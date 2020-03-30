@@ -1,0 +1,154 @@
+﻿<UserControl x:Class="ImageResizer.Views.InputPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:ImageResizer.Views"
+             xmlns:m="clr-namespace:ImageResizer.Models"
+             xmlns:p="clr-namespace:ImageResizer.Properties"
+             MinWidth="350">
+
+    <StackPanel>
+        <TextBlock Margin="11,11,11,0"
+                   Style="{StaticResource MainInstructionTextBlockStyle}"
+                   Text="{x:Static p:Resources.Input_MainInstruction}"/>
+        <Label Margin="11,11,11,0"
+               Content="{x:Static p:Resources.Input_Content}"
+               Target="{Binding ElementName=_selectedSizeListBox}"/>
+        <ListBox Margin="20,0,11,0"
+                 BorderThickness="0"
+                 ItemsSource="{Binding Settings.AllSizes}"
+                 Name="_selectedSizeListBox"
+                 SelectedIndex="{Binding Settings.SelectedSizeIndex}">
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListBoxItem">
+                                <RadioButton Margin="0,7,0,0"
+                                             Focusable="False"
+                                             IsChecked="{Binding IsSelected,RelativeSource={RelativeSource TemplatedParent}}">
+                                    <ContentPresenter/>
+                                </RadioButton>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListBox.ItemContainerStyle>
+            <ListBox.Resources>
+                <DataTemplate DataType="{x:Type m:ResizeSize}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Name}"/>
+                        <TextBlock Text=" ("/>
+                        <TextBlock Text="{Binding Fit,Converter={StaticResource EnumValueConverter},ConverterParameter=ThirdPersonSingular}"/>
+                        <TextBlock Text=" "/>
+                        <TextBlock Text="{Binding Width,Converter={StaticResource AutoDoubleConverter},ConverterParameter=Auto}"/>
+                        <TextBlock Text=" × " Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}"/>
+                        <TextBlock Text="{Binding Height,Converter={StaticResource AutoDoubleConverter},ConverterParameter=Auto}" Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}"/>
+                        <TextBlock Text=" "/>
+                        <TextBlock Text="{Binding Unit,Converter={StaticResource EnumValueConverter},ConverterParameter=ToLower}"/>
+                        <TextBlock Text=")"/>
+                    </StackPanel>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type m:CustomSize}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center" Text="{Binding Name}"/>
+                        <ComboBox Height="23"
+                                  Margin="5,0,0,0"
+                                  ItemsSource="{Binding Source={StaticResource ResizeFitValues}}"
+                                  SelectedItem="{Binding Fit}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type m:ResizeFit}">
+                                    <ContentPresenter Content="{Binding Converter={StaticResource EnumValueConverter}}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <TextBox Width="43"
+                                 Height="23"
+                                 Margin="7,0,0,0">
+                            <TextBox.Text>
+                                <Binding Converter="{StaticResource AutoDoubleConverter}"
+                                         Path="Width"
+                                         UpdateSourceTrigger="PropertyChanged">
+                                    <Binding.ValidationRules>
+                                        <local:AutoDoubleValidationRule/>
+                                    </Binding.ValidationRules>
+                                </Binding>
+                            </TextBox.Text>
+                        </TextBox>
+                        <TextBlock Margin="5,0,0,0"
+                                   VerticalAlignment="Center"
+                                   Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}">
+                            ×
+                        </TextBlock>
+                        <TextBox Width="43"
+                                 Height="23"
+                                 Margin="5,0,0,0"
+                                 Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}">
+                            <TextBox.Text>
+                                <Binding Converter="{StaticResource AutoDoubleConverter}"
+                                         Path="Height"
+                                         UpdateSourceTrigger="PropertyChanged">
+                                    <Binding.ValidationRules>
+                                        <local:AutoDoubleValidationRule/>
+                                    </Binding.ValidationRules>
+                                </Binding>
+                            </TextBox.Text>
+                        </TextBox>
+                        <ComboBox Height="23"
+                                  Margin="7,0,0,0"
+                                  ItemsSource="{Binding Source={StaticResource ResizeUnitValues}}"
+                                  SelectedItem="{Binding Unit}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type m:ResizeUnit}">
+                                    <ContentPresenter Content="{Binding Converter={StaticResource EnumValueConverter}}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.Resources>
+        </ListBox>
+        <CheckBox Margin="11,11,11,0"
+                  Content="{x:Static p:Resources.Input_ShrinkOnly}"
+                  IsChecked="{Binding Settings.ShrinkOnly}"/>
+        <!-- TODO: This option doesn't make much sense when resizing into a directory. We should swap it for an option
+                   to overwrite any files in the directory instead (issue #88) -->
+        <CheckBox Margin="11,7,11,0"
+                  Content="{x:Static p:Resources.Input_Replace}"
+                  IsChecked="{Binding Settings.Replace}"/>
+        <CheckBox Margin="11,7,11,0"
+                  Content="{x:Static p:Resources.Input_IgnoreOrientation}"
+                  IsChecked="{Binding Settings.IgnoreOrientation}"/>
+        <Border Margin="0,11,0,0"
+                Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+                BorderBrush="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}"
+                BorderThickness="0,1,0,0"
+                Padding="11,11">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock VerticalAlignment="Center">
+                    <Hyperlink Command="{Binding ShowAdvancedCommand}">
+                        <Run Text="{x:Static p:Resources.Input_ShowAdvanced}"/>
+                    </Hyperlink>
+                </TextBlock>
+                <Button Grid.Column="1"
+                        Height="23"
+                        MinWidth="75"
+                        Command="{Binding ResizeCommand}"
+                        Content="{x:Static p:Resources.Input_Resize}"
+                        IsDefault="True"/>
+                <Button Grid.Column="2"
+                        Height="23"
+                        MinWidth="75"
+                        Margin="7,0,0,0"
+                        Command="{Binding CancelCommand}"
+                        Content="{x:Static p:Resources.Cancel}"
+                        IsCancel="True"/>
+            </Grid>
+        </Border>
+    </StackPanel>
+
+</UserControl>

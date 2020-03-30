@@ -20,7 +20,7 @@ For the first-time installation, you'll need to generate a self-signed certifica
 **Note:** if you delete the folder, you will have to regenerate the key
 
 #### Elevate `Developer PowerShell for VS` permissions due to unsigned file
-`msix_reinstall.ps1` is unsigned, you'll need to elevate your prompt.
+`reinstall_msix.ps1` is unsigned, you'll need to elevate your prompt.
 1. Open `Developer PowerShell for VS` as admin
 2. Run `Set-ExecutionPolicy -executionPolicy Unrestricted`
 
@@ -31,10 +31,10 @@ In order to install the MSIX package without using the Microsoft Store, sideload
 1. Make sure you've built the `Release` configuration of `powertoys.sln`
 2. Open `Developer PowerShell for VS`
 3. Navigate to your repo's `installer\MSIX`
-4. Run `.\msix_reinstall.ps1` from the devenv powershell
+4. Run `.\reinstall_msix.ps1` from the devenv powershell
 
-### What msix_reinstall.ps1 does
-`msix_reinstall.ps1` removes the current PowerToys installation, restarts explorer.exe (to update PowerRename shell extension), builds `PowerToys-x64.msix` package, signs it with a PowerToys_TemporaryKey.pfx, and finally installs it.
+### What reinstall_msix.ps1 does
+`reinstall_msix.ps1` removes the current PowerToys installation, restarts explorer.exe (to update PowerRename and ImageResizer shell extension), builds `PowerToys-x64.msix` package, signs it with a PowerToys_TemporaryKey.pfx, and finally installs it.
 
 ## Cleanup - Removing all .msi/.msix PowerToys installations
 ```ps

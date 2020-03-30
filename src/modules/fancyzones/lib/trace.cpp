@@ -147,6 +147,16 @@ void Trace::FancyZones::DataChanged() noexcept
         TraceLoggingWideString(activeZoneSetInfo.c_str(), "ActiveZoneSetsList"));
 }
 
+void Trace::FancyZones::EditorLaunched(int value) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "FancyZones_EditorLaunch",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingInt32(value, "Value"));
+}
+
 void Trace::SettingsChanged(const Settings& settings) noexcept
 {
     const auto& editorHotkey = settings.editorHotkey;
@@ -170,6 +180,10 @@ void Trace::SettingsChanged(const Settings& settings) noexcept
         TraceLoggingBoolean(settings.overrideSnapHotkeys, "OverrideSnapHotKeys"),
         TraceLoggingBoolean(settings.appLastZone_moveWindows, "MoveWindowsToLastZoneOnAppOpening"),
         TraceLoggingBoolean(settings.use_cursorpos_editor_startupscreen, "UseCursorPosOnEditorStartup"),
+        TraceLoggingBoolean(settings.showZonesOnAllMonitors, "ShowZonesOnAllMonitors"),
+        TraceLoggingBoolean(settings.makeDraggedWindowTransparent, "MakeDraggedWindowTransparent"),
+        TraceLoggingWideString(settings.zoneColor.c_str(), "ZoneColor"),
+        TraceLoggingWideString(settings.zoneBorderColor.c_str(), "ZoneBorderColor"),
         TraceLoggingWideString(settings.zoneHightlightColor.c_str(), "ZoneHighlightColor"),
         TraceLoggingInt32(settings.zoneHighlightOpacity, "ZoneHighlightOpacity"),
         TraceLoggingWideString(hotkeyStr.c_str(), "Hotkey"),

@@ -6,7 +6,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 ## Build Status
 
-[![Build Status](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=master)](https://dev.azure.com/ms/PowerToys/_build?definitionId=35096)
+[![Build Status](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=master)](https://dev.azure.com/ms/PowerToys/_build?definitionId=219)
 
 ## Installing and running Microsoft PowerToys
 
@@ -125,16 +125,14 @@ PowerToys is still a very fluidic project and the team is actively working out o
 
 ## Code of Conduct
 
-This project has adopted the [Microsoft Open Source Code of Conduct][oss-conduct-code]. For more information see the [Code of Conduct FAQ][oss-conduct-FAQ] or contact [opencode@microsoft.com][oss-conduct-email] with any additional questions or comments.
+This project has adopted the [Microsoft Open Source Code of Conduct][oss-conduct-code]. 
 
 ## Privacy Statement
 
 The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has the trends from the telemetry. Please read the [Microsoft privacy statement][privacyLink] for more information.
 
 [oss-CLA]: https://cla.opensource.microsoft.com
-[oss-conduct-code]: https://opensource.microsoft.com/codeofconduct/
-[oss-conduct-FAQ]: https://opensource.microsoft.com/codeofconduct/faq/
-[oss-conduct-email]: mailto:opencode@microsoft.com
+[oss-conduct-code]: CODE_OF_CONDUCT.md
 [github-release-link]: https://github.com/microsoft/PowerToys/releases/
 [v1]: https://github.com/microsoft/PowerToys/wiki/Version-1.0-Strategy
 [privacyLink]: http://go.microsoft.com/fwlink/?LinkId=521839

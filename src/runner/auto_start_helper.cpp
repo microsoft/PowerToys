@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "auto_start_helper.h"
 
+#include "general_settings.h"
+
 #include <Lmcons.h>
 
 #include <comdef.h>
@@ -35,7 +37,7 @@
 const DWORD USERNAME_DOMAIN_LEN = DNLEN + UNLEN + 2; // Domain Name + '\' + User Name + '\0'
 const DWORD USERNAME_LEN = UNLEN + 1; // User Name + '\0'
 
-bool enable_auto_start_task_for_this_user()
+bool create_auto_start_task_for_this_user(bool runEvelvated)
 {
     HRESULT hr = S_OK;
 
@@ -217,8 +219,7 @@ bool enable_auto_start_task_for_this_user()
 
         hr = pPrincipal->put_LogonType(TASK_LOGON_INTERACTIVE_TOKEN);
 
-        // Run the task with the highest available privileges.
-        if (IsUserAnAdmin())
+        if (runEvelvated)
         {
             hr = pPrincipal->put_RunLevel(_TASK_RUNLEVEL::TASK_RUNLEVEL_HIGHEST);
         }
@@ -231,16 +232,19 @@ bool enable_auto_start_task_for_this_user()
     }
     // ------------------------------------------------------
     //  Save the task in the PowerToys folder.
-    hr = pTaskFolder->RegisterTaskDefinition(
-        _bstr_t(wstrTaskName.c_str()),
-        pTask,
-        TASK_CREATE_OR_UPDATE,
-        _variant_t(username_domain),
-        _variant_t(),
-        TASK_LOGON_INTERACTIVE_TOKEN,
-        _variant_t(L""),
-        &pRegisteredTask);
-    ExitOnFailure(hr, "Error saving the Task : %x", hr);
+    {
+        _variant_t SDDL_FULL_ACCESS_FOR_EVERYONE = L"D:(A;;FA;;;WD)";
+        hr = pTaskFolder->RegisterTaskDefinition(
+            _bstr_t(wstrTaskName.c_str()),
+            pTask,
+            TASK_CREATE_OR_UPDATE,
+            _variant_t(username_domain),
+            _variant_t(),
+            TASK_LOGON_INTERACTIVE_TOKEN,
+            SDDL_FULL_ACCESS_FOR_EVERYONE,
+            &pRegisteredTask);
+        ExitOnFailure(hr, "Error saving the Task : %x", hr);
+    }
 
 LExit:
     if (pService)
@@ -261,7 +265,7 @@ LExit:
     return (SUCCEEDED(hr));
 }
 
-bool disable_auto_start_task_for_this_user()
+bool delete_auto_start_task_for_this_user()
 {
     HRESULT hr = S_OK;
 
@@ -313,13 +317,7 @@ bool disable_auto_start_task_for_this_user()
         if (SUCCEEDED(hr))
         {
             // Task exists, try disabling it.
-            hr = pExistingRegisteredTask->put_Enabled(VARIANT_FALSE);
-            pExistingRegisteredTask->Release();
-            if (SUCCEEDED(hr))
-            {
-                // Function disable. Sounds like a success.
-                ExitFunction();
-            }
+            hr = pTaskFolder->DeleteTask(_bstr_t(wstrTaskName.c_str()), 0);
         }
     }
 

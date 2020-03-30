@@ -1,0 +1,32 @@
+﻿<Application x:Class="ImageResizer.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:m="clr-namespace:ImageResizer.Models"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:v="clr-namespace:ImageResizer.Views">
+
+    <Application.Resources>
+        <ObjectDataProvider x:Key="ResizeFitValues"
+                            MethodName="GetValues"
+                            ObjectType="sys:Enum">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type Type="{x:Type m:ResizeFit}"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <ObjectDataProvider x:Key="ResizeUnitValues"
+                            MethodName="GetValues"
+                            ObjectType="sys:Enum">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type Type="{x:Type m:ResizeUnit}"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <v:EnumValueConverter x:Key="EnumValueConverter"/>
+        <v:AutoDoubleConverter x:Key="AutoDoubleConverter"/>
+        <v:BoolValueConverter x:Key="BoolValueConverter"/>
+        <Style x:Key="MainInstructionTextBlockStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12pt"/>
+            <Setter Property="Foreground" Value="#039"/>
+        </Style>
+    </Application.Resources>
+
+</Application>

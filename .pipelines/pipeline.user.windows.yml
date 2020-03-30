@@ -50,6 +50,14 @@ build:
             - 'modules\fancyzones.dll'
             - 'modules\shortcut_guide.dll'
             - 'modules\PowerRenameExt.dll'
+            - 'modules\WindowWalker.exe'
+            - 'modules\WindowWalker.dll'
+            - 'modules\ImageResizerExt.dll'
+            - 'modules\ImageResizer.exe'
+            - 'modules\powerpreview.dll'
+            - 'modules\PreviewHandlerCommon.dll'
+            - 'modules\MarkdownPreviewHandler.dll'
+            - 'modules\SvgPreviewHandler.dll'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
     - !!buildcommand
@@ -59,7 +67,7 @@ build:
         - from: 'installer\PowerToysSetup\x64\Release'
           to: 'Build_Installer_Output'
           include:
-            - 'PowerToysSetup.msi'
+            - 'PowerToysSetup-*.msi'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
 #    - !!buildcommand

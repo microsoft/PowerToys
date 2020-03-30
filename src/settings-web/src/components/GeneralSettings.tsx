@@ -138,7 +138,8 @@ export class GeneralSettings extends React.Component <any, any> {
 
         {this.state.settings.general.is_admin &&
         (<BoolToggleSettingsControl
-          setting={{display_name: 'Always run as administrator', value: this.state.settings.general.run_elevated}}
+          setting={{display_name: this.state.settings.general.is_elevated ? 'Always run as administrator' : 'Always run as administrator (Restart as administrator to change this)', value: this.state.settings.general.run_elevated}}
+          disabled={!this.state.settings.general.is_elevated}
           on_change={this.parent_on_change}
           ref={(input) => {this.elevated_reference=input;}}
         />)
@@ -148,7 +149,9 @@ export class GeneralSettings extends React.Component <any, any> {
           setting={{
             display_name: '',
             value: 'Running as user. Do you wish to run as administrator instead?',
-            button_text: 'Restart as administrator'
+            button_text: 'Restart as administrator',
+            help_link_url: "https://aka.ms/powertoysDetectedElevatedHelp",
+            help_link_text: "(Learn more about Admin mode)"
           }}
           action_name={'restart_elevation'}
           action_callback={(action_name: any, value:any) => {
@@ -165,7 +168,7 @@ export class GeneralSettings extends React.Component <any, any> {
         />)
         }
         <ChoiceGroupSettingsControl
-          setting={{display_name: 'Chose Settings color',
+          setting={{display_name: 'Choose Settings color',
                     value: this.state.settings.general.theme,
                     options: [
                       { key: 'system', text: 'System default app mode'},

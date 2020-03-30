@@ -5,18 +5,21 @@
 #include <Windows.h>
 #include <UIAutomationClient.h>
 
-struct TasklistButton {
-  std::wstring name;
-  long x, y, width, height, keynum;
+struct TasklistButton
+{
+    std::wstring name;
+    long x, y, width, height, keynum;
 };
 
-class Tasklist {
+class Tasklist
+{
 public:
-  void update();
-  std::vector<TasklistButton> get_buttons();
-  bool update_buttons(std::vector<TasklistButton>& buttons);
+    void update();
+    std::vector<TasklistButton> get_buttons();
+    bool update_buttons(std::vector<TasklistButton>& buttons);
+
 private:
-  winrt::com_ptr<IUIAutomation> automation;
-  winrt::com_ptr<IUIAutomationElement> element;
-  winrt::com_ptr<IUIAutomationCondition> true_condition;
+    winrt::com_ptr<IUIAutomation> automation;
+    winrt::com_ptr<IUIAutomationElement> element;
+    winrt::com_ptr<IUIAutomationCondition> true_condition;
 };

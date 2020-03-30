@@ -113,50 +113,91 @@ namespace FancyZonesEditor.Models
             return layout;
         }
 
+        public void RestoreTo(CanvasLayoutModel other)
+        {
+            other.Zones.Clear();
+            foreach (Int32Rect zone in Zones)
+            {
+                other.Zones.Add(zone);
+            }
+        }
+
+        private struct Zone
+        {
+            public int X { get; set; }
+
+            public int Y { get; set; }
+
+            public int Width { get; set; }
+
+            public int Height { get; set; }
+        }
+
+        private struct CanvasLayoutInfo
+        {
+            public int RefWidth { get; set; }
+
+            public int RefHeight { get; set; }
+
+            public Zone[] Zones { get; set; }
+        }
+
+        private struct CanvasLayoutJson
+        {
+            public string Uuid { get; set; }
+
+            public string Name { get; set; }
+
+            public string Type { get; set; }
+
+            public CanvasLayoutInfo Info { get; set; }
+        }
+
         // PersistData
         // Implements the LayoutModel.PersistData abstract method
         protected override void PersistData()
         {
-            FileStream outputStream = File.Open(Settings.AppliedZoneSetTmpFile, FileMode.Create);
-            JsonWriterOptions writerOptions = new JsonWriterOptions
+            CanvasLayoutInfo layoutInfo = new CanvasLayoutInfo
             {
-                SkipValidation = true,
+                RefWidth = _referenceWidth,
+                RefHeight = _referenceHeight,
+                Zones = new Zone[Zones.Count],
             };
-            using (var writer = new Utf8JsonWriter(outputStream, writerOptions))
+            for (int i = 0; i < Zones.Count; ++i)
             {
-                writer.WriteStartObject();
-                writer.WriteString("uuid", "{" + Guid.ToString().ToUpper() + "}");
-                writer.WriteString("name", Name);
-
-                writer.WriteString("type", "canvas");
-
-                writer.WriteStartObject("info");
-
-                writer.WriteNumber("ref-width", _referenceWidth);
-                writer.WriteNumber("ref-height", _referenceHeight);
-
-                writer.WriteStartArray("zones");
-                foreach (Int32Rect rect in Zones)
+                Zone zone = new Zone
                 {
-                    writer.WriteStartObject();
-                    writer.WriteNumber("X", rect.X);
-                    writer.WriteNumber("Y", rect.Y);
-                    writer.WriteNumber("width", rect.Width);
-                    writer.WriteNumber("height", rect.Height);
-                    writer.WriteEndObject();
-                }
+                    X = Zones[i].X,
+                    Y = Zones[i].Y,
+                    Width = Zones[i].Width,
+                    Height = Zones[i].Height,
+                };
 
-                writer.WriteEndArray();
-
-                // end info object
-                writer.WriteEndObject();
-
-                // end root object
-                writer.WriteEndObject();
-                writer.Flush();
+                layoutInfo.Zones[i] = zone;
             }
 
-            outputStream.Close();
+            CanvasLayoutJson jsonObj = new CanvasLayoutJson
+            {
+                Uuid = "{" + Guid.ToString().ToUpper() + "}",
+                Name = Name,
+                Type = "canvas",
+                Info = layoutInfo,
+            };
+
+            JsonSerializerOptions options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = new DashCaseNamingPolicy(),
+            };
+
+            try
+            {
+                string jsonString = JsonSerializer.Serialize(jsonObj, options);
+                File.WriteAllText(Settings.AppliedZoneSetTmpFile, jsonString);
+            }
+            catch (Exception ex)
+            {
+                ShowExceptionMessageBox("Error persisting canvas layout", ex);
+            }
         }
     }
 }
