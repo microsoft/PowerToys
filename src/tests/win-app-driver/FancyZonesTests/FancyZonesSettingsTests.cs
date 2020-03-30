@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -37,11 +36,11 @@ namespace PowerToysTests
                 .SendKeys(OpenQA.Selenium.Keys.PageUp + OpenQA.Selenium.Keys.PageUp);
             Assert.IsNotNull(_scrollUp);
             _scrollDown = new Actions(session).MoveToElement(_saveButton).MoveByOffset(0, _saveButton.Rect.Height).ContextClick()
-                .SendKeys(OpenQA.Selenium.Keys.PageDown + OpenQA.Selenium.Keys.PageDown);
+                .SendKeys(OpenQA.Selenium.Keys.PageDown + OpenQA.Selenium.Keys.PageDown + OpenQA.Selenium.Keys.PageDown);
             Assert.IsNotNull(_scrollDown);
         }
 
-        private JObject getProperties()
+        private JObject GetProperties()
         {
             try
             {
@@ -54,13 +53,13 @@ namespace PowerToysTests
             }
         }
 
-        private T getPropertyValue<T>(string propertyName)
+        private T GetPropertyValue<T>(string propertyName)
         {
-            JObject properties = getProperties();
+            JObject properties = GetProperties();
             return properties[propertyName].ToObject<JObject>()["value"].Value<T>();
         }
 
-        private T getPropertyValue<T>(JObject properties, string propertyName)
+        private T GetPropertyValue<T>(JObject properties, string propertyName)
         {
             return properties[propertyName].ToObject<JObject>()["value"].Value<T>();
         }
@@ -93,7 +92,7 @@ namespace PowerToysTests
             SaveChanges();
             ShortWait();
 
-            int value = getPropertyValue<int>("fancyzones_highlight_opacity");
+            int value = GetPropertyValue<int>("fancyzones_highlight_opacity");
             Assert.AreEqual(expected, value);
         }
 
@@ -216,7 +215,7 @@ namespace PowerToysTests
 
             //Assert.AreEqual(expectedText, input.Text);
 
-            JObject props = getProperties();
+            JObject props = GetProperties();
             JObject hotkey = props["fancyzones_editor_hotkey"].ToObject<JObject>()["value"].ToObject<JObject>();
             Assert.AreEqual(flags[0] == 1, hotkey.Value<bool>("win"));
             Assert.AreEqual(flags[1] == 1, hotkey.Value<bool>("ctrl"));
@@ -241,7 +240,7 @@ namespace PowerToysTests
         public void TogglesSingleClickSaveButtonTest()
         {
             List<WindowsElement> toggles = session.FindElementsByXPath("//Pane[@Name=\"PowerToys Settings\"]/*[@LocalizedControlType=\"toggleswitch\"]").ToList();
-            Assert.AreEqual(8, toggles.Count);
+            Assert.AreEqual(9, toggles.Count);
 
             List<bool> toggleValues = new List<bool>();
             foreach (WindowsElement toggle in toggles)
@@ -258,15 +257,16 @@ namespace PowerToysTests
             }
             
             //check saved settings
-            JObject savedProps = getProperties();
-            Assert.AreNotEqual(toggleValues[0], getPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
-            Assert.AreNotEqual(toggleValues[1], getPropertyValue<bool>(savedProps, "fancyzones_overrideSnapHotkeys"));
-            Assert.AreNotEqual(toggleValues[2], getPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_flashZones"));
-            Assert.AreNotEqual(toggleValues[3], getPropertyValue<bool>(savedProps, "fancyzones_displayChange_moveWindows"));
-            Assert.AreNotEqual(toggleValues[4], getPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_moveWindows"));
-            Assert.AreNotEqual(toggleValues[5], getPropertyValue<bool>(savedProps, "fancyzones_virtualDesktopChange_moveWindows"));
-            Assert.AreNotEqual(toggleValues[6], getPropertyValue<bool>(savedProps, "fancyzones_appLastZone_moveWindows"));
-            Assert.AreNotEqual(toggleValues[7], getPropertyValue<bool>(savedProps, "use_cursorpos_editor_startupscreen"));
+            JObject savedProps = GetProperties();
+            Assert.AreNotEqual(toggleValues[0], GetPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
+            Assert.AreNotEqual(toggleValues[1], GetPropertyValue<bool>(savedProps, "fancyzones_overrideSnapHotkeys"));
+            Assert.AreNotEqual(toggleValues[2], GetPropertyValue<bool>(savedProps, "fancyzones_displayChange_moveWindows"));
+            Assert.AreNotEqual(toggleValues[3], GetPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_moveWindows"));
+            Assert.AreNotEqual(toggleValues[4], GetPropertyValue<bool>(savedProps, "fancyzones_virtualDesktopChange_moveWindows"));
+            Assert.AreNotEqual(toggleValues[5], GetPropertyValue<bool>(savedProps, "fancyzones_appLastZone_moveWindows"));
+            Assert.AreNotEqual(toggleValues[6], GetPropertyValue<bool>(savedProps, "use_cursorpos_editor_startupscreen"));
+            Assert.AreNotEqual(toggleValues[7], GetPropertyValue<bool>(savedProps, "fancyzones_show_on_all_monitors"));
+            Assert.AreNotEqual(toggleValues[8], GetPropertyValue<bool>(savedProps, "fancyzones_makeDraggedWindowTransparent"));
         }
 
         /*
@@ -278,7 +278,7 @@ namespace PowerToysTests
         public void TogglesDoubleClickSave()
         {
             List<WindowsElement> toggles = session.FindElementsByXPath("//Pane[@Name=\"PowerToys Settings\"]/*[@LocalizedControlType=\"toggleswitch\"]").ToList();
-            Assert.AreEqual(8, toggles.Count);
+            Assert.AreEqual(9, toggles.Count);
 
             List<bool> toggleValues = new List<bool>();
             foreach (WindowsElement toggle in toggles)
@@ -295,21 +295,22 @@ namespace PowerToysTests
             SaveChanges();
             ShortWait();
 
-            JObject savedProps = getProperties();
-            Assert.AreEqual(toggleValues[0], getPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
-            Assert.AreEqual(toggleValues[1], getPropertyValue<bool>(savedProps, "fancyzones_overrideSnapHotkeys"));
-            Assert.AreEqual(toggleValues[2], getPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_flashZones"));
-            Assert.AreEqual(toggleValues[3], getPropertyValue<bool>(savedProps, "fancyzones_displayChange_moveWindows"));
-            Assert.AreEqual(toggleValues[4], getPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_moveWindows"));
-            Assert.AreEqual(toggleValues[5], getPropertyValue<bool>(savedProps, "fancyzones_virtualDesktopChange_moveWindows"));
-            Assert.AreEqual(toggleValues[6], getPropertyValue<bool>(savedProps, "fancyzones_appLastZone_moveWindows"));
-            Assert.AreEqual(toggleValues[7], getPropertyValue<bool>(savedProps, "use_cursorpos_editor_startupscreen"));
+            JObject savedProps = GetProperties();
+            Assert.AreEqual(toggleValues[0], GetPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
+            Assert.AreEqual(toggleValues[1], GetPropertyValue<bool>(savedProps, "fancyzones_overrideSnapHotkeys"));
+            Assert.AreEqual(toggleValues[2], GetPropertyValue<bool>(savedProps, "fancyzones_displayChange_moveWindows"));
+            Assert.AreEqual(toggleValues[3], GetPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_moveWindows"));
+            Assert.AreEqual(toggleValues[4], GetPropertyValue<bool>(savedProps, "fancyzones_virtualDesktopChange_moveWindows"));
+            Assert.AreEqual(toggleValues[5], GetPropertyValue<bool>(savedProps, "fancyzones_appLastZone_moveWindows"));
+            Assert.AreEqual(toggleValues[6], GetPropertyValue<bool>(savedProps, "use_cursorpos_editor_startupscreen"));
+            Assert.AreEqual(toggleValues[7], GetPropertyValue<bool>(savedProps, "fancyzones_show_on_all_monitors"));
+            Assert.AreEqual(toggleValues[8], GetPropertyValue<bool>(savedProps, "fancyzones_makeDraggedWindowTransparent"));
         }
 
         [TestMethod]
         public void HighlightOpacitySetValue()
         {
-            WindowsElement editor = session.FindElementByName("Zone Highlight Opacity (%)");
+            WindowsElement editor = session.FindElementByName("Zone opacity (%)");
             Assert.IsNotNull(editor);
 
             SetOpacity(editor, "50");
@@ -339,7 +340,7 @@ namespace PowerToysTests
         [TestMethod]
         public void HighlightOpacityIncreaseValue()
         {
-            WindowsElement editor = session.FindElementByName("Zone Highlight Opacity (%)");
+            WindowsElement editor = session.FindElementByName("Zone opacity (%)");
             Assert.IsNotNull(editor);
 
             SetOpacity(editor, "99");
@@ -364,7 +365,7 @@ namespace PowerToysTests
         public void HighlightOpacityDecreaseValue()
         {
             
-            WindowsElement editor = session.FindElementByName("Zone Highlight Opacity (%)");
+            WindowsElement editor = session.FindElementByName("Zone opacity (%)");
             Assert.IsNotNull(editor);
 
             SetOpacity(editor, "1");
@@ -388,7 +389,8 @@ namespace PowerToysTests
         [TestMethod]
         public void HighlightOpacityClearValueButton()
         {
-            WindowsElement editor = session.FindElementByName("Zone Highlight Opacity (%)");
+            ScrollDown();
+            WindowsElement editor = session.FindElementByName("Zone opacity (%)");
             Assert.IsNotNull(editor);
 
             editor.Click(); //activate
@@ -402,8 +404,6 @@ namespace PowerToysTests
             Assert.AreEqual("\r\n", editor.Text);
         }
 
-        //in 0.15.2 sliders cannot be found by inspect.exe
-        /*
         [TestMethod]
         public void HighlightColorSlidersTest()
         {
@@ -437,7 +437,7 @@ namespace PowerToysTests
 
             SaveChanges();
             ShortWait();            
-            Assert.AreEqual("#000000", getPropertyValue<string>("fancyzones_zoneHighlightColor"));
+            Assert.AreEqual("#000000", GetPropertyValue<string>("fancyzones_zoneHighlightColor"));
 
             //white in left corner
             new Actions(session).MoveToElement(saturationAndBrightness).ClickAndHold().MoveByOffset(-(satRect.Width/2), -(satRect.Height / 2)).Click().Perform();
@@ -448,7 +448,7 @@ namespace PowerToysTests
 
             SaveChanges();
             ShortWait();
-            Assert.AreEqual("#ffffff", getPropertyValue<string>("fancyzones_zoneHighlightColor"));
+            Assert.AreEqual("#ffffff", GetPropertyValue<string>("fancyzones_zoneHighlightColor"));
 
             //color in right corner
             new Actions(session).MoveToElement(saturationAndBrightness).ClickAndHold().MoveByOffset((satRect.Width / 2), -(satRect.Height / 2)).Click()
@@ -460,7 +460,7 @@ namespace PowerToysTests
 
             SaveChanges();
             ShortWait();
-            Assert.AreEqual("#ff0000", getPropertyValue<string>("fancyzones_zoneHighlightColor"));
+            Assert.AreEqual("#ff0000", GetPropertyValue<string>("fancyzones_zoneHighlightColor"));
         }
         
         [TestMethod]
@@ -485,9 +485,8 @@ namespace PowerToysTests
 
             SaveChanges();
             ShortWait();
-            Assert.AreEqual("#63c99a", getPropertyValue<string>("fancyzones_zoneHighlightColor"));
+            Assert.AreEqual("#63c99a", GetPropertyValue<string>("fancyzones_zoneHighlightColor"));
         }
-        */
 
         [TestMethod]
         public void HighlightRGBInputsTest()
@@ -557,7 +556,7 @@ namespace PowerToysTests
             SaveChanges();
             ClearInput(input);
             ShortWait();
-            Assert.AreEqual(inputValue, getPropertyValue<string>("fancyzones_excluded_apps"));
+            Assert.AreEqual(inputValue, GetPropertyValue<string>("fancyzones_excluded_apps"));
 
             //invalid
             inputValue = "Notepad Chrome";
@@ -565,28 +564,28 @@ namespace PowerToysTests
             SaveChanges();
             ClearInput(input);
             ShortWait();
-            Assert.AreEqual(inputValue, getPropertyValue<string>("fancyzones_excluded_apps"));
+            Assert.AreEqual(inputValue, GetPropertyValue<string>("fancyzones_excluded_apps"));
 
             inputValue = "Notepad,Chrome";
             input.SendKeys(inputValue);
             SaveChanges();
             ClearInput(input);
             ShortWait();
-            Assert.AreEqual(inputValue, getPropertyValue<string>("fancyzones_excluded_apps"));
+            Assert.AreEqual(inputValue, GetPropertyValue<string>("fancyzones_excluded_apps"));
 
             inputValue = "Note*";
             input.SendKeys(inputValue);
             SaveChanges();
             ClearInput(input);
             ShortWait();
-            Assert.AreEqual(inputValue, getPropertyValue<string>("fancyzones_excluded_apps"));
+            Assert.AreEqual(inputValue, GetPropertyValue<string>("fancyzones_excluded_apps"));
 
             inputValue = "Кириллица";
             input.SendKeys(inputValue);
             SaveChanges();
             ClearInput(input);
             ShortWait();
-            Assert.AreEqual(inputValue, getPropertyValue<string>("fancyzones_excluded_apps"));
+            Assert.AreEqual(inputValue, GetPropertyValue<string>("fancyzones_excluded_apps"));
         }
 
         [TestMethod]
@@ -609,9 +608,9 @@ namespace PowerToysTests
             Assert.IsNotNull(powerToysWindow); 
 
             //check settings change
-            JObject savedProps = getProperties();
+            JObject savedProps = GetProperties();
             
-            Assert.AreNotEqual(initialToggleValue, getPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
+            Assert.AreNotEqual(initialToggleValue, GetPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
             
             //return initial app state
             toggle.Click(); 
@@ -648,8 +647,8 @@ namespace PowerToysTests
             Init();
 
             //check settings change
-            JObject savedProps = getProperties();
-            Assert.AreEqual(initialToggleValue, getPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
+            JObject savedProps = GetProperties();
+            Assert.AreEqual(initialToggleValue, GetPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
         }
 
         [TestMethod]
@@ -670,9 +669,9 @@ namespace PowerToysTests
             Assert.IsNotNull(powerToysWindow);
 
             //check settings change
-            JObject savedProps = getProperties();
+            JObject savedProps = GetProperties();
             JObject initialProps = _initialSettingsJson["properties"].ToObject<JObject>();
-            Assert.AreEqual(getPropertyValue<bool>(initialProps, "fancyzones_shiftDrag"), getPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
+            Assert.AreEqual(GetPropertyValue<bool>(initialProps, "fancyzones_shiftDrag"), GetPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
 
             //return initial app state
             toggle.Click();

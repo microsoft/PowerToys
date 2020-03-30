@@ -23,6 +23,10 @@ namespace PowerToysTests
         protected static string _initialSettings = "";
         protected static string _initialZoneSettings = "";
 
+        protected const string _defaultSettings = "{\"version\":\"1.0\",\"name\":\"FancyZones\",\"properties\":{\"fancyzones_shiftDrag\":{\"value\":true},\"fancyzones_overrideSnapHotkeys\":{\"value\":false},\"fancyzones_zoneSetChange_flashZones\":{\"value\":false},\"fancyzones_displayChange_moveWindows\":{\"value\":false},\"fancyzones_zoneSetChange_moveWindows\":{\"value\":false},\"fancyzones_virtualDesktopChange_moveWindows\":{\"value\":false},\"fancyzones_appLastZone_moveWindows\":{\"value\":false},\"use_cursorpos_editor_startupscreen\":{\"value\":true},\"fancyzones_zoneHighlightColor\":{\"value\":\"#0078D7\"},\"fancyzones_highlight_opacity\":{\"value\":90},\"fancyzones_editor_hotkey\":{\"value\":{\"win\":true,\"ctrl\":false,\"alt\":false,\"shift\":false,\"code\":192,\"key\":\"`\"}},\"fancyzones_excluded_apps\":{\"value\":\"\"}}}";
+        protected const string _defaultZoneSettings = "{\"app-zone-history\":[],\"devices\":[],\"custom-zone-sets\":[]}";
+            
+
         public static void Setup(TestContext context, bool isLaunchRequired = true)
         {
             //read settings before running tests to restore them after
@@ -201,7 +205,9 @@ namespace PowerToysTests
             {
                 AppiumOptions opts = new AppiumOptions();
                 opts.PlatformName = "Windows";
-                opts.AddAdditionalCapability("app", "Microsoft.PowerToys_8wekyb3d8bbwe!PowerToys");
+                opts.AddAdditionalCapability("platformVersion", "10");
+                opts.AddAdditionalCapability("deviceName", "WindowsPC");
+                opts.AddAdditionalCapability("app", "C:/Program Files/PowerToys/PowerToys.exe");
                 
                 WindowsDriver<WindowsElement> driver = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), opts);
                 Assert.IsNotNull(driver);
@@ -237,8 +243,7 @@ namespace PowerToysTests
                 Directory.CreateDirectory(_settingsFolderPath);
             }
 
-            string settings = "{\"version\":\"1.0\",\"name\":\"FancyZones\",\"properties\":{\"fancyzones_shiftDrag\":{\"value\":true},\"fancyzones_overrideSnapHotkeys\":{\"value\":false},\"fancyzones_zoneSetChange_flashZones\":{\"value\":false},\"fancyzones_displayChange_moveWindows\":{\"value\":false},\"fancyzones_zoneSetChange_moveWindows\":{\"value\":false},\"fancyzones_virtualDesktopChange_moveWindows\":{\"value\":false},\"fancyzones_appLastZone_moveWindows\":{\"value\":false},\"use_cursorpos_editor_startupscreen\":{\"value\":true},\"fancyzones_zoneHighlightColor\":{\"value\":\"#0078D7\"},\"fancyzones_highlight_opacity\":{\"value\":90},\"fancyzones_editor_hotkey\":{\"value\":{\"win\":true,\"ctrl\":false,\"alt\":false,\"shift\":false,\"code\":192,\"key\":\"`\"}},\"fancyzones_excluded_apps\":{\"value\":\"\"}}}";
-            File.WriteAllText(_settingsPath, settings);
+            File.WriteAllText(_settingsPath, _defaultSettings);
 
             if (isPowerToysLaunched)
             {
@@ -253,8 +258,7 @@ namespace PowerToysTests
 
         public static void ResetDefautZoneSettings(bool relaunch)
         {
-            string zoneSettings = "{\"app-zone-history\":[],\"devices\":[],\"custom-zone-sets\":[]}";
-            File.WriteAllText(_zoneSettingsPath, zoneSettings);
+            File.WriteAllText(_zoneSettingsPath, _defaultZoneSettings);
 
             if (isPowerToysLaunched)
             {
