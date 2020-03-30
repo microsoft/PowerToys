@@ -52,15 +52,6 @@ namespace PowerLauncher.UI
                 new SearchApp() { Title = "Yammer", Icon = "ms-appx:///Assets/Images/Yammer.png" }
             };
         }
-
-        private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
-        {
-            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
-            {
-                var Suggestion = SearchResults.Where(p => p.Title.StartsWith(sender.Text, StringComparison.OrdinalIgnoreCase)).ToArray();
-                sender.ItemsSource = Suggestion;
-            }
-        }
     }
 
 
