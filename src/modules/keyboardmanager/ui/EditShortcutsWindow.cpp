@@ -36,7 +36,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Window Creation
     HWND _hWndEditShortcutsWindow = CreateWindow(
         szWindowClass,
-        L"PowerKeys Edit Shortcuts",
+        L"Edit Shortcuts",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
         CW_USEDEFAULT,
         CW_USEDEFAULT,

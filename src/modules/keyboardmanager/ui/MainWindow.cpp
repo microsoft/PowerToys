@@ -38,7 +38,7 @@ void createMainWindow(HINSTANCE hInstance, KeyboardManagerState& keyboardManager
     // Window Creation
     _hWndMain = CreateWindow(
         szWindowClass,
-        L"PowerKeys Settings",
+        L"Keyboard Manager Settings",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
