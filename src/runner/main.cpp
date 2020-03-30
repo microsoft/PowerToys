@@ -176,7 +176,7 @@ int runner(bool isProcessElevated)
             L"shortcut_guide.dll",
             L"fancyzones.dll",
             L"PowerRenameExt.dll",
-            L"PowerKeys.dll"
+            L"KeyboardManager.dll"
         };
         for (auto& file : std::filesystem::directory_iterator(L"modules/"))
         {
