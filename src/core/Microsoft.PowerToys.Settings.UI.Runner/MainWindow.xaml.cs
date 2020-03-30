@@ -25,30 +25,12 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 
             if (shellPage != null)
             {
-                shellPage.SetRestartElevatedCallback(delegate(string msg) 
+                // send IPC Message
+                shellPage.SetDefaultSndMessageCallback(delegate (string msg)
                 {
-                    MessageBox.Show(
-                        msg,
-                        "Restart Elevated",
-                        MessageBoxButton.OK);
-
-                    Program.ipcmanager.SendMessage(msg);
-
-                    int milliseconds = 2000;
-                    Thread.Sleep(milliseconds);
-
-                    System.Windows.Application.Current.Shutdown();
-                });
-
-                shellPage.SetRunOnStartUpCallback(delegate (string msg)
-                {
-                    MessageBox.Show(
-                        msg,
-                        "Run On Start Up",
-                        MessageBoxButton.OK);
-
                     Program.ipcmanager.SendMessage(msg);
                 });
+
             }
         }
 
