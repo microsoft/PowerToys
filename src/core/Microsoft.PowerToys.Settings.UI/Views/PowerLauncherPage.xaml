@@ -1,0 +1,91 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerLauncherPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+
+        <StackPanel Orientation="Vertical">
+            <TextBlock Text="A quick launcher that has additional capabilities without sacrificing performance."
+                       TextWrapping="Wrap"/>
+
+            <ToggleSwitch Header="Enable PowerLauncher"
+                          IsOn="True"
+                          Margin="{StaticResource SmallTopMargin}" />
+
+            <TextBlock Text="Search &amp; results"
+                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+            <ComboBox Header="Search result preference"
+                          SelectedIndex="0"
+                              MinWidth="320"
+                          Margin="{StaticResource SmallTopMargin}">
+                <ComboBoxItem>Most commonly used</ComboBoxItem>
+                <ComboBoxItem>Most recently used</ComboBoxItem>
+                <ComboBoxItem>Alphabetical order</ComboBoxItem>
+                <ComboBoxItem>Running processes/opened applications</ComboBoxItem>
+            </ComboBox>
+
+            <ComboBox Header="Search type preference"
+                          SelectedIndex="0"
+                          MinWidth="320"
+                          Margin="{StaticResource SmallTopMargin}">
+                <ComboBoxItem>Application name</ComboBoxItem>
+                <ComboBoxItem>A string that is contained in the application</ComboBoxItem>
+                <ComboBoxItem>Executable name</ComboBoxItem>
+            </ComboBox>
+
+            <muxc:NumberBox Header="Maximum numbers of results"
+                            Value="4"
+                            Width="320"
+                            SpinButtonPlacementMode="Inline"
+                            HorizontalAlignment="Left"
+                            Margin="{StaticResource SmallTopMargin}" />
+
+
+            <TextBlock Text="Shortcuts"
+                       Width="320"
+                       HorizontalAlignment="Left"
+                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+            <!-- TO DO: Add logic to only allow specific (or combination of) keys as entries -->
+            <TextBox Header="Open PowerLauncher"
+                     Width="320"
+                     HorizontalAlignment="Left"
+                     Margin="{StaticResource SmallTopMargin}"/>
+
+            <!-- TO DO: Add logic to only allow specific (or combination of) keys as entries -->
+            <TextBox Header="Open file location"
+                     Width="320"
+                     HorizontalAlignment="Left"
+                     Margin="{StaticResource SmallTopMargin}"/>
+
+            <!-- TO DO: Add logic to only allow specific (or combination of) keys as entries -->
+            <TextBox Header="Copy path location"
+                     Width="320"
+                     HorizontalAlignment="Left"
+                     Margin="{StaticResource SmallTopMargin}"/>
+
+            <!-- TO DO: Add logic to only allow specific (or combination of) keys as entries -->
+            <TextBox Header="Open console"
+                     HorizontalAlignment="Left"
+                     Width="320"
+                     Margin="{StaticResource SmallTopMargin}"/>
+
+            <ToggleSwitch Header="Override Win+R key"
+                          IsOn="True"
+                          Margin="{StaticResource SmallTopMargin}"/>
+
+            <ToggleSwitch Header="Override Win+S key"
+                          IsOn="True" 
+                          Margin="{StaticResource SmallTopMargin}" />
+
+        </StackPanel>
+    </Grid>
+</Page>

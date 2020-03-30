@@ -50,6 +50,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ToggleSwitch_Preview_SVG.IsOn = settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value;
                 ToggleSwitch_Preview_MD.IsOn = settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value;
             }
+
+            ShellPage.ShellHandler.ShowFeatureDetails();
+
+            ShellPage.ShellHandler.SetFeatureDetails(
+                "https://github.com/microsoft/PowerToys/tree/master/src/modules/previewpane",
+                "https://github.com/microsoft/PowerToys/issues");
+
+            ShellPage.ShellHandler.HideContributorsList();
         }
 
         private void ToggleSwitch_Preview_SVG_Toggled(object sender, RoutedEventArgs e)
@@ -61,7 +69,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 PowerPreviewSettings settings = SettingsUtils.GetSettings<PowerPreviewSettings>(POWERTOY_NAME);
                 settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value = swt.IsOn;
 
-                ModuleSettings<PowerPreviewSettings> moduleSettings = new ModuleSettings<PowerPreviewSettings>(settings);
+                SndModuleSettings<PowerPreviewSettings> moduleSettings = new SndModuleSettings<PowerPreviewSettings>(settings);
 
                 if (ShellPage.Default_SndMSG_Callback != null)
                 {
@@ -79,7 +87,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 PowerPreviewSettings settings = SettingsUtils.GetSettings<PowerPreviewSettings>(POWERTOY_NAME);
                 settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value = swt.IsOn;
 
-                ModuleSettings<PowerPreviewSettings> moduleSettings = new ModuleSettings<PowerPreviewSettings>(settings);
+                SndModuleSettings<PowerPreviewSettings> moduleSettings = new SndModuleSettings<PowerPreviewSettings>(settings);
 
                 if (ShellPage.Default_SndMSG_Callback != null)
                 {

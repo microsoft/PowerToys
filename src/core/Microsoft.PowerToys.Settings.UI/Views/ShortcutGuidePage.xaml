@@ -1,0 +1,45 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.ShortcutGuidePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <StackPanel Orientation="Vertical">
+            <TextBlock Text="Shows a help overlay with Windows shortcuts when the Windows key is pressed."
+                       TextWrapping="Wrap"/>
+
+            <ToggleSwitch Header="Enable Shortcut Guide"
+                          IsOn="True"
+                          Margin="{StaticResource SmallTopMargin}" />
+
+            <TextBlock Text="Appearance &amp; behaviour" 
+                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+            <muxc:NumberBox Header="How long to press the Windows key before showing the Shortcut Guide"
+                            Minimum="100"
+                            Value="900"
+                            SpinButtonPlacementMode="Inline"
+                            HorizontalAlignment="Left"
+                            Margin="{StaticResource SmallTopMargin}" />
+
+            <Slider Header="Opacity of the Shortcut Guide's overlay background (%)"
+                    Minimum="0"
+                    Maximum="100"
+                    Value="70"
+                    HorizontalAlignment="Left"
+                    Margin="{StaticResource MediumTopMargin}"/>
+
+            <muxc:RadioButtons Header="Theme" Margin="{StaticResource SmallTopMargin}">
+                <RadioButton Content="Dark"/>
+                <RadioButton Content="Light"/>
+                <RadioButton Content="System default" IsChecked="True"/>
+            </muxc:RadioButtons>
+        </StackPanel>
+    </Grid>
+</Page>

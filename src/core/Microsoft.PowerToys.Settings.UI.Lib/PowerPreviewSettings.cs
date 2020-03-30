@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     /// }
 
     /// </summary>
-    public class PowerPreviewSettings
+    public class PowerPreviewSettings 
     {
         public string name { get; set; }
         public Properties properties { get; set; }
@@ -40,7 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public override string ToString()
         {
-            return JsonSerializer.Serialize(this);
+            return "{\"" + this.name + "\":" + JsonSerializer.Serialize(this) + "}";
         }
     }
 

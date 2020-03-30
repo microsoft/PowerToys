@@ -125,12 +125,28 @@
     <value>Microsoft.PowerToys.Settings.UI</value>
     <comment>Application description</comment>
   </data>
+  <data name="Shell_Main.Content" xml:space="preserve">
+    <value>Main</value>
+    <comment>Navigation view item name for Main</comment>
+  </data>
   <data name="Shell_General.Content" xml:space="preserve">
     <value>General</value>
     <comment>Navigation view item name for General</comment>
   </data>
-  <data name="Shell_PowerPreview.Content" xml:space="preserve">
+  <data name="Shell_PowerLauncher.Content" xml:space="preserve">
+    <value>PowerLauncher</value>
+    <comment>Navigation view item name for PowerLauncher</comment>
+  </data>
+  <data name="Shell_PowerRename.Content" xml:space="preserve">
+    <value>PowerRename</value>
+    <comment>Navigation view item name for PowerRename</comment>
+  </data>
+  <data name="Shell_ShortcutGuide.Content" xml:space="preserve">
+    <value>Shortcut Guide</value>
+    <comment>Navigation view item name for Shortcut Guide</comment>
+  </data>
+   <data name="Shell_PowerPreview.Content" xml:space="preserve">
     <value>File Explorer Preview</value>
     <comment>File Explorer Preview Settings</comment>
-  </data>
+  </data> 
 </root>

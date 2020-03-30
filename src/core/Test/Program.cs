@@ -10,9 +10,12 @@ namespace Test
     {
         static void Main(string[] args)
         {
-            PowerPreviewSettings settings = new PowerPreviewSettings("Image Resizer");
-            
-            Console.WriteLine(settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value);
+            PowerPreviewSettings pvst = new PowerPreviewSettings();
+            pvst.name = "File Explorer";
+
+            SndModuleSettings<PowerPreviewSettings> snd = new SndModuleSettings<PowerPreviewSettings>(pvst);
+
+            Console.WriteLine(snd.ToString());
         }
     }
 }

@@ -11,18 +11,18 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     /// this will tell the runner that we are sending settings for a powertoy module and not for general settings.
     /// </summary>
     /// <typeparam name="M">M stands for the Model of PT Module Settings to be sent.</typeparam>
-    public class ModuleSettings<M>
+    public class SndModuleSettings<M>
     {
         public M powertoys { get; set; }
 
-        public ModuleSettings(M ptModuleSettings)
+        public SndModuleSettings(M ptModuleSettings)
         {
             this.powertoys = ptModuleSettings;
         }
 
         public override string ToString()
         {
-            return JsonSerializer.Serialize(this);
+            return "{\"powertoys\":" + this.powertoys.ToString() + "}";
         }
     }
 }

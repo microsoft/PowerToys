@@ -35,25 +35,32 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <inheritdoc/>
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
+            base.OnNavigatedTo(e);
             GeneralSettings settings = null;
             try
             {
                 // get settings file if they exist.
                 settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-                base.OnNavigatedTo(e);
+                // load and apply theme settings
+                this.ReLoadTheme(settings.theme);
+
+                // load run on start-up settings value and update the ui state.
+                this.ToggleSwitch_RunAtStartUp.IsOn = settings.startup;
             }
             catch (Exception exp)
             {
                 // create settings file if one is not found.
                 settings = new GeneralSettings();
                 SettingsUtils.SaveSettings<GeneralSettings>(settings, string.Empty);
+                // load and apply theme settings
+                this.ReLoadTheme(settings.theme);
+
+                // load run on start up ui settings value and update the ui state.
+                this.ToggleSwitch_RunAtStartUp.IsOn = settings.startup;
             }
 
-            // load and apply theme settings
-            this.ReLoadTheme(settings.theme);
-
-            // load run on start up ui settings value and update the ui state.
-            this.ToggleSwitch_RunAtStartUp.IsOn = settings.startup;
+            ShellPage.ShellHandler.HideContributorsList();
+            ShellPage.ShellHandler.HideFeatureDetails();
         }
 
         /// <summary>
