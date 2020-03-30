@@ -422,7 +422,7 @@
                     <SymbolIcon Symbol="Find"/>
                 </AutoSuggestBox.QueryIcon>
                 <AutoSuggestBox.ItemTemplate>
-                    <DataTemplate x:DataType="local:SearchApp">
+                    <DataTemplate>
                         <Grid Height="72" Width="690" Background="Transparent" RowSpacing="0">
                             <Interactivity:Interaction.Behaviors>
                                 <Core:EventTriggerBehavior EventName="PointerEntered">
@@ -442,8 +442,8 @@
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
 
-                            <Image x:Name="AppIcon" Source="{x:Bind Icon}" Height="36" Margin="8,0,0,0" Grid.RowSpan="2" HorizontalAlignment="Left" />
-                            <TextBlock x:Name="Title" Grid.Column="1" Text="{x:Bind Title}" FontWeight="SemiBold" FontSize="20" VerticalAlignment="Bottom"/>
+                            <Image x:Name="AppIcon" Source="{Binding Icon}" Height="36" Margin="8,0,0,0" Grid.RowSpan="2" HorizontalAlignment="Left" />
+                            <TextBlock x:Name="Title" Grid.Column="1" Text="{Binding Title}" FontWeight="SemiBold" FontSize="20" VerticalAlignment="Bottom"/>
                             <TextBlock x:Name="Path" Grid.Column="1" Text="C:\Program Files\WindowsApps\Microsoft\Folder                                               " Grid.Row="1" Opacity="0.6" VerticalAlignment="Top"/>
                             <StackPanel Orientation="Horizontal" Opacity="0" HorizontalAlignment="Right" Grid.RowSpan="2" Grid.Column="1">
                                 <Interactivity:Interaction.Behaviors>
