@@ -2,7 +2,7 @@
 
 # File Explorer
 
-File Explorer add ons right now are just limited to Preview Pane additions for File Explorer.
+File Explorer add-ons, right now are just limited to Preview Pane additions for File Explorer.
 
 
 ## Preview Pane
