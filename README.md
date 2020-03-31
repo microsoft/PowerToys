@@ -41,7 +41,7 @@ choco upgrade powertoys
 
 ### Processor support
 
-We currently support the matrix below.  Adding MSIX support will make supporting x86 and ARM much easier.
+We currently support the matrix below.
 
 | x64 | x86 | ARM |
 |:---:|:---:|:---:|
