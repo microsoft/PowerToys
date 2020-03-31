@@ -1,0 +1,8 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+   <Target Name="KillPowerLauncher" BeforeTargets="PreBuildEvent;BeforeClean">
+    <Message Text="Killing process 'PowerLauncher.exe'" Importance="normal" ContinueOnError="true" />
+    <Exec Command="taskkill /f /im PowerLauncher.exe" ContinueOnError="true"/>
+  </Target>
+
+</Project>
