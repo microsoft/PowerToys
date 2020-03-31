@@ -59,9 +59,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 // load run on start up ui settings value and update the ui state.
                 this.ToggleSwitch_RunAtStartUp.IsOn = settings.startup;
             }
-
-            ShellPage.ShellHandler.HideContributorsList();
-            ShellPage.ShellHandler.HideFeatureDetails();
         }
 
         /// <summary>

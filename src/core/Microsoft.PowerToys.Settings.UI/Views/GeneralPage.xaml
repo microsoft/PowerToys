@@ -9,7 +9,7 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid ColumnSpacing="32" RowSpacing="32">
+    <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
                 <VisualState x:Name="WideLayout">
@@ -88,11 +88,11 @@
 
          
 
-            <TextBlock Text="Contributors" Style="{StaticResource SettingsGroupTitleStyle}"/>
+            <!--<TextBlock Text="Contributors" Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <HyperlinkButton Content="Contributor name"/>
             <HyperlinkButton Content="Contributor name"/>
-            <HyperlinkButton Content="Contributor name"/>
+            <HyperlinkButton Content="Contributor name"/>-->
         </StackPanel>
     </Grid>
 </Page>
