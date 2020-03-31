@@ -88,11 +88,11 @@
 
          
 
-            <TextBlock Text="Contributors" Style="{StaticResource SettingsGroupTitleStyle}"/>
+            <!--<TextBlock Text="Contributors" Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <HyperlinkButton Content="Contributor name"/>
             <HyperlinkButton Content="Contributor name"/>
-            <HyperlinkButton Content="Contributor name"/>
+            <HyperlinkButton Content="Contributor name"/>-->
         </StackPanel>
     </Grid>
 </Page>
