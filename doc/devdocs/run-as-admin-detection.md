@@ -1,7 +1,7 @@
 
 # PowerToys and running as Administrator
 
-## Too long, Didn't Read
+## Too long, Didn't Read 😁
 
 If you're running any application as an administrator and PowerToys is not, a few things may not work correctly when the elevated applications are in focus or trying to interact with a PowerToys feature like FancyZones.
 
@@ -12,9 +12,11 @@ This is when a process runs with "elevated" privileges.  Typically this would be
 Basically it runs with additional access to the operating system.  Most things do not need run elevated. A common scenario would be needing to run certain PowerShell commands or edit the registry.
 
 How do i know my application is "elevated"?  If you see this prompt (User Access Control prompt), the application is requesting it:
+
 ![alt text][uac]
 
 At times also, elevated terminals for instance, they will typically have the phrase "Administrator" appended to the title bar. Be warned, this isn't always the case it will be appended.
+
 ![alt text][elevatedWindow]
 
 ## When does PowerToys need this
@@ -45,5 +47,5 @@ We understand users will run applications elevated. We do as well.  We have two 
 1. **Recommended:** PowerToys will prompt when we detect a process that is elevated.  Click relaunch, accept the UAC prompt and it be running as admin :)
 2. Enable "Always run as administrator" in the PowerToys settings.
 
-[uac]: ./images/runAsAdmin/uac.png "User access control (UAC)"
-[elevatedWindow]: ./images/runAsAdmin/elevatedWindows.png "Run as admin"
+[uac]: ../images/runAsAdmin/uac.png "User access control (UAC)"
+[elevatedWindow]: ../images/runAsAdmin/elevatedWindows.png "Run as admin"
