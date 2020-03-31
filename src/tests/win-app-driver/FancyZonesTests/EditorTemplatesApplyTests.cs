@@ -1,32 +1,12 @@
 ﻿using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
-using OpenQA.Selenium.Appium.Windows;
-using OpenQA.Selenium.Interactions;
 
 namespace PowerToysTests
 {
     [TestClass]
-    public class FancyZonesEditorTemplatesApplyTests : PowerToysSession
+    public class FancyZonesEditorTemplatesApplyTests : FancyZonesEditor
     {
-        WindowsElement editorWindow;
-
-        private void OpenEditor()
-        {
-            new Actions(session).KeyDown(OpenQA.Selenium.Keys.Command).SendKeys("`").KeyUp(OpenQA.Selenium.Keys.Command).Perform();
-            ShortWait();
-
-            editorWindow = session.FindElementByXPath("//Window[@Name=\"FancyZones Editor\"]");
-        }
-
-        private void OpenTemplates()
-        {
-            WindowsElement templatesTab = session.FindElementByName("Templates");
-            templatesTab.Click();
-            string isSelected = templatesTab.GetAttribute("SelectionItem.IsSelected");
-            Assert.AreEqual("True", isSelected, "Templates tab cannot be opened");
-        }
-
         private void ApplyLayout(string tabName)
         {
             string elementXPath = "//Text[@Name=\"" + tabName + "\"]";
@@ -108,19 +88,6 @@ namespace PowerToysTests
         [TestCleanup]
         public void TestCleanup()
         {
-            //Close editor
-            try
-            {
-                if (editorWindow != null)
-                {
-                    editorWindow.SendKeys(OpenQA.Selenium.Keys.Alt + OpenQA.Selenium.Keys.F4);
-                    ShortWait();
-                }
-            }
-            catch (OpenQA.Selenium.WebDriverException)
-            {
-                //editor has already closed
-            }
         }
     }
 }
