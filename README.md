@@ -8,29 +8,20 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 [![Build Status](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=master)](https://dev.azure.com/ms/PowerToys/_build?definitionId=219)
 
-## Installing and running Microsoft PowerToys
-
-> 👉 **Note:** Microsoft PowerToys requires Windows 10 1803 (build 17134) or later.
-
-> 👉 **Upgrading to 0.15:** You need to reapply your zone layout for FancyZones.  Don't worry, your custom zone sets are preserved.
+## Installing and running Microsoft PowerToys 0.16
+ 👉 **Note:** Microsoft PowerToys requires Windows 10 1803 (build 17134) or later.
 
 ### Via Github with MSI [Recommended]
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.15.0-x64.msi` to download the PowerToys installer.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.16.0-x64.msi` to download the PowerToys installer.
 
 This is our preferred method.
 
 ### Other install methods
 
-#### Via GitHub with MSIX - ⚠ Experimental ⚠
+##### MSIX / Store Build Update
 
-The experimental version of PowerToys using MSIX is available.  It can be installed from the [PowerToys GitHub releases page][github-release-link].
-
-Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-MSIX-0.15.0.zip` to download the PowerToys installer zip.  From there, please read the ReadMe and you can double click to install the MSIX file.
-
-##### Known issues with MSIX Build
-
-- For PowerRename, you may need to restart your machine to get this to work for the first time.
+- We put in a lot of effort here but currently our plan of record is to make the MSI our only installer option and built-in auto-upgrade. MSIX is a great installer / container tech but there are few spots we are working with the team to improve so we can adopt.
 
 #### Via Chocolatey - ⚠ Unofficial ⚠
 
@@ -48,17 +39,13 @@ To upgrade PowerToys, run the following command from the command line / PowerShe
 choco upgrade powertoys
 ```
 
-### Microsoft Store
-
-On backlog, [Issue #413](https://github.com/microsoft/PowerToys/issues/413)
-
 ### Processor support
 
-We currently support the matrix below.  Adding MSIX support will make supporting x86 and ARM much easier.
+We currently support the matrix below.
 
 | x64 | x86 | ARM |
 |:---:|:---:|:---:|
-| [Install][github-release-link] | [Issue #602](https://github.com/microsoft/PowerToys/issues/602)  | [Issue #490](https://github.com/microsoft/PowerToys/issues/490)|
+| [Supported][github-release-link] | [Issue #602](https://github.com/microsoft/PowerToys/issues/602) | [Issue #490](https://github.com/microsoft/PowerToys/issues/490) |
 
 ## Current PowerToy Utilities
 
@@ -74,36 +61,60 @@ We currently support the matrix below.  Adding MSIX support will make supporting
 
 [PowerRename](/src/modules/powerrename) - PowerRename is a Windows Shell Extension for advanced bulk renaming using search and replace or regular expressions. PowerRename allows simple search and replace or more advanced regular expression matching. While you type in the search and replace input fields, the preview area will show what the items will be renamed to. PowerRename then calls into the Windows Explorer file operations engine to perform the rename. This has the benefit of allowing the rename operation to be undone after PowerRename exits.
 
+### File Explorer (Preview Panes)
+
+[File Explorer](/src/modules/previewpane) add-ons right now are just limited to Preview Pane additions for File Explorer. Preview Pane is an existing feature in the File Explorer.  To enable it, you just click the View tab in the ribbon and then click "Preview Pane".
+
+PowerToys will now enable two types of files to be previewed:
+
+- Markdown files (.md)
+- SVG (.svg)
+
+### Image Resizer
+
+[Image Resizer](/src/modules/imageresizer) is a Windows Shell Extension for quickly resizing images.  With a simple right click from File Explorer, resize one or many images instantly.
+
+### Window Walker (Text based alt-tab alternative)
+
+[Window Walker](src/modules/windowwalker/) is an app that lets you search and switch between windows that you have open, all from the comfort of your keyboard. As you are searching for an app, you can use the keyboard up and down arrows to see an Alt-Tab style preview of the windows.  In the future, this will be merged into the Launcher project.
+
 ### Version 1.0 plan
 
 Our plan for all the [goals and utilities for v1.0 detailed over here in the wiki][v1].
 
 ## What's Happening
 
-### February 2020 Update
+### March 2020 Update
 
-Our mantra for the 0.15 was infrastructure, quality, stability and work toward getting a way to auto-update PowerToys.  While it took a bit longer to get here, we feel it was worth the extra time to fix bugs that really impacted your experience with PowerToys.
+Our mantra for the 0.16 was adding in new features along with a continual push for quality and stability.  We are working toward getting a way to auto-update PowerToys and have a good plan for this.  We want to proactively thank the community for quickly identifying a few bugs inside 0.15 and allowing us to quickly release 0.15.1 and 0.15.2.
 
 Below are just a few of the bullet items from this release.
 
-- We shipped [v0.15][github-release-link]!
-- Make you aware there is a new version from within PowerToys
-- Removed requirement to always 'run as admin'
-- Added almost 300 unit tests to increase stability and prevent regressions.
-- Resolved almost 100 issues
-- Made .NET Framework parts of the source run faster with NGEN
-- Improved for how we store data locally
-- Increased FancyZones compatibility with applications
-- Initial work for 4 new PowerToys added for 0.16!
-- Created the [v1.0 strategy][v1], the [launcher](https://github.com/microsoft/PowerToys/wiki/Launcher), the [keyboard manager](https://github.com/microsoft/PowerToys/wiki/Keyboard-Manager) specs
-- Work on cleaning up our issue backlog and labels
+- We shipped [v0.16][github-release-link]!
+- FancyZone improvement: 
+  - Multi-Monitor improvement: Zone flipping switching now works between monitors!
+  - Simplified UX: Removed layout hot-swap and flashing due to multi-monitor lacking
+- New Utilities!
+  - Markdown Preview pane extension
+  - SVG Preview pane extension
+  - Image Resizer Window Shell extension
+  - Window Walker, an alt-tab alternative
+- Fixed over 100 issues!
+- Testing improvements
+  - 54 UX Functional tests
+  - 161 new Unit tests
 
-For 0.16, we have some fun things planned and hopefully will be able to ship pretty quickly. Here are the new utilities we'll enable:
+For [0.17](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F3), we are proactively working on:
 
-- An alternative to Alt-Tab PowerToy
-- SVG preview pane for support Explorer
-- Markdown preview pane support for Explorer
-- Image Resizer PowerToy
+- Auto-updating
+- Win+R replacement (Launcher)
+- Keyboard remapping
+- Performance improvements with FancyZones
+- A testing utility for FancyZones to be sure we can test different window configurations.
+
+Future release work, we are proactively working on:
+
+- Settings v2 / Fix bug #243
 
 ## Developer Guidance
 
