@@ -19,6 +19,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public string system_theme { get; set; }
         public string powertoys_version { get; set; }
 
+        public GeneralSettings()
+        {
+            this.packaged = false;
+            this.startup = false;
+            this.is_admin = false;
+            this.is_elevated = false;
+            this.theme = "system";
+            this.system_theme = "light";
+            this.powertoys_version = "v0.15.3";
+        }
+
         public override string ToString()
         {
             return JsonSerializer.Serialize(this);

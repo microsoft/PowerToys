@@ -10,9 +10,12 @@ namespace Test
     {
         static void Main(string[] args)
         {
-            GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-            OutGoingGeneralSettings outSettings = new OutGoingGeneralSettings(settings);
-            Console.WriteLine(outSettings.ToString());
+            PowerPreviewSettings pvst = new PowerPreviewSettings();
+            pvst.name = "File Explorer";
+
+            SndModuleSettings<PowerPreviewSettings> snd = new SndModuleSettings<PowerPreviewSettings>(pvst);
+
+            Console.WriteLine(snd.ToString());
         }
     }
 }
