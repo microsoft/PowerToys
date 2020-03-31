@@ -335,6 +335,7 @@ public:
                     keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
                 }
 
+                lock.unlock();
                 UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
                 delete[] keyEventList;
                 return 1;
@@ -363,6 +364,7 @@ public:
                     }
                     else
                     {
+                        lock.unlock();
                         return 1;
                     }
                 }
@@ -386,6 +388,8 @@ public:
                 {
                     keyboardManagerState.singleKeyToggleToMod[data->lParam->vkCode] = false;
                 }
+
+                lock.unlock();
                 return 1;
             }
         }
@@ -778,7 +782,9 @@ public:
         if (data->lParam->dwExtraInfo != KEYBOARDMANAGER_SHORTCUT_FLAG)
         {
             std::unique_lock<std::mutex> lock(keyboardManagerState.osLevelShortcutReMap_mutex);
-            return HandleShortcutRemapEvent(data, keyboardManagerState.osLevelShortcutReMap);
+            bool result = HandleShortcutRemapEvent(data, keyboardManagerState.osLevelShortcutReMap);
+            lock.unlock();
+            return result;
         }
 
         return 0;
@@ -845,7 +851,9 @@ public:
             auto it = keyboardManagerState.appSpecificShortcutReMap.find(process_name);
             if (it != keyboardManagerState.appSpecificShortcutReMap.end())
             {
-                return HandleShortcutRemapEvent(data, keyboardManagerState.appSpecificShortcutReMap[process_name]);
+                bool result = HandleShortcutRemapEvent(data, keyboardManagerState.appSpecificShortcutReMap[process_name]);
+                lock.unlock();
+                return result;
             }
         }
 
