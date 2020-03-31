@@ -6,21 +6,8 @@ using OpenQA.Selenium.Interactions;
 namespace PowerToysTests
 {
     [TestClass]
-    public class FancyZonesEditorOpeningTests : PowerToysSession
+    public class FancyZonesEditorOpeningTests : FancyZonesEditor
     {
-        WindowsElement editorWindow;
-
-        static void ResetDefaultFancyZonesSettings()
-        {
-            if (!Directory.Exists(_settingsFolderPath))
-            {
-                Directory.CreateDirectory(_settingsFolderPath);
-            }
-
-            string settings = "{\"version\":\"1.0\",\"name\":\"FancyZones\",\"properties\":{\"fancyzones_shiftDrag\":{\"value\":true},\"fancyzones_overrideSnapHotkeys\":{\"value\":false},\"fancyzones_zoneSetChange_flashZones\":{\"value\":false},\"fancyzones_displayChange_moveWindows\":{\"value\":false},\"fancyzones_zoneSetChange_moveWindows\":{\"value\":false},\"fancyzones_virtualDesktopChange_moveWindows\":{\"value\":false},\"fancyzones_appLastZone_moveWindows\":{\"value\":false},\"use_cursorpos_editor_startupscreen\":{\"value\":true},\"fancyzones_zoneHighlightColor\":{\"value\":\"#0078D7\"},\"fancyzones_highlight_opacity\":{\"value\":90},\"fancyzones_editor_hotkey\":{\"value\":{\"win\":true,\"ctrl\":false,\"alt\":false,\"shift\":false,\"code\":192,\"key\":\"`\"}},\"fancyzones_excluded_apps\":{\"value\":\"\"}}}";
-            File.WriteAllText(_settingsPath, settings);
-        }
-
         void RemoveSettingsFile()
         {
             File.Delete(_zoneSettingsPath);
@@ -251,19 +238,12 @@ namespace PowerToysTests
         public static void ClassInitialize(TestContext context)
         {
             Setup(context, false);
-
-            if (isPowerToysLaunched)
-            {
-                ExitPowerToys();
-            }
-            ResetDefaultFancyZonesSettings();
-            LaunchPowerToys();
+            ResetDefaultFancyZonesSettings(true);
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            CloseSettings();
             ExitPowerToys();
             TearDown();
         }
@@ -277,12 +257,7 @@ namespace PowerToysTests
         [TestCleanup]
         public void TestCleanup()
         {
-            //Close editor
-            if (editorWindow != null)
-            {
-                editorWindow.SendKeys(OpenQA.Selenium.Keys.Alt + OpenQA.Selenium.Keys.F4);
-                ShortWait();
-            }
+            CloseEditor();
 
             if (!Directory.Exists(_settingsFolderPath))
             {

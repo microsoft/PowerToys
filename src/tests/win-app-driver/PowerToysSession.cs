@@ -256,7 +256,10 @@ namespace PowerToysTests
             string zoneSettings = "{\"app-zone-history\":[],\"devices\":[],\"custom-zone-sets\":[]}";
             File.WriteAllText(_zoneSettingsPath, zoneSettings);
 
-            ExitPowerToys();
+            if (isPowerToysLaunched)
+            {
+                ExitPowerToys();
+            }
             if (relaunch)
             {
                 LaunchPowerToys();
