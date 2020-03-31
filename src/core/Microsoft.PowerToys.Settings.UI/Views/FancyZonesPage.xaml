@@ -9,7 +9,7 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
+    <Grid ColumnSpacing="32" RowSpacing="32">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
                 <VisualState x:Name="WideLayout">
@@ -131,8 +131,8 @@
                                    Style="{StaticResource SettingsGroupTitleStyle}"
                                    Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <Image Source="https://user-images.githubusercontent.com/9866362/77859136-f04ae880-7207-11ea-8a7f-4295342fe319.gif" />
             <HyperlinkButton Content="Module overview" NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/fancyzones/README.md"/>
+            <HyperlinkButton Content="Video demo" NavigateUri="https://www.youtube.com/watch?v=rTtGzZYAXgY"/>
             <HyperlinkButton Content="Give feedback"/>
 
             <TextBlock Text="Contributors"

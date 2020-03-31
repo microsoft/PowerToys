@@ -145,16 +145,8 @@
     <value>Shortcut Guide</value>
     <comment>Navigation view item name for Shortcut Guide</comment>
   </data>
-  <data name="Shell_PowerPreview.Content" xml:space="preserve">
+   <data name="Shell_PowerPreview.Content" xml:space="preserve">
     <value>File Explorer Preview</value>
-    <comment>Navigation view item name for File Explorer Preview</comment>
-  </data>
-  <data name="Shell_FancyZones.Content" xml:space="preserve">
-    <value>FancyZones</value>
-    <comment>Navigation view item name for FancyZones</comment>
-  </data>
-  <data name="Shell_ImageResizer.Content" xml:space="preserve">
-    <value>Image Resizer</value>
-    <comment>Navigation view item name for Image Resizer</comment>
-  </data>
+    <comment>File Explorer Preview Settings</comment>
+  </data> 
 </root>

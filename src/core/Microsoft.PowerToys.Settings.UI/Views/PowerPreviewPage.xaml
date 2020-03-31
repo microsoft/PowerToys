@@ -7,38 +7,7 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup x:Name="LayoutVisualStates">
-                <VisualState x:Name="WideLayout">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="1" />
-                        <Setter Target="SidePanel.(Grid.Row)" Value="0" />
-                    </VisualState.Setters>
-                </VisualState>
-                <VisualState x:Name="SmallLayout">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
-                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-
+    <Grid>
         <StackPanel Orientation="Vertical">
             <TextBlock Text="These settings allow you to manage your Windows File Explorer Addons."
                        TextWrapping="Wrap"/>
@@ -53,28 +22,6 @@
                               Margin="{StaticResource SmallTopMargin}"
                               Toggled="ToggleSwitch_Preview_MD_Toggled" />
 
-        </StackPanel>
-
-        <StackPanel x:Name="SidePanel"
-                                Orientation="Vertical"
-                                HorizontalAlignment="Left"
-                                Width="{StaticResource SidePanelWidth}"
-                                Grid.Column="1">
-
-            <TextBlock Text="About this feature"
-                                   Style="{StaticResource SettingsGroupTitleStyle}"
-                                   Margin="{StaticResource XSmallBottomMargin}"/>
-
-            <HyperlinkButton Content="Module overview" NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/previewpane"/>
-            <HyperlinkButton Content="Give feedback" NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
-
-          <!--  <TextBlock Text="Contributors"
-                           Style="{StaticResource SettingsGroupTitleStyle}"/>
-
-            <HyperlinkButton Content="Contributor name"/>
-            <HyperlinkButton Content="Contributor name"/>
-            <HyperlinkButton Content="Contributor name"/>
-            -->
         </StackPanel>
     </Grid>
 </Page>

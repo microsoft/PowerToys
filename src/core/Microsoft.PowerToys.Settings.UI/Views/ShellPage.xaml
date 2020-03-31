@@ -75,14 +75,7 @@
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 
-                <!-- TO DO: Update icon -->
-                <winui:NavigationViewItem x:Uid="Shell_FancyZones" helpers:NavHelper.NavigateTo="views:FancyZonesPage">
-                    <winui:NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE8AC;"/>
-                    </winui:NavigationViewItem.Icon>
-                </winui:NavigationViewItem>
-                
-                <!-- TO DO: Update icon -->
+            <!-- TO DO: Update icon -->
             <winui:NavigationViewItem x:Uid="Shell_PowerRename" helpers:NavHelper.NavigateTo="views:PowerRenamePage">
                 <winui:NavigationViewItem.Icon>
                     <FontIcon Glyph="&#xE8AC;"/>
@@ -98,13 +91,6 @@
 
                 <!-- TO DO: Update icon -->
                 <winui:NavigationViewItem x:Uid="Shell_PowerLauncher" helpers:NavHelper.NavigateTo="views:PowerLauncherPage">
-                    <winui:NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE8A7;"/>
-                    </winui:NavigationViewItem.Icon>
-                </winui:NavigationViewItem>
-
-                <!-- TO DO: Update icon -->
-                <winui:NavigationViewItem x:Uid="Shell_ImageResizer" helpers:NavHelper.NavigateTo="views:ImageResizerPage">
                     <winui:NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE8A7;"/>
                     </winui:NavigationViewItem.Icon>
@@ -137,9 +123,40 @@
             </ic:EventTriggerBehavior>
         </i:Interaction.Behaviors>
         <ScrollViewer Grid.Column="0">
-                <Grid Margin="{StaticResource MediumLeftRightBottomMargin}">
-                    <Frame x:Name="shellFrame" />
-                </Grid>
+            <Grid RowSpacing="32"
+                      Margin="{StaticResource MediumLeftRightBottomMargin}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Frame x:Name="shellFrame" />
+
+                <StackPanel x:Name="SidePanel"
+                                Orientation="Vertical"
+                                HorizontalAlignment="Left"
+                                Width="240"
+                                Grid.Column="1">
+
+                    <TextBlock Text="About this feature"
+                                   Style="{StaticResource SettingsGroupTitleStyle}"
+                                   Margin="{StaticResource XSmallBottomMargin}"/>
+
+                    <HyperlinkButton Content="Module overview"/>
+                    <HyperlinkButton Content="Give feedback"/>
+
+                    <TextBlock Text="Contributors"
+                           Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+                    <HyperlinkButton Content="Contributor name"/>
+                    <HyperlinkButton Content="Contributor name"/>
+                    <HyperlinkButton Content="Contributor name"/>
+                </StackPanel>
+            </Grid>
         </ScrollViewer>
     </winui:NavigationView>
     </Grid>
