@@ -21,7 +21,7 @@ This is our preferred method.
 
 ##### MSIX / Store Build Update
 
-- We put in a lot of effort here but currently our plan of record is to make the MSI our only installer option and build in auto-upgrade. MSIX is a great installer / container tech but there are few spots we are working with the team to improve so we can adopt.
+- We put in a lot of effort here but currently our plan of record is to make the MSI our only installer option and built-in auto-upgrade. MSIX is a great installer / container tech but there are few spots we are working with the team to improve so we can adopt.
 
 #### Via Chocolatey - ⚠ Unofficial ⚠
 
