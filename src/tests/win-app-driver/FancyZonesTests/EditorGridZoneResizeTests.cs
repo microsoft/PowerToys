@@ -379,7 +379,9 @@ namespace PowerToysTests
         [TestCleanup]
         public void TestCleanup()
         {
-            new Actions(session).MoveToElement(session.FindElementByXPath("//Button[@Name=\"Cancel\"]")).Click().Perform();
+            WindowsElement cancelButton = session.FindElementByXPath("//Window[@Name=\"FancyZones Editor\"]/Window/Button[@Name=\"Cancel\"]");
+            Assert.IsNotNull(cancelButton);
+            new Actions(session).MoveToElement(cancelButton).Click().Perform();
         }
     }
 }

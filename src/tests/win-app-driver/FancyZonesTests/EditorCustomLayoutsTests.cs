@@ -21,7 +21,8 @@ namespace PowerToysTests
 
         private void CancelTest()
         {
-            new Actions(session).MoveToElement(session.FindElementByXPath("//Text[@Name=\"Cancel\"]")).Click().Perform();
+            WindowsElement cancelButton = session.FindElementByXPath("//Window[@Name=\"FancyZones Editor\"]/Window/Button[@Name=\"Cancel\"]");
+            new Actions(session).MoveToElement(cancelButton).Click().Perform();
             ShortWait();
 
             Assert.AreEqual(_initialZoneSettings, File.ReadAllText(_zoneSettingsPath), "Settings were changed");
