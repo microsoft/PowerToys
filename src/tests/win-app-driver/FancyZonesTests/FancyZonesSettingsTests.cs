@@ -31,7 +31,7 @@ namespace PowerToysTests
             Assert.IsNotNull(_saveButton);
 
             _scrollUp = new Actions(session).MoveToElement(_saveButton).MoveByOffset(0, _saveButton.Rect.Height).ContextClick()
-                .SendKeys(OpenQA.Selenium.Keys.PageUp + OpenQA.Selenium.Keys.PageUp + OpenQA.Selenium.Keys.PageUp);
+                .SendKeys(OpenQA.Selenium.Keys.Home);
             Assert.IsNotNull(_scrollUp);
         }
 
