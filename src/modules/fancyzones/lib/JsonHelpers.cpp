@@ -10,9 +10,23 @@
 #include <filesystem>
 #include <fstream>
 #include <regex>
+#include <sstream>
 
 namespace
 {
+    // Needed for migration of applied zonesets from registry
+    struct ZoneSetPersistedDataOLD
+    {
+        static constexpr inline size_t MAX_ZONES = 40;
+        DWORD Version{ VERSION_PERSISTEDDATA };
+        WORD LayoutId{};
+        DWORD ZoneCount{};
+        JSONHelpers::ZoneSetLayoutType Layout{};
+        DWORD PaddingInner{};
+        DWORD PaddingOuter{};
+        RECT Zones[MAX_ZONES]{};
+    };
+
     // From Settings.cs
     constexpr int c_focusModelId = 0xFFFF;
     constexpr int c_rowsModelId = 0xFFFE;
@@ -33,6 +47,59 @@ namespace
 
 namespace JSONHelpers
 {
+    bool isValidGuid(const std::wstring& str)
+    {
+        GUID id;
+        return SUCCEEDED_LOG(CLSIDFromString(str.c_str(), &id));
+    }
+
+    bool isValidDeviceId(const std::wstring& str)
+    {
+        std::wstring temp;
+        std::vector<std::wstring> parts;
+        std::wstringstream wss(str);
+        while (std::getline(wss, temp, L'_'))
+        {
+            parts.push_back(temp);
+        }
+
+        if (parts.size() != 4)
+        {
+            return false;
+        }
+
+        /*
+         Refer to ZoneWindowUtils::GenerateUniqueId parts contain:
+         1. monitor id [string]
+         2. width of device [int]
+         3. height of device [int]
+         4. virtual desktop id (GUID) [string]
+        */
+        try
+        {
+            //check if resolution contain only digits
+            for (const auto& c : parts[1])
+            {
+                std::stoi(std::wstring(&c));
+            }
+            for (const auto& c : parts[2])
+            {
+                std::stoi(std::wstring(&c));
+            }
+        }
+        catch (const std::exception&)
+        {
+            return false;
+        }
+
+        if (!isValidGuid(parts[3]) || parts[0].empty())
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     json::JsonArray NumVecToJsonArray(const std::vector<int>& vec)
     {
         json::JsonArray arr;
@@ -618,13 +685,13 @@ namespace JSONHelpers
                 // int version =  data[0] * 256 + data[1]; - Not used anymore
 
                 std::wstring uuid = std::to_wstring(data[3] * 256 + data[4]);
-                auto it = std::find_if(appliedZoneSetsMap.begin(), appliedZoneSetsMap.end(), [&uuid](std::pair<std::wstring, ZoneSetData> zoneSetMap) {
+                auto it = std::find_if(appliedZoneSetsMap.cbegin(), appliedZoneSetsMap.cend(), [&uuid](std::pair<std::wstring, ZoneSetData> zoneSetMap) {
                     return zoneSetMap.second.uuid.compare(uuid) == 0;
                 });
 
-                if (it != appliedZoneSetsMap.end())
+                if (it != appliedZoneSetsMap.cend())
                 {
-                    it->second.uuid = uuid = it->first;
+                    uuid = it->first;
                 }
                 else
                 {
@@ -637,7 +704,7 @@ namespace JSONHelpers
                     wil::unique_cotaskmem_string guidString;
                     if (SUCCEEDED_LOG(StringFromCLSID(guid, &guidString)))
                     {
-                        it->second.uuid = uuid = guidString.get();
+                        uuid = guidString.get();
                     }
                 }
 
@@ -647,14 +714,14 @@ namespace JSONHelpers
                     int j = 5;
                     GridLayoutInfo zoneSetInfo(GridLayoutInfo::Minimal{ .rows = data[j++], .columns = data[j++] });
 
-                    for (int row = 0; row < zoneSetInfo.rows(); row++)
+                    for (int row = 0; row < zoneSetInfo.rows(); row++, j+=2)
                     {
-                        zoneSetInfo.rowsPercents()[row] = data[j++] * 256 + data[j++];
+                        zoneSetInfo.rowsPercents()[row] = data[j] * 256 + data[j+1];
                     }
 
-                    for (int col = 0; col < zoneSetInfo.columns(); col++)
+                    for (int col = 0; col < zoneSetInfo.columns(); col++, j+=2)
                     {
-                        zoneSetInfo.columnsPercents()[col] = data[j++] * 256 + data[j++];
+                        zoneSetInfo.columnsPercents()[col] = data[j] * 256 + data[j+1];
                     }
 
                     for (int row = 0; row < zoneSetInfo.rows(); row++)
@@ -720,9 +787,13 @@ namespace JSONHelpers
         try
         {
             ZoneSetData zoneSetData;
-
             zoneSetData.uuid = zoneSet.GetNamedString(L"uuid");
             zoneSetData.type = TypeFromString(std::wstring{ zoneSet.GetNamedString(L"type") });
+
+            if (!isValidGuid(zoneSetData.uuid))
+            {
+                return std::nullopt;
+            }
 
             return zoneSetData;
         }
@@ -755,6 +826,11 @@ namespace JSONHelpers
             result.data.deviceId = zoneSet.GetNamedString(L"device-id");
             result.data.zoneSetUuid = zoneSet.GetNamedString(L"zoneset-uuid");
 
+            if (!isValidGuid(result.data.zoneSetUuid) || !isValidDeviceId(result.data.deviceId))
+            {
+                return std::nullopt;
+            }
+
             return result;
         }
         catch (const winrt::hresult_error&)
@@ -783,6 +859,10 @@ namespace JSONHelpers
             DeviceInfoJSON result;
 
             result.deviceId = device.GetNamedString(L"device-id");
+            if (!isValidDeviceId(result.deviceId))
+            {
+                return std::nullopt;
+            }
 
             if (auto zoneSet = ZoneSetData::FromJson(device.GetNamedObject(L"active-zoneset")); zoneSet.has_value())
             {
@@ -975,6 +1055,11 @@ namespace JSONHelpers
             CustomZoneSetJSON result;
 
             result.uuid = customZoneSet.GetNamedString(L"uuid");
+            if (!isValidGuid(result.uuid))
+            {
+                return std::nullopt;
+            }
+            
             result.data.name = customZoneSet.GetNamedString(L"name");
 
             json::JsonObject infoJson = customZoneSet.GetNamedObject(L"info");

@@ -145,10 +145,10 @@ void notifications::register_background_toast_handler()
     }
 }
 
-void notifications::show_toast(std::wstring_view message)
+void notifications::show_toast(std::wstring message, toast_params params)
 {
     // The toast won't be actually activated in the background, since it doesn't have any buttons
-    show_toast_with_activations(message, {}, {});
+    show_toast_with_activations(std::move(message), {}, {}, std::move(params));
 }
 
 inline void xml_escape(std::wstring data)
@@ -182,14 +182,14 @@ inline void xml_escape(std::wstring data)
     data.swap(buffer);
 }
 
-void notifications::show_toast_with_activations(std::wstring_view message, std::wstring_view background_handler_id, std::vector<button_t> buttons)
+void notifications::show_toast_with_activations(std::wstring message, std::wstring_view background_handler_id, std::vector<action_t> actions, toast_params params)
 {
     // DO NOT LOCALIZE any string in this function, because they're XML tags and a subject to
     // https://docs.microsoft.com/en-us/windows/uwp/design/shell/tiles-and-notifications/toast-xml-schema
 
     std::wstring toast_xml;
-    toast_xml.reserve(1024);
-    std::wstring title{L"PowerToys"};
+    toast_xml.reserve(2048);
+    std::wstring title{ L"PowerToys" };
     if (winstore::running_as_packaged())
     {
         title += L" (Experimental)";
@@ -200,28 +200,78 @@ void notifications::show_toast_with_activations(std::wstring_view message, std::
     toast_xml += L"</text><text>";
     toast_xml += message;
     toast_xml += L"</text></binding></visual><actions>";
+    for (size_t i = 0; i < size(actions); ++i)
+    {
+        std::visit(overloaded{
+                       [&](const snooze_button& b) {
+                           const bool has_durations = !b.durations.empty() && size(b.durations) <= 5;
+                           std::wstring selection_id = L"snoozeTime";
+                           selection_id += static_cast<wchar_t>(L'0' + i);
+                           if (has_durations)
+                           {
+                               toast_xml += LR"(<input id=")";
+                               toast_xml += selection_id;
+                               toast_xml += LR"(" type="selection" defaultInput=")";
+                               toast_xml += std::to_wstring(b.durations[0].minutes);
+                               toast_xml += LR"(">)";
+                               for (const auto& duration : b.durations)
+                               {
+                                   toast_xml += LR"(<selection id=")";
+                                   toast_xml += std::to_wstring(duration.minutes);
+                                   toast_xml += LR"(" content=")";
+                                   toast_xml += duration.label;
+                                   toast_xml += LR"("/>)";
+                               }
+                               toast_xml += LR"(</input>)";
+                           }
+                       },
+                       [](const auto&) {} },
+                   actions[i]);
+    }
 
-    for (size_t i = 0; i < size(buttons); ++i)
+    for (size_t i = 0; i < size(actions); ++i)
     {
         std::visit(overloaded{
                        [&](const link_button& b) {
-                           toast_xml += LR"(<action activationType="protocol" arguments=")";
+                           toast_xml += LR"(<action activationType="protocol" )";
+                           if (b.context_menu)
+                           {
+                               toast_xml += LR"(placement="contextMenu" )";
+                           }
+                           toast_xml += LR"(arguments=")";
                            toast_xml += b.url;
                            toast_xml += LR"(" content=")";
                            toast_xml += b.label;
-                           toast_xml += LR"("/>)";
+                           toast_xml += LR"(" />)";
                        },
                        [&](const background_activated_button& b) {
-                           toast_xml += LR"(<action activationType="background" arguments=")";
+                           toast_xml += LR"(<action activationType="background" )";
+                           if (b.context_menu)
+                           {
+                               toast_xml += LR"(placement="contextMenu" )";
+                           }
+                           toast_xml += LR"(arguments=")";
                            toast_xml += L"button_id=" + std::to_wstring(i); // pass the button ID
                            toast_xml += L"&amp;handler=";
                            toast_xml += background_handler_id;
                            toast_xml += LR"(" content=")";
                            toast_xml += b.label;
-                           toast_xml += LR"("/>)";
+                           toast_xml += LR"(" />)";
                        },
-                   },
-                   buttons[i]);
+                       [&](const snooze_button& b) {
+                           const bool has_durations = !b.durations.empty() && size(b.durations) <= 5;
+                           std::wstring selection_id = L"snoozeTime";
+                           selection_id += static_cast<wchar_t>(L'0' + i);
+                           toast_xml += LR"(<action activationType="system" arguments="snooze" )";
+                           if (has_durations)
+                           {
+                               toast_xml += LR"(hint-inputId=")";
+                               toast_xml += selection_id;
+                               toast_xml += '"';
+                           }
+                           toast_xml += LR"( content="" />)";
+                       } },
+                   actions[i]);
     }
     toast_xml += L"</actions></toast>";
 
@@ -232,5 +282,22 @@ void notifications::show_toast_with_activations(std::wstring_view message, std::
 
     const auto notifier = winstore::running_as_packaged() ? ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
                                                             ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(WIN32_AUMID);
+
+    // Set a tag-related params if it has a valid length
+    if (params.tag.has_value() && params.tag->length() < 64)
+    {
+        notification.Tag(*params.tag);
+        if (!params.resend_if_scheduled)
+        {
+            for (const auto& scheduled_toast : notifier.GetScheduledToastNotifications())
+            {
+                if (scheduled_toast.Tag() == *params.tag)
+                {
+                    return;
+                }
+            }
+        }
+    }
+
     notifier.Show(notification);
 }

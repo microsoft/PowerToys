@@ -19,6 +19,15 @@ namespace CustomAssert
     {
         Microsoft::VisualStudio::CppUnitTestFramework::Assert::IsTrue(t1 == t2);
     }
+
+    static void AreEqual(const std::vector<std::pair<HMONITOR, RECT>>& a1, const std::vector<std::pair<HMONITOR, RECT>>& a2)
+    {
+        Microsoft::VisualStudio::CppUnitTestFramework::Assert::IsTrue(a1.size() == a2.size());
+        for (size_t i = 0; i < a1.size(); i++)
+        {
+            Microsoft::VisualStudio::CppUnitTestFramework::Assert::IsTrue(a1[i].first == a2[i].first);
+        }
+    }
 }
 
 namespace Mocks
@@ -42,4 +51,10 @@ namespace Mocks
     }
 
     HWND WindowCreate(HINSTANCE hInst);
+}
+
+namespace Helpers
+{
+    std::wstring GuidToString(const GUID& guid);
+    std::wstring CreateGuidString();
 }

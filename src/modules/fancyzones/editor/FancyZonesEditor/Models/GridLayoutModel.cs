@@ -2,10 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Text.Json;
+using System.Windows;
 
 namespace FancyZonesEditor.Models
 {
@@ -130,6 +131,12 @@ namespace FancyZonesEditor.Models
         public override LayoutModel Clone()
         {
             GridLayoutModel layout = new GridLayoutModel(Name);
+            RestoreTo(layout);
+            return layout;
+        }
+
+        public void RestoreTo(GridLayoutModel layout)
+        {
             int rows = Rows;
             int cols = Columns;
 
@@ -162,67 +169,74 @@ namespace FancyZonesEditor.Models
             }
 
             layout.ColumnPercents = colPercents;
+        }
 
-            return layout;
+        private struct GridLayoutInfo
+        {
+            public int Rows { get; set; }
+
+            public int Columns { get; set; }
+
+            public int[] RowsPercentage { get; set; }
+
+            public int[] ColumnsPercentage { get; set; }
+
+            public int[][] CellChildMap { get; set; }
+        }
+
+        private struct GridLayoutJson
+        {
+            public string Uuid { get; set; }
+
+            public string Name { get; set; }
+
+            public string Type { get; set; }
+
+            public GridLayoutInfo Info { get; set; }
         }
 
         // PersistData
         // Implements the LayoutModel.PersistData abstract method
         protected override void PersistData()
         {
-            FileStream outputStream = File.Open(Settings.AppliedZoneSetTmpFile, FileMode.Create);
-            using (var writer = new Utf8JsonWriter(outputStream, options: default))
+            GridLayoutInfo layoutInfo = new GridLayoutInfo
             {
-                writer.WriteStartObject();
-                writer.WriteString("uuid", "{" + Guid.ToString().ToUpper() + "}");
-                writer.WriteString("name", Name);
-
-                writer.WriteString("type", "grid");
-
-                writer.WriteStartObject("info");
-
-                writer.WriteNumber("rows", Rows);
-                writer.WriteNumber("columns", Columns);
-
-                writer.WriteStartArray("rows-percentage");
-                for (int row = 0; row < Rows; row++)
-                {
-                    writer.WriteNumberValue(RowPercents[row]);
-                }
-
-                writer.WriteEndArray();
-
-                writer.WriteStartArray("columns-percentage");
+                Rows = Rows,
+                Columns = Columns,
+                RowsPercentage = RowPercents,
+                ColumnsPercentage = ColumnPercents,
+                CellChildMap = new int[Rows][],
+            };
+            for (int row = 0; row < Rows; row++)
+            {
+                layoutInfo.CellChildMap[row] = new int[Columns];
                 for (int col = 0; col < Columns; col++)
                 {
-                    writer.WriteNumberValue(ColumnPercents[col]);
+                    layoutInfo.CellChildMap[row][col] = CellChildMap[row, col];
                 }
-
-                writer.WriteEndArray();
-
-                writer.WriteStartArray("cell-child-map");
-                for (int row = 0; row < Rows; row++)
-                {
-                    writer.WriteStartArray();
-                    for (int col = 0; col < Columns; col++)
-                    {
-                        writer.WriteNumberValue(CellChildMap[row, col]);
-                    }
-
-                    writer.WriteEndArray();
-                }
-
-                writer.WriteEndArray();
-
-                // end info object
-                writer.WriteEndObject();
-
-                // end root object
-                writer.WriteEndObject();
-                writer.Flush();
             }
 
-            outputStream.Close();
+            GridLayoutJson jsonObj = new GridLayoutJson
+            {
+                Uuid = "{" + Guid.ToString().ToUpper() + "}",
+                Name = Name,
+                Type = "grid",
+                Info = layoutInfo,
+            };
+            JsonSerializerOptions options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = new DashCaseNamingPolicy(),
+            };
+
+            try
+            {
+                string jsonString = JsonSerializer.Serialize(jsonObj, options);
+                File.WriteAllText(Settings.AppliedZoneSetTmpFile, jsonString);
+            }
+            catch (Exception ex)
+            {
+                ShowExceptionMessageBox("Error persisting grid layout", ex);
+            }
         }
     }
 }

@@ -248,7 +248,7 @@ void initialize_webview(int nShowCmd)
                     // WebView doesn't let us to open ms-settings:protocol links directly, so we translate it
                     // from a https placeholder
                     if (uri.AbsoluteUri() == L"https://ms_settings_startupapps/")
-                        uri = Uri{L"ms-settings:startupapps"};
+                        uri = Uri{ L"ms-settings:startupapps" };
                     winrt::Windows::System::Launcher::LaunchUriAsync(uri);
                 });
 
@@ -339,7 +339,8 @@ LRESULT CALLBACK wnd_proc_static(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
         wm_data_for_webview = RegisterWindowMessageW(L"PTSettingsCopyDataWebView");
         wm_destroy_window = RegisterWindowMessageW(L"PTSettingsParentTerminated");
         break;
-    case WM_DPICHANGED: {
+    case WM_DPICHANGED:
+    {
         // Resize the window using the suggested rect
         RECT* const prcNewWindow = (RECT*)lParam;
         SetWindowPos(hWnd,
@@ -351,7 +352,8 @@ LRESULT CALLBACK wnd_proc_static(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
                      SWP_NOZORDER | SWP_NOACTIVATE);
     }
     break;
-    case WM_NCCREATE: {
+    case WM_NCCREATE:
+    {
         // Enable auto-resizing the title bar
         EnableNonClientDpiScaling(hWnd);
     }

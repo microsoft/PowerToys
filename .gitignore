@@ -301,6 +301,8 @@ __pycache__/
 # Cake - Uncomment if you are using it
 # tools/**
 # !tools/packages.config
+ImageResizer/tools/**
+!ImageResizer/tools/packages.config
 
 # Tabs Studio
 *.tss
@@ -332,3 +334,6 @@ ASALocalRun/
 # Temp build files
 src/settings/settings-html/200.html
 src/settings/settings-html/404.html
+
+# Temp telemetry files.
+src/common/Telemetry/*.etl
