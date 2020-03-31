@@ -10,4 +10,10 @@
     
     <!-- Breakpoint for small layout (side panel under content) -->
     <x:Double x:Key="SmallLayoutMinWidth">480</x:Double>
+
+    <!-- Column spacing between content and sidepanel -->
+    <x:Double x:Key="DefaultColumnSpacing">24</x:Double>
+
+    <!-- Row spacing between content and sidepanel (in small mode) -->
+    <x:Double x:Key="DefaultRowSpacing">24</x:Double>
 </ResourceDictionary>

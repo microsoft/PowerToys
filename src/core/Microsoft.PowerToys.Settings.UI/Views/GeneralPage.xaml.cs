@@ -59,9 +59,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 // load run on start up ui settings value and update the ui state.
                 this.ToggleSwitch_RunAtStartUp.IsOn = settings.startup;
             }
-
-            ShellPage.ShellHandler.HideContributorsList();
-            ShellPage.ShellHandler.HideFeatureDetails();
         }
 
         /// <summary>
@@ -132,16 +129,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             RadioButton rb = sender as RadioButton;
 
-            if (rb != null)
-            {
-                string themeName = rb.Tag.ToString();
-                this.ReLoadTheme(themeName);
+            //if (rb != null)
+            //{
+            //    string themeName = rb.Tag.ToString();
+            //    this.ReLoadTheme(themeName);
 
-                // update and save settings to file.
-                GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-                settings.theme = themeName;
-                SettingsUtils.SaveSettings<GeneralSettings>(settings, string.Empty);
-            }
+            //    // update and save settings to file.
+            //    GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+            //    settings.theme = themeName;
+            //    SettingsUtils.SaveSettings<GeneralSettings>(settings, string.Empty);
+            //}
         }
 
         private async void CheckForUpdates_Click(object sender, RoutedEventArgs e)
