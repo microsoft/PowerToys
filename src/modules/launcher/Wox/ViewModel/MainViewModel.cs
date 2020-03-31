@@ -393,26 +393,30 @@ namespace Wox.ViewModel
                     }, currentCancellationToken);
 
                     var plugins = PluginManager.ValidPluginsForQuery(query);
-                    Task.Run(() =>
-                    {
+                    Application.Current.Dispatcher.Invoke((Action)(() => {
                         // so looping will stop once it was cancelled
                         var parallelOptions = new ParallelOptions { CancellationToken = currentCancellationToken };
                         try
                         {
-                            Parallel.ForEach(plugins, parallelOptions, plugin =>
+                            //Parallel.ForEach(plugins, parallelOptions, plugin =>
+                            //{
+                            //    if (!plugin.Metadata.Disabled)
+                            //    {
+                            //        var results = PluginManager.QueryForPlugin(plugin, query);
+                            //        UpdateResultView(results, plugin.Metadata, query);
+                            //    }
+                            //});
+                            foreach(PluginPair plugin in plugins)
                             {
-                                if (!plugin.Metadata.Disabled)
-                                {
-                                    var results = PluginManager.QueryForPlugin(plugin, query);
-                                    UpdateResultView(results, plugin.Metadata, query);
-                                }
-                            });
+                                var results = PluginManager.QueryForPlugin(plugin, query);
+                                UpdateResultView(results, plugin.Metadata, query);
+                            }
                         }
                         catch (OperationCanceledException)
                         {
                             // nothing to do here
                         }
-                        
+
 
                         // this should happen once after all queries are done so progress bar should continue
                         // until the end of all querying
@@ -421,7 +425,40 @@ namespace Wox.ViewModel
                         { // update to hidden if this is still the current query
                             ProgressBarVisibility = Visibility.Hidden;
                         }
-                    }, currentCancellationToken);
+                    }));
+
+
+
+
+                    //Task.Run(() =>
+                    //{
+                    //    // so looping will stop once it was cancelled
+                    //    var parallelOptions = new ParallelOptions { CancellationToken = currentCancellationToken };
+                    //    try
+                    //    {
+                    //        Parallel.ForEach(plugins, parallelOptions, plugin =>
+                    //        {
+                    //            if (!plugin.Metadata.Disabled)
+                    //            {
+                    //                var results = PluginManager.QueryForPlugin(plugin, query);
+                    //                UpdateResultView(results, plugin.Metadata, query);
+                    //            }
+                    //        });
+                    //    }
+                    //    catch (OperationCanceledException)
+                    //    {
+                    //        // nothing to do here
+                    //    }
+
+
+                    //    // this should happen once after all queries are done so progress bar should continue
+                    //    // until the end of all querying
+                    //    _isQueryRunning = false;
+                    //    if (currentUpdateSource == _updateSource)
+                    //    { // update to hidden if this is still the current query
+                    //        ProgressBarVisibility = Visibility.Hidden;
+                    //    }
+                    //}, currentCancellationToken);
                 }
             }
             else

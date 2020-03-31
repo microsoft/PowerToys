@@ -17,6 +17,7 @@ using DragEventArgs = System.Windows.DragEventArgs;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
+using Windows.UI.Xaml.Controls;
 
 namespace PowerLauncher
 {
@@ -110,27 +111,27 @@ namespace PowerLauncher
             if (e.ChangedButton == MouseButton.Left) DragMove();
         }
 
-        private void OnPreviewMouseButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (sender != null && e.OriginalSource != null)
-            {
-                var r = (ResultListBox)sender;
-                var d = (DependencyObject)e.OriginalSource;
-                var item = ItemsControl.ContainerFromElement(r, d) as ListBoxItem;
-                var result = (ResultViewModel)item?.DataContext;
-                if (result != null)
-                {
-                    if (e.ChangedButton == MouseButton.Left)
-                    {
-                        _viewModel.OpenResultCommand.Execute(null);
-                    }
-                    else if (e.ChangedButton == MouseButton.Right)
-                    {
-                        _viewModel.LoadContextMenuCommand.Execute(null);
-                    }
-                }
-            }
-        }
+        //private void OnPreviewMouseButtonDown(object sender, MouseButtonEventArgs e)
+        //{
+        //    if (sender != null && e.OriginalSource != null)
+        //    {
+        //        var r = (ResultListBox)sender;
+        //        var d = (DependencyObject)e.OriginalSource;
+        //        var item = ItemsControl.ContainerFromElement(r, d) as ListBoxItem;
+        //        var result = (ResultViewModel)item?.DataContext;
+        //        if (result != null)
+        //        {
+        //            if (e.ChangedButton == MouseButton.Left)
+        //            {
+        //                _viewModel.OpenResultCommand.Execute(null);
+        //            }
+        //            else if (e.ChangedButton == MouseButton.Right)
+        //            {
+        //                _viewModel.LoadContextMenuCommand.Execute(null);
+        //            }
+        //        }
+        //    }
+        //}
 
 
         private void OnDrop(object sender, DragEventArgs e)
@@ -278,9 +279,12 @@ namespace PowerLauncher
         }
         private void QueryTextBox_TextChanged(Windows.UI.Xaml.Controls.AutoSuggestBox sender, Windows.UI.Xaml.Controls.AutoSuggestBoxTextChangedEventArgs args)
         {
-            if (_viewModel.QueryTextCursorMovedToEnd)
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
-                _viewModel.QueryTextCursorMovedToEnd = false;
+                if (_viewModel.QueryTextCursorMovedToEnd)
+                {
+                    _viewModel.QueryTextCursorMovedToEnd = false;
+                }
             }
         }
     }
