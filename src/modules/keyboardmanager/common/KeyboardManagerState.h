@@ -56,11 +56,11 @@ public:
     std::mutex singleKeyToggleToMod_mutex;
 
     // Stores the os level shortcut remappings
-    std::map<std::vector<DWORD>, std::pair<std::vector<WORD>, bool>> osLevelShortcutReMap;
+    std::map<std::vector<DWORD>, std::pair<std::vector<DWORD>, bool>> osLevelShortcutReMap;
     std::mutex osLevelShortcutReMap_mutex;
 
     // Stores the app-specific shortcut remappings. Maps application name to the shortcut map
-    std::map<std::wstring, std::map<std::vector<DWORD>, std::pair<std::vector<WORD>, bool>>> appSpecificShortcutReMap;
+    std::map<std::wstring, std::map<std::vector<DWORD>, std::pair<std::vector<DWORD>, bool>>> appSpecificShortcutReMap;
     std::mutex appSpecificShortcutReMap_mutex;
 
     // Constructor
@@ -85,10 +85,10 @@ public:
     void ClearSingleKeyRemaps();
 
     // Function to add a new single key remapping
-    bool AddSingleKeyRemap(const DWORD& originalKey, const WORD& newRemapKey);
+    bool AddSingleKeyRemap(const DWORD& originalKey, const DWORD& newRemapKey);
 
     // Function to add a new OS level shortcut remapping
-    bool AddOSLevelShortcut(const std::vector<DWORD>& originalSC, const std::vector<WORD>& newSC);
+    bool AddOSLevelShortcut(const std::vector<DWORD>& originalSC, const std::vector<DWORD>& newSC);
 
     // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
     void ConfigureDetectShortcutUI(const TextBlock& textBlock);

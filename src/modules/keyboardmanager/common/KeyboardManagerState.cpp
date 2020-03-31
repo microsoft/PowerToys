@@ -83,7 +83,7 @@ void KeyboardManagerState::ClearSingleKeyRemaps()
 }
 
 // Function to add a new OS level shortcut remapping
-bool KeyboardManagerState::AddOSLevelShortcut(const std::vector<DWORD>& originalSC, const std::vector<WORD>& newSC)
+bool KeyboardManagerState::AddOSLevelShortcut(const std::vector<DWORD>& originalSC, const std::vector<DWORD>& newSC)
 {
     std::unique_lock<std::mutex> lock(osLevelShortcutReMap_mutex);
 
@@ -99,7 +99,7 @@ bool KeyboardManagerState::AddOSLevelShortcut(const std::vector<DWORD>& original
 }
 
 // Function to add a new OS level shortcut remapping
-bool KeyboardManagerState::AddSingleKeyRemap(const DWORD& originalKey, const WORD& newRemapKey)
+bool KeyboardManagerState::AddSingleKeyRemap(const DWORD& originalKey, const DWORD& newRemapKey)
 {
     std::unique_lock<std::mutex> lock(singleKeyReMap_mutex);
 

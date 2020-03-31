@@ -138,7 +138,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
             if (!originalShortcut.empty() && !newShortcut.empty())
             {
                 std::vector<DWORD> originalKeys = convertWStringVectorToIntegerVector<DWORD>(splitwstring(originalShortcut.c_str(), L' '));
-                std::vector<WORD> newKeys = convertWStringVectorToIntegerVector<WORD>(splitwstring(newShortcut.c_str(), L' '));
+                std::vector<DWORD> newKeys = convertWStringVectorToIntegerVector<DWORD>(splitwstring(newShortcut.c_str(), L' '));
 
                 // Shortcut should consist of atleast two keys
                 if (originalKeys.size() > 1 && newKeys.size() > 1)

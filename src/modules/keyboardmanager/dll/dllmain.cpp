@@ -314,6 +314,7 @@ public:
         if (!(data->lParam->dwExtraInfo & KEYBOARDMANAGER_INJECTED_FLAG))
         {
             std::unique_lock<std::mutex> lock(keyboardManagerState.singleKeyReMap_mutex);
+            lock.unlock();
             auto it = keyboardManagerState.singleKeyReMap.find(data->lParam->vkCode);
             if (it != keyboardManagerState.singleKeyReMap.end())
             {
@@ -482,7 +483,7 @@ public:
     }
 
     // Function to check if all the modifiers in the first shorcut are present in the second shortcut, i.e. Modifiers(src) are a subset of Modifiers(dest)
-    std::vector<DWORD> GetCommonModifiers(const std::vector<DWORD>& src, const std::vector<WORD>& dest)
+    std::vector<DWORD> GetCommonModifiers(const std::vector<DWORD>& src, const std::vector<DWORD>& dest)
     {
         std::vector<DWORD> commonElements;
         for (auto it = src.begin(); it != src.end() - 1; it++)
@@ -497,7 +498,7 @@ public:
     }
 
     // Function to a handle a shortcut remap
-    intptr_t HandleShortcutRemapEvent(LowlevelKeyboardEvent* data, std::map<std::vector<DWORD>, std::pair<std::vector<WORD>, bool>>& reMap) noexcept
+    intptr_t HandleShortcutRemapEvent(LowlevelKeyboardEvent* data, std::map<std::vector<DWORD>, std::pair<std::vector<DWORD>, bool>>& reMap) noexcept
     {
         for (auto& it : reMap)
         {
@@ -666,7 +667,7 @@ public:
                 }
 
                 // The system will see the modifiers of the new shortcut as being held down because of the shortcut remap
-                if (CheckModifiersKeyboardState<WORD>(it.second.first))
+                if (CheckModifiersKeyboardState<DWORD>(it.second.first))
                 {
                     // Case 2: If the original shortcut is still held down the keyboard will get a key down message of the last key in the original shortcut and the new shortcut's modifiers will be held down (keys held down send repeated keydown messages)
                     if (data->lParam->vkCode == it.first[src_size - 1] && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))

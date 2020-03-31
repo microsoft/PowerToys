@@ -6,7 +6,7 @@ HWND ShortcutControl::EditShortcutsWindowHandle = nullptr;
 KeyboardManagerState* ShortcutControl::keyboardManagerState = nullptr;
 
 // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
-void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, const std::vector<DWORD>& originalKeys, const std::vector<WORD>& newKeys)
+void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, const std::vector<DWORD>& originalKeys, const std::vector<DWORD>& newKeys)
 {
     // Parent element for the row
     Windows::UI::Xaml::Controls::StackPanel tableRow;
@@ -26,7 +26,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, const std::ve
     if (!originalKeys.empty() && !newKeys.empty())
     {
         originalSC.shortcutText.Text(convertVectorToHstring<DWORD>(originalKeys));
-        newSC.shortcutText.Text(convertVectorToHstring<WORD>(newKeys));
+        newSC.shortcutText.Text(convertVectorToHstring<DWORD>(newKeys));
     }
 
     // Delete row button
