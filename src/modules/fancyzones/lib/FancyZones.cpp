@@ -12,6 +12,7 @@
 
 #include <functional>
 #include <common/common.h>
+#include <common/timeutil.h>
 #include <common/window_helpers.h>
 #include <common/notifications.h>
 #include <lib/util.h>
@@ -845,22 +846,29 @@ void FancyZones::UpdateDragState(HWND window, require_write_lock) noexcept
         m_dragEnabled = !(shift | mouse);
     }
 
-    const bool windowElevated = IsProcessOfWindowElevated(window);
-    static const bool meElevated = is_process_elevated();
-    static bool warning_shown = false;
-    if (windowElevated && !meElevated)
+    // We should move this logic into the runner once we monitor all elevated processes which are being launched
+    // and notify a user about them, since other modules might care about them as well
+    static std::time_t warning_shown_at = 0;
+    constexpr int64_t warning_cooldown_interval_minutes = 60;
+    const auto now = timeutil::now();
+    const bool warning_ready = timeutil::diff::in_minutes(now, warning_shown_at) > warning_cooldown_interval_minutes;
+
+    if (warning_ready && !is_cant_drag_elevated_warning_disabled())
     {
-        m_dragEnabled = false;
-        if (!warning_shown && !is_cant_drag_elevated_warning_disabled())
+        const bool windowElevated = IsProcessOfWindowElevated(window);
+        static const bool meElevated = is_process_elevated();
+        if (!meElevated && windowElevated)
         {
+            m_dragEnabled = false;
             std::vector<notifications::action_t> actions = {
                 notifications::link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_LEARN_MORE), L"https://aka.ms/powertoysDetectedElevatedHelp" },
                 notifications::link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN), L"powertoys://cant_drag_elevated_disable/" }
             };
             notifications::show_toast_with_activations(GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED), {}, std::move(actions));
-            warning_shown = true;
+            warning_shown_at = now;
         }
     }
+
 }
 
 void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
