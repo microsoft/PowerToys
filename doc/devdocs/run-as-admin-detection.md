@@ -1,15 +1,14 @@
-
 # PowerToys and running as Administrator
 
 ## Too long, Didn't Read 😁
 
-If you're running any application as an administrator and PowerToys is not, a few things may not work correctly when the elevated applications are in focus or trying to interact with a PowerToys feature like FancyZones.
+If you're running any application as an administrator (aka elevated) and PowerToys is not, a few things may not work correctly when the elevated applications are in focus or trying to interact with a PowerToys feature like FancyZones.
 
 ## Having PowerToys keep functioning properly
 
 We understand users will run applications elevated. We do as well.  We have two options for you when this scenario happens:
 
-1. **Recommended:** PowerToys will prompt when we detect a process that is elevated.  Click relaunch, accept the UAC prompt and it be running as admin :)
+1. **Recommended:** PowerToys will prompt when we detect a process that is elevated.  Go to PowerToys settings inside the General Tab and click "Relaunch as adminstrator".
 2. Enable "Always run as administrator" in the PowerToys settings.
 
 ## What is "Run as Administrator" / Elevated processes
@@ -32,7 +31,7 @@ PowerToys in itself does not.  It only needs to be elevated when it has to inter
 
 These are the two scenarios we will not work in:
 
-1. Intercepting some styles of keyboard strokes, namely low-level keyboard hooks
+1. Intercepting certain types of keyboard strokes
 2. Resizing / Moving windows
 
 ### PowerToys affected
