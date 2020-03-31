@@ -20,6 +20,8 @@ namespace PowerToysTests
         private static WindowsElement _saveButton;
         private static Actions _scrollUp;
 
+        private const int _expectedTogglesCount = 9;
+
         private static void Init()
         {
             OpenSettings();
@@ -284,7 +286,7 @@ namespace PowerToysTests
         public void TogglesSingleClickSaveButtonTest()
         {
             List<WindowsElement> toggles = session.FindElementsByXPath("//Pane[@Name=\"PowerToys Settings\"]/*[@LocalizedControlType=\"toggleswitch\"]").ToList();
-            Assert.AreEqual(9, toggles.Count);
+            Assert.AreEqual(_expectedTogglesCount, toggles.Count);
 
             List<bool> toggleValues = new List<bool>();
             foreach (WindowsElement toggle in toggles)
@@ -322,7 +324,7 @@ namespace PowerToysTests
         public void TogglesDoubleClickSave()
         {
             List<WindowsElement> toggles = session.FindElementsByXPath("//Pane[@Name=\"PowerToys Settings\"]/*[@LocalizedControlType=\"toggleswitch\"]").ToList();
-            Assert.AreEqual(9, toggles.Count);
+            Assert.AreEqual(_expectedTogglesCount, toggles.Count);
 
             List<bool> toggleValues = new List<bool>();
             foreach (WindowsElement toggle in toggles)
