@@ -93,7 +93,7 @@ Below are just a few of the bullet items from this release.
 - We shipped [v0.16][github-release-link]!
 - FancyZone improvement: 
   - Multi-Monitor improvement: Zone flipping switching now works between monitors!
-  - Simplified UX: Removed layout hot-swap and flashing due to multi-monitor lacking
+  - Simplified UX: Removed layout hot-swap and flashing feature due to need to improve multi-monitor support
 - New Utilities!
   - Markdown Preview pane extension
   - SVG Preview pane extension
