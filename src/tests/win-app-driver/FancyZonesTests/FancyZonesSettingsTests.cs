@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -17,7 +18,6 @@ namespace PowerToysTests
         private JObject _initialSettingsJson;
 
         private static WindowsElement _saveButton;
-        private static Actions _scrollDown;
         private static Actions _scrollUp;
 
         private static void Init()
@@ -30,14 +30,9 @@ namespace PowerToysTests
             _saveButton = session.FindElementByName("Save");
             Assert.IsNotNull(_saveButton);
 
-            WindowsElement powerToysWindow = session.FindElementByXPath("//Window[@Name=\"PowerToys Settings\"]");
-            Assert.IsNotNull(powerToysWindow);
             _scrollUp = new Actions(session).MoveToElement(_saveButton).MoveByOffset(0, _saveButton.Rect.Height).ContextClick()
-                .SendKeys(OpenQA.Selenium.Keys.PageUp + OpenQA.Selenium.Keys.PageUp);
+                .SendKeys(OpenQA.Selenium.Keys.PageUp + OpenQA.Selenium.Keys.PageUp + OpenQA.Selenium.Keys.PageUp);
             Assert.IsNotNull(_scrollUp);
-            _scrollDown = new Actions(session).MoveToElement(_saveButton).MoveByOffset(0, _saveButton.Rect.Height).ContextClick()
-                .SendKeys(OpenQA.Selenium.Keys.PageDown + OpenQA.Selenium.Keys.PageDown + OpenQA.Selenium.Keys.PageDown);
-            Assert.IsNotNull(_scrollDown);
         }
 
         private JObject GetProperties()
@@ -64,9 +59,16 @@ namespace PowerToysTests
             return properties[propertyName].ToObject<JObject>()["value"].Value<T>();
         }
         
-        private void ScrollDown()
+        private void ScrollDown(int count)
         {
-            _scrollDown.Perform();
+            Actions scroll = new Actions(session);
+            scroll.MoveToElement(_saveButton).MoveByOffset(0, _saveButton.Rect.Height).ContextClick();
+            for (int i = 0; i < count; i++)
+            {
+                scroll.SendKeys(OpenQA.Selenium.Keys.PageDown);
+            }
+
+            scroll.Perform();
         }
 
         private void ScrollUp()
@@ -222,6 +224,48 @@ namespace PowerToysTests
             Assert.AreEqual(flags[2] == 1, hotkey.Value<bool>("alt"));
             Assert.AreEqual(flags[3] == 1, hotkey.Value<bool>("shift"));
             //Assert.AreEqual(keyString, hotkey.Value<string>("key"));
+        }
+
+        private void TestColorSliders(WindowsElement saturationAndBrightness, WindowsElement hue, WindowsElement hex, WindowsElement red, WindowsElement green, WindowsElement blue, string propertyName)
+        {
+            System.Drawing.Rectangle satRect = saturationAndBrightness.Rect;
+            System.Drawing.Rectangle hueRect = hue.Rect;
+
+            //black on the bottom
+            new Actions(session).MoveToElement(saturationAndBrightness).ClickAndHold().MoveByOffset(0, satRect.Height).Release().Perform();
+            ShortWait();
+
+            Assert.AreEqual("0\r\n", red.Text);
+            Assert.AreEqual("0\r\n", green.Text);
+            Assert.AreEqual("0\r\n", blue.Text);
+            Assert.AreEqual("000000\r\n", hex.Text);
+
+            SaveChanges();
+            ShortWait();
+            Assert.AreEqual("#000000", GetPropertyValue<string>(propertyName));
+
+            //white in left corner
+            new Actions(session).MoveToElement(saturationAndBrightness).ClickAndHold().MoveByOffset(-(satRect.Width / 2), -(satRect.Height / 2)).Release().Perform();
+            Assert.AreEqual("255\r\n", red.Text);
+            Assert.AreEqual("255\r\n", green.Text);
+            Assert.AreEqual("255\r\n", blue.Text);
+            Assert.AreEqual("ffffff\r\n", hex.Text);
+
+            SaveChanges();
+            ShortWait();
+            Assert.AreEqual("#ffffff", GetPropertyValue<string>(propertyName));
+
+            //color in right corner
+            new Actions(session).MoveToElement(saturationAndBrightness).ClickAndHold().MoveByOffset((satRect.Width / 2), -(satRect.Height / 2)).Release()
+                .MoveToElement(hue).ClickAndHold().MoveByOffset(-(hueRect.Width / 2), 0).Release().Perform();
+            Assert.AreEqual("255\r\n", red.Text);
+            Assert.AreEqual("0\r\n", green.Text);
+            Assert.AreEqual("0\r\n", blue.Text);
+            Assert.AreEqual("ff0000\r\n", hex.Text);
+
+            SaveChanges();
+            ShortWait();
+            Assert.AreEqual("#ff0000", GetPropertyValue<string>(propertyName));
         }
 
         [TestMethod]
@@ -389,7 +433,7 @@ namespace PowerToysTests
         [TestMethod]
         public void HighlightOpacityClearValueButton()
         {
-            ScrollDown();
+            ScrollDown(3);
             WindowsElement editor = session.FindElementByName("Zone opacity (%)");
             Assert.IsNotNull(editor);
 
@@ -407,66 +451,30 @@ namespace PowerToysTests
         [TestMethod]
         public void HighlightColorSlidersTest()
         {
-            ScrollDown();
+            ScrollDown(4);
 
-            WindowsElement saturationAndBrightness = session.FindElementByName("Saturation and brightness");
-            WindowsElement hue = session.FindElementByName("Hue");
-            WindowsElement hex = session.FindElementByXPath("//Edit[@Name=\"Hex\"]");
-            WindowsElement red = session.FindElementByXPath("//Edit[@Name=\"Red\"]");
-            WindowsElement green = session.FindElementByXPath("//Edit[@Name=\"Green\"]");
-            WindowsElement blue = session.FindElementByXPath("//Edit[@Name=\"Blue\"]");
+            ReadOnlyCollection<WindowsElement> saturationAndBrightness = session.FindElementsByName("Saturation and brightness");
+            ReadOnlyCollection<WindowsElement> hue = session.FindElementsByName("Hue");
+            ReadOnlyCollection<WindowsElement> hex = session.FindElementsByXPath("//Edit[@Name=\"Hex\"]");
+            ReadOnlyCollection<WindowsElement> red = session.FindElementsByXPath("//Edit[@Name=\"Red\"]");
+            ReadOnlyCollection<WindowsElement> green = session.FindElementsByXPath("//Edit[@Name=\"Green\"]");
+            ReadOnlyCollection<WindowsElement> blue = session.FindElementsByXPath("//Edit[@Name=\"Blue\"]");
 
-            Assert.IsNotNull(saturationAndBrightness);
-            Assert.IsNotNull(hue);
-            Assert.IsNotNull(hex);
-            Assert.IsNotNull(red);
-            Assert.IsNotNull(green);
-            Assert.IsNotNull(blue);
+            TestColorSliders(saturationAndBrightness[2], hue[2], hex[2], red[2], green[2], blue[2], "fancyzones_zoneBorderColor");
 
-            System.Drawing.Rectangle satRect = saturationAndBrightness.Rect;
-            System.Drawing.Rectangle hueRect = hue.Rect;
+            new Actions(session).MoveToElement(saturationAndBrightness[2]).MoveByOffset(saturationAndBrightness[2].Rect.Width / 2 + 10, 0)
+                .Click().SendKeys(OpenQA.Selenium.Keys.PageUp).Perform();
+            TestColorSliders(saturationAndBrightness[1], hue[1], hex[1], red[1], green[1], blue[1], "fancyzones_zoneColor");
 
-            //black on the bottom
-            new Actions(session).MoveToElement(saturationAndBrightness).ClickAndHold().MoveByOffset(0, satRect.Height / 2).Click().Perform();
-            ShortWait();
-
-            Assert.AreEqual("0\r\n", red.Text);
-            Assert.AreEqual("0\r\n", green.Text);
-            Assert.AreEqual("0\r\n", blue.Text);
-            Assert.AreEqual("000000\r\n", hex.Text);
-
-            SaveChanges();
-            ShortWait();            
-            Assert.AreEqual("#000000", GetPropertyValue<string>("fancyzones_zoneHighlightColor"));
-
-            //white in left corner
-            new Actions(session).MoveToElement(saturationAndBrightness).ClickAndHold().MoveByOffset(-(satRect.Width/2), -(satRect.Height / 2)).Click().Perform();
-            Assert.AreEqual("255\r\n", red.Text);
-            Assert.AreEqual("255\r\n", green.Text);
-            Assert.AreEqual("255\r\n", blue.Text);
-            Assert.AreEqual("ffffff\r\n", hex.Text);
-
-            SaveChanges();
-            ShortWait();
-            Assert.AreEqual("#ffffff", GetPropertyValue<string>("fancyzones_zoneHighlightColor"));
-
-            //color in right corner
-            new Actions(session).MoveToElement(saturationAndBrightness).ClickAndHold().MoveByOffset((satRect.Width / 2), -(satRect.Height / 2)).Click()
-                .MoveToElement(hue).ClickAndHold().MoveByOffset(-(hueRect.Width / 2), 0).Click().Perform();
-            Assert.AreEqual("255\r\n", red.Text);
-            Assert.AreEqual("0\r\n", green.Text);
-            Assert.AreEqual("0\r\n", blue.Text);
-            Assert.AreEqual("ff0000\r\n", hex.Text);
-
-            SaveChanges();
-            ShortWait();
-            Assert.AreEqual("#ff0000", GetPropertyValue<string>("fancyzones_zoneHighlightColor"));
+            new Actions(session).MoveToElement(saturationAndBrightness[1]).MoveByOffset(saturationAndBrightness[1].Rect.Width / 2 + 10, 0)
+                .Click().SendKeys(OpenQA.Selenium.Keys.PageDown + OpenQA.Selenium.Keys.PageDown).SendKeys(OpenQA.Selenium.Keys.PageUp + OpenQA.Selenium.Keys.PageUp).Perform();
+            TestColorSliders(saturationAndBrightness[0], hue[0], hex[0], red[0], green[0], blue[0], "fancyzones_zoneHighlightColor");
         }
         
         [TestMethod]
         public void HighlightColorTest()
         {
-            ScrollDown();
+            ScrollDown(2);
 
             WindowsElement saturationAndBrightness = session.FindElementByName("Saturation and brightness");
             WindowsElement hue = session.FindElementByName("Hue");
@@ -491,7 +499,7 @@ namespace PowerToysTests
         [TestMethod]
         public void HighlightRGBInputsTest()
         {
-            ScrollDown();
+            ScrollDown(2);
 
             TestRgbInput("Red");
             TestRgbInput("Green");
@@ -501,7 +509,7 @@ namespace PowerToysTests
         [TestMethod]
         public void HighlightHexInputTest()
         {
-            ScrollDown();
+            ScrollDown(2);
 
             WindowsElement hexInput = session.FindElementByXPath("//Edit[@Name=\"Hex\"]");
             Assert.IsNotNull(hexInput);
