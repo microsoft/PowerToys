@@ -130,8 +130,8 @@ public:
     GetZones() noexcept { return m_zones; }
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByIndex(HWND window, HWND zoneWindow, int index) noexcept;
-    IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByDirection(HWND window, HWND zoneWindow, DWORD vkCode) noexcept;
+    IFACEMETHODIMP_(bool)
+    MoveWindowIntoZoneByDirection(HWND window, HWND zoneWindow, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByPoint(HWND window, HWND zoneWindow, POINT ptClient) noexcept;
     IFACEMETHODIMP_(bool)
@@ -240,12 +240,12 @@ ZoneSet::MoveWindowIntoZoneByIndex(HWND window, HWND windowZone, int index) noex
     }
 }
 
-IFACEMETHODIMP_(void)
-ZoneSet::MoveWindowIntoZoneByDirection(HWND window, HWND windowZone, DWORD vkCode) noexcept
+IFACEMETHODIMP_(bool)
+ZoneSet::MoveWindowIntoZoneByDirection(HWND window, HWND windowZone, DWORD vkCode, bool cycle) noexcept
 {
     if (m_zones.empty())
     {
-        return;
+        return false;
     }
 
     winrt::com_ptr<IZone> oldZone = nullptr;
@@ -262,6 +262,11 @@ ZoneSet::MoveWindowIntoZoneByDirection(HWND window, HWND windowZone, DWORD vkCod
         {
             if (iter == m_zones.begin())
             {
+                if (!cycle)
+                {
+                    oldZone->RemoveWindowFromZone(window, false);
+                    return false;
+                }
                 iter = m_zones.end();
             }
             iter--;
@@ -271,6 +276,11 @@ ZoneSet::MoveWindowIntoZoneByDirection(HWND window, HWND windowZone, DWORD vkCod
             iter++;
             if (iter == m_zones.end())
             {
+                if (!cycle)
+                {
+                    oldZone->RemoveWindowFromZone(window, false);
+                    return false;
+                }
                 iter = m_zones.begin();
             }
         }
@@ -283,7 +293,9 @@ ZoneSet::MoveWindowIntoZoneByDirection(HWND window, HWND windowZone, DWORD vkCod
             oldZone->RemoveWindowFromZone(window, false);
         }
         newZone->AddWindowToZone(window, windowZone, true);
+        return true;
     }
+    return false;
 }
 
 IFACEMETHODIMP_(void)
@@ -373,36 +385,40 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, JSONHelpers::ZoneSetL
 {
     bool success = true;
 
-    int zonePercent = C_MULTIPLIER / zoneCount;
-
     long totalWidth;
     long totalHeight;
-
-    long cellWidth;
-    long cellHeight;
 
     if (type == JSONHelpers::ZoneSetLayoutType::Columns)
     {
         totalWidth = workArea.width() - (spacing * (zoneCount + 1));
         totalHeight = workArea.height() - (spacing * 2);
-        cellWidth = totalWidth * zonePercent / C_MULTIPLIER;
-        cellHeight = totalHeight;
     }
     else
     { //Rows
         totalWidth = workArea.width() - (spacing * 2);
         totalHeight = workArea.height() - (spacing * (zoneCount + 1));
-        cellWidth = totalWidth;
-        cellHeight = totalHeight * zonePercent / C_MULTIPLIER;
     }
 
     long top = spacing;
     long left = spacing;
-    long bottom = top + cellHeight;
-    long right = left + cellWidth;
+    long bottom;
+    long right;
 
+    // Note: The expressions below are NOT equal to total{Width|Height} / zoneCount and are done
+    // like this to make the sum of all zones' sizes exactly total{Width|Height}.
     for (int zone = 0; zone < zoneCount; zone++)
     {
+        if (type == JSONHelpers::ZoneSetLayoutType::Columns)
+        {
+            right = left + (zone + 1) * totalWidth / zoneCount - zone * totalWidth / zoneCount;
+            bottom = totalHeight + spacing;
+        }
+        else
+        { //Rows
+            right = totalWidth + spacing;
+            bottom = top + (zone + 1) * totalHeight / zoneCount - zone * totalHeight / zoneCount;
+        }
+        
         if (left >= right || top >= bottom || left < 0 || right < 0 || top < 0 || bottom < 0)
         {
             success = false;
@@ -413,13 +429,11 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, JSONHelpers::ZoneSetL
 
         if (type == JSONHelpers::ZoneSetLayoutType::Columns)
         {
-            left += cellWidth + spacing;
-            right = left + cellWidth;
+            left = right + spacing;
         }
         else
         { //Rows
-            top += cellHeight + spacing;
-            bottom = top + cellHeight;
+            top = bottom + spacing;
         }
     }
 
@@ -452,13 +466,15 @@ bool ZoneSet::CalculateGridLayout(Rect workArea, JSONHelpers::ZoneSetLayoutType 
 
     JSONHelpers::GridLayoutInfo gridLayoutInfo(JSONHelpers::GridLayoutInfo::Minimal{ .rows = rows, .columns = columns });
 
+    // Note: The expressions below are NOT equal to C_MULTIPLIER / {rows|columns} and are done
+    // like this to make the sum of all percents exactly C_MULTIPLIER
     for (int row = 0; row < rows; row++)
     {
-        gridLayoutInfo.rowsPercents()[row] = C_MULTIPLIER / rows;
+        gridLayoutInfo.rowsPercents()[row] = C_MULTIPLIER * (row + 1) / rows - C_MULTIPLIER * row / rows;
     }
     for (int col = 0; col < columns; col++)
     {
-        gridLayoutInfo.columnsPercents()[col] = C_MULTIPLIER / columns;
+        gridLayoutInfo.columnsPercents()[col] = C_MULTIPLIER * (col + 1) / columns - C_MULTIPLIER * col / columns;
     }
 
     for (int i = 0; i < rows; ++i)
@@ -551,25 +567,27 @@ bool ZoneSet::CalculateGridZones(Rect workArea, JSONHelpers::GridLayoutInfo grid
         long Start;
         long End;
     };
-    Info rowInfo[JSONHelpers::MAX_ZONE_COUNT];
-    Info columnInfo[JSONHelpers::MAX_ZONE_COUNT];
+    std::vector<Info> rowInfo(gridLayoutInfo.rows());
+    std::vector<Info> columnInfo(gridLayoutInfo.columns());
 
-    long top = spacing;
+    // Note: The expressions below are carefully written to 
+    // make the sum of all zones' sizes exactly total{Width|Height}
+    int totalPercents = 0;
     for (int row = 0; row < gridLayoutInfo.rows(); row++)
     {
-        rowInfo[row].Start = top;
-        rowInfo[row].Extent = totalHeight * gridLayoutInfo.rowsPercents()[row] / C_MULTIPLIER;
-        rowInfo[row].End = rowInfo[row].Start + rowInfo[row].Extent;
-        top += rowInfo[row].Extent + spacing;
+        rowInfo[row].Start = totalPercents * totalHeight / C_MULTIPLIER + (row + 1) * spacing;
+        totalPercents += gridLayoutInfo.rowsPercents()[row];
+        rowInfo[row].End = totalPercents * totalHeight / C_MULTIPLIER + (row + 1) * spacing;
+        rowInfo[row].Extent = rowInfo[row].End - rowInfo[row].Start;
     }
 
-    long left = spacing;
+    totalPercents = 0;
     for (int col = 0; col < gridLayoutInfo.columns(); col++)
     {
-        columnInfo[col].Start = left;
-        columnInfo[col].Extent = totalWidth * gridLayoutInfo.columnsPercents()[col] / C_MULTIPLIER;
-        columnInfo[col].End = columnInfo[col].Start + columnInfo[col].Extent;
-        left += columnInfo[col].Extent + spacing;
+        columnInfo[col].Start = totalPercents * totalWidth / C_MULTIPLIER + (col + 1) * spacing;
+        totalPercents += gridLayoutInfo.columnsPercents()[col];
+        columnInfo[col].End = totalPercents * totalWidth / C_MULTIPLIER + (col + 1) * spacing;
+        columnInfo[col].Extent = columnInfo[col].End - columnInfo[col].Start;
     }
 
     for (int row = 0; row < gridLayoutInfo.rows(); row++)
@@ -580,8 +598,8 @@ bool ZoneSet::CalculateGridZones(Rect workArea, JSONHelpers::GridLayoutInfo grid
             if (((row == 0) || (gridLayoutInfo.cellChildMap()[row - 1][col] != i)) &&
                 ((col == 0) || (gridLayoutInfo.cellChildMap()[row][col - 1] != i)))
             {
-                left = columnInfo[col].Start;
-                top = rowInfo[row].Start;
+                long left = columnInfo[col].Start;
+                long top = rowInfo[row].Start;
 
                 int maxRow = row;
                 while (((maxRow + 1) < gridLayoutInfo.rows()) && (gridLayoutInfo.cellChildMap()[maxRow + 1][col] == i))

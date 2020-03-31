@@ -1,0 +1,142 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="..\..\..\..\installer\Version.props" />
+  <!-- We don't have GenerateAssemblyInfo task until we use .net core, so we generate it with WriteLinesToFile -->
+  <PropertyGroup>
+    <AssemblyTitle>MarkdownPreviewHandler</AssemblyTitle>
+    <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
+    <AssemblyCopyright>Copyright (C) 2019 Microsoft Corp.</AssemblyCopyright>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyVersionFiles Include="Generated Files\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Target Name="GenerateAssemblyInfo" BeforeTargets="PrepareForBuild">
+    <ItemGroup>
+      <HeaderLines Include="// Copyright (c) Microsoft Corporation" />
+      <HeaderLines Include="// The Microsoft Corporation licenses this file to you under the MIT license." />
+      <HeaderLines Include="// See the LICENSE file in the project root for more information." />
+      <HeaderLines Include="#pragma warning disable SA1516" />
+      <HeaderLines Include="using System.Reflection%3b" />
+      <HeaderLines Include="using System.Resources%3b" />
+      <HeaderLines Include="using System.Runtime.CompilerServices%3b" />
+      <HeaderLines Include="using System.Runtime.InteropServices%3b" />
+      <HeaderLines Include="[assembly: AssemblyTitle(&quot;$(AssemblyTitle)&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyDescription(&quot;&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyConfiguration(&quot;&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyCompany(&quot;$(AssemblyCompany)&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyCopyright(&quot;$(AssemblyCopyright)&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyProduct(&quot;$(AssemblyTitle)&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyTrademark(&quot;&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyCulture(&quot;&quot;)]" />
+      <HeaderLines Include="[assembly: ComVisible(false)]" />
+      <HeaderLines Include="[assembly: NeutralResourcesLanguage(&quot;en-US&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyVersion(&quot;$(Version).0&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyFileVersion(&quot;$(Version).0&quot;)]" />
+    </ItemGroup>
+    <WriteLinesToFile File="Generated Files\AssemblyInfo.cs" Lines="@(HeaderLines)" Overwrite="true" Encoding="Unicode" WriteOnlyWhenDifferent="true" />
+  </Target>
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6A71162E-FC4C-4A2C-B90F-3CF94F59A9BB}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MarkdownPreviewHandler</RootNamespace>
+    <AssemblyName>MarkdownPreviewHandler</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+    <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DocumentationFile>$(SolutionDir)$(Platform)\$(Configuration)\modules\MarkdownPreviewPaneDocumentation.xml</DocumentationFile>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DocumentationFile>$(SolutionDir)$(Platform)\$(Configuration)\modules\MarkdownPreviewPaneDocumentation.xml</DocumentationFile>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="HTMLParsingExtension.cs" />
+    <Compile Include="MarkdownPreviewHandler.cs" />
+    <Compile Include="MarkdownPreviewHandlerControl.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Generated Files\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MarkdownTelemetry.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="HtmlAgilityPack">
+      <Version>1.8.10</Version>
+    </PackageReference>
+    <PackageReference Include="Markdig.Signed">
+      <Version>0.18.0</Version>
+    </PackageReference>
+    <PackageReference Include="StyleCop.Analyzers">
+      <Version>1.1.118</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
+      <Link>StyleCop.json</Link>
+    </AdditionalFiles>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\common\PreviewHandlerCommon.csproj">
+      <Project>{af2349b8-e5b6-4004-9502-687c1c7730b1}</Project>
+      <Name>PreviewHandlerCommon</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -4,6 +4,7 @@
 #include <Windows.h>
 #include <string>
 #include <memory>
+#include <vector>
 
 // Returns RECT with positions of the minmize/maximize buttons of the given window.
 // Does not always work, since some apps draw custom toolbars.
@@ -14,18 +15,20 @@ std::optional<RECT> get_window_pos(HWND hwnd);
 std::optional<POINT> get_mouse_pos();
 
 // Test if window can be zoned by FancyZones
-struct FancyZonesFilter {
-  bool zonable = false; // If the window is zonable by FancyZones by default - true when both standard_window and no_visible_owner are also true
-  bool standard_window = false; // True if from the styles the window looks like a standard window
-  bool no_visible_owner = false; // True if the window is a top-level window that does not have a visible owner
-  std::wstring process_path; // Path to the executable owning the window
+struct FancyZonesFilter
+{
+    bool zonable = false; // If the window is zonable by FancyZones by default - true when both standard_window and no_visible_owner are also true
+    bool standard_window = false; // True if from the styles the window looks like a standard window
+    bool no_visible_owner = false; // True if the window is a top-level window that does not have a visible owner
+    std::wstring process_path; // Path to the executable owning the window
 };
 FancyZonesFilter get_fancyzones_filtered_window(HWND window);
 
 // Gets active foreground window, filtering out all "non standard" windows like the taskbar, etc.
-struct ShortcutGuideFilter {
-  HWND hwnd = nullptr; // Handle to the top-level foreground window or nullptr if there is no such window
-  bool snappable = false; // True, if the window can react to Windows Snap keys
+struct ShortcutGuideFilter
+{
+    HWND hwnd = nullptr; // Handle to the top-level foreground window or nullptr if there is no such window
+    bool snappable = false; // True, if the window can react to Windows Snap keys
 };
 ShortcutGuideFilter get_shortcutguide_filtered_window();
 
@@ -42,17 +45,18 @@ int run_message_loop();
 std::optional<std::wstring> get_last_error_message(const DWORD dw);
 void show_last_error_message(LPCWSTR lpszFunction, DWORD dw);
 
-enum WindowState {
-  UNKNONW,
-  MINIMIZED,
-  MAXIMIZED,
-  SNAPED_TOP_LEFT,
-  SNAPED_LEFT,
-  SNAPED_BOTTOM_LEFT,
-  SNAPED_TOP_RIGHT,
-  SNAPED_RIGHT,
-  SNAPED_BOTTOM_RIGHT,
-  RESTORED
+enum WindowState
+{
+    UNKNONW,
+    MINIMIZED,
+    MAXIMIZED,
+    SNAPED_TOP_LEFT,
+    SNAPED_LEFT,
+    SNAPED_BOTTOM_LEFT,
+    SNAPED_TOP_RIGHT,
+    SNAPED_RIGHT,
+    SNAPED_BOTTOM_RIGHT,
+    RESTORED
 };
 WindowState get_window_state(HWND hwnd);
 
@@ -73,6 +77,9 @@ bool run_same_elevation(const std::wstring& file, const std::wstring& params);
 
 // Returns true if the current process is running from administrator account
 bool check_user_is_admin();
+
+//Returns true when one or more strings from vector found in string 
+bool find_app_name_in_path(const std::wstring& where, const std::vector<std::wstring>& what);
 
 // Get the executable path or module name for modern apps
 std::wstring get_process_path(DWORD pid) noexcept;

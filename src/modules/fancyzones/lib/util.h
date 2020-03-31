@@ -1,14 +1,18 @@
 #pragma once
 
+#include "gdiplus.h"
+
 struct Rect
 {
     Rect() {}
 
-    Rect(RECT rect) : m_rect(rect)
+    Rect(RECT rect) :
+        m_rect(rect)
     {
     }
 
-    Rect(RECT rect, UINT dpi) : m_rect(rect)
+    Rect(RECT rect, UINT dpi) :
+        m_rect(rect)
     {
         m_rect.right = m_rect.left + MulDiv(m_rect.right - m_rect.left, dpi, 96);
         m_rect.bottom = m_rect.top + MulDiv(m_rect.bottom - m_rect.top, dpi, 96);
@@ -38,7 +42,7 @@ inline void MakeWindowTransparent(HWND window)
     }
 }
 
-inline void InitRGB(_Out_ RGBQUAD *quad, BYTE alpha, COLORREF color)
+inline void InitRGB(_Out_ RGBQUAD* quad, BYTE alpha, COLORREF color)
 {
     ZeroMemory(quad, sizeof(*quad));
     quad->rgbReserved = alpha;
@@ -47,7 +51,7 @@ inline void InitRGB(_Out_ RGBQUAD *quad, BYTE alpha, COLORREF color)
     quad->rgbBlue = GetBValue(color) * alpha / 255;
 }
 
-inline void FillRectARGB(wil::unique_hdc& hdc, RECT const *prcFill, BYTE alpha, COLORREF color, bool blendAlpha)
+inline void FillRectARGB(wil::unique_hdc& hdc, RECT const* prcFill, BYTE alpha, COLORREF color, bool blendAlpha)
 {
     BITMAPINFO bi;
     ZeroMemory(&bi, sizeof(bi));
@@ -60,63 +64,30 @@ inline void FillRectARGB(wil::unique_hdc& hdc, RECT const *prcFill, BYTE alpha, 
 
     RECT fillRect;
     CopyRect(&fillRect, prcFill);
-    if ((alpha == 255) || !blendAlpha)
-    {
-        // Opaque or the caller does not want to blend the alpha
-        RGBQUAD bitmapBits;
-        InitRGB(&bitmapBits, alpha, color);
-        StretchDIBits(
-            hdc.get(),
-            fillRect.left,
-            fillRect.top,
-            fillRect.right - fillRect.left,
-            fillRect.bottom - fillRect.top,
-            0, 0, 1, 1, &bitmapBits, &bi, DIB_RGB_COLORS, SRCCOPY);
-    }
-    else
-    {
-        if (wil::unique_hdc hdcSrc{ CreateCompatibleDC(hdc.get()) })
-        {
-            void* pBitmapBits;
-            if (wil::unique_hbitmap bitmapSource{ CreateDIBSection(hdcSrc.get(), &bi, DIB_RGB_COLORS, &pBitmapBits, nullptr, 0) })
-            {
-                InitRGB(reinterpret_cast<RGBQUAD *>(pBitmapBits), alpha, color);
 
-                wil::unique_select_object bitmapOld{ SelectObject(hdcSrc.get(), bitmapSource.get()) };
-                BLENDFUNCTION bf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
-                GdiAlphaBlend(
-                    hdc.get(),
-                    fillRect.left,
-                    fillRect.top,
-                    fillRect.right - fillRect.left,
-                    fillRect.bottom - fillRect.top,
-                    hdcSrc.get(), 0, 0, 1, 1, bf);
-            }
-
-        }
-    }
-}
-
-inline void FrameRectARGB(wil::unique_hdc& hdc, const RECT &rc, BYTE bAlpha, COLORREF clr, int thickness)
-{
-    RECT sides[] = {
-        { rc.left, rc.top, (rc.left + thickness), rc.bottom },
-        { (rc.right - thickness), rc.top, rc.right, rc.bottom },
-        { (rc.left + thickness), rc.top, (rc.right - thickness), (rc.top + thickness) },
-        { (rc.left + thickness), (rc.bottom - thickness), (rc.right - thickness), rc.bottom }
-    };
-
-    for (UINT i = 0; i < ARRAYSIZE(sides); i++)
-    {
-        FillRectARGB(hdc, &(sides[i]), bAlpha, clr, false);
-    }
+    RGBQUAD bitmapBits;
+    InitRGB(&bitmapBits, alpha, color);
+    StretchDIBits(
+        hdc.get(),
+        fillRect.left,
+        fillRect.top,
+        fillRect.right - fillRect.left,
+        fillRect.bottom - fillRect.top,
+        0,
+        0,
+        1,
+        1,
+        &bitmapBits,
+        &bi,
+        DIB_RGB_COLORS,
+        SRCCOPY);
 }
 
 inline void ParseDeviceId(PCWSTR deviceId, PWSTR parsedId, size_t size)
 {
     // We're interested in the unique part between the first and last #'s
     // Example input: \\?\DISPLAY#DELA026#5&10a58c63&0&UID16777488#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}
-    // Example output: DELA026#5&10a58c63&0&UID16777488 
+    // Example output: DELA026#5&10a58c63&0&UID16777488
     const std::wstring defaultDeviceId = L"FallbackDevice";
     if (!deviceId)
     {
@@ -140,10 +111,10 @@ inline void ParseDeviceId(PCWSTR deviceId, PWSTR parsedId, size_t size)
     }
 }
 
-inline int OpacitySettingToAlpha(int opacity)
+inline BYTE OpacitySettingToAlpha(int opacity)
 {
-    // convert percentage to a 0-255 alpha value
-    return static_cast<int>(opacity * 2.55);
+    return static_cast<BYTE>(opacity * 2.55);
 }
 
 UINT GetDpiForMonitor(HMONITOR monitor) noexcept;
+void OrderMonitors(std::vector<std::pair<HMONITOR, RECT>>& monitorInfo);

@@ -150,11 +150,11 @@ namespace FancyZonesEditor
             {
                 if (model is GridLayoutModel)
                 {
-                    model.Apply(mainEditor.GetZoneRects());
+                    model.Apply();
                 }
                 else
                 {
-                    model.Apply((model as CanvasLayoutModel).Zones.ToArray());
+                    model.Apply();
                 }
 
                 Close();

@@ -18,11 +18,16 @@ namespace FancyZonesEditor
     {
         public static readonly DependencyProperty ModelProperty = DependencyProperty.Register("Model", typeof(GridLayoutModel), typeof(GridEditor), new PropertyMetadata(null, OnGridDimensionsChanged));
 
+        private static int gridEditorUniqueIdCounter = 0;
+
+        private int gridEditorUniqueId;
+
         public GridEditor()
         {
             InitializeComponent();
             Loaded += GridEditor_Loaded;
             ((App)Application.Current).ZoneSettings.PropertyChanged += ZoneSettings_PropertyChanged;
+            gridEditorUniqueId = ++gridEditorUniqueIdCounter;
         }
 
         private void GridEditor_Loaded(object sender, RoutedEventArgs e)
@@ -73,7 +78,9 @@ namespace FancyZonesEditor
         private void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             Size actualSize = new Size(ActualWidth, ActualHeight);
-            if (actualSize.Width > 0)
+
+            // Only enter if this is the newest instance
+            if (actualSize.Width > 0 && gridEditorUniqueId == gridEditorUniqueIdCounter)
             {
                 ArrangeGridRects(actualSize);
             }
@@ -134,82 +141,49 @@ namespace FancyZonesEditor
 
         private void ExtendRangeToHaveEvenCellEdges()
         {
-            // extend each edge of the [(_startCol, _startRow) - (_endCol, _endRow)] range based on merged cells until you have 4 straight edges with no "straddling cells"
+            // As long as there is an edge of the 2D range such that some zone crosses its boundary, extend
+            // that boundary. A single pass is not enough, a while loop is needed. This results in the unique
+            // smallest rectangle containing the initial range such that no zone is "broken", meaning that
+            // some part of it is inside the 2D range, and some part is outside.
             GridLayoutModel model = Model;
+            bool possiblyBroken = true;
 
-            while (_startRow > 0)
+            while (possiblyBroken)
             {
-                bool dirty = false;
+                possiblyBroken = false;
+
                 for (int col = _startCol; col <= _endCol; col++)
                 {
-                    if (model.CellChildMap[_startRow - 1, col] == model.CellChildMap[_startRow, col])
+                    if (_startRow > 0 && model.CellChildMap[_startRow - 1, col] == model.CellChildMap[_startRow, col])
                     {
                         _startRow--;
-                        dirty = true;
+                        possiblyBroken = true;
                         break;
                     }
-                }
 
-                if (!dirty)
-                {
-                    break;
-                }
-            }
-
-            while (_endRow < model.Rows - 1)
-            {
-                bool dirty = false;
-                for (int col = _startCol; col <= _endCol; col++)
-                {
-                    if (model.CellChildMap[_endRow + 1, col] == model.CellChildMap[_endRow, col])
+                    if (_endRow < model.Rows - 1 && model.CellChildMap[_endRow + 1, col] == model.CellChildMap[_endRow, col])
                     {
                         _endRow++;
-                        dirty = true;
+                        possiblyBroken = true;
                         break;
                     }
                 }
 
-                if (!dirty)
-                {
-                    break;
-                }
-            }
-
-            while (_startCol > 0)
-            {
-                bool dirty = false;
                 for (int row = _startRow; row <= _endRow; row++)
                 {
-                    if (model.CellChildMap[row, _startCol - 1] == model.CellChildMap[row, _startCol])
+                    if (_startCol > 0 && model.CellChildMap[row, _startCol - 1] == model.CellChildMap[row, _startCol])
                     {
                         _startCol--;
-                        dirty = true;
+                        possiblyBroken = true;
                         break;
                     }
-                }
 
-                if (!dirty)
-                {
-                    break;
-                }
-            }
-
-            while (_endCol < model.Columns - 1)
-            {
-                bool dirty = false;
-                for (int row = _startRow; row <= _endRow; row++)
-                {
-                    if (model.CellChildMap[row, _endCol + 1] == model.CellChildMap[row, _endCol])
+                    if (_endCol < model.Columns - 1 && model.CellChildMap[row, _endCol + 1] == model.CellChildMap[row, _endCol])
                     {
                         _endCol++;
-                        dirty = true;
+                        possiblyBroken = true;
                         break;
                     }
-                }
-
-                if (!dirty)
-                {
-                    break;
                 }
             }
         }
@@ -528,7 +502,8 @@ namespace FancyZonesEditor
 
         private void OnGridDimensionsChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if ((e.PropertyName == "Rows") || (e.PropertyName == "Columns"))
+            // Only enter if this is the newest instance
+            if (((e.PropertyName == "Rows") || (e.PropertyName == "Columns")) && gridEditorUniqueId == gridEditorUniqueIdCounter)
             {
                 OnGridDimensionsChanged();
             }
@@ -594,6 +569,7 @@ namespace FancyZonesEditor
                         top = _rowInfo[row].Start;
                         Canvas.SetLeft(zone, left);
                         Canvas.SetTop(zone, top);
+                        zone.LabelID.Content = i + 1;
 
                         int maxRow = row;
                         while (((maxRow + 1) < rows) && (model.CellChildMap[maxRow + 1, col] == i))
@@ -690,6 +666,7 @@ namespace FancyZonesEditor
                 {
                     Canvas.SetLeft(resizer, _colInfo[col].End + (spacing / 2) - 24); // hard coding this as (resizer.ActualWidth / 2) will still evaluate to 0 here ... a layout hasn't yet happened
                     Canvas.SetTop(resizer, (_rowInfo[endRow].End + _rowInfo[startRow].Start) / 2);
+                    resizer.Visibility = Visibility.Visible;
                 }
                 else
                 {

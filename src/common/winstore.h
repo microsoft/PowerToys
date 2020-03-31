@@ -4,7 +4,6 @@
 
 #include <winrt/Windows.ApplicationModel.h>
 
-
 namespace winstore
 {
     using winrt::Windows::ApplicationModel::StartupTaskState;

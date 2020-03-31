@@ -10,12 +10,17 @@
 
 ## Github Workflow
 
-- Follow the PR template, in particular make sure there is open issue for the new PR.
-- When the PR is approved, let the owner of the PR merge it.
+- Before starting to work on a fix/feature, make sure there is an open issue to track the work.
+- Add the `In progress` label to the issue, if not already present also add a `Cost-Small/Medium/Large` estimate and make sure all appropriate labels are set.
+- If you are a community contributor, you will not be able to add labels to the issue, in that case just add a comment saying that you started to work on the issue and try to give an estimate for the delivery date.
+- If the work item has a medium/large cost, using the markdown task list, list each sub item and update the list with a check mark after completing each sub item.
+- When opening a PR, follow the PR template.
+- When the PR is approved, let the owner of the PR merge it. For community contributions the reviewer that approved the PR can also merge it.
 - Use the `Squash and merge` option to merge a PR, if you don't want to squash it because there are logically different commits, use `Rebase and merge`.
-- We don't close issues automatically when referenced in a PR, so after the OR is merged:
-  - mark the issue(s) fixed by the PR with the `resolved` label.
-  - don't close the issue if it's a bug in the current release since users tend to not search for closed issues, we will close the resolved issues when a new released is published.
+- We don't close issues automatically when referenced in a PR, so after the PR is merged:
+  - mark the issue(s), that the PR solved, with the `Resolution-Fix-Committed` label, remove the `In progress` label and if the issue is assigned to a project, move the item to the `Done` status.
+  - don't close the issue if it's a bug in the current released version since users tend to not search for closed issues, we will close the resolved issues when a new version is released.
+  - if it's not a code fix that effects the end user, the issue can be closed (for example a fix in the build or a code refactoring and so on).
 
 ## Repository Overview
 

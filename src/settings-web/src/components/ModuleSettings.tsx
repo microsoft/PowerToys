@@ -163,6 +163,10 @@ export class ModuleSettings extends React.Component <any, any> {
                   on_change={this.parent_on_change}
                   ref={(input) => {this.references[key]=input;}}
                 />;
+              case 'header_large':
+                return <Text 
+                  variant='large'
+                  className="SubHeader">{power_toys_properties[key].value}</Text>;
               default:
                 return null;
             }

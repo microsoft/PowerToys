@@ -147,3 +147,27 @@ namespace Mocks
     }
 
 }
+
+std::wstring Helpers::GuidToString(const GUID& guid)
+{
+    OLECHAR* guidString;
+    if (StringFromCLSID(guid, &guidString) == S_OK)
+    {
+        std::wstring guidStr{ guidString };
+        CoTaskMemFree(guidString);
+        return guidStr;
+    }
+
+    return L"";
+}
+
+std::wstring Helpers::CreateGuidString()
+{
+    GUID guid;
+    if (CoCreateGuid(&guid) == S_OK)
+    {
+        return GuidToString(guid);
+    }
+
+    return L"";
+}
