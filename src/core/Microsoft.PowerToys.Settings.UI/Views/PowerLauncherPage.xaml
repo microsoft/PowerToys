@@ -9,10 +9,40 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
+    <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LayoutVisualStates">
+                <VisualState x:Name="WideLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="1" />
+                        <Setter Target="SidePanel.(Grid.Row)" Value="0" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="SmallLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
+                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
         <StackPanel Orientation="Vertical">
-            <TextBlock Text="A quick launcher that has additional capabilities without sacrificing performance."
+            <TextBlock Text="A quick launcher that has additional capabilities without sacrificing performance." Style="{StaticResource BodyTextBlockStyle}"
                        TextWrapping="Wrap"/>
 
             <ToggleSwitch Header="Enable PowerLauncher"
@@ -78,14 +108,35 @@
                      Width="320"
                      Margin="{StaticResource SmallTopMargin}"/>
 
-            <ToggleSwitch Header="Override Win+R key"
-                          IsOn="True"
+            <CheckBox Content="Override Win+R key"
+                          IsChecked="True"
                           Margin="{StaticResource SmallTopMargin}"/>
 
-            <ToggleSwitch Header="Override Win+S key"
-                          IsOn="True" 
+            <CheckBox Content="Override Win+S key"
+                          IsChecked="True" 
                           Margin="{StaticResource SmallTopMargin}" />
 
+        </StackPanel>
+
+        <StackPanel x:Name="SidePanel"
+                                Orientation="Vertical"
+                                HorizontalAlignment="Left"
+                                Width="{StaticResource SidePanelWidth}"
+                                Grid.Column="1">
+
+            <TextBlock Text="About this feature"
+                                   Style="{StaticResource SettingsGroupTitleStyle}"
+                                   Margin="{StaticResource XSmallBottomMargin}"/>
+
+            <HyperlinkButton Content="Module overview"/>
+            <HyperlinkButton Content="Give feedback"/>
+
+            <TextBlock Text="Contributors"
+                           Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+            <HyperlinkButton Content="Contributor name"/>
+            <HyperlinkButton Content="Contributor name"/>
+            <HyperlinkButton Content="Contributor name"/>
         </StackPanel>
     </Grid>
 </Page>

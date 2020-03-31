@@ -62,48 +62,5 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             Default_SndMSG_Callback = implmentation;
         }
-
-        public void HideFeatureDetails()
-        {
-            this.Feature_Details_Title.Visibility = Visibility.Collapsed;
-            this.Feature_Details.Visibility = Visibility.Collapsed;
-        }
-
-        public void ShowFeatureDetails()
-        {
-            this.Feature_Details_Title.Visibility = Visibility.Visible;
-            this.Feature_Details.Visibility = Visibility.Visible;
-        }
-
-        public void SetFeatureDetails(string moduleOverviewLink,string reportBugLink)
-        {
-            this.Module_Overview_LinkButton.NavigateUri = new Uri(moduleOverviewLink);
-            this.Module_Feedback_LinkButton.NavigateUri = new Uri(reportBugLink);
-        }
-
-        public void HideContributorsList()
-        {
-            this.Contributors_List_Title.Visibility = Visibility.Collapsed;
-            this.Contributors_List.Visibility = Visibility.Collapsed;
-        }
-
-        public void ShowContributorsList()
-        {
-            this.Contributors_List_Title.Visibility = Visibility.Visible;
-            this.Contributors_List.Visibility = Visibility.Visible;
-        }
-
-        public void PopulateContributorsList(List<Contributor> contributors)
-        {
-            this.Contributors_List.Items.Clear();
-
-            foreach (Contributor contributor in contributors)
-            {
-                HyperlinkButton link = new HyperlinkButton();
-                link.Content = contributor.Name;
-                link.NavigateUri = new Uri(contributor.Link);
-                this.Contributors_List.Items.Add(link);
-            }
-        }
     }
 }
