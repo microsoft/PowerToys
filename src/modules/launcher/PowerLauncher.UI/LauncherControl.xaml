@@ -418,7 +418,7 @@
 
 
             <AutoSuggestBox x:Name="SearchBox"  x:FieldModifier="public" PlaceholderText="Launch an app" FontSize="24" Style="{StaticResource CustomStyledAutoSuggestBox}" MinWidth="720"
-                            ItemsSource="{Binding Results.Results}" >
+                            Text="{Binding QueryText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding Results.Results}">
                 <AutoSuggestBox.QueryIcon>
                     <SymbolIcon Symbol="Find"/>
                 </AutoSuggestBox.QueryIcon>
