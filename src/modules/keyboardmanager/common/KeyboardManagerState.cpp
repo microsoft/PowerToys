@@ -41,7 +41,7 @@ void KeyboardManagerState::SetUIState(KeyboardManagerUIState state, HWND windowH
 {
     std::unique_lock<std::mutex> lock(uiState_mutex);
     uiState = state;
-    currentUIWindow = windowHandle;
+    SetCurrentUIWindow(windowHandle);
 }
 
 // Function to reset the UI state members
@@ -201,11 +201,16 @@ bool KeyboardManagerState::DetectSingleRemapKeyUIBackend(LowlevelKeyboardEvent* 
     // Check if the detect key UI window has been activated
     if (CheckUIState(KeyboardManagerUIState::DetectSingleKeyRemapWindowActivated))
     {
-        std::unique_lock<std::mutex> detectedRemapKey_lock(detectedRemapKey_mutex);
-        detectedRemapKey = data->lParam->vkCode;
-        detectedRemapKey_lock.unlock();
+        // detect the key if it is pressed down
+        if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
+        {
+            std::unique_lock<std::mutex> detectedRemapKey_lock(detectedRemapKey_mutex);
+            detectedRemapKey = data->lParam->vkCode;
+            detectedRemapKey_lock.unlock();
 
-        UpdateDetectSingleKeyRemapUI();
+            UpdateDetectSingleKeyRemapUI();
+        }
+
         // Suppress the keyboard event
         return true;
     }

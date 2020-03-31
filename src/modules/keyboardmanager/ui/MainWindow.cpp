@@ -93,10 +93,8 @@ void createMainWindow(HINSTANCE hInstance, KeyboardManagerState& keyboardManager
     Windows::UI::Xaml::Controls::Button bt;
     bt.Content(winrt::box_value(winrt::to_hstring("Edit Keyboard")));
     bt.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
-        //keyboardManagerState.SetUIState(KeyboardManagerUIState::DetectKeyWindowActivated);
         std::thread th(createEditKeyboardWindow, _hInstance, std::ref(keyboardManagerState));
         th.join();
-        //keyboardManagerState.ResetUIState();
     });
 
     Windows::UI::Xaml::Controls::Button bt2;
