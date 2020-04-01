@@ -1,6 +1,7 @@
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
+using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 
 namespace PowerToysTests
@@ -15,10 +16,11 @@ namespace PowerToysTests
 
         private void CancelTest()
         {
-            new Actions(session).MoveToElement(session.FindElementByXPath("//Button[@Name=\"Cancel\"]")).Click().Perform();
+            WindowsElement cancelButton = session.FindElementByXPath("//Window[@Name=\"FancyZones Editor\"]/Window/Button[@Name=\"Cancel\"]");
+            new Actions(session).MoveToElement(cancelButton).Click().Perform();
             ShortWait();
 
-            Assert.AreEqual(_initialZoneSettings, File.ReadAllText(_zoneSettingsPath), "Settings were changed");
+            Assert.AreEqual(_defaultZoneSettings, File.ReadAllText(_zoneSettingsPath), "Settings were changed");
         }
 
         private void SaveTest()
