@@ -29,7 +29,7 @@
             <local:WindowSearchResultToXamlConverter x:Key="windowSearchResultToXamlConverter"/>
         </ResourceDictionary>
     </Window.Resources>
-    <Grid>
+    <Grid KeyboardNavigation.TabNavigation="None">
         <StackPanel Margin="1" Orientation="Vertical">
             <TextBox x:Name="searchBox" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" FontSize="40" Margin="10" KeyUp="SearchBoxKeyUp" materialDesign:HintAssist.Hint="{Binding Hint}" materialDesign:HintAssist.HintOpacity="0.2"/>
             <ListBox x:Name="results" ItemsSource="{Binding Results}" SelectedItem="{Binding SelectedWindowResult}" HorizontalContentAlignment="Stretch" MouseDoubleClick="Results_MouseDoubleClick">

@@ -68,7 +68,7 @@ namespace WindowWalker
                     viewModel.WindowHideCommand.Execute(null);
                 }
             }
-            else if (e.Key == Key.Down)
+            else if (e.Key == Key.Down || e.Key == Key.Tab)
             {
                 if (viewModel.WindowNavigateToNextResultCommand.CanExecute(null))
                 {
