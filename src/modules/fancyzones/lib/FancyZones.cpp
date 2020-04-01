@@ -424,7 +424,8 @@ void FancyZones::ToggleEditor() noexcept
         std::shared_lock readLock(m_lock);
         if (m_terminateEditorEvent)
         {
-            SetEvent(m_terminateEditorEvent.get());
+            MessageBox(nullptr, L"Fancy Zones Editor is already running.", L"Fancy Zones Editor", MB_ICONINFORMATION); // Show a notification to users
+            //SetEvent(m_terminateEditorEvent.get()); // Stop terminating event
             return;
         }
     }
