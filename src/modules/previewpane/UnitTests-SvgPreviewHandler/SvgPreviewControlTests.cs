@@ -1,4 +1,4 @@
-﻿/*// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -43,7 +43,7 @@ namespace UnitTests_SvgPreviewHandler
 
             // Act
             svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
-            
+
             // Assert
             Assert.IsNotNull(((WebBrowser)svgPreviewControl.Controls[0]).DocumentStream);
         }
@@ -117,8 +117,8 @@ namespace UnitTests_SvgPreviewHandler
             // Assert
             Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).AllowNavigation, false);
         }
-
-        *//*[STAThread]
+/*
+        [STAThread]
         [TestMethod]
         public void SvgPreviewControl_ShouldAddValidInfoBar_IfSvgPreviewThrows()
         {
@@ -142,9 +142,9 @@ namespace UnitTests_SvgPreviewHandler
             Assert.IsTrue(textBox.ReadOnly);
             Assert.AreEqual(textBox.ScrollBars, RichTextBoxScrollBars.None);
             Assert.AreEqual(textBox.BorderStyle, BorderStyle.None);
-        }*/
+        }
 
-        /*[STAThread]
+        [STAThread]
         [TestMethod]
         public void SvgPreviewControl_InfoBarWidthShouldAdjustWithParentControlWidthChanges_IfSvgPreviewThrows()
         {
@@ -167,7 +167,7 @@ namespace UnitTests_SvgPreviewHandler
             // Assert
             Assert.AreEqual(intialParentWidth, intitialTextBoxWidth);
             Assert.AreEqual(finalParentWidth, textBox.Width);
-        }*//*
+        }*/
 
         [STAThread]
         [TestMethod]
@@ -234,7 +234,7 @@ namespace UnitTests_SvgPreviewHandler
             Assert.AreEqual(finalParentWidth, textBox.Width);
         }
 
-        private IStream GetMockStream(string streamData) 
+        private IStream GetMockStream(string streamData)
         {
             var mockStream = new Mock<IStream>();
             var streamBytes = Encoding.UTF8.GetBytes(streamData);
@@ -251,7 +251,7 @@ namespace UnitTests_SvgPreviewHandler
                         Marshal.WriteInt32(bytesReadPtr, streamBytes.Length);
                         firstCall = false;
                     }
-                    else 
+                    else
                     {
                         Marshal.WriteInt32(bytesReadPtr, 0);
                     }
@@ -261,4 +261,3 @@ namespace UnitTests_SvgPreviewHandler
         }
     }
 }
-*/
