@@ -7,6 +7,7 @@
 #include "resource.h"
 #include <keyboardmanager/ui/MainWindow.h>
 #include <keyboardmanager/common/KeyboardManagerState.h>
+#include <keyboardmanager/common/Shortcut.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 

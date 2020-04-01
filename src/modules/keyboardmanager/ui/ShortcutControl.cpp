@@ -71,8 +71,8 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
     // OK button
     detectShortcutBox.PrimaryButtonClick([=, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
         // Save the detected shortcut in the linked text block
-        std::vector<DWORD> detectedShortcutKeys = keyboardManagerState.GetDetectedShortcut();
-        linkedShortcutText.Text(convertVectorToHstring<DWORD>(detectedShortcutKeys));
+        Shortcut detectedShortcutKeys = keyboardManagerState.GetDetectedShortcut();
+        linkedShortcutText.Text(detectedShortcutKeys.toHstring());
 
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();

@@ -1,5 +1,6 @@
 #pragma once
 #include "Helpers.h"
+#include "Shortcut.h"
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <mutex>
 #include <winrt/Windows.UI.Xaml.Controls.h>
@@ -28,8 +29,8 @@ private:
     HWND currentUIWindow;
     std::mutex currentUIWindow_mutex;
 
-    // Vector to store the shortcut detected in the detect shortcut UI window. This is used in both the backend and the UI.
-    std::vector<DWORD> detectedShortcut;
+    // Object to store the shortcut detected in the detect shortcut UI window. This is used in both the backend and the UI.
+    Shortcut detectedShortcut;
     std::mutex detectedShortcut_mutex;
 
     // Store detected remap key in the remap UI window. This is used in both the backend and the UI.
@@ -103,7 +104,7 @@ public:
     void UpdateDetectSingleKeyRemapUI();
 
     // Function to return the currently detected shortcut which is displayed on the UI
-    std::vector<DWORD> GetDetectedShortcut();
+    Shortcut GetDetectedShortcut();
 
     // Function to return the currently detected remap key which is displayed on the UI
     DWORD GetDetectedSingleRemapKey();
