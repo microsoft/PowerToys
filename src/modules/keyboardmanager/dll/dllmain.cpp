@@ -314,7 +314,6 @@ public:
         if (!(data->lParam->dwExtraInfo & KEYBOARDMANAGER_INJECTED_FLAG))
         {
             std::unique_lock<std::mutex> lock(keyboardManagerState.singleKeyReMap_mutex);
-            lock.unlock();
             auto it = keyboardManagerState.singleKeyReMap.find(data->lParam->vkCode);
             if (it != keyboardManagerState.singleKeyReMap.end())
             {
@@ -539,7 +538,7 @@ public:
                             if (std::find(commonKeys.begin(), commonKeys.end(), it.second.first[j]) == commonKeys.end())
                             {
                                 keyEventList[i].type = INPUT_KEYBOARD;
-                                keyEventList[i].ki.wVk = it.second.first[j];
+                                keyEventList[i].ki.wVk = (WORD)it.second.first[j];
                                 keyEventList[i].ki.dwFlags = 0;
                                 keyEventList[i].ki.dwExtraInfo = KEYBOARDMANAGER_SHORTCUT_FLAG;
                                 i++;
@@ -585,7 +584,7 @@ public:
                             if (std::find(commonKeys.begin(), commonKeys.end(), it.second.first[j]) == commonKeys.end())
                             {
                                 keyEventList[i].type = INPUT_KEYBOARD;
-                                keyEventList[i].ki.wVk = it.second.first[j];
+                                keyEventList[i].ki.wVk = (WORD)it.second.first[j];
                                 keyEventList[i].ki.dwFlags = 0;
                                 keyEventList[i].ki.dwExtraInfo = KEYBOARDMANAGER_SHORTCUT_FLAG;
                                 i++;
@@ -639,7 +638,7 @@ public:
                         if ((std::find(commonKeys.begin(), commonKeys.end(), it.second.first[j]) == commonKeys.end()) || it.second.first[j] == data->lParam->vkCode)
                         {
                             keyEventList[i].type = INPUT_KEYBOARD;
-                            keyEventList[i].ki.wVk = it.second.first[j];
+                            keyEventList[i].ki.wVk = (WORD)it.second.first[j];
                             keyEventList[i].ki.dwFlags = KEYEVENTF_KEYUP;
                             keyEventList[i].ki.dwExtraInfo = KEYBOARDMANAGER_SHORTCUT_FLAG;
                             i++;
@@ -680,7 +679,7 @@ public:
                         LPINPUT keyEventList = new INPUT[key_count]();
                         memset(keyEventList, 0, sizeof(keyEventList));
                         keyEventList[0].type = INPUT_KEYBOARD;
-                        keyEventList[0].ki.wVk = it.second.first[dest_size - 1];
+                        keyEventList[0].ki.wVk = (WORD)it.second.first[dest_size - 1];
                         keyEventList[0].ki.dwFlags = 0;
                         keyEventList[0].ki.dwExtraInfo = KEYBOARDMANAGER_SHORTCUT_FLAG;
 
@@ -709,7 +708,7 @@ public:
                                 if (std::find(commonKeys.begin(), commonKeys.end(), it.second.first[j]) == commonKeys.end())
                                 {
                                     keyEventList[i].type = INPUT_KEYBOARD;
-                                    keyEventList[i].ki.wVk = it.second.first[j];
+                                    keyEventList[i].ki.wVk = (WORD)it.second.first[j];
                                     keyEventList[i].ki.dwFlags = KEYEVENTF_KEYUP;
                                     keyEventList[i].ki.dwExtraInfo = KEYBOARDMANAGER_SHORTCUT_FLAG;
                                     i++;
@@ -733,7 +732,7 @@ public:
                                 if (std::find(commonKeys.begin(), commonKeys.end(), it.second.first[j]) == commonKeys.end())
                                 {
                                     keyEventList[i].type = INPUT_KEYBOARD;
-                                    keyEventList[i].ki.wVk = it.second.first[j];
+                                    keyEventList[i].ki.wVk = (WORD)it.second.first[j];
                                     keyEventList[i].ki.dwFlags = KEYEVENTF_KEYUP;
                                     keyEventList[i].ki.dwExtraInfo = KEYBOARDMANAGER_SHORTCUT_FLAG;
                                     i++;
