@@ -61,6 +61,8 @@ We currently support the matrix below.
 
 [PowerRename](/src/modules/powerrename) - PowerRename is a Windows Shell Extension for advanced bulk renaming using search and replace or regular expressions. PowerRename allows simple search and replace or more advanced regular expression matching. While you type in the search and replace input fields, the preview area will show what the items will be renamed to. PowerRename then calls into the Windows Explorer file operations engine to perform the rename. This has the benefit of allowing the rename operation to be undone after PowerRename exits.
 
+This code is based off of [Chris Davis's SmartRename](https://github.com/chrdavis).
+
 ### File Explorer (Preview Panes)
 
 [File Explorer](/src/modules/previewpane) add-ons right now are just limited to Preview Pane additions for File Explorer. Preview Pane is an existing feature in the File Explorer.  To enable it, you just click the View tab in the ribbon and then click "Preview Pane".
@@ -72,11 +74,15 @@ PowerToys will now enable two types of files to be previewed:
 
 ### Image Resizer
 
-[Image Resizer](/src/modules/imageresizer) is a Windows Shell Extension for quickly resizing images.  With a simple right click from File Explorer, resize one or many images instantly.
+[Image Resizer](/src/modules/imageresizer) is a Windows Shell Extension for quickly resizing images.  With a simple right click from File Explorer, resize one or many images instantly. 
+
+This code is based off of [Brice Lambson's Image Rezier](https://github.com/bricelam).
 
 ### Window Walker (Text based alt-tab alternative)
 
-[Window Walker](src/modules/windowwalker/) is an app that lets you search and switch between windows that you have open, all from the comfort of your keyboard. As you are searching for an app, you can use the keyboard up and down arrows to see an Alt-Tab style preview of the windows.  In the future, this will be merged into the Launcher project.
+[Window Walker](src/modules/windowwalker/) is an app that lets you search and switch between windows that you have open, all from the comfort of your keyboard. As you are searching for an app, you can use the keyboard up and down arrows to see an Alt-Tab style preview of the windows.  In the future, this will be merged into the Launcher project.  
+
+This code is based off of [Beta Tadele's Window Walker](https://github.com/betsegaw).
 
 ### Version 1.0 plan
 
