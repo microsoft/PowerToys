@@ -76,13 +76,13 @@ PowerToys will now enable two types of files to be previewed:
 
 [Image Resizer](/src/modules/imageresizer) is a Windows Shell Extension for quickly resizing images.  With a simple right click from File Explorer, resize one or many images instantly. 
 
-This code is based on [Brice Lambson's Image Rezier](https://github.com/bricelam).
+This code is based on [Brice Lambson's Image Resizer](https://github.com/bricelam/ImageResizer).
 
 ### Window Walker (Text based alt-tab alternative)
 
 [Window Walker](src/modules/windowwalker/) is an app that lets you search and switch between windows that you have open, all from the comfort of your keyboard. As you are searching for an app, you can use the keyboard up and down arrows to see an Alt-Tab style preview of the windows.  In the future, this will be merged into the Launcher project.  
 
-This code is based on [Beta Tadele's Window Walker](https://github.com/betsegaw).
+This code is based on [Beta Tadele's Window Walker](https://github.com/betsegaw/windowwalker).
 
 ### Version 1.0 plan
 
