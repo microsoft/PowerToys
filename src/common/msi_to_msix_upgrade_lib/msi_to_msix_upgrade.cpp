@@ -113,13 +113,13 @@ std::future<std::optional<new_version_download_info>> check_for_new_github_relea
 
         VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
 
-        if (current_version > github_version)
+        if (github_version > current_version)
         {
-            co_return std::nullopt;
+            co_return new_version_download_info{ std::move(release_page_uri), new_version.c_str() };
         }
         else
         {
-            co_return new_version_download_info{ std::move(release_page_uri), new_version.c_str() };
+            co_return std::nullopt;
         }
     }
     catch (...)

@@ -30,33 +30,33 @@ VersionHelper::VersionHelper(int major, int minor, int revision) :
 
 bool VersionHelper::operator>(const VersionHelper& rhs)
 {
-    if (major < rhs.major)
-    {
-        return false;
-    }
-    else if (major > rhs.major)
+    if (major > rhs.major)
     {
         return true;
     }
+    else if (major < rhs.major)
+    {
+        return false;
+    }
     else
     {
-        if (minor < rhs.minor)
-        {
-            return false;
-        }
-        else if (minor > rhs.minor)
+        if (minor > rhs.minor)
         {
             return true;
         }
+        else if (minor < rhs.minor)
+        {
+            return false;
+        }
         else
         {
-            if (revision < rhs.revision)
+            if (revision > rhs.revision)
             {
-                return false;
+                return true;
             }
             else
             {
-                return true;
+                return false;
             }
         }
     }
