@@ -51,13 +51,13 @@ namespace SvgPreviewHandler
                 {
                     this.infoBarAdded = false;
                     string svgData = null;
-                    using (var stream = new StreamWrapper(dataSource as IStream))
+                    /*using (var stream = new StreamWrapper(dataSource as IStream))
                     {
                         using (var reader = new StreamReader(stream))
                         {
                             // svgData = reader.ReadToEnd();
                         }
-                    }
+                    }*/
 
                     // Add a info bar on top of the Preview if any blocked element is present.
                     if (SvgPreviewHandlerHelper.CheckBlockedElements(svgData))
