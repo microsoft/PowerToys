@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             this.InitializeComponent();
         }
-
+        
         /// <inheritdoc/>
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {

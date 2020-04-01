@@ -69,11 +69,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 PowerPreviewSettings settings = SettingsUtils.GetSettings<PowerPreviewSettings>(POWERTOY_NAME);
                 settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value = swt.IsOn;
 
-                SndModuleSettings<PowerPreviewSettings> moduleSettings = new SndModuleSettings<PowerPreviewSettings>(settings);
-
                 if (ShellPage.Default_SndMSG_Callback != null)
                 {
-                    ShellPage.Default_SndMSG_Callback(moduleSettings.ToString());
+                    ShellPage.Default_SndMSG_Callback(settings.IPCOutMessage());
                 }
             }
         }
@@ -87,13 +85,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 PowerPreviewSettings settings = SettingsUtils.GetSettings<PowerPreviewSettings>(POWERTOY_NAME);
                 settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value = swt.IsOn;
 
-                SndModuleSettings<PowerPreviewSettings> moduleSettings = new SndModuleSettings<PowerPreviewSettings>(settings);
-
                 if (ShellPage.Default_SndMSG_Callback != null)
                 {
-                    ShellPage.Default_SndMSG_Callback(moduleSettings.ToString());
+                    ShellPage.Default_SndMSG_Callback(settings.IPCOutMessage());
                 }
             }
         }
+
     }
 }

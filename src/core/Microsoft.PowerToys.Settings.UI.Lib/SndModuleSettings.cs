@@ -10,19 +10,19 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     /// The one for general settings is placed in the General settings model. This class represents the json text that starts with the "powertoys" attribute.
     /// this will tell the runner that we are sending settings for a powertoy module and not for general settings.
     /// </summary>
-    /// <typeparam name="M">M stands for the Model of PT Module Settings to be sent.</typeparam>
-    public class SndModuleSettings<M>
+    /// <typeparam name="IPowerToySettings">IPowerToySettings stands for the Model of PT Module Settings to be sent.</typeparam>
+    public class SndModuleSettings
     {
-        public M powertoys { get; set; }
+        public IPowerToySettings powertoys { get; set; }
 
-        public SndModuleSettings(M ptModuleSettings)
+        public SndModuleSettings(IPowerToySettings ptModuleSettings)
         {
             this.powertoys = ptModuleSettings;
         }
 
         public override string ToString()
         {
-            return "{\"powertoys\":" + this.powertoys.ToString() + "}";
+            return "{\"powertoys\":{\"" + this.powertoys.name + "\":"+this.powertoys.ToString()+"}}";
         }
     }
 }

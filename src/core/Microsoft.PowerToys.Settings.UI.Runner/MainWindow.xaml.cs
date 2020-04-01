@@ -28,6 +28,10 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                 // send IPC Message
                 shellPage.SetDefaultSndMessageCallback(delegate (string msg)
                 {
+                    MessageBox.Show(
+                        msg,
+                        "Message From Settings",
+                        MessageBoxButton.OK);
                     Program.ipcmanager.SendMessage(msg);
                 });
 

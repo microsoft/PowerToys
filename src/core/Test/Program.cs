@@ -10,12 +10,17 @@ namespace Test
     {
         static void Main(string[] args)
         {
-            PowerPreviewSettings pvst = new PowerPreviewSettings();
+            PowerRenameSettings pvst = new PowerRenameSettings();
             pvst.name = "File Explorer";
 
-            SndModuleSettings<PowerPreviewSettings> snd = new SndModuleSettings<PowerPreviewSettings>(pvst);
+            TestSome(pvst);
 
-            Console.WriteLine(snd.ToString());
+
+        }
+
+        public static void TestSome(IPowerToySettings settings)
+        {
+            Console.WriteLine(settings.IPCOutMessage());
         }
     }
 }
