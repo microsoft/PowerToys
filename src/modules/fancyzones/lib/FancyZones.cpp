@@ -851,7 +851,7 @@ void FancyZones::UpdateDragState(HWND window, require_write_lock) noexcept
     static std::time_t warning_shown_at = 0;
     constexpr int64_t warning_cooldown_interval_minutes = 60;
     const auto now = timeutil::now();
-    const bool warning_ready = timeutil::diff::in_minutes(now, warning_shown_at) > warning_cooldown_interval_minutes;
+    const bool warning_ready = timeutil::diff::in_minutes(now, warning_shown_at) >= warning_cooldown_interval_minutes;
 
     if (warning_ready && !is_cant_drag_elevated_warning_disabled())
     {
