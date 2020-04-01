@@ -84,6 +84,12 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(isValidDeviceId(deviceId));
         }
 
+        TEST_METHOD (DeviceIdWithUnderscoresInName)
+        {
+            const auto deviceId = L"Default_Monitor#1&1f0c3c2f&0&UID256_5120_1440_{00000000-0000-0000-0000-000000000000}";
+            Assert::IsTrue(isValidDeviceId(deviceId));
+        }
+
         TEST_METHOD (DeviceIdInvalidFormat)
         {
             const auto deviceId = L"_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
@@ -1011,7 +1017,7 @@ namespace FancyZonesUnitTests
                 for (int i = 0; i < 10; i++)
                 {
                     json::JsonObject obj = json::JsonObject::Parse(m_defaultCustomDeviceStr);
-                    obj.SetNamedValue(L"device-id", json::JsonValue::CreateStringValue(std::to_wstring(i) + L"_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}"));
+                    obj.SetNamedValue(L"device-id", json::JsonValue::CreateStringValue(std::to_wstring(i) + L"#_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}"));
                     devices.Append(obj);
                 }
 
