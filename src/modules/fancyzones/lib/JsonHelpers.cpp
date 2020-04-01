@@ -67,20 +67,20 @@ namespace JSONHelpers
         */
 
         // Step 1: parse the name until the #, then to the '_'
-        if (!std::getline(wss, temp, L'#'))
+        if (str.find(L'#') != std::string::npos)
         {
-            return false;
-        }
-        
-        monitorName = temp;
+            std::getline(wss, temp, L'#');
 
-        if (!std::getline(wss, temp, L'_'))
-        {
-            return false;
-        }
+            monitorName = temp;
 
-        monitorName += L"#" + temp;
-        parts.push_back(monitorName);
+            if (!std::getline(wss, temp, L'_'))
+            {
+                return false;
+            }
+
+            monitorName += L"#" + temp;
+            parts.push_back(monitorName);
+        }
 
         // Step 2: parse the rest of the id
         while (std::getline(wss, temp, L'_'))
