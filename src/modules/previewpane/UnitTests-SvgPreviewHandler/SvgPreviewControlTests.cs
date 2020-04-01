@@ -169,7 +169,7 @@ namespace UnitTests_SvgPreviewHandler
             Assert.AreEqual(finalParentWidth, textBox.Width);
         }*/
 
-        [STAThread]
+        /*[STAThread]
         [TestMethod]
         public void SvgPreviewControl_ShouldAddTextBox_IfBlockedElementsArePresent()
         {
@@ -187,7 +187,7 @@ namespace UnitTests_SvgPreviewHandler
             Assert.IsInstanceOfType(svgPreviewControl.Controls[0], typeof(RichTextBox));
             Assert.IsInstanceOfType(svgPreviewControl.Controls[1], typeof(WebBrowserExt));
             Assert.AreEqual(svgPreviewControl.Controls.Count, 2);
-        }
+        }*/
 
         [STAThread]
         [TestMethod]
@@ -209,7 +209,7 @@ namespace UnitTests_SvgPreviewHandler
             Assert.AreEqual(svgPreviewControl.Controls.Count, 1);
         }
 
-        [STAThread]
+        /*[STAThread]
         [TestMethod]
         public void SvgPreviewControl_InfoBarWidthShouldAdjustWithParentControlWidthChanges_IfBlockedElementsArePresent()
         {
@@ -232,7 +232,7 @@ namespace UnitTests_SvgPreviewHandler
             // Assert
             Assert.AreEqual(intialParentWidth, intitialTextBoxWidth);
             Assert.AreEqual(finalParentWidth, textBox.Width);
-        }
+        }*/
 
         private IStream GetMockStream(string streamData)
         {

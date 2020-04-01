@@ -55,7 +55,7 @@ namespace SvgPreviewHandler
                     {
                         using (var reader = new StreamReader(stream))
                         {
-                            svgData = reader.ReadToEnd();
+                            // svgData = reader.ReadToEnd();
                         }
                     }
 
