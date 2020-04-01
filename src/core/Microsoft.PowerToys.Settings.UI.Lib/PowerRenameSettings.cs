@@ -23,7 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             this.name = ptName;
         }
 
-        public override string ToString()
+        public override string ToJsonString()
         {
             return JsonSerializer.Serialize(this);
         }

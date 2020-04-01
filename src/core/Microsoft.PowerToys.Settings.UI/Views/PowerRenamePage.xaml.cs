@@ -43,7 +43,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             catch (Exception exp)
             {
                 settings = new PowerRenameSettings(POWERTOY_NAME);
-                SettingsUtils.SaveSettings<PowerRenameSettings>(settings, POWERTOY_NAME);
+                SettingsUtils.SaveSettings(settings.ToJsonString(), POWERTOY_NAME);
                 UpdateView(settings);
             }
         }

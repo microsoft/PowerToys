@@ -39,13 +39,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         /// Save settings to a json file.
         /// </summary>
         /// <param name="settings">dynamic json settings object.</param>
-        public static void SaveSettings<T>(T settings, string powertoy)
+        public static void SaveSettings(string jsonSettings, string powertoy)
         {
-            if(settings != null)
+            if(jsonSettings != null)
             {
                 System.IO.File.WriteAllText(
                     SettingsUtils.GetSettingsPath(powertoy),
-                    settings.ToString());
+                    jsonSettings.ToString());
             }
         }
     }

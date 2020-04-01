@@ -46,7 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             catch(Exception exp)
             {
                 settings = new PowerPreviewSettings(POWERTOY_NAME);
-                SettingsUtils.SaveSettings<PowerPreviewSettings>(settings, POWERTOY_NAME);
+                SettingsUtils.SaveSettings(settings.ToJsonString(), POWERTOY_NAME);
                 ToggleSwitch_Preview_SVG.IsOn = settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value;
                 ToggleSwitch_Preview_MD.IsOn = settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value;
             }

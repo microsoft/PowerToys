@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public interface IPowerToySettings
+    public interface IPowerToySettings : IPTSettings
     {
         string name { get; set; }
         string version { get; set; }
