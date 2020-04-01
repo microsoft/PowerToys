@@ -274,7 +274,7 @@ namespace JSONHelpers
         return modified;
     }
 
-    void FancyZonesData::CloneDeviceInfo(const std::wstring& source, const std::wstring& destination)
+    void FancyZonesData::CloneDeviceInfo(const std::wstring& source, const std::wstring& destination, bool newWorkArea)
     {
         if (source == destination)
         {
@@ -290,7 +290,7 @@ namespace JSONHelpers
 
         // Clone information from source device if destination device is uninitialized (Blank).
         auto& destInfo = deviceInfoMap[destination];
-        if (destInfo.activeZoneSet.type == ZoneSetLayoutType::Blank)
+        if (newWorkArea && destInfo.activeZoneSet.type == ZoneSetLayoutType::Blank)
         {
             destInfo = deviceInfoMap[source];
         }
