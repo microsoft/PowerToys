@@ -137,8 +137,34 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
             hstring newShortcut = currentRow.Children().GetAt(1).as<StackPanel>().Children().GetAt(1).as<TextBlock>().Text();
             if (!originalShortcut.empty() && !newShortcut.empty())
             {
-                std::vector<DWORD> originalKeys = convertWStringVectorToIntegerVector<DWORD>(splitwstring(originalShortcut.c_str(), L' '));
-                std::vector<DWORD> newKeys = convertWStringVectorToIntegerVector<DWORD>(splitwstring(newShortcut.c_str(), L' '));
+                std::vector<DWORD> originalKeys;
+                std::vector<std::wstring> shortcutVector = splitwstring(originalShortcut.c_str(), L' ');
+                for (int i = 0; i < shortcutVector.size(); i++)
+                {
+                    if (shortcutVector[i] == L"Win")
+                    {
+                        originalKeys.push_back(VK_LWIN);
+                    }
+                    else
+                    {
+                        DWORD keyCode = Shortcut::decodeKey(shortcutVector[i]);
+                        originalKeys.push_back(keyCode);
+                    }
+                }
+                std::vector<DWORD> newKeys;
+                shortcutVector = splitwstring(originalShortcut.c_str(), L' ');
+                for (int i = 0; i < shortcutVector.size(); i++)
+                {
+                    if (shortcutVector[i] == L"Win")
+                    {
+                        newKeys.push_back(VK_LWIN);
+                    }
+                    else
+                    {
+                        DWORD keyCode = Shortcut::decodeKey(shortcutVector[i]);
+                        newKeys.push_back(keyCode);
+                    }
+                }
 
                 // Shortcut should consist of atleast two keys
                 if (originalKeys.size() > 1 && newKeys.size() > 1)

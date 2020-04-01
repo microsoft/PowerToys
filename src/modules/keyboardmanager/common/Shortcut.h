@@ -38,6 +38,8 @@ private:
         return winrt::hstring();
     }
 
+public:
+
     static DWORD decodeKey(const std::wstring& keyName)
     {
         if (keyName == L"LWin")
@@ -90,7 +92,6 @@ private:
         }
     }
 
-public:
     // By default create an empty shortcut
     Shortcut() :
         winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
