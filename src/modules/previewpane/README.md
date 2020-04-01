@@ -1,4 +1,4 @@
-<img width="200" src="../../../doc/images/Logo.jpg">
+<img align="right" width="200" src="../../../doc/images/Logo.jpg">
 
 # File Explorer
 
@@ -192,24 +192,10 @@ const std::vector<std::pair<CLSID, CLSID>> NativeToManagedClsid({
 
 ## Managing Preview Handlers
 
-After successful integration, your preview handler should appear in the PowerToys settings UI under the `File Explorer Preview` Tab as shown in Figure 2 below. In here you should be able to enable and disable your preview handler.
+After successful integration, your preview handler should appear in the PowerToys settings UI under the `File Explorer Preview` Tab. In here you should be able to enable and disable your preview handler.
 
-<center>
+<img src="../../../doc/images/preview_pane/settings-ui.png" alt="Settings UI - File Explorer Preview Tab" >
 
-<figure>
-  <img src="../../../doc/images/preview_pane/settings-ui.png" alt="Settings UI - File Explorer Preview Tab" >
-  <figcaption>Figure 2 : Settings UI - File Explorer Preview Tab</figcaption>
-</figure>
+In the general settings of the Settings UI, you should be able to disable and enable all the preview handlers all at once.
 
-</center>
-
-In the general settings of the Settings UI, you should be able to disable and enable all the preview handlers all at once. See Figure 3.
-
-<center>
-
-<figure>
-  <img src="../../../doc/images/preview_pane/general-settings.png" alt="Settings UI - General Settings Tab" >
-  <figcaption>Figure 3 : Settings UI - General Settings Tab</figcaption>
-</figure>
-
-</center>
+<img src="../../../doc/images/preview_pane/general-settings.png" alt="Settings UI - General Settings Tab" >
