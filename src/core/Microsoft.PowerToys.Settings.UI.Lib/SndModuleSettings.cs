@@ -5,12 +5,16 @@ using System.Text.Json;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public abstract class BasePTModuleSettings
+    public class SndModuleSettings<S>
     {
-        public string name { get; set; }
-        public string version { get; set; }
+        public S powertoys { get; set; }
 
-        public virtual string ToJsonString()
+        public SndModuleSettings(S settings)
+        {
+            this.powertoys = settings;
+        }
+
+        public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);
         }

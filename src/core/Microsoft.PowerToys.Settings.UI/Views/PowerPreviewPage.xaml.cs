@@ -63,7 +63,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 if (ShellPage.Default_SndMSG_Callback != null)
                 {
-                    ShellPage.Default_SndMSG_Callback(settings.IPCOutMessage());
+                    SndPowerPreviewSettings snd = new SndPowerPreviewSettings(settings);
+                    SndModuleSettings<SndPowerPreviewSettings> ipcMessage = new SndModuleSettings<SndPowerPreviewSettings>(snd);
+                    ShellPage.Default_SndMSG_Callback(ipcMessage.ToJsonString());
                 }
             }
         }
@@ -79,7 +81,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 if (ShellPage.Default_SndMSG_Callback != null)
                 {
-                    ShellPage.Default_SndMSG_Callback(settings.IPCOutMessage());
+                    SndPowerPreviewSettings snd = new SndPowerPreviewSettings(settings);
+                    SndModuleSettings<SndPowerPreviewSettings> ipcMessage = new SndModuleSettings<SndPowerPreviewSettings>(snd);
+                    ShellPage.Default_SndMSG_Callback(ipcMessage.ToJsonString());
                 }
             }
         }

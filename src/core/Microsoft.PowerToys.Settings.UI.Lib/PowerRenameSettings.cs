@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
@@ -45,6 +46,22 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public IntProperty int_max_mru_size { get; set; }
         public BoolProperty bool_show_icon_on_menu { get; set; }
         public BoolProperty bool_show_extended_menu { get; set; }
+    }
+
+    public class SndPowerRenameSettings
+    {
+        [JsonPropertyName("PowerRename")]
+        public PowerRenameSettings PowerRename { get; set; }
+
+        public SndPowerRenameSettings(PowerRenameSettings settings)
+        {
+            this.PowerRename = settings;
+        }
+
+        public string ToJsonString()
+        {
+            return JsonSerializer.Serialize(this);
+        }
     }
 }
 

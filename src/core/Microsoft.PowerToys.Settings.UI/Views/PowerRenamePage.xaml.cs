@@ -69,7 +69,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 if (ShellPage.Default_SndMSG_Callback != null)
                 {
-                    ShellPage.Default_SndMSG_Callback(settings.IPCOutMessage());
+                    SndPowerRenameSettings snd = new SndPowerRenameSettings(settings);
+                    SndModuleSettings<SndPowerRenameSettings> ipcMessage = new SndModuleSettings<SndPowerRenameSettings>(snd);
+                    ShellPage.Default_SndMSG_Callback(ipcMessage.ToJsonString());
                 }
             }
         }
@@ -85,7 +87,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 if (ShellPage.Default_SndMSG_Callback != null)
                 {
-                    ShellPage.Default_SndMSG_Callback(settings.IPCOutMessage());
+                    SndPowerRenameSettings snd = new SndPowerRenameSettings(settings);
+                    SndModuleSettings<SndPowerRenameSettings> ipcMessage = new SndModuleSettings<SndPowerRenameSettings>(snd);
+                    ShellPage.Default_SndMSG_Callback(ipcMessage.ToJsonString());
                 }
             }
         }
@@ -101,7 +105,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 if (ShellPage.Default_SndMSG_Callback != null)
                 {
-                    ShellPage.Default_SndMSG_Callback(settings.IPCOutMessage());
+                    SndPowerRenameSettings snd = new SndPowerRenameSettings(settings);
+                    SndModuleSettings<SndPowerRenameSettings> ipcMessage = new SndModuleSettings<SndPowerRenameSettings>(snd);
+                    ShellPage.Default_SndMSG_Callback(ipcMessage.ToJsonString());
                 }
             }
         }
@@ -117,7 +123,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 if (ShellPage.Default_SndMSG_Callback != null)
                 {
-                    ShellPage.Default_SndMSG_Callback(settings.IPCOutMessage());
+                    SndPowerRenameSettings snd = new SndPowerRenameSettings(settings);
+                    SndModuleSettings<SndPowerRenameSettings> ipcMessage = new SndModuleSettings<SndPowerRenameSettings>(snd);
+                    ShellPage.Default_SndMSG_Callback(ipcMessage.ToJsonString());
                 }
             }
         }
@@ -131,7 +139,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 if (ShellPage.Default_SndMSG_Callback != null)
                 {
-                    ShellPage.Default_SndMSG_Callback(settings.IPCOutMessage());
+                    SndPowerRenameSettings snd = new SndPowerRenameSettings(settings);
+                    SndModuleSettings<SndPowerRenameSettings> ipcMessage = new SndModuleSettings<SndPowerRenameSettings>(snd);
+                    ShellPage.Default_SndMSG_Callback(ipcMessage.ToJsonString());
                 }
             }
         }

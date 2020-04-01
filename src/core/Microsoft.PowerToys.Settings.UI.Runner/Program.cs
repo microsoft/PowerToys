@@ -22,7 +22,6 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                 {
                     ipcmanager.Initialize(args[1], args[0]);
                     app.Run();
-                    //ipcmanager.SendMessage("{\"general\":{\"startup\":true,\"run_elevated\":true,\"enabled\":{\"FancyZones\":true,\"PowerRename\":true,\"Shortcut Guide\":true}}}");
                 }
                 else
                 {

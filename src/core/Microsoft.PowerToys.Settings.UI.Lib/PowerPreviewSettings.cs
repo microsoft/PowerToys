@@ -2,22 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    /// <summary>
-    /// This class models the settings for the PowerPreview class. 
-    /// Eaxmple JSON:
-    /// {
-    ///     "name": "File Explorer Preview",
-    ///     "properties": {
-    ///         "IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL": { "value": true },
-    ///         "PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID": { "value": true }
-    ///     },
-    ///     "version": "1.0"
-    /// }
-
-    /// </summary>
     public class PowerPreviewSettings : BasePTModuleSettings
     {
         public PowerPreviewProperties properties { get; set; }
@@ -54,6 +42,22 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         }
 
         public override string ToString()
+        {
+            return JsonSerializer.Serialize(this);
+        }
+    }
+
+    public class SndPowerPreviewSettings
+    {
+        [JsonPropertyName("File Explorer Preview")]
+        public PowerPreviewSettings File_Explorer_Preview { get; set; }
+
+        public SndPowerPreviewSettings(PowerPreviewSettings settings)
+        {
+            this.File_Explorer_Preview = settings;
+        }
+
+        public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);
         }

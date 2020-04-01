@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class GeneralSettings : IPTSettings
+    public class GeneralSettings
     {
         public bool packaged { get; set; }
         public bool startup { get; set; }
