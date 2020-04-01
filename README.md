@@ -69,7 +69,7 @@ This code is based on [Chris Davis's SmartRename](https://github.com/chrdavis/Sm
 
 PowerToys will now enable two types of files to be previewed:
 
-- Markdown files (.md)
+- Markdown files (.md).  This code leverages [MarkDig](https://github.com/lunet-io/markdig) for markdown rendering. 
 - SVG (.svg)
 
 ### Image Resizer
