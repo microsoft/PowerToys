@@ -17,9 +17,10 @@ namespace PowerToysTests
         protected static bool isPowerToysLaunched = false;
         protected static WindowsElement trayButton;
 
-        protected static string _settingsFolderPath = "";
-        protected static string _settingsPath = ""; 
-        protected static string _zoneSettingsPath = "";
+        protected static string _settingsFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\FancyZones");
+        protected static string _settingsPath = _settingsFolderPath + "\\settings.json"; 
+        protected static string _zoneSettingsPath = _settingsFolderPath + "\\zones-settings.json";
+
         protected static string _initialSettings = "";
         protected static string _initialZoneSettings = "";
 
@@ -29,20 +30,7 @@ namespace PowerToysTests
 
         public static void Setup(TestContext context, bool isLaunchRequired = true)
         {
-            //read settings before running tests to restore them after
-            _settingsFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\FancyZones");
-            _settingsPath = _settingsFolderPath + "\\settings.json";
-            _zoneSettingsPath = _settingsFolderPath + "\\zones-settings.json";
-            try
-            {
-                _initialSettings = File.ReadAllText(_settingsPath);
-                _initialZoneSettings = File.ReadAllText(_zoneSettingsPath);
-            }
-            catch(Exception)
-            {
-                //failed to read settings
-            }
-            
+            ReadUserSettings(); //read settings before running tests to restore them after
 
             if (session == null)
             {
@@ -61,29 +49,11 @@ namespace PowerToysTests
                     LaunchPowerToys();
                 }
             }
-
         }
 
         public static void TearDown()
         {
-            //restore initial settings files
-            if (_initialSettings.Length > 0)
-            {
-                File.WriteAllText(_settingsPath, _initialSettings);
-            }
-            else
-            {
-                File.Delete(_settingsPath);
-            }
-
-            if (_initialZoneSettings.Length > 0)
-            {
-                File.WriteAllText(_zoneSettingsPath, _initialZoneSettings);
-            }
-            else
-            {
-                File.Delete(_zoneSettingsPath);
-            }
+            RestoreUserSettings(); //restore initial settings files
 
             if (session != null)
             {
@@ -238,35 +208,72 @@ namespace PowerToysTests
 
         public static void ResetDefaultFancyZonesSettings(bool relaunch)
         {
-            if (!Directory.Exists(_settingsFolderPath))
-            {
-                Directory.CreateDirectory(_settingsFolderPath);
-            }
+            ResetSettings(_settingsFolderPath, _settingsPath, _defaultSettings, relaunch);
+        }
 
-            File.WriteAllText(_settingsPath, _defaultSettings);
+        public static void ResetDefautZoneSettings(bool relaunch)
+        {
+            ResetSettings(_settingsFolderPath, _zoneSettingsPath, _defaultZoneSettings, relaunch);
+        }
+
+        private static void ResetSettings(string folder, string filePath, string data, bool relaunch)
+        {
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
+            File.WriteAllText(filePath, data);
 
             if (isPowerToysLaunched)
             {
                 ExitPowerToys();
             }
-            
+
             if (relaunch)
             {
                 LaunchPowerToys();
             }
         }
 
-        public static void ResetDefautZoneSettings(bool relaunch)
+        private static void ReadUserSettings()
         {
-            File.WriteAllText(_zoneSettingsPath, _defaultZoneSettings);
-
-            if (isPowerToysLaunched)
+            try
             {
-                ExitPowerToys();
+                _initialSettings = File.ReadAllText(_settingsPath);
             }
-            if (relaunch)
+            catch (Exception)
             {
-                LaunchPowerToys();
+                //failed to read settings
+            }
+
+            try
+            {
+                _initialZoneSettings = File.ReadAllText(_zoneSettingsPath);
+            }
+            catch (Exception)
+            {
+                //failed to read settings
+            }
+        }
+
+        private static void RestoreUserSettings()
+        {
+            if (_initialSettings.Length > 0)
+            {
+                File.WriteAllText(_settingsPath, _initialSettings);
+            }
+            else
+            {
+                File.Delete(_settingsPath);
+            }
+
+            if (_initialZoneSettings.Length > 0)
+            {
+                File.WriteAllText(_zoneSettingsPath, _initialZoneSettings);
+            }
+            else
+            {
+                File.Delete(_zoneSettingsPath);
             }
         }
     }
