@@ -46,14 +46,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SettingsUtils.SaveSettings<PowerRenameSettings>(settings, POWERTOY_NAME);
                 UpdateView(settings);
             }
-
-            ShellPage.ShellHandler.ShowFeatureDetails();
-
-            ShellPage.ShellHandler.SetFeatureDetails(
-                "https://github.com/microsoft/PowerToys/tree/master/src/modules/powerrename",
-                "https://github.com/microsoft/PowerToys/issues");
-
-            ShellPage.ShellHandler.HideContributorsList();
         }
 
         
