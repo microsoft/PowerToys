@@ -110,7 +110,6 @@ std::future<std::optional<new_version_download_info>> check_for_new_github_relea
         winrt::Windows::Foundation::Uri release_page_uri{ json_body.GetNamedString(L"html_url") };
 
         VersionHelper github_version(winrt::to_string(new_version));
-
         VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
 
         if (github_version > current_version)

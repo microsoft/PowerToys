@@ -30,34 +30,5 @@ VersionHelper::VersionHelper(int major, int minor, int revision) :
 
 bool VersionHelper::operator>(const VersionHelper& rhs)
 {
-    if (major > rhs.major)
-    {
-        return true;
-    }
-    else if (major < rhs.major)
-    {
-        return false;
-    }
-    else
-    {
-        if (minor > rhs.minor)
-        {
-            return true;
-        }
-        else if (minor < rhs.minor)
-        {
-            return false;
-        }
-        else
-        {
-            if (revision > rhs.revision)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-    }
+    return std::tie(major, minor, revision) > std::tie(rhs.major, rhs.minor, rhs.revision);
 }
