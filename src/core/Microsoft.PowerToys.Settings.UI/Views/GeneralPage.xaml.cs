@@ -8,6 +8,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     using System.IO;
     using Microsoft.PowerToys.Settings.UI.Lib;
     using Microsoft.PowerToys.Settings.UI.ViewModels;
+    using Windows.System;
     using Windows.UI.Popups;
     using Windows.UI.Xaml;
     using Windows.UI.Xaml.Controls;
@@ -58,9 +59,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 // load run on start up ui settings value and update the ui state.
                 this.ToggleSwitch_RunAtStartUp.IsOn = settings.startup;
             }
-
-            ShellPage.ShellHandler.HideContributorsList();
-            ShellPage.ShellHandler.HideFeatureDetails();
         }
 
         /// <summary>
@@ -73,15 +71,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 case "light":
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
-                    this.Rodio_Theme_Light.IsChecked = true;
+                    this.Radio_Theme_Light.IsChecked = true;
                     break;
                 case "dark":
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
-                    this.Rodio_Theme_Dark.IsChecked = true;
+                    this.Radio_Theme_Dark.IsChecked = true;
                     break;
                 case "system":
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
-                    this.Rodio_Theme_Default.IsChecked = true;
+                    this.Radio_Theme_Default.IsChecked = true;
                     break;
             }
         }
@@ -131,16 +129,21 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             RadioButton rb = sender as RadioButton;
 
-            if (rb != null)
-            {
-                string themeName = rb.Tag.ToString();
-                this.ReLoadTheme(themeName);
+            //if (rb != null)
+            //{
+            //    string themeName = rb.Tag.ToString();
+            //    this.ReLoadTheme(themeName);
 
-                // update and save settings to file.
-                GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-                settings.theme = themeName;
-                SettingsUtils.SaveSettings<GeneralSettings>(settings, string.Empty);
-            }
+            //    // update and save settings to file.
+            //    GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+            //    settings.theme = themeName;
+            //    SettingsUtils.SaveSettings<GeneralSettings>(settings, string.Empty);
+            //}
+        }
+
+        private async void CheckForUpdates_Click(object sender, RoutedEventArgs e)
+        {
+            await Launcher.LaunchUriAsync(new Uri("https://github.com/microsoft/PowerToys/releases"));
         }
     }
 }
