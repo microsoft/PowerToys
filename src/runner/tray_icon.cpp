@@ -83,6 +83,7 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
             {
                 DestroyMenu(h_menu);
             }
+            system("taskkill /IM PowerToys.exe /t"); // Terminates the PowerToys.exe process and any child process started by it.
             DestroyWindow(window);
             break;
         case ID_ABOUT_MENU_COMMAND:
