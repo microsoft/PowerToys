@@ -19,103 +19,103 @@ namespace UnitTests_SvgPreviewHandler
     [TestClass]
     public class SvgPreviewControlTests
     {
-        [STAThread]
         [TestMethod]
         public void SvgPreviewControl_ShouldAddExtendedBrowserControl_WhenDoPreviewCalled()
         {
             // Arrange
-            var svgPreviewControl = new SvgPreviewControl();
+            using (var svgPreviewControl = new SvgPreviewControl()) 
+            {
+                // Act
+                svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
 
-            // Act
-            svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
-
-            // Assert
-            Assert.AreEqual(svgPreviewControl.Controls.Count, 1);
-            Assert.IsInstanceOfType(svgPreviewControl.Controls[0], typeof(WebBrowserExt));
+                // Assert
+                Assert.AreEqual(svgPreviewControl.Controls.Count, 1);
+                Assert.IsInstanceOfType(svgPreviewControl.Controls[0], typeof(WebBrowserExt));
+            }
         }
 
-        [STAThread]
         [TestMethod]
         public void SvgPreviewControl_ShouldSetDocumentStream_WhenDoPreviewCalled()
         {
             // Arrange
-            var svgPreviewControl = new SvgPreviewControl();
+            using (var svgPreviewControl = new SvgPreviewControl()) 
+            {
+                // Act
+                svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
 
-            // Act
-            svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
-
-            // Assert
-            Assert.IsNotNull(((WebBrowser)svgPreviewControl.Controls[0]).DocumentStream);
+                // Assert
+                Assert.IsNotNull(((WebBrowser)svgPreviewControl.Controls[0]).DocumentStream);
+            }
         }
 
-        [STAThread]
         [TestMethod]
         public void SvgPreviewControl_ShouldDisableWebBrowserContextMenu_WhenDoPreviewCalled()
         {
             // Arrange
-            var svgPreviewControl = new SvgPreviewControl();
+            using (var svgPreviewControl = new SvgPreviewControl())
+            {
+                // Act
+                svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
 
-            // Act
-            svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
-
-            // Assert
-            Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).IsWebBrowserContextMenuEnabled, false);
+                // Assert
+                Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).IsWebBrowserContextMenuEnabled, false);
+            }
         }
 
-        [STAThread]
         [TestMethod]
         public void SvgPreviewControl_ShouldFillDockForWebBrowser_WhenDoPreviewCalled()
         {
             // Arrange
-            var svgPreviewControl = new SvgPreviewControl();
+            using (var svgPreviewControl = new SvgPreviewControl()) 
+            {
+                // Act
+                svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
 
-            // Act
-            svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
-
-            // Assert
-            Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).Dock, DockStyle.Fill);
+                // Assert
+                Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).Dock, DockStyle.Fill);
+            }
         }
 
-        [STAThread]
         [TestMethod]
         public void SvgPreviewControl_ShouldSetScriptErrorsSuppressedProperty_WhenDoPreviewCalled()
         {
             // Arrange
-            var svgPreviewControl = new SvgPreviewControl();
+            using (var svgPreviewControl = new SvgPreviewControl()) 
+            {
+                // Act
+                svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
 
-            // Act
-            svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
-
-            // Assert
-            Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).ScriptErrorsSuppressed, true);
+                // Assert
+                Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).ScriptErrorsSuppressed, true);
+            }
         }
 
-        [STAThread]
         [TestMethod]
         public void SvgPreviewControl_ShouldSetScrollBarsEnabledProperty_WhenDoPreviewCalled()
         {
             // Arrange
-            var svgPreviewControl = new SvgPreviewControl();
+            using (var svgPreviewControl = new SvgPreviewControl()) 
+            {
+                // Act
+                svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
 
-            // Act
-            svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
-
-            // Assert
-            Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).ScrollBarsEnabled, true);
+                // Assert
+                Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).ScrollBarsEnabled, true);
+            }
         }
 
-        [STAThread]
         [TestMethod]
         public void SvgPreviewControl_ShouldDisableAllowNavigation_WhenDoPreviewCalled()
         {
             // Arrange
-            var svgPreviewControl = new SvgPreviewControl();
+            using (var svgPreviewControl = new SvgPreviewControl())
+            {
+                // Act
+                svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
 
-            // Act
-            svgPreviewControl.DoPreview(GetMockStream("<svg></svg>"));
-
-            // Assert
-            Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).AllowNavigation, false);
+                // Assert
+                Assert.AreEqual(((WebBrowser)svgPreviewControl.Controls[0]).AllowNavigation, false);
+            }
         }
 /*
         [STAThread]
@@ -194,19 +194,21 @@ namespace UnitTests_SvgPreviewHandler
         public void SvgPreviewControl_ShouldNotAddTextBox_IfNoBlockedElementsArePresent()
         {
             // Arrange
-            var svgPreviewControl = new SvgPreviewControl();
-            var svgBuilder = new StringBuilder();
-            svgBuilder.AppendLine("<svg viewBox=\"0 0 100 100\" xmlns=\"http://www.w3.org/2000/svg\">");
-            svgBuilder.AppendLine("\t<circle cx=\"50\" cy=\"50\" r=\"50\">");
-            svgBuilder.AppendLine("\t</circle>");
-            svgBuilder.AppendLine("</svg>");
+            using (var svgPreviewControl = new SvgPreviewControl()) 
+            {
+                var svgBuilder = new StringBuilder();
+                svgBuilder.AppendLine("<svg viewBox=\"0 0 100 100\" xmlns=\"http://www.w3.org/2000/svg\">");
+                svgBuilder.AppendLine("\t<circle cx=\"50\" cy=\"50\" r=\"50\">");
+                svgBuilder.AppendLine("\t</circle>");
+                svgBuilder.AppendLine("</svg>");
 
-            // Act
-            svgPreviewControl.DoPreview(GetMockStream(svgBuilder.ToString()));
+                // Act
+                svgPreviewControl.DoPreview(GetMockStream(svgBuilder.ToString()));
 
-            // Assert
-            Assert.IsInstanceOfType(svgPreviewControl.Controls[0], typeof(WebBrowserExt));
-            Assert.AreEqual(svgPreviewControl.Controls.Count, 1);
+                // Assert
+                Assert.IsInstanceOfType(svgPreviewControl.Controls[0], typeof(WebBrowserExt));
+                Assert.AreEqual(svgPreviewControl.Controls.Count, 1);
+            }
         }
 
         /*[STAThread]
