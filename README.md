@@ -61,7 +61,7 @@ We currently support the matrix below.
 
 [PowerRename](/src/modules/powerrename) - PowerRename is a Windows Shell Extension for advanced bulk renaming using search and replace or regular expressions. PowerRename allows simple search and replace or more advanced regular expression matching. While you type in the search and replace input fields, the preview area will show what the items will be renamed to. PowerRename then calls into the Windows Explorer file operations engine to perform the rename. This has the benefit of allowing the rename operation to be undone after PowerRename exits.
 
-This code is based on [Chris Davis's SmartRename](https://github.com/chrdavis).
+This code is based on [Chris Davis's SmartRename](https://github.com/chrdavis/SmartRename).
 
 ### File Explorer (Preview Panes)
 
