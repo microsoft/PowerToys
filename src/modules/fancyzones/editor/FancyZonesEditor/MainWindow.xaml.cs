@@ -193,6 +193,7 @@ namespace FancyZonesEditor
             }
 
             model.Delete();
+            LayoutModel.SerializeDeletedCustomZoneSets();
         }
     }
 }
