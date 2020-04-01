@@ -1,7 +1,5 @@
 # File Explorer
 
-<img align="right" width="200" src="../../../doc/images/Logo.jpg">
-
 File Explorer add-ons, right now are just limited to Preview Pane additions for File Explorer.
 
 ## Preview Pane
