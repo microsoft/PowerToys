@@ -365,6 +365,11 @@ namespace WindowWalker.Components
             Unknown,
         }
 
+        /// <summary>
+        /// Gets the name of the process using the window handle
+        /// </summary>
+        /// <param name="hwnd">The handle to the window</param>
+        /// <returns>A string representing the process name or an empty string if the function fails</returns>
         private string GetProcessNameFromWindowHandle(IntPtr hwnd)
         {
             uint processId = GetProcessIDFromWindowHandle(hwnd);
@@ -382,6 +387,11 @@ namespace WindowWalker.Components
             }
         }
 
+        /// <summary>
+        /// Gets the process ID for the Window handle
+        /// </summary>
+        /// <param name="hwnd">The handle to the window</param>
+        /// <returns>The process ID</returns>
         private uint GetProcessIDFromWindowHandle(IntPtr hwnd)
         {
             InteropAndHelpers.GetWindowThreadProcessId(hwnd, out uint processId);
