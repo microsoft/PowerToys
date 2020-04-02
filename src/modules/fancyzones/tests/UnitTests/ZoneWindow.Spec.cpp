@@ -55,6 +55,7 @@ namespace FancyZonesUnitTests
     {
         const std::wstring m_deviceId = L"\\\\?\\DISPLAY#DELA026#5&10a58c63&0&UID16777488#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}";
         const std::wstring m_virtualDesktopId = L"MyVirtualDesktopId";
+        std::wstringstream m_parentUniqueId;
         std::wstringstream m_uniqueId;
 
         HINSTANCE m_hInst{};
@@ -75,6 +76,7 @@ namespace FancyZonesUnitTests
             m_monitorInfo.cbSize = sizeof(m_monitorInfo);
             Assert::AreNotEqual(0, GetMonitorInfoW(m_monitor, &m_monitorInfo));
 
+            m_parentUniqueId << L"DELA026#5&10a58c63&0&UID16777488_" << m_monitorInfo.rcMonitor.right << "_" << m_monitorInfo.rcMonitor.bottom << "_{61FA9FC0-26A6-4B37-A834-491C148DFC57}";
             m_uniqueId << L"DELA026#5&10a58c63&0&UID16777488_" << m_monitorInfo.rcMonitor.right << "_" << m_monitorInfo.rcMonitor.bottom << "_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
 
             Assert::IsFalse(ZoneWindowUtils::GetActiveZoneSetTmpPath().empty());
@@ -374,6 +376,65 @@ namespace FancyZonesUnitTests
             Assert::IsNotNull(actual->ActiveZoneSet());
             const auto actualZoneSet = actual->ActiveZoneSet()->GetZones();
             Assert::AreEqual((size_t)1, actualZoneSet.size());
+        }
+
+        TEST_METHOD (CreateZoneWindowClonedFromParent)
+        {
+            using namespace JSONHelpers;
+
+            const ZoneSetLayoutType type = ZoneSetLayoutType::PriorityGrid;
+            const int spacing = 10;
+            const int zoneCount = 5;
+            const auto customSetGuid = Helpers::CreateGuidString();
+            const auto parentZoneSet = ZoneSetData{ customSetGuid, type };
+            const auto parentDeviceInfo = DeviceInfoData{ parentZoneSet, true, spacing, zoneCount };
+            m_fancyZonesData.SetDeviceInfo(m_parentUniqueId.str(), parentDeviceInfo);
+
+            auto parentZoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_parentUniqueId.str(), false, false);
+            m_zoneWindowHost.m_zoneWindow = parentZoneWindow.get();
+
+            // newWorkArea = true - zoneWindow will be cloned from parrent
+            auto actualZoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, true);
+
+            Assert::IsNotNull(actualZoneWindow->ActiveZoneSet());
+            const auto actualZoneSet = actualZoneWindow->ActiveZoneSet()->GetZones();
+            Assert::AreEqual((size_t)zoneCount, actualZoneSet.size());
+
+            Assert::IsTrue(m_fancyZonesData.GetDeviceInfoMap().contains(m_uniqueId.str()));
+            auto currentDeviceInfo = m_fancyZonesData.GetDeviceInfoMap().at(m_uniqueId.str());
+            Assert::AreEqual(zoneCount, currentDeviceInfo.zoneCount);
+            Assert::AreEqual(spacing, currentDeviceInfo.spacing);
+            Assert::AreEqual(static_cast<int>(type), static_cast<int>(currentDeviceInfo.activeZoneSet.type));
+        }
+
+        TEST_METHOD (CreateZoneWindowNotClonedFromParent)
+        {
+            using namespace JSONHelpers;
+
+            const ZoneSetLayoutType type = ZoneSetLayoutType::PriorityGrid;
+            const int spacing = 10;
+            const int zoneCount = 5;
+            const auto customSetGuid = Helpers::CreateGuidString();
+            const auto parentZoneSet = ZoneSetData{ customSetGuid, type };
+            const auto parentDeviceInfo = DeviceInfoData{ parentZoneSet, true, spacing, zoneCount };
+            m_fancyZonesData.SetDeviceInfo(m_parentUniqueId.str(), parentDeviceInfo);
+
+            auto parentZoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_parentUniqueId.str(), false, false);
+            m_zoneWindowHost.m_zoneWindow = parentZoneWindow.get();
+
+            // newWorkArea = false - zoneWindow won't be cloned from parrent
+            auto actualZoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, false);
+
+            Assert::IsNull(actualZoneWindow->ActiveZoneSet());
+
+            Assert::IsTrue(m_fancyZonesData.GetDeviceInfoMap().contains(m_uniqueId.str()));
+            auto currentDeviceInfo = m_fancyZonesData.GetDeviceInfoMap().at(m_uniqueId.str());
+            // default values
+            Assert::AreEqual(false, currentDeviceInfo.showSpacing);
+            Assert::AreEqual(0, currentDeviceInfo.zoneCount);
+            Assert::AreEqual(0, currentDeviceInfo.spacing);
+            Assert::AreEqual(std::wstring{ L"null" }, currentDeviceInfo.activeZoneSet.uuid);
+            Assert::AreEqual(static_cast<int>(ZoneSetLayoutType::Blank), static_cast<int>(currentDeviceInfo.activeZoneSet.type));
         }
 
         TEST_METHOD(MoveSizeEnter)

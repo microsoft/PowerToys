@@ -232,7 +232,7 @@ protected:
 
 private:
     void LoadSettings() noexcept;
-    void InitializeZoneSets(MONITORINFO const& mi, bool newWorkArea) noexcept;
+    void InitializeZoneSets(bool newWorkArea) noexcept;
     void CalculateZoneSet() noexcept;
     void UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept;
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
@@ -304,7 +304,7 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
 
     m_uniqueId = uniqueId;
     LoadSettings();
-    InitializeZoneSets(mi, newWorkArea);
+    InitializeZoneSets(newWorkArea);
 
     m_window = wil::unique_hwnd{
         CreateWindowExW(WS_EX_TOOLWINDOW, L"SuperFancyZones_ZoneWindow", L"", WS_POPUP, workAreaRect.left(), workAreaRect.top(), workAreaRect.width(), workAreaRect.height(), nullptr, nullptr, hinstance, this)
@@ -522,7 +522,7 @@ void ZoneWindow::LoadSettings() noexcept
     JSONHelpers::FancyZonesDataInstance().AddDevice(m_uniqueId);
 }
 
-void ZoneWindow::InitializeZoneSets(MONITORINFO const& mi, bool newWorkArea) noexcept
+void ZoneWindow::InitializeZoneSets(bool newWorkArea) noexcept
 {
     auto parent = m_host->GetParentZoneWindow(m_monitor);
     if (parent)
