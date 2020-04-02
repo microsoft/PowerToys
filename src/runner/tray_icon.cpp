@@ -78,6 +78,15 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         case ID_SETTINGS_MENU_COMMAND:
             open_settings_window();
             break;
+        case ID_IMAGE_RESIZER_COMMAND:
+            start_image_resizer();
+            break;
+        case ID_WINDOW_WALKER_COMMAND:
+            start_window_walker();
+            break;
+        case ID_CHECK_FOR_UPDATES_COMMAND:
+            start_check_for_updates();
+            break;
         case ID_EXIT_MENU_COMMAND:
             if (h_menu)
             {
@@ -205,4 +214,37 @@ void stop_tray_icon()
     {
         SendMessage(tray_icon_hwnd, WM_CLOSE, 0, 0);
     }
+}
+
+void start_check_for_updates()
+{
+    ShellExecute(NULL, NULL, L"https://github.com/microsoft/PowerToys/releases", NULL, NULL, SW_SHOW);
+}
+
+void start_image_resizer()
+{
+    start_exe_file(const_cast<wchar_t*>(L".\\modules\\ImageResizer.exe"));
+}
+
+void start_window_walker()
+{
+    start_exe_file(const_cast<wchar_t*>(L".\\modules\\WindowWalker.exe"));
+}
+
+void start_exe_file(wchar_t* path)
+{
+    STARTUPINFO info = { sizeof(info) };
+    PROCESS_INFORMATION processInfo;
+    if (CreateProcess(path, NULL, NULL, NULL, TRUE, 0, NULL, NULL, &info, &processInfo))
+    {
+        //WaitForSingleObject(processInfo.hProcess, INFINITE); // Cannot open more than one window during the program is running
+        CloseHandle(processInfo.hProcess);
+        CloseHandle(processInfo.hThread);
+    }
+    else
+    {
+        MessageBox(NULL, L"Please report the bug to\nhttps://github.com/microsoft/PowerToys/issues\n", L"Error", MB_OK);
+    }
+
+    /*ShellExecute(NULL, NULL, L".\\modules\\ImageResizer.exe", NULL, NULL, SW_SHOW);*/ // Can open more than one window during the program is running
 }
