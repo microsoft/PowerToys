@@ -212,7 +212,6 @@ void start_initial_powertoys()
             {
                 if (!disabled_element.Value().GetBoolean())
                 {
-                    // Disable this powertoy.
                     powertoys_to_disable.emplace(disabled_element.Key());
                 }
             }
