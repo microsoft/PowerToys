@@ -46,7 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             catch(Exception exp)
             {
                 settings = new PowerPreviewSettings(POWERTOY_NAME);
-                SettingsUtils.SaveSettings<PowerPreviewSettings>(settings, POWERTOY_NAME);
+                SettingsUtils.SaveSettings(settings.ToJsonString(), POWERTOY_NAME);
                 ToggleSwitch_Preview_SVG.IsOn = settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value;
                 ToggleSwitch_Preview_MD.IsOn = settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value;
             }
@@ -61,11 +61,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 PowerPreviewSettings settings = SettingsUtils.GetSettings<PowerPreviewSettings>(POWERTOY_NAME);
                 settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value = swt.IsOn;
 
-                SndModuleSettings<PowerPreviewSettings> moduleSettings = new SndModuleSettings<PowerPreviewSettings>(settings);
-
                 if (ShellPage.Default_SndMSG_Callback != null)
                 {
-                    ShellPage.Default_SndMSG_Callback(moduleSettings.ToString());
+                    SndPowerPreviewSettings snd = new SndPowerPreviewSettings(settings);
+                    SndModuleSettings<SndPowerPreviewSettings> ipcMessage = new SndModuleSettings<SndPowerPreviewSettings>(snd);
+                    ShellPage.Default_SndMSG_Callback(ipcMessage.ToJsonString());
                 }
             }
         }
@@ -79,13 +79,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 PowerPreviewSettings settings = SettingsUtils.GetSettings<PowerPreviewSettings>(POWERTOY_NAME);
                 settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value = swt.IsOn;
 
-                SndModuleSettings<PowerPreviewSettings> moduleSettings = new SndModuleSettings<PowerPreviewSettings>(settings);
-
                 if (ShellPage.Default_SndMSG_Callback != null)
                 {
-                    ShellPage.Default_SndMSG_Callback(moduleSettings.ToString());
+                    SndPowerPreviewSettings snd = new SndPowerPreviewSettings(settings);
+                    SndModuleSettings<SndPowerPreviewSettings> ipcMessage = new SndModuleSettings<SndPowerPreviewSettings>(snd);
+                    ShellPage.Default_SndMSG_Callback(ipcMessage.ToJsonString());
                 }
             }
         }
+
     }
 }
