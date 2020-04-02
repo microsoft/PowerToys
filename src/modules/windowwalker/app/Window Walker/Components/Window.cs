@@ -91,12 +91,9 @@ namespace WindowWalker.Components
 
                     if (!_handlesToProcessCache.ContainsKey(Hwnd))
                     {
-                        InteropAndHelpers.GetWindowThreadProcessId(Hwnd, out uint processId);
-                        ProcessID = processId;
-                        IntPtr processHandle = InteropAndHelpers.OpenProcess(InteropAndHelpers.ProcessAccessFlags.AllAccess, true, (int)processId);
-                        StringBuilder processName = new StringBuilder(MaximumFileNameLength);
+                        var processName = GetProcessNameFromWindowHandle(Hwnd);
 
-                        if (InteropAndHelpers.GetProcessImageFileName(processHandle, processName, MaximumFileNameLength) != 0)
+                        if (processName.Length != 0)
                         {
                             _handlesToProcessCache.Add(
                                 Hwnd,
