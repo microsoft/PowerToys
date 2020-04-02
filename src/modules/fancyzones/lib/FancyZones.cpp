@@ -437,9 +437,6 @@ void FancyZones::ToggleEditor() noexcept
     HMONITOR monitor{};
     HWND foregroundWindow{};
 
-    UINT dpi_x = DPIAware::DEFAULT_DPI;
-    UINT dpi_y = DPIAware::DEFAULT_DPI;
-
     const bool use_cursorpos_editor_startupscreen = m_settings->GetSettings()->use_cursorpos_editor_startupscreen;
     POINT currentCursorPos{};
     if (use_cursorpos_editor_startupscreen)
@@ -473,24 +470,14 @@ void FancyZones::ToggleEditor() noexcept
                       } })
         .wait();
 
-    if (use_cursorpos_editor_startupscreen)
-    {
-        DPIAware::GetScreenDPIForPoint(currentCursorPos, dpi_x, dpi_y);
-    }
-    else
-    {
-        DPIAware::GetScreenDPIForWindow(foregroundWindow, dpi_x, dpi_y);
-    }
-
     auto zoneWindow = iter->second;
 
     const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
     fancyZonesData.CustomZoneSetsToJsonFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
 
-    const auto taskbar_x_offset = MulDiv(mi.rcWork.left - mi.rcMonitor.left, DPIAware::DEFAULT_DPI, dpi_x);
-    const auto taskbar_y_offset = MulDiv(mi.rcWork.top - mi.rcMonitor.top, DPIAware::DEFAULT_DPI, dpi_y);
-
     // Do not scale window params by the dpi, that will be done in the editor - see LayoutModel.Apply
+    const auto taskbar_x_offset = mi.rcWork.left - mi.rcMonitor.left;
+    const auto taskbar_y_offset = mi.rcWork.top - mi.rcMonitor.top;
     const auto x = mi.rcMonitor.left + taskbar_x_offset;
     const auto y = mi.rcMonitor.top + taskbar_y_offset;
     const auto width = mi.rcWork.right - mi.rcWork.left;
