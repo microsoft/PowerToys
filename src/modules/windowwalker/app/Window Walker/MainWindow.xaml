@@ -21,7 +21,8 @@
         TextElement.FontSize="14"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
         Deactivated="Window_Deactivated"
-        ShowInTaskbar="false">
+        ShowInTaskbar="false"
+        GotFocus="Window_GotFocus">
     
     <Window.Resources>
         <ResourceDictionary>    

@@ -114,5 +114,10 @@ namespace WindowWalker
                 viewModel.WindowHideCommand.Execute(null);
             }
         }
+
+        private void Window_GotFocus(object sender, RoutedEventArgs e)
+        {
+            this.searchBox.Focus();
+        }
     }
 }
