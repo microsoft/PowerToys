@@ -55,9 +55,34 @@ namespace JSONHelpers
 
     bool isValidDeviceId(const std::wstring& str)
     {
+        std::wstring monitorName;
         std::wstring temp;
         std::vector<std::wstring> parts;
         std::wstringstream wss(str);
+
+        /* 
+         Important fix for device info that contains a '_' in the name:
+         1. first search for '#'
+         2. Then split the remaining string by '_' 
+        */
+
+        // Step 1: parse the name until the #, then to the '_'
+        if (str.find(L'#') != std::string::npos)
+        {
+            std::getline(wss, temp, L'#');
+
+            monitorName = temp;
+
+            if (!std::getline(wss, temp, L'_'))
+            {
+                return false;
+            }
+
+            monitorName += L"#" + temp;
+            parts.push_back(monitorName);
+        }
+
+        // Step 2: parse the rest of the id
         while (std::getline(wss, temp, L'_'))
         {
             parts.push_back(temp);
