@@ -101,7 +101,10 @@ namespace WindowWalker.Components
                     windows.Remove(windows.Where(x => x.Title == newWindow.Title).First());
                 }
 
-                return true;
+                if (windows.Select(x => x.Hwnd).Contains(newWindow.Hwnd))
+                {
+                    return true;
+                }
             }
 
             if ((newWindow.Visible && !newWindow.ProcessName.ToLower().Equals("iexplore.exe")) ||
