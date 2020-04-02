@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.PowerToys.Settings.UI.ViewModels
+namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class GeneralSettings
     {
@@ -30,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             this.powertoys_version = "v0.15.3";
         }
 
-        public override string ToString()
+        public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);
         }
