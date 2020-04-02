@@ -393,24 +393,31 @@ namespace Wox.ViewModel
                     }, currentCancellationToken);
 
                     var plugins = PluginManager.ValidPluginsForQuery(query);
-                    Application.Current.Dispatcher.Invoke((Action)(() => {
+                    
+                    Task.Run(() =>
+                    {
                         // so looping will stop once it was cancelled
                         var parallelOptions = new ParallelOptions { CancellationToken = currentCancellationToken };
                         try
                         {
-                            //Parallel.ForEach(plugins, parallelOptions, plugin =>
-                            //{
-                            //    if (!plugin.Metadata.Disabled)
-                            //    {
-                            //        var results = PluginManager.QueryForPlugin(plugin, query);
-                            //        UpdateResultView(results, plugin.Metadata, query);
-                            //    }
-                            //});
-                            foreach(PluginPair plugin in plugins)
+                            Parallel.ForEach(plugins, parallelOptions, plugin =>
                             {
-                                var results = PluginManager.QueryForPlugin(plugin, query);
-                                UpdateResultView(results, plugin.Metadata, query);
-                            }
+                                if (!plugin.Metadata.Disabled)
+                                {
+                                    var results = PluginManager.QueryForPlugin(plugin, query);
+                                    if (Application.Current.Dispatcher.CheckAccess())
+                                    {
+                                        UpdateResultView(results, plugin.Metadata, query);
+                                    }
+                                    else
+                                    {
+                                        Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                                        {
+                                            UpdateResultView(results, plugin.Metadata, query);
+                                        }));
+                                    }
+                                }
+                            });
                         }
                         catch (OperationCanceledException)
                         {
@@ -425,40 +432,7 @@ namespace Wox.ViewModel
                         { // update to hidden if this is still the current query
                             ProgressBarVisibility = Visibility.Hidden;
                         }
-                    }));
-
-
-
-
-                    //Task.Run(() =>
-                    //{
-                    //    // so looping will stop once it was cancelled
-                    //    var parallelOptions = new ParallelOptions { CancellationToken = currentCancellationToken };
-                    //    try
-                    //    {
-                    //        Parallel.ForEach(plugins, parallelOptions, plugin =>
-                    //        {
-                    //            if (!plugin.Metadata.Disabled)
-                    //            {
-                    //                var results = PluginManager.QueryForPlugin(plugin, query);
-                    //                UpdateResultView(results, plugin.Metadata, query);
-                    //            }
-                    //        });
-                    //    }
-                    //    catch (OperationCanceledException)
-                    //    {
-                    //        // nothing to do here
-                    //    }
-
-
-                    //    // this should happen once after all queries are done so progress bar should continue
-                    //    // until the end of all querying
-                    //    _isQueryRunning = false;
-                    //    if (currentUpdateSource == _updateSource)
-                    //    { // update to hidden if this is still the current query
-                    //        ProgressBarVisibility = Visibility.Hidden;
-                    //    }
-                    //}, currentCancellationToken);
+                    }, currentCancellationToken);
                 }
             }
             else
