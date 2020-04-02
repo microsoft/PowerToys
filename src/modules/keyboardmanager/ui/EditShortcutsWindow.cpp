@@ -152,7 +152,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
                     }
                 }
                 std::vector<DWORD> newKeys;
-                shortcutVector = splitwstring(originalShortcut.c_str(), L' ');
+                shortcutVector = splitwstring(newShortcut.c_str(), L' ');
                 for (int i = 0; i < shortcutVector.size(); i++)
                 {
                     if (shortcutVector[i] == L"Win")
