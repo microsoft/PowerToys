@@ -122,10 +122,7 @@ namespace Common
         /// <inheritdoc />
         public virtual void DoPreview<T>(T dataSource)
         {
-            this.InvokeOnControlThread(() =>
-            {
-                this.Visible = true;
-            });
+            this.Visible = true;
         }
 
         /// <summary>

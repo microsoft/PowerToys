@@ -118,11 +118,11 @@ namespace UnitTests_SvgPreviewHandler
             }
         }
 
-        /*[TestMethod]
+        [TestMethod]
         public void SvgPreviewControl_ShouldAddValidInfoBar_IfSvgPreviewThrows()
         {
             // Arrange
-            using (var svgPreviewControl = new SvgPreviewControl()) 
+            using (var svgPreviewControl = new SvgPreviewControl())
             {
                 var mockStream = new Mock<IStream>();
                 mockStream
@@ -143,13 +143,13 @@ namespace UnitTests_SvgPreviewHandler
                 Assert.AreEqual(textBox.ScrollBars, RichTextBoxScrollBars.None);
                 Assert.AreEqual(textBox.BorderStyle, BorderStyle.None);
             }
-        }*/
+        }
 
-        /*[TestMethod]
+        [TestMethod]
         public void SvgPreviewControl_InfoBarWidthShouldAdjustWithParentControlWidthChanges_IfSvgPreviewThrows()
         {
             // Arrange
-            using (var svgPreviewControl = new SvgPreviewControl()) 
+            using (var svgPreviewControl = new SvgPreviewControl())
             {
                 var mockStream = new Mock<IStream>();
                 mockStream
@@ -169,7 +169,7 @@ namespace UnitTests_SvgPreviewHandler
                 Assert.AreEqual(intialParentWidth, intitialTextBoxWidth);
                 Assert.AreEqual(finalParentWidth, textBox.Width);
             }
-        }*/
+        }
 
         [TestMethod]
         public void SvgPreviewControl_ShouldAddTextBox_IfBlockedElementsArePresent()

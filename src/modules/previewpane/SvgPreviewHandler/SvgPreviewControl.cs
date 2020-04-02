@@ -45,39 +45,41 @@ namespace SvgPreviewHandler
         /// <param name="dataSource">Stream reference to access source file.</param>
         public override void DoPreview<T>(T dataSource)
         {
-            try
+            this.InvokeOnControlThread(() =>
             {
-                this.infoBarAdded = false;
-                string svgData = null;
-                using (var stream = new StreamWrapper(dataSource as IStream))
+                try
                 {
-                    using (var reader = new StreamReader(stream))
+                    this.infoBarAdded = false;
+                    string svgData = null;
+                    using (var stream = new StreamWrapper(dataSource as IStream))
                     {
-                        svgData = reader.ReadToEnd();
+                        using (var reader = new StreamReader(stream))
+                        {
+                            svgData = reader.ReadToEnd();
+                        }
                     }
-                }
 
-                // Add a info bar on top of the Preview if any blocked element is present.
-                if (SvgPreviewHandlerHelper.CheckBlockedElements(svgData))
+                    // Add a info bar on top of the Preview if any blocked element is present.
+                    if (SvgPreviewHandlerHelper.CheckBlockedElements(svgData))
+                    {
+                        this.infoBarAdded = true;
+                        this.AddTextBoxControl(Resource.BlockedElementInfoText);
+                    }
+
+                    this.AddBrowserControl(svgData);
+                    this.Resize += this.FormResized;
+                    base.DoPreview(dataSource);
+                    SvgTelemetry.Log.SvgFilePreviewed();
+                }
+                catch (Exception ex)
                 {
+                    SvgTelemetry.Log.SvgFilePreviewError(ex.Message);
+                    this.Controls.Clear();
                     this.infoBarAdded = true;
-                    this.AddTextBoxControl(Resource.BlockedElementInfoText);
+                    this.AddTextBoxControl(Resource.SvgNotPreviewedError);
+                    base.DoPreview(dataSource);
                 }
-
-                this.AddBrowserControl(svgData);
-                this.Resize += this.FormResized;
-                base.DoPreview(dataSource);
-                SvgTelemetry.Log.SvgFilePreviewed();
-            }
-            catch (Exception ex)
-            {
-                SvgTelemetry.Log.SvgFilePreviewError(ex.Message);
-                this.Controls.Clear();
-                this.infoBarAdded = true;
-                this.AddTextBoxControl(Resource.SvgNotPreviewedError);
-                base.DoPreview(dataSource);
-                throw;
-            }
+            });
         }
 
         /// <summary>
