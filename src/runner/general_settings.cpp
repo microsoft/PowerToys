@@ -199,9 +199,7 @@ void apply_general_settings(const json::JsonObject& general_configs)
 
 void start_initial_powertoys()
 {
-    bool only_enable_some_powertoys = false;
-
-    std::unordered_set<std::wstring> powertoys_to_enable;
+    std::unordered_set<std::wstring> powertoys_to_disable;
 
     json::JsonObject general_settings;
     try
@@ -210,34 +208,32 @@ void start_initial_powertoys()
         if (general_settings.HasKey(L"enabled"))
         {
             json::JsonObject enabled = general_settings.GetNamedObject(L"enabled");
-            for (const auto& enabled_element : enabled)
+            for (const auto& disabled_element : enabled)
             {
-                if (enabled_element.Value().GetBoolean())
+                if (!disabled_element.Value().GetBoolean())
                 {
-                    // Enable this powertoy.
-                    powertoys_to_enable.emplace(enabled_element.Key());
+                    powertoys_to_disable.emplace(disabled_element.Key());
                 }
             }
-            only_enable_some_powertoys = true;
         }
     }
-    catch (...)
-    {
-        only_enable_some_powertoys = false;
-    }
+    catch (...) { }
 
-    for (auto& [name, powertoy] : modules())
+    if (powertoys_to_disable.empty())
     {
-        if (only_enable_some_powertoys)
+        for (auto& [name, powertoy] : modules())
         {
-            if (powertoys_to_enable.find(name) != powertoys_to_enable.end())
+            powertoy->enable();
+        }
+    }
+    else
+    {
+        for (auto& [name, powertoy] : modules())
+        {
+            if (powertoys_to_disable.find(name) == powertoys_to_disable.end())
             {
                 powertoy->enable();
             }
-        }
-        else
-        {
-            powertoy->enable();
         }
     }
 }
