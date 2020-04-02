@@ -210,6 +210,8 @@ public:
     IsDragEnabled() noexcept { return m_dragEnabled; }
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByIndex(HWND window, int index) noexcept;
+    IFACEMETHODIMP_(void)
+    MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& indexSet) noexcept;
     IFACEMETHODIMP_(bool)
     MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(void)
@@ -433,9 +435,15 @@ ZoneWindow::RestoreOrginalTransparency() noexcept
 IFACEMETHODIMP_(void)
 ZoneWindow::MoveWindowIntoZoneByIndex(HWND window, int index) noexcept
 {
+    MoveWindowIntoZoneByIndexSet(window, { index });
+}
+
+IFACEMETHODIMP_(void)
+ZoneWindow::MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& indexSet) noexcept
+{
     if (m_activeZoneSet)
     {
-        m_activeZoneSet->MoveWindowIntoZoneByIndex(window, m_window.get(), index);
+        m_activeZoneSet->MoveWindowIntoZoneByIndexSet(window, m_window.get(), indexSet);
     }
 }
 

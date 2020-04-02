@@ -4,6 +4,7 @@
 #include <common/monitors.h>
 #include "Zone.h"
 #include "Settings.h"
+#include "util.h"
 
 struct Zone : winrt::implements<Zone, IZone>
 {
@@ -62,19 +63,7 @@ IFACEMETHODIMP_(void) Zone::RemoveWindowFromZone(HWND window, bool restoreSize) 
 
 void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
 {
-    WINDOWPLACEMENT placement{};
-    ::GetWindowPlacement(window, &placement);
-    placement.rcNormalPosition = ComputeActualZoneRect(window, zoneWindow);
-    placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
-    // Do not restore minimized windows. We change their placement though so they restore to the correct zone.
-    if ((placement.showCmd & SW_SHOWMINIMIZED) == 0)
-    {
-        placement.showCmd = SW_RESTORE | SW_SHOWNA;
-    }
-    ::SetWindowPlacement(window, &placement);
-    // Do it again, allowing Windows to resize the window and set correct scaling
-    // This fixes Issue #365
-    ::SetWindowPlacement(window, &placement);
+    SizeWindowToRect(window, ComputeActualZoneRect(window, zoneWindow));
 }
 
 RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) noexcept

@@ -130,6 +130,8 @@ public:
     GetZones() noexcept { return m_zones; }
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByIndex(HWND window, HWND zoneWindow, int index) noexcept;
+    IFACEMETHODIMP_(void)
+    MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::vector<int>& indexSet) noexcept;
     IFACEMETHODIMP_(bool)
     MoveWindowIntoZoneByDirection(HWND window, HWND zoneWindow, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(void)
@@ -237,6 +239,54 @@ ZoneSet::MoveWindowIntoZoneByIndex(HWND window, HWND windowZone, int index) noex
     if (auto zone = m_zones.at(index))
     {
         zone->AddWindowToZone(window, windowZone, false);
+    }
+}
+
+IFACEMETHODIMP_(void)
+ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::vector<int>& indexSet) noexcept
+{
+    if (m_zones.empty())
+    {
+        return;
+    }
+
+    while (auto zoneDrop = ZoneFromWindow(window))
+    {
+        zoneDrop->RemoveWindowFromZone(window, !IsZoomed(window));
+    }
+
+    if (indexSet.size() == 1)
+    {
+        MoveWindowIntoZoneByIndex(window, windowZone, indexSet[0]);
+        return;
+    }
+
+    RECT size;
+    bool sizeEmpty = true;
+
+    for (int index : indexSet)
+    {
+        if (index < static_cast<int>(m_zones.size()))
+        {
+            RECT newSize = m_zones.at(index)->ComputeActualZoneRect(window, windowZone);
+            if (!sizeEmpty)
+            {
+                size.left = min(size.left, newSize.left);
+                size.top = min(size.top, newSize.top);
+                size.right = max(size.right, newSize.right);
+                size.bottom = max(size.bottom, newSize.bottom);
+            }
+            else
+            {
+                size = newSize;
+                sizeEmpty = false;
+            }
+        }
+    }
+
+    if (!sizeEmpty)
+    {
+        SizeWindowToRect(window, size);
     }
 }
 

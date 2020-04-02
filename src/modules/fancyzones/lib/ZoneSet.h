@@ -51,6 +51,15 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      */
     IFACEMETHOD_(void, MoveWindowIntoZoneByIndex)(HWND window, HWND zoneWindow, int index) = 0;
     /**
+     * Assign window to the zones based on the set of zone indices inside zone layout.
+     *
+     * @param   window     Handle of window which should be assigned to zone.
+     * @param   zoneWindow The m_window of a ZoneWindow, it's a hidden window representing the
+     *                     current monitor desktop work area.
+     * @param   indexSet   The set of zone indices within zone layout.
+     */
+    IFACEMETHOD_(void, MoveWindowIntoZoneByIndexSet)(HWND window, HWND zoneWindow, const std::vector<int>& indexSet) = 0;
+    /**
      * Assign window to the zone based on direction (using WIN + LEFT/RIGHT arrow).
      *
      * @param   window     Handle of window which should be assigned to zone.

@@ -108,3 +108,20 @@ void OrderMonitors(std::vector<std::pair<HMONITOR, RECT>>& monitorInfo)
 
     monitorInfo = std::move(sortedMonitorInfo);
 }
+
+void SizeWindowToRect(HWND window, RECT rect) noexcept
+{
+    WINDOWPLACEMENT placement{};
+    ::GetWindowPlacement(window, &placement);
+    placement.rcNormalPosition = rect;
+    placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
+    // Do not restore minimized windows. We change their placement though so they restore to the correct zone.
+    if ((placement.showCmd & SW_SHOWMINIMIZED) == 0)
+    {
+        placement.showCmd = SW_RESTORE | SW_SHOWNA;
+    }
+    ::SetWindowPlacement(window, &placement);
+    // Do it again, allowing Windows to resize the window and set correct scaling
+    // This fixes Issue #365
+    ::SetWindowPlacement(window, &placement);
+}

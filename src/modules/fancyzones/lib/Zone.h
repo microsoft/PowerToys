@@ -54,7 +54,7 @@ interface __declspec(uuid("{8228E934-B6EF-402A-9892-15A1441BF8B0}")) IZone : pub
      *                     current monitor desktop work area.
      * @returns a RECT structure, describing global coordinates to which a window should be resized
      */
-    IFACEMETHODIMP_(RECT) ComputeActualZoneRect(HWND window, HWND zoneWindow) noexcept;
+    IFACEMETHOD_(RECT, ComputeActualZoneRect)(HWND window, HWND zoneWindow) = 0;
 
 };
 
