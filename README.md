@@ -53,7 +53,7 @@ We currently support the matrix below.
 
 [FancyZones](/src/modules/fancyzones/) - FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.
 
-### Shortcut
+### Shortcut Guide
 
 [Windows key shortcut guide](/src/modules/shortcut_guide) - The shortcut guide appears when a user holds the Windows key down for more than one second and shows the available shortcuts for the current state of the desktop.
 
