@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -71,6 +72,8 @@ namespace WindowWalker.Components
             get { return hwnd; }
         }
 
+        public uint ProcessID { get; set; }
+
         /// <summary>
         /// Gets returns the name of the process
         /// </summary>
@@ -89,6 +92,7 @@ namespace WindowWalker.Components
                     if (!_handlesToProcessCache.ContainsKey(Hwnd))
                     {
                         InteropAndHelpers.GetWindowThreadProcessId(Hwnd, out uint processId);
+                        ProcessID = processId;
                         IntPtr processHandle = InteropAndHelpers.OpenProcess(InteropAndHelpers.ProcessAccessFlags.AllAccess, true, (int)processId);
                         StringBuilder processName = new StringBuilder(MaximumFileNameLength);
 
@@ -102,6 +106,27 @@ namespace WindowWalker.Components
                         {
                             _handlesToProcessCache.Add(Hwnd, string.Empty);
                         }
+                    }
+
+                    if (_handlesToProcessCache[hwnd].ToLower() == "applicationframehost.exe")
+                    {
+                        new Task(() =>
+                        {
+                            InteropAndHelpers.CallBackPtr callbackptr = new InteropAndHelpers.CallBackPtr((IntPtr hwnd, IntPtr lParam) =>
+                            {
+                                var childProcessId = GetProcessIDFromWindowHandle(hwnd);
+                                if (childProcessId != this.ProcessID)
+                                {
+                                    _handlesToProcessCache[Hwnd] = GetProcessNameFromWindowHandle(hwnd);
+                                    return false;
+                                }
+                                else
+                                {
+                                    return true;
+                                }
+                            });
+                            InteropAndHelpers.EnumChildWindows(Hwnd, callbackptr, 0);
+                        }).Start();
                     }
 
                     return _handlesToProcessCache[hwnd];
@@ -341,6 +366,29 @@ namespace WindowWalker.Components
             Minimized,
             Maximized,
             Unknown,
+        }
+
+        private string GetProcessNameFromWindowHandle(IntPtr hwnd)
+        {
+            uint processId = GetProcessIDFromWindowHandle(hwnd);
+            ProcessID = processId;
+            IntPtr processHandle = InteropAndHelpers.OpenProcess(InteropAndHelpers.ProcessAccessFlags.AllAccess, true, (int)processId);
+            StringBuilder processName = new StringBuilder(MaximumFileNameLength);
+
+            if (InteropAndHelpers.GetProcessImageFileName(processHandle, processName, MaximumFileNameLength) != 0)
+            {
+                return processName.ToString().Split('\\').Reverse().ToArray()[0];
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        private uint GetProcessIDFromWindowHandle(IntPtr hwnd)
+        {
+            InteropAndHelpers.GetWindowThreadProcessId(hwnd, out uint processId);
+            return processId;
         }
     }
 }
