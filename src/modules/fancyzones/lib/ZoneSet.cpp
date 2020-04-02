@@ -226,7 +226,7 @@ ZoneSet::MoveWindowIntoZoneByIndex(HWND window, HWND windowZone, int index) noex
 
     if (index >= int(m_zones.size()))
     {
-        index = 0;
+        return;
     }
 
     while (auto zoneDrop = ZoneFromWindow(window))
