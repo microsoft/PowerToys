@@ -10,7 +10,7 @@ KeyboardManagerState::KeyboardManagerState() :
 // Function to check the if the UI state matches the argument state. For states with activated windows it also checks if the window is in focus.
 bool KeyboardManagerState::CheckUIState(KeyboardManagerUIState state)
 {
-    std::unique_lock<std::mutex> lock(uiState_mutex);
+    std::lock_guard<std::mutex> lock(uiState_mutex);
     if (uiState == state)
     {
         std::unique_lock<std::mutex> lock(currentUIWindow_mutex);
@@ -32,14 +32,14 @@ bool KeyboardManagerState::CheckUIState(KeyboardManagerUIState state)
 // Function to set the window handle of the current UI window that is activated
 void KeyboardManagerState::SetCurrentUIWindow(HWND windowHandle)
 {
-    std::unique_lock<std::mutex> lock(currentUIWindow_mutex);
+    std::lock_guard<std::mutex> lock(currentUIWindow_mutex);
     currentUIWindow = windowHandle;
 }
 
 // Function to set the UI state. When a window is activated, the handle to the window can be passed in the windowHandle argument.
 void KeyboardManagerState::SetUIState(KeyboardManagerUIState state, HWND windowHandle)
 {
-    std::unique_lock<std::mutex> lock(uiState_mutex);
+    std::lock_guard<std::mutex> lock(uiState_mutex);
     uiState = state;
     SetCurrentUIWindow(windowHandle);
 }
@@ -71,21 +71,21 @@ void KeyboardManagerState::ResetUIState()
 // Function to clear the OS Level shortcut remapping table
 void KeyboardManagerState::ClearOSLevelShortcuts()
 {
-    std::unique_lock<std::mutex> lock(osLevelShortcutReMap_mutex);
+    std::lock_guard<std::mutex> lock(osLevelShortcutReMap_mutex);
     osLevelShortcutReMap.clear();
 }
 
 // Function to clear the Keys remapping table.
 void KeyboardManagerState::ClearSingleKeyRemaps()
 {
-    std::unique_lock<std::mutex> lock(singleKeyReMap_mutex);
+    std::lock_guard<std::mutex> lock(singleKeyReMap_mutex);
     singleKeyReMap.clear();
 }
 
 // Function to add a new OS level shortcut remapping
 bool KeyboardManagerState::AddOSLevelShortcut(const std::vector<DWORD>& originalSC, const std::vector<WORD>& newSC)
 {
-    std::unique_lock<std::mutex> lock(osLevelShortcutReMap_mutex);
+    std::lock_guard<std::mutex> lock(osLevelShortcutReMap_mutex);
 
     // Check if the shortcut is already remapped
     auto it = osLevelShortcutReMap.find(originalSC);
@@ -101,7 +101,7 @@ bool KeyboardManagerState::AddOSLevelShortcut(const std::vector<DWORD>& original
 // Function to add a new OS level shortcut remapping
 bool KeyboardManagerState::AddSingleKeyRemap(const DWORD& originalKey, const WORD& newRemapKey)
 {
-    std::unique_lock<std::mutex> lock(singleKeyReMap_mutex);
+    std::lock_guard<std::mutex> lock(singleKeyReMap_mutex);
 
     // Check if the key is already remapped
     auto it = singleKeyReMap.find(originalKey);
@@ -117,21 +117,21 @@ bool KeyboardManagerState::AddSingleKeyRemap(const DWORD& originalKey, const WOR
 // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
 void KeyboardManagerState::ConfigureDetectShortcutUI(const TextBlock& textBlock)
 {
-    std::unique_lock<std::mutex> lock(currentShortcutTextBlock_mutex);
+    std::lock_guard<std::mutex> lock(currentShortcutTextBlock_mutex);
     currentShortcutTextBlock = textBlock;
 }
 
 // Function to set the textblock of the detect remap key UI so that it can be accessed by the hook
 void KeyboardManagerState::ConfigureDetectSingleKeyRemapUI(const TextBlock& textBlock)
 {
-    std::unique_lock<std::mutex> lock(currentSingleKeyRemapTextBlock_mutex);
+    std::lock_guard<std::mutex> lock(currentSingleKeyRemapTextBlock_mutex);
     currentSingleKeyRemapTextBlock = textBlock;
 }
 
 // Function to update the detect shortcut UI based on the entered keys
 void KeyboardManagerState::UpdateDetectShortcutUI()
 {
-    std::unique_lock<std::mutex> currentShortcutTextBlock_lock(currentShortcutTextBlock_mutex);
+    std::lock_guard<std::mutex> currentShortcutTextBlock_lock(currentShortcutTextBlock_mutex);
     if (currentShortcutTextBlock == nullptr)
     {
         return;
@@ -150,7 +150,7 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
 // Function to update the detect remap key UI based on the entered key.
 void KeyboardManagerState::UpdateDetectSingleKeyRemapUI()
 {
-    std::unique_lock<std::mutex> currentSingleKeyRemapTextBlock_lock(currentSingleKeyRemapTextBlock_mutex);
+    std::lock_guard<std::mutex> currentSingleKeyRemapTextBlock_lock(currentSingleKeyRemapTextBlock_mutex);
     if (currentSingleKeyRemapTextBlock == nullptr)
     {
         return;
@@ -240,7 +240,7 @@ bool KeyboardManagerState::DetectShortcutUIBackend(LowlevelKeyboardEvent* data)
         // Remove the key if it has been released
         else if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
         {
-            std::unique_lock<std::mutex> lock(detectedShortcut_mutex);
+            std::lock_guard<std::mutex> lock(detectedShortcut_mutex);
             detectedShortcut.erase(std::remove(detectedShortcut.begin(), detectedShortcut.end(), data->lParam->vkCode), detectedShortcut.end());
         }
 
@@ -251,7 +251,7 @@ bool KeyboardManagerState::DetectShortcutUIBackend(LowlevelKeyboardEvent* data)
     // If the detect shortcut UI window is not activated, then clear the shortcut buffer if it isn't empty
     else
     {
-        std::unique_lock<std::mutex> lock(detectedShortcut_mutex);
+        std::lock_guard<std::mutex> lock(detectedShortcut_mutex);
         if (!detectedShortcut.empty())
         {
             detectedShortcut.clear();

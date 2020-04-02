@@ -45,7 +45,7 @@ private:
     std::mutex currentShortcutTextBlock_mutex;
 
 public:
-    // The map members and their mutexes are left as public since the maps are used extensively in dllmain.cpp
+    // The map members and their mutexes are left as public since the maps are used extensively in dllmain.cpp.
     // Maps which store the remappings for each of the features. The bool fields should be initalised to false. They are used to check the current state of the shortcut (i.e is that particular shortcut currently pressed down or not).
     // Stores single key remappings
     std::unordered_map<DWORD, WORD> singleKeyReMap;
