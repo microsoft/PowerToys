@@ -2,7 +2,6 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerRenamePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
@@ -44,37 +43,43 @@
             <TextBlock Text="A Windows Shell Extension for more advanced bulk renaming using search and replace or regular expressions."
                        TextWrapping="Wrap"/>
 
-            <ToggleSwitch Header="Enable PowerRename"
-                          IsOn="True"
-                          Margin="{StaticResource SmallTopMargin}" />
+            <ToggleSwitch x:Name="Toggle_PowerRename_Enable"
+                          Header="Enable PowerRename"
+                          Margin="{StaticResource SmallTopMargin}" 
+                          Toggled="Toggle_PowerRename_Enable_Toggled"
+                           />
 
-            <TextBlock Text="Shell integration"
-                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+            <TextBlock  Text="Shell integration"
+                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <CheckBox Content="Show on default context menu"
-                          IsChecked="True"
-                          Margin="{StaticResource SmallTopMargin}"/>
+            <ToggleSwitch x:Name="Toggle_PowerRename_EnableOnContextMenu" 
+                          Header="Show on default context menu"
+                          Margin="{StaticResource SmallTopMargin}" 
+                          Toggled="Toggle_PowerRename_EnableOnContextMenu_Toggled"
+                           />
 
-            <CheckBox Content="Only show on extended context menu (Shift + Right-click)"
-                          IsChecked="True" 
-                          Margin="{StaticResource SmallTopMargin}" />
+            <ToggleSwitch x:Name="Toggle_PowerRename_EnableOnExtendedContextMenu"
+                          Header="Only show on extended context menu (Shift + Right-click)"
+                          Margin="{StaticResource SmallTopMargin}"
+                          Toggled="Toggle_PowerRename_EnableOnExtendedContextMenu_Toggled"
+                           />
 
             <TextBlock Text="Miscellaneous" 
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <CheckBox Content="Enable autocomplete and autosuggest of recently used inputs for search and replace values"
-                          IsChecked="True"
-                          Margin="{StaticResource SmallTopMargin}"/>
+            <ToggleSwitch x:Name="Toggle_PowerRename_RestoreFlagsOnLaunch"
+                          Header="Restore search, replace and flags values on launch from previous run"     
+                          Margin="{StaticResource SmallTopMargin}" 
+                          Toggled="Toggle_PowerRename_RestoreFlagsOnLaunch_Toggled"
+                           />
 
-            <CheckBox Content="Restore search, replace and flags values on launch from previous run" 
-                          IsChecked="True" 
-                          Margin="{StaticResource SmallTopMargin}" />
-
-            <muxc:NumberBox Header="Maximum numbers of items to show in recently used list"
-                            Value="10"
+            <muxc:NumberBox x:Name="Toggle_PowerRename_MaxDispListNum"
+                            Header="Maximum numbers of items to show in recently used list"
                             SpinButtonPlacementMode="Inline"
                             HorizontalAlignment="Left"
-                            Margin="{StaticResource SmallTopMargin}" />
+                            Margin="{StaticResource SmallTopMargin}" 
+                           ValueChanged="Toggle_PowerRename_MaxDispListNum_ValueChanged"
+                            />
         </StackPanel>
         
         
@@ -91,12 +96,14 @@
             <HyperlinkButton Content="Module overview" NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/powerrename"/>
             <HyperlinkButton Content="Give feedback"/>
 
+            <!--
             <TextBlock Text="Contributors"
                            Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <HyperlinkButton Content="Contributor name"/>
             <HyperlinkButton Content="Contributor name"/>
             <HyperlinkButton Content="Contributor name"/>
+            -->
         </StackPanel>
     </Grid>
 </Page>
