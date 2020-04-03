@@ -80,15 +80,15 @@ public:
         //keyboardManagerState.singleKeyReMap[0x42] = 0x43;
         //keyboardManagerState.singleKeyReMap[0x43] = 0x41;
         //keyboardManagerState.singleKeyReMap[VK_LWIN] = VK_LCONTROL;
-        keyboardManagerState.singleKeyReMap[VK_LCONTROL] = VK_RWIN;
+        //keyboardManagerState.singleKeyReMap[VK_LCONTROL] = VK_RWIN;
         //keyboardManagerState.singleKeyReMap[VK_CAPITAL] = 0x0;
         //keyboardManagerState.singleKeyReMap[VK_LSHIFT] = VK_CAPITAL;
         //keyboardManagerState.singleKeyToggleToMod[VK_CAPITAL] = false;
 
         //// OS-level shortcut remappings
-        Shortcut newShortcut = Shortcut::CreateShortcut(winrt::to_hstring(L"Win 65"));
-        Shortcut originalShortcut = Shortcut::CreateShortcut(winrt::to_hstring(L"Shift 65"));
-        keyboardManagerState.AddOSLevelShortcut(originalShortcut, newShortcut);
+        //Shortcut newShortcut = Shortcut::CreateShortcut(winrt::to_hstring(L"Win 65"));
+        //Shortcut originalShortcut = Shortcut::CreateShortcut(winrt::to_hstring(L"Shift 65"));
+        //keyboardManagerState.AddOSLevelShortcut(originalShortcut, newShortcut);
         //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false);
         //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x45 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
         //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x53 }), false);
