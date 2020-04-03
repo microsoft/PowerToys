@@ -1,45 +1,73 @@
 #pragma once
 
+#include "json.h"
+
+#include <string>
+#include <mutex>
+
 class CSettings
 {
 public:
     static const int MAX_INPUT_STRING_LEN = 1024;
 
-    static bool GetEnabled();
-    static bool SetEnabled(_In_ bool enabled);
+    CSettings();
 
-    static bool GetShowIconOnMenu();
-    static bool SetShowIconOnMenu(_In_ bool show);
+    bool GetEnabled() const;
+    void SetEnabled(bool enabled);
 
-    static bool GetExtendedContextMenuOnly();
-    static bool SetExtendedContextMenuOnly(_In_ bool extendedOnly);
+    bool GetShowIconOnMenu() const;
+    void SetShowIconOnMenu(bool show);
 
-    static bool GetPersistState();
-    static bool SetPersistState(_In_ bool extendedOnly);
+    bool GetExtendedContextMenuOnly() const;
+    void SetExtendedContextMenuOnly(bool extendedOnly);
 
-    static bool GetMRUEnabled();
-    static bool SetMRUEnabled(_In_ bool enabled);
+    bool GetPersistState() const;
+    void SetPersistState(bool persistState);
 
-    static DWORD GetMaxMRUSize();
-    static bool SetMaxMRUSize(_In_ DWORD maxMRUSize);
+    bool GetMRUEnabled() const;
+    void SetMRUEnabled(bool MRUEenabled);
 
-    static DWORD GetFlags();
-    static bool SetFlags(_In_ DWORD flags);
+    long GetMaxMRUSize() const;
+    void SetMaxMRUSize(long maxMRUSize);
 
-    static bool GetSearchText(__out_ecount(cchBuf) PWSTR text, DWORD cchBuf);
-    static bool SetSearchText(_In_ PCWSTR text);
+    long GetFlags() const;
+    void SetFlags(long flags);
 
-    static bool GetReplaceText(__out_ecount(cchBuf) PWSTR text, DWORD cchBuf);
-    static bool SetReplaceText(_In_ PCWSTR text);
+    const std::wstring& GetSearchText() const;
+    void SetSearchText(const std::wstring& text);
+
+    const std::wstring& GetReplaceText() const;
+    void SetReplaceText(const std::wstring& text);
+
+    void LoadPowerRenameData();
+    void SavePowerRenameData() const;
 
 private:
-    static bool GetRegBoolValue(_In_ PCWSTR valueName, _In_ bool defaultValue);
-    static bool SetRegBoolValue(_In_ PCWSTR valueName, _In_ bool value);
-    static bool SetRegDWORDValue(_In_ PCWSTR valueName, _In_ DWORD value);
-    static DWORD GetRegDWORDValue(_In_ PCWSTR valueName, _In_ DWORD defaultValue);
-    static bool SetRegStringValue(_In_ PCWSTR valueName, _In_ PCWSTR value);
-    static bool GetRegStringValue(_In_ PCWSTR valueName, __out_ecount(cchBuf) PWSTR value, DWORD cchBuf);
+    struct Settings
+    {
+        bool enabled{ true };
+        bool showIconOnMenu{ true };
+        bool extendedContextMenuOnly{ false }; // Disabled by default.
+        bool persistState{ true };
+        bool MRUEnabled{ true };
+        long maxMRUSize{ 10 };
+        long flags{ 0 };
+        std::wstring searchText;
+        std::wstring replaceText;
+    };
+
+    json::JsonObject GetPersistPowerRenameJSON();
+
+    void MigrateSettingsFromRegistry();
+    void ParseJsonSettings(const json::JsonObject& jsonSettings);
+
+    Settings settings;
+    std::wstring jsonFilePath;
+
+    mutable std::recursive_mutex dataLock;
 };
+
+CSettings& CSettingsInstance();
 
 HRESULT CRenameMRUSearch_CreateInstance(_Outptr_ IUnknown** ppUnk);
 HRESULT CRenameMRUReplace_CreateInstance(_Outptr_ IUnknown** ppUnk);
