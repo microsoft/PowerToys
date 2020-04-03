@@ -148,7 +148,7 @@ namespace ZoneWindowDrawUtils
                            COLORREF highlightColor,
                            int zoneOpacity,
                            const std::vector<winrt::com_ptr<IZone>>& zones,
-                           const winrt::com_ptr<IZone>& highlightZone,
+                           const std::vector<int>& highlightZone,
                            bool flashMode,
                            bool drawHints) noexcept
     {
@@ -158,15 +158,22 @@ namespace ZoneWindowDrawUtils
         ColorSetting colorHighlight{ OpacitySettingToAlpha(zoneOpacity), 0, 255, 0, -2 };
         ColorSetting const colorFlash{ OpacitySettingToAlpha(zoneOpacity), RGB(81, 92, 107), 200, RGB(104, 118, 138), -2 };
 
+        std::vector<bool> isHighlighted(zones.size(), false);
+        for (int x : highlightZone)
+        {
+            isHighlighted[x] = true;
+        }
+
         for (auto iter = zones.begin(); iter != zones.end(); iter++)
         {
+            int zoneId = iter - zones.begin();
             winrt::com_ptr<IZone> zone = iter->try_as<IZone>();
             if (!zone)
             {
                 continue;
             }
 
-            if (zone != highlightZone)
+            if (!isHighlighted[zoneId])
             {
                 if (flashMode)
                 {
@@ -182,13 +189,12 @@ namespace ZoneWindowDrawUtils
                     DrawZone(hdc, colorViewer, zone, zones, flashMode);
                 }
             }
-        }
-
-        if (highlightZone)
-        {
-            colorHighlight.fill = highlightColor;
-            colorHighlight.border = zoneBorderColor;
-            DrawZone(hdc, colorHighlight, highlightZone, zones, flashMode);
+            else
+            {
+                colorHighlight.fill = highlightColor;
+                colorHighlight.border = zoneBorderColor;
+                DrawZone(hdc, colorHighlight, zone, zones, flashMode);
+            }
         }
     }
 }
@@ -240,7 +246,7 @@ private:
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
     void OnPaint(wil::unique_hdc& hdc) noexcept;
     void OnKeyUp(WPARAM wparam) noexcept;
-    winrt::com_ptr<IZone> ZoneFromPoint(POINT pt) noexcept;
+    std::vector<int> ZonesFromPoint(POINT pt) noexcept;
     void CycleActiveZoneSetInternal(DWORD wparam, Trace::ZoneWindow::InputMode mode) noexcept;
     void FlashZones() noexcept;
 
@@ -255,7 +261,7 @@ private:
     bool m_dragEnabled{};
     winrt::com_ptr<IZoneSet> m_activeZoneSet;
     std::vector<winrt::com_ptr<IZoneSet>> m_zoneSets;
-    winrt::com_ptr<IZone> m_highlightZone;
+    std::vector<int> m_highlightZone;
     WPARAM m_keyLast{};
     size_t m_keyCycle{};
     static const UINT m_showAnimationDuration = 200; // ms
@@ -365,7 +371,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnter(HWND window, bool dragEnabled) noexcept
     m_dragEnabled = dragEnabled;
     m_windowMoveSize = window;
     m_drawHints = true;
-    m_highlightZone = nullptr;
+    m_highlightZone = {};
     ShowZoneWindow();
     return S_OK;
 }
@@ -380,13 +386,13 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
 
     if (dragEnabled)
     {
-        auto highlightZone = ZoneFromPoint(ptClient);
+        auto highlightZone = ZonesFromPoint(ptClient);
         redraw = (highlightZone != m_highlightZone);
         m_highlightZone = std::move(highlightZone);
     }
-    else if (m_highlightZone)
+    else if (m_highlightZone.size())
     {
-        m_highlightZone = nullptr;
+        m_highlightZone = {};
         redraw = true;
     }
 
@@ -526,7 +532,7 @@ ZoneWindow::HideZoneWindow() noexcept
         m_keyLast = 0;
         m_windowMoveSize = nullptr;
         m_drawHints = false;
-        m_highlightZone = nullptr;
+        m_highlightZone = {};
     }
 }
 
@@ -693,13 +699,13 @@ void ZoneWindow::OnKeyUp(WPARAM wparam) noexcept
     }
 }
 
-winrt::com_ptr<IZone> ZoneWindow::ZoneFromPoint(POINT pt) noexcept
+std::vector<int> ZoneWindow::ZonesFromPoint(POINT pt) noexcept
 {
     if (m_activeZoneSet)
     {
-        return m_activeZoneSet->ZoneFromPoint(pt);
+        return m_activeZoneSet->ZonesFromPoint(pt);
     }
-    return nullptr;
+    return {};
 }
 
 void ZoneWindow::CycleActiveZoneSetInternal(DWORD wparam, Trace::ZoneWindow::InputMode mode) noexcept
@@ -747,7 +753,7 @@ void ZoneWindow::CycleActiveZoneSetInternal(DWORD wparam, Trace::ZoneWindow::Inp
     {
         m_host->MoveWindowsOnActiveZoneSetChange();
     }
-    m_highlightZone = nullptr;
+    m_highlightZone = {};
 }
 
 void ZoneWindow::FlashZones() noexcept

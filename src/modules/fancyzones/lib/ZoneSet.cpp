@@ -122,8 +122,8 @@ public:
     IFACEMETHODIMP_(JSONHelpers::ZoneSetLayoutType)
     LayoutType() noexcept { return m_config.LayoutType; }
     IFACEMETHODIMP AddZone(winrt::com_ptr<IZone> zone) noexcept;
-    IFACEMETHODIMP_(winrt::com_ptr<IZone>)
-    ZoneFromPoint(POINT pt) noexcept;
+    IFACEMETHODIMP_(std::vector<int>)
+    ZonesFromPoint(POINT pt) noexcept;
     IFACEMETHODIMP_(int)
     GetZoneIndexFromWindow(HWND window) noexcept;
     IFACEMETHODIMP_(std::vector<winrt::com_ptr<IZone>>)
@@ -164,41 +164,63 @@ IFACEMETHODIMP ZoneSet::AddZone(winrt::com_ptr<IZone> zone) noexcept
     return S_OK;
 }
 
-IFACEMETHODIMP_(winrt::com_ptr<IZone>)
-ZoneSet::ZoneFromPoint(POINT pt) noexcept
+IFACEMETHODIMP_(std::vector<int>)
+ZoneSet::ZonesFromPoint(POINT pt) noexcept
 {
-    winrt::com_ptr<IZone> smallestKnownZone = nullptr;
-    // To reduce redundant calculations, we will store the last known zones area.
-    int smallestKnownZoneArea = INT32_MAX;
-    for (auto iter = m_zones.rbegin(); iter != m_zones.rend(); iter++)
+    const int SENSITIVITY_RADIUS = 40;
+    std::vector<int> capturedZones;
+    for (size_t i = 0; i < m_zones.size(); i++)
     {
-        if (winrt::com_ptr<IZone> zone = iter->try_as<IZone>())
+        auto zone = m_zones[i];
+        RECT newZoneRect = zone->GetZoneRect();
+        if (newZoneRect.left - SENSITIVITY_RADIUS <= pt.x && pt.x <= newZoneRect.right + SENSITIVITY_RADIUS &&
+            newZoneRect.top - SENSITIVITY_RADIUS <= pt.y && pt.y <= newZoneRect.bottom + SENSITIVITY_RADIUS &&
+            newZoneRect.left < newZoneRect.right && newZoneRect.top < newZoneRect.bottom) // proper zone
         {
-            RECT* newZoneRect = &zone->GetZoneRect();
-            if (PtInRect(newZoneRect, pt))
+            capturedZones.emplace_back(i);
+        }
+    }
+
+    // If captured zones do not overlap, return all of them
+    // Otherwise, return the smallest one
+
+    bool overlap = false;
+    for (size_t i = 0; i < capturedZones.size(); ++i)
+    {
+        for (size_t j = i + 1; j < capturedZones.size(); ++j)
+        {
+            auto rectI = m_zones[capturedZones[i]]->GetZoneRect();
+            auto rectJ = m_zones[capturedZones[j]]->GetZoneRect();
+            if (max(rectI.top, rectJ.top) < min(rectI.bottom, rectJ.bottom) &&
+                max(rectI.left, rectJ.left) < min(rectI.right, rectJ.right))
             {
-                if (smallestKnownZone == nullptr)
-                {
-                    smallestKnownZone = zone;
-
-                    RECT* r = &smallestKnownZone->GetZoneRect();
-                    smallestKnownZoneArea = (r->right - r->left) * (r->bottom - r->top);
-                }
-                else
-                {
-                    int newZoneArea = (newZoneRect->right - newZoneRect->left) * (newZoneRect->bottom - newZoneRect->top);
-
-                    if (newZoneArea < smallestKnownZoneArea)
-                    {
-                        smallestKnownZone = zone;
-                        smallestKnownZoneArea = newZoneArea;
-                    }
-                }
+                overlap = true;
+                i = capturedZones.size() - 1;
+                break;
             }
         }
     }
 
-    return smallestKnownZone;
+    if (overlap)
+    {
+        size_t smallestIdx = 0;
+        for (size_t i = 1; i < capturedZones.size(); ++i)
+        {
+            auto rectS = m_zones[capturedZones[smallestIdx]]->GetZoneRect();
+            auto rectI = m_zones[capturedZones[i]]->GetZoneRect();
+            int smallestSize = (rectS.bottom - rectS.top) * (rectS.right - rectS.left);
+            int iSize = (rectI.bottom - rectI.top) * (rectI.right - rectI.left);
+
+            if (iSize <= smallestSize)
+            {
+                smallestIdx = i;
+            }
+        }
+
+        capturedZones = { capturedZones[smallestIdx] };
+    }
+
+    return capturedZones;
 }
 
 IFACEMETHODIMP_(int)
@@ -356,10 +378,8 @@ ZoneSet::MoveWindowIntoZoneByPoint(HWND window, HWND zoneWindow, POINT ptClient)
         zoneDrop->RemoveWindowFromZone(window, !IsZoomed(window));
     }
 
-    if (auto zone = ZoneFromPoint(ptClient))
-    {
-        zone->AddWindowToZone(window, zoneWindow, true);
-    }
+    auto zones = ZonesFromPoint(ptClient);
+    MoveWindowIntoZoneByIndexSet(window, zoneWindow, zones);
 }
 
 IFACEMETHODIMP_(bool)

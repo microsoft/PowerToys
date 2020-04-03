@@ -132,8 +132,8 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (ZoneFromPointEmpty)
             {
-                auto actual = m_set->ZoneFromPoint(POINT{ 0, 0 });
-                Assert::IsTrue(nullptr == actual);
+                auto actual = m_set->ZonesFromPoint(POINT{ 0, 0 });
+                Assert::IsTrue(actual.size() == 0);
             }
 
             TEST_METHOD (ZoneFromPointInner)
@@ -146,44 +146,48 @@ namespace FancyZonesUnitTests
                 {
                     for (int j = top + 1; j < bottom; j++)
                     {
-                        auto actual = m_set->ZoneFromPoint(POINT{ i, j });
-                        Assert::IsTrue(actual != nullptr);
-                        compareZones(expected, actual);
+                        auto actual = m_set->ZonesFromPoint(POINT{ i, j });
+                        Assert::IsTrue(actual.size() == 1);
+                        compareZones(expected, m_set->GetZones()[actual[0]]);
                     }
                 }
             }
 
             TEST_METHOD (ZoneFromPointBorder)
             {
+                // Due to Multizones support, points on the border are considered to belong to the zone
+
                 const int left = 0, top = 0, right = 100, bottom = 100;
                 winrt::com_ptr<IZone> expected = MakeZone({ left, top, right, bottom });
                 m_set->AddZone(expected);
 
                 for (int i = left; i < right; i++)
                 {
-                    auto actual = m_set->ZoneFromPoint(POINT{ i, top });
-                    Assert::IsTrue(actual != nullptr);
-                    compareZones(expected, actual);
+                    auto actual = m_set->ZonesFromPoint(POINT{ i, top });
+                    Assert::IsTrue(actual.size() == 1);
+                    compareZones(expected, m_set->GetZones()[actual[0]]);
                 }
 
                 for (int i = top; i < bottom; i++)
                 {
-                    auto actual = m_set->ZoneFromPoint(POINT{ left, i });
-                    Assert::IsTrue(actual != nullptr);
-                    compareZones(expected, actual);
+                    auto actual = m_set->ZonesFromPoint(POINT{ left, i });
+                    Assert::IsTrue(actual.size() == 1);
+                    compareZones(expected, m_set->GetZones()[actual[0]]);
                 }
 
                 //bottom and right borders considered to be outside
                 for (int i = left; i < right; i++)
                 {
-                    auto actual = m_set->ZoneFromPoint(POINT{ i, bottom });
-                    Assert::IsTrue(nullptr == actual);
+                    auto actual = m_set->ZonesFromPoint(POINT{ i, bottom });
+                    Assert::IsTrue(actual.size() == 1);
+                    compareZones(expected, m_set->GetZones()[actual[0]]);
                 }
 
                 for (int i = top; i < bottom; i++)
                 {
-                    auto actual = m_set->ZoneFromPoint(POINT{ right, i });
-                    Assert::IsTrue(nullptr == actual);
+                    auto actual = m_set->ZonesFromPoint(POINT{ right, i });
+                    Assert::IsTrue(actual.size() == 1);
+                    compareZones(expected, m_set->GetZones()[actual[0]]);
                 }
             }
 
@@ -193,8 +197,8 @@ namespace FancyZonesUnitTests
                 winrt::com_ptr<IZone> zone = MakeZone({ left, top, right, bottom });
                 m_set->AddZone(zone);
 
-                auto actual = m_set->ZoneFromPoint(POINT{ 101, 101 });
-                Assert::IsTrue(actual == nullptr);
+                auto actual = m_set->ZonesFromPoint(POINT{ 200, 200 });
+                Assert::IsTrue(actual.size() == 0);
             }
 
             TEST_METHOD (ZoneFromPointOverlapping)
@@ -208,9 +212,12 @@ namespace FancyZonesUnitTests
                 winrt::com_ptr<IZone> zone4 = MakeZone({ 10, 10, 50, 50 });
                 m_set->AddZone(zone4);
 
-                auto actual = m_set->ZoneFromPoint(POINT{ 50, 50 });
-                Assert::IsTrue(actual != nullptr);
-                compareZones(zone2, actual);
+                // zone4 is expected because it's the smallest one, and it's considered to be inside
+                // since Multizones support
+
+                auto actual = m_set->ZonesFromPoint(POINT{ 50, 50 });
+                Assert::IsTrue(actual.size() == 1);
+                compareZones(zone4, m_set->GetZones()[actual[0]]);
             }
 
             TEST_METHOD (ZoneFromPointWithNotNormalizedRect)
@@ -218,8 +225,8 @@ namespace FancyZonesUnitTests
                 winrt::com_ptr<IZone> zone = MakeZone({ 100, 100, 0, 0 });
                 m_set->AddZone(zone);
 
-                auto actual = m_set->ZoneFromPoint(POINT{ 50, 50 });
-                Assert::IsTrue(actual == nullptr);
+                auto actual = m_set->ZonesFromPoint(POINT{ 50, 50 });
+                Assert::IsTrue(actual.size() == 0);
             }
 
             TEST_METHOD (ZoneFromPointWithZeroRect)
@@ -227,8 +234,8 @@ namespace FancyZonesUnitTests
                 winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 0, 0 });
                 m_set->AddZone(zone);
 
-                auto actual = m_set->ZoneFromPoint(POINT{ 0, 0 });
-                Assert::IsTrue(actual == nullptr);
+                auto actual = m_set->ZonesFromPoint(POINT{ 0, 0 });
+                Assert::IsTrue(actual.size() == 0);
             }
 
             TEST_METHOD (ZoneIndexFromWindow)
@@ -401,7 +408,7 @@ namespace FancyZonesUnitTests
                 m_set->AddZone(zone1);
 
                 auto window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 101, 101 });
+                m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 200, 200 });
 
                 Assert::IsFalse(zone1->ContainsWindow(window));
             }

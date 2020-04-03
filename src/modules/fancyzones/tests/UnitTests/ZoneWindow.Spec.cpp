@@ -458,7 +458,7 @@ namespace FancyZonesUnitTests
             zoneWindow->MoveSizeEnter(window, true);
 
             const auto expected = S_OK;
-            const auto actual = zoneWindow->MoveSizeEnd(window, POINT{ 0, 0 });
+            const auto actual = zoneWindow->MoveSizeEnd(window, POINT{ -100, -100 });
             Assert::AreEqual(expected, actual);
 
             const auto zoneSet = zoneWindow->ActiveZoneSet();
