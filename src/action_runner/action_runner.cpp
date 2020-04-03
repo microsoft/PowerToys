@@ -4,19 +4,23 @@
 
 #include <string_view>
 
-#include <common/msi_to_msix_upgrade_lib/msi_to_msix_upgrade.h>
+#include <common/common.h>
+#include <common/updating/updating.h>
 
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Storage.h>
+#include <Msi.h>
+
+#include "../runner/tray_icon.h"
 
 int uninstall_msi_action()
 {
-    const auto package_path = get_msi_package_path();
+    const auto package_path = updating::get_msi_package_path();
     if (package_path.empty())
     {
         return 0;
     }
-    if (!uninstall_msi_version(package_path))
+    if (!updating::uninstall_msi_version(package_path))
     {
         return -1;
     }
@@ -33,6 +37,84 @@ int uninstall_msi_action()
     return 0;
 }
 
+namespace fs = std::filesystem;
+
+std::optional<fs::path> copy_self_to_temp_dir()
+{
+    std::error_code error;
+    auto dst_path = fs::temp_directory_path() / "action_runner.exe";
+    fs::copy_file(get_module_filename(), dst_path, fs::copy_options::overwrite_existing, error);
+    if (error)
+    {
+        return std::nullopt;
+    }
+    return std::move(dst_path);
+}
+
+bool install_new_version_stage_1(const bool must_restart = false)
+{
+    std::optional<fs::path> installer;
+    for (auto path : fs::directory_iterator{ updating::get_pending_updates_path() })
+    {
+        if (path.path().native().find(updating::installer_filename_pattern) != std::wstring::npos)
+        {
+            installer.emplace(std::move(path));
+            break;
+        }
+    }
+    if (!installer)
+    {
+        return false;
+    }
+
+    if (auto copy_in_temp = copy_self_to_temp_dir())
+    {
+        // detect if PT was running
+        const bool launch_powertoys = must_restart || FindWindowW(pt_tray_icon_window_class, nullptr) != nullptr;
+
+        std::wstring arguments{ L"-update_now_stage_2 \"" };
+        arguments += installer->c_str();
+        arguments += L"\" \"";
+        arguments += get_module_folderpath();
+        arguments += L"\" ";
+        arguments += launch_powertoys ? L"restart" : L"dont_start";
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC };
+        sei.lpFile = copy_in_temp->c_str();
+        sei.nShow = SW_SHOWNORMAL;
+
+        sei.lpParameters = arguments.c_str();
+        return ShellExecuteExW(&sei) == TRUE;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool install_new_version_stage_2(std::wstring_view installer_path, std::wstring_view install_path, const bool launch_powertoys)
+{
+    if (MsiInstallProductW(installer_path.data(), nullptr) != ERROR_SUCCESS)
+    {
+        return false;
+    }
+
+    std::error_code _;
+    fs::remove(installer_path, _);
+    if (launch_powertoys)
+    {
+        std::wstring new_pt_path{ install_path };
+        new_pt_path += L"\\PowerToys.exe";
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC };
+        sei.lpFile = new_pt_path.c_str();
+        sei.nShow = SW_SHOWNORMAL;
+        sei.lpParameters = L"-report_update_success";
+        return ShellExecuteExW(&sei) == TRUE;
+    }
+    return true;
+}
+
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
     int nArgs = 0;
@@ -46,6 +128,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     if (action == L"-uninstall_msi")
     {
         return uninstall_msi_action();
+    }
+    else if (action == L"-update_now")
+    {
+        return !install_new_version_stage_1();
+    }
+    else if (action == L"-update_now_and_start_pt")
+    {
+        return !install_new_version_stage_1(true);
+    }
+    else if (action == L"-update_now_stage_2")
+    {
+        using namespace std::string_view_literals;
+        return !install_new_version_stage_2(args[2], args[3], args[4] == L"restart"sv);
     }
 
     return 0;

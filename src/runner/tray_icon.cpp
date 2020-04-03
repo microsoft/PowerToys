@@ -164,17 +164,16 @@ void start_tray_icon()
     {
         UINT id_tray_icon = wm_icon_notify = RegisterWindowMessageW(L"WM_PowerToysIconNotify");
 
-        static LPCWSTR class_name = L"PToyTrayIconWindow";
         WNDCLASS wc = {};
         wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
         wc.hInstance = h_instance;
-        wc.lpszClassName = class_name;
+        wc.lpszClassName = pt_tray_icon_window_class;
         wc.style = CS_HREDRAW | CS_VREDRAW;
         wc.lpfnWndProc = tray_icon_window_proc;
         wc.hIcon = icon;
         RegisterClass(&wc);
         auto hwnd = CreateWindowW(wc.lpszClassName,
-                                  L"PToyTrayIconWindow",
+                                  pt_tray_icon_window_class,
                                   WS_OVERLAPPEDWINDOW | WS_POPUP,
                                   CW_USEDEFAULT,
                                   CW_USEDEFAULT,

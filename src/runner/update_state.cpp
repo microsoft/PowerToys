@@ -8,31 +8,59 @@
 namespace
 {
     const wchar_t PERSISTENT_STATE_FILENAME[] = L"\\update_state.json";
+    const wchar_t UPDATE_STATE_MUTEX[] = L"PTUpdateStateMutex";
 }
 
-UpdateState UpdateState::load()
+UpdateState deserialize(const json::JsonObject& json)
 {
-    const auto file_name = PTSettingsHelper::get_root_save_folder_location() + PERSISTENT_STATE_FILENAME;
-    auto json = json::from_file(file_name);
-    UpdateState state;
+    UpdateState result;
 
-    if (!json)
-    {
-        return state;
-    }
+    result.github_update_last_checked_date = timeutil::from_string(json.GetNamedString(L"github_update_last_checked_date", L"invalid").c_str());
+    result.pending_update = json.GetNamedBoolean(L"pending_update", false);
 
-    state.github_update_last_checked_date = timeutil::from_string(json->GetNamedString(L"github_update_last_checked_date", L"invalid").c_str());
-
-    return state;
+    return result;
 }
 
-void UpdateState::save()
+json::JsonObject serialize(const UpdateState& state)
 {
     json::JsonObject json;
-    if (github_update_last_checked_date.has_value())
+    if (state.github_update_last_checked_date.has_value())
     {
-        json.SetNamedValue(L"github_update_last_checked_date", json::value(timeutil::to_string(*github_update_last_checked_date)));
+        json.SetNamedValue(L"github_update_last_checked_date", json::value(timeutil::to_string(*state.github_update_last_checked_date)));
     }
+    json.SetNamedValue(L"pending_update", json::value(state.pending_update));
+
+    return json;
+}
+
+UpdateState UpdateState::read()
+{
     const auto file_name = PTSettingsHelper::get_root_save_folder_location() + PERSISTENT_STATE_FILENAME;
-    json::to_file(file_name, json);
+    std::optional<json::JsonObject> json;
+    {
+        wil::unique_mutex_nothrow mutex{ CreateMutexW(nullptr, FALSE, UPDATE_STATE_MUTEX) };
+        auto lock = mutex.acquire();
+        json = json::from_file(file_name);
+    }
+    return json ? deserialize(*json) : UpdateState{};
+}
+
+void UpdateState::store(std::function<void(UpdateState&)> state_modifier)
+{
+    const auto file_name = PTSettingsHelper::get_root_save_folder_location() + PERSISTENT_STATE_FILENAME;
+
+    std::optional<json::JsonObject> json;
+    {
+        wil::unique_mutex_nothrow mutex{ CreateMutexW(nullptr, FALSE, UPDATE_STATE_MUTEX) };
+        auto lock = mutex.acquire();
+        json = json::from_file(file_name);
+        UpdateState state;
+        if (json)
+        {
+            state = deserialize(*json);
+        }
+        state_modifier(state);
+        json.emplace(serialize(state));
+        json::to_file(file_name, *json);
+    }
 }
