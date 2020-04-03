@@ -199,7 +199,7 @@ public:
     ZoneWindow(HINSTANCE hinstance);
     ~ZoneWindow();
 
-    bool Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, bool flashZone, bool newWorkArea);
+    bool Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, bool flashZones, bool newWorkArea);
 
     IFACEMETHODIMP MoveSizeEnter(HWND window, bool dragEnabled) noexcept;
     IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled) noexcept;
