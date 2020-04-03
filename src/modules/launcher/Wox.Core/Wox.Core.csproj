@@ -59,7 +59,7 @@
     <PackageReference Include="JetBrains.Annotations" Version="2019.1.3" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="ppy.squirrel.windows" Version="1.9.0.4" />
-    <PackageReference Include="PropertyChanged.Fody" Version="3.2.6" />
+    <PackageReference Include="PropertyChanged.Fody" Version="3.2.7" />
     <PackageReference Include="SharpZipLib" Version="1.2.0" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>

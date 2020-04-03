@@ -49,8 +49,8 @@
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2019.1.3" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="NLog.Schema" Version="4.7.0-rc1" />
-    <PackageReference Include="NLog.Web.AspNetCore" Version="4.9.0" />
+    <PackageReference Include="NLog.Schema" Version="4.7.0" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="4.9.1" />
     <PackageReference Include="Pinyin4DotNet" Version="2016.4.23.4" />
     <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />

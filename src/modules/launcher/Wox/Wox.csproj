@@ -57,21 +57,18 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="InputSimulator" Version="1.0.4" />
     <PackageReference Include="JetBrains.Annotations" Version="2019.1.3" />
-    <PackageReference Include="Mages" Version="1.6.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="NHotkey.Wpf" Version="1.2.1" />
-    <PackageReference Include="NLog.Web.AspNetCore" Version="4.9.0" />
+    <PackageReference Include="NHotkey.Wpf" Version="2.0.0" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="4.9.1" />
     <PackageReference Include="NuGet.CommandLine" Version="5.4.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="PropertyChanged.Fody" Version="3.2.6" />
+    <PackageReference Include="PropertyChanged.Fody" Version="3.2.7" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.112" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.112" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
-    <PackageReference Include="UnidecodeSharp" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
