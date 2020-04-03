@@ -353,7 +353,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnter(HWND window, bool dragEnabled) noexcept
         draggedWindow = window;
         SetWindowLong(window,
                       GWL_EXSTYLE,
-                      GetWindowLong(window, GWL_EXSTYLE) | WS_EX_LAYERED);
+                      draggedWindowExstyle | WS_EX_LAYERED);
 
         GetLayeredWindowAttributes(window, &draggedWindowCrKey, &draggedWindowInitialAlpha, &draggedWindowDwFlags);
 
