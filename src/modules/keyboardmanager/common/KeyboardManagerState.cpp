@@ -69,9 +69,8 @@ void KeyboardManagerState::ClearSingleKeyRemaps()
 }
 
 // Function to add a new OS level shortcut remapping
-bool KeyboardManagerState::AddOSLevelShortcut(const std::vector<DWORD>& originalSC, const std::vector<DWORD>& newSC)
+bool KeyboardManagerState::AddOSLevelShortcut(const Shortcut& originalSC, const Shortcut& newSC)
 {
-
     // Check if the shortcut is already remapped
     auto it = osLevelShortcutReMap.find(originalSC);
     if (it != osLevelShortcutReMap.end())
@@ -117,7 +116,7 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
         return;
     }
 
-    hstring shortcutString = detectedShortcut.toHstring();
+    hstring shortcutString = detectedShortcut.ToHstring();
 
     // Since this function is invoked from the back-end thread, in order to update the UI the dispatcher must be used.
     currentShortcutTextBlock.Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [=]() {
@@ -145,7 +144,7 @@ void KeyboardManagerState::UpdateDetectSingleKeyRemapUI()
 Shortcut KeyboardManagerState::GetDetectedShortcut()
 {
     hstring detectedShortcutString = currentShortcutTextBlock.Text();
-    return Shortcut::createShortcut(detectedShortcutString);
+    return Shortcut::CreateShortcut(detectedShortcutString);
 }
 
 // Function to return the currently detected remap key which is displayed on the UI
@@ -214,7 +213,7 @@ bool KeyboardManagerState::DetectShortcutUIBackend(LowlevelKeyboardEvent* data)
     // If the detect shortcut UI window is not activated, then clear the shortcut buffer if it isn't empty
     else
     {
-        if (!detectedShortcut.isEmpty())
+        if (!detectedShortcut.IsEmpty())
         {
             detectedShortcut.Reset();
         }

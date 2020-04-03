@@ -49,10 +49,10 @@ public:
     std::unordered_map<DWORD, bool> singleKeyToggleToMod;
 
     // Stores the os level shortcut remappings
-    std::map<std::vector<DWORD>, std::pair<std::vector<DWORD>, bool>> osLevelShortcutReMap;
+    std::map<Shortcut, std::pair<Shortcut, bool>> osLevelShortcutReMap;
 
     // Stores the app-specific shortcut remappings. Maps application name to the shortcut map
-    std::map<std::wstring, std::map<std::vector<DWORD>, std::pair<std::vector<DWORD>, bool>>> appSpecificShortcutReMap;
+    std::map<std::wstring, std::map<Shortcut, std::pair<Shortcut, bool>>> appSpecificShortcutReMap;
 
     // Constructor
     KeyboardManagerState();
@@ -79,7 +79,7 @@ public:
     bool AddSingleKeyRemap(const DWORD& originalKey, const DWORD& newRemapKey);
 
     // Function to add a new OS level shortcut remapping
-    bool AddOSLevelShortcut(const std::vector<DWORD>& originalSC, const std::vector<DWORD>& newSC);
+    bool AddOSLevelShortcut(const Shortcut& originalSC, const Shortcut& newSC);
 
     // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
     void ConfigureDetectShortcutUI(const TextBlock& textBlock);

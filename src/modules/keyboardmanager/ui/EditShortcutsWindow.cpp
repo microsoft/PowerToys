@@ -133,43 +133,17 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         for (unsigned int i = 1; i < shortcutTable.Children().Size(); i++)
         {
             StackPanel currentRow = shortcutTable.Children().GetAt(i).as<StackPanel>();
-            hstring originalShortcut = currentRow.Children().GetAt(0).as<StackPanel>().Children().GetAt(1).as<TextBlock>().Text();
-            hstring newShortcut = currentRow.Children().GetAt(1).as<StackPanel>().Children().GetAt(1).as<TextBlock>().Text();
-            if (!originalShortcut.empty() && !newShortcut.empty())
+            hstring originalShortcutText = currentRow.Children().GetAt(0).as<StackPanel>().Children().GetAt(1).as<TextBlock>().Text();
+            hstring newShortcutText = currentRow.Children().GetAt(1).as<StackPanel>().Children().GetAt(1).as<TextBlock>().Text();
+            if (!originalShortcutText.empty() && !newShortcutText.empty())
             {
-                std::vector<DWORD> originalKeys;
-                std::vector<std::wstring> shortcutVector = splitwstring(originalShortcut.c_str(), L' ');
-                for (int i = 0; i < shortcutVector.size(); i++)
-                {
-                    if (shortcutVector[i] == L"Win")
-                    {
-                        originalKeys.push_back(VK_LWIN);
-                    }
-                    else
-                    {
-                        DWORD keyCode = Shortcut::decodeKey(shortcutVector[i]);
-                        originalKeys.push_back(keyCode);
-                    }
-                }
-                std::vector<DWORD> newKeys;
-                shortcutVector = splitwstring(newShortcut.c_str(), L' ');
-                for (int i = 0; i < shortcutVector.size(); i++)
-                {
-                    if (shortcutVector[i] == L"Win")
-                    {
-                        newKeys.push_back(VK_LWIN);
-                    }
-                    else
-                    {
-                        DWORD keyCode = Shortcut::decodeKey(shortcutVector[i]);
-                        newKeys.push_back(keyCode);
-                    }
-                }
+                Shortcut originalShortcut = Shortcut::CreateShortcut(originalShortcutText);
+                Shortcut newShortcut = Shortcut::CreateShortcut(newShortcutText);
 
-                // Shortcut should consist of atleast two keys
-                if (originalKeys.size() > 1 && newKeys.size() > 1)
+                // Shortcut should be valid
+                if (originalShortcut.IsValidShortcut() && originalShortcut.IsValidShortcut())
                 {
-                    bool result = keyboardManagerState.AddOSLevelShortcut(originalKeys, newKeys);
+                    bool result = keyboardManagerState.AddOSLevelShortcut(originalShortcut, newShortcut);
                     if (!result)
                     {
                         isSuccess = false;
