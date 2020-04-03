@@ -259,8 +259,12 @@ private:
     static const UINT m_showAnimationDuration = 200; // ms
     static const UINT m_flashDuration = 700; // ms
 
-    HWND draggedWindow;
-    BYTE draggedWindowInitialAlpha;
+    HWND draggedWindow = nullptr;
+    long draggedWindowExstyle = 0;
+    COLORREF draggedWindowCrKey = RGB(0, 0, 0);
+    DWORD draggedWindowDwFlags = 0;
+    BYTE draggedWindowInitialAlpha = 0;
+
     ULONG_PTR gdiplusToken;
 };
 
@@ -335,20 +339,25 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
 
 IFACEMETHODIMP ZoneWindow::MoveSizeEnter(HWND window, bool dragEnabled) noexcept
 {
-    if (m_host->isMakeDraggedWindowTransparentActive())
-    {
-        draggedWindow = window;
-        SetWindowLong(window,
-                      GWL_EXSTYLE,
-                      GetWindowLong(window, GWL_EXSTYLE) | WS_EX_LAYERED);
-
-        GetLayeredWindowAttributes(window, 0, &draggedWindowInitialAlpha, 0);
-
-        SetLayeredWindowAttributes(window, 0, (255 * 50) / 100, LWA_ALPHA);
-    }
     if (m_windowMoveSize)
     {
         return E_INVALIDARG;
+    }
+
+    if (m_host->isMakeDraggedWindowTransparentActive())
+    {
+        RestoreOrginalTransparency();
+
+        draggedWindowExstyle = GetWindowLong(window, GWL_EXSTYLE);
+
+        draggedWindow = window;
+        SetWindowLong(window,
+                      GWL_EXSTYLE,
+                      draggedWindowExstyle | WS_EX_LAYERED);
+
+        GetLayeredWindowAttributes(window, &draggedWindowCrKey, &draggedWindowInitialAlpha, &draggedWindowDwFlags);
+
+        SetLayeredWindowAttributes(window, 0, (255 * 50) / 100, LWA_ALPHA);
     }
 
     m_dragEnabled = dragEnabled;
@@ -415,10 +424,8 @@ ZoneWindow::RestoreOrginalTransparency() noexcept
 {
     if (m_host->isMakeDraggedWindowTransparentActive() && draggedWindow != nullptr)
     {
-        SetLayeredWindowAttributes(draggedWindow,
-                                   0,
-                                   draggedWindowInitialAlpha == 0 ? 255 : draggedWindowInitialAlpha,
-                                   LWA_ALPHA);
+        SetLayeredWindowAttributes(draggedWindow, draggedWindowCrKey, draggedWindowInitialAlpha, draggedWindowDwFlags);
+        SetWindowLong(draggedWindow, GWL_EXSTYLE, draggedWindowExstyle);
         draggedWindow = nullptr;
     }
 }
@@ -738,7 +745,10 @@ void ZoneWindow::CycleActiveZoneSetInternal(DWORD wparam, Trace::ZoneWindow::Inp
 void ZoneWindow::FlashZones() noexcept
 {
     // "Turning FLASHING_ZONE option off"
-    if(true) return;
+    if (true)
+    {
+        return;
+    }
 
     m_flashMode = true;
 
