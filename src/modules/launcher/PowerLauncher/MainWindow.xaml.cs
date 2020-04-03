@@ -260,26 +260,26 @@ namespace PowerLauncher
             _launcher = (PowerLauncher.UI.LauncherControl)host.Child;
             _launcher.DataContext = _viewModel;
             _launcher.SearchBox.TextChanged += QueryTextBox_TextChanged;
-            _launcher.SearchBox.SuggestionChosen += SearchBox_SuggestionChosen;
-            _launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
+            //_launcher.SearchBox.SuggestionChosen += SearchBox_SuggestionChosen;
+            //_launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
 
-            _viewModel.PropertyChanged += (o, e) =>
-            {
-                if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
-                {
-                    if (Visibility == System.Windows.Visibility.Visible)
-                    {
-                        Activate();
-                        _launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
-                        UpdatePosition();
-                        _settings.ActivateTimes++;
-                        if (!_viewModel.LastQuerySelected)
-                        {
-                            _viewModel.LastQuerySelected = true;
-                        }
-                    }
-                }
-            };
+            //_viewModel.PropertyChanged += (o, e) =>
+            //{
+            //    if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
+            //    {
+            //        if (Visibility == System.Windows.Visibility.Visible)
+            //        {
+            //            Activate();
+            //            _launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
+            //            UpdatePosition();
+            //            _settings.ActivateTimes++;
+            //            if (!_viewModel.LastQuerySelected)
+            //            {
+            //                _viewModel.LastQuerySelected = true;
+            //            }
+            //        }
+            //    }
+            //};
         }
 
         private void SearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
@@ -295,7 +295,7 @@ namespace PowerLauncher
                 {
                     Console.WriteLine("here");
                 }
-            }
+            } 
         }
 
         private void QueryTextBox_TextChanged(Windows.UI.Xaml.Controls.AutoSuggestBox sender, Windows.UI.Xaml.Controls.AutoSuggestBoxTextChangedEventArgs args)
