@@ -260,10 +260,10 @@ private:
     static const UINT m_flashDuration = 700; // ms
 
     HWND draggedWindow = nullptr;
-    long draggedWindowExstyle;
-    COLORREF draggedWindowCrKey;
-    DWORD draggedWindowDwFlags;
-    BYTE draggedWindowInitialAlpha;
+    long draggedWindowExstyle = 0;
+    COLORREF draggedWindowCrKey = RGB(0, 0, 0);
+    DWORD draggedWindowDwFlags = 0;
+    BYTE draggedWindowInitialAlpha = 0;
 
     ULONG_PTR gdiplusToken;
 };
@@ -746,7 +746,9 @@ void ZoneWindow::FlashZones() noexcept
 {
     // "Turning FLASHING_ZONE option off"
     if (true)
+    {
         return;
+    }
 
     m_flashMode = true;
 
