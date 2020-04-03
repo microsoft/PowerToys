@@ -73,7 +73,7 @@ DWORD Shortcut::GetActionKey() const
 }
 
 // Function to return the virtual key code of the win key state expected in the shortcut. Argument is used to decide which win key to return in case of both. If the current shortcut doesn't use both win keys then arg is ignored. Return NULL if it is not a part of the shortcut
-DWORD Shortcut::GetWinKey(ModifierKey input) const
+DWORD Shortcut::GetWinKey(const ModifierKey& input) const
 {
     if (winKey == ModifierKey::Disabled)
     {
@@ -167,7 +167,7 @@ DWORD Shortcut::GetShiftKey() const
 }
 
 // Function to check if the input key matches the win key expected in the shortcut
-bool Shortcut::CheckWinKey(DWORD input) const
+bool Shortcut::CheckWinKey(const DWORD& input) const
 {
     if (winKey == ModifierKey::Disabled)
     {
@@ -189,7 +189,7 @@ bool Shortcut::CheckWinKey(DWORD input) const
 }
 
 // Function to check if the input key matches the ctrl key expected in the shortcut
-bool Shortcut::CheckCtrlKey(DWORD input) const
+bool Shortcut::CheckCtrlKey(const DWORD& input) const
 {
     if (ctrlKey == ModifierKey::Disabled)
     {
@@ -211,7 +211,7 @@ bool Shortcut::CheckCtrlKey(DWORD input) const
 }
 
 // Function to check if the input key matches the alt key expected in the shortcut
-bool Shortcut::CheckAltKey(DWORD input) const
+bool Shortcut::CheckAltKey(const DWORD& input) const
 {
     if (altKey == ModifierKey::Disabled)
     {
@@ -233,7 +233,7 @@ bool Shortcut::CheckAltKey(DWORD input) const
 }
 
 // Function to check if the input key matches the shift key expected in the shortcut
-bool Shortcut::CheckShiftKey(DWORD input) const
+bool Shortcut::CheckShiftKey(const DWORD& input) const
 {
     if (shiftKey == ModifierKey::Disabled)
     {
@@ -255,7 +255,7 @@ bool Shortcut::CheckShiftKey(DWORD input) const
 }
 
 // Function to set a key in the shortcut based on the passed key code argument. Since there is no VK_WIN code, use the second argument for setting common win key. If isWinBoth is true then first arg is ignored. Returns false if it is already set to the same value. This can be used to avoid UI refreshing
-bool Shortcut::SetKey(DWORD input, bool isWinBoth)
+bool Shortcut::SetKey(const DWORD& input, const bool& isWinBoth)
 {
     // Since there isn't a key for a common Win key this is handled with a separate argument
     if (isWinBoth)
@@ -367,7 +367,7 @@ bool Shortcut::SetKey(DWORD input, bool isWinBoth)
 }
 
 // Function to reset the state of a shortcut key based on the passed key code argument. Since there is no VK_WIN code, use the second argument for setting common win key.
-void Shortcut::ResetKey(DWORD input, bool isWinBoth)
+void Shortcut::ResetKey(const DWORD& input, const bool& isWinBoth)
 {
     // Since there isn't a key for a common Win key this is handled with a separate argument.
     if (isWinBoth || input == VK_LWIN || input == VK_RWIN)
@@ -693,7 +693,7 @@ int Shortcut::GetCommonModifiersCount(const Shortcut& input) const
 }
 
 // Function to return the name of the key with L or R prefix depending on the first argument. Second argument should be the name of the key without any prefix (ex: Win, Ctrl)
-winrt::hstring Shortcut::ModifierKeyNameWithSide(ModifierKey key, const std::wstring& keyName) const
+winrt::hstring Shortcut::ModifierKeyNameWithSide(const ModifierKey& key, const std::wstring& keyName) const
 {
     if (key == ModifierKey::Left)
     {

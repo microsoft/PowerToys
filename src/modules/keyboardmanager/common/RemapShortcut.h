@@ -9,7 +9,7 @@ public:
     bool isShortcutInvoked;
     ModifierKey winKeyInvoked;
 
-    RemapShortcut(Shortcut sc) :
+    RemapShortcut(const Shortcut& sc) :
         targetShortcut(sc), isShortcutInvoked(false), winKeyInvoked(ModifierKey::Disabled)
     {
     }
