@@ -183,10 +183,12 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     ShortcutControl::keyboardManagerState = &keyboardManagerState;
 
     // Load existing shortcuts into UI
+    std::unique_lock<std::mutex> lock(keyboardManagerState.osLevelShortcutReMap_mutex);
     for (const auto& it : keyboardManagerState.osLevelShortcutReMap)
     {
         ShortcutControl::AddNewShortcutControlRow(shortcutTable, it.first, it.second.first);
     }
+    lock.unlock();
 
     // Add shortcut button
     Windows::UI::Xaml::Controls::Button addShortcut;

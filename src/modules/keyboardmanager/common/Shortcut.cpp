@@ -358,7 +358,7 @@ bool Shortcut::SetKey(DWORD input, bool isWinBoth)
 }
 
 // Function to reset the state of a shortcut key based on the passed key code argument. Since there is no VK_WIN code, use the second argument for setting common win key.
-void Shortcut::ResetKey(DWORD input, bool isWinBoth = false)
+void Shortcut::ResetKey(DWORD input, bool isWinBoth)
 {
     // Since there isn't a key for a common Win key this is handled with a separate argument.
     if (isWinBoth || input == VK_LWIN || input == VK_RWIN)

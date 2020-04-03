@@ -186,10 +186,12 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     SingleKeyRemapControl::keyboardManagerState = &keyboardManagerState;
 
     // Load existing remaps into UI
+    std::unique_lock<std::mutex> lock(keyboardManagerState.singleKeyReMap_mutex);
     for (const auto& it : keyboardManagerState.singleKeyReMap)
     {
         SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, it.first, it.second);
     }
+    lock.unlock();
 
     // Add remap key button
     Windows::UI::Xaml::Controls::Button addRemapKey;
