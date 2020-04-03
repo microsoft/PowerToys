@@ -18,6 +18,7 @@ using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
 using Windows.UI.Xaml.Controls;
+using System.Diagnostics;
 
 namespace PowerLauncher
 {
@@ -132,6 +133,8 @@ namespace PowerLauncher
         //        }
         //    }
         //}
+
+        
 
 
         private void OnDrop(object sender, DragEventArgs e)
@@ -256,7 +259,7 @@ namespace PowerLauncher
             _launcher = (PowerLauncher.UI.LauncherControl)host.Child;
             _launcher.DataContext = _viewModel;
             _launcher.SearchBox.TextChanged += QueryTextBox_TextChanged;
-
+            _launcher.SearchBox.SuggestionChosen += SearchBox_SuggestionChosen;
             _launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
 
             _viewModel.PropertyChanged += (o, e) =>
@@ -277,6 +280,16 @@ namespace PowerLauncher
                 }
             };
         }
+
+        private void SearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        {
+            if (args != null)
+            {
+                ResultViewModel result = (ResultViewModel)args.SelectedItem;
+                Process.Start(result.Result.SubTitle);
+            }
+        }
+
         private void QueryTextBox_TextChanged(Windows.UI.Xaml.Controls.AutoSuggestBox sender, Windows.UI.Xaml.Controls.AutoSuggestBoxTextChangedEventArgs args)
         {
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)

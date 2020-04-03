@@ -66,6 +66,5 @@ namespace Wox.ViewModel
         {
             return Result.ToString();
         }
-
     }
 }
