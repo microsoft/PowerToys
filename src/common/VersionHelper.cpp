@@ -27,8 +27,3 @@ VersionHelper::VersionHelper(int major, int minor, int revision) :
     revision(revision)
 {
 }
-
-bool VersionHelper::operator>(const VersionHelper& rhs)
-{
-    return std::tie(major, minor, revision) > std::tie(rhs.major, rhs.minor, rhs.revision);
-}
