@@ -143,6 +143,7 @@ public:
         m_hProcess = sei.hProcess;
 
         m_enabled = true;
+        Trace::EnableWindowWalker(true);
     }
 
     // Disable the powertoy
@@ -154,6 +155,7 @@ public:
         }
 
         m_enabled = false;
+        Trace::EnableWindowWalker(false);
     }
 
     // Returns if the powertoys is enabled

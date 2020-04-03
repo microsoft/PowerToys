@@ -18,11 +18,12 @@ void Trace::UnregisterProvider()
     TraceLoggingUnregister(g_hProvider);
 }
 
-void Trace::MyEvent()
+void Trace::EnableWindowWalker(const bool enabled) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "PowerToyName_MyEvent",
+        "WindowWalker_EnableWindowWalker",
+        TraceLoggingBoolean(enabled, "Enabled"),
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
