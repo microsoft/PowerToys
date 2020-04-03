@@ -93,12 +93,14 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="RemapShortcut.cpp" />
     <ClCompile Include="Shortcut.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="KeyboardManagerState.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="RemapShortcut.h" />
     <ClInclude Include="Shortcut.h" />
   </ItemGroup>
   <ItemGroup>

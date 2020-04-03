@@ -72,8 +72,8 @@ DWORD Shortcut::GetActionKey() const
     return actionKey;
 }
 
-// Function to return the virtual key code of the win key state expected in the shortcut. Return NULL if it is not a part of the shortcut
-DWORD Shortcut::GetWinKey() const
+// Function to return the virtual key code of the win key state expected in the shortcut. Argument is used to decide which win key to return in case of both. If the current shortcut doesn't use both win keys then arg is ignored. Return NULL if it is not a part of the shortcut
+DWORD Shortcut::GetWinKey(ModifierKey input) const
 {
     if (winKey == ModifierKey::Disabled)
     {
@@ -89,8 +89,17 @@ DWORD Shortcut::GetWinKey() const
     }
     else
     {
-        // Since VK_WIN does not exist, just return VK_LWIN
-        return VK_LWIN;
+        // Since VK_WIN does not exist if right windows key is to be sent based on the argument, then return VK_RWIN as the win key (since that will be used to release it).
+        if (input == ModifierKey::Right)
+        {
+            return VK_RWIN;
+        }
+        else
+        {
+            //return VK_LWIN by default
+            return VK_LWIN;
+        }
+
     }
 }
 

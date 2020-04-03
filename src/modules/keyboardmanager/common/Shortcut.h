@@ -107,8 +107,8 @@ public:
     // Function to return the action key
     DWORD GetActionKey() const;
 
-    // Function to return the virtual key code of the win key state expected in the shortcut. Return NULL if it is not a part of the shortcut
-    DWORD GetWinKey() const;
+    // Function to return the virtual key code of the win key state expected in the shortcut. Argument is used to decide which win key to return in case of both. If the current shortcut doesn't use both win keys then arg is ignored. Return NULL if it is not a part of the shortcut
+    DWORD GetWinKey(ModifierKey input) const;
 
     // Function to return the virtual key code of the ctrl key state expected in the shortcut. Return NULL if it is not a part of the shortcut
     DWORD GetCtrlKey() const;

@@ -1,6 +1,7 @@
 #pragma once
 #include "Helpers.h"
 #include "Shortcut.h"
+#include "RemapShortcut.h"
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <mutex>
 #include <winrt/Windows.UI.Xaml.Controls.h>
@@ -57,11 +58,11 @@ public:
     std::mutex singleKeyToggleToMod_mutex;
 
     // Stores the os level shortcut remappings
-    std::map<Shortcut, std::pair<Shortcut, bool>> osLevelShortcutReMap;
+    std::map<Shortcut, RemapShortcut> osLevelShortcutReMap;
     std::mutex osLevelShortcutReMap_mutex;
 
     // Stores the app-specific shortcut remappings. Maps application name to the shortcut map
-    std::map<std::wstring, std::map<Shortcut, std::pair<Shortcut, bool>>> appSpecificShortcutReMap;
+    std::map<std::wstring, std::map<Shortcut, RemapShortcut>> appSpecificShortcutReMap;
     std::mutex appSpecificShortcutReMap_mutex;
 
     // Constructor

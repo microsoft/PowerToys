@@ -94,7 +94,7 @@ bool KeyboardManagerState::AddOSLevelShortcut(const Shortcut& originalSC, const 
         return false;
     }
 
-    osLevelShortcutReMap[originalSC] = std::make_pair(newSC, false);
+    osLevelShortcutReMap[originalSC] = RemapShortcut(newSC);
     return true;
 }
 
