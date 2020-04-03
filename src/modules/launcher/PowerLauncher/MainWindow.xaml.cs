@@ -19,6 +19,7 @@ using MessageBox = System.Windows.MessageBox;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
 using Windows.UI.Xaml.Controls;
 using System.Diagnostics;
+using Wox.Plugin;
 
 namespace PowerLauncher
 {
@@ -286,7 +287,14 @@ namespace PowerLauncher
             if (args != null)
             {
                 ResultViewModel result = (ResultViewModel)args.SelectedItem;
-                Process.Start(result.Result.SubTitle);
+                bool hideWindow = result.Result.Action != null && result.Result.Action(new ActionContext
+                {
+                  
+                });
+                if (!hideWindow)
+                {
+                    Console.WriteLine("here");
+                }
             }
         }
 
