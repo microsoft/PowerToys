@@ -32,6 +32,8 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 namespace localized_strings
 {
     const wchar_t MSI_VERSION_IS_ALREADY_RUNNING[] = L"An older version of PowerToys is already running.";
+    const wchar_t OLDER_MSIX_UNINSTALLED[] = L"An older MSIX version of PowerToys was uninstalled.";
+
     const wchar_t GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT[] = L"An update to PowerToys is available. Visit our GitHub page to get ";
     const wchar_t GITHUB_NEW_VERSION_AGREE[] = L"Visit";
 }
@@ -179,6 +181,16 @@ int runner(bool isProcessElevated)
             std::thread{ [] {
                 start_msi_uninstallation_sequence();
             } }.detach();
+        }
+        else
+        {
+            std::thread{[] {
+                if(uninstall_previous_msix_version_async().get())
+                {
+                    notifications::show_toast(localized_strings::OLDER_MSIX_UNINSTALLED);
+                }
+            }}.detach();
+            
         }
 
         notifications::register_background_toast_handler();

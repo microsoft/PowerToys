@@ -14,6 +14,7 @@
 
 #include <winrt/Windows.Web.Http.h>
 #include <winrt/Windows.Web.Http.Headers.h>
+#include <winrt/Windows.Management.Deployment.h>
 
 #include "VersionHelper.h"
 
@@ -23,6 +24,8 @@ namespace
     const wchar_t* DONT_SHOW_AGAIN_RECORD_REGISTRY_PATH = L"delete_previous_powertoys_confirm";
     const wchar_t* USER_AGENT = L"Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; WOW64; Trident/6.0)";
     const wchar_t* LATEST_RELEASE_ENDPOINT = L"https://api.github.com/repos/microsoft/PowerToys/releases/latest";
+    const wchar_t* MSIX_PACKAGE_NAME = L"Microsoft.PowerToys";
+    const wchar_t* MSIX_PACKAGE_PUBLISHER = L"CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US";
 }
 
 namespace localized_strings
@@ -125,4 +128,30 @@ std::future<std::optional<new_version_download_info>> check_for_new_github_relea
     {
         co_return std::nullopt;
     }
+}
+
+std::future<bool> uninstall_previous_msix_version_async()
+{
+    winrt::Windows::Management::Deployment::PackageManager package_manager;
+
+    try
+    {
+        auto packages = package_manager.FindPackagesForUser({}, MSIX_PACKAGE_NAME, MSIX_PACKAGE_PUBLISHER);
+        VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
+
+        for (auto package : packages)
+        {
+            VersionHelper msix_version(package.Id().Version().Major, package.Id().Version().Minor, package.Id().Version().Revision);
+
+            if (msix_version < current_version)
+            {
+                co_await package_manager.RemovePackageAsync(package.Id().FullName());
+                co_return true;
+            }
+        }
+    }
+    catch (...)
+    {
+    }
+    co_return false;
 }
