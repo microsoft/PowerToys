@@ -169,6 +169,28 @@ namespace WindowWalker.Components
         }
 
         /// <summary>
+        /// Determines whether the specified window handle identifies an existing window.
+        /// </summary>
+        public bool IsWindow
+        {
+            get
+            {
+                return InteropAndHelpers.IsWindow(Hwnd);
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether is the window cloaked. To detect UWP apps in background or win32 apps running in another virtual desktop
+        /// </summary>
+        public bool IsWindowCloaked()
+        {
+            int isCloaked = 0;
+            const int DWMWA_CLOAKED = 14;
+            InteropAndHelpers.DwmGetWindowAttribute(this.hwnd, DWMWA_CLOAKED, out isCloaked, sizeof(int));
+            return isCloaked != 0;
+        }
+
+        /// <summary>
         /// Gets a value indicating whether returns true if the window is minimized
         /// </summary>
         public bool Minimized

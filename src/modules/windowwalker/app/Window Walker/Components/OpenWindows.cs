@@ -94,23 +94,26 @@ namespace WindowWalker.Components
         {
             Window newWindow = new Window(hwnd);
 
-            if (windows.Select(x => x.Title).Contains(newWindow.Title))
-            {
-                if (newWindow.ProcessName.ToLower().Equals("applicationframehost.exe"))
-                {
-                    windows.Remove(windows.Where(x => x.Title == newWindow.Title).First());
-                }
+            uint toolWindow = (uint)InteropAndHelpers.ExtendedWindowStyles.WS_EX_TOOLWINDOW;
+            uint appWindow = (uint)InteropAndHelpers.ExtendedWindowStyles.WS_EX_APPWINDOW;
+            InteropAndHelpers.GetWindowCmd owner = InteropAndHelpers.GetWindowCmd.GW_OWNER;
+            int windowLong = InteropAndHelpers.GetWindowLong(hwnd, InteropAndHelpers.GWL_EXSTYLE);
 
-                return true;
+            if (newWindow.IsWindow && newWindow.Visible && InteropAndHelpers.GetWindow(hwnd, owner) != null &&
+                (((windowLong & toolWindow) != toolWindow) || ((windowLong & appWindow) == appWindow)) &&
+                InteropAndHelpers.GetProp(hwnd, "ITaskList_Deleted") == IntPtr.Zero &&
+                newWindow.ClassName != "Window.UI.Core.CoreWindow" && !newWindow.IsWindowCloaked())
+            {
+                windows.Add(newWindow);
             }
 
-            if ((newWindow.Visible && !newWindow.ProcessName.ToLower().Equals("iexplore.exe")) ||
+            /*if ((newWindow.Visible && !newWindow.ProcessName.ToLower().Equals("iexplore.exe")) ||
                 (newWindow.ProcessName.ToLower().Equals("iexplore.exe") && newWindow.ClassName == "TabThumbnailWindow"))
             {
                 windows.Add(newWindow);
 
                 OnOpenWindowsUpdate?.Invoke(this, new SearchController.SearchResultUpdateEventArgs());
-            }
+            }*/
 
             return true;
         }
