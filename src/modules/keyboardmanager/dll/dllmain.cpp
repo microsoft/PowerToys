@@ -334,13 +334,13 @@ public:
                 int key_count = 1;
                 LPINPUT keyEventList = new INPUT[size_t(key_count)]();
                 memset(keyEventList, 0, sizeof(keyEventList));
-                keyEventList[0].type = INPUT_KEYBOARD;
-                keyEventList[0].ki.wVk = it->second;
-                keyEventList[0].ki.dwFlags = 0;
-                keyEventList[0].ki.dwExtraInfo = KEYBOARDMANAGER_SINGLEKEY_FLAG;
                 if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
                 {
-                    keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
+                    SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)it->second, KEYEVENTF_KEYUP, KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                }
+                else
+                {
+                    SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)it->second, 0, KEYBOARDMANAGER_SINGLEKEY_FLAG);
                 }
 
                 UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
@@ -376,14 +376,8 @@ public:
                 int key_count = 2;
                 LPINPUT keyEventList = new INPUT[size_t(key_count)]();
                 memset(keyEventList, 0, sizeof(keyEventList));
-                keyEventList[0].type = INPUT_KEYBOARD;
-                keyEventList[0].ki.wVk = (WORD)data->lParam->vkCode;
-                keyEventList[0].ki.dwFlags = 0;
-                keyEventList[0].ki.dwExtraInfo = KEYBOARDMANAGER_SINGLEKEY_FLAG;
-                keyEventList[1].type = INPUT_KEYBOARD;
-                keyEventList[1].ki.wVk = (WORD)data->lParam->vkCode;
-                keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
-                keyEventList[1].ki.dwExtraInfo = KEYBOARDMANAGER_SINGLEKEY_FLAG;
+                SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, 0, KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                SetKeyEvent(keyEventList, 1, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, KEYEVENTF_KEYUP, KEYBOARDMANAGER_SINGLEKEY_FLAG);
 
                 UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
                 delete[] keyEventList;
