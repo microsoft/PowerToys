@@ -34,7 +34,6 @@ namespace Wox.Plugin.Indexer.SearchHelper
                             // col 0 is our path in display format
                             if (WDSResults.GetString(0) != null)
                             {
-                                //Console.WriteLine("{0}", WDSResults.GetString(0));
                                 var result = new SearchResult { Path = WDSResults.GetString(0) };
                                 yield return result;
                             }
