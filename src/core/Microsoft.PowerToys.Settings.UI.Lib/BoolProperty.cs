@@ -5,15 +5,17 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public interface IPowerToySettings
+    public class BoolProperty
     {
-        string name { get; set; }
+        public bool value { get; set; }
 
-        string version { get; set; }
-
-        string ToJsonString();
+        public override string ToString()
+        {
+            return JsonSerializer.Serialize(this);
+        }
     }
 }

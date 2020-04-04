@@ -4,6 +4,6 @@
     {
         Always,
         Never,
-        Minimal
+        Minimal,
     }
 }

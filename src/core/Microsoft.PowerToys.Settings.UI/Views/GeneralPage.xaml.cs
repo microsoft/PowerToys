@@ -1,19 +1,19 @@
-// <copyright file="GeneralPage.xaml.cs" company="Microsoft Corp">
-// Copyright (c) Microsoft Corp. All rights reserved.
-// </copyright>
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.IO;
+using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Windows.System;
+using Windows.UI.Popups;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    using System;
-    using System.IO;
-    using Microsoft.PowerToys.Settings.UI.Lib;
-    using Microsoft.PowerToys.Settings.UI.ViewModels;
-    using Windows.System;
-    using Windows.UI.Popups;
-    using Windows.UI.Xaml;
-    using Windows.UI.Xaml.Controls;
-    using Windows.UI.Xaml.Navigation;
-
     /// <summary>
     /// General Settings Page.
     /// </summary>
@@ -32,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             this.InitializeComponent();
         }
-        
+
         /// <inheritdoc/>
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -42,17 +42,19 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 // get settings file if they exist.
                 settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+
                 // load and apply theme settings
                 this.ReLoadTheme(settings.theme);
 
                 // load run on start-up settings value and update the ui state.
                 this.ToggleSwitch_RunAtStartUp.IsOn = settings.startup;
             }
-            catch (Exception exp)
+            catch
             {
                 // create settings file if one is not found.
                 settings = new GeneralSettings();
                 SettingsUtils.SaveSettings(settings.ToJsonString(), string.Empty);
+
                 // load and apply theme settings
                 this.ReLoadTheme(settings.theme);
 
@@ -106,9 +108,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SettingsUtils.SaveSettings(settings.ToJsonString(), string.Empty);
                 OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
 
-                if (ShellPage.Default_SndMSG_Callback != null)
+                if (ShellPage.DefaultSndMSGCallback != null)
                 {
-                    ShellPage.Default_SndMSG_Callback(outsettings.ToString());
+                    ShellPage.DefaultSndMSGCallback(outsettings.ToString());
                 }
             }
         }
@@ -119,9 +121,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             settings.run_elevated = true;
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
 
-            if (ShellPage.Default_SndMSG_Callback != null)
+            if (ShellPage.DefaultSndMSGCallback != null)
             {
-                ShellPage.Default_SndMSG_Callback(outsettings.ToString());
+                ShellPage.DefaultSndMSGCallback(outsettings.ToString());
             }
         }
 

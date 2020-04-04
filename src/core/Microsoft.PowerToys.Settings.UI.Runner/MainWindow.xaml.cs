@@ -1,20 +1,22 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Windows;
-using Microsoft.Toolkit.Wpf.UI.XamlHost;
-using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Views;
-using System.Threading;
+using Microsoft.Toolkit.Wpf.UI.XamlHost;
 
 namespace Microsoft.PowerToys.Settings.UI.Runner
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for MainWindow.xaml.
     /// </summary>
     public partial class MainWindow : Window
     {
         public MainWindow()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
         private void WindowsXamlHost_ChildChanged(object sender, EventArgs e)
@@ -26,19 +28,10 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
             if (shellPage != null)
             {
                 // send IPC Message
-                shellPage.SetDefaultSndMessageCallback(delegate (string msg)
+                shellPage.SetDefaultSndMessageCallback(msg =>
                 {
-                    Program.ipcmanager.SendMessage(msg);
+                    Program.GetTwoWayIPCManager().SendMessage(msg);
                 });
-
-            }
-        }
-
-        public string WPFMessage
-        {
-            get
-            {
-                return "Binding from WPF to UWP XAML";
             }
         }
     }

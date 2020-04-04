@@ -1,15 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Text.Json;
+
+#pragma warning disable SA1649 // File name should match first type name
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class SndModuleSettings<S>
+    /// <summary>
+    /// Represents a powertoys module settings setnt to the runner.
+    /// </summary>
+    /// <typeparam name="T">A powertoys module settings class.</typeparam>
+    public class SndModuleSettings<T>
     {
-        public S powertoys { get; set; }
+        public T powertoys { get; set; }
 
-        public SndModuleSettings(S settings)
+        public SndModuleSettings(T settings)
         {
             this.powertoys = settings;
         }

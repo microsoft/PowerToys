@@ -1,5 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
+using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Animation;
@@ -13,26 +16,26 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
         public static event NavigationFailedEventHandler NavigationFailed;
 
-        private static Frame _frame;
-        private static object _lastParamUsed;
+        private static Frame frame;
+        private static object lastParamUsed;
 
         public static Frame Frame
         {
             get
             {
-                if (_frame == null)
+                if (frame == null)
                 {
-                    _frame = Window.Current.Content as Frame;
+                    frame = Window.Current.Content as Frame;
                     RegisterFrameEvents();
                 }
 
-                return _frame;
+                return frame;
             }
 
             set
             {
                 UnregisterFrameEvents();
-                _frame = value;
+                frame = value;
                 RegisterFrameEvents();
             }
         }
@@ -57,12 +60,12 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         public static bool Navigate(Type pageType, object parameter = null, NavigationTransitionInfo infoOverride = null)
         {
             // Don't open the same page multiple times
-            if (Frame.Content?.GetType() != pageType || (parameter != null && !parameter.Equals(_lastParamUsed)))
+            if (Frame.Content?.GetType() != pageType || (parameter != null && !parameter.Equals(lastParamUsed)))
             {
                 var navigationResult = Frame.Navigate(pageType, parameter, infoOverride);
                 if (navigationResult)
                 {
-                    _lastParamUsed = parameter;
+                    lastParamUsed = parameter;
                 }
 
                 return navigationResult;
@@ -79,19 +82,19 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
         private static void RegisterFrameEvents()
         {
-            if (_frame != null)
+            if (frame != null)
             {
-                _frame.Navigated += Frame_Navigated;
-                _frame.NavigationFailed += Frame_NavigationFailed;
+                frame.Navigated += Frame_Navigated;
+                frame.NavigationFailed += Frame_NavigationFailed;
             }
         }
 
         private static void UnregisterFrameEvents()
         {
-            if (_frame != null)
+            if (frame != null)
             {
-                _frame.Navigated -= Frame_Navigated;
-                _frame.NavigationFailed -= Frame_NavigationFailed;
+                frame.Navigated -= Frame_Navigated;
+                frame.NavigationFailed -= Frame_NavigationFailed;
             }
         }
 

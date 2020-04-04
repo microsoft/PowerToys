@@ -1,22 +1,12 @@
-﻿using Microsoft.PowerToys.Settings.UI.Lib;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.ServiceModel.Channels;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.Popups;
+using Microsoft.PowerToys.Settings.UI.Lib;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
-
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -40,15 +30,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 base.OnNavigatedTo(e);
                 settings = SettingsUtils.GetSettings<PowerPreviewSettings>(POWERTOY_NAME);
-                ToggleSwitch_Preview_SVG.IsOn = settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value;
-                ToggleSwitch_Preview_MD.IsOn = settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value;
+                this.ToggleSwitch_Preview_SVG.IsOn = settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value;
+                this.ToggleSwitch_Preview_MD.IsOn = settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value;
             }
-            catch(Exception exp)
+            catch
             {
                 settings = new PowerPreviewSettings(POWERTOY_NAME);
                 SettingsUtils.SaveSettings(settings.ToJsonString(), POWERTOY_NAME);
-                ToggleSwitch_Preview_SVG.IsOn = settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value;
-                ToggleSwitch_Preview_MD.IsOn = settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value;
+                this.ToggleSwitch_Preview_SVG.IsOn = settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value;
+                this.ToggleSwitch_Preview_MD.IsOn = settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value;
             }
         }
 
@@ -61,11 +51,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 PowerPreviewSettings settings = SettingsUtils.GetSettings<PowerPreviewSettings>(POWERTOY_NAME);
                 settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value = swt.IsOn;
 
-                if (ShellPage.Default_SndMSG_Callback != null)
+                if (ShellPage.DefaultSndMSGCallback != null)
                 {
                     SndPowerPreviewSettings snd = new SndPowerPreviewSettings(settings);
                     SndModuleSettings<SndPowerPreviewSettings> ipcMessage = new SndModuleSettings<SndPowerPreviewSettings>(snd);
-                    ShellPage.Default_SndMSG_Callback(ipcMessage.ToJsonString());
+                    ShellPage.DefaultSndMSGCallback(ipcMessage.ToJsonString());
                 }
             }
         }
@@ -79,11 +69,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 PowerPreviewSettings settings = SettingsUtils.GetSettings<PowerPreviewSettings>(POWERTOY_NAME);
                 settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value = swt.IsOn;
 
-                if (ShellPage.Default_SndMSG_Callback != null)
+                if (ShellPage.DefaultSndMSGCallback != null)
                 {
                     SndPowerPreviewSettings snd = new SndPowerPreviewSettings(settings);
                     SndModuleSettings<SndPowerPreviewSettings> ipcMessage = new SndModuleSettings<SndPowerPreviewSettings>(snd);
-                    ShellPage.Default_SndMSG_Callback(ipcMessage.ToJsonString());
+                    ShellPage.DefaultSndMSGCallback(ipcMessage.ToJsonString());
                 }
             }
         }

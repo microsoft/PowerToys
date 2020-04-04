@@ -11,18 +11,18 @@ namespace Microsoft.PowerToys.Settings.UI.Behaviors
 {
     public class NavigationViewHeaderBehavior : Behavior<WinUI.NavigationView>
     {
-        private static NavigationViewHeaderBehavior _current;
-        private Page _currentPage;
+        private static NavigationViewHeaderBehavior current;
+        private Page currentPage;
 
         public DataTemplate DefaultHeaderTemplate { get; set; }
 
         public object DefaultHeader
         {
-            get { return GetValue(DefaultHeaderProperty); }
-            set { SetValue(DefaultHeaderProperty, value); }
+            get { return this.GetValue(DefaultHeaderProperty); }
+            set { this.SetValue(DefaultHeaderProperty, value); }
         }
 
-        public static readonly DependencyProperty DefaultHeaderProperty = DependencyProperty.Register("DefaultHeader", typeof(object), typeof(NavigationViewHeaderBehavior), new PropertyMetadata(null, (d, e) => _current.UpdateHeader()));
+        public static readonly DependencyProperty DefaultHeaderProperty = DependencyProperty.Register("DefaultHeader", typeof(object), typeof(NavigationViewHeaderBehavior), new PropertyMetadata(null, (d, e) => current.UpdateHeader()));
 
         public static NavigationViewHeaderMode GetHeaderMode(Page item)
         {
@@ -35,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.Behaviors
         }
 
         public static readonly DependencyProperty HeaderModeProperty =
-            DependencyProperty.RegisterAttached("HeaderMode", typeof(bool), typeof(NavigationViewHeaderBehavior), new PropertyMetadata(NavigationViewHeaderMode.Always, (d, e) => _current.UpdateHeader()));
+            DependencyProperty.RegisterAttached("HeaderMode", typeof(bool), typeof(NavigationViewHeaderBehavior), new PropertyMetadata(NavigationViewHeaderMode.Always, (d, e) => current.UpdateHeader()));
 
         public static object GetHeaderContext(Page item)
         {
@@ -48,7 +48,7 @@ namespace Microsoft.PowerToys.Settings.UI.Behaviors
         }
 
         public static readonly DependencyProperty HeaderContextProperty =
-            DependencyProperty.RegisterAttached("HeaderContext", typeof(object), typeof(NavigationViewHeaderBehavior), new PropertyMetadata(null, (d, e) => _current.UpdateHeader()));
+            DependencyProperty.RegisterAttached("HeaderContext", typeof(object), typeof(NavigationViewHeaderBehavior), new PropertyMetadata(null, (d, e) => current.UpdateHeader()));
 
         public static DataTemplate GetHeaderTemplate(Page item)
         {
@@ -61,19 +61,19 @@ namespace Microsoft.PowerToys.Settings.UI.Behaviors
         }
 
         public static readonly DependencyProperty HeaderTemplateProperty =
-            DependencyProperty.RegisterAttached("HeaderTemplate", typeof(DataTemplate), typeof(NavigationViewHeaderBehavior), new PropertyMetadata(null, (d, e) => _current.UpdateHeaderTemplate()));
+            DependencyProperty.RegisterAttached("HeaderTemplate", typeof(DataTemplate), typeof(NavigationViewHeaderBehavior), new PropertyMetadata(null, (d, e) => current.UpdateHeaderTemplate()));
 
         protected override void OnAttached()
         {
             base.OnAttached();
-            _current = this;
-            NavigationService.Navigated += OnNavigated;
+            current = this;
+            NavigationService.Navigated += this.OnNavigated;
         }
 
         protected override void OnDetaching()
         {
             base.OnDetaching();
-            NavigationService.Navigated -= OnNavigated;
+            NavigationService.Navigated -= this.OnNavigated;
         }
 
         private void OnNavigated(object sender, NavigationEventArgs e)
@@ -81,42 +81,42 @@ namespace Microsoft.PowerToys.Settings.UI.Behaviors
             var frame = sender as Frame;
             if (frame.Content is Page page)
             {
-                _currentPage = page;
+                this.currentPage = page;
 
-                UpdateHeader();
-                UpdateHeaderTemplate();
+                this.UpdateHeader();
+                this.UpdateHeaderTemplate();
             }
         }
 
         private void UpdateHeader()
         {
-            if (_currentPage != null)
+            if (this.currentPage != null)
             {
-                var headerMode = GetHeaderMode(_currentPage);
+                var headerMode = GetHeaderMode(this.currentPage);
                 if (headerMode == NavigationViewHeaderMode.Never)
                 {
-                    AssociatedObject.Header = null;
-                    AssociatedObject.AlwaysShowHeader = false;
+                    this.AssociatedObject.Header = null;
+                    this.AssociatedObject.AlwaysShowHeader = false;
                 }
                 else
                 {
-                    var headerFromPage = GetHeaderContext(_currentPage);
+                    var headerFromPage = GetHeaderContext(this.currentPage);
                     if (headerFromPage != null)
                     {
-                        AssociatedObject.Header = headerFromPage;
+                        this.AssociatedObject.Header = headerFromPage;
                     }
                     else
                     {
-                        AssociatedObject.Header = DefaultHeader;
+                        this.AssociatedObject.Header = this.DefaultHeader;
                     }
 
                     if (headerMode == NavigationViewHeaderMode.Always)
                     {
-                        AssociatedObject.AlwaysShowHeader = true;
+                        this.AssociatedObject.AlwaysShowHeader = true;
                     }
                     else
                     {
-                        AssociatedObject.AlwaysShowHeader = false;
+                        this.AssociatedObject.AlwaysShowHeader = false;
                     }
                 }
             }
@@ -124,10 +124,10 @@ namespace Microsoft.PowerToys.Settings.UI.Behaviors
 
         private void UpdateHeaderTemplate()
         {
-            if (_currentPage != null)
+            if (this.currentPage != null)
             {
-                var headerTemplate = GetHeaderTemplate(_currentPage);
-                AssociatedObject.HeaderTemplate = headerTemplate ?? DefaultHeaderTemplate;
+                var headerTemplate = GetHeaderTemplate(this.currentPage);
+                this.AssociatedObject.HeaderTemplate = headerTemplate ?? this.DefaultHeaderTemplate;
             }
         }
     }

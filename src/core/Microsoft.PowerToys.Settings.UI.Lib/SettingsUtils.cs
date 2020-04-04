@@ -14,12 +14,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         /// <returns>string path.</returns>
         public static string GetSettingsPath(string powertoy)
         {
-            if(string.IsNullOrWhiteSpace(powertoy))
+            if (string.IsNullOrWhiteSpace(powertoy))
             {
                 return Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                     $"Microsoft\\PowerToys\\settings.json");
             }
+
             return Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 $"Microsoft\\PowerToys\\{powertoy}\\settings.json");
@@ -38,15 +39,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         /// <summary>
         /// Save settings to a json file.
         /// </summary>
-        /// <param name="settings">dynamic json settings object.</param>
-        public static void SaveSettings(string jsonSettings, string powertoy)
+        /// <param name="moduleJsonSettings">json string settings object.</param>
+        /// <param name="powertoyModuleName">the name of the powertoy</param>
+        public static void SaveSettings(string moduleJsonSettings, string powertoyModuleName)
         {
-            if(jsonSettings != null)
-            {
-                System.IO.File.WriteAllText(
-                    SettingsUtils.GetSettingsPath(powertoy),
-                    jsonSettings.ToString());
-            }
+            System.IO.File.WriteAllText(
+                SettingsUtils.GetSettingsPath(powertoyModuleName),
+                moduleJsonSettings);
         }
     }
 }
