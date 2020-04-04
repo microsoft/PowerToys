@@ -105,6 +105,9 @@ void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
         }
     }
 
+    //wait if SW_SHOWMINIMIZED would be removed from window (Issue #1685)
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
     WINDOWPLACEMENT placement{};
     ::GetWindowPlacement(window, &placement);
     placement.rcNormalPosition = zoneRect;
