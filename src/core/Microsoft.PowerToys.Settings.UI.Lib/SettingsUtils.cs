@@ -8,22 +8,48 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public static class SettingsUtils
     {
-        // Get path to the json settings file.
+        private static string LocalApplicationDataFolder()
+        {
+            return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        }
+
+        public static bool SettingsFolderExists(string powertoy)
+        {
+            return Directory.Exists(Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
+        }
+
+        public static void CreateSettingsFolder(string powertoy)
+        {
+            Directory.CreateDirectory(Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
+        }
+
+        /// <summary>
+        /// Get path to the json settings file.
+        /// </summary>
+        /// <returns>string path.</returns>
         public static string GetSettingsPath(string powertoy)
         {
             if (string.IsNullOrWhiteSpace(powertoy))
             {
                 return Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    LocalApplicationDataFolder(),
                     $"Microsoft\\PowerToys\\settings.json");
             }
 
             return Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                LocalApplicationDataFolder(),
                 $"Microsoft\\PowerToys\\{powertoy}\\settings.json");
         }
 
-        // Get a Deserialized object of the json settings string.
+        public static bool SettingsExists(string powertoy)
+        {
+            return File.Exists(SettingsUtils.GetSettingsPath(powertoy));
+        }
+
+        /// <summary>
+        /// Get a Deserialized object of the json settings string.
+        /// </summary>
+        /// <returns>Deserialized json settings object.</returns>
         public static T GetSettings<T>(string powertoy)
         {
             var jsonSettingsString = System.IO.File.ReadAllText(SettingsUtils.GetSettingsPath(powertoy));
@@ -31,11 +57,18 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         }
 
         // Save settings to a json file.
-        public static void SaveSettings(string moduleJsonSettings, string powertoyModuleName)
+        public static void SaveSettings(string jsonSettings, string powertoy)
         {
-            System.IO.File.WriteAllText(
-                SettingsUtils.GetSettingsPath(powertoyModuleName),
-                moduleJsonSettings);
+            if(jsonSettings != null)
+            {
+                if (!SettingsFolderExists(powertoy))
+                {
+                    CreateSettingsFolder(powertoy);
+                }
+                System.IO.File.WriteAllText(
+                    SettingsUtils.GetSettingsPath(powertoy),
+                    jsonSettings);
+            }
         }
     }
 }
