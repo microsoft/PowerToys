@@ -525,10 +525,10 @@ void ZoneWindow::LoadSettings() noexcept
 void ZoneWindow::InitializeZoneSets(bool newWorkArea) noexcept
 {
     auto parent = m_host->GetParentZoneWindow(m_monitor);
-    if (parent)
+    if (newWorkArea && parent)
     {
         // Update device info with device info from parent virtual desktop (if empty).
-        JSONHelpers::FancyZonesDataInstance().CloneDeviceInfo(parent->UniqueId(), m_uniqueId, newWorkArea);
+        JSONHelpers::FancyZonesDataInstance().CloneDeviceInfo(parent->UniqueId(), m_uniqueId);
     }
     CalculateZoneSet();
 }
