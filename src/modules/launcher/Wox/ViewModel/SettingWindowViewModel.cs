@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -74,6 +74,33 @@ namespace Wox.ViewModel
                     modes.Add(m);
                 }
                 return modes;
+            }
+        }
+
+        public string Language
+        {
+            get
+            {
+                return Settings.Language;
+            }
+            set
+            {
+                InternationalizationManager.Instance.ChangeLanguage(value);
+
+                if (InternationalizationManager.Instance.PromptShouldUsePinyin(value))
+                    ShouldUsePinyin = true;
+            }
+        }
+
+        public bool ShouldUsePinyin
+        {
+            get 
+            {
+                return Settings.ShouldUsePinyin;            
+            }
+            set 
+            {
+                Settings.ShouldUsePinyin = value;
             }
         }
 
