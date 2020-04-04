@@ -12,32 +12,95 @@ public:
 
     CSettings();
 
-    bool GetEnabled() const;
-    void SetEnabled(bool enabled);
+    inline bool GetEnabled() const
+    {
+        return settings.enabled;
+    }
 
-    bool GetShowIconOnMenu() const;
-    void SetShowIconOnMenu(bool show);
+    inline void SetEnabled(bool enabled)
+    {
+        settings.enabled = enabled;
+    }
 
-    bool GetExtendedContextMenuOnly() const;
-    void SetExtendedContextMenuOnly(bool extendedOnly);
+    inline bool GetShowIconOnMenu() const
+    {
+        return settings.showIconOnMenu;
+    }
 
-    bool GetPersistState() const;
-    void SetPersistState(bool persistState);
+    inline void SetShowIconOnMenu(bool show)
+    {
+        settings.showIconOnMenu = show;
+    }
 
-    bool GetMRUEnabled() const;
-    void SetMRUEnabled(bool MRUEenabled);
+    inline bool GetExtendedContextMenuOnly() const
+    {
+        return settings.extendedContextMenuOnly;
+    }
 
-    long GetMaxMRUSize() const;
-    void SetMaxMRUSize(long maxMRUSize);
+    inline void SetExtendedContextMenuOnly(bool extendedOnly)
+    {
+        settings.extendedContextMenuOnly = extendedOnly;
+    }
 
-    long GetFlags() const;
-    void SetFlags(long flags);
+    inline bool GetPersistState() const
+    {
+        return settings.persistState;
+    }
 
-    const std::wstring& GetSearchText() const;
-    void SetSearchText(const std::wstring& text);
+    inline void SetPersistState(bool persistState)
+    {
+        settings.persistState = persistState;
+    }
 
-    const std::wstring& GetReplaceText() const;
-    void SetReplaceText(const std::wstring& text);
+    inline bool GetMRUEnabled() const
+    {
+        return settings.MRUEnabled;
+    }
+
+    inline void SetMRUEnabled(bool MRUEnabled)
+    {
+        settings.MRUEnabled = MRUEnabled;
+    }
+
+    inline long GetMaxMRUSize() const
+    {
+        return settings.maxMRUSize;
+    }
+
+    inline void SetMaxMRUSize(long maxMRUSize)
+    {
+        settings.maxMRUSize = maxMRUSize;
+    }
+
+    inline long GetFlags() const
+    {
+        return settings.flags;
+    }
+
+    inline void SetFlags(long flags)
+    {
+        settings.flags = flags;
+    }
+
+    inline const std::wstring& GetSearchText() const
+    {
+        return settings.searchText;
+    }
+
+    inline void SetSearchText(const std::wstring& text)
+    {
+        settings.searchText = text;
+    }
+
+    inline const std::wstring& GetReplaceText() const
+    {
+        return settings.replaceText;
+    }
+
+    inline void SetReplaceText(const std::wstring& text)
+    {
+        settings.replaceText = text;
+    }
 
     void LoadPowerRenameData();
     void SavePowerRenameData() const;
@@ -52,19 +115,15 @@ private:
         bool MRUEnabled{ true };
         long maxMRUSize{ 10 };
         long flags{ 0 };
-        std::wstring searchText;
-        std::wstring replaceText;
+        std::wstring searchText{};
+        std::wstring replaceText{};
     };
 
-    json::JsonObject GetPersistPowerRenameJSON();
-
     void MigrateSettingsFromRegistry();
-    void ParseJsonSettings(const json::JsonObject& jsonSettings);
+    void ParseJsonSettings();
 
     Settings settings;
     std::wstring jsonFilePath;
-
-    mutable std::recursive_mutex dataLock;
 };
 
 CSettings& CSettingsInstance();

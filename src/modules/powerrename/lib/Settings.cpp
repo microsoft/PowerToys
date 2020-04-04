@@ -43,7 +43,7 @@ namespace
     }
 
     std::wstring GetRegString(const std::wstring& valueName) {
-        wchar_t* value = new wchar_t[CSettings::MAX_INPUT_STRING_LEN];
+        wchar_t value[CSettings::MAX_INPUT_STRING_LEN];
         value[0] = L'\0';
         DWORD type = REG_SZ;
         DWORD size = CSettings::MAX_INPUT_STRING_LEN * sizeof(wchar_t);
@@ -365,134 +365,22 @@ CSettings::CSettings()
     jsonFilePath = result + L"\\" + std::wstring(c_powerRenameDataFilePath);
 }
 
-bool CSettings::GetEnabled() const
-{
-    std::scoped_lock lock{ dataLock };
-    return settings.enabled;
-}
-
-void CSettings::SetEnabled(bool enabled)
-{
-    std::scoped_lock lock{ dataLock };
-    settings.enabled = enabled;
-}
-
-bool CSettings::GetShowIconOnMenu() const
-{
-    std::scoped_lock lock{ dataLock };
-    return settings.showIconOnMenu;
-}
-
-void CSettings::SetShowIconOnMenu(bool show)
-{
-    std::scoped_lock lock{ dataLock };
-    settings.showIconOnMenu = show;
-}
-
-bool CSettings::GetExtendedContextMenuOnly() const
-{
-    std::scoped_lock lock{ dataLock };
-    return settings.extendedContextMenuOnly;
-}
-
-void CSettings::SetExtendedContextMenuOnly(bool extendedOnly)
-{
-    std::scoped_lock lock{ dataLock };
-    settings.extendedContextMenuOnly = extendedOnly;
-}
-
-bool CSettings::GetPersistState() const
-{
-    std::scoped_lock lock{ dataLock };
-    return settings.persistState;
-}
-
-void CSettings::SetPersistState(bool persistState)
-{
-    std::scoped_lock lock{ dataLock };
-    settings.persistState = persistState;
-}
-
-bool CSettings::GetMRUEnabled() const
-{
-    std::scoped_lock lock{ dataLock };
-    return settings.MRUEnabled;
-}
-
-void CSettings::SetMRUEnabled(bool MRUEnabled)
-{
-    std::scoped_lock lock{ dataLock };
-    settings.MRUEnabled = MRUEnabled;
-}
-
-long CSettings::GetMaxMRUSize() const
-{
-    std::scoped_lock lock{ dataLock };
-    return settings.maxMRUSize;
-}
-
-void CSettings::SetMaxMRUSize(long maxMRUSize)
-{
-    std::scoped_lock lock{ dataLock };
-    settings.maxMRUSize = maxMRUSize;
-}
-
-long CSettings::GetFlags() const
-{
-    std::scoped_lock lock{ dataLock };
-    return settings.flags;
-}
-
-void CSettings::SetFlags(long flags)
-{
-    std::scoped_lock lock{ dataLock };
-    settings.flags = flags;
-}
-
-const std::wstring& CSettings::GetSearchText() const
-{
-    std::scoped_lock lock{ dataLock };
-    return settings.searchText;
-}
-
-void CSettings::SetSearchText(const std::wstring& text)
-{
-    std::scoped_lock lock{ dataLock };
-    settings.searchText = text;
-}
-
-const std::wstring& CSettings::GetReplaceText() const
-{
-    std::scoped_lock lock{ dataLock };
-    return settings.replaceText;
-}
-
-void CSettings::SetReplaceText(const std::wstring& text)
-{
-    std::scoped_lock lock{ dataLock };
-    settings.replaceText = text;
-}
-
 void CSettings::LoadPowerRenameData()
 {
-    std::scoped_lock lock{ dataLock };
-
     if (!std::filesystem::exists(jsonFilePath))
     {
         MigrateSettingsFromRegistry();
+
+        SavePowerRenameData();
     }
     else
     {
-        ParseJsonSettings(GetPersistPowerRenameJSON());
-
-        SavePowerRenameData();
+        ParseJsonSettings();
     }
 }
 
 void CSettings::SavePowerRenameData() const
 {
-    std::scoped_lock lock{ dataLock };
-
     json::JsonObject jsonData;
 
     jsonData.SetNamedValue(c_enabled,                 json::value(settings.enabled));
@@ -508,18 +396,8 @@ void CSettings::SavePowerRenameData() const
     json::to_file(jsonFilePath, jsonData);
 }
 
-json::JsonObject CSettings::GetPersistPowerRenameJSON()
-{
-    std::scoped_lock lock{ dataLock };
-
-    auto jsonData = json::from_file(jsonFilePath);
-    return jsonData ? jsonData.value() : json::JsonObject();
-}
-
 void CSettings::MigrateSettingsFromRegistry()
 {
-    std::scoped_lock lock{ dataLock };
-
     settings.enabled                 = GetRegBoolean(c_enabled, true);
     settings.showIconOnMenu          = GetRegBoolean(c_showIconOnMenu, true);
     settings.extendedContextMenuOnly = GetRegBoolean(c_extendedContextMenuOnly, false); // Disabled by default.
@@ -531,19 +409,49 @@ void CSettings::MigrateSettingsFromRegistry()
     settings.replaceText             = GetRegString(c_replaceText);
 }
 
-void CSettings::ParseJsonSettings(const json::JsonObject& jsonSettings)
+void CSettings::ParseJsonSettings()
 {
-    std::scoped_lock lock{ dataLock };
-
-    settings.enabled                 = jsonSettings.GetNamedBoolean(c_enabled, true);
-    settings.showIconOnMenu          = jsonSettings.GetNamedBoolean(c_showIconOnMenu, true);
-    settings.extendedContextMenuOnly = jsonSettings.GetNamedBoolean(c_extendedContextMenuOnly, false); // Disabled by default.
-    settings.persistState            = jsonSettings.GetNamedBoolean(c_persistState, true);
-    settings.MRUEnabled              = jsonSettings.GetNamedBoolean(c_mruEnabled, true);
-    settings.maxMRUSize              = (long)jsonSettings.GetNamedNumber(c_maxMRUSize, 10);
-    settings.flags                   = (long)jsonSettings.GetNamedNumber(c_flags, 0);
-    settings.searchText              = jsonSettings.GetNamedString(c_searchText, L"");
-    settings.replaceText             = jsonSettings.GetNamedString(c_replaceText, L"");
+    auto json = json::from_file(jsonFilePath);
+    if (json)
+    {
+        const json::JsonObject& jsonSettings = json.value();
+        if (json::has(jsonSettings, c_enabled, json::JsonValueType::Boolean))
+        {
+            settings.enabled = jsonSettings.GetNamedBoolean(c_enabled);
+        }
+        if (json::has(jsonSettings, c_showIconOnMenu, json::JsonValueType::Boolean))
+        {
+            settings.showIconOnMenu = jsonSettings.GetNamedBoolean(c_showIconOnMenu);
+        }
+        if (json::has(jsonSettings, c_extendedContextMenuOnly, json::JsonValueType::Boolean))
+        {
+            settings.extendedContextMenuOnly = jsonSettings.GetNamedBoolean(c_extendedContextMenuOnly);
+        }
+        if (json::has(jsonSettings, c_persistState, json::JsonValueType::Boolean))
+        {
+            settings.persistState = jsonSettings.GetNamedBoolean(c_persistState);
+        }
+        if (json::has(jsonSettings, c_mruEnabled, json::JsonValueType::Boolean))
+        {
+            settings.MRUEnabled = jsonSettings.GetNamedBoolean(c_mruEnabled);
+        }
+        if (json::has(jsonSettings, c_maxMRUSize, json::JsonValueType::Number))
+        {
+            settings.maxMRUSize = (long)jsonSettings.GetNamedNumber(c_maxMRUSize);
+        }
+        if (json::has(jsonSettings, c_flags, json::JsonValueType::Number))
+        {
+            settings.flags = (long)jsonSettings.GetNamedNumber(c_flags);
+        }
+        if (json::has(jsonSettings, c_searchText, json::JsonValueType::String))
+        {
+            settings.searchText = jsonSettings.GetNamedString(c_searchText);
+        }
+        if (json::has(jsonSettings, c_replaceText, json::JsonValueType::String))
+        {
+            settings.replaceText = jsonSettings.GetNamedString(c_replaceText);
+        }
+    }
 }
 
 CSettings& CSettingsInstance()

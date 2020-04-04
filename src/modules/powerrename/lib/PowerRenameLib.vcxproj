@@ -112,6 +112,9 @@
       <SubSystem>Windows</SubSystem>
     </Link>
     <Lib />
+    <Lib>
+      <AdditionalDependencies>WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
