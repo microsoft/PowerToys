@@ -4,8 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Windows;
-using Squirrel;
-using Wox.Core;
+
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Helper;
@@ -63,12 +62,12 @@ namespace Wox
             // which will cause ungraceful exit
             SaveAppAllSettings();
 
-            UpdateManager.RestartApp();
+            Squirrel.UpdateManager.RestartApp();
         }
 
         public void CheckForNewUpdate()
         {
-            _settingsVM.UpdateApp();
+            //_settingsVM.UpdateApp();
         }
 
         public void SaveAppAllSettings()
@@ -101,7 +100,7 @@ namespace Wox
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                var msg = useMainWindowAsOwner ? new Msg {Owner = Application.Current.MainWindow} : new Msg();
+                var msg = useMainWindowAsOwner ? new Msg { Owner = Application.Current.MainWindow } : new Msg();
                 msg.Show(title, subTitle, iconPath);
             });
         }

@@ -25,7 +25,6 @@ namespace Wox
         private Settings _settings;
         private MainViewModel _mainVM;
         private SettingWindowViewModel _settingsVM;
-        private readonly Updater _updater = new Updater(Wox.Properties.Settings.Default.GithubRepo);
         private readonly Alphabet _alphabet = new Alphabet();
         private StringMatcher _stringMatcher;
 
@@ -53,7 +52,7 @@ namespace Wox
 
                 ImageLoader.Initialize();
 
-                _settingsVM = new SettingWindowViewModel(_updater);
+                _settingsVM = new SettingWindowViewModel();
                 _settings = _settingsVM.Settings;
 
                 _alphabet.Initialize(_settings);
@@ -83,37 +82,8 @@ namespace Wox
 
                 RegisterExitEvents();
 
-                AutoStartup();
-                AutoUpdates();
-
                 _mainVM.MainWindowVisibility = _settings.HideOnStartup ? Visibility.Hidden : Visibility.Visible;
                 Log.Info("|App.OnStartup|End Wox startup ----------------------------------------------------  ");
-            });
-        }
-
-
-        private void AutoStartup()
-        {
-        }
-
-        //[Conditional("RELEASE")]
-        private void AutoUpdates()
-        {
-            Task.Run(async () =>
-            {
-                if (_settings.AutoUpdates)
-                {
-                    // check udpate every 5 hours
-                    var timer = new Timer(1000 * 60 * 60 * 5);
-                    timer.Elapsed += async (s, e) =>
-                    {
-                        await _updater.UpdateApp();
-                    };
-                    timer.Start();
-
-                    // check updates on startup
-                    await _updater.UpdateApp();
-                }
             });
         }
 
