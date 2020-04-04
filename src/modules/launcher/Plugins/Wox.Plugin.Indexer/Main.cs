@@ -92,7 +92,7 @@ namespace Wox.Plugin.Indexer
                     results.Add(new Result
                     {
                         // TODO: Localize the string
-                        Title = "Windows indexer plugin is not running",
+                        Title = ex.ToString(),
                         IcoPath = "Images\\WindowsIndexerImg.bmp"
                     });
                 }

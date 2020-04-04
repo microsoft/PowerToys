@@ -32,10 +32,11 @@ namespace Wox.Plugin.Indexer.SearchHelper
                         while (WDSResults.Read())
                         {
                             // col 0 is our path in display format
-                            Console.WriteLine("{0}", WDSResults.GetString(0));
-                            var result = new SearchResult { Path = WDSResults.GetString(0) };
-
-                            yield return result;
+                            if (WDSResults.GetString(0) != null)
+                            {
+                                var result = new SearchResult { Path = WDSResults.GetString(0) };
+                                yield return result;
+                            }
                         }
                     }
 
