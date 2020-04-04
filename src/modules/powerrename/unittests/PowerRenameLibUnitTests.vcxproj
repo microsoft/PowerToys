@@ -112,7 +112,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(OutDir)PowerRenameLib.lib;$(OutDir)PowerRenameUI.lib;WindowsApp.lib;comctl32.lib;pathcch.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Pathcch.lib;$(OutDir)..\..\src\modules\powerrename\UI\$(Platform)\$(Configuration)\PowerRenameUI.res;$(OutDir)PowerRenameLib.lib;$(OutDir)PowerRenameLib.lib;%(AdditionalDependencies);</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)PowerRenameLib.lib;$(OutDir)PowerRenameUI.lib;comctl32.lib;pathcch.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Pathcch.lib;$(OutDir)..\..\src\modules\powerrename\UI\$(Platform)\$(Configuration)\PowerRenameUI.res;$(OutDir)PowerRenameLib.lib;$(OutDir)PowerRenameLib.lib;%(AdditionalDependencies);</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -129,7 +129,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(OutDir)PowerRenameLib.lib;$(OutDir)PowerRenameUI.lib;WindowsApp.lib;comctl32.lib;pathcch.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Pathcch.lib;$(SolutionDir)$(Platform)\$(Configuration)\obj\PowerRenameUI\PowerRenameUI.res;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)PowerRenameLib.lib;$(OutDir)PowerRenameUI.lib;comctl32.lib;pathcch.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Pathcch.lib;$(SolutionDir)$(Platform)\$(Configuration)\obj\PowerRenameUI\PowerRenameUI.res;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -150,7 +150,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(OutDir)PowerRenameLib.lib;$(OutDir)PowerRenameUI.lib;WindowsApp.lib;comctl32.lib;pathcch.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Pathcch.lib;$(OutDir)..\..\src\modules\powerrename\UI\$(Platform)\$(Configuration)\PowerRenameUI.res;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)PowerRenameLib.lib;$(OutDir)PowerRenameUI.lib;comctl32.lib;pathcch.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Pathcch.lib;$(OutDir)..\..\src\modules\powerrename\UI\$(Platform)\$(Configuration)\PowerRenameUI.res;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -171,7 +171,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(OutDir)PowerRenameLib.lib;$(OutDir)PowerRenameUI.lib;WindowsApp.lib;comctl32.lib;pathcch.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Pathcch.lib;$(SolutionDir)$(Platform)\$(Configuration)\obj\PowerRenameUI\PowerRenameUI.res;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)PowerRenameLib.lib;$(OutDir)PowerRenameUI.lib;comctl32.lib;pathcch.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Pathcch.lib;$(SolutionDir)$(Platform)\$(Configuration)\obj\PowerRenameUI\PowerRenameUI.res;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
