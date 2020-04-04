@@ -99,6 +99,22 @@ namespace Wox.Core.Resource
 
         }
 
+        public bool PromptShouldUsePinyin(string languageCodeToSet)
+        {
+            var languageToSet = GetLanguageByLanguageCode(languageCodeToSet);
+
+            if (Settings.ShouldUsePinyin)
+                return false;
+
+            if (languageToSet != AvailableLanguages.Chinese && languageToSet != AvailableLanguages.Chinese_TW)
+                return false;
+
+            if (MessageBox.Show("Do you want to turn on search with Pinyin?", string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.No)
+                return false;
+
+            return true;
+        }
+
         private void RemoveOldLanguageFiles()
         {
             var dicts = Application.Current.Resources.MergedDictionaries;
