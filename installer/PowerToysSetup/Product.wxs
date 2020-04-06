@@ -226,7 +226,7 @@
           <Shortcut Id="ApplicationStartMenuShortcut"
                     Name="PowerToys (Preview)"
                     Description="PowerToys - Windows system utilities to maximize productivity"
-                    Directory="ApplicationProgramsFolder"
+                    Directory="ProgramMenuFolder" 
                     WorkingDirectory="INSTALLFOLDER"
                     Icon="powertoys.ico"
                     IconIndex="0"
