@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProjectGuid>{A7D5099E-F0FD-4BF3-8522-5A682759F915}</ProjectGuid>
+    <ProjectGuid>{A09BB59F-7B10-484A-91E4-4BA4F02B11EE}</ProjectGuid>
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.PowerToys.Settings.UI</RootNamespace>
