@@ -52,8 +52,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsDefaulted" Value="true">
-                                <!-- TO DO: Best way to get active Accent color?-->
-                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="true">
                                 <Setter Property="Opacity" TargetName="contentPresenter" Value="0.6"/>
@@ -66,10 +65,9 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <SolidColorBrush x:Key="BackgroundColor" Color="#BF333333"/>
     </UserControl.Resources>
 
-    <Border BorderBrush="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}" Background="{StaticResource BackgroundColor}" BorderThickness="1">
+    <Border BorderBrush="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}" Background="{StaticResource CanvasZoneBackgroundBrush}" BorderThickness="1">
         <Grid x:Name="Frame">
             <Grid.RowDefinitions>
                 <RowDefinition Height="8"/>
