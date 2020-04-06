@@ -167,7 +167,7 @@ IFACEMETHODIMP ZoneSet::AddZone(winrt::com_ptr<IZone> zone) noexcept
 IFACEMETHODIMP_(std::vector<int>)
 ZoneSet::ZonesFromPoint(POINT pt) noexcept
 {
-    const int SENSITIVITY_RADIUS = 40;
+    const int SENSITIVITY_RADIUS = 20;
     std::vector<int> capturedZones;
     for (size_t i = 0; i < m_zones.size(); i++)
     {
