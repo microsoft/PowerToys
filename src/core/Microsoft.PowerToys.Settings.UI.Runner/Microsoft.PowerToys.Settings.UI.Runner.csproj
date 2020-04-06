@@ -32,14 +32,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="stylecop.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AdditionalFiles Include="stylecop.json" />
-  </ItemGroup>
-
-  <ItemGroup>
     <COMReference Include="TwoWayIPCLibLib.dll">
       <Guid>7e00d5a3-11df-45c1-a675-96e408bd5bf5</Guid>
       <VersionMajor>1</VersionMajor>
@@ -48,6 +40,10 @@
       <WrapperTool>tlbimp</WrapperTool>
       <Isolated>false</Isolated>
     </COMReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="..\..\codeAnalysis\StyleCop.json" Link="StyleCop.json" />
   </ItemGroup>
 
   <ItemGroup>

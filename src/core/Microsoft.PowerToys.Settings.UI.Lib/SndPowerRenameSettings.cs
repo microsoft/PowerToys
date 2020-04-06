@@ -7,7 +7,6 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-
     public class SndPowerRenameSettings
     {
         [JsonPropertyName("PowerRename")]
@@ -24,4 +23,3 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         }
     }
 }
-
