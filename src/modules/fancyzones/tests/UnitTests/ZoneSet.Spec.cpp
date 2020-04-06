@@ -220,6 +220,59 @@ namespace FancyZonesUnitTests
                 compareZones(zone4, m_set->GetZones()[actual[0]]);
             }
 
+            TEST_METHOD (ZoneFromPointMultizoneHorizontal)
+            {
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                m_set->AddZone(zone1);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 100, 0, 200, 100 });
+                m_set->AddZone(zone2);
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 100, 100, 200 });
+                m_set->AddZone(zone3);
+                winrt::com_ptr<IZone> zone4 = MakeZone({ 100, 100, 200, 200 });
+                m_set->AddZone(zone4);
+
+                auto actual = m_set->ZonesFromPoint(POINT{ 50, 100 });
+                Assert::IsTrue(actual.size() == 2);
+                compareZones(zone1, m_set->GetZones()[actual[0]]);
+                compareZones(zone3, m_set->GetZones()[actual[1]]);
+            }
+
+            TEST_METHOD (ZoneFromPointMultizoneVertical)
+            {
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                m_set->AddZone(zone1);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 100, 0, 200, 100 });
+                m_set->AddZone(zone2);
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 100, 100, 200 });
+                m_set->AddZone(zone3);
+                winrt::com_ptr<IZone> zone4 = MakeZone({ 100, 100, 200, 200 });
+                m_set->AddZone(zone4);
+
+                auto actual = m_set->ZonesFromPoint(POINT{ 100, 50 });
+                Assert::IsTrue(actual.size() == 2);
+                compareZones(zone1, m_set->GetZones()[actual[0]]);
+                compareZones(zone2, m_set->GetZones()[actual[1]]);
+            }
+
+            TEST_METHOD(ZoneFromPointMultizoneQuad)
+            {
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                m_set->AddZone(zone1);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 100, 0, 200, 100 });
+                m_set->AddZone(zone2);
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 100, 100, 200 });
+                m_set->AddZone(zone3);
+                winrt::com_ptr<IZone> zone4 = MakeZone({ 100, 100, 200, 200 });
+                m_set->AddZone(zone4);
+
+                auto actual = m_set->ZonesFromPoint(POINT{ 100, 100 });
+                Assert::IsTrue(actual.size() == 4);
+                compareZones(zone1, m_set->GetZones()[actual[0]]);
+                compareZones(zone2, m_set->GetZones()[actual[1]]);
+                compareZones(zone3, m_set->GetZones()[actual[2]]);
+                compareZones(zone4, m_set->GetZones()[actual[3]]);
+            }
+
             TEST_METHOD (ZoneFromPointWithNotNormalizedRect)
             {
                 winrt::com_ptr<IZone> zone = MakeZone({ 100, 100, 0, 0 });
