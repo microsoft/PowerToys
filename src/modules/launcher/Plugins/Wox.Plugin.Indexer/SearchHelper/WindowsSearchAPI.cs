@@ -31,8 +31,7 @@ namespace Wox.Plugin.Indexer.SearchHelper
                     {
                         while (WDSResults.Read())
                         {
-                            // col 0 is our path in display format
-                            if (WDSResults.GetString(0) != null)
+                            if (!Convert.IsDBNull(WDSResults[0]))
                             {
                                 var result = new SearchResult { Path = WDSResults.GetString(0) };
                                 yield return result;
