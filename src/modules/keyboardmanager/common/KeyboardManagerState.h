@@ -1,5 +1,6 @@
 #pragma once
 #include "Helpers.h"
+#include "LayoutMap.h"
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <mutex>
 #include <winrt/Windows.UI.Xaml.Controls.h>
@@ -62,6 +63,8 @@ public:
     // Stores the app-specific shortcut remappings. Maps application name to the shortcut map
     std::map<std::wstring, std::map<std::vector<DWORD>, std::pair<std::vector<WORD>, bool>>> appSpecificShortcutReMap;
     std::mutex appSpecificShortcutReMap_mutex;
+
+    LayoutMap myMap;
 
     // Constructor
     KeyboardManagerState();
