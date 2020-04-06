@@ -157,6 +157,12 @@ void alert_already_running()
                 MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND);
 }
 
+void open_menu_from_another_instance()
+{
+    HWND hwnd_main = FindWindow(L"PToyTrayIconWindow", NULL);
+    PostMessage(hwnd_main, WM_COMMAND, ID_SETTINGS_MENU_COMMAND, NULL);
+}
+
 int runner(bool isProcessElevated)
 {
     DPIAware::EnableDPIAwarenessForThisProcess();
@@ -320,7 +326,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         if (!msix_mutex)
         {
             // The MSIX version is already running.
-            alert_already_running();
+            open_menu_from_another_instance();
             return 0;
         }
 
@@ -337,7 +343,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
                 msi_mutex = create_msi_mutex();
                 if (!msi_mutex)
                 {
-                    alert_already_running();
+                    open_menu_from_another_instance();
                     return 0;
                 }
             }
@@ -355,7 +361,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         if (!msi_mutex)
         {
             // The MSI version is already running.
-            alert_already_running();
+            open_menu_from_another_instance();
             return 0;
         }
 
@@ -366,7 +372,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         if (!msix_mutex)
         {
             // The MSIX version is already running.
-            alert_already_running();
+            open_menu_from_another_instance();
             return 0;
         }
         else
