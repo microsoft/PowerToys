@@ -9,9 +9,7 @@ using Microsoft.Toolkit.Wpf.UI.XamlHost;
 
 namespace Microsoft.PowerToys.Settings.UI.Runner
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml.
-    /// </summary>
+    // Interaction logic for MainWindow.xaml.
     public partial class MainWindow : Window
     {
         public MainWindow()

@@ -8,44 +8,28 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class GeneralSettings
     {
-        /// <summary>
-        /// Gets or sets a value indicating whether packaged.
-        /// </summary>
+        // Gets or sets a value indicating whether packaged.
         public bool Packaged { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether run powertoys on start-up.
-        /// </summary>
+        // Gets or sets a value indicating whether run powertoys on start-up.
         public bool startup { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether the powertoy elevated.
-        /// </summary>
+        // Gets or sets a value indicating whether the powertoy elevated.
         public bool is_elevated { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether powertoys should run elevated.
-        /// </summary>
+        // Gets or sets a value indicating whether powertoys should run elevated.
         public bool run_elevated { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether is admin.
-        /// </summary>
+        // Gets or sets a value indicating whether is admin.
         public bool is_admin { get; set; }
 
-        /// <summary>
-        /// Gets or sets theme Name.
-        /// </summary>
+        // Gets or sets theme Name.
         public string theme { get; set; }
 
-        /// <summary>
-        /// Gets or sets system theme name.
-        /// </summary>
+        // Gets or sets system theme name.
         public string system_theme { get; set; }
 
-        /// <summary>
-        /// Gets or sets powertoys version number.
-        /// </summary>
+        // Gets or sets powertoys version number.
         public string powertoys_version { get; set; }
 
         public GeneralSettings()
@@ -59,10 +43,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             this.powertoys_version = "v0.15.3";
         }
 
-        /// <summary>
-        /// converts the current to a json string.
-        /// </summary>
-        /// <returns>returnns a json string version of the class.</returns>
+        // converts the current to a json string.
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);

@@ -8,20 +8,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public abstract class BasePTModuleSettings
     {
-        /// <summary>
-        /// Gets or sets name of the powertoy module.
-        /// </summary>
+        // Gets or sets name of the powertoy module.
         public string name { get; set; }
 
-        /// <summary>
-        /// Gets or sets the powertoys version.
-        /// </summary>
+        // Gets or sets the powertoys version.
         public string version { get; set; }
 
-        /// <summary>
-        /// converts the current to a json string.
-        /// </summary>
-        /// <returns>returnns a json string version of the class.</returns>
+        // converts the current to a json string.
         public virtual string ToJsonString()
         {
             return JsonSerializer.Serialize(this);

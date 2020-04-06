@@ -10,10 +10,8 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 {
     public class Program
     {
-        /// <summary>
-        /// Create an instance of the  IPC wrapper.
-        /// </summary>
-        private static ITwoWayIPCManager Ipcmanager = new TwoWayIPCManager();
+        // Create an instance of the  IPC wrapper.
+        private static ITwoWayIPCManager ipcmanager = new TwoWayIPCManager();
 
         [STAThreadAttribute()]
         public static void Main(string[] args)
@@ -25,7 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 
                 if (args.Length > 1)
                 {
-                    Ipcmanager.Initialize(args[1], args[0]);
+                    ipcmanager.Initialize(args[1], args[0]);
                     app.Run();
                 }
                 else
@@ -41,7 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 
         public static ITwoWayIPCManager GetTwoWayIPCManager()
         {
-            return Ipcmanager;
+            return ipcmanager;
         }
     }
 }
