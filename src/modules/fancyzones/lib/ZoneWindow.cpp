@@ -148,7 +148,7 @@ namespace ZoneWindowDrawUtils
                            COLORREF highlightColor,
                            int zoneOpacity,
                            const std::vector<winrt::com_ptr<IZone>>& zones,
-                           const std::vector<int>& highlightZone,
+                           const std::vector<int>& highlightZones,
                            bool flashMode,
                            bool drawHints) noexcept
     {
@@ -159,14 +159,14 @@ namespace ZoneWindowDrawUtils
         ColorSetting const colorFlash{ OpacitySettingToAlpha(zoneOpacity), RGB(81, 92, 107), 200, RGB(104, 118, 138), -2 };
 
         std::vector<bool> isHighlighted(zones.size(), false);
-        for (int x : highlightZone)
+        for (int x : highlightZones)
         {
             isHighlighted[x] = true;
         }
 
         for (auto iter = zones.begin(); iter != zones.end(); iter++)
         {
-            int zoneId = iter - zones.begin();
+            int zoneId = static_cast<int>(iter - zones.begin());
             winrt::com_ptr<IZone> zone = iter->try_as<IZone>();
             if (!zone)
             {

@@ -177,7 +177,7 @@ ZoneSet::ZonesFromPoint(POINT pt) noexcept
             newZoneRect.top - SENSITIVITY_RADIUS <= pt.y && pt.y <= newZoneRect.bottom + SENSITIVITY_RADIUS &&
             newZoneRect.left < newZoneRect.right && newZoneRect.top < newZoneRect.bottom) // proper zone
         {
-            capturedZones.emplace_back(i);
+            capturedZones.emplace_back(static_cast<int>(i));
         }
     }
 
