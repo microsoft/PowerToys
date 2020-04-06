@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Wox.Plugin.Indexer
+namespace Microsoft.Plugin.Indexer
 {
     public class Settings
     {

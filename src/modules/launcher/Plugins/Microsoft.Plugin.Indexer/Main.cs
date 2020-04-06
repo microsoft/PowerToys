@@ -8,10 +8,10 @@ using Wox.Plugin;
 using System.IO;
 using System.ComponentModel;
 using Wox.Infrastructure.Storage;
-using Wox.Plugin.Indexer.SearchHelper;
+using Microsoft.Plugin.Indexer.SearchHelper;
 using Microsoft.Search.Interop;
 
-namespace Wox.Plugin.Indexer
+namespace Microsoft.Plugin.Indexer
 {
     class Main : IPlugin, ISavable, IPluginI18n
     {

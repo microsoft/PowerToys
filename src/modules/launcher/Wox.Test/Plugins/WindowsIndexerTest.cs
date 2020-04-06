@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
 using Microsoft.Search.Interop;
-using Wox.Plugin.Indexer.SearchHelper;
+using Microsoft.Plugin.Indexer.SearchHelper;
 
 namespace Wox.Test.Plugins
 {

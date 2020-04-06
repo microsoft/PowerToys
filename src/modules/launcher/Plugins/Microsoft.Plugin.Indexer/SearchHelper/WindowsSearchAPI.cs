@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data.OleDb;
 using Microsoft.Search.Interop;
 
-namespace Wox.Plugin.Indexer.SearchHelper
+namespace Microsoft.Plugin.Indexer.SearchHelper
 {
     public class WindowsSearchAPI
     {
