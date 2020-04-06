@@ -183,6 +183,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Setting
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.PowerToys.Settings.UI", "src\core\Microsoft.PowerToys.Settings.UI\Microsoft.PowerToys.Settings.UI.csproj", "{A09BB59F-7B10-484A-91E4-4BA4F02B11EE}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.PowerToys.Settings.TwoWayIPCLib", "src\core\Microsoft.PowerToys.Settings.TwoWayIPCLib\TwoWayIPCLib.vcxproj", "{F88B6FD1-14BD-48DB-85C2-6C51B8045121}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.PowerToys.Settings.IPCWrapperPS", "src\core\Microsoft.PowerToys.Settings.IPCWrapperPS\Microsoft.PowerToys.Settings.IPCWrapperPS.vcxproj", "{C073B057-B157-40F0-8678-1DCD119D841C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -611,6 +615,27 @@ Global
 		{A09BB59F-7B10-484A-91E4-4BA4F02B11EE}.Release|x86.ActiveCfg = Release|x86
 		{A09BB59F-7B10-484A-91E4-4BA4F02B11EE}.Release|x86.Build.0 = Release|x86
 		{A09BB59F-7B10-484A-91E4-4BA4F02B11EE}.Release|x86.Deploy.0 = Release|x86
+		{F88B6FD1-14BD-48DB-85C2-6C51B8045121}.Debug|ARM.ActiveCfg = Debug|Win32
+		{F88B6FD1-14BD-48DB-85C2-6C51B8045121}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{F88B6FD1-14BD-48DB-85C2-6C51B8045121}.Debug|x64.ActiveCfg = Debug|x64
+		{F88B6FD1-14BD-48DB-85C2-6C51B8045121}.Debug|x64.Build.0 = Debug|x64
+		{F88B6FD1-14BD-48DB-85C2-6C51B8045121}.Debug|x86.ActiveCfg = Debug|Win32
+		{F88B6FD1-14BD-48DB-85C2-6C51B8045121}.Debug|x86.Build.0 = Debug|Win32
+		{F88B6FD1-14BD-48DB-85C2-6C51B8045121}.Release|ARM.ActiveCfg = Release|Win32
+		{F88B6FD1-14BD-48DB-85C2-6C51B8045121}.Release|ARM64.ActiveCfg = Release|Win32
+		{F88B6FD1-14BD-48DB-85C2-6C51B8045121}.Release|x64.ActiveCfg = Release|x64
+		{F88B6FD1-14BD-48DB-85C2-6C51B8045121}.Release|x64.Build.0 = Release|x64
+		{F88B6FD1-14BD-48DB-85C2-6C51B8045121}.Release|x86.ActiveCfg = Release|Win32
+		{F88B6FD1-14BD-48DB-85C2-6C51B8045121}.Release|x86.Build.0 = Release|Win32
+		{C073B057-B157-40F0-8678-1DCD119D841C}.Debug|ARM.ActiveCfg = Debug|Win32
+		{C073B057-B157-40F0-8678-1DCD119D841C}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{C073B057-B157-40F0-8678-1DCD119D841C}.Debug|x64.ActiveCfg = Debug|x64
+		{C073B057-B157-40F0-8678-1DCD119D841C}.Debug|x86.ActiveCfg = Debug|Win32
+		{C073B057-B157-40F0-8678-1DCD119D841C}.Debug|x86.Build.0 = Debug|Win32
+		{C073B057-B157-40F0-8678-1DCD119D841C}.Release|ARM.ActiveCfg = Release|Win32
+		{C073B057-B157-40F0-8678-1DCD119D841C}.Release|ARM64.ActiveCfg = Release|Win32
+		{C073B057-B157-40F0-8678-1DCD119D841C}.Release|x64.ActiveCfg = Release|x64
+		{C073B057-B157-40F0-8678-1DCD119D841C}.Release|x86.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -657,6 +682,8 @@ Global
 		{6F2B5799-36AE-4D10-9DCF-B19CD26A5DBC} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
 		{AE3EFE25-662D-4987-B24E-30E729701B2E} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
 		{A09BB59F-7B10-484A-91E4-4BA4F02B11EE} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
+		{F88B6FD1-14BD-48DB-85C2-6C51B8045121} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
+		{C073B057-B157-40F0-8678-1DCD119D841C} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
