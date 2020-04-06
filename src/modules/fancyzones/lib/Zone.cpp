@@ -105,18 +105,23 @@ void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
         }
     }
 
-    //wait if SW_SHOWMINIMIZED would be removed from window (Issue #1685)
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
     WINDOWPLACEMENT placement{};
-    ::GetWindowPlacement(window, &placement);
-    placement.rcNormalPosition = zoneRect;
-    placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
+    
     // Do not restore minimized windows. We change their placement though so they restore to the correct zone.
     if ((placement.showCmd & SW_SHOWMINIMIZED) == 0)
     {
+        //wait if SW_SHOWMINIMIZED would be removed from window (Issue #1685)
+        for (int i = 0; i < 5; i++)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            ::GetWindowPlacement(window, &placement);
+        }
         placement.showCmd = SW_RESTORE | SW_SHOWNA;
     }
+
+    placement.rcNormalPosition = zoneRect;
+    placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
+
     ::SetWindowPlacement(window, &placement);
     // Do it again, allowing Windows to resize the window and set correct scaling
     // This fixes Issue #365
