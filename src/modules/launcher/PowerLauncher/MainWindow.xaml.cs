@@ -20,6 +20,7 @@ using Microsoft.Toolkit.Wpf.UI.XamlHost;
 using Windows.UI.Xaml.Controls;
 using System.Diagnostics;
 using Wox.Plugin;
+using Windows.UI.Xaml.Input;
 
 namespace PowerLauncher
 {
@@ -260,9 +261,9 @@ namespace PowerLauncher
             _launcher = (PowerLauncher.UI.LauncherControl)host.Child;
             _launcher.DataContext = _viewModel;
             _launcher.SearchBox.TextChanged += QueryTextBox_TextChanged;
-            _launcher.SearchBox.SuggestionChosen += SearchBox_SuggestionChosen;
+            _launcher.SearchBox.SuggestionChosen += AutoSuggestBox_SuggestionChosen;
+            _launcher.SearchBox.QuerySubmitted += AutoSuggestBox_QuerySubmitted;
             _launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
-
             _viewModel.PropertyChanged += (o, e) =>
             {
                 if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
@@ -282,12 +283,21 @@ namespace PowerLauncher
             };
         }
 
-        private void SearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
-            if (args != null)
+            if(args != null && args.SelectedItem != null)
             {
                 ResultViewModel result = (ResultViewModel)args.SelectedItem;
-                _ = result.Result.Action != null && result.Result.Action(new ActionContext{});              
+                sender.Text = result.Result.Title;
+            }         
+        }
+
+        private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            if (args != null && args.ChosenSuggestion != null)
+            {
+                ResultViewModel result = (ResultViewModel)args.ChosenSuggestion;
+                _ = result.Result.Action != null && result.Result.Action(new ActionContext { });
             }
         }
 
