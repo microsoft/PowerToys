@@ -176,7 +176,7 @@ int runner(bool isProcessElevated)
             L"shortcut_guide.dll",
             L"fancyzones.dll",
             L"PowerRenameExt.dll",
-            L"Wox.Launcher.dll"
+            L"Microsoft.Launcher.dll"
         };
         for (auto& file : std::filesystem::directory_iterator(L"modules/"))
         {

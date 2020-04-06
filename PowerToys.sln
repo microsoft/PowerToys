@@ -160,12 +160,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wox.Plugin.Shell", "src\mod
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wox.Plugin.Folder", "src\modules\launcher\Plugins\Wox.Plugin.Folder\Wox.Plugin.Folder.csproj", "{787B8AA6-CA93-4C84-96FE-DF31110AD1C4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Wox.Launcher", "src\modules\launcher\Wox.Launcher\Wox.Launcher.vcxproj", "{E364F67B-BB12-4E91-B639-355866EBCD8B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Indexer", "src\modules\launcher\Plugins\Microsoft.Plugin.Indexer\Microsoft.Plugin.Indexer.csproj", "{F8B870EB-D5F5-45BA-9CF7-A5C459818820}"
 	ProjectSection(ProjectDependencies) = postProject
-		{DB90F671-D861-46BB-93A3-F1304F5BA1C5} = {DB90F671-D861-46BB-93A3-F1304F5BA1C5}
+		{8451ECDD-2EA4-4966-BB0A-7BBC40138E80} = {8451ECDD-2EA4-4966-BB0A-7BBC40138E80}
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Indexer", "src\modules\launcher\Plugins\Microsoft.Plugin.Indexer\Microsoft.Plugin.Indexer.csproj", "{F8B870EB-D5F5-45BA-9CF7-A5C459818820}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.Launcher", "src\modules\launcher\Microsoft.Launcher\Microsoft.Launcher.vcxproj", "{E364F67B-BB12-4E91-B639-355866EBCD8B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -301,14 +301,14 @@ Global
 		{787B8AA6-CA93-4C84-96FE-DF31110AD1C4}.Debug|x64.Build.0 = Debug|x64
 		{787B8AA6-CA93-4C84-96FE-DF31110AD1C4}.Release|x64.ActiveCfg = Release|x64
 		{787B8AA6-CA93-4C84-96FE-DF31110AD1C4}.Release|x64.Build.0 = Release|x64
-		{E364F67B-BB12-4E91-B639-355866EBCD8B}.Debug|x64.ActiveCfg = Debug|x64
-		{E364F67B-BB12-4E91-B639-355866EBCD8B}.Debug|x64.Build.0 = Debug|x64
-		{E364F67B-BB12-4E91-B639-355866EBCD8B}.Release|x64.ActiveCfg = Release|x64
-		{E364F67B-BB12-4E91-B639-355866EBCD8B}.Release|x64.Build.0 = Release|x64
 		{F8B870EB-D5F5-45BA-9CF7-A5C459818820}.Debug|x64.ActiveCfg = Debug|x64
 		{F8B870EB-D5F5-45BA-9CF7-A5C459818820}.Debug|x64.Build.0 = Debug|x64
 		{F8B870EB-D5F5-45BA-9CF7-A5C459818820}.Release|x64.ActiveCfg = Release|x64
 		{F8B870EB-D5F5-45BA-9CF7-A5C459818820}.Release|x64.Build.0 = Release|x64
+		{E364F67B-BB12-4E91-B639-355866EBCD8B}.Debug|x64.ActiveCfg = Debug|x64
+		{E364F67B-BB12-4E91-B639-355866EBCD8B}.Debug|x64.Build.0 = Debug|x64
+		{E364F67B-BB12-4E91-B639-355866EBCD8B}.Release|x64.ActiveCfg = Release|x64
+		{E364F67B-BB12-4E91-B639-355866EBCD8B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -349,8 +349,8 @@ Global
 		{FDB3555B-58EF-4AE6-B5F1-904719637AB4} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{C21BFF9C-2C99-4B5F-B7C9-A5E6DDDB37B0} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{787B8AA6-CA93-4C84-96FE-DF31110AD1C4} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
-		{E364F67B-BB12-4E91-B639-355866EBCD8B} = {C140A3EF-6DBF-4084-9D4C-4EB5A99FEE68}
 		{F8B870EB-D5F5-45BA-9CF7-A5C459818820} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
+		{E364F67B-BB12-4E91-B639-355866EBCD8B} = {C140A3EF-6DBF-4084-9D4C-4EB5A99FEE68}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

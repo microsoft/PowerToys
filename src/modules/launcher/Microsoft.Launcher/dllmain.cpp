@@ -29,7 +29,7 @@ struct ModuleSettings {
 } g_settings;
 
 // Implement the PowerToy Module Interface and all the required methods.
-class Wox_Launcher : public PowertoyModuleIface {
+class Microsoft_Launcher : public PowertoyModuleIface {
 private:
   // The PowerToy state.
   bool m_enabled = false;
@@ -45,12 +45,12 @@ private:
 
 public:
   // Constructor
-  Wox_Launcher() {
+  Microsoft_Launcher() {
     app_name = GET_RESOURCE_STRING(IDS_LAUNCHER_NAME);
     init_settings();
   };
 
-  ~Wox_Launcher() {
+  ~Microsoft_Launcher() {
       if (m_enabled)
       {
           TerminateProcess(m_hProcess, 1);
@@ -179,7 +179,7 @@ public:
 };
 
 // Load the settings file.
-void Wox_Launcher::init_settings() {
+void Microsoft_Launcher::init_settings() {
   try {
     // Load and parse the settings file for this PowerToy.
     PowerToysSettings::PowerToyValues settings =
@@ -193,5 +193,5 @@ void Wox_Launcher::init_settings() {
 
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create() {
-  return new Wox_Launcher();
+  return new Microsoft_Launcher();
 }
