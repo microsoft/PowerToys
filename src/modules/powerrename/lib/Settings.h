@@ -11,15 +11,9 @@ public:
 
     CSettings();
 
-    inline bool GetEnabled() const
-    {
-        return settings.enabled;
-    }
+    bool GetEnabled();
 
-    inline void SetEnabled(bool enabled)
-    {
-        settings.enabled = enabled;
-    }
+    void SetEnabled(bool enabled);
 
     inline bool GetShowIconOnMenu() const
     {
@@ -107,7 +101,6 @@ public:
 private:
     struct Settings
     {
-        bool enabled{ true };
         bool showIconOnMenu{ true };
         bool extendedContextMenuOnly{ false }; // Disabled by default.
         bool persistState{ true };

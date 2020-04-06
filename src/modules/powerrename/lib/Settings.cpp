@@ -36,10 +36,20 @@ namespace
         return defaultValue;
     }
 
+    void SetRegNumber(const std::wstring& valueName, long value)
+    {
+        SHSetValue(HKEY_CURRENT_USER, c_rootRegPath, valueName.c_str(), REG_DWORD, &value, sizeof(value));
+    }
+
     bool GetRegBoolean(const std::wstring& valueName, bool defaultValue)
     {
-        DWORD value = GetRegNumber(valueName.c_str(), (defaultValue == 0) ? false : true);
+        DWORD value = GetRegNumber(valueName.c_str(), defaultValue ? 1 : 0);
         return (value == 0) ? false : true;
+    }
+
+    void SetRegBoolean(const std::wstring& valueName, bool value)
+    {
+        SetRegNumber(valueName, value ? 1 : 0);
     }
 
     std::wstring GetRegString(const std::wstring& valueName) {
@@ -365,6 +375,16 @@ CSettings::CSettings()
     jsonFilePath = result + L"\\" + std::wstring(c_powerRenameDataFilePath);
 }
 
+bool CSettings::GetEnabled()
+{
+    return GetRegBoolean(c_enabled, true);
+}
+
+void CSettings::SetEnabled(bool enabled)
+{
+    SetRegBoolean(c_enabled, enabled);
+}
+
 void CSettings::LoadPowerRenameData()
 {
     if (!std::filesystem::exists(jsonFilePath))
@@ -383,7 +403,6 @@ void CSettings::SavePowerRenameData() const
 {
     json::JsonObject jsonData;
 
-    jsonData.SetNamedValue(c_enabled,                 json::value(settings.enabled));
     jsonData.SetNamedValue(c_showIconOnMenu,          json::value(settings.showIconOnMenu));
     jsonData.SetNamedValue(c_extendedContextMenuOnly, json::value(settings.extendedContextMenuOnly));
     jsonData.SetNamedValue(c_persistState,            json::value(settings.persistState));
@@ -398,7 +417,6 @@ void CSettings::SavePowerRenameData() const
 
 void CSettings::MigrateSettingsFromRegistry()
 {
-    settings.enabled                 = GetRegBoolean(c_enabled, true);
     settings.showIconOnMenu          = GetRegBoolean(c_showIconOnMenu, true);
     settings.extendedContextMenuOnly = GetRegBoolean(c_extendedContextMenuOnly, false); // Disabled by default.
     settings.persistState            = GetRegBoolean(c_persistState, true);
@@ -415,42 +433,42 @@ void CSettings::ParseJsonSettings()
     if (json)
     {
         const json::JsonObject& jsonSettings = json.value();
-        if (json::has(jsonSettings, c_enabled, json::JsonValueType::Boolean))
+        try
         {
-            settings.enabled = jsonSettings.GetNamedBoolean(c_enabled);
+            if (json::has(jsonSettings, c_showIconOnMenu, json::JsonValueType::Boolean))
+            {
+                settings.showIconOnMenu = jsonSettings.GetNamedBoolean(c_showIconOnMenu);
+            }
+            if (json::has(jsonSettings, c_extendedContextMenuOnly, json::JsonValueType::Boolean))
+            {
+                settings.extendedContextMenuOnly = jsonSettings.GetNamedBoolean(c_extendedContextMenuOnly);
+            }
+            if (json::has(jsonSettings, c_persistState, json::JsonValueType::Boolean))
+            {
+                settings.persistState = jsonSettings.GetNamedBoolean(c_persistState);
+            }
+            if (json::has(jsonSettings, c_mruEnabled, json::JsonValueType::Boolean))
+            {
+                settings.MRUEnabled = jsonSettings.GetNamedBoolean(c_mruEnabled);
+            }
+            if (json::has(jsonSettings, c_maxMRUSize, json::JsonValueType::Number))
+            {
+                settings.maxMRUSize = (long)jsonSettings.GetNamedNumber(c_maxMRUSize);
+            }
+            if (json::has(jsonSettings, c_flags, json::JsonValueType::Number))
+            {
+                settings.flags = (long)jsonSettings.GetNamedNumber(c_flags);
+            }
+            if (json::has(jsonSettings, c_searchText, json::JsonValueType::String))
+            {
+                settings.searchText = jsonSettings.GetNamedString(c_searchText);
+            }
+            if (json::has(jsonSettings, c_replaceText, json::JsonValueType::String))
+            {
+                settings.replaceText = jsonSettings.GetNamedString(c_replaceText);
+            }
         }
-        if (json::has(jsonSettings, c_showIconOnMenu, json::JsonValueType::Boolean))
-        {
-            settings.showIconOnMenu = jsonSettings.GetNamedBoolean(c_showIconOnMenu);
-        }
-        if (json::has(jsonSettings, c_extendedContextMenuOnly, json::JsonValueType::Boolean))
-        {
-            settings.extendedContextMenuOnly = jsonSettings.GetNamedBoolean(c_extendedContextMenuOnly);
-        }
-        if (json::has(jsonSettings, c_persistState, json::JsonValueType::Boolean))
-        {
-            settings.persistState = jsonSettings.GetNamedBoolean(c_persistState);
-        }
-        if (json::has(jsonSettings, c_mruEnabled, json::JsonValueType::Boolean))
-        {
-            settings.MRUEnabled = jsonSettings.GetNamedBoolean(c_mruEnabled);
-        }
-        if (json::has(jsonSettings, c_maxMRUSize, json::JsonValueType::Number))
-        {
-            settings.maxMRUSize = (long)jsonSettings.GetNamedNumber(c_maxMRUSize);
-        }
-        if (json::has(jsonSettings, c_flags, json::JsonValueType::Number))
-        {
-            settings.flags = (long)jsonSettings.GetNamedNumber(c_flags);
-        }
-        if (json::has(jsonSettings, c_searchText, json::JsonValueType::String))
-        {
-            settings.searchText = jsonSettings.GetNamedString(c_searchText);
-        }
-        if (json::has(jsonSettings, c_replaceText, json::JsonValueType::String))
-        {
-            settings.replaceText = jsonSettings.GetNamedString(c_replaceText);
-        }
+        catch (const winrt::hresult_error&) { }
     }
 }
 
