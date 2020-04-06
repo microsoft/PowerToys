@@ -187,8 +187,4 @@
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File $(SolutionDir)src\modules\launcher\Scripts\post_build.ps1 $(ConfigurationName) $(SolutionDir)src\modules\launcher" />
   </Target>
-
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="taskkill /f /fi &quot;IMAGENAME eq PowerLauncher.exe&quot;" />
-  </Target>
 </Project>
