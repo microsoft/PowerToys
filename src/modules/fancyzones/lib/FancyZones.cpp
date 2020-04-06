@@ -961,49 +961,50 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
 
 void FancyZones::MoveSizeStartInternal(HWND window, HMONITOR monitor, POINT const& ptScreen, require_write_lock writeLock) noexcept
 {
-    if (!IsCursorTypeIndicatingSizeEvent())
+    if (IsCursorTypeIndicatingSizeEvent())
     {
-        m_inMoveSize = true;
+        return;
+    }
+    m_inMoveSize = true;
 
-        auto iter = m_zoneWindowMap.find(monitor);
-        if (iter == end(m_zoneWindowMap))
+    auto iter = m_zoneWindowMap.find(monitor);
+    if (iter == end(m_zoneWindowMap))
+    {
+        return;
+    }
+
+    m_windowMoveSize = window;
+
+    // This updates m_dragEnabled depending on if the shift key is being held down.
+    UpdateDragState(window, writeLock);
+
+    if (m_dragEnabled)
+    {
+        m_zoneWindowMoveSize = iter->second;
+        m_zoneWindowMoveSize->MoveSizeEnter(window, m_dragEnabled);
+        if (m_settings->GetSettings()->showZonesOnAllMonitors)
         {
-            return;
-        }
-
-        m_windowMoveSize = window;
-
-        // This updates m_dragEnabled depending on if the shift key is being held down.
-        UpdateDragState(window, writeLock);
-
-        if (m_dragEnabled)
-        {
-            m_zoneWindowMoveSize = iter->second;
-            m_zoneWindowMoveSize->MoveSizeEnter(window, m_dragEnabled);
-            if (m_settings->GetSettings()->showZonesOnAllMonitors)
+            for (auto [keyMonitor, zoneWindow] : m_zoneWindowMap)
             {
-                for (auto [keyMonitor, zoneWindow] : m_zoneWindowMap)
+                // Skip calling ShowZoneWindow for iter->second (m_zoneWindowMoveSize) since it
+                // was already called in MoveSizeEnter
+                const bool moveSizeEnterCalled = zoneWindow == m_zoneWindowMoveSize;
+                if (zoneWindow && !moveSizeEnterCalled)
                 {
-                    // Skip calling ShowZoneWindow for iter->second (m_zoneWindowMoveSize) since it
-                    // was already called in MoveSizeEnter
-                    const bool moveSizeEnterCalled = zoneWindow == m_zoneWindowMoveSize;
-                    if (zoneWindow && !moveSizeEnterCalled)
-                    {
-                        zoneWindow->ShowZoneWindow();
-                    }
+                    zoneWindow->ShowZoneWindow();
                 }
             }
         }
-        else if (m_zoneWindowMoveSize)
+    }
+    else if (m_zoneWindowMoveSize)
+    {
+        m_zoneWindowMoveSize->RestoreOrginalTransparency();
+        m_zoneWindowMoveSize = nullptr;
+        for (auto [keyMonitor, zoneWindow] : m_zoneWindowMap)
         {
-            m_zoneWindowMoveSize->RestoreOrginalTransparency();
-            m_zoneWindowMoveSize = nullptr;
-            for (auto [keyMonitor, zoneWindow] : m_zoneWindowMap)
+            if (zoneWindow)
             {
-                if (zoneWindow)
-                {
-                    zoneWindow->HideZoneWindow();
-                }
+                zoneWindow->HideZoneWindow();
             }
         }
     }
