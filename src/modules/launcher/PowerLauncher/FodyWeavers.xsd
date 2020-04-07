@@ -31,6 +31,16 @@
                 <xs:documentation>Used to control if equality checks should use the static Equals method resolved from the base class.</xs:documentation>
               </xs:annotation>
             </xs:attribute>
+            <xs:attribute name="SuppressWarnings" type="xs:boolean">
+              <xs:annotation>
+                <xs:documentation>Used to turn off build warnings from this weaver.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="SuppressOnPropertyNameChangedWarning" type="xs:boolean">
+              <xs:annotation>
+                <xs:documentation>Used to turn off build warnings about mismatched On_PropertyName_Changed methods.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
           </xs:complexType>
         </xs:element>
       </xs:all>
