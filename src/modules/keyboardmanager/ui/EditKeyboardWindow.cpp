@@ -155,28 +155,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         // Clear existing Key Remaps
         keyboardManagerState.ClearSingleKeyRemaps();
 
-        // Save the keys that are valid and report if any of them were invalid
-        //for (unsigned int i = 1; i < keyRemapTable.Children().Size(); i++)
-        //{
-        //    StackPanel currentRow = keyRemapTable.Children().GetAt(i).as<StackPanel>();
-        //    hstring originalKeyString = currentRow.Children().GetAt(0).as<StackPanel>().Children().GetAt(1).as<TextBlock>().Text();
-        //    hstring newKeyString = currentRow.Children().GetAt(1).as<StackPanel>().Children().GetAt(1).as<TextBlock>().Text();
-        //    if (!originalKeyString.empty() && !newKeyString.empty())
-        //    {
-        //        DWORD originalKey = std::stoi(originalKeyString.c_str());
-        //        DWORD newKey = std::stoi(newKeyString.c_str());
-
-        //        bool result = keyboardManagerState.AddSingleKeyRemap(originalKey, newKey);
-        //        if (!result)
-        //        {
-        //            isSuccess = false;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        isSuccess = false;
-        //    }
-        //}
         for (int i = 0; i < SingleKeyRemapControl::singleKeyRemapBuffer.size(); i++)
         {
             DWORD originalKey = SingleKeyRemapControl::singleKeyRemapBuffer[i][0];
