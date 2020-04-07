@@ -130,6 +130,21 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     // Message to display success/failure of saving settings.
     TextBlock settingsMessage;
 
+    // Store handle of edit keyboard window
+    SingleKeyRemapControl::EditKeyboardWindowHandle = _hWndEditKeyboardWindow;
+    // Store keyboard manager state
+    SingleKeyRemapControl::keyboardManagerState = &keyboardManagerState;
+    // Clear the single key remap buffer
+    SingleKeyRemapControl::singleKeyRemapBuffer.clear();
+
+    // Load existing remaps into UI
+    std::unique_lock<std::mutex> lock(keyboardManagerState.singleKeyReMap_mutex);
+    for (const auto& it : keyboardManagerState.singleKeyReMap)
+    {
+        SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, it.first, it.second);
+    }
+    lock.unlock();
+
     // Main Header Apply button
     Button applyButton;
     applyButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
@@ -141,16 +156,34 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         keyboardManagerState.ClearSingleKeyRemaps();
 
         // Save the keys that are valid and report if any of them were invalid
-        for (unsigned int i = 1; i < keyRemapTable.Children().Size(); i++)
-        {
-            StackPanel currentRow = keyRemapTable.Children().GetAt(i).as<StackPanel>();
-            hstring originalKeyString = currentRow.Children().GetAt(0).as<StackPanel>().Children().GetAt(1).as<TextBlock>().Text();
-            hstring newKeyString = currentRow.Children().GetAt(1).as<StackPanel>().Children().GetAt(1).as<TextBlock>().Text();
-            if (!originalKeyString.empty() && !newKeyString.empty())
-            {
-                DWORD originalKey = std::stoi(originalKeyString.c_str());
-                DWORD newKey = std::stoi(newKeyString.c_str());
+        //for (unsigned int i = 1; i < keyRemapTable.Children().Size(); i++)
+        //{
+        //    StackPanel currentRow = keyRemapTable.Children().GetAt(i).as<StackPanel>();
+        //    hstring originalKeyString = currentRow.Children().GetAt(0).as<StackPanel>().Children().GetAt(1).as<TextBlock>().Text();
+        //    hstring newKeyString = currentRow.Children().GetAt(1).as<StackPanel>().Children().GetAt(1).as<TextBlock>().Text();
+        //    if (!originalKeyString.empty() && !newKeyString.empty())
+        //    {
+        //        DWORD originalKey = std::stoi(originalKeyString.c_str());
+        //        DWORD newKey = std::stoi(newKeyString.c_str());
 
+        //        bool result = keyboardManagerState.AddSingleKeyRemap(originalKey, newKey);
+        //        if (!result)
+        //        {
+        //            isSuccess = false;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        isSuccess = false;
+        //    }
+        //}
+        for (int i = 0; i < SingleKeyRemapControl::singleKeyRemapBuffer.size(); i++)
+        {
+            DWORD originalKey = SingleKeyRemapControl::singleKeyRemapBuffer[i][0];
+            DWORD newKey = SingleKeyRemapControl::singleKeyRemapBuffer[i][1];
+
+            if (originalKey != NULL && newKey != NULL)
+            {
                 bool result = keyboardManagerState.AddSingleKeyRemap(originalKey, newKey);
                 if (!result)
                 {
@@ -179,19 +212,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     header.Children().Append(cancelButton);
     header.Children().Append(applyButton);
     header.Children().Append(settingsMessage);
-
-    // Store handle of edit keyboard window
-    SingleKeyRemapControl::EditKeyboardWindowHandle = _hWndEditKeyboardWindow;
-    // Store keyboard manager state
-    SingleKeyRemapControl::keyboardManagerState = &keyboardManagerState;
-
-    // Load existing remaps into UI
-    std::unique_lock<std::mutex> lock(keyboardManagerState.singleKeyReMap_mutex);
-    for (const auto& it : keyboardManagerState.singleKeyReMap)
-    {
-        SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, it.first, it.second);
-    }
-    lock.unlock();
 
     // Add remap key button
     Windows::UI::Xaml::Controls::Button addRemapKey;

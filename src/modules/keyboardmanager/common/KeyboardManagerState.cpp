@@ -181,18 +181,8 @@ std::vector<DWORD> KeyboardManagerState::GetDetectedShortcut()
 // Function to return the currently detected remap key which is displayed on the UI
 DWORD KeyboardManagerState::GetDetectedSingleRemapKey()
 {
-    std::unique_lock<std::mutex> lock(currentSingleKeyRemapTextBlock_mutex);
-    hstring remapKeyString = currentSingleKeyRemapTextBlock.Text();
-    lock.unlock();
-
-    std::wstring remapKeyWString = remapKeyString.c_str();
-    DWORD remapKey = NULL;
-    if (!remapKeyString.empty())
-    {
-        remapKey = std::stoul(remapKeyWString);
-    }
-
-    return remapKey;
+    std::lock_guard<std::mutex> lock(detectedRemapKey_mutex);
+    return detectedRemapKey;
 }
 
 // Function which can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.

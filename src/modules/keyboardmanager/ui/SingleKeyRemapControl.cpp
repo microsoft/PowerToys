@@ -4,6 +4,8 @@
 //Both static members are initialized to null
 HWND SingleKeyRemapControl::EditKeyboardWindowHandle = nullptr;
 KeyboardManagerState* SingleKeyRemapControl::keyboardManagerState = nullptr;
+// Initialized as new vector
+std::vector<std::vector<DWORD>> SingleKeyRemapControl::singleKeyRemapBuffer;
 
 // Function to add a new row to the remap keys table. If the originalKey and newKey args are provided, then the displayed remap keys are set to those values.
 void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, const DWORD& originalKey, const WORD& newKey)
@@ -15,18 +17,24 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, const D
     tableRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
 
     // SingleKeyRemapControl for the original key.
-    SingleKeyRemapControl originalRemapKeyControl;
+    SingleKeyRemapControl originalRemapKeyControl(singleKeyRemapBuffer.size(), 0);
     tableRow.Children().Append(originalRemapKeyControl.getSingleKeyRemapControl());
 
     // SingleKeyRemapControl for the new remap key.
-    SingleKeyRemapControl newRemapKeyControl;
+    SingleKeyRemapControl newRemapKeyControl(singleKeyRemapBuffer.size(), 1);
     tableRow.Children().Append(newRemapKeyControl.getSingleKeyRemapControl());
 
     // Set the key text if the two keys are not null (i.e. default args)
     if (originalKey != NULL && newKey != NULL)
     {
-        originalRemapKeyControl.singleKeyRemapText.Text(winrt::to_hstring((unsigned int)originalKey));
-        newRemapKeyControl.singleKeyRemapText.Text(winrt::to_hstring((unsigned int)newKey));
+        singleKeyRemapBuffer.push_back(std::vector<DWORD>{ originalKey, newKey });
+        originalRemapKeyControl.singleKeyRemapText.Text(winrt::to_hstring(keyboardManagerState->keyboardMap.GetKeyName(originalKey).c_str()));
+        newRemapKeyControl.singleKeyRemapText.Text(winrt::to_hstring(keyboardManagerState->keyboardMap.GetKeyName(newKey).c_str()));
+    }
+    else
+    {
+        // Initialize both keys to NULL
+        singleKeyRemapBuffer.push_back(std::vector<DWORD>{ NULL, NULL });
     }
 
     // Delete row button
@@ -42,6 +50,8 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, const D
         uint32_t index;
         parent.Children().IndexOf(currentRow, index);
         parent.Children().RemoveAt(index);
+        // delete the row from the buffer. Since first child of the stackpanel is the header, the effective index starts from 1
+        singleKeyRemapBuffer.erase(singleKeyRemapBuffer.begin() + (index - 1));
     });
     tableRow.Children().Append(deleteRemapKeys);
     parent.Children().Append(tableRow);
@@ -54,7 +64,7 @@ StackPanel SingleKeyRemapControl::getSingleKeyRemapControl()
 }
 
 // Function to create the detect remap key UI window
-void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, XamlRoot xamlRoot, KeyboardManagerState& keyboardManagerState)
+void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, KeyboardManagerState& keyboardManagerState, const int& rowIndex, const int& colIndex)
 {
     // ContentDialog for detecting remap key. This is the parent UI element.
     ContentDialog detectRemapKeyBox;
@@ -72,12 +82,14 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
     TextBlock linkedRemapText = getSiblingElement(sender).as<TextBlock>();
 
     // OK button
-    detectRemapKeyBox.PrimaryButtonClick([=, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
+    detectRemapKeyBox.PrimaryButtonClick([=, &singleKeyRemapBuffer, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
         // Save the detected key in the linked text block
         DWORD detectedKey = keyboardManagerState.GetDetectedSingleRemapKey();
+
         if (detectedKey != NULL)
         {
-            linkedRemapText.Text(winrt::to_hstring((unsigned int)detectedKey));
+            singleKeyRemapBuffer[rowIndex][colIndex] = detectedKey;
+            linkedRemapText.Text(winrt::to_hstring(keyboardManagerState.keyboardMap.GetKeyName(detectedKey).c_str()));
         }
 
         // Reset the keyboard manager UI state
