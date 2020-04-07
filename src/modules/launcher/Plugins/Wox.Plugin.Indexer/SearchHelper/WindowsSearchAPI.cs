@@ -29,16 +29,15 @@ namespace Wox.Plugin.Indexer.SearchHelper
                     // execute the command, which returns the results as an OleDbDataReader.
                     using (WDSResults = command.ExecuteReader())
                     {
-                        while (WDSResults.Read())
+                        if(WDSResults.HasRows)
                         {
-                            if (!Convert.IsDBNull(WDSResults[0]))
+                            while (WDSResults.Read() && WDSResults.GetValue(0) != DBNull.Value)
                             {
                                 var result = new SearchResult { Path = WDSResults.GetString(0) };
                                 yield return result;
                             }
                         }
                     }
-
                 }
             }
         }
@@ -88,6 +87,7 @@ namespace Wox.Plugin.Indexer.SearchHelper
             queryHelper.QuerySorting = "System.DateModified DESC";
         }
 
+        [STAThread]
         public IEnumerable<SearchResult> Search(string keyword, string pattern = "*", int maxCount = 100)
         {
             ISearchQueryHelper queryHelper;
