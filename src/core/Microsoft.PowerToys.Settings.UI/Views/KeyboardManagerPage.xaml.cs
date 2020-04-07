@@ -1,10 +1,13 @@
-﻿using System;
+﻿using Microsoft.PowerToys.Settings.UI.ViewModels;
+using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -22,6 +25,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// </summary>
     public sealed partial class KeyboardManagerPage : Page
     {
+        public KeyboardManagerViewModel ViewModel { get; } = new KeyboardManagerViewModel();
+
         public KeyboardManagerPage()
         {
             this.InitializeComponent();

@@ -70,6 +70,7 @@
     <Compile Include="ViewModels\KeyboardManagerViewModel.cs" />
     <Compile Include="ViewModels\PowerRenameViewModel.cs" />
     <Compile Include="ViewModels\PowerLauncherViewModel.cs" />
+    <Compile Include="ViewModels\RemapKeysModel.cs" />
     <Compile Include="ViewModels\ShellViewModel.cs" />
     <Compile Include="ViewModels\ShortcutGuideViewModel.cs" />
     <Compile Include="Views\GeneralPage.xaml.cs">

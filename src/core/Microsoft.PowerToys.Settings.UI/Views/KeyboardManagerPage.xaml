@@ -5,10 +5,240 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
+    <Page.Resources>
+        <viewmodels:RemapKeysModel x:Key="dummyData"/>
+    </Page.Resources>
+
+    <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LayoutVisualStates">
+                <VisualState x:Name="WideLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="1" />
+                        <Setter Target="SidePanel.(Grid.Row)" Value="0" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="SmallLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
+                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Vertical">
+            <TextBlock Text="Reconfigure your keyboard by remapping keys and shortcuts"
+                       TextWrapping="Wrap"
+                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+            <Grid Margin="{StaticResource SmallTopMargin}">
+                <TextBlock Text="Current configuration"
+                           Style="{StaticResource SubtitleTextBlockStyle}" />
+                <ComboBox SelectedIndex="1"
+                          Margin="{StaticResource ResourceKey=MediumRightMargin}"
+                          HorizontalAlignment="Right">
+                    <ComboBoxItem Content="Config-1"/>
+                    <ComboBoxItem Content="Config-2"/>
+                    <ComboBoxItem Content="Config-3"/>
+                </ComboBox>
+            </Grid>
+
+            <TextBlock Text="Select the profile to display the active key remap and shortcuts"
+                Margin="{StaticResource XSmallTopMargin}"/>
+
+            <Grid Margin="{StaticResource SmallTopMargin}">
+                <TextBlock Text="Remap Keyboard"
+                           Style="{StaticResource SubtitleTextBlockStyle}" />
+                <Button Content="Remap"
+                        Margin="{StaticResource MediumLeftRightMargin}"
+                        Style="{StaticResource AccentButtonStyle}"
+                        HorizontalAlignment="Right"/>
+            </Grid>
+
+            <TextBlock Text="To remap keys, press the remap button"
+                       Margin="{StaticResource XSmallTopMargin}"/>
+
+            <StackPanel Margin="{StaticResource SmallLeftTopRightBottomMargin}"
+                        Orientation="Horizontal">
+                <TextBlock Text="Remap for:"
+                           FontWeight="Bold"/>
+                <TextBlock Text="Config-1"
+                           Margin="{StaticResource XSmallLeftMargin}"
+                           FontWeight="ExtraLight" />
+            </StackPanel>
+
+            <StackPanel Margin="{StaticResource SmallLeftMargin}"
+                        Orientation="Horizontal">
+                <TextBlock Text="From:"
+                           Width="200"/>
+                <TextBlock Text="To:"
+                           Width="200"
+                           FontWeight="ExtraLight" />
+            </StackPanel>
+
+            <ListView x:Name="RemapKeysList"
+                      ItemsSource="{StaticResource dummyData}"
+                      BorderBrush="LightGray"
+                      BorderThickness="1" 
+                      Width="400"
+                      MaxHeight="150"
+                      Margin="{StaticResource SmallLeftTopRightBottomMargin}"
+                      HorizontalAlignment="Left">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="200"/>
+                                <ColumnDefinition Width="200"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Background="{ThemeResource SystemBaseLowColor}"
+                                    Grid.Column="0"
+                                    Width="70"
+                                    Height="35"
+                                    HorizontalAlignment="Left">
+                                <TextBlock  Grid.Column="0"
+                                            Style="{StaticResource BodyTextBlockStyle}"
+                                            VerticalAlignment="Center"
+                                            TextAlignment="Center"
+                                            Text="{Binding From}">
+                                </TextBlock>
+                            </Border>
+                            <Border Background="{ThemeResource SystemBaseLowColor}"
+                                    Grid.Column="1"
+                                    Width="70"
+                                    Height="35"
+                                    HorizontalAlignment="Left">
+                                <TextBlock Grid.Column="1" 
+                                           Style="{StaticResource BodyTextBlockStyle}"
+                                           VerticalAlignment="Center"
+                                           TextAlignment="Center"
+                                           Text="{Binding To}">
+                                </TextBlock>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            
+            <Grid Margin="{StaticResource SmallTopMargin}">
+                <TextBlock Text="Edit Shortcuts"
+                           Style="{StaticResource SubtitleTextBlockStyle}" />
+                <Button Content="Remap" 
+                        Margin="{StaticResource MediumRightMargin}"
+                        Style="{StaticResource AccentButtonStyle}" 
+                        HorizontalAlignment="Right"/>
+            </Grid>
+
+            <TextBlock Text="To redefine shortcuts, press the remap button"
+                       Margin="{StaticResource XSmallTopMargin}"/>
+
+            <StackPanel Margin="{StaticResource SmallLeftTopRightBottomMargin}"
+                        Orientation="Horizontal">
+                <TextBlock Text="Shortcuts for:"
+                           FontWeight="Bold">
+                </TextBlock>
+                <TextBlock Text="Config-1"
+                           Margin="{StaticResource XSmallLeftMargin}"
+                           FontWeight="ExtraLight" >
+                </TextBlock>
+            </StackPanel>
+
+            <StackPanel Margin="{StaticResource SmallLeftMargin}"
+                        Orientation="Horizontal">
+                <TextBlock Text="From:"
+                           Width="200">
+                </TextBlock>
+                <TextBlock Text="To:"
+                           Width="200" 
+                           FontWeight="ExtraLight" >
+                </TextBlock>
+            </StackPanel>
+
+            <ListView x:Name="RemapShortcutsList"  
+                      ItemsSource="{StaticResource dummyData}" 
+                      BorderBrush="LightGray" 
+                      BorderThickness="1" 
+                      Width="400"
+                      MaxHeight="150"
+                      Margin="{StaticResource SmallLeftTopRightBottomMargin}"
+                      HorizontalAlignment="Left">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="200"/>
+                                <ColumnDefinition Width="200"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Background="{ThemeResource SystemBaseLowColor}"
+                                    Grid.Column="0"
+                                    Width="70"
+                                    Height="35"
+                                    HorizontalAlignment="Left">
+                                <TextBlock  Grid.Column="0"
+                                            Style="{StaticResource BodyTextBlockStyle}"
+                                            VerticalAlignment="Center"
+                                            TextAlignment="Center"
+                                            Text="{Binding From}">
+                                </TextBlock>
+                            </Border>
+                            <Border Background="{ThemeResource SystemBaseLowColor}"
+                                    Grid.Column="1"
+                                    Width="70"
+                                    Height="35"
+                                    HorizontalAlignment="Left">
+                                <TextBlock Grid.Column="1"
+                                           Style="{StaticResource BodyTextBlockStyle}"
+                                           VerticalAlignment="Center"
+                                           TextAlignment="Center"
+                                           Text="{Binding To}">
+                                </TextBlock>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackPanel>
+
+        <StackPanel x:Name="SidePanel"
+                                Orientation="Vertical"
+                                HorizontalAlignment="Left"
+                                Width="{StaticResource SidePanelWidth}"
+                                Grid.Column="1">
+
+            <TextBlock Text="About this feature"
+                                   Style="{StaticResource SettingsGroupTitleStyle}"
+                                   Margin="{StaticResource XSmallBottomMargin}"/>
+
+            <HyperlinkButton Content="Module overview"/>
+            <HyperlinkButton Content="Give feedback"/>
+
+            <TextBlock Text="Contributors"
+                           Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+            <HyperlinkButton Content="Contributor name"/>
+            <HyperlinkButton Content="Contributor name"/>
+            <HyperlinkButton Content="Contributor name"/>
+        </StackPanel>
+
 
     </Grid>
 </Page>

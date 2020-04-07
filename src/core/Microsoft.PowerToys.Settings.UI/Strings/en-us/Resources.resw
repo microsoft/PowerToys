@@ -157,4 +157,8 @@
     <value>Image Resizer</value>
     <comment>Navigation view item name for Image Resizer</comment>
   </data>
+  <data name="Shell_KeyboardManager.Content" xml:space="preserve">
+    <value>Keyboard Manager</value>
+    <comment>Navigation view item name for Keyboard Manager</comment>
+  </data>
 </root>
