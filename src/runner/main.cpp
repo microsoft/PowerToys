@@ -149,13 +149,6 @@ void github_update_checking_worker()
         state.save();
     }
 }
-void alert_already_running()
-{
-    MessageBoxW(nullptr,
-                GET_RESOURCE_STRING(IDS_ANOTHER_INSTANCE_RUNNING).c_str(),
-                GET_RESOURCE_STRING(IDS_POWERTOYS).c_str(),
-                MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND);
-}
 
 void open_menu_from_another_instance()
 {
