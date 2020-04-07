@@ -261,7 +261,6 @@ namespace PowerLauncher
             _launcher = (PowerLauncher.UI.LauncherControl)host.Child;
             _launcher.DataContext = _viewModel;
             _launcher.SearchBox.TextChanged += QueryTextBox_TextChanged;
-            _launcher.SearchBox.SuggestionChosen += AutoSuggestBox_SuggestionChosen;
             _launcher.SearchBox.QuerySubmitted += AutoSuggestBox_QuerySubmitted;
             _launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
             _viewModel.PropertyChanged += (o, e) =>
@@ -283,15 +282,6 @@ namespace PowerLauncher
             };
         }
 
-        private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
-        {
-            if(args != null && args.SelectedItem != null)
-            {
-                ResultViewModel result = (ResultViewModel)args.SelectedItem;
-                sender.Text = result.Result.Title;
-            }         
-        }
-
         private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
             if (args != null && args.ChosenSuggestion != null)
@@ -305,10 +295,7 @@ namespace PowerLauncher
         {
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
-                if (_viewModel.QueryTextCursorMovedToEnd)
-                {
-                    _viewModel.QueryTextCursorMovedToEnd = false;
-                }
+                _viewModel.QueryText = sender.Text;
             }
         }
     }
