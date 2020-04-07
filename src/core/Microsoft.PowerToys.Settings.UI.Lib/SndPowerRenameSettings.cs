@@ -3,19 +3,18 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
-
-#pragma warning disable SA1649 // File name should match first type name
+using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    // Represents a powertoys module settings setnt to the runner.
-    public class SndModuleSettings<T>
+    public class SndPowerRenameSettings
     {
-        public T powertoys { get; set; }
+        [JsonPropertyName("PowerRename")]
+        public PowerRenameSettings PowerRename { get; set; }
 
-        public SndModuleSettings(T settings)
+        public SndPowerRenameSettings(PowerRenameSettings settings)
         {
-            this.powertoys = settings;
+            this.PowerRename = settings;
         }
 
         public string ToJsonString()

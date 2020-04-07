@@ -47,6 +47,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AdditionalFiles Include="..\..\codeAnalysis\StyleCop.json" Link="StyleCop.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\settingsui\Assets\logo.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>

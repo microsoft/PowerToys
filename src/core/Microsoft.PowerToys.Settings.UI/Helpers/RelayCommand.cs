@@ -5,9 +5,9 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
     public class RelayCommand : ICommand
     {
-        private readonly Action _execute;
+        private readonly Action execute;
 
-        private readonly Func<bool> _canExecute;
+        private readonly Func<bool> canExecute;
 
         public event EventHandler CanExecuteChanged;
 
@@ -18,22 +18,22 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         public RelayCommand(Action execute, Func<bool> canExecute)
         {
-            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
-            _canExecute = canExecute;
+            this.execute = execute ?? throw new ArgumentNullException(nameof(execute));
+            this.canExecute = canExecute;
         }
 
-        public bool CanExecute(object parameter) => _canExecute == null || _canExecute();
+        public bool CanExecute(object parameter) => this.canExecute == null || this.canExecute();
 
-        public void Execute(object parameter) => _execute();
+        public void Execute(object parameter) => this.execute();
 
-        public void OnCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+        public void OnCanExecuteChanged() => this.CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public class RelayCommand<T> : ICommand
     {
-        private readonly Action<T> _execute;
+        private readonly Action<T> execute;
 
-        private readonly Func<T, bool> _canExecute;
+        private readonly Func<T, bool> canExecute;
 
         public event EventHandler CanExecuteChanged;
 
@@ -44,14 +44,14 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         public RelayCommand(Action<T> execute, Func<T, bool> canExecute)
         {
-            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
-            _canExecute = canExecute;
+            this.execute = execute ?? throw new ArgumentNullException(nameof(execute));
+            this.canExecute = canExecute;
         }
 
-        public bool CanExecute(object parameter) => _canExecute == null || _canExecute((T)parameter);
+        public bool CanExecute(object parameter) => this.canExecute == null || this.canExecute((T)parameter);
 
-        public void Execute(object parameter) => _execute((T)parameter);
+        public void Execute(object parameter) => this.execute((T)parameter);
 
-        public void OnCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+        public void OnCanExecuteChanged() => this.CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 }

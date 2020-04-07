@@ -5,7 +5,7 @@
 using System;
 using System.Windows;
 using Microsoft.PowerToys.Settings.UI.Views;
-using System.Threading;
+using Microsoft.Toolkit.Wpf.UI.XamlHost;
 
 namespace Microsoft.PowerToys.Settings.UI.Runner
 {
@@ -26,16 +26,10 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
             if (shellPage != null)
             {
                 // send IPC Message
-                shellPage.SetDefaultSndMessageCallback(delegate (string msg)
+                shellPage.SetDefaultSndMessageCallback(msg =>
                 {
-                    Program.ipcmanager.SendMessage(msg);
+                    Program.GetTwoWayIPCManager().SendMessage(msg);
                 });
-
-            }
-        }
-
-            if (shellPage != null)
-            {
             }
         }
     }

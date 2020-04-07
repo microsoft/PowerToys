@@ -1,27 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class GeneralSettings
     {
-        public bool packaged { get; set; }
+        // Gets or sets a value indicating whether packaged.
+        public bool Packaged { get; set; }
+
+        // Gets or sets a value indicating whether run powertoys on start-up.
         public bool startup { get; set; }
+
+        // Gets or sets a value indicating whether the powertoy elevated.
         public bool is_elevated { get; set; }
+
+        // Gets or sets a value indicating whether powertoys should run elevated.
         public bool run_elevated { get; set; }
+
+        // Gets or sets a value indicating whether is admin.
         public bool is_admin { get; set; }
+
+        // Gets or sets theme Name.
         public string theme { get; set; }
+
+        // Gets or sets system theme name.
         public string system_theme { get; set; }
+
+        // Gets or sets powertoys version number.
         public string powertoys_version { get; set; }
 
         public GeneralSettings()
         {
-            this.packaged = false;
+            this.Packaged = false;
             this.startup = false;
             this.is_admin = false;
             this.is_elevated = false;
@@ -30,27 +43,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             this.powertoys_version = "v0.15.3";
         }
 
+        // converts the current to a json string.
         public string ToJsonString()
-        {
-            return JsonSerializer.Serialize(this);
-        }
-    }
-
-    public class OutGoingGeneralSettings
-    {
-        public GeneralSettings general { get; set; }
-
-        public OutGoingGeneralSettings()
-        {
-            this.general = null;
-        }
-
-        public OutGoingGeneralSettings(GeneralSettings generalSettings)
-        {
-            this.general = generalSettings;
-        }
-
-        public override string ToString()
         {
             return JsonSerializer.Serialize(this);
         }

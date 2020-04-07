@@ -1,19 +1,21 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Threading.Tasks;
-
 using Microsoft.PowerToys.Settings.UI.Services;
-
 using Windows.ApplicationModel.Activation;
 
 namespace Microsoft.PowerToys.Settings.UI.Activation
 {
     internal class DefaultActivationHandler : ActivationHandler<IActivatedEventArgs>
     {
-        private readonly Type _navElement;
+        private readonly Type navElement;
 
         public DefaultActivationHandler(Type navElement)
         {
-            _navElement = navElement;
+            this.navElement = navElement;
         }
 
         protected override async Task HandleInternalAsync(IActivatedEventArgs args)
@@ -26,14 +28,14 @@ namespace Microsoft.PowerToys.Settings.UI.Activation
                 arguments = launchArgs.Arguments;
             }
 
-            NavigationService.Navigate(_navElement, arguments);
+            NavigationService.Navigate(this.navElement, arguments);
             await Task.CompletedTask;
         }
 
         protected override bool CanHandleInternal(IActivatedEventArgs args)
         {
             // None of the ActivationHandlers has handled the app activation
-            return NavigationService.Frame.Content == null && _navElement != null;
+            return NavigationService.Frame.Content == null && this.navElement != null;
         }
     }
 }

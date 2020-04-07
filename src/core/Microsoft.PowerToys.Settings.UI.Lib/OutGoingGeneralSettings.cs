@@ -4,21 +4,23 @@
 
 using System.Text.Json;
 
-#pragma warning disable SA1649 // File name should match first type name
-
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    // Represents a powertoys module settings setnt to the runner.
-    public class SndModuleSettings<T>
+    public class OutGoingGeneralSettings
     {
-        public T powertoys { get; set; }
+        public GeneralSettings general { get; set; }
 
-        public SndModuleSettings(T settings)
+        public OutGoingGeneralSettings()
         {
-            this.powertoys = settings;
+            this.general = null;
         }
 
-        public string ToJsonString()
+        public OutGoingGeneralSettings(GeneralSettings generalSettings)
+        {
+            this.general = generalSettings;
+        }
+
+        public override string ToString()
         {
             return JsonSerializer.Serialize(this);
         }

@@ -6,16 +6,14 @@ using System.Text.Json;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public abstract class BasePTModuleSettings
+    // Represents the configuration property of the settings that store Integer type.
+    public class IntProperty
     {
-        // Gets or sets name of the powertoy module.
-        public string name { get; set; }
+        // Gets or sets the integer value of the settings configuration.
+        public int value { get; set; }
 
-        // Gets or sets the powertoys version.
-        public string version { get; set; }
-
-        // converts the current to a json string.
-        public virtual string ToJsonString()
+        // Returns a JSON version of the class settings configuration class.
+        public override string ToString()
         {
             return JsonSerializer.Serialize(this);
         }
