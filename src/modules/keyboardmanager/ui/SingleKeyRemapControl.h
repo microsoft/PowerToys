@@ -13,12 +13,6 @@ private:
     // StackPanel to parent the above controls
     StackPanel singleKeyRemapControlLayout;
 
-    // Row index
-    int rowIndex;
-
-    // Column index
-    int colIndex;
-
 public:
     // Handle to the current Edit Keyboard Window
     static HWND EditKeyboardWindowHandle;
