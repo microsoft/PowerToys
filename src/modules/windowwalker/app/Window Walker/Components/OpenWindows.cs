@@ -94,32 +94,12 @@ namespace WindowWalker.Components
         {
             Window newWindow = new Window(hwnd);
 
-            uint toolWindow = (uint)InteropAndHelpers.ExtendedWindowStyles.WS_EX_TOOLWINDOW;
-            uint appWindow = (uint)InteropAndHelpers.ExtendedWindowStyles.WS_EX_APPWINDOW;
-            InteropAndHelpers.GetWindowCmd owner = InteropAndHelpers.GetWindowCmd.GW_OWNER;
-            int windowLong = InteropAndHelpers.GetWindowLong(hwnd, InteropAndHelpers.GWL_EXSTYLE);
-
-            if ((newWindow.IsWindow && newWindow.Visible && InteropAndHelpers.GetWindow(hwnd, owner) != null &&
-                (((windowLong & toolWindow) != toolWindow) || ((windowLong & appWindow) == appWindow)) &&
-                InteropAndHelpers.GetProp(hwnd, "ITaskList_Deleted") == IntPtr.Zero &&
-                newWindow.ClassName != "Windows.UI.Core.CoreWindow" /*&& !newWindow.IsWindowCloaked() //hides all cloaked apps*/)
-                )
-            {
-                /*if (newWindow.IsWindowCloaked() && newWindow.ClassName == "ApplicationFrameWindow") 
-                {
-                    // hides cloaked UWP apps only
-                }
-                else*/
-                    windows.Add(newWindow);
-            }
-
-            /*if ((newWindow.Visible && !newWindow.ProcessName.ToLower().Equals("iexplore.exe")) ||
-                (newWindow.ProcessName.ToLower().Equals("iexplore.exe") && newWindow.ClassName == "TabThumbnailWindow"))
+            if (newWindow.IsWindow && newWindow.Visible && newWindow.IsOwner &&
+                (!newWindow.IsToolWindow || newWindow.IsAppWindow ) && !newWindow.TaskListDeleted &&
+                newWindow.ClassName != "Windows.UI.Core.CoreWindow")
             {
                 windows.Add(newWindow);
-
-                OnOpenWindowsUpdate?.Invoke(this, new SearchController.SearchResultUpdateEventArgs());
-            }*/
+            }
 
             return true;
         }
