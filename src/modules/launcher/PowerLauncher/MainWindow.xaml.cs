@@ -18,6 +18,9 @@ using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
 using Windows.UI.Xaml.Controls;
+using System.Diagnostics;
+using Wox.Plugin;
+using Windows.UI.Xaml.Input;
 
 namespace PowerLauncher
 {
@@ -132,6 +135,8 @@ namespace PowerLauncher
         //        }
         //    }
         //}
+
+        
 
 
         private void OnDrop(object sender, DragEventArgs e)
@@ -256,9 +261,8 @@ namespace PowerLauncher
             _launcher = (PowerLauncher.UI.LauncherControl)host.Child;
             _launcher.DataContext = _viewModel;
             _launcher.SearchBox.TextChanged += QueryTextBox_TextChanged;
-
+            _launcher.SearchBox.QuerySubmitted += AutoSuggestBox_QuerySubmitted;
             _launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
-
             _viewModel.PropertyChanged += (o, e) =>
             {
                 if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
@@ -277,14 +281,21 @@ namespace PowerLauncher
                 }
             };
         }
+
+        private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            if (args != null && args.ChosenSuggestion != null)
+            {
+                ResultViewModel result = (ResultViewModel)args.ChosenSuggestion;
+                _ = result.Result.Action != null && result.Result.Action(new ActionContext { });
+            }
+        }
+
         private void QueryTextBox_TextChanged(Windows.UI.Xaml.Controls.AutoSuggestBox sender, Windows.UI.Xaml.Controls.AutoSuggestBoxTextChangedEventArgs args)
         {
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
-                if (_viewModel.QueryTextCursorMovedToEnd)
-                {
-                    _viewModel.QueryTextCursorMovedToEnd = false;
-                }
+                _viewModel.QueryText = sender.Text;
             }
         }
     }

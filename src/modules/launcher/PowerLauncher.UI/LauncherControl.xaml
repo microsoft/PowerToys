@@ -415,15 +415,13 @@
     <Grid>
         <Grid x:Name="ShadowReceiverGrid"/>
         <Grid x:Name="PowerBar" CornerRadius="4" Height="72" Background="{StaticResource BackdropAcrylicBrush}" Translation="0,0,16" Shadow="{StaticResource ShellBarShadow}" Margin="12" VerticalAlignment="Top" HorizontalAlignment="Center" MinWidth="240">
-
-
-            <AutoSuggestBox x:Name="SearchBox"  x:FieldModifier="public" PlaceholderText="Launch an app" FontSize="24" Style="{StaticResource CustomStyledAutoSuggestBox}" MinWidth="720"
-                            Text="{Binding QueryText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding Results.Results}">
+            <AutoSuggestBox x:Name="SearchBox" x:FieldModifier="public" PlaceholderText="Launch an app" FontSize="24" Style="{StaticResource CustomStyledAutoSuggestBox}" 
+                            MinWidth="720" ItemsSource="{Binding Results.Results}">
                 <AutoSuggestBox.QueryIcon>
                     <SymbolIcon Symbol="Find"/>
                 </AutoSuggestBox.QueryIcon>
                 <AutoSuggestBox.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate >
                         <Grid Height="72" Width="690" Background="Transparent" RowSpacing="0">
                             <Interactivity:Interaction.Behaviors>
                                 <Core:EventTriggerBehavior EventName="PointerEntered">
@@ -443,9 +441,9 @@
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
 
-                            <Image x:Name="AppIcon"  Height="36" Margin="8,0,0,0" Grid.RowSpan="2" HorizontalAlignment="Left" Source="{Binding Image}"/>
+                            <Image x:Name="AppIcon" Height="36" Margin="8,0,0,0" Grid.RowSpan="2" HorizontalAlignment="Left" Source="{Binding Result.IcoPath}" />
                             <TextBlock x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" VerticalAlignment="Bottom"/>
-                            <TextBlock x:Name="Path" Grid.Column="1" Text="C:\Program Files\WindowsApps\Microsoft\Folder                                               " Grid.Row="1" Opacity="0.6" VerticalAlignment="Top"/>
+                            <TextBlock x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Opacity="0.6" VerticalAlignment="Top"/>
                             <StackPanel Orientation="Horizontal" Opacity="0" HorizontalAlignment="Right" Grid.RowSpan="2" Grid.Column="1">
                                 <Interactivity:Interaction.Behaviors>
                                     <ToolkitBehaviors:Fade x:Name="ShowActionButtons" Duration="250" Delay="0" AutomaticallyStart="False" Value="1" />
@@ -478,7 +476,7 @@
                             </StackPanel>
 
 
-                        </Grid>
+                       </Grid>
                     </DataTemplate>
                 </AutoSuggestBox.ItemTemplate>
             </AutoSuggestBox>
