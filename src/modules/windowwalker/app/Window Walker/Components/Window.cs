@@ -169,6 +169,87 @@ namespace WindowWalker.Components
         }
 
         /// <summary>
+        /// Determines whether the specified window handle identifies an existing window.
+        /// </summary>
+        public bool IsWindow
+        {
+            get
+            {
+                return InteropAndHelpers.IsWindow(Hwnd);
+            }
+        }
+
+        /// <summary>
+        /// Get a value indicating whether is the window GWL_EX_STYLE is a toolwindow
+        /// </summary>
+        public bool IsToolWindow
+        {
+            get
+            {
+                return (InteropAndHelpers.GetWindowLong(Hwnd, InteropAndHelpers.GWL_EXSTYLE) &
+                    (uint)InteropAndHelpers.ExtendedWindowStyles.WS_EX_TOOLWINDOW) ==
+                    (uint)InteropAndHelpers.ExtendedWindowStyles.WS_EX_TOOLWINDOW;
+            }
+        }
+
+        /// <summary>
+        /// Get a value indicating whether the window GWL_EX_STYLE is an appwindow
+        /// </summary>
+        public bool IsAppWindow
+        {
+            get
+            {
+                return (InteropAndHelpers.GetWindowLong(Hwnd, InteropAndHelpers.GWL_EXSTYLE) &
+                    (uint)InteropAndHelpers.ExtendedWindowStyles.WS_EX_APPWINDOW) ==
+                    (uint)InteropAndHelpers.ExtendedWindowStyles.WS_EX_APPWINDOW;
+            }
+        }
+
+        /// <summary>
+        /// Get a value indicating whether the window has ITaskList_Deleted property
+        /// </summary>
+        public bool TaskListDeleted
+        {
+            get
+            {
+                return InteropAndHelpers.GetProp(Hwnd, "ITaskList_Deleted") != IntPtr.Zero;
+            }
+        }
+
+        /// <summary>
+        /// Get a value indicating whether the app is a cloaked UWP app
+        /// </summary>
+        public bool IsUWPCloaked
+        {
+            get
+            {
+                return (this.IsWindowCloaked() && this.ClassName == "ApplicationFrameWindow");
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified windows is the owner
+        /// </summary>
+        public bool IsOwner
+        {
+            get
+            {
+                return InteropAndHelpers.GetWindow(Hwnd, InteropAndHelpers.GetWindowCmd.GW_OWNER) != null;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether is the window cloaked. To detect UWP apps in background or win32 apps running in another virtual desktop
+        /// </summary>
+        public bool IsWindowCloaked()
+        {
+            int isCloaked = 0;
+            const int DWMWA_CLOAKED = 14;
+            InteropAndHelpers.DwmGetWindowAttribute(this.hwnd, DWMWA_CLOAKED, out isCloaked, sizeof(int));
+            return isCloaked != 0;
+        }
+
+        /// <summary>
         /// Gets a value indicating whether returns true if the window is minimized
         /// </summary>
         public bool Minimized
