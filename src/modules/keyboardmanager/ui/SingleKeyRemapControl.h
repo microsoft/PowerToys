@@ -21,7 +21,7 @@ public:
     // Stores the current list of remappings
     static std::vector<std::vector<DWORD>> singleKeyRemapBuffer;
 
-    SingleKeyRemapControl(int rowIndex, int colIndex)
+    SingleKeyRemapControl(const int& rowIndex, const int& colIndex)
     {
         typeKey.Content(winrt::box_value(winrt::to_hstring("Type Key")));
         typeKey.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
@@ -29,7 +29,7 @@ public:
         typeKey.Click([&, rowIndex, colIndex](IInspectable const& sender, RoutedEventArgs const&) {
             keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectSingleKeyRemapWindowActivated, EditKeyboardWindowHandle);
             // Using the XamlRoot of the typeKey to get the root of the XAML host
-            createDetectKeyWindow(sender, sender.as<Button>().XamlRoot(), singleKeyRemapBuffer,*keyboardManagerState, rowIndex, colIndex);
+            createDetectKeyWindow(sender, sender.as<Button>().XamlRoot(), singleKeyRemapBuffer, *keyboardManagerState, rowIndex, colIndex);
         });
 
         singleKeyRemapControlLayout.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
