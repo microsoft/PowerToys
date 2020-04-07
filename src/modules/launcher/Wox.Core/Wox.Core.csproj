@@ -64,10 +64,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
-  
-  <ItemGroup>
     <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
     <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj" />
   </ItemGroup>
