@@ -149,12 +149,11 @@ void github_update_checking_worker()
         state.save();
     }
 }
-void alert_already_running()
+
+void open_menu_from_another_instance()
 {
-    MessageBoxW(nullptr,
-                GET_RESOURCE_STRING(IDS_ANOTHER_INSTANCE_RUNNING).c_str(),
-                GET_RESOURCE_STRING(IDS_POWERTOYS).c_str(),
-                MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND);
+    HWND hwnd_main = FindWindow(L"PToyTrayIconWindow", NULL);
+    PostMessage(hwnd_main, WM_COMMAND, ID_SETTINGS_MENU_COMMAND, NULL);
 }
 
 int runner(bool isProcessElevated)
@@ -320,7 +319,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         if (!msix_mutex)
         {
             // The MSIX version is already running.
-            alert_already_running();
+            open_menu_from_another_instance();
             return 0;
         }
 
@@ -337,7 +336,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
                 msi_mutex = create_msi_mutex();
                 if (!msi_mutex)
                 {
-                    alert_already_running();
+                    open_menu_from_another_instance();
                     return 0;
                 }
             }
@@ -355,7 +354,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         if (!msi_mutex)
         {
             // The MSI version is already running.
-            alert_already_running();
+            open_menu_from_another_instance();
             return 0;
         }
 
@@ -366,7 +365,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         if (!msix_mutex)
         {
             // The MSIX version is already running.
-            alert_already_running();
+            open_menu_from_another_instance();
             return 0;
         }
         else
