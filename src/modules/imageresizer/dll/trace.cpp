@@ -47,3 +47,13 @@ void Trace::InvokedRet(_In_ HRESULT hr) noexcept
         TraceLoggingHResult(hr),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
+
+void Trace::QueryContextMenuError(_In_ HRESULT hr) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "ImageResizer_QueryContextMenuError",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingHResult(hr),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
