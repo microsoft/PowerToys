@@ -7,7 +7,7 @@ namespace Wox.Infrastructure
 {
     public static class Constant
     {
-        public const string Wox = "Wox";
+        public const string Wox = "PowerLauncher";
         public const string Plugins = "Plugins";
 
         private static readonly Assembly Assembly = Assembly.GetExecutingAssembly();
@@ -33,7 +33,7 @@ namespace Wox.Infrastructure
         public static readonly string DataDirectory = DetermineDataDirectory();
         public static readonly string PluginsDirectory = Path.Combine(DataDirectory, Plugins);
         public static readonly string PreinstalledDirectory = Path.Combine(ProgramDirectory, Plugins);
-        public const string Issue = "https://github.com/Wox-launcher/Wox/issues/new";
+        public const string Issue = "https://github.com/microsoft/PowerToys/issues/new";
         public static readonly string Version = FileVersionInfo.GetVersionInfo(Assembly.Location.NonNull()).ProductVersion;
 
         public static readonly int ThumbnailSize = 64;

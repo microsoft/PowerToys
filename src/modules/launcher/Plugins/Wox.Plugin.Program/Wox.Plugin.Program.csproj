@@ -113,13 +113,10 @@
   
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2019.1.3" />
+    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.18362.2005" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="NLog" Version="4.7.0-rc1" />
+    <PackageReference Include="NLog" Version="4.7.0" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
-    <PackageReference Include="UwpDesktop" Version="10.0.14393.3" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
+
 </Project>
