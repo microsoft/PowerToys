@@ -2,36 +2,46 @@
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <string>
 #include <map>
+#include <mutex>
 
+// Wrapper class to handle keyboard layout
 class LayoutMap
 {
 private:
+    // Stores mappings for all the virtual key codes to the name of the key
     std::map<DWORD, std::wstring> keyboardLayoutMap;
+    std::mutex keyboardLayoutMap_mutex;
 
 public:
     LayoutMap()
     {
-        // Snippet to convert virtual scan code to corresponding unicode
+        // Get keyboard layout for current thread
         HKL layout = GetKeyboardLayout(0);
         unsigned char btKeys[256] = { 0 };
         GetKeyboardState(btKeys);
+
+        // Iterate over all the virtual key codes
         for (int i = 0; i < 256; i++)
         {
+            // Get the scan code from the virtual key code
             UINT scanCode = MapVirtualKeyExW(i, MAPVK_VK_TO_VSC, layout);
-
+            // Get the unicode representation from the virtual key code and scan code pair to 
             wchar_t szBuffer[3] = { 0 };
             int result = ToUnicodeEx(i, scanCode, (BYTE*)btKeys, szBuffer, 3, 0, layout);
+            // If a representation is returned
             if (result > 0)
             {
                 keyboardLayoutMap[i] = szBuffer;
             }
             else
             {
+                // Store the virtual key code as string
                 keyboardLayoutMap[i] = L"VK " + std::to_wstring(i);
             }
         }
 
         // Override special key names like Shift, Ctrl etc because they don't have unicode mappings and key names like Enter, Space as they appear as "\r", " "
+        // To do: localization
         keyboardLayoutMap[VK_CANCEL] = L"Break";
         keyboardLayoutMap[VK_BACK] = L"Backspace";
         keyboardLayoutMap[VK_TAB] = L"Tab";
@@ -54,6 +64,8 @@ public:
         keyboardLayoutMap[VK_DOWN] = L"Down";
         keyboardLayoutMap[VK_SELECT] = L"Select";
         keyboardLayoutMap[VK_PRINT] = L"Print";
+        keyboardLayoutMap[VK_EXECUTE] = L"Execute";
+        keyboardLayoutMap[VK_SNAPSHOT] = L"Print Screen";
         keyboardLayoutMap[VK_INSERT] = L"Insert";
         keyboardLayoutMap[VK_DELETE] = L"Delete";
         keyboardLayoutMap[VK_HELP] = L"Help";
@@ -122,8 +134,6 @@ public:
         keyboardLayoutMap[VK_LAUNCH_MEDIA_SELECT] = L"Select Media";
         keyboardLayoutMap[VK_LAUNCH_APP1] = L"Start Application 1";
         keyboardLayoutMap[VK_LAUNCH_APP2] = L"Start Application 2";
-        keyboardLayoutMap[VK_RCONTROL] = L"RCtrl";
-        keyboardLayoutMap[VK_LMENU] = L"LMenu";
         keyboardLayoutMap[VK_PACKET] = L"Packet";
         keyboardLayoutMap[VK_ATTN] = L"Attn";
         keyboardLayoutMap[VK_CRSEL] = L"CrSel";
@@ -133,6 +143,10 @@ public:
         keyboardLayoutMap[VK_ZOOM] = L"Zoom";
         keyboardLayoutMap[VK_PA1] = L"PA1";
         keyboardLayoutMap[VK_OEM_CLEAR] = L"Clear";
+        keyboardLayoutMap[0xFF] = L"Undefined";
         // To do: Add IME key names
     }
+
+    // Function to return the unicode string name of the key
+    std::wstring GetKeyName(DWORD key);
 };

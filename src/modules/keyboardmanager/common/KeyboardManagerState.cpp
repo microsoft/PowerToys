@@ -157,7 +157,7 @@ void KeyboardManagerState::UpdateDetectSingleKeyRemapUI()
     }
 
     std::unique_lock<std::mutex> detectedRemapKey_lock(detectedRemapKey_mutex);
-    hstring remapKeyString = winrt::to_hstring((unsigned int)detectedRemapKey);
+    hstring remapKeyString = winrt::to_hstring(keyboardMap.GetKeyName(detectedRemapKey).c_str());
     detectedRemapKey_lock.unlock();
 
     // Since this function is invoked from the back-end thread, in order to update the UI the dispatcher must be used.

@@ -64,7 +64,8 @@ public:
     std::map<std::wstring, std::map<std::vector<DWORD>, std::pair<std::vector<WORD>, bool>>> appSpecificShortcutReMap;
     std::mutex appSpecificShortcutReMap_mutex;
 
-    LayoutMap myMap;
+    // Stores the keyboard layout
+    LayoutMap keyboardMap;
 
     // Constructor
     KeyboardManagerState();
