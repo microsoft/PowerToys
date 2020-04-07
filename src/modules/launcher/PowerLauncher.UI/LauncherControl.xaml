@@ -416,7 +416,7 @@
         <Grid x:Name="ShadowReceiverGrid"/>
         <Grid x:Name="PowerBar" CornerRadius="4" Height="72" Background="{StaticResource BackdropAcrylicBrush}" Translation="0,0,16" Shadow="{StaticResource ShellBarShadow}" Margin="12" VerticalAlignment="Top" HorizontalAlignment="Center" MinWidth="240">
             <AutoSuggestBox x:Name="SearchBox" x:FieldModifier="public" PlaceholderText="Launch an app" FontSize="24" Style="{StaticResource CustomStyledAutoSuggestBox}" 
-                            MinWidth="720" ItemsSource="{Binding Results.Results}" TextMemberPath="Title">
+                            MinWidth="720" ItemsSource="{Binding Results.Results}">
                 <AutoSuggestBox.QueryIcon>
                     <SymbolIcon Symbol="Find"/>
                 </AutoSuggestBox.QueryIcon>

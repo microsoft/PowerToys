@@ -64,7 +64,7 @@ namespace Wox.ViewModel
 
         public override string ToString()
         {
-            return Result.ToString();
+            return Result.Title.ToString();
         }
     }
 }
