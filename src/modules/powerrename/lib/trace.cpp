@@ -79,11 +79,11 @@ void Trace::SettingsChanged() noexcept
         "PowerRename_SettingsChanged",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingBoolean(CSettings::GetEnabled(), "IsEnabled"),
-        TraceLoggingBoolean(CSettings::GetShowIconOnMenu(), "ShowIconOnMenu"),
-        TraceLoggingBoolean(CSettings::GetExtendedContextMenuOnly(), "ExtendedContextMenuOnly"),
-        TraceLoggingBoolean(CSettings::GetPersistState(), "PersistState"),
-        TraceLoggingBoolean(CSettings::GetMRUEnabled(), "IsMRUEnabled"),
-        TraceLoggingUInt64(CSettings::GetMaxMRUSize(), "MaxMRUSize"),
-        TraceLoggingUInt64(CSettings::GetFlags(), "Flags"));
+        TraceLoggingBoolean(CSettingsInstance().GetEnabled(), "IsEnabled"),
+        TraceLoggingBoolean(CSettingsInstance().GetShowIconOnMenu(), "ShowIconOnMenu"),
+        TraceLoggingBoolean(CSettingsInstance().GetExtendedContextMenuOnly(), "ExtendedContextMenuOnly"),
+        TraceLoggingBoolean(CSettingsInstance().GetPersistState(), "PersistState"),
+        TraceLoggingBoolean(CSettingsInstance().GetMRUEnabled(), "IsMRUEnabled"),
+        TraceLoggingUInt64(CSettingsInstance().GetMaxMRUSize(), "MaxMRUSize"),
+        TraceLoggingUInt64(CSettingsInstance().GetFlags(), "Flags"));
 }

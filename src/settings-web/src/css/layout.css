@@ -58,3 +58,6 @@
   flex-direction: column;
   flex-grow: 1;
 }
+.SubHeader{
+  font-weight: bold;
+}

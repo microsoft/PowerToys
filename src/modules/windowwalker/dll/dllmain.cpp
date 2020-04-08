@@ -4,6 +4,7 @@
 #include <interface/win_hook_event_data.h>
 #include <common/settings_objects.h>
 #include "trace.h"
+#include "resource.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -24,11 +25,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     return TRUE;
 }
 
-// The PowerToy name that will be shown in the settings.
-const static wchar_t* MODULE_NAME = L"Window Walker";
-// Add a description that will we shown in the module settings page.
-const static wchar_t* MODULE_DESC = L"Alt+Tab but with search";
-
 // These are the properties shown in the Settings page.
 struct ModuleSettings
 {
@@ -39,8 +35,11 @@ struct ModuleSettings
 class WindowWalker : public PowertoyModuleIface
 {
 private:
+    // The PowerToy name that will be show in the settings.
+    std::wstring m_appName;
+
     // The PowerToy state.
-    bool m_enabled = true;
+    bool m_enabled = false;
 
     // Load initial settings from the persisted values.
     void init_settings();
@@ -53,18 +52,24 @@ public:
     WindowWalker()
     {
         init_settings();
+        m_appName = GET_RESOURCE_STRING(IDS_MODULE_NAME);
     };
 
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
+        if (m_enabled)
+        {
+            TerminateProcess(m_hProcess, 1);
+        }
+
         delete this;
     }
 
     // Return the display name of the powertoy, this will be cached by the runner
     virtual const wchar_t* get_name() override
     {
-        return MODULE_NAME;
+        return m_appName.c_str();
     }
 
     // Return array of the names of all events that this powertoy listens for, with
@@ -84,7 +89,10 @@ public:
 
         // Create a Settings object.
         PowerToysSettings::Settings settings(hinstance, get_name());
-        settings.set_description(MODULE_DESC);
+        settings.set_description(GET_RESOURCE_STRING(IDS_GENERAL_DESCRIPTION));
+        settings.set_overview_link(GET_RESOURCE_STRING(IDS_OVERVIEW_LINK));
+        settings.set_icon_key(L"pt-window-walker");
+
 
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
@@ -135,6 +143,7 @@ public:
         m_hProcess = sei.hProcess;
 
         m_enabled = true;
+        Trace::EnableWindowWalker(true);
     }
 
     // Disable the powertoy
@@ -146,6 +155,7 @@ public:
         }
 
         m_enabled = false;
+        Trace::EnableWindowWalker(false);
     }
 
     // Returns if the powertoys is enabled

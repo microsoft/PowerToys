@@ -101,7 +101,7 @@ GeneralSettings get_settings()
 
     for (auto& [name, powertoy] : modules())
     {
-        settings.isModulesEnabledMap[name] = powertoy.is_enabled();
+        settings.isModulesEnabledMap[name] = powertoy->is_enabled();
     }
 
     return settings;
@@ -115,6 +115,8 @@ json::JsonObject get_general_settings()
 
 void apply_general_settings(const json::JsonObject& general_configs)
 {
+    run_as_elevated = general_configs.GetNamedBoolean(L"run_elevated", false);
+
     if (json::has(general_configs, L"startup", json::JsonValueType::Boolean))
     {
         const bool startup = general_configs.GetNamedBoolean(L"startup");
@@ -124,17 +126,32 @@ void apply_general_settings(const json::JsonObject& general_configs)
         }
         else
         {
-            const bool current_startup = is_auto_start_task_active_for_this_user();
-            if (current_startup != startup)
+            if (startup)
             {
-                if (startup)
+                if (is_process_elevated())
                 {
-                    enable_auto_start_task_for_this_user();
+                    delete_auto_start_task_for_this_user();
+                    create_auto_start_task_for_this_user(general_configs.GetNamedBoolean(L"run_elevated", false));
                 }
                 else
                 {
-                    disable_auto_start_task_for_this_user();
+                    if (!is_auto_start_task_active_for_this_user())
+                    {
+                        delete_auto_start_task_for_this_user();
+                        create_auto_start_task_for_this_user(false);
+
+                        run_as_elevated = false;
+                    }
+                    else if (!general_configs.GetNamedBoolean(L"run_elevated", false))
+                    {
+                        delete_auto_start_task_for_this_user();
+                        create_auto_start_task_for_this_user(false);
+                    }
                 }
+            }
+            else
+            {
+                delete_auto_start_task_for_this_user();
             }
         }
     }
@@ -153,7 +170,7 @@ void apply_general_settings(const json::JsonObject& general_configs)
             {
                 continue;
             }
-            const bool module_inst_enabled = modules().at(name).is_enabled();
+            const bool module_inst_enabled = modules().at(name)->is_enabled();
             const bool target_enabled = value.GetBoolean();
             if (module_inst_enabled == target_enabled)
             {
@@ -161,15 +178,15 @@ void apply_general_settings(const json::JsonObject& general_configs)
             }
             if (target_enabled)
             {
-                modules().at(name).enable();
+                modules().at(name)->enable();
             }
             else
             {
-                modules().at(name).disable();
+                modules().at(name)->disable();
             }
         }
     }
-    run_as_elevated = general_configs.GetNamedBoolean(L"run_elevated", false);
+
     if (json::has(general_configs, L"theme", json::JsonValueType::String))
     {
         settings_theme = general_configs.GetNamedString(L"theme");
@@ -182,45 +199,41 @@ void apply_general_settings(const json::JsonObject& general_configs)
 
 void start_initial_powertoys()
 {
-    bool only_enable_some_powertoys = false;
-
-    std::unordered_set<std::wstring> powertoys_to_enable;
+    std::unordered_set<std::wstring> powertoys_to_disable;
 
     json::JsonObject general_settings;
     try
     {
         general_settings = load_general_settings();
-        json::JsonObject enabled = general_settings.GetNamedObject(L"enabled");
-        for (const auto& enabled_element : enabled)
+        if (general_settings.HasKey(L"enabled"))
         {
-            if (enabled_element.Value().GetBoolean())
+            json::JsonObject enabled = general_settings.GetNamedObject(L"enabled");
+            for (const auto& disabled_element : enabled)
             {
-                // Enable this powertoy.
-                powertoys_to_enable.emplace(enabled_element.Key());
+                if (!disabled_element.Value().GetBoolean())
+                {
+                    powertoys_to_disable.emplace(disabled_element.Key());
+                }
             }
         }
-        only_enable_some_powertoys = true;
     }
-    catch (...)
-    {
-        // Couldn't read the general settings correctly.
-        // Load all powertoys.
-        // TODO: notify user about invalid json config
-        only_enable_some_powertoys = false;
-    }
+    catch (...) { }
 
-    for (auto& [name, powertoy] : modules())
+    if (powertoys_to_disable.empty())
     {
-        if (only_enable_some_powertoys)
+        for (auto& [name, powertoy] : modules())
         {
-            if (powertoys_to_enable.find(name) != powertoys_to_enable.end())
-            {
-                powertoy.enable();
-            }
+            powertoy->enable();
         }
-        else
+    }
+    else
+    {
+        for (auto& [name, powertoy] : modules())
         {
-            powertoy.enable();
+            if (powertoys_to_disable.find(name) == powertoys_to_disable.end())
+            {
+                powertoy->enable();
+            }
         }
     }
 }

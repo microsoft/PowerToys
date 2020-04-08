@@ -3,9 +3,9 @@
 #include "lowlevel_keyboard_event.h"
 #include <algorithm>
 
-std::unordered_map<std::wstring, PowertoyModule>& modules()
+std::map<std::wstring, PowertoyModule>& modules()
 {
-    static std::unordered_map<std::wstring, PowertoyModule> modules;
+    static std::map<std::wstring, PowertoyModule> modules;
     return modules;
 }
 
@@ -36,4 +36,25 @@ json::JsonObject PowertoyModule::json_config() const
     result.resize(size - 1);
     module->get_config(result.data(), &size);
     return json::JsonObject::Parse(result);
+}
+
+PowertoyModule::PowertoyModule(PowertoyModuleIface* module, HMODULE handle) :
+    handle(handle), module(module)
+{
+    if (!module)
+    {
+        throw std::runtime_error("Module not initialized");
+    }
+    auto want_signals = module->get_events();
+    if (want_signals)
+    {
+        for (; *want_signals; ++want_signals)
+        {
+            powertoys_events().register_receiver(*want_signals, module);
+        }
+    }
+    if (SystemMenuHelperInstace().HasCustomConfig(module))
+    {
+        powertoys_events().register_system_menu_action(module);
+    }
 }

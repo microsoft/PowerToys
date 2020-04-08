@@ -21,7 +21,7 @@ struct InvokeStruct
 CPowerRenameMenu::CPowerRenameMenu()
 {
     ModuleAddRef();
-    app_name = GET_RESOURCE_STRING(IDS_POWERRENAME);
+    app_name = GET_RESOURCE_STRING(IDS_POWERRENAME_APP_NAME);
 }
 
 CPowerRenameMenu::~CPowerRenameMenu()
@@ -48,7 +48,7 @@ HRESULT CPowerRenameMenu::s_CreateInstance(_In_opt_ IUnknown*, _In_ REFIID riid,
 HRESULT CPowerRenameMenu::Initialize(_In_opt_ PCIDLIST_ABSOLUTE, _In_ IDataObject* pdtobj, HKEY)
 {
     // Check if we have disabled ourselves
-    if (!CSettings::GetEnabled())
+    if (!CSettingsInstance().GetEnabled())
         return E_FAIL;
 
     // Cache the data object to be used later
@@ -60,11 +60,11 @@ HRESULT CPowerRenameMenu::Initialize(_In_opt_ PCIDLIST_ABSOLUTE, _In_ IDataObjec
 HRESULT CPowerRenameMenu::QueryContextMenu(HMENU hMenu, UINT index, UINT uIDFirst, UINT, UINT uFlags)
 {
     // Check if we have disabled ourselves
-    if (!CSettings::GetEnabled())
+    if (!CSettingsInstance().GetEnabled())
         return E_FAIL;
 
     // Check if we should only be on the extended context menu
-    if (CSettings::GetExtendedContextMenuOnly() && (!(uFlags & CMF_EXTENDEDVERBS)))
+    if (CSettingsInstance().GetExtendedContextMenuOnly() && (!(uFlags & CMF_EXTENDEDVERBS)))
         return E_FAIL;
 
     HRESULT hr = E_UNEXPECTED;
@@ -81,7 +81,7 @@ HRESULT CPowerRenameMenu::QueryContextMenu(HMENU hMenu, UINT index, UINT uIDFirs
         mii.dwTypeData = (PWSTR)menuName;
         mii.fState = MFS_ENABLED;
 
-        if (CSettings::GetShowIconOnMenu())
+        if (CSettingsInstance().GetShowIconOnMenu())
         {
             HICON hIcon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_RENAME), IMAGE_ICON, 16, 16, 0);
             if (hIcon)
@@ -113,7 +113,7 @@ HRESULT CPowerRenameMenu::InvokeCommand(_In_ LPCMINVOKECOMMANDINFO pici)
 {
     HRESULT hr = E_FAIL;
 
-    if (CSettings::GetEnabled() &&
+    if (CSettingsInstance().GetEnabled() &&
         (IS_INTRESOURCE(pici->lpVerb)) &&
         (LOWORD(pici->lpVerb) == 0))
     {
@@ -203,7 +203,7 @@ HRESULT __stdcall CPowerRenameMenu::GetTitle(IShellItemArray* /*psiItemArray*/, 
 
 HRESULT __stdcall CPowerRenameMenu::GetIcon(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszIcon)
 {
-    if (!CSettings::GetShowIconOnMenu())
+    if (!CSettingsInstance().GetShowIconOnMenu())
     {
         *ppszIcon = nullptr;
         return E_NOTIMPL;
@@ -229,7 +229,7 @@ HRESULT __stdcall CPowerRenameMenu::GetCanonicalName(GUID* pguidCommandName)
 
 HRESULT __stdcall CPowerRenameMenu::GetState(IShellItemArray* psiItemArray, BOOL fOkToBeSlow, EXPCMDSTATE* pCmdState)
 {
-    *pCmdState = CSettings::GetEnabled() ? ECS_ENABLED : ECS_HIDDEN;
+    *pCmdState = CSettingsInstance().GetEnabled() ? ECS_ENABLED : ECS_HIDDEN;
     return S_OK;
 }
 

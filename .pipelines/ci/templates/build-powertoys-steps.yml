@@ -33,3 +33,16 @@ steps:
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     clean: true
     maximumCpuCount: true
+
+- task: VSTest@2
+  inputs:
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    testSelector: 'testAssemblies'
+    testAssemblyVer2: |
+      **\PreviewPaneUnitTests.dll
+      **\UnitTests-SvgPreviewHandler.dll
+      **\UnitTests-PreviewHandlerCommon.dll
+      **\powerpreviewTest.dll
+      !**\*TestAdapter.dll
+      !**\obj\**

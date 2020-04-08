@@ -87,12 +87,14 @@
     <TargetName>$(ProjectName)</TargetName>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\</OutDir>
     <LibraryPath>$(SolutionDir)$(Platform)\$(Configuration)\;$(LibraryPath)</LibraryPath>
+    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>..\lib\;..\ui\;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)</TargetName>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\</OutDir>
     <LibraryPath>$(SolutionDir)$(Platform)\$(Configuration)\;$(LibraryPath)</LibraryPath>
+    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -120,7 +122,7 @@
       <AdditionalIncludeDirectories>..\;..\..\..\common;..\..\..\common\telemetry;..\..\;..\..\..\;..\..\..\..\deps\cpprestsdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(SolutionDir)$(Platform)\$(Configuration)\PowerRenameLib.lib;$(SolutionDir)$(Platform)\$(Configuration)\PowerRenameUI.lib;Pathcch.lib;comctl32.lib;$(SolutionDir)$(Platform)\$(Configuration)\..\..\src\modules\powerrename\UI\$(Platform)\$(Configuration)\PowerRenameUI.res;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Pathcch.lib;comctl32.lib;$(SolutionDir)$(Platform)\$(Configuration)\obj\PowerRenameUI\PowerRenameUI.res;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>PowerRenameExt.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -158,7 +160,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>$(SolutionDir)$(Platform)\$(Configuration)\PowerRenameLib.lib;$(SolutionDir)$(Platform)\$(Configuration)\PowerRenameUI.lib;Pathcch.lib;comctl32.lib;$(SolutionDir)$(Platform)\$(Configuration)\..\..\src\modules\powerrename\UI\$(Platform)\$(Configuration)\PowerRenameUI.res;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Pathcch.lib;comctl32.lib;$(SolutionDir)$(Platform)\$(Configuration)\obj\PowerRenameUI\PowerRenameUI.res;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>PowerRenameExt.def</ModuleDefinitionFile>
       <DelayLoadDLLs>gdi32.dll;advapi32.dll;shell32.dll;ole32.dll;shlwapi.dll;oleaut32.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
@@ -184,6 +186,12 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\common.vcxproj">
       <Project>{74485049-c722-400f-abe5-86ac52d929b3}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\lib\PowerRenameLib.vcxproj">
+      <Project>{51920f1f-c28c-4adf-8660-4238766796c2}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\ui\PowerRenameUI.vcxproj">
+      <Project>{0e072714-d127-460b-afad-b4c40b412798}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

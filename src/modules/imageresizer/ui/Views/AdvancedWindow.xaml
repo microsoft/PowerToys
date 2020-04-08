@@ -1,0 +1,272 @@
+﻿<Window x:Class="ImageResizer.Views.AdvancedWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:ImageResizer.Views"
+        xmlns:m="clr-namespace:ImageResizer.Models"
+        xmlns:p="clr-namespace:ImageResizer.Properties"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        MinWidth="390"
+        MinHeight="340"
+        Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+        Name="_this"
+        ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight"
+        Title="{x:Static p:Resources.Advanced_Title}"
+        WindowStyle="ToolWindow"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <ObjectDataProvider x:Key="PngInterlaceOptionValues"
+                            MethodName="GetValues"
+                            ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="PngInterlaceOption"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <ObjectDataProvider x:Key="TiffCompressOptionValues"
+                            MethodName="GetValues"
+                            ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="TiffCompressOption"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <local:ContainerFormatConverter x:Key="ContainerFormatConverter"/>
+    </Window.Resources>
+
+    <Grid Margin="11">
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TabControl>
+            <TabItem Header="{x:Static p:Resources.Advanced_Sizes}">
+                <StackPanel Margin="11">
+                    <!-- TODO: Allow these to be drag-and-drop reordered (issue #15) -->
+                    <ItemsControl Grid.IsSharedSizeScope="True" ItemsSource="{Binding Settings.Sizes}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="m:ResizeSize">
+                                <Grid Margin="0,0,0,7">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition SharedSizeGroup="0"/>
+                                        <ColumnDefinition SharedSizeGroup="1"/>
+                                        <ColumnDefinition SharedSizeGroup="2"/>
+                                        <ColumnDefinition SharedSizeGroup="3"/>
+                                        <ColumnDefinition SharedSizeGroup="4"/>
+                                        <ColumnDefinition SharedSizeGroup="5"/>
+                                        <ColumnDefinition SharedSizeGroup="6"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Width="66" Text="{Binding Name}"/>
+                                    <ComboBox Grid.Column="1"
+                                              Height="23"
+                                              Margin="5,0,0,0"
+                                              ItemsSource="{Binding Source={StaticResource ResizeFitValues}}"
+                                              SelectedItem="{Binding Fit}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type m:ResizeFit}">
+                                                <ContentPresenter Content="{Binding Converter={StaticResource EnumValueConverter}}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                    <TextBox Grid.Column="2"
+                                             Width="43"
+                                             Height="23"
+                                             Margin="7,0,0,0">
+                                        <TextBox.Text>
+                                            <Binding Converter="{StaticResource AutoDoubleConverter}"
+                                                     Path="Width"
+                                                     UpdateSourceTrigger="PropertyChanged">
+                                                <Binding.ValidationRules>
+                                                    <local:AutoDoubleValidationRule/>
+                                                </Binding.ValidationRules>
+                                            </Binding>
+                                        </TextBox.Text>
+                                    </TextBox>
+                                    <TextBlock Grid.Column="3"
+                                               Margin="5,0,0,0"
+                                               VerticalAlignment="Center"
+                                               Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}">
+                                        ×
+                                    </TextBlock>
+                                    <TextBox Grid.Column="4"
+                                             Width="43"
+                                             Height="23"
+                                             Margin="5,0,0,0"
+                                             Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}">
+                                        <TextBox.Text>
+                                            <Binding Converter="{StaticResource AutoDoubleConverter}"
+                                                     Path="Height"
+                                                     UpdateSourceTrigger="PropertyChanged">
+                                                <Binding.ValidationRules>
+                                                    <local:AutoDoubleValidationRule/>
+                                                </Binding.ValidationRules>
+                                            </Binding>
+                                        </TextBox.Text>
+                                    </TextBox>
+                                    <ComboBox Grid.Column="5"
+                                              Height="23"
+                                              Margin="7,0,0,0"
+                                              ItemsSource="{Binding Source={StaticResource ResizeUnitValues}}"
+                                              SelectedItem="{Binding Unit}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type m:ResizeUnit}">
+                                                <ContentPresenter Content="{Binding Converter={StaticResource EnumValueConverter}}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                    <TextBlock Grid.Column="6" Margin="5,0,0,0">
+                                        <Hyperlink Command="{Binding DataContext.RemoveSizeCommand,ElementName=_this}" CommandParameter="{Binding}">
+                                            <Run Text="{x:Static p:Resources.Advanced_DeleteSize}"/>
+                                        </Hyperlink>
+                                    </TextBlock>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock>
+                        <Hyperlink Command="{Binding AddSizeCommand}">
+                            <Run Text="{x:Static p:Resources.Advanced_CreateSize}"/>
+                        </Hyperlink>
+                    </TextBlock>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="{x:Static p:Resources.Advanced_Encoding}">
+                <Grid Margin="11" VerticalAlignment="Top">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Label Content="{x:Static p:Resources.Advanced_FallbackEncoder}"
+                           Padding="0,5,5,0"
+                           Target="{Binding ElementName=_fallbackEncoderComboBox}"/>
+                    <ComboBox Grid.Column="1"
+                              Height="23"
+                              HorizontalAlignment="Left"
+                              ItemsSource="{Binding Encoders}"
+                              Name="_fallbackEncoderComboBox"
+                              SelectedItem="{Binding Settings.FallbackEncoder}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type sys:Guid}">
+                                <ContentPresenter Content="{Binding Converter={StaticResource ContainerFormatConverter}}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Label Grid.Row="1"
+                           Margin="0,7,0,0"
+                           Content="{x:Static p:Resources.Advanced_JpegQualityLevel}"
+                           Padding="0,5,5,0"
+                           Target="{Binding ElementName=_jpegQualityLevelTextBox}"/>
+                    <TextBox Grid.Row="1"
+                             Grid.Column="1"
+                             Width="34"
+                             Height="23"
+                             Margin="0,7,0,0"
+                             HorizontalAlignment="Left"
+                             Name="_jpegQualityLevelTextBox"
+                             Text="{Binding Settings.JpegQualityLevel,ValidatesOnExceptions=True,ValidatesOnDataErrors=True}"/>
+                    <Label Grid.Row="2"
+                           Margin="0,7,0,0"
+                           Content="{x:Static p:Resources.Advanced_PngInterlaceOption}"
+                           Padding="0,5,5,0"
+                           Target="{Binding ElementName=_pngInterlaceComboBox}"/>
+                    <ComboBox Grid.Row="2"
+                              Grid.Column="1"
+                              Height="23"
+                              Margin="0,7,0,0"
+                              HorizontalAlignment="Left"
+                              ItemsSource="{Binding Source={StaticResource PngInterlaceOptionValues}}"
+                              Name="_pngInterlaceComboBox"
+                              SelectedItem="{Binding Settings.PngInterlaceOption}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type PngInterlaceOption}">
+                                <ContentPresenter Content="{Binding Converter={StaticResource EnumValueConverter}}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Label Grid.Row="3"
+                           Margin="0,7,0,0"
+                           Content="{x:Static p:Resources.Advanced_TiffCompressOption}"
+                           Padding="0,5,5,0"
+                           Target="{Binding ElementName=_tiffCompressComboBox}"/>
+                    <ComboBox Grid.Row="3"
+                              Grid.Column="1"
+                              Height="23"
+                              Margin="0,7,0,0"
+                              HorizontalAlignment="Left"
+                              ItemsSource="{Binding Source={StaticResource TiffCompressOptionValues}}"
+                              Name="_tiffCompressComboBox"
+                              SelectedItem="{Binding Settings.TiffCompressOption}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type TiffCompressOption}">
+                                <ContentPresenter Content="{Binding Converter={StaticResource EnumValueConverter}}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </Grid>
+            </TabItem>
+            <TabItem Header="{x:Static p:Resources.Advanced_File}">
+                <StackPanel Margin="11,9">
+                    <TextBlock Text="{x:Static p:Resources.Advanced_FileNameTokens}"/>
+                    <TextBlock Margin="9,5,0,0">
+                        <Run Text="%1 -"/>
+                        <Run Text="{x:Static p:Resources.Advanced_FileNameToken1}"/>
+                        <LineBreak/>
+                        <Run>%2 -</Run>
+                        <Run Text="{x:Static p:Resources.Advanced_FileNameToken2}"/>
+                        <LineBreak/>
+                        <Run>%3 -</Run>
+                        <Run Text="{x:Static p:Resources.Advanced_FileNameToken3}"/>
+                        <LineBreak/>
+                        <Run>%4 -</Run>
+                        <Run Text="{x:Static p:Resources.Advanced_FileNameToken4}"/>
+                        <LineBreak/>
+                        <Run>%5 -</Run>
+                        <Run Text="{x:Static p:Resources.Advanced_FileNameToken5}"/>
+                        <LineBreak/>
+                        <Run>%6 -</Run>
+                        <Run Text="{x:Static p:Resources.Advanced_FileNameToken6}"/>
+                    </TextBlock>
+                    <Grid Margin="0,7,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Label HorizontalAlignment="Left"
+                               Content="{x:Static p:Resources.Advanced_FileName}"
+                               Padding="0,5,5,0"
+                               Target="{Binding ElementName=_fileNameTextBox}"/>
+                        <TextBox Grid.Column="1"
+                                 Height="23"
+                                 Name="_fileNameTextBox"
+                                 Text="{Binding Settings.FileName}"/>
+                    </Grid>
+                    <Separator Margin="0,11,0,0"/>
+                    <CheckBox Margin="0,11,0,0"
+                              Content="{x:Static p:Resources.Advanced_KeepDateModified}"
+                              IsChecked="{Binding Settings.KeepDateModified}"/>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+        <StackPanel Grid.Row="1"
+                    Margin="0,11,0,0"
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal">
+            <Button Height="23"
+                    MinWidth="75"
+                    Click="HandleAcceptClick"
+                    Content="{x:Static p:Resources.OK}"
+                    IsDefault="True"/>
+            <Button Height="23"
+                    MinWidth="75"
+                    Margin="7,0,0,0"
+                    Content="{x:Static p:Resources.Cancel}"
+                    IsCancel="True"/>
+        </StackPanel>
+    </Grid>
+
+</Window>

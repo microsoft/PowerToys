@@ -94,22 +94,11 @@ namespace WindowWalker.Components
         {
             Window newWindow = new Window(hwnd);
 
-            if (windows.Select(x => x.Title).Contains(newWindow.Title))
-            {
-                if (newWindow.ProcessName.ToLower().Equals("applicationframehost.exe"))
-                {
-                    windows.Remove(windows.Where(x => x.Title == newWindow.Title).First());
-                }
-
-                return true;
-            }
-
-            if ((newWindow.Visible && !newWindow.ProcessName.ToLower().Equals("iexplore.exe")) ||
-                (newWindow.ProcessName.ToLower().Equals("iexplore.exe") && newWindow.ClassName == "TabThumbnailWindow"))
+            if (newWindow.IsWindow && newWindow.Visible && newWindow.IsOwner &&
+                (!newWindow.IsToolWindow || newWindow.IsAppWindow ) && !newWindow.TaskListDeleted &&
+                newWindow.ClassName != "Windows.UI.Core.CoreWindow")
             {
                 windows.Add(newWindow);
-
-                OnOpenWindowsUpdate?.Invoke(this, new SearchController.SearchResultUpdateEventArgs());
             }
 
             return true;

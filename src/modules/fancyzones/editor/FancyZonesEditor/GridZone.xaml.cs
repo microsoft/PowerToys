@@ -45,7 +45,7 @@ namespace FancyZonesEditor
 
         private void OnSelectionChanged()
         {
-            Background = IsSelected ? Brushes.SteelBlue : Brushes.LightGray;
+            Background = IsSelected ? SystemParameters.WindowGlassBrush : App.Current.Resources["GridZoneBackgroundBrush"] as SolidColorBrush;
         }
 
         public bool IsSelected
@@ -60,7 +60,7 @@ namespace FancyZonesEditor
             OnSelectionChanged();
             _splitter = new Rectangle
             {
-                Fill = Brushes.DarkGray,
+                Fill = SystemParameters.WindowGlassBrush,
             };
             Body.Children.Add(_splitter);
 
@@ -146,13 +146,13 @@ namespace FancyZonesEditor
 
         protected override void OnMouseEnter(MouseEventArgs e)
         {
-            Frame.Visibility = Visibility.Visible;
+            _splitter.Fill = SystemParameters.WindowGlassBrush; // Active Accent color
             base.OnMouseEnter(e);
         }
 
         protected override void OnMouseLeave(MouseEventArgs e)
         {
-            Frame.Visibility = Visibility.Collapsed;
+            _splitter.Fill = Brushes.Transparent;
             base.OnMouseLeave(e);
         }
 
