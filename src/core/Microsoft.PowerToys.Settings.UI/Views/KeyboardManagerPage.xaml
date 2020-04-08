@@ -1,0 +1,196 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.KeyboardManagerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <viewmodels:RemapKeysModel x:Key="dummyData"/>
+
+        <DataTemplate x:Name="KeysListViewTemplate" x:DataType="viewmodels:RemapKeysModel">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="200"/>
+                </Grid.ColumnDefinitions>
+                <Border Background="{ThemeResource SystemBaseLowColor}"
+                        CornerRadius="4"
+                        Grid.Column="0"
+                        Width="70"
+                        Height="35"
+                        HorizontalAlignment="Left">
+                    <TextBlock  Grid.Column="0"
+                                Style="{StaticResource BodyTextBlockStyle}"
+                                VerticalAlignment="Center"
+                                TextAlignment="Center"
+                                Text="{Binding From}">
+                    </TextBlock>
+                </Border>
+                <Border Background="{ThemeResource SystemBaseLowColor}"
+                        CornerRadius="4"
+                        Grid.Column="1"
+                        Width="70"
+                        Height="35"
+                        HorizontalAlignment="Left">
+                    <TextBlock Grid.Column="1"
+                               Style="{StaticResource BodyTextBlockStyle}"
+                               VerticalAlignment="Center"
+                               TextAlignment="Center"
+                               Text="{Binding To}">
+                    </TextBlock>
+                </Border>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LayoutVisualStates">
+                <VisualState x:Name="WideLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="1" />
+                        <Setter Target="SidePanel.(Grid.Row)" Value="0" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="SmallLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
+                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Vertical">
+            <TextBlock x:Uid="KeyboardManager_Description"
+                       TextWrapping="Wrap"
+                       Style="{StaticResource BodyTextBlockStyle}"/>
+
+            <ToggleSwitch x:Uid="KeyboardManager_EnableToggle"
+                          IsOn="True"
+                          Margin="{StaticResource SmallTopMargin}" />
+
+            <TextBlock x:Uid="KeyboardManager_ConfigHeader"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Margin="{StaticResource SmallTopMargin}"/>
+            
+            <ComboBox SelectedIndex="1"
+                      Margin="{StaticResource SmallTopMargin}"
+                      HorizontalAlignment="Left">
+                      <ComboBoxItem Content="Config-1"/>
+                      <ComboBoxItem Content="Config-2"/>
+                      <ComboBoxItem Content="Config-3"/>
+            </ComboBox>
+
+            <TextBlock x:Uid="KeyboardManager_ProfileDescription"
+                       Margin="{StaticResource SmallTopMargin}"/>
+
+            <TextBlock x:Uid="KeyboardManager_RemapKeyboardHeader"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Margin="{StaticResource SmallTopMargin}"/>
+
+            <Button x:Uid="KeyboardManager_RemapKeyboardButton"
+                    Margin="{StaticResource SmallTopMargin}"
+                    Style="{StaticResource AccentButtonStyle}"
+                    HorizontalAlignment="Left"/>
+
+            <StackPanel Margin="{StaticResource SmallTopMargin}"
+                        Orientation="Horizontal">
+                <TextBlock x:Uid="KeyboardManager_KeysMappingLayoutLeftHeader"
+                           Width="200"
+                           FontWeight="SemiBold"/>
+                <TextBlock x:Uid="KeyboardManager_KeysMappingLayoutRightHeader"
+                           Width="200"
+                           FontWeight="SemiBold" />
+            </StackPanel>
+
+            <ListView x:Name="RemapKeysList"
+                      ItemsSource="{StaticResource dummyData}"
+                      ItemTemplate="{StaticResource KeysListViewTemplate}"
+                      BorderBrush="LightGray"
+                      BorderThickness="1" 
+                      CornerRadius="4"
+                      Width="400"
+                      MaxHeight="150"
+                      Margin="{StaticResource SmallTopMargin}"
+                      HorizontalAlignment="Left">
+            </ListView>
+
+            <TextBlock x:Uid="KeyboardManager_RemapShortcutsHeader"
+                       Style="{StaticResource SubtitleTextBlockStyle}"
+                       Margin="{StaticResource SmallTopMargin}"/>
+
+            <Button x:Uid="KeyboardManager_RemapShortcutsButton"
+                    Margin="{StaticResource SmallTopMargin}"
+                    Style="{StaticResource AccentButtonStyle}"
+                    HorizontalAlignment="Left"/>
+
+            <StackPanel Margin="{StaticResource SmallTopMargin}"
+                        Orientation="Horizontal">
+                <TextBlock x:Uid="KeyboardManager_KeysMappingLayoutLeftHeader"
+                           Width="200"
+                           FontWeight="SemiBold">
+                </TextBlock>
+                <TextBlock x:Uid="KeyboardManager_KeysMappingLayoutRightHeader"
+                           Width="200" 
+                           FontWeight="SemiBold" >
+                </TextBlock>
+            </StackPanel>
+
+            <ListView x:Name="RemapShortcutsList"  
+                      ItemsSource="{StaticResource dummyData}"
+                      ItemTemplate="{StaticResource KeysListViewTemplate}"
+                      BorderBrush="LightGray" 
+                      BorderThickness="1" 
+                      CornerRadius="4"
+                      Width="400"
+                      MaxHeight="150"
+                      Margin="{StaticResource SmallTopMargin}"
+                      HorizontalAlignment="Left">
+            </ListView>
+            
+        </StackPanel>
+
+        <StackPanel x:Name="SidePanel"
+                                Orientation="Vertical"
+                                HorizontalAlignment="Left"
+                                Width="{StaticResource SidePanelWidth}"
+                                Grid.Column="1">
+
+            <TextBlock Text="About this feature"
+                                   Style="{StaticResource SettingsGroupTitleStyle}"
+                                   Margin="{StaticResource XSmallBottomMargin}"/>
+
+            <HyperlinkButton Content="Module overview"/>
+            <HyperlinkButton Content="Give feedback"/>
+
+            <TextBlock Text="Contributors"
+                           Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+            <HyperlinkButton Content="Contributor name"/>
+            <HyperlinkButton Content="Contributor name"/>
+            <HyperlinkButton Content="Contributor name"/>
+        </StackPanel>
+
+
+    </Grid>
+</Page>
