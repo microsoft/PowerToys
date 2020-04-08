@@ -156,11 +156,10 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
         return;
     }
 
-    std::vector<hstring> shortcut;
     
     std::unique_lock<std::mutex> detectedShortcut_lock(detectedShortcut_mutex);
     
-    detectedShortcut.GetKeyVector(shortcut);
+    std::vector<hstring> shortcut = detectedShortcut.GetKeyVector();
     
     detectedShortcut_lock.unlock();
 

@@ -395,8 +395,7 @@ void Shortcut::ResetKey(const DWORD& input, const bool& isWinBoth)
 // Function to return the string representation of the shortcut
 winrt::hstring Shortcut::ToHstring() const
 {
-    std::vector<winrt::hstring> keys;
-    GetKeyVector(keys);
+    std::vector<winrt::hstring> keys = GetKeyVector();
     
     winrt::hstring output;
     for (auto& key : keys)
@@ -413,8 +412,9 @@ winrt::hstring Shortcut::ToHstring() const
     }
 }
 
-size_t Shortcut::GetKeyVector(std::vector<winrt::hstring>& keys) const
+std::vector<winrt::hstring> Shortcut::GetKeyVector() const
 {
+    std::vector<winrt::hstring> keys;
     if (winKey != ModifierKey::Disabled)
     {
         keys.push_back(ModifierKeyNameWithSide(winKey, L"Win"));
@@ -435,7 +435,7 @@ size_t Shortcut::GetKeyVector(std::vector<winrt::hstring>& keys) const
     {
         keys.push_back(winrt::to_hstring((unsigned int)actionKey));
     }
-    return keys.size();
+    return keys;
 }
 
 // Function to check if all the modifiers in the shortcut have been pressed down
