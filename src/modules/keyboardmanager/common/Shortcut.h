@@ -140,6 +140,9 @@ public:
     // Function to return the string representation of the shortcut
     winrt::hstring ToHstring() const;
 
+    // Function to return a vector of hstring for each key, in the same order as ToHstring()
+    std::vector<winrt::hstring> GetKeyVector() const;
+
     // Function to check if all the modifiers in the shortcut have been pressed down
     bool CheckModifiersKeyboardState() const;
 
@@ -151,6 +154,9 @@ public:
 
     // Function to return the virtual key code from the name of the key
     static DWORD DecodeKey(const std::wstring& keyName);
+
+    // Function to create a shortcut object from its string vector representation
+    static Shortcut CreateShortcut(const std::vector<winrt::hstring>& keys);
 
     // Function to create a shortcut object from its string representation
     static Shortcut CreateShortcut(const winrt::hstring& input);
