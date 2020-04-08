@@ -13,6 +13,8 @@ namespace PowerToysTests
     public class PowerToysSession
     {
         protected const string WindowsApplicationDriverUrl = "http://127.0.0.1:4723";
+        protected const string AppPath = "C:\\Program Files\\PowerToys\\PowerToys.exe";
+        
         protected static WindowsDriver<WindowsElement> session;
         protected static bool isPowerToysLaunched = false;
         protected static WindowsElement trayButton;
@@ -67,13 +69,26 @@ namespace PowerToysTests
             Thread.Sleep(TimeSpan.FromSeconds(seconds));
         }
 
-        public static void ShortWait()
+        //Trying to find element by XPath
+        protected static WindowsElement WaitElementByName(string name, double maxTime = 10)
         {
-            Thread.Sleep(TimeSpan.FromSeconds(0.5));
+            WindowsElement result = null;
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            while (timer.Elapsed < TimeSpan.FromSeconds(maxTime))
+            {
+                try
+                {
+                    result = session.FindElementByName(name);
+                }
+                catch { }
+                return result;
+            }
+            return null;
         }
 
         //Trying to find element by XPath
-        protected WindowsElement WaitElementByXPath(string xPath, double maxTime = 10)
+        protected static WindowsElement WaitElementByXPath(string xPath, double maxTime = 10)
         {
             WindowsElement result = null;
             Stopwatch timer = new Stopwatch();
@@ -85,17 +100,13 @@ namespace PowerToysTests
                     result = session.FindElementByXPath(xPath);
                 }
                 catch { }
-                if (result != null)
-                {
-                    return result;
-                }
+                return result;
             }
-            Assert.IsNotNull(result);
             return null;
         }
 
         //Trying to find element by AccessibilityId
-        protected WindowsElement WaitElementByAccessibilityId(string accessibilityId, double maxTime = 10)
+        protected static WindowsElement WaitElementByAccessibilityId(string accessibilityId, double maxTime = 10)
         {
             WindowsElement result = null;
             Stopwatch timer = new Stopwatch();
@@ -107,12 +118,8 @@ namespace PowerToysTests
                     result = session.FindElementByAccessibilityId(accessibilityId);
                 }
                 catch { }
-                if (result != null)
-                {
-                    return result;
-                }
+                return result;
             }
-            Assert.IsNotNull(result);
             return null;
         }
 
@@ -125,13 +132,11 @@ namespace PowerToysTests
 
         public static void OpenFancyZonesSettings()
         {
-            WindowsElement fzNavigationButton = session.FindElementByXPath("//Button[@Name=\"FancyZones\"]");
+            WindowsElement fzNavigationButton = WaitElementByXPath("//Button[@Name=\"FancyZones\"]");
             Assert.IsNotNull(fzNavigationButton);
 
             fzNavigationButton.Click();
             fzNavigationButton.Click();
-
-            ShortWait();
         }
 
         public static void CloseSettings()
@@ -175,10 +180,8 @@ namespace PowerToysTests
             {
                 AppiumOptions opts = new AppiumOptions();
                 opts.PlatformName = "Windows";
-                opts.AddAdditionalCapability("platformVersion", "10");
-                opts.AddAdditionalCapability("deviceName", "WindowsPC");
-                opts.AddAdditionalCapability("app", "C:/Program Files/PowerToys/PowerToys.exe");
-                
+                opts.AddAdditionalCapability("app", AppPath);
+
                 WindowsDriver<WindowsElement> driver = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), opts);
                 Assert.IsNotNull(driver);
                 driver.LaunchApp();
@@ -195,13 +198,12 @@ namespace PowerToysTests
         public static void ExitPowerToys()
         {
             trayButton.Click();
-            ShortWait();
 
-            WindowsElement pt = session.FindElementByXPath("//Button[@Name=\"PowerToys\"]");
+            WindowsElement pt = WaitElementByXPath("//Button[@Name=\"PowerToys\"]");
+            Assert.IsNotNull(pt, "Couldn't find \'PowerToys\' button");
             new Actions(session).MoveToElement(pt).ContextClick().Perform();
-            ShortWait();
-
-            session.FindElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
+            
+            WaitElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
             trayButton.Click(); //close tray
             isPowerToysLaunched = false;
         }
