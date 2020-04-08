@@ -10,9 +10,12 @@ namespace Wox.Plugin.Indexer.SearchHelper
         public OleDbConnection conn;
         public OleDbCommand command;
         public OleDbDataReader WDSResults;
+        private readonly object _lock = new object();
+        
 
-        public IEnumerable<SearchResult> ExecuteQuery(ISearchQueryHelper queryHelper, string keyword)
+        public List<SearchResult> ExecuteQuery(ISearchQueryHelper queryHelper, string keyword)
         {
+            List<SearchResult> _Result = new List<SearchResult>();
             // Generate SQL from our parameters, converting the userQuery from AQS->WHERE clause
             string sqlQuery = queryHelper.GenerateSQLFromUserQuery(keyword);
 
@@ -29,19 +32,19 @@ namespace Wox.Plugin.Indexer.SearchHelper
                     // execute the command, which returns the results as an OleDbDataReader.
                     using (WDSResults = command.ExecuteReader())
                     {
-                        while (WDSResults.Read())
+                        if(WDSResults.HasRows)
                         {
-                            // col 0 is our path in display format
-                            if (WDSResults.GetString(0) != null)
+                            while (WDSResults.Read() && WDSResults.GetValue(0) != DBNull.Value)
                             {
                                 var result = new SearchResult { Path = WDSResults.GetString(0) };
-                                yield return result;
+                                _Result.Add(result);
                             }
                         }
                     }
-
                 }
             }
+
+            return _Result;
         }
 
 
@@ -91,10 +94,12 @@ namespace Wox.Plugin.Indexer.SearchHelper
 
         public IEnumerable<SearchResult> Search(string keyword, string pattern = "*", int maxCount = 100)
         {
-            ISearchQueryHelper queryHelper;
-            InitQueryHelper(out queryHelper, maxCount);
-            ModifyQueryHelper(ref queryHelper, pattern);
-            return ExecuteQuery(queryHelper, keyword);
+            lock(_lock){
+                ISearchQueryHelper queryHelper;
+                InitQueryHelper(out queryHelper, maxCount);
+                ModifyQueryHelper(ref queryHelper, pattern);
+                return ExecuteQuery(queryHelper, keyword);
+            }
         }
     }
 }

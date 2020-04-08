@@ -87,11 +87,15 @@ namespace Wox.Plugin.Indexer
                         results.Add(r);
                     }
                 }
+                catch(InvalidOperationException)
+                {
+                    //The connection has closed, internal error of ExecuteReader()
+                    //Not showing this exception to the users
+                }
                 catch (Exception ex)
                 {
                     results.Add(new Result
                     {
-                        // TODO: Localize the string
                         Title = ex.ToString(),
                         IcoPath = "Images\\WindowsIndexerImg.bmp"
                     });
