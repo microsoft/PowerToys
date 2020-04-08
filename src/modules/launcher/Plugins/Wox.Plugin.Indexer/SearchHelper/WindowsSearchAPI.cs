@@ -92,7 +92,6 @@ namespace Wox.Plugin.Indexer.SearchHelper
             queryHelper.QuerySorting = "System.DateModified DESC";
         }
 
-        [STAThread]
         public IEnumerable<SearchResult> Search(string keyword, string pattern = "*", int maxCount = 100)
         {
             lock(_lock){
