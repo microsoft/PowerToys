@@ -18,10 +18,13 @@ using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace PowerLauncher
 {
+    
+
     public partial class App : IDisposable, ISingleInstanceApp
     {
         public static PublicAPIInstance API { get; private set; }
-        private const string Unique = "Wox_Unique_Application_Mutex";
+        private const string UI_Unique = "LauncherUI_Unique_Application_Mutex";
+        private const string Unique = "Launcher_Unique_Application_Mutex";
         private static bool _disposed;
         private Settings _settings;
         private MainViewModel _mainVM;
@@ -34,10 +37,13 @@ namespace PowerLauncher
         {
             if (SingleInstance<App>.InitializeAsFirstInstance(Unique))
             {
-                using (var application = new App())
+                using (new UI.App())
                 {
-                    application.InitializeComponent();
-                    application.Run();
+                    using (var application = new App())
+                    {
+                        application.InitializeComponent();
+                        application.Run();
+                    }
                 }
             }
         }
