@@ -155,8 +155,6 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (ZoneFromPointBorder)
             {
-                // Due to Multizones support, points on the border are considered to belong to the zone
-
                 const int left = 0, top = 0, right = 100, bottom = 100;
                 winrt::com_ptr<IZone> expected = MakeZone({ left, top, right, bottom });
                 m_set->AddZone(expected);
@@ -179,15 +177,13 @@ namespace FancyZonesUnitTests
                 for (int i = left; i < right; i++)
                 {
                     auto actual = m_set->ZonesFromPoint(POINT{ i, bottom });
-                    Assert::IsTrue(actual.size() == 1);
-                    compareZones(expected, m_set->GetZones()[actual[0]]);
+                    Assert::IsTrue(actual.size() == 0);
                 }
 
                 for (int i = top; i < bottom; i++)
                 {
                     auto actual = m_set->ZonesFromPoint(POINT{ right, i });
-                    Assert::IsTrue(actual.size() == 1);
-                    compareZones(expected, m_set->GetZones()[actual[0]]);
+                    Assert::IsTrue(actual.size() == 0);
                 }
             }
 

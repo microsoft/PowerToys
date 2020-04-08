@@ -169,16 +169,32 @@ ZoneSet::ZonesFromPoint(POINT pt) noexcept
 {
     const int SENSITIVITY_RADIUS = 20;
     std::vector<int> capturedZones;
+    std::vector<int> strictlyCapturedZones;
     for (size_t i = 0; i < m_zones.size(); i++)
     {
         auto zone = m_zones[i];
         RECT newZoneRect = zone->GetZoneRect();
-        if (newZoneRect.left - SENSITIVITY_RADIUS <= pt.x && pt.x <= newZoneRect.right + SENSITIVITY_RADIUS &&
-            newZoneRect.top - SENSITIVITY_RADIUS <= pt.y && pt.y <= newZoneRect.bottom + SENSITIVITY_RADIUS &&
-            newZoneRect.left < newZoneRect.right && newZoneRect.top < newZoneRect.bottom) // proper zone
+        if (newZoneRect.left < newZoneRect.right && newZoneRect.top < newZoneRect.bottom) // proper zone
         {
-            capturedZones.emplace_back(static_cast<int>(i));
+            if (newZoneRect.left - SENSITIVITY_RADIUS <= pt.x && pt.x <= newZoneRect.right + SENSITIVITY_RADIUS &&
+                newZoneRect.top - SENSITIVITY_RADIUS <= pt.y && pt.y <= newZoneRect.bottom + SENSITIVITY_RADIUS)
+            {
+                capturedZones.emplace_back(static_cast<int>(i));
+            }
+            
+            if (newZoneRect.left <= pt.x && pt.x < newZoneRect.right &&
+                newZoneRect.top <= pt.y && pt.y < newZoneRect.bottom)
+            {
+                strictlyCapturedZones.emplace_back(static_cast<int>(i));
+            }
         }
+    }
+
+    // If only one zone is captured, but it's not strictly captured
+    // don't consider it as captured
+    if (capturedZones.size() == 1 && strictlyCapturedZones.size() == 0)
+    {
+        return {};
     }
 
     // If captured zones do not overlap, return all of them
