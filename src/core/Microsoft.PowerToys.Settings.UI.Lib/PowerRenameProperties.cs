@@ -20,10 +20,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         }
 
         public BoolProperty bool_persist_input { get; set; }
+
         public BoolProperty bool_mru_enabled { get; set; }
+
         public IntProperty int_max_mru_size { get; set; }
+
         public BoolProperty bool_show_icon_on_menu { get; set; }
+
         public BoolProperty bool_show_extended_menu { get; set; }
     }
 }
-

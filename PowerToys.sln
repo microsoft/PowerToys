@@ -180,12 +180,16 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.Test", "src\core\Microsoft.PowerToys.Settings.Test\Microsoft.PowerToys.Settings.Test.csproj", "{6F2B5799-36AE-4D10-9DCF-B19CD26A5DBC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Settings.UI.Runner", "src\core\Microsoft.PowerToys.Settings.UI.Runner\Microsoft.PowerToys.Settings.UI.Runner.csproj", "{E4E0D2AE-B17D-4BD4-8BEE-AFC8CC464C5F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F88B6FD1-14BD-48DB-85C2-6C51B8045121} = {F88B6FD1-14BD-48DB-85C2-6C51B8045121}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.PowerToys.Settings.TwoWayIPCLib", "src\core\Microsoft.PowerToys.Settings.TwoWayIPCLib\TwoWayIPCLib.vcxproj", "{F88B6FD1-14BD-48DB-85C2-6C51B8045121}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.PowerToys.Settings.UI", "src\core\Microsoft.PowerToys.Settings.UI\Microsoft.PowerToys.Settings.UI.csproj", "{4EB9C181-96E2-4587-AB98-2DB84C1A2310}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.PowerToys.Settings.IPCWrapperPS", "src\core\Microsoft.PowerToys.Settings.IPCWrapperPS\Microsoft.PowerToys.Settings.IPCWrapperPS.vcxproj", "{C073B057-B157-40F0-8678-1DCD119D841C}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4981CCD1-4CD9-4A49-B240-00AA46493FF8}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
@@ -642,14 +646,22 @@ Global
 		{C073B057-B157-40F0-8678-1DCD119D841C}.Release|ARM64.ActiveCfg = Release|Win32
 		{C073B057-B157-40F0-8678-1DCD119D841C}.Release|x64.ActiveCfg = Release|x64
 		{C073B057-B157-40F0-8678-1DCD119D841C}.Release|x86.ActiveCfg = Release|Win32
-		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Debug|ARM.Build.0 = Debug|Any CPU
+		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Debug|ARM64.Build.0 = Debug|Any CPU
 		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Debug|x64.Build.0 = Debug|Any CPU
-		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Debug|x86.Build.0 = Debug|Any CPU
+		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Release|ARM.ActiveCfg = Release|Any CPU
+		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Release|ARM.Build.0 = Release|Any CPU
+		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Release|ARM64.Build.0 = Release|Any CPU
 		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Release|x64.ActiveCfg = Release|Any CPU
 		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Release|x64.Build.0 = Release|Any CPU
+		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Release|x86.ActiveCfg = Release|Any CPU
+		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
