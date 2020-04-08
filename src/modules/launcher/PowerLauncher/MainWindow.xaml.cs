@@ -287,7 +287,11 @@ namespace PowerLauncher
             if (args != null && args.ChosenSuggestion != null)
             {
                 ResultViewModel result = (ResultViewModel)args.ChosenSuggestion;
-                _ = result.Result.Action != null && result.Result.Action(new ActionContext { });
+                if (result != null)
+                {
+                    _viewModel.Results.SelectedItem = result;
+                    _viewModel.OpenResultCommand.Execute(null);
+                }
             }
         }
 
