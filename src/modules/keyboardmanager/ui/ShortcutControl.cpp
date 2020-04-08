@@ -57,13 +57,14 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
     // ContentDialog for detecting shortcuts. This is the parent UI element.
     ContentDialog detectShortcutBox;
 
+    // TODO: Hardcoded light theme, since the app is not theme aware ATM.
+    detectShortcutBox.RequestedTheme(ElementTheme::Light);
     // ContentDialog requires manually setting the XamlRoot (https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
     detectShortcutBox.XamlRoot(xamlRoot);
     detectShortcutBox.Title(box_value(L"Press the keys in shortcut:"));
     detectShortcutBox.PrimaryButtonText(to_hstring(L"OK"));
     detectShortcutBox.IsSecondaryButtonEnabled(false);
     detectShortcutBox.CloseButtonText(to_hstring(L"Cancel"));
-    detectShortcutBox.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
 
     // Get the linked text block for the "Type shortcut" button that was clicked
     TextBlock linkedShortcutText = getSiblingElement(sender).as<TextBlock>();
@@ -86,23 +87,23 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
 
     // StackPanel parent for the displayed text in the dialog
     Windows::UI::Xaml::Controls::StackPanel stackPanel;
-    stackPanel.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+    detectShortcutBox.Content(stackPanel);
 
     // Header textblock
     TextBlock text;
     text.Text(winrt::to_hstring("Keys Pressed:"));
     text.Margin({ 0, 0, 0, 10 });
-
-    // Textblock to display the detected shortcut
-    TextBlock shortcutKeys;
-
     stackPanel.Children().Append(text);
-    stackPanel.Children().Append(shortcutKeys);
+
+    // Target StackPanel to place the selected key
+    Windows::UI::Xaml::Controls::StackPanel keyStackPanel;
+    stackPanel.Children().Append(keyStackPanel);
+    keyStackPanel.Orientation(Orientation::Horizontal);
+
     stackPanel.UpdateLayout();
-    detectShortcutBox.Content(stackPanel);
 
     // Configure the keyboardManagerState to store the UI information.
-    keyboardManagerState.ConfigureDetectShortcutUI(shortcutKeys);
+    keyboardManagerState.ConfigureDetectShortcutUI(keyStackPanel);
 
     // Show the dialog
     detectShortcutBox.ShowAsync();

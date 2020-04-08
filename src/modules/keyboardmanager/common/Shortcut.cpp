@@ -395,28 +395,47 @@ void Shortcut::ResetKey(const DWORD& input, const bool& isWinBoth)
 // Function to return the string representation of the shortcut
 winrt::hstring Shortcut::ToHstring() const
 {
+    std::vector<winrt::hstring> keys;
+    GetKeyVector(keys);
+    
     winrt::hstring output;
+    for (auto& key : keys)
+    {
+        output = output + key + winrt::to_hstring(L" ");
+    }
+    if (keys.size() > 1)
+    {
+        return winrt::hstring(output.c_str(), output.size() - 1);   
+    }
+    else
+    {
+        return output;
+    }
+}
+
+size_t Shortcut::GetKeyVector(std::vector<winrt::hstring>& keys) const
+{
     if (winKey != ModifierKey::Disabled)
     {
-        output = output + ModifierKeyNameWithSide(winKey, L"Win") + winrt::to_hstring(L" ");
+        keys.push_back(ModifierKeyNameWithSide(winKey, L"Win"));
     }
     if (ctrlKey != ModifierKey::Disabled)
     {
-        output = output + ModifierKeyNameWithSide(ctrlKey, L"Ctrl") + winrt::to_hstring(L" ");
+        keys.push_back(ModifierKeyNameWithSide(ctrlKey, L"Ctrl"));
     }
     if (altKey != ModifierKey::Disabled)
     {
-        output = output + ModifierKeyNameWithSide(altKey, L"Alt") + winrt::to_hstring(L" ");
+        keys.push_back(ModifierKeyNameWithSide(altKey, L"Alt"));
     }
     if (shiftKey != ModifierKey::Disabled)
     {
-        output = output + ModifierKeyNameWithSide(shiftKey, L"Shift") + winrt::to_hstring(L" ");
+        keys.push_back(ModifierKeyNameWithSide(shiftKey, L"Shift"));
     }
     if (actionKey != NULL)
     {
-        output = output + winrt::to_hstring((unsigned int)actionKey);
+        keys.push_back(winrt::to_hstring((unsigned int)actionKey));
     }
-    return output;
+    return keys.size();
 }
 
 // Function to check if all the modifiers in the shortcut have been pressed down
@@ -765,23 +784,27 @@ DWORD Shortcut::DecodeKey(const std::wstring& keyName)
 }
 
 // Function to create a shortcut object from its string representation
-Shortcut Shortcut::CreateShortcut(const winrt::hstring& input)
+Shortcut Shortcut::CreateShortcut(const std::vector<winrt::hstring>& keys)
 {
     Shortcut newShortcut;
-    std::wstring shortcutWstring = input.c_str();
-    std::vector<std::wstring> shortcutVector = splitwstring(shortcutWstring, L' ');
-    for (int i = 0; i < shortcutVector.size(); i++)
+    for (int i = 0; i < keys.size(); i++)
     {
-        if (shortcutVector[i] == L"Win")
+        if (keys[i] == L"Win")
         {
             newShortcut.SetKey(NULL, true);
         }
         else
         {
-            DWORD keyCode = DecodeKey(shortcutVector[i]);
+            DWORD keyCode = DecodeKey(keys[i].c_str());
             newShortcut.SetKey(keyCode);
         }
     }
 
     return newShortcut;
+}
+
+Shortcut Shortcut::CreateShortcut(const winrt::hstring& input)
+{
+    std::vector<std::wstring> shortcut = splitwstring(input.c_str(), L' ');
+    return CreateShortcut(std::vector<winrt::hstring>(shortcut.begin(), shortcut.end()));
 }
