@@ -105,7 +105,7 @@ void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
         }
     }
 
-    if ((::GetWindowLong(window, GWL_EXSTYLE) & SWP_NOSIZE) != 0)
+    if ((::GetWindowLong(window, GWL_STYLE) & WS_SIZEBOX) == 0)
     {
         newWindowRect.right = newWindowRect.left + (windowRect.right - windowRect.left);
         newWindowRect.bottom = newWindowRect.top + (windowRect.bottom - windowRect.top);
