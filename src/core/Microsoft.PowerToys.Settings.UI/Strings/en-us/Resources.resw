@@ -200,5 +200,61 @@
   <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
     <value>To:</value>
     <comment>Keyboard Manager mapping keys view right header</comment>
+  <data name="PowerLauncher_Description.Text" xml:space="preserve">
+    <value>A quick launcher that has additional capabilities without sacrificing performance.</value>
+  </data>
+  <data name="PowerLauncher_EnablePowerLauncher.Header" xml:space="preserve">
+    <value>Enable PowerLauncher</value>
+  </data>
+  <data name="PowerLauncher_SearchResults.Text" xml:space="preserve">
+    <value>Search &amp; results</value>
+  </data>
+  <data name="PowerLauncher_SearchResultPreference.Header" xml:space="preserve">
+    <value>Search result preference</value>
+  </data>
+  <data name="PowerLauncher_SearchResultPreference_MostRecentlyUsed" xml:space="preserve">
+    <value>Most recently used</value>
+  </data>
+  <data name="PowerLauncher_SearchResultPreference_AlphabeticalOrder" xml:space="preserve">
+    <value>Alphabetical order</value>
+  </data>
+  <data name="PowerLauncher_SearchResultPreference_RunningProcessesOpenApplications" xml:space="preserve">
+    <value>Running processes/open applications</value>
+  </data>
+  <data name="PowerLauncher_SearchTypePreference.Header" xml:space="preserve">
+    <value>Search type preference</value>
+  </data>
+  <data name="PowerLauncher_SearchTypePreference_ApplicationName" xml:space="preserve">
+    <value>Application name</value>
+  </data>
+  <data name="PowerLauncher_SearchTypePreference_StringInApplication" xml:space="preserve">
+    <value>A string that is contained in the application</value>
+  </data>
+  <data name="PowerLauncher_SearchTypePreference_ExecutableName" xml:space="preserve">
+    <value>Executable name</value>
+  </data>
+  <data name="PowerLauncher_MaximumNumberOfResults.Header" xml:space="preserve">
+    <value>Maximum numbers of results</value>
+  </data>
+  <data name="PowerLauncher_Shortcuts.Text" xml:space="preserve">
+    <value>Shortcuts</value>
+  </data>
+  <data name="PowerLauncher_OpenPowerLauncher.Header" xml:space="preserve">
+    <value>Open PowerLauncher</value>
+  </data>
+  <data name="PowerLauncher_OpenFileLocation.Header" xml:space="preserve">
+    <value>Open file location</value>
+  </data>
+  <data name="PowerLauncher_CopyPathLocation.Header" xml:space="preserve">
+    <value>Copy path location</value>
+  </data>
+  <data name="PowerLauncher_OpenConsole.Header" xml:space="preserve">
+    <value>Open console</value>
+  </data>
+  <data name="PowerLauncher_OverrideWinRKey.Content" xml:space="preserve">
+    <value>Override Win+R key</value>
+  </data>
+  <data name="PowerLauncher_OverrideWinSKey.Content" xml:space="preserve">
+    <value>Override Win+S key</value>
   </data>
 </root>

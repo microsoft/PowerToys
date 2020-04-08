@@ -10,7 +10,6 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-
     public class SndPowerPreviewSettings
     {
         [JsonPropertyName("File Explorer Preview")]

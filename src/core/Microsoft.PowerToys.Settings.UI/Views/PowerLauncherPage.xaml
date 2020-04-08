@@ -1,11 +1,12 @@
 ﻿<Page
-    x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerLauncherPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:Custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerLauncherPage"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -42,79 +43,80 @@
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Vertical">
-            <TextBlock Text="A quick launcher that has additional capabilities without sacrificing performance." Style="{StaticResource BodyTextBlockStyle}"
+            <TextBlock x:Uid="PowerLauncher_Description" Style="{StaticResource BodyTextBlockStyle}"
                        TextWrapping="Wrap"/>
 
-            <ToggleSwitch Header="Enable PowerLauncher"
-                          IsOn="True"
-                          Margin="{StaticResource SmallTopMargin}" />
+            <ToggleSwitch x:Uid="PowerLauncher_EnablePowerLauncher" 
+                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnablePowerLauncher}"
+                          Margin="{StaticResource SmallTopMargin}"/>
 
-            <TextBlock Text="Search &amp; results"
+            <TextBlock x:Uid="PowerLauncher_SearchResults"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <ComboBox Header="Search result preference"
-                          SelectedIndex="0"
-                              MinWidth="320"
-                          Margin="{StaticResource SmallTopMargin}">
-                <ComboBoxItem>Most commonly used</ComboBoxItem>
-                <ComboBoxItem>Most recently used</ComboBoxItem>
-                <ComboBoxItem>Alphabetical order</ComboBoxItem>
-                <ComboBoxItem>Running processes/opened applications</ComboBoxItem>
-            </ComboBox>
+            <ComboBox x:Uid="PowerLauncher_SearchResultPreference"
+                      MinWidth="320"
+                      Margin="{StaticResource SmallTopMargin}"
+                      ItemsSource="{x:Bind searchResultPreferencesOptions}"
+                      SelectedItem="{x:Bind Mode=TwoWay, Path=SelectedSearchResultPreference}"
+                      SelectedValuePath="Item2"
+                      DisplayMemberPath="Item1"
+                      />
 
-            <ComboBox Header="Search type preference"
-                          SelectedIndex="0"
-                          MinWidth="320"
-                          Margin="{StaticResource SmallTopMargin}">
-                <ComboBoxItem>Application name</ComboBoxItem>
-                <ComboBoxItem>A string that is contained in the application</ComboBoxItem>
-                <ComboBoxItem>Executable name</ComboBoxItem>
-            </ComboBox>
+            <ComboBox x:Uid="PowerLauncher_SearchTypePreference"
+                      MinWidth="320"
+                      Margin="{StaticResource SmallTopMargin}"
+                      ItemsSource="{x:Bind searchTypePreferencesOptions}"
+                      SelectedItem="{x:Bind Mode=TwoWay, Path=SelectedSearchTypePreference}"
+                      SelectedValuePath="Item2"
+                      DisplayMemberPath="Item1"
+                      />
 
-            <muxc:NumberBox Header="Maximum numbers of results"
-                            Value="4"
+            <muxc:NumberBox x:Uid="PowerLauncher_MaximumNumberOfResults" 
+                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.MaximumNumberOfResults}"
                             Width="320"
                             SpinButtonPlacementMode="Inline"
                             HorizontalAlignment="Left"
-                            Margin="{StaticResource SmallTopMargin}" />
+                            Margin="{StaticResource SmallTopMargin}"
+                            Minimum="1"/>
 
-
-            <TextBlock Text="Shortcuts"
+            <TextBlock x:Uid="PowerLauncher_Shortcuts"
                        Width="320"
                        HorizontalAlignment="Left"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <!-- TO DO: Add logic to only allow specific (or combination of) keys as entries -->
-            <TextBox Header="Open PowerLauncher"
-                     Width="320"
-                     HorizontalAlignment="Left"
-                     Margin="{StaticResource SmallTopMargin}"/>
+            <Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenPowerLauncher"
+                                          Width="320"
+                                          HorizontalAlignment="Left"
+                                          Margin="{StaticResource SmallTopMargin}"
+                                          HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}"
+                                        />
+            <Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenFileLocation"
+                                          Width="320"
+                                          HorizontalAlignment="Left"
+                                          Margin="{StaticResource SmallTopMargin}"
+                                          HotkeySettings="{x:Bind Path=ViewModel.OpenFileLocation, Mode=TwoWay}"
+                                        />
+            <Custom:HotkeySettingsControl x:Uid="PowerLauncher_CopyPathLocation"
+                                          Width="320"
+                                          HorizontalAlignment="Left"
+                                          Margin="{StaticResource SmallTopMargin}"
+                                          HotkeySettings="{x:Bind Path=ViewModel.CopyPathLocation, Mode=TwoWay}"
+                                        />
+            <Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenConsole"
+                                          Width="320"
+                                          HorizontalAlignment="Left"
+                                          Margin="{StaticResource SmallTopMargin}"
+                                          HotkeySettings="{x:Bind Path=ViewModel.OpenConsole, Mode=TwoWay}"
+                                        />
 
-            <!-- TO DO: Add logic to only allow specific (or combination of) keys as entries -->
-            <TextBox Header="Open file location"
-                     Width="320"
-                     HorizontalAlignment="Left"
-                     Margin="{StaticResource SmallTopMargin}"/>
+            <CheckBox x:Uid="PowerLauncher_OverrideWinRKey" 
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideWinRKey}"/>
 
-            <!-- TO DO: Add logic to only allow specific (or combination of) keys as entries -->
-            <TextBox Header="Copy path location"
-                     Width="320"
-                     HorizontalAlignment="Left"
-                     Margin="{StaticResource SmallTopMargin}"/>
+            <CheckBox x:Uid="PowerLauncher_OverrideWinSKey"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideWinSKey}" />
 
-            <!-- TO DO: Add logic to only allow specific (or combination of) keys as entries -->
-            <TextBox Header="Open console"
-                     HorizontalAlignment="Left"
-                     Width="320"
-                     Margin="{StaticResource SmallTopMargin}"/>
-
-            <CheckBox Content="Override Win+R key"
-                          IsChecked="True"
-                          Margin="{StaticResource SmallTopMargin}"/>
-
-            <CheckBox Content="Override Win+S key"
-                          IsChecked="True" 
-                          Margin="{StaticResource SmallTopMargin}" />
 
         </StackPanel>
 
