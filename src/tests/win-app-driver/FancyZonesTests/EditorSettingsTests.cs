@@ -9,24 +9,19 @@ using OpenQA.Selenium.Appium.Windows;
 namespace PowerToysTests
 {
     [TestClass]
-    public class FancyZonesEditorSettingsTests : PowerToysSession
+    public class FancyZonesEditorSettingsTests : FancyZonesEditor
     {
-        private string editorZoneCount = "editor-zone-count";
-        private string editorShowSpacing = "editor-show-spacing";
-        private string editorSpacing = "editor-spacing";
+        private const string editorZoneCount = "editor-zone-count";
+        private const string editorShowSpacing = "editor-show-spacing";
+        private const string editorSpacing = "editor-spacing";
 
         [TestMethod]
         public void ZoneCount()
         {
-            ShortWait();
-            OpenFancyZonesSettings();
+            OpenEditor();
 
-            WindowsElement editorButton = WaitElementByXPath("//Button[@Name=\"Edit zones\"]");
-            editorButton.Click();
-
-            WindowsElement minusButton = WaitElementByAccessibilityId("decrementZones");
-            WindowsElement zoneCount = WaitElementByAccessibilityId("zoneCount");
-            WindowsElement applyButton;
+            WindowsElement minusButton = session.FindElementByAccessibilityId("decrementZones");
+            WindowsElement zoneCount = session.FindElementByAccessibilityId("zoneCount");
 
             int editorZoneCountValue;
             Assert.IsTrue(Int32.TryParse(zoneCount.Text, out editorZoneCountValue));
@@ -40,17 +35,18 @@ namespace PowerToysTests
 
                 if (j == 0 || i == -4)
                 {
-                    applyButton = WaitElementByAccessibilityId("ApplyTemplateButton");
-                    applyButton.Click();
+                    session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
+
                     ShortWait();
                     Assert.AreEqual(editorZoneCountValue, GetEditZonesSetting<int>(editorZoneCount));
-                    editorButton.Click();
-                    minusButton = WaitElementByAccessibilityId("decrementZones");
-                    zoneCount = WaitElementByAccessibilityId("zoneCount");
+                    OpenEditor();
+                    
+                    minusButton = session.FindElementByAccessibilityId("decrementZones");
+                    zoneCount = session.FindElementByAccessibilityId("zoneCount");
                 }
             }
 
-            WindowsElement plusButton = WaitElementByAccessibilityId("incrementZones");
+            WindowsElement plusButton = session.FindElementByAccessibilityId("incrementZones");
 
             for (int i = 2; i < 45; ++i)
             {
@@ -60,8 +56,7 @@ namespace PowerToysTests
                 Assert.AreEqual(Math.Min(i, 40), editorZoneCountValue);
             }
 
-            applyButton = WaitElementByAccessibilityId("ApplyTemplateButton");
-            applyButton.Click();
+            session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
             ShortWait();
             Assert.AreEqual(editorZoneCountValue, GetEditZonesSetting<int>(editorZoneCount));
         }
@@ -69,21 +64,15 @@ namespace PowerToysTests
         [TestMethod]
         public void ShowSpacingTest()
         {
-            ShortWait();
-            OpenFancyZonesSettings();
-
-            WindowsElement editorButton = WaitElementByXPath("//Button[@Name=\"Edit zones\"]");
-
-            for (int i = 0; i < 2; ++i)
+           for (int i = 0; i < 2; ++i)
             {
-                editorButton.Click();
+                OpenEditor();
 
-                WindowsElement spaceAroundSetting = WaitElementByAccessibilityId("spaceAroundSetting", 20);
+                WindowsElement spaceAroundSetting = session.FindElementByAccessibilityId("spaceAroundSetting");
                 bool spaceAroundSettingValue = spaceAroundSetting.Selected;
-                WindowsElement applyButton = WaitElementByAccessibilityId("ApplyTemplateButton", 20);
-
                 spaceAroundSetting.Click();
-                applyButton.Click();
+
+                session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
 
                 ShortWait();
 
@@ -94,27 +83,25 @@ namespace PowerToysTests
         [TestMethod]
         public void SpacingTestsValid()
         {
-            ShortWait();
-            OpenFancyZonesSettings();
+            OpenEditor();
 
-            WindowsElement editorButton = WaitElementByXPath("//Button[@Name=\"Edit zones\"]");
-            editorButton.Click();
-
-            WindowsElement spaceAroundSetting = WaitElementByAccessibilityId("spaceAroundSetting");
+            WindowsElement spaceAroundSetting = session.FindElementByAccessibilityId("spaceAroundSetting");
             bool editorShowSpacingValue = spaceAroundSetting.Selected;
+
+            session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
+            ShortWait();
 
             string[] validValues = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
             foreach (string editorSpacingValue in validValues)
             {
-                editorButton.Click();
+                OpenEditor();
 
                 WindowsElement paddingValue = WaitElementByAccessibilityId("paddingValue");
                 ClearText(paddingValue);
                 paddingValue.SendKeys(editorSpacingValue);
 
-                WindowsElement applyButton = WaitElementByAccessibilityId("ApplyTemplateButton");
-                applyButton.Click();
+                session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
                 ShortWait();
 
                 Assert.AreEqual(editorShowSpacingValue, GetEditZonesSetting<bool>(editorShowSpacing));
@@ -125,14 +112,13 @@ namespace PowerToysTests
         [TestMethod]
         public void SpacingTestsInvalid()
         {
-            ShortWait();
-            OpenFancyZonesSettings();
+            OpenEditor();
 
-            WindowsElement editorButton = WaitElementByXPath("//Button[@Name=\"Edit zones\"]");
-            editorButton.Click();
-
-            WindowsElement spaceAroundSetting = WaitElementByAccessibilityId("spaceAroundSetting");
+            WindowsElement spaceAroundSetting = session.FindElementByAccessibilityId("spaceAroundSetting");
             bool editorShowSpacingValue = spaceAroundSetting.Selected;
+
+            session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
+            ShortWait();
 
             string[] invalidValues = { "!", "/", "<", "?", "D", "Z", "]", "m", "}", "1.5", "2,5" };
 
@@ -140,63 +126,40 @@ namespace PowerToysTests
 
             foreach (string value in invalidValues)
             {
-                editorButton.Click();
+                OpenEditor();
 
                 WindowsElement paddingValue = WaitElementByAccessibilityId("paddingValue");
                 ClearText(paddingValue);
                 paddingValue.SendKeys(value);
 
-                WindowsElement applyButton = WaitElementByAccessibilityId("ApplyTemplateButton");
-                applyButton.Click();
+                session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
                 ShortWait();
 
                 Assert.AreEqual(editorShowSpacingValue, GetEditZonesSetting<bool>(editorShowSpacing));
                 Assert.AreEqual(editorSpacingValue, GetEditZonesSetting<string>(editorSpacing));
             }
         }
-
+        
         [TestMethod]
         public void SpacingTestLargeValue()
         {
-            string zoneSettings = File.ReadAllText(_zoneSettingsPath);
+            OpenEditor();
+            session.FindElementByXPath("//Text[@Name=\"Grid\"]").Click();
 
-            const string largeValue = "1000";
-
-            ShortWait();
-            OpenFancyZonesSettings();
-
-            WindowsElement editorButton = WaitElementByXPath("//Button[@Name=\"Edit zones\"]");
-            editorButton.Click();
-
-            WindowsElement paddingValue = WaitElementByAccessibilityId("paddingValue");
+            WindowsElement paddingValue = session.FindElementByAccessibilityId("paddingValue");
             ClearText(paddingValue);
-            ClearText(paddingValue);
-            paddingValue.SendKeys(largeValue);
+            paddingValue.SendKeys("1000");
 
-            WindowsElement applyButton = WaitElementByAccessibilityId("ApplyTemplateButton");
-            applyButton.Click();
+            session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
 
-            editorButton.Click();
-            WindowsElement editorWindow = null;
+            editorWindow = null;
             try
             {
-                editorWindow = WaitElementByAccessibilityId("MainWindow1");
+                OpenEditor();
             }
             catch { }
 
-            bool result = editorWindow == null;
-
-            if (editorWindow != null)
-            {
-                editorWindow.SendKeys(Keys.Alt + Keys.F4);
-            }
-
-            ExitPowerToys();
-            File.WriteAllText(_zoneSettingsPath, zoneSettings);
-            LaunchPowerToys();
-            OpenSettings();
-
-            Assert.IsFalse(result);
+            Assert.AreNotEqual(editorWindow, null, "Editor Zones Window is not starting after setting large padding value");
         }
 
         private T GetEditZonesSetting<T>(string value)
@@ -215,8 +178,8 @@ namespace PowerToysTests
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
-            Setup(context);
-            OpenSettings();
+            Setup(context, false);
+            ResetSettings();
         }
 
         [ClassCleanup]
@@ -235,7 +198,7 @@ namespace PowerToysTests
         [TestCleanup]
         public void TestCleanup()
         {
-
+            ResetSettings();
         }
     }
 }
