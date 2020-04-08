@@ -96,7 +96,7 @@
                 <!-- TO DO: Update icon -->
                 <winui:NavigationViewItem x:Uid="Shell_KeyboardManager" helpers:NavHelper.NavigateTo="views:KeyboardManagerPage">
                     <winui:NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xEDA7;"/>
+                        <FontIcon Glyph="&#xE765;"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
             </winui:NavigationView.MenuItems>
