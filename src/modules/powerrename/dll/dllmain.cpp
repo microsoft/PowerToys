@@ -207,17 +207,17 @@ public:
         settings.add_bool_toogle(
             L"bool_persist_input",
             GET_RESOURCE_STRING(IDS_RESTORE_SEARCH),
-            CSettings::GetPersistState());
+            CSettingsInstance().GetPersistState());
 
         settings.add_bool_toogle(
             L"bool_mru_enabled",
             GET_RESOURCE_STRING(IDS_ENABLE_AUTO),
-            CSettings::GetMRUEnabled());
+            CSettingsInstance().GetMRUEnabled());
 
         settings.add_int_spinner(
             L"int_max_mru_size",
             GET_RESOURCE_STRING(IDS_MAX_ITEMS),
-            CSettings::GetMaxMRUSize(),
+            CSettingsInstance().GetMaxMRUSize(),
             0,
             20,
             1);
@@ -225,12 +225,12 @@ public:
         settings.add_bool_toogle(
             L"bool_show_icon_on_menu",
             GET_RESOURCE_STRING(IDS_ICON_CONTEXT_MENU),
-            CSettings::GetShowIconOnMenu());
+            CSettingsInstance().GetShowIconOnMenu());
 
         settings.add_bool_toogle(
             L"bool_show_extended_menu",
             GET_RESOURCE_STRING(IDS_EXTENDED_MENU_INFO),
-            CSettings::GetExtendedContextMenuOnly());
+            CSettingsInstance().GetExtendedContextMenuOnly());
 
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
@@ -245,11 +245,12 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config);
 
-            CSettings::SetPersistState(values.get_bool_value(L"bool_persist_input").value());
-            CSettings::SetMRUEnabled(values.get_bool_value(L"bool_mru_enabled").value());
-            CSettings::SetMaxMRUSize(values.get_int_value(L"int_max_mru_size").value());
-            CSettings::SetShowIconOnMenu(values.get_bool_value(L"bool_show_icon_on_menu").value());
-            CSettings::SetExtendedContextMenuOnly(values.get_bool_value(L"bool_show_extended_menu").value());
+            CSettingsInstance().SetPersistState(values.get_bool_value(L"bool_persist_input").value());
+            CSettingsInstance().SetMRUEnabled(values.get_bool_value(L"bool_mru_enabled").value());
+            CSettingsInstance().SetMaxMRUSize(values.get_int_value(L"int_max_mru_size").value());
+            CSettingsInstance().SetShowIconOnMenu(values.get_bool_value(L"bool_show_icon_on_menu").value());
+            CSettingsInstance().SetExtendedContextMenuOnly(values.get_bool_value(L"bool_show_extended_menu").value());
+            CSettingsInstance().SavePowerRenameData();
 
             Trace::SettingsChanged();
         }
@@ -282,13 +283,15 @@ public:
 
     void init_settings()
     {
-        m_enabled = CSettings::GetEnabled();
+        CSettingsInstance().LoadPowerRenameData();
+        m_enabled = CSettingsInstance().GetEnabled();
         Trace::EnablePowerRename(m_enabled);
     }
 
     void save_settings()
     {
-        CSettings::SetEnabled(m_enabled);
+        CSettingsInstance().SetEnabled(m_enabled);
+        CSettingsInstance().SavePowerRenameData();
         Trace::EnablePowerRename(m_enabled);
     }
 
