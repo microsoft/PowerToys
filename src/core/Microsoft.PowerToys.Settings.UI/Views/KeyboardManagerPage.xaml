@@ -81,30 +81,35 @@
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Vertical">
-            <TextBlock Text="Reconfigure your keyboard by remapping keys and shortcuts"
+            <TextBlock x:Uid="KeyboardManager_Description" 
+                       Text="Reconfigure your keyboard by remapping keys and shortcuts"
                        TextWrapping="Wrap"
                        Style="{StaticResource BodyTextBlockStyle}"/>
 
-            <ToggleSwitch Header="Enable Keyboard Manager"
+            <ToggleSwitch x:Uid="KeyboardManager_EnableToggle"
+                          Header="Enable Keyboard Manager"
                           IsOn="True"
                           Margin="{StaticResource SmallTopMargin}" />
 
-            <TextBlock Text="Current configuration"
-                           Style="{StaticResource SettingsGroupTitleStyle}"
-                           Margin="{StaticResource SmallTopMargin}"/>
+            <TextBlock x:Uid="KeyboardManager_ConfigHeader"
+                       Text="Current configuration"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Margin="{StaticResource SmallTopMargin}"/>
             
             <ComboBox SelectedIndex="1"
-                          Margin="{StaticResource SmallTopMargin}"
-                          HorizontalAlignment="Left">
-                <ComboBoxItem Content="Config-1"/>
-                <ComboBoxItem Content="Config-2"/>
-                <ComboBoxItem Content="Config-3"/>
+                      Margin="{StaticResource SmallTopMargin}"
+                      HorizontalAlignment="Left">
+                      <ComboBoxItem Content="Config-1"/>
+                      <ComboBoxItem Content="Config-2"/>
+                      <ComboBoxItem Content="Config-3"/>
             </ComboBox>
 
-            <TextBlock Text="Select the profile to display the active key remap and shortcuts"
+            <TextBlock x:Uid="KeyboardManager_ProfileDescription"
+                Text="Select the profile to display the active key remap and shortcuts"
                 Margin="{StaticResource SmallTopMargin}"/>
 
-            <TextBlock Text="Remap Keyboard"
+            <TextBlock x:Uid="KeyboardManager_Remap" 
+                       Text="Remap Keyboard"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Margin="{StaticResource SmallTopMargin}"/>
 
