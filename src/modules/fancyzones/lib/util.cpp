@@ -113,13 +113,23 @@ void SizeWindowToRect(HWND window, RECT rect) noexcept
 {
     WINDOWPLACEMENT placement{};
     ::GetWindowPlacement(window, &placement);
-    placement.rcNormalPosition = rect;
-    placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
+
+    //wait if SW_SHOWMINIMIZED would be removed from window (Issue #1685)    
+    for (int i = 0; i < 5 && (placement.showCmd & SW_SHOWMINIMIZED) != 0; i++)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        ::GetWindowPlacement(window, &placement);
+    }
+
     // Do not restore minimized windows. We change their placement though so they restore to the correct zone.
     if ((placement.showCmd & SW_SHOWMINIMIZED) == 0)
     {
         placement.showCmd = SW_RESTORE | SW_SHOWNA;
     }
+
+    placement.rcNormalPosition = rect;
+    placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
+
     ::SetWindowPlacement(window, &placement);
     // Do it again, allowing Windows to resize the window and set correct scaling
     // This fixes Issue #365
