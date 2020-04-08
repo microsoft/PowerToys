@@ -200,6 +200,7 @@
   <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
     <value>To:</value>
     <comment>Keyboard Manager mapping keys view right header</comment>
+  </data>
   <data name="PowerLauncher_Description.Text" xml:space="preserve">
     <value>A quick launcher that has additional capabilities without sacrificing performance.</value>
   </data>
