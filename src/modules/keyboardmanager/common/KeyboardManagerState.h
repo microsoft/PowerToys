@@ -39,12 +39,12 @@ private:
     std::mutex detectedRemapKey_mutex;
 
     // Stores the UI element which is to be updated based on the remap key entered.
-    StackPanel currentSingleKeyRemapTextBlock;
-    std::mutex currentSingleKeyRemapTextBlock_mutex;
+    StackPanel currentSingleKeyUI;
+    std::mutex currentSingleKeyUI_mutex;
 
     // Stores the UI element which is to be updated based on the shortcut entered
-    StackPanel currentShortcutTextBlock;
-    std::mutex currentShortcutTextBlock_mutex;
+    StackPanel currentShortcutUI;
+    std::mutex currentShortcutUI_mutex;
 
     // Display a key by appending a border Control as a child of the panel.
     void AddKeyToLayout(const StackPanel& panel, const winrt::hstring& key);

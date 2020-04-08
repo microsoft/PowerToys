@@ -3,7 +3,7 @@
 
 // Constructor
 KeyboardManagerState::KeyboardManagerState() :
-    uiState(KeyboardManagerUIState::Deactivated), currentUIWindow(nullptr), currentShortcutTextBlock(nullptr), currentSingleKeyRemapTextBlock(nullptr), detectedRemapKey(NULL)
+    uiState(KeyboardManagerUIState::Deactivated), currentUIWindow(nullptr), currentShortcutUI(nullptr), currentSingleKeyUI(nullptr), detectedRemapKey(NULL)
 {
 }
 
@@ -50,18 +50,18 @@ void KeyboardManagerState::ResetUIState()
     SetUIState(KeyboardManagerUIState::Deactivated);
 
     // Reset the shortcut UI stored variables
-    std::unique_lock<std::mutex> currentShortcutTextBlock_lock(currentShortcutTextBlock_mutex);
-    currentShortcutTextBlock = nullptr;
-    currentShortcutTextBlock_lock.unlock();
+    std::unique_lock<std::mutex> currentShortcutUI_lock(currentShortcutUI_mutex);
+    currentShortcutUI = nullptr;
+    currentShortcutUI_lock.unlock();
 
     std::unique_lock<std::mutex> detectedShortcut_lock(detectedShortcut_mutex);
     detectedShortcut.Reset();
     detectedShortcut_lock.unlock();
 
     // Reset all the single key remap UI stored variables.
-    std::unique_lock<std::mutex> currentSingleKeyRemapTextBlock_lock(currentSingleKeyRemapTextBlock_mutex);
-    currentSingleKeyRemapTextBlock = nullptr;
-    currentSingleKeyRemapTextBlock_lock.unlock();
+    std::unique_lock<std::mutex> currentSingleKeyUI_lock(currentSingleKeyUI_mutex);
+    currentSingleKeyUI = nullptr;
+    currentSingleKeyUI_lock.unlock();
 
     std::unique_lock<std::mutex> detectedRemapKey_lock(detectedRemapKey_mutex);
     detectedRemapKey = NULL;
@@ -117,15 +117,15 @@ bool KeyboardManagerState::AddSingleKeyRemap(const DWORD& originalKey, const DWO
 // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
 void KeyboardManagerState::ConfigureDetectShortcutUI(const StackPanel& textBlock)
 {
-    std::lock_guard<std::mutex> lock(currentShortcutTextBlock_mutex);
-    currentShortcutTextBlock = textBlock;
+    std::lock_guard<std::mutex> lock(currentShortcutUI_mutex);
+    currentShortcutUI = textBlock;
 }
 
 // Function to set the textblock of the detect remap key UI so that it can be accessed by the hook
 void KeyboardManagerState::ConfigureDetectSingleKeyRemapUI(const StackPanel& textBlock)
 {
-    std::lock_guard<std::mutex> lock(currentSingleKeyRemapTextBlock_mutex);
-    currentSingleKeyRemapTextBlock = textBlock;
+    std::lock_guard<std::mutex> lock(currentSingleKeyUI_mutex);
+    currentSingleKeyUI = textBlock;
 }
 
 
@@ -150,8 +150,8 @@ void KeyboardManagerState::AddKeyToLayout(const StackPanel& panel, const hstring
 // Function to update the detect shortcut UI based on the entered keys
 void KeyboardManagerState::UpdateDetectShortcutUI()
 {
-    std::lock_guard<std::mutex> currentShortcutTextBlock_lock(currentShortcutTextBlock_mutex);
-    if (currentShortcutTextBlock == nullptr)
+    std::lock_guard<std::mutex> currentShortcutUI_lock(currentShortcutUI_mutex);
+    if (currentShortcutUI == nullptr)
     {
         return;
     }
@@ -165,21 +165,21 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
     detectedShortcut_lock.unlock();
 
     // Since this function is invoked from the back-end thread, in order to update the UI the dispatcher must be used.
-    currentShortcutTextBlock.Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [this, shortcut]() {
-        currentShortcutTextBlock.Children().Clear();
+    currentShortcutUI.Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [this, shortcut]() {
+        currentShortcutUI.Children().Clear();
         for (auto& key : shortcut)
         {
-            AddKeyToLayout(currentShortcutTextBlock, key);
+            AddKeyToLayout(currentShortcutUI, key);
         }
-        currentShortcutTextBlock.UpdateLayout();
+        currentShortcutUI.UpdateLayout();
     });
 }
 
 // Function to update the detect remap key UI based on the entered key.
 void KeyboardManagerState::UpdateDetectSingleKeyRemapUI()
 {
-    std::lock_guard<std::mutex> currentSingleKeyRemapTextBlock_lock(currentSingleKeyRemapTextBlock_mutex);
-    if (currentSingleKeyRemapTextBlock == nullptr)
+    std::lock_guard<std::mutex> currentSingleKeyUI_lock(currentSingleKeyUI_mutex);
+    if (currentSingleKeyUI == nullptr)
     {
         return;
     }
@@ -189,22 +189,22 @@ void KeyboardManagerState::UpdateDetectSingleKeyRemapUI()
     detectedRemapKey_lock.unlock();
 
     // Since this function is invoked from the back-end thread, in order to update the UI the dispatcher must be used.
-    currentSingleKeyRemapTextBlock.Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [this, key]() {
-        currentSingleKeyRemapTextBlock.Children().Clear();
-        AddKeyToLayout(currentSingleKeyRemapTextBlock, key);
-        currentSingleKeyRemapTextBlock.UpdateLayout();
+    currentSingleKeyUI.Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [this, key]() {
+        currentSingleKeyUI.Children().Clear();
+        AddKeyToLayout(currentSingleKeyUI, key);
+        currentSingleKeyUI.UpdateLayout();
     });
 }
 
 // Function to return the currently detected shortcut which is displayed on the UI
 Shortcut KeyboardManagerState::GetDetectedShortcut()
 {
-    std::unique_lock<std::mutex> lock(currentShortcutTextBlock_mutex);
+    std::unique_lock<std::mutex> lock(currentShortcutUI_mutex);
 
     std::vector<winrt::hstring> keys;
-    if (currentShortcutTextBlock.Children().Size() > 0)
+    if (currentShortcutUI.Children().Size() > 0)
     {
-        for (auto border : currentShortcutTextBlock.Children())
+        for (auto border : currentShortcutUI.Children())
         {
             auto keyString = border.as<Border>().Child().as<TextBlock>().Text();
             keys.push_back(keyString);
@@ -218,11 +218,11 @@ Shortcut KeyboardManagerState::GetDetectedShortcut()
 // Function to return the currently detected remap key which is displayed on the UI
 DWORD KeyboardManagerState::GetDetectedSingleRemapKey()
 {
-    std::unique_lock<std::mutex> lock(currentSingleKeyRemapTextBlock_mutex);
+    std::unique_lock<std::mutex> lock(currentSingleKeyUI_mutex);
     DWORD key = 0;
-    if (currentSingleKeyRemapTextBlock.Children().Size() > 0)
+    if (currentSingleKeyUI.Children().Size() > 0)
     {
-        auto border = currentSingleKeyRemapTextBlock.Children().GetAt(0);
+        auto border = currentSingleKeyUI.Children().GetAt(0);
         auto keyString = border.as<Border>().Child().as<TextBlock>().Text();
         key = std::stoul(keyString.c_str());
     }
