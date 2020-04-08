@@ -180,6 +180,7 @@ private:
     };
 
     bool IsInterestingWindow(HWND window) noexcept;
+    bool IsCursorTypeIndicatingSizeEvent();
     void UpdateZoneWindows() noexcept;
     void MoveWindowsOnDisplayChange() noexcept;
     void UpdateDragState(HWND window, require_write_lock) noexcept;
@@ -745,6 +746,33 @@ bool FancyZones::IsInterestingWindow(HWND window) noexcept
     return true;
 }
 
+bool FancyZones::IsCursorTypeIndicatingSizeEvent()
+{
+    CURSORINFO cursorInfo = { 0 };
+    cursorInfo.cbSize = sizeof(cursorInfo);
+
+    if (::GetCursorInfo(&cursorInfo))
+    {
+        if (::LoadCursor(NULL, IDC_SIZENS) == cursorInfo.hCursor)
+        {
+            return true;
+        }
+        if (::LoadCursor(NULL, IDC_SIZEWE) == cursorInfo.hCursor)
+        {
+            return true;
+        }
+        if (::LoadCursor(NULL, IDC_SIZENESW) == cursorInfo.hCursor)
+        {
+            return true;
+        }
+        if (::LoadCursor(NULL, IDC_SIZENWSE) == cursorInfo.hCursor)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 void FancyZones::UpdateZoneWindows() noexcept
 {
     auto callback = [](HMONITOR monitor, HDC, RECT*, LPARAM data) -> BOOL {
@@ -920,23 +948,10 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
 
 void FancyZones::MoveSizeStartInternal(HWND window, HMONITOR monitor, POINT const& ptScreen, require_write_lock writeLock) noexcept
 {
-    // Only enter move/size if the cursor is inside the window rect by a certain padding.
-    // This prevents resize from triggering zones.
-    RECT windowRect{};
-    ::GetWindowRect(window, &windowRect);
-
-    const auto padding_x = 8;
-    const auto padding_y = 6;
-    windowRect.top += padding_y;
-    windowRect.left += padding_x;
-    windowRect.right -= padding_x;
-    windowRect.bottom -= padding_y;
-
-    if (PtInRect(&windowRect, ptScreen) == FALSE)
+    if (IsCursorTypeIndicatingSizeEvent())
     {
         return;
     }
-
     m_inMoveSize = true;
 
     auto iter = m_zoneWindowMap.find(monitor);
