@@ -39,13 +39,15 @@ private:
     std::mutex detectedRemapKey_mutex;
 
     // Stores the UI element which is to be updated based on the remap key entered.
-    TextBlock currentSingleKeyRemapTextBlock;
-    std::mutex currentSingleKeyRemapTextBlock_mutex;
+    StackPanel currentSingleKeyUI;
+    std::mutex currentSingleKeyUI_mutex;
 
     // Stores the UI element which is to be updated based on the shortcut entered
-    TextBlock currentShortcutTextBlock;
-    std::mutex currentShortcutTextBlock_mutex;
+    StackPanel currentShortcutUI;
+    std::mutex currentShortcutUI_mutex;
 
+    // Display a key by appending a border Control as a child of the panel.
+    void AddKeyToLayout(const StackPanel& panel, const winrt::hstring& key);
 public:
     // The map members and their mutexes are left as public since the maps are used extensively in dllmain.cpp.
     // Maps which store the remappings for each of the features. The bool fields should be initalised to false. They are used to check the current state of the shortcut (i.e is that particular shortcut currently pressed down or not).
@@ -93,10 +95,10 @@ public:
     bool AddOSLevelShortcut(const Shortcut& originalSC, const Shortcut& newSC);
 
     // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
-    void ConfigureDetectShortcutUI(const TextBlock& textBlock);
+    void ConfigureDetectShortcutUI(const StackPanel& textBlock);
 
     // Function to set the textblock of the detect remap key UI so that it can be accessed by the hook
-    void ConfigureDetectSingleKeyRemapUI(const TextBlock& textBlock);
+    void ConfigureDetectSingleKeyRemapUI(const StackPanel& textBlock);
 
     // Function to update the detect shortcut UI based on the entered keys
     void UpdateDetectShortcutUI();

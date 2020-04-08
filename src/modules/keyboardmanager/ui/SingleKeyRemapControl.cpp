@@ -58,15 +58,15 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
 {
     // ContentDialog for detecting remap key. This is the parent UI element.
     ContentDialog detectRemapKeyBox;
-
+    
+    // TODO: Hardcoded light theme, since the app is not theme aware ATM.
+    detectRemapKeyBox.RequestedTheme(ElementTheme::Light);
     // ContentDialog requires manually setting the XamlRoot (https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
     detectRemapKeyBox.XamlRoot(xamlRoot);
     detectRemapKeyBox.Title(box_value(L"Press a key on selected keyboard:"));
     detectRemapKeyBox.PrimaryButtonText(to_hstring(L"OK"));
     detectRemapKeyBox.IsSecondaryButtonEnabled(false);
     detectRemapKeyBox.CloseButtonText(to_hstring(L"Cancel"));
-    detectRemapKeyBox.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    detectRemapKeyBox.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
 
     // Get the linked text block for the "Type Key" button that was clicked
     TextBlock linkedRemapText = getSiblingElement(sender).as<TextBlock>();
@@ -92,23 +92,22 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
 
     // StackPanel parent for the displayed text in the dialog
     Windows::UI::Xaml::Controls::StackPanel stackPanel;
-    stackPanel.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+    detectRemapKeyBox.Content(stackPanel);
 
     // Header textblock
     TextBlock text;
     text.Text(winrt::to_hstring("Key Pressed:"));
     text.Margin({ 0, 0, 0, 10 });
-
-    // Textblock to display the detected key
-    TextBlock remapKey;
-
     stackPanel.Children().Append(text);
-    stackPanel.Children().Append(remapKey);
+
+    // Target StackPanel to place the selected key
+    Windows::UI::Xaml::Controls::StackPanel keyStackPanel;
+    stackPanel.Children().Append(keyStackPanel);
+    keyStackPanel.Orientation(Orientation::Horizontal);
     stackPanel.UpdateLayout();
-    detectRemapKeyBox.Content(stackPanel);
 
     // Configure the keyboardManagerState to store the UI information.
-    keyboardManagerState.ConfigureDetectSingleKeyRemapUI(remapKey);
+    keyboardManagerState.ConfigureDetectSingleKeyRemapUI(keyStackPanel);
 
     // Show the dialog
     detectRemapKeyBox.ShowAsync();
