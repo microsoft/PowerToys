@@ -66,9 +66,9 @@ void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
     {
         return;
     }
-  
+
     // Take care of 1px border
-    RECT zoneRect = m_zoneRect;
+    RECT newWindowRect = m_zoneRect;
 
     RECT windowRect{};
     ::GetWindowRect(window, &windowRect);
@@ -82,27 +82,33 @@ void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
         const auto left_margin = frameRect.left - windowRect.left;
         const auto right_margin = frameRect.right - windowRect.right;
         const auto bottom_margin = frameRect.bottom - windowRect.bottom;
-        zoneRect.left -= left_margin;
-        zoneRect.right -= right_margin;
-        zoneRect.bottom -= bottom_margin;
+        newWindowRect.left -= left_margin;
+        newWindowRect.right -= right_margin;
+        newWindowRect.bottom -= bottom_margin;
     }
 
     // Map to screen coords
-    MapWindowRect(zoneWindow, nullptr, &zoneRect);
+    MapWindowRect(zoneWindow, nullptr, &newWindowRect);
 
-    MONITORINFO mi{sizeof(mi)};
+    MONITORINFO mi{ sizeof(mi) };
     if (GetMonitorInfoW(MonitorFromWindow(zoneWindow, MONITOR_DEFAULTTONEAREST), &mi))
     {
         const auto taskbar_left_size = std::abs(mi.rcMonitor.left - mi.rcWork.left);
         const auto taskbar_top_size = std::abs(mi.rcMonitor.top - mi.rcWork.top);
-        OffsetRect(&zoneRect, -taskbar_left_size, -taskbar_top_size);
+        OffsetRect(&newWindowRect, -taskbar_left_size, -taskbar_top_size);
         if (accountForUnawareness)
         {
-            zoneRect.left = max(mi.rcMonitor.left, zoneRect.left);
-            zoneRect.right = min(mi.rcMonitor.right - taskbar_left_size, zoneRect.right);
-            zoneRect.top = max(mi.rcMonitor.top, zoneRect.top);
-            zoneRect.bottom = min(mi.rcMonitor.bottom - taskbar_top_size, zoneRect.bottom);
+            newWindowRect.left = max(mi.rcMonitor.left, newWindowRect.left);
+            newWindowRect.right = min(mi.rcMonitor.right - taskbar_left_size, newWindowRect.right);
+            newWindowRect.top = max(mi.rcMonitor.top, newWindowRect.top);
+            newWindowRect.bottom = min(mi.rcMonitor.bottom - taskbar_top_size, newWindowRect.bottom);
         }
+    }
+
+    if ((::GetWindowLong(window, GWL_STYLE) & WS_SIZEBOX) == 0)
+    {
+        newWindowRect.right = newWindowRect.left + (windowRect.right - windowRect.left);
+        newWindowRect.bottom = newWindowRect.top + (windowRect.bottom - windowRect.top);
     }
 
     WINDOWPLACEMENT placement{};
@@ -121,7 +127,7 @@ void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
         placement.showCmd = SW_RESTORE | SW_SHOWNA;
     }
 
-    placement.rcNormalPosition = zoneRect;
+    placement.rcNormalPosition = newWindowRect;
     placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
 
     ::SetWindowPlacement(window, &placement);
