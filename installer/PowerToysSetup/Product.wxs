@@ -22,7 +22,7 @@
          Property="PREVIOUSVERSIONSINSTALLED"
          IncludeMinimum="yes" IncludeMaximum="no" />
     </Upgrade>
-    
+
     <MediaTemplate EmbedCab="yes" />
 
     <Property Id="WINDOWSBUILDNUMBER" Secure="yes">
@@ -32,11 +32,12 @@
       <![CDATA[(WINDOWSBUILDNUMBER >= 17134)]]>
     </Condition>
 
-    <Icon Id="powertoys.ico" SourceFile="$(var.BinX64Dir)\svgs\icon.ico"/>
-    <Property Id="ARPPRODUCTICON" Value="powertoys.ico" />
+    <Icon Id="powertoys.exe" SourceFile="$(var.BinX64Dir)\svgs\icon.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="powertoys.exe" />
     <Feature Id="CoreFeature" Title="PowerToys" AllowAdvertise="no" Absent="disallow" TypicalDefault="install"
              Description="Contains the Shortcut Guide and Fancy Zones features.">
       <ComponentGroupRef Id="CoreComponents" />
+      <ComponentGroupRef Id="ResourcesComponents" />
     </Feature>
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
     <UI>
@@ -55,7 +56,7 @@
     </UI>
     <WixVariable Id="WixUIBannerBmp" Value="$(var.ProjectDir)\Bitmaps\banner.bmp" />
     <WixVariable Id="WixUIDialogBmp" Value="$(var.ProjectDir)\Bitmaps\dialog.bmp" />
-    <WixVariable Id="WixUILicenseRtf" Value="$(var.RepoDir)\License.rtf" />
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.RepoDir)\installer\License.rtf" />
     <Property Id="INSTALLSTARTMENUSHORTCUT" Value="1"/>
     <Property Id="CREATESCHEDULEDTASK" Value="1"/>
     <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1"/>
@@ -65,6 +66,9 @@
 
     <Property Id ="EXISTINGPOWERRENAMEEXTPATH">
       <RegistrySearch Id="ExistingExtPath" Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}\InprocServer32" Type="raw"/>
+    </Property>
+    <Property Id ="EXISTINGIMAGERESIZERPATH">
+      <RegistrySearch Id="ExistingImageResizerPath" Root="HKCU" Key="Software\Classes\CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32" Type="raw"/>
     </Property>
 
     <InstallExecuteSequence>
@@ -144,7 +148,7 @@
                   BinaryKey="PTCustomActions"
                   DllEntry="TelemetryLogUninstallFailCA"
                    />
-    
+
     <CustomAction Id="TelemetryLogRepairCancel"
                   Return="ignore"
                   Impersonate="yes"
@@ -161,9 +165,9 @@
 
     <!-- Close 'PowerToys.exe' before uninstall-->
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="Disable" />
-    <!-- Restart explorer.exe if we detect existing powerrenameext.dll installation -->
+    <!-- Restart explorer.exe if we detect existing PowerRenameExt.dll or ImageResizerExt.dll installation -->
     <util:CloseApplication Target="explorer.exe" RebootPrompt="no" TerminateProcess="0">
-      EXISTINGPOWERRENAMEEXTPATH
+      EXISTINGPOWERRENAMEEXTPATH OR EXISTINGIMAGERESIZERPATH
     </util:CloseApplication>
     <util:CloseApplication CloseMessage="yes" Target="PowerToys.exe" ElevatedCloseMessage="yes" RebootPrompt="no" TerminateProcess="0" />
   </Product>
@@ -177,7 +181,25 @@
       <Directory Id="ProgramFiles64Folder">
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
           <Directory Id="SvgsInstallFolder" Name="svgs"/>
-          <Directory Id="ModulesInstallFolder" Name="modules"/>
+          <Directory Id="ModulesInstallFolder" Name="modules">
+            <!-- Resource file directories -->
+            <?foreach Language in ar;bg;ca;cs;de;es;eu-ES;fr;he;hu;it;nb-NO;nl;pl;pt-BR;ru;sk;tr;zh-Hans?>
+              <!--NB: Ids can't contain hyphens-->
+              <?if $(var.Language) = eu-ES?>
+                <?define IdSafeLanguage = eu_ES?>
+              <?elseif $(var.Language) = nb-NO?>
+                <?define IdSafeLanguage = nb_NO?>
+              <?elseif $(var.Language) = pt-BR?>
+                <?define IdSafeLanguage = pt_BR?>
+              <?elseif $(var.Language) = zh-Hans?>
+                <?define IdSafeLanguage = zh_Hans?>
+              <?else?>
+                <?define IdSafeLanguage = $(var.Language)?>
+              <?endif?>
+              <Directory Id="Resources$(var.IdSafeLanguage)Folder" Name="$(var.Language)" />
+              <?undef IdSafeLanguage?>
+            <?endforeach?>
+          </Directory>
           <Directory Id="SettingsHtmlInstallFolder" Name="settings-html">
             <Directory Id="SettingsHtmlDistInstallFolder" Name="dist"/>
           </Directory>
@@ -206,7 +228,7 @@
                     Description="PowerToys - Windows system utilities to maximize productivity"
                     Directory="ApplicationProgramsFolder"
                     WorkingDirectory="INSTALLFOLDER"
-                    Icon="powertoys.ico"
+                    Icon="powertoys.exe"
                     IconIndex="0"
                     Advertise="yes">
             <ShortcutProperty Key="System.AppUserModel.ID" Value="Microsoft.PowerToysWin32"/>
@@ -214,8 +236,20 @@
           </Shortcut>
         </File>
 
+        <RegistryKey Root="HKCR" Key="powertoys" Action="createAndRemoveOnUninstall">
+          <RegistryValue Type="string" Name="URL Protocol" Value=""/>
+          <RegistryValue Type="string" Value="URL:PowerToys custom internal URI protocol"/>
+          <RegistryKey Key="DefaultIcon">
+            <RegistryValue Type="string" Value="PowerToys.exe" />
+          </RegistryKey>
+          <RegistryKey Key="shell\open\command">
+            <RegistryValue Type="string" Value="&quot;[INSTALLFOLDER]PowerToys.exe&quot; &quot;%1&quot;" />
+          </RegistryKey>
+        </RegistryKey>
+
         <RemoveFolder Id="DeleteShortcutFolder" Directory="ApplicationProgramsFolder" On="uninstall" />
       </Component>
+
       <Component Id="settings_exe" Guid="A5A461A9-7097-4CBA-9D39-3DBBB6B7B80C" Win64="yes">
         <File Id="PowerToysSettings.exe" KeyPath="yes" Checksum="yes" />
       </Component>
@@ -223,7 +257,7 @@
         <File Id="Notifications.dll" KeyPath="yes" Checksum="yes" />
       </Component>
       <Component Id="License_rtf" Guid="3E5AE43B-CFB4-449B-A346-94CAAFF3312E" Win64="yes">
-        <File Source="$(var.RepoDir)\License.rtf" Id="License.rtf" KeyPath="yes" />
+        <File Source="$(var.RepoDir)\installer\License.rtf" Id="License.rtf" KeyPath="yes" />
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="SvgsInstallFolder" FileSource="$(var.BinX64Dir)\svgs\">
@@ -274,7 +308,167 @@
           <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
         </RegistryKey>
         <RegistryKey Root="HKCR" Key="AllFileSystemObjects\ShellEx\ContextMenuHandlers\PowerRenameExt">
-            <RegistryValue Type="string" Value="{0440049F-D1DC-4E46-B27B-98393D79486B}"/>
+          <RegistryValue Type="string" Value="{0440049F-D1DC-4E46-B27B-98393D79486B}"/>
+        </RegistryKey>
+      </Component>
+      
+      <Component Id="Module_WindowWalker" Guid="0F96981C-5D36-4467-9515-71FB0CE72F6F" Win64="yes">
+        <File Source="$(var.BinX64Dir)\modules\WindowWalker.exe" />
+        <File Source="$(var.BinX64Dir)\modules\WindowWalker.dll" />
+        <File Source="$(var.BinX64Dir)\modules\MaterialDesignColors.dll" />
+        <File Source="$(var.BinX64Dir)\modules\MaterialDesignThemes.Wpf.dll" />
+      </Component>
+
+      <Component Id="Module_ImageResizer" Guid="96E63289-759C-4A73-A56B-EE7429932F72" Win64="yes">
+        <File Source="$(var.BinX64Dir)\modules\ImageResizer.exe">
+          <netfx:NativeImage Id="ImageResizer.exe" Platform="all" Priority="0" />
+        </File>
+        <File Source="$(var.BinX64Dir)\modules\GalaSoft.MvvmLight.dll" />
+        <File Source="$(var.BinX64Dir)\modules\GalaSoft.MvvmLight.Platform.dll" />
+        <File Source="$(var.BinX64Dir)\modules\GalaSoft.MvvmLight.Extras.dll" />
+        <File Source="$(var.BinX64Dir)\modules\System.Windows.Interactivity.dll">
+          <!-- NB: Needed since it's only referenced in XAML. -->
+          <netfx:NativeImage Id="Interactivity" Platform="all" Priority="0"/>
+        </File>
+        <File Source="$(var.BinX64Dir)\modules\Newtonsoft.Json.dll" />
+        <File Source="$(var.BinX64Dir)\modules\ImageResizerExt.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Module_ImageResizer_Registry" Guid="8B593E2C-2D9B-4EBC-93F7-A2B69707DAC9" Win64="yes">
+        <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32">
+          <RegistryValue Value="[ModulesInstallFolder]ImageResizerExt.dll" Type="string" />
+          <RegistryValue Name="ThreadingModel" Value="Apartment" Type="string" />
+        </RegistryKey>
+        <!-- Registry Key for the drag and drop handler -->
+        <RegistryValue Root="HKCU"
+                       Key="Software\Classes\Directory\ShellEx\DragDropHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <!-- Registry Keys for the context menu handler for each of the following image formats: bmp, dib, gif, jfif, jpe, jpeg, jpg, jxr, png, rle, tif, tiff, wdp  -->
+        <RegistryValue Root="HKCU"
+                       Key="Software\Classes\SystemFileAssociations\.bmp\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCU"
+                       Key="Software\Classes\SystemFileAssociations\.dib\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCU"
+                       Key="Software\Classes\SystemFileAssociations\.gif\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCU"
+                       Key="Software\Classes\SystemFileAssociations\.jfif\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCU"
+                       Key="Software\Classes\SystemFileAssociations\.jpe\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCU"
+                       Key="Software\Classes\SystemFileAssociations\.jpeg\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCU"
+                       Key="Software\Classes\SystemFileAssociations\.jpg\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCU"
+                       Key="Software\Classes\SystemFileAssociations\.jxr\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCU"
+                       Key="Software\Classes\SystemFileAssociations\.png\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCU"
+                       Key="Software\Classes\SystemFileAssociations\.rle\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCU"
+                         Key="Software\Classes\SystemFileAssociations\.tif\ShellEx\ContextMenuHandlers\ImageResizer"
+                         Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                         Type="string" />
+        <RegistryValue Root="HKCU"
+                         Key="Software\Classes\SystemFileAssociations\.tiff\ShellEx\ContextMenuHandlers\ImageResizer"
+                         Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                         Type="string" />
+        <RegistryValue Root="HKCU"
+                         Key="Software\Classes\SystemFileAssociations\.wdp\ShellEx\ContextMenuHandlers\ImageResizer"
+                         Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                         Type="string" />
+      </Component>
+      <Component Id="Module_PowerPreview" Guid="FF1700D5-1B07-4E07-9A62-4D206645EEA9" Win64="yes">
+        <!-- Component to include PowerPreview Module Source dll's -->
+        <!-- File to include PowerPreview Module native dll -->
+        <File Source="$(var.BinX64Dir)\modules\powerpreview.dll" KeyPath="yes" />
+        <!-- File to include common library used by preview handlers -->
+        <File Source="$(var.BinX64Dir)\modules\PreviewHandlerCommon.dll" />
+        <!-- File to include dll for Svg Preview Handler -->
+        <File Source="$(var.BinX64Dir)\modules\SvgPreviewHandler.dll" />
+        <!-- Files to include dll's for Markdown Preview Handler and it's dependencies -->
+        <File Source="$(var.BinX64Dir)\modules\MarkdownPreviewHandler.dll" />
+        <File Source="$(var.BinX64Dir)\modules\Markdig.Signed.dll" />
+        <File Source="$(var.BinX64Dir)\modules\HtmlAgilityPack.dll" />
+      </Component>
+      <Component Id="Module_PowerPreview_PerUserRegistry" Guid="CD90ADC0-7CD5-4A62-B0AF-23545C1E6DD3" Win64="yes">
+        <!-- Added a separate component for Per-User registry changes -->
+        <!-- Registry Key for Class Registration of Svg Preview Handler -->
+        <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{ddee2b8a-6807-48a6-bb20-2338174ff779}">
+          <RegistryValue Type="string" Value="SvgPreviewHandler.SvgPreviewHandler" />
+          <RegistryValue Type="string" Name="DisplayName" Value="Svg Preview Handler" />
+          <RegistryValue Type="string" Name="AppID" Value="{CF142243-F059-45AF-8842-DBBE9783DB14}" />
+          <RegistryValue Type="string" Key="Implemented Categories\{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}" Value=""/>
+          <RegistryValue Type="string" Key="InprocServer32" Value="mscoree.dll" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="Assembly" Value="SvgPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="SvgPreviewHandler.SvgPreviewHandler" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="RuntimeVersion" Value="v4.0.30319" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Both" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="CodeBase" Value="file:///[ModulesInstallFolder]SvgPreviewHandler.dll" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="SvgPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="SvgPreviewHandler.SvgPreviewHandler" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="RuntimeVersion" Value="v4.0.30319" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="CodeBase" Value="file:///[ModulesInstallFolder]SvgPreviewHandler.dll" />
+        </RegistryKey>
+        <!-- Registry Key for Class Registration of Markdown Preview Handler -->
+        <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{45769bcc-e8fd-42d0-947e-02beef77a1f5}">
+          <RegistryValue Type="string" Value="MarkdownPreviewHandler.MarkdownPreviewHandler" />
+          <RegistryValue Type="string" Name="DisplayName" Value="Markdown Preview Handler" />
+          <RegistryValue Type="string" Name="AppID" Value="{CF142243-F059-45AF-8842-DBBE9783DB14}" />
+          <RegistryValue Type="string" Key="Implemented Categories\{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}" Value="" />
+          <RegistryValue Type="string" Key="InprocServer32" Value="mscoree.dll" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="Assembly" Value="MarkdownPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="Class" Value="MarkdownPreviewHandler.MarkdownPreviewHandler" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="RuntimeVersion" Value="v4.0.30319" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Both" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="CodeBase" Value="file:///[ModulesInstallFolder]MarkdownPreviewHandler.dll" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Assembly" Value="MarkdownPreviewHandler, Version=$(var.Version).0, Culture=neutral" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="Class" Value="MarkdownPreviewHandler.MarkdownPreviewHandler" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="RuntimeVersion" Value="v4.0.30319" />
+          <RegistryValue Type="string" Key="InprocServer32\$(var.Version).0" Name="CodeBase" Value="file:///[ModulesInstallFolder]MarkdownPreviewHandler.dll" />
+        </RegistryKey>
+        <!-- Registry Key for AppID registration -->
+        <RegistryKey Root="HKCU" Key="Software\Classes\AppID\{CF142243-F059-45AF-8842-DBBE9783DB14}">
+          <RegistryValue Type="expandable" Name="DllSurrogate" Value="%SystemRoot%\system32\prevhost.exe" />
+        </RegistryKey>
+        <!-- Add Svg preview handler to preview handlers list -->
+        <RegistryKey Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\PreviewHandlers">
+          <RegistryValue Type="string" Name="{ddee2b8a-6807-48a6-bb20-2338174ff779}" Value="Svg Preview Handler" />
+        </RegistryKey>
+        <!-- Add Markdown preview handler to preview handlers list -->
+        <RegistryKey Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\PreviewHandlers">
+          <RegistryValue Type="string" Name="{45769bcc-e8fd-42d0-947e-02beef77a1f5}" Value="Markdown Preview Handler" />
+        </RegistryKey>
+        <!-- Add file type association for Svg Preview Handler -->
+        <RegistryKey Root="HKCU" Key="Software\Classes\.svg\shellex">
+          <RegistryValue Type="string" Key="{8895b1c6-b41f-4c1c-a562-0d564250836f}" Value="{ddee2b8a-6807-48a6-bb20-2338174ff779}" />
+        </RegistryKey>
+        <!-- Add file type association for Markdown Preview Handler -->
+        <RegistryKey Root="HKCU" Key="Software\Classes\.md\shellex">
+          <RegistryValue Type="string" Key="{8895b1c6-b41f-4c1c-a562-0d564250836f}" Value="{45769bcc-e8fd-42d0-947e-02beef77a1f5}" />
+        </RegistryKey>
+        <!-- Update Key to use IE11 for prevhost.exe -->
+        <RegistryKey Root="HKCU" Key="Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION">
+          <RegistryValue Type="integer" Name="prevhost.exe" Value="11000" />
         </RegistryKey>
       </Component>
     </DirectoryRef>
@@ -306,7 +500,7 @@
                   Description="PowerToys - Windows system utilities to maximize productivity"
                   Target="[!PowerToys.exe]"
                   WorkingDirectory="INSTALLFOLDER"
-                  Icon="powertoys.ico"
+                  Icon="powertoys.exe"
                   Directory="DesktopFolder"/>
       </Component>
     </DirectoryRef>
@@ -323,10 +517,38 @@
       <ComponentRef Id="Module_FancyZones" />
       <ComponentRef Id="DesktopShortcut" />
       <ComponentRef Id="Module_PowerRename" />
+      <ComponentRef Id="Module_ImageResizer" />
+      <ComponentRef Id="Module_ImageResizer_Registry" />
+      <ComponentRef Id="Module_PowerPreview" />
+      <ComponentRef Id="Module_PowerPreview_PerUserRegistry" />
+      <ComponentRef Id="Module_WindowWalker" />
       <ComponentRef Id="settings_exe" />
       <ComponentRef Id="settings_html" />
       <ComponentRef Id="settings_dark_html" />
       <ComponentRef Id="settings_js_bundle" />
+    </ComponentGroup>
+  </Fragment>
+  <Fragment>
+    <ComponentGroup Id="ResourcesComponents">
+      <!-- Components for adding resource files -->
+      <?foreach Language in ar;bg;ca;cs;de;es;eu-ES;fr;he;hu;it;nb-NO;nl;pl;pt-BR;ru;sk;tr;zh-Hans?>
+        <!--NB: Ids can't contain hyphens-->
+        <?if $(var.Language) = eu-ES?>
+          <?define IdSafeLanguage = eu_ES?>
+        <?elseif $(var.Language) = nb-NO?>
+          <?define IdSafeLanguage = nb_NO?>
+        <?elseif $(var.Language) = pt-BR?>
+          <?define IdSafeLanguage = pt_BR?>
+        <?elseif $(var.Language) = zh-Hans?>
+          <?define IdSafeLanguage = zh_Hans?>
+        <?else?>
+          <?define IdSafeLanguage = $(var.Language)?>
+        <?endif?>
+        <Component Id="Resources_$(var.IdSafeLanguage)_Component" Directory="Resources$(var.IdSafeLanguage)Folder">
+          <File Id="Resources_ImageResizer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)\modules\$(var.Language)\ImageResizer.resources.dll" />
+        </Component>
+        <?undef IdSafeLanguage?>
+      <?endforeach?>
     </ComponentGroup>
   </Fragment>
 </Wix>

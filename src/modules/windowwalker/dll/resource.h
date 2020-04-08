@@ -1,0 +1,3 @@
+#define IDS_MODULE_NAME         100
+#define IDS_GENERAL_DESCRIPTION 101
+#define IDS_OVERVIEW_LINK       102

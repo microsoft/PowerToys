@@ -7,7 +7,7 @@ struct GeneralSettings
     bool isPackaged;
     bool isStartupEnabled;
     std::wstring startupDisabledReason;
-    std::unordered_map<std::wstring, bool> isModulesEnabledMap;
+    std::map<std::wstring, bool> isModulesEnabledMap;
     bool isElevated;
     bool isRunElevated;
     bool isAdmin;

@@ -7,10 +7,10 @@
 #include <windows.h>
 
 // C RunTime Header Files
-#include <stdlib.h>
+#include <cstdlib>
 #include <malloc.h>
 #include <memory.h>
-#include <wchar.h>
+#include <cwchar>
 #include <atlbase.h>
 #include <strsafe.h>
 #include <pathcch.h>
@@ -19,3 +19,5 @@
 #include <shlwapi.h>
 
 #include <ProjectTelemetry.h>
+
+#pragma comment(lib, "windowsapp")

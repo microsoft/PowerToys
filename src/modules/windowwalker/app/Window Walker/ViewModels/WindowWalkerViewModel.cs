@@ -17,8 +17,8 @@ namespace WindowWalker.ViewModels
         private readonly HotKeyHandler _hotKeyHandler;
         private readonly List<string> _hints = new List<string>()
         {
-            "search...",
-            "you can reinvoke this app using CTRL + WIN",
+            "search for running processes or windows...",
+            // "you can reinvoke this app using CTRL + WIN",
         };
 
         private string _searchText = string.Empty;
@@ -160,18 +160,6 @@ namespace WindowWalker.ViewModels
 
         public WindowWalkerViewModel(System.Windows.Window mainWindow)
         {
-            // The path to the key where Windows looks for startup applications
-            RegistryKey rkApp = Registry.CurrentUser.OpenSubKey(
-                                @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
-
-            // Path to launch shortcut
-            string startPath = Environment.GetFolderPath(Environment.SpecialFolder.Programs)
-                               + @"\WindowWalker\WindowWalker.appref-ms";
-
-            rkApp.SetValue("WindowWalker", startPath);
-
-            rkApp.Close();
-
             SearchController.Instance.OnSearchResultUpdate += SearchResultUpdated;
             OpenWindows.Instance.UpdateOpenWindowsList();
             Hwnd = new WindowInteropHelper(mainWindow).Handle;
@@ -180,7 +168,7 @@ namespace WindowWalker.ViewModels
             _hotKeyHandler = new HotKeyHandler(mainWindow);
             _hotKeyHandler.OnHotKeyPressed += HotKeyPressedHandler;
 
-            _hints.AddRange(Commands.GetTips());
+            // _hints.AddRange(Commands.GetTips());
             Hint = _hints[_hintCounter];
 
             WireCommands();
@@ -238,7 +226,8 @@ namespace WindowWalker.ViewModels
         {
             LivePreview.DeactivateLivePreview();
             WindowVisibility = false;
-            ApplicationUpdates.InstallUpdateSyncWithInfo();
+
+            // ApplicationUpdates.InstallUpdateSyncWithInfo();
         }
 
         private void WindowShow()
@@ -255,13 +244,7 @@ namespace WindowWalker.ViewModels
 
         public void SwitchToSelectedWindow()
         {
-            if (SearchText.StartsWith(":"))
-            {
-                LivePreview.DeactivateLivePreview();
-                WindowHide();
-                Commands.ProcessCommand(SearchText);
-            }
-            else if (SelectedWindowResult != null)
+            if (SelectedWindowResult != null)
             {
                 LivePreview.DeactivateLivePreview();
                 SelectedWindowResult.Result.SwitchToWindow();

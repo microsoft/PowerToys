@@ -16,6 +16,11 @@ namespace JSONHelpers
 {
     constexpr int MAX_ZONE_COUNT = 50;
 
+    #if defined(UNIT_TESTS)
+    bool isValidGuid(const std::wstring& str);
+    bool isValidDeviceId(const std::wstring& str);
+    #endif
+
     enum class ZoneSetLayoutType : int
     {
         Blank = -1,
@@ -202,7 +207,6 @@ namespace JSONHelpers
 #if defined(UNIT_TESTS)
         inline void clear_data()
         {
-            appliedZoneSetsMap.clear();
             appZoneHistoryMap.clear();
             deviceInfoMap.clear();
             customZoneSetsMap.clear();
@@ -249,10 +253,8 @@ namespace JSONHelpers
         void SaveFancyZonesData() const;
 
     private:
-        void TmpMigrateAppliedZoneSetsFromRegistry();
         void MigrateCustomZoneSetsFromRegistry();
 
-        std::unordered_map<std::wstring, ZoneSetData> appliedZoneSetsMap{};
         std::unordered_map<std::wstring, AppZoneHistoryData> appZoneHistoryMap{};
         std::unordered_map<std::wstring, DeviceInfoData> deviceInfoMap{};
         std::unordered_map<std::wstring, CustomZoneSetData> customZoneSetsMap{};

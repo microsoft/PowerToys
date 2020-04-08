@@ -12,7 +12,7 @@ using TZoneSetLayoutType = JSONHelpers::ZoneSetLayoutType;
 
 namespace FancyZonesUnitTests
 {
-    TEST_CLASS(ZoneSetUnitTests)
+    TEST_CLASS (ZoneSetUnitTests)
     {
         GUID m_id;
         const TZoneSetLayoutType m_layoutType = TZoneSetLayoutType::Custom;
@@ -21,481 +21,481 @@ namespace FancyZonesUnitTests
         winrt::com_ptr<IZoneSet> m_set;
 
         TEST_METHOD_INITIALIZE(Init)
-        {
-            auto hres = CoCreateGuid(&m_id);
-            Assert::AreEqual(S_OK, hres);
-
-            ZoneSetConfig m_config = ZoneSetConfig(m_id, m_layoutType, Mocks::Monitor(), m_resolutionKey);
-            m_set = MakeZoneSet(m_config);
-        }
-
-        void compareZones(const winrt::com_ptr<IZone>& expected, const winrt::com_ptr<IZone>& actual)
-        {
-            Assert::AreEqual(expected->Id(), actual->Id());
-            Assert::AreEqual(expected->GetZoneRect().left, actual->GetZoneRect().left);
-            Assert::AreEqual(expected->GetZoneRect().right, actual->GetZoneRect().right);
-            Assert::AreEqual(expected->GetZoneRect().top, actual->GetZoneRect().top);
-            Assert::AreEqual(expected->GetZoneRect().bottom, actual->GetZoneRect().bottom);
-        }
-
-    public:
-        TEST_METHOD(TestCreateZoneSet)
-        {
-            Assert::IsNotNull(&m_set);
-            CustomAssert::AreEqual(m_set->Id(), m_id);
-            CustomAssert::AreEqual(m_set->LayoutType(), m_layoutType);
-        }
-
-        TEST_METHOD(TestCreateZoneSetGuidEmpty)
-        {
-            GUID zoneSetId{};
-            ZoneSetConfig config(zoneSetId, m_layoutType, Mocks::Monitor(), m_resolutionKey);
-            winrt::com_ptr<IZoneSet> set = MakeZoneSet(config);
-
-            Assert::IsNotNull(&set);
-            CustomAssert::AreEqual(set->Id(), zoneSetId);
-            CustomAssert::AreEqual(set->LayoutType(), m_layoutType);
-        }
-
-        TEST_METHOD(TestCreateZoneSetMonitorEmpty)
-        {
-            ZoneSetConfig config(m_id, m_layoutType, nullptr, m_resolutionKey);
-            winrt::com_ptr<IZoneSet> set = MakeZoneSet(config);
-            Assert::IsNotNull(&set);
-            CustomAssert::AreEqual(set->Id(), m_id);
-            CustomAssert::AreEqual(set->LayoutType(), m_layoutType);
-        }
-
-        TEST_METHOD(TestCreateZoneSetKeyEmpty)
-        {
-            ZoneSetConfig config(m_id, m_layoutType, Mocks::Monitor(), nullptr);
-            winrt::com_ptr<IZoneSet> set = MakeZoneSet(config);
-            Assert::IsNotNull(&set);
-            CustomAssert::AreEqual(set->Id(), m_id);
-            CustomAssert::AreEqual(set->LayoutType(), m_layoutType);
-        }
-
-        TEST_METHOD(EmptyZones)
-        {
-            auto zones = m_set->GetZones();
-            Assert::AreEqual((size_t)0, zones.size());
-        }
-
-        TEST_METHOD(AddOne)
-        {
-            winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 });
-            m_set->AddZone(zone);
-            auto zones = m_set->GetZones();
-            Assert::AreEqual((size_t)1, zones.size());
-            compareZones(zone, zones[0]);
-            Assert::AreEqual((size_t)1, zones[0]->Id());
-        }
-
-        TEST_METHOD(AddManySame)
-        {
-            winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 });
-            for (size_t i = 0; i < 1024; i++)
             {
-                m_set->AddZone(zone);
-                auto zones = m_set->GetZones();
-                Assert::AreEqual(i + 1, zones.size());
-                compareZones(zone, zones[i]);
-                Assert::AreEqual(i + 1, zones[i]->Id());
-            }
-        }
+                auto hres = CoCreateGuid(&m_id);
+                Assert::AreEqual(S_OK, hres);
 
-        TEST_METHOD(AddManyEqual)
-        {
-            for (size_t i = 0; i < 1024; i++)
+                ZoneSetConfig m_config = ZoneSetConfig(m_id, m_layoutType, Mocks::Monitor(), m_resolutionKey);
+                m_set = MakeZoneSet(m_config);
+            }
+
+            void compareZones(const winrt::com_ptr<IZone>& expected, const winrt::com_ptr<IZone>& actual)
+            {
+                Assert::AreEqual(expected->Id(), actual->Id());
+                Assert::AreEqual(expected->GetZoneRect().left, actual->GetZoneRect().left);
+                Assert::AreEqual(expected->GetZoneRect().right, actual->GetZoneRect().right);
+                Assert::AreEqual(expected->GetZoneRect().top, actual->GetZoneRect().top);
+                Assert::AreEqual(expected->GetZoneRect().bottom, actual->GetZoneRect().bottom);
+            }
+
+        public:
+            TEST_METHOD (TestCreateZoneSet)
+            {
+                Assert::IsNotNull(&m_set);
+                CustomAssert::AreEqual(m_set->Id(), m_id);
+                CustomAssert::AreEqual(m_set->LayoutType(), m_layoutType);
+            }
+
+            TEST_METHOD (TestCreateZoneSetGuidEmpty)
+            {
+                GUID zoneSetId{};
+                ZoneSetConfig config(zoneSetId, m_layoutType, Mocks::Monitor(), m_resolutionKey);
+                winrt::com_ptr<IZoneSet> set = MakeZoneSet(config);
+
+                Assert::IsNotNull(&set);
+                CustomAssert::AreEqual(set->Id(), zoneSetId);
+                CustomAssert::AreEqual(set->LayoutType(), m_layoutType);
+            }
+
+            TEST_METHOD (TestCreateZoneSetMonitorEmpty)
+            {
+                ZoneSetConfig config(m_id, m_layoutType, nullptr, m_resolutionKey);
+                winrt::com_ptr<IZoneSet> set = MakeZoneSet(config);
+                Assert::IsNotNull(&set);
+                CustomAssert::AreEqual(set->Id(), m_id);
+                CustomAssert::AreEqual(set->LayoutType(), m_layoutType);
+            }
+
+            TEST_METHOD (TestCreateZoneSetKeyEmpty)
+            {
+                ZoneSetConfig config(m_id, m_layoutType, Mocks::Monitor(), nullptr);
+                winrt::com_ptr<IZoneSet> set = MakeZoneSet(config);
+                Assert::IsNotNull(&set);
+                CustomAssert::AreEqual(set->Id(), m_id);
+                CustomAssert::AreEqual(set->LayoutType(), m_layoutType);
+            }
+
+            TEST_METHOD (EmptyZones)
+            {
+                auto zones = m_set->GetZones();
+                Assert::AreEqual((size_t)0, zones.size());
+            }
+
+            TEST_METHOD (AddOne)
             {
                 winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 });
                 m_set->AddZone(zone);
                 auto zones = m_set->GetZones();
-                Assert::AreEqual(i + 1, zones.size());
-                compareZones(zone, zones[i]);
-                Assert::AreEqual(i + 1, zones[i]->Id());
+                Assert::AreEqual((size_t)1, zones.size());
+                compareZones(zone, zones[0]);
+                Assert::AreEqual((size_t)1, zones[0]->Id());
             }
-        }
 
-        TEST_METHOD(AddManyDifferent)
-        {
-            for (size_t i = 0; i < 1024; i++)
+            TEST_METHOD (AddManySame)
             {
-                winrt::com_ptr<IZone> zone = MakeZone({ rand() % 10, rand() % 10, rand() % 100, rand() % 100 });
-                m_set->AddZone(zone);
-                auto zones = m_set->GetZones();
-                Assert::AreEqual(i + 1, zones.size());
-                compareZones(zone, zones[i]);
-                Assert::AreEqual(i + 1, zones[i]->Id());
-            }
-        }
-
-        TEST_METHOD(ZoneFromPointEmpty)
-        {
-            auto actual = m_set->ZoneFromPoint(POINT{ 0, 0 });
-            Assert::IsTrue(nullptr == actual);
-        }
-
-        TEST_METHOD(ZoneFromPointInner)
-        {
-            const int left = 0, top = 0, right = 100, bottom = 100;
-            winrt::com_ptr<IZone> expected = MakeZone({ left, top, right, bottom });
-            m_set->AddZone(expected);
-
-            for (int i = left + 1; i < right; i++)
-            {
-                for (int j = top + 1; j < bottom; j++)
+                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 });
+                for (size_t i = 0; i < 1024; i++)
                 {
-                    auto actual = m_set->ZoneFromPoint(POINT{ i, j });
+                    m_set->AddZone(zone);
+                    auto zones = m_set->GetZones();
+                    Assert::AreEqual(i + 1, zones.size());
+                    compareZones(zone, zones[i]);
+                    Assert::AreEqual(i + 1, zones[i]->Id());
+                }
+            }
+
+            TEST_METHOD (AddManyEqual)
+            {
+                for (size_t i = 0; i < 1024; i++)
+                {
+                    winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 });
+                    m_set->AddZone(zone);
+                    auto zones = m_set->GetZones();
+                    Assert::AreEqual(i + 1, zones.size());
+                    compareZones(zone, zones[i]);
+                    Assert::AreEqual(i + 1, zones[i]->Id());
+                }
+            }
+
+            TEST_METHOD (AddManyDifferent)
+            {
+                for (size_t i = 0; i < 1024; i++)
+                {
+                    winrt::com_ptr<IZone> zone = MakeZone({ rand() % 10, rand() % 10, rand() % 100, rand() % 100 });
+                    m_set->AddZone(zone);
+                    auto zones = m_set->GetZones();
+                    Assert::AreEqual(i + 1, zones.size());
+                    compareZones(zone, zones[i]);
+                    Assert::AreEqual(i + 1, zones[i]->Id());
+                }
+            }
+
+            TEST_METHOD (ZoneFromPointEmpty)
+            {
+                auto actual = m_set->ZoneFromPoint(POINT{ 0, 0 });
+                Assert::IsTrue(nullptr == actual);
+            }
+
+            TEST_METHOD (ZoneFromPointInner)
+            {
+                const int left = 0, top = 0, right = 100, bottom = 100;
+                winrt::com_ptr<IZone> expected = MakeZone({ left, top, right, bottom });
+                m_set->AddZone(expected);
+
+                for (int i = left + 1; i < right; i++)
+                {
+                    for (int j = top + 1; j < bottom; j++)
+                    {
+                        auto actual = m_set->ZoneFromPoint(POINT{ i, j });
+                        Assert::IsTrue(actual != nullptr);
+                        compareZones(expected, actual);
+                    }
+                }
+            }
+
+            TEST_METHOD (ZoneFromPointBorder)
+            {
+                const int left = 0, top = 0, right = 100, bottom = 100;
+                winrt::com_ptr<IZone> expected = MakeZone({ left, top, right, bottom });
+                m_set->AddZone(expected);
+
+                for (int i = left; i < right; i++)
+                {
+                    auto actual = m_set->ZoneFromPoint(POINT{ i, top });
                     Assert::IsTrue(actual != nullptr);
                     compareZones(expected, actual);
                 }
+
+                for (int i = top; i < bottom; i++)
+                {
+                    auto actual = m_set->ZoneFromPoint(POINT{ left, i });
+                    Assert::IsTrue(actual != nullptr);
+                    compareZones(expected, actual);
+                }
+
+                //bottom and right borders considered to be outside
+                for (int i = left; i < right; i++)
+                {
+                    auto actual = m_set->ZoneFromPoint(POINT{ i, bottom });
+                    Assert::IsTrue(nullptr == actual);
+                }
+
+                for (int i = top; i < bottom; i++)
+                {
+                    auto actual = m_set->ZoneFromPoint(POINT{ right, i });
+                    Assert::IsTrue(nullptr == actual);
+                }
             }
-        }
 
-        TEST_METHOD(ZoneFromPointBorder)
-        {
-            const int left = 0, top = 0, right = 100, bottom = 100;
-            winrt::com_ptr<IZone> expected = MakeZone({ left, top, right, bottom });
-            m_set->AddZone(expected);
-
-            for (int i = left; i < right; i++)
+            TEST_METHOD (ZoneFromPointOuter)
             {
-                auto actual = m_set->ZoneFromPoint(POINT{ i, top });
+                const int left = 0, top = 0, right = 100, bottom = 100;
+                winrt::com_ptr<IZone> zone = MakeZone({ left, top, right, bottom });
+                m_set->AddZone(zone);
+
+                auto actual = m_set->ZoneFromPoint(POINT{ 101, 101 });
+                Assert::IsTrue(actual == nullptr);
+            }
+
+            TEST_METHOD (ZoneFromPointOverlapping)
+            {
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                m_set->AddZone(zone1);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 });
+                m_set->AddZone(zone2);
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 10, 10, 150, 150 });
+                m_set->AddZone(zone3);
+                winrt::com_ptr<IZone> zone4 = MakeZone({ 10, 10, 50, 50 });
+                m_set->AddZone(zone4);
+
+                auto actual = m_set->ZoneFromPoint(POINT{ 50, 50 });
                 Assert::IsTrue(actual != nullptr);
-                compareZones(expected, actual);
+                compareZones(zone2, actual);
             }
 
-            for (int i = top; i < bottom; i++)
+            TEST_METHOD (ZoneFromPointWithNotNormalizedRect)
             {
-                auto actual = m_set->ZoneFromPoint(POINT{ left, i });
-                Assert::IsTrue(actual != nullptr);
-                compareZones(expected, actual);
+                winrt::com_ptr<IZone> zone = MakeZone({ 100, 100, 0, 0 });
+                m_set->AddZone(zone);
+
+                auto actual = m_set->ZoneFromPoint(POINT{ 50, 50 });
+                Assert::IsTrue(actual == nullptr);
             }
 
-            //bottom and right borders considered to be outside
-            for (int i = left; i < right; i++)
+            TEST_METHOD (ZoneFromPointWithZeroRect)
             {
-                auto actual = m_set->ZoneFromPoint(POINT{ i, bottom });
-                Assert::IsTrue(nullptr == actual);
+                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 0, 0 });
+                m_set->AddZone(zone);
+
+                auto actual = m_set->ZoneFromPoint(POINT{ 0, 0 });
+                Assert::IsTrue(actual == nullptr);
             }
 
-            for (int i = top; i < bottom; i++)
+            TEST_METHOD (ZoneIndexFromWindow)
             {
-                auto actual = m_set->ZoneFromPoint(POINT{ right, i });
-                Assert::IsTrue(nullptr == actual);
+                HWND window = Mocks::Window();
+                HWND zoneWindow = Mocks::Window();
+
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 20, 20, 200, 200 });
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone4 = MakeZone({ 10, 10, 100, 100 });
+                winrt::com_ptr<IZone> zone5 = MakeZone({ 20, 20, 100, 100 });
+
+                zone3->AddWindowToZone(window, zoneWindow, true);
+
+                m_set->AddZone(zone1);
+                m_set->AddZone(zone2);
+                m_set->AddZone(zone3);
+                m_set->AddZone(zone4);
+                m_set->AddZone(zone5);
+
+                const int expected = 2;
+                auto actual = m_set->GetZoneIndexFromWindow(window);
+                Assert::AreEqual(expected, actual);
             }
-        }
 
-        TEST_METHOD(ZoneFromPointOuter)
-        {
-            const int left = 0, top = 0, right = 100, bottom = 100;
-            winrt::com_ptr<IZone> zone = MakeZone({ left, top, right, bottom });
-            m_set->AddZone(zone);
+            TEST_METHOD (ZoneIndexFromWindowWithEqualWindows)
+            {
+                HWND window = Mocks::Window();
+                HWND zoneWindow = Mocks::Window();
 
-            auto actual = m_set->ZoneFromPoint(POINT{ 101, 101 });
-            Assert::IsTrue(actual == nullptr);
-        }
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 20, 20, 200, 200 });
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone4 = MakeZone({ 10, 10, 100, 100 });
+                winrt::com_ptr<IZone> zone5 = MakeZone({ 20, 20, 100, 100 });
 
-        TEST_METHOD(ZoneFromPointOverlapping)
-        {
-            winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
-            m_set->AddZone(zone1);
-            winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 });
-            m_set->AddZone(zone2);
-            winrt::com_ptr<IZone> zone3 = MakeZone({ 10, 10, 150, 150 });
-            m_set->AddZone(zone3);
-            winrt::com_ptr<IZone> zone4 = MakeZone({ 10, 10, 50, 50 });
-            m_set->AddZone(zone4);
+                zone3->AddWindowToZone(window, zoneWindow, true);
+                zone4->AddWindowToZone(window, zoneWindow, true);
 
-            auto actual = m_set->ZoneFromPoint(POINT{ 50, 50 });
-            Assert::IsTrue(actual != nullptr);
-            compareZones(zone2, actual);
-        }
+                m_set->AddZone(zone1);
+                m_set->AddZone(zone2);
+                m_set->AddZone(zone3);
+                m_set->AddZone(zone4);
+                m_set->AddZone(zone5);
 
-        TEST_METHOD(ZoneFromPointWithNotNormalizedRect)
-        {
-            winrt::com_ptr<IZone> zone = MakeZone({ 100, 100, 0, 0 });
-            m_set->AddZone(zone);
+                const int expected = 2;
+                auto actual = m_set->GetZoneIndexFromWindow(window);
+                Assert::AreEqual(expected, actual);
+            }
 
-            auto actual = m_set->ZoneFromPoint(POINT{ 50, 50 });
-            Assert::IsTrue(actual == nullptr);
-        }
+            TEST_METHOD (ZoneIndexFromWindowUnknown)
+            {
+                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 });
+                HWND window = Mocks::Window();
+                HWND zoneWindow = Mocks::Window();
+                zone->AddWindowToZone(window, zoneWindow, true);
+                m_set->AddZone(zone);
 
-        TEST_METHOD(ZoneFromPointWithZeroRect)
-        {
-            winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 0, 0 });
-            m_set->AddZone(zone);
+                const int expected = -1;
+                auto actual = m_set->GetZoneIndexFromWindow(Mocks::Window());
+                Assert::AreEqual(expected, actual);
+            }
 
-            auto actual = m_set->ZoneFromPoint(POINT{ 0, 0 });
-            Assert::IsTrue(actual == nullptr);
-        }
+            TEST_METHOD (ZoneIndexFromWindowNull)
+            {
+                winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 });
+                HWND window = Mocks::Window();
+                HWND zoneWindow = Mocks::Window();
+                zone->AddWindowToZone(window, zoneWindow, true);
+                m_set->AddZone(zone);
 
-        TEST_METHOD(ZoneIndexFromWindow)
-        {
-            HWND window = Mocks::Window();
-            HWND zoneWindow = Mocks::Window();
+                const int expected = -1;
+                auto actual = m_set->GetZoneIndexFromWindow(nullptr);
+                Assert::AreEqual(expected, actual);
+            }
 
-            winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
-            winrt::com_ptr<IZone> zone2 = MakeZone({ 20, 20, 200, 200 });
-            winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 0, 100, 100 });
-            winrt::com_ptr<IZone> zone4 = MakeZone({ 10, 10, 100, 100 });
-            winrt::com_ptr<IZone> zone5 = MakeZone({ 20, 20, 100, 100 });
+            TEST_METHOD (MoveWindowIntoZoneByIndex)
+            {
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 0, 100, 100 });
+                m_set->AddZone(zone1);
+                m_set->AddZone(zone2);
+                m_set->AddZone(zone3);
 
-            zone3->AddWindowToZone(window, zoneWindow, true);
+                HWND window = Mocks::Window();
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1);
+                Assert::IsFalse(zone1->ContainsWindow(window));
+                Assert::IsTrue(zone2->ContainsWindow(window));
+                Assert::IsFalse(zone3->ContainsWindow(window));
+            }
 
-            m_set->AddZone(zone1);
-            m_set->AddZone(zone2);
-            m_set->AddZone(zone3);
-            m_set->AddZone(zone4);
-            m_set->AddZone(zone5);
+            TEST_METHOD (MoveWindowIntoZoneByIndexWithNoZones)
+            {
+                HWND window = Mocks::Window();
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
+            }
 
-            const int expected = 2;
-            auto actual = m_set->GetZoneIndexFromWindow(window);
-            Assert::AreEqual(expected, actual);
-        }
+            TEST_METHOD (MoveWindowIntoZoneByIndexWithInvalidIndex)
+            {
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 0, 100, 100 });
+                m_set->AddZone(zone1);
+                m_set->AddZone(zone2);
+                m_set->AddZone(zone3);
 
-        TEST_METHOD(ZoneIndexFromWindowWithEqualWindows)
-        {
-            HWND window = Mocks::Window();
-            HWND zoneWindow = Mocks::Window();
+                HWND window = Mocks::Window();
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 100);
+                Assert::IsFalse(zone1->ContainsWindow(window));
+                Assert::IsFalse(zone2->ContainsWindow(window));
+                Assert::IsFalse(zone3->ContainsWindow(window));
+            }
 
-            winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
-            winrt::com_ptr<IZone> zone2 = MakeZone({ 20, 20, 200, 200 });
-            winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 0, 100, 100 });
-            winrt::com_ptr<IZone> zone4 = MakeZone({ 10, 10, 100, 100 });
-            winrt::com_ptr<IZone> zone5 = MakeZone({ 20, 20, 100, 100 });
+            TEST_METHOD (MoveWindowIntoZoneByIndexSeveralTimesSameWindow)
+            {
+                // Add a couple of zones.
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 1, 1, 101, 101 });
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 2, 2, 102, 102 });
+                m_set->AddZone(zone1);
+                m_set->AddZone(zone2);
+                m_set->AddZone(zone3);
 
-            zone3->AddWindowToZone(window, zoneWindow, true);
-            zone4->AddWindowToZone(window, zoneWindow, true);
+                HWND window = Mocks::Window();
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
+                Assert::IsTrue(zone1->ContainsWindow(window));
+                Assert::IsFalse(zone2->ContainsWindow(window));
+                Assert::IsFalse(zone3->ContainsWindow(window));
 
-            m_set->AddZone(zone1);
-            m_set->AddZone(zone2);
-            m_set->AddZone(zone3);
-            m_set->AddZone(zone4);
-            m_set->AddZone(zone5);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1);
+                Assert::IsFalse(zone1->ContainsWindow(window));
+                Assert::IsTrue(zone2->ContainsWindow(window));
+                Assert::IsFalse(zone3->ContainsWindow(window));
 
-            const int expected = 2;
-            auto actual = m_set->GetZoneIndexFromWindow(window);
-            Assert::AreEqual(expected, actual);
-        }
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 2);
+                Assert::IsFalse(zone1->ContainsWindow(window));
+                Assert::IsFalse(zone2->ContainsWindow(window));
+                Assert::IsTrue(zone3->ContainsWindow(window));
+            }
 
-        TEST_METHOD(ZoneIndexFromWindowUnknown)
-        {
-            winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 });
-            HWND window = Mocks::Window();
-            HWND zoneWindow = Mocks::Window();
-            zone->AddWindowToZone(window, zoneWindow, true);
-            m_set->AddZone(zone);
+            TEST_METHOD (MoveWindowIntoZoneByIndexSeveralTimesSameIndex)
+            {
+                // Add a couple of zones.
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 1, 1, 101, 101 });
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 2, 2, 102, 102 });
+                m_set->AddZone(zone1);
+                m_set->AddZone(zone2);
+                m_set->AddZone(zone3);
 
-            const int expected = -1;
-            auto actual = m_set->GetZoneIndexFromWindow(Mocks::Window());
-            Assert::AreEqual(expected, actual);
-        }
+                HWND window = Mocks::Window();
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
+                Assert::IsTrue(zone1->ContainsWindow(window));
+                Assert::IsFalse(zone2->ContainsWindow(window));
+                Assert::IsFalse(zone3->ContainsWindow(window));
+            }
 
-        TEST_METHOD(ZoneIndexFromWindowNull)
-        {
-            winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 100, 100 });
-            HWND window = Mocks::Window();
-            HWND zoneWindow = Mocks::Window();
-            zone->AddWindowToZone(window, zoneWindow, true);
-            m_set->AddZone(zone);
+            TEST_METHOD (MoveWindowIntoZoneByPointEmpty)
+            {
+                m_set->MoveWindowIntoZoneByPoint(Mocks::Window(), Mocks::Window(), POINT{ 0, 0 });
+            }
 
-            const int expected = -1;
-            auto actual = m_set->GetZoneIndexFromWindow(nullptr);
-            Assert::AreEqual(expected, actual);
-        }
+            TEST_METHOD (MoveWindowIntoZoneByPointOuterPoint)
+            {
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                m_set->AddZone(zone1);
 
-        TEST_METHOD(MoveWindowIntoZoneByIndex)
-        {
-            winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
-            winrt::com_ptr<IZone> zone2 = MakeZone({ 0, 0, 100, 100 });
-            winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 0, 100, 100 });
-            m_set->AddZone(zone1);
-            m_set->AddZone(zone2);
-            m_set->AddZone(zone3);
+                auto window = Mocks::Window();
+                m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 101, 101 });
 
-            HWND window = Mocks::Window();
-            m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1);
-            Assert::IsFalse(zone1->ContainsWindow(window));
-            Assert::IsTrue(zone2->ContainsWindow(window));
-            Assert::IsFalse(zone3->ContainsWindow(window));
-        }
+                Assert::IsFalse(zone1->ContainsWindow(window));
+            }
 
-        TEST_METHOD(MoveWindowIntoZoneByIndexWithNoZones)
-        {
-            HWND window = Mocks::Window();
-            m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
-        }
+            TEST_METHOD (MoveWindowIntoZoneByPointInnerPoint)
+            {
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                m_set->AddZone(zone1);
 
-        TEST_METHOD(MoveWindowIntoZoneByIndexWithInvalidIndex)
-        {
-            winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
-            winrt::com_ptr<IZone> zone2 = MakeZone({ 0, 0, 100, 100 });
-            winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 0, 100, 100 });
-            m_set->AddZone(zone1);
-            m_set->AddZone(zone2);
-            m_set->AddZone(zone3);
+                auto window = Mocks::Window();
+                m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
 
-            HWND window = Mocks::Window();
-            m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 100);
-            Assert::IsTrue(zone1->ContainsWindow(window));
-            Assert::IsFalse(zone2->ContainsWindow(window));
-            Assert::IsFalse(zone3->ContainsWindow(window));
-        }
+                Assert::IsTrue(zone1->ContainsWindow(window));
+            }
 
-        TEST_METHOD(MoveWindowIntoZoneByIndexSeveralTimesSameWindow)
-        {
-            // Add a couple of zones.
-            winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
-            winrt::com_ptr<IZone> zone2 = MakeZone({ 1, 1, 101, 101 });
-            winrt::com_ptr<IZone> zone3 = MakeZone({ 2, 2, 102, 102 });
-            m_set->AddZone(zone1);
-            m_set->AddZone(zone2);
-            m_set->AddZone(zone3);
+            TEST_METHOD (MoveWindowIntoZoneByPointInnerPointOverlappingZones)
+            {
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 });
+                m_set->AddZone(zone1);
+                m_set->AddZone(zone2);
 
-            HWND window = Mocks::Window();
-            m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
-            Assert::IsTrue(zone1->ContainsWindow(window));
-            Assert::IsFalse(zone2->ContainsWindow(window));
-            Assert::IsFalse(zone3->ContainsWindow(window));
+                auto window = Mocks::Window();
+                m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
 
-            m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1);
-            Assert::IsFalse(zone1->ContainsWindow(window));
-            Assert::IsTrue(zone2->ContainsWindow(window));
-            Assert::IsFalse(zone3->ContainsWindow(window));
+                Assert::IsFalse(zone1->ContainsWindow(window));
+                Assert::IsTrue(zone2->ContainsWindow(window));
+            }
 
-            m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 2);
-            Assert::IsFalse(zone1->ContainsWindow(window));
-            Assert::IsFalse(zone2->ContainsWindow(window));
-            Assert::IsTrue(zone3->ContainsWindow(window));
-        }
+            TEST_METHOD (MoveWindowIntoZoneByPointDropAddWindow)
+            {
+                const auto window = Mocks::Window();
+                const auto zoneWindow = Mocks::Window();
 
-        TEST_METHOD(MoveWindowIntoZoneByIndexSeveralTimesSameIndex)
-        {
-            // Add a couple of zones.
-            winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
-            winrt::com_ptr<IZone> zone2 = MakeZone({ 1, 1, 101, 101 });
-            winrt::com_ptr<IZone> zone3 = MakeZone({ 2, 2, 102, 102 });
-            m_set->AddZone(zone1);
-            m_set->AddZone(zone2);
-            m_set->AddZone(zone3);
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 });
 
-            HWND window = Mocks::Window();
-            m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
-            m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
-            m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
-            Assert::IsTrue(zone1->ContainsWindow(window));
-            Assert::IsFalse(zone2->ContainsWindow(window));
-            Assert::IsFalse(zone3->ContainsWindow(window));
-        }
+                zone1->AddWindowToZone(window, zoneWindow, false);
 
-        TEST_METHOD(MoveWindowIntoZoneByPointEmpty)
-        {
-            m_set->MoveWindowIntoZoneByPoint(Mocks::Window(), Mocks::Window(), POINT{ 0, 0 });
-        }
+                m_set->AddZone(zone1);
+                m_set->AddZone(zone2);
 
-        TEST_METHOD(MoveWindowIntoZoneByPointOuterPoint)
-        {
-            winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
-            m_set->AddZone(zone1);
+                m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
 
-            auto window = Mocks::Window();
-            m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 101, 101 });
+                Assert::IsFalse(zone1->ContainsWindow(window));
+                Assert::IsTrue(zone2->ContainsWindow(window));
+            }
 
-            Assert::IsFalse(zone1->ContainsWindow(window));
-        }
+            TEST_METHOD (MoveWindowIntoZoneByPointDropAddWindowToSameZone)
+            {
+                const auto window = Mocks::Window();
+                const auto zoneWindow = Mocks::Window();
 
-        TEST_METHOD(MoveWindowIntoZoneByPointInnerPoint)
-        {
-            winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
-            m_set->AddZone(zone1);
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 });
 
-            auto window = Mocks::Window();
-            m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
+                zone2->AddWindowToZone(window, zoneWindow, false);
 
-            Assert::IsTrue(zone1->ContainsWindow(window));
-        }
+                m_set->AddZone(zone1);
+                m_set->AddZone(zone2);
 
-        TEST_METHOD(MoveWindowIntoZoneByPointInnerPointOverlappingZones)
-        {
-            winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
-            winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 });
-            m_set->AddZone(zone1);
-            m_set->AddZone(zone2);
+                m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
 
-            auto window = Mocks::Window();
-            m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
+                Assert::IsFalse(zone1->ContainsWindow(window));
+                Assert::IsTrue(zone2->ContainsWindow(window));
+            }
 
-            Assert::IsFalse(zone1->ContainsWindow(window));
-            Assert::IsTrue(zone2->ContainsWindow(window));
-        }
+            TEST_METHOD (MoveWindowIntoZoneByPointSeveralZonesWithSameWindow)
+            {
+                const auto window = Mocks::Window();
+                const auto zoneWindow = Mocks::Window();
 
-        TEST_METHOD(MoveWindowIntoZoneByPointDropAddWindow)
-        {
-            const auto window = Mocks::Window();
-            const auto zoneWindow = Mocks::Window();
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 });
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 20, 20, 80, 80 });
 
-            winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
-            winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 });
+                zone1->AddWindowToZone(window, zoneWindow, false);
+                zone2->AddWindowToZone(window, zoneWindow, false);
+                zone3->AddWindowToZone(window, zoneWindow, false);
 
-            zone1->AddWindowToZone(window, zoneWindow, false);
+                m_set->AddZone(zone1);
+                m_set->AddZone(zone2);
+                m_set->AddZone(zone3);
 
-            m_set->AddZone(zone1);
-            m_set->AddZone(zone2);
+                m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
 
-            m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
-
-            Assert::IsFalse(zone1->ContainsWindow(window));
-            Assert::IsTrue(zone2->ContainsWindow(window));
-        }
-
-        TEST_METHOD(MoveWindowIntoZoneByPointDropAddWindowToSameZone)
-        {
-            const auto window = Mocks::Window();
-            const auto zoneWindow = Mocks::Window();
-
-            winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
-            winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 });
-
-            zone2->AddWindowToZone(window, zoneWindow, false);
-
-            m_set->AddZone(zone1);
-            m_set->AddZone(zone2);
-
-            m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
-
-            Assert::IsFalse(zone1->ContainsWindow(window));
-            Assert::IsTrue(zone2->ContainsWindow(window));
-        }
-
-        TEST_METHOD(MoveWindowIntoZoneByPointSeveralZonesWithSameWindow)
-        {
-            const auto window = Mocks::Window();
-            const auto zoneWindow = Mocks::Window();
-
-            winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
-            winrt::com_ptr<IZone> zone2 = MakeZone({ 10, 10, 90, 90 });
-            winrt::com_ptr<IZone> zone3 = MakeZone({ 20, 20, 80, 80 });
-
-            zone1->AddWindowToZone(window, zoneWindow, false);
-            zone2->AddWindowToZone(window, zoneWindow, false);
-            zone3->AddWindowToZone(window, zoneWindow, false);
-
-            m_set->AddZone(zone1);
-            m_set->AddZone(zone2);
-            m_set->AddZone(zone3);
-
-            m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 50, 50 });
-
-            Assert::IsFalse(zone1->ContainsWindow(window));
-            Assert::IsFalse(zone2->ContainsWindow(window));
-            Assert::IsTrue(zone3->ContainsWindow(window));
-        }
+                Assert::IsFalse(zone1->ContainsWindow(window));
+                Assert::IsFalse(zone2->ContainsWindow(window));
+                Assert::IsTrue(zone3->ContainsWindow(window));
+            }
     };
 
     // MoveWindowIntoZoneByDirection is complicated enough to warrant it's own test class
-    TEST_CLASS(ZoneSetsMoveWindowIntoZoneByDirectionUnitTests)
+    TEST_CLASS (ZoneSetsMoveWindowIntoZoneByDirectionUnitTests)
     {
         winrt::com_ptr<IZoneSet> m_set;
         winrt::com_ptr<IZone> m_zone1;
@@ -516,66 +516,66 @@ namespace FancyZonesUnitTests
             m_set->AddZone(m_zone3);
         }
 
-        TEST_METHOD(EmptyZonesLeft)
+        TEST_METHOD (EmptyZonesLeft)
         {
             ZoneSetConfig config({}, TZoneSetLayoutType::Custom, Mocks::Monitor(), L"WorkAreaIn");
             auto set = MakeZoneSet(config);
 
-            set->MoveWindowIntoZoneByDirection(Mocks::Window(), Mocks::Window(), VK_LEFT);
+            set->MoveWindowIntoZoneByDirection(Mocks::Window(), Mocks::Window(), VK_LEFT, true);
         }
 
-        TEST_METHOD(EmptyZonesRight)
+        TEST_METHOD (EmptyZonesRight)
         {
             ZoneSetConfig config({}, TZoneSetLayoutType::Custom, Mocks::Monitor(), L"WorkAreaIn");
             auto set = MakeZoneSet(config);
 
-            set->MoveWindowIntoZoneByDirection(Mocks::Window(), Mocks::Window(), VK_RIGHT);
+            set->MoveWindowIntoZoneByDirection(Mocks::Window(), Mocks::Window(), VK_RIGHT, true);
         }
 
-        TEST_METHOD(MoveRightNoZones)
+        TEST_METHOD (MoveRightNoZones)
         {
             HWND window = Mocks::Window();
-            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_RIGHT);
+            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_RIGHT, true);
             Assert::IsTrue(m_zone1->ContainsWindow(window));
             Assert::IsFalse(m_zone2->ContainsWindow(window));
             Assert::IsFalse(m_zone3->ContainsWindow(window));
         }
 
-        TEST_METHOD(MoveLeftNoZones)
+        TEST_METHOD (MoveLeftNoZones)
         {
             HWND window = Mocks::Window();
-            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_LEFT);
+            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_LEFT, true);
             Assert::IsFalse(m_zone1->ContainsWindow(window));
             Assert::IsFalse(m_zone2->ContainsWindow(window));
             Assert::IsTrue(m_zone3->ContainsWindow(window));
         }
 
-        TEST_METHOD(MoveRightTwice)
+        TEST_METHOD (MoveRightTwice)
         {
             HWND window = Mocks::Window();
-            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_RIGHT);
-            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_RIGHT);
+            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_RIGHT, true);
+            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_RIGHT, true);
             Assert::IsFalse(m_zone1->ContainsWindow(window));
             Assert::IsTrue(m_zone2->ContainsWindow(window));
             Assert::IsFalse(m_zone3->ContainsWindow(window));
         }
 
-        TEST_METHOD(MoveLeftTwice)
+        TEST_METHOD (MoveLeftTwice)
         {
             HWND window = Mocks::Window();
-            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_LEFT);
-            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_LEFT);
+            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_LEFT, true);
+            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_LEFT, true);
             Assert::IsFalse(m_zone1->ContainsWindow(window));
             Assert::IsTrue(m_zone2->ContainsWindow(window));
             Assert::IsFalse(m_zone3->ContainsWindow(window));
         }
 
-        TEST_METHOD(MoveRightMoreThanZonesCount)
+        TEST_METHOD (MoveRightMoreThanZonesCount)
         {
             HWND window = Mocks::Window();
             for (int i = 0; i <= m_set->GetZones().size(); i++)
             {
-                m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_RIGHT);
+                m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_RIGHT, true);
             }
 
             Assert::IsTrue(m_zone1->ContainsWindow(window));
@@ -583,12 +583,12 @@ namespace FancyZonesUnitTests
             Assert::IsFalse(m_zone3->ContainsWindow(window));
         }
 
-        TEST_METHOD(MoveLeftMoreThanZonesCount)
+        TEST_METHOD (MoveLeftMoreThanZonesCount)
         {
             HWND window = Mocks::Window();
             for (int i = 0; i <= m_set->GetZones().size(); i++)
             {
-                m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_LEFT);
+                m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_LEFT, true);
             }
 
             Assert::IsFalse(m_zone1->ContainsWindow(window));
@@ -596,22 +596,22 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(m_zone3->ContainsWindow(window));
         }
 
-        TEST_METHOD(MoveWindowIntoZoneByDirectionRight)
+        TEST_METHOD (MoveWindowIntoZoneByDirectionRight)
         {
             HWND window = Mocks::Window();
             m_zone1->AddWindowToZone(window, Mocks::Window(), false /*stampZone*/);
-            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_RIGHT);
+            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_RIGHT, true);
             Assert::IsFalse(m_zone1->ContainsWindow(window));
             Assert::IsTrue(m_zone2->ContainsWindow(window));
             Assert::IsFalse(m_zone3->ContainsWindow(window));
 
-            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_RIGHT);
+            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_RIGHT, true);
             Assert::IsFalse(m_zone1->ContainsWindow(window));
             Assert::IsFalse(m_zone2->ContainsWindow(window));
             Assert::IsTrue(m_zone3->ContainsWindow(window));
         }
 
-        TEST_METHOD(MoveRightWithSameWindowAdded)
+        TEST_METHOD (MoveRightWithSameWindowAdded)
         {
             HWND window = Mocks::Window();
             m_zone1->AddWindowToZone(window, Mocks::Window(), false /*stampZone*/);
@@ -621,18 +621,18 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(m_zone2->ContainsWindow(window));
             Assert::IsFalse(m_zone3->ContainsWindow(window));
 
-            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_RIGHT);
+            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_RIGHT, true);
             Assert::IsFalse(m_zone1->ContainsWindow(window));
             Assert::IsTrue(m_zone2->ContainsWindow(window));
             Assert::IsFalse(m_zone3->ContainsWindow(window));
 
-            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_RIGHT);
+            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_RIGHT, true);
             Assert::IsFalse(m_zone1->ContainsWindow(window));
             Assert::IsFalse(m_zone2->ContainsWindow(window));
             Assert::IsTrue(m_zone3->ContainsWindow(window));
         }
 
-        TEST_METHOD(MoveRightWithDifferentWindowsAdded)
+        TEST_METHOD (MoveRightWithDifferentWindowsAdded)
         {
             HWND window1 = Mocks::Window();
             HWND window2 = Mocks::Window();
@@ -646,7 +646,7 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(m_zone2->ContainsWindow(window2));
             Assert::IsFalse(m_zone3->ContainsWindow(window2));
 
-            m_set->MoveWindowIntoZoneByDirection(window1, Mocks::Window(), VK_RIGHT);
+            m_set->MoveWindowIntoZoneByDirection(window1, Mocks::Window(), VK_RIGHT, true);
             Assert::IsFalse(m_zone1->ContainsWindow(window1));
             Assert::IsTrue(m_zone2->ContainsWindow(window1));
             Assert::IsFalse(m_zone3->ContainsWindow(window1));
@@ -654,7 +654,7 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(m_zone2->ContainsWindow(window2));
             Assert::IsFalse(m_zone3->ContainsWindow(window2));
 
-            m_set->MoveWindowIntoZoneByDirection(window1, Mocks::Window(), VK_RIGHT);
+            m_set->MoveWindowIntoZoneByDirection(window1, Mocks::Window(), VK_RIGHT, true);
             Assert::IsFalse(m_zone1->ContainsWindow(window1));
             Assert::IsFalse(m_zone2->ContainsWindow(window1));
             Assert::IsTrue(m_zone3->ContainsWindow(window1));
@@ -663,22 +663,22 @@ namespace FancyZonesUnitTests
             Assert::IsFalse(m_zone3->ContainsWindow(window2));
         }
 
-        TEST_METHOD(MoveWindowIntoZoneByDirectionLeft)
+        TEST_METHOD (MoveWindowIntoZoneByDirectionLeft)
         {
             HWND window = Mocks::Window();
             m_zone3->AddWindowToZone(window, Mocks::Window(), false /*stampZone*/);
-            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_LEFT);
+            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_LEFT, true);
             Assert::IsFalse(m_zone1->ContainsWindow(window));
             Assert::IsTrue(m_zone2->ContainsWindow(window));
             Assert::IsFalse(m_zone3->ContainsWindow(window));
 
-            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_LEFT);
+            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_LEFT, true);
             Assert::IsTrue(m_zone1->ContainsWindow(window));
             Assert::IsFalse(m_zone2->ContainsWindow(window));
             Assert::IsFalse(m_zone3->ContainsWindow(window));
         }
 
-        TEST_METHOD(MoveLeftWithSameWindowAdded)
+        TEST_METHOD (MoveLeftWithSameWindowAdded)
         {
             HWND window = Mocks::Window();
             m_zone2->AddWindowToZone(window, Mocks::Window(), false /*stampZone*/);
@@ -688,18 +688,18 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(m_zone2->ContainsWindow(window));
             Assert::IsTrue(m_zone3->ContainsWindow(window));
 
-            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_LEFT);
+            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_LEFT, true);
             Assert::IsTrue(m_zone1->ContainsWindow(window));
             Assert::IsFalse(m_zone2->ContainsWindow(window));
             Assert::IsTrue(m_zone3->ContainsWindow(window));
 
-            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_LEFT);
+            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_LEFT, true);
             Assert::IsFalse(m_zone1->ContainsWindow(window));
             Assert::IsFalse(m_zone2->ContainsWindow(window));
             Assert::IsTrue(m_zone3->ContainsWindow(window));
         }
 
-        TEST_METHOD(MoveLeftWithDifferentWindowsAdded)
+        TEST_METHOD (MoveLeftWithDifferentWindowsAdded)
         {
             HWND window1 = Mocks::Window();
             HWND window2 = Mocks::Window();
@@ -713,7 +713,7 @@ namespace FancyZonesUnitTests
             Assert::IsFalse(m_zone2->ContainsWindow(window2));
             Assert::IsTrue(m_zone3->ContainsWindow(window2));
 
-            m_set->MoveWindowIntoZoneByDirection(window2, Mocks::Window(), VK_LEFT);
+            m_set->MoveWindowIntoZoneByDirection(window2, Mocks::Window(), VK_LEFT, true);
             Assert::IsFalse(m_zone1->ContainsWindow(window1));
             Assert::IsTrue(m_zone2->ContainsWindow(window1));
             Assert::IsFalse(m_zone3->ContainsWindow(window1));
@@ -721,7 +721,7 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(m_zone2->ContainsWindow(window2));
             Assert::IsFalse(m_zone3->ContainsWindow(window2));
 
-            m_set->MoveWindowIntoZoneByDirection(window2, Mocks::Window(), VK_LEFT);
+            m_set->MoveWindowIntoZoneByDirection(window2, Mocks::Window(), VK_LEFT, true);
             Assert::IsFalse(m_zone1->ContainsWindow(window1));
             Assert::IsTrue(m_zone2->ContainsWindow(window1));
             Assert::IsFalse(m_zone3->ContainsWindow(window1));
@@ -730,33 +730,33 @@ namespace FancyZonesUnitTests
             Assert::IsFalse(m_zone3->ContainsWindow(window2));
         }
 
-        TEST_METHOD(MoveWindowIntoZoneByDirectionWrapAroundRight)
+        TEST_METHOD (MoveWindowIntoZoneByDirectionWrapAroundRight)
         {
             HWND window = Mocks::Window();
             m_zone3->AddWindowToZone(window, Mocks::Window(), false /*stampZone*/);
-            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_RIGHT);
+            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_RIGHT, true);
             Assert::IsTrue(m_zone1->ContainsWindow(window));
             Assert::IsFalse(m_zone2->ContainsWindow(window));
             Assert::IsFalse(m_zone3->ContainsWindow(window));
         }
 
-        TEST_METHOD(MoveWindowIntoZoneByDirectionWrapAroundLeft)
+        TEST_METHOD (MoveWindowIntoZoneByDirectionWrapAroundLeft)
         {
             HWND window = Mocks::Window();
             m_zone1->AddWindowToZone(window, Mocks::Window(), false /*stampZone*/);
-            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_LEFT);
+            m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_LEFT, true);
             Assert::IsFalse(m_zone1->ContainsWindow(window));
             Assert::IsFalse(m_zone2->ContainsWindow(window));
             Assert::IsTrue(m_zone3->ContainsWindow(window));
         }
 
-        TEST_METHOD(MoveSecondWindowIntoSameZone)
+        TEST_METHOD (MoveSecondWindowIntoSameZone)
         {
             HWND window1 = Mocks::Window();
             m_zone1->AddWindowToZone(window1, Mocks::Window(), false /*stampZone*/);
 
             HWND window2 = Mocks::Window();
-            m_set->MoveWindowIntoZoneByDirection(window2, Mocks::Window(), VK_RIGHT);
+            m_set->MoveWindowIntoZoneByDirection(window2, Mocks::Window(), VK_RIGHT, true);
 
             Assert::IsTrue(m_zone1->ContainsWindow(window1));
             Assert::IsFalse(m_zone2->ContainsWindow(window1));
@@ -766,9 +766,33 @@ namespace FancyZonesUnitTests
             Assert::IsFalse(m_zone2->ContainsWindow(window2));
             Assert::IsFalse(m_zone3->ContainsWindow(window2));
         }
+
+        TEST_METHOD (MoveRightMoreThanZoneCountReturnsFalse)
+        {
+            HWND window = Mocks::Window();
+            m_zone1->AddWindowToZone(window, Mocks::Window(), false /*stampZone*/);
+            for (size_t i = 0; i < m_set->GetZones().size() - 1; ++i)
+            {
+                m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_RIGHT, false);
+            }
+            bool moreZonesInLayout = m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_RIGHT, false);
+            Assert::IsFalse(moreZonesInLayout);
+        }
+
+        TEST_METHOD (MoveLeftMoreThanZoneCountReturnsFalse)
+        {
+            HWND window = Mocks::Window();
+            m_zone3->AddWindowToZone(window, Mocks::Window(), false /*stampZone*/);
+            for (size_t i = 0; i < m_set->GetZones().size() - 1; ++i)
+            {
+                m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_LEFT, false);
+            }
+            bool moreZonesInLayout = m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_LEFT, false);
+            Assert::IsFalse(moreZonesInLayout);
+        }
     };
 
-    TEST_CLASS(ZoneSetCalculateZonesUnitTests)
+    TEST_CLASS (ZoneSetCalculateZonesUnitTests)
     {
         GUID m_id;
         const TZoneSetLayoutType m_layoutType = TZoneSetLayoutType::Custom;
@@ -776,7 +800,7 @@ namespace FancyZonesUnitTests
         winrt::com_ptr<IZoneSet> m_set;
 
         HMONITOR m_monitor;
-        const std::array<MONITORINFO, 9> m_popularMonitors {
+        const std::array<MONITORINFO, 9> m_popularMonitors{
             MONITORINFO{ .cbSize = sizeof(MONITORINFO), .rcWork{ .left = 0, .top = 0, .right = 1024, .bottom = 768 } },
             MONITORINFO{ .cbSize = sizeof(MONITORINFO), .rcWork{ .left = 0, .top = 0, .right = 1280, .bottom = 720 } },
             MONITORINFO{ .cbSize = sizeof(MONITORINFO), .rcWork{ .left = 0, .top = 0, .right = 1280, .bottom = 800 } },
@@ -793,406 +817,406 @@ namespace FancyZonesUnitTests
         const std::wstring m_path = PTSettingsHelper::get_module_save_folder_location(L"FancyZones") + L"\\" + std::wstring(L"testzones.json");
 
         TEST_METHOD_INITIALIZE(Init)
-        {
-            auto hres = CoCreateGuid(&m_id);
-            Assert::AreEqual(S_OK, hres);
-
-            m_monitor = MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY);
-            
-            ZoneSetConfig m_config = ZoneSetConfig(m_id, m_layoutType, m_monitor, m_resolutionKey);
-            m_set = MakeZoneSet(m_config);
-        }
-
-        TEST_METHOD_CLEANUP(Cleanup)
-        {
-            std::filesystem::remove(m_path);
-        }
-
-        void checkZones(const winrt::com_ptr<IZoneSet>& set, size_t expectedCount, MONITORINFO monitorInfo)
-        {
-            auto zones = set->GetZones();
-            Assert::AreEqual(expectedCount, zones.size());
-
-            for (const auto& zone : zones)
             {
-                Assert::IsTrue(zone->IsEmpty());
+                auto hres = CoCreateGuid(&m_id);
+                Assert::AreEqual(S_OK, hres);
 
-                const auto& zoneRect = zone->GetZoneRect();
-                Assert::IsTrue(zoneRect.left >= 0, L"left border is less than zero");
-                Assert::IsTrue(zoneRect.top >= 0, L"top border is less than zero");
+                m_monitor = MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY);
 
-                Assert::IsTrue(zoneRect.left < zoneRect.right, L"rect.left >= rect.right");
-                Assert::IsTrue(zoneRect.top < zoneRect.bottom, L"rect.top >= rect.bottom");
-
-                Assert::IsTrue(zoneRect.right <= monitorInfo.rcWork.right, L"right border is bigger than monitor work space");
-                Assert::IsTrue(zoneRect.bottom <= monitorInfo.rcWork.bottom, L"bottom border is bigger than monitor work space");
+                ZoneSetConfig m_config = ZoneSetConfig(m_id, m_layoutType, m_monitor, m_resolutionKey);
+                m_set = MakeZoneSet(m_config);
             }
-        }
 
-    public:
-        TEST_METHOD(ValidValues)
-        {
-            const int spacing = 10;
-            const int zoneCount = 10;
-
-            for (int type = static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus); type < static_cast<int>(JSONHelpers::ZoneSetLayoutType::Custom); type++)
-            {
-                ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<TZoneSetLayoutType>(type), m_monitor, m_resolutionKey);
-
-                for (const auto& monitorInfo : m_popularMonitors)
+            TEST_METHOD_CLEANUP(Cleanup)
                 {
-                    auto set = MakeZoneSet(m_config);
-                    auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
-                    Assert::IsTrue(result);
-                    checkZones(set, zoneCount, monitorInfo);
+                    std::filesystem::remove(m_path);
                 }
-            }
-        }
-        TEST_METHOD(InvalidMonitorInfo)
-        {
-            const int spacing = 10;
-            const int zoneCount = 10;
 
-            for (int type = static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus); type < static_cast<int>(JSONHelpers::ZoneSetLayoutType::Custom); type++)
-            {
-                ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<TZoneSetLayoutType>(type), m_monitor, m_resolutionKey);
-                auto set = MakeZoneSet(m_config);
-
-                MONITORINFO info{};
-                auto result = set->CalculateZones(info, zoneCount, spacing);
-                Assert::IsFalse(result);
-            }
-        }
-
-        TEST_METHOD(ZeroSpacing)
-        {
-            const int spacing = 0;
-            const int zoneCount = 10;
-
-            for (int type = static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus); type < static_cast<int>(JSONHelpers::ZoneSetLayoutType::Custom); type++)
-            {
-                ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<TZoneSetLayoutType>(type), m_monitor, m_resolutionKey);
-
-                for (const auto& monitorInfo : m_popularMonitors)
+                void checkZones(const winrt::com_ptr<IZoneSet>& set, size_t expectedCount, MONITORINFO monitorInfo)
                 {
-                    auto set = MakeZoneSet(m_config);
-                    auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
-                    Assert::IsTrue(result);
-                    checkZones(set, zoneCount, monitorInfo);
-                }
-            }
-        }
+                    auto zones = set->GetZones();
+                    Assert::AreEqual(expectedCount, zones.size());
 
-        TEST_METHOD(NegativeSpacing)
-        {
-            const int spacing = -1;
-            const int zoneCount = 10;
-
-            for (int type = static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus); type < static_cast<int>(JSONHelpers::ZoneSetLayoutType::Custom); type++)
-            {
-                ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<TZoneSetLayoutType>(type), m_monitor, m_resolutionKey);
-                auto set = MakeZoneSet(m_config);
-
-                for (const auto& monitorInfo : m_popularMonitors)
-                {
-                    auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
-                    if (type == static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus))
+                    for (const auto& zone : zones)
                     {
-                        //Focus doesn't depends on spacing
-                        Assert::IsTrue(result);
+                        Assert::IsTrue(zone->IsEmpty());
+
+                        const auto& zoneRect = zone->GetZoneRect();
+                        Assert::IsTrue(zoneRect.left >= 0, L"left border is less than zero");
+                        Assert::IsTrue(zoneRect.top >= 0, L"top border is less than zero");
+
+                        Assert::IsTrue(zoneRect.left < zoneRect.right, L"rect.left >= rect.right");
+                        Assert::IsTrue(zoneRect.top < zoneRect.bottom, L"rect.top >= rect.bottom");
+
+                        Assert::IsTrue(zoneRect.right <= monitorInfo.rcWork.right, L"right border is bigger than monitor work space");
+                        Assert::IsTrue(zoneRect.bottom <= monitorInfo.rcWork.bottom, L"bottom border is bigger than monitor work space");
                     }
-                    else
+                }
+
+            public:
+                TEST_METHOD (ValidValues)
+                {
+                    const int spacing = 10;
+                    const int zoneCount = 10;
+
+                    for (int type = static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus); type < static_cast<int>(JSONHelpers::ZoneSetLayoutType::Custom); type++)
                     {
+                        ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<TZoneSetLayoutType>(type), m_monitor, m_resolutionKey);
+
+                        for (const auto& monitorInfo : m_popularMonitors)
+                        {
+                            auto set = MakeZoneSet(m_config);
+                            auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                            Assert::IsTrue(result);
+                            checkZones(set, zoneCount, monitorInfo);
+                        }
+                    }
+                }
+                TEST_METHOD (InvalidMonitorInfo)
+                {
+                    const int spacing = 10;
+                    const int zoneCount = 10;
+
+                    for (int type = static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus); type < static_cast<int>(JSONHelpers::ZoneSetLayoutType::Custom); type++)
+                    {
+                        ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<TZoneSetLayoutType>(type), m_monitor, m_resolutionKey);
+                        auto set = MakeZoneSet(m_config);
+
+                        MONITORINFO info{};
+                        auto result = set->CalculateZones(info, zoneCount, spacing);
                         Assert::IsFalse(result);
                     }
                 }
-            }
-        }
 
-        TEST_METHOD(HorizontallyBigSpacing)
-        {
-            const int zoneCount = 10;
-
-            for (int type = static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus); type < static_cast<int>(JSONHelpers::ZoneSetLayoutType::Custom); type++)
-            {
-                ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<TZoneSetLayoutType>(type), m_monitor, m_resolutionKey);
-                auto set = MakeZoneSet(m_config);
-
-                for (const auto& monitorInfo : m_popularMonitors)
+                TEST_METHOD (ZeroSpacing)
                 {
-                    const int spacing = monitorInfo.rcWork.right;
-                    auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
-                    if (type == static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus))
+                    const int spacing = 0;
+                    const int zoneCount = 10;
+
+                    for (int type = static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus); type < static_cast<int>(JSONHelpers::ZoneSetLayoutType::Custom); type++)
                     {
-                        //Focus doesn't depends on spacing
-                        Assert::IsTrue(result);
-                    }
-                    else
-                    {
-                        Assert::IsFalse(result);
+                        ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<TZoneSetLayoutType>(type), m_monitor, m_resolutionKey);
+
+                        for (const auto& monitorInfo : m_popularMonitors)
+                        {
+                            auto set = MakeZoneSet(m_config);
+                            auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                            Assert::IsTrue(result);
+                            checkZones(set, zoneCount, monitorInfo);
+                        }
                     }
                 }
-            }
-        }
 
-        TEST_METHOD(VerticallyBigSpacing)
-        {
-            const int zoneCount = 10;
-
-            for (int type = static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus); type < static_cast<int>(JSONHelpers::ZoneSetLayoutType::Custom); type++)
-            {
-                ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<TZoneSetLayoutType>(type), m_monitor, m_resolutionKey);
-                auto set = MakeZoneSet(m_config);
-
-                for (const auto& monitorInfo : m_popularMonitors)
+                TEST_METHOD (NegativeSpacing)
                 {
-                    const int spacing = monitorInfo.rcWork.bottom;
-                    auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
-                    if (type == static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus))
+                    const int spacing = -1;
+                    const int zoneCount = 10;
+
+                    for (int type = static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus); type < static_cast<int>(JSONHelpers::ZoneSetLayoutType::Custom); type++)
                     {
-                        //Focus doesn't depends on spacing
-                        Assert::IsTrue(result);
-                    }
-                    else
-                    {
-                        Assert::IsFalse(result);
+                        ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<TZoneSetLayoutType>(type), m_monitor, m_resolutionKey);
+                        auto set = MakeZoneSet(m_config);
+
+                        for (const auto& monitorInfo : m_popularMonitors)
+                        {
+                            auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                            if (type == static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus))
+                            {
+                                //Focus doesn't depends on spacing
+                                Assert::IsTrue(result);
+                            }
+                            else
+                            {
+                                Assert::IsFalse(result);
+                            }
+                        }
                     }
                 }
-            }
-        }
 
-        TEST_METHOD(ZeroZoneCount)
-        {
-            const int spacing = 10;
-            const int zoneCount = 0;
-
-            for (int type = static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus); type < static_cast<int>(JSONHelpers::ZoneSetLayoutType::Custom); type++)
-            {
-                ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<TZoneSetLayoutType>(type), m_monitor, m_resolutionKey);
-                auto set = MakeZoneSet(m_config);
-
-                for (const auto& monitorInfo : m_popularMonitors)
+                TEST_METHOD (HorizontallyBigSpacing)
                 {
-                    auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
-                    Assert::IsFalse(result);
+                    const int zoneCount = 10;
+
+                    for (int type = static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus); type < static_cast<int>(JSONHelpers::ZoneSetLayoutType::Custom); type++)
+                    {
+                        ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<TZoneSetLayoutType>(type), m_monitor, m_resolutionKey);
+                        auto set = MakeZoneSet(m_config);
+
+                        for (const auto& monitorInfo : m_popularMonitors)
+                        {
+                            const int spacing = monitorInfo.rcWork.right;
+                            auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                            if (type == static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus))
+                            {
+                                //Focus doesn't depends on spacing
+                                Assert::IsTrue(result);
+                            }
+                            else
+                            {
+                                Assert::IsFalse(result);
+                            }
+                        }
+                    }
                 }
-            }
-        }
 
-        TEST_METHOD(BigZoneCount)
-        {
-            const int spacing = 1;
-
-            for (int type = static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus); type < static_cast<int>(JSONHelpers::ZoneSetLayoutType::Custom); type++)
-            {
-                const int spacing = 10;
-                const int zoneCount = 40; //editor limit
-
-                ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<TZoneSetLayoutType>(type), m_monitor, m_resolutionKey);
-                
-                for (const auto& monitorInfo : m_popularMonitors)
+                TEST_METHOD (VerticallyBigSpacing)
                 {
+                    const int zoneCount = 10;
+
+                    for (int type = static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus); type < static_cast<int>(JSONHelpers::ZoneSetLayoutType::Custom); type++)
+                    {
+                        ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<TZoneSetLayoutType>(type), m_monitor, m_resolutionKey);
+                        auto set = MakeZoneSet(m_config);
+
+                        for (const auto& monitorInfo : m_popularMonitors)
+                        {
+                            const int spacing = monitorInfo.rcWork.bottom;
+                            auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                            if (type == static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus))
+                            {
+                                //Focus doesn't depends on spacing
+                                Assert::IsTrue(result);
+                            }
+                            else
+                            {
+                                Assert::IsFalse(result);
+                            }
+                        }
+                    }
+                }
+
+                TEST_METHOD (ZeroZoneCount)
+                {
+                    const int spacing = 10;
+                    const int zoneCount = 0;
+
+                    for (int type = static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus); type < static_cast<int>(JSONHelpers::ZoneSetLayoutType::Custom); type++)
+                    {
+                        ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<TZoneSetLayoutType>(type), m_monitor, m_resolutionKey);
+                        auto set = MakeZoneSet(m_config);
+
+                        for (const auto& monitorInfo : m_popularMonitors)
+                        {
+                            auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                            Assert::IsFalse(result);
+                        }
+                    }
+                }
+
+                TEST_METHOD (BigZoneCount)
+                {
+                    const int spacing = 1;
+
+                    for (int type = static_cast<int>(JSONHelpers::ZoneSetLayoutType::Focus); type < static_cast<int>(JSONHelpers::ZoneSetLayoutType::Custom); type++)
+                    {
+                        const int spacing = 10;
+                        const int zoneCount = 40; //editor limit
+
+                        ZoneSetConfig m_config = ZoneSetConfig(m_id, static_cast<TZoneSetLayoutType>(type), m_monitor, m_resolutionKey);
+
+                        for (const auto& monitorInfo : m_popularMonitors)
+                        {
+                            auto set = MakeZoneSet(m_config);
+                            auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                            Assert::IsTrue(result);
+                            checkZones(set, zoneCount, monitorInfo);
+                        }
+                    }
+                }
+
+                TEST_METHOD (CustomZonesFromUnexistedFile)
+                {
+                    const int spacing = 10;
+                    const int zoneCount = 0;
+
+                    //be sure that file does not exist
+                    if (std::filesystem::exists(m_path))
+                    {
+                        std::filesystem::remove(m_path);
+                    }
+
+                    ZoneSetConfig m_config = ZoneSetConfig(m_id, TZoneSetLayoutType::Custom, m_monitor, m_resolutionKey);
                     auto set = MakeZoneSet(m_config);
-                    auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
-                    Assert::IsTrue(result);
-                    checkZones(set, zoneCount, monitorInfo);
+
+                    for (const auto& monitorInfo : m_popularMonitors)
+                    {
+                        auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                        Assert::IsFalse(result);
+                    }
                 }
-            }
-        }
 
-        TEST_METHOD(CustomZonesFromUnexistedFile)
-        {
-            const int spacing = 10;
-            const int zoneCount = 0;
+                TEST_METHOD (CustomZoneFromEmptyFile)
+                {
+                    const int spacing = 10;
+                    const int zoneCount = 0;
 
-            //be sure that file does not exist
-            if (std::filesystem::exists(m_path))
-            {
-                std::filesystem::remove(m_path);
-            }
+                    Assert::IsTrue(std::filesystem::create_directories(m_path));
+                    Assert::IsTrue(std::filesystem::exists(m_path));
 
-            ZoneSetConfig m_config = ZoneSetConfig(m_id, TZoneSetLayoutType::Custom, m_monitor, m_resolutionKey);
-            auto set = MakeZoneSet(m_config);
+                    ZoneSetConfig m_config = ZoneSetConfig(m_id, TZoneSetLayoutType::Custom, m_monitor, m_resolutionKey);
+                    auto set = MakeZoneSet(m_config);
 
-            for (const auto& monitorInfo : m_popularMonitors)
-            {
-                auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
-                Assert::IsFalse(result);
-            }
-        }
+                    for (const auto& monitorInfo : m_popularMonitors)
+                    {
+                        auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                        Assert::IsFalse(result);
+                    }
+                }
 
-        TEST_METHOD(CustomZoneFromEmptyFile)
-        {
-            const int spacing = 10;
-            const int zoneCount = 0;
+                TEST_METHOD (CustomZoneFromInvalidCanvasLayoutInfo)
+                {
+                    using namespace JSONHelpers;
 
-            Assert::IsTrue(std::filesystem::create_directories(m_path));
-            Assert::IsTrue(std::filesystem::exists(m_path));
+                    const std::wstring uuid = L"uuid";
+                    const CanvasLayoutInfo info{ -1, 100, { CanvasLayoutInfo::Rect{ -10, -10, 100, 100 }, CanvasLayoutInfo::Rect{ 50, 50, 150, 150 } } };
+                    CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info } };
+                    json::to_file(m_path, CustomZoneSetJSON::ToJson(expected));
+                    Assert::IsTrue(std::filesystem::exists(m_path));
 
-            ZoneSetConfig m_config = ZoneSetConfig(m_id, TZoneSetLayoutType::Custom, m_monitor, m_resolutionKey);
-            auto set = MakeZoneSet(m_config);
+                    const int spacing = 10;
+                    const int zoneCount = static_cast<int>(info.zones.size());
 
-            for (const auto& monitorInfo : m_popularMonitors)
-            {
-                auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
-                Assert::IsFalse(result);
-            }
-        }
+                    ZoneSetConfig m_config = ZoneSetConfig(m_id, TZoneSetLayoutType::Custom, m_monitor, m_resolutionKey);
+                    auto set = MakeZoneSet(m_config);
 
-        TEST_METHOD(CustomZoneFromInvalidCanvasLayoutInfo)
-        {
-            using namespace JSONHelpers;
+                    for (const auto& monitorInfo : m_popularMonitors)
+                    {
+                        auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                        Assert::IsFalse(result);
+                    }
+                }
 
-            const std::wstring uuid = L"uuid";
-            const CanvasLayoutInfo info{ -1, 100, { CanvasLayoutInfo::Rect{ -10, -10, 100, 100 }, CanvasLayoutInfo::Rect{ 50, 50, 150, 150 } } };
-            CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info } };
-            json::to_file(m_path, CustomZoneSetJSON::ToJson(expected));
-            Assert::IsTrue(std::filesystem::exists(m_path));
+                TEST_METHOD (CustomZoneFromInvalidGridLayoutInfo)
+                {
+                    using namespace JSONHelpers;
 
-            const int spacing = 10;
-            const int zoneCount = static_cast<int>(info.zones.size());
+                    const std::wstring uuid = L"uuid";
+                    const GridLayoutInfo grid(GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+                        .rows = 1,
+                        .columns = 3,
+                        .rowsPercents = { -100 }, //rows percents are negative
+                        .columnsPercents = { 2500, 2500 }, //column percents count is invalid
+                        .cellChildMap = { { 0, 1, 2 } } }));
+                    CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
+                    json::to_file(m_path, CustomZoneSetJSON::ToJson(expected));
+                    Assert::IsTrue(std::filesystem::exists(m_path));
 
-            ZoneSetConfig m_config = ZoneSetConfig(m_id, TZoneSetLayoutType::Custom, m_monitor, m_resolutionKey);
-            auto set = MakeZoneSet(m_config);
+                    const int spacing = 0;
+                    const int zoneCount = grid.rows() * grid.columns();
 
-            for (const auto& monitorInfo : m_popularMonitors)
-            {
-                auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
-                Assert::IsFalse(result);
-            }
-        }
+                    ZoneSetConfig m_config = ZoneSetConfig(m_id, TZoneSetLayoutType::Custom, m_monitor, m_resolutionKey);
+                    auto set = MakeZoneSet(m_config);
 
-        TEST_METHOD(CustomZoneFromInvalidGridLayoutInfo)
-        {
-            using namespace JSONHelpers;
+                    for (const auto& monitorInfo : m_popularMonitors)
+                    {
+                        auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                        Assert::IsFalse(result);
+                    }
+                }
 
-            const std::wstring uuid = L"uuid";
-            const GridLayoutInfo grid(GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
-                .rows = 1,
-                .columns = 3,
-                .rowsPercents = { -100 }, //rows percents are negative
-                .columnsPercents = { 2500, 2500 }, //column percents count is invalid
-                .cellChildMap = { { 0, 1, 2 } } }));
-            CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
-            json::to_file(m_path, CustomZoneSetJSON::ToJson(expected));
-            Assert::IsTrue(std::filesystem::exists(m_path));
+                TEST_METHOD (CustomZoneFromValidCanvasLayoutInfo)
+                {
+                    using namespace JSONHelpers;
 
-            const int spacing = 0;
-            const int zoneCount = grid.rows() * grid.columns();
+                    //prepare device data
+                    {
+                        const std::wstring zoneUuid = L"default_device_id";
+                        DeviceInfoJSON deviceInfo{ zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
+                        const std::wstring deviceInfoPath = FancyZonesDataInstance().GetPersistFancyZonesJSONPath() + L".device_info_tmp";
+                        FancyZonesDataInstance().SerializeDeviceInfoToTmpFile(deviceInfo, deviceInfoPath);
 
-            ZoneSetConfig m_config = ZoneSetConfig(m_id, TZoneSetLayoutType::Custom, m_monitor, m_resolutionKey);
-            auto set = MakeZoneSet(m_config);
+                        FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(deviceInfoPath);
+                        std::filesystem::remove(deviceInfoPath);
+                    }
 
-            for (const auto& monitorInfo : m_popularMonitors)
-            {
-                auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
-                Assert::IsFalse(result);
-            }
-        }
+                    //prepare expected data
+                    wil::unique_cotaskmem_string uuid;
+                    Assert::AreEqual(S_OK, StringFromCLSID(m_id, &uuid));
+                    const CanvasLayoutInfo info{ 123, 321, { CanvasLayoutInfo::Rect{ 0, 0, 100, 100 }, CanvasLayoutInfo::Rect{ 50, 50, 150, 150 } } };
+                    CustomZoneSetJSON expected{ uuid.get(), CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info } };
+                    json::to_file(m_path, CustomZoneSetJSON::ToJson(expected));
+                    Assert::IsTrue(std::filesystem::exists(m_path));
+                    FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(m_path);
 
-        TEST_METHOD(CustomZoneFromValidCanvasLayoutInfo)
-        {
-            using namespace JSONHelpers;
+                    //test
+                    const int spacing = 10;
+                    const int zoneCount = static_cast<int>(info.zones.size());
+                    ZoneSetConfig m_config = ZoneSetConfig(m_id, TZoneSetLayoutType::Custom, m_monitor, m_resolutionKey);
+                    for (const auto& monitorInfo : m_popularMonitors)
+                    {
+                        auto set = MakeZoneSet(m_config);
+                        auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                        Assert::IsTrue(result);
+                        checkZones(set, zoneCount, monitorInfo);
+                    }
+                }
 
-            //prepare device data
-            {
-                const std::wstring zoneUuid = L"default_device_id";
-                DeviceInfoJSON deviceInfo{ zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
-                const std::wstring deviceInfoPath = FancyZonesDataInstance().GetPersistFancyZonesJSONPath() + L".device_info_tmp";
-                FancyZonesDataInstance().SerializeDeviceInfoToTmpFile(deviceInfo, deviceInfoPath);
+                TEST_METHOD (CustomZoneFromValidGridFullLayoutInfo)
+                {
+                    using namespace JSONHelpers;
 
-                FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(deviceInfoPath);
-                std::filesystem::remove(deviceInfoPath);
-            }
+                    //prepare device data
+                    {
+                        const std::wstring zoneUuid = L"default_device_id";
+                        DeviceInfoJSON deviceInfo{ zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
+                        const std::wstring deviceInfoPath = FancyZonesDataInstance().GetPersistFancyZonesJSONPath() + L".device_info_tmp";
+                        FancyZonesDataInstance().SerializeDeviceInfoToTmpFile(deviceInfo, deviceInfoPath);
 
-            //prepare expected data
-            wil::unique_cotaskmem_string uuid;
-            Assert::AreEqual(S_OK, StringFromCLSID(m_id, &uuid));
-            const CanvasLayoutInfo info{ 123, 321, { CanvasLayoutInfo::Rect{ 0, 0, 100, 100 }, CanvasLayoutInfo::Rect{ 50, 50, 150, 150 } } };
-            CustomZoneSetJSON expected{ uuid.get(), CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info } };
-            json::to_file(m_path, CustomZoneSetJSON::ToJson(expected));
-            Assert::IsTrue(std::filesystem::exists(m_path));
-            FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(m_path);
+                        FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(deviceInfoPath);
+                        std::filesystem::remove(deviceInfoPath);
+                    }
 
-            //test
-            const int spacing = 10;
-            const int zoneCount = static_cast<int>(info.zones.size());
-            ZoneSetConfig m_config = ZoneSetConfig(m_id, TZoneSetLayoutType::Custom, m_monitor, m_resolutionKey);
-            for (const auto& monitorInfo : m_popularMonitors)
-            {
-                auto set = MakeZoneSet(m_config);
-                auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
-                Assert::IsTrue(result);
-                checkZones(set, zoneCount, monitorInfo);
-            }
-        }
+                    //prepare expected data
+                    wil::unique_cotaskmem_string uuid;
+                    Assert::AreEqual(S_OK, StringFromCLSID(m_id, &uuid));
+                    const GridLayoutInfo grid(GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+                        .rows = 1,
+                        .columns = 3,
+                        .rowsPercents = { 10000 },
+                        .columnsPercents = { 2500, 5000, 2500 },
+                        .cellChildMap = { { 0, 1, 2 } } }));
+                    CustomZoneSetJSON expected{ uuid.get(), CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
+                    json::to_file(m_path, CustomZoneSetJSON::ToJson(expected));
+                    Assert::IsTrue(std::filesystem::exists(m_path));
+                    FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(m_path);
 
-        TEST_METHOD(CustomZoneFromValidGridFullLayoutInfo)
-        {
-            using namespace JSONHelpers;
+                    const int spacing = 10;
+                    const int zoneCount = grid.rows() * grid.columns();
 
-            //prepare device data
-            {
-                const std::wstring zoneUuid = L"default_device_id";
-                DeviceInfoJSON deviceInfo{ zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
-                const std::wstring deviceInfoPath = FancyZonesDataInstance().GetPersistFancyZonesJSONPath() + L".device_info_tmp";
-                FancyZonesDataInstance().SerializeDeviceInfoToTmpFile(deviceInfo, deviceInfoPath);
+                    ZoneSetConfig m_config = ZoneSetConfig(m_id, TZoneSetLayoutType::Custom, m_monitor, m_resolutionKey);
 
-                FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(deviceInfoPath);
-                std::filesystem::remove(deviceInfoPath);
-            }
+                    for (const auto& monitorInfo : m_popularMonitors)
+                    {
+                        auto set = MakeZoneSet(m_config);
+                        auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                        Assert::IsTrue(result);
+                        checkZones(set, zoneCount, monitorInfo);
+                    }
+                }
 
-            //prepare expected data
-            wil::unique_cotaskmem_string uuid;
-            Assert::AreEqual(S_OK, StringFromCLSID(m_id, &uuid));
-            const GridLayoutInfo grid(GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
-                .rows = 1,
-                .columns = 3,
-                .rowsPercents = { 10000 },
-                .columnsPercents = { 2500, 5000, 2500 },
-                .cellChildMap = { { 0, 1, 2 } } }));
-            CustomZoneSetJSON expected{ uuid.get(), CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
-            json::to_file(m_path, CustomZoneSetJSON::ToJson(expected));
-            Assert::IsTrue(std::filesystem::exists(m_path));
-            FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(m_path);
+                TEST_METHOD (CustomZoneFromValidGridMinimalLayoutInfo)
+                {
+                    using namespace JSONHelpers;
 
-            const int spacing = 10;
-            const int zoneCount = grid.rows() * grid.columns();
+                    const std::wstring uuid = L"uuid";
+                    const GridLayoutInfo grid(GridLayoutInfo(JSONHelpers::GridLayoutInfo::Minimal{
+                        .rows = 1,
+                        .columns = 3 }));
+                    CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
+                    json::to_file(m_path, CustomZoneSetJSON::ToJson(expected));
+                    Assert::IsTrue(std::filesystem::exists(m_path));
 
-            ZoneSetConfig m_config = ZoneSetConfig(m_id, TZoneSetLayoutType::Custom, m_monitor, m_resolutionKey);
+                    const int spacing = 0;
+                    const int zoneCount = grid.rows() * grid.columns();
 
-            for (const auto& monitorInfo : m_popularMonitors)
-            {
-                auto set = MakeZoneSet(m_config);
-                auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
-                Assert::IsTrue(result);
-                checkZones(set, zoneCount, monitorInfo);
-            }
-        }
+                    ZoneSetConfig m_config = ZoneSetConfig(m_id, TZoneSetLayoutType::Custom, m_monitor, m_resolutionKey);
+                    auto set = MakeZoneSet(m_config);
 
-        TEST_METHOD(CustomZoneFromValidGridMinimalLayoutInfo)
-        {
-            using namespace JSONHelpers;
-
-            const std::wstring uuid = L"uuid";
-            const GridLayoutInfo grid(GridLayoutInfo(JSONHelpers::GridLayoutInfo::Minimal{
-                .rows = 1,
-                .columns = 3 }));
-            CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
-            json::to_file(m_path, CustomZoneSetJSON::ToJson(expected));
-            Assert::IsTrue(std::filesystem::exists(m_path));
-
-            const int spacing = 0;
-            const int zoneCount = grid.rows() * grid.columns();
-
-            ZoneSetConfig m_config = ZoneSetConfig(m_id, TZoneSetLayoutType::Custom, m_monitor, m_resolutionKey);
-            auto set = MakeZoneSet(m_config);
-
-            for (const auto& monitorInfo : m_popularMonitors)
-            {
-                auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
-                Assert::IsFalse(result);
-            }            
-        }
+                    for (const auto& monitorInfo : m_popularMonitors)
+                    {
+                        auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                        Assert::IsFalse(result);
+                    }
+                }
     };
 }

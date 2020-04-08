@@ -329,15 +329,15 @@ namespace FancyZonesEditor
                 _gridModel.ColumnPercents[col] = ((_multiplier * (col + 1)) / cols) - ((_multiplier * col) / cols);
             }
 
-            int index = 0;
-            for (int col = cols - 1; col >= 0; col--)
+            int index = ZoneCount - 1;
+            for (int row = rows - 1; row >= 0; row--)
             {
-                for (int row = rows - 1; row >= 0; row--)
+                for (int col = cols - 1; col >= 0; col--)
                 {
-                    _gridModel.CellChildMap[row, col] = index++;
-                    if (index == ZoneCount)
+                    _gridModel.CellChildMap[row, col] = index--;
+                    if (index < 0)
                     {
-                        index--;
+                        index = 0;
                     }
                 }
             }
@@ -407,7 +407,8 @@ namespace FancyZonesEditor
                 }
 
                 inputStream.Close();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 LayoutModel.ShowExceptionMessageBox("Error parsing device info data", ex);
             }

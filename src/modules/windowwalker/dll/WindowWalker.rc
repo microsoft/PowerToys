@@ -1,3 +1,6 @@
+#include "resource.h"
+#include "../../../common/version.h"
+
 1 VERSIONINFO
  FILEVERSION 0,1,0,0
  PRODUCTVERSION 0,1,0,0
@@ -15,18 +18,25 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "Company Name"
+            VALUE "CompanyName", COMPANY_NAME
             VALUE "FileDescription", "$projectname$ Module"
-            VALUE "FileVersion", "0.1.0.0"
+            VALUE "FileVersion", FILE_VERSION_STRING
             VALUE "InternalName", "$projectname$"
-            VALUE "LegalCopyright", "Copyright (C) 2019 Company Name"
+            VALUE "LegalCopyright", COPYRIGHT_NOTE
             VALUE "OriginalFilename", "$projectname$.dll"
             VALUE "ProductName", "$projectname$"
-            VALUE "ProductVersion", "0.1.0.0"
+            VALUE "ProductVersion", PRODUCT_VERSION_STRING
         END
     END
     BLOCK "VarFileInfo"
     BEGIN
         VALUE "Translation", 0x409, 1200
     END
+END
+
+STRINGTABLE
+BEGIN
+    IDS_MODULE_NAME         L"Window Walker"
+    IDS_GENERAL_DESCRIPTION L"A text-based Alt+Tab with search. Use Ctrl+Win to pop up."
+    IDS_OVERVIEW_LINK       L"https://github.com/microsoft/PowerToys/blob/master/src/modules/windowwalker"
 END

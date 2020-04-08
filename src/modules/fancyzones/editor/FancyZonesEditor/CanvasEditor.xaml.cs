@@ -55,6 +55,12 @@ namespace FancyZonesEditor
                 previewChildrenCount++;
             }
 
+            while (previewChildrenCount > _model.Zones.Count)
+            {
+                Preview.Children.RemoveAt(previewChildrenCount - 1);
+                previewChildrenCount--;
+            }
+
             for (int i = 0; i < previewChildrenCount; i++)
             {
                 Int32Rect rect = _model.Zones[i];
@@ -65,6 +71,7 @@ namespace FancyZonesEditor
                 Canvas.SetTop(zone, rect.Y);
                 zone.Height = rect.Height;
                 zone.Width = rect.Width;
+                zone.LabelID.Content = i + 1;
             }
         }
     }
