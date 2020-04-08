@@ -6,7 +6,7 @@ HWND ShortcutControl::EditShortcutsWindowHandle = nullptr;
 KeyboardManagerState* ShortcutControl::keyboardManagerState = nullptr;
 
 // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
-void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, const std::vector<DWORD>& originalKeys, const std::vector<WORD>& newKeys)
+void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, const Shortcut& originalKeys, const Shortcut& newKeys)
 {
     // Parent element for the row
     Windows::UI::Xaml::Controls::StackPanel tableRow;
@@ -23,10 +23,10 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, const std::ve
     tableRow.Children().Append(newSC.getShortcutControl());
 
     // Set the shortcut text if the two vectors are not empty (i.e. default args)
-    if (!originalKeys.empty() && !newKeys.empty())
+    if (!originalKeys.IsEmpty() && !newKeys.IsEmpty())
     {
-        originalSC.shortcutText.Text(convertVectorToHstring<DWORD>(originalKeys));
-        newSC.shortcutText.Text(convertVectorToHstring<WORD>(newKeys));
+        originalSC.shortcutText.Text(originalKeys.ToHstring());
+        newSC.shortcutText.Text(newKeys.ToHstring());
     }
 
     // Delete row button
@@ -71,8 +71,8 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
     // OK button
     detectShortcutBox.PrimaryButtonClick([=, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
         // Save the detected shortcut in the linked text block
-        std::vector<DWORD> detectedShortcutKeys = keyboardManagerState.GetDetectedShortcut();
-        linkedShortcutText.Text(convertVectorToHstring<DWORD>(detectedShortcutKeys));
+        Shortcut detectedShortcutKeys = keyboardManagerState.GetDetectedShortcut();
+        linkedShortcutText.Text(detectedShortcutKeys.ToHstring());
 
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();

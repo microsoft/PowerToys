@@ -7,6 +7,8 @@
 #include "resource.h"
 #include <keyboardmanager/ui/MainWindow.h>
 #include <keyboardmanager/common/KeyboardManagerState.h>
+#include <keyboardmanager/common/Shortcut.h>
+#include <keyboardmanager/common/RemapShortcut.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -78,12 +80,15 @@ public:
         //keyboardManagerState.singleKeyReMap[0x42] = 0x43;
         //keyboardManagerState.singleKeyReMap[0x43] = 0x41;
         //keyboardManagerState.singleKeyReMap[VK_LWIN] = VK_LCONTROL;
-        //keyboardManagerState.singleKeyReMap[VK_LCONTROL] = VK_LWIN;
+        //keyboardManagerState.singleKeyReMap[VK_LCONTROL] = VK_RWIN;
         //keyboardManagerState.singleKeyReMap[VK_CAPITAL] = 0x0;
         //keyboardManagerState.singleKeyReMap[VK_LSHIFT] = VK_CAPITAL;
         //keyboardManagerState.singleKeyToggleToMod[VK_CAPITAL] = false;
 
         //// OS-level shortcut remappings
+        //Shortcut newShortcut = Shortcut::CreateShortcut(winrt::to_hstring(L"Win 65"));
+        //Shortcut originalShortcut = Shortcut::CreateShortcut(winrt::to_hstring(L"Shift 65"));
+        //keyboardManagerState.AddOSLevelShortcut(originalShortcut, newShortcut);
         //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false);
         //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x45 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
         //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x53 }), false);
@@ -307,6 +312,14 @@ public:
         }
     }
 
+    void SetKeyEvent(LPINPUT keyEventArray, int index, DWORD inputType, WORD keyCode, DWORD flags, ULONG_PTR extraInfo)
+    {
+        keyEventArray[index].type = inputType;
+        keyEventArray[index].ki.wVk = keyCode;
+        keyEventArray[index].ki.dwFlags = flags;
+        keyEventArray[index].ki.dwExtraInfo = extraInfo;
+    }
+
     // Function to a handle a single key remap
     intptr_t HandleSingleKeyRemapEvent(LowlevelKeyboardEvent* data) noexcept
     {
@@ -327,13 +340,13 @@ public:
                 int key_count = 1;
                 LPINPUT keyEventList = new INPUT[size_t(key_count)]();
                 memset(keyEventList, 0, sizeof(keyEventList));
-                keyEventList[0].type = INPUT_KEYBOARD;
-                keyEventList[0].ki.wVk = it->second;
-                keyEventList[0].ki.dwFlags = 0;
-                keyEventList[0].ki.dwExtraInfo = KEYBOARDMANAGER_SINGLEKEY_FLAG;
                 if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
                 {
-                    keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
+                    SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)it->second, KEYEVENTF_KEYUP, KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                }
+                else
+                {
+                    SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)it->second, 0, KEYBOARDMANAGER_SINGLEKEY_FLAG);
                 }
 
                 lock.unlock();
@@ -373,14 +386,8 @@ public:
                 int key_count = 2;
                 LPINPUT keyEventList = new INPUT[size_t(key_count)]();
                 memset(keyEventList, 0, sizeof(keyEventList));
-                keyEventList[0].type = INPUT_KEYBOARD;
-                keyEventList[0].ki.wVk = (WORD)data->lParam->vkCode;
-                keyEventList[0].ki.dwFlags = 0;
-                keyEventList[0].ki.dwExtraInfo = KEYBOARDMANAGER_SINGLEKEY_FLAG;
-                keyEventList[1].type = INPUT_KEYBOARD;
-                keyEventList[1].ki.wVk = (WORD)data->lParam->vkCode;
-                keyEventList[1].ki.dwFlags = KEYEVENTF_KEYUP;
-                keyEventList[1].ki.dwExtraInfo = KEYBOARDMANAGER_SINGLEKEY_FLAG;
+                SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, 0, KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                SetKeyEvent(keyEventList, 1, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, KEYEVENTF_KEYUP, KEYBOARDMANAGER_SINGLEKEY_FLAG);
 
                 lock.unlock();
                 UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
@@ -401,205 +408,134 @@ public:
         return 0;
     }
 
-    // Function to check if any keys are pressed down except those passed in the argument
-    bool IsKeyboardStateClearExceptArgs(const std::vector<DWORD>& args)
-    {
-        bool isIgnore = false;
-        for (int keyVal = 0; keyVal < 0x100; keyVal++)
-        {
-            // Skip mouse buttons. Keeping this could cause a remapping to fail if a mouse button is also pressed at the same time
-            if (keyVal == VK_LBUTTON || keyVal == VK_RBUTTON || keyVal == VK_MBUTTON || keyVal == VK_XBUTTON1 || keyVal == VK_XBUTTON2)
-            {
-                continue;
-            }
-            // Check state of the key
-            if (GetAsyncKeyState(keyVal) & 0x8000)
-            {
-                isIgnore = false;
-                // If the key is not part of the argument then the keyboard state is not clear
-                for (int i = 0; i < args.size(); i++)
-                {
-                    // If the key matches one of the args, ignore
-                    if (args[i] == keyVal)
-                    {
-                        isIgnore = true;
-                        break;
-                    }
-                    // If the key is Control and either of the args is L/R Control, ignore
-                    else if ((args[i] == VK_LCONTROL || args[i] == VK_RCONTROL) && keyVal == VK_CONTROL)
-                    {
-                        isIgnore = true;
-                        break;
-                    }
-                    // If the key is Alt and either of the args is L/R Alt, ignore
-                    else if ((args[i] == VK_LMENU || args[i] == VK_RMENU) && keyVal == VK_MENU)
-                    {
-                        isIgnore = true;
-                        break;
-                    }
-                    // If the key is Shift and either of the args is L/R Shift, ignore
-                    else if ((args[i] == VK_LSHIFT || args[i] == VK_RSHIFT) && keyVal == VK_SHIFT)
-                    {
-                        isIgnore = true;
-                        break;
-                    }
-                    // If the key is L/R Control and either of the args is Control, ignore
-                    else if ((keyVal == VK_LCONTROL || keyVal == VK_RCONTROL) && args[i] == VK_CONTROL)
-                    {
-                        isIgnore = true;
-                        break;
-                    }
-                    // If the key is L/R Alt and either of the args is Alt, ignore
-                    else if ((keyVal == VK_LMENU || keyVal == VK_RMENU) && args[i] == VK_MENU)
-                    {
-                        isIgnore = true;
-                        break;
-                    }
-                    // If the key is L/R Shift and either of the args is Shift, ignore
-                    else if ((keyVal == VK_LSHIFT || keyVal == VK_RSHIFT) && args[i] == VK_SHIFT)
-                    {
-                        isIgnore = true;
-                        break;
-                    }
-                }
-
-                if (!isIgnore)
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    // Function to check if the modifiers in the shortcut have been pressed down
-    template<typename T>
-    bool CheckModifiersKeyboardState(const std::vector<T>& args)
-    {
-        // Check all keys except last
-        for (int i = 0; i < args.size() - 1; i++)
-        {
-            if (!(GetAsyncKeyState(args[i]) & 0x8000))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    // Function to check if all the modifiers in the first shorcut are present in the second shortcut, i.e. Modifiers(src) are a subset of Modifiers(dest)
-    std::vector<DWORD> GetCommonModifiers(const std::vector<DWORD>& src, const std::vector<WORD>& dest)
-    {
-        std::vector<DWORD> commonElements;
-        for (auto it = src.begin(); it != src.end() - 1; it++)
-        {
-            if (std::find(dest.begin(), dest.end() - 1, *it) != dest.end() - 1)
-            {
-                commonElements.push_back(*it);
-            }
-        }
-
-        return commonElements;
-    }
-
     // Function to a handle a shortcut remap
-    intptr_t HandleShortcutRemapEvent(LowlevelKeyboardEvent* data, std::map<std::vector<DWORD>, std::pair<std::vector<WORD>, bool>>& reMap, std::mutex& map_mutex) noexcept
+    intptr_t HandleShortcutRemapEvent(LowlevelKeyboardEvent* data, std::map<Shortcut, RemapShortcut>& reMap, std::mutex& map_mutex) noexcept
     {
         // The mutex should be unlocked before SendInput is called to avoid re-entry into the same mutex. More details can be found at https://github.com/microsoft/PowerToys/pull/1789#issuecomment-607555837
         std::unique_lock<std::mutex> lock(map_mutex);
         for (auto& it : reMap)
         {
-            const size_t src_size = it.first.size();
-            const size_t dest_size = it.second.first.size();
+            const size_t src_size = it.first.Size();
+            const size_t dest_size = it.second.targetShortcut.Size();
+
             // If the shortcut has been pressed down
-            if (!it.second.second && CheckModifiersKeyboardState<DWORD>(it.first))
+            if (!it.second.isShortcutInvoked && it.first.CheckModifiersKeyboardState())
             {
-                if (data->lParam->vkCode == it.first[src_size - 1] && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+                if (data->lParam->vkCode == it.first.GetActionKey() && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
                 {
                     // Check if any other keys have been pressed apart from the shortcut. If true, then check for the next shortcut
-                    if (!IsKeyboardStateClearExceptArgs(it.first))
+                    if (!it.first.IsKeyboardStateClearExceptShortcut())
                     {
                         continue;
                     }
 
                     size_t key_count;
                     LPINPUT keyEventList;
+
+                    // Remember which win key was pressed initially
+                    if (GetAsyncKeyState(VK_RWIN) & 0x8000)
+                    {
+                        it.second.winKeyInvoked = ModifierKey::Right;
+                    }
+                    else if (GetAsyncKeyState(VK_LWIN) & 0x8000)
+                    {
+                        it.second.winKeyInvoked = ModifierKey::Left;
+                    }
+
                     // Get the common keys between the two shortcuts
-                    std::vector<DWORD> commonKeys = GetCommonModifiers(it.first, it.second.first);
+                    int commonKeys = it.first.GetCommonModifiersCount(it.second.targetShortcut);
 
                     // If the original shortcut modifiers are a subset of the new shortcut
-                    if (commonKeys.size() == src_size - 1)
+                    if (commonKeys == src_size - 1)
                     {
                         // key down for all new shortcut keys except the common modifiers
-                        key_count = dest_size - commonKeys.size();
+                        key_count = dest_size - commonKeys;
                         keyEventList = new INPUT[key_count]();
                         memset(keyEventList, 0, sizeof(keyEventList));
-                        long long i = 0;
-                        long long j = 0;
-                        // Add a key down only for the non-common keys in the new shortcut
-                        while (i < (long long)key_count)
+                        int i = 0;
+
+                        if ((it.second.targetShortcut.GetWinKey(it.second.winKeyInvoked) != it.first.GetWinKey(it.second.winKeyInvoked)) && it.second.targetShortcut.GetWinKey(it.second.winKeyInvoked) != NULL)
                         {
-                            if (std::find(commonKeys.begin(), commonKeys.end(), it.second.first[j]) == commonKeys.end())
-                            {
-                                keyEventList[i].type = INPUT_KEYBOARD;
-                                keyEventList[i].ki.wVk = it.second.first[j];
-                                keyEventList[i].ki.dwFlags = 0;
-                                keyEventList[i].ki.dwExtraInfo = KEYBOARDMANAGER_SHORTCUT_FLAG;
-                                i++;
-                            }
-                            j++;
+                            SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetWinKey(it.second.winKeyInvoked), 0, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
                         }
+                        if ((it.second.targetShortcut.GetCtrlKey() != it.first.GetCtrlKey()) && it.second.targetShortcut.GetCtrlKey() != NULL)
+                        {
+                            SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetCtrlKey(), 0, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
+                        }
+                        if ((it.second.targetShortcut.GetAltKey() != it.first.GetAltKey()) && it.second.targetShortcut.GetAltKey() != NULL)
+                        {
+                            SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetAltKey(), 0, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
+                        }
+                        if ((it.second.targetShortcut.GetShiftKey() != it.first.GetShiftKey()) && it.second.targetShortcut.GetShiftKey() != NULL)
+                        {
+                            SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetShiftKey(), 0, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
+                        }
+                        SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetActionKey(), 0, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        i++;
                     }
                     else
                     {
                         // Dummy key, key up for all the original shortcut modifier keys and key down for all the new shortcut keys but common keys in each are not repeated
-                        key_count = 1 + (src_size - 1) + (dest_size) - (2 * commonKeys.size());
+                        key_count = 1 + (src_size - 1) + (dest_size) - (2 * (size_t)commonKeys);
                         keyEventList = new INPUT[key_count]();
                         memset(keyEventList, 0, sizeof(keyEventList));
 
                         // Send dummy key
-                        keyEventList[0].type = INPUT_KEYBOARD;
-                        keyEventList[0].ki.wVk = (WORD)DUMMY_KEY;
-                        keyEventList[0].ki.dwFlags = KEYEVENTF_KEYUP;
-                        keyEventList[0].ki.dwExtraInfo = KEYBOARDMANAGER_SHORTCUT_FLAG;
-
+                        int i = 0;
+                        SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)DUMMY_KEY, KEYEVENTF_KEYUP, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        i++;
                         // Release original shortcut state (release in reverse order of shortcut to be accurate)
-                        long long i = 1;
-                        long long j = (long long)src_size - 2;
-                        while (j >= 0)
+                        if ((it.second.targetShortcut.GetShiftKey() != it.first.GetShiftKey()) && it.first.GetShiftKey() != NULL)
                         {
-                            // Release only those keys which are not common
-                            if (std::find(commonKeys.begin(), commonKeys.end(), it.first[j]) == commonKeys.end())
-                            {
-                                keyEventList[i].type = INPUT_KEYBOARD;
-                                keyEventList[i].ki.wVk = (WORD)it.first[j];
-                                keyEventList[i].ki.dwFlags = KEYEVENTF_KEYUP;
-                                keyEventList[i].ki.dwExtraInfo = KEYBOARDMANAGER_SHORTCUT_FLAG;
-                                i++;
-                            }
-                            j--;
+                            SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.first.GetShiftKey(), KEYEVENTF_KEYUP, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
+                        }
+                        if ((it.second.targetShortcut.GetAltKey() != it.first.GetAltKey()) && it.first.GetAltKey() != NULL)
+                        {
+                            SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.first.GetAltKey(), KEYEVENTF_KEYUP, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
+                        }
+                        if ((it.second.targetShortcut.GetCtrlKey() != it.first.GetCtrlKey()) && it.first.GetCtrlKey() != NULL)
+                        {
+                            SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.first.GetCtrlKey(), KEYEVENTF_KEYUP, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
+                        }
+                        if ((it.second.targetShortcut.GetWinKey(it.second.winKeyInvoked) != it.first.GetWinKey(it.second.winKeyInvoked)) && it.first.GetWinKey(it.second.winKeyInvoked) != NULL)
+                        {
+                            SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.first.GetWinKey(it.second.winKeyInvoked), KEYEVENTF_KEYUP, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
                         }
 
                         // Set new shortcut key down state
-                        j = 0;
-                        while (i < (long long)key_count)
+                        if ((it.second.targetShortcut.GetWinKey(it.second.winKeyInvoked) != it.first.GetWinKey(it.second.winKeyInvoked)) && it.second.targetShortcut.GetWinKey(it.second.winKeyInvoked) != NULL)
                         {
-                            // Key down only those keys which are not common
-                            if (std::find(commonKeys.begin(), commonKeys.end(), it.second.first[j]) == commonKeys.end())
-                            {
-                                keyEventList[i].type = INPUT_KEYBOARD;
-                                keyEventList[i].ki.wVk = it.second.first[j];
-                                keyEventList[i].ki.dwFlags = 0;
-                                keyEventList[i].ki.dwExtraInfo = KEYBOARDMANAGER_SHORTCUT_FLAG;
-                                i++;
-                            }
-                            j++;
+                            SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetWinKey(it.second.winKeyInvoked), 0, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
                         }
+                        if ((it.second.targetShortcut.GetCtrlKey() != it.first.GetCtrlKey()) && it.second.targetShortcut.GetCtrlKey() != NULL)
+                        {
+                            SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetCtrlKey(), 0, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
+                        }
+                        if ((it.second.targetShortcut.GetAltKey() != it.first.GetAltKey()) && it.second.targetShortcut.GetAltKey() != NULL)
+                        {
+                            SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetAltKey(), 0, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
+                        }
+                        if ((it.second.targetShortcut.GetShiftKey() != it.first.GetShiftKey()) && it.second.targetShortcut.GetShiftKey() != NULL)
+                        {
+                            SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetShiftKey(), 0, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
+                        }
+                        SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetActionKey(), 0, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        i++;
                     }
 
-                    it.second.second = true;
+                    it.second.isShortcutInvoked = true;
                     lock.unlock();
                     UINT res = SendInput((UINT)key_count, keyEventList, sizeof(INPUT));
                     delete[] keyEventList;
@@ -610,66 +546,81 @@ public:
             // There are 4 cases to be handled if the shortcut has been pressed down
             // 1. The user lets go of one of the modifier keys - reset the keyboard back to the state of the keys actually being pressed down
             // 2. The user keeps the shortcut pressed - the shortcut is repeated (for example you could hold down Ctrl+V and it will keep pasting)
-            // 3. The user lets go of the last key - reset the keyboard back to the state of the keys actually being pressed down
+            // 3. The user lets go of the action key - reset the keyboard back to the state of the keys actually being pressed down
             // 4. The user presses another key while holding the shortcut down - the system now sees all the new shortcut keys and this extra key pressed at the end. Not handled as resetting the state would trigger the original shortcut once more
-            else if (it.second.second)
+            else if (it.second.isShortcutInvoked)
             {
                 // Get the common keys between the two shortcuts
-                std::vector<DWORD> commonKeys = GetCommonModifiers(it.first, it.second.first);
+                int commonKeys = it.first.GetCommonModifiersCount(it.second.targetShortcut);
 
                 // Case 1: If any of the modifier keys of the original shortcut are released before the normal key
-                auto keyIt = std::find(it.first.begin(), it.first.end() - 1, data->lParam->vkCode);
-                if (keyIt != (it.first.end() - 1) && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+                if ((it.first.CheckWinKey(data->lParam->vkCode) || it.first.CheckCtrlKey(data->lParam->vkCode) || it.first.CheckAltKey(data->lParam->vkCode) || it.first.CheckShiftKey(data->lParam->vkCode)) && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
                 {
                     // Release new shortcut, and set original shortcut keys except the one released
                     size_t key_count;
-                    if (std::find(commonKeys.begin(), commonKeys.end(), data->lParam->vkCode) != commonKeys.end())
+                    // if the released key is present in both shortcuts' modifiers (i.e part of the common modifiers)
+                    if (it.second.targetShortcut.CheckWinKey(data->lParam->vkCode) || it.second.targetShortcut.CheckCtrlKey(data->lParam->vkCode) || it.second.targetShortcut.CheckAltKey(data->lParam->vkCode) || it.second.targetShortcut.CheckShiftKey(data->lParam->vkCode))
                     {
                         // release all new shortcut keys and the common released modifier except the other common modifiers, and add all original shortcut modifiers except the common ones
-                        key_count = (dest_size - commonKeys.size() + 1) + (src_size - 1 - commonKeys.size());
+                        key_count = (dest_size - commonKeys + 1) + (src_size - 1 - commonKeys);
                     }
                     else
                     {
                         // release all new shortcut keys except the common modifiers and add all original shortcut modifiers except the common ones
-                        key_count = dest_size + (src_size - 2) - (2 * commonKeys.size());
+                        key_count = dest_size + (src_size - 2) - (2 * (size_t)commonKeys);
                     }
                     LPINPUT keyEventList = new INPUT[key_count]();
                     memset(keyEventList, 0, sizeof(keyEventList));
 
                     // Release new shortcut state (release in reverse order of shortcut to be accurate)
-                    long long i = 0;
-                    long long j = (long long)dest_size - 1;
-                    while (j >= 0)
+                    int i = 0;
+                    SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetActionKey(), KEYEVENTF_KEYUP, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                    i++;
+                    if (((it.second.targetShortcut.GetShiftKey() != it.first.GetShiftKey()) || (it.second.targetShortcut.CheckShiftKey(data->lParam->vkCode))) && it.second.targetShortcut.GetShiftKey() != NULL)
                     {
-                        // Do not release if it is a common modifier, except the case where a common modifier is released (second part of the if condition))
-                        if ((std::find(commonKeys.begin(), commonKeys.end(), it.second.first[j]) == commonKeys.end()) || it.second.first[j] == data->lParam->vkCode)
-                        {
-                            keyEventList[i].type = INPUT_KEYBOARD;
-                            keyEventList[i].ki.wVk = it.second.first[j];
-                            keyEventList[i].ki.dwFlags = KEYEVENTF_KEYUP;
-                            keyEventList[i].ki.dwExtraInfo = KEYBOARDMANAGER_SHORTCUT_FLAG;
-                            i++;
-                        }
-                        j--;
+                        SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetShiftKey(), KEYEVENTF_KEYUP, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        i++;
+                    }
+                    if (((it.second.targetShortcut.GetAltKey() != it.first.GetAltKey()) || (it.second.targetShortcut.CheckAltKey(data->lParam->vkCode))) && it.second.targetShortcut.GetAltKey() != NULL)
+                    {
+                        SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetAltKey(), KEYEVENTF_KEYUP, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        i++;
+                    }
+                    if (((it.second.targetShortcut.GetCtrlKey() != it.first.GetCtrlKey()) || (it.second.targetShortcut.CheckCtrlKey(data->lParam->vkCode))) && it.second.targetShortcut.GetCtrlKey() != NULL)
+                    {
+                        SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetCtrlKey(), KEYEVENTF_KEYUP, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        i++;
+                    }
+                    if (((it.second.targetShortcut.GetWinKey(it.second.winKeyInvoked) != it.first.GetWinKey(it.second.winKeyInvoked)) || (it.second.targetShortcut.CheckWinKey(data->lParam->vkCode))) && it.second.targetShortcut.GetWinKey(it.second.winKeyInvoked) != NULL)
+                    {
+                        SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetWinKey(it.second.winKeyInvoked), KEYEVENTF_KEYUP, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        i++;
                     }
 
-                    // Set original shortcut key down state except the last key and the released modifier
-                    j = 0;
-                    while (i < (long long)key_count)
+                    // Set original shortcut key down state except the action key and the released modifier
+                    if ((it.second.targetShortcut.GetWinKey(it.second.winKeyInvoked) != it.first.GetWinKey(it.second.winKeyInvoked)) && (!it.first.CheckWinKey(data->lParam->vkCode)) && it.first.GetWinKey(it.second.winKeyInvoked) != NULL)
                     {
-                        // Do not set key down for the released modifier and for the common modifiers
-                        if (it.first[j] != data->lParam->vkCode && (std::find(commonKeys.begin(), commonKeys.end(), it.first[j]) == commonKeys.end()))
-                        {
-                            keyEventList[i].type = INPUT_KEYBOARD;
-                            keyEventList[i].ki.wVk = (WORD)it.first[j];
-                            keyEventList[i].ki.dwFlags = 0;
-                            keyEventList[i].ki.dwExtraInfo = KEYBOARDMANAGER_SHORTCUT_FLAG;
-                            i++;
-                        }
-                        j++;
+                        SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.first.GetWinKey(it.second.winKeyInvoked), 0, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        i++;
+                    }
+                    if ((it.second.targetShortcut.GetCtrlKey() != it.first.GetCtrlKey()) && (!it.first.CheckCtrlKey(data->lParam->vkCode)) && it.first.GetCtrlKey() != NULL)
+                    {
+                        SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.first.GetCtrlKey(), 0, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        i++;
+                    }
+                    if ((it.second.targetShortcut.GetAltKey() != it.first.GetAltKey()) && (!it.first.CheckAltKey(data->lParam->vkCode)) && it.first.GetAltKey() != NULL)
+                    {
+                        SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.first.GetAltKey(), 0, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        i++;
+                    }
+                    if ((it.second.targetShortcut.GetShiftKey() != it.first.GetShiftKey()) && (!it.first.CheckShiftKey(data->lParam->vkCode)) && it.first.GetShiftKey() != NULL)
+                    {
+                        SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.first.GetShiftKey(), 0, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        i++;
                     }
 
-                    it.second.second = false;
+                    it.second.isShortcutInvoked = false;
+                    it.second.winKeyInvoked = ModifierKey::Disabled;
                     lock.unlock();
                     UINT res = SendInput((UINT)key_count, keyEventList, sizeof(INPUT));
                     delete[] keyEventList;
@@ -677,101 +628,122 @@ public:
                 }
 
                 // The system will see the modifiers of the new shortcut as being held down because of the shortcut remap
-                if (CheckModifiersKeyboardState<WORD>(it.second.first))
+                if (it.second.targetShortcut.CheckModifiersKeyboardState())
                 {
-                    // Case 2: If the original shortcut is still held down the keyboard will get a key down message of the last key in the original shortcut and the new shortcut's modifiers will be held down (keys held down send repeated keydown messages)
-                    if (data->lParam->vkCode == it.first[src_size - 1] && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+                    // Case 2: If the original shortcut is still held down the keyboard will get a key down message of the action key in the original shortcut and the new shortcut's modifiers will be held down (keys held down send repeated keydown messages)
+                    if (data->lParam->vkCode == it.first.GetActionKey() && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
                     {
                         size_t key_count = 1;
                         LPINPUT keyEventList = new INPUT[key_count]();
                         memset(keyEventList, 0, sizeof(keyEventList));
-                        keyEventList[0].type = INPUT_KEYBOARD;
-                        keyEventList[0].ki.wVk = it.second.first[dest_size - 1];
-                        keyEventList[0].ki.dwFlags = 0;
-                        keyEventList[0].ki.dwExtraInfo = KEYBOARDMANAGER_SHORTCUT_FLAG;
+                        SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetActionKey(), 0, KEYBOARDMANAGER_SHORTCUT_FLAG);
 
-                        it.second.second = true;
+                        it.second.isShortcutInvoked = true;
                         lock.unlock();
                         UINT res = SendInput((UINT)key_count, keyEventList, sizeof(INPUT));
                         delete[] keyEventList;
                         return 1;
                     }
 
-                    // Case 3: If the last key is released from the original shortcut then revert the keyboard state to just the original modifiers being held down
-                    if (data->lParam->vkCode == it.first[src_size - 1] && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+                    // Case 3: If the action key is released from the original shortcut then revert the keyboard state to just the original modifiers being held down
+                    if (data->lParam->vkCode == it.first.GetActionKey() && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
                     {
                         size_t key_count;
                         LPINPUT keyEventList;
 
                         // If the original shortcut is a subset of the new shortcut
-                        if (commonKeys.size() == src_size - 1)
+                        if (commonKeys == src_size - 1)
                         {
-                            key_count = dest_size - commonKeys.size();
+                            key_count = dest_size - commonKeys;
                             keyEventList = new INPUT[key_count]();
                             memset(keyEventList, 0, sizeof(keyEventList));
-                            long long i = 0;
-                            long long j = (long long)dest_size - 1;
-                            while (i < (long long)key_count)
+
+                            int i = 0;
+                            SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetActionKey(), KEYEVENTF_KEYUP, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
+                            if ((it.second.targetShortcut.GetShiftKey() != it.first.GetShiftKey()) && it.second.targetShortcut.GetShiftKey() != NULL)
                             {
-                                if (std::find(commonKeys.begin(), commonKeys.end(), it.second.first[j]) == commonKeys.end())
-                                {
-                                    keyEventList[i].type = INPUT_KEYBOARD;
-                                    keyEventList[i].ki.wVk = it.second.first[j];
-                                    keyEventList[i].ki.dwFlags = KEYEVENTF_KEYUP;
-                                    keyEventList[i].ki.dwExtraInfo = KEYBOARDMANAGER_SHORTCUT_FLAG;
-                                    i++;
-                                }
-                                j--;
+                                SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetShiftKey(), KEYEVENTF_KEYUP, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                i++;
+                            }
+                            if ((it.second.targetShortcut.GetAltKey() != it.first.GetAltKey()) && it.second.targetShortcut.GetAltKey() != NULL)
+                            {
+                                SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetAltKey(), KEYEVENTF_KEYUP, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                i++;
+                            }
+                            if ((it.second.targetShortcut.GetCtrlKey() != it.first.GetCtrlKey()) && it.second.targetShortcut.GetCtrlKey() != NULL)
+                            {
+                                SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetCtrlKey(), KEYEVENTF_KEYUP, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                i++;
+                            }
+                            if ((it.second.targetShortcut.GetWinKey(it.second.winKeyInvoked) != it.first.GetWinKey(it.second.winKeyInvoked)) && it.second.targetShortcut.GetWinKey(it.second.winKeyInvoked) != NULL)
+                            {
+                                SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetWinKey(it.second.winKeyInvoked), KEYEVENTF_KEYUP, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                i++;
                             }
                         }
                         else
                         {
                             // Key up for all new shortcut keys, key down for original shortcut modifiers and dummy key but common keys aren't repeated
-                            key_count = (dest_size) + (src_size - 1) + 1 - (2 * commonKeys.size());
+                            key_count = (dest_size) + (src_size - 1) + 1 - (2 * (size_t)commonKeys);
                             keyEventList = new INPUT[key_count]();
                             memset(keyEventList, 0, sizeof(keyEventList));
 
                             // Release new shortcut state (release in reverse order of shortcut to be accurate)
-                            long long i = 0;
-                            long long j = (long long)dest_size - 1;
-                            while (j >= 0 && i < (long long)(dest_size - commonKeys.size()))
+                            int i = 0;
+                            SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetActionKey(), KEYEVENTF_KEYUP, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
+                            if ((it.second.targetShortcut.GetShiftKey() != it.first.GetShiftKey()) && it.second.targetShortcut.GetShiftKey() != NULL)
                             {
-                                // Release only those keys which are not common
-                                if (std::find(commonKeys.begin(), commonKeys.end(), it.second.first[j]) == commonKeys.end())
-                                {
-                                    keyEventList[i].type = INPUT_KEYBOARD;
-                                    keyEventList[i].ki.wVk = it.second.first[j];
-                                    keyEventList[i].ki.dwFlags = KEYEVENTF_KEYUP;
-                                    keyEventList[i].ki.dwExtraInfo = KEYBOARDMANAGER_SHORTCUT_FLAG;
-                                    i++;
-                                }
-                                j--;
+                                SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetShiftKey(), KEYEVENTF_KEYUP, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                i++;
+                            }
+                            if ((it.second.targetShortcut.GetAltKey() != it.first.GetAltKey()) && it.second.targetShortcut.GetAltKey() != NULL)
+                            {
+                                SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetAltKey(), KEYEVENTF_KEYUP, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                i++;
+                            }
+                            if ((it.second.targetShortcut.GetCtrlKey() != it.first.GetCtrlKey()) && it.second.targetShortcut.GetCtrlKey() != NULL)
+                            {
+                                SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetCtrlKey(), KEYEVENTF_KEYUP, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                i++;
+                            }
+                            if ((it.second.targetShortcut.GetWinKey(it.second.winKeyInvoked) != it.first.GetWinKey(it.second.winKeyInvoked)) && it.second.targetShortcut.GetWinKey(it.second.winKeyInvoked) != NULL)
+                            {
+                                SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetWinKey(it.second.winKeyInvoked), KEYEVENTF_KEYUP, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                i++;
                             }
 
                             // Set old shortcut key down state
-                            j = 0;
-                            while (i < (long long)key_count)
+
+                            if ((it.second.targetShortcut.GetWinKey(it.second.winKeyInvoked) != it.first.GetWinKey(it.second.winKeyInvoked)) && it.first.GetWinKey(it.second.winKeyInvoked) != NULL)
                             {
-                                // Key down only those keys which are not common
-                                if (std::find(commonKeys.begin(), commonKeys.end(), it.first[j]) == commonKeys.end())
-                                {
-                                    keyEventList[i].type = INPUT_KEYBOARD;
-                                    keyEventList[i].ki.wVk = (WORD)it.first[j];
-                                    keyEventList[i].ki.dwFlags = 0;
-                                    keyEventList[i].ki.dwExtraInfo = KEYBOARDMANAGER_SHORTCUT_FLAG;
-                                    i++;
-                                }
-                                j++;
+                                SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.first.GetWinKey(it.second.winKeyInvoked), 0, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                i++;
+                            }
+                            if ((it.second.targetShortcut.GetCtrlKey() != it.first.GetCtrlKey()) && it.first.GetCtrlKey() != NULL)
+                            {
+                                SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.first.GetCtrlKey(), 0, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                i++;
+                            }
+                            if ((it.second.targetShortcut.GetAltKey() != it.first.GetAltKey()) && it.first.GetAltKey() != NULL)
+                            {
+                                SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.first.GetAltKey(), 0, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                i++;
+                            }
+                            if ((it.second.targetShortcut.GetShiftKey() != it.first.GetShiftKey()) && it.first.GetShiftKey() != NULL)
+                            {
+                                SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.first.GetShiftKey(), 0, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                i++;
                             }
 
                             // Send dummy key
-                            keyEventList[key_count - 1].type = INPUT_KEYBOARD;
-                            keyEventList[key_count - 1].ki.wVk = (WORD)DUMMY_KEY;
-                            keyEventList[key_count - 1].ki.dwFlags = KEYEVENTF_KEYUP;
-                            keyEventList[key_count - 1].ki.dwExtraInfo = KEYBOARDMANAGER_SHORTCUT_FLAG;
+                            SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)DUMMY_KEY, KEYEVENTF_KEYUP, KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
                         }
 
-                        it.second.second = false;
+                        it.second.isShortcutInvoked = false;
+                        it.second.winKeyInvoked = ModifierKey::Disabled;
                         lock.unlock();
                         UINT res = SendInput((UINT)key_count, keyEventList, sizeof(INPUT));
                         delete[] keyEventList;
@@ -854,6 +826,7 @@ public:
             {
                 return 0;
             }
+
             std::unique_lock<std::mutex> lock(keyboardManagerState.appSpecificShortcutReMap_mutex);
             auto it = keyboardManagerState.appSpecificShortcutReMap.find(process_name);
             if (it != keyboardManagerState.appSpecificShortcutReMap.end())
