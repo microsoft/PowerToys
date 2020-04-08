@@ -18,6 +18,7 @@ namespace WindowWalker.ViewModels
         private readonly List<string> _hints = new List<string>()
         {
             "search for running processes or windows...",
+
             // "you can reinvoke this app using CTRL + WIN",
         };
 

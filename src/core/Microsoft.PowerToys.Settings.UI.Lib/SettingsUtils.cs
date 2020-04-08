@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.IO;
-using System.Text;
 using System.Text.Json;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public static class SettingsUtils
     {
-        private static string LocalApplicationDataFolder()
-        {
-            return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        }
-
         public static bool SettingsFolderExists(string powertoy)
         {
             return Directory.Exists(Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
@@ -59,16 +56,22 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         // Save settings to a json file.
         public static void SaveSettings(string jsonSettings, string powertoy)
         {
-            if(jsonSettings != null)
+            if (jsonSettings != null)
             {
                 if (!SettingsFolderExists(powertoy))
                 {
                     CreateSettingsFolder(powertoy);
                 }
+
                 System.IO.File.WriteAllText(
                     SettingsUtils.GetSettingsPath(powertoy),
                     jsonSettings);
             }
+        }
+
+        private static string LocalApplicationDataFolder()
+        {
+            return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         }
     }
 }

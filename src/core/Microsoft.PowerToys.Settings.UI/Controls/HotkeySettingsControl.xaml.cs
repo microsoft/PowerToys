@@ -1,25 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using Microsoft.PowerToys.Settings.UI.Lib;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 
-using Microsoft.PowerToys.Settings.UI.Lib;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
-
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     public sealed partial class HotkeySettingsControl : UserControl
@@ -28,30 +17,35 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public static readonly DependencyProperty HotkeySettingsProperty =
             DependencyProperty.Register(
-                "HotkeySettings", 
+                "HotkeySettings",
                 typeof(HotkeySettings),
                 typeof(HotkeySettingsControl),
                 null);
 
-        private HotkeySettings _hotkeySettings;
-        public HotkeySettings HotkeySettings 
-        { 
-            get { return _hotkeySettings; }
-            set 
+        private HotkeySettings hotkeySettings;
+
+        public HotkeySettings HotkeySettings
+        {
+            get
             {
-                if (_hotkeySettings != value)
+                return this.hotkeySettings;
+            }
+
+            set
+            {
+                if (this.hotkeySettings != value)
                 {
-                    _hotkeySettings = value;
-                    SetValue(HotkeySettingsProperty, value);
-                    HotkeyTextBox.Text = HotkeySettings.ToString();
+                    this.hotkeySettings = value;
+                    this.SetValue(HotkeySettingsProperty, value);
+                    this.HotkeyTextBox.Text = this.HotkeySettings.ToString();
                 }
-            } 
+            }
         }
 
         public HotkeySettingsControl()
         {
             this.InitializeComponent();
-            HotkeyTextBox.PreviewKeyDown += HotkeyTextBox_KeyDown;
+            this.HotkeyTextBox.PreviewKeyDown += this.HotkeyTextBox_KeyDown;
         }
 
         private static bool IsDown(Windows.System.VirtualKey key)
@@ -67,27 +61,30 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 e.Key == Windows.System.VirtualKey.RightWindows ||
                 e.Key == Windows.System.VirtualKey.Control ||
                 e.Key == Windows.System.VirtualKey.Menu ||
-                e.Key == Windows.System.VirtualKey.Shift
-                )
+                e.Key == Windows.System.VirtualKey.Shift)
             {
                 return;
             }
 
             var settings = new HotkeySettings();
+
             // Display HotKey value
-            if (IsDown(Windows.System.VirtualKey.LeftWindows) || 
+            if (IsDown(Windows.System.VirtualKey.LeftWindows) ||
                 IsDown(Windows.System.VirtualKey.RightWindows))
             {
                 settings.win = true;
             }
+
             if (IsDown(Windows.System.VirtualKey.Control))
             {
                 settings.ctrl = true;
             }
+
             if (IsDown(Windows.System.VirtualKey.Menu))
             {
                 settings.alt = true;
             }
+
             if (IsDown(Windows.System.VirtualKey.Shift))
             {
                 settings.shift = true;
@@ -96,8 +93,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             settings.key = e.Key.ToString();
 
             // TODO: Check that e.OriginalKey is the ScanCode. It is not clear from docs.
-            settings.code = (int) e.OriginalKey;
-            HotkeySettings = settings;
+            settings.code = (int)e.OriginalKey;
+            this.HotkeySettings = settings;
         }
     }
 }

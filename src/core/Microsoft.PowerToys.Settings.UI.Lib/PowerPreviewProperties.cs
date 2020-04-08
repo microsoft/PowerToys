@@ -10,10 +10,10 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-
     public class PowerPreviewProperties
     {
         public BoolProperty IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL { get; set; }
+
         public BoolProperty PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID { get; set; }
 
         public PowerPreviewProperties()
