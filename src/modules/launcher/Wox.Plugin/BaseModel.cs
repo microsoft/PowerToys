@@ -1,5 +1,7 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using JetBrains.Annotations;
 
 namespace Wox.Plugin
@@ -11,7 +13,13 @@ namespace Wox.Plugin
         [NotifyPropertyChangedInvocator]
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));  
+            if (Application.Current.Dispatcher.CheckAccess())
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            else
+                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+                }));
         }
     }
 }

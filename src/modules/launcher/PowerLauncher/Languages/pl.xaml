@@ -1,0 +1,130 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+    <!--MainWindow-->
+    <system:String x:Key="registerHotkeyFailed">Nie udało się ustawić skrótu klawiszowego: {0}</system:String>
+    <system:String x:Key="couldnotStartCmd">Nie udało się uruchomić: {0}</system:String>
+    <system:String x:Key="invalidWoxPluginFileFormat">Niepoprawny format pliku wtyczki</system:String>
+    <system:String x:Key="setAsTopMostInThisQuery">Ustaw jako najwyższy wynik dla tego zapytania</system:String>
+    <system:String x:Key="cancelTopMostInThisQuery">Usuń ten najwyższy wynik dla tego zapytania</system:String>
+    <system:String x:Key="executeQuery">Wyszukaj: {0}</system:String>
+    <system:String x:Key="lastExecuteTime">Ostatni czas wykonywania: {0}</system:String>
+    <system:String x:Key="iconTrayOpen">Otwórz</system:String>
+    <system:String x:Key="iconTraySettings">Ustawienia</system:String>
+    <system:String x:Key="iconTrayAbout">O programie</system:String>
+    <system:String x:Key="iconTrayExit">Wyjdź</system:String>
+
+    <!--Setting General-->
+    <system:String x:Key="wox_settings">Ustawienia Wox</system:String>
+    <system:String x:Key="general">Ogólne</system:String>
+    <system:String x:Key="startWoxOnSystemStartup">Uruchamiaj Wox przy starcie systemu</system:String>
+    <system:String x:Key="hideWoxWhenLoseFocus">Ukryj okno Wox kiedy przestanie ono być aktywne</system:String>
+    <system:String x:Key="dontPromptUpdateMsg">Nie pokazuj powiadomienia o nowej wersji</system:String>
+    <system:String x:Key="rememberLastLocation">Zapamiętaj ostatnią pozycję okna</system:String>
+    <system:String x:Key="language">Język</system:String>
+    <system:String x:Key="maxShowResults">Maksymalna liczba wyników</system:String>
+    <system:String x:Key="ignoreHotkeysOnFullscreen">Ignoruj skróty klawiszowe w trybie pełnego ekranu</system:String>
+    <system:String x:Key="autoUpdates">Automatyczne aktualizacje</system:String>
+    <system:String x:Key="hideOnStartup">Uruchamiaj Wox zminimalizowany</system:String>
+
+    <!--Setting Plugin-->
+    <system:String x:Key="plugin">Wtyczki</system:String>
+    <system:String x:Key="browserMorePlugins">Znajdź więcej wtyczek</system:String>
+    <system:String x:Key="disable">Wyłącz</system:String>
+    <system:String x:Key="actionKeywords">Wyzwalacze</system:String>
+    <system:String x:Key="pluginDirectory">Folder wtyczki</system:String>
+    <system:String x:Key="author">Autor</system:String>
+    <system:String x:Key="plugin_init_time">Czas ładowania: {0}ms</system:String>
+    <system:String x:Key="plugin_query_time">Czas zapytania: {0}ms</system:String>
+
+    <!--Setting Theme-->
+    <system:String x:Key="theme">Skórka</system:String>
+    <system:String x:Key="browserMoreThemes">Znajdź więcej skórek</system:String>
+    <system:String x:Key="helloWox">Witaj Wox</system:String>
+    <system:String x:Key="queryBoxFont">Czcionka okna zapytania</system:String>
+    <system:String x:Key="resultItemFont">Czcionka okna wyników</system:String>
+    <system:String x:Key="windowMode">Tryb w oknie</system:String>
+    <system:String x:Key="opacity">Przeźroczystość</system:String>
+
+    <!--Setting Hotkey-->
+    <system:String x:Key="hotkey">Skrót klawiszowy</system:String>
+    <system:String x:Key="woxHotkey">Skrót klawiszowy Wox</system:String>
+    <system:String x:Key="customQueryHotkey">Skrót klawiszowy niestandardowych zapytań</system:String>
+    <system:String x:Key="delete">Usuń</system:String>
+    <system:String x:Key="edit">Edytuj</system:String>
+    <system:String x:Key="add">Dodaj</system:String>
+    <system:String x:Key="pleaseSelectAnItem">Musisz coś wybrać</system:String>
+    <system:String x:Key="deleteCustomHotkeyWarning">Czy jesteś pewien że chcesz usunąć skrót klawiszowy {0} wtyczki?</system:String>
+
+    <!--Setting Proxy-->
+    <system:String x:Key="proxy">Serwer proxy HTTP</system:String>
+    <system:String x:Key="enableProxy">Używaj HTTP proxy</system:String>
+    <system:String x:Key="server">HTTP Serwer</system:String>
+    <system:String x:Key="port">Port</system:String>
+    <system:String x:Key="userName">Nazwa użytkownika</system:String>
+    <system:String x:Key="password">Hasło</system:String>
+    <system:String x:Key="testProxy">Sprawdź proxy</system:String>
+    <system:String x:Key="save">Zapisz</system:String>
+    <system:String x:Key="serverCantBeEmpty">Nazwa serwera nie może być pusta</system:String>
+    <system:String x:Key="portCantBeEmpty">Numer portu nie może być pusty</system:String>
+    <system:String x:Key="invalidPortFormat">Nieprawidłowy format numeru portu</system:String>
+    <system:String x:Key="saveProxySuccessfully">Ustawienia proxy zostały zapisane</system:String>
+    <system:String x:Key="proxyIsCorrect">Proxy zostało skonfigurowane poprawnie</system:String>
+    <system:String x:Key="proxyConnectFailed">Nie udało się połączyć z serwerem proxy</system:String>
+
+    <!--Setting About-->
+    <system:String x:Key="about">O programie</system:String>
+    <system:String x:Key="website">Strona internetowa</system:String>
+    <system:String x:Key="version">Wersja</system:String>
+    <system:String x:Key="about_activate_times">Uaktywniłeś Wox {0} razy</system:String>
+    <system:String x:Key="checkUpdates">Szukaj aktualizacji</system:String>
+    <system:String x:Key="newVersionTips">Nowa wersja {0} jest dostępna, uruchom ponownie Wox</system:String>
+    <system:String x:Key="releaseNotes">Zmiany:</system:String>
+
+    <!--Action Keyword Setting Dialog-->
+    <system:String x:Key="oldActionKeywords">Stary wyzwalacz</system:String>
+    <system:String x:Key="newActionKeywords">Nowy wyzwalacz</system:String>
+    <system:String x:Key="cancel">Anuluj</system:String>
+    <system:String x:Key="done">Zapisz</system:String>
+    <system:String x:Key="cannotFindSpecifiedPlugin">Nie można odnaleźć podanej wtyczki</system:String>
+    <system:String x:Key="newActionKeywordsCannotBeEmpty">Nowy wyzwalacz nie może być pusty</system:String>
+    <system:String x:Key="newActionKeywordsHasBeenAssigned">Ten wyzwalacz został już przypisany do innej wtyczki, musisz podać inny wyzwalacz.</system:String>
+    <system:String x:Key="success">Sukces</system:String>
+    <system:String x:Key="actionkeyword_tips">Użyj * jeżeli nie chcesz podawać wyzwalacza</system:String>
+
+    <!--Custom Query Hotkey Dialog-->
+    <system:String x:Key="preview">Podgląd</system:String>
+    <system:String x:Key="hotkeyIsNotUnavailable">Skrót klawiszowy jest niedostępny, musisz podać inny skrót klawiszowy</system:String>
+    <system:String x:Key="invalidPluginHotkey">Niepoprawny skrót klawiszowy</system:String>
+    <system:String x:Key="update">Aktualizuj</system:String>
+
+    <!--Hotkey Control-->
+    <system:String x:Key="hotkeyUnavailable">Niepoprawny skrót klawiszowy</system:String>
+
+    <!--Crash Reporter-->
+    <system:String x:Key="reportWindow_version">Wersja</system:String>
+    <system:String x:Key="reportWindow_time">Czas</system:String>
+    <system:String x:Key="reportWindow_reproduce">Proszę powiedz nam co się stało zanim wystąpił błąd dzięki czemu będziemy mogli go naprawić (tylko po angielsku)</system:String>
+    <system:String x:Key="reportWindow_send_report">Wyślij raport błędu</system:String>
+    <system:String x:Key="reportWindow_cancel">Anuluj</system:String>
+    <system:String x:Key="reportWindow_general">Ogólne</system:String>
+    <system:String x:Key="reportWindow_exceptions">Wyjątki</system:String>
+    <system:String x:Key="reportWindow_exception_type">Typ wyjątku</system:String>
+    <system:String x:Key="reportWindow_source">Źródło</system:String>
+    <system:String x:Key="reportWindow_stack_trace">Stos wywołań</system:String>
+    <system:String x:Key="reportWindow_sending">Wysyłam raport...</system:String>
+    <system:String x:Key="reportWindow_report_succeed">Raport wysłany pomyślnie</system:String>
+    <system:String x:Key="reportWindow_report_failed">Nie udało się wysłać raportu</system:String>
+    <system:String x:Key="reportWindow_wox_got_an_error">W programie Wox wystąpił błąd</system:String>
+
+    <!--update-->
+    <system:String x:Key="update_wox_update_new_version_available">Nowa wersja Wox {0} jest dostępna</system:String>
+    <system:String x:Key="update_wox_update_error">Wystąpił błąd podczas instalowania aktualizacji programu</system:String>
+    <system:String x:Key="update_wox_update">Aktualizuj</system:String>
+    <system:String x:Key="update_wox_update_cancel">Anuluj</system:String>
+    <system:String x:Key="update_wox_update_restart_wox_tip">Aby dokończyć proces aktualizacji Wox musi zostać zresetowany</system:String>
+    <system:String x:Key="update_wox_update_upadte_files">Następujące pliki zostaną zaktualizowane</system:String>
+    <system:String x:Key="update_wox_update_files">Aktualizuj pliki</system:String>
+    <system:String x:Key="update_wox_update_upadte_description">Opis aktualizacji</system:String>
+
+</ResourceDictionary>

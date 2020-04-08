@@ -393,6 +393,7 @@ namespace Wox.ViewModel
                     }, currentCancellationToken);
 
                     var plugins = PluginManager.ValidPluginsForQuery(query);
+                    
                     Task.Run(() =>
                     {
                         // so looping will stop once it was cancelled
@@ -404,7 +405,17 @@ namespace Wox.ViewModel
                                 if (!plugin.Metadata.Disabled)
                                 {
                                     var results = PluginManager.QueryForPlugin(plugin, query);
-                                    UpdateResultView(results, plugin.Metadata, query);
+                                    if (Application.Current.Dispatcher.CheckAccess())
+                                    {
+                                        UpdateResultView(results, plugin.Metadata, query);
+                                    }
+                                    else
+                                    {
+                                        Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                                        {
+                                            UpdateResultView(results, plugin.Metadata, query);
+                                        }));
+                                    }
                                 }
                             });
                         }
@@ -412,7 +423,7 @@ namespace Wox.ViewModel
                         {
                             // nothing to do here
                         }
-                        
+
 
                         // this should happen once after all queries are done so progress bar should continue
                         // until the end of all querying

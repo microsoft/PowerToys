@@ -132,14 +132,33 @@ namespace Wox.Test.Plugins
             _api.InitQueryHelper(out queryHelper, 10);
             _api.ModifyQueryHelper(ref queryHelper, "*");
             string keyword = "test";
+            bool commandDisposed = false;
+            bool resultDisposed = false;
 
             // Act
             _api.ExecuteQuery(queryHelper, keyword);
+            try
+            {
+                _api.command.ExecuteReader();
+            }
+            catch(InvalidOperationException)
+            {
+                commandDisposed = true;
+            }
+
+            try
+            {
+                _api.WDSResults.Read();
+            }
+            catch(InvalidOperationException)
+            {
+                resultDisposed = true;
+            }
 
             // Assert
-            Assert.IsNull(_api.conn);
-            Assert.IsNull(_api.command);
-            Assert.IsNull(_api.WDSResults);
+            Assert.IsTrue(_api.conn.State == System.Data.ConnectionState.Closed);
+            Assert.IsTrue(commandDisposed);
+            Assert.IsTrue(resultDisposed);
         }
     }
 }
