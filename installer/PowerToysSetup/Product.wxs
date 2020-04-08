@@ -32,8 +32,8 @@
       <![CDATA[(WINDOWSBUILDNUMBER >= 17134)]]>
     </Condition>
 
-    <Icon Id="powertoys.ico" SourceFile="$(var.BinX64Dir)\svgs\icon.ico"/>
-    <Property Id="ARPPRODUCTICON" Value="powertoys.ico" />
+    <Icon Id="powertoys.exe" SourceFile="$(var.BinX64Dir)\svgs\icon.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="powertoys.exe" />
     <Feature Id="CoreFeature" Title="PowerToys" AllowAdvertise="no" Absent="disallow" TypicalDefault="install"
              Description="Contains the Shortcut Guide and Fancy Zones features.">
       <ComponentGroupRef Id="CoreComponents" />
@@ -228,7 +228,7 @@
                     Description="PowerToys - Windows system utilities to maximize productivity"
                     Directory="ApplicationProgramsFolder"
                     WorkingDirectory="INSTALLFOLDER"
-                    Icon="powertoys.ico"
+                    Icon="powertoys.exe"
                     IconIndex="0"
                     Advertise="yes">
             <ShortcutProperty Key="System.AppUserModel.ID" Value="Microsoft.PowerToysWin32"/>
@@ -500,7 +500,7 @@
                   Description="PowerToys - Windows system utilities to maximize productivity"
                   Target="[!PowerToys.exe]"
                   WorkingDirectory="INSTALLFOLDER"
-                  Icon="powertoys.ico"
+                  Icon="powertoys.exe"
                   Directory="DesktopFolder"/>
       </Component>
     </DirectoryRef>
