@@ -15,7 +15,6 @@
         WindowStartupLocation="Manual"
         AllowDrop="True"
         ShowInTaskbar="False"
-        Style="{DynamicResource WindowStyle}"
         Icon="Images/app.png"
         AllowsTransparency="True"
         Loaded="OnLoaded"
@@ -25,10 +24,16 @@
         LocationChanged="OnLocationChanged"
         Deactivated="OnDeactivated"
         PreviewKeyDown="OnKeyDown"
+        Background="Transparent"   
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         d:DataContext="{d:DesignInstance vm:MainViewModel}">
-    <xaml:WindowsXamlHost InitialTypeName="PowerLauncher.UI.LauncherControl" ChildChanged="WindowsXamlHost_ChildChanged" />
+    <Border Margin="10" Background="#fff" BorderBrush="#ccc" BorderThickness="1" CornerRadius="4" Padding="4" Width="720" >
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="12" Opacity="0.3" ShadowDepth="4" />
+        </Border.Effect>
+        <xaml:WindowsXamlHost InitialTypeName="PowerLauncher.UI.LauncherControl" ChildChanged="WindowsXamlHost_ChildChanged" />
+    </Border>
     <Window.InputBindings>
-        <KeyBinding Key="Escape" Command="{Binding EscCommand}"></KeyBinding>
+        <KeyBinding Key="Escape" Command="{Binding EscCommand}" />
     </Window.InputBindings>
 </Window>

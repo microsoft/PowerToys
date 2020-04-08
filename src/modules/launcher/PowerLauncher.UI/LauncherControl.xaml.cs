@@ -6,8 +6,7 @@ namespace PowerLauncher.UI
     {
         public LauncherControl()
         {
-            this.InitializeComponent();
-            ShellBarShadow.Receivers.Add(ShadowReceiverGrid);   
+            InitializeComponent();
         }
     }
 }
