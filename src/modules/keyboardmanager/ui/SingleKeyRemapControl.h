@@ -41,7 +41,7 @@ public:
     }
 
     // Function to add a new row to the remap keys table. If the originalKey and newKey args are provided, then the displayed remap keys are set to those values.
-    static void AddNewControlKeyRemapRow(StackPanel& parent, const DWORD& originalKey = NULL, const WORD& newKey = NULL);
+    static void AddNewControlKeyRemapRow(StackPanel& parent, const DWORD& originalKey = NULL, const DWORD& newKey = NULL);
 
     // Function to return the stack panel element of the SingleKeyRemapControl. This is the externally visible UI element which can be used to add it to other layouts
     StackPanel getSingleKeyRemapControl();

@@ -55,7 +55,7 @@ void KeyboardManagerState::ResetUIState()
     currentShortcutTextBlock_lock.unlock();
 
     std::unique_lock<std::mutex> detectedShortcut_lock(detectedShortcut_mutex);
-    detectedShortcut.clear();
+    detectedShortcut.Reset();
     detectedShortcut_lock.unlock();
 
     // Reset all the single key remap UI stored variables.
@@ -83,7 +83,7 @@ void KeyboardManagerState::ClearSingleKeyRemaps()
 }
 
 // Function to add a new OS level shortcut remapping
-bool KeyboardManagerState::AddOSLevelShortcut(const std::vector<DWORD>& originalSC, const std::vector<WORD>& newSC)
+bool KeyboardManagerState::AddOSLevelShortcut(const Shortcut& originalSC, const Shortcut& newSC)
 {
     std::lock_guard<std::mutex> lock(osLevelShortcutReMap_mutex);
 
@@ -94,12 +94,12 @@ bool KeyboardManagerState::AddOSLevelShortcut(const std::vector<DWORD>& original
         return false;
     }
 
-    osLevelShortcutReMap[originalSC] = std::make_pair(newSC, false);
+    osLevelShortcutReMap[originalSC] = RemapShortcut(newSC);
     return true;
 }
 
 // Function to add a new OS level shortcut remapping
-bool KeyboardManagerState::AddSingleKeyRemap(const DWORD& originalKey, const WORD& newRemapKey)
+bool KeyboardManagerState::AddSingleKeyRemap(const DWORD& originalKey, const DWORD& newRemapKey)
 {
     std::lock_guard<std::mutex> lock(singleKeyReMap_mutex);
 
@@ -138,7 +138,7 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
     }
 
     std::unique_lock<std::mutex> detectedShortcut_lock(detectedShortcut_mutex);
-    hstring shortcutString = convertVectorToHstring<DWORD>(detectedShortcut);
+    hstring shortcutString = detectedShortcut.ToHstring();
     detectedShortcut_lock.unlock();
 
     // Since this function is invoked from the back-end thread, in order to update the UI the dispatcher must be used.
@@ -167,15 +167,12 @@ void KeyboardManagerState::UpdateDetectSingleKeyRemapUI()
 }
 
 // Function to return the currently detected shortcut which is displayed on the UI
-std::vector<DWORD> KeyboardManagerState::GetDetectedShortcut()
+Shortcut KeyboardManagerState::GetDetectedShortcut()
 {
     std::unique_lock<std::mutex> lock(currentShortcutTextBlock_mutex);
     hstring detectedShortcutString = currentShortcutTextBlock.Text();
     lock.unlock();
-
-    std::wstring detectedShortcutWstring = detectedShortcutString.c_str();
-    std::vector<std::wstring> detectedShortcutVector = splitwstring(detectedShortcutWstring, L' ');
-    return convertWStringVectorToIntegerVector<DWORD>(detectedShortcutVector);
+    return Shortcut::CreateShortcut(detectedShortcutString);
 }
 
 // Function to return the currently detected remap key which is displayed on the UI
@@ -217,12 +214,13 @@ bool KeyboardManagerState::DetectShortcutUIBackend(LowlevelKeyboardEvent* data)
         // Add the key if it is pressed down
         if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
         {
+            // Set the new key and store if a change occured
             std::unique_lock<std::mutex> lock(detectedShortcut_mutex);
-            if (std::find(detectedShortcut.begin(), detectedShortcut.end(), data->lParam->vkCode) == detectedShortcut.end())
-            {
-                detectedShortcut.push_back(data->lParam->vkCode);
-                lock.unlock();
+            bool updateUI = detectedShortcut.SetKey(data->lParam->vkCode);
+            lock.unlock();
 
+            if (updateUI)
+            {
                 // Update the UI. This function is called here because it should store the set of keys pressed till the last key which was pressed down.
                 UpdateDetectShortcutUI();
             }
@@ -231,7 +229,7 @@ bool KeyboardManagerState::DetectShortcutUIBackend(LowlevelKeyboardEvent* data)
         else if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
         {
             std::lock_guard<std::mutex> lock(detectedShortcut_mutex);
-            detectedShortcut.erase(std::remove(detectedShortcut.begin(), detectedShortcut.end(), data->lParam->vkCode), detectedShortcut.end());
+            detectedShortcut.ResetKey(data->lParam->vkCode);
         }
 
         // Suppress the keyboard event
@@ -242,9 +240,9 @@ bool KeyboardManagerState::DetectShortcutUIBackend(LowlevelKeyboardEvent* data)
     else
     {
         std::lock_guard<std::mutex> lock(detectedShortcut_mutex);
-        if (!detectedShortcut.empty())
+        if (!detectedShortcut.IsEmpty())
         {
-            detectedShortcut.clear();
+            detectedShortcut.Reset();
         }
     }
 

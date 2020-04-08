@@ -1,6 +1,8 @@
 #pragma once
 #include "Helpers.h"
 #include "LayoutMap.h"
+#include "Shortcut.h"
+#include "RemapShortcut.h"
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <mutex>
 #include <winrt/Windows.UI.Xaml.Controls.h>
@@ -29,8 +31,8 @@ private:
     HWND currentUIWindow;
     std::mutex currentUIWindow_mutex;
 
-    // Vector to store the shortcut detected in the detect shortcut UI window. This is used in both the backend and the UI.
-    std::vector<DWORD> detectedShortcut;
+    // Object to store the shortcut detected in the detect shortcut UI window. This is used in both the backend and the UI.
+    Shortcut detectedShortcut;
     std::mutex detectedShortcut_mutex;
 
     // Store detected remap key in the remap UI window. This is used in both the backend and the UI.
@@ -49,7 +51,7 @@ public:
     // The map members and their mutexes are left as public since the maps are used extensively in dllmain.cpp.
     // Maps which store the remappings for each of the features. The bool fields should be initalised to false. They are used to check the current state of the shortcut (i.e is that particular shortcut currently pressed down or not).
     // Stores single key remappings
-    std::unordered_map<DWORD, WORD> singleKeyReMap;
+    std::unordered_map<DWORD, DWORD> singleKeyReMap;
     std::mutex singleKeyReMap_mutex;
 
     // Stores keys which need to be changed from toggle behaviour to modifier behaviour. Eg. Caps Lock
@@ -57,11 +59,11 @@ public:
     std::mutex singleKeyToggleToMod_mutex;
 
     // Stores the os level shortcut remappings
-    std::map<std::vector<DWORD>, std::pair<std::vector<WORD>, bool>> osLevelShortcutReMap;
+    std::map<Shortcut, RemapShortcut> osLevelShortcutReMap;
     std::mutex osLevelShortcutReMap_mutex;
 
     // Stores the app-specific shortcut remappings. Maps application name to the shortcut map
-    std::map<std::wstring, std::map<std::vector<DWORD>, std::pair<std::vector<WORD>, bool>>> appSpecificShortcutReMap;
+    std::map<std::wstring, std::map<Shortcut, RemapShortcut>> appSpecificShortcutReMap;
     std::mutex appSpecificShortcutReMap_mutex;
 
     // Stores the keyboard layout
@@ -89,10 +91,10 @@ public:
     void ClearSingleKeyRemaps();
 
     // Function to add a new single key remapping
-    bool AddSingleKeyRemap(const DWORD& originalKey, const WORD& newRemapKey);
+    bool AddSingleKeyRemap(const DWORD& originalKey, const DWORD& newRemapKey);
 
     // Function to add a new OS level shortcut remapping
-    bool AddOSLevelShortcut(const std::vector<DWORD>& originalSC, const std::vector<WORD>& newSC);
+    bool AddOSLevelShortcut(const Shortcut& originalSC, const Shortcut& newSC);
 
     // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
     void ConfigureDetectShortcutUI(const TextBlock& textBlock);
@@ -107,7 +109,7 @@ public:
     void UpdateDetectSingleKeyRemapUI();
 
     // Function to return the currently detected shortcut which is displayed on the UI
-    std::vector<DWORD> GetDetectedShortcut();
+    Shortcut GetDetectedShortcut();
 
     // Function to return the currently detected remap key which is displayed on the UI
     DWORD GetDetectedSingleRemapKey();
