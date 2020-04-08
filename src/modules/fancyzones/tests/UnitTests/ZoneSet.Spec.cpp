@@ -339,7 +339,7 @@ namespace FancyZonesUnitTests
 
                 HWND window = Mocks::Window();
                 m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 100);
-                Assert::IsTrue(zone1->ContainsWindow(window));
+                Assert::IsFalse(zone1->ContainsWindow(window));
                 Assert::IsFalse(zone2->ContainsWindow(window));
                 Assert::IsFalse(zone3->ContainsWindow(window));
             }
