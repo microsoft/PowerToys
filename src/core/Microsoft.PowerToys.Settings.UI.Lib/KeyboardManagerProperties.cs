@@ -7,15 +7,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class KeyboardManagerProperties
     {
-        // Bool property to notify Keyboard Manager module if the Edit ShortCut botton is pressed.
-        public BoolProperty EditShortCut { get; set; }
+        // Bool property to notify Keyboard Manager module if the Edit Shortcut button is pressed.
+        public BoolProperty EditShortcut { get; set; }
 
-        // Bool property to notify Keyboard Manager module if the Remap Keyboard botton is pressed.
+        // Bool property to notify Keyboard Manager module if the Remap Keyboard button is pressed.
         public BoolProperty RemapKeyboard { get; set; }
 
         public KeyboardManagerProperties()
         {
-            this.EditShortCut = new BoolProperty();
+            this.EditShortcut = new BoolProperty();
             this.RemapKeyboard = new BoolProperty();
         }
 

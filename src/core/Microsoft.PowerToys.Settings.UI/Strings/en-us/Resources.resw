@@ -161,4 +161,44 @@
     <value>Keyboard Manager</value>
     <comment>Navigation view item name for Keyboard Manager</comment>
   </data>
+  <data name="KeyboardManager_ConfigHeader.Text" xml:space="preserve">
+    <value>Current configuration</value>
+    <comment>Keyboard Manager current configuration header</comment>
+  </data>
+  <data name="KeyboardManager_Description.Text" xml:space="preserve">
+    <value>Reconfigure your keyboard by remapping keys and shortcuts</value>
+    <comment>Keyboard Manager page description</comment>
+  </data>
+  <data name="KeyboardManager_EnableToggle.Header" xml:space="preserve">
+    <value>Enable Keyboard Manager</value>
+    <comment>Keyboard Manager enable toggle header</comment>
+  </data>
+  <data name="KeyboardManager_ProfileDescription.Text" xml:space="preserve">
+    <value>Select the profile to display the active key remap and shortcuts</value>
+    <comment>Keyboard Manager configuration dropdown decription</comment>
+  </data>
+  <data name="KeyboardManager_RemapKeyboardButton.Content" xml:space="preserve">
+    <value>Remap a key</value>
+    <comment>Keyboard Manager remap keyboard button content</comment>
+  </data>
+  <data name="KeyboardManager_RemapKeyboardHeader.Text" xml:space="preserve">
+    <value>Remap Keyboard</value>
+    <comment>Keyboard Manager remap keyboard header</comment>
+  </data>
+  <data name="KeyboardManager_RemapShortcutsButton.Content" xml:space="preserve">
+    <value>Redefine a shortcut</value>
+    <comment>Keyboard Manager edit shortcuts button</comment>
+  </data>
+  <data name="KeyboardManager_RemapShortcutsHeader.Text" xml:space="preserve">
+    <value>Edit Shortcuts</value>
+    <comment>Keyboard Manager edit shortcuts header</comment>
+  </data>
+  <data name="KeyboardManager_KeysMappingLayoutLeftHeader.Text" xml:space="preserve">
+    <value>From:</value>
+    <comment>Keyboard Manager mapping keys view left header</comment>
+  </data>
+  <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
+    <value>To:</value>
+    <comment>Keyboard Manager mapping keys view right header</comment>
+  </data>
 </root>

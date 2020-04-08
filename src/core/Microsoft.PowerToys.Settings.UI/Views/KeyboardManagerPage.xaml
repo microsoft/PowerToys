@@ -81,18 +81,15 @@
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Vertical">
-            <TextBlock x:Uid="KeyboardManager_Description" 
-                       Text="Reconfigure your keyboard by remapping keys and shortcuts"
+            <TextBlock x:Uid="KeyboardManager_Description"
                        TextWrapping="Wrap"
                        Style="{StaticResource BodyTextBlockStyle}"/>
 
             <ToggleSwitch x:Uid="KeyboardManager_EnableToggle"
-                          Header="Enable Keyboard Manager"
                           IsOn="True"
                           Margin="{StaticResource SmallTopMargin}" />
 
             <TextBlock x:Uid="KeyboardManager_ConfigHeader"
-                       Text="Current configuration"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Margin="{StaticResource SmallTopMargin}"/>
             
@@ -105,25 +102,23 @@
             </ComboBox>
 
             <TextBlock x:Uid="KeyboardManager_ProfileDescription"
-                Text="Select the profile to display the active key remap and shortcuts"
-                Margin="{StaticResource SmallTopMargin}"/>
+                       Margin="{StaticResource SmallTopMargin}"/>
 
-            <TextBlock x:Uid="KeyboardManager_Remap" 
-                       Text="Remap Keyboard"
+            <TextBlock x:Uid="KeyboardManager_RemapKeyboardHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Margin="{StaticResource SmallTopMargin}"/>
 
-            <Button Content="Remap a key"
-                        Margin="{StaticResource SmallTopMargin}"
-                        Style="{StaticResource AccentButtonStyle}"
-                        HorizontalAlignment="Left"/>
+            <Button x:Uid="KeyboardManager_RemapKeyboardButton"
+                    Margin="{StaticResource SmallTopMargin}"
+                    Style="{StaticResource AccentButtonStyle}"
+                    HorizontalAlignment="Left"/>
 
             <StackPanel Margin="{StaticResource SmallTopMargin}"
                         Orientation="Horizontal">
-                <TextBlock Text="From:"
+                <TextBlock x:Uid="KeyboardManager_KeysMappingLayoutLeftHeader"
                            Width="200"
                            FontWeight="SemiBold"/>
-                <TextBlock Text="To:"
+                <TextBlock x:Uid="KeyboardManager_KeysMappingLayoutRightHeader"
                            Width="200"
                            FontWeight="SemiBold" />
             </StackPanel>
@@ -139,26 +134,23 @@
                       Margin="{StaticResource SmallTopMargin}"
                       HorizontalAlignment="Left">
             </ListView>
-            
-            <TextBlock Text="Edit Shortcuts"
+
+            <TextBlock x:Uid="KeyboardManager_RemapShortcutsHeader"
                        Style="{StaticResource SubtitleTextBlockStyle}"
                        Margin="{StaticResource SmallTopMargin}"/>
-            
-            <Button Content="Redefine a shortcut" 
-                        Margin="{StaticResource SmallTopMargin}"
-                        Style="{StaticResource AccentButtonStyle}" 
-                        HorizontalAlignment="Left"/>
 
-            <TextBlock Text="To redefine shortcuts, press the remap button"
-                       Margin="{StaticResource SmallTopMargin}"/>
+            <Button x:Uid="KeyboardManager_RemapShortcutsButton"
+                    Margin="{StaticResource SmallTopMargin}"
+                    Style="{StaticResource AccentButtonStyle}"
+                    HorizontalAlignment="Left"/>
 
             <StackPanel Margin="{StaticResource SmallTopMargin}"
                         Orientation="Horizontal">
-                <TextBlock Text="From:"
+                <TextBlock x:Uid="KeyboardManager_KeysMappingLayoutLeftHeader"
                            Width="200"
                            FontWeight="SemiBold">
                 </TextBlock>
-                <TextBlock Text="To:"
+                <TextBlock x:Uid="KeyboardManager_KeysMappingLayoutRightHeader"
                            Width="200" 
                            FontWeight="SemiBold" >
                 </TextBlock>
