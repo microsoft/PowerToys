@@ -6,7 +6,7 @@
   "Author": "??",
   "Version": "1.0.0",
   "Language": "csharp",
-  "Website": "http://www.wox.one/plugin",
+  "Website": "http://aka.ms/PowerToys",
   "ExecuteFileName": "Microsoft.Plugin.Indexer.dll",
   "IcoPath": "Images\\WindowsIndexerImg.bmp"
 }
