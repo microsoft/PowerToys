@@ -109,7 +109,7 @@ namespace FancyZonesEditor
                     return 1;
                 }
 
-                return Math.Max(settings.Spacing, 5);
+                return Math.Max(settings.Spacing, 1);
             }
         }
 
