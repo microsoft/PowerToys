@@ -17,7 +17,9 @@ namespace PowerToysTests
         protected static void OpenEditor()
         {
             new Actions(session).KeyDown(OpenQA.Selenium.Keys.Command).SendKeys("`").KeyUp(OpenQA.Selenium.Keys.Command).Perform();
-            editorWindow = WaitElementByXPath("//Window[@Name=\"FancyZones Editor\"]");
+            //editorWindow = WaitElementByXPath("//Window[@Name=\"FancyZones Editor\"]");
+            //may not find editor by name in 0.16.1
+            editorWindow = WaitElementByAccessibilityId("MainWindow1");
             Assert.IsNotNull(editorWindow, "Couldn't find editor window");
         }
 
