@@ -166,12 +166,12 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
     // Save the latest displayed shortcut
     currentShortcut = detectedShortcut;
     currentShortcut_lock.unlock();
-    std::vector<hstring> shortcut = detectedShortcut.GetKeyVector(keyboardMap);
-    
     detectedShortcut_lock.unlock();
 
     // Since this function is invoked from the back-end thread, in order to update the UI the dispatcher must be used.
-    currentShortcutUI.Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [this, shortcut]() {
+    currentShortcutUI.Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [this]() {
+
+        std::vector<hstring> shortcut = detectedShortcut.GetKeyVector(keyboardMap);
         currentShortcutUI.Children().Clear();
         for (auto& key : shortcut)
         {
@@ -190,13 +190,10 @@ void KeyboardManagerState::UpdateDetectSingleKeyRemapUI()
         return;
     }
 
-    std::unique_lock<std::mutex> detectedRemapKey_lock(detectedRemapKey_mutex);
-    hstring key = winrt::to_hstring(keyboardMap.GetKeyName(detectedRemapKey).c_str());
-    detectedRemapKey_lock.unlock();
-
     // Since this function is invoked from the back-end thread, in order to update the UI the dispatcher must be used.
-    currentSingleKeyUI.Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [this, key]() {
+    currentSingleKeyUI.Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [this]() {
         currentSingleKeyUI.Children().Clear();
+        hstring key = winrt::to_hstring(keyboardMap.GetKeyName(detectedRemapKey).c_str());
         AddKeyToLayout(currentSingleKeyUI, key);
         currentSingleKeyUI.UpdateLayout();
     });
