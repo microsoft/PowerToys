@@ -10,5 +10,9 @@ namespace Wox.Plugin.Indexer.SearchHelper
     {
         // Contains the Path of the file or folder
         public string Path { get; set; }
+
+        // Contains the Title of the file or folder
+        public string Title { get; set; }
+
     }
 }
