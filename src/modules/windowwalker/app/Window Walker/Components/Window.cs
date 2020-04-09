@@ -191,7 +191,7 @@ namespace WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether determines whether the specified window handle identifies an existing window.
+        /// Gets a value indicating whether the specified window handle identifies an existing window.
         /// </summary>
         public bool IsWindow
         {
@@ -202,7 +202,7 @@ namespace WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether get a value indicating whether is the window GWL_EX_STYLE is a toolwindow
+        /// Gets a value indicating whether a value is the window GWL_EX_STYLE is a toolwindow
         /// </summary>
         public bool IsToolWindow
         {
