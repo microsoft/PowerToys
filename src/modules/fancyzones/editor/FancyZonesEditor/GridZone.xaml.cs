@@ -101,7 +101,16 @@ namespace FancyZonesEditor
 
         private int SplitterThickness
         {
-            get { return Math.Max(((App)Application.Current).ZoneSettings.Spacing, 5); }
+            get
+            {
+                Settings settings = ((App)Application.Current).ZoneSettings;
+                if (!settings.ShowSpacing)
+                {
+                    return 1;
+                }
+
+                return Math.Max(settings.Spacing, 5);
+            }
         }
 
         private void UpdateSplitter()
