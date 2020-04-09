@@ -26,13 +26,18 @@ namespace PowerToysTests
             Assert.IsNotNull(topBorder);
             Assert.IsNotNull(bottomBorder);
 
+            int height = bottomBorder.Rect.Y - topBorder.Rect.Y;
+
             //up
             new Actions(session).MoveToElement(topBorder).ClickAndHold().MoveByOffset(0, -5000).Release().Perform();
             Assert.IsTrue(topBorder.Rect.Y >= 0);
+            Assert.IsTrue(height < bottomBorder.Rect.Y - topBorder.Rect.Y);
+            height = bottomBorder.Rect.Y - topBorder.Rect.Y;
 
             //down
             new Actions(session).MoveToElement(topBorder).ClickAndHold().MoveByOffset(0, 5000).Release().Perform();
             Assert.IsTrue(topBorder.Rect.Y <= bottomBorder.Rect.Y);
+            Assert.IsTrue(height > bottomBorder.Rect.Y - topBorder.Rect.Y);
         }
 
         [TestMethod]
@@ -43,13 +48,18 @@ namespace PowerToysTests
             Assert.IsNotNull(topBorder);
             Assert.IsNotNull(bottomBorder);
 
+            int height = bottomBorder.Rect.Y - topBorder.Rect.Y;
+
             //up
             new Actions(session).MoveToElement(bottomBorder).ClickAndHold().MoveByOffset(0, -5000).Release().Perform();
             Assert.IsTrue(topBorder.Rect.Y <= bottomBorder.Rect.Y);
+            Assert.IsTrue(height > bottomBorder.Rect.Y - topBorder.Rect.Y);
+            height = bottomBorder.Rect.Y - topBorder.Rect.Y;
 
             //down
             new Actions(session).MoveToElement(bottomBorder).ClickAndHold().MoveByOffset(0, 5000).Release().Perform();
             Assert.IsTrue(bottomBorder.Rect.Y <= Screen.PrimaryScreen.WorkingArea.Bottom);
+            Assert.IsTrue(height < bottomBorder.Rect.Y - topBorder.Rect.Y);
         }
 
         [TestMethod]
@@ -60,13 +70,18 @@ namespace PowerToysTests
             Assert.IsNotNull(leftBorder);
             Assert.IsNotNull(rightBorder);
 
+            int width = rightBorder.Rect.X - leftBorder.Rect.X;
+
             //to the left
             new Actions(session).MoveToElement(leftBorder).ClickAndHold().MoveByOffset(-5000, 0).Release().Perform();
             Assert.IsTrue(leftBorder.Rect.Y <= Screen.PrimaryScreen.WorkingArea.Bottom);
+            Assert.IsTrue(width < rightBorder.Rect.X - leftBorder.Rect.X);
+            width = rightBorder.Rect.X - leftBorder.Rect.X;
 
             //to the right
             new Actions(session).MoveToElement(leftBorder).ClickAndHold().MoveByOffset(5000, 0).Release().Perform();
             Assert.IsTrue(leftBorder.Rect.X <= rightBorder.Rect.X);
+            Assert.IsTrue(width > rightBorder.Rect.X - leftBorder.Rect.X);
         }
         
         [TestMethod]
@@ -77,13 +92,18 @@ namespace PowerToysTests
             Assert.IsNotNull(leftBorder);
             Assert.IsNotNull(rightBorder);
 
+            int width = rightBorder.Rect.X - leftBorder.Rect.X;
+
             //to the left
             new Actions(session).MoveToElement(rightBorder).ClickAndHold().MoveByOffset(-5000, 0).Release().Perform();
-            Assert.IsTrue(leftBorder.Rect.X <= rightBorder.Rect.X); 
-            
+            Assert.IsTrue(leftBorder.Rect.X <= rightBorder.Rect.X);
+            Assert.IsTrue(width > rightBorder.Rect.X - leftBorder.Rect.X);
+            width = rightBorder.Rect.X - leftBorder.Rect.X;
+
             //to the right
             new Actions(session).MoveToElement(rightBorder).ClickAndHold().MoveByOffset(5000, 0).Release().Perform();
             Assert.IsTrue(leftBorder.Rect.X <= Screen.PrimaryScreen.WorkingArea.Right);
+            Assert.IsTrue(width < rightBorder.Rect.X - leftBorder.Rect.X);
         }
 
         [TestMethod]
@@ -96,41 +116,32 @@ namespace PowerToysTests
             Assert.IsNotNull(bottomBorder);
             Assert.IsNotNull(rightBorder);
 
-            //up
-            MoveCorner(topLeftCorner, true, true, 0, -5000);
-            Assert.IsTrue(topLeftCorner.Rect.Y >= 0);
-
-            //down
-            MoveCorner(topLeftCorner, true, true, 0, 5000);
-            Assert.IsTrue(topLeftCorner.Rect.Y <= bottomBorder.Rect.Y);
+            int expectedWidth = rightBorder.Rect.X - topLeftCorner.Rect.X;
+            int expectedHeight = bottomBorder.Rect.Y - topLeftCorner.Rect.Y;
+            int actualWidth, actualHeight;
 
             //up-left
             MoveCorner(topLeftCorner, true, true, -5000, -5000);
+            actualHeight = bottomBorder.Rect.Y - topLeftCorner.Rect.Y;
+            actualWidth = rightBorder.Rect.X - topLeftCorner.Rect.X;
+
             Assert.IsTrue(topLeftCorner.Rect.Y >= 0);
             Assert.IsTrue(topLeftCorner.Rect.X >= 0);
+            Assert.IsTrue(actualHeight > expectedHeight);
+            Assert.IsTrue(actualWidth > expectedWidth);
 
-            //up-right
-            MoveCorner(topLeftCorner, true, true, 5000, -5000);
-            Assert.IsTrue(topLeftCorner.Rect.Y >= 0);
-            Assert.IsTrue(topLeftCorner.Rect.X <= rightBorder.Rect.X);
-
-            //to the left
-            MoveCorner(topLeftCorner, true, true, -5000, 0);
-            Assert.IsTrue(topLeftCorner.Rect.X >= 0);
-
-            //to the right
-            MoveCorner(topLeftCorner, true, true, 5000, 0);
-            Assert.IsTrue(topLeftCorner.Rect.X <= rightBorder.Rect.X);
-
-            //down-left
-            MoveCorner(topLeftCorner, true, true, -5000, 5000);
-            Assert.IsTrue(topLeftCorner.Rect.Y <= bottomBorder.Rect.Y);
-            Assert.IsTrue(topLeftCorner.Rect.X >= 0);
+            expectedHeight = actualHeight;
+            expectedWidth = actualWidth;
 
             //down-right
             MoveCorner(topLeftCorner, true, true, 5000, 5000);
+            actualHeight = bottomBorder.Rect.Y - topLeftCorner.Rect.Y;
+            actualWidth = rightBorder.Rect.X - topLeftCorner.Rect.X;
+
             Assert.IsTrue(topLeftCorner.Rect.Y <= bottomBorder.Rect.Y);
             Assert.IsTrue(topLeftCorner.Rect.X <= rightBorder.Rect.X);
+            Assert.IsTrue(actualHeight < expectedHeight);
+            Assert.IsTrue(actualWidth < expectedWidth);
         }
 
         [TestMethod]
@@ -143,41 +154,32 @@ namespace PowerToysTests
             Assert.IsNotNull(bottomBorder);
             Assert.IsNotNull(leftBorder);
 
-            //up
-            MoveCorner(topRightCorner, false, true, 0, -5000);
-            Assert.IsTrue(topRightCorner.Rect.Y >= 0);
-
-            //down
-            MoveCorner(topRightCorner, false, true, 0, 5000);
-            Assert.IsTrue(topRightCorner.Rect.Y <= bottomBorder.Rect.Y);
-
-            //up-left
-            MoveCorner(topRightCorner, false, true, -5000, -5000);
-            Assert.IsTrue(topRightCorner.Rect.Y >= 0);
-            Assert.IsTrue(topRightCorner.Rect.X >= leftBorder.Rect.X);
+            int expectedWidth = topRightCorner.Rect.X - leftBorder.Rect.X;
+            int expectedHeight = bottomBorder.Rect.Y - topRightCorner.Rect.Y;
+            int actualWidth, actualHeight;
 
             //up-right
             MoveCorner(topRightCorner, false, true, 5000, -5000);
+            actualHeight = bottomBorder.Rect.Y - topRightCorner.Rect.Y;
+            actualWidth = topRightCorner.Rect.X - leftBorder.Rect.X;
+
             Assert.IsTrue(topRightCorner.Rect.Y >= 0);
             Assert.IsTrue(leftBorder.Rect.X <= Screen.PrimaryScreen.WorkingArea.Right);
+            Assert.IsTrue(actualHeight > expectedHeight);
+            Assert.IsTrue(actualWidth > expectedWidth);
 
-            //to the left
-            MoveCorner(topRightCorner, false, true, -5000, 0);
-            Assert.IsTrue(topRightCorner.Rect.X >= leftBorder.Rect.X);
-
-            //to the right
-            MoveCorner(topRightCorner, false, true, 5000, 0);
-            Assert.IsTrue(leftBorder.Rect.X <= Screen.PrimaryScreen.WorkingArea.Right);
-
-            //down-right
-            MoveCorner(topRightCorner, false, true, 5000, 5000);
-            Assert.IsTrue(topRightCorner.Rect.Y <= bottomBorder.Rect.Y);
-            Assert.IsTrue(leftBorder.Rect.X <= Screen.PrimaryScreen.WorkingArea.Right);
+            expectedHeight = actualHeight;
+            expectedWidth = actualWidth;
 
             //down-left
             MoveCorner(topRightCorner, false, true, -5000, 5000);
+            actualHeight = bottomBorder.Rect.Y - topRightCorner.Rect.Y;
+            actualWidth = topRightCorner.Rect.X - leftBorder.Rect.X;
+
             Assert.IsTrue(topRightCorner.Rect.Y <= bottomBorder.Rect.Y);
             Assert.IsTrue(topRightCorner.Rect.X >= leftBorder.Rect.X);
+            Assert.IsTrue(actualHeight < expectedHeight);
+            Assert.IsTrue(actualWidth < expectedWidth);
         }
 
         [TestMethod]
@@ -190,41 +192,32 @@ namespace PowerToysTests
             Assert.IsNotNull(topBorder);
             Assert.IsNotNull(rightBorder);
 
-            //down
-            MoveCorner(bottomLeftCorner, true, false, 0, 5000);
-            Assert.IsTrue(bottomLeftCorner.Rect.Y <= Screen.PrimaryScreen.WorkingArea.Bottom);
-
-            //up
-            MoveCorner(bottomLeftCorner, true, false, 0, -5000);
-            Assert.IsTrue(bottomLeftCorner.Rect.Y >= topBorder.Rect.Y);
-
-            //down-right
-            MoveCorner(bottomLeftCorner, true, false, 5000, 5000);
-            Assert.IsTrue(bottomLeftCorner.Rect.Y <= Screen.PrimaryScreen.WorkingArea.Bottom);
-            Assert.IsTrue(bottomLeftCorner.Rect.X <= rightBorder.Rect.X);
-
-            //down-left
-            MoveCorner(bottomLeftCorner, true, false, -5000, 5000);
-            Assert.IsTrue(bottomLeftCorner.Rect.Y <= Screen.PrimaryScreen.WorkingArea.Bottom);
-            Assert.IsTrue(bottomLeftCorner.Rect.X >= 0);
-
-            //to the right
-            MoveCorner(bottomLeftCorner, true, false, 5000, 0);
-            Assert.IsTrue(bottomLeftCorner.Rect.X <= rightBorder.Rect.X);
-
-            //to the left
-            MoveCorner(bottomLeftCorner, true, false, -5000, 0);
-            Assert.IsTrue(bottomLeftCorner.Rect.X >= 0);
+            int expectedWidth = rightBorder.Rect.X - bottomLeftCorner.Rect.X;
+            int expectedHeight = bottomLeftCorner.Rect.Y - topBorder.Rect.Y;
+            int actualWidth, actualHeight;
 
             //up-left
-            MoveCorner(bottomLeftCorner, true, false, -5000, -5000);
-            Assert.IsTrue(bottomLeftCorner.Rect.Y >= topBorder.Rect.Y);
-            Assert.IsTrue(bottomLeftCorner.Rect.X >= 0);
-
-            //up-right
             MoveCorner(bottomLeftCorner, true, false, 5000, -5000);
+            actualHeight = bottomLeftCorner.Rect.Y - topBorder.Rect.Y;
+            actualWidth = rightBorder.Rect.X - bottomLeftCorner.Rect.X;
+
             Assert.IsTrue(bottomLeftCorner.Rect.Y >= topBorder.Rect.Y);
             Assert.IsTrue(bottomLeftCorner.Rect.X <= rightBorder.Rect.X);
+            Assert.IsTrue(actualHeight < expectedHeight);
+            Assert.IsTrue(actualWidth < expectedWidth);
+            
+            expectedHeight = actualHeight;
+            expectedWidth = actualWidth;
+
+            //down-right
+            MoveCorner(bottomLeftCorner, true, false, -5000, 5000);
+            actualHeight = bottomLeftCorner.Rect.Y - topBorder.Rect.Y;
+            actualWidth = rightBorder.Rect.X - bottomLeftCorner.Rect.X;
+
+            Assert.IsTrue(bottomLeftCorner.Rect.Y <= Screen.PrimaryScreen.WorkingArea.Bottom);
+            Assert.IsTrue(bottomLeftCorner.Rect.X >= 0);
+            Assert.IsTrue(actualHeight > expectedHeight);
+            Assert.IsTrue(actualWidth > expectedWidth);
         }
 
         [TestMethod]
@@ -237,41 +230,31 @@ namespace PowerToysTests
             Assert.IsNotNull(topBorder);
             Assert.IsNotNull(leftBorder);
 
-            //to the right
-            MoveCorner(bottomRightCorner, false, false, 5000, 0);
-            Assert.IsTrue(bottomRightCorner.Rect.X <= Screen.PrimaryScreen.WorkingArea.Right);
-
-            //to the left
-            MoveCorner(bottomRightCorner, false, false, -5000, 0);
-            Assert.IsTrue(bottomRightCorner.Rect.X >= leftBorder.Rect.X);
-
-            //down
-            MoveCorner(bottomRightCorner, false, false, 0, 5000);
-            Assert.IsTrue(bottomRightCorner.Rect.Y <= Screen.PrimaryScreen.WorkingArea.Bottom);
-
-            //up
-            MoveCorner(bottomRightCorner, false, false, 0, -5000);
-            Assert.IsTrue(bottomRightCorner.Rect.Y >= topBorder.Rect.Y);
+            int expectedWidth = bottomRightCorner.Rect.X - leftBorder.Rect.X;
+            int expectedHeight = bottomRightCorner.Rect.Y - topBorder.Rect.Y;
+            int actualWidth, actualHeight;
 
             //up-left
             MoveCorner(bottomRightCorner, false, false, -5000, -5000);
+            actualHeight = bottomRightCorner.Rect.Y - topBorder.Rect.Y;
+            actualWidth = bottomRightCorner.Rect.X - leftBorder.Rect.X;
+
             Assert.IsTrue(bottomRightCorner.Rect.Y >= topBorder.Rect.Y);
             Assert.IsTrue(bottomRightCorner.Rect.X >= leftBorder.Rect.X);
+            Assert.IsTrue(actualHeight < expectedHeight);
+            Assert.IsTrue(actualWidth < expectedWidth);
 
-            //up-right
-            MoveCorner(bottomRightCorner, false, false, 5000, -5000);
-            Assert.IsTrue(bottomRightCorner.Rect.Y >= topBorder.Rect.Y);
-            Assert.IsTrue(bottomRightCorner.Rect.X <= Screen.PrimaryScreen.WorkingArea.Right);
+            expectedHeight = actualHeight;
+            expectedWidth = actualWidth;
 
             //down-right
             MoveCorner(bottomRightCorner, false, false, 5000, 5000);
+            actualHeight = bottomRightCorner.Rect.Y - topBorder.Rect.Y;
+            actualWidth = bottomRightCorner.Rect.X - leftBorder.Rect.X;
+
             Assert.IsTrue(bottomRightCorner.Rect.Y <= Screen.PrimaryScreen.WorkingArea.Bottom);
             Assert.IsTrue(bottomRightCorner.Rect.X <= Screen.PrimaryScreen.WorkingArea.Right);
-
-            //down-left
-            MoveCorner(bottomRightCorner, false, false, -5000, 5000);
-            Assert.IsTrue(bottomRightCorner.Rect.Y <= Screen.PrimaryScreen.WorkingArea.Bottom);
-            Assert.IsTrue(bottomRightCorner.Rect.X >= leftBorder.Rect.X);
+            Assert.IsTrue(actualHeight > expectedHeight);
         }
 
         [ClassInitialize]
@@ -285,17 +268,12 @@ namespace PowerToysTests
                 LaunchPowerToys();
             }
             OpenEditor();
-            OpenCustomLayouts();
-
-            //create canvas zone
-            OpenCreatorWindow("Create new custom", "Custom layout creator");
-            session.FindElementByAccessibilityId("newZoneButton").Click();
+            OpenCustomLayouts();            
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            new Actions(session).MoveToElement(session.FindElementByXPath("//Button[@Name=\"Cancel\"]")).Click().Perform();
             CloseEditor();
             TearDown();
         }
@@ -303,13 +281,15 @@ namespace PowerToysTests
         [TestInitialize]
         public void TestInitialize()
         {
-
+            //create canvas zone
+            OpenCreatorWindow("Create new custom", "Custom layout creator");
+            session.FindElementByAccessibilityId("newZoneButton").Click();
         }
 
         [TestCleanup]
         public void TestCleanup()
         {
-            
+            new Actions(session).MoveToElement(session.FindElementByXPath("//Button[@Name=\"Cancel\"]")).Click().Perform();
         }
     }
 }
