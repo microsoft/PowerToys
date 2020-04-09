@@ -106,7 +106,13 @@ RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) noexcept
         }
     }
 
-    return zoneRect;
+    if ((::GetWindowLong(window, GWL_STYLE) & WS_SIZEBOX) == 0)
+    {
+        newWindowRect.right = newWindowRect.left + (windowRect.right - windowRect.left);
+        newWindowRect.bottom = newWindowRect.top + (windowRect.bottom - windowRect.top);
+    }
+
+    return newWindowRect;
 }
 
 void Zone::StampZone(HWND window, bool stamp) noexcept
