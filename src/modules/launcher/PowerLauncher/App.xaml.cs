@@ -23,8 +23,7 @@ namespace PowerLauncher
     public partial class App : IDisposable, ISingleInstanceApp
     {
         public static PublicAPIInstance API { get; private set; }
-        private const string UI_Unique = "LauncherUI_Unique_Application_Mutex";
-        private const string Unique = "Launcher_Unique_Application_Mutex";
+        private const string Unique = "PowerLauncher_Unique_Application_Mutex";
         private static bool _disposed;
         private Settings _settings;
         private MainViewModel _mainVM;
