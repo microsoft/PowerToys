@@ -3,7 +3,7 @@
   "ActionKeyword": "*",
   "Name": "Windows Indexer",
   "Description": "Search for files and folders",
-  "Author": "??",
+  "Author": "Microsoft",
   "Version": "1.0.0",
   "Language": "csharp",
   "Website": "http://aka.ms/PowerToys",
