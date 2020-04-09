@@ -383,15 +383,7 @@ namespace Wox.ViewModel
                     // handle the exclusiveness of plugin using action keyword
                     RemoveOldQueryResults(query);
 
-                    _lastQuery = query;
-                    Task.Delay(200, currentCancellationToken).ContinueWith(_ =>
-                    { // start the progress bar if query takes more than 200 ms and this is the current running query and it didn't finish yet
-                        if (currentUpdateSource == _updateSource && _isQueryRunning)
-                        {
-                            ProgressBarVisibility = Visibility.Visible;
-                        }
-                    }, currentCancellationToken);
-
+                    _lastQuery = query;                  
                     var plugins = PluginManager.ValidPluginsForQuery(query);
                     
                     Task.Run(() =>
