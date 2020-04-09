@@ -176,6 +176,23 @@ namespace PowerToysTests
             }
         }
 
+        // Close window by using FindElementByName
+        public static void CloseWindow(string windowName)
+        {
+            try
+            {
+                WindowsElement window = session.FindElementByName(windowName);
+                if (window != null)
+                {
+                    window.SendKeys(Keys.Alt + Keys.F4);
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+        }
+
         private static bool CheckPowerToysLaunched()        
         {
             trayButton.Click();
