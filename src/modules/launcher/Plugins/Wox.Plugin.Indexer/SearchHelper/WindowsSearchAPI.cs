@@ -88,6 +88,9 @@ namespace Wox.Plugin.Indexer.SearchHelper
             // Set additional query restriction
             queryHelper.QueryWhereRestrictions = "AND scope='file:'";
 
+            // To filter based on title for now
+            queryHelper.QueryContentProperties = "System.Title";
+
             // Set sorting order 
             queryHelper.QuerySorting = "System.DateModified DESC";
         }
