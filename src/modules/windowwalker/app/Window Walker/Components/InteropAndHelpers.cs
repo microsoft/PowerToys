@@ -639,7 +639,9 @@ namespace WindowWalker.Components
         /// <summary>
         /// GetWindowLong index to retrieves the extended window styles.
         /// </summary>
+#pragma warning disable SA1310 // Field names should not contain underscore
         public const int GWL_EXSTYLE = -20;
+#pragma warning restore SA1310 // Field names should not contain underscore
 
         /// <summary>
         /// The following are the extended window styles
