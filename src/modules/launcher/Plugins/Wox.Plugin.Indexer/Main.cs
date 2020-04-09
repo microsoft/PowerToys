@@ -58,7 +58,7 @@ namespace Wox.Plugin.Indexer
                             workingDir = Path.GetDirectoryName(path);
 
                         Result r = new Result();
-                        r.Title = Path.GetFileName(path);
+                        r.Title = searchResult.Title;
                         r.SubTitle = path;
                         r.IcoPath = path;
                         r.Action = c =>
