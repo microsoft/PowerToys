@@ -13,34 +13,46 @@
         <viewmodels:RemapKeysModel x:Key="dummyData"/>
 
         <DataTemplate x:Name="KeysListViewTemplate" x:DataType="viewmodels:RemapKeysModel">
-            <Grid>
+            <Grid Height="56">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="200"/>
-                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="120"/>
                 </Grid.ColumnDefinitions>
-                <Border Background="{ThemeResource SystemBaseLowColor}"
+                <Border 
+                        Background="{ThemeResource SystemBaseLowColor}"
                         CornerRadius="4"
                         Grid.Column="0"
-                        Width="70"
-                        Height="35"
+                        Padding="14,0,14,0"
+                        Margin="0,0,0,0"
+                        Height="36"
+                        VerticalAlignment="Center"
                         HorizontalAlignment="Left">
-                    <TextBlock  Grid.Column="0"
-                                Style="{StaticResource BodyTextBlockStyle}"
-                                VerticalAlignment="Center"
-                                TextAlignment="Center"
+                    <TextBlock FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               TextAlignment="Center"
+                                FontSize="12"
                                 Text="{Binding From}">
                     </TextBlock>
                 </Border>
-                <Border Background="{ThemeResource SystemBaseLowColor}"
+                <FontIcon Glyph="&#xE72A;"
+                          Grid.Column="1"
+                          FontSize="14"
+                          VerticalAlignment="Center" />
+                
+                <Border Background="{ThemeResource SystemAccentColor}"
                         CornerRadius="4"
-                        Grid.Column="1"
-                        Width="70"
-                        Height="35"
+                        Grid.Column="2"
+                        Padding="14,0,14,0"
+                        Margin="20,0,0,0"
+                        Height="36"
+                        VerticalAlignment="Center"
                         HorizontalAlignment="Left">
-                    <TextBlock Grid.Column="1"
-                               Style="{StaticResource BodyTextBlockStyle}"
+                    <TextBlock FontWeight="SemiBold"
                                VerticalAlignment="Center"
                                TextAlignment="Center"
+                               Foreground="White"
+                               FontSize="12"
                                Text="{Binding To}">
                     </TextBlock>
                 </Border>
@@ -82,92 +94,69 @@
 
         <StackPanel Orientation="Vertical">
             <TextBlock x:Uid="KeyboardManager_Description"
-                       TextWrapping="Wrap"
-                       Style="{StaticResource BodyTextBlockStyle}"/>
+                       TextWrapping="Wrap"/>
 
             <ToggleSwitch x:Uid="KeyboardManager_EnableToggle"
                           IsOn="True"
                           Margin="{StaticResource SmallTopMargin}" />
 
             <TextBlock x:Uid="KeyboardManager_ConfigHeader"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+            <TextBlock x:Uid="KeyboardManager_ProfileDescription"
                        Margin="{StaticResource SmallTopMargin}"/>
-            
-            <ComboBox SelectedIndex="1"
-                      Margin="{StaticResource SmallTopMargin}"
-                      HorizontalAlignment="Left">
+
+            <ComboBox SelectedIndex="1" MinWidth="160"
+                      Margin="{StaticResource SmallTopMargin}">
                       <ComboBoxItem Content="Config-1"/>
                       <ComboBoxItem Content="Config-2"/>
                       <ComboBoxItem Content="Config-3"/>
             </ComboBox>
 
-            <TextBlock x:Uid="KeyboardManager_ProfileDescription"
-                       Margin="{StaticResource SmallTopMargin}"/>
-
             <TextBlock x:Uid="KeyboardManager_RemapKeyboardHeader"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Margin="{StaticResource SmallTopMargin}"/>
+                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+            <TextBlock Text="Description of the Remap Keyboard (subfeature)"
+                       Margin="{StaticResource SmallTopMargin}"
+                       TextWrapping="Wrap"/>
 
             <Button x:Uid="KeyboardManager_RemapKeyboardButton"
                     Margin="{StaticResource SmallTopMargin}"
-                    Style="{StaticResource AccentButtonStyle}"
-                    HorizontalAlignment="Left"/>
-
-            <StackPanel Margin="{StaticResource SmallTopMargin}"
-                        Orientation="Horizontal">
-                <TextBlock x:Uid="KeyboardManager_KeysMappingLayoutLeftHeader"
-                           Width="200"
-                           FontWeight="SemiBold"/>
-                <TextBlock x:Uid="KeyboardManager_KeysMappingLayoutRightHeader"
-                           Width="200"
-                           FontWeight="SemiBold" />
-            </StackPanel>
+                    Style="{StaticResource ButtonRevealStyle}"/>
 
             <ListView x:Name="RemapKeysList"
                       ItemsSource="{StaticResource dummyData}"
                       ItemTemplate="{StaticResource KeysListViewTemplate}"
-                      BorderBrush="LightGray"
+                      BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
                       BorderThickness="1" 
-                      CornerRadius="4"
-                      Width="400"
-                      MaxHeight="150"
-                      Margin="{StaticResource SmallTopMargin}"
-                      HorizontalAlignment="Left">
-            </ListView>
+                      Width="350"
+                      MaxHeight="200"
+                      Margin="{StaticResource MediumTopBottomMargin}"
+                      HorizontalAlignment="Left"/>
+
 
             <TextBlock x:Uid="KeyboardManager_RemapShortcutsHeader"
-                       Style="{StaticResource SubtitleTextBlockStyle}"
-                       Margin="{StaticResource SmallTopMargin}"/>
+                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+            <TextBlock Text="Description of the Remap Shortcuts (subfeature)"
+                       TextWrapping="Wrap" Margin="{StaticResource SmallTopMargin}"/>
 
             <Button x:Uid="KeyboardManager_RemapShortcutsButton"
                     Margin="{StaticResource SmallTopMargin}"
-                    Style="{StaticResource AccentButtonStyle}"
-                    HorizontalAlignment="Left"/>
-
-            <StackPanel Margin="{StaticResource SmallTopMargin}"
-                        Orientation="Horizontal">
-                <TextBlock x:Uid="KeyboardManager_KeysMappingLayoutLeftHeader"
-                           Width="200"
-                           FontWeight="SemiBold">
-                </TextBlock>
-                <TextBlock x:Uid="KeyboardManager_KeysMappingLayoutRightHeader"
-                           Width="200" 
-                           FontWeight="SemiBold" >
-                </TextBlock>
-            </StackPanel>
+                    Style="{StaticResource ButtonRevealStyle}"/>
 
             <ListView x:Name="RemapShortcutsList"  
                       ItemsSource="{StaticResource dummyData}"
                       ItemTemplate="{StaticResource KeysListViewTemplate}"
-                      BorderBrush="LightGray" 
+                      BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
                       BorderThickness="1" 
                       CornerRadius="4"
-                      Width="400"
-                      MaxHeight="150"
-                      Margin="{StaticResource SmallTopMargin}"
-                      HorizontalAlignment="Left">
-            </ListView>
-            
+                      Width="350"
+                      MaxHeight="200"
+                      Margin="{StaticResource MediumTopBottomMargin}"
+                      HorizontalAlignment="Left"/>
+
+
         </StackPanel>
 
         <StackPanel x:Name="SidePanel"
