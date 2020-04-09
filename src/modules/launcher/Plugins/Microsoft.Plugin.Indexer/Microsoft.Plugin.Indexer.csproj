@@ -6,6 +6,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.Plugin.Indexer</RootNamespace>
     <AssemblyName>Microsoft.Plugin.Indexer</AssemblyName>
+    <useWPF>true</useWPF>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <Platforms>x64</Platforms>

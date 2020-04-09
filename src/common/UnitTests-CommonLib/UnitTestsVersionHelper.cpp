@@ -50,45 +50,51 @@ namespace UnitTestsVersionHelper
         }
         TEST_METHOD (whenMajorVersionIsGreaterComparationOperatorShouldReturnProperValue)
         {
-            VersionHelper rhs(MAJOR_VERSION_0, MINOR_VERSION_12, REVISION_VERSION_0);
             VersionHelper lhs(MAJOR_VERSION_0 + 1, MINOR_VERSION_12, REVISION_VERSION_0);
+            VersionHelper rhs(MAJOR_VERSION_0, MINOR_VERSION_12, REVISION_VERSION_0);
 
             Assert::IsTrue(lhs > rhs);
         }
         TEST_METHOD (whenMajorVersionIsLesserComparationOperatorShouldReturnProperValue)
         {
-            VersionHelper rhs(MAJOR_VERSION_0 + 1, MINOR_VERSION_12, REVISION_VERSION_0);
             VersionHelper lhs(MAJOR_VERSION_0, MINOR_VERSION_12, REVISION_VERSION_0);
+            VersionHelper rhs(MAJOR_VERSION_0 + 1, MINOR_VERSION_12, REVISION_VERSION_0);
 
             Assert::IsFalse(lhs > rhs);
         }
         TEST_METHOD (whenMajorVersionIsEqualComparationOperatorShouldCompareMinorVersionValue)
         {
-            VersionHelper rhs(MAJOR_VERSION_0, MINOR_VERSION_12 - 1, REVISION_VERSION_0);
-
             VersionHelper lhs(MAJOR_VERSION_0, MINOR_VERSION_12, REVISION_VERSION_0);
+            VersionHelper rhs(MAJOR_VERSION_0, MINOR_VERSION_12 - 1, REVISION_VERSION_0);
 
             Assert::IsTrue(lhs > rhs);
         }
         TEST_METHOD (whenMajorVersionIsEqualComparationOperatorShouldCompareMinorVersionValue2)
         {
-            VersionHelper rhs(MAJOR_VERSION_0, MINOR_VERSION_12, REVISION_VERSION_0);
             VersionHelper lhs(MAJOR_VERSION_0, MINOR_VERSION_12 - 1, REVISION_VERSION_0);
+            VersionHelper rhs(MAJOR_VERSION_0, MINOR_VERSION_12, REVISION_VERSION_0);
 
             Assert::IsFalse(lhs > rhs);
         }
 
         TEST_METHOD (whenMajorAndMinorVersionIsEqualComparationOperatorShouldCompareRevisionValue)
         {
-            VersionHelper rhs(MAJOR_VERSION_0, MINOR_VERSION_12, REVISION_VERSION_0);
             VersionHelper lhs(MAJOR_VERSION_0, MINOR_VERSION_12, REVISION_VERSION_0 + 1);
+            VersionHelper rhs(MAJOR_VERSION_0, MINOR_VERSION_12, REVISION_VERSION_0);
 
             Assert::IsTrue(lhs > rhs);
         }
         TEST_METHOD (whenMajorAndMinorVersionIsEqualComparationOperatorShouldCompareRevisionValue2)
         {
-            VersionHelper rhs(MAJOR_VERSION_0, MINOR_VERSION_12, REVISION_VERSION_0 + 1);
             VersionHelper lhs(MAJOR_VERSION_0, MINOR_VERSION_12, REVISION_VERSION_0);
+            VersionHelper rhs(MAJOR_VERSION_0, MINOR_VERSION_12, REVISION_VERSION_0 + 1);
+
+            Assert::IsFalse(lhs > rhs);
+        }
+        TEST_METHOD (whenMajorMinorAndRevisionIsEqualGreaterThanOperatorShouldReturnFalse)
+        {
+            VersionHelper lhs(MAJOR_VERSION_0, MINOR_VERSION_12, REVISION_VERSION_0);
+            VersionHelper rhs(MAJOR_VERSION_0, MINOR_VERSION_12, REVISION_VERSION_0);
 
             Assert::IsFalse(lhs > rhs);
         }

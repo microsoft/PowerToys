@@ -3,7 +3,16 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:local="clr-namespace:WindowWalker"
-        Title="MainWindow" Width="1000" MinHeight="10" Height="85" ResizeMode="NoResize" Topmost="True" WindowStyle="None" Loaded="Window_Loaded" WindowStartupLocation="CenterScreen" SizeToContent="Height" Visibility="{Binding WindowVisibility, Mode=TwoWay, Converter={StaticResource BoolToVis}}"
+        Title="MainWindow" 
+        Width="1000" 
+        Height="85" 
+        MinHeight="10" 
+        ResizeMode="NoResize" 
+        Topmost="True" 
+        WindowStyle="None" 
+        Loaded="Window_Loaded"
+        SizeToContent="Height" 
+        Visibility="{Binding WindowVisibility, Mode=TwoWay, Converter={StaticResource BoolToVis}}"
         BorderBrush="{DynamicResource PrimaryHueDarkBrush}"
         BorderThickness="2"        
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
@@ -12,7 +21,8 @@
         TextElement.FontSize="14"
         FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
         Deactivated="Window_Deactivated"
-        ShowInTaskbar="false">
+        ShowInTaskbar="false"
+        GotFocus="Window_GotFocus">
     
     <Window.Resources>
         <ResourceDictionary>    
@@ -20,7 +30,7 @@
             <local:WindowSearchResultToXamlConverter x:Key="windowSearchResultToXamlConverter"/>
         </ResourceDictionary>
     </Window.Resources>
-    <Grid>
+    <Grid KeyboardNavigation.TabNavigation="None">
         <StackPanel Margin="1" Orientation="Vertical">
             <TextBox x:Name="searchBox" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" FontSize="40" Margin="10" KeyUp="SearchBoxKeyUp" materialDesign:HintAssist.Hint="{Binding Hint}" materialDesign:HintAssist.HintOpacity="0.2"/>
             <ListBox x:Name="results" ItemsSource="{Binding Results}" SelectedItem="{Binding SelectedWindowResult}" HorizontalContentAlignment="Stretch" MouseDoubleClick="Results_MouseDoubleClick">

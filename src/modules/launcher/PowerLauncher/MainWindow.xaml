@@ -28,4 +28,7 @@
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         d:DataContext="{d:DesignInstance vm:MainViewModel}">
     <xaml:WindowsXamlHost InitialTypeName="PowerLauncher.UI.LauncherControl" ChildChanged="WindowsXamlHost_ChildChanged" />
+    <Window.InputBindings>
+        <KeyBinding Key="Escape" Command="{Binding EscCommand}"></KeyBinding>
+    </Window.InputBindings>
 </Window>

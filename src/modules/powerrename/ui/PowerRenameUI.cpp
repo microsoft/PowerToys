@@ -308,7 +308,7 @@ HRESULT CPowerRenameUI::_Initialize(_In_ IPowerRenameManager* psrm, _In_opt_ IUn
 HRESULT CPowerRenameUI::_InitAutoComplete()
 {
     HRESULT hr = S_OK;
-    if (CSettings::GetMRUEnabled())
+    if (CSettingsInstance().GetMRUEnabled())
     {
         hr = CoCreateInstance(CLSID_AutoComplete, NULL, CLSCTX_INPROC, IID_PPV_ARGS(&m_spSearchAC));
         if (SUCCEEDED(hr))
@@ -387,19 +387,13 @@ HRESULT CPowerRenameUI::_ReadSettings()
     // Check if we should read flags from settings
     // or the defaults from the manager.
     DWORD flags = 0;
-    if (CSettings::GetPersistState())
+    if (CSettingsInstance().GetPersistState())
     {
-        flags = CSettings::GetFlags();
+        flags = CSettingsInstance().GetFlags();
         m_spsrm->put_flags(flags);
 
-        wchar_t buffer[CSettings::MAX_INPUT_STRING_LEN];
-        buffer[0] = L'\0';
-        CSettings::GetSearchText(buffer, ARRAYSIZE(buffer));
-        SetDlgItemText(m_hwnd, IDC_EDIT_SEARCHFOR, buffer);
-
-        buffer[0] = L'\0';
-        CSettings::GetReplaceText(buffer, ARRAYSIZE(buffer));
-        SetDlgItemText(m_hwnd, IDC_EDIT_REPLACEWITH, buffer);
+        SetDlgItemText(m_hwnd, IDC_EDIT_SEARCHFOR, CSettingsInstance().GetSearchText().c_str());
+        SetDlgItemText(m_hwnd, IDC_EDIT_REPLACEWITH, CSettingsInstance().GetReplaceText().c_str());
     }
     else
     {
@@ -414,18 +408,18 @@ HRESULT CPowerRenameUI::_ReadSettings()
 HRESULT CPowerRenameUI::_WriteSettings()
 {
     // Check if we should store our settings
-    if (CSettings::GetPersistState())
+    if (CSettingsInstance().GetPersistState())
     {
         DWORD flags = 0;
         m_spsrm->get_flags(&flags);
-        CSettings::SetFlags(flags);
+        CSettingsInstance().SetFlags(flags);
 
         wchar_t buffer[CSettings::MAX_INPUT_STRING_LEN];
         buffer[0] = L'\0';
         GetDlgItemText(m_hwnd, IDC_EDIT_SEARCHFOR, buffer, ARRAYSIZE(buffer));
-        CSettings::SetSearchText(buffer);
+        CSettingsInstance().SetSearchText(buffer);
 
-        if (CSettings::GetMRUEnabled() && m_spSearchACL)
+        if (CSettingsInstance().GetMRUEnabled() && m_spSearchACL)
         {
             CComPtr<IPowerRenameMRU> spSearchMRU;
             if (SUCCEEDED(m_spSearchACL->QueryInterface(IID_PPV_ARGS(&spSearchMRU))))
@@ -436,9 +430,9 @@ HRESULT CPowerRenameUI::_WriteSettings()
 
         buffer[0] = L'\0';
         GetDlgItemText(m_hwnd, IDC_EDIT_REPLACEWITH, buffer, ARRAYSIZE(buffer));
-        CSettings::SetReplaceText(buffer);
+        CSettingsInstance().SetReplaceText(buffer);
 
-        if (CSettings::GetMRUEnabled() && m_spReplaceACL)
+        if (CSettingsInstance().GetMRUEnabled() && m_spReplaceACL)
         {
             CComPtr<IPowerRenameMRU> spReplaceMRU;
             if (SUCCEEDED(m_spReplaceACL->QueryInterface(IID_PPV_ARGS(&spReplaceMRU))))
@@ -653,16 +647,16 @@ void CPowerRenameUI::_OnCommand(_In_ WPARAM wParam, _In_ LPARAM lParam)
     switch (LOWORD(wParam))
     {
     case IDOK:
-    case IDCANCEL:
-        _OnCloseDlg();
-        break;
-
     case ID_RENAME:
         _OnRename();
         break;
 
     case ID_ABOUT:
         _OnAbout();
+        break;
+
+    case IDCANCEL:
+        _OnCloseDlg();
         break;
 
     case IDC_EDIT_REPLACEWITH:

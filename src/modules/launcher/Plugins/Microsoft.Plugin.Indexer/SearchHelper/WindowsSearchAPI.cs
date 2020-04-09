@@ -34,10 +34,17 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                     {
                         if(WDSResults.HasRows)
                         {
-                            while (WDSResults.Read() && WDSResults.GetValue(0) != DBNull.Value)
+                            while (WDSResults.Read())
                             {
-                                var result = new SearchResult { Path = WDSResults.GetString(0) };
-                                _Result.Add(result);
+                                if(WDSResults.GetValue(0) != DBNull.Value && WDSResults.GetValue(1) != DBNull.Value)
+                                {
+                                    var result = new SearchResult
+                                    {
+                                        Path = WDSResults.GetString(0),
+                                        Title = WDSResults.GetString(1)
+                                    };
+                                    _Result.Add(result);
+                                }
                             }
                         }
                     }
@@ -87,6 +94,9 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 
             // Set additional query restriction
             queryHelper.QueryWhereRestrictions = "AND scope='file:'";
+
+            // To filter based on title for now
+            queryHelper.QueryContentProperties = "System.Title";
 
             // Set sorting order 
             queryHelper.QuerySorting = "System.DateModified DESC";
