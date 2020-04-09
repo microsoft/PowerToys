@@ -162,7 +162,7 @@ namespace PowerToysTests
 
             try
             {
-                WindowsElement pt = session.FindElementByXPath("//Button[@Name=\"PowerToys\"]");
+                WindowsElement pt = WaitElementByXPath("//Button[@Name=\"PowerToys\"]");
                 isLaunched = (pt != null);
             }
             catch(OpenQA.Selenium.WebDriverException)
