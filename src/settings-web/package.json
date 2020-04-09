@@ -12,6 +12,7 @@
   "typings": "lib/index.d.ts",
   "license": "MIT",
   "scripts": {
+    "preinstall": "npx npm-force-resolutions",
     "just": "just-scripts",
     "clean": "rimraf build lib lib-commonjs && just-scripts clean",
     "build": "rimraf build && just-scripts build --min --production && copy *.html build && react-snap && xcopy build\\* ..\\settings\\settings-html /sy",
@@ -46,5 +47,8 @@
   },
   "just": {
     "stack": "just-stack-uifabric"
+  },
+  "resolutions": {
+    "mkdirp": "0.5.5"
   }
 }
