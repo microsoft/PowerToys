@@ -3,13 +3,12 @@
 
 std::wstring LayoutMap::GetKeyName(DWORD key)
 {
+    std::wstring result = L"Undefined";
     std::lock_guard<std::mutex> lock(keyboardLayoutMap_mutex);
-    if (keyboardLayoutMap.find(key) != keyboardLayoutMap.end())
+    auto it = keyboardLayoutMap.find(key);
+    if (it != keyboardLayoutMap.end())
     {
-        return keyboardLayoutMap[key];
+        result = it->second;
     }
-    else
-    {
-        return L"Undefined";
-    }
+    return result;
 }

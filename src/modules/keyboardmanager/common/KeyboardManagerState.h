@@ -31,9 +31,13 @@ private:
     HWND currentUIWindow;
     std::mutex currentUIWindow_mutex;
 
-    // Object to store the shortcut detected in the detect shortcut UI window. This is used in both the backend and the UI.
+    // Object to store the shortcut detected in the detect shortcut UI window. Gets cleared on releasing keys. This is used in both the backend and the UI.
     Shortcut detectedShortcut;
     std::mutex detectedShortcut_mutex;
+
+    // Object to store the shortcut state displayed in the UI window. Always stores last displayed shortcut irrespective of releasing keys. This is used in both the backend and the UI.
+    Shortcut currentShortcut;
+    std::mutex currentShortcut_mutex;
 
     // Store detected remap key in the remap UI window. This is used in both the backend and the UI.
     DWORD detectedRemapKey;

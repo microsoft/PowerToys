@@ -4,9 +4,11 @@
 //Both static members are initialized to null
 HWND ShortcutControl::EditShortcutsWindowHandle = nullptr;
 KeyboardManagerState* ShortcutControl::keyboardManagerState = nullptr;
+// Initialized as new vector
+std::vector<std::vector<Shortcut>> ShortcutControl::shortcutRemapBuffer;
 
 // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
-void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, const Shortcut& originalKeys, const Shortcut& newKeys)
+void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, Shortcut originalKeys, Shortcut newKeys)
 {
     // Parent element for the row
     Windows::UI::Xaml::Controls::StackPanel tableRow;
@@ -15,18 +17,24 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, const Shortcu
     tableRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
 
     // ShortcutControl for the original shortcut
-    ShortcutControl originalSC;
+    ShortcutControl originalSC(shortcutRemapBuffer.size(), 0);
     tableRow.Children().Append(originalSC.getShortcutControl());
 
     // ShortcutControl for the new shortcut
-    ShortcutControl newSC;
+    ShortcutControl newSC(shortcutRemapBuffer.size(), 1);
     tableRow.Children().Append(newSC.getShortcutControl());
 
     // Set the shortcut text if the two vectors are not empty (i.e. default args)
     if (!originalKeys.IsEmpty() && !newKeys.IsEmpty())
     {
-        originalSC.shortcutText.Text(originalKeys.ToHstring());
-        newSC.shortcutText.Text(newKeys.ToHstring());
+        shortcutRemapBuffer.push_back(std::vector<Shortcut>{ originalKeys, newKeys });
+        originalSC.shortcutText.Text(originalKeys.ToHstring(keyboardManagerState->keyboardMap));
+        newSC.shortcutText.Text(newKeys.ToHstring(keyboardManagerState->keyboardMap));
+    }
+    else
+    {
+        // Initialize both shortcuts as empty shortcuts
+        shortcutRemapBuffer.push_back(std::vector<Shortcut>{ Shortcut(), Shortcut() });
     }
 
     // Delete row button
@@ -40,6 +48,8 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, const Shortcu
         uint32_t index;
         parent.Children().IndexOf(currentRow, index);
         parent.Children().RemoveAt(index);
+        // delete the row from the buffer. Since first child of the stackpanel is the header, the effective index starts from 1
+        shortcutRemapBuffer.erase(shortcutRemapBuffer.begin() + (index - 1));
     });
     tableRow.Children().Append(deleteShortcut);
     parent.Children().Append(tableRow);
@@ -52,7 +62,7 @@ StackPanel ShortcutControl::getShortcutControl()
 }
 
 // Function to create the detect shortcut UI window
-void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, XamlRoot xamlRoot, KeyboardManagerState& keyboardManagerState)
+void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, KeyboardManagerState& keyboardManagerState, const int& rowIndex, const int& colIndex)
 {
     // ContentDialog for detecting shortcuts. This is the parent UI element.
     ContentDialog detectShortcutBox;
@@ -70,10 +80,15 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
     TextBlock linkedShortcutText = getSiblingElement(sender).as<TextBlock>();
 
     // OK button
-    detectShortcutBox.PrimaryButtonClick([=, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
+    detectShortcutBox.PrimaryButtonClick([=, &shortcutRemapBuffer, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
         // Save the detected shortcut in the linked text block
         Shortcut detectedShortcutKeys = keyboardManagerState.GetDetectedShortcut();
-        linkedShortcutText.Text(detectedShortcutKeys.ToHstring());
+
+        if (!detectedShortcutKeys.IsEmpty())
+        {
+            shortcutRemapBuffer[rowIndex][colIndex] = detectedShortcutKeys;
+            linkedShortcutText.Text(detectedShortcutKeys.ToHstring(keyboardManagerState.keyboardMap));
+        }
 
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();

@@ -58,6 +58,10 @@ void KeyboardManagerState::ResetUIState()
     detectedShortcut.Reset();
     detectedShortcut_lock.unlock();
 
+    std::unique_lock<std::mutex> currentShortcut_lock(currentShortcut_mutex);
+    currentShortcut.Reset();
+    currentShortcut_lock.unlock();
+
     // Reset all the single key remap UI stored variables.
     std::unique_lock<std::mutex> currentSingleKeyUI_lock(currentSingleKeyUI_mutex);
     currentSingleKeyUI = nullptr;
@@ -158,8 +162,11 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
 
     
     std::unique_lock<std::mutex> detectedShortcut_lock(detectedShortcut_mutex);
-    
-    std::vector<hstring> shortcut = detectedShortcut.GetKeyVector();
+    std::unique_lock<std::mutex> currentShortcut_lock(currentShortcut_mutex);
+    // Save the latest displayed shortcut
+    currentShortcut = detectedShortcut;
+    currentShortcut_lock.unlock();
+    std::vector<hstring> shortcut = detectedShortcut.GetKeyVector(keyboardMap);
     
     detectedShortcut_lock.unlock();
 
@@ -198,20 +205,8 @@ void KeyboardManagerState::UpdateDetectSingleKeyRemapUI()
 // Function to return the currently detected shortcut which is displayed on the UI
 Shortcut KeyboardManagerState::GetDetectedShortcut()
 {
-    std::unique_lock<std::mutex> lock(currentShortcutUI_mutex);
-
-    std::vector<winrt::hstring> keys;
-    if (currentShortcutUI.Children().Size() > 0)
-    {
-        for (auto border : currentShortcutUI.Children())
-        {
-            auto keyString = border.as<Border>().Child().as<TextBlock>().Text();
-            keys.push_back(keyString);
-        }    
-    }
-
-    lock.unlock();
-    return Shortcut::CreateShortcut(keys);
+    std::lock_guard<std::mutex> lock(currentShortcut_mutex);
+    return currentShortcut;
 }
 
 // Function to return the currently detected remap key which is displayed on the UI

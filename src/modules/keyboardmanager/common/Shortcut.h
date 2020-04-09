@@ -1,5 +1,6 @@
 #pragma once
 #include "Helpers.h"
+#include "LayoutMap.h"
 #include <interface/lowlevel_keyboard_event_data.h>
 
 // Enum type to store different states of the win key
@@ -20,10 +21,8 @@ private:
     ModifierKey shiftKey;
     DWORD actionKey;
 
-    // Function to return the name of the key with L or R prefix depending on the first argument. Second argument should be the name of the key without any prefix (ex: Win, Ctrl)
-    winrt::hstring ModifierKeyNameWithSide(const ModifierKey& key, const std::wstring& keyName) const;
-
 public:
+
     // By default create an empty shortcut
     Shortcut() :
         winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
@@ -138,10 +137,10 @@ public:
     void ResetKey(const DWORD& input, const bool& isWinBoth = false);
 
     // Function to return the string representation of the shortcut
-    winrt::hstring ToHstring() const;
+    winrt::hstring ToHstring(LayoutMap& keyboardMap);
 
     // Function to return a vector of hstring for each key, in the same order as ToHstring()
-    std::vector<winrt::hstring> GetKeyVector() const;
+    std::vector<winrt::hstring> GetKeyVector(LayoutMap& keyboardMap);
 
     // Function to check if all the modifiers in the shortcut have been pressed down
     bool CheckModifiersKeyboardState() const;
@@ -151,13 +150,4 @@ public:
 
     // Function to get the number of modifiers that are common between the current shortcut and the shortcut in the argument
     int GetCommonModifiersCount(const Shortcut& input) const;
-
-    // Function to return the virtual key code from the name of the key
-    static DWORD DecodeKey(const std::wstring& keyName);
-
-    // Function to create a shortcut object from its string vector representation
-    static Shortcut CreateShortcut(const std::vector<winrt::hstring>& keys);
-
-    // Function to create a shortcut object from its string representation
-    static Shortcut CreateShortcut(const winrt::hstring& input);
 };
