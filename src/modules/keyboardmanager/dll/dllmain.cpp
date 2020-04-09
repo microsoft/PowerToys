@@ -59,9 +59,6 @@ private:
     // Variable which stores all the state information to be shared between the UI and back-end
     KeyboardManagerState keyboardManagerState;
 
-    // Vector to store the detected shortcut in the detect shortcut UI. Acts as a shortcut buffer while detecting the shortcuts in the UI.
-    std::vector<DWORD> detectedShortcutKeys;
-
 public:
     // Constructor
     KeyboardManager()
