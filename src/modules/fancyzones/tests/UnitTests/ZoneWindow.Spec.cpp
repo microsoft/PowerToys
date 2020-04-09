@@ -650,5 +650,29 @@ namespace FancyZonesUnitTests
             const auto actual = m_fancyZonesData.GetAppZoneHistoryMap().at(processPath).zoneIndex;
             Assert::AreEqual(expected, actual);
         }
+
+        TEST_METHOD (WhenWindowIsNotResizablePlacingItIntoTheZoneShouldNotResizeIt)
+        {
+            m_zoneWindow = InitZoneWindowWithActiveZoneSet();
+            Assert::IsNotNull(m_zoneWindow->ActiveZoneSet());
+
+            auto window = Mocks::WindowCreate(m_hInst);
+
+            int orginalWidth = 450;
+            int orginalHeight = 550;
+
+            SetWindowPos(window, nullptr, 150, 150, orginalWidth, orginalHeight, SWP_SHOWWINDOW);
+            SetWindowLong(window, GWL_STYLE, GetWindowLong(window, GWL_STYLE) & ~WS_SIZEBOX);
+
+            auto zone = MakeZone(RECT{ 50, 50, 300, 300 });
+            m_zoneWindow->ActiveZoneSet()->AddZone(zone);
+
+            m_zoneWindow->MoveWindowIntoZoneByDirection(window, VK_LEFT, true);
+
+            RECT inZoneRect;
+            GetWindowRect(window, &inZoneRect);
+            Assert::AreEqual(orginalWidth, (int)inZoneRect.right - (int) inZoneRect.left);
+            Assert::AreEqual(orginalHeight, (int)inZoneRect.bottom - (int)inZoneRect.top);
+        }
     };
 }
