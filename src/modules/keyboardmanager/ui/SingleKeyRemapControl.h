@@ -18,16 +18,18 @@ public:
     static HWND EditKeyboardWindowHandle;
     // Pointer to the keyboard manager state
     static KeyboardManagerState* keyboardManagerState;
+    // Stores the current list of remappings
+    static std::vector<std::vector<DWORD>> singleKeyRemapBuffer;
 
-    SingleKeyRemapControl()
+    SingleKeyRemapControl(const int& rowIndex, const int& colIndex)
     {
         typeKey.Content(winrt::box_value(winrt::to_hstring("Type Key")));
         typeKey.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
         typeKey.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
-        typeKey.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+        typeKey.Click([&, rowIndex, colIndex](IInspectable const& sender, RoutedEventArgs const&) {
             keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectSingleKeyRemapWindowActivated, EditKeyboardWindowHandle);
             // Using the XamlRoot of the typeKey to get the root of the XAML host
-            createDetectKeyWindow(sender, sender.as<Button>().XamlRoot(), *keyboardManagerState);
+            createDetectKeyWindow(sender, sender.as<Button>().XamlRoot(), singleKeyRemapBuffer, *keyboardManagerState, rowIndex, colIndex);
         });
 
         singleKeyRemapControlLayout.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
@@ -45,5 +47,5 @@ public:
     StackPanel getSingleKeyRemapControl();
 
     // Function to create the detect remap keys UI window
-    void createDetectKeyWindow(IInspectable const& sender, XamlRoot xamlRoot, KeyboardManagerState& keyboardManagerState);
+    void createDetectKeyWindow(IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, KeyboardManagerState& keyboardManagerState, const int& rowIndex, const int& colIndex);
 };

@@ -121,6 +121,21 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Message to display success/failure of saving settings.
     TextBlock settingsMessage;
 
+    // Store handle of edit shortcuts window
+    ShortcutControl::EditShortcutsWindowHandle = _hWndEditShortcutsWindow;
+    // Store keyboard manager state
+    ShortcutControl::keyboardManagerState = &keyboardManagerState;
+    // Clear the shortcut remap buffer
+    ShortcutControl::shortcutRemapBuffer.clear();
+
+    // Load existing shortcuts into UI
+    std::unique_lock<std::mutex> lock(keyboardManagerState.osLevelShortcutReMap_mutex);
+    for (const auto& it : keyboardManagerState.osLevelShortcutReMap)
+    {
+        ShortcutControl::AddNewShortcutControlRow(shortcutTable, it.first, it.second.targetShortcut);
+    }
+    lock.unlock();
+
     // Apply button
     Button applyButton;
     applyButton.Content(winrt::box_value(winrt::to_hstring("Apply")));
@@ -130,26 +145,15 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         keyboardManagerState.ClearOSLevelShortcuts();
 
         // Save the shortcuts that are valid and report if any of them were invalid
-        for (unsigned int i = 1; i < shortcutTable.Children().Size(); i++)
+        for (int i = 0; i < ShortcutControl::shortcutRemapBuffer.size(); i++)
         {
-            StackPanel currentRow = shortcutTable.Children().GetAt(i).as<StackPanel>();
-            hstring originalShortcutText = currentRow.Children().GetAt(0).as<StackPanel>().Children().GetAt(1).as<TextBlock>().Text();
-            hstring newShortcutText = currentRow.Children().GetAt(1).as<StackPanel>().Children().GetAt(1).as<TextBlock>().Text();
-            if (!originalShortcutText.empty() && !newShortcutText.empty())
-            {
-                Shortcut originalShortcut = Shortcut::CreateShortcut(originalShortcutText);
-                Shortcut newShortcut = Shortcut::CreateShortcut(newShortcutText);
+            Shortcut originalShortcut = ShortcutControl::shortcutRemapBuffer[i][0];
+            Shortcut newShortcut = ShortcutControl::shortcutRemapBuffer[i][1];
 
-                // Shortcut should be valid
-                if (originalShortcut.IsValidShortcut() && originalShortcut.IsValidShortcut())
-                {
-                    bool result = keyboardManagerState.AddOSLevelShortcut(originalShortcut, newShortcut);
-                    if (!result)
-                    {
-                        isSuccess = false;
-                    }
-                }
-                else
+            if (originalShortcut.IsValidShortcut() && originalShortcut.IsValidShortcut())
+            {
+                bool result = keyboardManagerState.AddOSLevelShortcut(originalShortcut, newShortcut);
+                if (!result)
                 {
                     isSuccess = false;
                 }
@@ -176,19 +180,6 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     header.Children().Append(cancelButton);
     header.Children().Append(applyButton);
     header.Children().Append(settingsMessage);
-
-    // Store handle of edit shortcuts window
-    ShortcutControl::EditShortcutsWindowHandle = _hWndEditShortcutsWindow;
-    // Store keyboard manager state
-    ShortcutControl::keyboardManagerState = &keyboardManagerState;
-
-    // Load existing shortcuts into UI
-    std::unique_lock<std::mutex> lock(keyboardManagerState.osLevelShortcutReMap_mutex);
-    for (const auto& it : keyboardManagerState.osLevelShortcutReMap)
-    {
-        ShortcutControl::AddNewShortcutControlRow(shortcutTable, it.first, it.second.targetShortcut);
-    }
-    lock.unlock();
 
     // Add shortcut button
     Windows::UI::Xaml::Controls::Button addShortcut;

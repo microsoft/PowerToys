@@ -1,5 +1,6 @@
 #pragma once
 #include "Helpers.h"
+#include "LayoutMap.h"
 #include "Shortcut.h"
 #include "RemapShortcut.h"
 #include <interface/lowlevel_keyboard_event_data.h>
@@ -30,9 +31,13 @@ private:
     HWND currentUIWindow;
     std::mutex currentUIWindow_mutex;
 
-    // Object to store the shortcut detected in the detect shortcut UI window. This is used in both the backend and the UI.
+    // Object to store the shortcut detected in the detect shortcut UI window. Gets cleared on releasing keys. This is used in both the backend and the UI.
     Shortcut detectedShortcut;
     std::mutex detectedShortcut_mutex;
+
+    // Object to store the shortcut state displayed in the UI window. Always stores last displayed shortcut irrespective of releasing keys. This is used in both the backend and the UI.
+    Shortcut currentShortcut;
+    std::mutex currentShortcut_mutex;
 
     // Store detected remap key in the remap UI window. This is used in both the backend and the UI.
     DWORD detectedRemapKey;
@@ -66,6 +71,9 @@ public:
     // Stores the app-specific shortcut remappings. Maps application name to the shortcut map
     std::map<std::wstring, std::map<Shortcut, RemapShortcut>> appSpecificShortcutReMap;
     std::mutex appSpecificShortcutReMap_mutex;
+
+    // Stores the keyboard layout
+    LayoutMap keyboardMap;
 
     // Constructor
     KeyboardManagerState();

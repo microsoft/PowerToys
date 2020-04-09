@@ -99,7 +99,6 @@ DWORD Shortcut::GetWinKey(const ModifierKey& input) const
             //return VK_LWIN by default
             return VK_LWIN;
         }
-
     }
 }
 
@@ -393,10 +392,10 @@ void Shortcut::ResetKey(const DWORD& input, const bool& isWinBoth)
 }
 
 // Function to return the string representation of the shortcut
-winrt::hstring Shortcut::ToHstring() const
+winrt::hstring Shortcut::ToHstring(LayoutMap& keyboardMap)
 {
-    std::vector<winrt::hstring> keys = GetKeyVector();
-    
+    std::vector<winrt::hstring> keys = GetKeyVector(keyboardMap);
+
     winrt::hstring output;
     for (auto& key : keys)
     {
@@ -404,7 +403,7 @@ winrt::hstring Shortcut::ToHstring() const
     }
     if (keys.size() > 1)
     {
-        return winrt::hstring(output.c_str(), output.size() - 1);   
+        return winrt::hstring(output.c_str(), output.size() - 1);
     }
     else
     {
@@ -412,28 +411,28 @@ winrt::hstring Shortcut::ToHstring() const
     }
 }
 
-std::vector<winrt::hstring> Shortcut::GetKeyVector() const
+std::vector<winrt::hstring> Shortcut::GetKeyVector(LayoutMap& keyboardMap)
 {
     std::vector<winrt::hstring> keys;
     if (winKey != ModifierKey::Disabled)
     {
-        keys.push_back(ModifierKeyNameWithSide(winKey, L"Win"));
+        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetWinKey(ModifierKey::Left)).c_str()));
     }
     if (ctrlKey != ModifierKey::Disabled)
     {
-        keys.push_back(ModifierKeyNameWithSide(ctrlKey, L"Ctrl"));
+        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetCtrlKey()).c_str()));
     }
     if (altKey != ModifierKey::Disabled)
     {
-        keys.push_back(ModifierKeyNameWithSide(altKey, L"Alt"));
+        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetAltKey()).c_str()));
     }
     if (shiftKey != ModifierKey::Disabled)
     {
-        keys.push_back(ModifierKeyNameWithSide(shiftKey, L"Shift"));
+        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetShiftKey()).c_str()));
     }
     if (actionKey != NULL)
     {
-        keys.push_back(winrt::to_hstring((unsigned int)actionKey));
+        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(actionKey).c_str()));
     }
     return keys;
 }
@@ -709,102 +708,4 @@ int Shortcut::GetCommonModifiersCount(const Shortcut& input) const
     }
 
     return commonElements;
-}
-
-// Function to return the name of the key with L or R prefix depending on the first argument. Second argument should be the name of the key without any prefix (ex: Win, Ctrl)
-winrt::hstring Shortcut::ModifierKeyNameWithSide(const ModifierKey& key, const std::wstring& keyName) const
-{
-    if (key == ModifierKey::Left)
-    {
-        return winrt::to_hstring(L"L") + winrt::to_hstring(keyName.c_str());
-    }
-    else if (key == ModifierKey::Right)
-    {
-        return winrt::to_hstring(L"R") + winrt::to_hstring(keyName.c_str());
-    }
-    else if (key == ModifierKey::Both)
-    {
-        return winrt::to_hstring(keyName.c_str());
-    }
-
-    return winrt::hstring();
-}
-
-// Function to return the virtual key code from the name of the key
-DWORD Shortcut::DecodeKey(const std::wstring& keyName)
-{
-    if (keyName == L"LWin")
-    {
-        return VK_LWIN;
-    }
-    else if (keyName == L"RWin")
-    {
-        return VK_RWIN;
-    }
-    else if (keyName == L"LCtrl")
-    {
-        return VK_LCONTROL;
-    }
-    else if (keyName == L"RCtrl")
-    {
-        return VK_RCONTROL;
-    }
-    else if (keyName == L"Ctrl")
-    {
-        return VK_CONTROL;
-    }
-    else if (keyName == L"LAlt")
-    {
-        return VK_LMENU;
-    }
-    else if (keyName == L"RAlt")
-    {
-        return VK_RMENU;
-    }
-    else if (keyName == L"Alt")
-    {
-        return VK_MENU;
-    }
-    else if (keyName == L"LShift")
-    {
-        return VK_LSHIFT;
-    }
-    else if (keyName == L"RShift")
-    {
-        return VK_RSHIFT;
-    }
-    else if (keyName == L"Shift")
-    {
-        return VK_SHIFT;
-    }
-    else
-    {
-        return std::stoi(keyName);
-    }
-}
-
-// Function to create a shortcut object from its string representation
-Shortcut Shortcut::CreateShortcut(const std::vector<winrt::hstring>& keys)
-{
-    Shortcut newShortcut;
-    for (int i = 0; i < keys.size(); i++)
-    {
-        if (keys[i] == L"Win")
-        {
-            newShortcut.SetKey(NULL, true);
-        }
-        else
-        {
-            DWORD keyCode = DecodeKey(keys[i].c_str());
-            newShortcut.SetKey(keyCode);
-        }
-    }
-
-    return newShortcut;
-}
-
-Shortcut Shortcut::CreateShortcut(const winrt::hstring& input)
-{
-    std::vector<std::wstring> shortcut = splitwstring(input.c_str(), L' ');
-    return CreateShortcut(std::vector<winrt::hstring>(shortcut.begin(), shortcut.end()));
 }
