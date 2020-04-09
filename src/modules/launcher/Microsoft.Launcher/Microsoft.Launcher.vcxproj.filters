@@ -11,6 +11,6 @@
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Wox.Launcher.rc" />
+    <ResourceCompile Include="Microsoft.Launcher.rc" />
   </ItemGroup>
 </Project>

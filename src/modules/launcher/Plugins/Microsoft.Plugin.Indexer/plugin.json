@@ -7,6 +7,6 @@
   "Version": "1.0.0",
   "Language": "csharp",
   "Website": "http://www.wox.one/plugin",
-  "ExecuteFileName": "Wox.Plugin.Indexer.dll",
+  "ExecuteFileName": "Microsoft.Plugin.Indexer.dll",
   "IcoPath": "Images\\WindowsIndexerImg.bmp"
 }
