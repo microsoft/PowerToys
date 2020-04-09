@@ -182,9 +182,4 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File $(SolutionDir)src\modules\launcher\Scripts\post_build.ps1 $(ConfigurationName) $(SolutionDir)src\modules\launcher" />
-  </Target>
 </Project>
