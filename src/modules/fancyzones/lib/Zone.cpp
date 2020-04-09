@@ -77,14 +77,19 @@ void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
 
     const auto level = DPIAware::GetAwarenessLevel(GetWindowDpiAwarenessContext(window));
     const bool accountForUnawareness = level < DPIAware::PER_MONITOR_AWARE;
+
+    LONG leftMargin = 0;
+    LONG rightMargin = 0;
+    LONG bottomMargin = 0;
+
     if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &frameRect, sizeof(frameRect))))
     {
-        const auto left_margin = frameRect.left - windowRect.left;
-        const auto right_margin = frameRect.right - windowRect.right;
-        const auto bottom_margin = frameRect.bottom - windowRect.bottom;
-        newWindowRect.left -= left_margin;
-        newWindowRect.right -= right_margin;
-        newWindowRect.bottom -= bottom_margin;
+        leftMargin = frameRect.left - windowRect.left;
+        rightMargin = frameRect.right - windowRect.right;
+        bottomMargin = frameRect.bottom - windowRect.bottom;
+        newWindowRect.left -= leftMargin;
+        newWindowRect.right -= rightMargin;
+        newWindowRect.bottom -= bottomMargin;
     }
 
     // Map to screen coords
@@ -98,8 +103,8 @@ void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
         OffsetRect(&newWindowRect, -taskbar_left_size, -taskbar_top_size);
         if (accountForUnawareness)
         {
-            newWindowRect.left = max(mi.rcMonitor.left, newWindowRect.left);
-            newWindowRect.right = min(mi.rcMonitor.right - taskbar_left_size, newWindowRect.right);
+            newWindowRect.left = max(mi.rcMonitor.left - leftMargin, newWindowRect.left);
+            newWindowRect.right = min(mi.rcMonitor.right - taskbar_left_size - rightMargin, newWindowRect.right);
             newWindowRect.top = max(mi.rcMonitor.top, newWindowRect.top);
             newWindowRect.bottom = min(mi.rcMonitor.bottom - taskbar_top_size, newWindowRect.bottom);
         }
