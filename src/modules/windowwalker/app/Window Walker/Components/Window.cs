@@ -215,7 +215,7 @@ namespace WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether get a value indicating whether the window GWL_EX_STYLE is an appwindow
+        /// Gets a value indicating whether the window GWL_EX_STYLE is an appwindow
         /// </summary>
         public bool IsAppWindow
         {
@@ -228,7 +228,7 @@ namespace WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether get a value indicating whether the window has ITaskList_Deleted property
+        /// Gets a value indicating whether the window has ITaskList_Deleted property
         /// </summary>
         public bool TaskListDeleted
         {
@@ -239,7 +239,7 @@ namespace WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether get a value indicating whether the app is a cloaked UWP app
+        /// Gets a value indicating whether the app is a cloaked UWP app
         /// </summary>
         public bool IsUWPCloaked
         {
@@ -250,7 +250,7 @@ namespace WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a value indicating whether determines whether the specified windows is the owner
+        /// Gets a value indicating whether the specified windows is the owner
         /// </summary>
         public bool IsOwner
         {
