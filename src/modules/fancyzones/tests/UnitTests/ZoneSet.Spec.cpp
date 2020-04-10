@@ -372,7 +372,7 @@ namespace FancyZonesUnitTests
                 m_set->AddZone(zone3);
 
                 HWND window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1, false);
                 Assert::IsFalse(zone1->ContainsWindow(window));
                 Assert::IsTrue(zone2->ContainsWindow(window));
                 Assert::IsFalse(zone3->ContainsWindow(window));
@@ -381,7 +381,7 @@ namespace FancyZonesUnitTests
             TEST_METHOD (MoveWindowIntoZoneByIndexWithNoZones)
             {
                 HWND window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0, false);
             }
 
             TEST_METHOD (MoveWindowIntoZoneByIndexWithInvalidIndex)
@@ -394,7 +394,7 @@ namespace FancyZonesUnitTests
                 m_set->AddZone(zone3);
 
                 HWND window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 100);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 100, false);
                 Assert::IsFalse(zone1->ContainsWindow(window));
                 Assert::IsFalse(zone2->ContainsWindow(window));
                 Assert::IsFalse(zone3->ContainsWindow(window));
@@ -411,17 +411,17 @@ namespace FancyZonesUnitTests
                 m_set->AddZone(zone3);
 
                 HWND window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0, false);
                 Assert::IsTrue(zone1->ContainsWindow(window));
                 Assert::IsFalse(zone2->ContainsWindow(window));
                 Assert::IsFalse(zone3->ContainsWindow(window));
 
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1, false);
                 Assert::IsFalse(zone1->ContainsWindow(window));
                 Assert::IsTrue(zone2->ContainsWindow(window));
                 Assert::IsFalse(zone3->ContainsWindow(window));
 
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 2);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 2, false);
                 Assert::IsFalse(zone1->ContainsWindow(window));
                 Assert::IsFalse(zone2->ContainsWindow(window));
                 Assert::IsTrue(zone3->ContainsWindow(window));
@@ -438,9 +438,9 @@ namespace FancyZonesUnitTests
                 m_set->AddZone(zone3);
 
                 HWND window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0, false);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0, false);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0, false);
                 Assert::IsTrue(zone1->ContainsWindow(window));
                 Assert::IsFalse(zone2->ContainsWindow(window));
                 Assert::IsFalse(zone3->ContainsWindow(window));

@@ -129,9 +129,9 @@ public:
     IFACEMETHODIMP_(std::vector<winrt::com_ptr<IZone>>)
     GetZones() noexcept { return m_zones; }
     IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByIndex(HWND window, HWND zoneWindow, int index) noexcept;
+    MoveWindowIntoZoneByIndex(HWND window, HWND zoneWindow, int index, bool stampZone) noexcept;
     IFACEMETHODIMP_(void)
-    MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::vector<int>& indexSet) noexcept;
+    MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::vector<int>& indexSet, bool stampZone) noexcept;
     IFACEMETHODIMP_(bool)
     MoveWindowIntoZoneByDirection(HWND window, HWND zoneWindow, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(void)
@@ -257,7 +257,7 @@ ZoneSet::GetZoneIndexFromWindow(HWND window) noexcept
 }
 
 IFACEMETHODIMP_(void)
-ZoneSet::MoveWindowIntoZoneByIndex(HWND window, HWND windowZone, int index) noexcept
+ZoneSet::MoveWindowIntoZoneByIndex(HWND window, HWND windowZone, int index, bool stampZone) noexcept
 {
     if (m_zones.empty())
     {
@@ -276,12 +276,12 @@ ZoneSet::MoveWindowIntoZoneByIndex(HWND window, HWND windowZone, int index) noex
 
     if (auto zone = m_zones.at(index))
     {
-        zone->AddWindowToZone(window, windowZone, false);
+        zone->AddWindowToZone(window, windowZone, stampZone);
     }
 }
 
 IFACEMETHODIMP_(void)
-ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::vector<int>& indexSet) noexcept
+ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::vector<int>& indexSet, bool stampZone) noexcept
 {
     if (m_zones.empty())
     {
@@ -295,7 +295,7 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::v
 
     if (indexSet.size() == 1)
     {
-        MoveWindowIntoZoneByIndex(window, windowZone, indexSet[0]);
+        MoveWindowIntoZoneByIndex(window, windowZone, indexSet[0], stampZone);
         return;
     }
 
@@ -395,7 +395,7 @@ ZoneSet::MoveWindowIntoZoneByPoint(HWND window, HWND zoneWindow, POINT ptClient)
     }
 
     auto zones = ZonesFromPoint(ptClient);
-    MoveWindowIntoZoneByIndexSet(window, zoneWindow, zones);
+    MoveWindowIntoZoneByIndexSet(window, zoneWindow, zones, true);
 }
 
 IFACEMETHODIMP_(bool)
