@@ -193,14 +193,6 @@
     <value>Edit Shortcuts</value>
     <comment>Keyboard Manager edit shortcuts header</comment>
   </data>
-  <data name="KeyboardManager_KeysMappingLayoutLeftHeader.Text" xml:space="preserve">
-    <value>From:</value>
-    <comment>Keyboard Manager mapping keys view left header</comment>
-  </data>
-  <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
-    <value>To:</value>
-    <comment>Keyboard Manager mapping keys view right header</comment>
-  </data>
   <data name="PowerLauncher_Description.Text" xml:space="preserve">
     <value>A quick launcher that has additional capabilities without sacrificing performance.</value>
   </data>
@@ -257,5 +249,9 @@
   </data>
   <data name="PowerLauncher_OverrideWinSKey.Content" xml:space="preserve">
     <value>Override Win+S key</value>
+  </data>
+  <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
+    <value>To:</value>
+    <comment>Keyboard Manager mapping keys view right header</comment>
   </data>
 </root>
