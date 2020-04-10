@@ -4,7 +4,6 @@
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-
     public class Keys
     {
         public string From { get; set; }

@@ -7,7 +7,6 @@ using System.Windows.Input;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
-
     public class RelayCommand<T> : ICommand
     {
         private readonly Action<T> execute;
