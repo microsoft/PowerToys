@@ -150,6 +150,7 @@ public:
     void AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept;
 
     void MoveWindowIntoZoneByIndex(HWND window, HMONITOR monitor, int index) noexcept;
+    void MoveWindowIntoZoneByIndexSet(HWND window, HMONITOR monitor, const std::vector<int>& indexSet) noexcept;
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
@@ -697,6 +698,12 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
 void FancyZones::MoveWindowIntoZoneByIndex(HWND window, HMONITOR monitor, int index) noexcept
 {
     std::shared_lock readLock(m_lock);
+    MoveWindowIntoZoneByIndexSet(window, monitor, { index });
+}
+
+void FancyZones::MoveWindowIntoZoneByIndexSet(HWND window, HMONITOR monitor, const std::vector<int>& indexSet) noexcept
+{
+    std::shared_lock readLock(m_lock);
     if (window != m_windowMoveSize)
     {
         const HMONITOR hm = (monitor != nullptr) ? monitor : MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
@@ -706,7 +713,7 @@ void FancyZones::MoveWindowIntoZoneByIndex(HWND window, HMONITOR monitor, int in
             if (zoneWindow != m_zoneWindowMap.end())
             {
                 const auto& zoneWindowPtr = zoneWindow->second;
-                zoneWindowPtr->MoveWindowIntoZoneByIndex(window, index);
+                zoneWindowPtr->MoveWindowIntoZoneByIndexSet(window, indexSet);
             }
         }
     }
