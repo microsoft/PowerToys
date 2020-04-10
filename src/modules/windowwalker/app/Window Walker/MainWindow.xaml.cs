@@ -117,7 +117,7 @@ namespace WindowWalker
 
         private void Window_GotFocus(object sender, RoutedEventArgs e)
         {
-            this.searchBox.Focus();
+            searchBox.Focus();
         }
     }
 }
