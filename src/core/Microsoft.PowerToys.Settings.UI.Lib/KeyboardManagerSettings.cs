@@ -14,16 +14,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public KeyboardManagerSettings()
         {
-            this.properties = new KeyboardManagerProperties();
-            this.version = "1";
-            this.name = "_unset_";
+            properties = new KeyboardManagerProperties();
+            version = "1";
+            name = "_unset_";
         }
 
         public KeyboardManagerSettings(string ptName)
         {
-            this.properties = new KeyboardManagerProperties();
-            this.version = "1";
-            this.name = ptName;
+            properties = new KeyboardManagerProperties();
+            version = "1";
+            name = ptName;
         }
     }
 }

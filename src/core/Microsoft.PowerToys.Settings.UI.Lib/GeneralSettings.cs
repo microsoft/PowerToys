@@ -34,13 +34,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public GeneralSettings()
         {
-            this.Packaged = false;
-            this.startup = false;
-            this.is_admin = false;
-            this.is_elevated = false;
-            this.theme = "system";
-            this.system_theme = "light";
-            this.powertoys_version = "v0.15.3";
+            Packaged = false;
+            startup = false;
+            is_admin = false;
+            is_elevated = false;
+            theme = "system";
+            system_theme = "light";
+            powertoys_version = "v0.15.3";
         }
 
         // converts the current to a json string.

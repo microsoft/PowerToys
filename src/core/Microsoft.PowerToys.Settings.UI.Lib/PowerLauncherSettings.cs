@@ -10,9 +10,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public PowerLauncherSettings()
         {
-            this.properties = new PowerLauncherProperties();
-            this.version = "1";
-            this.name = "_unset_";
+            properties = new PowerLauncherProperties();
+            version = "1";
+            name = "_unset_";
         }
     }
 }

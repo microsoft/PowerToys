@@ -16,8 +16,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public KeyboardManagerProperties()
         {
-            this.EditShortcut = new BoolProperty();
-            this.RemapKeyboard = new BoolProperty();
+            EditShortcut = new BoolProperty();
+            RemapKeyboard = new BoolProperty();
         }
 
         public string ToJsonString()
