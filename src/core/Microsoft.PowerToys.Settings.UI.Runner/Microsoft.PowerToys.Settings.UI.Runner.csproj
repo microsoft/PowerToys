@@ -51,6 +51,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\settingsui\Assets\logo.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>

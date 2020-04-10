@@ -77,6 +77,5 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
             }
         }
-
     }
 }
