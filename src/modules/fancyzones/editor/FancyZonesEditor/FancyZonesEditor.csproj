@@ -85,7 +85,7 @@
     <CodeAnalysisRuleSet>..\..\..\..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>images\Merge.ico</ApplicationIcon>
+    <ApplicationIcon>images\FancyZonesEditor.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -260,7 +260,7 @@
     <Resource Include="images\Merge.png" />
   </ItemGroup>
   <ItemGroup>
-	<Resource Include="images\Merge.ico" />
+    <Resource Include="images\FancyZonesEditor.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
