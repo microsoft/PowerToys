@@ -18,10 +18,14 @@ namespace WindowWalker.Components
         /// </summary>
         public delegate void OpenWindowsUpdateHandler(object sender, SearchController.SearchResultUpdateEventArgs e);
 
+#pragma warning disable 0067 // suppress false positive
+
         /// <summary>
         /// Event raised when there is an update to the list of open windows
         /// </summary>
         public event OpenWindowsUpdateHandler OnOpenWindowsUpdate;
+
+#pragma warning restore 0067
 
         /// <summary>
         /// List of all the open windows
