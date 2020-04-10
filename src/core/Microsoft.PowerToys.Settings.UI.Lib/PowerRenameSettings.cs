@@ -13,16 +13,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public PowerRenameSettings()
         {
-            this.properties = new PowerRenameProperties();
-            this.version = "1";
-            this.name = "_unset_";
+            properties = new PowerRenameProperties();
+            version = "1";
+            name = "_unset_";
         }
 
         public PowerRenameSettings(string ptName)
         {
-            this.properties = new PowerRenameProperties();
-            this.version = "1";
-            this.name = ptName;
+            properties = new PowerRenameProperties();
+            version = "1";
+            name = ptName;
         }
 
         public override string ToJsonString()

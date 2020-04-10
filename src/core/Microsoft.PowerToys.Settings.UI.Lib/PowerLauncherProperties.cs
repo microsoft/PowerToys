@@ -28,12 +28,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public PowerLauncherProperties()
         {
-            this.open_powerlauncher = new HotkeySettings();
-            this.open_file_location = new HotkeySettings();
-            this.copy_path_location = new HotkeySettings();
-            this.open_console = new HotkeySettings();
-            this.search_result_preference = "most_recently_used";
-            this.search_type_preference = "application_name";
+            open_powerlauncher = new HotkeySettings();
+            open_file_location = new HotkeySettings();
+            copy_path_location = new HotkeySettings();
+            open_console = new HotkeySettings();
+            search_result_preference = "most_recently_used";
+            search_type_preference = "application_name";
         }
     }
 }

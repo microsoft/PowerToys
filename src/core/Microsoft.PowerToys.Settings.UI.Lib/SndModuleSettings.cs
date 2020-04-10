@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public SndModuleSettings(T settings)
         {
-            this.powertoys = settings;
+            powertoys = settings;
         }
 
         public string ToJsonString()

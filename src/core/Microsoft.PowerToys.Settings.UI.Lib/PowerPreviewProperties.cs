@@ -18,8 +18,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public PowerPreviewProperties()
         {
-            this.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL = new BoolProperty();
-            this.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID = new BoolProperty();
+            IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL = new BoolProperty();
+            PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID = new BoolProperty();
         }
 
         public override string ToString()

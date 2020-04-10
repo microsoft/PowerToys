@@ -14,7 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public SndPowerRenameSettings(PowerRenameSettings settings)
         {
-            this.PowerRename = settings;
+            PowerRename = settings;
         }
 
         public string ToJsonString()

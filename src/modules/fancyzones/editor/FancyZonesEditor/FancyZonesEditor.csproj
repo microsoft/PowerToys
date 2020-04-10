@@ -233,7 +233,7 @@
       <Version>2.0.0-alpha0455</Version>
     </PackageReference>
     <PackageReference Include="System.Text.Json">
-      <Version>4.7.0</Version>
+      <Version>4.7.1</Version>
     </PackageReference>
     <PackageReference Include="StyleCop.Analyzers">
       <Version>1.1.118</Version>

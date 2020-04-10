@@ -32,19 +32,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsBackEnabled
         {
-            get { return this.isBackEnabled; }
-            set { this.Set(ref this.isBackEnabled, value); }
+            get { return isBackEnabled; }
+            set { Set(ref isBackEnabled, value); }
         }
 
         public WinUI.NavigationViewItem Selected
         {
-            get { return this.selected; }
-            set { this.Set(ref this.selected, value); }
+            get { return selected; }
+            set { Set(ref selected, value); }
         }
 
-        public ICommand LoadedCommand => this.loadedCommand ?? (this.loadedCommand = new RelayCommand(this.OnLoaded));
+        public ICommand LoadedCommand => loadedCommand ?? (loadedCommand = new RelayCommand(OnLoaded));
 
-        public ICommand ItemInvokedCommand => this.itemInvokedCommand ?? (this.itemInvokedCommand = new RelayCommand<WinUI.NavigationViewItemInvokedEventArgs>(this.OnItemInvoked));
+        public ICommand ItemInvokedCommand => itemInvokedCommand ?? (itemInvokedCommand = new RelayCommand<WinUI.NavigationViewItemInvokedEventArgs>(OnItemInvoked));
 
         public ShellViewModel()
         {
@@ -55,9 +55,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             this.navigationView = navigationView;
             this.keyboardAccelerators = keyboardAccelerators;
             NavigationService.Frame = frame;
-            NavigationService.NavigationFailed += this.Frame_NavigationFailed;
-            NavigationService.Navigated += this.Frame_Navigated;
-            this.navigationView.BackRequested += this.OnBackRequested;
+            NavigationService.NavigationFailed += Frame_NavigationFailed;
+            NavigationService.Navigated += Frame_Navigated;
+            this.navigationView.BackRequested += OnBackRequested;
         }
 
         private static KeyboardAccelerator BuildKeyboardAccelerator(VirtualKey key, VirtualKeyModifiers? modifiers = null)
@@ -82,14 +82,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             // Keyboard accelerators are added here to avoid showing 'Alt + left' tooltip on the page.
             // More info on tracking issue https://github.com/Microsoft/microsoft-ui-xaml/issues/8
-            this.keyboardAccelerators.Add(this.altLeftKeyboardAccelerator);
-            this.keyboardAccelerators.Add(this.backKeyboardAccelerator);
+            keyboardAccelerators.Add(altLeftKeyboardAccelerator);
+            keyboardAccelerators.Add(backKeyboardAccelerator);
             await Task.CompletedTask;
         }
 
         private void OnItemInvoked(WinUI.NavigationViewItemInvokedEventArgs args)
         {
-            var item = this.navigationView.MenuItems
+            var item = navigationView.MenuItems
                             .OfType<WinUI.NavigationViewItem>()
                             .First(menuItem => (string)menuItem.Content == (string)args.InvokedItem);
             var pageType = item.GetValue(NavHelper.NavigateToProperty) as Type;
@@ -108,10 +108,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void Frame_Navigated(object sender, NavigationEventArgs e)
         {
-            this.IsBackEnabled = NavigationService.CanGoBack;
-            this.Selected = this.navigationView.MenuItems
+            IsBackEnabled = NavigationService.CanGoBack;
+            Selected = navigationView.MenuItems
                             .OfType<WinUI.NavigationViewItem>()
-                            .FirstOrDefault(menuItem => this.IsMenuItemForPageType(menuItem, e.SourcePageType));
+                            .FirstOrDefault(menuItem => IsMenuItemForPageType(menuItem, e.SourcePageType));
         }
 
         private bool IsMenuItemForPageType(WinUI.NavigationViewItem menuItem, Type sourcePageType)

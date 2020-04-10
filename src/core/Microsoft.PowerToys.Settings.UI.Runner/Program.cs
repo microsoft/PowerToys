@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
         // Create an instance of the  IPC wrapper.
         private static ITwoWayIPCManager ipcmanager = new TwoWayIPCManager();
 
-        [STAThreadAttribute()]
+        [STAThread]
         public static void Main(string[] args)
         {
             using (new UI.App())

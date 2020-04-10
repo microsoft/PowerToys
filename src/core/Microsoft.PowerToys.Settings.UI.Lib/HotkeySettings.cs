@@ -24,27 +24,27 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         {
             StringBuilder output = new StringBuilder();
 
-            if (this.win)
+            if (win)
             {
                 output.Append("Win + ");
             }
 
-            if (this.ctrl)
+            if (ctrl)
             {
                 output.Append("Ctrl + ");
             }
 
-            if (this.alt)
+            if (alt)
             {
                 output.Append("Alt + ");
             }
 
-            if (this.shift)
+            if (shift)
             {
                 output.Append("Shift + ");
             }
 
-            output.Append(this.key);
+            output.Append(key);
             return output.ToString();
         }
     }

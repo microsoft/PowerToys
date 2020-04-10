@@ -12,12 +12,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public OutGoingGeneralSettings()
         {
-            this.general = null;
+            general = null;
         }
 
         public OutGoingGeneralSettings(GeneralSettings generalSettings)
         {
-            this.general = generalSettings;
+            general = generalSettings;
         }
 
         public override string ToString()

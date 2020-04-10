@@ -28,24 +28,24 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             get
             {
-                return this.hotkeySettings;
+                return hotkeySettings;
             }
 
             set
             {
-                if (this.hotkeySettings != value)
+                if (hotkeySettings != value)
                 {
-                    this.hotkeySettings = value;
-                    this.SetValue(HotkeySettingsProperty, value);
-                    this.HotkeyTextBox.Text = this.HotkeySettings.ToString();
+                    hotkeySettings = value;
+                    SetValue(HotkeySettingsProperty, value);
+                    HotkeyTextBox.Text = HotkeySettings.ToString();
                 }
             }
         }
 
         public HotkeySettingsControl()
         {
-            this.InitializeComponent();
-            this.HotkeyTextBox.PreviewKeyDown += this.HotkeyTextBox_KeyDown;
+            InitializeComponent();
+            HotkeyTextBox.PreviewKeyDown += HotkeyTextBox_KeyDown;
         }
 
         private static bool IsDown(Windows.System.VirtualKey key)
@@ -94,7 +94,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             // TODO: Check that e.OriginalKey is the ScanCode. It is not clear from docs.
             settings.code = (int)e.OriginalKey;
-            this.HotkeySettings = settings;
+            HotkeySettings = settings;
         }
     }
 }

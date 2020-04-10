@@ -3,11 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Windows.System;
-using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -30,7 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// </summary>
         public GeneralPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
         }
 
         /// <inheritdoc/>
@@ -44,10 +42,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
 
                 // load and apply theme settings
-                this.ReLoadTheme(settings.theme);
+                ReLoadTheme(settings.theme);
 
                 // load run on start-up settings value and update the ui state.
-                this.ToggleSwitch_RunAtStartUp.IsOn = settings.startup;
+                ToggleSwitch_RunAtStartUp.IsOn = settings.startup;
             }
             catch
             {
@@ -56,10 +54,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SettingsUtils.SaveSettings(settings.ToJsonString(), string.Empty);
 
                 // load and apply theme settings
-                this.ReLoadTheme(settings.theme);
+                ReLoadTheme(settings.theme);
 
                 // load run on start up ui settings value and update the ui state.
-                this.ToggleSwitch_RunAtStartUp.IsOn = settings.startup;
+                ToggleSwitch_RunAtStartUp.IsOn = settings.startup;
             }
         }
 
@@ -73,15 +71,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 case "light":
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
-                    this.Radio_Theme_Light.IsChecked = true;
+                    Radio_Theme_Light.IsChecked = true;
                     break;
                 case "dark":
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
-                    this.Radio_Theme_Dark.IsChecked = true;
+                    Radio_Theme_Dark.IsChecked = true;
                     break;
                 case "system":
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
-                    this.Radio_Theme_Default.IsChecked = true;
+                    Radio_Theme_Default.IsChecked = true;
                     break;
             }
         }
@@ -134,7 +132,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (rb != null)
             {
                 string themeName = rb.Tag.ToString();
-                this.ReLoadTheme(themeName);
+                ReLoadTheme(themeName);
 
                 // update and save settings to file.
                 GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);

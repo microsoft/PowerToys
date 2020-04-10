@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public KeyboardManagerPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
         }
     }
 }

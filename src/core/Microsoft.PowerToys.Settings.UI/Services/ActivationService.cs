@@ -34,33 +34,33 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
         public async Task ActivateAsync(object activationArgs)
         {
-            if (this.IsInteractive(activationArgs))
+            if (IsInteractive(activationArgs))
             {
                 // Initialize services that you need before app activation
                 // take into account that the splash screen is shown while this code runs.
-                await this.InitializeAsync();
+                await InitializeAsync();
 
                 // Do not repeat app initialization when the Window already has content,
                 // just ensure that the window is active
                 if (Window.Current.Content == null)
                 {
                     // Create a Shell or Frame to act as the navigation context
-                    Window.Current.Content = this.shell?.Value ?? new Frame();
+                    Window.Current.Content = shell?.Value ?? new Frame();
                 }
             }
 
             // Depending on activationArgs one of ActivationHandlers or DefaultActivationHandler
             // will navigate to the first page
-            await this.HandleActivationAsync(activationArgs);
-            this.lastActivationArgs = activationArgs;
+            await HandleActivationAsync(activationArgs);
+            lastActivationArgs = activationArgs;
 
-            if (this.IsInteractive(activationArgs))
+            if (IsInteractive(activationArgs))
             {
                 // Ensure the current window is active
                 Window.Current.Activate();
 
                 // Tasks after activation
-                await this.StartupAsync();
+                await StartupAsync();
             }
         }
 
@@ -71,7 +71,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
         private async Task HandleActivationAsync(object activationArgs)
         {
-            var activationHandler = this.GetActivationHandlers()
+            var activationHandler = GetActivationHandlers()
                                                 .FirstOrDefault(h => h.CanHandle(activationArgs));
 
             if (activationHandler != null)
@@ -79,9 +79,9 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 await activationHandler.HandleAsync(activationArgs);
             }
 
-            if (this.IsInteractive(activationArgs))
+            if (IsInteractive(activationArgs))
             {
-                var defaultHandler = new DefaultActivationHandler(this.defaultNavItem);
+                var defaultHandler = new DefaultActivationHandler(defaultNavItem);
                 if (defaultHandler.CanHandle(activationArgs))
                 {
                     await defaultHandler.HandleAsync(activationArgs);

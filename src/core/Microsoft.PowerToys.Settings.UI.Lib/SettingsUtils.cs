@@ -40,7 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public static bool SettingsExists(string powertoy)
         {
-            return File.Exists(SettingsUtils.GetSettingsPath(powertoy));
+            return File.Exists(GetSettingsPath(powertoy));
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         /// <returns>Deserialized json settings object.</returns>
         public static T GetSettings<T>(string powertoy)
         {
-            var jsonSettingsString = System.IO.File.ReadAllText(SettingsUtils.GetSettingsPath(powertoy));
+            var jsonSettingsString = File.ReadAllText(GetSettingsPath(powertoy));
             return JsonSerializer.Deserialize<T>(jsonSettingsString);
         }
 
@@ -63,9 +63,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                     CreateSettingsFolder(powertoy);
                 }
 
-                System.IO.File.WriteAllText(
-                    SettingsUtils.GetSettingsPath(powertoy),
-                    jsonSettings);
+                File.WriteAllText(GetSettingsPath(powertoy), jsonSettings);
             }
         }
 

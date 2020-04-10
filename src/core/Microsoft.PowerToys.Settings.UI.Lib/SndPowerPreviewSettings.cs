@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public SndPowerPreviewSettings(PowerPreviewSettings settings)
         {
-            this.File_Explorer_Preview = settings;
+            File_Explorer_Preview = settings;
         }
 
         public string ToJsonString()

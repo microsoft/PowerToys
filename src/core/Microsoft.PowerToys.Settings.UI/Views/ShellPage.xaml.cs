@@ -39,12 +39,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// </summary>
         public ShellPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
-            this.DataContext = this.ViewModel;
+            DataContext = ViewModel;
             ShellHandler = this;
-            this.ViewModel.Initialize(this.shellFrame, this.navigationView, this.KeyboardAccelerators);
-            this.shellFrame.Navigate(typeof(GeneralPage));
+            ViewModel.Initialize(shellFrame, navigationView, KeyboardAccelerators);
+            shellFrame.Navigate(typeof(GeneralPage));
         }
 
         /// <summary>

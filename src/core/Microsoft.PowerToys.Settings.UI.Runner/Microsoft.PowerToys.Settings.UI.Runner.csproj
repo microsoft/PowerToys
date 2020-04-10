@@ -51,6 +51,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\settingsui\Assets\logo.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
@@ -68,6 +72,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.PowerToys.Settings.UI\Microsoft.PowerToys.Settings.UI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.VCRTForwarders.140" Version="1.0.5" />
   </ItemGroup>
 
 </Project>

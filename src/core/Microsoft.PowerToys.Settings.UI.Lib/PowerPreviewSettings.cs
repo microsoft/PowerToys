@@ -16,16 +16,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public PowerPreviewSettings()
         {
-            this.properties = new PowerPreviewProperties();
-            this.version = "1";
-            this.name = "_unset_";
+            properties = new PowerPreviewProperties();
+            version = "1";
+            name = "_unset_";
         }
 
         public PowerPreviewSettings(string ptName)
         {
-            this.properties = new PowerPreviewProperties();
-            this.version = "1";
-            this.name = ptName;
+            properties = new PowerPreviewProperties();
+            version = "1";
+            name = ptName;
         }
 
         public override string ToJsonString()

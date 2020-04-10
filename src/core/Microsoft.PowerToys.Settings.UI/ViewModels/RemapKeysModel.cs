@@ -11,21 +11,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         public RemapKeysModel()
         {
-            this.Add(new Keys { From = "A", To = "B" });
-            this.Add(new Keys { From = "B", To = "A" });
-            this.Add(new Keys { From = "Ctrl", To = "Shift" });
-            this.Add(new Keys { From = "Shift", To = "Ctrl" });
-            this.Add(new Keys { From = "A", To = "B" });
-            this.Add(new Keys { From = "B", To = "B" });
-            this.Add(new Keys { From = "Ctrl", To = "Shift" });
-            this.Add(new Keys { From = "Shift", To = "Ctrl" });
+            Add(new Keys { From = "A", To = "B" });
+            Add(new Keys { From = "B", To = "A" });
+            Add(new Keys { From = "Ctrl", To = "Shift" });
+            Add(new Keys { From = "Shift", To = "Ctrl" });
+            Add(new Keys { From = "A", To = "B" });
+            Add(new Keys { From = "B", To = "B" });
+            Add(new Keys { From = "Ctrl", To = "Shift" });
+            Add(new Keys { From = "Shift", To = "Ctrl" });
         }
-    }
-
-    public class Keys
-    {
-        public string From { get; set; }
-
-        public string To { get; set; }
     }
 }
