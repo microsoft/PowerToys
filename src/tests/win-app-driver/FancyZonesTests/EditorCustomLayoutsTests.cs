@@ -23,7 +23,7 @@ namespace PowerToysTests
         {
             WindowsElement cancelButton = session.FindElementByXPath("//Window[@Name=\"FancyZones Editor\"]/Window/Button[@Name=\"Cancel\"]");
             new Actions(session).MoveToElement(cancelButton).Click().Perform();
-            ShortWait();
+            WaitSeconds(1);
 
             Assert.AreEqual(_initialZoneSettings, File.ReadAllText(_zoneSettingsPath), "Settings were changed");
         }
@@ -31,7 +31,7 @@ namespace PowerToysTests
         private void SaveTest(string type, string name, int zoneCount)
         {
             new Actions(session).MoveToElement(session.FindElementByName("Save and apply")).Click().Perform();
-            ShortWait();
+            WaitSeconds(1);
 
             JObject settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
             Assert.AreEqual(name, settings["custom-zone-sets"][0]["name"]);
@@ -149,7 +149,7 @@ namespace PowerToysTests
             string name = "My custom zone layout name";
             SetLayoutName(name);
             SaveTest("canvas", name, 0);
-            ShortWait();
+            WaitSeconds(1);
 
             //rename layout
             OpenEditor();
@@ -168,7 +168,7 @@ namespace PowerToysTests
             string name = "Name";
             SetLayoutName(name);
             SaveTest("canvas", name, 0);
-            ShortWait();
+            WaitSeconds(1);
 
             //save layout id
             JObject settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
@@ -183,7 +183,7 @@ namespace PowerToysTests
 
             //settings are saved on window closing
             new Actions(session).MoveToElement(session.FindElementByAccessibilityId("PART_Close")).Click().Perform();
-            ShortWait();
+            WaitSeconds(1);
 
             //check settings
             settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
@@ -206,7 +206,7 @@ namespace PowerToysTests
                 SetLayoutName(name);
 
                 new Actions(session).MoveToElement(session.FindElementByName("Save and apply")).Click().Perform();
-                ShortWait();
+                WaitSeconds(1);
 
                 //remove layout
                 OpenEditor();
@@ -217,7 +217,7 @@ namespace PowerToysTests
 
             //settings are saved on window closing
             new Actions(session).MoveToElement(session.FindElementByAccessibilityId("PART_Close")).Click().Perform();
-            ShortWait();
+            WaitSeconds(1);
 
             //check settings
             JObject settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
@@ -236,8 +236,7 @@ namespace PowerToysTests
                 SetLayoutName(name);
 
                 new Actions(session).MoveToElement(session.FindElementByName("Save and apply")).Click().Perform();
-                ShortWait();
-
+                
                 //remove layout
                 OpenEditor();
                 OpenCustomLayouts();
@@ -247,7 +246,7 @@ namespace PowerToysTests
 
             //settings are saved on window closing
             new Actions(session).MoveToElement(session.FindElementByAccessibilityId("PART_Close")).Click().Perform();
-            ShortWait();
+            WaitSeconds(1);
 
             //check settings
             JObject settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
@@ -263,7 +262,7 @@ namespace PowerToysTests
             OpenCreatorWindow("Create new custom", "Custom layout creator");
             SetLayoutName(name);
             new Actions(session).MoveToElement(session.FindElementByName("Save and apply")).Click().Perform();
-            ShortWait();
+            WaitSeconds(1);
 
             //save layout id
             JObject settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));
@@ -278,7 +277,7 @@ namespace PowerToysTests
 
             //apply
             new Actions(session).MoveToElement(session.FindElementByName("Apply")).Click().Perform();
-            ShortWait();
+            WaitSeconds(1);
 
             //check settings
             settings = JObject.Parse(File.ReadAllText(_zoneSettingsPath));

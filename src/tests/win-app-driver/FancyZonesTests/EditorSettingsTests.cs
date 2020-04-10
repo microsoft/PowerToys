@@ -37,7 +37,7 @@ namespace PowerToysTests
                 {
                     session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
 
-                    ShortWait();
+                    WaitSeconds(1);
                     Assert.AreEqual(editorZoneCountValue, GetEditZonesSetting<int>(editorZoneCount));
                     OpenEditor();
                     
@@ -57,7 +57,7 @@ namespace PowerToysTests
             }
 
             session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
-            ShortWait();
+            WaitSeconds(1);
             Assert.AreEqual(editorZoneCountValue, GetEditZonesSetting<int>(editorZoneCount));
         }
 
@@ -74,7 +74,7 @@ namespace PowerToysTests
 
                 session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
 
-                ShortWait();
+                WaitSeconds(1);
 
                 Assert.AreNotEqual(spaceAroundSettingValue, GetEditZonesSetting<bool>(editorShowSpacing));
             }
@@ -89,7 +89,7 @@ namespace PowerToysTests
             bool editorShowSpacingValue = spaceAroundSetting.Selected;
 
             session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
-            ShortWait();
+            WaitSeconds(1);
 
             string[] validValues = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
@@ -102,7 +102,7 @@ namespace PowerToysTests
                 paddingValue.SendKeys(editorSpacingValue);
 
                 session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
-                ShortWait();
+                WaitSeconds(1);
 
                 Assert.AreEqual(editorShowSpacingValue, GetEditZonesSetting<bool>(editorShowSpacing));
                 Assert.AreEqual(editorSpacingValue, GetEditZonesSetting<string>(editorSpacing));
@@ -118,7 +118,7 @@ namespace PowerToysTests
             bool editorShowSpacingValue = spaceAroundSetting.Selected;
 
             session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
-            ShortWait();
+            WaitSeconds(1);
 
             string[] invalidValues = { "!", "/", "<", "?", "D", "Z", "]", "m", "}", "1.5", "2,5" };
 
@@ -133,7 +133,7 @@ namespace PowerToysTests
                 paddingValue.SendKeys(value);
 
                 session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
-                ShortWait();
+                WaitSeconds(1);
 
                 Assert.AreEqual(editorShowSpacingValue, GetEditZonesSetting<bool>(editorShowSpacing));
                 Assert.AreEqual(editorSpacingValue, GetEditZonesSetting<string>(editorSpacing));
