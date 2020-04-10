@@ -10,11 +10,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     public class SndKeyboardManagerSettings
     {
         [JsonPropertyName("Keyboard Manager")]
-        public KeyboardManagerSettings keyboardManagerSettings { get; }
+        public KeyboardManagerSettings KeyboardManagerSettings { get; }
 
         public SndKeyboardManagerSettings(KeyboardManagerSettings keyboardManagerSettings)
         {
-            this.keyboardManagerSettings = keyboardManagerSettings;
+            KeyboardManagerSettings = keyboardManagerSettings;
         }
 
         public string ToJsonString()

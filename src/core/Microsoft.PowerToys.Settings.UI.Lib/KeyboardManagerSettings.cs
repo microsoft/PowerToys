@@ -5,23 +5,25 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class KeyboardManagerSettings : BasePTModuleSettings
     {
-        public KeyboardManagerProperties properties { get; set; }
+        [JsonPropertyName("properties")]
+        public KeyboardManagerProperties Properties { get; set; }
 
         public KeyboardManagerSettings()
         {
-            properties = new KeyboardManagerProperties();
+            Properties = new KeyboardManagerProperties();
             version = "1";
             name = "_unset_";
         }
 
         public KeyboardManagerSettings(string ptName)
         {
-            properties = new KeyboardManagerProperties();
+            Properties = new KeyboardManagerProperties();
             version = "1";
             name = ptName;
         }
