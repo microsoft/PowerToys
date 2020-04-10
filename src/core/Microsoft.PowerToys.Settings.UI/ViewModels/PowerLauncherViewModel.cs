@@ -19,45 +19,45 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             if (SettingsUtils.SettingsExists(POWERTOYNAME))
             {
-                this.settings = SettingsUtils.GetSettings<PowerLauncherSettings>(POWERTOYNAME);
+                settings = SettingsUtils.GetSettings<PowerLauncherSettings>(POWERTOYNAME);
             }
             else
             {
-                this.settings = new PowerLauncherSettings();
+                settings = new PowerLauncherSettings();
             }
         }
 
         private void UpdateSettings([CallerMemberName] string propertyName = null)
         {
             // Notify UI of property change
-            this.OnPropertyChanged(propertyName);
+            OnPropertyChanged(propertyName);
 
             // Save settings to file
             var options = new JsonSerializerOptions
             {
                 WriteIndented = true,
             };
-            SettingsUtils.SaveSettings(JsonSerializer.Serialize(this.settings, options), POWERTOYNAME);
+            SettingsUtils.SaveSettings(JsonSerializer.Serialize(settings, options), POWERTOYNAME);
 
             // Propagate changes to Power Launcher through IPC
-            var propertiesJson = JsonSerializer.Serialize(this.settings.properties);
+            var propertiesJson = JsonSerializer.Serialize(settings.properties);
             ShellPage.DefaultSndMSGCallback(
-                string.Format("{{ \"{0}\": {1} }}", POWERTOYNAME, JsonSerializer.Serialize(this.settings.properties)));
+                string.Format("{{ \"{0}\": {1} }}", POWERTOYNAME, JsonSerializer.Serialize(settings.properties)));
         }
 
         public bool EnablePowerLauncher
         {
             get
             {
-                return this.settings.properties.enable_powerlauncher;
+                return settings.properties.enable_powerlauncher;
             }
 
             set
             {
-                if (this.settings.properties.enable_powerlauncher != value)
+                if (settings.properties.enable_powerlauncher != value)
                 {
-                    this.settings.properties.enable_powerlauncher = value;
-                    this.UpdateSettings();
+                    settings.properties.enable_powerlauncher = value;
+                    UpdateSettings();
                 }
             }
         }
@@ -66,15 +66,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return this.settings.properties.search_result_preference;
+                return settings.properties.search_result_preference;
             }
 
             set
             {
-                if (this.settings.properties.search_result_preference != value)
+                if (settings.properties.search_result_preference != value)
                 {
-                    this.settings.properties.search_result_preference = value;
-                    this.UpdateSettings();
+                    settings.properties.search_result_preference = value;
+                    UpdateSettings();
                 }
             }
         }
@@ -83,15 +83,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return this.settings.properties.search_type_preference;
+                return settings.properties.search_type_preference;
             }
 
             set
             {
-                if (this.settings.properties.search_type_preference != value)
+                if (settings.properties.search_type_preference != value)
                 {
-                    this.settings.properties.search_type_preference = value;
-                    this.UpdateSettings();
+                    settings.properties.search_type_preference = value;
+                    UpdateSettings();
                 }
             }
         }
@@ -100,15 +100,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return this.settings.properties.maximum_number_of_results;
+                return settings.properties.maximum_number_of_results;
             }
 
             set
             {
-                if (this.settings.properties.maximum_number_of_results != value)
+                if (settings.properties.maximum_number_of_results != value)
                 {
-                    this.settings.properties.maximum_number_of_results = value;
-                    this.UpdateSettings();
+                    settings.properties.maximum_number_of_results = value;
+                    UpdateSettings();
                 }
             }
         }
@@ -117,15 +117,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return this.settings.properties.open_powerlauncher;
+                return settings.properties.open_powerlauncher;
             }
 
             set
             {
-                if (this.settings.properties.open_powerlauncher != value)
+                if (settings.properties.open_powerlauncher != value)
                 {
-                    this.settings.properties.open_powerlauncher = value;
-                    this.UpdateSettings();
+                    settings.properties.open_powerlauncher = value;
+                    UpdateSettings();
                 }
             }
         }
@@ -134,15 +134,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return this.settings.properties.open_file_location;
+                return settings.properties.open_file_location;
             }
 
             set
             {
-                if (this.settings.properties.open_file_location != value)
+                if (settings.properties.open_file_location != value)
                 {
-                    this.settings.properties.open_file_location = value;
-                    this.UpdateSettings();
+                    settings.properties.open_file_location = value;
+                    UpdateSettings();
                 }
             }
         }
@@ -151,15 +151,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return this.settings.properties.copy_path_location;
+                return settings.properties.copy_path_location;
             }
 
             set
             {
-                if (this.settings.properties.copy_path_location != value)
+                if (settings.properties.copy_path_location != value)
                 {
-                    this.settings.properties.copy_path_location = value;
-                    this.UpdateSettings();
+                    settings.properties.copy_path_location = value;
+                    UpdateSettings();
                 }
             }
         }
@@ -168,15 +168,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return this.settings.properties.open_console;
+                return settings.properties.open_console;
             }
 
             set
             {
-                if (this.settings.properties.open_console != value)
+                if (settings.properties.open_console != value)
                 {
-                    this.settings.properties.open_console = value;
-                    this.UpdateSettings();
+                    settings.properties.open_console = value;
+                    UpdateSettings();
                 }
             }
         }
@@ -185,15 +185,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return this.settings.properties.override_win_r_key;
+                return settings.properties.override_win_r_key;
             }
 
             set
             {
-                if (this.settings.properties.override_win_r_key != value)
+                if (settings.properties.override_win_r_key != value)
                 {
-                    this.settings.properties.override_win_r_key = value;
-                    this.UpdateSettings();
+                    settings.properties.override_win_r_key = value;
+                    UpdateSettings();
                 }
             }
         }
@@ -202,15 +202,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return this.settings.properties.override_win_s_key;
+                return settings.properties.override_win_s_key;
             }
 
             set
             {
-                if (this.settings.properties.override_win_s_key != value)
+                if (settings.properties.override_win_s_key != value)
                 {
-                    this.settings.properties.override_win_s_key = value;
-                    this.UpdateSettings();
+                    settings.properties.override_win_s_key = value;
+                    UpdateSettings();
                 }
             }
         }

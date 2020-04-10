@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public PowerRenamePage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
         }
 
         /// <inheritdoc/>
@@ -31,23 +31,23 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             try
             {
                 settings = SettingsUtils.GetSettings<PowerRenameSettings>(POWERTOYNAME);
-                this.UpdateView(settings);
+                UpdateView(settings);
             }
             catch
             {
                 settings = new PowerRenameSettings(POWERTOYNAME);
                 SettingsUtils.SaveSettings(settings.ToJsonString(), POWERTOYNAME);
-                this.UpdateView(settings);
+                UpdateView(settings);
             }
         }
 
         private void UpdateView(PowerRenameSettings settings)
         {
-            this.Toggle_PowerRename_Enable.IsOn = settings.properties.bool_mru_enabled.value;
-            this.Toggle_PowerRename_EnableOnExtendedContextMenu.IsOn = settings.properties.bool_show_extended_menu.value;
-            this.Toggle_PowerRename_MaxDispListNum.Value = settings.properties.int_max_mru_size.value;
-            this.Toggle_PowerRename_EnableOnContextMenu.IsOn = settings.properties.bool_show_icon_on_menu.value;
-            this.Toggle_PowerRename_RestoreFlagsOnLaunch.IsOn = settings.properties.bool_persist_input.value;
+            Toggle_PowerRename_Enable.IsOn = settings.properties.bool_mru_enabled.value;
+            Toggle_PowerRename_EnableOnExtendedContextMenu.IsOn = settings.properties.bool_show_extended_menu.value;
+            Toggle_PowerRename_MaxDispListNum.Value = settings.properties.int_max_mru_size.value;
+            Toggle_PowerRename_EnableOnContextMenu.IsOn = settings.properties.bool_show_icon_on_menu.value;
+            Toggle_PowerRename_RestoreFlagsOnLaunch.IsOn = settings.properties.bool_persist_input.value;
         }
 
         private void Toggle_PowerRename_Enable_Toggled(object sender, RoutedEventArgs e)

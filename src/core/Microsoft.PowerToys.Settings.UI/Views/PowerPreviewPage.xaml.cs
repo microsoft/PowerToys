@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -19,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public PowerPreviewPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
         }
 
         /// <inheritdoc/>
@@ -30,15 +29,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 base.OnNavigatedTo(e);
                 settings = SettingsUtils.GetSettings<PowerPreviewSettings>(POWERTOY_NAME);
-                this.ToggleSwitch_Preview_SVG.IsOn = settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value;
-                this.ToggleSwitch_Preview_MD.IsOn = settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value;
+                ToggleSwitch_Preview_SVG.IsOn = settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value;
+                ToggleSwitch_Preview_MD.IsOn = settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value;
             }
             catch
             {
                 settings = new PowerPreviewSettings(POWERTOY_NAME);
                 SettingsUtils.SaveSettings(settings.ToJsonString(), POWERTOY_NAME);
-                this.ToggleSwitch_Preview_SVG.IsOn = settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value;
-                this.ToggleSwitch_Preview_MD.IsOn = settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value;
+                ToggleSwitch_Preview_SVG.IsOn = settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value;
+                ToggleSwitch_Preview_MD.IsOn = settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value;
             }
         }
 

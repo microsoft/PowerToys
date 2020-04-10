@@ -18,33 +18,33 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public PowerLauncherPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
             var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
 
-            this.searchResultPreferencesOptions = new ObservableCollection<Tuple<string, string>>();
-            this.searchResultPreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchResultPreference_AlphabeticalOrder"), "alphabetical_order"));
-            this.searchResultPreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchResultPreference_MostRecentlyUsed"), "most_recently_used"));
-            this.searchResultPreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchResultPreference_RunningProcessesOpenApplications"), "running_processes_open_applications"));
+            searchResultPreferencesOptions = new ObservableCollection<Tuple<string, string>>();
+            searchResultPreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchResultPreference_AlphabeticalOrder"), "alphabetical_order"));
+            searchResultPreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchResultPreference_MostRecentlyUsed"), "most_recently_used"));
+            searchResultPreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchResultPreference_RunningProcessesOpenApplications"), "running_processes_open_applications"));
 
-            this.searchTypePreferencesOptions = new ObservableCollection<Tuple<string, string>>();
-            this.searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ApplicationName"), "application_name"));
-            this.searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_StringInApplication"), "string_in_application"));
-            this.searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ExecutableName"), "executable_name"));
+            searchTypePreferencesOptions = new ObservableCollection<Tuple<string, string>>();
+            searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ApplicationName"), "application_name"));
+            searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_StringInApplication"), "string_in_application"));
+            searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ExecutableName"), "executable_name"));
         }
 
         public Tuple<string, string> SelectedSearchResultPreference
         {
             get
             {
-                return this.searchResultPreferencesOptions.First(item => item.Item2 == this.ViewModel.SearchResultPreference);
+                return searchResultPreferencesOptions.First(item => item.Item2 == ViewModel.SearchResultPreference);
             }
 
             set
             {
-                if (this.ViewModel.SearchResultPreference != value.Item2)
+                if (ViewModel.SearchResultPreference != value.Item2)
                 {
-                    this.ViewModel.SearchResultPreference = value.Item2;
+                    ViewModel.SearchResultPreference = value.Item2;
                 }
             }
         }
@@ -53,14 +53,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             get
             {
-                return this.searchTypePreferencesOptions.First(item => item.Item2 == this.ViewModel.SearchTypePreference);
+                return searchTypePreferencesOptions.First(item => item.Item2 == ViewModel.SearchTypePreference);
             }
 
             set
             {
-                if (this.ViewModel.SearchTypePreference != value.Item2)
+                if (ViewModel.SearchTypePreference != value.Item2)
                 {
-                    this.ViewModel.SearchTypePreference = value.Item2;
+                    ViewModel.SearchTypePreference = value.Item2;
                 }
             }
         }

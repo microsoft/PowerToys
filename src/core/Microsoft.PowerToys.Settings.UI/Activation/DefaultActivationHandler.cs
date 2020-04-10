@@ -28,14 +28,14 @@ namespace Microsoft.PowerToys.Settings.UI.Activation
                 arguments = launchArgs.Arguments;
             }
 
-            NavigationService.Navigate(this.navElement, arguments);
+            NavigationService.Navigate(navElement, arguments);
             await Task.CompletedTask;
         }
 
         protected override bool CanHandleInternal(IActivatedEventArgs args)
         {
             // None of the ActivationHandlers has handled the app activation
-            return NavigationService.Frame.Content == null && this.navElement != null;
+            return NavigationService.Frame.Content == null && navElement != null;
         }
     }
 }

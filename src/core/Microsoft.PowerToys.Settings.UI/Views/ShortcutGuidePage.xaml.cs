@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public ShortcutGuidePage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
         }
     }
 }

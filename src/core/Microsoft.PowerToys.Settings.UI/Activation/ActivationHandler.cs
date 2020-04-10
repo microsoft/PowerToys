@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Threading.Tasks;
 
 namespace Microsoft.PowerToys.Settings.UI.Activation
@@ -16,19 +15,19 @@ namespace Microsoft.PowerToys.Settings.UI.Activation
         public abstract Task HandleAsync(object args);
     }
 
-    // Extend this class to implement new ActivationHandlers
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "abstract T and abstract")]
     internal abstract class ActivationHandler<T> : ActivationHandler
         where T : class
     {
         public override async Task HandleAsync(object args)
         {
-            await this.HandleInternalAsync(args as T);
+            await HandleInternalAsync(args as T);
         }
 
         public override bool CanHandle(object args)
         {
             // CanHandle checks the args is of type you have configured
-            return args is T && this.CanHandleInternal(args as T);
+            return args is T && CanHandleInternal(args as T);
         }
 
         // Override this method to add the activation logic in your activation handler
