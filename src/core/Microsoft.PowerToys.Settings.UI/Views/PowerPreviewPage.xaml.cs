@@ -14,7 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// </summary>
     public sealed partial class PowerPreviewPage : Page
     {
-        private const string POWERTOY_NAME = "File Explorer Preview";
+        private const string PreviewPaneKey = "File Explorer Preview";
 
         public PowerPreviewPage()
         {
@@ -28,14 +28,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             try
             {
                 base.OnNavigatedTo(e);
-                settings = SettingsUtils.GetSettings<PowerPreviewSettings>(POWERTOY_NAME);
+                settings = SettingsUtils.GetSettings<PowerPreviewSettings>(PreviewPaneKey);
                 ToggleSwitch_Preview_SVG.IsOn = settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value;
                 ToggleSwitch_Preview_MD.IsOn = settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value;
             }
             catch
             {
-                settings = new PowerPreviewSettings(POWERTOY_NAME);
-                SettingsUtils.SaveSettings(settings.ToJsonString(), POWERTOY_NAME);
+                settings = new PowerPreviewSettings(PreviewPaneKey);
+                SettingsUtils.SaveSettings(settings.ToJsonString(), PreviewPaneKey);
                 ToggleSwitch_Preview_SVG.IsOn = settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value;
                 ToggleSwitch_Preview_MD.IsOn = settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value;
             }
@@ -47,7 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (swt != null)
             {
-                PowerPreviewSettings settings = SettingsUtils.GetSettings<PowerPreviewSettings>(POWERTOY_NAME);
+                PowerPreviewSettings settings = SettingsUtils.GetSettings<PowerPreviewSettings>(PreviewPaneKey);
                 settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value = swt.IsOn;
 
                 if (ShellPage.DefaultSndMSGCallback != null)
@@ -65,7 +65,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (swt != null)
             {
-                PowerPreviewSettings settings = SettingsUtils.GetSettings<PowerPreviewSettings>(POWERTOY_NAME);
+                PowerPreviewSettings settings = SettingsUtils.GetSettings<PowerPreviewSettings>(PreviewPaneKey);
                 settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value = swt.IsOn;
 
                 if (ShellPage.DefaultSndMSGCallback != null)
