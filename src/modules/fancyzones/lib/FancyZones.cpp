@@ -681,7 +681,7 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
         //const bool flash = m_settings->GetSettings()->zoneSetChange_flashZones && newWorkArea;
         const bool flash = false;
 
-        auto zoneWindow = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, flash);
+        auto zoneWindow = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, flash, newWorkArea);
         if (zoneWindow)
         {
             m_zoneWindowMap[monitor] = std::move(zoneWindow);

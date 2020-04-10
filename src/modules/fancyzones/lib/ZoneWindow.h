@@ -105,4 +105,4 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
 };
 
 winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor,
-    const std::wstring& uniqueId, bool flashZones) noexcept;
+    const std::wstring& uniqueId, bool flashZones, bool newWorkArea) noexcept;
