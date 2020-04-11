@@ -152,13 +152,6 @@ namespace Wox.Plugin.WindowWalker.Components
             List<SearchResult> result = new List<SearchResult>();
             List<SearchString> searchStrings = new List<SearchString>();
 
-            List<string> shortcuts = SettingsManager.Instance.GetShortcut(SearchText);
-
-            foreach (var shortcut in shortcuts)
-            {
-                searchStrings.Add(new SearchString(shortcut, SearchResult.SearchType.Shortcut));
-            }
-
             searchStrings.Add(new SearchString(searchText, SearchResult.SearchType.Fuzzy));
 
             foreach (var searchString in searchStrings)

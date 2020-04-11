@@ -12,7 +12,7 @@ namespace Wox.Plugin.WindowWalker.Components
         /// Number of letters in between constant for when
         /// the result hasn't been set yet
         /// </summary>
-        public static const int NoResult = -1; 
+        public const int NoResult = -1; 
 
         /// <summary>
         /// Properties that signify how many characters (including spaces)
