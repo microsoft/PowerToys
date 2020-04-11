@@ -5,7 +5,6 @@
 #include <commctrl.h>
 #include <Shlobj.h>
 #include <helpers.h>
-#include <settings.h>
 #include <windowsx.h>
 #include <thread>
 #include <trace.h>

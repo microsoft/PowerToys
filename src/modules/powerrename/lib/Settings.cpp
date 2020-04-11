@@ -238,7 +238,7 @@ void MRUListHandler::ParseJson()
                     if (size > oldSize)
                     {
                         std::reverse(std::begin(temp), std::end(temp));
-                        pushIdx = temp.size();
+                        pushIdx = (long)temp.size();
                         temp.resize(size);
                     }
                     else
@@ -388,6 +388,23 @@ CSettings::CSettings()
     Load();
 }
 
+void CSettings::Save()
+{
+    json::JsonObject jsonData;
+
+    jsonData.SetNamedValue(c_enabled,                 json::value(settings.enabled));
+    jsonData.SetNamedValue(c_showIconOnMenu,          json::value(settings.showIconOnMenu));
+    jsonData.SetNamedValue(c_extendedContextMenuOnly, json::value(settings.extendedContextMenuOnly));
+    jsonData.SetNamedValue(c_persistState,            json::value(settings.persistState));
+    jsonData.SetNamedValue(c_mruEnabled,              json::value(settings.MRUEnabled));
+    jsonData.SetNamedValue(c_maxMRUSize,              json::value(settings.maxMRUSize));
+    jsonData.SetNamedValue(c_flags,                   json::value(settings.flags));
+    jsonData.SetNamedValue(c_searchText,              json::value(settings.searchText));
+    jsonData.SetNamedValue(c_replaceText,             json::value(settings.replaceText));
+
+    json::to_file(jsonFilePath, jsonData);
+}
+
 void CSettings::Load()
 {
     if (!std::filesystem::exists(jsonFilePath))
@@ -413,22 +430,6 @@ void CSettings::Reload()
     }
 }
 
-void CSettings::Save()
-{
-    json::JsonObject jsonData;
-
-    jsonData.SetNamedValue(c_enabled,                 json::value(settings.enabled));
-    jsonData.SetNamedValue(c_showIconOnMenu,          json::value(settings.showIconOnMenu));
-    jsonData.SetNamedValue(c_extendedContextMenuOnly, json::value(settings.extendedContextMenuOnly));
-    jsonData.SetNamedValue(c_persistState,            json::value(settings.persistState));
-    jsonData.SetNamedValue(c_mruEnabled,              json::value(settings.MRUEnabled));
-    jsonData.SetNamedValue(c_maxMRUSize,              json::value(settings.maxMRUSize));
-    jsonData.SetNamedValue(c_flags,                   json::value(settings.flags));
-    jsonData.SetNamedValue(c_searchText,              json::value(settings.searchText));
-    jsonData.SetNamedValue(c_replaceText,             json::value(settings.replaceText));
-
-    json::to_file(jsonFilePath, jsonData);
-}
 
 void CSettings::MigrateFromRegistry()
 {

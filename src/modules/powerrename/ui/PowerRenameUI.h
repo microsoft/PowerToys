@@ -1,5 +1,6 @@
 #pragma once
 #include <PowerRenameInterfaces.h>
+#include <settings.h>
 #include <shldisp.h>
 
 void ModuleAddRef();
@@ -40,6 +41,7 @@ public:
     CPowerRenameUI() :
         m_refCount(1)
     {
+        CSettingsInstance().Load();
         (void)OleInitialize(nullptr);
         ModuleAddRef();
     }

@@ -18,11 +18,11 @@ public:
     inline void SetEnabled(bool enabled)
     {
         settings.enabled = enabled;
+        Save();
     }
 
     inline bool GetShowIconOnMenu()
     {
-        Reload();
         return settings.showIconOnMenu;
     }
 
@@ -33,7 +33,6 @@ public:
 
     inline bool GetExtendedContextMenuOnly()
     {
-        Reload();
         return settings.extendedContextMenuOnly;
     }
 
@@ -44,7 +43,6 @@ public:
 
     inline bool GetPersistState()
     {
-        Reload();
         return settings.persistState;
     }
 
@@ -55,7 +53,6 @@ public:
 
     inline bool GetMRUEnabled()
     {
-        Reload();
         return settings.MRUEnabled;
     }
 
@@ -66,7 +63,6 @@ public:
 
     inline long GetMaxMRUSize()
     {
-        Reload();
         return settings.maxMRUSize;
     }
 
@@ -77,7 +73,6 @@ public:
 
     inline long GetFlags()
     {
-        Reload();
         return settings.flags;
     }
 
@@ -89,7 +84,6 @@ public:
 
     inline const std::wstring& GetSearchText()
     {
-        Reload();
         return settings.searchText;
     }
 
@@ -101,7 +95,6 @@ public:
 
     inline const std::wstring& GetReplaceText()
     {
-        Reload();
         return settings.replaceText;
     }
 
@@ -112,6 +105,7 @@ public:
     }
 
     void Save();
+    void Load();
 
 private:
     struct Settings
@@ -127,7 +121,6 @@ private:
         std::wstring replaceText{};
     };
 
-    void Load();
     void Reload();
     void MigrateFromRegistry();
     void ParseJson();
