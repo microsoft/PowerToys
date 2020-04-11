@@ -36,12 +36,12 @@ namespace Wox.Plugin.WindowWalker
 
         public string GetTranslatedPluginTitle()
         {
-            return Context.API.GetTranslation("wox_plugin_caculator_plugin_name");
+            return Context.API.GetTranslation("wox_plugin_windowwalker_plugin_name");
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return Context.API.GetTranslation("wox_plugin_caculator_plugin_description");
+            return Context.API.GetTranslation("wox_plugin_windowwalker_plugin_description");
         }
 
         private static void SearchResultUpdated(object sender, SearchController.SearchResultUpdateEventArgs e)
