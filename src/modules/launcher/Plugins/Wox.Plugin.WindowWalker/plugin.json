@@ -1,12 +1,12 @@
 {
     "ID":"CEA0FDFC6D3B4085823D60DC76F28855",
     "ActionKeyword":"*",
-    "Name":"Calculator",
-    "Description":"Provide mathematical calculations.(Try 5*3-2 in Wox)",
-    "Author":"cxfksword",
+    "Name":"Window Walker",
+    "Description":"Alt-Tab alternative enabling searching through your windows.",
+    "Author":"betadele",
     "Version":"1.0.0",
     "Language":"csharp",
-    "Website":"http://www.wox.one/plugin",
-    "ExecuteFileName":"Wox.Plugin.Caculator.dll",
-    "IcoPath":"Images\\calculator.png"
+    "Website":"http://www.windowwalker.com/",
+    "ExecuteFileName":"Wox.Plugin.WindowWalker.dll",
+    "IcoPath":"Images\\windowwalker.png"
 }
