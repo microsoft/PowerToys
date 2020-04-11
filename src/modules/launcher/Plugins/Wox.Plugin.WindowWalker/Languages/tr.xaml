@@ -1,0 +1,10 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:String x:Key="wox_plugin_caculator_plugin_name">Hesap Makinesi</system:String>
+    <system:String x:Key="wox_plugin_caculator_plugin_description">Matematiksel hesaplamalar yapmaya yarar. (5*3-2 yazmayı deneyin)</system:String>
+    <system:String x:Key="wox_plugin_calculator_not_a_number">Sayı değil (NaN)</system:String>
+    <system:String x:Key="wox_plugin_calculator_expression_not_complete">İfade hatalı ya da eksik. (Parantez koymayı mı unuttunuz?)</system:String>
+    <system:String x:Key="wox_plugin_calculator_copy_number_to_clipboard">Bu sayıyı panoya kopyala</system:String>
+</ResourceDictionary>
