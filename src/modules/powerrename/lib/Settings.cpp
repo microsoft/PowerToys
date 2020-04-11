@@ -167,8 +167,8 @@ void MRUListHandler::Save()
     json::JsonObject jsonData;
 
     jsonData.SetNamedValue(c_maxMRUSize, json::value(size));
-    jsonData.SetNamedValue(c_mruList, Serialize());
     jsonData.SetNamedValue(c_insertionIdx, json::value(pushIdx));
+    jsonData.SetNamedValue(c_mruList, Serialize());
 
     json::to_file(jsonFilePath, jsonData);
 }
@@ -205,30 +205,31 @@ void MRUListHandler::ParseJson()
         const json::JsonObject& jsonObject = json.value();
         try
         {
-            if (json::has(jsonObject, c_mruList, json::JsonValueType::Array))
-            {
-                auto searchList = jsonObject.GetNamedArray(c_mruList);
-                for (uint32_t i = 0; i < searchList.Size(); ++i)
-                {
-                    Push(std::wstring(searchList.GetStringAt(i)));
-                }
-            }
+            long oldSize{ size };
             if (json::has(jsonObject, c_maxMRUSize, json::JsonValueType::Number))
             {
-                long oldSize = (long)jsonObject.GetNamedNumber(c_maxMRUSize);
-                if (oldSize == size)
-                {
-                    // Load insertion index if size remained the same.
-                    if (json::has(jsonObject, c_insertionIdx, json::JsonValueType::Number))
-                    {
-                        pushIdx = (long)jsonObject.GetNamedNumber(c_insertionIdx);
-                    }
-                }
-                else
-                {
-                    Save();
-                }
+                oldSize = (long)jsonObject.GetNamedNumber(c_maxMRUSize);
             }
+            long oldPushIdx{ 0 };
+            if (json::has(jsonObject, c_insertionIdx, json::JsonValueType::Number))
+            {
+                oldPushIdx = (long)jsonObject.GetNamedNumber(c_insertionIdx);
+            }
+            std::vector<std::wstring> temp;
+            if (json::has(jsonObject, c_mruList, json::JsonValueType::Array))
+            {
+                // Load most recently used items in correct order and resize if needed.
+                auto searchList = jsonObject.GetNamedArray(c_mruList);
+                for (uint32_t i = 0; i < min(searchList.Size(), size); ++i)
+                {
+                    int idx = (oldPushIdx + oldSize - (i + 1)) % oldSize;
+                    temp.push_back(std::wstring(searchList.GetStringAt(idx)));
+                }
+                temp.resize(size);
+                std::reverse(std::begin(temp), std::end(temp));
+            }
+            items = std::move(temp);
+
         }
         catch (const winrt::hresult_error&) { }
     }
@@ -384,6 +385,7 @@ void CSettings::Load()
 
 void CSettings::Reload()
 {
+    // Load json settings from data file if it is modified in the meantime.
     FILETIME lastModifiedTime = LastModifiedTime(jsonFilePath);
     if (CompareFileTime(&lastModifiedTime, &lastLoadedTime) == 1)
     {
