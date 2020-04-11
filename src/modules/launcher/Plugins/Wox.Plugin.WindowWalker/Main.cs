@@ -19,7 +19,8 @@ namespace Wox.Plugin.WindowWalker
         {
             return new List<Result>{ new Result()
             {
-                Title = "Yo!"
+                Title = "Yo!",
+                IcoPath = "Images/windowwalker.png",
             } };
         }
 
