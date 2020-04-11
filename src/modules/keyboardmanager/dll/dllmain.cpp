@@ -6,6 +6,8 @@
 #include "trace.h"
 #include "resource.h"
 #include <keyboardmanager/ui/MainWindow.h>
+#include <keyboardmanager/ui/EditKeyboardWindow.h>
+#include <keyboardmanager/ui/EditShortcutsWindow.h>
 #include <keyboardmanager/common/KeyboardManagerState.h>
 #include <keyboardmanager/common/Shortcut.h>
 #include <keyboardmanager/common/RemapShortcut.h>
@@ -152,10 +154,16 @@ public:
             // Parse the action values, including name.
             PowerToysSettings::CustomActionObject action_object =
                 PowerToysSettings::CustomActionObject::from_json_string(action);
+            HINSTANCE hInstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
 
-            //if (action_object.get_name() == L"custom_action_id") {
-            //  // Execute your custom action
-            //}
+            if (action_object.get_name() == L"RemapKeyboard") 
+            {
+                std::thread(createEditKeyboardWindow, hInstance, std::ref(keyboardManagerState)).detach();
+            }
+            else if (action_object.get_name() == L"EditShortcut")
+            {
+                std::thread(createEditShortcutsWindow, hInstance, std::ref(keyboardManagerState)).detach();
+            }
         }
         catch (std::exception&)
         {
@@ -186,8 +194,6 @@ public:
     virtual void enable()
     {
         m_enabled = true;
-        HINSTANCE hInstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-        std::thread(createMainWindow, hInstance, std::ref(keyboardManagerState)).detach();
         start_lowlevel_keyboard_hook();
     }
 
