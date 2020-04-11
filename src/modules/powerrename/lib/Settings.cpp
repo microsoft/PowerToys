@@ -79,14 +79,15 @@ namespace
 class MRUListHandler
 {
 public:
-    MRUListHandler(int size, const std::wstring& path) :
+    MRUListHandler(int size, const std::wstring& filePath, const std::wstring& regPath) :
         pushIdx(0),
         nextIdx(1),
         size(size)
     {
         items.resize(size);
         std::wstring result = PTSettingsHelper::get_module_save_folder_location(L"PowerRename");
-        jsonFilePath = result + L"\\" + path;
+        jsonFilePath = result + L"\\" + filePath;
+        registryFilePath = regPath;
         Load();
     }
 
@@ -109,6 +110,7 @@ private:
     long nextIdx;
     long size;
     std::wstring jsonFilePath;
+    std::wstring registryFilePath;
 };
 
 
@@ -178,22 +180,21 @@ json::JsonArray MRUListHandler::Serialize()
     json::JsonArray searchMRU{};
 
     std::wstring data{};
-    while (Next(data))
+    for (const std::wstring& item : items)
     {
-        searchMRU.Append(json::value(data));
+        searchMRU.Append(json::value(item));
     }
-    Reset();
 
     return searchMRU;
 }
 
 void MRUListHandler::MigrateFromRegistry()
 {
-    std::wstring searchListKeys = GetRegString(c_mruList, c_mruSearchRegPath);
+    std::wstring searchListKeys = GetRegString(c_mruList, registryFilePath);
     std::sort(std::begin(searchListKeys), std::end(searchListKeys));
     for (const wchar_t& key : searchListKeys)
     {
-        Push(GetRegString(std::wstring(1, key), c_mruSearchRegPath));
+        Push(GetRegString(std::wstring(1, key), registryFilePath));
     }
 }
 
@@ -215,21 +216,40 @@ void MRUListHandler::ParseJson()
             {
                 oldPushIdx = (long)jsonObject.GetNamedNumber(c_insertionIdx);
             }
-            std::vector<std::wstring> temp;
             if (json::has(jsonObject, c_mruList, json::JsonValueType::Array))
             {
-                // Load most recently used items in correct order and resize if needed.
-                auto searchList = jsonObject.GetNamedArray(c_mruList);
-                for (uint32_t i = 0; i < min(searchList.Size(), size); ++i)
+                auto jsonArray = jsonObject.GetNamedArray(c_mruList);
+                if (oldSize == size)
                 {
-                    int idx = (oldPushIdx + oldSize - (i + 1)) % oldSize;
-                    temp.push_back(std::wstring(searchList.GetStringAt(idx)));
+                    for (uint32_t i = 0; i < jsonArray.Size(); ++i)
+                    {
+                        items[i] = std::wstring(jsonArray.GetStringAt(i));
+                    }
+                    pushIdx = oldPushIdx;
                 }
-                temp.resize(size);
-                std::reverse(std::begin(temp), std::end(temp));
+                else
+                {
+                    std::vector<std::wstring> temp;
+                    for (uint32_t i = 0; i < min(jsonArray.Size(), size); ++i)
+                    {
+                        int idx = (oldPushIdx + oldSize - (i + 1)) % oldSize;
+                        temp.push_back(std::wstring(jsonArray.GetStringAt(idx)));
+                    }
+                    if (size > oldSize)
+                    {
+                        std::reverse(std::begin(temp), std::end(temp));
+                        pushIdx = temp.size();
+                        temp.resize(size);
+                    }
+                    else
+                    {
+                        temp.resize(size);
+                        std::reverse(std::begin(temp), std::end(temp));
+                    }
+                    items = std::move(temp);
+                    Save();
+                }
             }
-            items = std::move(temp);
-
         }
         catch (const winrt::hresult_error&) { }
     }
@@ -259,29 +279,29 @@ public:
     // IPowerRenameMRU
     IFACEMETHODIMP AddMRUString(_In_ PCWSTR entry);
 
-    static HRESULT CreateInstance(_In_ const std::wstring& path, _Outptr_ IUnknown** ppUnk);
+    static HRESULT CreateInstance(_In_ const std::wstring& filePath, _In_ const std::wstring& regPath, _Outptr_ IUnknown** ppUnk);
 
 private:
-    CRenameMRU(int size, const std::wstring& path);
+    CRenameMRU(int size, const std::wstring& filePath, const std::wstring& regPath);
 
     std::unique_ptr<MRUListHandler> mruList;
     long refCount = 0;
 };
 
-CRenameMRU::CRenameMRU(int size, const std::wstring& path) :
+CRenameMRU::CRenameMRU(int size, const std::wstring& filePath, const std::wstring& regPath) :
     refCount(1)
 {
-    mruList = std::make_unique<MRUListHandler>(size, path);
+    mruList = std::make_unique<MRUListHandler>(size, filePath, regPath);
 }
 
-HRESULT CRenameMRU::CreateInstance(_In_ const std::wstring& path, _Outptr_ IUnknown** ppUnk)
+HRESULT CRenameMRU::CreateInstance(_In_ const std::wstring& filePath, _In_ const std::wstring& regPath, _Outptr_ IUnknown** ppUnk)
 {
     *ppUnk = nullptr;
     long maxMRUSize = CSettingsInstance().GetMaxMRUSize();
     HRESULT hr = maxMRUSize > 0 ? S_OK : E_FAIL;
     if (SUCCEEDED(hr))
     {
-        CRenameMRU* renameMRU = new CRenameMRU(maxMRUSize, path);
+        CRenameMRU* renameMRU = new CRenameMRU(maxMRUSize, filePath, regPath);
         hr = renameMRU ? S_OK : E_OUTOFMEMORY;
         if (SUCCEEDED(hr))
         {
@@ -480,10 +500,10 @@ CSettings& CSettingsInstance()
 
 HRESULT CRenameMRUSearch_CreateInstance(_Outptr_ IUnknown** ppUnk)
 {
-    return CRenameMRU::CreateInstance(c_searchMRUListFilePath, ppUnk);
+    return CRenameMRU::CreateInstance(c_searchMRUListFilePath, c_mruSearchRegPath, ppUnk);
 }
 
 HRESULT CRenameMRUReplace_CreateInstance(_Outptr_ IUnknown** ppUnk)
 {
-    return CRenameMRU::CreateInstance(c_replaceMRUListFilePath, ppUnk);
+    return CRenameMRU::CreateInstance(c_replaceMRUListFilePath, c_mruReplaceRegPath, ppUnk);
 }
