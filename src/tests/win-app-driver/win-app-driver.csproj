@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\..\packages\MSTest.TestAdapter.2.1.0\build\net45\MSTest.TestAdapter.props" Condition="Exists('..\..\..\packages\MSTest.TestAdapter.2.1.0\build\net45\MSTest.TestAdapter.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -96,6 +96,7 @@
     <Compile Include="FancyZonesTests\FancyZonesEditor.cs" />
     <Compile Include="FancyZonesTests\FancyZonesSettingsTests.cs" />
     <Compile Include="PowerToysSession.cs" />
+    <Compile Include="PowerToysClosingTests.cs" />
     <Compile Include="PowerToysTrayTests.cs" />
     <Compile Include="TestShortcutHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
