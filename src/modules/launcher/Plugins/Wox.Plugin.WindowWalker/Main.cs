@@ -1,8 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
-using System.Windows;
-using Mages.Core;
 
 namespace Wox.Plugin.WindowWalker
 {
