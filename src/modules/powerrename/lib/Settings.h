@@ -134,6 +134,7 @@ private:
 
     Settings settings;
     std::wstring jsonFilePath;
+    FILETIME lastLoadedTime;
 };
 
 CSettings& CSettingsInstance();

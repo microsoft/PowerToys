@@ -67,6 +67,13 @@ namespace
         SHGetValue(HKEY_CURRENT_USER, completePath.c_str(), valueName.c_str(), &type, value, &size);
         return std::wstring(value);
     }
+
+    FILETIME LastModifiedTime(const std::wstring& filePath)
+    {
+        WIN32_FILE_ATTRIBUTE_DATA attr{};
+        GetFileAttributesExW(filePath.c_str(), GetFileExInfoStandard, &attr);
+        return attr.ftLastWriteTime;
+    }
 }
 
 class MRUListHandler
@@ -372,11 +379,16 @@ void CSettings::Load()
     {
         ParseJson();
     }
+    GetSystemTimeAsFileTime(&lastLoadedTime);
 }
 
 void CSettings::Reload()
 {
-    Load();
+    FILETIME lastModifiedTime = LastModifiedTime(jsonFilePath);
+    if (CompareFileTime(&lastModifiedTime, &lastLoadedTime) == 1)
+    {
+        Load();
+    }
 }
 
 void CSettings::Save()
@@ -473,4 +485,3 @@ HRESULT CRenameMRUReplace_CreateInstance(_Outptr_ IUnknown** ppUnk)
 {
     return CRenameMRU::CreateInstance(c_replaceMRUListFilePath, ppUnk);
 }
-
