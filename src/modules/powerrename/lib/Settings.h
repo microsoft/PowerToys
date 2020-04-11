@@ -21,7 +21,7 @@ public:
         Save();
     }
 
-    inline bool GetShowIconOnMenu()
+    inline bool GetShowIconOnMenu() const
     {
         return settings.showIconOnMenu;
     }
@@ -31,7 +31,7 @@ public:
         settings.showIconOnMenu = show;
     }
 
-    inline bool GetExtendedContextMenuOnly()
+    inline bool GetExtendedContextMenuOnly() const
     {
         return settings.extendedContextMenuOnly;
     }
@@ -41,7 +41,7 @@ public:
         settings.extendedContextMenuOnly = extendedOnly;
     }
 
-    inline bool GetPersistState()
+    inline bool GetPersistState() const
     {
         return settings.persistState;
     }
@@ -51,7 +51,7 @@ public:
         settings.persistState = persistState;
     }
 
-    inline bool GetMRUEnabled()
+    inline bool GetMRUEnabled() const
     {
         return settings.MRUEnabled;
     }
@@ -61,7 +61,7 @@ public:
         settings.MRUEnabled = MRUEnabled;
     }
 
-    inline long GetMaxMRUSize()
+    inline long GetMaxMRUSize() const
     {
         return settings.maxMRUSize;
     }
@@ -71,7 +71,7 @@ public:
         settings.maxMRUSize = maxMRUSize;
     }
 
-    inline long GetFlags()
+    inline long GetFlags() const
     {
         return settings.flags;
     }
@@ -82,7 +82,7 @@ public:
         Save();
     }
 
-    inline const std::wstring& GetSearchText()
+    inline const std::wstring& GetSearchText() const
     {
         return settings.searchText;
     }
@@ -93,7 +93,7 @@ public:
         Save();
     }
 
-    inline const std::wstring& GetReplaceText()
+    inline const std::wstring& GetReplaceText() const
     {
         return settings.replaceText;
     }
