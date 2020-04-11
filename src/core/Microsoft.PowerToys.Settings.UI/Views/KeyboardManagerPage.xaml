@@ -122,7 +122,8 @@
 
             <Button x:Uid="KeyboardManager_RemapKeyboardButton"
                     Margin="{StaticResource SmallTopMargin}"
-                    Style="{StaticResource ButtonRevealStyle}"/>
+                    Style="{StaticResource ButtonRevealStyle}"
+                    Command="{Binding Path=RemapKeyboardCommand}"/>
 
             <ListView x:Name="RemapKeysList"
                       ItemsSource="{StaticResource dummyData}"
@@ -143,7 +144,8 @@
 
             <Button x:Uid="KeyboardManager_RemapShortcutsButton"
                     Margin="{StaticResource SmallTopMargin}"
-                    Style="{StaticResource ButtonRevealStyle}"/>
+                    Style="{StaticResource ButtonRevealStyle}"
+                    Command="{Binding Path=EditShortcutCommand}"/>
 
             <ListView x:Name="RemapShortcutsList"  
                       ItemsSource="{StaticResource dummyData}"
