@@ -29,6 +29,9 @@ namespace ImageResizer.Views
                     AppResources.AllFilesFilter + "|*.*",
                 InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
                 Multiselect = true,
+
+                // Create the Window title for OpenFileDialog
+                Title = "Image Resizer - Open files",
             };
 
             if (openFileDialog.ShowDialog() != true)
@@ -43,6 +46,15 @@ namespace ImageResizer.Views
             => viewModel.Close(new AdvancedWindow(viewModel).ShowDialog() == true);
 
         void IMainView.Close()
-            => Dispatcher.Invoke((Action)Close);
+        {
+            Dispatcher.Invoke((Action)Close);
+
+            // Close background processes when close the program
+            var processes = System.Diagnostics.Process.GetProcessesByName("ImageResizer");
+            foreach (var process in processes)
+            {
+                process.Kill();
+            }
+        }
     }
 }
