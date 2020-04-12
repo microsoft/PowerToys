@@ -37,6 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var sendCustomAction = new SendCustomAction("Keyboard Manager");
             sendCustomAction.Action = moduleCustomAction;
             var ipcMessage = sendCustomAction.ToJsonString();
+            ShellPage.AllowRunnerToForeground();
             ShellPage.DefaultSndMSGCallback(ipcMessage);
         }
 
@@ -55,6 +56,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var sendCustomAction = new SendCustomAction("Keyboard Manager");
             sendCustomAction.Action = moduleCustomAction;
             var ipcMessage = sendCustomAction.ToJsonString();
+            ShellPage.AllowRunnerToForeground();
             ShellPage.DefaultSndMSGCallback(ipcMessage);
         }
     }

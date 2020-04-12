@@ -51,6 +51,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         return;
     }
 
+     SetForegroundWindow(_hWndEditKeyboardWindow);
+
     // This DesktopWindowXamlSource is the object that enables a non-UWP desktop application
     // to host UWP controls in any UI element that is associated with a window handle (HWND).
     DesktopWindowXamlSource desktopSource;

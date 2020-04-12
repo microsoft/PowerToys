@@ -5,7 +5,6 @@
 #include <common/settings_objects.h>
 #include "trace.h"
 #include "resource.h"
-#include <keyboardmanager/ui/MainWindow.h>
 #include <keyboardmanager/ui/EditKeyboardWindow.h>
 #include <keyboardmanager/ui/EditShortcutsWindow.h>
 #include <keyboardmanager/common/KeyboardManagerState.h>

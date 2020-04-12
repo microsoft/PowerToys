@@ -52,6 +52,8 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         return;
     }
 
+    SetForegroundWindow(_hWndEditShortcutsWindow);
+
     // This DesktopWindowXamlSource is the object that enables a non-UWP desktop application
     // to host UWP controls in any UI element that is associated with a window handle (HWND).
     DesktopWindowXamlSource desktopSource;

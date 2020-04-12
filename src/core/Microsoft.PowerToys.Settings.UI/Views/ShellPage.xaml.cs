@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Windows.UI.Xaml.Controls;
 
@@ -27,6 +28,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// Gets or sets iPC callback function for run on start up.
         /// </summary>
         public static IPCMessageCallback DefaultSndMSGCallback { get; set; }
+
+        public static Action AllowRunnerToForeground { get; set; }
 
         /// <summary>
         /// Gets view model.
@@ -54,6 +57,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void SetDefaultSndMessageCallback(IPCMessageCallback implmentation)
         {
             DefaultSndMSGCallback = implmentation;
+        }
+
+        public void SetAllowRunnerToForeground(Action implmentation)
+        {
+            AllowRunnerToForeground = implmentation;
         }
     }
 }

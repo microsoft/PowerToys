@@ -4,6 +4,7 @@
 
 using System;
 using System.Windows;
+using Microsoft.PowerToys.Settings.UI.Runner.Utilities;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
 
@@ -30,6 +31,8 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                 {
                     Program.GetTwoWayIPCManager().SendMessage(msg);
                 });
+
+                shellPage.SetAllowRunnerToForeground(() => Helper.AllowRunnerToForeground());
             }
         }
     }
