@@ -9,7 +9,8 @@
       xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
      xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
     d:DesignHeight="300"
-    d:DesignWidth="720">
+    d:DesignWidth="720"
+    PreviewKeyDown="OnKeyDown">
     <UserControl.Resources>
 
         <Style TargetType="AutoSuggestBox" x:Name="CustomStyledAutoSuggestBox">

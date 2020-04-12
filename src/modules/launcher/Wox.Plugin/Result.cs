@@ -40,6 +40,11 @@ namespace Wox.Plugin
         /// </summary>
         public Func<ActionContext, bool> Action { get; set; }
 
+        /// <summary>
+        /// Highlighted Action
+        /// </summary>
+        public Func<ActionContext, string> SelectionAction { get; set; }
+
         public int Score { get; set; }
 
         /// <summary>
