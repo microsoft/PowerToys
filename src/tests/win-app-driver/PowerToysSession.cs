@@ -7,6 +7,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
+using System.Diagnostics;
 
 namespace PowerToysTests
 {
@@ -274,6 +275,40 @@ namespace PowerToysTests
             else
             {
                 File.Delete(_zoneSettingsPath);
+            }
+        }
+
+        // Close window by using FindElementByName
+        public static void CloseWindow(string windowName)
+        {
+            try
+            {
+                WindowsElement window = session.FindElementByName(windowName);
+                if (window != null)
+                {
+                    window.SendKeys(Keys.Alt + Keys.F4);
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+        }
+
+        // Close processes by GetProcessesByName
+        public static void CloseWindowByProcessName(string processName)
+        {
+            try
+            {
+                Process[] processes = Process.GetProcessesByName(processName);
+                foreach (Process process in processes)
+                {
+                    process.Kill();
+                }
+            }
+            catch (Exception)
+            {
+
             }
         }
     }
