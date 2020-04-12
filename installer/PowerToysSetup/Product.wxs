@@ -68,7 +68,7 @@
       <RegistrySearch Id="ExistingExtPath" Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}\InprocServer32" Type="raw"/>
     </Property>
     <Property Id ="EXISTINGIMAGERESIZERPATH">
-      <RegistrySearch Id="ExistingImageResizerPath" Root="HKCU" Key="Software\Classes\CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32" Type="raw"/>
+      <RegistrySearch Id="ExistingImageResizerPath" Root="HKCR" Key="CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32" Type="raw"/>
     </Property>
 
     <InstallExecuteSequence>
@@ -334,68 +334,68 @@
         <File Source="$(var.BinX64Dir)\modules\ImageResizerExt.dll" KeyPath="yes" />
       </Component>
       <Component Id="Module_ImageResizer_Registry" Guid="8B593E2C-2D9B-4EBC-93F7-A2B69707DAC9" Win64="yes">
-        <RegistryKey Root="HKCU" Key="Software\Classes\CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32">
+        <RegistryKey Root="HKCR" Key="CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32">
           <RegistryValue Value="[ModulesInstallFolder]ImageResizerExt.dll" Type="string" />
           <RegistryValue Name="ThreadingModel" Value="Apartment" Type="string" />
         </RegistryKey>
         <!-- Registry Key for the drag and drop handler -->
-        <RegistryValue Root="HKCU"
-                       Key="Software\Classes\Directory\ShellEx\DragDropHandlers\ImageResizer"
+        <RegistryValue Root="HKCR"
+                       Key="Directory\ShellEx\DragDropHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
         <!-- Registry Keys for the context menu handler for each of the following image formats: bmp, dib, gif, jfif, jpe, jpeg, jpg, jxr, png, rle, tif, tiff, wdp  -->
-        <RegistryValue Root="HKCU"
-                       Key="Software\Classes\SystemFileAssociations\.bmp\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.bmp\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCU"
-                       Key="Software\Classes\SystemFileAssociations\.dib\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.dib\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCU"
-                       Key="Software\Classes\SystemFileAssociations\.gif\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.gif\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCU"
-                       Key="Software\Classes\SystemFileAssociations\.jfif\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.jfif\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCU"
-                       Key="Software\Classes\SystemFileAssociations\.jpe\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.jpe\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCU"
-                       Key="Software\Classes\SystemFileAssociations\.jpeg\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.jpeg\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCU"
-                       Key="Software\Classes\SystemFileAssociations\.jpg\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.jpg\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCU"
-                       Key="Software\Classes\SystemFileAssociations\.jxr\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.jxr\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCU"
-                       Key="Software\Classes\SystemFileAssociations\.png\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.png\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCU"
-                       Key="Software\Classes\SystemFileAssociations\.rle\ShellEx\ContextMenuHandlers\ImageResizer"
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.rle\ShellEx\ContextMenuHandlers\ImageResizer"
                        Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
                        Type="string" />
-        <RegistryValue Root="HKCU"
-                         Key="Software\Classes\SystemFileAssociations\.tif\ShellEx\ContextMenuHandlers\ImageResizer"
-                         Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
-                         Type="string" />
-        <RegistryValue Root="HKCU"
-                         Key="Software\Classes\SystemFileAssociations\.tiff\ShellEx\ContextMenuHandlers\ImageResizer"
-                         Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
-                         Type="string" />
-        <RegistryValue Root="HKCU"
-                         Key="Software\Classes\SystemFileAssociations\.wdp\ShellEx\ContextMenuHandlers\ImageResizer"
-                         Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
-                         Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.tif\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.tiff\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.wdp\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
       </Component>
       <Component Id="Module_PowerPreview" Guid="FF1700D5-1B07-4E07-9A62-4D206645EEA9" Win64="yes">
         <!-- Component to include PowerPreview Module Source dll's -->
