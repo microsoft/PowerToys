@@ -255,19 +255,33 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
 LExit:
     ReleaseStr(wszExecutablePath);
     if (pService)
+    {
         pService->Release();
+    }
     if (pTaskFolder)
+    {
         pTaskFolder->Release();
+    }
     if (pTask)
+    {
         pTask->Release();
+    }
     if (pRegInfo)
+    {
         pRegInfo->Release();
+    }
     if (pSettings)
+    {
         pSettings->Release();
+    }
     if (pTriggerCollection)
+    {
         pTriggerCollection->Release();
+    }
     if (pRegisteredTask)
+    {
         pRegisteredTask->Release();
+    }
 
     if (!SUCCEEDED(hr))
     {
@@ -374,11 +388,17 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
 
 LExit:
     if (pService)
+    {
         pService->Release();
+    }
     if (pTaskFolder)
+    {
         pTaskFolder->Release();
+    }
     if (pTaskCollection)
+    {
         pTaskCollection->Release();
+    }
 
     if (!SUCCEEDED(hr))
     {
