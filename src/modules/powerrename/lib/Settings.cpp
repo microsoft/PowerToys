@@ -9,9 +9,9 @@
 
 namespace
 {
-    const wchar_t c_powerRenameDataFilePath[] = L"power-rename-settings.json";
-    const wchar_t c_searchMRUListFilePath[] = L"search-mru.json";
-    const wchar_t c_replaceMRUListFilePath[] = L"replace-mru.json";
+    const wchar_t c_powerRenameDataFilePath[] = L"\\power-rename-settings.json";
+    const wchar_t c_searchMRUListFilePath[] = L"\\search-mru.json";
+    const wchar_t c_replaceMRUListFilePath[] = L"\\replace-mru.json";
 
     const wchar_t c_rootRegPath[] = L"Software\\Microsoft\\PowerRename";
     const wchar_t c_mruSearchRegPath[] = L"\\SearchMRU";
@@ -68,11 +68,15 @@ namespace
         return std::wstring(value);
     }
 
-    FILETIME LastModifiedTime(const std::wstring& filePath)
+    bool LastModifiedTime(const std::wstring& filePath, FILETIME* lpFileTime)
     {
         WIN32_FILE_ATTRIBUTE_DATA attr{};
-        GetFileAttributesExW(filePath.c_str(), GetFileExInfoStandard, &attr);
-        return attr.ftLastWriteTime;
+        if (GetFileAttributesExW(filePath.c_str(), GetFileExInfoStandard, &attr))
+        {
+            *lpFileTime = attr.ftLastWriteTime;
+            return true;
+        }
+        return false;
     }
 }
 
@@ -82,12 +86,11 @@ public:
     MRUListHandler(int size, const std::wstring& filePath, const std::wstring& regPath) :
         pushIdx(0),
         nextIdx(1),
-        size(size)
+        size(size),
+        jsonFilePath(PTSettingsHelper::get_module_save_folder_location(L"PowerRename") + filePath),
+        registryFilePath(regPath)
     {
         items.resize(size);
-        std::wstring result = PTSettingsHelper::get_module_save_folder_location(L"PowerRename");
-        jsonFilePath = result + L"\\" + filePath;
-        registryFilePath = regPath;
         Load();
     }
 
@@ -109,8 +112,8 @@ private:
     long pushIdx;
     long nextIdx;
     long size;
-    std::wstring jsonFilePath;
-    std::wstring registryFilePath;
+    const std::wstring jsonFilePath;
+    const std::wstring registryFilePath;
 };
 
 
@@ -215,6 +218,10 @@ void MRUListHandler::ParseJson()
             if (json::has(jsonObject, c_insertionIdx, json::JsonValueType::Number))
             {
                 oldPushIdx = (long)jsonObject.GetNamedNumber(c_insertionIdx);
+                if (oldPushIdx < 0 || oldPushIdx >= oldSize)
+                {
+                    oldPushIdx = 0;
+                }
             }
             if (json::has(jsonObject, c_mruList, json::JsonValueType::Array))
             {
@@ -384,7 +391,7 @@ IFACEMETHODIMP CRenameMRU::AddMRUString(_In_ PCWSTR entry)
 CSettings::CSettings()
 {
     std::wstring result = PTSettingsHelper::get_module_save_folder_location(L"PowerRename");
-    jsonFilePath = result + L"\\" + std::wstring(c_powerRenameDataFilePath);
+    jsonFilePath = result + std::wstring(c_powerRenameDataFilePath);
     Load();
 }
 
@@ -423,8 +430,9 @@ void CSettings::Load()
 void CSettings::Reload()
 {
     // Load json settings from data file if it is modified in the meantime.
-    FILETIME lastModifiedTime = LastModifiedTime(jsonFilePath);
-    if (CompareFileTime(&lastModifiedTime, &lastLoadedTime) == 1)
+    FILETIME lastModifiedTime{};
+    if (LastModifiedTime(jsonFilePath, &lastModifiedTime) &&
+        CompareFileTime(&lastModifiedTime, &lastLoadedTime) == 1)
     {
         Load();
     }

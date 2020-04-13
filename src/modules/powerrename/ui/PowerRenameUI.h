@@ -38,13 +38,7 @@ class CPowerRenameUI :
     public IPowerRenameManagerEvents
 {
 public:
-    CPowerRenameUI() :
-        m_refCount(1)
-    {
-        CSettingsInstance().Load();
-        (void)OleInitialize(nullptr);
-        ModuleAddRef();
-    }
+    CPowerRenameUI();
 
     // IUnknown
     IFACEMETHODIMP QueryInterface(__in REFIID riid, __deref_out void** ppv);

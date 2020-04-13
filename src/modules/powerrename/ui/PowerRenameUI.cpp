@@ -79,6 +79,14 @@ inline int RECT_HEIGHT(RECT& r)
     return r.bottom - r.top;
 }
 
+CPowerRenameUI::CPowerRenameUI() :
+    m_refCount(1)
+{
+    CSettingsInstance().Load();
+    (void)OleInitialize(nullptr);
+    ModuleAddRef();
+}
+
 // IUnknown
 IFACEMETHODIMP CPowerRenameUI::QueryInterface(__in REFIID riid, __deref_out void** ppv)
 {
