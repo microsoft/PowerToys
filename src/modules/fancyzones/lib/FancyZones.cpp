@@ -43,6 +43,47 @@ namespace std
     };
 }
 
+namespace
+{
+    const CLSID CLSID_ImmersiveShell = { 0xC2F03A33, 0x21F5, 0x47FA, 0xB4, 0xBB, 0x15, 0x63, 0x62, 0xA2, 0xF2, 0x39 };
+
+    IServiceProvider* GetServiceProvider()
+    {
+        static winrt::com_ptr<IServiceProvider> provider;
+        if (!provider)
+        {
+            winrt::check_hresult(CoCreateInstance(
+                CLSID_ImmersiveShell,
+                nullptr,
+                CLSCTX_LOCAL_SERVER,
+                __uuidof(provider),
+                provider.put_void()));
+        }
+        return provider.get();
+    }
+
+    IVirtualDesktopManager* GetVirtualDesktopManager()
+    {
+        static winrt::com_ptr<IVirtualDesktopManager> manager;
+        if (!manager)
+        {
+            winrt::check_hresult(GetServiceProvider()->QueryService(__uuidof(manager), manager.put()));
+        }
+        return manager.get();
+    }
+
+    bool GetWindowDesktopId(HWND topLevelWindow, GUID *desktopId)
+    {
+        return SUCCEEDED(GetVirtualDesktopManager()->GetWindowDesktopId(topLevelWindow, desktopId));
+    }
+
+    std::wstring ExtractVirtualDesktopId(const std::wstring& uniqueId)
+    {
+        // Format: <device-id>_<resolution>_<virtual-desktop-id>
+        return uniqueId.substr(uniqueId.rfind('_') + 1);
+    }
+}
+
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
 {
 public:
@@ -349,10 +390,22 @@ FancyZones::VirtualDesktopInitialize() noexcept
 IFACEMETHODIMP_(void)
 FancyZones::WindowCreated(HWND window) noexcept
 {
+    std::shared_lock readLock(m_lock);
     if (m_settings->GetSettings()->appLastZone_moveWindows && IsInterestingWindow(window))
     {
         for (const auto& [monitor, zoneWindow] : m_zoneWindowMap)
         {
+            if (GUID windowDesktopId{}; GetWindowDesktopId(window, &windowDesktopId))
+            {
+                if (GUID zoneWindowDesktopId{};
+                    SUCCEEDED_LOG(CLSIDFromString(ExtractVirtualDesktopId(zoneWindow->UniqueId()).c_str(), &zoneWindowDesktopId)))
+                {
+                    if (windowDesktopId != zoneWindowDesktopId)
+                    {
+                        break;
+                    }
+                }
+            }
             const auto activeZoneSet = zoneWindow->ActiveZoneSet();
             if (activeZoneSet)
             {
