@@ -29,99 +29,73 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void ModifyQueryHelper_ShouldSetQueryHelper_WhenPatternIsAsterisk()
+        public void ModifySearchQuery_ShouldNotAddAsterisk_ForAllSpaceSeparatedStrings()
         {
             // Arrange
-            ISearchQueryHelper queryHelper;
-            String pattern = "*";
-            _api.InitQueryHelper(out queryHelper, 10);
+            string query1 = "*";
+            string query2 = " *";
+            string query3 = "* ";
+            string query4 = "**";
+            string query5 = "*  ** *** ";
 
             // Act
-            _api.ModifyQueryHelper(ref queryHelper, pattern);
+            query1 = _api.ModifySearchQuery(query1);
+            query2 = _api.ModifySearchQuery(query2);
+            query3 = _api.ModifySearchQuery(query3);
+            query4 = _api.ModifySearchQuery(query4);
+            query5 = _api.ModifySearchQuery(query5);
 
             // Assert
-            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("LIKE"));
-            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("Contains"));
+            Assert.AreEqual(query1, "*");
+            Assert.AreEqual(query2, "*");
+            Assert.AreEqual(query3, "*");
+            Assert.AreEqual(query4, "*");
+            Assert.AreEqual(query5, "*");
+
         }
 
         [Test]
-        public void ModifyQueryHelper_ShouldSetQueryHelper_WhenPatternContainsAsterisk()
+        public void ModifySearchQuery_ShouldAddAsterisk_ForAllSpaceSeparatedStrings()
         {
             // Arrange
-            ISearchQueryHelper queryHelper;
-            String pattern = "tt*^&)";
-            _api.InitQueryHelper(out queryHelper, 10);
+            string query1 = "test";
+            string query2 = "*test";
+            string query3 = " **test";
+            string query4 = " *test** *";
+            string query5 = "* ** test* ** ";
 
             // Act
-            _api.ModifyQueryHelper(ref queryHelper, pattern);
+            query1 = _api.ModifySearchQuery(query1);
+            query2 = _api.ModifySearchQuery(query2);
+            query3 = _api.ModifySearchQuery(query3);
+            query4 = _api.ModifySearchQuery(query4);
+            query5 = _api.ModifySearchQuery(query5);
 
             // Assert
-            Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("LIKE"));
-            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("Contains"));
+            Assert.AreEqual(query1, "*test");
+            Assert.AreEqual(query2, "*test");
+            Assert.AreEqual(query3, "*test");
+            Assert.AreEqual(query4, "*test");
+            Assert.AreEqual(query5, "*test");
         }
 
         [Test]
-        public void ModifyQueryHelper_ShouldSetQueryHelper_WhenPatternContainsPercent()
+        public void ModifySearchQuery_ShouldAddAsterisk_MultipleKeywords()
         {
             // Arrange
-            ISearchQueryHelper queryHelper;
-            String pattern = "tt%^&)";
-            _api.InitQueryHelper(out queryHelper, 10);
+            string query1 = "test1 test2";
+            string query2 = "*test1 * test2";
+            string query3 = "test1 test2 test3 test4 ";
 
             // Act
-            _api.ModifyQueryHelper(ref queryHelper, pattern);
+            query1 = _api.ModifySearchQuery(query1);
+            query2 = _api.ModifySearchQuery(query2);
+            query3 = _api.ModifySearchQuery(query3);
 
             // Assert
-            Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("LIKE"));
-            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("Contains"));
-        }
-
-        [Test]
-        public void ModifyQueryHelper_ShouldSetQueryHelper_WhenPatternContainsUnderScore()
-        {
-            // Arrange
-            ISearchQueryHelper queryHelper;
-            String pattern = "tt_^&)";
-            _api.InitQueryHelper(out queryHelper, 10);
-
-            // Act
-            _api.ModifyQueryHelper(ref queryHelper, pattern);
-
-            // Assert
-            Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("LIKE"));
-            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("Contains"));
-        }
-
-        [Test]
-        public void ModifyQueryHelper_ShouldSetQueryHelper_WhenPatternContainsQuestionMark()
-        {
-            // Arrange
-            ISearchQueryHelper queryHelper;
-            String pattern = "tt?^&)";
-            _api.InitQueryHelper(out queryHelper, 10);
-
-            // Act
-            _api.ModifyQueryHelper(ref queryHelper, pattern);
-
-            // Assert
-            Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("LIKE"));
-            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("Contains"));
-        }
-
-        [Test]
-        public void ModifyQueryHelper_ShouldSetQueryHelper_WhenPatternDoesNotContainSplSymbols()
-        {
-            // Arrange
-            ISearchQueryHelper queryHelper;
-            String pattern = "tt^&)bc";
-            _api.InitQueryHelper(out queryHelper, 10);
-
-            // Act
-            _api.ModifyQueryHelper(ref queryHelper, pattern);
-
-            // Assert
-            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("LIKE"));
-            Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("Contains"));
+            Assert.AreEqual(query1, "*test1 *test2");
+            Assert.AreEqual(query2, "*test1 *test2");
+            Assert.AreEqual(query3, "*test1 *test2 *test3 *test4");
         }
 
         [Test]
@@ -130,8 +104,8 @@ namespace Wox.Test.Plugins
             // Arrange
             ISearchQueryHelper queryHelper;
             _api.InitQueryHelper(out queryHelper, 10);
-            _api.ModifyQueryHelper(ref queryHelper, "*");
             string keyword = "test";
+            keyword = _api.ModifySearchQuery(keyword);
             bool commandDisposed = false;
             bool resultDisposed = false;
 
