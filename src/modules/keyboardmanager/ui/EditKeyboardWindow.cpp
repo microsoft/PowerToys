@@ -8,7 +8,7 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND, UINT, WPARAM, LPARAM);
 HWND hWndXamlIslandEditKeyboardWindow = nullptr;
 // This variable is used to check if window registration has been done to avoid repeated registration leading to an error.
 bool isEditKeyboardWindowRegistrationCompleted = false;
-// Holds the natvie window handle of EditShortcuts Window.
+// Holds the native window handle of EditKeyboard Window.
 HWND hwndEditKeyboardNativeWindow = nullptr;
 std::mutex editKeyboardWindowMutex;
 

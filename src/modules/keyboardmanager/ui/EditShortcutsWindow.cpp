@@ -8,7 +8,7 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND, UINT, WPARAM, LPARAM);
 HWND hWndXamlIslandEditShortcutsWindow = nullptr;
 // This variable is used to check if window registration has been done to avoid repeated registration leading to an error.
 bool isEditShortcutsWindowRegistrationCompleted = false;
-// Holds the natvie window handle of EditShortcuts Window.
+// Holds the native window handle of EditShortcuts Window.
 HWND hwndEditShortcutsNativeWindow = nullptr;
 std::mutex editShortcutsWindowMutex;
 
