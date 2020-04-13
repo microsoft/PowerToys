@@ -70,15 +70,15 @@ namespace MarkdownPreviewHandler
         /// <param name="dataSource">Path to the file.</param>
         public override void DoPreview<T>(T dataSource)
         {
-            if (!(dataSource is string filePath))
-            {
-                throw new ArgumentException($"{nameof(dataSource)} for {nameof(MarkdownPreviewHandler)} must be a string but was a '{typeof(T)}'");
-            }
-
             this.infoBarDisplayed = false;
 
             try
             {
+                if (!(dataSource is string filePath))
+                {
+                    throw new ArgumentException($"{nameof(dataSource)} for {nameof(MarkdownPreviewHandler)} must be a string but was a '{typeof(T)}'");
+                }
+            
                 string fileText = File.ReadAllText(filePath);
                 Regex imageTagRegex = new Regex(@"<[ ]*img.*>");
                 if (imageTagRegex.IsMatch(fileText))
