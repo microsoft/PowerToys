@@ -77,20 +77,6 @@ void createMainWindow(HINSTANCE hInstance, KeyboardManagerState& keyboardManager
     keyRow.Spacing(10);
     keyRow.Margin({ 10 });
 
-    Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> keyNames{ single_threaded_vector<Windows::Foundation::IInspectable>(
-        { winrt::box_value(L"Alt"),
-          winrt::box_value(L"Delete"),
-          winrt::box_value(L"LAlt"),
-          winrt::box_value(L"LWin"),
-          winrt::box_value(L"Shift"),
-          winrt::box_value(L"NumLock"),
-          winrt::box_value(L"LCtrl") }) };
-    Windows::UI::Xaml::Controls::ComboBox cb;
-    cb.IsEditable(true);
-    cb.IsTextSearchEnabled(true);
-    cb.Width(200);
-    cb.ItemsSource(keyNames);
-
     Windows::UI::Xaml::Controls::Button bt;
     bt.Content(winrt::box_value(winrt::to_hstring("Edit Keyboard")));
     bt.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
@@ -105,7 +91,6 @@ void createMainWindow(HINSTANCE hInstance, KeyboardManagerState& keyboardManager
         th.join();
     });
 
-    keyRow.Children().Append(cb);
     keyRow.Children().Append(bt);
     keyRow.Children().Append(bt2);
 

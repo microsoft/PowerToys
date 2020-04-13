@@ -162,7 +162,7 @@ Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> Lay
     std::lock_guard<std::mutex> lock(keyboardLayoutMap_mutex);
     UpdateLayout();
     Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> keyNames = single_threaded_vector<Windows::Foundation::IInspectable>();
-    for (int i=0;i<256;i++)
+    for (int i = 0; i < 256; i++)
     {
         keyNames.Append(winrt::box_value(keyboardLayoutMap[i].c_str()));
     }

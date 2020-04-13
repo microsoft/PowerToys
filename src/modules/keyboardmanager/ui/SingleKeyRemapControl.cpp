@@ -68,7 +68,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
 {
     // ContentDialog for detecting remap key. This is the parent UI element.
     ContentDialog detectRemapKeyBox;
-    
+
     // TODO: Hardcoded light theme, since the app is not theme aware ATM.
     detectRemapKeyBox.RequestedTheme(ElementTheme::Light);
     // ContentDialog requires manually setting the XamlRoot (https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
