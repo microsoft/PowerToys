@@ -870,7 +870,7 @@ void FancyZones::UpdateDragState(HWND window, require_write_lock) noexcept
     const bool windowElevated = IsProcessOfWindowElevated(window);
     static const bool meElevated = is_process_elevated();
     static bool warning_shown = false;
-    if (windowElevated && !meElevated)
+    if (!meElevated && windowElevated)
     {
         m_dragEnabled = false;
         if (!warning_shown && !is_cant_drag_elevated_warning_disabled())
