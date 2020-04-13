@@ -61,7 +61,7 @@ enum WindowState
 WindowState get_window_state(HWND hwnd);
 
 // Returns true if the current process is running with elevated privileges
-bool is_process_elevated();
+bool is_process_elevated(const bool use_cached_value = true);
 
 // Drops the elevated privilages if present
 bool drop_elevated_privileges();
@@ -78,7 +78,7 @@ bool run_same_elevation(const std::wstring& file, const std::wstring& params);
 // Returns true if the current process is running from administrator account
 bool check_user_is_admin();
 
-//Returns true when one or more strings from vector found in string 
+// Returns true when one or more strings from vector found in string
 bool find_app_name_in_path(const std::wstring& where, const std::vector<std::wstring>& what);
 
 // Get the executable path or module name for modern apps
