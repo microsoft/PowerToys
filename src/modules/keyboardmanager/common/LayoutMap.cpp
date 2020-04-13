@@ -19,7 +19,8 @@ void LayoutMap::UpdateLayout()
 {
     // Get keyboard layout for current thread
     HKL layout = GetKeyboardLayout(0);
-    if (layout == previousLayout) {
+    if (layout == previousLayout)
+    {
         return;
     }
     previousLayout = layout;
@@ -32,7 +33,7 @@ void LayoutMap::UpdateLayout()
     {
         // Get the scan code from the virtual key code
         UINT scanCode = MapVirtualKeyExW(i, MAPVK_VK_TO_VSC, layout);
-        // Get the unicode representation from the virtual key code and scan code pair to 
+        // Get the unicode representation from the virtual key code and scan code pair to
         wchar_t szBuffer[3] = { 0 };
         int result = ToUnicodeEx(i, scanCode, (BYTE*)btKeys, szBuffer, 3, 0, layout);
         // If a representation is returned
@@ -154,4 +155,17 @@ void LayoutMap::UpdateLayout()
     keyboardLayoutMap[VK_OEM_CLEAR] = L"Clear";
     keyboardLayoutMap[0xFF] = L"Undefined";
     // To do: Add IME key names
+}
+
+Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> LayoutMap::GetKeyList()
+{
+    std::lock_guard<std::mutex> lock(keyboardLayoutMap_mutex);
+    UpdateLayout();
+    Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> keyNames = single_threaded_vector<Windows::Foundation::IInspectable>();
+    for (int i=0;i<256;i++)
+    {
+        keyNames.Append(winrt::box_value(keyboardLayoutMap[i].c_str()));
+    }
+
+    return keyNames;
 }

@@ -4,8 +4,8 @@
 class SingleKeyRemapControl
 {
 private:
-    // Textblock to display the selected remap key
-    TextBlock singleKeyRemapText;
+    // Dropdown to display the selected remap key
+    Windows::UI::Xaml::Controls::ComboBox singleKeyRemapDropDown;
 
     // Button to type the remap key
     Button typeKey;
@@ -23,6 +23,9 @@ public:
 
     SingleKeyRemapControl(const int& rowIndex, const int& colIndex)
     {
+        singleKeyRemapDropDown.IsEditable(true);
+        singleKeyRemapDropDown.Width(100);
+        singleKeyRemapDropDown.ItemsSource(keyboardManagerState->keyboardMap.GetKeyList());
         typeKey.Content(winrt::box_value(winrt::to_hstring("Type Key")));
         typeKey.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
         typeKey.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
@@ -37,7 +40,7 @@ public:
         singleKeyRemapControlLayout.Spacing(10);
 
         singleKeyRemapControlLayout.Children().Append(typeKey);
-        singleKeyRemapControlLayout.Children().Append(singleKeyRemapText);
+        singleKeyRemapControlLayout.Children().Append(singleKeyRemapDropDown);
     }
 
     // Function to add a new row to the remap keys table. If the originalKey and newKey args are provided, then the displayed remap keys are set to those values.

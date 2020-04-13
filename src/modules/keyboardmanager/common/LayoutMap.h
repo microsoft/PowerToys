@@ -5,6 +5,8 @@
 #include <mutex>
 #include <windows.h>
 
+using namespace winrt;
+
 // Wrapper class to handle keyboard layout
 class LayoutMap
 {
@@ -26,4 +28,6 @@ public:
     // Function to return the unicode string name of the key
     std::wstring GetKeyName(DWORD key);
 
+    // Function to return the list of names of all the keys for the drop down
+    Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> GetKeyList();
 };

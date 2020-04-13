@@ -28,8 +28,8 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, const D
     if (originalKey != NULL && newKey != NULL)
     {
         singleKeyRemapBuffer.push_back(std::vector<DWORD>{ originalKey, newKey });
-        originalRemapKeyControl.singleKeyRemapText.Text(winrt::to_hstring(keyboardManagerState->keyboardMap.GetKeyName(originalKey).c_str()));
-        newRemapKeyControl.singleKeyRemapText.Text(winrt::to_hstring(keyboardManagerState->keyboardMap.GetKeyName(newKey).c_str()));
+        originalRemapKeyControl.singleKeyRemapDropDown.Text(winrt::to_hstring(keyboardManagerState->keyboardMap.GetKeyName(originalKey).c_str()));
+        newRemapKeyControl.singleKeyRemapDropDown.Text(winrt::to_hstring(keyboardManagerState->keyboardMap.GetKeyName(newKey).c_str()));
     }
     else
     {
@@ -79,7 +79,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
     detectRemapKeyBox.CloseButtonText(to_hstring(L"Cancel"));
 
     // Get the linked text block for the "Type Key" button that was clicked
-    TextBlock linkedRemapText = getSiblingElement(sender).as<TextBlock>();
+    ComboBox linkedRemapDropDown = getSiblingElement(sender).as<ComboBox>();
 
     // OK button
     detectRemapKeyBox.PrimaryButtonClick([=, &singleKeyRemapBuffer, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
@@ -89,7 +89,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
         if (detectedKey != NULL)
         {
             singleKeyRemapBuffer[rowIndex][colIndex] = detectedKey;
-            linkedRemapText.Text(winrt::to_hstring(keyboardManagerState.keyboardMap.GetKeyName(detectedKey).c_str()));
+            linkedRemapDropDown.SelectedItem(winrt::box_value(keyboardManagerState.keyboardMap.GetKeyName(detectedKey).c_str()));
         }
 
         // Reset the keyboard manager UI state

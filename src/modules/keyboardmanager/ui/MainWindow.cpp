@@ -87,6 +87,7 @@ void createMainWindow(HINSTANCE hInstance, KeyboardManagerState& keyboardManager
           winrt::box_value(L"LCtrl") }) };
     Windows::UI::Xaml::Controls::ComboBox cb;
     cb.IsEditable(true);
+    cb.IsTextSearchEnabled(true);
     cb.Width(200);
     cb.ItemsSource(keyNames);
 
