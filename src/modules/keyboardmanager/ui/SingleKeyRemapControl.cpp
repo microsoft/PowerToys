@@ -28,8 +28,8 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, const D
     if (originalKey != NULL && newKey != NULL)
     {
         singleKeyRemapBuffer.push_back(std::vector<DWORD>{ originalKey, newKey });
-        originalRemapKeyControl.singleKeyRemapDropDown.Text(winrt::to_hstring(keyboardManagerState->keyboardMap.GetKeyName(originalKey).c_str()));
-        newRemapKeyControl.singleKeyRemapDropDown.Text(winrt::to_hstring(keyboardManagerState->keyboardMap.GetKeyName(newKey).c_str()));
+        originalRemapKeyControl.singleKeyRemapDropDown.SelectedValue(winrt::box_value(keyboardManagerState->keyboardMap.GetKeyName(originalKey).c_str()));
+        newRemapKeyControl.singleKeyRemapDropDown.SelectedValue(winrt::box_value(keyboardManagerState->keyboardMap.GetKeyName(newKey).c_str()));
     }
     else
     {
@@ -88,8 +88,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
 
         if (detectedKey != NULL)
         {
-            singleKeyRemapBuffer[rowIndex][colIndex] = detectedKey;
-            linkedRemapDropDown.SelectedItem(winrt::box_value(keyboardManagerState.keyboardMap.GetKeyName(detectedKey).c_str()));
+            linkedRemapDropDown.SelectedValue(winrt::box_value(keyboardManagerState.keyboardMap.GetKeyName(detectedKey).c_str()));
         }
 
         // Reset the keyboard manager UI state

@@ -23,9 +23,21 @@ public:
 
     SingleKeyRemapControl(const int& rowIndex, const int& colIndex)
     {
-        singleKeyRemapDropDown.IsEditable(true);
         singleKeyRemapDropDown.Width(100);
+        singleKeyRemapDropDown.MaxDropDownHeight(200);
         singleKeyRemapDropDown.ItemsSource(keyboardManagerState->keyboardMap.GetKeyList());
+        // drop down selection handler
+        singleKeyRemapDropDown.SelectionChanged([&, rowIndex, colIndex](IInspectable const& sender, SelectionChangedEventArgs const&) {
+            uint32_t selectedKey = NULL;
+            ComboBox currentDropDown = sender.as<ComboBox>();
+            Collections::IVector<IInspectable> itemsSource = currentDropDown.ItemsSource().as<Collections::IVector<IInspectable>>();
+            bool result = itemsSource.IndexOf(currentDropDown.SelectedItem(), selectedKey);
+            if (result)
+            {
+                singleKeyRemapBuffer[rowIndex][colIndex] = (DWORD)selectedKey;
+            }
+        });
+
         typeKey.Content(winrt::box_value(winrt::to_hstring("Type Key")));
         typeKey.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
         typeKey.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
