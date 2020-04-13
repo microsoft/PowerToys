@@ -157,11 +157,17 @@ public:
 
             if (action_object.get_name() == L"RemapKeyboard") 
             {
-                std::thread(createEditKeyboardWindow, hInstance, std::ref(keyboardManagerState)).detach();
+                if (!CheckEditKeyboardWindowActive())
+                {
+                    std::thread(createEditKeyboardWindow, hInstance, std::ref(keyboardManagerState)).detach();
+                }
             }
             else if (action_object.get_name() == L"EditShortcut")
             {
-                std::thread(createEditShortcutsWindow, hInstance, std::ref(keyboardManagerState)).detach();
+                if (!CheckEditShortcutsWindowActive())
+                {
+                    std::thread(createEditShortcutsWindow, hInstance, std::ref(keyboardManagerState)).detach();
+                }
             }
         }
         catch (std::exception&)

@@ -2,9 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Helpers;
-using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.Views;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -22,42 +23,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
         }
 
-        private void OnRemapKeyboard()
+        private async void OnRemapKeyboard()
         {
-            var customAction = new CustomActionDataModel
-            {
-                Name = "RemapKeyboard",
-                Value = "Create Remap Keyboard Window",
-            };
-            var moduleCustomAction = new ModuleCustomAction
-            {
-                ModuleAction = customAction,
-            };
-
-            var sendCustomAction = new SendCustomAction("Keyboard Manager");
-            sendCustomAction.Action = moduleCustomAction;
-            var ipcMessage = sendCustomAction.ToJsonString();
-            ShellPage.AllowRunnerToForeground();
-            ShellPage.DefaultSndMSGCallback(ipcMessage);
+            await Task.Run(() => OnRemapKeyboardBackground());
         }
 
-        private void OnEditShortcut()
+        private async void OnEditShortcut()
         {
-            var customAction = new CustomActionDataModel
-            {
-                Name = "EditShortcut",
-                Value = "Create Edit Shortcut Window",
-            };
-            var moduleCustomAction = new ModuleCustomAction
-            {
-                ModuleAction = customAction,
-            };
+            await Task.Run(() => OnEditShortcutBackground());
+        }
 
-            var sendCustomAction = new SendCustomAction("Keyboard Manager");
-            sendCustomAction.Action = moduleCustomAction;
-            var ipcMessage = sendCustomAction.ToJsonString();
-            ShellPage.AllowRunnerToForeground();
-            ShellPage.DefaultSndMSGCallback(ipcMessage);
+        private async Task OnRemapKeyboardBackground()
+        {
+            Helper.AllowRunnerToForeground();
+            ShellPage.DefaultSndMSGCallback(Helper.GetSerializedCustomAction("Keyboard Manager", "RemapKeyboard", "Create Remap Keyboard Window"));
+            await Task.CompletedTask;
+        }
+
+        private async Task OnEditShortcutBackground()
+        {
+            Helper.AllowRunnerToForeground();
+            ShellPage.DefaultSndMSGCallback(Helper.GetSerializedCustomAction("Keyboard Manager", "EditShortcut", "Create Edit Shortcut Window"));
+            await Task.CompletedTask;
         }
     }
 }

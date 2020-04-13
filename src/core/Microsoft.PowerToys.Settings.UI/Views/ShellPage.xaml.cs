@@ -29,8 +29,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// </summary>
         public static IPCMessageCallback DefaultSndMSGCallback { get; set; }
 
-        public static Action AllowRunnerToForeground { get; set; }
-
         /// <summary>
         /// Gets view model.
         /// </summary>
@@ -57,11 +55,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void SetDefaultSndMessageCallback(IPCMessageCallback implmentation)
         {
             DefaultSndMSGCallback = implmentation;
-        }
-
-        public void SetAllowRunnerToForeground(Action implmentation)
-        {
-            AllowRunnerToForeground = implmentation;
         }
     }
 }

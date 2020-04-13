@@ -8,6 +8,9 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND, UINT, WPARAM, LPARAM);
 HWND hWndXamlIslandEditKeyboardWindow = nullptr;
 // This variable is used to check if window registration has been done to avoid repeated registration leading to an error.
 bool isEditKeyboardWindowRegistrationCompleted = false;
+// Holds the natvie window handle of EditShortcuts Window.
+HWND hwndEditKeyboardNativeWindow = nullptr;
+std::mutex editKeyboardWindowMutex;
 
 // Function to create the Edit Keyboard Window
 void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
@@ -50,6 +53,10 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         MessageBox(NULL, L"Call to CreateWindow failed!", L"Error", NULL);
         return;
     }
+    // Store the newly created window's handle.
+    std::unique_lock<std::mutex> hwmdLock(editKeyboardWindowMutex);
+    hwndEditKeyboardNativeWindow = _hWndEditKeyboardWindow;
+    hwmdLock.unlock();
 
      SetForegroundWindow(_hWndEditKeyboardWindow);
 
@@ -230,6 +237,10 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         DispatchMessage(&msg);
     }
     desktopSource.Close();
+
+    hwmdLock.lock();
+    hwndEditKeyboardNativeWindow = nullptr;
+    hwmdLock.unlock();
 }
 
 LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wParam, LPARAM lParam)
@@ -250,4 +261,24 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wPar
     }
 
     return 0;
+}
+
+bool CheckEditKeyboardWindowActive()
+{
+    bool result = false;
+    std::unique_lock<std::mutex> hwmdLock(editKeyboardWindowMutex);
+    if (hwndEditKeyboardNativeWindow != nullptr)
+    {
+        // Check if the window is minimized if yes then restore the window.
+        if (IsIconic(hwndEditKeyboardNativeWindow))
+        {
+            ShowWindow(hwndEditKeyboardNativeWindow, SW_RESTORE);
+        }
+        // If there is an already existing window no need to create a new open bring it on foreground.
+        SetForegroundWindow(hwndEditKeyboardNativeWindow);
+        result = true;
+    }
+
+    hwmdLock.unlock();
+    return result;
 }
