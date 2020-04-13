@@ -222,6 +222,7 @@ namespace FancyZonesEditor
             int newChildIndex = AddZone();
 
             double offset = e.Offset;
+            double thickness = e.Thickness;
 
             if (e.Orientation == Orientation.Vertical)
             {
@@ -298,17 +299,20 @@ namespace FancyZonesEditor
                 {
                     if (col == foundCol)
                     {
-                        RowColInfo[] split = _colInfo[col].Split(offset);
+                        RowColInfo[] split = _colInfo[col].Split(offset, thickness);
+                        newColInfo[col] = split[0];
                         newColPercents[col] = split[0].Percent;
-                        newColInfo[col++] = split[0];
-                        newColPercents[col] = split[1].Percent;
+                        col++;
+
                         newColInfo[col] = split[1];
+                        newColPercents[col] = split[1].Percent;
                         sourceCol++;
                     }
                     else
                     {
+                        newColInfo[col] = _colInfo[sourceCol];
                         newColPercents[col] = model.ColumnPercents[sourceCol];
-                        newColInfo[col] = _colInfo[sourceCol++];
+                        sourceCol++;
                     }
                 }
 
@@ -393,17 +397,20 @@ namespace FancyZonesEditor
                 {
                     if (row == foundRow)
                     {
-                        RowColInfo[] split = _rowInfo[row].Split(offset);
+                        RowColInfo[] split = _rowInfo[row].Split(offset, thickness);
+                        newRowInfo[row] = split[0];
                         newRowPercents[row] = split[0].Percent;
-                        newRowInfo[row++] = split[0];
-                        newRowPercents[row] = split[1].Percent;
+                        row++;
+
                         newRowInfo[row] = split[1];
+                        newRowPercents[row] = split[1].Percent;
                         sourceRow++;
                     }
                     else
                     {
+                        newRowInfo[row] = _rowInfo[sourceRow];
                         newRowPercents[row] = model.RowPercents[sourceRow];
-                        newRowInfo[row] = _rowInfo[sourceRow++];
+                        sourceRow++;
                     }
                 }
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -34,13 +34,18 @@ namespace FancyZonesEditor
             return Extent;
         }
 
-        public RowColInfo[] Split(double offset)
+        public RowColInfo[] Split(double offset, double thickness)
         {
             RowColInfo[] info = new RowColInfo[2];
 
-            int newPercent = (int)(Percent * offset / Extent);
+            double totalExtent = Extent * _multiplier / Percent;
+            totalExtent -= thickness;
+
+            int newPercent = (int)(offset * _multiplier / totalExtent);
+
             info[0] = new RowColInfo(newPercent);
             info[1] = new RowColInfo(Percent - newPercent);
+
             return info;
         }
     }

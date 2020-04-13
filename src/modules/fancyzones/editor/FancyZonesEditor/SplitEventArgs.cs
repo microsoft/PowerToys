@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -13,15 +13,18 @@ namespace FancyZonesEditor
         {
         }
 
-        public SplitEventArgs(Orientation orientation, double offset)
+        public SplitEventArgs(Orientation orientation, double offset, double thickness)
         {
             Orientation = orientation;
             Offset = offset;
+            Thickness = thickness;
         }
 
         public Orientation Orientation { get; }
 
         public double Offset { get; }
+
+        public double Thickness { get; }
     }
 
     public delegate void SplitEventHandler(object sender, SplitEventArgs args);
