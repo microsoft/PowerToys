@@ -64,8 +64,11 @@ namespace
         DWORD type = REG_SZ;
         DWORD size = CSettings::MAX_INPUT_STRING_LEN * sizeof(wchar_t);
         std::wstring completePath = std::wstring(c_rootRegPath) + subPath;
-        SHGetValue(HKEY_CURRENT_USER, completePath.c_str(), valueName.c_str(), &type, value, &size);
-        return std::wstring(value);
+        if (SHGetValue(HKEY_CURRENT_USER, completePath.c_str(), valueName.c_str(), &type, value, &size) == ERROR_SUCCESS)
+        {
+            return std::wstring(value);
+        }
+        return std::wstring{};
     }
 
     bool LastModifiedTime(const std::wstring& filePath, FILETIME* lpFileTime)
