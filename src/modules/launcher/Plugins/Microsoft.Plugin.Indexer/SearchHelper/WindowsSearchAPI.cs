@@ -54,25 +54,29 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             return _Result;
         }
 
-
-        public void ModifyQueryHelper(ref ISearchQueryHelper queryHelper, string pattern)
+        // To add '*' to the beginning of any search keyword
+        public string ModifySearchQuery(string keyword)
         {
-            // convert file pattern if it is not '*'. Don't create restriction for '*' as it includes all files.
-            if (pattern != "*")
+            //Presently when we enter a keyword, it is automatically converted to "keyword*"
+            //However, to enable search from within a string as well, we need to change the keyword to "*keyword" 
+            string modifiedKeyword = "";
+            char[] separator = { '*', ' ' };
+            string[] elements = keyword.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+            foreach(string element in elements)
             {
-                pattern = pattern.Replace("*", "%");
-                pattern = pattern.Replace("?", "_");
-
-                if (pattern.Contains("%") || pattern.Contains("_"))
-                {
-                    queryHelper.QueryWhereRestrictions += " AND System.FileName LIKE '" + pattern + "' ";
-                }
-                else
-                {
-                    // if there are no wildcards we can use a contains which is much faster as it uses the index
-                    queryHelper.QueryWhereRestrictions += " AND Contains(System.FileName, '" + pattern + "') ";
-                }
+                modifiedKeyword += "*" + element + " ";
             }
+            
+            if(modifiedKeyword != "")
+            {
+                modifiedKeyword = modifiedKeyword.Remove(modifiedKeyword.Length - 1, 1);
+            }
+            else
+            {
+                modifiedKeyword = "*";
+            }
+            
+            return modifiedKeyword;
         }
 
         public void InitQueryHelper(out ISearchQueryHelper queryHelper, int maxCount)
@@ -90,24 +94,24 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             queryHelper.QueryMaxResults = maxCount;
 
             // Set list of columns we want to display, getting the path presently
-            queryHelper.QuerySelectColumns = "System.ItemPathDisplay";
+            queryHelper.QuerySelectColumns = "System.ItemPathDisplay, System.FileName";
 
             // Set additional query restriction
             queryHelper.QueryWhereRestrictions = "AND scope='file:'";
 
             // To filter based on title for now
-            queryHelper.QueryContentProperties = "System.Title";
+            queryHelper.QueryContentProperties = "System.FileName";
 
             // Set sorting order 
             queryHelper.QuerySorting = "System.DateModified DESC";
         }
 
-        public IEnumerable<SearchResult> Search(string keyword, string pattern = "*", int maxCount = 100)
+        public IEnumerable<SearchResult> Search(string keyword, int maxCount = 100)
         {
             lock(_lock){
                 ISearchQueryHelper queryHelper;
                 InitQueryHelper(out queryHelper, maxCount);
-                ModifyQueryHelper(ref queryHelper, pattern);
+                keyword = ModifySearchQuery(keyword);
                 return ExecuteQuery(queryHelper, keyword);
             }
         }
