@@ -240,7 +240,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     hwmdLock.lock();
     hwndEditKeyboardNativeWindow = nullptr;
-    hwmdLock.unlock();
 }
 
 LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wParam, LPARAM lParam)
@@ -279,6 +278,5 @@ bool CheckEditKeyboardWindowActive()
         result = true;
     }
 
-    hwmdLock.unlock();
     return result;
 }
