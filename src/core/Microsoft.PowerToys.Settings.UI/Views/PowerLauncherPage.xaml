@@ -120,25 +120,31 @@
 
         </StackPanel>
 
-        <StackPanel x:Name="SidePanel"
-                                Orientation="Vertical"
-                                HorizontalAlignment="Left"
-                                Width="{StaticResource SidePanelWidth}"
-                                Grid.Column="1">
+        <StackPanel
+            x:Name="SidePanel"
+            Orientation="Vertical"
+            HorizontalAlignment="Left"
+            Width="{StaticResource SidePanelWidth}"
+            Grid.Column="1">
 
-            <TextBlock Text="About this feature"
-                                   Style="{StaticResource SettingsGroupTitleStyle}"
-                                   Margin="{StaticResource XSmallBottomMargin}"/>
+            <TextBlock 
+                Text="About this feature"
+                Style="{StaticResource SettingsGroupTitleStyle}"
+                Margin="{StaticResource XSmallBottomMargin}"/>
 
             <HyperlinkButton Content="Module overview"/>
-            <HyperlinkButton Content="Give feedback"/>
 
-            <TextBlock Text="Contributors"
-                           Style="{StaticResource SettingsGroupTitleStyle}"/>
+            <TextBlock 
+                Text="Based on"
+                Style="{StaticResource SettingsGroupTitleStyle}" />
 
-            <HyperlinkButton Content="Contributor name"/>
-            <HyperlinkButton Content="Contributor name"/>
-            <HyperlinkButton Content="Contributor name"/>
+            <HyperlinkButton 
+                Content="Wox" 
+                NavigateUri="https://github.com/Wox-launcher/Wox/" />
+
+            <HyperlinkButton 
+                Content="Beta Tadele's Window Walker" 
+                NavigateUri="https://github.com/betsegaw/windowwalker/" />
         </StackPanel>
     </Grid>
 </Page>

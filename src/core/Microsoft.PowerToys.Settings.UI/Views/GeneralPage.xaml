@@ -56,7 +56,11 @@
                 <TextBlock Text="PowerToys currently respects the Windows data &amp; feedback setting" Opacity="0.8" Margin="0,0,0,0" />
                     -->
 
-            <Button Content="Restart as admin" Margin="{StaticResource SmallTopMargin}" Style="{StaticResource AccentButtonStyle}" Click="Restart_Elevated" />
+            <Button 
+                Content="Restart as admin" 
+                Margin="{StaticResource SmallTopMargin}" 
+                Style="{StaticResource AccentButtonStyle}" 
+                Click="Restart_Elevated" />
 
             <!--
                 <TextBlock Text="Default apps" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,34,0,8"/>
@@ -70,29 +74,40 @@
 
         </StackPanel>
 
-        <StackPanel x:Name="SidePanel"
-                                Orientation="Vertical"
-                                HorizontalAlignment="Left"
-                                Width="{StaticResource SidePanelWidth}"
-                                Grid.Column="1">
+        <StackPanel 
+            x:Name="SidePanel"
+            Orientation="Vertical"
+            HorizontalAlignment="Left"
+            Width="{StaticResource SidePanelWidth}"
+            Grid.Column="1">
 
-            <TextBlock Text="About PowerToys"
-                                   Style="{StaticResource SettingsGroupTitleStyle}"
-                                   Margin="{StaticResource XSmallBottomMargin}"/>
-            <TextBlock Text="Version 0.15.2" FontWeight="Bold" Margin="{StaticResource SmallTopMargin}" />
-            <Button Content="Check for updates" Margin="{StaticResource SmallTopMargin}" Foreground="White" Style="{StaticResource AccentButtonStyle}" Click="CheckForUpdates_Click" />
+            <TextBlock 
+                Text="About PowerToys"
+                Style="{StaticResource SettingsGroupTitleStyle}"
+                Margin="{StaticResource XSmallBottomMargin}"/>
+            <TextBlock 
+                Text="Version 0.15.2" 
+                FontWeight="Bold"
+                Margin="{StaticResource SmallTopMargin}" />
+            <Button 
+                Content="Check for updates" 
+                Margin="{StaticResource SmallTopMargin}" 
+                Style="{StaticResource AccentButtonStyle}" 
+                Click="CheckForUpdates_Click" />
 
-            <HyperlinkButton Content="Report a bug" NavigateUri="https://github.com/microsoft/PowerToys/issues" Margin="{StaticResource SmallTopMargin}" />
-            <HyperlinkButton Content="Request a feature"  NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
-            <HyperlinkButton Content="Privacy statement" NavigateUri=" http://go.microsoft.com/fwlink/?LinkId=521839" />
-
-         
-
-            <!--<TextBlock Text="Contributors" Style="{StaticResource SettingsGroupTitleStyle}"/>
-
-            <HyperlinkButton Content="Contributor name"/>
-            <HyperlinkButton Content="Contributor name"/>
-            <HyperlinkButton Content="Contributor name"/>-->
+            <HyperlinkButton 
+                Content="Report a bug" 
+                NavigateUri="https://github.com/microsoft/PowerToys/issues" 
+                Margin="{StaticResource SmallTopMargin}" />
+            <HyperlinkButton 
+                Content="Request a feature"  
+                NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
+            <HyperlinkButton 
+                Content="Privacy statement" 
+                NavigateUri="http://go.microsoft.com/fwlink/?LinkId=521839" />
+            <HyperlinkButton 
+                Content="Open-source notice" 
+                NavigateUri="https://github.com/microsoft/PowerToys/blob/master/NOTICE.md" />
         </StackPanel>
     </Grid>
 </Page>
