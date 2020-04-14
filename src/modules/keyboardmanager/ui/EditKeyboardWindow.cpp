@@ -8,6 +8,9 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND, UINT, WPARAM, LPARAM);
 HWND hWndXamlIslandEditKeyboardWindow = nullptr;
 // This variable is used to check if window registration has been done to avoid repeated registration leading to an error.
 bool isEditKeyboardWindowRegistrationCompleted = false;
+// Holds the native window handle of EditKeyboard Window.
+HWND hwndEditKeyboardNativeWindow = nullptr;
+std::mutex editKeyboardWindowMutex;
 
 // Function to create the Edit Keyboard Window
 void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
@@ -51,6 +54,11 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         MessageBox(NULL, L"Call to CreateWindow failed!", L"Error", NULL);
         return;
     }
+
+    // Store the newly created Edit Keyboard window's handle.
+    std::unique_lock<std::mutex> hwndLock(editKeyboardWindowMutex);
+    hwndEditKeyboardNativeWindow = _hWndEditKeyboardWindow;
+    hwndLock.unlock();
 
     // This DesktopWindowXamlSource is the object that enables a non-UWP desktop application
     // to host UWP controls in any UI element that is associated with a window handle (HWND).
@@ -227,6 +235,10 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         DispatchMessage(&msg);
     }
     desktopSource.Close();
+
+    hWndXamlIslandEditKeyboardWindow = nullptr;
+    hwndLock.lock();
+    hwndEditKeyboardNativeWindow = nullptr;
 }
 
 LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wParam, LPARAM lParam)
@@ -247,4 +259,23 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wPar
     }
 
     return 0;
+}
+
+bool CheckEditKeyboardWindowActive()
+{
+    bool result = false;
+    std::unique_lock<std::mutex> hwndLock(editKeyboardWindowMutex);
+    if (hwndEditKeyboardNativeWindow != nullptr)
+    {
+        // Check if the window is minimized if yes then restore the window.
+        if (IsIconic(hwndEditKeyboardNativeWindow))
+        {
+            ShowWindow(hwndEditKeyboardNativeWindow, SW_RESTORE);
+        }
+        // If there is an already existing window no need to create a new open bring it on foreground.
+        SetForegroundWindow(hwndEditKeyboardNativeWindow);
+        result = true;
+    }
+
+    return result;
 }

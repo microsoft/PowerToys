@@ -17,6 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public KeyboardManagerPage()
         {
             InitializeComponent();
+            DataContext = ViewModel;
         }
     }
 }
