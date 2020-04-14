@@ -25,11 +25,11 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, Shortcut orig
     tableRow.Children().Append(newSC.getShortcutControl());
 
     // Set the shortcut text if the two vectors are not empty (i.e. default args)
-    if (!originalKeys.IsEmpty() && !newKeys.IsEmpty())
+    if (originalKeys.IsValidShortcut() && newKeys.IsValidShortcut())
     {
         shortcutRemapBuffer.push_back(std::vector<Shortcut>{ originalKeys, newKeys });
-        //originalSC.shortcutText.Text(originalKeys.ToHstring(keyboardManagerState->keyboardMap));
-        //newSC.shortcutText.Text(newKeys.ToHstring(keyboardManagerState->keyboardMap));
+        originalSC.AddShortcutToControl(originalKeys, originalSC.shortcutDropDownStackPanel, *keyboardManagerState, shortcutRemapBuffer.size() - 1, 0);
+        newSC.AddShortcutToControl(newKeys, newSC.shortcutDropDownStackPanel, *keyboardManagerState, shortcutRemapBuffer.size() - 1, 1);
     }
     else
     {
@@ -87,21 +87,7 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
         if (!detectedShortcutKeys.IsEmpty())
         {
             shortcutRemapBuffer[rowIndex][colIndex] = detectedShortcutKeys;
-            linkedShortcutStackPanel.Children().Clear();
-            std::vector<DWORD> shortcutKeyCodes = detectedShortcutKeys.GetKeyCodes();
-            std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyList().second;
-            for (int i=0; i< shortcutKeyCodes.size();i++)
-            {
-                ComboBox dropDown = AddDropDown(linkedShortcutStackPanel, rowIndex, colIndex);
-                auto it = std::find(keyCodeList.begin(), keyCodeList.end(), shortcutKeyCodes[i]);
-                if (it != keyCodeList.end())
-                {
-                    dropDown.SelectedIndex(std::distance(keyCodeList.begin(), it));
-                }
-            
-            }
-            linkedShortcutStackPanel.UpdateLayout();
-
+            AddShortcutToControl(detectedShortcutKeys, linkedShortcutStackPanel, keyboardManagerState, rowIndex, colIndex);
         }
 
         // Reset the keyboard manager UI state

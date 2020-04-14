@@ -22,7 +22,6 @@ private:
     DWORD actionKey;
 
 public:
-
     // By default create an empty shortcut
     Shortcut() :
         winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
@@ -136,11 +135,14 @@ public:
     // Function to reset the state of a shortcut key based on the passed key code argument. Since there is no VK_WIN code, use the second argument for setting common win key.
     void ResetKey(const DWORD& input, const bool& isWinBoth = false);
 
-    // Function to return a vector of hstring for each key, in the same order as ToHstring()
+    // Function to return a vector of hstring for each key in the display order
     std::vector<winrt::hstring> GetKeyVector(LayoutMap& keyboardMap);
 
-    // Function to return a vector of hstring for each key, in the same order as ToHstring()
+    // Function to return a vector of key codes in the display order
     std::vector<DWORD> GetKeyCodes();
+
+    // Function to set a shortcut from a vector of key codes
+    void SetKeyCodes(const std::vector<DWORD>& keys);
 
     // Function to check if all the modifiers in the shortcut have been pressed down
     bool CheckModifiersKeyboardState() const;

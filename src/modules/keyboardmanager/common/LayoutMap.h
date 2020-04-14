@@ -37,6 +37,6 @@ public:
     // Function to return the unicode string name of the key
     std::wstring GetKeyName(DWORD key);
 
-    // Function to return two vectors: the list of names of all the keys for the drop down, and their corresponding virtual key codes
-    std::pair<Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable>, std::vector<DWORD>> GetKeyList();
+    // Function to return two vectors: the list of names of all the keys for the drop down, and their corresponding virtual key codes. If the first argument is true, then an additional None option is added at the top
+    std::pair<Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable>, std::vector<DWORD>> GetKeyList(const bool isShortcut = false);
 };

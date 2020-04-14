@@ -443,6 +443,15 @@ std::vector<DWORD> Shortcut::GetKeyCodes()
     return keys;
 }
 
+void Shortcut::SetKeyCodes(const std::vector<DWORD>& keys)
+{
+    Reset();
+    for (int i=0;i<keys.size();i++)
+    {
+        SetKey(keys[i]);
+    }
+}
+
 // Function to check if all the modifiers in the shortcut have been pressed down
 bool Shortcut::CheckModifiersKeyboardState() const
 {

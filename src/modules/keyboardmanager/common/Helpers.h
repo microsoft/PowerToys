@@ -32,3 +32,6 @@ std::vector<T> convertWStringVectorToIntegerVector(const std::vector<std::wstrin
 
     return typeVector;
 }
+
+// Function to check if the key is a modifier key
+bool IsModifierKey(DWORD key);

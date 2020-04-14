@@ -26,3 +26,25 @@ IInspectable getSiblingElement(IInspectable const& element)
     parentElement.Children().IndexOf(frameworkElement, index);
     return parentElement.Children().GetAt(index + 1);
 }
+
+// Function to check if the key is a modifier key
+bool IsModifierKey(DWORD key)
+{
+    switch (key)
+    {
+    case VK_LWIN:
+    case VK_RWIN:
+    case VK_CONTROL:
+    case VK_LCONTROL:
+    case VK_RCONTROL:
+    case VK_MENU:
+    case VK_LMENU:
+    case VK_RMENU:
+    case VK_SHIFT:
+    case VK_LSHIFT:
+    case VK_RSHIFT:
+        return true;
+    default:
+        return false;
+    }
+}

@@ -161,12 +161,19 @@ void LayoutMap::UpdateLayout()
     // To do: Add IME key names
 }
 
-std::pair<Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable>, std::vector<DWORD>> LayoutMap::GetKeyList()
+std::pair<Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable>, std::vector<DWORD>> LayoutMap::GetKeyList(const bool isShortcut)
 {
     std::lock_guard<std::mutex> lock(keyboardLayoutMap_mutex);
     UpdateLayout();
     Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> keyNames = single_threaded_vector<Windows::Foundation::IInspectable>();
     std::vector<DWORD> keyCodes;
+
+    // If it is a key list for the shortcut control then we add a "None" key at the start
+    if (isShortcut)
+    {
+        keyNames.Append(winrt::box_value(L"None"));
+        keyCodes.push_back(0);
+    }
 
     // Add modifier keys
     keyNames.Append(winrt::box_value(keyboardLayoutMap[VK_LWIN].c_str()));
