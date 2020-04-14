@@ -360,7 +360,7 @@ FancyZones::WindowCreated(HWND window) noexcept
                 ZoneWindowUtils::GetZoneWindowDesktopId(zoneWindow.get(), &zoneWindowDesktopId) &&
                 (windowDesktopId != zoneWindowDesktopId))
             {
-                break;
+                return;
             }
             const auto activeZoneSet = zoneWindow->ActiveZoneSet();
             if (activeZoneSet)

@@ -86,23 +86,23 @@ namespace ZoneWindowUtils
 
     IServiceProvider* GetServiceProvider()
     {
-        winrt::com_ptr<IServiceProvider> provider;
-        if (FAILED(CoCreateInstance(CLSID_ImmersiveShell, nullptr, CLSCTX_LOCAL_SERVER, __uuidof(provider), provider.put_void())))
+        IServiceProvider* provider{ nullptr };
+        if (FAILED(CoCreateInstance(CLSID_ImmersiveShell, nullptr, CLSCTX_LOCAL_SERVER, __uuidof(provider), (PVOID*)&provider)))
         {
             return nullptr;
         }
-        return provider.get();
+        return provider;
     }
 
     IVirtualDesktopManager* GetVirtualDesktopManager()
     {
-        winrt::com_ptr<IVirtualDesktopManager> manager;
+        IVirtualDesktopManager* manager{ nullptr };
         IServiceProvider* serviceProvider = GetServiceProvider();
-        if (serviceProvider == nullptr || FAILED(serviceProvider->QueryService(__uuidof(manager), manager.put())))
+        if (serviceProvider == nullptr || FAILED(serviceProvider->QueryService(__uuidof(manager), &manager)))
         {
             return nullptr;
         }
-        return manager.get();
+        return manager;
     }
 
     bool GetWindowDesktopId(HWND topLevelWindow, GUID* desktopId)
