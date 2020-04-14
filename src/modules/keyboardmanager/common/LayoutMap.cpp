@@ -30,8 +30,8 @@ void LayoutMap::UpdateLayout()
     unsigned char btKeys[256] = { 0 };
     GetKeyboardState(btKeys);
 
-    // Iterate over all the virtual key codes
-    for (int i = 0; i < 256; i++)
+    // Iterate over all the virtual key codes. virtual key 0 is not used
+    for (int i = 1; i < 256; i++)
     {
         // Get the scan code from the virtual key code
         UINT scanCode = MapVirtualKeyExW(i, MAPVK_VK_TO_VSC, layout);
@@ -167,11 +167,7 @@ std::pair<Windows::Foundation::Collections::IVector<Windows::Foundation::IInspec
     UpdateLayout();
     Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> keyNames = single_threaded_vector<Windows::Foundation::IInspectable>();
     std::vector<DWORD> keyCodes;
-    //for (int i = 0; i < 256; i++)
-    //{
-    //    keyNames.Append(winrt::box_value(keyboardLayoutMap[i].c_str()));
-    //    keyCodes.push_back(i);
-    //}
+
     // Add modifier keys
     keyNames.Append(winrt::box_value(keyboardLayoutMap[VK_LWIN].c_str()));
     keyCodes.push_back(VK_LWIN);
@@ -206,7 +202,7 @@ std::pair<Windows::Foundation::Collections::IVector<Windows::Foundation::IInspec
         }
     }
     // Add all other special keys
-    for (int i = 0; i < 256; i++)
+    for (int i = 1; i < 256; i++)
     {
         // If it is not already been added (i.e. it was either a modifier or had a unicode representation)
         if (std::find(keyCodes.begin(), keyCodes.end(), i) == keyCodes.end())

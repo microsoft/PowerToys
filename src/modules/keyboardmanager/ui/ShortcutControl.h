@@ -9,6 +9,9 @@ private:
     // Textblock to display the selected shortcut
     TextBlock shortcutText;
 
+    // Stack panel for the drop downs to display the selected shortcut
+    StackPanel shortcutDropDownStackPanel;
+
     // Button to type the shortcut
     Button typeShortcut;
 
@@ -25,6 +28,11 @@ public:
 
     ShortcutControl(const int& rowIndex, const int& colIndex)
     {
+        shortcutDropDownStackPanel.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+        shortcutDropDownStackPanel.Spacing(10);
+        shortcutDropDownStackPanel.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+        AddDropDown(shortcutDropDownStackPanel, rowIndex, colIndex);
+
         typeShortcut.Content(winrt::box_value(winrt::to_hstring("Type Shortcut")));
         typeShortcut.Click([&, rowIndex, colIndex](IInspectable const& sender, RoutedEventArgs const&) {
             keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectShortcutWindowActivated, EditShortcutsWindowHandle);
@@ -37,11 +45,30 @@ public:
         shortcutControlLayout.Spacing(10);
 
         shortcutControlLayout.Children().Append(typeShortcut);
-        shortcutControlLayout.Children().Append(shortcutText);
+        shortcutControlLayout.Children().Append(shortcutDropDownStackPanel);
+        shortcutControlLayout.UpdateLayout();
     }
 
     // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
     static void AddNewShortcutControlRow(StackPanel& parent, Shortcut originalKeys = Shortcut(), Shortcut newKeys = Shortcut());
+
+    // Function to add a drop down to the shortcut stack panel
+    ComboBox AddDropDown(StackPanel parent, const int& rowIndex, const int& colIndex)
+    {
+        ComboBox shortcutDropDown;
+        shortcutDropDown.Width(100);
+        shortcutDropDown.MaxDropDownHeight(200);
+        shortcutDropDown.ItemsSource(keyboardManagerState->keyboardMap.GetKeyList().first);
+        // drop down selection handler
+        shortcutDropDown.SelectionChanged([&, rowIndex, colIndex](IInspectable const& sender, SelectionChangedEventArgs const&) {
+
+        });
+
+        parent.Children().Append(shortcutDropDown);
+        parent.UpdateLayout();
+
+        return shortcutDropDown;
+    }
 
     // Function to return the stack panel element of the ShortcutControl. This is the externally visible UI element which can be used to add it to other layouts
     StackPanel getShortcutControl();

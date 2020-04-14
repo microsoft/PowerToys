@@ -391,26 +391,6 @@ void Shortcut::ResetKey(const DWORD& input, const bool& isWinBoth)
     }
 }
 
-// Function to return the string representation of the shortcut
-winrt::hstring Shortcut::ToHstring(LayoutMap& keyboardMap)
-{
-    std::vector<winrt::hstring> keys = GetKeyVector(keyboardMap);
-
-    winrt::hstring output;
-    for (auto& key : keys)
-    {
-        output = output + key + winrt::to_hstring(L" ");
-    }
-    if (keys.size() > 1)
-    {
-        return winrt::hstring(output.c_str(), output.size() - 1);
-    }
-    else
-    {
-        return output;
-    }
-}
-
 std::vector<winrt::hstring> Shortcut::GetKeyVector(LayoutMap& keyboardMap)
 {
     std::vector<winrt::hstring> keys;
@@ -433,6 +413,32 @@ std::vector<winrt::hstring> Shortcut::GetKeyVector(LayoutMap& keyboardMap)
     if (actionKey != NULL)
     {
         keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(actionKey).c_str()));
+    }
+    return keys;
+}
+
+std::vector<DWORD> Shortcut::GetKeyCodes()
+{
+    std::vector<DWORD> keys;
+    if (winKey != ModifierKey::Disabled)
+    {
+        keys.push_back(GetWinKey(ModifierKey::Left));
+    }
+    if (ctrlKey != ModifierKey::Disabled)
+    {
+        keys.push_back(GetCtrlKey());
+    }
+    if (altKey != ModifierKey::Disabled)
+    {
+        keys.push_back(GetAltKey());
+    }
+    if (shiftKey != ModifierKey::Disabled)
+    {
+        keys.push_back(GetShiftKey());
+    }
+    if (actionKey != NULL)
+    {
+        keys.push_back(actionKey);
     }
     return keys;
 }
@@ -540,7 +546,7 @@ bool Shortcut::CheckModifiersKeyboardState() const
 bool Shortcut::IsKeyboardStateClearExceptShortcut() const
 {
     // Iterate through all the virtual key codes
-    for (int keyVal = 0; keyVal < 0x100; keyVal++)
+    for (int keyVal = 1; keyVal < 0x100; keyVal++)
     {
         // Skip mouse buttons. Keeping this could cause a remapping to fail if a mouse button is also pressed at the same time
         if (keyVal == VK_LBUTTON || keyVal == VK_RBUTTON || keyVal == VK_MBUTTON || keyVal == VK_XBUTTON1 || keyVal == VK_XBUTTON2)

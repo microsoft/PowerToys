@@ -136,11 +136,11 @@ public:
     // Function to reset the state of a shortcut key based on the passed key code argument. Since there is no VK_WIN code, use the second argument for setting common win key.
     void ResetKey(const DWORD& input, const bool& isWinBoth = false);
 
-    // Function to return the string representation of the shortcut
-    winrt::hstring ToHstring(LayoutMap& keyboardMap);
-
     // Function to return a vector of hstring for each key, in the same order as ToHstring()
     std::vector<winrt::hstring> GetKeyVector(LayoutMap& keyboardMap);
+
+    // Function to return a vector of hstring for each key, in the same order as ToHstring()
+    std::vector<DWORD> GetKeyCodes();
 
     // Function to check if all the modifiers in the shortcut have been pressed down
     bool CheckModifiersKeyboardState() const;

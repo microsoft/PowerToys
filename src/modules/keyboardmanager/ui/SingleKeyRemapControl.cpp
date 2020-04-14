@@ -92,7 +92,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
             auto it = std::find(keyCodes.begin(), keyCodes.end(), detectedKey);
             if (it != keyCodes.end())
             {
-                linkedRemapDropDown.SelectedIndex(std::distance(keyCodes.begin(), it));            
+                linkedRemapDropDown.SelectedIndex(std::distance(keyCodes.begin(), it));
             }
         }
 

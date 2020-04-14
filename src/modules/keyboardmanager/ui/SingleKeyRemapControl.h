@@ -31,6 +31,8 @@ public:
             ComboBox currentDropDown = sender.as<ComboBox>();
             std::vector<DWORD> keyCodes = keyboardManagerState->keyboardMap.GetKeyList().second;
             int selectedKeyIndex = currentDropDown.SelectedIndex();
+
+            // Check if the element was not found or the index exceeds the known keys
             if (selectedKeyIndex != -1 && keyCodes.size() > selectedKeyIndex)
             {
                 singleKeyRemapBuffer[rowIndex][colIndex] = keyCodes[selectedKeyIndex];
@@ -57,6 +59,7 @@ public:
 
         singleKeyRemapControlLayout.Children().Append(typeKey);
         singleKeyRemapControlLayout.Children().Append(singleKeyRemapDropDown);
+        singleKeyRemapControlLayout.UpdateLayout();
     }
 
     // Function to add a new row to the remap keys table. If the originalKey and newKey args are provided, then the displayed remap keys are set to those values.

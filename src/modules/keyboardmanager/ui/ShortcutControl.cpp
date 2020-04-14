@@ -28,8 +28,8 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, Shortcut orig
     if (!originalKeys.IsEmpty() && !newKeys.IsEmpty())
     {
         shortcutRemapBuffer.push_back(std::vector<Shortcut>{ originalKeys, newKeys });
-        originalSC.shortcutText.Text(originalKeys.ToHstring(keyboardManagerState->keyboardMap));
-        newSC.shortcutText.Text(newKeys.ToHstring(keyboardManagerState->keyboardMap));
+        //originalSC.shortcutText.Text(originalKeys.ToHstring(keyboardManagerState->keyboardMap));
+        //newSC.shortcutText.Text(newKeys.ToHstring(keyboardManagerState->keyboardMap));
     }
     else
     {
@@ -77,7 +77,7 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
     detectShortcutBox.CloseButtonText(to_hstring(L"Cancel"));
 
     // Get the linked text block for the "Type shortcut" button that was clicked
-    TextBlock linkedShortcutText = getSiblingElement(sender).as<TextBlock>();
+    StackPanel linkedShortcutStackPanel = getSiblingElement(sender).as<StackPanel>();
 
     // OK button
     detectShortcutBox.PrimaryButtonClick([=, &shortcutRemapBuffer, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
@@ -87,7 +87,21 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
         if (!detectedShortcutKeys.IsEmpty())
         {
             shortcutRemapBuffer[rowIndex][colIndex] = detectedShortcutKeys;
-            linkedShortcutText.Text(detectedShortcutKeys.ToHstring(keyboardManagerState.keyboardMap));
+            linkedShortcutStackPanel.Children().Clear();
+            std::vector<DWORD> shortcutKeyCodes = detectedShortcutKeys.GetKeyCodes();
+            std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyList().second;
+            for (int i=0; i< shortcutKeyCodes.size();i++)
+            {
+                ComboBox dropDown = AddDropDown(linkedShortcutStackPanel, rowIndex, colIndex);
+                auto it = std::find(keyCodeList.begin(), keyCodeList.end(), shortcutKeyCodes[i]);
+                if (it != keyCodeList.end())
+                {
+                    dropDown.SelectedIndex(std::distance(keyCodeList.begin(), it));
+                }
+            
+            }
+            linkedShortcutStackPanel.UpdateLayout();
+
         }
 
         // Reset the keyboard manager UI state
