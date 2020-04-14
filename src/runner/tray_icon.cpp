@@ -4,6 +4,7 @@
 #include "tray_icon.h"
 #include <Windows.h>
 #include <common/common.h>
+#include <iostream>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -49,6 +50,7 @@ bool dispatch_run_on_main_ui_thread(main_loop_callback_function _callback, PVOID
     return true;
 }
 
+using namespace std;
 LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
     switch (message)
@@ -78,6 +80,28 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         case ID_SETTINGS_MENU_COMMAND:
             open_settings_window();
             break;
+        case ID_POWERRENAME_MENU_COMMAND:
+        {
+            STARTUPINFO starInfo = { 0 };
+
+            PROCESS_INFORMATION processInfo = { 0 };
+
+            BOOL bSuccess = CreateProcess(TEXT("D:\\issue1\\PowerToys-1\\x64\\Debug\\modules\\PowerRenameTest.exe"), NULL, NULL, NULL, FALSE, NULL, NULL, NULL, &starInfo, &processInfo);
+
+            if (bSuccess)
+            {
+                cout << "Process Started" << endl
+                     << "Process ID:\t" << processInfo.dwProcessId << endl;
+            }
+            else
+            {
+                cout << "Erro to start the process:" << GetLastError() << endl;
+            }
+
+            cin.get();
+            return 0;
+        }
+        break;
         case ID_EXIT_MENU_COMMAND:
             if (h_menu)
             {
@@ -206,3 +230,25 @@ void stop_tray_icon()
         SendMessage(tray_icon_hwnd, WM_CLOSE, 0, 0);
     }
 }
+
+//int main()
+//{
+//    STARTUPINFO starInfo = { 0 };
+
+//    PROCESS_INFORMATION processInfo = { 0 };
+    
+//    BOOL bSuccess = CreateProcess(TEXT("D:\\issue1\\PowerToys-1\\x64\\Debug\\PowerToysSettings.exe"), NULL, NULL, NULL, FALSE, NULL, NULL, NULL, &starInfo, &processInfo);
+
+//    if (bSuccess)
+//   {
+//        cout << "Process Started" << endl
+//              << "Process ID:\t" << processInfo.dwProcessId << endl;
+//    }
+//    else
+//    {
+ //       cout << "Erro to start the process:" << GetLastError() << endl;
+//    }
+
+ //   cin.get();
+ //   return 0;
+//}
