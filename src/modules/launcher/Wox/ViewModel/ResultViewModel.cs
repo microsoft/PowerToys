@@ -1,5 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
+using System.Windows.Controls.Ribbon;
+using System.Windows.Input;
+using Wox.Core.Plugin;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
@@ -10,12 +17,48 @@ namespace Wox.ViewModel
 {
     public class ResultViewModel : BaseModel
     {
+        public List<ContextMenuItemViewModel> ContextMenuItems { get; set; }
+
+        public ICommand LoadContextMenuCommand { get; set; }
+
         public ResultViewModel(Result result)
         {
             if (result != null)
             {
                 Result = result;
             }
+
+            LoadContextMenuCommand = new RelayCommand(LoadContextMenu);
+        }
+
+        void LoadContextMenu(object sender)
+        {
+            var results = PluginManager.GetContextMenusForPlugin(Result);
+            var newItems = new List<ContextMenuItemViewModel>();
+            foreach (var r in results)
+            {
+                newItems.Add(new ContextMenuItemViewModel
+                {
+                    Title = r.Title,
+                    Glyph = r.Glyph,
+                    FontFamily = r.FontFamily,
+                    Command = new RelayCommand(_ =>
+                    {
+                        bool hideWindow = r.Action != null && r.Action(new ActionContext
+                        {
+                            SpecialKeyState = GlobalHotkey.Instance.CheckModifiers()
+                        });
+
+                        if (hideWindow)
+                        {
+                            //TODO - Do we hide the window
+                            // MainWindowVisibility = Visibility.Collapsed;
+                        }
+                    })
+                });
+            }
+
+            ContextMenuItems = newItems;
         }
 
         public ImageSource Image

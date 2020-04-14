@@ -26,7 +26,6 @@ namespace Wox.Plugin.Folder
             {
                 if (record.Type == ResultType.File)
                 {
-                    contextMenus.Add(CreateOpenWithEditorResult(record));
                     contextMenus.Add(CreateOpenContainingFolderResult(record));
                 }
 
@@ -35,6 +34,8 @@ namespace Wox.Plugin.Folder
                 contextMenus.Add(new Result
                 {
                     Title = "Copy path",
+                    Glyph = "\xE8C8",
+                    FontFamily = "Segoe MDL2 Assets",
                     SubTitle = $"Copy the current {fileOrFolder} path to clipboard",
                     Action = (context) =>
                     {
@@ -53,78 +54,6 @@ namespace Wox.Plugin.Folder
                     },
                     IcoPath = Main.CopyImagePath
                 });
-
-                contextMenus.Add(new Result
-                {
-                    Title = $"Copy {fileOrFolder}",
-                    SubTitle = $"Copy the {fileOrFolder} to clipboard",
-                    Action = (context) =>
-                    {
-                        try
-                        {
-                            Clipboard.SetFileDropList(new System.Collections.Specialized.StringCollection { record.FullPath });
-                            return true;
-                        }
-                        catch (Exception e)
-                        {
-                            var message = $"Fail to set {fileOrFolder} in clipboard";
-                            LogException(message, e);
-                            _context.API.ShowMsg(message);
-                            return false;
-                        }
-                        
-                    },
-                    IcoPath = icoPath
-                });
-
-                if (record.Type == ResultType.File || record.Type == ResultType.Folder)
-                    contextMenus.Add(new Result
-                    {
-                        Title = $"Delete {fileOrFolder}",
-                        SubTitle = $"Delete the selected {fileOrFolder}",
-                        Action = (context) =>
-                        {
-                            try
-                            {
-                                if (record.Type == ResultType.File)
-                                    File.Delete(record.FullPath);
-                                else
-                                    Directory.Delete(record.FullPath);
-                            }
-                            catch(Exception e)
-                            {
-                                var message = $"Fail to delete {fileOrFolder} at {record.FullPath}";
-                                LogException(message, e);
-                                _context.API.ShowMsg(message);
-                                return false;
-                            }
-
-                            return true;
-                        },
-                        IcoPath = Main.DeleteFileFolderImagePath
-                    });
-
-                if (record.Type == ResultType.File && CanRunAsDifferentUser(record.FullPath))
-                    contextMenus.Add(new Result
-                    {
-                        Title = "Run as different user",
-                        Action = (context) =>
-                        {
-                            try
-                            {
-                                Task.Run(()=> ShellCommand.RunAsDifferentUser(record.FullPath.SetProcessStartInfo()));
-                            }
-                            catch (FileNotFoundException e)
-                            {
-                                var name = "Plugin: Folder";
-                                var message = $"File not found: {e.Message}";
-                                _context.API.ShowMsg(name, message);
-                            }
-
-                            return true;
-                        },
-                        IcoPath = "Images/user.png"
-                    });
             }
 
             return contextMenus;
@@ -135,6 +64,8 @@ namespace Wox.Plugin.Folder
             return new Result
             {
                 Title = "Open containing folder",
+                Glyph = "\xE838",
+                FontFamily = "Segoe MDL2 Assets",
                 Action = _ =>
                 {
                     try
