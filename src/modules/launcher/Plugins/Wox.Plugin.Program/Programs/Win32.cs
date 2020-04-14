@@ -100,25 +100,9 @@ namespace Wox.Plugin.Program.Programs
             {
                 new Result
                 {
-                    Title = api.GetTranslation("wox_plugin_program_run_as_different_user"),
-                    Action = _ =>
-                    {
-                        var info = new ProcessStartInfo
-                        {
-                            FileName = FullPath,
-                            WorkingDirectory = ParentDirectory,
-                            UseShellExecute = true
-                        };
-
-                        Task.Run(() => Main.StartProcess(ShellCommand.RunAsDifferentUser, info));
-
-                        return true;
-                    },
-                    IcoPath = "Images/user.png"
-                },
-                new Result
-                {
                     Title = api.GetTranslation("wox_plugin_program_run_as_administrator"),
+                    Glyph = "\xE7EF",
+                    FontFamily = "Segoe MDL2 Assets",
                     Action = _ =>
                     {
                         var info = new ProcessStartInfo
@@ -138,6 +122,8 @@ namespace Wox.Plugin.Program.Programs
                 new Result
                 {
                     Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
+                    Glyph = "\xE838",
+                    FontFamily = "Segoe MDL2 Assets",
                     Action = _ =>
                     {
 
