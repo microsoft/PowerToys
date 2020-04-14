@@ -43,51 +43,6 @@ namespace std
     };
 }
 
-namespace
-{
-    const CLSID CLSID_ImmersiveShell = { 0xC2F03A33, 0x21F5, 0x47FA, 0xB4, 0xBB, 0x15, 0x63, 0x62, 0xA2, 0xF2, 0x39 };
-
-    IServiceProvider* GetServiceProvider()
-    {
-        static winrt::com_ptr<IServiceProvider> provider;
-        if (!provider)
-        {
-            if (FAILED(CoCreateInstance(CLSID_ImmersiveShell, nullptr, CLSCTX_LOCAL_SERVER, __uuidof(provider), provider.put_void())))
-            {
-                return nullptr;
-            }
-        }
-        return provider.get();
-    }
-
-    IVirtualDesktopManager* GetVirtualDesktopManager()
-    {
-        static winrt::com_ptr<IVirtualDesktopManager> manager;
-        if (!manager)
-        {
-            auto serviceProvider = GetServiceProvider();
-            if (serviceProvider == nullptr || FAILED(serviceProvider->QueryService(__uuidof(manager), manager.put())))
-            {
-                return nullptr;
-            }
-        }
-        return manager.get();
-    }
-
-    bool GetWindowDesktopId(HWND topLevelWindow, GUID *desktopId)
-    {
-        auto virtualDesktopManager = GetVirtualDesktopManager();
-        return (virtualDesktopManager != nullptr) &&
-            SUCCEEDED(virtualDesktopManager->GetWindowDesktopId(topLevelWindow, desktopId));
-    }
-
-    std::wstring ExtractVirtualDesktopId(const std::wstring& uniqueId)
-    {
-        // Format: <device-id>_<resolution>_<virtual-desktop-id>
-        return uniqueId.substr(uniqueId.rfind('_') + 1);
-    }
-}
-
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
 {
 public:
@@ -400,16 +355,12 @@ FancyZones::WindowCreated(HWND window) noexcept
         for (const auto& [monitor, zoneWindow] : m_zoneWindowMap)
         {
             GUID windowDesktopId{};
-            if (GetWindowDesktopId(window, &windowDesktopId))
+            GUID zoneWindowDesktopId{};
+            if (ZoneWindowUtils::GetWindowDesktopId(window, &windowDesktopId) &&
+                ZoneWindowUtils::GetZoneWindowDesktopId(zoneWindow.get(), &zoneWindowDesktopId) &&
+                (windowDesktopId != zoneWindowDesktopId))
             {
-                GUID zoneWindowDesktopId{};
-                if (SUCCEEDED(CLSIDFromString(ExtractVirtualDesktopId(zoneWindow->UniqueId()).c_str(), &zoneWindowDesktopId)))
-                {
-                    if (windowDesktopId != zoneWindowDesktopId)
-                    {
-                        break;
-                    }
-                }
+                break;
             }
             const auto activeZoneSet = zoneWindow->ActiveZoneSet();
             if (activeZoneSet)
