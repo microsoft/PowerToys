@@ -78,6 +78,9 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         case ID_SETTINGS_MENU_COMMAND:
             open_settings_window();
             break;
+        case ID_POWER_RENAME_MENU_COMMAND:
+            ShellExecute(NULL, NULL, L".\\modules\\PowerRename.exe", NULL, NULL, SW_SHOW);
+            break;
         case ID_EXIT_MENU_COMMAND:
             if (h_menu)
             {
