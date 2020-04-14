@@ -52,12 +52,10 @@ namespace
         static winrt::com_ptr<IServiceProvider> provider;
         if (!provider)
         {
-            winrt::check_hresult(CoCreateInstance(
-                CLSID_ImmersiveShell,
-                nullptr,
-                CLSCTX_LOCAL_SERVER,
-                __uuidof(provider),
-                provider.put_void()));
+            if (FAILED(CoCreateInstance(CLSID_ImmersiveShell, nullptr, CLSCTX_LOCAL_SERVER, __uuidof(provider), provider.put_void())))
+            {
+                return nullptr;
+            }
         }
         return provider.get();
     }
@@ -67,14 +65,20 @@ namespace
         static winrt::com_ptr<IVirtualDesktopManager> manager;
         if (!manager)
         {
-            winrt::check_hresult(GetServiceProvider()->QueryService(__uuidof(manager), manager.put()));
+            auto serviceProvider = GetServiceProvider();
+            if (serviceProvider == nullptr || FAILED(serviceProvider->QueryService(__uuidof(manager), manager.put())))
+            {
+                return nullptr;
+            }
         }
         return manager.get();
     }
 
     bool GetWindowDesktopId(HWND topLevelWindow, GUID *desktopId)
     {
-        return SUCCEEDED(GetVirtualDesktopManager()->GetWindowDesktopId(topLevelWindow, desktopId));
+        auto virtualDesktopManager = GetVirtualDesktopManager();
+        return (virtualDesktopManager != nullptr) &&
+            SUCCEEDED(virtualDesktopManager->GetWindowDesktopId(topLevelWindow, desktopId));
     }
 
     std::wstring ExtractVirtualDesktopId(const std::wstring& uniqueId)
@@ -395,10 +399,11 @@ FancyZones::WindowCreated(HWND window) noexcept
     {
         for (const auto& [monitor, zoneWindow] : m_zoneWindowMap)
         {
-            if (GUID windowDesktopId{}; GetWindowDesktopId(window, &windowDesktopId))
+            GUID windowDesktopId{};
+            if (GetWindowDesktopId(window, &windowDesktopId))
             {
-                if (GUID zoneWindowDesktopId{};
-                    SUCCEEDED_LOG(CLSIDFromString(ExtractVirtualDesktopId(zoneWindow->UniqueId()).c_str(), &zoneWindowDesktopId)))
+                GUID zoneWindowDesktopId{};
+                if (SUCCEEDED(CLSIDFromString(ExtractVirtualDesktopId(zoneWindow->UniqueId()).c_str(), &zoneWindowDesktopId)))
                 {
                     if (windowDesktopId != zoneWindowDesktopId)
                     {
@@ -412,7 +417,7 @@ FancyZones::WindowCreated(HWND window) noexcept
                 const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
 
                 wil::unique_cotaskmem_string guidString;
-                if (SUCCEEDED_LOG(StringFromCLSID(activeZoneSet->Id(), &guidString)))
+                if (SUCCEEDED(StringFromCLSID(activeZoneSet->Id(), &guidString)))
                 {
                     int zoneIndex = fancyZonesData.GetAppLastZoneIndex(window, zoneWindow->UniqueId(), guidString.get());
                     if (zoneIndex != -1)
