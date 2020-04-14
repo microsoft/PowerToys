@@ -55,12 +55,10 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         return;
     }
 
-    // Store the newly created window's handle.
-    std::unique_lock<std::mutex> hwmdLock(editShortcutsWindowMutex);
+    // Store the newly created Edit Shortcuts window's handle.
+    std::unique_lock<std::mutex> hwndLock(editShortcutsWindowMutex);
     hwndEditShortcutsNativeWindow = _hWndEditShortcutsWindow;
-    hwmdLock.unlock();
-
-    SetForegroundWindow(_hWndEditShortcutsWindow);
+    hwndLock.unlock();
 
     // This DesktopWindowXamlSource is the object that enables a non-UWP desktop application
     // to host UWP controls in any UI element that is associated with a window handle (HWND).
@@ -233,7 +231,8 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     }
     desktopSource.Close();
 
-    hwmdLock.lock();
+    hWndXamlIslandEditShortcutsWindow = nullptr;
+    hwndLock.lock();
     hwndEditShortcutsNativeWindow = nullptr;
 }
 
@@ -260,7 +259,7 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
 bool CheckEditShortcutsWindowActive() 
 {
     bool result = false;
-    std::unique_lock<std::mutex> hwmdLock(editShortcutsWindowMutex);
+    std::unique_lock<std::mutex> hwndLock(editShortcutsWindowMutex);
     if (hwndEditShortcutsNativeWindow != nullptr)
     {
         // Check if the window is minimized if yes then restore the window.

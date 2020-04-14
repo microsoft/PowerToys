@@ -53,12 +53,11 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         MessageBox(NULL, L"Call to CreateWindow failed!", L"Error", NULL);
         return;
     }
-    // Store the newly created window's handle.
-    std::unique_lock<std::mutex> hwmdLock(editKeyboardWindowMutex);
-    hwndEditKeyboardNativeWindow = _hWndEditKeyboardWindow;
-    hwmdLock.unlock();
 
-     SetForegroundWindow(_hWndEditKeyboardWindow);
+    // Store the newly created Edit Keyboard window's handle.
+    std::unique_lock<std::mutex> hwndLock(editKeyboardWindowMutex);
+    hwndEditKeyboardNativeWindow = _hWndEditKeyboardWindow;
+    hwndLock.unlock();
 
     // This DesktopWindowXamlSource is the object that enables a non-UWP desktop application
     // to host UWP controls in any UI element that is associated with a window handle (HWND).
@@ -238,7 +237,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     }
     desktopSource.Close();
 
-    hwmdLock.lock();
+    hWndXamlIslandEditKeyboardWindow = nullptr;
+    hwndLock.lock();
     hwndEditKeyboardNativeWindow = nullptr;
 }
 
@@ -265,7 +265,7 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wPar
 bool CheckEditKeyboardWindowActive()
 {
     bool result = false;
-    std::unique_lock<std::mutex> hwmdLock(editKeyboardWindowMutex);
+    std::unique_lock<std::mutex> hwndLock(editKeyboardWindowMutex);
     if (hwndEditKeyboardNativeWindow != nullptr)
     {
         // Check if the window is minimized if yes then restore the window.
