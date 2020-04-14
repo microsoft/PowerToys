@@ -94,19 +94,6 @@ namespace PowerLauncher
             _settings.WindowLeft = Left;
         }
 
-        //private void InitProgressbarAnimation()
-        //{
-        //    var da = new DoubleAnimation(ProgressBar.X2, ActualWidth + 100, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
-        //    var da1 = new DoubleAnimation(ProgressBar.X1, ActualWidth, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
-        //    Storyboard.SetTargetProperty(da, new PropertyPath("(Line.X2)"));
-        //    Storyboard.SetTargetProperty(da1, new PropertyPath("(Line.X1)"));
-        //    _progressBarStoryboard.Children.Add(da);
-        //    _progressBarStoryboard.Children.Add(da1);
-        //    _progressBarStoryboard.RepeatBehavior = RepeatBehavior.Forever;
-        //    ProgressBar.BeginStoryboard(_progressBarStoryboard);
-        //    _viewModel.ProgressBarVisibility = Visibility.Hidden;
-        //}
-
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left) DragMove();
