@@ -651,7 +651,7 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(expected, actual);
         }
 
-        TEST_METHOD (TestNesdsdw)
+        TEST_METHOD (WhenPlacingDpiUnawareWindowIntoTheZoneItRectShouldBeExtendedToFitTargetZone)
         {
             m_zoneWindow = InitZoneWindowWithActiveZoneSet();
             Assert::IsNotNull(m_zoneWindow->ActiveZoneSet());
@@ -660,17 +660,30 @@ namespace FancyZonesUnitTests
 
             SetWindowPos(window, nullptr, 150, 150, 450, 550, SWP_SHOWWINDOW);
             Assert::IsTrue(AreDpiAwarenessContextsEqual(DPI_AWARENESS_CONTEXT_UNAWARE, GetWindowDpiAwarenessContext(window)));
+
+            RECT nonExtendedWindowRect{};
+            ::GetWindowRect(window, &nonExtendedWindowRect);
+
+            RECT extendedFrameRect{};
+            Assert::IsTrue(SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &extendedFrameRect, sizeof(extendedFrameRect))));
+
+            int leftMargin = extendedFrameRect.left - nonExtendedWindowRect.left;
+            int rightMargin = extendedFrameRect.right - nonExtendedWindowRect.right;
+            int bottomMargin = extendedFrameRect.bottom - nonExtendedWindowRect.bottom;
             ShowWindow(window, SW_SHOW);
 
-            auto zone = MakeZone(RECT{ 0, 0, 300, 300 });
+            RECT zoneRect{ 0, 0, 250, 350 };
+            auto zone = MakeZone(zoneRect);
             m_zoneWindow->ActiveZoneSet()->AddZone(zone);
 
             m_zoneWindow->MoveWindowIntoZoneByDirection(window, VK_LEFT, true);
 
             RECT inZoneRect;
             GetWindowRect(window, &inZoneRect);
-            Assert::AreEqual(0, (int)inZoneRect.left);
-            Assert::AreEqual(0, (int)inZoneRect.bottom - (int)inZoneRect.top);
+            Assert::AreEqual(-leftMargin, (int)inZoneRect.left);
+            Assert::AreEqual((int)zoneRect.right - rightMargin, (int)inZoneRect.right);
+            Assert::AreEqual((int)zoneRect.bottom - bottomMargin, (int)inZoneRect.bottom);
+            Assert::AreEqual(0, (int)inZoneRect.top);
         }
     };
 }
