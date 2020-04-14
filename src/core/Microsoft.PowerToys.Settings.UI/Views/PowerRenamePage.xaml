@@ -39,14 +39,16 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Vertical">
+        <StackPanel Orientation="Vertical"
+                    x:Name="PowerRenameSettingsView">
+
             <TextBlock Text="A Windows Shell Extension for more advanced bulk renaming using search and replace or regular expressions."
                        TextWrapping="Wrap"/>
 
             <ToggleSwitch x:Name="Toggle_PowerRename_Enable"
                           Header="Enable PowerRename"
                           Margin="{StaticResource SmallTopMargin}" 
-                          Toggled="Toggle_PowerRename_Enable_Toggled"
+                          IsOn="{Binding Mode=TwoWay, Path=IsEnabled}"
                            />
 
             <TextBlock  Text="Shell integration"
@@ -55,13 +57,13 @@
             <ToggleSwitch x:Name="Toggle_PowerRename_EnableOnContextMenu" 
                           Header="Show on default context menu"
                           Margin="{StaticResource SmallTopMargin}" 
-                          Toggled="Toggle_PowerRename_EnableOnContextMenu_Toggled"
+                          IsOn="{Binding Mode=TwoWay, Path=EnabledOnContextMenu}"
                            />
 
             <ToggleSwitch x:Name="Toggle_PowerRename_EnableOnExtendedContextMenu"
                           Header="Only show on extended context menu (Shift + Right-click)"
                           Margin="{StaticResource SmallTopMargin}"
-                          Toggled="Toggle_PowerRename_EnableOnExtendedContextMenu_Toggled"
+                          IsOn="{Binding Mode=TwoWay, Path=EnabledOnContextExtendedMenu}"
                            />
 
             <TextBlock Text="Miscellaneous" 
@@ -70,7 +72,7 @@
             <ToggleSwitch x:Name="Toggle_PowerRename_RestoreFlagsOnLaunch"
                           Header="Restore search, replace and flags values on launch from previous run"     
                           Margin="{StaticResource SmallTopMargin}" 
-                          Toggled="Toggle_PowerRename_RestoreFlagsOnLaunch_Toggled"
+                          IsOn="{Binding Mode=TwoWay, Path=RestoreFlagsOnLaunch}"
                            />
 
             <muxc:NumberBox x:Name="Toggle_PowerRename_MaxDispListNum"
@@ -78,35 +80,26 @@
                             SpinButtonPlacementMode="Inline"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallTopMargin}" 
-                           ValueChanged="Toggle_PowerRename_MaxDispListNum_ValueChanged"
+                            Value="{Binding Mode=TwoWay, Path=MaxDispListNum}"
                             />
         </StackPanel>
-        
-        
-        <StackPanel 
-            x:Name="SidePanel"
-            Orientation="Vertical"
-            HorizontalAlignment="Left"
-            Width="{StaticResource SidePanelWidth}"
-            Grid.Column="1">
 
-            <TextBlock 
-                Text="About this feature"
-                Style="{StaticResource SettingsGroupTitleStyle}"
-                Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <HyperlinkButton 
-                Content="Module overview" 
-                NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/powerrename"/>
+        <StackPanel x:Name="SidePanel"
+                    Orientation="Vertical"
+                    HorizontalAlignment="Left"
+                    Width="{StaticResource SidePanelWidth}"
+                    Grid.Column="1">
 
-            <TextBlock 
-                Text="Attribution"
-                Style="{StaticResource SettingsGroupTitleStyle}" />
+            <TextBlock Text="About this feature"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <HyperlinkButton 
-                Content="Chris Davis's SmartRenamer" 
-                NavigateUri="https://github.com/chrdavis/SmartRename" />
-            
+            <HyperlinkButton Content="Module overview"
+                             NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/powerrename"/>
+
+            <HyperlinkButton Content="Give feedback"
+                             NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
         </StackPanel>
     </Grid>
 </Page>

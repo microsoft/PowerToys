@@ -14,128 +14,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 {
     public sealed partial class PowerRenamePage : Page
     {
-        public PowerRenameViewModel ViewModel { get; } = new PowerRenameViewModel();
+        public PowerRenameViewModel ViewModel { get; set; }
 
         private const string POWERTOYNAME = "PowerRename";
 
         public PowerRenamePage()
         {
-            InitializeComponent();
-        }
+            this.InitializeComponent();
 
-        /// <inheritdoc/>
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            base.OnNavigatedTo(e);
-            PowerRenameSettings settings;
-            try
-            {
-                settings = SettingsUtils.GetSettings<PowerRenameSettings>(POWERTOYNAME);
-                UpdateView(settings);
-            }
-            catch
-            {
-                settings = new PowerRenameSettings(POWERTOYNAME);
-                SettingsUtils.SaveSettings(settings.ToJsonString(), POWERTOYNAME);
-                UpdateView(settings);
-            }
-        }
-
-        private void UpdateView(PowerRenameSettings settings)
-        {
-            Toggle_PowerRename_Enable.IsOn = settings.properties.MruEnabled.value;
-            Toggle_PowerRename_EnableOnExtendedContextMenu.IsOn = settings.properties.ShowExtendedMenu.value;
-            Toggle_PowerRename_MaxDispListNum.Value = settings.properties.MaxMruSize.value;
-            Toggle_PowerRename_EnableOnContextMenu.IsOn = settings.properties.ShowIconInMenu.value;
-            Toggle_PowerRename_RestoreFlagsOnLaunch.IsOn = settings.properties.PersistInput.value;
-        }
-
-        private void Toggle_PowerRename_Enable_Toggled(object sender, RoutedEventArgs e)
-        {
-            ToggleSwitch swt = sender as ToggleSwitch;
-
-            if (swt != null)
-            {
-                PowerRenameSettings settings = SettingsUtils.GetSettings<PowerRenameSettings>(POWERTOYNAME);
-                settings.properties.MruEnabled.value = swt.IsOn;
-
-                if (ShellPage.DefaultSndMSGCallback != null)
-                {
-                    SndPowerRenameSettings snd = new SndPowerRenameSettings(settings);
-                    SndModuleSettings<SndPowerRenameSettings> ipcMessage = new SndModuleSettings<SndPowerRenameSettings>(snd);
-                    ShellPage.DefaultSndMSGCallback(ipcMessage.ToJsonString());
-                }
-            }
-        }
-
-        private void Toggle_PowerRename_EnableOnContextMenu_Toggled(object sender, RoutedEventArgs e)
-        {
-            ToggleSwitch swt = sender as ToggleSwitch;
-
-            if (swt != null)
-            {
-                PowerRenameSettings settings = SettingsUtils.GetSettings<PowerRenameSettings>(POWERTOYNAME);
-                settings.properties.ShowIconInMenu.value = swt.IsOn;
-
-                if (ShellPage.DefaultSndMSGCallback != null)
-                {
-                    SndPowerRenameSettings snd = new SndPowerRenameSettings(settings);
-                    SndModuleSettings<SndPowerRenameSettings> ipcMessage = new SndModuleSettings<SndPowerRenameSettings>(snd);
-                    ShellPage.DefaultSndMSGCallback(ipcMessage.ToJsonString());
-                }
-            }
-        }
-
-        private void Toggle_PowerRename_EnableOnExtendedContextMenu_Toggled(object sender, RoutedEventArgs e)
-        {
-            ToggleSwitch swt = sender as ToggleSwitch;
-
-            if (swt != null)
-            {
-                PowerRenameSettings settings = SettingsUtils.GetSettings<PowerRenameSettings>(POWERTOYNAME);
-                settings.properties.ShowExtendedMenu.value = swt.IsOn;
-
-                if (ShellPage.DefaultSndMSGCallback != null)
-                {
-                    SndPowerRenameSettings snd = new SndPowerRenameSettings(settings);
-                    SndModuleSettings<SndPowerRenameSettings> ipcMessage = new SndModuleSettings<SndPowerRenameSettings>(snd);
-                    ShellPage.DefaultSndMSGCallback(ipcMessage.ToJsonString());
-                }
-            }
-        }
-
-        private void Toggle_PowerRename_RestoreFlagsOnLaunch_Toggled(object sender, RoutedEventArgs e)
-        {
-            ToggleSwitch swt = sender as ToggleSwitch;
-
-            if (swt != null)
-            {
-                PowerRenameSettings settings = SettingsUtils.GetSettings<PowerRenameSettings>(POWERTOYNAME);
-                settings.properties.PersistInput.value = swt.IsOn;
-
-                if (ShellPage.DefaultSndMSGCallback != null)
-                {
-                    SndPowerRenameSettings snd = new SndPowerRenameSettings(settings);
-                    SndModuleSettings<SndPowerRenameSettings> ipcMessage = new SndModuleSettings<SndPowerRenameSettings>(snd);
-                    ShellPage.DefaultSndMSGCallback(ipcMessage.ToJsonString());
-                }
-            }
-        }
-
-        private void Toggle_PowerRename_MaxDispListNum_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
-        {
-            if (sender != null)
-            {
-                PowerRenameSettings settings = SettingsUtils.GetSettings<PowerRenameSettings>(POWERTOYNAME);
-                settings.properties.MaxMruSize.value = Convert.ToInt32(sender.Value);
-
-                if (ShellPage.DefaultSndMSGCallback != null)
-                {
-                    SndPowerRenameSettings snd = new SndPowerRenameSettings(settings);
-                    SndModuleSettings<SndPowerRenameSettings> ipcMessage = new SndModuleSettings<SndPowerRenameSettings>(snd);
-                    ShellPage.DefaultSndMSGCallback(ipcMessage.ToJsonString());
-                }
-            }
+            ViewModel = new PowerRenameViewModel();
+            this.PowerRenameSettingsView.DataContext = ViewModel;
         }
     }
 }

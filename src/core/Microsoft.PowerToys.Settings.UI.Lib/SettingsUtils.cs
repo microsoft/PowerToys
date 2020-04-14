@@ -67,7 +67,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             }
         }
 
-        private static string LocalApplicationDataFolder()
+        public static string LocalApplicationDataFolder()
         {
             return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         }
