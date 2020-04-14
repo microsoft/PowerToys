@@ -54,26 +54,24 @@
                               Toggled="ToggleSwitch_Preview_MD_Toggled" />
 
         </StackPanel>
-        <StackPanel x:Name="SidePanel"
-                                Orientation="Vertical"
-                                HorizontalAlignment="Left"
-                                Width="{StaticResource SidePanelWidth}"
-                                Grid.Column="1">
+        <StackPanel 
+            x:Name="SidePanel"
+            Orientation="Vertical"
+            HorizontalAlignment="Left"
+            Width="{StaticResource SidePanelWidth}"
+            Grid.Column="1">
 
-            <TextBlock Text="About this feature"
-                                   Style="{StaticResource SettingsGroupTitleStyle}"
-                                   Margin="{StaticResource XSmallBottomMargin}"/>
+            <TextBlock 
+                Text="About this feature"
+                Style="{StaticResource SettingsGroupTitleStyle}"
+                Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <HyperlinkButton Content="Module overview" NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/previewpane"/>
-            <HyperlinkButton Content="Give feedback" NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
-
-            <!--  <TextBlock Text="Contributors"
-                           Style="{StaticResource SettingsGroupTitleStyle}"/>
-
-            <HyperlinkButton Content="Contributor name"/>
-            <HyperlinkButton Content="Contributor name"/>
-            <HyperlinkButton Content="Contributor name"/>
-            -->
+            <HyperlinkButton 
+                Content="Module overview" 
+                NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/previewpane"/>
+            <HyperlinkButton 
+                Content="Give feedback" 
+                NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
         </StackPanel>
     </Grid>
 </Page>

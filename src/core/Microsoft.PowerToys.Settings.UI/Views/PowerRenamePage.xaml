@@ -83,27 +83,30 @@
         </StackPanel>
         
         
-        <StackPanel x:Name="SidePanel"
-                                Orientation="Vertical"
-                                HorizontalAlignment="Left"
-                                 Width="{StaticResource SidePanelWidth}"
-                                Grid.Column="1">
+        <StackPanel 
+            x:Name="SidePanel"
+            Orientation="Vertical"
+            HorizontalAlignment="Left"
+            Width="{StaticResource SidePanelWidth}"
+            Grid.Column="1">
 
-            <TextBlock Text="About this feature"
-                                   Style="{StaticResource SettingsGroupTitleStyle}"
-                                   Margin="{StaticResource XSmallBottomMargin}"/>
+            <TextBlock 
+                Text="About this feature"
+                Style="{StaticResource SettingsGroupTitleStyle}"
+                Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <HyperlinkButton Content="Module overview" NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/powerrename"/>
-            <HyperlinkButton Content="Give feedback"/>
+            <HyperlinkButton 
+                Content="Module overview" 
+                NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/powerrename"/>
 
-            <!--
-            <TextBlock Text="Contributors"
-                           Style="{StaticResource SettingsGroupTitleStyle}"/>
+            <TextBlock 
+                Text="Attribution"
+                Style="{StaticResource SettingsGroupTitleStyle}" />
 
-            <HyperlinkButton Content="Contributor name"/>
-            <HyperlinkButton Content="Contributor name"/>
-            <HyperlinkButton Content="Contributor name"/>
-            -->
+            <HyperlinkButton 
+                Content="Chris Davis's SmartRenamer" 
+                NavigateUri="https://github.com/chrdavis/SmartRename" />
+            
         </StackPanel>
     </Grid>
 </Page>
