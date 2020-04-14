@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -14,6 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         private ICommand remapKeyboardCommand;
         private ICommand editShortcutCommand;
+        private FileSystemWatcher watcher;
 
         public ICommand RemapKeyboardCommand => remapKeyboardCommand ?? (remapKeyboardCommand = new RelayCommand(OnRemapKeyboard));
 
@@ -21,6 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public KeyboardManagerViewModel()
         {
+            this.watcher = Helper.GetFileWatcher("Keyboard Manager", "config-1.json", OnConfigFileUpdate);
         }
 
         private async void OnRemapKeyboard()
@@ -45,6 +48,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Helper.AllowRunnerToForeground();
             ShellPage.DefaultSndMSGCallback(Helper.GetSerializedCustomAction("Keyboard Manager", "EditShortcut", "Create Edit Shortcut Window"));
             await Task.CompletedTask;
+        }
+
+        private void OnConfigFileUpdate()
+        {
+            // Update the UI here.
         }
     }
 }
