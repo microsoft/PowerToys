@@ -14,9 +14,6 @@ namespace Wox.Infrastructure.Image
     {
         private static readonly ImageCache ImageCache = new ImageCache();
         private static BinaryStorage<ConcurrentDictionary<string, int>> _storage;
-        private static readonly ConcurrentDictionary<string, string> GuidToKey = new ConcurrentDictionary<string, string>();
-        private static IImageHashGenerator _hashGenerator;
-
 
         private static readonly string[] ImageExtensions =
         {
@@ -33,7 +30,6 @@ namespace Wox.Infrastructure.Image
         public static void Initialize()
         {
             _storage = new BinaryStorage<ConcurrentDictionary<string, int>>("Image");
-            _hashGenerator = new ImageHashGenerator();
             ImageCache.Usage = _storage.TryLoad(new ConcurrentDictionary<string, int>());
 
             foreach (var icon in new[] { Constant.DefaultIcon, Constant.ErrorIcon })
@@ -165,33 +161,16 @@ namespace Wox.Infrastructure.Image
             return new ImageResult(image, type);
         }
 
-        private static bool EnableImageHash = false;
-
         public static ImageSource Load(string path, bool loadFullImage = false)
         {
             var imageResult = LoadInternal(path, loadFullImage);
 
             var img = imageResult.ImageSource;
             if (imageResult.ImageType != ImageType.Error && imageResult.ImageType != ImageType.Cache)
-            { // we need to get image hash
-                //string hash = EnableImageHash ? _hashGenerator.GetHashFromImage(img) : null;
-                //if (hash != null)
-                //{
-                //    if (GuidToKey.TryGetValue(hash, out string key))
-                //    { // image already exists
-                //        img = ImageCache[key];
-                //    }
-                //    else
-                //    { // new guid
-                //        GuidToKey[hash] = path;
-                //    }
-                //}
-
+            {                                
                 // update cache
                 ImageCache[path] = img;
             }
-
-
             return img;
         }
 
