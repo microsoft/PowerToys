@@ -86,34 +86,28 @@ namespace ZoneWindowUtils
 
     IServiceProvider* GetServiceProvider()
     {
-        static winrt::com_ptr<IServiceProvider> provider;
-        if (!provider)
+        winrt::com_ptr<IServiceProvider> provider;
+        if (FAILED(CoCreateInstance(CLSID_ImmersiveShell, nullptr, CLSCTX_LOCAL_SERVER, __uuidof(provider), provider.put_void())))
         {
-            if (FAILED(CoCreateInstance(CLSID_ImmersiveShell, nullptr, CLSCTX_LOCAL_SERVER, __uuidof(provider), provider.put_void())))
-            {
-                return nullptr;
-            }
+            return nullptr;
         }
         return provider.get();
     }
 
     IVirtualDesktopManager* GetVirtualDesktopManager()
     {
-        static winrt::com_ptr<IVirtualDesktopManager> manager;
-        if (!manager)
+        winrt::com_ptr<IVirtualDesktopManager> manager;
+        static IServiceProvider* serviceProvider = GetServiceProvider();
+        if (serviceProvider == nullptr || FAILED(serviceProvider->QueryService(__uuidof(manager), manager.put())))
         {
-            auto serviceProvider = GetServiceProvider();
-            if (serviceProvider == nullptr || FAILED(serviceProvider->QueryService(__uuidof(manager), manager.put())))
-            {
-                return nullptr;
-            }
+            return nullptr;
         }
         return manager.get();
     }
 
     bool GetWindowDesktopId(HWND topLevelWindow, GUID* desktopId)
     {
-        auto virtualDesktopManager = GetVirtualDesktopManager();
+        static IVirtualDesktopManager* virtualDesktopManager = GetVirtualDesktopManager();
         return (virtualDesktopManager != nullptr) &&
                SUCCEEDED(virtualDesktopManager->GetWindowDesktopId(topLevelWindow, desktopId));
     }
