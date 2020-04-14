@@ -24,6 +24,8 @@ void LayoutMap::UpdateLayout()
         return;
     }
     previousLayout = layout;
+    unicodeKeys.clear();
+    unknownKeys.clear();
 
     unsigned char btKeys[256] = { 0 };
     GetKeyboardState(btKeys);
@@ -40,6 +42,7 @@ void LayoutMap::UpdateLayout()
         if (result > 0)
         {
             keyboardLayoutMap[i] = szBuffer;
+            unicodeKeys.insert(std::make_pair(i, szBuffer));
         }
         else
         {
@@ -47,6 +50,7 @@ void LayoutMap::UpdateLayout()
             std::wstring vk = L"VK ";
             vk += std::to_wstring(i);
             keyboardLayoutMap[i] = vk;
+            unknownKeys.insert(std::make_pair(i, vk));
         }
     }
 
@@ -157,15 +161,74 @@ void LayoutMap::UpdateLayout()
     // To do: Add IME key names
 }
 
-Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> LayoutMap::GetKeyList()
+std::pair<Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable>, std::vector<DWORD>> LayoutMap::GetKeyList()
 {
     std::lock_guard<std::mutex> lock(keyboardLayoutMap_mutex);
     UpdateLayout();
     Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> keyNames = single_threaded_vector<Windows::Foundation::IInspectable>();
+    std::vector<DWORD> keyCodes;
+    //for (int i = 0; i < 256; i++)
+    //{
+    //    keyNames.Append(winrt::box_value(keyboardLayoutMap[i].c_str()));
+    //    keyCodes.push_back(i);
+    //}
+    // Add modifier keys
+    keyNames.Append(winrt::box_value(keyboardLayoutMap[VK_LWIN].c_str()));
+    keyCodes.push_back(VK_LWIN);
+    keyNames.Append(winrt::box_value(keyboardLayoutMap[VK_RWIN].c_str()));
+    keyCodes.push_back(VK_RWIN);
+    keyNames.Append(winrt::box_value(keyboardLayoutMap[VK_CONTROL].c_str()));
+    keyCodes.push_back(VK_CONTROL);
+    keyNames.Append(winrt::box_value(keyboardLayoutMap[VK_LCONTROL].c_str()));
+    keyCodes.push_back(VK_LCONTROL);
+    keyNames.Append(winrt::box_value(keyboardLayoutMap[VK_RCONTROL].c_str()));
+    keyCodes.push_back(VK_RCONTROL);
+    keyNames.Append(winrt::box_value(keyboardLayoutMap[VK_MENU].c_str()));
+    keyCodes.push_back(VK_MENU);
+    keyNames.Append(winrt::box_value(keyboardLayoutMap[VK_LMENU].c_str()));
+    keyCodes.push_back(VK_LMENU);
+    keyNames.Append(winrt::box_value(keyboardLayoutMap[VK_RMENU].c_str()));
+    keyCodes.push_back(VK_RMENU);
+    keyNames.Append(winrt::box_value(keyboardLayoutMap[VK_SHIFT].c_str()));
+    keyCodes.push_back(VK_SHIFT);
+    keyNames.Append(winrt::box_value(keyboardLayoutMap[VK_LSHIFT].c_str()));
+    keyCodes.push_back(VK_LSHIFT);
+    keyNames.Append(winrt::box_value(keyboardLayoutMap[VK_RSHIFT].c_str()));
+    keyCodes.push_back(VK_RSHIFT);
+    // Add character keys
+    for (auto& it : unicodeKeys)
+    {
+        // If it was not renamed with a special name
+        if (it.second == keyboardLayoutMap[it.first])
+        {
+            keyNames.Append(winrt::box_value(it.second.c_str()));
+            keyCodes.push_back(it.first);
+        }
+    }
+    // Add all other special keys
     for (int i = 0; i < 256; i++)
     {
-        keyNames.Append(winrt::box_value(keyboardLayoutMap[i].c_str()));
+        // If it is not already been added (i.e. it was either a modifier or had a unicode representation)
+        if (std::find(keyCodes.begin(), keyCodes.end(), i) == keyCodes.end())
+        {
+            // If it is any other key but it is not named as VK #
+            if (unknownKeys.find(std::make_pair(i, keyboardLayoutMap[i])) == unknownKeys.end())
+            {
+                keyNames.Append(winrt::box_value(keyboardLayoutMap[i].c_str()));
+                keyCodes.push_back(i);
+            }
+        }
+    }
+    // Add unknown keys
+    for (auto& it : unknownKeys)
+    {
+        // If it was not renamed with a special name
+        if (it.second == keyboardLayoutMap[it.first])
+        {
+            keyNames.Append(winrt::box_value(it.second.c_str()));
+            keyCodes.push_back(it.first);
+        }
     }
 
-    return keyNames;
+    return std::make_pair(keyNames, keyCodes);
 }

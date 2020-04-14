@@ -4,7 +4,7 @@
 class SingleKeyRemapControl
 {
 private:
-    // Dropdown to display the selected remap key
+    // Drop down to display the selected remap key
     Windows::UI::Xaml::Controls::ComboBox singleKeyRemapDropDown;
 
     // Button to type the remap key
@@ -25,16 +25,20 @@ public:
     {
         singleKeyRemapDropDown.Width(100);
         singleKeyRemapDropDown.MaxDropDownHeight(200);
-        singleKeyRemapDropDown.ItemsSource(keyboardManagerState->keyboardMap.GetKeyList());
+        singleKeyRemapDropDown.ItemsSource(keyboardManagerState->keyboardMap.GetKeyList().first);
         // drop down selection handler
         singleKeyRemapDropDown.SelectionChanged([&, rowIndex, colIndex](IInspectable const& sender, SelectionChangedEventArgs const&) {
-            uint32_t selectedKey = NULL;
             ComboBox currentDropDown = sender.as<ComboBox>();
-            Collections::IVector<IInspectable> itemsSource = currentDropDown.ItemsSource().as<Collections::IVector<IInspectable>>();
-            bool result = itemsSource.IndexOf(currentDropDown.SelectedItem(), selectedKey);
-            if (result)
+            std::vector<DWORD> keyCodes = keyboardManagerState->keyboardMap.GetKeyList().second;
+            int selectedKeyIndex = currentDropDown.SelectedIndex();
+            if (selectedKeyIndex != -1 && keyCodes.size() > selectedKeyIndex)
             {
-                singleKeyRemapBuffer[rowIndex][colIndex] = (DWORD)selectedKey;
+                singleKeyRemapBuffer[rowIndex][colIndex] = keyCodes[selectedKeyIndex];
+            }
+            else
+            {
+                // Reset to null if the key is not found
+                singleKeyRemapBuffer[rowIndex][colIndex] = NULL;
             }
         });
 

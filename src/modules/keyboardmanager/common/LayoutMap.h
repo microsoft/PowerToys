@@ -2,6 +2,7 @@
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <string>
 #include <map>
+#include <set>
 #include <mutex>
 #include <windows.h>
 
@@ -14,7 +15,15 @@ private:
     // Stores mappings for all the virtual key codes to the name of the key
     std::map<DWORD, std::wstring> keyboardLayoutMap;
     std::mutex keyboardLayoutMap_mutex;
+
+    // Stores the previous layout
     HKL previousLayout = 0;
+
+    // Stores the keys which have a unicode representation
+    std::set<std::pair<DWORD, std::wstring>> unicodeKeys;
+
+    // Stores the keys which do not have a name
+    std::set<std::pair<DWORD, std::wstring>> unknownKeys;
 
 public:
     // Update Keyboard layout according to input locale identifier
@@ -28,6 +37,6 @@ public:
     // Function to return the unicode string name of the key
     std::wstring GetKeyName(DWORD key);
 
-    // Function to return the list of names of all the keys for the drop down
-    Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> GetKeyList();
+    // Function to return two vectors: the list of names of all the keys for the drop down, and their corresponding virtual key codes
+    std::pair<Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable>, std::vector<DWORD>> GetKeyList();
 };

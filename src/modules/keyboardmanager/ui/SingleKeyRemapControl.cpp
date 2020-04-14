@@ -88,7 +88,12 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
 
         if (detectedKey != NULL)
         {
-            linkedRemapDropDown.SelectedValue(winrt::box_value(keyboardManagerState.keyboardMap.GetKeyName(detectedKey).c_str()));
+            std::vector<DWORD> keyCodes = keyboardManagerState.keyboardMap.GetKeyList().second;
+            auto it = std::find(keyCodes.begin(), keyCodes.end(), detectedKey);
+            if (it != keyCodes.end())
+            {
+                linkedRemapDropDown.SelectedIndex(std::distance(keyCodes.begin(), it));            
+            }
         }
 
         // Reset the keyboard manager UI state
