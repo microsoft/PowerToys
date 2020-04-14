@@ -135,7 +135,7 @@
             <HyperlinkButton Content="Module overview"/>
 
             <TextBlock 
-                Text="Based on"
+                Text="Attribution"
                 Style="{StaticResource SettingsGroupTitleStyle}" />
 
             <HyperlinkButton 

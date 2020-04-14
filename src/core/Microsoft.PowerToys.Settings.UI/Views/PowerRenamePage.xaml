@@ -100,7 +100,7 @@
                 NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/powerrename"/>
 
             <TextBlock 
-                Text="Based on"
+                Text="Attribution"
                 Style="{StaticResource SettingsGroupTitleStyle}" />
 
             <HyperlinkButton 

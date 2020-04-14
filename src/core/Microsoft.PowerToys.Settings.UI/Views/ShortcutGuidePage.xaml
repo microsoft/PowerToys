@@ -87,8 +87,6 @@
             <HyperlinkButton 
                 Content="Module overview" 
                 NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/shortcut_guide/README.md"/>
-            <HyperlinkButton 
-                Content="Give feedback"/>
         </StackPanel>
     </Grid>
 </Page>

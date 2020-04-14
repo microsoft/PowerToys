@@ -72,14 +72,6 @@
             <HyperlinkButton 
                 Content="Give feedback" 
                 NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
-
-            <!--  <TextBlock Text="Contributors"
-                           Style="{StaticResource SettingsGroupTitleStyle}"/>
-
-            <HyperlinkButton Content="Contributor name"/>
-            <HyperlinkButton Content="Contributor name"/>
-            <HyperlinkButton Content="Contributor name"/>
-            -->
         </StackPanel>
     </Grid>
 </Page>
