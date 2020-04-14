@@ -1,6 +1,7 @@
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -11,6 +12,14 @@ namespace Microsoft.PowerToys.Settings.UnitTest
     [TestClass]
     public class SettingsUtilsTests
     {
+        public SettingsUtilsTests()
+        {
+            string file_name = "\\test";
+            if (SettingsUtils.SettingsFolderExists(file_name))
+            {
+                DeleteFolder(file_name);
+            }
+        }
         [TestMethod]
         public void SaveSettings_SaveSettingsToFile_WhenFilePathExists()
         {
