@@ -97,7 +97,7 @@ namespace ZoneWindowUtils
     IVirtualDesktopManager* GetVirtualDesktopManager()
     {
         winrt::com_ptr<IVirtualDesktopManager> manager;
-        static IServiceProvider* serviceProvider = GetServiceProvider();
+        IServiceProvider* serviceProvider = GetServiceProvider();
         if (serviceProvider == nullptr || FAILED(serviceProvider->QueryService(__uuidof(manager), manager.put())))
         {
             return nullptr;
