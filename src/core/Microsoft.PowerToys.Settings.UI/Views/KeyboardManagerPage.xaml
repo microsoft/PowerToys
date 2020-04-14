@@ -122,7 +122,8 @@
 
             <Button x:Uid="KeyboardManager_RemapKeyboardButton"
                     Margin="{StaticResource SmallTopMargin}"
-                    Style="{StaticResource ButtonRevealStyle}"/>
+                    Style="{StaticResource ButtonRevealStyle}"
+                    Command="{Binding Path=RemapKeyboardCommand}"/>
 
             <ListView x:Name="RemapKeysList"
                       ItemsSource="{StaticResource dummyData}"
@@ -143,7 +144,8 @@
 
             <Button x:Uid="KeyboardManager_RemapShortcutsButton"
                     Margin="{StaticResource SmallTopMargin}"
-                    Style="{StaticResource ButtonRevealStyle}"/>
+                    Style="{StaticResource ButtonRevealStyle}"
+                    Command="{Binding Path=EditShortcutCommand}"/>
 
             <ListView x:Name="RemapShortcutsList"  
                       ItemsSource="{StaticResource dummyData}"
@@ -159,27 +161,19 @@
 
         </StackPanel>
 
-        <StackPanel x:Name="SidePanel"
-                                Orientation="Vertical"
-                                HorizontalAlignment="Left"
-                                Width="{StaticResource SidePanelWidth}"
-                                Grid.Column="1">
+        <StackPanel 
+            x:Name="SidePanel"
+            Orientation="Vertical"
+            HorizontalAlignment="Left"
+            Width="{StaticResource SidePanelWidth}"
+            Grid.Column="1">
 
-            <TextBlock Text="About this feature"
-                                   Style="{StaticResource SettingsGroupTitleStyle}"
-                                   Margin="{StaticResource XSmallBottomMargin}"/>
+            <TextBlock
+                Text="About this feature"
+                Style="{StaticResource SettingsGroupTitleStyle}"
+                Margin="{StaticResource XSmallBottomMargin}"/>
 
             <HyperlinkButton Content="Module overview"/>
-            <HyperlinkButton Content="Give feedback"/>
-
-            <TextBlock Text="Contributors"
-                           Style="{StaticResource SettingsGroupTitleStyle}"/>
-
-            <HyperlinkButton Content="Contributor name"/>
-            <HyperlinkButton Content="Contributor name"/>
-            <HyperlinkButton Content="Contributor name"/>
         </StackPanel>
-
-
     </Grid>
 </Page>
