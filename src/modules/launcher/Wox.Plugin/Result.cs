@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Windows.Media;
+using ImageSource = Windows.UI.Xaml.Media.ImageSource;
 
 namespace Wox.Plugin
 {

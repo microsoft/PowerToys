@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Windows.Media;
-using System.Windows.Threading;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
+using Windows.UI.Xaml.Media;
 
 
 namespace Wox.ViewModel
