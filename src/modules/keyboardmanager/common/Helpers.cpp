@@ -30,21 +30,30 @@ IInspectable getSiblingElement(IInspectable const& element)
 // Function to check if the key is a modifier key
 bool IsModifierKey(DWORD key)
 {
+    return (GetKeyType(key) != KeyType::Action);
+}
+
+// Function to get the type of the key
+KeyType GetKeyType(DWORD key)
+{
     switch (key)
     {
     case VK_LWIN:
     case VK_RWIN:
+        return KeyType::Win;
     case VK_CONTROL:
     case VK_LCONTROL:
     case VK_RCONTROL:
+        return KeyType::Ctrl;
     case VK_MENU:
     case VK_LMENU:
     case VK_RMENU:
+        return KeyType::Alt;
     case VK_SHIFT:
     case VK_LSHIFT:
     case VK_RSHIFT:
-        return true;
+        return KeyType::Shift;
     default:
-        return false;
+        return KeyType::Action;
     }
 }

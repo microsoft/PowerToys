@@ -2,6 +2,16 @@
 #include <vector>
 #include <winrt/Windows.System.h>
 
+// Type to distinguish between keys
+enum class KeyType
+{
+    Win,
+    Ctrl,
+    Alt,
+    Shift,
+    Action
+};
+
 // Function to split a wstring based on a delimiter and return a vector of split strings
 std::vector<std::wstring> splitwstring(const std::wstring& input, wchar_t delimiter);
 
@@ -35,3 +45,6 @@ std::vector<T> convertWStringVectorToIntegerVector(const std::vector<std::wstrin
 
 // Function to check if the key is a modifier key
 bool IsModifierKey(DWORD key);
+
+// Function to get the type of the key
+KeyType GetKeyType(DWORD key);

@@ -17,19 +17,19 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, Shortcut orig
     tableRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
 
     // ShortcutControl for the original shortcut
-    ShortcutControl originalSC(shortcutRemapBuffer.size(), 0);
+    ShortcutControl originalSC((int)shortcutRemapBuffer.size(), 0);
     tableRow.Children().Append(originalSC.getShortcutControl());
 
     // ShortcutControl for the new shortcut
-    ShortcutControl newSC(shortcutRemapBuffer.size(), 1);
+    ShortcutControl newSC((int)shortcutRemapBuffer.size(), 1);
     tableRow.Children().Append(newSC.getShortcutControl());
 
     // Set the shortcut text if the two vectors are not empty (i.e. default args)
     if (originalKeys.IsValidShortcut() && newKeys.IsValidShortcut())
     {
         shortcutRemapBuffer.push_back(std::vector<Shortcut>{ originalKeys, newKeys });
-        originalSC.AddShortcutToControl(originalKeys, originalSC.shortcutDropDownStackPanel, *keyboardManagerState, shortcutRemapBuffer.size() - 1, 0);
-        newSC.AddShortcutToControl(newKeys, newSC.shortcutDropDownStackPanel, *keyboardManagerState, shortcutRemapBuffer.size() - 1, 1);
+        originalSC.AddShortcutToControl(originalKeys, originalSC.shortcutDropDownStackPanel, *keyboardManagerState, (int)shortcutRemapBuffer.size() - 1, 0);
+        newSC.AddShortcutToControl(newKeys, newSC.shortcutDropDownStackPanel, *keyboardManagerState, (int)shortcutRemapBuffer.size() - 1, 1);
     }
     else
     {
@@ -53,6 +53,209 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, Shortcut orig
     });
     tableRow.Children().Append(deleteShortcut);
     parent.Children().Append(tableRow);
+}
+
+// Function to add a drop down to the shortcut stack panel
+ComboBox ShortcutControl::AddDropDown(StackPanel parent, const int& rowIndex, const int& colIndex)
+{
+    ComboBox shortcutDropDown;
+    shortcutDropDown.Width(100);
+    shortcutDropDown.MaxDropDownHeight(200);
+    shortcutDropDown.ItemsSource(keyboardManagerState->keyboardMap.GetKeyList(true).first);
+    // drop down selection handler
+    shortcutDropDown.SelectionChanged([&, rowIndex, colIndex, parent](IInspectable const& sender, SelectionChangedEventArgs const&) {
+        ComboBox currentDropDown = sender.as<ComboBox>();
+        std::vector<DWORD> keyCodeList = keyboardManagerState->keyboardMap.GetKeyList(true).second;
+        int selectedKeyIndex = currentDropDown.SelectedIndex();
+        uint32_t dropDownIndex = -1;
+        bool dropDownFound = parent.Children().IndexOf(currentDropDown, dropDownIndex);
+
+        if (selectedKeyIndex != -1 && keyCodeList.size() > selectedKeyIndex && dropDownFound)
+        {
+            // If only 1 drop down and action key is chosen: Warn that a modifier must be chosen
+            if (parent.Children().Size() == 1 && !IsModifierKey(keyCodeList[selectedKeyIndex]))
+            {
+                // warn and reset the drop down
+                currentDropDown.SelectedIndex(-1);
+            }
+            // If it is the last drop down
+            else if (dropDownIndex == parent.Children().Size() - 1)
+            {
+                // If last drop down and a modifier is selected: add a new drop down (max of 5 drop downs should be enforced)
+                if (IsModifierKey(keyCodeList[selectedKeyIndex]) && parent.Children().Size() < 5)
+                {
+                    // check if modifier has already been added before in a previous drop down
+                    std::vector<DWORD> currentKeys = GetKeysFromStackPanel(parent);
+                    bool matchPreviousModifier = false;
+                    for (int i = 0; i < currentKeys.size(); i++)
+                    {
+                        // Skip the current drop down
+                        if (i != dropDownIndex)
+                        {
+                            // If the key type for the newly added key matches any of the existing keys in the shortcut
+                            if (GetKeyType(keyCodeList[selectedKeyIndex]) == GetKeyType(currentKeys[i]))
+                            {
+                                matchPreviousModifier = true;
+                                break;
+                            }
+                        }
+                    }
+                    // If it matched any of the previous modifiers then reset that drop down
+                    if (matchPreviousModifier)
+                    {
+                        // warn and reset the drop down
+                        currentDropDown.SelectedIndex(-1);
+                    }
+                    // If not, add a new drop down
+                    else
+                    {
+                        AddDropDown(parent, rowIndex, colIndex);
+                    }
+                }
+                // If last drop down and a modifier is selected but there are already 5 drop downs: warn the user
+                else if (IsModifierKey(keyCodeList[selectedKeyIndex]) && parent.Children().Size() >= 5)
+                {
+                    // warn and reset the drop down
+                    currentDropDown.SelectedIndex(-1);
+                }
+                // If None is selected but it's the last index: warn
+                else if (keyCodeList[selectedKeyIndex] == 0)
+                {
+                    // warn and reset the drop down
+                    currentDropDown.SelectedIndex(-1);
+                }
+                // If none of the above, then the action key will be set
+            }
+            // If it is the not the last drop down
+            else
+            {
+                if (IsModifierKey(keyCodeList[selectedKeyIndex]))
+                {
+                    // check if modifier has already been added before in a previous drop down
+                    std::vector<DWORD> currentKeys = GetKeysFromStackPanel(parent);
+                    bool matchPreviousModifier = false;
+                    for (int i = 0; i < currentKeys.size(); i++)
+                    {
+                        // Skip the current drop down
+                        if (i != dropDownIndex)
+                        {
+                            // If the key type for the newly added key matches any of the existing keys in the shortcut
+                            if (GetKeyType(keyCodeList[selectedKeyIndex]) == GetKeyType(currentKeys[i]))
+                            {
+                                matchPreviousModifier = true;
+                                break;
+                            }
+                        }
+                    }
+                    // If it matched any of the previous modifiers then reset that drop down
+                    if (matchPreviousModifier)
+                    {
+                        // warn and reset the drop down
+                        currentDropDown.SelectedIndex(-1);
+                    }
+                    // If not, the modifier key will be set
+                }
+                // If None is selected and there are more than 2 drop downs
+                else if (keyCodeList[selectedKeyIndex] == 0 && parent.Children().Size() > 2)
+                {
+                    // delete drop down
+                    parent.Children().RemoveAt(dropDownIndex);
+                    parent.UpdateLayout();
+                }
+                else if (keyCodeList[selectedKeyIndex] == 0 && parent.Children().Size() <= 2)
+                {
+                    // warn and reset the drop down
+                    currentDropDown.SelectedIndex(-1);
+                }
+                // If the user tries to set an action key check if all drop down menus after this are empty
+                else
+                {
+                    bool isClear = true;
+                    for (int i = dropDownIndex + 1; i < (int)parent.Children().Size(); i++)
+                    {
+                        ComboBox currentDropDown = parent.Children().GetAt(i).as<ComboBox>();
+                        if (currentDropDown.SelectedIndex() != -1)
+                        {
+                            isClear = false;
+                            break;
+                        }
+                    }
+
+                    if (isClear)
+                    {
+                        // remove all the drop down
+                        int elementsToBeRemoved = parent.Children().Size() - dropDownIndex - 1;
+                        for (int i = 0; i < elementsToBeRemoved; i++)
+                        {
+                            parent.Children().RemoveAtEnd();
+                        }
+                        parent.UpdateLayout();
+                    }
+                    else
+                    {
+                        // warn and reset the drop down
+                        currentDropDown.SelectedIndex(-1);
+                    }
+                }
+            }
+        }
+
+        // Reset the buffer based on the new selected drop down items
+        shortcutRemapBuffer[rowIndex][colIndex].SetKeyCodes(GetKeysFromStackPanel(parent));
+    });
+
+    parent.Children().Append(shortcutDropDown);
+    parent.UpdateLayout();
+
+    return shortcutDropDown;
+}
+
+// Function to add a shortcut to the shortcut control as combo boxes
+void ShortcutControl::AddShortcutToControl(Shortcut& shortcut, StackPanel parent, KeyboardManagerState& keyboardManagerState, const int& rowIndex, const int& colIndex)
+{
+    parent.Children().Clear();
+    std::vector<DWORD> shortcutKeyCodes = shortcut.GetKeyCodes();
+    std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyList(true).second;
+    if (shortcutKeyCodes.size() != 0)
+    {
+        ComboBox firstDropDown = AddDropDown(parent, rowIndex, colIndex);
+        for (int i = 0; i < shortcutKeyCodes.size(); i++)
+        {
+            // New drop down gets added automatically when the SelectedIndex is set
+            if (i < (int)parent.Children().Size())
+            {
+                ComboBox currentDropDown = parent.Children().GetAt(i).as<ComboBox>();
+                auto it = std::find(keyCodeList.begin(), keyCodeList.end(), shortcutKeyCodes[i]);
+                if (it != keyCodeList.end())
+                {
+                    currentDropDown.SelectedIndex((int32_t)std::distance(keyCodeList.begin(), it));
+                }
+            }
+        }
+    }
+    parent.UpdateLayout();
+}
+
+// Function to get the list of key codes from the shortcut combo box stack panel
+std::vector<DWORD> ShortcutControl::GetKeysFromStackPanel(StackPanel parent)
+{
+    std::vector<DWORD> keys;
+    std::vector<DWORD> keyCodeList = keyboardManagerState->keyboardMap.GetKeyList(true).second;
+    for (int i = 0; i < (int)parent.Children().Size(); i++)
+    {
+        ComboBox currentDropDown = parent.Children().GetAt(i).as<ComboBox>();
+        int selectedKeyIndex = currentDropDown.SelectedIndex();
+        if (selectedKeyIndex != -1 && keyCodeList.size() > selectedKeyIndex)
+        {
+            // If None is not the selected key
+            if (keyCodeList[selectedKeyIndex] != 0)
+            {
+                keys.push_back(keyCodeList[selectedKeyIndex]);
+            }
+        }
+    }
+
+    return keys;
 }
 
 // Function to return the stack panel element of the ShortcutControl. This is the externally visible UI element which can be used to add it to other layouts
