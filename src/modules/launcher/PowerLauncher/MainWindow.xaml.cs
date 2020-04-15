@@ -3,24 +3,20 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
-using System.Windows.Controls;
-using System.Windows.Forms;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Helper;
 using Wox.Infrastructure.UserSettings;
 using Wox.ViewModel;
+
 using Screen = System.Windows.Forms.Screen;
-using ContextMenuStrip = System.Windows.Forms.ContextMenuStrip;
 using DataFormats = System.Windows.DataFormats;
 using DragEventArgs = System.Windows.DragEventArgs;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
 using Windows.UI.Xaml.Controls;
-using System.Diagnostics;
-using Wox.Plugin;
-using Windows.UI.Xaml.Input;
+
 
 namespace PowerLauncher
 {
