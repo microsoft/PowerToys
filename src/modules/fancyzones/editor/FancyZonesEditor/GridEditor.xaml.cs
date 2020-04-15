@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -222,7 +222,7 @@ namespace FancyZonesEditor
             int newChildIndex = AddZone();
 
             double offset = e.Offset;
-            double thickness = e.Thickness;
+            double space = e.Space;
 
             if (e.Orientation == Orientation.Vertical)
             {
@@ -295,25 +295,28 @@ namespace FancyZonesEditor
                 model.CellChildMap = newCellChildMap;
 
                 sourceCol = 0;
+                double newTotalExtent = ActualWidth - (space * (cols + 1));
                 for (int col = 0; col < cols; col++)
                 {
                     if (col == foundCol)
                     {
-                        RowColInfo[] split = _colInfo[col].Split(offset, thickness);
+                        RowColInfo[] split = _colInfo[col].Split(offset, space);
                         newColInfo[col] = split[0];
                         newColPercents[col] = split[0].Percent;
                         col++;
 
                         newColInfo[col] = split[1];
                         newColPercents[col] = split[1].Percent;
-                        sourceCol++;
                     }
                     else
                     {
                         newColInfo[col] = _colInfo[sourceCol];
+                        newColInfo[col].RecalculatePercent(newTotalExtent);
+
                         newColPercents[col] = model.ColumnPercents[sourceCol];
-                        sourceCol++;
                     }
+
+                    sourceCol++;
                 }
 
                 _colInfo = newColInfo;
@@ -393,25 +396,28 @@ namespace FancyZonesEditor
                 model.CellChildMap = newCellChildMap;
 
                 sourceRow = 0;
+                double newTotalExtent = ActualHeight - (space * (rows + 1));
                 for (int row = 0; row < rows; row++)
                 {
                     if (row == foundRow)
                     {
-                        RowColInfo[] split = _rowInfo[row].Split(offset, thickness);
+                        RowColInfo[] split = _rowInfo[row].Split(offset, space);
                         newRowInfo[row] = split[0];
                         newRowPercents[row] = split[0].Percent;
                         row++;
 
                         newRowInfo[row] = split[1];
                         newRowPercents[row] = split[1].Percent;
-                        sourceRow++;
                     }
                     else
                     {
                         newRowInfo[row] = _rowInfo[sourceRow];
+                        newRowInfo[row].RecalculatePercent(newTotalExtent);
+
                         newRowPercents[row] = model.RowPercents[sourceRow];
-                        sourceRow++;
                     }
+                    
+                    sourceRow++;
                 }
 
                 _rowInfo = newRowInfo;

@@ -34,17 +34,23 @@ namespace FancyZonesEditor
             return Extent;
         }
 
-        public RowColInfo[] Split(double offset, double thickness)
+        public void RecalculatePercent(double newTotalExtent)
+        {
+            Percent = (int)(Extent * _multiplier / newTotalExtent);
+        }
+
+        public RowColInfo[] Split(double offset, double space)
         {
             RowColInfo[] info = new RowColInfo[2];
 
             double totalExtent = Extent * _multiplier / Percent;
-            totalExtent -= thickness;
+            totalExtent -= space;
 
-            int newPercent = (int)(offset * _multiplier / totalExtent);
+            int percent0 = (int)(offset * _multiplier / totalExtent);
+            int percent1 = (int)((Extent - space - offset) * _multiplier / totalExtent);
 
-            info[0] = new RowColInfo(newPercent);
-            info[1] = new RowColInfo(Percent - newPercent);
+            info[0] = new RowColInfo(percent0);
+            info[1] = new RowColInfo(percent1);
 
             return info;
         }
