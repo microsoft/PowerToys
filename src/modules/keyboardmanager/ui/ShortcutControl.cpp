@@ -62,8 +62,14 @@ ComboBox ShortcutControl::AddDropDown(StackPanel parent, const int& rowIndex, co
     shortcutDropDown.Width(100);
     shortcutDropDown.MaxDropDownHeight(200);
     shortcutDropDown.ItemsSource(keyboardManagerState->keyboardMap.GetKeyList(true).first);
+    // Flyout to display the warning on the drop down element
+    Flyout warningFlyout;
+    TextBlock warningMessage;
+    warningFlyout.Content(warningMessage);
+    shortcutDropDown.ContextFlyout().SetAttachedFlyout((FrameworkElement)shortcutDropDown, warningFlyout);
+
     // drop down selection handler
-    shortcutDropDown.SelectionChanged([&, rowIndex, colIndex, parent](IInspectable const& sender, SelectionChangedEventArgs const&) {
+    shortcutDropDown.SelectionChanged([&, rowIndex, colIndex, parent, warningMessage](IInspectable const& sender, SelectionChangedEventArgs const&) {
         ComboBox currentDropDown = sender.as<ComboBox>();
         std::vector<DWORD> keyCodeList = keyboardManagerState->keyboardMap.GetKeyList(true).second;
         int selectedKeyIndex = currentDropDown.SelectedIndex();
@@ -76,6 +82,8 @@ ComboBox ShortcutControl::AddDropDown(StackPanel parent, const int& rowIndex, co
             if (parent.Children().Size() == 1 && !IsModifierKey(keyCodeList[selectedKeyIndex]))
             {
                 // warn and reset the drop down
+                warningMessage.Text(L"Shortcut must start with a modifier key");
+                currentDropDown.ContextFlyout().ShowAttachedFlyout((FrameworkElement)currentDropDown);
                 currentDropDown.SelectedIndex(-1);
             }
             // If it is the last drop down
@@ -104,6 +112,8 @@ ComboBox ShortcutControl::AddDropDown(StackPanel parent, const int& rowIndex, co
                     if (matchPreviousModifier)
                     {
                         // warn and reset the drop down
+                        warningMessage.Text(L"Shortcut cannot contain a repeated modifier");
+                        currentDropDown.ContextFlyout().ShowAttachedFlyout((FrameworkElement)currentDropDown);
                         currentDropDown.SelectedIndex(-1);
                     }
                     // If not, add a new drop down
@@ -116,12 +126,16 @@ ComboBox ShortcutControl::AddDropDown(StackPanel parent, const int& rowIndex, co
                 else if (IsModifierKey(keyCodeList[selectedKeyIndex]) && parent.Children().Size() >= 5)
                 {
                     // warn and reset the drop down
+                    warningMessage.Text(L"Shortcuts must contain an action key");
+                    currentDropDown.ContextFlyout().ShowAttachedFlyout((FrameworkElement)currentDropDown);
                     currentDropDown.SelectedIndex(-1);
                 }
                 // If None is selected but it's the last index: warn
                 else if (keyCodeList[selectedKeyIndex] == 0)
                 {
                     // warn and reset the drop down
+                    warningMessage.Text(L"Shortcuts must contain an action key");
+                    currentDropDown.ContextFlyout().ShowAttachedFlyout((FrameworkElement)currentDropDown);
                     currentDropDown.SelectedIndex(-1);
                 }
                 // If none of the above, then the action key will be set
@@ -151,6 +165,8 @@ ComboBox ShortcutControl::AddDropDown(StackPanel parent, const int& rowIndex, co
                     if (matchPreviousModifier)
                     {
                         // warn and reset the drop down
+                        warningMessage.Text(L"Shortcut cannot contain a repeated modifier");
+                        currentDropDown.ContextFlyout().ShowAttachedFlyout((FrameworkElement)currentDropDown);
                         currentDropDown.SelectedIndex(-1);
                     }
                     // If not, the modifier key will be set
@@ -165,10 +181,12 @@ ComboBox ShortcutControl::AddDropDown(StackPanel parent, const int& rowIndex, co
                 else if (keyCodeList[selectedKeyIndex] == 0 && parent.Children().Size() <= 2)
                 {
                     // warn and reset the drop down
+                    warningMessage.Text(L"Shortcut must have atleast 2 keys");
+                    currentDropDown.ContextFlyout().ShowAttachedFlyout((FrameworkElement)currentDropDown);
                     currentDropDown.SelectedIndex(-1);
                 }
-                // If the user tries to set an action key check if all drop down menus after this are empty
-                else
+                // If the user tries to set an action key check if all drop down menus after this are empty if it is not the first key
+                else if (dropDownIndex != 0)
                 {
                     bool isClear = true;
                     for (int i = dropDownIndex + 1; i < (int)parent.Children().Size(); i++)
@@ -194,6 +212,8 @@ ComboBox ShortcutControl::AddDropDown(StackPanel parent, const int& rowIndex, co
                     else
                     {
                         // warn and reset the drop down
+                        warningMessage.Text(L"Shortcut must end with an action key");
+                        currentDropDown.ContextFlyout().ShowAttachedFlyout((FrameworkElement)currentDropDown);
                         currentDropDown.SelectedIndex(-1);
                     }
                 }
