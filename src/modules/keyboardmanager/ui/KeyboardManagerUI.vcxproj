@@ -98,7 +98,6 @@
   <ItemGroup>
     <ClCompile Include="EditKeyboardWindow.cpp" />
     <ClCompile Include="EditShortcutsWindow.cpp" />
-    <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -110,7 +109,6 @@
     <ClInclude Include="EditKeyboardWindow.h" />
     <ClInclude Include="EditShortcutsWindow.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="MainWindow.h" />
     <ClInclude Include="ShortcutControl.h" />
     <ClInclude Include="SingleKeyRemapControl.h" />
   </ItemGroup>
