@@ -80,15 +80,11 @@ void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
     const auto level = DPIAware::GetAwarenessLevel(GetWindowDpiAwarenessContext(window));
     const bool accountForUnawareness = level < DPIAware::PER_MONITOR_AWARE;
 
-    LONG leftMargin = 0;
-    LONG rightMargin = 0;
-    LONG bottomMargin = 0;
-
     if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &frameRect, sizeof(frameRect))))
     {
-        leftMargin = frameRect.left - windowRect.left;
-        rightMargin = frameRect.right - windowRect.right;
-        bottomMargin = frameRect.bottom - windowRect.bottom;
+        LONG leftMargin = frameRect.left - windowRect.left;
+        LONG rightMargin = frameRect.right - windowRect.right;
+        LONG bottomMargin = frameRect.bottom - windowRect.bottom;
         newWindowRect.left -= leftMargin;
         newWindowRect.right -= rightMargin;
         newWindowRect.bottom -= bottomMargin;
