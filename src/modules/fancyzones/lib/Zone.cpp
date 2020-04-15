@@ -6,6 +6,8 @@
 #include "Settings.h"
 #include "util.h"
 
+#include "common/monitors.h"
+
 struct Zone : winrt::implements<Zone, IZone>
 {
 public:
@@ -78,14 +80,15 @@ RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) noexcept
 
     const auto level = DPIAware::GetAwarenessLevel(GetWindowDpiAwarenessContext(window));
     const bool accountForUnawareness = level < DPIAware::PER_MONITOR_AWARE;
+
     if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &frameRect, sizeof(frameRect))))
     {
-        const auto left_margin = frameRect.left - windowRect.left;
-        const auto right_margin = frameRect.right - windowRect.right;
-        const auto bottom_margin = frameRect.bottom - windowRect.bottom;
-        newWindowRect.left -= left_margin;
-        newWindowRect.right -= right_margin;
-        newWindowRect.bottom -= bottom_margin;
+        LONG leftMargin = frameRect.left - windowRect.left;
+        LONG rightMargin = frameRect.right - windowRect.right;
+        LONG bottomMargin = frameRect.bottom - windowRect.bottom;
+        newWindowRect.left -= leftMargin;
+        newWindowRect.right -= rightMargin;
+        newWindowRect.bottom -= bottomMargin;
     }
 
     // Map to screen coords
@@ -97,7 +100,8 @@ RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) noexcept
         const auto taskbar_left_size = std::abs(mi.rcMonitor.left - mi.rcWork.left);
         const auto taskbar_top_size = std::abs(mi.rcMonitor.top - mi.rcWork.top);
         OffsetRect(&newWindowRect, -taskbar_left_size, -taskbar_top_size);
-        if (accountForUnawareness)
+
+        if (accountForUnawareness && MonitorInfo::GetMonitorsCount() > 1)
         {
             newWindowRect.left = max(mi.rcMonitor.left, newWindowRect.left);
             newWindowRect.right = min(mi.rcMonitor.right - taskbar_left_size, newWindowRect.right);
