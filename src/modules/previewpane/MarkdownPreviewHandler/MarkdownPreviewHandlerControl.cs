@@ -3,11 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Common;
@@ -73,28 +70,29 @@ namespace MarkdownPreviewHandler
         /// <param name="dataSource">Path to the file.</param>
         public override void DoPreview<T>(T dataSource)
         {
-            this.InvokeOnControlThread(() =>
+            this.infoBarDisplayed = false;
+
+            try
             {
-                try
+                if (!(dataSource is string filePath))
                 {
-                    this.infoBarDisplayed = false;
+                    throw new ArgumentException($"{nameof(dataSource)} for {nameof(MarkdownPreviewHandler)} must be a string but was a '{typeof(T)}'");
+                }
 
-                    StringBuilder sb = new StringBuilder();
-                    string filePath = dataSource as string;
-                    string fileText = File.ReadAllText(filePath);
-                    this.extension.BaseUrl = Path.GetDirectoryName(filePath);
+                string fileText = File.ReadAllText(filePath);
+                Regex imageTagRegex = new Regex(@"<[ ]*img.*>");
+                if (imageTagRegex.IsMatch(fileText))
+                {
+                    this.infoBarDisplayed = true;
+                }
 
-                    Regex rgx = new Regex(@"<[ ]*img.*>");
-                    if (rgx.IsMatch(fileText))
-                    {
-                        this.infoBarDisplayed = true;
-                    }
+                this.extension.BaseUrl = Path.GetDirectoryName(filePath);
+                MarkdownPipeline pipeline = this.pipelineBuilder.Build();
+                string parsedMarkdown = Markdown.ToHtml(fileText, pipeline);
+                string markdownHTML = $"{this.htmlHeader}{parsedMarkdown}{this.htmlFooter}";
 
-                    MarkdownPipeline pipeline = this.pipelineBuilder.Build();
-                    string parsedMarkdown = Markdown.ToHtml(fileText, pipeline);
-                    sb.AppendFormat("{0}{1}{2}", this.htmlHeader, parsedMarkdown, this.htmlFooter);
-                    string markdownHTML = sb.ToString();
-
+                this.InvokeOnControlThread(() =>
+                {
                     this.browser = new WebBrowserExt
                     {
                         DocumentText = markdownHTML,
@@ -109,24 +107,30 @@ namespace MarkdownPreviewHandler
                     if (this.infoBarDisplayed)
                     {
                         this.infoBar = this.GetTextBoxControl(Resources.BlockedImageInfoText);
+                        this.Resize += this.FormResized;
                         this.Controls.Add(this.infoBar);
                     }
+                });
 
-                    this.Resize += this.FormResized;
-                    base.DoPreview(dataSource);
-                    MarkdownTelemetry.Log.MarkdownFilePreviewed();
-                }
-                catch (Exception e)
+                MarkdownTelemetry.Log.MarkdownFilePreviewed();
+            }
+            catch (Exception e)
+            {
+                MarkdownTelemetry.Log.MarkdownFilePreviewError(e.Message);
+
+                this.InvokeOnControlThread(() =>
                 {
-                    MarkdownTelemetry.Log.MarkdownFilePreviewError(e.Message);
+                    this.Controls.Clear();
                     this.infoBarDisplayed = true;
                     this.infoBar = this.GetTextBoxControl(Resources.MarkdownNotPreviewedError);
                     this.Resize += this.FormResized;
-                    this.Controls.Clear();
                     this.Controls.Add(this.infoBar);
-                    base.DoPreview(dataSource);
-                }
-            });
+                });
+            }
+            finally
+            {
+                base.DoPreview(dataSource);
+            }
         }
 
         /// <summary>
