@@ -38,6 +38,11 @@ std::vector<MonitorInfo> MonitorInfo::GetMonitors(bool include_toolbar)
     return monitors;
 }
 
+int MonitorInfo::GetMonitorsCount()
+{
+    return GetMonitors(true).size();
+}
+
 static BOOL CALLBACK get_primary_display_enum_cb(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
 {
     MONITORINFOEX monitor_info;
