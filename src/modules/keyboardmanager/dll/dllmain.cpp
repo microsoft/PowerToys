@@ -10,6 +10,7 @@
 #include <keyboardmanager/common/KeyboardManagerState.h>
 #include <keyboardmanager/common/Shortcut.h>
 #include <keyboardmanager/common/RemapShortcut.h>
+#include <common\settings_helpers.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -64,11 +65,58 @@ public:
     // Constructor
     KeyboardManager()
     {
-        init_map();
+        init_intial_config();
 
         // Set the static pointer to the newest object of the class
         keyboardmanager_object_ptr = this;
     };
+
+    void init_intial_config() 
+    {
+        PowerToysSettings::PowerToyValues settings =
+            PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
+        auto current_config = settings.get_string_value(L"configuration");
+
+        if (current_config)
+        {
+            // Read the config file and load the remaps.
+            auto configFile = json::from_file(PTSettingsHelper::get_module_save_folder_location(get_name()) + L"\\" + *current_config + L".json");
+            if (configFile)
+            {
+                auto jsonData = *configFile;
+                auto remapKeysData = jsonData.GetNamedObject(L"remapkeys");
+                auto remapShortcutsData = jsonData.GetNamedObject(L"remapShortcuts");
+
+                for (auto it : remapKeysData)
+                {
+                    // Be more resilient here.
+                    auto originalKey = it.Key().c_str();
+                    auto newKey = it.Value().GetString().c_str();
+                    keyboardManagerState.AddSingleKeyRemap(std::stoi(originalKey), std::stoi(newKey));
+                }
+
+                for (auto it : remapShortcutsData)
+                {
+                    auto originalSCVector = KeyboardManagerHelper::splitwstring(it.Key().c_str(), L';');
+                    auto remapSCVector = KeyboardManagerHelper::splitwstring(it.Value().GetString().c_str(), L';');
+
+                    Shortcut originalSC;
+                    for (auto key : originalSCVector)
+                    {
+                        originalSC.SetKey(std::stoi(key), false);
+                    }
+
+                    Shortcut remapSC;
+                    for (auto key : remapSCVector)
+                    {
+                        remapSC.SetKey(std::stoi(key), false);
+                    }
+                    
+                    keyboardManagerState.AddOSLevelShortcut(originalSC, remapSC);
+                }
+            }
+        }
+    }
 
     // This function is used to add the hardcoded mappings
     void init_map()

@@ -77,7 +77,7 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
     detectShortcutBox.CloseButtonText(to_hstring(L"Cancel"));
 
     // Get the linked text block for the "Type shortcut" button that was clicked
-    TextBlock linkedShortcutText = getSiblingElement(sender).as<TextBlock>();
+    TextBlock linkedShortcutText = KeyboardManagerHelper::getSiblingElement(sender).as<TextBlock>();
 
     // OK button
     detectShortcutBox.PrimaryButtonClick([=, &shortcutRemapBuffer, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {

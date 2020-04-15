@@ -79,7 +79,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
     detectRemapKeyBox.CloseButtonText(to_hstring(L"Cancel"));
 
     // Get the linked text block for the "Type Key" button that was clicked
-    TextBlock linkedRemapText = getSiblingElement(sender).as<TextBlock>();
+    TextBlock linkedRemapText = KeyboardManagerHelper::getSiblingElement(sender).as<TextBlock>();
 
     // OK button
     detectRemapKeyBox.PrimaryButtonClick([=, &singleKeyRemapBuffer, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
