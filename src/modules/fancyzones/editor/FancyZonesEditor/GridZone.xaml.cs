@@ -277,7 +277,14 @@ namespace FancyZonesEditor
 
         private void DoSplit(Orientation orientation, double offset)
         {
-            Split?.Invoke(this, new SplitEventArgs(orientation, offset, SplitterThickness));
+            int spacing = 0;
+            Settings settings = ((App)Application.Current).ZoneSettings;
+            if (settings.ShowSpacing)
+            {
+                spacing = settings.Spacing;
+            }
+
+            Split?.Invoke(this, new SplitEventArgs(orientation, offset, spacing));
         }
 
         private void FullSplit_Click(object sender, RoutedEventArgs e)
