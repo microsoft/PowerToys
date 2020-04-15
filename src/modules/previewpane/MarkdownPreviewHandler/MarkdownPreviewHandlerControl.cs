@@ -78,7 +78,7 @@ namespace MarkdownPreviewHandler
                 {
                     throw new ArgumentException($"{nameof(dataSource)} for {nameof(MarkdownPreviewHandler)} must be a string but was a '{typeof(T)}'");
                 }
-            
+
                 string fileText = File.ReadAllText(filePath);
                 Regex imageTagRegex = new Regex(@"<[ ]*img.*>");
                 if (imageTagRegex.IsMatch(fileText))
