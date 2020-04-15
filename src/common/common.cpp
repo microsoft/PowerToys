@@ -364,27 +364,31 @@ WindowState get_window_state(HWND hwnd)
     return RESTORED;
 }
 
-bool is_process_elevated()
+bool is_process_elevated(const bool use_cached_value)
 {
-    HANDLE token = nullptr;
-    bool elevated = false;
+    auto detection_func = []() {
+        HANDLE token = nullptr;
+        bool elevated = false;
 
-    if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token))
-    {
-        TOKEN_ELEVATION elevation;
-        DWORD size;
-        if (GetTokenInformation(token, TokenElevation, &elevation, sizeof(elevation), &size))
+        if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token))
         {
-            elevated = (elevation.TokenIsElevated != 0);
+            TOKEN_ELEVATION elevation;
+            DWORD size;
+            if (GetTokenInformation(token, TokenElevation, &elevation, sizeof(elevation), &size))
+            {
+                elevated = (elevation.TokenIsElevated != 0);
+            }
         }
-    }
 
-    if (token)
-    {
-        CloseHandle(token);
-    }
+        if (token)
+        {
+            CloseHandle(token);
+        }
 
-    return elevated;
+        return elevated;
+    };
+    static const bool cached_value = detection_func();
+    return use_cached_value ? cached_value : detection_func();
 }
 
 bool drop_elevated_privileges()

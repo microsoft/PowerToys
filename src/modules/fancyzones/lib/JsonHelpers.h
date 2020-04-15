@@ -212,6 +212,11 @@ namespace JSONHelpers
             customZoneSetsMap.clear();
             activeDeviceId.clear();
         }
+
+        inline void SetDeviceInfo(const std::wstring& deviceId, DeviceInfoData data)
+        {
+            deviceInfoMap[deviceId] = data;
+        }
 #endif
 
         inline void SetActiveDeviceId(const std::wstring& deviceId)

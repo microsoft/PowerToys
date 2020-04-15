@@ -25,8 +25,6 @@ namespace PowerToysTests
         private static void Init()
         {
             OpenSettings();
-            ShortWait();
-
             OpenFancyZonesSettings();
 
             _saveButton = session.FindElementByName("Save");
@@ -94,7 +92,7 @@ namespace PowerToysTests
             Assert.AreEqual(expected.ToString() + "\r\n", editor.Text);
 
             SaveChanges();
-            ShortWait();
+            WaitSeconds(1);
 
             int value = GetPropertyValue<int>("fancyzones_highlight_opacity");
             Assert.AreEqual(expected, value);
@@ -215,7 +213,7 @@ namespace PowerToysTests
             action.Perform();
 
             SaveChanges();
-            ShortWait();
+            WaitSeconds(1);
 
             //Assert.AreEqual(expectedText, input.Text);
 
@@ -235,7 +233,7 @@ namespace PowerToysTests
 
             //black on the bottom
             new Actions(session).MoveToElement(saturationAndBrightness).ClickAndHold().MoveByOffset(0, satRect.Height).Release().Perform();
-            ShortWait();
+            WaitSeconds(1);
 
             Assert.AreEqual("0\r\n", red.Text);
             Assert.AreEqual("0\r\n", green.Text);
@@ -243,7 +241,7 @@ namespace PowerToysTests
             Assert.AreEqual("000000\r\n", hex.Text);
 
             SaveChanges();
-            ShortWait();
+            WaitSeconds(1);
             Assert.AreEqual("#000000", GetPropertyValue<string>(propertyName));
 
             //white in left corner
@@ -254,7 +252,7 @@ namespace PowerToysTests
             Assert.AreEqual("ffffff\r\n", hex.Text);
 
             SaveChanges();
-            ShortWait();
+            WaitSeconds(1);
             Assert.AreEqual("#ffffff", GetPropertyValue<string>(propertyName));
 
             //color in right corner
@@ -266,7 +264,7 @@ namespace PowerToysTests
             Assert.AreEqual("ff0000\r\n", hex.Text);
 
             SaveChanges();
-            ShortWait();
+            WaitSeconds(1);
             Assert.AreEqual("#ff0000", GetPropertyValue<string>(propertyName));
         }
 
@@ -299,9 +297,10 @@ namespace PowerToysTests
                 toggle.Click();
 
                 SaveChanges();
-                ShortWait();
             }
-            
+
+            WaitSeconds(1);
+
             //check saved settings
             JObject savedProps = GetProperties();
             Assert.AreNotEqual(toggleValues[0], GetPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
@@ -339,7 +338,7 @@ namespace PowerToysTests
             }
             
             SaveChanges();
-            ShortWait();
+            WaitSeconds(1);
 
             JObject savedProps = GetProperties();
             Assert.AreEqual(toggleValues[0], GetPropertyValue<bool>(savedProps, "fancyzones_shiftDrag"));
@@ -396,7 +395,7 @@ namespace PowerToysTests
             
             Actions action = new Actions(session);
             action.MoveToElement(editor).MoveByOffset(editorRect.Width / 2 + 10, -editorRect.Height / 4).Perform();
-            ShortWait();
+            WaitSeconds(1);
 
             action.Click().Perform();
             Assert.AreEqual("100\r\n", editor.Text);
@@ -421,7 +420,7 @@ namespace PowerToysTests
 
             Actions action = new Actions(session);
             action.MoveToElement(editor).MoveByOffset(editorRect.Width / 2 + 10, editorRect.Height / 4).Perform();
-            ShortWait();
+            WaitSeconds(1);
 
             action.Click().Perform();
             Assert.AreEqual("0\r\n", editor.Text);
@@ -494,7 +493,7 @@ namespace PowerToysTests
             Assert.AreEqual("152", hue.Text);
 
             SaveChanges();
-            ShortWait();
+            WaitSeconds(1);
             Assert.AreEqual("#63c99a", GetPropertyValue<string>("fancyzones_zoneHighlightColor"));
         }
 
@@ -565,7 +564,7 @@ namespace PowerToysTests
             input.SendKeys(inputValue);
             SaveChanges();
             ClearInput(input);
-            ShortWait();
+            WaitSeconds(1);
             Assert.AreEqual(inputValue, GetPropertyValue<string>("fancyzones_excluded_apps"));
 
             //invalid
@@ -573,28 +572,28 @@ namespace PowerToysTests
             input.SendKeys(inputValue);
             SaveChanges();
             ClearInput(input);
-            ShortWait();
+            WaitSeconds(1);
             Assert.AreEqual(inputValue, GetPropertyValue<string>("fancyzones_excluded_apps"));
 
             inputValue = "Notepad,Chrome";
             input.SendKeys(inputValue);
             SaveChanges();
             ClearInput(input);
-            ShortWait();
+            WaitSeconds(1);
             Assert.AreEqual(inputValue, GetPropertyValue<string>("fancyzones_excluded_apps"));
 
             inputValue = "Note*";
             input.SendKeys(inputValue);
             SaveChanges();
             ClearInput(input);
-            ShortWait();
+            WaitSeconds(1);
             Assert.AreEqual(inputValue, GetPropertyValue<string>("fancyzones_excluded_apps"));
 
             inputValue = "Кириллица";
             input.SendKeys(inputValue);
             SaveChanges();
             ClearInput(input);
-            ShortWait();
+            WaitSeconds(1);
             Assert.AreEqual(inputValue, GetPropertyValue<string>("fancyzones_excluded_apps"));
         }
 

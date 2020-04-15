@@ -4,6 +4,7 @@
 #include <common/monitors.h>
 #include "Zone.h"
 #include "Settings.h"
+#include "util.h"
 
 struct Zone : winrt::implements<Zone, IZone>
 {
@@ -20,6 +21,7 @@ public:
     IFACEMETHODIMP_(void) RemoveWindowFromZone(HWND window, bool restoreSize) noexcept;
     IFACEMETHODIMP_(void) SetId(size_t id) noexcept { m_id = id; }
     IFACEMETHODIMP_(size_t) Id() noexcept { return m_id; }
+    IFACEMETHODIMP_(RECT) ComputeActualZoneRect(HWND window, HWND zoneWindow) noexcept;
 
 private:
     void SizeWindowToZone(HWND window, HWND zoneWindow) noexcept;
@@ -61,12 +63,11 @@ IFACEMETHODIMP_(void) Zone::RemoveWindowFromZone(HWND window, bool restoreSize) 
 
 void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
 {
-    // Skip invisible windows
-    if (!IsWindowVisible(window))
-    {
-        return;
-    }
+    SizeWindowToRect(window, ComputeActualZoneRect(window, zoneWindow));
+}
 
+RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) noexcept
+{
     // Take care of 1px border
     RECT newWindowRect = m_zoneRect;
 
@@ -111,29 +112,7 @@ void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
         newWindowRect.bottom = newWindowRect.top + (windowRect.bottom - windowRect.top);
     }
 
-    WINDOWPLACEMENT placement{};
-    ::GetWindowPlacement(window, &placement);
-
-    //wait if SW_SHOWMINIMIZED would be removed from window (Issue #1685)    
-    for (int i = 0; i < 5 && (placement.showCmd & SW_SHOWMINIMIZED) != 0; i++)
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        ::GetWindowPlacement(window, &placement);
-    }
-
-    // Do not restore minimized windows. We change their placement though so they restore to the correct zone.
-    if ((placement.showCmd & SW_SHOWMINIMIZED) == 0)
-    {
-        placement.showCmd = SW_RESTORE | SW_SHOWNA;
-    }
-
-    placement.rcNormalPosition = newWindowRect;
-    placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
-
-    ::SetWindowPlacement(window, &placement);
-    // Do it again, allowing Windows to resize the window and set correct scaling
-    // This fixes Issue #365
-    ::SetWindowPlacement(window, &placement);
+    return newWindowRect;
 }
 
 void Zone::StampZone(HWND window, bool stamp) noexcept

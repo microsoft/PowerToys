@@ -112,7 +112,7 @@ namespace WindowWalker.Components
                             InteropAndHelpers.CallBackPtr callbackptr = new InteropAndHelpers.CallBackPtr((IntPtr hwnd, IntPtr lParam) =>
                             {
                                 var childProcessId = GetProcessIDFromWindowHandle(hwnd);
-                                if (childProcessId != this.ProcessID)
+                                if (childProcessId != ProcessID)
                                 {
                                     _handlesToProcessCache[Hwnd] = GetProcessNameFromWindowHandle(hwnd);
                                     return false;
@@ -191,7 +191,7 @@ namespace WindowWalker.Components
         }
 
         /// <summary>
-        /// Determines whether the specified window handle identifies an existing window.
+        /// Gets a value indicating whether the specified window handle identifies an existing window.
         /// </summary>
         public bool IsWindow
         {
@@ -202,7 +202,7 @@ namespace WindowWalker.Components
         }
 
         /// <summary>
-        /// Get a value indicating whether is the window GWL_EX_STYLE is a toolwindow
+        /// Gets a value indicating whether a value is the window GWL_EX_STYLE is a toolwindow
         /// </summary>
         public bool IsToolWindow
         {
@@ -215,7 +215,7 @@ namespace WindowWalker.Components
         }
 
         /// <summary>
-        /// Get a value indicating whether the window GWL_EX_STYLE is an appwindow
+        /// Gets a value indicating whether the window GWL_EX_STYLE is an appwindow
         /// </summary>
         public bool IsAppWindow
         {
@@ -228,7 +228,7 @@ namespace WindowWalker.Components
         }
 
         /// <summary>
-        /// Get a value indicating whether the window has ITaskList_Deleted property
+        /// Gets a value indicating whether the window has ITaskList_Deleted property
         /// </summary>
         public bool TaskListDeleted
         {
@@ -239,18 +239,18 @@ namespace WindowWalker.Components
         }
 
         /// <summary>
-        /// Get a value indicating whether the app is a cloaked UWP app
+        /// Gets a value indicating whether the app is a cloaked UWP app
         /// </summary>
         public bool IsUWPCloaked
         {
             get
             {
-                return (this.IsWindowCloaked() && this.ClassName == "ApplicationFrameWindow");
+                return IsWindowCloaked() && ClassName == "ApplicationFrameWindow";
             }
         }
 
         /// <summary>
-        /// Determines whether the specified windows is the owner
+        /// Gets a value indicating whether the specified windows is the owner
         /// </summary>
         public bool IsOwner
         {
@@ -267,7 +267,7 @@ namespace WindowWalker.Components
         {
             int isCloaked = 0;
             const int DWMWA_CLOAKED = 14;
-            InteropAndHelpers.DwmGetWindowAttribute(this.hwnd, DWMWA_CLOAKED, out isCloaked, sizeof(int));
+            InteropAndHelpers.DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, out isCloaked, sizeof(int));
             return isCloaked != 0;
         }
 

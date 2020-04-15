@@ -132,8 +132,8 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (ZoneFromPointEmpty)
             {
-                auto actual = m_set->ZoneFromPoint(POINT{ 0, 0 });
-                Assert::IsTrue(nullptr == actual);
+                auto actual = m_set->ZonesFromPoint(POINT{ 0, 0 });
+                Assert::IsTrue(actual.size() == 0);
             }
 
             TEST_METHOD (ZoneFromPointInner)
@@ -146,9 +146,9 @@ namespace FancyZonesUnitTests
                 {
                     for (int j = top + 1; j < bottom; j++)
                     {
-                        auto actual = m_set->ZoneFromPoint(POINT{ i, j });
-                        Assert::IsTrue(actual != nullptr);
-                        compareZones(expected, actual);
+                        auto actual = m_set->ZonesFromPoint(POINT{ i, j });
+                        Assert::IsTrue(actual.size() == 1);
+                        compareZones(expected, m_set->GetZones()[actual[0]]);
                     }
                 }
             }
@@ -161,29 +161,29 @@ namespace FancyZonesUnitTests
 
                 for (int i = left; i < right; i++)
                 {
-                    auto actual = m_set->ZoneFromPoint(POINT{ i, top });
-                    Assert::IsTrue(actual != nullptr);
-                    compareZones(expected, actual);
+                    auto actual = m_set->ZonesFromPoint(POINT{ i, top });
+                    Assert::IsTrue(actual.size() == 1);
+                    compareZones(expected, m_set->GetZones()[actual[0]]);
                 }
 
                 for (int i = top; i < bottom; i++)
                 {
-                    auto actual = m_set->ZoneFromPoint(POINT{ left, i });
-                    Assert::IsTrue(actual != nullptr);
-                    compareZones(expected, actual);
+                    auto actual = m_set->ZonesFromPoint(POINT{ left, i });
+                    Assert::IsTrue(actual.size() == 1);
+                    compareZones(expected, m_set->GetZones()[actual[0]]);
                 }
 
                 //bottom and right borders considered to be outside
                 for (int i = left; i < right; i++)
                 {
-                    auto actual = m_set->ZoneFromPoint(POINT{ i, bottom });
-                    Assert::IsTrue(nullptr == actual);
+                    auto actual = m_set->ZonesFromPoint(POINT{ i, bottom });
+                    Assert::IsTrue(actual.size() == 0);
                 }
 
                 for (int i = top; i < bottom; i++)
                 {
-                    auto actual = m_set->ZoneFromPoint(POINT{ right, i });
-                    Assert::IsTrue(nullptr == actual);
+                    auto actual = m_set->ZonesFromPoint(POINT{ right, i });
+                    Assert::IsTrue(actual.size() == 0);
                 }
             }
 
@@ -193,8 +193,8 @@ namespace FancyZonesUnitTests
                 winrt::com_ptr<IZone> zone = MakeZone({ left, top, right, bottom });
                 m_set->AddZone(zone);
 
-                auto actual = m_set->ZoneFromPoint(POINT{ 101, 101 });
-                Assert::IsTrue(actual == nullptr);
+                auto actual = m_set->ZonesFromPoint(POINT{ 200, 200 });
+                Assert::IsTrue(actual.size() == 0);
             }
 
             TEST_METHOD (ZoneFromPointOverlapping)
@@ -208,9 +208,65 @@ namespace FancyZonesUnitTests
                 winrt::com_ptr<IZone> zone4 = MakeZone({ 10, 10, 50, 50 });
                 m_set->AddZone(zone4);
 
-                auto actual = m_set->ZoneFromPoint(POINT{ 50, 50 });
-                Assert::IsTrue(actual != nullptr);
-                compareZones(zone2, actual);
+                // zone4 is expected because it's the smallest one, and it's considered to be inside
+                // since Multizones support
+
+                auto actual = m_set->ZonesFromPoint(POINT{ 50, 50 });
+                Assert::IsTrue(actual.size() == 1);
+                compareZones(zone4, m_set->GetZones()[actual[0]]);
+            }
+
+            TEST_METHOD (ZoneFromPointMultizoneHorizontal)
+            {
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                m_set->AddZone(zone1);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 100, 0, 200, 100 });
+                m_set->AddZone(zone2);
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 100, 100, 200 });
+                m_set->AddZone(zone3);
+                winrt::com_ptr<IZone> zone4 = MakeZone({ 100, 100, 200, 200 });
+                m_set->AddZone(zone4);
+
+                auto actual = m_set->ZonesFromPoint(POINT{ 50, 100 });
+                Assert::IsTrue(actual.size() == 2);
+                compareZones(zone1, m_set->GetZones()[actual[0]]);
+                compareZones(zone3, m_set->GetZones()[actual[1]]);
+            }
+
+            TEST_METHOD (ZoneFromPointMultizoneVertical)
+            {
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                m_set->AddZone(zone1);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 100, 0, 200, 100 });
+                m_set->AddZone(zone2);
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 100, 100, 200 });
+                m_set->AddZone(zone3);
+                winrt::com_ptr<IZone> zone4 = MakeZone({ 100, 100, 200, 200 });
+                m_set->AddZone(zone4);
+
+                auto actual = m_set->ZonesFromPoint(POINT{ 100, 50 });
+                Assert::IsTrue(actual.size() == 2);
+                compareZones(zone1, m_set->GetZones()[actual[0]]);
+                compareZones(zone2, m_set->GetZones()[actual[1]]);
+            }
+
+            TEST_METHOD(ZoneFromPointMultizoneQuad)
+            {
+                winrt::com_ptr<IZone> zone1 = MakeZone({ 0, 0, 100, 100 });
+                m_set->AddZone(zone1);
+                winrt::com_ptr<IZone> zone2 = MakeZone({ 100, 0, 200, 100 });
+                m_set->AddZone(zone2);
+                winrt::com_ptr<IZone> zone3 = MakeZone({ 0, 100, 100, 200 });
+                m_set->AddZone(zone3);
+                winrt::com_ptr<IZone> zone4 = MakeZone({ 100, 100, 200, 200 });
+                m_set->AddZone(zone4);
+
+                auto actual = m_set->ZonesFromPoint(POINT{ 100, 100 });
+                Assert::IsTrue(actual.size() == 4);
+                compareZones(zone1, m_set->GetZones()[actual[0]]);
+                compareZones(zone2, m_set->GetZones()[actual[1]]);
+                compareZones(zone3, m_set->GetZones()[actual[2]]);
+                compareZones(zone4, m_set->GetZones()[actual[3]]);
             }
 
             TEST_METHOD (ZoneFromPointWithNotNormalizedRect)
@@ -218,8 +274,8 @@ namespace FancyZonesUnitTests
                 winrt::com_ptr<IZone> zone = MakeZone({ 100, 100, 0, 0 });
                 m_set->AddZone(zone);
 
-                auto actual = m_set->ZoneFromPoint(POINT{ 50, 50 });
-                Assert::IsTrue(actual == nullptr);
+                auto actual = m_set->ZonesFromPoint(POINT{ 50, 50 });
+                Assert::IsTrue(actual.size() == 0);
             }
 
             TEST_METHOD (ZoneFromPointWithZeroRect)
@@ -227,8 +283,8 @@ namespace FancyZonesUnitTests
                 winrt::com_ptr<IZone> zone = MakeZone({ 0, 0, 0, 0 });
                 m_set->AddZone(zone);
 
-                auto actual = m_set->ZoneFromPoint(POINT{ 0, 0 });
-                Assert::IsTrue(actual == nullptr);
+                auto actual = m_set->ZonesFromPoint(POINT{ 0, 0 });
+                Assert::IsTrue(actual.size() == 0);
             }
 
             TEST_METHOD (ZoneIndexFromWindow)
@@ -316,7 +372,7 @@ namespace FancyZonesUnitTests
                 m_set->AddZone(zone3);
 
                 HWND window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1, false);
                 Assert::IsFalse(zone1->ContainsWindow(window));
                 Assert::IsTrue(zone2->ContainsWindow(window));
                 Assert::IsFalse(zone3->ContainsWindow(window));
@@ -325,7 +381,7 @@ namespace FancyZonesUnitTests
             TEST_METHOD (MoveWindowIntoZoneByIndexWithNoZones)
             {
                 HWND window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0, false);
             }
 
             TEST_METHOD (MoveWindowIntoZoneByIndexWithInvalidIndex)
@@ -338,7 +394,7 @@ namespace FancyZonesUnitTests
                 m_set->AddZone(zone3);
 
                 HWND window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 100);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 100, false);
                 Assert::IsFalse(zone1->ContainsWindow(window));
                 Assert::IsFalse(zone2->ContainsWindow(window));
                 Assert::IsFalse(zone3->ContainsWindow(window));
@@ -355,17 +411,17 @@ namespace FancyZonesUnitTests
                 m_set->AddZone(zone3);
 
                 HWND window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0, false);
                 Assert::IsTrue(zone1->ContainsWindow(window));
                 Assert::IsFalse(zone2->ContainsWindow(window));
                 Assert::IsFalse(zone3->ContainsWindow(window));
 
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 1, false);
                 Assert::IsFalse(zone1->ContainsWindow(window));
                 Assert::IsTrue(zone2->ContainsWindow(window));
                 Assert::IsFalse(zone3->ContainsWindow(window));
 
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 2);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 2, false);
                 Assert::IsFalse(zone1->ContainsWindow(window));
                 Assert::IsFalse(zone2->ContainsWindow(window));
                 Assert::IsTrue(zone3->ContainsWindow(window));
@@ -382,9 +438,9 @@ namespace FancyZonesUnitTests
                 m_set->AddZone(zone3);
 
                 HWND window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
-                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0, false);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0, false);
+                m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0, false);
                 Assert::IsTrue(zone1->ContainsWindow(window));
                 Assert::IsFalse(zone2->ContainsWindow(window));
                 Assert::IsFalse(zone3->ContainsWindow(window));
@@ -401,7 +457,7 @@ namespace FancyZonesUnitTests
                 m_set->AddZone(zone1);
 
                 auto window = Mocks::Window();
-                m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 101, 101 });
+                m_set->MoveWindowIntoZoneByPoint(window, Mocks::Window(), POINT{ 200, 200 });
 
                 Assert::IsFalse(zone1->ContainsWindow(window));
             }
