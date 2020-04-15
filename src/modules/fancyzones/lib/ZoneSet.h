@@ -24,12 +24,12 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      */
     IFACEMETHOD(AddZone)(winrt::com_ptr<IZone> zone) = 0;
     /**
-     * Get zone from cursor coordinates.
+     * Get zones from cursor coordinates.
      *
      * @param   pt Cursor coordinates.
-     * @returns Zone object (defining coordinates of the zone).
+     * @returns Vector of indices, corresponding to the current set of zones - the zones considered active.
      */
-    IFACEMETHOD_(winrt::com_ptr<IZone>, ZoneFromPoint)(POINT pt) = 0;
+    IFACEMETHOD_(std::vector<int>, ZonesFromPoint)(POINT pt) = 0;
     /**
      * Get index of the zone inside zone layout by window assigned to it.
      *
@@ -48,8 +48,20 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      * @param   zoneWindow The m_window of a ZoneWindow, it's a hidden window representing the
      *                     current monitor desktop work area.
      * @param   index      Zone index within zone layout.
+     * @param   stampZone  Whether the window being added to the zone should be stamped.
      */
-    IFACEMETHOD_(void, MoveWindowIntoZoneByIndex)(HWND window, HWND zoneWindow, int index) = 0;
+    IFACEMETHOD_(void, MoveWindowIntoZoneByIndex)(HWND window, HWND zoneWindow, int index, bool stampZone) = 0;
+    /**
+     * Assign window to the zones based on the set of zone indices inside zone layout.
+     *
+     * @param   window     Handle of window which should be assigned to zone.
+     * @param   zoneWindow The m_window of a ZoneWindow, it's a hidden window representing the
+     *                     current monitor desktop work area.
+     * @param   indexSet   The set of zone indices within zone layout.
+     * @param   stampZone  Whether the window being added to the zone should be stamped,
+                           in case a single window is to be added.
+     */
+    IFACEMETHOD_(void, MoveWindowIntoZoneByIndexSet)(HWND window, HWND zoneWindow, const std::vector<int>& indexSet, bool stampZone) = 0;
     /**
      * Assign window to the zone based on direction (using WIN + LEFT/RIGHT arrow).
      *

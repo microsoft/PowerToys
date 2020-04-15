@@ -1,170 +1,69 @@
 #include "stdafx.h"
-#include <commctrl.h>
 #include "Settings.h"
 #include "PowerRenameInterfaces.h"
+#include "settings_helpers.h"
 
-const wchar_t c_rootRegPath[] = L"Software\\Microsoft\\PowerRename";
-const wchar_t c_mruSearchRegPath[] = L"SearchMRU";
-const wchar_t c_mruReplaceRegPath[] = L"ReplaceMRU";
+#include <filesystem>
+#include <commctrl.h>
 
-const wchar_t c_enabled[] = L"Enabled";
-const wchar_t c_showIconOnMenu[] = L"ShowIcon";
-const wchar_t c_extendedContextMenuOnly[] = L"ExtendedContextMenuOnly";
-const wchar_t c_persistState[] = L"PersistState";
-const wchar_t c_maxMRUSize[] = L"MaxMRUSize";
-const wchar_t c_flags[] = L"Flags";
-const wchar_t c_searchText[] = L"SearchText";
-const wchar_t c_replaceText[] = L"ReplaceText";
-const wchar_t c_mruEnabled[] = L"MRUEnabled";
-
-const bool c_enabledDefault = true;
-const bool c_showIconOnMenuDefault = true;
-const bool c_extendedContextMenuOnlyDefaut = false;
-const bool c_persistStateDefault = true;
-const bool c_mruEnabledDefault = true;
-
-const DWORD c_maxMRUSizeDefault = 10;
-const DWORD c_flagsDefault = 0;
-
-bool CSettings::GetEnabled()
+namespace
 {
-    return GetRegBoolValue(c_enabled, c_enabledDefault);
-}
+    const wchar_t c_powerRenameDataFilePath[] = L"power-rename-settings.json";
 
-bool CSettings::SetEnabled(_In_ bool enabled)
-{
-    return SetRegBoolValue(c_enabled, enabled);
-}
+    const wchar_t c_rootRegPath[] = L"Software\\Microsoft\\PowerRename";
+    const wchar_t c_mruSearchRegPath[] = L"SearchMRU";
+    const wchar_t c_mruReplaceRegPath[] = L"ReplaceMRU";
 
-bool CSettings::GetShowIconOnMenu()
-{
-    return GetRegBoolValue(c_showIconOnMenu, c_showIconOnMenuDefault);
-}
+    const wchar_t c_enabled[] = L"Enabled";
+    const wchar_t c_showIconOnMenu[] = L"ShowIcon";
+    const wchar_t c_extendedContextMenuOnly[] = L"ExtendedContextMenuOnly";
+    const wchar_t c_persistState[] = L"PersistState";
+    const wchar_t c_maxMRUSize[] = L"MaxMRUSize";
+    const wchar_t c_flags[] = L"Flags";
+    const wchar_t c_searchText[] = L"SearchText";
+    const wchar_t c_replaceText[] = L"ReplaceText";
+    const wchar_t c_mruEnabled[] = L"MRUEnabled";
 
-bool CSettings::SetShowIconOnMenu(_In_ bool show)
-{
-    return SetRegBoolValue(c_showIconOnMenu, show);
-}
-
-bool CSettings::GetExtendedContextMenuOnly()
-{
-    return GetRegBoolValue(c_extendedContextMenuOnly, c_extendedContextMenuOnlyDefaut);
-}
-
-bool CSettings::SetExtendedContextMenuOnly(_In_ bool extendedOnly)
-{
-    return SetRegBoolValue(c_extendedContextMenuOnly, extendedOnly);
-}
-
-bool CSettings::GetPersistState()
-{
-    return GetRegBoolValue(c_persistState, c_persistStateDefault);
-}
-
-bool CSettings::SetPersistState(_In_ bool persistState)
-{
-    return SetRegBoolValue(c_persistState, persistState);
-}
-
-bool CSettings::GetMRUEnabled()
-{
-    return GetRegBoolValue(c_mruEnabled, c_mruEnabledDefault);
-}
-
-bool CSettings::SetMRUEnabled(_In_ bool enabled)
-{
-    return SetRegBoolValue(c_mruEnabled, enabled);
-}
-
-DWORD CSettings::GetMaxMRUSize()
-{
-    return GetRegDWORDValue(c_maxMRUSize, c_maxMRUSizeDefault);
-}
-
-bool CSettings::SetMaxMRUSize(_In_ DWORD maxMRUSize)
-{
-    return SetRegDWORDValue(c_maxMRUSize, maxMRUSize);
-}
-
-DWORD CSettings::GetFlags()
-{
-    return GetRegDWORDValue(c_flags, c_flagsDefault);
-}
-
-bool CSettings::SetFlags(_In_ DWORD flags)
-{
-    return SetRegDWORDValue(c_flags, flags);
-}
-
-bool CSettings::GetSearchText(__out_ecount(cchBuf) PWSTR text, DWORD cchBuf)
-{
-    return GetRegStringValue(c_searchText, text, cchBuf);
-}
-
-bool CSettings::SetSearchText(_In_ PCWSTR text)
-{
-    return SetRegStringValue(c_searchText, text);
-}
-
-bool CSettings::GetReplaceText(__out_ecount(cchBuf) PWSTR text, DWORD cchBuf)
-{
-    return GetRegStringValue(c_replaceText, text, cchBuf);
-}
-
-bool CSettings::SetReplaceText(_In_ PCWSTR text)
-{
-    return SetRegStringValue(c_replaceText, text);
-}
-
-bool CSettings::SetRegBoolValue(_In_ PCWSTR valueName, _In_ bool value)
-{
-    DWORD dwValue = value ? 1 : 0;
-    return SetRegDWORDValue(valueName, dwValue);
-}
-
-bool CSettings::GetRegBoolValue(_In_ PCWSTR valueName, _In_ bool defaultValue)
-{
-    DWORD value = GetRegDWORDValue(valueName, (defaultValue == 0) ? false : true);
-    return (value == 0) ? false : true;
-}
-
-bool CSettings::SetRegDWORDValue(_In_ PCWSTR valueName, _In_ DWORD value)
-{
-    return (SUCCEEDED(HRESULT_FROM_WIN32(SHSetValue(HKEY_CURRENT_USER, c_rootRegPath, valueName, REG_DWORD, &value, sizeof(value)))));
-}
-
-DWORD CSettings::GetRegDWORDValue(_In_ PCWSTR valueName, _In_ DWORD defaultValue)
-{
-    DWORD retVal = defaultValue;
-    DWORD type = REG_DWORD;
-    DWORD dwEnabled = 0;
-    DWORD cb = sizeof(dwEnabled);
-    if (SHGetValue(HKEY_CURRENT_USER, c_rootRegPath, valueName, &type, &dwEnabled, &cb) == ERROR_SUCCESS)
+    long GetRegNumber(const std::wstring& valueName, long defaultValue)
     {
-        retVal = dwEnabled;
+        DWORD type = REG_DWORD;
+        DWORD data = 0;
+        DWORD size = sizeof(DWORD);
+        if (SHGetValue(HKEY_CURRENT_USER, c_rootRegPath, valueName.c_str(), &type, &data, &size) == ERROR_SUCCESS)
+        {
+            return data;
+        }
+        return defaultValue;
     }
 
-    return retVal;
-}
-
-bool CSettings::SetRegStringValue(_In_ PCWSTR valueName, _In_ PCWSTR value)
-{
-    ULONG cb = (DWORD)((wcslen(value) + 1) * sizeof(*value));
-    return (SUCCEEDED(HRESULT_FROM_WIN32(SHSetValue(HKEY_CURRENT_USER, c_rootRegPath, valueName, REG_SZ, (const BYTE*)value, cb))));
-}
-
-bool CSettings::GetRegStringValue(_In_ PCWSTR valueName, __out_ecount(cchBuf) PWSTR value, DWORD cchBuf)
-{
-    if (cchBuf > 0)
+    void SetRegNumber(const std::wstring& valueName, long value)
     {
+        SHSetValue(HKEY_CURRENT_USER, c_rootRegPath, valueName.c_str(), REG_DWORD, &value, sizeof(value));
+    }
+
+    bool GetRegBoolean(const std::wstring& valueName, bool defaultValue)
+    {
+        DWORD value = GetRegNumber(valueName.c_str(), defaultValue ? 1 : 0);
+        return (value == 0) ? false : true;
+    }
+
+    void SetRegBoolean(const std::wstring& valueName, bool value)
+    {
+        SetRegNumber(valueName, value ? 1 : 0);
+    }
+
+    std::wstring GetRegString(const std::wstring& valueName) {
+        wchar_t value[CSettings::MAX_INPUT_STRING_LEN];
         value[0] = L'\0';
+        DWORD type = REG_SZ;
+        DWORD size = CSettings::MAX_INPUT_STRING_LEN * sizeof(wchar_t);
+        if (SUCCEEDED(HRESULT_FROM_WIN32(SHGetValue(HKEY_CURRENT_USER, c_rootRegPath, valueName.c_str(), &type, value, &size) == ERROR_SUCCESS)))
+        {
+            return std::wstring(value);
+        }
+        return std::wstring{};
     }
-
-    DWORD type = REG_SZ;
-    ULONG cb = cchBuf * sizeof(*value);
-    return (SUCCEEDED(HRESULT_FROM_WIN32(SHGetValue(HKEY_CURRENT_USER, c_rootRegPath, valueName, &type, value, &cb) == ERROR_SUCCESS)));
 }
-
 
 typedef int (CALLBACK* MRUCMPPROC)(LPCWSTR, LPCWSTR);
 
@@ -470,12 +369,121 @@ void CRenameMRU::_FreeMRUList()
     }
 }
 
+CSettings::CSettings()
+{
+    std::wstring result = PTSettingsHelper::get_module_save_folder_location(L"PowerRename");
+    jsonFilePath = result + L"\\" + std::wstring(c_powerRenameDataFilePath);
+}
+
+bool CSettings::GetEnabled()
+{
+    return GetRegBoolean(c_enabled, true);
+}
+
+void CSettings::SetEnabled(bool enabled)
+{
+    SetRegBoolean(c_enabled, enabled);
+}
+
+void CSettings::LoadPowerRenameData()
+{
+    if (!std::filesystem::exists(jsonFilePath))
+    {
+        MigrateSettingsFromRegistry();
+
+        SavePowerRenameData();
+    }
+    else
+    {
+        ParseJsonSettings();
+    }
+}
+
+void CSettings::SavePowerRenameData() const
+{
+    json::JsonObject jsonData;
+
+    jsonData.SetNamedValue(c_showIconOnMenu,          json::value(settings.showIconOnMenu));
+    jsonData.SetNamedValue(c_extendedContextMenuOnly, json::value(settings.extendedContextMenuOnly));
+    jsonData.SetNamedValue(c_persistState,            json::value(settings.persistState));
+    jsonData.SetNamedValue(c_mruEnabled,              json::value(settings.MRUEnabled));
+    jsonData.SetNamedValue(c_maxMRUSize,              json::value(settings.maxMRUSize));
+    jsonData.SetNamedValue(c_flags,                   json::value(settings.flags));
+    jsonData.SetNamedValue(c_searchText,              json::value(settings.searchText));
+    jsonData.SetNamedValue(c_replaceText,             json::value(settings.replaceText));
+
+    json::to_file(jsonFilePath, jsonData);
+}
+
+void CSettings::MigrateSettingsFromRegistry()
+{
+    settings.showIconOnMenu          = GetRegBoolean(c_showIconOnMenu, true);
+    settings.extendedContextMenuOnly = GetRegBoolean(c_extendedContextMenuOnly, false); // Disabled by default.
+    settings.persistState            = GetRegBoolean(c_persistState, true);
+    settings.MRUEnabled              = GetRegBoolean(c_mruEnabled, true);
+    settings.maxMRUSize              = GetRegNumber(c_maxMRUSize, 10);
+    settings.flags                   = GetRegNumber(c_flags, 0);
+    settings.searchText              = GetRegString(c_searchText);
+    settings.replaceText             = GetRegString(c_replaceText);
+}
+
+void CSettings::ParseJsonSettings()
+{
+    auto json = json::from_file(jsonFilePath);
+    if (json)
+    {
+        const json::JsonObject& jsonSettings = json.value();
+        try
+        {
+            if (json::has(jsonSettings, c_showIconOnMenu, json::JsonValueType::Boolean))
+            {
+                settings.showIconOnMenu = jsonSettings.GetNamedBoolean(c_showIconOnMenu);
+            }
+            if (json::has(jsonSettings, c_extendedContextMenuOnly, json::JsonValueType::Boolean))
+            {
+                settings.extendedContextMenuOnly = jsonSettings.GetNamedBoolean(c_extendedContextMenuOnly);
+            }
+            if (json::has(jsonSettings, c_persistState, json::JsonValueType::Boolean))
+            {
+                settings.persistState = jsonSettings.GetNamedBoolean(c_persistState);
+            }
+            if (json::has(jsonSettings, c_mruEnabled, json::JsonValueType::Boolean))
+            {
+                settings.MRUEnabled = jsonSettings.GetNamedBoolean(c_mruEnabled);
+            }
+            if (json::has(jsonSettings, c_maxMRUSize, json::JsonValueType::Number))
+            {
+                settings.maxMRUSize = (long)jsonSettings.GetNamedNumber(c_maxMRUSize);
+            }
+            if (json::has(jsonSettings, c_flags, json::JsonValueType::Number))
+            {
+                settings.flags = (long)jsonSettings.GetNamedNumber(c_flags);
+            }
+            if (json::has(jsonSettings, c_searchText, json::JsonValueType::String))
+            {
+                settings.searchText = jsonSettings.GetNamedString(c_searchText);
+            }
+            if (json::has(jsonSettings, c_replaceText, json::JsonValueType::String))
+            {
+                settings.replaceText = jsonSettings.GetNamedString(c_replaceText);
+            }
+        }
+        catch (const winrt::hresult_error&) { }
+    }
+}
+
+CSettings& CSettingsInstance()
+{
+    static CSettings instance;
+    return instance;
+}
+
 HRESULT CRenameMRUSearch_CreateInstance(_Outptr_ IUnknown** ppUnk)
 {
-    return CRenameMRU::CreateInstance(c_mruSearchRegPath, CSettings::GetMaxMRUSize(), ppUnk);
+    return CRenameMRU::CreateInstance(c_mruSearchRegPath, CSettingsInstance().GetMaxMRUSize(), ppUnk);
 }
 
 HRESULT CRenameMRUReplace_CreateInstance(_Outptr_ IUnknown** ppUnk)
 {
-    return CRenameMRU::CreateInstance(c_mruReplaceRegPath, CSettings::GetMaxMRUSize(), ppUnk);
+    return CRenameMRU::CreateInstance(c_mruReplaceRegPath, CSettingsInstance().GetMaxMRUSize(), ppUnk);
 }

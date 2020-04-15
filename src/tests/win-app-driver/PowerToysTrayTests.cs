@@ -15,10 +15,9 @@ namespace PowerToysTests
         public void SettingsOpen()
         {
             OpenSettings();
-            ShortWait();
 
             //check settings window opened
-            WindowsElement settingsWindow = session.FindElementByName("PowerToys Settings");
+            WindowsElement settingsWindow = WaitElementByName("PowerToys Settings");
             Assert.IsNotNull(settingsWindow);
 
             isSettingsOpened = true;
@@ -36,14 +35,12 @@ namespace PowerToysTests
             Assert.IsNotNull(pt);
 
             new Actions(session).MoveToElement(pt).ContextClick().Perform();
-            ShortWait();
-
+            
             //open settings
-            session.FindElementByXPath("//MenuItem[@Name=\"Settings\"]").Click();
-            ShortWait();
-
+            WaitElementByXPath("//MenuItem[@Name=\"Settings\"]").Click();
+            
             //check settings window opened
-            WindowsElement settingsWindow = session.FindElementByName("PowerToys Settings");
+            WindowsElement settingsWindow = WaitElementByName("PowerToys Settings");
             Assert.IsNotNull(settingsWindow);
 
             isSettingsOpened = true;
@@ -62,12 +59,10 @@ namespace PowerToysTests
             Assert.IsNotNull(powerToys);
 
             new Actions(session).MoveToElement(powerToys).ContextClick().Perform();
-            ShortWait();
-
+            
             //exit
-            session.FindElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
-            ShortWait();
-
+            WaitElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
+            
             //check PowerToys exited
             powerToys = null;
             try
@@ -82,8 +77,6 @@ namespace PowerToysTests
             }
 
             LaunchPowerToys();
-            ShortWait();
-
             Assert.IsNull(powerToys);
         }
 

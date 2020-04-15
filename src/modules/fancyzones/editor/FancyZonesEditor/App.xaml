@@ -12,6 +12,10 @@
                 <!-- Accent and AppTheme setting -->
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Light.Blue.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <SolidColorBrush x:Key="CanvasZoneBackgroundBrush" Color="#BF333333"/>
+            <SolidColorBrush x:Key="GridZoneBackgroundBrush" Color="#FF1a1a1a"/>
+            
         </ResourceDictionary>
     </Application.Resources>
 </Application>

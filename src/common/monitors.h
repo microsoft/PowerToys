@@ -32,6 +32,7 @@ struct MonitorInfo : ScreenSize
 
     // Returns monitor rects ordered from left to right
     static std::vector<MonitorInfo> GetMonitors(bool include_toolbar);
+    static int GetMonitorsCount();
     // Return primary display
     static MonitorInfo GetPrimaryMonitor();
     // Return monitor on which hwnd window is displayed
