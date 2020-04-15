@@ -27,7 +27,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, Shortcut orig
     // Set the shortcut text if the two vectors are not empty (i.e. default args)
     if (originalKeys.IsValidShortcut() && newKeys.IsValidShortcut())
     {
-        shortcutRemapBuffer.push_back(std::vector<Shortcut>{ originalKeys, newKeys });
+        shortcutRemapBuffer.push_back(std::vector<Shortcut>{ Shortcut(), Shortcut() });
         originalSC.AddShortcutToControl(originalKeys, originalSC.shortcutDropDownStackPanel, *keyboardManagerState, (int)shortcutRemapBuffer.size() - 1, 0);
         newSC.AddShortcutToControl(newKeys, newSC.shortcutDropDownStackPanel, *keyboardManagerState, (int)shortcutRemapBuffer.size() - 1, 1);
     }
@@ -309,7 +309,7 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
 
         if (!detectedShortcutKeys.IsEmpty())
         {
-            shortcutRemapBuffer[rowIndex][colIndex] = detectedShortcutKeys;
+            // The shortcut buffer gets set in this function
             AddShortcutToControl(detectedShortcutKeys, linkedShortcutStackPanel, keyboardManagerState, rowIndex, colIndex);
         }
 
