@@ -12,6 +12,7 @@
 #include <Msi.h>
 
 #include "../runner/tray_icon.h"
+#include "../runner/action_runner_utils.h"
 
 int uninstall_msi_action()
 {
@@ -72,12 +73,13 @@ bool install_new_version_stage_1(const bool must_restart = false)
         // detect if PT was running
         const bool launch_powertoys = must_restart || FindWindowW(pt_tray_icon_window_class, nullptr) != nullptr;
 
-        std::wstring arguments{ L"-update_now_stage_2 \"" };
+        std::wstring arguments{ UPDATE_NOW_LAUNCH_STAGE2_CMDARG };
+        arguments += L" \"";
         arguments += installer->c_str();
         arguments += L"\" \"";
         arguments += get_module_folderpath();
         arguments += L"\" ";
-        arguments += launch_powertoys ? L"restart" : L"dont_start";
+        arguments += launch_powertoys ? UPDATE_STAGE2_RESTART_PT_CMDARG : UPDATE_STAGE2_DONT_START_PT_CMDARG;
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC };
         sei.lpFile = copy_in_temp->c_str();
@@ -109,7 +111,7 @@ bool install_new_version_stage_2(std::wstring_view installer_path, std::wstring_
         sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC };
         sei.lpFile = new_pt_path.c_str();
         sei.nShow = SW_SHOWNORMAL;
-        sei.lpParameters = L"-report_update_success";
+        sei.lpParameters = UPDATE_REPORT_SUCCESS;
         return ShellExecuteExW(&sei) == TRUE;
     }
     return true;
@@ -129,15 +131,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     {
         return uninstall_msi_action();
     }
-    else if (action == L"-update_now")
+    else if (action == UPDATE_NOW_LAUNCH_STAGE1_CMDARG)
     {
         return !install_new_version_stage_1();
     }
-    else if (action == L"-update_now_and_start_pt")
+    else if (action == UPDATE_NOW_LAUNCH_STAGE1_START_PT_CMDARG)
     {
         return !install_new_version_stage_1(true);
     }
-    else if (action == L"-update_now_stage_2")
+    else if (action == UPDATE_NOW_LAUNCH_STAGE2_CMDARG)
     {
         using namespace std::string_view_literals;
         return !install_new_version_stage_2(args[2], args[3], args[4] == L"restart"sv);

@@ -227,7 +227,10 @@ namespace updating
             auto msi_installer_file_stream = co_await storage::Streams::FileRandomAccessStream::OpenAsync(download_dst.c_str(), storage::FileAccessMode::ReadWrite, storage::StorageOpenOptions::AllowReadersAndWriters, storage::Streams::FileOpenDisposition::CreateAlways);
             co_await response.Content().WriteToStreamAsync(msi_installer_file_stream);
             notifications::toast_params toast_params{ L"PTUpdateReadyTag", false };
-            notifications::show_toast_with_activations(GITHUB_NEW_VERSION_READY_TO_INSTALL, {}, { notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_NOW, L"powertoys://update_now/" }, notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART, L"powertoys://schedule_update/" }, notifications::snooze_button{ { { GITHUB_NEW_VERSION_UPDATE_SNOOZE_1D, 24 * 60 }, { GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D, 120 * 60 } } } }, std::move(toast_params));
+            std::wstring new_version_ready{ GITHUB_NEW_VERSION_READY_TO_INSTALL };
+            new_version_ready += L" ";
+            new_version_ready += new_version->version_string;
+            notifications::show_toast_with_activations(std::move(new_version_ready), {}, { notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_NOW, L"powertoys://update_now/" }, notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART, L"powertoys://schedule_update/" }, notifications::snooze_button{ { { GITHUB_NEW_VERSION_UPDATE_SNOOZE_1D, 24 * 60 }, { GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D, 120 * 60 } } } }, std::move(toast_params));
         }
         else
         {

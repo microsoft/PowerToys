@@ -79,7 +79,7 @@ bool launch_pending_update()
             UpdateState::store([](UpdateState& state) {
                 state.pending_update = false;
             });
-            launch_action_runner(L"-update_now_and_start_pt");
+            launch_action_runner(UPDATE_NOW_LAUNCH_STAGE1_START_PT_CMDARG);
             return true;
         }
     }

@@ -185,7 +185,7 @@ SpecialMode should_run_in_special_mode(const int n_cmd_args, LPWSTR* cmd_arg_lis
         {
             return SpecialMode::ToastNotificationHandler;
         }
-        else if (n_cmd_args == 2 && !wcscmp(L"-report_update_success", cmd_arg_list[i]))
+        else if (n_cmd_args == 2 && !wcscmp(UPDATE_REPORT_SUCCESS, cmd_arg_list[i]))
         {
             return SpecialMode::ReportSuccessfulUpdate;
         }
@@ -214,7 +214,7 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     }
     else if (param == L"update_now/")
     {
-        launch_action_runner(L"-update_now");
+        launch_action_runner(UPDATE_NOW_LAUNCH_STAGE1_CMDARG);
         return toast_notification_handler_result::exit_success;
     }
     else if (param == L"schedule_update/")
