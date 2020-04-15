@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using NHotkey;
 using NHotkey.Wpf;
 using Wox.Core.Plugin;
@@ -195,6 +196,9 @@ namespace Wox.ViewModel
         #endregion
 
         #region ViewModel Properties
+
+        public Brush MainWindowBackground { get; set; }
+        public Brush MainWindowBorderBrush { get; set; }
 
         public ResultsViewModel Results { get; private set; }
         public ResultsViewModel ContextMenu { get; private set; }

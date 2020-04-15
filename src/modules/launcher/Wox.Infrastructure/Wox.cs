@@ -7,12 +7,12 @@ namespace Wox.Infrastructure
 {
     public static class Constant
     {
-        public const string Wox = "PowerLauncher";
+        public const string ExeFileName = "PowerLauncher";
         public const string Plugins = "Plugins";
 
         private static readonly Assembly Assembly = Assembly.GetExecutingAssembly();
         public static readonly string ProgramDirectory = Directory.GetParent(Assembly.Location.NonNull()).ToString();
-        public static readonly string ExecutablePath = Path.Combine(ProgramDirectory, Wox + ".exe");
+        public static readonly string ExecutablePath = Path.Combine(ProgramDirectory, ExeFileName + ".exe");
 
         public static bool IsPortableMode;
         public const string PortableFolderName = "UserData";
@@ -26,7 +26,7 @@ namespace Wox.Infrastructure
             }
             else
             {
-                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Wox);
+                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ExeFileName);
             }
         }
 
@@ -39,7 +39,5 @@ namespace Wox.Infrastructure
         public static readonly int ThumbnailSize = 64;
         public static readonly string DefaultIcon = Path.Combine(ProgramDirectory, "Images", "app.png");
         public static readonly string ErrorIcon = Path.Combine(ProgramDirectory, "Images", "app_error.png");
-
-        public static string EverythingSDKPath;
     }
 }

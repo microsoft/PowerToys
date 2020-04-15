@@ -65,10 +65,9 @@ namespace Wox
                 var window = new MainWindow(_settings, _mainVM);
                 API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet);
                 PluginManager.InitializePlugins(API);
-                Log.Info($"|App.OnStartup|Dependencies Info:{ErrorReporting.DependenciesInfo()}");
 
                 Current.MainWindow = window;
-                Current.MainWindow.Title = Constant.Wox;
+                Current.MainWindow.Title = Constant.ExeFileName;
 
                 // happlebao todo temp fix for instance code logic
                 // load plugin before change language, because plugin language also needs be changed
