@@ -212,7 +212,7 @@ ComboBox ShortcutControl::AddDropDown(StackPanel parent, const int& rowIndex, co
                     else
                     {
                         // warn and reset the drop down
-                        warningMessage.Text(L"Shortcut must end with an action key");
+                        warningMessage.Text(L"Shortcut cannot have more than one action key");
                         currentDropDown.ContextFlyout().ShowAttachedFlyout((FrameworkElement)currentDropDown);
                         currentDropDown.SelectedIndex(-1);
                     }
