@@ -28,8 +28,17 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, const D
     if (originalKey != NULL && newKey != NULL)
     {
         singleKeyRemapBuffer.push_back(std::vector<DWORD>{ originalKey, newKey });
-        originalRemapKeyControl.singleKeyRemapDropDown.SelectedValue(winrt::box_value(keyboardManagerState->keyboardMap.GetKeyName(originalKey).c_str()));
-        newRemapKeyControl.singleKeyRemapDropDown.SelectedValue(winrt::box_value(keyboardManagerState->keyboardMap.GetKeyName(newKey).c_str()));
+        std::vector<DWORD> keyCodes = keyboardManagerState->keyboardMap.GetKeyList().second;
+        auto it = std::find(keyCodes.begin(), keyCodes.end(), originalKey);
+        if (it != keyCodes.end())
+        {
+            originalRemapKeyControl.singleKeyRemapDropDown.SelectedIndex(std::distance(keyCodes.begin(), it));
+        }
+        it = std::find(keyCodes.begin(), keyCodes.end(), newKey);
+        if (it != keyCodes.end())
+        {
+            newRemapKeyControl.singleKeyRemapDropDown.SelectedIndex(std::distance(keyCodes.begin(), it));
+        }
     }
     else
     {
