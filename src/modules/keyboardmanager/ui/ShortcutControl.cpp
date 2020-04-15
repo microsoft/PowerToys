@@ -217,6 +217,14 @@ ComboBox ShortcutControl::AddDropDown(StackPanel parent, const int& rowIndex, co
                         currentDropDown.SelectedIndex(-1);
                     }
                 }
+                // If there an action key is chosen on the first drop down and there are more than one drop down menus
+                else
+                {
+                    // warn and reset the drop down
+                    warningMessage.Text(L"Shortcut must start with a modifier key");
+                    currentDropDown.ContextFlyout().ShowAttachedFlyout((FrameworkElement)currentDropDown);
+                    currentDropDown.SelectedIndex(-1);
+                }
             }
         }
 
