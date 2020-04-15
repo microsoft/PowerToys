@@ -5,6 +5,8 @@
 #include "Zone.h"
 #include "Settings.h"
 
+#include "common/monitors.h"
+
 struct Zone : winrt::implements<Zone, IZone>
 {
 public:
@@ -101,10 +103,12 @@ void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
         const auto taskbar_left_size = std::abs(mi.rcMonitor.left - mi.rcWork.left);
         const auto taskbar_top_size = std::abs(mi.rcMonitor.top - mi.rcWork.top);
         OffsetRect(&newWindowRect, -taskbar_left_size, -taskbar_top_size);
-        if (accountForUnawareness)
+
+        int monitorCount = MonitorInfo::GetMonitors(true).size();
+        if (accountForUnawareness && monitorCount  > 1)
         {
-            newWindowRect.left = max(mi.rcMonitor.left - leftMargin, newWindowRect.left);
-            newWindowRect.right = min(mi.rcMonitor.right - taskbar_left_size - rightMargin, newWindowRect.right);
+            newWindowRect.left = max(mi.rcMonitor.left, newWindowRect.left);
+            newWindowRect.right = min(mi.rcMonitor.right - taskbar_left_size, newWindowRect.right);
             newWindowRect.top = max(mi.rcMonitor.top, newWindowRect.top);
             newWindowRect.bottom = min(mi.rcMonitor.bottom - taskbar_top_size, newWindowRect.bottom);
         }

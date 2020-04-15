@@ -650,40 +650,5 @@ namespace FancyZonesUnitTests
             const auto actual = m_fancyZonesData.GetAppZoneHistoryMap().at(processPath).zoneIndex;
             Assert::AreEqual(expected, actual);
         }
-
-        TEST_METHOD (WhenPlacingDpiUnawareWindowIntoTheZoneItRectShouldBeExtendedToFitTargetZone)
-        {
-            m_zoneWindow = InitZoneWindowWithActiveZoneSet();
-            Assert::IsNotNull(m_zoneWindow->ActiveZoneSet());
-
-            auto window = Mocks::WindowCreate(m_hInst);
-
-            SetWindowPos(window, nullptr, 150, 150, 450, 550, SWP_SHOWWINDOW);
-            Assert::IsTrue(AreDpiAwarenessContextsEqual(DPI_AWARENESS_CONTEXT_UNAWARE, GetWindowDpiAwarenessContext(window)));
-
-            RECT nonExtendedWindowRect{};
-            ::GetWindowRect(window, &nonExtendedWindowRect);
-
-            RECT extendedFrameRect{};
-            Assert::IsTrue(SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &extendedFrameRect, sizeof(extendedFrameRect))));
-
-            int leftMargin = extendedFrameRect.left - nonExtendedWindowRect.left;
-            int rightMargin = extendedFrameRect.right - nonExtendedWindowRect.right;
-            int bottomMargin = extendedFrameRect.bottom - nonExtendedWindowRect.bottom;
-            ShowWindow(window, SW_SHOW);
-
-            RECT zoneRect{ 0, 0, 250, 350 };
-            auto zone = MakeZone(zoneRect);
-            m_zoneWindow->ActiveZoneSet()->AddZone(zone);
-
-            m_zoneWindow->MoveWindowIntoZoneByDirection(window, VK_LEFT, true);
-
-            RECT inZoneRect;
-            GetWindowRect(window, &inZoneRect);
-            Assert::AreEqual(-leftMargin, (int)inZoneRect.left);
-            Assert::AreEqual((int)zoneRect.right - rightMargin, (int)inZoneRect.right);
-            Assert::AreEqual((int)zoneRect.bottom - bottomMargin, (int)inZoneRect.bottom);
-            Assert::AreEqual(0, (int)inZoneRect.top);
-        }
     };
 }
