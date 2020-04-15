@@ -42,9 +42,20 @@ interface __declspec(uuid("{8228E934-B6EF-402A-9892-15A1441BF8B0}")) IZone : pub
      */
     IFACEMETHOD_(void, SetId)(size_t id) = 0;
     /**
-     * @retirns Zone identifier.
+     * @returns Zone identifier.
      */
     IFACEMETHOD_(size_t, Id)() = 0;
+
+    /**
+     * Compute the coordinates of the rectangle to which a window should be resized.
+     *
+     * @param   window     Handle of window which should be assigned to zone.
+     * @param   zoneWindow The m_window of a ZoneWindow, it's a hidden window representing the
+     *                     current monitor desktop work area.
+     * @returns a RECT structure, describing global coordinates to which a window should be resized
+     */
+    IFACEMETHOD_(RECT, ComputeActualZoneRect)(HWND window, HWND zoneWindow) = 0;
+
 };
 
 winrt::com_ptr<IZone> MakeZone(const RECT& zoneRect) noexcept;
