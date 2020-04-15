@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Events">
+      <UniqueIdentifier>{52627ce8-7462-467c-aac3-0a386bf635e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Events">
+      <UniqueIdentifier>{6063170a-2a82-4727-8a41-76e00679fb91}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -51,6 +57,9 @@
     <ClInclude Include="WindowMoveHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LLMouseHookWrapper.h">
+      <Filter>Header Files\Events</Filter>
+    </ClInclude>
     <ClInclude Include="FancyZonesWinHookEventIDs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -88,6 +97,9 @@
     </ClCompile>
     <ClCompile Include="WindowMoveHandler.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LLMouseHookWrapper.cpp">
+      <Filter>Source Files\Events</Filter>
     </ClCompile>
     <ClCompile Include="FancyZonesWinHookEventIDs.cpp">
       <Filter>Source Files</Filter>

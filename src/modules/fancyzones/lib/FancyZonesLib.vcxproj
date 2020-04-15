@@ -97,6 +97,7 @@
     <ClInclude Include="FancyZones.h" />
     <ClInclude Include="FancyZonesWinHookEventIDs.h" />
     <ClInclude Include="JsonHelpers.h" />
+    <ClInclude Include="LLMouseHookWrapper.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Settings.h" />
@@ -109,6 +110,7 @@
     <ClInclude Include="ZoneWindow.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="LLMouseHookWrapper.cpp" />
     <ClCompile Include="FancyZones.cpp" />
     <ClCompile Include="FancyZonesWinHookEventIDs.cpp" />
     <ClCompile Include="JsonHelpers.cpp" />
