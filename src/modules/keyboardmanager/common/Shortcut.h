@@ -29,6 +29,18 @@ public:
     {
     }
 
+    // Constructor to intialize Shortcut from it's virtual key code string representation.
+    Shortcut(const std::wstring& shortcutVK) :
+        winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
+    {
+        auto keys = KeyboardManagerHelper::splitwstring(shortcutVK, ';');
+        for (auto it : keys)
+        {
+            auto vkKeyCode = std::stoul(it);
+            SetKey(vkKeyCode);
+        }
+    }
+
     // Less than operator must be defined to use with std::map.
     inline bool operator<(const Shortcut& sc) const
     {
@@ -139,7 +151,7 @@ public:
     // Function to return the string representation of the shortcut
     winrt::hstring ToHstring(LayoutMap& keyboardMap);
 
-    // Function to return the string representation of the shortcut in virtual key codes.
+    // Function to return the string representation of the shortcut in virtual key codes appended in a string by ";" separator.
     winrt::hstring ToHstringVK() const;
 
     // Function to return a vector of hstring for each key, in the same order as ToHstring()

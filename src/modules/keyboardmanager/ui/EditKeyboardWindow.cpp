@@ -185,7 +185,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
         if (isSuccess)
         {
-            keyboardManagerState.SaveConfigToFile();
             settingsMessage.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Green() });
             settingsMessage.Text(winrt::to_hstring("Remapping successful!"));
         }
@@ -194,6 +193,9 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
             settingsMessage.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Red() });
             settingsMessage.Text(winrt::to_hstring("All remappings were not successfully applied."));
         }
+
+        // Save the updated single key remaps to file.
+        std::thread(&KeyboardManagerState::SaveConfigToFile, &keyboardManagerState).detach();
     });
 
     header.Children().Append(headerText);

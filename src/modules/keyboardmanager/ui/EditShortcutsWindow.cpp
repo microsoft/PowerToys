@@ -183,6 +183,9 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
             settingsMessage.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Red() });
             settingsMessage.Text(winrt::to_hstring("All remappings were not successfully applied."));
         }
+
+        // Save the updated shortcuts remaps to file.
+        std::thread(&KeyboardManagerState::SaveConfigToFile, &keyboardManagerState).detach();
     });
 
     header.Children().Append(headerText);

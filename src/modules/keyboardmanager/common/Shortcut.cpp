@@ -411,6 +411,7 @@ winrt::hstring Shortcut::ToHstring(LayoutMap& keyboardMap)
     }
 }
 
+// Function to return the string representation of the shortcut in virtual key codes appended in a string by ";" separator.
 winrt::hstring Shortcut::ToHstringVK() const
 {
     winrt::hstring output;
@@ -435,7 +436,11 @@ winrt::hstring Shortcut::ToHstringVK() const
         output = output + winrt::to_hstring((unsigned int)GetActionKey()) + winrt::to_hstring(L";");
     }
 
-    output = (output == L";") ? L"" : output;
+    if (!output.empty())
+    {
+        output = winrt::hstring(output.c_str(), output.size() - 1);
+    }
+    
     return output;
 }
 

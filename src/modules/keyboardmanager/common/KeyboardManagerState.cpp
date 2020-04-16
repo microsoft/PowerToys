@@ -280,25 +280,49 @@ bool KeyboardManagerState::DetectShortcutUIBackend(LowlevelKeyboardEvent* data)
     return false;
 }
 
+// Save the updated configuration.
 bool KeyboardManagerState::SaveConfigToFile()
 {
+    bool result = true;
     json::JsonObject configJson;
-    json::JsonObject remapKeysJObject;
-    json::JsonObject remapShortcutsJObject;
+    json::JsonArray remapKeysArray;
+    json::JsonArray remapShortcutsArray;
+    std::unique_lock<std::mutex> lockSingleKeyReMap(singleKeyReMap_mutex);
     for (auto it : singleKeyReMap)
     {
-        remapKeysJObject.SetNamedValue(winrt::to_hstring((unsigned int)it.first), json::value(winrt::to_hstring((unsigned int)it.second)));
-    }
+        json::JsonObject keys;
+        keys.SetNamedValue(L"originalKeys", json::value(winrt::to_hstring((unsigned int)it.first)));
+        keys.SetNamedValue(L"newRemapKeys", json::value(winrt::to_hstring((unsigned int)it.second)));
 
+        remapKeysArray.Append(keys);
+    }
+    lockSingleKeyReMap.unlock();
+
+    std::unique_lock<std::mutex> lockOsLevelShortcutReMap(osLevelShortcutReMap_mutex);
     for (auto it : osLevelShortcutReMap)
     {
-        remapShortcutsJObject.SetNamedValue(it.first.ToHstringVK(), json::value(it.second.targetShortcut.ToHstringVK()));
+        json::JsonObject keys;
+        keys.SetNamedValue(L"originalKeys", json::value(it.first.ToHstringVK()));
+        keys.SetNamedValue(L"newRemapKeys", json::value(it.second.targetShortcut.ToHstringVK()));
+
+        remapShortcutsArray.Append(keys);
+    }
+    lockOsLevelShortcutReMap.unlock();
+
+    configJson.SetNamedValue(L"remapKeys", remapKeysArray);
+    configJson.SetNamedValue(L"remapShortcuts", remapShortcutsArray);
+
+    try
+    {
+        json::to_file((PTSettingsHelper::get_module_save_folder_location(L"Keyboard Manager") + L"\\" + L"config-1.json"), configJson);
+
+        // Hack to update another dummmy file to notify the Setting Process that the Update is completed.
+        json::to_file((PTSettingsHelper::get_module_save_folder_location(L"Keyboard Manager") + L"\\" + L"settings-updated.json"), json::JsonObject{});
+    }
+    catch (...)
+    {
+        result = false;
     }
 
-    configJson.SetNamedValue(L"remapkeys", remapKeysJObject);
-    configJson.SetNamedValue(L"remapShortcuts", remapShortcutsJObject);
-
-    json::to_file((PTSettingsHelper::get_module_save_folder_location(L"Keyboard Manager") + L"\\" +  L"config-1.json"), configJson);
-
-    return true;
+    return result;
 }

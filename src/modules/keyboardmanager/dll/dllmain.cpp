@@ -65,59 +65,86 @@ public:
     // Constructor
     KeyboardManager()
     {
-        init_intial_config();
+        load_config();
 
         // Set the static pointer to the newest object of the class
         keyboardmanager_object_ptr = this;
     };
 
-    void init_intial_config() 
+    // Load config from the saved settings.
+    void load_config() 
     {
-        PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
-        auto current_config = settings.get_string_value(L"configuration");
-
-        if (current_config)
+        try
         {
-            // Read the config file and load the remaps.
-            auto configFile = json::from_file(PTSettingsHelper::get_module_save_folder_location(get_name()) + L"\\" + *current_config + L".json");
-            if (configFile)
+            PowerToysSettings::PowerToyValues settings =
+                PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
+            auto current_config = settings.get_string_value(L"activeConfiguration");
+
+            if (current_config)
             {
-                auto jsonData = *configFile;
-                auto remapKeysData = jsonData.GetNamedObject(L"remapkeys");
-                auto remapShortcutsData = jsonData.GetNamedObject(L"remapShortcuts");
-                keyboardManagerState.ClearSingleKeyRemaps();
-
-                for (auto it : remapKeysData)
+                // Read the config file and load the remaps.
+                auto configFile = json::from_file(PTSettingsHelper::get_module_save_folder_location(get_name()) + L"\\" + *current_config + L".json");
+                if (configFile)
                 {
-                    // Be more resilient here.
-                    auto originalKey = it.Key().c_str();
-                    auto newKey = it.Value().GetString().c_str();
-                    keyboardManagerState.AddSingleKeyRemap(std::stoul(originalKey), std::stoul(newKey));
-                }
+                    auto jsonData = *configFile;
+                    auto remapKeysData = jsonData.GetNamedArray(L"remapKeys");
+                    auto remapShortcutsData = jsonData.GetNamedArray(L"remapShortcuts");
+                    keyboardManagerState.ClearSingleKeyRemaps();
 
-                keyboardManagerState.ClearOSLevelShortcuts();
-                // Todo more resillent and validate shortcuts first.
-                for (auto it : remapShortcutsData)
-                {
-                    auto originalSCVector = KeyboardManagerHelper::splitwstring(it.Key().c_str(), L';');
-                    auto remapSCVector = KeyboardManagerHelper::splitwstring(it.Value().GetString().c_str(), L';');
-
-                    Shortcut originalSC;
-                    for (auto key : originalSCVector)
+                    if (remapKeysData)
                     {
-                        originalSC.SetKey(std::stoi(key), false);
+                        for (auto it : remapKeysData)
+                        {
+                            try
+                            {
+                                auto originalKey = it.GetObjectW().GetNamedString(L"originalKeys");
+                                auto newRemapKey = it.GetObjectW().GetNamedString(L"newRemapKeys");
+                                keyboardManagerState.AddSingleKeyRemap(std::stoul(originalKey.c_str()), std::stoul(newRemapKey.c_str()));
+                            }
+                            catch (std::exception&)
+                            {
+                                // Improper Key Data JSON. Try the next remap.
+                            }
+                            catch (winrt::hresult_error&)
+                            {
+                                // Winrt Exception.
+                            }
+                        }
                     }
 
-                    Shortcut remapSC;
-                    for (auto key : remapSCVector)
+                    keyboardManagerState.ClearOSLevelShortcuts();
+                    if (remapShortcutsData)
                     {
-                        remapSC.SetKey(std::stoi(key), false);
+                        for (auto it : remapShortcutsData)
+                        {
+                            try
+                            {
+                                auto originalKeys = it.GetObjectW().GetNamedString(L"originalKeys");
+                                auto newRemapKeys = it.GetObjectW().GetNamedString(L"newRemapKeys");
+                                Shortcut originalSC(originalKeys.c_str());
+                                Shortcut newRemapSC(newRemapKeys.c_str());
+                                keyboardManagerState.AddOSLevelShortcut(originalSC, newRemapSC);
+                            }
+                            catch (std::exception&)
+                            {
+                                // Improper Key Data JSON. Try the next remap.
+                            }
+                            catch (winrt::hresult_error&)
+                            {
+                                // Winrt Exception.
+                            }
+                        }
                     }
-                    
-                    keyboardManagerState.AddOSLevelShortcut(originalSC, remapSC);
                 }
             }
+        }
+        catch (std::exception&)
+        {
+            // Unable to load inital config.
+        }
+        catch (winrt::hresult_error&)
+        {
+            //  Winrt Exception.
         }
     }
 

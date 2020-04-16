@@ -127,5 +127,6 @@ public:
     // Function which can be used in HandleKeyboardHookEvent before the os level shortcut remap event to use the UI and suppress events while the remap window is active.
     bool DetectShortcutUIBackend(LowlevelKeyboardEvent* data);
 
+    // Save the updated configuration.
     bool SaveConfigToFile();
 };

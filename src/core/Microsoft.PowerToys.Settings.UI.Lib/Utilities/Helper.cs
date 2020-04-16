@@ -6,6 +6,8 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
+using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Lib.CustomAction;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
@@ -53,6 +55,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
             watcher.EnableRaisingEvents = true;
 
             return watcher;
+        }
+
+        public static T GetConfigFile<T>(string moduleName, string configName)
+        {
+            var jsonSettingsString = File.ReadAllText(Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{moduleName}\\{configName}" + ".json"));
+            return JsonSerializer.Deserialize<T>(jsonSettingsString);
         }
 
         private static string LocalApplicationDataFolder()
