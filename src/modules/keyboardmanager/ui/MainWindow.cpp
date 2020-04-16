@@ -92,14 +92,14 @@ void createMainWindow(HINSTANCE hInstance, KeyboardManagerState& keyboardManager
 
     Windows::UI::Xaml::Controls::Button bt;
     bt.Content(winrt::box_value(winrt::to_hstring("Edit Keyboard")));
-    bt.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+    bt.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         std::thread th(createEditKeyboardWindow, _hInstance, std::ref(keyboardManagerState));
         th.join();
     });
 
     Windows::UI::Xaml::Controls::Button bt2;
     bt2.Content(winrt::box_value(winrt::to_hstring("Edit Shortcuts")));
-    bt2.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+    bt2.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         std::thread th(createEditShortcutsWindow, _hInstance, std::ref(keyboardManagerState));
         th.join();
     });

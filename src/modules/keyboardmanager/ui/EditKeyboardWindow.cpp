@@ -95,7 +95,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     cancelButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
     cancelButton.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     cancelButton.Content(winrt::box_value(winrt::to_hstring("Cancel")));
-    cancelButton.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+    cancelButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         // Close the window since settings do not need to be saved
         PostMessage(_hWndEditKeyboardWindow, WM_CLOSE, 0, 0);
     });
@@ -159,7 +159,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     applyButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
     applyButton.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     applyButton.Content(winrt::box_value(winrt::to_hstring("Apply")));
-    applyButton.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+    applyButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         bool isSuccess = true;
         // Clear existing Key Remaps
         keyboardManagerState.ClearSingleKeyRemaps();
@@ -185,6 +185,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
         if (isSuccess)
         {
+            keyboardManagerState.SaveConfigToFile();
             settingsMessage.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Green() });
             settingsMessage.Text(winrt::to_hstring("Remapping successful!"));
         }
@@ -209,7 +210,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     plusSymbol.Glyph(L"\xE109");
     addRemapKey.Content(plusSymbol);
     addRemapKey.Margin({ 10 });
-    addRemapKey.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+    addRemapKey.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable);
     });
 

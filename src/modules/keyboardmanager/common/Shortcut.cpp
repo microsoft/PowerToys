@@ -411,6 +411,34 @@ winrt::hstring Shortcut::ToHstring(LayoutMap& keyboardMap)
     }
 }
 
+winrt::hstring Shortcut::ToHstringVK() const
+{
+    winrt::hstring output;
+    if (winKey != ModifierKey::Disabled)
+    {
+        output = output + winrt::to_hstring((unsigned int)GetWinKey(ModifierKey::Left)) + winrt::to_hstring(L";");
+    }
+    if (ctrlKey != ModifierKey::Disabled)
+    {
+        output = output + winrt::to_hstring((unsigned int)GetCtrlKey()) + winrt::to_hstring(L";");
+    }
+    if (altKey != ModifierKey::Disabled)
+    {
+        output = output + winrt::to_hstring((unsigned int)GetAltKey()) + winrt::to_hstring(L";");
+    }
+    if (shiftKey != ModifierKey::Disabled)
+    {
+        output = output + winrt::to_hstring((unsigned int)GetShiftKey()) + winrt::to_hstring(L";");
+    }
+    if (actionKey != NULL)
+    {
+        output = output + winrt::to_hstring((unsigned int)GetActionKey()) + winrt::to_hstring(L";");
+    }
+
+    output = (output == L";") ? L"" : output;
+    return output;
+}
+
 std::vector<winrt::hstring> Shortcut::GetKeyVector(LayoutMap& keyboardMap)
 {
     std::vector<winrt::hstring> keys;

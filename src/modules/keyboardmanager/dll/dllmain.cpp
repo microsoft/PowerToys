@@ -86,15 +86,18 @@ public:
                 auto jsonData = *configFile;
                 auto remapKeysData = jsonData.GetNamedObject(L"remapkeys");
                 auto remapShortcutsData = jsonData.GetNamedObject(L"remapShortcuts");
+                keyboardManagerState.ClearSingleKeyRemaps();
 
                 for (auto it : remapKeysData)
                 {
                     // Be more resilient here.
                     auto originalKey = it.Key().c_str();
                     auto newKey = it.Value().GetString().c_str();
-                    keyboardManagerState.AddSingleKeyRemap(std::stoi(originalKey), std::stoi(newKey));
+                    keyboardManagerState.AddSingleKeyRemap(std::stoul(originalKey), std::stoul(newKey));
                 }
 
+                keyboardManagerState.ClearOSLevelShortcuts();
+                // Todo more resillent and validate shortcuts first.
                 for (auto it : remapShortcutsData)
                 {
                     auto originalSCVector = KeyboardManagerHelper::splitwstring(it.Key().c_str(), L';');

@@ -279,3 +279,26 @@ bool KeyboardManagerState::DetectShortcutUIBackend(LowlevelKeyboardEvent* data)
 
     return false;
 }
+
+bool KeyboardManagerState::SaveConfigToFile()
+{
+    json::JsonObject configJson;
+    json::JsonObject remapKeysJObject;
+    json::JsonObject remapShortcutsJObject;
+    for (auto it : singleKeyReMap)
+    {
+        remapKeysJObject.SetNamedValue(winrt::to_hstring((unsigned int)it.first), json::value(winrt::to_hstring((unsigned int)it.second)));
+    }
+
+    for (auto it : osLevelShortcutReMap)
+    {
+        remapShortcutsJObject.SetNamedValue(it.first.ToHstringVK(), json::value(it.second.targetShortcut.ToHstringVK()));
+    }
+
+    configJson.SetNamedValue(L"remapkeys", remapKeysJObject);
+    configJson.SetNamedValue(L"remapShortcuts", remapShortcutsJObject);
+
+    json::to_file((PTSettingsHelper::get_module_save_folder_location(L"Keyboard Manager") + L"\\" +  L"config-1.json"), configJson);
+
+    return true;
+}

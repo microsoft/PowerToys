@@ -139,6 +139,9 @@ public:
     // Function to return the string representation of the shortcut
     winrt::hstring ToHstring(LayoutMap& keyboardMap);
 
+    // Function to return the string representation of the shortcut in virtual key codes.
+    winrt::hstring ToHstringVK() const;
+
     // Function to return a vector of hstring for each key, in the same order as ToHstring()
     std::vector<winrt::hstring> GetKeyVector(LayoutMap& keyboardMap);
 

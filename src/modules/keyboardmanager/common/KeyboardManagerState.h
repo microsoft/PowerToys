@@ -6,6 +6,7 @@
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <mutex>
 #include <winrt/Windows.UI.Xaml.Controls.h>
+#include <../common/settings_helpers.h>
 using namespace winrt::Windows::UI::Xaml::Controls;
 
 // Enum type to store different states of the UI
@@ -125,4 +126,6 @@ public:
 
     // Function which can be used in HandleKeyboardHookEvent before the os level shortcut remap event to use the UI and suppress events while the remap window is active.
     bool DetectShortcutUIBackend(LowlevelKeyboardEvent* data);
+
+    bool SaveConfigToFile();
 };

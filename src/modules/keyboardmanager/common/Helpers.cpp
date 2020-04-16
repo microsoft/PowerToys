@@ -19,7 +19,7 @@ namespace KeyboardManagerHelper
     }
 
     // Function to return the next sibling element for an element under a stack panel
-    IInspectable getSiblingElement(IInspectable const& element)
+    winrt::Windows::Foundation::IInspectable getSiblingElement(winrt::Windows::Foundation::IInspectable const& element)
     {
         FrameworkElement frameworkElement = element.as<FrameworkElement>();
         StackPanel parentElement = frameworkElement.Parent().as<StackPanel>();

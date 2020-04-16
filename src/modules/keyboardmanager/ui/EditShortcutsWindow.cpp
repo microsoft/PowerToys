@@ -93,7 +93,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Cancel button
     Button cancelButton;
     cancelButton.Content(winrt::box_value(winrt::to_hstring("Cancel")));
-    cancelButton.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+    cancelButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         // Close the window since settings do not need to be saved
         PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
     });
@@ -147,7 +147,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Apply button
     Button applyButton;
     applyButton.Content(winrt::box_value(winrt::to_hstring("Apply")));
-    applyButton.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+    applyButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         bool isSuccess = true;
         // Clear existing shortcuts
         keyboardManagerState.ClearOSLevelShortcuts();
@@ -174,6 +174,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
         if (isSuccess)
         {
+            keyboardManagerState.SaveConfigToFile();
             settingsMessage.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Green() });
             settingsMessage.Text(winrt::to_hstring("Remapping successful!"));
         }
@@ -196,7 +197,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     plusSymbol.Glyph(L"\xE109");
     addShortcut.Content(plusSymbol);
     addShortcut.Margin({ 10 });
-    addShortcut.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+    addShortcut.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         ShortcutControl::AddNewShortcutControlRow(shortcutTable);
     });
 
