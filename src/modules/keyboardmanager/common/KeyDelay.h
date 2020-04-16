@@ -51,9 +51,9 @@ private:
 
     // Manage state transitions and trigger callbacks on certain events.
     // Returns whether or not the thread should wait on new events.
-    void HandleRelease();
-    void HandleOnHold(std::unique_lock<std::mutex>& cvLock);
-    void HandleOnHoldTimeout();
+    bool HandleRelease();
+    bool HandleOnHold(std::unique_lock<std::mutex>& cvLock);
+    bool HandleOnHoldTimeout();
 
     // Get next key event in queue.
     KeyTimedEvent NextEvent();
