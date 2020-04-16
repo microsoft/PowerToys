@@ -136,7 +136,7 @@ public:
     void ResetKey(const DWORD& input, const bool& isWinBoth = false);
 
     // Function to return a vector of hstring for each key in the display order
-    std::vector<winrt::hstring> GetKeyVector(LayoutMap& keyboardMap);
+    std::vector<winrt::hstring> GetKeyVector(LayoutMap& keyboardMap) const;
 
     // Function to return a vector of key codes in the display order
     std::vector<DWORD> GetKeyCodes();

@@ -83,15 +83,26 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
     // ContentDialog requires manually setting the XamlRoot (https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
     detectRemapKeyBox.XamlRoot(xamlRoot);
     detectRemapKeyBox.Title(box_value(L"Press a key on selected keyboard:"));
-    detectRemapKeyBox.PrimaryButtonText(to_hstring(L"OK"));
+    detectRemapKeyBox.IsPrimaryButtonEnabled(false);
     detectRemapKeyBox.IsSecondaryButtonEnabled(false);
-    detectRemapKeyBox.CloseButtonText(to_hstring(L"Cancel"));
 
     // Get the linked text block for the "Type Key" button that was clicked
     ComboBox linkedRemapDropDown = getSiblingElement(sender).as<ComboBox>();
 
-    // OK button
-    detectRemapKeyBox.PrimaryButtonClick([=, &singleKeyRemapBuffer, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
+    auto unregisterKeys = [&keyboardManagerState]() {
+        std::thread t1(&KeyboardManagerState::UnregisterKeyDelay, &keyboardManagerState, VK_ESCAPE);
+        std::thread t2(&KeyboardManagerState::UnregisterKeyDelay, &keyboardManagerState, VK_RETURN);
+        t1.detach();
+        t2.detach();
+    };
+
+    auto onAccept = [linkedRemapDropDown,
+                     detectRemapKeyBox,
+                     &keyboardManagerState,
+                     &singleKeyRemapBuffer,
+                     unregisterKeys,
+                     rowIndex,
+                     colIndex] {
         // Save the detected key in the linked text block
         DWORD detectedKey = keyboardManagerState.GetDetectedSingleRemapKey();
 
@@ -107,13 +118,68 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
 
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();
+        unregisterKeys();
+        detectRemapKeyBox.Hide();
+    };
+
+    TextBlock primaryButtonText;
+    primaryButtonText.Text(to_hstring(L"OK"));
+
+    Button primaryButton;
+    primaryButton.HorizontalAlignment(HorizontalAlignment::Stretch);
+    primaryButton.Margin({ 2, 2, 2, 2 });
+    primaryButton.Content(primaryButtonText);
+    primaryButton.Click([onAccept](IInspectable const& sender, RoutedEventArgs const&) {
+        onAccept();
     });
 
+    keyboardManagerState.RegisterKeyDelay(
+        VK_RETURN,
+        std::bind(&KeyboardManagerState::SelectDetectedRemapKey, &keyboardManagerState, std::placeholders::_1),
+        [primaryButton, detectRemapKeyBox](DWORD) {
+            detectRemapKeyBox.Dispatcher().RunAsync(
+                Windows::UI::Core::CoreDispatcherPriority::Normal,
+                [primaryButton] {
+                    primaryButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::DarkGray() });
+                });
+        },
+        [onAccept, detectRemapKeyBox](DWORD) {
+            detectRemapKeyBox.Dispatcher().RunAsync(
+                Windows::UI::Core::CoreDispatcherPriority::Normal,
+                [onAccept] {
+                    onAccept();
+                });
+        });
+
+    TextBlock cancelButtonText;
+    cancelButtonText.Text(to_hstring(L"Cancel"));
+
+    Button cancelButton;
+    cancelButton.HorizontalAlignment(HorizontalAlignment::Stretch);
+    cancelButton.Margin({ 2, 2, 2, 2 });
+    cancelButton.Content(cancelButtonText);
     // Cancel button
-    detectRemapKeyBox.CloseButtonClick([&keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
+    cancelButton.Click([detectRemapKeyBox, unregisterKeys, &keyboardManagerState](IInspectable const& sender, RoutedEventArgs const&) {
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();
+        unregisterKeys();
+        detectRemapKeyBox.Hide();
     });
+
+    keyboardManagerState.RegisterKeyDelay(
+        VK_ESCAPE,
+        std::bind(&KeyboardManagerState::SelectDetectedRemapKey, &keyboardManagerState, std::placeholders::_1),
+        [&keyboardManagerState, detectRemapKeyBox, unregisterKeys](DWORD) {
+            detectRemapKeyBox.Dispatcher().RunAsync(
+                Windows::UI::Core::CoreDispatcherPriority::Normal,
+                [detectRemapKeyBox] {
+                    detectRemapKeyBox.Hide();
+                });
+
+            keyboardManagerState.ResetUIState();
+            unregisterKeys();
+        },
+        nullptr);
 
     // StackPanel parent for the displayed text in the dialog
     Windows::UI::Xaml::Controls::StackPanel stackPanel;
@@ -127,8 +193,36 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
 
     // Target StackPanel to place the selected key
     Windows::UI::Xaml::Controls::StackPanel keyStackPanel;
-    stackPanel.Children().Append(keyStackPanel);
     keyStackPanel.Orientation(Orientation::Horizontal);
+    stackPanel.Children().Append(keyStackPanel);
+
+    TextBlock holdEscInfo;
+    holdEscInfo.Text(winrt::to_hstring("Hold Esc to discard"));
+    holdEscInfo.FontSize(12);
+    holdEscInfo.Margin({ 0, 20, 0, 0 });
+    stackPanel.Children().Append(holdEscInfo);
+
+    TextBlock holdEnterInfo;
+    holdEnterInfo.Text(winrt::to_hstring("Hold Enter to apply"));
+    holdEnterInfo.FontSize(12);
+    holdEnterInfo.Margin({ 0, 0, 0, 0 });
+    stackPanel.Children().Append(holdEnterInfo);
+
+    ColumnDefinition primaryButtonColumn;
+    ColumnDefinition cancelButtonColumn;
+
+    Grid buttonPanel;
+    buttonPanel.Margin({ 0, 20, 0, 0 });
+    buttonPanel.HorizontalAlignment(HorizontalAlignment::Stretch);
+    buttonPanel.ColumnDefinitions().Append(primaryButtonColumn);
+    buttonPanel.ColumnDefinitions().Append(cancelButtonColumn);
+    buttonPanel.SetColumn(primaryButton, 0);
+    buttonPanel.SetColumn(cancelButton, 1);
+
+    buttonPanel.Children().Append(primaryButton);
+    buttonPanel.Children().Append(cancelButton);
+
+    stackPanel.Children().Append(buttonPanel);
     stackPanel.UpdateLayout();
 
     // Configure the keyboardManagerState to store the UI information.

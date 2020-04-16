@@ -392,7 +392,7 @@ void Shortcut::ResetKey(const DWORD& input, const bool& isWinBoth)
 }
 
 // Function to return a vector of hstring for each key in the display order
-std::vector<winrt::hstring> Shortcut::GetKeyVector(LayoutMap& keyboardMap)
+std::vector<winrt::hstring> Shortcut::GetKeyVector(LayoutMap& keyboardMap) const
 {
     std::vector<winrt::hstring> keys;
     if (winKey != ModifierKey::Disabled)
