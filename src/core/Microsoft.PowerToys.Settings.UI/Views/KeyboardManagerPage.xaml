@@ -39,7 +39,7 @@
                           Grid.Column="1"
                           FontSize="14"
                           VerticalAlignment="Center" />
-                
+
                 <Border Background="{ThemeResource SystemAccentColor}"
                         CornerRadius="4"
                         Grid.Column="2"
@@ -108,9 +108,9 @@
 
             <ComboBox SelectedIndex="1" MinWidth="160"
                       Margin="{StaticResource SmallTopMargin}">
-                      <ComboBoxItem Content="Config-1"/>
-                      <ComboBoxItem Content="Config-2"/>
-                      <ComboBoxItem Content="Config-3"/>
+                <ComboBoxItem Content="Config-1"/>
+                <ComboBoxItem Content="Config-2"/>
+                <ComboBoxItem Content="Config-3"/>
             </ComboBox>
 
             <TextBlock x:Uid="KeyboardManager_RemapKeyboardHeader"
@@ -133,7 +133,9 @@
                       Width="350"
                       MaxHeight="200"
                       Margin="{StaticResource MediumTopBottomMargin}"
-                      HorizontalAlignment="Left"/>
+                      HorizontalAlignment="Left"
+                      SelectionMode="None"
+                      IsSwipeEnabled="False"/>
 
 
             <TextBlock x:Uid="KeyboardManager_RemapShortcutsHeader"
@@ -156,7 +158,9 @@
                       Width="350"
                       MaxHeight="200"
                       Margin="{StaticResource MediumTopBottomMargin}"
-                      HorizontalAlignment="Left"/>
+                      HorizontalAlignment="Left"
+                      SelectionMode="None"
+                      IsSwipeEnabled="False"/>
 
 
         </StackPanel>
