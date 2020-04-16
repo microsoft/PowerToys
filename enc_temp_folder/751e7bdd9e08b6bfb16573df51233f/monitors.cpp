@@ -35,6 +35,7 @@ static BOOL CALLBACK getDisplaysEnumCbWithToolbar(HMONITOR monitor, HDC hdc, LPR
     return true;
 };
 
+
 std::vector<MonitorInfo> MonitorInfo::GetMonitors(bool include_toolbar)
 {
     std::vector<MonitorInfo> monitors;
