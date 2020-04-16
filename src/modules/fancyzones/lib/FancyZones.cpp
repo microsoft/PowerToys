@@ -9,6 +9,7 @@
 #include "lib/JsonHelpers.h"
 #include "lib/ZoneSet.h"
 #include "trace.h"
+#include "VirtualDesktopUtils.h"
 
 #include <functional>
 #include <common/common.h>
@@ -356,8 +357,8 @@ FancyZones::WindowCreated(HWND window) noexcept
         {
             GUID windowDesktopId{};
             GUID zoneWindowDesktopId{};
-            if (ZoneWindowUtils::GetWindowDesktopId(window, &windowDesktopId) &&
-                ZoneWindowUtils::GetZoneWindowDesktopId(zoneWindow.get(), &zoneWindowDesktopId) &&
+            if (VirtualDesktopUtils::GetWindowDesktopId(window, &windowDesktopId) &&
+                VirtualDesktopUtils::GetZoneWindowDesktopId(zoneWindow.get(), &zoneWindowDesktopId) &&
                 (windowDesktopId != zoneWindowDesktopId))
             {
                 return;

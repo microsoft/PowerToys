@@ -48,6 +48,9 @@
     <ClInclude Include="JsonHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VirtualDesktopUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -75,6 +78,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VirtualDesktopUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
