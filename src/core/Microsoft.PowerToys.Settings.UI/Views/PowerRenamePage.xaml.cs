@@ -16,8 +16,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     {
         public PowerRenameViewModel ViewModel { get; set; }
 
-        private const string POWERTOYNAME = "PowerRename";
-
         public PowerRenamePage()
         {
             this.InitializeComponent();
