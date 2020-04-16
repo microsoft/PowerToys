@@ -20,6 +20,17 @@ namespace Microsoft.PowerToys.Settings.UnitTest
                 DeleteFolder(file_name);
             }
         }
+
+        [TestCleanup()]
+        public void Cleanup()
+        {
+            string file_name = "\\test";
+            if (SettingsUtils.SettingsFolderExists(file_name))
+            {
+                DeleteFolder(file_name);
+            }
+        }
+
         [TestMethod]
         public void SaveSettings_SaveSettingsToFile_WhenFilePathExists()
         {
