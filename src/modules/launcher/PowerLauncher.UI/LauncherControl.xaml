@@ -433,14 +433,13 @@
                 <Border x:Name="SuggestionsContainer">
                     <ListView 
                             x:Name="SuggestionsList"
-                            d:DesignWidth="100" d:DesignHeight="100"
                             HorizontalContentAlignment="Stretch"
                             MinHeight="{Binding Results.MaxHeight}"
                             IsItemClickEnabled="True"
                             Margin="{ThemeResource AutoSuggestListMargin}"
                             Padding="{ThemeResource AutoSuggestListPadding}"
-                            ItemsSource="{Binding Results.Results}"
-                            Visibility="{Binding Results.Visbility}"
+                            ItemsSource="{Binding Results.Results, Mode=OneWay}"
+                            Visibility="{Binding Results.Visbility, Mode=OneWay}"
                             SelectionMode="Single"
                             SelectionChanged="SuggestionsList_SelectionChanged"
                             >

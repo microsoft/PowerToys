@@ -11,6 +11,7 @@ using Wox.Plugin;
 
 namespace Wox.ViewModel
 {
+
     public class ResultsViewModel : BaseModel
     {
         #region Private Fields
@@ -49,7 +50,7 @@ namespace Wox.ViewModel
 
         public ResultViewModel SelectedItem { get; set; }
         public Thickness Margin { get; set; }
-        public Visibility Visbility { get; set; } = Visibility.Collapsed;
+        public Windows.UI.Xaml.Visibility Visbility { get; set; } = Windows.UI.Xaml.Visibility.Collapsed;
 
         #endregion
 
