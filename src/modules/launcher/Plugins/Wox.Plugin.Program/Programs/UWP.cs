@@ -7,8 +7,6 @@ using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Xml.Linq;
 using Windows.ApplicationModel;
 using Windows.Management.Deployment;
@@ -18,6 +16,8 @@ using Wox.Infrastructure;
 using Wox.Plugin.Program.Logger;
 using IStream = AppxPackaing.IStream;
 using Rect = System.Windows.Rect;
+using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Media;
 
 namespace Wox.Plugin.Program.Programs
 {
@@ -517,11 +517,7 @@ namespace Wox.Plugin.Program.Programs
             public ImageSource Logo()
             {
                 var logo = ImageFromPath(LogoPath);
-                var plated = PlatedImage(logo);
-
-                // todo magic! temp fix for cross thread object
-                plated.Freeze();
-                return plated;
+                return logo;
             }
 
 
@@ -538,62 +534,6 @@ namespace Wox.Plugin.Program.Programs
                                                     $"|Unable to get logo for {UserModelId} from {path} and" +
                                                     $" located in {Package.Location}", new FileNotFoundException());
                     return new BitmapImage(new Uri(Constant.ErrorIcon));
-                }
-            }
-
-            private ImageSource PlatedImage(BitmapImage image)
-            {
-                if (!string.IsNullOrEmpty(BackgroundColor) && BackgroundColor != "transparent")
-                {
-                    var width = image.Width;
-                    var height = image.Height;
-                    var x = 0;
-                    var y = 0;
-
-                    var group = new DrawingGroup();
-
-                    var converted = ColorConverter.ConvertFromString(BackgroundColor);
-                    if (converted != null)
-                    {
-                        var color = (Color)converted;
-                        var brush = new SolidColorBrush(color);
-                        var pen = new Pen(brush, 1);
-                        var backgroundArea = new Rect(0, 0, width, width);
-                        var rectabgle = new RectangleGeometry(backgroundArea);
-                        var rectDrawing = new GeometryDrawing(brush, pen, rectabgle);
-                        group.Children.Add(rectDrawing);
-
-                        var imageArea = new Rect(x, y, image.Width, image.Height);
-                        var imageDrawing = new ImageDrawing(image, imageArea);
-                        group.Children.Add(imageDrawing);
-
-                        // http://stackoverflow.com/questions/6676072/get-system-drawing-bitmap-of-a-wpf-area-using-visualbrush
-                        var visual = new DrawingVisual();
-                        var context = visual.RenderOpen();
-                        context.DrawDrawing(group);
-                        context.Close();
-                        const int dpiScale100 = 96;
-                        var bitmap = new RenderTargetBitmap(
-                            Convert.ToInt32(width), Convert.ToInt32(height),
-                            dpiScale100, dpiScale100,
-                            PixelFormats.Pbgra32
-                        );
-                        bitmap.Render(visual);
-                        return bitmap;
-                    }
-                    else
-                    {
-                        ProgramLogger.LogException($"|UWP|PlatedImage|{Package.Location}" +
-                                                    $"|Unable to convert background string {BackgroundColor} " +
-                                                    $"to color for {Package.Location}", new InvalidOperationException());
-
-                        return new BitmapImage(new Uri(Constant.ErrorIcon));
-                    }
-                }
-                else
-                {
-                    // todo use windows theme as background
-                    return image;
                 }
             }
 
