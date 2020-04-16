@@ -3,6 +3,7 @@
 #include "LayoutMap.h"
 #include "Shortcut.h"
 #include "RemapShortcut.h"
+#include "KeyDelay.h"
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <mutex>
 #include <winrt/Windows.UI.Xaml.Controls.h>
@@ -51,8 +52,13 @@ private:
     StackPanel currentShortcutUI;
     std::mutex currentShortcutUI_mutex;
 
+    // Registered KeyDelay objects, used to notify delayed key events.
+    std::map<DWORD, std::unique_ptr<KeyDelay>> keyDelays;
+    std::mutex keyDelays_mutex;
+
     // Display a key by appending a border Control as a child of the panel.
     void AddKeyToLayout(const StackPanel& panel, const winrt::hstring& key);
+
 public:
     // The map members and their mutexes are left as public since the maps are used extensively in dllmain.cpp.
     // Maps which store the remappings for each of the features. The bool fields should be initalised to false. They are used to check the current state of the shortcut (i.e is that particular shortcut currently pressed down or not).
@@ -125,4 +131,30 @@ public:
 
     // Function which can be used in HandleKeyboardHookEvent before the os level shortcut remap event to use the UI and suppress events while the remap window is active.
     bool DetectShortcutUIBackend(LowlevelKeyboardEvent* data);
+
+    // Add a KeyDelay object to get delayed key presses events for a given virtual key
+    // NOTE: this will throw an exception if a virtual key is registered twice.
+    // NOTE*: the virtual key should represent the original, unmapped virtual key.
+    void RegisterKeyDelay(
+        DWORD key,
+        std::function<void(DWORD)> onShortPress,
+        std::function<void(DWORD)> onLongPressDetected,
+        std::function<void(DWORD)> onLongPressReleased);
+
+    // Remove a KeyDelay.
+    // NOTE: this method will throw if the virtual key is not registered beforehand.
+    // NOTE*: the virtual key should represent the original, unmapped virtual key.
+    void UnregisterKeyDelay(DWORD key);
+
+    // Handle a key event, for a delayed key.
+    bool HandleKeyDelayEvent(LowlevelKeyboardEvent* ev);
+
+    // Update the currently selected single key remap
+    void SelectDetectedRemapKey(DWORD key);
+
+    // Update the currently selected shortcut.
+    void SelectDetectedShortcut(DWORD key);
+
+    // Reset the shortcut (backend) state after releasing a key.
+    void ResetDetectedShortcutKey(DWORD key);
 };

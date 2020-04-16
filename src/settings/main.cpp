@@ -567,7 +567,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     Trace::RegisterProvider();
     CoInitialize(nullptr);
 
-    const bool should_try_drop_privileges = !initialize_com_security_policy_for_webview() && is_process_elevated();
+    const bool should_try_drop_privileges = !initialize_com_security_policy_for_webview() && is_process_elevated(false);
 
     if (should_try_drop_privileges)
     {

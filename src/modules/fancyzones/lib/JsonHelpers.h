@@ -207,11 +207,15 @@ namespace JSONHelpers
 #if defined(UNIT_TESTS)
         inline void clear_data()
         {
-            appliedZoneSetsMap.clear();
             appZoneHistoryMap.clear();
             deviceInfoMap.clear();
             customZoneSetsMap.clear();
             activeDeviceId.clear();
+        }
+
+        inline void SetDeviceInfo(const std::wstring& deviceId, DeviceInfoData data)
+        {
+            deviceInfoMap[deviceId] = data;
         }
 #endif
 
@@ -254,10 +258,8 @@ namespace JSONHelpers
         void SaveFancyZonesData() const;
 
     private:
-        void TmpMigrateAppliedZoneSetsFromRegistry();
         void MigrateCustomZoneSetsFromRegistry();
 
-        std::unordered_map<std::wstring, ZoneSetData> appliedZoneSetsMap{};
         std::unordered_map<std::wstring, AppZoneHistoryData> appZoneHistoryMap{};
         std::unordered_map<std::wstring, DeviceInfoData> deviceInfoMap{};
         std::unordered_map<std::wstring, CustomZoneSetData> customZoneSetsMap{};
