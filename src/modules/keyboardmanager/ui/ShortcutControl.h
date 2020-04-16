@@ -28,7 +28,7 @@ public:
 
     ShortcutControl(const int& rowIndex, const int& colIndex)
     {
-        shortcutDropDownStackPanel.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+        shortcutDropDownStackPanel.RequestedTheme(ElementTheme::Light);
         shortcutDropDownStackPanel.Spacing(10);
         shortcutDropDownStackPanel.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
         AddDropDown(shortcutDropDownStackPanel, rowIndex, colIndex);
@@ -60,6 +60,12 @@ public:
 
     // Function to get the list of key codes from the shortcut combo box stack panel
     std::vector<DWORD> GetKeysFromStackPanel(StackPanel parent);
+
+    // Function to check if a modifier has been repeated in the previous drop downs
+    bool CheckRepeatedModifier(StackPanel parent, uint32_t dropDownIndex, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList);
+
+    // Function to set the flyout warning message and reset the drop down
+    void SetDropDownError(ComboBox dropDown, TextBlock messageBlock, hstring message);
 
     // Function to return the stack panel element of the ShortcutControl. This is the externally visible UI element which can be used to add it to other layouts
     StackPanel getShortcutControl();
