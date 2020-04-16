@@ -252,15 +252,15 @@ namespace PowerLauncher
         //    }
         //}
 
-        private PowerLauncher.UI.LauncherControl _launcher = null;
-        private void WindowsXamlHost_ChildChanged(object sender, EventArgs ev)
+        //private PowerLauncher.UI.LauncherControl _launcher = null;
+        private void WindowsXamlHostTextBox_ChildChanged(object sender, EventArgs ev)
         {
             if (sender == null) return;
 
             var host = (WindowsXamlHost)sender;
-            _launcher = (PowerLauncher.UI.LauncherControl)host.Child;
-            _launcher.DataContext = _viewModel;
-            _launcher.ResultsList.ItemClick += ResultsList_ItemClick;
+            //_launcher = (PowerLauncher.UI.LauncherControl)host.Child;
+            host.DataContext = _viewModel;
+            //_launcher.ResultsList.ItemClick += ResultsList_ItemClick;
             //_launcher.SearchBox.TextChanged += QueryTextBox_TextChanged;
             //_launcher.SearchBox.QuerySubmitted += AutoSuggestBox_QuerySubmitted;
             //_launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
@@ -281,6 +281,36 @@ namespace PowerLauncher
                     }
                 }
             };
+        }
+
+        private void WindowsXamlHostListView_ChildChanged(object sender, EventArgs ev)
+        {
+            if (sender == null) return;
+
+            var host = (WindowsXamlHost)sender;
+            //_launcher = (PowerLauncher.UI.LauncherControl)host.Child;
+            host.DataContext = _viewModel;
+            //_launcher.ResultsList.ItemClick += ResultsList_ItemClick;
+            //_launcher.SearchBox.TextChanged += QueryTextBox_TextChanged;
+            //_launcher.SearchBox.QuerySubmitted += AutoSuggestBox_QuerySubmitted;
+            //_launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
+            //_viewModel.PropertyChanged += (o, e) =>
+            //{
+            //    if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
+            //    {
+            //        if (Visibility == System.Windows.Visibility.Visible)
+            //        {
+            //            Activate();
+            //            //_launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
+            //            UpdatePosition();
+            //            _settings.ActivateTimes++;
+            //            if (!_viewModel.LastQuerySelected)
+            //            {
+            //                _viewModel.LastQuerySelected = true;
+            //            }
+            //        }
+            //    }
+            //};
         }
 
         private void ResultsList_ItemClick(object sender, ItemClickEventArgs e)
