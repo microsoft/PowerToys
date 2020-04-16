@@ -416,7 +416,7 @@ namespace FancyZonesEditor
 
                         newRowPercents[row] = model.RowPercents[sourceRow];
                     }
-                    
+
                     sourceRow++;
                 }
 
