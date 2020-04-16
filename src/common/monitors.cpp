@@ -1,7 +1,10 @@
 #include "pch.h"
 
-#include "common.h"
 #include "monitors.h"
+
+#include <Shellscalingapi.h>
+
+#include "common.h"
 
 bool operator==(const ScreenSize& lhs, const ScreenSize& rhs)
 {
@@ -10,48 +13,80 @@ bool operator==(const ScreenSize& lhs, const ScreenSize& rhs)
     return lhs_tuple == rhs_tuple;
 }
 
-static BOOL CALLBACK get_displays_enum_cb(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
+static BOOL CALLBACK getDisplaysEnumCb(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
 {
-    MONITORINFOEX monitor_info;
-    monitor_info.cbSize = sizeof(MONITORINFOEX);
-    GetMonitorInfo(monitor, &monitor_info);
-    reinterpret_cast<std::vector<MonitorInfo>*>(data)->emplace_back(monitor, monitor_info.rcWork);
+    MONITORINFOEX monitorInfo;
+    monitorInfo.cbSize = sizeof(MONITORINFOEX);
+    if (GetMonitorInfo(monitor, &monitorInfo))
+    {
+        reinterpret_cast<std::vector<MonitorInfo>*>(data)->emplace_back(monitor, monitorInfo.rcWork);
+    }
     return true;
 };
 
-static BOOL CALLBACK get_displays_enum_cb_with_toolbar(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
+static BOOL CALLBACK getDisplaysEnumCbWithToolbar(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
 {
-    MONITORINFOEX monitor_info;
-    monitor_info.cbSize = sizeof(MONITORINFOEX);
-    GetMonitorInfo(monitor, &monitor_info);
-    reinterpret_cast<std::vector<MonitorInfo>*>(data)->emplace_back(monitor, monitor_info.rcMonitor);
+    MONITORINFOEX monitorInfo;
+    monitorInfo.cbSize = sizeof(MONITORINFOEX);
+    if (GetMonitorInfo(monitor, &monitorInfo))
+    {
+        reinterpret_cast<std::vector<MonitorInfo>*>(data)->emplace_back(monitor, monitorInfo.rcMonitor);
+    }
     return true;
 };
 
 std::vector<MonitorInfo> MonitorInfo::GetMonitors(bool include_toolbar)
 {
     std::vector<MonitorInfo> monitors;
-    EnumDisplayMonitors(NULL, NULL, include_toolbar ? get_displays_enum_cb_with_toolbar : get_displays_enum_cb, reinterpret_cast<LPARAM>(&monitors));
+    EnumDisplayMonitors(NULL, NULL, include_toolbar ? getDisplaysEnumCbWithToolbar : getDisplaysEnumCb, reinterpret_cast<LPARAM>(&monitors));
     std::sort(begin(monitors), end(monitors), [](const MonitorInfo& lhs, const MonitorInfo& rhs) {
         return lhs.rect < rhs.rect;
     });
     return monitors;
 }
 
-int MonitorInfo::GetMonitorsCount()
+bool MonitorInfo::DoesAllMonitorsHaveSameDpiScaling()
 {
-    return GetMonitors(true).size();
+    auto monitors = GetMonitors(true);
+
+    if (monitors.size() < 2)
+    {
+        return true;
+    }
+
+    UINT firstMonitorDpiX;
+    UINT firstMonitorDpiY;
+
+    if (S_OK != GetDpiForMonitor(monitors[0].handle, MDT_EFFECTIVE_DPI, &firstMonitorDpiX, &firstMonitorDpiY))
+    {
+        return false;
+    }
+
+    for (int i = 1; i < monitors.size(); i++)
+    {
+        UINT iteratedMonitorDpiX;
+        UINT iteratedMonitorDpiY;
+
+        if (S_OK != GetDpiForMonitor(monitors[i].handle, MDT_EFFECTIVE_DPI, &iteratedMonitorDpiX, &iteratedMonitorDpiY) ||
+            iteratedMonitorDpiX != firstMonitorDpiX ||
+            iteratedMonitorDpiY != firstMonitorDpiY)
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
-static BOOL CALLBACK get_primary_display_enum_cb(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
+static BOOL CALLBACK getPrimaryDisplayEnumCb(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
 {
-    MONITORINFOEX monitor_info;
-    monitor_info.cbSize = sizeof(MONITORINFOEX);
-    GetMonitorInfo(monitor, &monitor_info);
-    if (monitor_info.dwFlags & MONITORINFOF_PRIMARY)
+    MONITORINFOEX monitorInfo;
+    monitorInfo.cbSize = sizeof(MONITORINFOEX);
+
+    if (GetMonitorInfo(monitor, &monitorInfo) && monitorInfo.dwFlags & MONITORINFOF_PRIMARY)
     {
         reinterpret_cast<MonitorInfo*>(data)->handle = monitor;
-        reinterpret_cast<MonitorInfo*>(data)->rect = monitor_info.rcWork;
+        reinterpret_cast<MonitorInfo*>(data)->rect = monitorInfo.rcWork;
     }
     return true;
 };
@@ -59,26 +94,6 @@ static BOOL CALLBACK get_primary_display_enum_cb(HMONITOR monitor, HDC hdc, LPRE
 MonitorInfo MonitorInfo::GetPrimaryMonitor()
 {
     MonitorInfo primary({}, {});
-    EnumDisplayMonitors(NULL, NULL, get_primary_display_enum_cb, reinterpret_cast<LPARAM>(&primary));
+    EnumDisplayMonitors(NULL, NULL, getPrimaryDisplayEnumCb, reinterpret_cast<LPARAM>(&primary));
     return primary;
-}
-
-MonitorInfo MonitorInfo::GetFromWindow(HWND hwnd)
-{
-    auto monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-    return GetFromHandle(monitor);
-}
-
-MonitorInfo MonitorInfo::GetFromPoint(POINT p)
-{
-    auto monitor = MonitorFromPoint(p, MONITOR_DEFAULTTONEAREST);
-    return GetFromHandle(monitor);
-}
-
-MonitorInfo MonitorInfo::GetFromHandle(HMONITOR monitor)
-{
-    MONITORINFOEX monitor_info;
-    monitor_info.cbSize = sizeof(MONITORINFOEX);
-    GetMonitorInfo(monitor, &monitor_info);
-    return MonitorInfo(monitor, monitor_info.rcWork);
 }

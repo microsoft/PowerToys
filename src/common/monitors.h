@@ -32,15 +32,8 @@ struct MonitorInfo : ScreenSize
 
     // Returns monitor rects ordered from left to right
     static std::vector<MonitorInfo> GetMonitors(bool include_toolbar);
-    static int GetMonitorsCount();
-    // Return primary display
+    static bool DoesAllMonitorsHaveSameDpiScaling();
     static MonitorInfo GetPrimaryMonitor();
-    // Return monitor on which hwnd window is displayed
-    static MonitorInfo GetFromWindow(HWND hwnd);
-    // Return monitor nearest to a point
-    static MonitorInfo GetFromPoint(POINT p);
-    // Return monitor info given a HMONITOR
-    static MonitorInfo GetFromHandle(HMONITOR monitor);
 };
 
 bool operator==(const ScreenSize& lhs, const ScreenSize& rhs);

@@ -101,7 +101,7 @@ RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) noexcept
         const auto taskbar_top_size = std::abs(mi.rcMonitor.top - mi.rcWork.top);
         OffsetRect(&newWindowRect, -taskbar_left_size, -taskbar_top_size);
 
-        if (accountForUnawareness && MonitorInfo::GetMonitorsCount() > 1)
+        if (accountForUnawareness && !MonitorInfo::DoesAllMonitorsHaveSameDpiScaling())
         {
             newWindowRect.left = max(mi.rcMonitor.left, newWindowRect.left);
             newWindowRect.right = min(mi.rcMonitor.right - taskbar_left_size, newWindowRect.right);
