@@ -413,7 +413,6 @@
     <Grid 
         x:Name="PowerBar" 
         Background="{StaticResource BackdropAcrylicBrush}"
-        Height="72" 
         Translation="0,0,16" 
         VerticalAlignment="Top">
         <StackPanel Orientation="Vertical">
@@ -434,16 +433,18 @@
                 <ListView 
                     x:Name="SuggestionsList"
                     d:DesignWidth="100" d:DesignHeight="100"
-                    MaxHeight="{Binding Results.MaxHeight}"
+                    HorizontalContentAlignment="Stretch"
+                    MinHeight="{Binding Results.MaxHeight}"
                     SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
                     SelectedItem="{Binding Results.SelectedItem, Mode=TwoWay}"
                     IsItemClickEnabled="True"
                     Margin="{ThemeResource AutoSuggestListMargin}"
                     Padding="{ThemeResource AutoSuggestListPadding}"
-                    ItemsSource="{Binding Results}"
-                    Visibility="{Binding Visbility}"
+                    ItemsSource="{Binding Results.Results}"
+                    Visibility="{Binding Results.Visbility}"
                     SelectionMode="Single"
-                    IsSynchronizedWithCurrentItem="True">
+                    SelectionChanged="SelectionChanged"
+                    >
                     <ListView.ItemTemplate>
                         <DataTemplate >
                             <Grid Height="72" Width="690" Background="Transparent" RowSpacing="0">
@@ -463,7 +464,6 @@
                                     <RowDefinition Height="*"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-
                                 <Image x:Name="AppIcon" Height="36" Margin="8,0,0,0" Grid.RowSpan="2" HorizontalAlignment="Left" Source="{Binding Result.IcoPath}" />
                                 <TextBlock x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" VerticalAlignment="Bottom"/>
                                 <TextBlock x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Opacity="0.6" VerticalAlignment="Top"/>

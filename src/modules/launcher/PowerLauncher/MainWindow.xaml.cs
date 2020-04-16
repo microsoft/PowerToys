@@ -258,11 +258,11 @@ namespace PowerLauncher
             if (sender == null) return;
 
             var host = (WindowsXamlHost)sender;
-            _launcher = (PowerLauncher.UI.LauncherControl)host.Child;
+            //_launcher = (PowerLauncher.UI.LauncherControl)host.Child;
             _launcher.DataContext = _viewModel;
-            _launcher.SearchBox.TextChanged += QueryTextBox_TextChanged;
-            _launcher.SearchBox.QuerySubmitted += AutoSuggestBox_QuerySubmitted;
-            _launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
+            //_launcher.SearchBox.TextChanged += QueryTextBox_TextChanged;
+            //_launcher.SearchBox.QuerySubmitted += AutoSuggestBox_QuerySubmitted;
+            //_launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
             _viewModel.PropertyChanged += (o, e) =>
             {
                 if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
@@ -270,7 +270,7 @@ namespace PowerLauncher
                     if (Visibility == System.Windows.Visibility.Visible)
                     {
                         Activate();
-                        _launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
+                        //_launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
                         UpdatePosition();
                         _settings.ActivateTimes++;
                         if (!_viewModel.LastQuerySelected)
