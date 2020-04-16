@@ -132,19 +132,29 @@ public:
     // Function which can be used in HandleKeyboardHookEvent before the os level shortcut remap event to use the UI and suppress events while the remap window is active.
     bool DetectShortcutUIBackend(LowlevelKeyboardEvent* data);
 
+    // Add a KeyDelay object to get delayed key presses events for a given virtual key
+    // NOTE: this will throw an exception if a virtual key is registered twice.
+    // NOTE*: the virtual key should represent the original, unmapped virtual key.
     void RegisterKeyDelay(
         DWORD key,
         std::function<void(DWORD)> onShortPress,
         std::function<void(DWORD)> onLongPressDetected,
         std::function<void(DWORD)> onLongPressReleased);
 
+    // Remove a KeyDelay.
+    // NOTE: this method will throw if the virtual key is not registered beforehand.
+    // NOTE*: the virtual key should represent the original, unmapped virtual key.
     void UnregisterKeyDelay(DWORD key);
 
+    // Handle a key event, for a delayed key.
     bool HandleKeyDelayEvent(LowlevelKeyboardEvent* ev);
 
+    // Update the currently selected single key remap
     void SelectDetectedRemapKey(DWORD key);
 
+    // Update the currently selected shortcut.
     void SelectDetectedShortcut(DWORD key);
 
+    // Reset the shortcut (backend) state after releasing a key.
     void ResetDetectedShortcutKey(DWORD key);
 };
