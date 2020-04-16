@@ -44,7 +44,7 @@
 
             <ToggleSwitch Header="Run at startup" x:Name="ToggleSwitch_RunAtStartUp"  Margin="{StaticResource SmallTopMargin}" Toggled="ToggleSwitch_RunAtStartUp_Toggled" />
 
-            <muxc:RadioButtons Header="Theme" Margin="{StaticResource SmallTopMargin}">
+            <muxc:RadioButtons Header="Theme" Margin="{StaticResource MediumTopMargin}">
                 <RadioButton x:Name="Radio_Theme_Dark" Content="Dark" Tag="Dark" Checked="Theme_Changed"/>
                 <RadioButton x:Name="Radio_Theme_Light"  Content="Light" Tag="Light" Checked="Theme_Changed"/>
                 <RadioButton x:Name="Radio_Theme_Default"  Content="System default" Tag="System" Checked="Theme_Changed"/>
@@ -58,7 +58,7 @@
 
             <Button 
                 Content="Restart as admin" 
-                Margin="{StaticResource SmallTopMargin}" 
+                Margin="{StaticResource MediumTopMargin}" 
                 Style="{StaticResource AccentButtonStyle}" 
                 Click="Restart_Elevated" />
 
