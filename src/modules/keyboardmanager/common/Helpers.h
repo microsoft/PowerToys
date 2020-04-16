@@ -48,3 +48,6 @@ bool IsModifierKey(DWORD key);
 
 // Function to get the type of the key
 KeyType GetKeyType(DWORD key);
+
+// Function to return if the key is an extended key which requires the use of the extended key flag
+bool isExtendedKey(DWORD key);

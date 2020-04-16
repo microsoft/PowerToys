@@ -3,48 +3,65 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class HotkeySettings
     {
-        public bool win { get; set; }
+        public HotkeySettings()
+        {
+            this.Win = false;
+            this.Ctrl = false;
+            this.Alt = false;
+            this.Shift = false;
+            this.Key = string.Empty;
+            this.Code = 0;
+        }
 
-        public bool ctrl { get; set; }
+        [JsonPropertyName("win")]
+        public bool Win { get; set; }
 
-        public bool alt { get; set; }
+        [JsonPropertyName("ctrl")]
+        public bool Ctrl { get; set; }
 
-        public bool shift { get; set; }
+        [JsonPropertyName("alt")]
+        public bool Alt { get; set; }
 
-        public string key { get; set; }
+        [JsonPropertyName("shift")]
+        public bool Shift { get; set; }
 
-        public int code { get; set; }
+        [JsonPropertyName("key")]
+        public string Key { get; set; }
+
+        [JsonPropertyName("code")]
+        public int Code { get; set; }
 
         public override string ToString()
         {
             StringBuilder output = new StringBuilder();
 
-            if (win)
+            if (Win)
             {
                 output.Append("Win + ");
             }
 
-            if (ctrl)
+            if (Ctrl)
             {
                 output.Append("Ctrl + ");
             }
 
-            if (alt)
+            if (Alt)
             {
                 output.Append("Alt + ");
             }
 
-            if (shift)
+            if (Shift)
             {
                 output.Append("Shift + ");
             }
 
-            output.Append(key);
+            output.Append(Key);
             return output.ToString();
         }
     }

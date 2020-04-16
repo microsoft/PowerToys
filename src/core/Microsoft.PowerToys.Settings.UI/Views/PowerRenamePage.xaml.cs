@@ -43,11 +43,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void UpdateView(PowerRenameSettings settings)
         {
-            Toggle_PowerRename_Enable.IsOn = settings.properties.MruEnabled.value;
-            Toggle_PowerRename_EnableOnExtendedContextMenu.IsOn = settings.properties.ShowExtendedMenu.value;
-            Toggle_PowerRename_MaxDispListNum.Value = settings.properties.MaxMruSize.value;
-            Toggle_PowerRename_EnableOnContextMenu.IsOn = settings.properties.ShowIconInMenu.value;
-            Toggle_PowerRename_RestoreFlagsOnLaunch.IsOn = settings.properties.PersistInput.value;
+            Toggle_PowerRename_Enable.IsOn = settings.properties.MruEnabled.Value;
+            Toggle_PowerRename_EnableOnExtendedContextMenu.IsOn = settings.properties.ShowExtendedMenu.Value;
+            Toggle_PowerRename_MaxDispListNum.Value = settings.properties.MaxMruSize.Value;
+            Toggle_PowerRename_EnableOnContextMenu.IsOn = settings.properties.ShowIconInMenu.Value;
+            Toggle_PowerRename_RestoreFlagsOnLaunch.IsOn = settings.properties.PersistInput.Value;
         }
 
         private void Toggle_PowerRename_Enable_Toggled(object sender, RoutedEventArgs e)
@@ -57,7 +57,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (swt != null)
             {
                 PowerRenameSettings settings = SettingsUtils.GetSettings<PowerRenameSettings>(POWERTOYNAME);
-                settings.properties.MruEnabled.value = swt.IsOn;
+                settings.properties.MruEnabled.Value = swt.IsOn;
 
                 if (ShellPage.DefaultSndMSGCallback != null)
                 {
@@ -75,7 +75,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (swt != null)
             {
                 PowerRenameSettings settings = SettingsUtils.GetSettings<PowerRenameSettings>(POWERTOYNAME);
-                settings.properties.ShowIconInMenu.value = swt.IsOn;
+                settings.properties.ShowIconInMenu.Value = swt.IsOn;
 
                 if (ShellPage.DefaultSndMSGCallback != null)
                 {
@@ -93,7 +93,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (swt != null)
             {
                 PowerRenameSettings settings = SettingsUtils.GetSettings<PowerRenameSettings>(POWERTOYNAME);
-                settings.properties.ShowExtendedMenu.value = swt.IsOn;
+                settings.properties.ShowExtendedMenu.Value = swt.IsOn;
 
                 if (ShellPage.DefaultSndMSGCallback != null)
                 {
@@ -111,7 +111,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (swt != null)
             {
                 PowerRenameSettings settings = SettingsUtils.GetSettings<PowerRenameSettings>(POWERTOYNAME);
-                settings.properties.PersistInput.value = swt.IsOn;
+                settings.properties.PersistInput.Value = swt.IsOn;
 
                 if (ShellPage.DefaultSndMSGCallback != null)
                 {
@@ -127,7 +127,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (sender != null)
             {
                 PowerRenameSettings settings = SettingsUtils.GetSettings<PowerRenameSettings>(POWERTOYNAME);
-                settings.properties.MaxMruSize.value = Convert.ToInt32(sender.Value);
+                settings.properties.MaxMruSize.Value = Convert.ToInt32(sender.Value);
 
                 if (ShellPage.DefaultSndMSGCallback != null)
                 {
