@@ -1,5 +1,8 @@
 #include "pch.h"
 
+
+#include <Shellscalingapi.h>
+
 #include <common/dpi_aware.h>
 #include <common/monitors.h>
 #include "Zone.h"
@@ -68,6 +71,46 @@ void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
     SizeWindowToRect(window, ComputeActualZoneRect(window, zoneWindow));
 }
 
+static BOOL CALLBACK saveDisplayToVector(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
+{
+    reinterpret_cast<std::vector<HMONITOR>*>(data)->emplace_back(monitor);
+    return true;
+}
+
+bool AllMonitorsHaveSameDpiScaling()
+{
+    std::vector<HMONITOR> monitors;
+    EnumDisplayMonitors(NULL, NULL, saveDisplayToVector, reinterpret_cast<LPARAM>(&monitors));
+
+    if (monitors.size() < 2)
+    {
+        return true;
+    }
+
+    UINT firstMonitorDpiX;
+    UINT firstMonitorDpiY;
+
+    if (S_OK != GetDpiForMonitor(monitors[0], MDT_EFFECTIVE_DPI, &firstMonitorDpiX, &firstMonitorDpiY))
+    {
+        return false;
+    }
+
+    for (int i = 1; i < monitors.size(); i++)
+    {
+        UINT iteratedMonitorDpiX;
+        UINT iteratedMonitorDpiY;
+
+        if (S_OK != GetDpiForMonitor(monitors[i], MDT_EFFECTIVE_DPI, &iteratedMonitorDpiX, &iteratedMonitorDpiY) ||
+            iteratedMonitorDpiX != firstMonitorDpiX ||
+            iteratedMonitorDpiY != firstMonitorDpiY)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) noexcept
 {
     // Take care of 1px border
@@ -101,7 +144,7 @@ RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) noexcept
         const auto taskbar_top_size = std::abs(mi.rcMonitor.top - mi.rcWork.top);
         OffsetRect(&newWindowRect, -taskbar_left_size, -taskbar_top_size);
 
-        if (accountForUnawareness && !MonitorInfo::DoesAllMonitorsHaveSameDpiScaling())
+        if (accountForUnawareness && !AllMonitorsHaveSameDpiScaling())
         {
             newWindowRect.left = max(mi.rcMonitor.left, newWindowRect.left);
             newWindowRect.right = min(mi.rcMonitor.right - taskbar_left_size, newWindowRect.right);

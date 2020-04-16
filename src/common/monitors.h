@@ -32,7 +32,6 @@ struct MonitorInfo : ScreenSize
 
     // Returns monitor rects ordered from left to right
     static std::vector<MonitorInfo> GetMonitors(bool include_toolbar);
-    static bool DoesAllMonitorsHaveSameDpiScaling();
     static MonitorInfo GetPrimaryMonitor();
 };
 

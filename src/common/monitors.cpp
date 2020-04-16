@@ -2,8 +2,6 @@
 
 #include "monitors.h"
 
-#include <Shellscalingapi.h>
-
 #include "common.h"
 
 bool operator==(const ScreenSize& lhs, const ScreenSize& rhs)
@@ -43,47 +41,6 @@ std::vector<MonitorInfo> MonitorInfo::GetMonitors(bool include_toolbar)
         return lhs.rect < rhs.rect;
     });
     return monitors;
-}
-
-static BOOL CALLBACK saveDisplayToVector(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
-{
-    reinterpret_cast<std::vector<HMONITOR>*>(data)->emplace_back(monitor);
-    return true;
-}
-
-
-bool MonitorInfo::DoesAllMonitorsHaveSameDpiScaling()
-{
-    std::vector<HMONITOR> monitors;
-    EnumDisplayMonitors(NULL, NULL, saveDisplayToVector, reinterpret_cast<LPARAM>(&monitors));
-
-    if (monitors.size() < 2)
-    {
-        return true;
-    }
-
-    UINT firstMonitorDpiX;
-    UINT firstMonitorDpiY;
-
-    if (S_OK != GetDpiForMonitor(monitors[0], MDT_EFFECTIVE_DPI, &firstMonitorDpiX, &firstMonitorDpiY))
-    {
-        return false;
-    }
-
-    for (int i = 1; i < monitors.size(); i++)
-    {
-        UINT iteratedMonitorDpiX;
-        UINT iteratedMonitorDpiY;
-
-        if (S_OK != GetDpiForMonitor(monitors[i], MDT_EFFECTIVE_DPI, &iteratedMonitorDpiX, &iteratedMonitorDpiY) ||
-            iteratedMonitorDpiX != firstMonitorDpiX ||
-            iteratedMonitorDpiY != firstMonitorDpiY)
-        {
-            return false;
-        }
-    }
-
-    return true;
 }
 
 static BOOL CALLBACK getPrimaryDisplayEnumCb(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
