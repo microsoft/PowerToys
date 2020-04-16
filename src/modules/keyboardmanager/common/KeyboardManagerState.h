@@ -3,6 +3,7 @@
 #include "LayoutMap.h"
 #include "Shortcut.h"
 #include "RemapShortcut.h"
+#include "KeyDelay.h"
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <mutex>
 #include <winrt/Windows.UI.Xaml.Controls.h>
@@ -50,6 +51,10 @@ private:
     // Stores the UI element which is to be updated based on the shortcut entered
     StackPanel currentShortcutUI;
     std::mutex currentShortcutUI_mutex;
+
+    // Registered KeyDelay objects, used to notify delayed key events.
+    std::map<DWORD, std::unique_ptr<KeyDelay>> keyDelays;
+    std::mutex keyDelays_mutex;
 
     // Display a key by appending a border Control as a child of the panel.
     void AddKeyToLayout(const StackPanel& panel, const winrt::hstring& key);
@@ -125,4 +130,19 @@ public:
 
     // Function which can be used in HandleKeyboardHookEvent before the os level shortcut remap event to use the UI and suppress events while the remap window is active.
     bool DetectShortcutUIBackend(LowlevelKeyboardEvent* data);
+
+    void RegisterKeyDelay(
+        DWORD key, 
+        std::function<void(DWORD)> onShortPress, 
+        std::function<void(DWORD)> onLongPressDetected, 
+        std::function<void(DWORD)> onLongPressReleased
+    );
+    
+    void UnregisterKeyDelay(DWORD key);
+
+    bool HandleKeyDelayEvent(LowlevelKeyboardEvent* ev);
+
+    void SelectDetectedRemapKey(DWORD key);
+  
+    void SelectDetectedShortcut(DWORD key);
 };

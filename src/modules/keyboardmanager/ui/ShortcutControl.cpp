@@ -72,15 +72,29 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
     // ContentDialog requires manually setting the XamlRoot (https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
     detectShortcutBox.XamlRoot(xamlRoot);
     detectShortcutBox.Title(box_value(L"Press the keys in shortcut:"));
-    detectShortcutBox.PrimaryButtonText(to_hstring(L"OK"));
+    detectShortcutBox.IsPrimaryButtonEnabled(false);
     detectShortcutBox.IsSecondaryButtonEnabled(false);
-    detectShortcutBox.CloseButtonText(to_hstring(L"Cancel"));
 
     // Get the linked text block for the "Type shortcut" button that was clicked
     TextBlock linkedShortcutText = getSiblingElement(sender).as<TextBlock>();
 
+    auto unregisterKeys = [&keyboardManagerState]() {
+        std::thread t1(&KeyboardManagerState::UnregisterKeyDelay, &keyboardManagerState, VK_ESCAPE);
+        std::thread t2(&KeyboardManagerState::UnregisterKeyDelay, &keyboardManagerState, VK_RETURN);
+        t1.detach();
+        t2.detach();
+    };
+
+    TextBlock primaryButtonText;
+    primaryButtonText.Text(to_hstring(L"OK"));
+
+    Button primaryButton;
+    primaryButton.HorizontalAlignment(HorizontalAlignment::Stretch);
+    primaryButton.Margin({ 2, 2, 2, 2 });
+    primaryButton.Content(primaryButtonText);
+
     // OK button
-    detectShortcutBox.PrimaryButtonClick([=, &shortcutRemapBuffer, &keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
+    primaryButton.Click([=, &shortcutRemapBuffer, &keyboardManagerState](IInspectable const& sender, RoutedEventArgs const&) {
         // Save the detected shortcut in the linked text block
         Shortcut detectedShortcutKeys = keyboardManagerState.GetDetectedShortcut();
 
@@ -92,13 +106,78 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
 
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();
+        unregisterKeys();
+        detectShortcutBox.Hide();
     });
 
+    keyboardManagerState.RegisterKeyDelay(
+        VK_RETURN,
+        std::bind(&KeyboardManagerState::SelectDetectedShortcut, &keyboardManagerState, std::placeholders::_1),
+        [primaryButton, detectShortcutBox](DWORD) {
+            detectShortcutBox.Dispatcher().RunAsync(
+                Windows::UI::Core::CoreDispatcherPriority::Normal,
+                [primaryButton] {
+                    primaryButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::DarkGray() });
+                });
+        },
+        [=, &shortcutRemapBuffer, &keyboardManagerState](DWORD) {
+            // Save the detected shortcut in the linked text block
+            Shortcut detectedShortcutKeys = keyboardManagerState.GetDetectedShortcut();
+
+            bool detectedShortcutIsEmpty = detectedShortcutKeys.IsEmpty();
+            winrt::hstring detectedShortcutString;
+            if (!detectedShortcutIsEmpty)
+            {
+                shortcutRemapBuffer[rowIndex][colIndex] = detectedShortcutKeys;
+                detectedShortcutString = detectedShortcutKeys.ToHstring(keyboardManagerState.keyboardMap);
+            }
+            
+            detectShortcutBox.Dispatcher().RunAsync(
+                Windows::UI::Core::CoreDispatcherPriority::Normal,
+                [detectedShortcutString, detectedShortcutIsEmpty, detectShortcutBox, linkedShortcutText, &detectedShortcutKeys, &keyboardManagerState] {
+                    detectShortcutBox.Hide();
+
+                    if (!detectedShortcutIsEmpty)
+                    {
+                        linkedShortcutText.Text(detectedShortcutString);
+                    }
+                });
+
+            // Reset the keyboard manager UI state
+            keyboardManagerState.ResetUIState();
+            unregisterKeys();
+        });
+
+    TextBlock cancelButtonText;
+    cancelButtonText.Text(to_hstring(L"Cancel"));
+
+    Button cancelButton;
+    cancelButton.HorizontalAlignment(HorizontalAlignment::Stretch);
+    cancelButton.Margin({ 2, 2, 2, 2 });
+    cancelButton.Content(cancelButtonText);
     // Cancel button
-    detectShortcutBox.CloseButtonClick([&keyboardManagerState](Windows::UI::Xaml::Controls::ContentDialog const& sender, ContentDialogButtonClickEventArgs const&) {
+    cancelButton.Click([detectShortcutBox, unregisterKeys, &keyboardManagerState](IInspectable const& sender, RoutedEventArgs const&) {
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();
+        unregisterKeys();
+        detectShortcutBox.Hide();
     });
+
+    keyboardManagerState.RegisterKeyDelay(
+        VK_ESCAPE,
+        std::bind(&KeyboardManagerState::SelectDetectedShortcut, &keyboardManagerState, std::placeholders::_1),
+        [&keyboardManagerState, detectShortcutBox, unregisterKeys](DWORD) {
+            detectShortcutBox.Dispatcher().RunAsync(
+                Windows::UI::Core::CoreDispatcherPriority::Normal,
+                [detectShortcutBox] {
+                    detectShortcutBox.Hide();
+                });
+
+            keyboardManagerState.ResetUIState();
+            unregisterKeys();
+        },
+        nullptr
+            );
 
     // StackPanel parent for the displayed text in the dialog
     Windows::UI::Xaml::Controls::StackPanel stackPanel;
@@ -112,9 +191,36 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
 
     // Target StackPanel to place the selected key
     Windows::UI::Xaml::Controls::StackPanel keyStackPanel;
-    stackPanel.Children().Append(keyStackPanel);
     keyStackPanel.Orientation(Orientation::Horizontal);
+    stackPanel.Children().Append(keyStackPanel);
 
+    TextBlock holdEscInfo;
+    holdEscInfo.Text(winrt::to_hstring("Hold Esc to discard"));
+    holdEscInfo.FontSize(12);
+    holdEscInfo.Margin({ 0, 20, 0, 0 });
+    stackPanel.Children().Append(holdEscInfo);
+
+    TextBlock holdEnterInfo;
+    holdEnterInfo.Text(winrt::to_hstring("Hold Enter to apply"));
+    holdEnterInfo.FontSize(12);
+    holdEnterInfo.Margin({ 0, 0, 0, 0 });
+    stackPanel.Children().Append(holdEnterInfo);
+
+    ColumnDefinition primaryButtonColumn;
+    ColumnDefinition cancelButtonColumn;
+
+    Grid buttonPanel;
+    buttonPanel.Margin({ 0, 20, 0, 0 });
+    buttonPanel.HorizontalAlignment(HorizontalAlignment::Stretch);
+    buttonPanel.ColumnDefinitions().Append(primaryButtonColumn);
+    buttonPanel.ColumnDefinitions().Append(cancelButtonColumn);
+    buttonPanel.SetColumn(primaryButton, 0);
+    buttonPanel.SetColumn(cancelButton, 1);
+
+    buttonPanel.Children().Append(primaryButton);
+    buttonPanel.Children().Append(cancelButton);
+
+    stackPanel.Children().Append(buttonPanel);
     stackPanel.UpdateLayout();
 
     // Configure the keyboardManagerState to store the UI information.

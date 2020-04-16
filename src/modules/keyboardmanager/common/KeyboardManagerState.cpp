@@ -213,6 +213,29 @@ DWORD KeyboardManagerState::GetDetectedSingleRemapKey()
     return detectedRemapKey;
 }
 
+void KeyboardManagerState::SelectDetectedRemapKey(DWORD key)
+{
+    std::lock_guard<std::mutex> guard(detectedRemapKey_mutex);
+    detectedRemapKey = key;
+    UpdateDetectSingleKeyRemapUI();
+    return;
+}
+
+void KeyboardManagerState::SelectDetectedShortcut(DWORD key)
+{
+    // Set the new key and store if a change occured
+    std::unique_lock<std::mutex> lock(detectedShortcut_mutex);
+    bool updateUI = detectedShortcut.SetKey(key);
+    lock.unlock();
+
+    if (updateUI)
+    {
+        // Update the UI. This function is called here because it should store the set of keys pressed till the last key which was pressed down.
+        UpdateDetectShortcutUI();
+    }
+    return;
+}
+
 // Function which can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.
 bool KeyboardManagerState::DetectSingleRemapKeyUIBackend(LowlevelKeyboardEvent* data)
 {
@@ -222,13 +245,9 @@ bool KeyboardManagerState::DetectSingleRemapKeyUIBackend(LowlevelKeyboardEvent* 
         // detect the key if it is pressed down
         if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
         {
-            std::unique_lock<std::mutex> detectedRemapKey_lock(detectedRemapKey_mutex);
-            detectedRemapKey = data->lParam->vkCode;
-            detectedRemapKey_lock.unlock();
-
-            UpdateDetectSingleKeyRemapUI();
+            SelectDetectedRemapKey(data->lParam->vkCode);
         }
-
+        
         // Suppress the keyboard event
         return true;
     }
@@ -245,16 +264,7 @@ bool KeyboardManagerState::DetectShortcutUIBackend(LowlevelKeyboardEvent* data)
         // Add the key if it is pressed down
         if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
         {
-            // Set the new key and store if a change occured
-            std::unique_lock<std::mutex> lock(detectedShortcut_mutex);
-            bool updateUI = detectedShortcut.SetKey(data->lParam->vkCode);
-            lock.unlock();
-
-            if (updateUI)
-            {
-                // Update the UI. This function is called here because it should store the set of keys pressed till the last key which was pressed down.
-                UpdateDetectShortcutUI();
-            }
+            SelectDetectedShortcut(data->lParam->vkCode);
         }
         // Remove the key if it has been released
         else if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
@@ -278,4 +288,48 @@ bool KeyboardManagerState::DetectShortcutUIBackend(LowlevelKeyboardEvent* data)
     }
 
     return false;
+}
+
+void KeyboardManagerState::RegisterKeyDelay(
+    DWORD key, 
+    std::function<void(DWORD)> onShortPress, 
+    std::function<void(DWORD)> onLongPressDetected,
+    std::function<void(DWORD)> onLongPressReleased
+)
+{
+    std::lock_guard l(keyDelays_mutex);
+
+    if (keyDelays.find(key) != keyDelays.end())
+    {
+        throw std::invalid_argument("This key was already registered.");
+    }
+    keyDelays[key] = std::make_unique<KeyDelay>(key, onShortPress, onLongPressDetected, onLongPressReleased);
+}
+
+void KeyboardManagerState::UnregisterKeyDelay(DWORD key)
+{
+    std::lock_guard l(keyDelays_mutex);
+
+    auto deleted = keyDelays.erase(key);
+    if (deleted == 0) {
+        throw std::invalid_argument("The key was not previously registered.");
+    }
+}
+
+bool KeyboardManagerState::HandleKeyDelayEvent(LowlevelKeyboardEvent* ev)
+{
+    if (currentUIWindow != GetForegroundWindow())
+    {
+        return false;
+    }
+
+    std::lock_guard l(keyDelays_mutex);
+
+    if (keyDelays.find(ev->lParam->vkCode) == keyDelays.end())
+    {
+        return false;
+    }
+
+    keyDelays[ev->lParam->vkCode]->KeyEvent(ev);
+    return true;
 }

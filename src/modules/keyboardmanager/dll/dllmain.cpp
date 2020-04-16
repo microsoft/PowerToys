@@ -273,6 +273,12 @@ public:
     // Function called by the hook procedure to handle the events. This is the starting point function for remapping
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
     {
+        // Check if there is a registered KeyDelay for this key.
+        if (keyboardManagerState.HandleKeyDelayEvent(data))
+        {
+            return 1;
+        }
+
         // If the Detect Key Window is currently activated, then suppress the keyboard event
         if (keyboardManagerState.DetectSingleRemapKeyUIBackend(data))
         {
