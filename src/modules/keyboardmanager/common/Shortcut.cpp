@@ -411,7 +411,7 @@ winrt::hstring Shortcut::ToHstring(LayoutMap& keyboardMap)
     }
 }
 
-std::vector<winrt::hstring> Shortcut::GetKeyVector(LayoutMap& keyboardMap)
+std::vector<winrt::hstring> Shortcut::GetKeyVector(LayoutMap& keyboardMap) const
 {
     std::vector<winrt::hstring> keys;
     if (winKey != ModifierKey::Disabled)
