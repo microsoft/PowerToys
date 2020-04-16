@@ -6,8 +6,10 @@
 
 KeyDelay::~KeyDelay()
 {
+    std::unique_lock<std::mutex> l(_queueMutex);
     _quit = true;
     _cv.notify_all();
+    l.unlock();
     _delayThread.join();
 }
 
@@ -44,7 +46,7 @@ bool KeyDelay::HasNextEvent()
     return !_queue.empty();
 }
 
-bool KeyDelay::HandleRelease()
+void KeyDelay::HandleRelease()
 {
     while (HasNextEvent())
     {
@@ -55,17 +57,17 @@ bool KeyDelay::HandleRelease()
         case WM_SYSKEYDOWN:
             _state = KeyDelayState::ON_HOLD;
             _initialHoldKeyDown = ev.time;
-            return false;
+            return;
         case WM_KEYUP:
         case WM_SYSKEYUP:
             break;
         }
     }
 
-    return true;
+    return;
 }
 
-bool KeyDelay::HandleOnHold(std::unique_lock<std::mutex>& cvLock)
+void KeyDelay::HandleOnHold(std::unique_lock<std::mutex>& cvLock)
 {
     while (HasNextEvent())
     {
@@ -96,7 +98,7 @@ bool KeyDelay::HandleOnHold(std::unique_lock<std::mutex>& cvLock)
                 }
             }
             _state = KeyDelayState::RELEASED;
-           return false;
+           return;
         }
     }
 
@@ -112,10 +114,10 @@ bool KeyDelay::HandleOnHold(std::unique_lock<std::mutex>& cvLock)
     {
         _cv.wait_for(cvLock, std::chrono::milliseconds(ON_HOLD_WAIT_TIMEOUT_MILLIS));
     }
-    return false;
+    return;
 }
 
-bool KeyDelay::HandleOnHoldTimeout()
+void KeyDelay::HandleOnHoldTimeout()
 {
     while (HasNextEvent())
     {
@@ -132,21 +134,20 @@ bool KeyDelay::HandleOnHoldTimeout()
                 _onLongPressReleased(_key);
             }
             _state = KeyDelayState::RELEASED;
-            return false;
+            return;
         }
     }
 
-    return true;
+    return;
 }
 
 void KeyDelay::DelayThread()
 {
     std::unique_lock<std::mutex> qLock(_queueMutex);
-    bool shouldWait = true;
 
     while (!_quit)
     {
-        if (shouldWait)
+        if (!HasNextEvent())
         {
             _cv.wait(qLock);
         }
@@ -154,13 +155,13 @@ void KeyDelay::DelayThread()
         switch (_state)
         {
         case KeyDelayState::RELEASED:
-            shouldWait = HandleRelease();
+            HandleRelease();
             break;
         case KeyDelayState::ON_HOLD:
-            shouldWait = HandleOnHold(qLock);
+            HandleOnHold(qLock);
             break;
         case KeyDelayState::ON_HOLD_TIMEOUT:
-            shouldWait = HandleOnHoldTimeout();
+            HandleOnHoldTimeout();
             break;
         }
     }

@@ -4,8 +4,8 @@
 #include <thread>
 #include <queue>
 #include <mutex>
-#include <chrono>
 
+// Available states for the KeyDelay state machine.
 enum class KeyDelayState 
 {
     RELEASED,
@@ -13,12 +13,16 @@ enum class KeyDelayState
     ON_HOLD_TIMEOUT,
 };
 
+// Virtual key + timestamp (in millis since Windows startup)
 struct KeyTimedEvent
 {
     DWORD time;
     WPARAM message;
 };
 
+// Handles delayed key inputs.
+// Implemented as a state machine running on its own thread.
+// Thread stops on destruction.
 class KeyDelay
 {
 public:
@@ -38,28 +42,50 @@ public:
         _delayThread(&KeyDelay::DelayThread, this)
     {};
 
+    // Enque new KeyTimedEvent and notify the condition variable.
     void KeyEvent(LowlevelKeyboardEvent* ev);
     ~KeyDelay();
 
 private:
+    // Runs the state machine, waits if there is no events to process.
+    // Checks for _quit condition.
     void DelayThread();
-    bool HandleRelease();
-    bool HandleOnHold(std::unique_lock<std::mutex>& cvLock);
-    bool HandleOnHoldTimeout();
+
+    // Manage state transitions and trigger callbacks on certain events.
+    // Returns whether or not the thread should wait on new events.
+    void HandleRelease();
+    void HandleOnHold(std::unique_lock<std::mutex>& cvLock);
+    void HandleOnHoldTimeout();
+
+    // Get next key event in queue.
     KeyTimedEvent NextEvent();
     bool HasNextEvent();
+
+    // Check if <duration> milliseconds passed since <first> millisecond.
+    // Also checks for overflow conditions.
     bool CheckIfMillisHaveElapsed(DWORD first, DWORD last, DWORD duration);
 
     std::thread _delayThread;
     bool _quit;
     KeyDelayState _state;
+
+    // Callback functions, the key provided in the constructor is passed as an argument.
     std::function<void(DWORD)> _onLongPressDetected;
     std::function<void(DWORD)> _onLongPressReleased;
     std::function<void(DWORD)> _onShortPress;
+
+    // Queue holding key events that are not processed yet. Should be kept synchronized 
+    // using _queueMutex
     std::queue<KeyTimedEvent> _queue;
     std::mutex _queueMutex;
+
+    // DelayThread waits on this condition variable when there is no events to process.
     std::condition_variable _cv;
+
+    // Keeps track of the time at which the initial KEY_DOWN event happened.
     DWORD _initialHoldKeyDown;
+
+    // Virtual Key provided in the constructor. Passed to callback functions.
     DWORD _key;
 };
 
