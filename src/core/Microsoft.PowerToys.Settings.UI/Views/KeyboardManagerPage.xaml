@@ -5,14 +5,17 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:extensions="using:Microsoft.Toolkit.Uwp.UI.Extensions"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    >
 
     <Page.Resources>
-        <viewmodels:RemapKeysModel x:Key="dummyData"/>
+        <viewModel:RemapKeysModel x:Key="dummyData"/>
+        <viewModel:KeyboardManagerViewModel x:Key="eventViewModel"/>
 
-        <DataTemplate x:Name="KeysListViewTemplate" x:DataType="viewmodels:RemapKeysModel">
+        <DataTemplate x:Name="KeysListViewTemplate" x:DataType="viewModel:RemapKeysModel">
             <Grid Height="56">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="80"/>
@@ -126,6 +129,7 @@
                     Command="{Binding Path=RemapKeyboardCommand}"/>
 
             <ListView x:Name="RemapKeysList"
+                      extensions:ListViewExtensions.AlternateColor="{ThemeResource SystemControlBackgroundListLowBrush}"
                       ItemsSource="{StaticResource dummyData}"
                       ItemTemplate="{StaticResource KeysListViewTemplate}"
                       BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
@@ -149,7 +153,8 @@
                     Style="{StaticResource ButtonRevealStyle}"
                     Command="{Binding Path=EditShortcutCommand}"/>
 
-            <ListView x:Name="RemapShortcutsList"  
+            <ListView x:Name="RemapShortcutsList"
+                      extensions:ListViewExtensions.AlternateColor="{ThemeResource SystemControlBackgroundListLowBrush}"
                       ItemsSource="{StaticResource dummyData}"
                       ItemTemplate="{StaticResource KeysListViewTemplate}"
                       BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
