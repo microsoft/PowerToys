@@ -161,6 +161,7 @@ void LayoutMap::UpdateLayout()
     // To do: Add IME key names
 }
 
+// Function to return two vectors: the list of names of all the keys for the drop down, and their corresponding virtual key codes. If the first argument is true, then an additional None option is added at the top
 std::pair<Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable>, std::vector<DWORD>> LayoutMap::GetKeyList(const bool isShortcut)
 {
     std::lock_guard<std::mutex> lock(keyboardLayoutMap_mutex);

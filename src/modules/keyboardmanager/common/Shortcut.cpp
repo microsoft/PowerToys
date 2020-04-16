@@ -391,6 +391,7 @@ void Shortcut::ResetKey(const DWORD& input, const bool& isWinBoth)
     }
 }
 
+// Function to return a vector of hstring for each key in the display order
 std::vector<winrt::hstring> Shortcut::GetKeyVector(LayoutMap& keyboardMap)
 {
     std::vector<winrt::hstring> keys;
@@ -417,6 +418,7 @@ std::vector<winrt::hstring> Shortcut::GetKeyVector(LayoutMap& keyboardMap)
     return keys;
 }
 
+// Function to return a vector of key codes in the display order
 std::vector<DWORD> Shortcut::GetKeyCodes()
 {
     std::vector<DWORD> keys;
@@ -443,10 +445,11 @@ std::vector<DWORD> Shortcut::GetKeyCodes()
     return keys;
 }
 
+// Function to set a shortcut from a vector of key codes
 void Shortcut::SetKeyCodes(const std::vector<DWORD>& keys)
 {
     Reset();
-    for (int i=0;i<keys.size();i++)
+    for (int i = 0; i < keys.size(); i++)
     {
         SetKey(keys[i]);
     }
