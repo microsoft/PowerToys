@@ -100,6 +100,15 @@
 
             <HyperlinkButton Content="Give feedback"
                              NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
+
+
+            <TextBlock 
+                Text="Attribution"
+                Style="{StaticResource SettingsGroupTitleStyle}" />
+
+            <HyperlinkButton 
+                Content="Chris Davis's SmartRenamer" 
+                NavigateUri="https://github.com/chrdavis/SmartRename" />
         </StackPanel>
     </Grid>
 </Page>
