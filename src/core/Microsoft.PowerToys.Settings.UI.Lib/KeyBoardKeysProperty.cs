@@ -5,24 +5,18 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class BoolProperty
+    public class KeyBoardKeysProperty
     {
-        public BoolProperty()
+        public KeyBoardKeysProperty()
         {
-            this.Value = false;
+            this.Value = new HotkeySettings();
         }
 
         [JsonPropertyName("value")]
-        public bool Value { get; set; }
-
-        public override string ToString()
-        {
-            return JsonSerializer.Serialize(this);
-        }
+        public HotkeySettings Value { get; set; }
     }
 }

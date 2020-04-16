@@ -3,44 +3,57 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class GeneralSettings
     {
         // Gets or sets a value indicating whether packaged.
+        [JsonPropertyName("packaged")]
         public bool Packaged { get; set; }
 
         // Gets or sets a value indicating whether run powertoys on start-up.
-        public bool startup { get; set; }
+        [JsonPropertyName("startup")]
+        public bool Startup { get; set; }
 
         // Gets or sets a value indicating whether the powertoy elevated.
-        public bool is_elevated { get; set; }
+        [JsonPropertyName("is_elevated")]
+        public bool IsElevated { get; set; }
 
         // Gets or sets a value indicating whether powertoys should run elevated.
-        public bool run_elevated { get; set; }
+        [JsonPropertyName("run_elevated")]
+        public bool RunElevated { get; set; }
 
         // Gets or sets a value indicating whether is admin.
-        public bool is_admin { get; set; }
+        [JsonPropertyName("is_admin")]
+        public bool IsAdmin { get; set; }
 
         // Gets or sets theme Name.
-        public string theme { get; set; }
+        [JsonPropertyName("theme")]
+        public string Theme { get; set; }
 
         // Gets or sets system theme name.
-        public string system_theme { get; set; }
+        [JsonPropertyName("system_theme")]
+        public string SystemTheme { get; set; }
 
         // Gets or sets powertoys version number.
-        public string powertoys_version { get; set; }
+        [JsonPropertyName("powertoys_version")]
+        public string PowertoysVersion { get; set; }
+
+        [JsonPropertyName("enabled")]
+        public EnabledModules Enabled { get; set; }
 
         public GeneralSettings()
         {
-            Packaged = false;
-            startup = false;
-            is_admin = false;
-            is_elevated = false;
-            theme = "system";
-            system_theme = "light";
-            powertoys_version = "v0.15.3";
+            this.Packaged = false;
+            this.Startup = false;
+            this.IsAdmin = false;
+            this.IsElevated = false;
+            this.Theme = "system";
+            this.SystemTheme = "light";
+            this.PowertoysVersion = "v0.15.3";
+            this.Enabled = new EnabledModules();
         }
 
         // converts the current to a json string.

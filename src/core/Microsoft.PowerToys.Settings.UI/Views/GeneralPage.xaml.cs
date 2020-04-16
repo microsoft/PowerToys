@@ -42,10 +42,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
 
                 // load and apply theme settings
-                ReLoadTheme(settings.theme);
+                ReLoadTheme(settings.Theme);
 
                 // load run on start-up settings value and update the ui state.
-                ToggleSwitch_RunAtStartUp.IsOn = settings.startup;
+                ToggleSwitch_RunAtStartUp.IsOn = settings.Startup;
             }
             catch
             {
@@ -54,10 +54,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SettingsUtils.SaveSettings(settings.ToJsonString(), string.Empty);
 
                 // load and apply theme settings
-                ReLoadTheme(settings.theme);
+                ReLoadTheme(settings.Theme);
 
                 // load run on start up ui settings value and update the ui state.
-                ToggleSwitch_RunAtStartUp.IsOn = settings.startup;
+                ToggleSwitch_RunAtStartUp.IsOn = settings.Startup;
             }
         }
 
@@ -96,10 +96,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 switch (startup)
                 {
                     case "true":
-                        settings.startup = true;
+                        settings.Startup = true;
                         break;
                     case "false":
-                        settings.startup = false;
+                        settings.Startup = false;
                         break;
                 }
 
@@ -116,7 +116,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void Restart_Elevated(object sender, RoutedEventArgs e)
         {
             GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-            settings.run_elevated = true;
+            settings.RunElevated = true;
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
 
             if (ShellPage.DefaultSndMSGCallback != null)
@@ -136,7 +136,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 // update and save settings to file.
                 GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-                settings.theme = themeName;
+                settings.Theme = themeName;
                 SettingsUtils.SaveSettings(settings.ToJsonString(), string.Empty);
             }
         }
