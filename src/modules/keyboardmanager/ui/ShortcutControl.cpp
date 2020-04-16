@@ -85,16 +85,18 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
         t2.detach();
     };
 
-    TextBlock primaryButtonText;
-    primaryButtonText.Text(to_hstring(L"OK"));
+    auto selectDetectedShortcutAndResetKeys = [&keyboardManagerState](DWORD key) {
+        keyboardManagerState.SelectDetectedShortcut(key);
+        keyboardManagerState.ResetDetectedShortcutKey(key);
+    };
 
-    Button primaryButton;
-    primaryButton.HorizontalAlignment(HorizontalAlignment::Stretch);
-    primaryButton.Margin({ 2, 2, 2, 2 });
-    primaryButton.Content(primaryButtonText);
-
-    // OK button
-    primaryButton.Click([=, &shortcutRemapBuffer, &keyboardManagerState](IInspectable const& sender, RoutedEventArgs const&) {
+    auto onAccept = [linkedShortcutText,
+                     detectShortcutBox,
+                     &keyboardManagerState,
+                     &shortcutRemapBuffer,
+                     unregisterKeys,
+                     rowIndex,
+                     colIndex] {
         // Save the detected shortcut in the linked text block
         Shortcut detectedShortcutKeys = keyboardManagerState.GetDetectedShortcut();
 
@@ -108,11 +110,24 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
         keyboardManagerState.ResetUIState();
         unregisterKeys();
         detectShortcutBox.Hide();
+    };
+
+    TextBlock primaryButtonText;
+    primaryButtonText.Text(to_hstring(L"OK"));
+
+    Button primaryButton;
+    primaryButton.HorizontalAlignment(HorizontalAlignment::Stretch);
+    primaryButton.Margin({ 2, 2, 2, 2 });
+    primaryButton.Content(primaryButtonText);
+
+    // OK button
+    primaryButton.Click([onAccept](IInspectable const& sender, RoutedEventArgs const&) {
+        onAccept();
     });
 
     keyboardManagerState.RegisterKeyDelay(
         VK_RETURN,
-        std::bind(&KeyboardManagerState::SelectDetectedShortcut, &keyboardManagerState, std::placeholders::_1),
+        selectDetectedShortcutAndResetKeys,
         [primaryButton, detectShortcutBox](DWORD) {
             detectShortcutBox.Dispatcher().RunAsync(
                 Windows::UI::Core::CoreDispatcherPriority::Normal,
@@ -120,32 +135,12 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
                     primaryButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::DarkGray() });
                 });
         },
-        [=, &shortcutRemapBuffer, &keyboardManagerState](DWORD) {
-            // Save the detected shortcut in the linked text block
-            Shortcut detectedShortcutKeys = keyboardManagerState.GetDetectedShortcut();
-
-            bool detectedShortcutIsEmpty = detectedShortcutKeys.IsEmpty();
-            winrt::hstring detectedShortcutString;
-            if (!detectedShortcutIsEmpty)
-            {
-                shortcutRemapBuffer[rowIndex][colIndex] = detectedShortcutKeys;
-                detectedShortcutString = detectedShortcutKeys.ToHstring(keyboardManagerState.keyboardMap);
-            }
-            
+        [onAccept,detectShortcutBox](DWORD) {
             detectShortcutBox.Dispatcher().RunAsync(
                 Windows::UI::Core::CoreDispatcherPriority::Normal,
-                [detectedShortcutString, detectedShortcutIsEmpty, detectShortcutBox, linkedShortcutText, &detectedShortcutKeys, &keyboardManagerState] {
-                    detectShortcutBox.Hide();
-
-                    if (!detectedShortcutIsEmpty)
-                    {
-                        linkedShortcutText.Text(detectedShortcutString);
-                    }
+                [onAccept] {
+                    onAccept();
                 });
-
-            // Reset the keyboard manager UI state
-            keyboardManagerState.ResetUIState();
-            unregisterKeys();
         });
 
     TextBlock cancelButtonText;
@@ -165,7 +160,7 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
 
     keyboardManagerState.RegisterKeyDelay(
         VK_ESCAPE,
-        std::bind(&KeyboardManagerState::SelectDetectedShortcut, &keyboardManagerState, std::placeholders::_1),
+        selectDetectedShortcutAndResetKeys,
         [&keyboardManagerState, detectShortcutBox, unregisterKeys](DWORD) {
             detectShortcutBox.Dispatcher().RunAsync(
                 Windows::UI::Core::CoreDispatcherPriority::Normal,
@@ -176,8 +171,7 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
             keyboardManagerState.ResetUIState();
             unregisterKeys();
         },
-        nullptr
-            );
+        nullptr);
 
     // StackPanel parent for the displayed text in the dialog
     Windows::UI::Xaml::Controls::StackPanel stackPanel;

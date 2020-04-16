@@ -87,14 +87,13 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
         t2.detach();
     };
 
-    TextBlock primaryButtonText;
-    primaryButtonText.Text(to_hstring(L"OK"));
-
-    Button primaryButton;
-    primaryButton.HorizontalAlignment(HorizontalAlignment::Stretch);
-    primaryButton.Margin({ 2, 2, 2, 2 });
-    primaryButton.Content(primaryButtonText);
-    primaryButton.Click([=, &singleKeyRemapBuffer, &keyboardManagerState](IInspectable const& sender, RoutedEventArgs const&) {
+    auto onAccept = [linkedRemapText,
+                     detectRemapKeyBox,
+                     &keyboardManagerState,
+                     &singleKeyRemapBuffer,
+                     unregisterKeys,
+                     rowIndex,
+                     colIndex] {
         // Save the detected key in the linked text block
         DWORD detectedKey = keyboardManagerState.GetDetectedSingleRemapKey();
 
@@ -108,6 +107,17 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
         keyboardManagerState.ResetUIState();
         unregisterKeys();
         detectRemapKeyBox.Hide();
+    };
+
+    TextBlock primaryButtonText;
+    primaryButtonText.Text(to_hstring(L"OK"));
+
+    Button primaryButton;
+    primaryButton.HorizontalAlignment(HorizontalAlignment::Stretch);
+    primaryButton.Margin({ 2, 2, 2, 2 });
+    primaryButton.Content(primaryButtonText);
+    primaryButton.Click([onAccept](IInspectable const& sender, RoutedEventArgs const&) {
+        onAccept();
     });
 
     keyboardManagerState.RegisterKeyDelay(
@@ -120,28 +130,12 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
                     primaryButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::DarkGray() });
                 });
         },
-        [=, &singleKeyRemapBuffer, &keyboardManagerState](DWORD) {
-            DWORD detectedKey = keyboardManagerState.GetDetectedSingleRemapKey();
-
+        [onAccept, detectRemapKeyBox](DWORD) {
             detectRemapKeyBox.Dispatcher().RunAsync(
                 Windows::UI::Core::CoreDispatcherPriority::Normal,
-                [detectRemapKeyBox, linkedRemapText, detectedKey, &keyboardManagerState] {
-                    detectRemapKeyBox.Hide();
-
-                    if (detectedKey != NULL)
-                    {
-                        linkedRemapText.Text(winrt::to_hstring(keyboardManagerState.keyboardMap.GetKeyName(detectedKey).c_str()));
-                    }
+                [onAccept] {
+                    onAccept();
                 });
-
-            if (detectedKey != NULL)
-            {
-                singleKeyRemapBuffer[rowIndex][colIndex] = detectedKey;
-            }
-
-            // Reset the keyboard manager UI state
-            keyboardManagerState.ResetUIState();
-            unregisterKeys();
         });
 
     TextBlock cancelButtonText;
@@ -205,7 +199,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
     ColumnDefinition cancelButtonColumn;
 
     Grid buttonPanel;
-    buttonPanel.Margin({0, 20, 0, 0});
+    buttonPanel.Margin({ 0, 20, 0, 0 });
     buttonPanel.HorizontalAlignment(HorizontalAlignment::Stretch);
     buttonPanel.ColumnDefinitions().Append(primaryButtonColumn);
     buttonPanel.ColumnDefinitions().Append(cancelButtonColumn);

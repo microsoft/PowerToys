@@ -160,18 +160,17 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
         return;
     }
 
-    
     std::unique_lock<std::mutex> detectedShortcut_lock(detectedShortcut_mutex);
     std::unique_lock<std::mutex> currentShortcut_lock(currentShortcut_mutex);
     // Save the latest displayed shortcut
     currentShortcut = detectedShortcut;
+    auto detectedShortcutCopy = detectedShortcut;
     currentShortcut_lock.unlock();
     detectedShortcut_lock.unlock();
 
     // Since this function is invoked from the back-end thread, in order to update the UI the dispatcher must be used.
-    currentShortcutUI.Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [this]() {
-
-        std::vector<hstring> shortcut = detectedShortcut.GetKeyVector(keyboardMap);
+    currentShortcutUI.Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [this, detectedShortcutCopy]() {
+        std::vector<hstring> shortcut = detectedShortcutCopy.GetKeyVector(keyboardMap);
         currentShortcutUI.Children().Clear();
         for (auto& key : shortcut)
         {
@@ -236,18 +235,28 @@ void KeyboardManagerState::SelectDetectedShortcut(DWORD key)
     return;
 }
 
+void KeyboardManagerState::ResetDetectedShortcutKey(DWORD key)
+{
+    std::lock_guard<std::mutex> lock(detectedShortcut_mutex);
+    detectedShortcut.ResetKey(key);
+}
+
 // Function which can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.
 bool KeyboardManagerState::DetectSingleRemapKeyUIBackend(LowlevelKeyboardEvent* data)
 {
     // Check if the detect key UI window has been activated
     if (CheckUIState(KeyboardManagerUIState::DetectSingleKeyRemapWindowActivated))
     {
+        if (HandleKeyDelayEvent(data))
+        {
+            return true;
+        }
         // detect the key if it is pressed down
         if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
         {
             SelectDetectedRemapKey(data->lParam->vkCode);
         }
-        
+
         // Suppress the keyboard event
         return true;
     }
@@ -261,6 +270,11 @@ bool KeyboardManagerState::DetectShortcutUIBackend(LowlevelKeyboardEvent* data)
     // Check if the detect shortcut UI window has been activated
     if (CheckUIState(KeyboardManagerUIState::DetectShortcutWindowActivated))
     {
+        if (HandleKeyDelayEvent(data))
+        {
+            return true;
+        }
+
         // Add the key if it is pressed down
         if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
         {
@@ -269,8 +283,7 @@ bool KeyboardManagerState::DetectShortcutUIBackend(LowlevelKeyboardEvent* data)
         // Remove the key if it has been released
         else if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
         {
-            std::lock_guard<std::mutex> lock(detectedShortcut_mutex);
-            detectedShortcut.ResetKey(data->lParam->vkCode);
+            ResetDetectedShortcutKey(data->lParam->vkCode);
         }
 
         // Suppress the keyboard event
@@ -291,11 +304,10 @@ bool KeyboardManagerState::DetectShortcutUIBackend(LowlevelKeyboardEvent* data)
 }
 
 void KeyboardManagerState::RegisterKeyDelay(
-    DWORD key, 
-    std::function<void(DWORD)> onShortPress, 
+    DWORD key,
+    std::function<void(DWORD)> onShortPress,
     std::function<void(DWORD)> onLongPressDetected,
-    std::function<void(DWORD)> onLongPressReleased
-)
+    std::function<void(DWORD)> onLongPressReleased)
 {
     std::lock_guard l(keyDelays_mutex);
 

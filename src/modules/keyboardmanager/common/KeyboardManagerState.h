@@ -145,4 +145,6 @@ public:
     void SelectDetectedRemapKey(DWORD key);
   
     void SelectDetectedShortcut(DWORD key);
+
+    void ResetDetectedShortcutKey(DWORD key);
 };
