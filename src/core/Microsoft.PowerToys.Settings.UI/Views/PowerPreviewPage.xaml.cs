@@ -29,15 +29,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 base.OnNavigatedTo(e);
                 settings = SettingsUtils.GetSettings<PowerPreviewSettings>(PreviewPaneKey);
-                ToggleSwitch_Preview_SVG.IsOn = settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value;
-                ToggleSwitch_Preview_MD.IsOn = settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value;
+                ToggleSwitch_Preview_SVG.IsOn = settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.Value;
+                ToggleSwitch_Preview_MD.IsOn = settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.Value;
             }
             catch
             {
                 settings = new PowerPreviewSettings(PreviewPaneKey);
                 SettingsUtils.SaveSettings(settings.ToJsonString(), PreviewPaneKey);
-                ToggleSwitch_Preview_SVG.IsOn = settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value;
-                ToggleSwitch_Preview_MD.IsOn = settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value;
+                ToggleSwitch_Preview_SVG.IsOn = settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.Value;
+                ToggleSwitch_Preview_MD.IsOn = settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.Value;
             }
         }
 
@@ -48,7 +48,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (swt != null)
             {
                 PowerPreviewSettings settings = SettingsUtils.GetSettings<PowerPreviewSettings>(PreviewPaneKey);
-                settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.value = swt.IsOn;
+                settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.Value = swt.IsOn;
 
                 if (ShellPage.DefaultSndMSGCallback != null)
                 {
@@ -66,7 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (swt != null)
             {
                 PowerPreviewSettings settings = SettingsUtils.GetSettings<PowerPreviewSettings>(PreviewPaneKey);
-                settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.value = swt.IsOn;
+                settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.Value = swt.IsOn;
 
                 if (ShellPage.DefaultSndMSGCallback != null)
                 {

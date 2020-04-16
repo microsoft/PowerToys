@@ -254,4 +254,70 @@
     <value>To:</value>
     <comment>Keyboard Manager mapping keys view right header</comment>
   </data>
+  <data name="About_This_Feature.Text" xml:space="preserve">
+    <value>About this feature</value>
+  </data>
+  <data name="Appearancce_GroupSettings.Text" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="FancyZones_Description.Text" xml:space="preserve">
+    <value>Create window layouts to help make multi-tasking easy.</value>
+  </data>
+  <data name="FancyZones_DisplayChangeMoveWindowsCheckBoxControl.Content" xml:space="preserve">
+    <value>Keep windows in their zones when the screen resolution changes</value>
+  </data>
+  <data name="FancyZones_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable FancyZones</value>
+  </data>
+  <data name="FancyZones_ExcludeApps.Text" xml:space="preserve">
+    <value>Excluded apps</value>
+  </data>
+  <data name="FancyZones_ExcludeApps_TextBoxControl.Header" xml:space="preserve">
+    <value>To exclude an application from snapping to zones add its name here (one per line). Excluded apps will react to the Windows Snap regardless of all other settings.</value>
+  </data>
+  <data name="FancyZones_HighlightOpacity.Header" xml:space="preserve">
+    <value>Zone highlight opacity (%)</value>
+  </data>
+  <data name="FancyZones_HokeyEditorControl_Header.Header" xml:space="preserve">
+    <value>Edit Hot Key/ Shortcut</value>
+  </data>
+  <data name="FancyZones_KeepWindowsPinned.Content" xml:space="preserve">
+    <value>Keep windows pinned to multiple desktops in the same zone when the active desktop changes</value>
+  </data>
+  <data name="FancyZones_LaunchEditorButtonControl_Header.Content" xml:space="preserve">
+    <value>Launch Zones Editor</value>
+  </data>
+  <data name="FancyZones_OverrideSnapHotkeysCheckBoxControl.Content" xml:space="preserve">
+    <value>Override Windows Snap hotkeys (Win + arrow) to move windows between zones</value>
+  </data>
+  <data name="FancyZones_SaveColorChoice.Content" xml:space="preserve">
+    <value>Save Color Choice</value>
+  </data>
+  <data name="FancyZones_ShiftDragCheckBoxControl_Header.Content" xml:space="preserve">
+    <value>Hold Shift key or any non-primary mouse button to enable zones while dragging</value>
+  </data>
+  <data name="FancyZones_UseCursorPosEditorStartupScreen.Content" xml:space="preserve">
+    <value>Follow mouse cursor instead of focus when launching editor in a multi screen environment</value>
+  </data>
+  <data name="FancyZones_VirtualDesktopChangeMoveWindows.Content" xml:space="preserve">
+    <value>Move newly created windows to their last known zone</value>
+  </data>
+  <data name="FancyZones_ZonBehaivior_GroupSettings.Text" xml:space="preserve">
+    <value>Zone behaviour</value>
+  </data>
+  <data name="FancyZones_ZoneHighlightColor.Text" xml:space="preserve">
+    <value>Zone highlight color (default: #0078D7)</value>
+  </data>
+  <data name="FancyZones_ZoneSetChangeFlashZonesCheckBoxControl.Content" xml:space="preserve">
+    <value>Flash zones when the active FancyZones layout changes</value>
+  </data>
+  <data name="FancyZones_ZoneSetChangeMoveWindows.Content" xml:space="preserve">
+    <value>During zone layout changes, windows assigned to a zone will match new size/positions</value>
+  </data>
+  <data name="Give_Feedback.Content" xml:space="preserve">
+    <value>Give feedback</value>
+  </data>
+  <data name="Module_overview.Content" xml:space="preserve">
+    <value>Module overview</value>
+  </data>
 </root>
