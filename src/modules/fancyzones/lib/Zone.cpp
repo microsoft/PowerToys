@@ -77,7 +77,7 @@ static BOOL CALLBACK saveDisplayToVector(HMONITOR monitor, HDC hdc, LPRECT rect,
     return true;
 }
 
-bool AllMonitorsHaveSameDpiScaling()
+bool allMonitorsHaveSameDpiScaling()
 {
     std::vector<HMONITOR> monitors;
     EnumDisplayMonitors(NULL, NULL, saveDisplayToVector, reinterpret_cast<LPARAM>(&monitors));
@@ -144,7 +144,7 @@ RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) noexcept
         const auto taskbar_top_size = std::abs(mi.rcMonitor.top - mi.rcWork.top);
         OffsetRect(&newWindowRect, -taskbar_left_size, -taskbar_top_size);
 
-        if (accountForUnawareness && !AllMonitorsHaveSameDpiScaling())
+        if (accountForUnawareness && !allMonitorsHaveSameDpiScaling())
         {
             newWindowRect.left = max(mi.rcMonitor.left, newWindowRect.left);
             newWindowRect.right = min(mi.rcMonitor.right - taskbar_left_size, newWindowRect.right);
