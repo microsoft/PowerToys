@@ -1,9 +1,6 @@
 #include "pch.h"
 #include "KeyDelay.h"
 
-#define LONG_PRESS_DELAY_MILLIS 900
-#define ON_HOLD_WAIT_TIMEOUT_MILLIS 50
-
 KeyDelay::~KeyDelay()
 {
     std::unique_lock<std::mutex> l(_queueMutex);
@@ -29,7 +26,7 @@ KeyTimedEvent KeyDelay::NextEvent()
 
 bool KeyDelay::CheckIfMillisHaveElapsed(DWORD first, DWORD last, DWORD duration)
 {
-    if (first < last && first <= first + duration) 
+    if (first < last && first <= first + duration)
     {
         return first + duration < last;
     }
@@ -98,7 +95,7 @@ void KeyDelay::HandleOnHold(std::unique_lock<std::mutex>& cvLock)
                 }
             }
             _state = KeyDelayState::RELEASED;
-           return;
+            return;
         }
     }
 
@@ -106,11 +103,11 @@ void KeyDelay::HandleOnHold(std::unique_lock<std::mutex>& cvLock)
     {
         if (_onLongPressDetected != nullptr)
         {
-            _onLongPressDetected(_key);   
+            _onLongPressDetected(_key);
         }
         _state = KeyDelayState::ON_HOLD_TIMEOUT;
     }
-    else 
+    else
     {
         _cv.wait_for(cvLock, std::chrono::milliseconds(ON_HOLD_WAIT_TIMEOUT_MILLIS));
     }

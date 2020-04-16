@@ -6,7 +6,7 @@
 #include <mutex>
 
 // Available states for the KeyDelay state machine.
-enum class KeyDelayState 
+enum class KeyDelayState
 {
     RELEASED,
     ON_HOLD,
@@ -30,17 +30,15 @@ public:
         DWORD key,
         std::function<void(DWORD)> onShortPress,
         std::function<void(DWORD)> onLongPressDetected,
-        std::function<void(DWORD)> onLongPressReleased
-    ) :
-        _quit(false), 
+        std::function<void(DWORD)> onLongPressReleased) :
+        _quit(false),
         _state(KeyDelayState::RELEASED),
         _initialHoldKeyDown(0),
         _key(key),
         _onShortPress(onShortPress),
         _onLongPressDetected(onLongPressDetected),
         _onLongPressReleased(onLongPressReleased),
-        _delayThread(&KeyDelay::DelayThread, this)
-    {};
+        _delayThread(&KeyDelay::DelayThread, this){};
 
     // Enque new KeyTimedEvent and notify the condition variable.
     void KeyEvent(LowlevelKeyboardEvent* ev);
@@ -74,7 +72,7 @@ private:
     std::function<void(DWORD)> _onLongPressReleased;
     std::function<void(DWORD)> _onShortPress;
 
-    // Queue holding key events that are not processed yet. Should be kept synchronized 
+    // Queue holding key events that are not processed yet. Should be kept synchronized
     // using _queueMutex
     std::queue<KeyTimedEvent> _queue;
     std::mutex _queueMutex;
@@ -87,6 +85,7 @@ private:
 
     // Virtual Key provided in the constructor. Passed to callback functions.
     DWORD _key;
+
+    static const DWORD LONG_PRESS_DELAY_MILLIS = 900;
+    static const DWORD ON_HOLD_WAIT_TIMEOUT_MILLIS = 50;
 };
-
-

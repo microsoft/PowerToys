@@ -58,6 +58,7 @@ private:
 
     // Display a key by appending a border Control as a child of the panel.
     void AddKeyToLayout(const StackPanel& panel, const winrt::hstring& key);
+
 public:
     // The map members and their mutexes are left as public since the maps are used extensively in dllmain.cpp.
     // Maps which store the remappings for each of the features. The bool fields should be initalised to false. They are used to check the current state of the shortcut (i.e is that particular shortcut currently pressed down or not).
@@ -132,18 +133,17 @@ public:
     bool DetectShortcutUIBackend(LowlevelKeyboardEvent* data);
 
     void RegisterKeyDelay(
-        DWORD key, 
-        std::function<void(DWORD)> onShortPress, 
-        std::function<void(DWORD)> onLongPressDetected, 
-        std::function<void(DWORD)> onLongPressReleased
-    );
-    
+        DWORD key,
+        std::function<void(DWORD)> onShortPress,
+        std::function<void(DWORD)> onLongPressDetected,
+        std::function<void(DWORD)> onLongPressReleased);
+
     void UnregisterKeyDelay(DWORD key);
 
     bool HandleKeyDelayEvent(LowlevelKeyboardEvent* ev);
 
     void SelectDetectedRemapKey(DWORD key);
-  
+
     void SelectDetectedShortcut(DWORD key);
 
     void ResetDetectedShortcutKey(DWORD key);

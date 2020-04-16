@@ -132,7 +132,6 @@ void KeyboardManagerState::ConfigureDetectSingleKeyRemapUI(const StackPanel& tex
     currentSingleKeyUI = textBlock;
 }
 
-
 void KeyboardManagerState::AddKeyToLayout(const StackPanel& panel, const hstring& key)
 {
     // Textblock to display the detected key
@@ -140,7 +139,7 @@ void KeyboardManagerState::AddKeyToLayout(const StackPanel& panel, const hstring
     Border border;
 
     border.Padding({ 20, 10, 20, 10 });
-    border.Margin({0, 0, 10, 0 });
+    border.Margin({ 0, 0, 10, 0 });
     border.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
     remapKey.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     remapKey.FontSize(20);
@@ -323,7 +322,8 @@ void KeyboardManagerState::UnregisterKeyDelay(DWORD key)
     std::lock_guard l(keyDelays_mutex);
 
     auto deleted = keyDelays.erase(key);
-    if (deleted == 0) {
+    if (deleted == 0)
+    {
         throw std::invalid_argument("The key was not previously registered.");
     }
 }

@@ -135,7 +135,7 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
                     primaryButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::DarkGray() });
                 });
         },
-        [onAccept,detectShortcutBox](DWORD) {
+        [onAccept, detectShortcutBox](DWORD) {
             detectShortcutBox.Dispatcher().RunAsync(
                 Windows::UI::Core::CoreDispatcherPriority::Normal,
                 [onAccept] {
