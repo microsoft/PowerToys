@@ -71,7 +71,12 @@ bool install_new_version_stage_1(const bool must_restart = false)
     if (auto copy_in_temp = copy_self_to_temp_dir())
     {
         // detect if PT was running
-        const bool launch_powertoys = must_restart || FindWindowW(pt_tray_icon_window_class, nullptr) != nullptr;
+        const auto pt_main_window = FindWindowW(pt_tray_icon_window_class, nullptr);
+        const bool launch_powertoys = must_restart || pt_main_window != nullptr;
+        if (pt_main_window != nullptr)
+        {
+            SendMessageW(pt_main_window, WM_CLOSE, 0, 0);
+        }
 
         std::wstring arguments{ UPDATE_NOW_LAUNCH_STAGE2_CMDARG };
         arguments += L" \"";
@@ -142,7 +147,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     else if (action == UPDATE_NOW_LAUNCH_STAGE2_CMDARG)
     {
         using namespace std::string_view_literals;
-        return !install_new_version_stage_2(args[2], args[3], args[4] == L"restart"sv);
+        return !install_new_version_stage_2(args[2], args[3], args[4] == std::wstring_view{ UPDATE_STAGE2_RESTART_PT_CMDARG });
     }
 
     return 0;
