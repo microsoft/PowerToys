@@ -89,16 +89,18 @@
                 Text="Version 0.15.2" 
                 FontWeight="Bold"
                 Margin="{StaticResource SmallTopMargin}" />
+            <HyperlinkButton 
+                Content="Release notes" 
+                NavigateUri="https://github.com/microsoft/PowerToys/releases"  />
             <Button 
                 Content="Check for updates" 
                 Margin="{StaticResource SmallTopMargin}" 
                 Style="{StaticResource AccentButtonStyle}" 
                 Click="CheckForUpdates_Click" />
-
             <HyperlinkButton 
                 Content="Report a bug" 
                 NavigateUri="https://github.com/microsoft/PowerToys/issues" 
-                Margin="{StaticResource SmallTopMargin}" />
+                Margin="{StaticResource MediumTopMargin}" />
             <HyperlinkButton 
                 Content="Request a feature"  
                 NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
