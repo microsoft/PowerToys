@@ -89,6 +89,7 @@
   <ItemGroup>
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="KeyboardManagerState.cpp" />
+    <ClCompile Include="KeyDelay.cpp" />
     <ClCompile Include="LayoutMap.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -100,6 +101,7 @@
   <ItemGroup>
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="KeyboardManagerState.h" />
+    <ClInclude Include="KeyDelay.h" />
     <ClInclude Include="LayoutMap.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RemapShortcut.h" />
