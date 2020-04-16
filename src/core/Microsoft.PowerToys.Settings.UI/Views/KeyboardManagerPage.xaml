@@ -8,8 +8,7 @@
     xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:extensions="using:Microsoft.Toolkit.Uwp.UI.Extensions"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-    >
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
         <viewModel:RemapKeysModel x:Key="dummyData"/>
