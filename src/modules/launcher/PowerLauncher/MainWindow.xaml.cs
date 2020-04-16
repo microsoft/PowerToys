@@ -258,8 +258,9 @@ namespace PowerLauncher
             if (sender == null) return;
 
             var host = (WindowsXamlHost)sender;
-            //_launcher = (PowerLauncher.UI.LauncherControl)host.Child;
+            _launcher = (PowerLauncher.UI.LauncherControl)host.Child;
             _launcher.DataContext = _viewModel;
+            _launcher.ResultsList.ItemClick += ResultsList_ItemClick;
             //_launcher.SearchBox.TextChanged += QueryTextBox_TextChanged;
             //_launcher.SearchBox.QuerySubmitted += AutoSuggestBox_QuerySubmitted;
             //_launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
@@ -280,6 +281,16 @@ namespace PowerLauncher
                     }
                 }
             };
+        }
+
+        private void ResultsList_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            ResultViewModel result = e?.ClickedItem as ResultViewModel;
+            if(result != null)
+            {
+                _viewModel.Results.SelectedItem = result;
+                _viewModel.OpenResultCommand.Execute(null);
+            }
         }
 
         private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
