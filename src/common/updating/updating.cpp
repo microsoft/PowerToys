@@ -37,7 +37,7 @@ namespace localized_strings
     const wchar_t UNINSTALLATION_SUCCESS[] = L"Previous version of PowerToys was uninstalled successfully.";
     const wchar_t UNINSTALLATION_UNKNOWN_ERROR[] = L"Error: please uninstall the previous version of PowerToys manually.";
 
-    const wchar_t GITHUB_NEW_VERSION_READY_TO_INSTALL[] = L"An update to PowerToys is ready to install!";
+    const wchar_t GITHUB_NEW_VERSION_READY_TO_INSTALL[] = L"An update to PowerToys is ready to install.";
     const wchar_t GITHUB_NEW_VERSION_UPDATE_NOW[] = L"Update now";
     const wchar_t GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART[] = L"At next launch";
 
