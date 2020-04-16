@@ -100,7 +100,7 @@
                           IsOn="True"
                           Margin="{StaticResource SmallTopMargin}" />
 
-            <TextBlock x:Uid="KeyboardManager_ConfigHeader"
+            <!--<TextBlock x:Uid="KeyboardManager_ConfigHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <TextBlock x:Uid="KeyboardManager_ProfileDescription"
@@ -111,7 +111,7 @@
                 <ComboBoxItem Content="Config-1"/>
                 <ComboBoxItem Content="Config-2"/>
                 <ComboBoxItem Content="Config-3"/>
-            </ComboBox>
+            </ComboBox>-->
 
             <TextBlock x:Uid="KeyboardManager_RemapKeyboardHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
