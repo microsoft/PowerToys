@@ -205,9 +205,8 @@
           </Directory>
         </Directory>
       </Directory>
-      <Directory Id="ProgramMenuFolder">
+      <Directory Id="ProgramMenuFolder"/>
       <Directory Id="DesktopFolder" Name="Desktop"/>
-    </Directory>
    </Directory>
   </Fragment>
 
