@@ -267,13 +267,13 @@ private:
     static const UINT m_showAnimationDuration = 200; // ms
     static const UINT m_flashDuration = 700; // ms
 
-    HWND draggedWindow = nullptr;
-    long draggedWindowExstyle = 0;
-    COLORREF draggedWindowCrKey = RGB(0, 0, 0);
-    DWORD draggedWindowDwFlags = 0;
-    BYTE draggedWindowInitialAlpha = 0;
+    HWND m_draggedWindow = nullptr;
+    long m_draggedWindowExstyle = 0;
+    COLORREF m_draggedWindowCrKey = RGB(0, 0, 0);
+    DWORD m_draggedWindowDwFlags = 0;
+    BYTE m_draggedWindowInitialAlpha = 0;
 
-    ULONG_PTR gdiplusToken;
+    ULONG_PTR m_gdiplusToken;
 
     mutable std::shared_mutex m_mutex;
 };
@@ -289,14 +289,14 @@ ZoneWindow::ZoneWindow(HINSTANCE hinstance)
     RegisterClassExW(&wcex);
 
     Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-    Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+    Gdiplus::GdiplusStartup(&m_gdiplusToken, &gdiplusStartupInput, NULL);
 }
 
 ZoneWindow::~ZoneWindow()
 {
     RestoreOrginalTransparency();
 
-    Gdiplus::GdiplusShutdown(gdiplusToken);
+    Gdiplus::GdiplusShutdown(m_gdiplusToken);
 }
 
 bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, bool flashZones, bool newWorkArea)
@@ -361,6 +361,12 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnter(HWND window, bool dragEnabled) noexcept
 
     if (hostTransparentActive)
     {
+        decltype(m_draggedWindowExstyle) draggedWindowExstyle;
+        decltype(m_draggedWindow) draggedWindow;
+        decltype(m_draggedWindowCrKey) draggedWindowCrKey;
+        decltype(m_draggedWindowInitialAlpha) draggedWindowInitialAlpha;
+        decltype(m_draggedWindowDwFlags) draggedWindowDwFlags;
+
         RestoreOrginalTransparency();
 
         draggedWindowExstyle = GetWindowLong(window, GWL_EXSTYLE);
@@ -373,14 +379,22 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnter(HWND window, bool dragEnabled) noexcept
         GetLayeredWindowAttributes(window, &draggedWindowCrKey, &draggedWindowInitialAlpha, &draggedWindowDwFlags);
 
         SetLayeredWindowAttributes(window, 0, (255 * 50) / 100, LWA_ALPHA);
+
+        std::unique_lock writeLock(m_mutex);
+        m_draggedWindowExstyle = draggedWindowExstyle;
+        m_draggedWindow = draggedWindow;
+        m_draggedWindowCrKey = draggedWindowCrKey;
+        m_draggedWindowInitialAlpha = draggedWindowInitialAlpha;
+        m_draggedWindowDwFlags = draggedWindowDwFlags;
     }
 
-    std::unique_lock writeLock(m_mutex);
-    m_dragEnabled = dragEnabled;
-    m_windowMoveSize = window;
-    m_drawHints = true;
-    m_highlightZone = {};
-    writeLock.unlock();
+    {
+        std::unique_lock writeLock(m_mutex);
+        m_dragEnabled = dragEnabled;
+        m_windowMoveSize = window;
+        m_drawHints = true;
+        m_highlightZone = {};
+    }
     
     ShowZoneWindow();
     return S_OK;
@@ -486,6 +500,11 @@ ZoneWindow::RestoreOrginalTransparency() noexcept
 {
     std::shared_lock lock(m_mutex);
     auto hostTransparentActive = m_host->isMakeDraggedWindowTransparentActive();
+    auto draggedWindow = m_draggedWindow;
+    auto draggedWindowCrKey = m_draggedWindowCrKey;
+    auto draggedWindowInitialAlpha = m_draggedWindowInitialAlpha;
+    auto draggedWindowDwFlags = m_draggedWindowDwFlags;
+    auto draggedWindowExstyle = m_draggedWindowExstyle;
     lock.unlock();
 
     if (hostTransparentActive && draggedWindow != nullptr)
