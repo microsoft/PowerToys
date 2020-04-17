@@ -134,7 +134,7 @@
     <comment>Navigation view item name for General</comment>
   </data>
   <data name="Shell_PowerLauncher.Content" xml:space="preserve">
-    <value>PowerLauncher</value>
+    <value>PowerLauncher  [Not Functional]</value>
     <comment>Navigation view item name for PowerLauncher</comment>
   </data>
   <data name="Shell_PowerRename.Content" xml:space="preserve">
@@ -142,7 +142,7 @@
     <comment>Navigation view item name for PowerRename</comment>
   </data>
   <data name="Shell_ShortcutGuide.Content" xml:space="preserve">
-    <value>Shortcut Guide</value>
+    <value>Shortcut Guide [Not Functional]</value>
     <comment>Navigation view item name for Shortcut Guide</comment>
   </data>
   <data name="Shell_PowerPreview.Content" xml:space="preserve">
@@ -154,7 +154,7 @@
     <comment>Navigation view item name for FancyZones</comment>
   </data>
   <data name="Shell_ImageResizer.Content" xml:space="preserve">
-    <value>Image Resizer</value>
+    <value>Image Resizer  [Not Functional]</value>
     <comment>Navigation view item name for Image Resizer</comment>
   </data>
   <data name="Shell_KeyboardManager.Content" xml:space="preserve">
