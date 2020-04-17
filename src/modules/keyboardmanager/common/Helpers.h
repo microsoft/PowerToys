@@ -6,7 +6,7 @@ namespace KeyboardManagerHelper
 {
     // Function to split a wstring based on a delimiter and return a vector of split strings
     std::vector<std::wstring> splitwstring(const std::wstring& input, wchar_t delimiter);
-
+    
     // Function to return the next sibling element for an element under a stack panel
     winrt::Windows::Foundation::IInspectable getSiblingElement(winrt::Windows::Foundation::IInspectable const& element);
 
