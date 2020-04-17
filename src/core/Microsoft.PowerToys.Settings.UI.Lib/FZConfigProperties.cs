@@ -22,6 +22,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             this.FancyzonesHighlightOpacity = new IntProperty();
             this.FancyzonesEditorHotkey = new KeyBoardKeysProperty();
             this.FancyzonesExcludedApps = new StringProperty();
+            this.FancyzonesInActiveColor = new StringProperty();
+            this.FancyzonesBorderColor = new StringProperty();
         }
 
         [JsonPropertyName("fancyzones_shiftDrag")]
@@ -62,5 +64,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         [JsonPropertyName("fancyzones_excluded_apps")]
         public StringProperty FancyzonesExcludedApps { get; set; }
+
+        [JsonPropertyName("fancyzones_zoneBorderColor")]
+        public StringProperty FancyzonesBorderColor { get; set; }
+
+        [JsonPropertyName("fancyzones_zoneColor")]
+        public StringProperty FancyzonesInActiveColor { get; set; }
     }
 }

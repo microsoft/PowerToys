@@ -3,9 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Windows.System;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -18,9 +20,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     public sealed partial class GeneralPage : Page
     {
         /// <summary>
-        /// Gets view model.
+        /// Gets or sets view model.
         /// </summary>
-        public GeneralViewModel ViewModel { get; } = new GeneralViewModel();
+        public GeneralViewModel ViewModel { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GeneralPage"/> class.
@@ -28,122 +30,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// </summary>
         public GeneralPage()
         {
-            InitializeComponent();
-        }
+            this.InitializeComponent();
 
-        /// <inheritdoc/>
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            base.OnNavigatedTo(e);
-            GeneralSettings settings = null;
-            try
-            {
-                // get settings file if they exist.
-                settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-
-                // load and apply theme settings
-                ReLoadTheme(settings.Theme);
-
-                // load run on start-up settings value and update the ui state.
-                ToggleSwitch_RunAtStartUp.IsOn = settings.Startup;
-            }
-            catch
-            {
-                // create settings file if one is not found.
-                settings = new GeneralSettings();
-                SettingsUtils.SaveSettings(settings.ToJsonString(), string.Empty);
-
-                // load and apply theme settings
-                ReLoadTheme(settings.Theme);
-
-                // load run on start up ui settings value and update the ui state.
-                ToggleSwitch_RunAtStartUp.IsOn = settings.Startup;
-            }
-        }
-
-        /// <summary>
-        /// Update and save theme settings to json file.
-        /// </summary>
-        /// <param name="themeName">theme name.</param>
-        private void ReLoadTheme(string themeName)
-        {
-            switch (themeName.ToLower())
-            {
-                case "light":
-                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
-                    Radio_Theme_Light.IsChecked = true;
-                    break;
-                case "dark":
-                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
-                    Radio_Theme_Dark.IsChecked = true;
-                    break;
-                case "system":
-                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
-                    Radio_Theme_Default.IsChecked = true;
-                    break;
-            }
-        }
-
-        private void ToggleSwitch_RunAtStartUp_Toggled(object sender, RoutedEventArgs e)
-        {
-            ToggleSwitch swt = sender as ToggleSwitch;
-
-            if (swt != null)
-            {
-                GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-
-                string startup = swt.IsOn.ToString().ToLower();
-                switch (startup)
-                {
-                    case "true":
-                        settings.Startup = true;
-                        break;
-                    case "false":
-                        settings.Startup = false;
-                        break;
-                }
-
-                SettingsUtils.SaveSettings(settings.ToJsonString(), string.Empty);
-                OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
-
-                if (ShellPage.DefaultSndMSGCallback != null)
-                {
-                    ShellPage.DefaultSndMSGCallback(outsettings.ToString());
-                }
-            }
-        }
-
-        private void Restart_Elevated(object sender, RoutedEventArgs e)
-        {
-            GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-            settings.RunElevated = true;
-            OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
-
-            if (ShellPage.DefaultSndMSGCallback != null)
-            {
-                ShellPage.DefaultSndMSGCallback(outsettings.ToString());
-            }
-        }
-
-        private void Theme_Changed(object sender, RoutedEventArgs e)
-        {
-            RadioButton rb = sender as RadioButton;
-
-            if (rb != null)
-            {
-                string themeName = rb.Tag.ToString();
-                ReLoadTheme(themeName);
-
-                // update and save settings to file.
-                GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-                settings.Theme = themeName;
-                SettingsUtils.SaveSettings(settings.ToJsonString(), string.Empty);
-            }
-        }
-
-        private async void CheckForUpdates_Click(object sender, RoutedEventArgs e)
-        {
-            await Launcher.LaunchUriAsync(new Uri("https://github.com/microsoft/PowerToys/releases"));
+            this.ViewModel = new GeneralViewModel();
+            this.GeneralSettingsView.DataContext = this.ViewModel;
         }
     }
 }

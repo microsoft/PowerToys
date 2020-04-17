@@ -72,6 +72,7 @@
     <Compile Include="ViewModels\ImageResizerViewModel.cs" />
     <Compile Include="ViewModels\KeyboardManagerViewModel.cs" />
     <Compile Include="ViewModels\Keys.cs" />
+    <Compile Include="ViewModels\PowerPreviewViewModel.cs" />
     <Compile Include="ViewModels\PowerRenameViewModel.cs" />
     <Compile Include="ViewModels\PowerLauncherViewModel.cs" />
     <Compile Include="ViewModels\RemapKeysModel.cs" />
