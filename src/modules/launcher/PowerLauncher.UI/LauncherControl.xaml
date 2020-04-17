@@ -417,6 +417,7 @@
         VerticalAlignment="Top">
         <TextBox
             x:Name="TextBox"
+            x:FieldModifier="public"
             Style="{StaticResource CustomAutoSuggestBoxTextBoxStyle}"
             Text="{Binding QueryText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             PlaceholderText="Launch an app"

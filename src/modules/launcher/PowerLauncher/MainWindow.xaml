@@ -26,12 +26,18 @@
         Background="Transparent"
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         d:DataContext="{d:DesignInstance vm:MainViewModel}">
-    <StackPanel Background="Transparent" Orientation="Vertical">
-        <xaml:WindowsXamlHost InitialTypeName="PowerLauncher.UI.LauncherControl" ChildChanged="WindowsXamlHostTextBox_ChildChanged" />
-        <Border Name="myElement" Background="Transparent" Height="5"/>
-        <xaml:WindowsXamlHost InitialTypeName="PowerLauncher.UI.ResultList" Visibility="{Binding Results.Visbility}" ChildChanged="WindowsXamlHostListView_ChildChanged" />
-    </StackPanel> 
+    <Grid Width="690">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <xaml:WindowsXamlHost Grid.Row="0" InitialTypeName="PowerLauncher.UI.LauncherControl" ChildChanged="WindowsXamlHostTextBox_ChildChanged" />
+        <Border Grid.Row="1" Name="myElement" Background="Transparent" Height="5"/>
+        <xaml:WindowsXamlHost Grid.Row="2" PreviewMouseDown="WindowsXamlHost_PreviewMouseDown" InitialTypeName="PowerLauncher.UI.ResultList" Visibility="{Binding Results.Visbility}" ChildChanged="WindowsXamlHostListView_ChildChanged" />
+    </Grid> 
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding EscCommand}" />
+        <KeyBinding Key="Enter" Command="{Binding OpenResultCommand}"></KeyBinding>
     </Window.InputBindings>
 </Window>

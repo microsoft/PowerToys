@@ -137,7 +137,7 @@ namespace PowerLauncher
         //    }
         //}
 
-        
+
 
 
         private void OnDrop(object sender, DragEventArgs e)
@@ -234,10 +234,7 @@ namespace PowerLauncher
             _launcher = (PowerLauncher.UI.LauncherControl)host.Child;
             _launcher.DataContext = _viewModel;
             _launcher.KeyDown += _launcher_KeyDown;
-            //_launcher.ResultsList.ItemClick += ResultsList_ItemClick;
-            //_launcher.SearchBox.TextChanged += QueryTextBox_TextChanged;
-            //_launcher.SearchBox.QuerySubmitted += AutoSuggestBox_QuerySubmitted;
-            //_launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
+            _launcher.TextBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
             _viewModel.PropertyChanged += (o, e) =>
             {
                 if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
@@ -245,7 +242,7 @@ namespace PowerLauncher
                     if (Visibility == System.Windows.Visibility.Visible)
                     {
                         Activate();
-                        //_launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
+                        _launcher.TextBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
                         UpdatePosition();
                         _settings.ActivateTimes++;
                         if (!_viewModel.LastQuerySelected)
@@ -257,9 +254,20 @@ namespace PowerLauncher
             };
         }
 
+        private UI.ResultList _resultList = null;
+        private void WindowsXamlHostListView_ChildChanged(object sender, EventArgs ev)
+        {
+            if (sender == null) return; 
+
+            var host = (WindowsXamlHost)sender;
+            _resultList = (UI.ResultList)host.Child;
+            _resultList.DataContext = _viewModel;
+            _resultList.Tapped += SuggestionsList_Tapped;
+        }
+
         private void _launcher_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (e.Key == VirtualKey.Down )
+            if (e.Key == VirtualKey.Down)
             {
                 _viewModel.SelectNextItemCommand.Execute(null);
                 e.Handled = true;
@@ -281,34 +289,14 @@ namespace PowerLauncher
             }
         }
 
-        private void WindowsXamlHostListView_ChildChanged(object sender, EventArgs ev)
+        private void SuggestionsList_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (sender == null) return;
-
-            var host = (WindowsXamlHost)sender;
-            //_launcher = (PowerLauncher.UI.LauncherControl)host.Child;
-            host.DataContext = _viewModel;
-            //_launcher.ResultsList.ItemClick += ResultsList_ItemClick;
-            //_launcher.SearchBox.TextChanged += QueryTextBox_TextChanged;
-            //_launcher.SearchBox.QuerySubmitted += AutoSuggestBox_QuerySubmitted;
-            //_launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
-            //_viewModel.PropertyChanged += (o, e) =>
-            //{
-            //    if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
-            //    {
-            //        if (Visibility == System.Windows.Visibility.Visible)
-            //        {
-            //            Activate();
-            //            //_launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
-            //            UpdatePosition();
-            //            _settings.ActivateTimes++;
-            //            if (!_viewModel.LastQuerySelected)
-            //            {
-            //                _viewModel.LastQuerySelected = true;
-            //            }
-            //        }
-            //    }
-            //};
+            var result = ((Windows.UI.Xaml.FrameworkElement)e.OriginalSource).DataContext;
+            if (result != null)
+            {
+                _viewModel.Results.SelectedItem =  (ResultViewModel)result;
+                _viewModel.OpenResultCommand.Execute(null);
+            }
         }
 
         private void ResultsList_ItemClick(object sender, ItemClickEventArgs e)
@@ -340,6 +328,28 @@ namespace PowerLauncher
             {
                 _viewModel.QueryText = sender.Text;
             }
+        }
+
+        private void WindowsXamlHost_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            //    if (sender != null && e.OriginalSource != null)
+            //    {
+            //        //var r = (ResultListBox)sender;
+            //        //var d = (DependencyObject)e.OriginalSource;
+            //        //var item = ItemsControl.ContainerFromElement(r, d) as ListBoxItem;
+            //        //var result = (ResultViewModel)item?.DataContext;
+            //        //if (result != null)
+            //        //{
+            //        //    if (e.ChangedButton == MouseButton.Left)
+            //        //    {
+            //        //        _viewModel.OpenResultCommand.Execute(null);
+            //        //    }
+            //        //    else if (e.ChangedButton == MouseButton.Right)
+            //        //    {
+            //        //        _viewModel.LoadContextMenuCommand.Execute(null);
+            //        //    }
+            //        //}
+            //    }
         }
     }
  }

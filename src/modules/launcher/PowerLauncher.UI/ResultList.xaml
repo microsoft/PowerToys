@@ -415,12 +415,15 @@
         VerticalAlignment="Top">
         <ListView 
             x:Name="SuggestionsList"
+            x:FieldModifier="public"
             MaxHeight="{Binding Results.MaxHeight}"
+            MinHeight="{Binding Results.MaxHeight}"
+            AllowFocusOnInteraction="False"
             IsItemClickEnabled="True"
             Margin="{ThemeResource AutoSuggestListMargin}"
             Padding="{ThemeResource AutoSuggestListPadding}"
             ItemsSource="{Binding Results.Results, Mode=OneWay}"
-            SelectionMode="Single"
+            SelectionMode="Single"          
             SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
             SelectedItem="{Binding Results.SelectedItem, Mode=TwoWay}"
             SelectionChanged="OnSelectionChanged"
