@@ -53,7 +53,6 @@ namespace Wox.Plugin.WindowWalker.Components
             set
             {
                 searchText = value.ToLower().Trim();
-                SearchTextUpdated();
             }
         }
 
@@ -94,9 +93,10 @@ namespace Wox.Plugin.WindowWalker.Components
         /// <summary>
         /// Event handler for when the search text has been updated
         /// </summary>
-        public void SearchTextUpdated()
-        {
-            SyncOpenWindowsWithModelAsync();
+        public async Task UpdateSearchText(string searchText)
+        { 
+            this.SearchText = searchText;
+            await SyncOpenWindowsWithModelAsync();
         }
 
         /// <summary>
@@ -104,15 +104,15 @@ namespace Wox.Plugin.WindowWalker.Components
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void OpenWindowsUpdateHandler(object sender, SearchResultUpdateEventArgs e)
+        public async void OpenWindowsUpdateHandler(object sender, SearchResultUpdateEventArgs e)
         {
-            SyncOpenWindowsWithModelAsync();
+            await SyncOpenWindowsWithModelAsync();
         }
 
         /// <summary>
         /// Syncs the open windows with the OpenWindows Model
         /// </summary>
-        private async void SyncOpenWindowsWithModelAsync()
+        public async Task SyncOpenWindowsWithModelAsync()
         {
             System.Diagnostics.Debug.Print("Syncing WindowSearch result with OpenWindows Model");
 

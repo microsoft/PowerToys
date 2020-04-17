@@ -75,12 +75,8 @@ namespace Wox.Plugin.WindowWalker.Components
         public void UpdateOpenWindowsList()
         {
             windows.Clear();
-
-            new Task(() =>
-                {
-                    InteropAndHelpers.CallBackPtr callbackptr = new InteropAndHelpers.CallBackPtr(WindowEnumerationCallBack);
-                    InteropAndHelpers.EnumWindows(callbackptr, 0);
-                }).Start();
+            InteropAndHelpers.CallBackPtr callbackptr = new InteropAndHelpers.CallBackPtr(WindowEnumerationCallBack);
+            InteropAndHelpers.EnumWindows(callbackptr, 0);
         }
 
         /// <summary>

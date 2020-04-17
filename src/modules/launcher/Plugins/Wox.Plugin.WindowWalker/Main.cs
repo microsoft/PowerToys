@@ -18,7 +18,7 @@ namespace Wox.Plugin.WindowWalker
 
         public List<Result> Query(Query query)
         {
-            SearchController.Instance.SearchText = query.RawQuery;
+            SearchController.Instance.UpdateSearchText(query.RawQuery).Wait();
             OpenWindows.Instance.UpdateOpenWindowsList();
             return _results.Select(x => new Result()
             {
