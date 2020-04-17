@@ -41,16 +41,14 @@
 
         <StackPanel Orientation="Vertical" 
                     x:Name="PowerPreviewSettingsView">
-            <TextBlock Text="These settings allow you to manage your Windows File Explorer Addons."
+            <TextBlock x:Uid="FileExplorerPreview_Description"
                        TextWrapping="Wrap"/>
 
-            <ToggleSwitch Header="Svg Preview Handler"
-                          x:Name="ToggleSwitch_Preview_SVG"
+            <ToggleSwitch x:Uid="FileEplorerPreview_ToggleSwitch_Preview_SVG"
                           Margin="{StaticResource SmallTopMargin}"
                           IsOn="{Binding Mode=TwoWay, Path=SVGRenderIsEnebled}" />
 
-            <ToggleSwitch Header="Markdown Preview Handler"
-                          x:Name="ToggleSwitch_Preview_MD"
+            <ToggleSwitch x:Uid="FileEplorerPreview_ToggleSwitch_Preview_MD"
                           Margin="{StaticResource SmallTopMargin}"
                           IsOn="{Binding Mode=TwoWay, Path=MDRenderIsEnebled}" />
 
@@ -61,12 +59,15 @@
                     Width="{StaticResource SidePanelWidth}"
                     Grid.Column="1">
 
-            <TextBlock Text="About this feature"
+            <TextBlock x:Uid="About_This_Feature"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <HyperlinkButton Content="Module overview" NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/previewpane"/>
-            <HyperlinkButton Content="Give feedback" NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
+            <HyperlinkButton x:Uid="Module_overview"
+                             NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/previewpane"/>
+
+            <HyperlinkButton x:Uid="Give_Feedback"
+                             NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
         </StackPanel>
     </Grid>
 </Page>

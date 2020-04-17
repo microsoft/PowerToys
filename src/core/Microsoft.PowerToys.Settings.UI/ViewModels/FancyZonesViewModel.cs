@@ -32,9 +32,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public FancyZonesViewModel()
         {
-            Settings = SettingsUtils.GetSettings<FancyZonesSettings>(ModuleName);
+            try
+            {
+                Settings = SettingsUtils.GetSettings<FancyZonesSettings>(ModuleName);
+            }
+            catch
+            {
+                Settings = new FancyZonesSettings();
+                SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+            }
+
             this.LaunchEditorEventHandler = new ButtonClickCommand(LaunchEditor);
-            // this.SaveColorChoiceEventHandler = new ButtonClickCommand(SaveColorChoice);
 
             this._shiftDrag = Settings.Properties.FancyzonesShiftDrag.Value;
             this._overrideSnapHotkeys = Settings.Properties.FancyzonesOverrideSnapHotkeys.Value;

@@ -50,26 +50,25 @@
         <StackPanel Orientation="Vertical" 
                     x:Name="GeneralSettingsView">
 
-            <ToggleSwitch Header="Run at startup" 
-                          x:Name="ToggleSwitch_RunAtStartUp"  
+            <ToggleSwitch x:Uid="GeneralPage_ToggleSwitch_RunAtStartUp"  
                           Margin="{StaticResource SmallTopMargin}" 
                           IsOn="{Binding Mode=TwoWay, Path=Startup}"/>
 
-            <muxc:RadioButtons Header="Theme" Margin="{StaticResource SmallTopMargin}">
-                <RadioButton x:Name="Radio_Theme_Dark"
+            <muxc:RadioButtons x:Uid="RadioButtons_Name_Theme" Margin="{StaticResource SmallTopMargin}">
+                <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark"
                              Content="Dark"
                              IsChecked="{ Binding Mode=TwoWay, Path=IsDarkThemeRadioButtonChecked}"/>
 
-                <RadioButton x:Name="Radio_Theme_Light" 
+                <RadioButton x:Uid="GeneralPage_Radio_Theme_Light" 
                              Content="Light"
                              IsChecked="{ Binding Mode=TwoWay, Path=IsLightThemeRadioButtonChecked}"/>
 
-                <RadioButton x:Name="Radio_Theme_Default"
+                <RadioButton x:Uid="GeneralPage_Radio_Theme_Default"
                              Content="System default"
                              IsChecked="{ Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked}"/>
             </muxc:RadioButtons>
 
-            <Button Content="Restart as admin"
+            <Button x:Uid="GeneralPage_RestartAsAdmin_Button"
                     Margin="{StaticResource SmallTopMargin}"
                     Style="{StaticResource AccentButtonStyle}"
                     Command = "{Binding RestartElevatedButtonEventHandler, Source={StaticResource eventViewModel}}"
@@ -78,34 +77,34 @@
         </StackPanel>
 
         <StackPanel x:Name="SidePanel"
-                                Orientation="Vertical"
-                                HorizontalAlignment="Left"
-                                Width="{StaticResource SidePanelWidth}"
-                                Grid.Column="1">
+                    Orientation="Vertical"
+                    HorizontalAlignment="Left"
+                    Width="{StaticResource SidePanelWidth}"
+                    Grid.Column="1">
 
-            <TextBlock Text="About PowerToys"
-                                   Style="{StaticResource SettingsGroupTitleStyle}"
-                                   Margin="{StaticResource XSmallBottomMargin}"/>
+            <TextBlock x:Uid="GeneralPage_AboutPowerToysHeader"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Margin="{StaticResource XSmallBottomMargin}"/>
 
             <TextBlock Text="Version 0.15.2"
                        FontWeight="Bold"
                        Margin="{StaticResource SmallTopMargin}" />
 
-            <Button Content="Check for updates"
+            <Button x:Uid="GeneralPage_CheckForUpdates"
                     Margin="{StaticResource SmallTopMargin}"
                     Style="{StaticResource AccentButtonStyle}"
                     Foreground="White"
                     Command = "{Binding CheckFoUpdatesEventHandler, Source={StaticResource eventViewModel}}"
                     />
 
-            <HyperlinkButton Content="Report a bug"
+            <HyperlinkButton x:Uid="GeneralPage_ReportAbug"
                              NavigateUri="https://github.com/microsoft/PowerToys/issues"
                              Margin="{StaticResource SmallTopMargin}" />
 
-            <HyperlinkButton Content="Request a feature" 
+            <HyperlinkButton x:Uid="GeneralPage_RequestAFeature_URL" 
                              NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
 
-            <HyperlinkButton Content="Privacy statement"
+            <HyperlinkButton x:Uid="GeneralPage_PrivacyStatement_URL"
                              NavigateUri=" http://go.microsoft.com/fwlink/?LinkId=521839" />
         </StackPanel>
     </Grid>

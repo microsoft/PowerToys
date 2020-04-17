@@ -29,9 +29,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             this.CheckFoUpdatesEventHandler = new ButtonClickCommand(CheckForUpdates_Click);
             this.RestartElevatedButtonEventHandler = new ButtonClickCommand(Restart_Elevated);
 
-            GeneralSettingsConfigs = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+            try
+            {
+                GeneralSettingsConfigs = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+            }
+            catch
+            {
+                GeneralSettingsConfigs = new GeneralSettings();
+                SettingsUtils.SaveSettings(GeneralSettingsConfigs.ToJsonString(), string.Empty);
+            }
 
-            switch (GeneralSettingsConfigs.theme.ToLower())
+            switch (GeneralSettingsConfigs.Theme.ToLower())
             {
                 case "light":
                     _isLightThemeRadioButtonChecked = true;
@@ -47,7 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     break;
             }
 
-            _startup = GeneralSettingsConfigs.startup;
+            _startup = GeneralSettingsConfigs.Startup;
         }
 
         private bool _packaged = false;
@@ -144,7 +152,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value == true)
                 {
-                    GeneralSettingsConfigs.theme = "dark";
+                    GeneralSettingsConfigs.Theme = "dark";
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
                     RaisePropertyChanged();
                 }
@@ -164,7 +172,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value == true)
                 {
-                    GeneralSettingsConfigs.theme = "light";
+                    GeneralSettingsConfigs.Theme = "light";
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
                     RaisePropertyChanged();
                 }
@@ -184,7 +192,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value == true)
                 {
-                    GeneralSettingsConfigs.theme = "system";
+                    GeneralSettingsConfigs.Theme = "system";
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
                     RaisePropertyChanged();
                 }
@@ -214,7 +222,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void Restart_Elevated()
         {
             GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-            settings.run_elevated = true;
+            settings.RunElevated = true;
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
 
             if (ShellPage.DefaultSndMSGCallback != null)
