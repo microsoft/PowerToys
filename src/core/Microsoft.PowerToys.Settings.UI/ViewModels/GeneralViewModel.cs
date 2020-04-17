@@ -200,8 +200,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Notify UI of property change
             OnPropertyChanged(propertyName);
 
-            SettingsUtils.SaveSettings(GeneralSettingsConfigs.ToJsonString(), string.Empty);
-
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfigs);
 
             ShellPage.DefaultSndMSGCallback(outsettings.ToString());
