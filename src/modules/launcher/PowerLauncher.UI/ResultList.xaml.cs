@@ -30,15 +30,6 @@ namespace PowerLauncher.UI
         private void TextBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {
             // SuggestionsPopup.IsOpen = true;
-        }
-
-        private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            ListView listview = (ListView)sender;
-            if (e.AddedItems.Count > 0 && e.AddedItems[0] != null)
-            {
-                listview.ScrollIntoView(e.AddedItems[0]);
-            }
-        }
+        }        
     }
 }

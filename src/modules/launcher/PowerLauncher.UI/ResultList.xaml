@@ -425,8 +425,6 @@
             ItemsSource="{Binding Results.Results, Mode=OneWay}"
             SelectionMode="Single"          
             SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
-            SelectedItem="{Binding Results.SelectedItem, Mode=TwoWay}"
-            SelectionChanged="OnSelectionChanged"
             >
             <ListView.ItemTemplate>
                 <DataTemplate >

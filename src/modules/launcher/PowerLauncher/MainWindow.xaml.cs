@@ -265,6 +265,7 @@ namespace PowerLauncher
             _resultList = (UI.ResultList)host.Child;
             _resultList.DataContext = _viewModel;
             _resultList.Tapped += SuggestionsList_Tapped;
+            _resultList.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
         }
 
         private void _launcher_KeyDown(object sender, KeyRoutedEventArgs e)
@@ -298,6 +299,16 @@ namespace PowerLauncher
             {
                 _viewModel.Results.SelectedItem =  (ResultViewModel)result;
                 _viewModel.OpenResultCommand.Execute(null);
+            }
+        }
+
+        private void SuggestionsList_SelectionChanged(object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)
+        {
+            Windows.UI.Xaml.Controls.ListView listview = (Windows.UI.Xaml.Controls.ListView)sender;
+            _viewModel.Results.SelectedItem = (ResultViewModel) listview.SelectedItem;
+            if (e.AddedItems.Count > 0 && e.AddedItems[0] != null)
+            {
+                listview.ScrollIntoView(e.AddedItems[0]);
             }
         }
 
