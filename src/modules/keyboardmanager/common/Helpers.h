@@ -32,3 +32,6 @@ std::vector<T> convertWStringVectorToIntegerVector(const std::vector<std::wstrin
 
     return typeVector;
 }
+
+// Function to return if the key is an extended key which requires the use of the extended key flag
+bool isExtendedKey(DWORD key);

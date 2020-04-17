@@ -539,8 +539,8 @@ bool Shortcut::CheckModifiersKeyboardState() const
 // Function to check if any keys are pressed down except those in the shortcut
 bool Shortcut::IsKeyboardStateClearExceptShortcut() const
 {
-    // Iterate through all the virtual key codes
-    for (int keyVal = 0; keyVal < 0x100; keyVal++)
+    // Iterate through all the virtual key codes - 0xFF is set to key down because of the Num Lock
+    for (int keyVal = 0; keyVal < 0xFF; keyVal++)
     {
         // Skip mouse buttons. Keeping this could cause a remapping to fail if a mouse button is also pressed at the same time
         if (keyVal == VK_LBUTTON || keyVal == VK_RBUTTON || keyVal == VK_MBUTTON || keyVal == VK_XBUTTON1 || keyVal == VK_XBUTTON2)

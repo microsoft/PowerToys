@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.GeneralPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
