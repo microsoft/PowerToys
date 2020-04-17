@@ -58,14 +58,20 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         // Save settings to a json file.
         public static void SaveSettings(string jsonSettings, string powertoy, string fileName = DefaultFileName)
         {
-            if (jsonSettings != null)
+            try
             {
-                if (!SettingsFolderExists(powertoy))
+                if (jsonSettings != null)
                 {
-                    CreateSettingsFolder(powertoy);
-                }
+                    if (!SettingsFolderExists(powertoy))
+                    {
+                        CreateSettingsFolder(powertoy);
+                    }
 
-                File.WriteAllText(GetSettingsPath(powertoy, fileName), jsonSettings);
+                    File.WriteAllText(GetSettingsPath(powertoy, fileName), jsonSettings);
+                }
+            }
+            catch
+            {
             }
         }
 
