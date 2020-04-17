@@ -231,6 +231,7 @@ namespace JSONHelpers
         }
 
         void AddDevice(const std::wstring& deviceId);
+        std::vector<GUID> GetVirtualDeslktopIds() const;
         bool RemoveDevicesByVirtualDesktopId(const std::wstring& virtualDesktopId);
         void CloneDeviceInfo(const std::wstring& source, const std::wstring& destination);
 

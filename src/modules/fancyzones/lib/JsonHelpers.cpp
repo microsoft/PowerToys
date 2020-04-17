@@ -276,6 +276,21 @@ namespace JSONHelpers
         }
     }
 
+    std::vector<GUID> FancyZonesData::GetVirtualDeslktopIds() const
+    {
+        std::vector<GUID> ids;
+        for (auto it = deviceInfoMap.begin(); it != deviceInfoMap.end(); ++it)
+        {
+            const std::wstring& idStr = ExtractVirtualDesktopId(it->first);
+            GUID id;
+            if (SUCCEEDED_LOG(CLSIDFromString(idStr.c_str(), &id)))
+            {
+                ids.push_back(id);    
+            }
+        }
+        return ids;
+    }
+
     bool FancyZonesData::RemoveDevicesByVirtualDesktopId(const std::wstring& virtualDesktopId)
     {
         std::scoped_lock lock{ dataLock };

@@ -195,6 +195,7 @@ private:
     void RegisterVirtualDesktopUpdates(std::unordered_set<GUID>& currentVirtualDesktopIds) noexcept;
     void RegisterNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept;
     bool IsNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept;
+    void LoadWorkAreas();
 
     void OnEditorExitEvent() noexcept;
 
@@ -266,6 +267,9 @@ FancyZones::Run() noexcept
                           SetThreadDpiHostingBehavior(DPI_HOSTING_BEHAVIOR_MIXED);
                       } })
         .wait();
+
+
+    LoadWorkAreas();
 
     if (RegOpenKeyEx(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops", 0, KEY_ALL_ACCESS, &m_virtualDesktopsRegKey) == ERROR_SUCCESS)
     {
@@ -1200,6 +1204,16 @@ bool FancyZones::IsNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept
         return std::find(it->second.begin(), it->second.end(), monitor) == it->second.end();
     }
     return true;
+}
+
+void FancyZones::LoadWorkAreas()
+{
+    const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+    const auto usedVirtualDesktops = fancyZonesData.GetVirtualDeslktopIds();
+    for (auto id : usedVirtualDesktops)
+    {
+        m_processedWorkAreas[id] = std::vector<HMONITOR>();
+    }
 }
 
 void FancyZones::OnEditorExitEvent() noexcept
