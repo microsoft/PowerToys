@@ -66,6 +66,7 @@ public:
     // Constructor
     KeyboardManager()
     {
+        // Load the initial configuration.
         load_config();
 
         // Set the static pointer to the newest object of the class

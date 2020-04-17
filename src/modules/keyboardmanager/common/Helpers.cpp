@@ -14,10 +14,10 @@ namespace KeyboardManagerHelper
         {
             splittedStrings.push_back(item);
         }
-
+        
         return splittedStrings;
     }
-
+    
     // Function to return the next sibling element for an element under a stack panel
     winrt::Windows::Foundation::IInspectable getSiblingElement(winrt::Windows::Foundation::IInspectable const& element)
     {
