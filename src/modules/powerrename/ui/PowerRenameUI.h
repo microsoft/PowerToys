@@ -1,5 +1,6 @@
 #pragma once
 #include <PowerRenameInterfaces.h>
+#include <settings.h>
 #include <shldisp.h>
 
 void ModuleAddRef();
@@ -37,12 +38,7 @@ class CPowerRenameUI :
     public IPowerRenameManagerEvents
 {
 public:
-    CPowerRenameUI() :
-        m_refCount(1)
-    {
-        (void)OleInitialize(nullptr);
-        ModuleAddRef();
-    }
+    CPowerRenameUI();
 
     // IUnknown
     IFACEMETHODIMP QueryInterface(__in REFIID riid, __deref_out void** ppv);
