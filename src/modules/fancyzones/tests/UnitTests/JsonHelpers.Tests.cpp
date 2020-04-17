@@ -962,14 +962,14 @@ namespace FancyZonesUnitTests
                 }
             }
 
-            TEST_METHOD (FancyZonesDataDeviceInfoMap)
+            TEST_METHOD (DeviceInfoMap)
             {
                 FancyZonesData data;
                 const auto actual = data.GetDeviceInfoMap();
                 Assert::IsTrue(actual.empty());
             }
 
-            TEST_METHOD (FancyZonesDataDeviceInfoMapParseEmpty)
+            TEST_METHOD (DeviceInfoMapParseEmpty)
             {
                 FancyZonesData data;
 
@@ -980,7 +980,7 @@ namespace FancyZonesUnitTests
                 Assert::IsTrue(actual.empty());
             }
 
-            TEST_METHOD (FancyZonesDataDeviceInfoMapParseValidEmpty)
+            TEST_METHOD (DeviceInfoMapParseValidEmpty)
             {
                 FancyZonesData data;
 
@@ -994,7 +994,7 @@ namespace FancyZonesUnitTests
                 Assert::IsTrue(actual.empty());
             }
 
-            TEST_METHOD (FancyZonesDataDeviceInfoMapParseInvalid)
+            TEST_METHOD (DeviceInfoMapParseInvalid)
             {
                 json::JsonArray devices;
                 devices.Append(json::JsonObject::Parse(m_defaultCustomDeviceStr));
@@ -1009,7 +1009,7 @@ namespace FancyZonesUnitTests
                 Assert::IsFalse(actual);
             }
 
-            TEST_METHOD (FancyZonesDataDeviceInfoMapParseSingle)
+            TEST_METHOD (DeviceInfoMapParseSingle)
             {
                 json::JsonArray devices;
                 devices.Append(m_defaultCustomDeviceValue);
@@ -1023,7 +1023,7 @@ namespace FancyZonesUnitTests
                 Assert::AreEqual((size_t)1, actualMap.size());
             }
 
-            TEST_METHOD (FancyZonesDataDeviceInfoMapParseMany)
+            TEST_METHOD (DeviceInfoMapParseMany)
             {
                 json::JsonArray devices;
                 for (int i = 0; i < 10; i++)
@@ -1043,6 +1043,64 @@ namespace FancyZonesUnitTests
 
                 const auto actualMap = data.GetDeviceInfoMap();
                 Assert::AreEqual((size_t)10, actualMap.size());
+            }
+
+            TEST_METHOD(AddDevice)
+            {
+                FancyZonesData data;
+                data.AddDevice(m_defaultDeviceId);
+                const auto actual = data.GetDeviceInfoMap();
+                Assert::AreEqual((size_t)1, actual.size());
+            }
+
+            TEST_METHOD (RemoveDevicesByVirtualDesktopId)
+            {
+                FancyZonesData data;
+                data.AddDevice(m_defaultDeviceId);
+                data.RemoveDevicesByVirtualDesktopId(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}");
+
+                const auto actual = data.GetDeviceInfoMap();
+                Assert::IsTrue(actual.empty());
+            }
+
+            TEST_METHOD (RemoveDevicesByVirtualDesktopIdNonexistent)
+            {
+                FancyZonesData data;
+                data.AddDevice(m_defaultDeviceId);
+                data.RemoveDevicesByVirtualDesktopId(L"{00000000-130D-4B5D-8851-4791D66B1539}");
+
+                const auto actual = data.GetDeviceInfoMap();
+                Assert::AreEqual((size_t)1, actual.size());
+            }
+
+            TEST_METHOD (RemoveDevicesByVirtualDesktopIdEmpty)
+            {
+                FancyZonesData data;
+                data.RemoveDevicesByVirtualDesktopId(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}");
+
+                const auto actual = data.GetDeviceInfoMap();
+                Assert::IsTrue(actual.empty());
+            }
+
+            TEST_METHOD(GetVirtualDeslktopIds)
+            {
+                FancyZonesData data;
+                data.AddDevice(m_defaultDeviceId);
+
+                const auto actual = data.GetVirtualDeslktopIds();
+                Assert::AreEqual((size_t)1, actual.size());
+
+                GUID expected;
+                Assert::AreEqual(S_OK, CLSIDFromString(L"{39B25DD2-130D-4B5D-8851-4791D66B1539}", &expected));
+
+                Assert::IsTrue(expected == actual[0]);
+            }
+
+            TEST_METHOD (GetVirtualDeslktopIdsEmpty)
+            {
+                FancyZonesData data;
+                const auto actual = data.GetVirtualDeslktopIds();
+                Assert::IsTrue(actual.empty());
             }
 
             TEST_METHOD (FancyZonesDataSerialize)
