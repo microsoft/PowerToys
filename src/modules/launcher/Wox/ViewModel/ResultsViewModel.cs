@@ -50,7 +50,7 @@ namespace Wox.ViewModel
 
         public ResultViewModel SelectedItem { get; set; }
         public Thickness Margin { get; set; }
-        public Windows.UI.Xaml.Visibility Visbility { get; set; } = Windows.UI.Xaml.Visibility.Collapsed;
+        public Visibility Visbility { get; set; } = Visibility.Collapsed;
 
         #endregion
 

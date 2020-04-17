@@ -409,7 +409,13 @@
             </Setter>
         </Style>
     </UserControl.Resources>
-    <TextBox
+    <Grid 
+        x:Name="PowerBar" 
+        Background="{StaticResource BackdropAcrylicBrush}"
+        Height="72" 
+        Translation="0,0,16" 
+        VerticalAlignment="Top">
+        <TextBox
             x:Name="TextBox"
             Style="{StaticResource CustomAutoSuggestBoxTextBoxStyle}"
             Text="{Binding QueryText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -421,4 +427,5 @@
             VerticalAlignment="Center"
             FontSize="24"
             DesiredCandidateWindowAlignment="BottomEdge" />
+    </Grid>
 </UserControl>

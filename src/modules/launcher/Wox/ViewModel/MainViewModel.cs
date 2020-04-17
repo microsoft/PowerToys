@@ -268,7 +268,7 @@ namespace Wox.ViewModel
             else
             {
                 Results.Clear();
-                Results.Visbility = Windows.UI.Xaml.Visibility.Collapsed;
+                Results.Visbility = Visibility.Collapsed;
             }
         }
 
@@ -433,9 +433,9 @@ namespace Wox.ViewModel
                 Results.AddResults(list, metadata.ID);
             }
 
-            if (Results.Visbility != Windows.UI.Xaml.Visibility.Visible && list.Count > 0)
+            if (Results.Visbility != Visibility.Visible && list.Count > 0)
             {
-                Results.Visbility = Windows.UI.Xaml.Visibility.Visible;
+                Results.Visbility = Visibility.Visible;
             }
         }
 

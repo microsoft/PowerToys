@@ -21,6 +21,7 @@ using Windows.UI.Xaml.Controls;
 using System.Diagnostics;
 using Wox.Plugin;
 using Windows.UI.Xaml.Input;
+using Windows.System;
 
 namespace PowerLauncher
 {
@@ -215,34 +216,6 @@ namespace PowerLauncher
         //    return top;
         //}
 
-        /// <summary>
-        /// Register up and down key
-        /// todo: any way to put this in xaml ?
-        /// </summary>
-        private void OnKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Down)
-            {
-                _viewModel.SelectNextItemCommand.Execute(null);
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Up)
-            {
-                _viewModel.SelectPrevItemCommand.Execute(null);
-                e.Handled = true;
-            }
-            else if (e.Key == Key.PageDown)
-            {
-                _viewModel.SelectNextPageCommand.Execute(null);
-                e.Handled = true;
-            }
-            else if (e.Key == Key.PageUp)
-            {
-                _viewModel.SelectPrevPageCommand.Execute(null);
-                e.Handled = true;
-            }
-        }
-
         //private void OnTextChanged(object sender, TextChangedEventArgs e)
         //{
         //    if (_viewModel.QueryTextCursorMovedToEnd)
@@ -252,14 +225,15 @@ namespace PowerLauncher
         //    }
         //}
 
-        //private PowerLauncher.UI.LauncherControl _launcher = null;
+        private PowerLauncher.UI.LauncherControl _launcher = null;
         private void WindowsXamlHostTextBox_ChildChanged(object sender, EventArgs ev)
         {
             if (sender == null) return;
 
             var host = (WindowsXamlHost)sender;
-            //_launcher = (PowerLauncher.UI.LauncherControl)host.Child;
-            host.DataContext = _viewModel;
+            _launcher = (PowerLauncher.UI.LauncherControl)host.Child;
+            _launcher.DataContext = _viewModel;
+            _launcher.KeyDown += _launcher_KeyDown;
             //_launcher.ResultsList.ItemClick += ResultsList_ItemClick;
             //_launcher.SearchBox.TextChanged += QueryTextBox_TextChanged;
             //_launcher.SearchBox.QuerySubmitted += AutoSuggestBox_QuerySubmitted;
@@ -281,6 +255,30 @@ namespace PowerLauncher
                     }
                 }
             };
+        }
+
+        private void _launcher_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Down )
+            {
+                _viewModel.SelectNextItemCommand.Execute(null);
+                e.Handled = true;
+            }
+            else if (e.Key == VirtualKey.Up)
+            {
+                _viewModel.SelectPrevItemCommand.Execute(null);
+                e.Handled = true;
+            }
+            else if (e.Key == VirtualKey.PageDown)
+            {
+                _viewModel.SelectNextPageCommand.Execute(null);
+                e.Handled = true;
+            }
+            else if (e.Key == VirtualKey.PageUp)
+            {
+                _viewModel.SelectPrevPageCommand.Execute(null);
+                e.Handled = true;
+            }
         }
 
         private void WindowsXamlHostListView_ChildChanged(object sender, EventArgs ev)

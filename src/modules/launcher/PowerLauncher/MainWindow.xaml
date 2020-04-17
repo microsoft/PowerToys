@@ -23,14 +23,14 @@
         Drop="OnDrop"
         LocationChanged="OnLocationChanged"
         Deactivated="OnDeactivated"
-        PreviewKeyDown="OnKeyDown"
         Background="Transparent"
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         d:DataContext="{d:DesignInstance vm:MainViewModel}">
-        <StackPanel Orientation="Vertical">
-            <!--<xaml:WindowsXamlHost InitialTypeName="PowerLauncher.UI.LauncherControl" ChildChanged="WindowsXamlHostTextBox_ChildChanged" />-->
-            <xaml:WindowsXamlHost InitialTypeName="PowerLauncher.ResultList.ResultList" ChildChanged="WindowsXamlHostListView_ChildChanged" />
-        </StackPanel>
+    <StackPanel Background="Transparent" Orientation="Vertical">
+        <xaml:WindowsXamlHost InitialTypeName="PowerLauncher.UI.LauncherControl" ChildChanged="WindowsXamlHostTextBox_ChildChanged" />
+        <Border Name="myElement" Background="Transparent" Height="5"/>
+        <xaml:WindowsXamlHost InitialTypeName="PowerLauncher.UI.ResultList" Visibility="{Binding Results.Visbility}" ChildChanged="WindowsXamlHostListView_ChildChanged" />
+    </StackPanel> 
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding EscCommand}" />
     </Window.InputBindings>

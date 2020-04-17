@@ -75,7 +75,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PowerLauncher.ResultList\PowerLauncher.ResultList.csproj" />
+    <ProjectReference Include="..\PowerLauncher.UI\PowerLauncher.UI.csproj" />
     <ProjectReference Include="..\Wox.Core\Wox.Core.csproj" />
     <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
     <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj" />
