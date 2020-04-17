@@ -392,4 +392,7 @@
   <data name="Miscellaneous.Text" xml:space="preserve">
     <value>Miscellaneous</value>
   </data>
+  <data name="OpenSource_Notice.Content" xml:space="preserve">
+    <value>Open-source notice</value>
+  </data>
 </root>

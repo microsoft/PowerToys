@@ -106,6 +106,10 @@
 
             <HyperlinkButton x:Uid="GeneralPage_PrivacyStatement_URL"
                              NavigateUri=" http://go.microsoft.com/fwlink/?LinkId=521839" />
+
+            <HyperlinkButton x:Uid="OpenSource_Notice"
+                             NavigateUri="https://github.com/microsoft/PowerToys/blob/master/NOTICE.md"
+                />
         </StackPanel>
     </Grid>
 </Page>
