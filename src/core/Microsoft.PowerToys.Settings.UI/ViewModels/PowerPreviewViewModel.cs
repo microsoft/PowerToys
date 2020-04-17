@@ -17,7 +17,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public PowerPreviewViewModel()
         {
-            Settings = SettingsUtils.GetSettings<PowerPreviewSettings>(ModuleName);
+            try
+            {
+                Settings = SettingsUtils.GetSettings<PowerPreviewSettings>(ModuleName);
+            }
+            catch
+            {
+                Settings = new PowerPreviewSettings();
+                SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+            }
 
             this._svgRenderIsEnabled = Settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.Value;
             this._mdRenderIsEnabled = Settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.Value;
