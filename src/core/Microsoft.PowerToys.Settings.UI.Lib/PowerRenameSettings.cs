@@ -18,6 +18,19 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             name = "_unset_";
         }
 
+        public PowerRenameSettings(PowerRenameLocalProperties localProperties)
+        {
+            properties = new PowerRenameProperties();
+            properties.PersistState.Value = localProperties.PersistState;
+            properties.MRUEnabled.Value = localProperties.MRUEnabled;
+            properties.MaxMRUSize.Value = localProperties.MaxMRUSize;
+            properties.ShowIcon.Value = localProperties.ShowIcon;
+            properties.ExtendedContextMenuOnly.Value = localProperties.ExtendedContextMenuOnly;
+
+            version = "1";
+            name = "_unset_";
+        }
+
         public PowerRenameSettings(string ptName)
         {
             properties = new PowerRenameProperties();

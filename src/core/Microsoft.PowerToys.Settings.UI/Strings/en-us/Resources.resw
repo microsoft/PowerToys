@@ -290,8 +290,8 @@
   <data name="FancyZones_OverrideSnapHotkeysCheckBoxControl.Content" xml:space="preserve">
     <value>Override Windows Snap hotkeys (Win + arrow) to move windows between zones</value>
   </data>
-  <data name="FancyZones_SaveColorChoice.Content" xml:space="preserve">
-    <value>Save Color Choice</value>
+  <data name="FancyZones_SaveZoneHighlightColor.Content" xml:space="preserve">
+    <value>Save Zone Highlight Color Choice</value>
   </data>
   <data name="FancyZones_ShiftDragCheckBoxControl_Header.Content" xml:space="preserve">
     <value>Hold Shift key or any non-primary mouse button to enable zones while dragging</value>
@@ -394,5 +394,20 @@
   </data>
   <data name="OpenSource_Notice.Content" xml:space="preserve">
     <value>Open-source notice</value>
+  </data>
+  <data name="PowerRename_Toggle_AutoComplete.Header" xml:space="preserve">
+    <value>Enable Auto Complete</value>
+  </data>
+  <data name="FancyZones_BorderColor.Text" xml:space="preserve">
+    <value>Zone border color (Default #FFFFFF)</value>
+  </data>
+  <data name="FancyZones_InActiveColor.Text" xml:space="preserve">
+    <value>Zone inactive color (Default #F5FCFF)</value>
+  </data>
+  <data name="FancyZones_SaveBorderColor.Content" xml:space="preserve">
+    <value>Save Zone Border Color Choice</value>
+  </data>
+  <data name="FancyZones_SaveZoneInActiveColor.Content" xml:space="preserve">
+    <value>Save Zone Inactive Color Choice</value>
   </data>
 </root>

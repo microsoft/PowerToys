@@ -128,6 +128,7 @@ void send_message_to_powertoys_runner(const std::wstring& msg)
 {
     if (g_message_pipe != nullptr)
     {
+        MessageBox(g_main_wnd, msg.c_str(), L"From Webview", MB_OK);
         g_message_pipe->send(msg);
     }
     else
