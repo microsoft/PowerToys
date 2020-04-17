@@ -7,7 +7,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
         mc:Ignorable="d"
         xmlns:xaml="clr-namespace:Microsoft.Toolkit.Wpf.UI.XamlHost;assembly=Microsoft.Toolkit.Wpf.UI.XamlHost"
-        Title="Wox"
+        Title="PowerLaunch"
         Topmost="True"
         SizeToContent="Height"
         ResizeMode="NoResize"

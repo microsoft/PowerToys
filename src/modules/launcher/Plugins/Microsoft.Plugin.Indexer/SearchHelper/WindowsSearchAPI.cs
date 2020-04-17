@@ -90,13 +90,13 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             queryHelper.QueryMaxResults = maxCount;
 
             // Set list of columns we want to display, getting the path presently
-            queryHelper.QuerySelectColumns = "System.ItemPathDisplay";
+            queryHelper.QuerySelectColumns = "System.ItemPathDisplay, System.FileName";
 
             // Set additional query restriction
             queryHelper.QueryWhereRestrictions = "AND scope='file:'";
 
             // To filter based on title for now
-            queryHelper.QueryContentProperties = "System.Title";
+            queryHelper.QueryContentProperties = "System.FileName";
 
             // Set sorting order 
             queryHelper.QuerySorting = "System.DateModified DESC";

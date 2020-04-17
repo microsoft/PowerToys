@@ -12,6 +12,7 @@ namespace Wox.Helper
         {
             var logger = LogManager.GetLogger("UnHandledException");
             logger.Fatal(ExceptionFormatter.FormatExcpetion(e));
+            
             var reportWindow = new ReportWindow(e);
             reportWindow.Show();
         }
@@ -32,16 +33,10 @@ namespace Wox.Helper
 
         public static string RuntimeInfo()
         {
-            var info = $"\nWox version: {Constant.Version}" +
+            var info = $"\nVersion: {Constant.Version}" +
                        $"\nOS Version: {Environment.OSVersion.VersionString}" +
                        $"\nIntPtr Length: {IntPtr.Size}" +
                        $"\nx64: {Environment.Is64BitOperatingSystem}";
-            return info;
-        }
-
-        public static string DependenciesInfo()
-        {
-            var info = $"\nEverything SDK Path: {Constant.EverythingSDKPath}";
             return info;
         }
     }

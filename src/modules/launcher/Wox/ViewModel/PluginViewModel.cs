@@ -1,8 +1,8 @@
 ﻿using System.Windows;
-using System.Windows.Media;
 using Wox.Plugin;
 using Wox.Core.Resource;
 using Wox.Infrastructure.Image;
+using Windows.UI.Xaml.Media;
 
 namespace Wox.ViewModel
 {
