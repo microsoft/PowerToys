@@ -6,11 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using NHotkey;
 using NHotkey.Wpf;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Helper;
+using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.UserSettings;
@@ -25,6 +27,7 @@ namespace Wox.ViewModel
 
         private bool _isQueryRunning;
         private Query _lastQuery;
+        private string _queryTextBeforeLeaveResults;
 
         private readonly WoxJsonStorage<History> _historyItemsStorage;
         private readonly WoxJsonStorage<UserSelectedRecord> _userSelectedRecordStorage;
@@ -47,6 +50,7 @@ namespace Wox.ViewModel
         public MainViewModel(Settings settings)
         {
             _saved = false;
+            _queryTextBeforeLeaveResults = "";
             _queryText = "";
             _lastQuery = new Query();
 
@@ -62,6 +66,7 @@ namespace Wox.ViewModel
             ContextMenu = new ResultsViewModel(_settings);
             Results = new ResultsViewModel(_settings);
             History = new ResultsViewModel(_settings);
+            _selectedResults = Results;
 
             InitializeKeyCommands();
             RegisterResultsUpdatedEvent();
@@ -91,30 +96,37 @@ namespace Wox.ViewModel
         {
             EscCommand = new RelayCommand(_ =>
             {
-                MainWindowVisibility = Visibility.Collapsed;
+                if (!SelectedIsFromQueryResults())
+                {
+                    SelectedResults = Results;
+                }
+                else
+                {
+                    MainWindowVisibility = Visibility.Collapsed;
+                }
             });
 
             SelectNextItemCommand = new RelayCommand(_ =>
             {
-                Results.SelectNextResult();
+                SelectedResults.SelectNextResult();
             });
 
             SelectPrevItemCommand = new RelayCommand(_ =>
             {
-                Results.SelectPrevResult();
+                SelectedResults.SelectPrevResult();
             });
 
             SelectNextPageCommand = new RelayCommand(_ =>
             {
-                Results.SelectNextPage();
+                SelectedResults.SelectNextPage();
             });
 
             SelectPrevPageCommand = new RelayCommand(_ =>
             {
-                Results.SelectPrevPage();
+                SelectedResults.SelectPrevPage();
             });
 
-            SelectFirstResultCommand = new RelayCommand(_ => Results.SelectFirstResult());
+            SelectFirstResultCommand = new RelayCommand(_ => SelectedResults.SelectFirstResult());
 
             StartHelpCommand = new RelayCommand(_ =>
             {
@@ -123,7 +135,7 @@ namespace Wox.ViewModel
 
             OpenResultCommand = new RelayCommand(index =>
             {
-                var results = Results;
+                var results = SelectedResults;
 
                 if (index != null)
                 {
@@ -143,15 +155,50 @@ namespace Wox.ViewModel
                         MainWindowVisibility = Visibility.Collapsed;
                     }
 
-                    _userSelectedRecord.Add(result);
-                    _history.Add(result.OriginQuery.RawQuery);
+                    if (SelectedIsFromQueryResults())
+                    {
+                        _userSelectedRecord.Add(result);
+                        _history.Add(result.OriginQuery.RawQuery);
+                    }
+                    else
+                    {
+                        SelectedResults = Results;
+                    }
                 }
-            });         
+            });
+
+            LoadContextMenuCommand = new RelayCommand(_ =>
+            {
+                if (SelectedIsFromQueryResults())
+                {
+                    SelectedResults = ContextMenu;
+                }
+                else
+                {
+                    SelectedResults = Results;
+                }
+            });
+
+            LoadHistoryCommand = new RelayCommand(_ =>
+            {
+                if (SelectedIsFromQueryResults())
+                {
+                    SelectedResults = History;
+                    History.SelectedIndex = _history.Items.Count - 1;
+                }
+                else
+                {
+                    SelectedResults = Results;
+                }
+            });
         }
 
         #endregion
 
         #region ViewModel Properties
+
+        public Brush MainWindowBackground { get; set; }
+        public Brush MainWindowBorderBrush { get; set; }
 
         public ResultsViewModel Results { get; private set; }
         public ResultsViewModel ContextMenu { get; private set; }
@@ -181,6 +228,42 @@ namespace Wox.ViewModel
         public bool LastQuerySelected { get; set; }
         public bool QueryTextCursorMovedToEnd { get; set; }
 
+        private ResultsViewModel _selectedResults;
+        private ResultsViewModel SelectedResults
+        {
+            get { return _selectedResults; }
+            set
+            {
+                _selectedResults = value;
+                if (SelectedIsFromQueryResults())
+                {
+                    ContextMenu.Visbility = Visibility.Collapsed;
+                    History.Visbility = Visibility.Collapsed;
+                    ChangeQueryText(_queryTextBeforeLeaveResults);
+                }
+                else
+                {
+                    Results.Visbility = Visibility.Collapsed;
+                    _queryTextBeforeLeaveResults = QueryText;
+
+
+                    // Because of Fody's optimization
+                    // setter won't be called when property value is not changed.
+                    // so we need manually call Query()
+                    // http://stackoverflow.com/posts/25895769/revisions
+                    if (string.IsNullOrEmpty(QueryText))
+                    {
+                        Query();
+                    }
+                    else
+                    {
+                        QueryText = string.Empty;
+                    }
+                }
+                _selectedResults.Visbility = Visibility.Visible;
+            }
+        }
+
         public Visibility ProgressBarVisibility { get; set; }
 
         public Visibility MainWindowVisibility { get; set; }
@@ -192,15 +275,98 @@ namespace Wox.ViewModel
         public ICommand SelectPrevPageCommand { get; set; }
         public ICommand SelectFirstResultCommand { get; set; }
         public ICommand StartHelpCommand { get; set; }
+        public ICommand LoadContextMenuCommand { get; set; }
+        public ICommand LoadHistoryCommand { get; set; }
         public ICommand OpenResultCommand { get; set; }
 
         #endregion
 
         public void Query()
         {
+            if (SelectedIsFromQueryResults())
+            {
+                QueryResults();
+            }
+            else if (ContextMenuSelected())
+            {
+                QueryContextMenu();
+            }
+            else if (HistorySelected())
+            {
+                QueryHistory();
+            }
+        }
 
-            QueryResults();
-            
+        private void QueryContextMenu()
+        {
+            const string id = "Context Menu ID";
+            var query = QueryText.ToLower().Trim();
+            ContextMenu.Clear();
+
+            var selected = Results.SelectedItem?.Result;
+
+            if (selected != null) // SelectedItem returns null if selection is empty.
+            {
+                var results = PluginManager.GetContextMenusForPlugin(selected);
+                results.Add(ContextMenuTopMost(selected));
+                results.Add(ContextMenuPluginInfo(selected.PluginID));
+
+                if (!string.IsNullOrEmpty(query))
+                {
+                    var filtered = results.Where
+                    (
+                        r => StringMatcher.FuzzySearch(query, r.Title).IsSearchPrecisionScoreMet()
+                            || StringMatcher.FuzzySearch(query, r.SubTitle).IsSearchPrecisionScoreMet()
+                    ).ToList();
+                    ContextMenu.AddResults(filtered, id);
+                }
+                else
+                {
+                    ContextMenu.AddResults(results, id);
+                }
+            }
+        }
+
+        private void QueryHistory()
+        {
+            const string id = "Query History ID";
+            var query = QueryText.ToLower().Trim();
+            History.Clear();
+
+            var results = new List<Result>();
+            foreach (var h in _history.Items)
+            {
+                var title = _translator.GetTranslation("executeQuery");
+                var time = _translator.GetTranslation("lastExecuteTime");
+                var result = new Result
+                {
+                    Title = string.Format(title, h.Query),
+                    SubTitle = string.Format(time, h.ExecutedDateTime),
+                    IcoPath = "Images\\history.png",
+                    OriginQuery = new Query { RawQuery = h.Query },
+                    Action = _ =>
+                    {
+                        SelectedResults = Results;
+                        ChangeQueryText(h.Query);
+                        return false;
+                    }
+                };
+                results.Add(result);
+            }
+
+            if (!string.IsNullOrEmpty(query))
+            {
+                var filtered = results.Where
+                (
+                    r => StringMatcher.FuzzySearch(query, r.Title).IsSearchPrecisionScoreMet() ||
+                         StringMatcher.FuzzySearch(query, r.SubTitle).IsSearchPrecisionScoreMet()
+                ).ToList();
+                History.AddResults(filtered, id);
+            }
+            else
+            {
+                History.AddResults(results, id);
+            }
         }
 
         private void QueryResults()
@@ -221,9 +387,9 @@ namespace Wox.ViewModel
                     // handle the exclusiveness of plugin using action keyword
                     RemoveOldQueryResults(query);
 
-                    _lastQuery = query;                  
+                    _lastQuery = query;
                     var plugins = PluginManager.ValidPluginsForQuery(query);
-                    
+
                     Task.Run(() =>
                     {
                         // so looping will stop once it was cancelled
@@ -296,7 +462,85 @@ namespace Wox.ViewModel
             }
         }
 
-        
+
+        private Result ContextMenuTopMost(Result result)
+        {
+            Result menu;
+            if (_topMostRecord.IsTopMost(result))
+            {
+                menu = new Result
+                {
+                    Title = InternationalizationManager.Instance.GetTranslation("cancelTopMostInThisQuery"),
+                    IcoPath = "Images\\down.png",
+                    PluginDirectory = Constant.ProgramDirectory,
+                    Action = _ =>
+                    {
+                        _topMostRecord.Remove(result);
+                        App.API.ShowMsg("Success");
+                        return false;
+                    }
+                };
+            }
+            else
+            {
+                menu = new Result
+                {
+                    Title = InternationalizationManager.Instance.GetTranslation("setAsTopMostInThisQuery"),
+                    IcoPath = "Images\\up.png",
+                    PluginDirectory = Constant.ProgramDirectory,
+                    Action = _ =>
+                    {
+                        _topMostRecord.AddOrUpdate(result);
+                        App.API.ShowMsg("Success");
+                        return false;
+                    }
+                };
+            }
+            return menu;
+        }
+
+        private Result ContextMenuPluginInfo(string id)
+        {
+            var metadata = PluginManager.GetPluginForId(id).Metadata;
+            var translator = InternationalizationManager.Instance;
+
+            var author = translator.GetTranslation("author");
+            var website = translator.GetTranslation("website");
+            var version = translator.GetTranslation("version");
+            var plugin = translator.GetTranslation("plugin");
+            var title = $"{plugin}: {metadata.Name}";
+            var icon = metadata.IcoPath;
+            var subtitle = $"{author}: {metadata.Author}, {website}: {metadata.Website} {version}: {metadata.Version}";
+
+            var menu = new Result
+            {
+                Title = title,
+                IcoPath = icon,
+                SubTitle = subtitle,
+                PluginDirectory = metadata.PluginDirectory,
+                Action = _ => false
+            };
+            return menu;
+        }
+
+        private bool SelectedIsFromQueryResults()
+        {
+            var selected = SelectedResults == Results;
+            return selected;
+        }
+
+        private bool ContextMenuSelected()
+        {
+            var selected = SelectedResults == ContextMenu;
+            return selected;
+        }
+
+
+        private bool HistorySelected()
+        {
+            var selected = SelectedResults == History;
+            return selected;
+        }
         #region Hotkey
 
         private void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)

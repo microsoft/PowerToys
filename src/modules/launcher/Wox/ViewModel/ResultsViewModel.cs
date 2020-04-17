@@ -11,7 +11,6 @@ using Wox.Plugin;
 
 namespace Wox.ViewModel
 {
-
     public class ResultsViewModel : BaseModel
     {
         #region Private Fields
