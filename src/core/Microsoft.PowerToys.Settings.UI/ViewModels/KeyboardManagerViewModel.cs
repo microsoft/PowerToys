@@ -47,6 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             if (SettingsUtils.SettingsExists(PowerToyName))
             {
+                // Todo: Be more resillent while reading and saving settings.
                 settings = SettingsUtils.GetSettings<KeyboardManagerSettings>(PowerToyName);
             }
             else
@@ -89,7 +90,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             lastTriggerTime = DateTimeOffset.UtcNow;
             if (lastEventTimeDiff > TriggerExpirationThreshold)
             {
-                var config = Helper.GetConfigFile<KeyboadManagerConfigModel>(PowerToyName, settings.Properties.ActiveConfiguration.Value);
+                // Todo: Update the UI here.
             }
         }
     }
