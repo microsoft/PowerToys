@@ -19,6 +19,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.System;
 using System.Threading.Tasks;
+using Windows.UI.Core;
 
 namespace PowerLauncher
 {
@@ -226,10 +227,25 @@ namespace PowerLauncher
             _resultList.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
         }
 
+        private bool IsKeyDown(VirtualKey key)
+        {
+            var keyState = CoreWindow.GetForCurrentThread().GetKeyState(key);
+            return (keyState & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down;
+        }
 
         private void _launcher_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (e.Key == VirtualKey.Down)
+            if (e.Key == VirtualKey.Tab && IsKeyDown(VirtualKey.Shift))
+            {
+                _viewModel.SelectPrevItemCommand.Execute(null);
+                e.Handled = true;
+            }
+            else if (e.Key == VirtualKey.Tab)
+            {
+                _viewModel.SelectNextItemCommand.Execute(null);
+                e.Handled = true;
+            }
+            else if (e.Key == VirtualKey.Down)
             {
                 _viewModel.SelectNextItemCommand.Execute(null);
                 e.Handled = true;
