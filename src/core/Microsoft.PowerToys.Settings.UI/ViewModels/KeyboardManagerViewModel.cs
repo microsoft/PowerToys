@@ -26,9 +26,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private const string RemapKeyboardActionValue = "Open Remap Keyboard Window";
         private const string EditShortcutActionName = "EditShortcut";
         private const string EditShortcutActionValue = "Open Edit Shortcut Window";
+
+        // This is an dummy file which will be updated by the Keyboard Manager Module after finish up writing to the configuration file.
         private const string WatchFileName = "settings-updated.json";
 
-        private bool changeExpected;
+        // Time in miliseconds to group multiple fired events as one. Single file update can fire multiple events.
+        private const double TriggerExpirationThreshold = 100;
+
+        private DateTimeOffset lastTriggerTime = DateTimeOffset.MinValue;
         private ICommand remapKeyboardCommand;
         private ICommand editShortcutCommand;
         private FileSystemWatcher watcher;
@@ -51,7 +56,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             this.watcher = Helper.GetFileWatcher(PowerToyName, WatchFileName, OnConfigFileUpdate);
-            changeExpected = true;
         }
 
         private async void OnRemapKeyboard()
@@ -66,10 +70,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private async Task OnRemapKeyboardBackground()
         {
-            // Enable the watcher to catch the updates.
-            watcher.EnableRaisingEvents = true;
-            changeExpected = true;
-
             Helper.AllowRunnerToForeground();
             ShellPage.DefaultSndMSGCallback(Helper.GetSerializedCustomAction(PowerToyName, RemapKeyboardActionName, RemapKeyboardActionValue));
             await Task.CompletedTask;
@@ -77,9 +77,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private async Task OnEditShortcutBackground()
         {
-            this.watcher.EnableRaisingEvents = true;
-            changeExpected = true;
-
             Helper.AllowRunnerToForeground();
             ShellPage.DefaultSndMSGCallback(Helper.GetSerializedCustomAction(PowerToyName, EditShortcutActionName, EditShortcutActionValue));
             await Task.CompletedTask;
@@ -87,15 +84,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void OnConfigFileUpdate()
         {
-            // Turn off the file watcher to avoid mutliple triggers for same update.
-            this.watcher.EnableRaisingEvents = false;
-
-            // Update the UI here.
-            if (changeExpected)
+            // Todo: update the UI data source here.
+            var lastEventTimeDiff = (DateTimeOffset.UtcNow - lastTriggerTime).TotalMilliseconds;
+            lastTriggerTime = DateTimeOffset.UtcNow;
+            if (lastEventTimeDiff > TriggerExpirationThreshold)
             {
                 var config = Helper.GetConfigFile<KeyboadManagerConfigModel>(PowerToyName, settings.Properties.ActiveConfiguration.Value);
-
-                changeExpected = false;
             }
         }
     }
