@@ -96,10 +96,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (_startup != value)
                 {
+                    _startup = value;
                     RaisePropertyChanged();
                 }
-
-                _startup = value;
             }
         }
 
@@ -115,10 +114,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (_isElevated != value)
                 {
+                    _isElevated = value;
                     RaisePropertyChanged();
                 }
-
-                _isElevated = value;
             }
         }
 
@@ -134,10 +132,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (_runElevated != value)
                 {
+                    _runElevated = value;
                     RaisePropertyChanged();
                 }
-
-                _runElevated = value;
             }
         }
 
@@ -153,11 +150,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value == true)
                 {
                     GeneralSettingsConfigs.Theme = "dark";
+                    _isDarkThemeRadioButtonChecked = value;
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
                     RaisePropertyChanged();
                 }
-
-                _isDarkThemeRadioButtonChecked = value;
             }
         }
 
@@ -173,11 +169,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value == true)
                 {
                     GeneralSettingsConfigs.Theme = "light";
+                    _isLightThemeRadioButtonChecked = value;
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
                     RaisePropertyChanged();
                 }
-
-                _isLightThemeRadioButtonChecked = value;
             }
         }
 
@@ -193,11 +188,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value == true)
                 {
                     GeneralSettingsConfigs.Theme = "system";
+                    _isSystemThemeRadioButtonChecked = value;
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
                     RaisePropertyChanged();
                 }
-
-                _isSystemThemeRadioButtonChecked = value;
             }
         }
 
