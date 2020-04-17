@@ -288,36 +288,36 @@ bool KeyboardManagerState::SaveConfigToFile()
     json::JsonArray remapKeysArray;
     json::JsonArray remapShortcutsArray;
     std::unique_lock<std::mutex> lockSingleKeyReMap(singleKeyReMap_mutex);
-    for (auto it : singleKeyReMap)
+    for (const auto &it : singleKeyReMap)
     {
         json::JsonObject keys;
-        keys.SetNamedValue(L"originalKeys", json::value(winrt::to_hstring((unsigned int)it.first)));
-        keys.SetNamedValue(L"newRemapKeys", json::value(winrt::to_hstring((unsigned int)it.second)));
+        keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(winrt::to_hstring((unsigned int)it.first)));
+        keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(winrt::to_hstring((unsigned int)it.second)));
 
         remapKeysArray.Append(keys);
     }
     lockSingleKeyReMap.unlock();
 
     std::unique_lock<std::mutex> lockOsLevelShortcutReMap(osLevelShortcutReMap_mutex);
-    for (auto it : osLevelShortcutReMap)
+    for (const auto &it : osLevelShortcutReMap)
     {
         json::JsonObject keys;
-        keys.SetNamedValue(L"originalKeys", json::value(it.first.ToHstringVK()));
-        keys.SetNamedValue(L"newRemapKeys", json::value(it.second.targetShortcut.ToHstringVK()));
+        keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(it.first.ToHstringVK()));
+        keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(it.second.targetShortcut.ToHstringVK()));
 
         remapShortcutsArray.Append(keys);
     }
     lockOsLevelShortcutReMap.unlock();
 
-    configJson.SetNamedValue(L"remapKeys", remapKeysArray);
-    configJson.SetNamedValue(L"remapShortcuts", remapShortcutsArray);
+    configJson.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeysArray);
+    configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsSettingName, remapShortcutsArray);
 
     try
     {
-        json::to_file((PTSettingsHelper::get_module_save_folder_location(L"Keyboard Manager") + L"\\" + L"config-1.json"), configJson);
+        json::to_file((PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + GetCurrentConfigName() + L".json"), configJson);
 
         // Hack to update another dummmy file to notify the Setting Process that the Update is completed.
-        json::to_file((PTSettingsHelper::get_module_save_folder_location(L"Keyboard Manager") + L"\\" + L"settings-updated.json"), json::JsonObject{});
+        json::to_file((PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + KeyboardManagerConstants::DummyUpdateFileName), json::JsonObject{});
     }
     catch (...)
     {
@@ -325,4 +325,16 @@ bool KeyboardManagerState::SaveConfigToFile()
     }
 
     return result;
+}
+
+void KeyboardManagerState::SetCurrentConfigName(const std::wstring& configName)
+{
+    std::lock_guard<std::mutex> lock(currentConfig_mutex);
+    currentConfig = configName;
+}
+
+std::wstring KeyboardManagerState::GetCurrentConfigName()
+{
+    std::lock_guard<std::mutex> lock(currentConfig_mutex);
+    return currentConfig;
 }

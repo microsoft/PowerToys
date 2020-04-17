@@ -3,6 +3,7 @@
 #include "LayoutMap.h"
 #include "Shortcut.h"
 #include "RemapShortcut.h"
+#include "KeyboardManagerConstants.h"
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <mutex>
 #include <winrt/Windows.UI.Xaml.Controls.h>
@@ -51,6 +52,10 @@ private:
     // Stores the UI element which is to be updated based on the shortcut entered
     StackPanel currentShortcutUI;
     std::mutex currentShortcutUI_mutex;
+    
+    // Stores the current configuration name.
+    std::wstring currentConfig;
+    std::mutex currentConfig_mutex;
 
     // Display a key by appending a border Control as a child of the panel.
     void AddKeyToLayout(const StackPanel& panel, const winrt::hstring& key);
@@ -129,4 +134,10 @@ public:
 
     // Save the updated configuration.
     bool SaveConfigToFile();
+
+    // Sets the Current Active Configuartion Name.
+    void SetCurrentConfigName(const std::wstring& configName);
+
+    // Gets the Current Active Configuartion Name.
+    std::wstring GetCurrentConfigName();
 };

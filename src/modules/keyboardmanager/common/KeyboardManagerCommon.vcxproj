@@ -99,6 +99,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Helpers.h" />
+    <ClInclude Include="KeyboardManagerConstants.h" />
     <ClInclude Include="KeyboardManagerState.h" />
     <ClInclude Include="LayoutMap.h" />
     <ClInclude Include="pch.h" />

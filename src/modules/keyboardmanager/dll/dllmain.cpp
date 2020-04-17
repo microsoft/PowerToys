@@ -10,6 +10,7 @@
 #include <keyboardmanager/common/KeyboardManagerState.h>
 #include <keyboardmanager/common/Shortcut.h>
 #include <keyboardmanager/common/RemapShortcut.h>
+#include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <common\settings_helpers.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -78,36 +79,33 @@ public:
         {
             PowerToysSettings::PowerToyValues settings =
                 PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
-            auto current_config = settings.get_string_value(L"activeConfiguration");
+            auto current_config = settings.get_string_value(KeyboardManagerConstants::ActiveConfigurationSettingName);
 
             if (current_config)
             {
+                keyboardManagerState.SetCurrentConfigName(*current_config);
                 // Read the config file and load the remaps.
                 auto configFile = json::from_file(PTSettingsHelper::get_module_save_folder_location(get_name()) + L"\\" + *current_config + L".json");
                 if (configFile)
                 {
                     auto jsonData = *configFile;
-                    auto remapKeysData = jsonData.GetNamedArray(L"remapKeys");
-                    auto remapShortcutsData = jsonData.GetNamedArray(L"remapShortcuts");
+                    auto remapKeysData = jsonData.GetNamedArray(KeyboardManagerConstants::RemapKeysSettingName);
+                    auto remapShortcutsData = jsonData.GetNamedArray(KeyboardManagerConstants::RemapShortcutsSettingName);
                     keyboardManagerState.ClearSingleKeyRemaps();
 
                     if (remapKeysData)
                     {
-                        for (auto it : remapKeysData)
+                        for (const auto &it : remapKeysData)
                         {
                             try
                             {
-                                auto originalKey = it.GetObjectW().GetNamedString(L"originalKeys");
-                                auto newRemapKey = it.GetObjectW().GetNamedString(L"newRemapKeys");
+                                auto originalKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
+                                auto newRemapKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
                                 keyboardManagerState.AddSingleKeyRemap(std::stoul(originalKey.c_str()), std::stoul(newRemapKey.c_str()));
                             }
-                            catch (std::exception&)
+                            catch (...)
                             {
                                 // Improper Key Data JSON. Try the next remap.
-                            }
-                            catch (winrt::hresult_error&)
-                            {
-                                // Winrt Exception.
                             }
                         }
                     }
@@ -115,36 +113,28 @@ public:
                     keyboardManagerState.ClearOSLevelShortcuts();
                     if (remapShortcutsData)
                     {
-                        for (auto it : remapShortcutsData)
+                        for (const auto &it : remapShortcutsData)
                         {
                             try
                             {
-                                auto originalKeys = it.GetObjectW().GetNamedString(L"originalKeys");
-                                auto newRemapKeys = it.GetObjectW().GetNamedString(L"newRemapKeys");
+                                auto originalKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
+                                auto newRemapKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
                                 Shortcut originalSC(originalKeys.c_str());
                                 Shortcut newRemapSC(newRemapKeys.c_str());
                                 keyboardManagerState.AddOSLevelShortcut(originalSC, newRemapSC);
                             }
-                            catch (std::exception&)
+                            catch (...)
                             {
-                                // Improper Key Data JSON. Try the next remap.
-                            }
-                            catch (winrt::hresult_error&)
-                            {
-                                // Winrt Exception.
+                                // Improper Key Data JSON. Try the next shortcut.
                             }
                         }
                     }
                 }
             }
         }
-        catch (std::exception&)
+        catch (...)
         {
             // Unable to load inital config.
-        }
-        catch (winrt::hresult_error&)
-        {
-            //  Winrt Exception.
         }
     }
 
