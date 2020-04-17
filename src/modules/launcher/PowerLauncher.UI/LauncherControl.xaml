@@ -419,7 +419,7 @@
         <AutoSuggestBox 
             x:Name="SearchBox" 
             x:FieldModifier="public" 
-            PlaceholderText="Launch an app"
+            PlaceholderText="Start typing"
             FontSize="24" 
             Style="{StaticResource CustomStyledAutoSuggestBox}" 
             ItemsSource="{Binding Results.Results}">
