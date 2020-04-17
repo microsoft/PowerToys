@@ -125,7 +125,7 @@ namespace Wox
                     }
                     else if (e.ChangedButton == MouseButton.Right)
                     {
-                        //_viewModel.LoadContextMenuCommand.Execute(null);
+                        _viewModel.LoadContextMenuCommand.Execute(null);
                     }
                 }
             }
