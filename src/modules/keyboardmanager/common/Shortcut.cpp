@@ -415,9 +415,13 @@ winrt::hstring Shortcut::ToHstring(LayoutMap& keyboardMap)
 winrt::hstring Shortcut::ToHstringVK() const
 {
     winrt::hstring output;
-    if (winKey != ModifierKey::Disabled)
+    if (winKey != ModifierKey::Disabled && winKey != ModifierKey::Both)
     {
         output = output + winrt::to_hstring((unsigned int)GetWinKey(ModifierKey::Left)) + winrt::to_hstring(L";");
+    }
+    if (winKey == ModifierKey::Both)
+    {
+        output = output + winrt::to_hstring((unsigned int)KeyboardManagerConstants::VK_WIN_BOTH) + winrt::to_hstring(L";");
     }
     if (ctrlKey != ModifierKey::Disabled)
     {

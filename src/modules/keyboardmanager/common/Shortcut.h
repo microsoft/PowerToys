@@ -1,6 +1,7 @@
 #pragma once
 #include "Helpers.h"
 #include "LayoutMap.h"
+#include "KeyboardManagerConstants.h"
 #include <interface/lowlevel_keyboard_event_data.h>
 
 // Enum type to store different states of the win key
@@ -37,7 +38,14 @@ public:
         for (auto it : keys)
         {
             auto vkKeyCode = std::stoul(it);
-            SetKey(vkKeyCode);
+            if (vkKeyCode == KeyboardManagerConstants::VK_WIN_BOTH)
+            {
+                SetKey(vkKeyCode, true);
+            }
+            else
+            {
+                SetKey(vkKeyCode);
+            }
         }
     }
 

@@ -85,7 +85,7 @@ public:
             {
                 keyboardManagerState.SetCurrentConfigName(*current_config);
                 // Read the config file and load the remaps.
-                auto configFile = json::from_file(PTSettingsHelper::get_module_save_folder_location(get_name()) + L"\\" + *current_config + L".json");
+                auto configFile = json::from_file(PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + *current_config + L".json");
                 if (configFile)
                 {
                     auto jsonData = *configFile;

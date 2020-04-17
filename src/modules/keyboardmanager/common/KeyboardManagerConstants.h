@@ -23,4 +23,7 @@ namespace KeyboardManagerConstants
 
     // Name of the dummy update file.
     inline const std::wstring DummyUpdateFileName = L"settings-updated.json";
+
+    // Fake key code to represent VK_WIN.
+    inline const DWORD VK_WIN_BOTH = 0x104;
 }
