@@ -15,19 +15,8 @@ private:
     // Function to set properties apart from the SelectionChanged event handler
     void SetDefaultProperties(bool isShortcut);
 
-    void CheckAndUpdateKeyboardLayout(ComboBox currentDropDown, bool isShortcut)
-    {
-        // Get keyboard layout for current thread
-        HKL layout = GetKeyboardLayout(0);
-
-        // Check if the layout has changed
-        if (previousLayout != layout)
-        {
-            keyCodeList = keyboardManagerState->keyboardMap.GetKeyList(isShortcut).second;
-            currentDropDown.ItemsSource(keyboardManagerState->keyboardMap.GetKeyList(isShortcut).first);
-            previousLayout = layout;
-        }
-    }
+    // Function to check if the layout has changed and accordingly update the drop down list
+    void CheckAndUpdateKeyboardLayout(ComboBox currentDropDown, bool isShortcut);
 
 public:
     // Pointer to the keyboard manager state
@@ -53,9 +42,6 @@ public:
             }
         });
     }
-    ~KeyDropDownControl()
-    {
-    }
 
     // Constructor for shortcut drop down
     KeyDropDownControl(int rowIndex, int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects)
@@ -69,7 +55,6 @@ public:
         // drop down selection handler
         dropDown.SelectionChanged([&, rowIndex, colIndex, warningMessage](IInspectable const& sender, SelectionChangedEventArgs const&) {
             ComboBox currentDropDown = sender.as<ComboBox>();
-            //std::vector<DWORD> keyCodeList = keyboardManagerState->keyboardMap.GetKeyList(true).second;
             int selectedKeyIndex = currentDropDown.SelectedIndex();
             uint32_t dropDownIndex = -1;
             StackPanel parent = sender.as<FrameworkElement>().Parent().as<StackPanel>();
@@ -186,74 +171,21 @@ public:
         });
     }
 
-    // Function to add a drop down to the shortcut stack panel
-    static void AddDropDown(StackPanel parent, const int rowIndex, const int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects)
-    {
-        keyDropDownControlObjects.push_back(std::move(std::unique_ptr<KeyDropDownControl>(new KeyDropDownControl(rowIndex, colIndex, shortcutRemapBuffer, keyDropDownControlObjects))));
-        // Flyout to display the warning on the drop down element
-        Flyout warningFlyout;
-        TextBlock warningMessage;
-        warningFlyout.Content(warningMessage);
-        parent.Children().Append(keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->GetComboBox());
-        parent.UpdateLayout();
-    }
-
     // Function to set the selected index of the drop down
     void SetSelectedIndex(int32_t index);
 
     // Function to return the combo box element of the drop down
     ComboBox GetComboBox();
 
-    // Function to get the list of key codes from the shortcut combo box stack panel
-    std::vector<DWORD> GetKeysFromStackPanel(StackPanel parent)
-    {
-        std::vector<DWORD> keys;
-        std::vector<DWORD> keyCodeList = keyboardManagerState->keyboardMap.GetKeyList(true).second;
-        for (int i = 0; i < (int)parent.Children().Size(); i++)
-        {
-            ComboBox currentDropDown = parent.Children().GetAt(i).as<ComboBox>();
-            int selectedKeyIndex = currentDropDown.SelectedIndex();
-            if (selectedKeyIndex != -1 && keyCodeList.size() > selectedKeyIndex)
-            {
-                // If None is not the selected key
-                if (keyCodeList[selectedKeyIndex] != 0)
-                {
-                    keys.push_back(keyCodeList[selectedKeyIndex]);
-                }
-            }
-        }
+    // Function to add a drop down to the shortcut stack panel
+    static void AddDropDown(StackPanel parent, const int rowIndex, const int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects);
 
-        return keys;
-    }
+    // Function to get the list of key codes from the shortcut combo box stack panel
+    std::vector<DWORD> GetKeysFromStackPanel(StackPanel parent);
 
     // Function to check if a modifier has been repeated in the previous drop downs
-    bool CheckRepeatedModifier(StackPanel parent, uint32_t dropDownIndex, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList)
-    {
-        // check if modifier has already been added before in a previous drop down
-        std::vector<DWORD> currentKeys = GetKeysFromStackPanel(parent);
-        bool matchPreviousModifier = false;
-        for (int i = 0; i < currentKeys.size(); i++)
-        {
-            // Skip the current drop down
-            if (i != dropDownIndex)
-            {
-                // If the key type for the newly added key matches any of the existing keys in the shortcut
-                if (GetKeyType(keyCodeList[selectedKeyIndex]) == GetKeyType(currentKeys[i]))
-                {
-                    matchPreviousModifier = true;
-                    break;
-                }
-            }
-        }
-
-        return matchPreviousModifier;
-    }
+    bool CheckRepeatedModifier(StackPanel parent, uint32_t dropDownIndex, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList);
 
     // Function to set the flyout warning message
-    void SetDropDownError(ComboBox dropDown, TextBlock messageBlock, hstring message)
-    {
-        messageBlock.Text(message);
-        dropDown.ContextFlyout().ShowAttachedFlyout((FrameworkElement)dropDown);
-        dropDown.SelectedIndex(-1);
-    }
+    void SetDropDownError(ComboBox dropDown, TextBlock messageBlock, hstring message);
 };

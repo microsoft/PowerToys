@@ -2,7 +2,6 @@
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <string>
 #include <map>
-#include <set>
 #include <mutex>
 #include <windows.h>
 
@@ -19,13 +18,20 @@ private:
     HKL previousLayout = 0;
 
     // Stores the keys which have a unicode representation
-    std::set<std::pair<DWORD, std::wstring>> unicodeKeys;
+    std::map<DWORD, std::wstring> unicodeKeys;
 
     // Stores the keys which do not have a name
-    std::set<std::pair<DWORD, std::wstring>> unknownKeys;
+    std::map<DWORD, std::wstring> unknownKeys;
+
+    // Stores true if the fixed ordering key code list has already been set
+    bool isKeyCodeListGenerated = false;
+
+    // Stores a fixed order key code list for the drop down menus. It is kept fixed to change in ordering due to languages
+    std::vector<DWORD> keyCodeList;
 
 public:
     std::map<DWORD, std::wstring> keyboardLayoutMap;
+
     // Update Keyboard layout according to input locale identifier
     void UpdateLayout();
 
@@ -37,6 +43,9 @@ public:
     // Function to return the unicode string name of the key
     std::wstring GetKeyName(DWORD key);
 
-    // Function to return two vectors: the list of names of all the keys for the drop down, and their corresponding virtual key codes. If the first argument is true, then an additional None option is added at the top
-    std::pair<Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable>, std::vector<DWORD>> GetKeyList(const bool isShortcut = false);
+    // Function to return the list of key codes in the order for the drop down. It creates it if it doesn't exist
+    std::vector<DWORD> GetKeyCodeList(const bool isShortcut = false);
+
+    // Function to return the list of key name in the order for the drop down based on the key codes
+    Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> GetKeyNameList(const bool isShortcut = false);
 };

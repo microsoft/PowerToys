@@ -65,7 +65,7 @@ void ShortcutControl::AddShortcutToControl(Shortcut& shortcut, StackPanel parent
 {
     parent.Children().Clear();
     std::vector<DWORD> shortcutKeyCodes = shortcut.GetKeyCodes();
-    std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyList(true).second;
+    std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyCodeList(true);
     if (shortcutKeyCodes.size() != 0)
     {
         KeyDropDownControl::AddDropDown(parent, rowIndex, colIndex, shortcutRemapBuffer, keyDropDownControlObjects);

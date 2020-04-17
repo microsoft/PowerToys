@@ -30,7 +30,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
     if (originalKey != NULL && newKey != NULL)
     {
         singleKeyRemapBuffer.push_back(std::vector<DWORD>{ originalKey, newKey });
-        std::vector<DWORD> keyCodes = keyboardManagerState->keyboardMap.GetKeyList().second;
+        std::vector<DWORD> keyCodes = keyboardManagerState->keyboardMap.GetKeyCodeList();
         auto it = std::find(keyCodes.begin(), keyCodes.end(), originalKey);
         if (it != keyCodes.end())
         {
@@ -112,9 +112,9 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
 
         if (detectedKey != NULL)
         {
-            std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyList().second;
+            std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyCodeList();
             // Update the drop down list with the new language to ensure that the correct key is displayed
-            linkedRemapDropDown.ItemsSource(keyboardManagerState.keyboardMap.GetKeyList().first);
+            linkedRemapDropDown.ItemsSource(keyboardManagerState.keyboardMap.GetKeyNameList());
             auto it = std::find(keyCodeList.begin(), keyCodeList.end(), detectedKey);
             if (it != keyCodeList.end())
             {
