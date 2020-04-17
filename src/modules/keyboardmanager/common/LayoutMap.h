@@ -13,7 +13,6 @@ class LayoutMap
 {
 private:
     // Stores mappings for all the virtual key codes to the name of the key
-    std::map<DWORD, std::wstring> keyboardLayoutMap;
     std::mutex keyboardLayoutMap_mutex;
 
     // Stores the previous layout
@@ -26,6 +25,7 @@ private:
     std::set<std::pair<DWORD, std::wstring>> unknownKeys;
 
 public:
+    std::map<DWORD, std::wstring> keyboardLayoutMap;
     // Update Keyboard layout according to input locale identifier
     void UpdateLayout();
 

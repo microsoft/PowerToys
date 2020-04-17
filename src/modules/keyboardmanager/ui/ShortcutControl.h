@@ -2,6 +2,7 @@
 #include <keyboardmanager/common/KeyboardManagerState.h>
 #include <keyboardManager/common/Helpers.h>
 #include <keyboardmanager/common/Shortcut.h>
+#include "KeyDropDownControl.h"
 
 class ShortcutControl
 {
@@ -25,13 +26,15 @@ public:
     static KeyboardManagerState* keyboardManagerState;
     // Stores the current list of remappings
     static std::vector<std::vector<Shortcut>> shortcutRemapBuffer;
+    // Vector to store dynamically allocated KeyDropDownControl objects to avoid early destruction
+    std::vector<std::unique_ptr<KeyDropDownControl>> keyDropDownControlObjects;
 
-    ShortcutControl(const int& rowIndex, const int& colIndex)
+    ShortcutControl(const int rowIndex, const int colIndex)
     {
         shortcutDropDownStackPanel.RequestedTheme(ElementTheme::Light);
         shortcutDropDownStackPanel.Spacing(10);
         shortcutDropDownStackPanel.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
-        AddDropDown(shortcutDropDownStackPanel, rowIndex, colIndex);
+        KeyDropDownControl::AddDropDown(shortcutDropDownStackPanel, rowIndex, colIndex, shortcutRemapBuffer, keyDropDownControlObjects);
 
         typeShortcut.Content(winrt::box_value(winrt::to_hstring("Type Shortcut")));
         typeShortcut.Click([&, rowIndex, colIndex](IInspectable const& sender, RoutedEventArgs const&) {
@@ -50,26 +53,14 @@ public:
     }
 
     // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
-    static void AddNewShortcutControlRow(StackPanel& parent, Shortcut originalKeys = Shortcut(), Shortcut newKeys = Shortcut());
-
-    // Function to add a drop down to the shortcut stack panel
-    ComboBox AddDropDown(StackPanel parent, const int& rowIndex, const int& colIndex);
+    static void AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, Shortcut originalKeys = Shortcut(), Shortcut newKeys = Shortcut());
 
     // Function to add a shortcut to the shortcut control as combo boxes
-    void AddShortcutToControl(Shortcut& shortcut, StackPanel parent, KeyboardManagerState& keyboardManagerState, const int& rowIndex, const int& colIndex);
-
-    // Function to get the list of key codes from the shortcut combo box stack panel
-    std::vector<DWORD> GetKeysFromStackPanel(StackPanel parent);
-
-    // Function to check if a modifier has been repeated in the previous drop downs
-    bool CheckRepeatedModifier(StackPanel parent, uint32_t dropDownIndex, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList);
-
-    // Function to set the flyout warning message and reset the drop down
-    void SetDropDownError(ComboBox dropDown, TextBlock messageBlock, hstring message);
+    void AddShortcutToControl(Shortcut& shortcut, StackPanel parent, KeyboardManagerState& keyboardManagerState, const int rowIndex, const int colIndex);
 
     // Function to return the stack panel element of the ShortcutControl. This is the externally visible UI element which can be used to add it to other layouts
     StackPanel getShortcutControl();
 
     // Function to create the detect shortcut UI window
-    void createDetectShortcutWindow(IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, KeyboardManagerState& keyboardManagerState, const int& rowIndex, const int& colIndex);
+    void createDetectShortcutWindow(IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, KeyboardManagerState& keyboardManagerState, const int rowIndex, const int colIndex);
 };

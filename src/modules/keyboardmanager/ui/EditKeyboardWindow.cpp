@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "EditKeyboardWindow.h"
 #include "SingleKeyRemapControl.h"
+#include "KeyDropDownControl.h"
 
 LRESULT CALLBACK EditKeyboardWindowProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -142,14 +143,17 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     SingleKeyRemapControl::EditKeyboardWindowHandle = _hWndEditKeyboardWindow;
     // Store keyboard manager state
     SingleKeyRemapControl::keyboardManagerState = &keyboardManagerState;
+    KeyDropDownControl::keyboardManagerState = &keyboardManagerState;
     // Clear the single key remap buffer
     SingleKeyRemapControl::singleKeyRemapBuffer.clear();
+    // Vector to store dynamically allocated control objects to avoid early destruction
+    std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>> keyboardRemapControlObjects;
 
     // Load existing remaps into UI
     std::unique_lock<std::mutex> lock(keyboardManagerState.singleKeyReMap_mutex);
     for (const auto& it : keyboardManagerState.singleKeyReMap)
     {
-        SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, it.first, it.second);
+        SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects, it.first, it.second);
     }
     lock.unlock();
 
@@ -209,7 +213,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     addRemapKey.Content(plusSymbol);
     addRemapKey.Margin({ 10 });
     addRemapKey.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
-        SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable);
+        SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects);
     });
 
     xamlContainer.Children().Append(header);

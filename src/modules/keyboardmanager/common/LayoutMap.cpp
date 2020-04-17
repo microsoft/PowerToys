@@ -27,7 +27,7 @@ void LayoutMap::UpdateLayout()
     unicodeKeys.clear();
     unknownKeys.clear();
 
-    unsigned char btKeys[256] = { 0 };
+    unsigned char* btKeys = new unsigned char[256]{ 0 };
     GetKeyboardState(btKeys);
 
     // Iterate over all the virtual key codes. virtual key 0 is not used
@@ -53,6 +53,8 @@ void LayoutMap::UpdateLayout()
             unknownKeys.insert(std::make_pair(i, vk));
         }
     }
+
+    delete btKeys;
 
     // Override special key names like Shift, Ctrl etc because they don't have unicode mappings and key names like Enter, Space as they appear as "\r", " "
     // To do: localization
