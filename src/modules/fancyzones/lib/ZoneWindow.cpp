@@ -526,11 +526,12 @@ ZoneWindow::MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& in
 {
     std::shared_lock lock(m_mutex);
     auto thisWindow = m_window.get();
+    auto activeZoneSet = m_activeZoneSet;
     lock.unlock();
 
-    if (ActiveZoneSet())
+    if (activeZoneSet)
     {
-        ActiveZoneSet()->MoveWindowIntoZoneByIndexSet(window, thisWindow, indexSet, false);
+        activeZoneSet->MoveWindowIntoZoneByIndexSet(window, thisWindow, indexSet, false);
     }
 }
 
@@ -539,11 +540,12 @@ ZoneWindow::MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle)
 {
     std::shared_lock lock(m_mutex);
     auto thisWindow = m_window.get();
+    auto activeZoneSet = m_activeZoneSet;
     lock.unlock();
 
-    if (ActiveZoneSet())
+    if (activeZoneSet)
     {
-        if (ActiveZoneSet()->MoveWindowIntoZoneByDirection(window, thisWindow, vkCode, cycle))
+        if (activeZoneSet->MoveWindowIntoZoneByDirection(window, thisWindow, vkCode, cycle))
         {
             SaveWindowProcessToZoneIndex(window);
             return true;
@@ -575,13 +577,17 @@ ZoneWindow::CycleActiveZoneSet(DWORD wparam) noexcept
 IFACEMETHODIMP_(void)
 ZoneWindow::SaveWindowProcessToZoneIndex(HWND window) noexcept
 {
-    if (ActiveZoneSet())
+    std::shared_lock lock(m_mutex);
+    auto activeZoneSet = m_activeZoneSet;
+    lock.unlock();
+
+    if (activeZoneSet)
     {
-        DWORD zoneIndex = static_cast<DWORD>(ActiveZoneSet()->GetZoneIndexFromWindow(window));
+        DWORD zoneIndex = static_cast<DWORD>(activeZoneSet->GetZoneIndexFromWindow(window));
         if (zoneIndex != -1)
         {
             OLECHAR* guidString;
-            if (StringFromCLSID(ActiveZoneSet()->Id(), &guidString) == S_OK)
+            if (StringFromCLSID(activeZoneSet->Id(), &guidString) == S_OK)
             {
                 JSONHelpers::FancyZonesDataInstance().SetAppLastZone(window, UniqueId(), guidString, zoneIndex);
             }
@@ -601,9 +607,10 @@ ZoneWindow::ShowZoneWindow() noexcept
 
     if (window)
     {
-        std::unique_lock writeLock(m_mutex);
-        m_flashMode = false;
-        writeLock.unlock();
+        {
+            std::unique_lock writeLock(m_mutex);
+            m_flashMode = false;
+        }
 
         UINT flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
 
@@ -708,18 +715,19 @@ void ZoneWindow::CalculateZoneSet() noexcept
 
 void ZoneWindow::UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept
 {
-    std::unique_lock writeLock(m_mutex);
-    m_activeZoneSet.copy_from(zoneSet);
-    writeLock.unlock();
+    {
+        std::unique_lock writeLock(m_mutex);
+        m_activeZoneSet.copy_from(zoneSet);
+    }
 
-    if (ActiveZoneSet())
+    if (zoneSet)
     {
         wil::unique_cotaskmem_string zoneSetId;
-        if (SUCCEEDED_LOG(StringFromCLSID(ActiveZoneSet()->Id(), &zoneSetId)))
+        if (SUCCEEDED_LOG(StringFromCLSID(zoneSet->Id(), &zoneSetId)))
         {
             JSONHelpers::ZoneSetData data{
                 .uuid = zoneSetId.get(),
-                .type = ActiveZoneSet()->LayoutType()
+                .type = zoneSet->LayoutType()
             };
             JSONHelpers::FancyZonesDataInstance().SetActiveZoneSet(UniqueId(), data);
         }
@@ -781,6 +789,7 @@ void ZoneWindow::OnPaint(wil::unique_hdc& hdc) noexcept
     auto flashMode = m_flashMode;
     auto drawHints = m_drawHints;
     HWND window = m_window.get();
+    auto activeZoneSet = m_activeZoneSet;
     lock.unlock();
    
     RECT clientRect;
@@ -792,14 +801,14 @@ void ZoneWindow::OnPaint(wil::unique_hdc& hdc) noexcept
     {
         ZoneWindowDrawUtils::DrawBackdrop(hdcMem, clientRect);
 
-        if (ActiveZoneSet() && host)
+        if (activeZoneSet && host)
         {
             ZoneWindowDrawUtils::DrawActiveZoneSet(hdcMem,
                                                    host->GetZoneColor(),
                                                    host->GetZoneBorderColor(),
                                                    host->GetZoneHighlightColor(),
                                                    host->GetZoneHighlightOpacity(),
-                                                   ActiveZoneSet()->GetZones(),
+                                                   activeZoneSet->GetZones(),
                                                    highlightZone,
                                                    flashMode,
                                                    drawHints);
@@ -827,9 +836,10 @@ void ZoneWindow::OnKeyUp(WPARAM wparam) noexcept
 
 std::vector<int> ZoneWindow::ZonesFromPoint(POINT pt) noexcept
 {
-    if (ActiveZoneSet())
+    auto activeZoneSet = ActiveZoneSet();
+    if (activeZoneSet)
     {
-        return ActiveZoneSet()->ZonesFromPoint(pt);
+        return activeZoneSet->ZonesFromPoint(pt);
     }
     return {};
 }
