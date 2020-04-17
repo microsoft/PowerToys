@@ -419,7 +419,6 @@
             x:Name="TextBox"
             x:FieldModifier="public"
             Style="{StaticResource CustomAutoSuggestBoxTextBoxStyle}"
-            Text="{Binding QueryText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             PlaceholderText="Launch an app"
             Height="72"
             ScrollViewer.BringIntoViewOnFocusChange="False"

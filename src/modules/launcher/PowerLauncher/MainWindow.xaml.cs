@@ -22,6 +22,7 @@ using System.Diagnostics;
 using Wox.Plugin;
 using Windows.UI.Xaml.Input;
 using Windows.System;
+using System.Threading.Tasks;
 
 namespace PowerLauncher
 {
@@ -234,6 +235,7 @@ namespace PowerLauncher
             _launcher = (PowerLauncher.UI.LauncherControl)host.Child;
             _launcher.DataContext = _viewModel;
             _launcher.KeyDown += _launcher_KeyDown;
+            _launcher.TextBox.TextChanged += QueryTextBox_TextChanged;
             _launcher.TextBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
             _viewModel.PropertyChanged += (o, e) =>
             {
@@ -322,11 +324,26 @@ namespace PowerLauncher
             }
         }
 
-        private void QueryTextBox_TextChanged(Windows.UI.Xaml.Controls.AutoSuggestBox sender, Windows.UI.Xaml.Controls.AutoSuggestBoxTextChangedEventArgs args)
+        private const int millisecondsToWait = 200;
+        private static DateTime s_lastTimeOfTyping;
+
+        private void QueryTextBox_TextChanged(object sender, Windows.UI.Xaml.Controls.TextChangedEventArgs e)
         {
-            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            var latestTimeOfTyping = DateTime.Now;
+            var text = ((Windows.UI.Xaml.Controls.TextBox)sender).Text;
+            Task.Run(() => DelayedCheck(latestTimeOfTyping, text));
+            s_lastTimeOfTyping = latestTimeOfTyping;
+        }
+
+        private async Task DelayedCheck(DateTime latestTimeOfTyping, string text)
+        {
+            await Task.Delay(millisecondsToWait);
+            if (latestTimeOfTyping.Equals(s_lastTimeOfTyping))
             {
-                _viewModel.QueryText = sender.Text;
+                await System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                 {
+                     _viewModel.QueryText = text;
+                 }));               
             }
         }
 
