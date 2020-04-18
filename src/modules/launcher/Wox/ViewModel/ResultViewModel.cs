@@ -21,17 +21,16 @@ namespace Wox.ViewModel
 
         public ICommand LoadContextMenuCommand { get; set; }
 
+        public bool IsSelected { get; set; }
+
         public ResultViewModel(Result result)
         {
             if (result != null)
             {
                 Result = result;
             }
-
-            LoadContextMenuCommand = new RelayCommand(LoadContextMenu);
         }
-
-        void LoadContextMenu(object sender)
+        public void LoadContextMenu()
         {
             var results = PluginManager.GetContextMenusForPlugin(Result);
             var newItems = new List<ContextMenuItemViewModel>();
