@@ -210,16 +210,23 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
             {
                 // If Ctrl/Alt/Shift are added, add their L and R versions instead to the same key
                 bool result = false;
+                bool res1, res2;
                 switch (originalKey)
                 {
                 case VK_CONTROL:
-                    result = keyboardManagerState.AddSingleKeyRemap(VK_LCONTROL, newKey) && keyboardManagerState.AddSingleKeyRemap(VK_RCONTROL, newKey);
+                    res1 = keyboardManagerState.AddSingleKeyRemap(VK_LCONTROL, newKey);
+                    res2 = keyboardManagerState.AddSingleKeyRemap(VK_RCONTROL, newKey);
+                    result = res1 && res2;
                     break;
                 case VK_MENU:
-                    result = keyboardManagerState.AddSingleKeyRemap(VK_LMENU, newKey) && keyboardManagerState.AddSingleKeyRemap(VK_RMENU, newKey);
+                    res1 = keyboardManagerState.AddSingleKeyRemap(VK_LMENU, newKey);
+                    res2 = keyboardManagerState.AddSingleKeyRemap(VK_RMENU, newKey);
+                    result = res1 && res2;
                     break;
                 case VK_SHIFT:
-                    result = keyboardManagerState.AddSingleKeyRemap(VK_LSHIFT, newKey) && keyboardManagerState.AddSingleKeyRemap(VK_RSHIFT, newKey);
+                    res1 = keyboardManagerState.AddSingleKeyRemap(VK_LSHIFT, newKey);
+                    res2 = keyboardManagerState.AddSingleKeyRemap(VK_RSHIFT, newKey);
+                    result = res1 && res2;
                     break;
                 default:
                     result = keyboardManagerState.AddSingleKeyRemap(originalKey, newKey);
