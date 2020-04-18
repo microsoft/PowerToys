@@ -116,7 +116,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     primaryButton.HorizontalAlignment(HorizontalAlignment::Stretch);
     primaryButton.Margin({ 2, 2, 2, 2 });
     primaryButton.Content(primaryButtonText);
-    primaryButton.Click([onAccept](IInspectable const& sender, RoutedEventArgs const&) {
+    primaryButton.Click([onAccept](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         onAccept();
     });
 
@@ -146,7 +146,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     cancelButton.Margin({ 2, 2, 2, 2 });
     cancelButton.Content(cancelButtonText);
     // Cancel button
-    cancelButton.Click([detectRemapKeyBox, unregisterKeys, &keyboardManagerState](IInspectable const& sender, RoutedEventArgs const&) {
+    cancelButton.Click([detectRemapKeyBox, unregisterKeys, &keyboardManagerState](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();
         unregisterKeys();

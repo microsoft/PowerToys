@@ -28,20 +28,20 @@ namespace KeyboardManagerHelper
         parentElement.Children().IndexOf(frameworkElement, index);
         return parentElement.Children().GetAt(index + 1);
     }
-}
 
-// Function to return if the key is an extended key which requires the use of the extended key flag
-bool isExtendedKey(DWORD key)
-{
-    switch (key)
+    // Function to return if the key is an extended key which requires the use of the extended key flag
+    bool isExtendedKey(DWORD key)
     {
-    case VK_RCONTROL:
-    case VK_RMENU:
-    case VK_NUMLOCK:
-    case VK_SNAPSHOT:
-    case VK_CANCEL:
-        return true;
-    default:
-        return false;
+        switch (key)
+        {
+        case VK_RCONTROL:
+        case VK_RMENU:
+        case VK_NUMLOCK:
+        case VK_SNAPSHOT:
+        case VK_CANCEL:
+            return true;
+        default:
+            return false;
+        }
     }
 }

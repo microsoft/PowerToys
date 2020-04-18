@@ -394,7 +394,7 @@ public:
         keyEventArray[index].type = inputType;
         keyEventArray[index].ki.wVk = keyCode;
         keyEventArray[index].ki.dwFlags = flags;
-        if (isExtendedKey(keyCode))
+        if (KeyboardManagerHelper::isExtendedKey(keyCode))
         {
             keyEventArray[index].ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
         }

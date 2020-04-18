@@ -121,7 +121,7 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
     primaryButton.Content(primaryButtonText);
 
     // OK button
-    primaryButton.Click([onAccept](IInspectable const& sender, RoutedEventArgs const&) {
+    primaryButton.Click([onAccept](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         onAccept();
     });
 
@@ -151,7 +151,7 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
     cancelButton.Margin({ 2, 2, 2, 2 });
     cancelButton.Content(cancelButtonText);
     // Cancel button
-    cancelButton.Click([detectShortcutBox, unregisterKeys, &keyboardManagerState](IInspectable const& sender, RoutedEventArgs const&) {
+    cancelButton.Click([detectShortcutBox, unregisterKeys, &keyboardManagerState](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();
         unregisterKeys();
