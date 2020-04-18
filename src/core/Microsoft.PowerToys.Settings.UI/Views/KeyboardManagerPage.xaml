@@ -5,14 +5,16 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:extensions="using:Microsoft.Toolkit.Uwp.UI.Extensions"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
-        <viewmodels:RemapKeysModel x:Key="dummyData"/>
+        <viewModel:RemapKeysModel x:Key="dummyData"/>
+        <viewModel:KeyboardManagerViewModel x:Key="eventViewModel"/>
 
-        <DataTemplate x:Name="KeysListViewTemplate" x:DataType="viewmodels:RemapKeysModel">
+        <DataTemplate x:Name="KeysListViewTemplate" x:DataType="viewModel:RemapKeysModel">
             <Grid Height="56">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="80"/>
@@ -39,7 +41,7 @@
                           Grid.Column="1"
                           FontSize="14"
                           VerticalAlignment="Center" />
-                
+
                 <Border Background="{ThemeResource SystemAccentColor}"
                         CornerRadius="4"
                         Grid.Column="2"
@@ -100,7 +102,7 @@
                           IsOn="True"
                           Margin="{StaticResource SmallTopMargin}" />
 
-            <TextBlock x:Uid="KeyboardManager_ConfigHeader"
+            <!--<TextBlock x:Uid="KeyboardManager_ConfigHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <TextBlock x:Uid="KeyboardManager_ProfileDescription"
@@ -108,10 +110,10 @@
 
             <ComboBox SelectedIndex="1" MinWidth="160"
                       Margin="{StaticResource SmallTopMargin}">
-                      <ComboBoxItem Content="Config-1"/>
-                      <ComboBoxItem Content="Config-2"/>
-                      <ComboBoxItem Content="Config-3"/>
-            </ComboBox>
+                <ComboBoxItem Content="Config-1"/>
+                <ComboBoxItem Content="Config-2"/>
+                <ComboBoxItem Content="Config-3"/>
+            </ComboBox>-->
 
             <TextBlock x:Uid="KeyboardManager_RemapKeyboardHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
@@ -126,6 +128,7 @@
                     Command="{Binding Path=RemapKeyboardCommand}"/>
 
             <ListView x:Name="RemapKeysList"
+                      extensions:ListViewExtensions.AlternateColor="{ThemeResource SystemControlBackgroundListLowBrush}"
                       ItemsSource="{StaticResource dummyData}"
                       ItemTemplate="{StaticResource KeysListViewTemplate}"
                       BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
@@ -133,7 +136,9 @@
                       Width="350"
                       MaxHeight="200"
                       Margin="{StaticResource MediumTopBottomMargin}"
-                      HorizontalAlignment="Left"/>
+                      HorizontalAlignment="Left"
+                      SelectionMode="None"
+                      IsSwipeEnabled="False"/>
 
 
             <TextBlock x:Uid="KeyboardManager_RemapShortcutsHeader"
@@ -147,7 +152,8 @@
                     Style="{StaticResource ButtonRevealStyle}"
                     Command="{Binding Path=EditShortcutCommand}"/>
 
-            <ListView x:Name="RemapShortcutsList"  
+            <ListView x:Name="RemapShortcutsList"
+                      extensions:ListViewExtensions.AlternateColor="{ThemeResource SystemControlBackgroundListLowBrush}"
                       ItemsSource="{StaticResource dummyData}"
                       ItemTemplate="{StaticResource KeysListViewTemplate}"
                       BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
@@ -156,7 +162,9 @@
                       Width="350"
                       MaxHeight="200"
                       Margin="{StaticResource MediumTopBottomMargin}"
-                      HorizontalAlignment="Left"/>
+                      HorizontalAlignment="Left"
+                      SelectionMode="None"
+                      IsSwipeEnabled="False"/>
 
 
         </StackPanel>

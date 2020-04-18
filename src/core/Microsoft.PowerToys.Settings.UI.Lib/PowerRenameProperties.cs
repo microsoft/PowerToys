@@ -10,26 +10,26 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     {
         public PowerRenameProperties()
         {
-            PersistInput = new BoolProperty();
-            MruEnabled = new BoolProperty();
-            MaxMruSize = new IntProperty();
-            ShowIconInMenu = new BoolProperty();
-            ShowExtendedMenu = new BoolProperty();
+            PersistState = new BoolProperty();
+            MRUEnabled = new BoolProperty();
+            MaxMRUSize = new IntProperty();
+            ShowIcon = new BoolProperty();
+            ExtendedContextMenuOnly = new BoolProperty();
         }
 
         [JsonPropertyName("bool_persist_input")]
-        public BoolProperty PersistInput { get; set; }
+        public BoolProperty PersistState { get; set; }
 
         [JsonPropertyName("bool_mru_enabled")]
-        public BoolProperty MruEnabled { get; set; }
+        public BoolProperty MRUEnabled { get; set; }
 
         [JsonPropertyName("int_max_mru_size")]
-        public IntProperty MaxMruSize { get; set; }
+        public IntProperty MaxMRUSize { get; set; }
 
         [JsonPropertyName("bool_show_icon_on_menu")]
-        public BoolProperty ShowIconInMenu { get; set; }
+        public BoolProperty ShowIcon { get; set; }
 
         [JsonPropertyName("bool_show_extended_menu")]
-        public BoolProperty ShowExtendedMenu { get; set; }
+        public BoolProperty ExtendedContextMenuOnly { get; set; }
     }
 }

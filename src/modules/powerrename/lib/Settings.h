@@ -2,8 +2,6 @@
 
 #include "json.h"
 
-#include <string>
-
 class CSettings
 {
 public:
@@ -11,9 +9,17 @@ public:
 
     CSettings();
 
-    bool GetEnabled();
+    inline bool GetEnabled()
+    {
+        Reload();
+        return settings.enabled;
+    }
 
-    void SetEnabled(bool enabled);
+    inline void SetEnabled(bool enabled)
+    {
+        settings.enabled = enabled;
+        Save();
+    }
 
     inline bool GetShowIconOnMenu() const
     {
@@ -73,6 +79,7 @@ public:
     inline void SetFlags(long flags)
     {
         settings.flags = flags;
+        Save();
     }
 
     inline const std::wstring& GetSearchText() const
@@ -83,6 +90,7 @@ public:
     inline void SetSearchText(const std::wstring& text)
     {
         settings.searchText = text;
+        Save();
     }
 
     inline const std::wstring& GetReplaceText() const
@@ -93,14 +101,16 @@ public:
     inline void SetReplaceText(const std::wstring& text)
     {
         settings.replaceText = text;
+        Save();
     }
 
-    void LoadPowerRenameData();
-    void SavePowerRenameData() const;
+    void Save();
+    void Load();
 
 private:
     struct Settings
     {
+        bool enabled{ true };
         bool showIconOnMenu{ true };
         bool extendedContextMenuOnly{ false }; // Disabled by default.
         bool persistState{ true };
@@ -111,11 +121,13 @@ private:
         std::wstring replaceText{};
     };
 
-    void MigrateSettingsFromRegistry();
-    void ParseJsonSettings();
+    void Reload();
+    void MigrateFromRegistry();
+    void ParseJson();
 
     Settings settings;
     std::wstring jsonFilePath;
+    FILETIME lastLoadedTime;
 };
 
 CSettings& CSettingsInstance();

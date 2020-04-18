@@ -39,74 +39,81 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Vertical">
-            <TextBlock Text="A Windows Shell Extension for more advanced bulk renaming using search and replace or regular expressions."
+        <StackPanel Orientation="Vertical"
+                    x:Name="PowerRenameSettingsView">
+
+            <TextBlock x:Uid="PowerRename_Description"
                        TextWrapping="Wrap"/>
 
-            <ToggleSwitch x:Name="Toggle_PowerRename_Enable"
-                          Header="Enable PowerRename"
+            <ToggleSwitch x:Uid="PowerRename_Toggle_Enable"
                           Margin="{StaticResource SmallTopMargin}" 
-                          Toggled="Toggle_PowerRename_Enable_Toggled"
+                          IsOn="{Binding Mode=TwoWay, Path=IsEnabled}"                          
                            />
 
-            <TextBlock  Text="Shell integration"
+            <ToggleSwitch x:Uid="PowerRename_Toggle_AutoComplete"
+                          Margin="{StaticResource SmallTopMargin}" 
+                          IsOn="{Binding Mode=TwoWay, Path=MRUEnabled}"
+                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                           />
+
+            <TextBlock  x:Uid="PowerRename_ShellIntergration"
                         Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <ToggleSwitch x:Name="Toggle_PowerRename_EnableOnContextMenu" 
-                          Header="Show on default context menu"
+            <ToggleSwitch x:Uid="PowerRename_Toggle_EnableOnContextMenu"
                           Margin="{StaticResource SmallTopMargin}" 
-                          Toggled="Toggle_PowerRename_EnableOnContextMenu_Toggled"
+                          IsOn="{Binding Mode=TwoWay, Path=EnabledOnContextMenu}"
+                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
                            />
 
-            <ToggleSwitch x:Name="Toggle_PowerRename_EnableOnExtendedContextMenu"
-                          Header="Only show on extended context menu (Shift + Right-click)"
+            <ToggleSwitch x:Uid="PowerRename_Toggle_EnableOnExtendedContextMenu"
                           Margin="{StaticResource SmallTopMargin}"
-                          Toggled="Toggle_PowerRename_EnableOnExtendedContextMenu_Toggled"
+                          IsOn="{Binding Mode=TwoWay, Path=EnabledOnContextExtendedMenu}"
+                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
                            />
 
-            <TextBlock Text="Miscellaneous" 
+            <TextBlock x:Uid="Miscellaneous" 
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <ToggleSwitch x:Name="Toggle_PowerRename_RestoreFlagsOnLaunch"
-                          Header="Restore search, replace and flags values on launch from previous run"     
+            <ToggleSwitch x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch"
                           Margin="{StaticResource SmallTopMargin}" 
-                          Toggled="Toggle_PowerRename_RestoreFlagsOnLaunch_Toggled"
+                          IsOn="{Binding Mode=TwoWay, Path=RestoreFlagsOnLaunch}"
+                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
                            />
 
-            <muxc:NumberBox x:Name="Toggle_PowerRename_MaxDispListNum"
-                            Header="Maximum numbers of items to show in recently used list"
+            <muxc:NumberBox x:Name="PowerRename_Toggle_MaxDispListNum"
                             SpinButtonPlacementMode="Inline"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallTopMargin}" 
-                           ValueChanged="Toggle_PowerRename_MaxDispListNum_ValueChanged"
+                            Value="{Binding Mode=TwoWay, Path=MaxDispListNum}"
+                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
                             />
         </StackPanel>
-        
-        
-        <StackPanel 
-            x:Name="SidePanel"
-            Orientation="Vertical"
-            HorizontalAlignment="Left"
-            Width="{StaticResource SidePanelWidth}"
-            Grid.Column="1">
+
+
+        <StackPanel x:Name="SidePanel"
+                    Orientation="Vertical"
+                    HorizontalAlignment="Left"
+                    Width="{StaticResource SidePanelWidth}"
+                    Grid.Column="1">
+
+            <TextBlock x:Uid="About_This_Feature"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Margin="{StaticResource XSmallBottomMargin}"/>
+
+            <HyperlinkButton x:Uid="Module_overview"
+                             NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/powerrename"/>
+
+            <HyperlinkButton x:Uid="Give_Feedback"
+                             NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
+
 
             <TextBlock 
-                Text="About this feature"
-                Style="{StaticResource SettingsGroupTitleStyle}"
-                Margin="{StaticResource XSmallBottomMargin}"/>
-
-            <HyperlinkButton 
-                Content="Module overview" 
-                NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/powerrename"/>
-
-            <TextBlock 
-                Text="Attribution"
+                x:Uid="AttributionTitle"
                 Style="{StaticResource SettingsGroupTitleStyle}" />
 
             <HyperlinkButton 
                 Content="Chris Davis's SmartRenamer" 
                 NavigateUri="https://github.com/chrdavis/SmartRename" />
-            
         </StackPanel>
     </Grid>
 </Page>
