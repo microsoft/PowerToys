@@ -38,6 +38,13 @@
                             <Core:DataTriggerBehavior Binding="{Binding IsSelected}" ComparisonCondition="Equal" Value="false">
                                 <Core:CallMethodAction TargetObject="{Binding ElementName=HideActionsButtons}" MethodName="StartAnimation"/>
                             </Core:DataTriggerBehavior>
+                            <Core:EventTriggerBehavior EventName="PointerEntered">
+                                <Core:CallMethodAction TargetObject="{Binding ElementName=ShowActionButtons}" MethodName="StartAnimation"/>
+                                <Core:InvokeCommandAction Command="{Binding LoadContextMenuCommand}"/>
+                            </Core:EventTriggerBehavior>
+                            <Core:EventTriggerBehavior EventName="PointerExited">
+                                <Core:CallMethodAction TargetObject="{Binding ElementName=HideActionsButtons}" MethodName="StartAnimation"/>
+                            </Core:EventTriggerBehavior>
                         </Interactivity:Interaction.Behaviors>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="64" />
