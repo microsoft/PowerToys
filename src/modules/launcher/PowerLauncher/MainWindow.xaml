@@ -30,11 +30,21 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <xaml:WindowsXamlHost Grid.Row="0" InitialTypeName="PowerLauncher.UI.LauncherControl" ChildChanged="WindowsXamlHostTextBox_ChildChanged" />
-        <Border Grid.Row="1" Name="myElement" Background="Transparent" Height="5"/>
-        <xaml:WindowsXamlHost Grid.Row="2" PreviewMouseDown="WindowsXamlHost_PreviewMouseDown" InitialTypeName="PowerLauncher.UI.ResultList" Visibility="{Binding Results.Visbility}" ChildChanged="WindowsXamlHostListView_ChildChanged" />
+        <Border Margin="10" Grid.Row="0" BorderBrush="Black" BorderThickness="5" CornerRadius="4">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="12" Opacity="0.3" ShadowDepth="4" />
+            </Border.Effect>
+            <xaml:WindowsXamlHost  InitialTypeName="PowerLauncher.UI.LauncherControl" ChildChanged="WindowsXamlHostTextBox_ChildChanged" />
+        </Border>
+        <Border Grid.Row="1" Name="myElement" Background="Transparent" Height="10"/>
+        <Border Margin="10" Grid.Row="2" BorderBrush="Black" BorderThickness="5" CornerRadius="4" Visibility="{Binding Results.Visbility}">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="12" Opacity="0.3" ShadowDepth="4" />
+            </Border.Effect>
+            <xaml:WindowsXamlHost PreviewMouseDown="WindowsXamlHost_PreviewMouseDown" InitialTypeName="PowerLauncher.UI.ResultList"  ChildChanged="WindowsXamlHostListView_ChildChanged"  />
+        </Border>
     </Grid> 
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding EscCommand}" />
