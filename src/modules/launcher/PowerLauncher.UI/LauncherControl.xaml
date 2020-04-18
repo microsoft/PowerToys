@@ -419,7 +419,7 @@
             x:Name="AutoCompleteTextBox"
             x:FieldModifier="public"
             Style="{StaticResource CustomAutoSuggestBoxTextBoxStyle}"
-            PlaceholderText="{Binding AutoCompleteText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            PlaceholderText="{Binding AutoCompleteText, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
             Height="72"
             IsReadOnly="True"
             AllowFocusOnInteraction="False"
