@@ -44,7 +44,7 @@ public:
     }
 
     // Constructor for shortcut drop down
-    KeyDropDownControl(int rowIndex, int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects)
+    KeyDropDownControl(int rowIndex, int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, StackPanel parent)
     {
         SetDefaultProperties(true);
         Flyout warningFlyout;
@@ -53,11 +53,10 @@ public:
         dropDown.ContextFlyout().SetAttachedFlyout((FrameworkElement)dropDown, warningFlyout);
 
         // drop down selection handler
-        dropDown.SelectionChanged([&, rowIndex, colIndex, warningMessage](IInspectable const& sender, SelectionChangedEventArgs const&) {
+        dropDown.SelectionChanged([&, rowIndex, colIndex, parent, warningMessage](IInspectable const& sender, SelectionChangedEventArgs const&) {
             ComboBox currentDropDown = sender.as<ComboBox>();
             int selectedKeyIndex = currentDropDown.SelectedIndex();
             uint32_t dropDownIndex = -1;
-            StackPanel parent = sender.as<FrameworkElement>().Parent().as<StackPanel>();
             bool dropDownFound = parent.Children().IndexOf(currentDropDown, dropDownIndex);
 
             if (selectedKeyIndex != -1 && keyCodeList.size() > selectedKeyIndex && dropDownFound)

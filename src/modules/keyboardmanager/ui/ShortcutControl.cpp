@@ -27,19 +27,7 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     // ShortcutControl for the new shortcut
     tableRow.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getShortcutControl());
 
-    // Set the shortcut text if the two vectors are not empty (i.e. default args)
-    if (originalKeys.IsValidShortcut() && newKeys.IsValidShortcut())
-    {
-        shortcutRemapBuffer.push_back(std::vector<Shortcut>{ Shortcut(), Shortcut() });
-        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->AddShortcutToControl(originalKeys, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutDropDownStackPanel, *keyboardManagerState, (int)shortcutRemapBuffer.size() - 1, 0);
-        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->AddShortcutToControl(newKeys, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutDropDownStackPanel, *keyboardManagerState, (int)shortcutRemapBuffer.size() - 1, 1);
-    }
-    else
-    {
-        // Initialize both shortcuts as empty shortcuts
-        shortcutRemapBuffer.push_back(std::vector<Shortcut>{ Shortcut(), Shortcut() });
-    }
-
+    
     // Delete row button
     Windows::UI::Xaml::Controls::Button deleteShortcut;
     FontIcon deleteSymbol;
@@ -57,13 +45,33 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         keyboardRemapControlObjects.erase(keyboardRemapControlObjects.begin() + (index - 1));
     });
     tableRow.Children().Append(deleteShortcut);
+    tableRow.UpdateLayout();
     parent.Children().Append(tableRow);
+    parent.UpdateLayout();
+
+    // Set the shortcut text if the two vectors are not empty (i.e. default args)
+    if (originalKeys.IsValidShortcut() && newKeys.IsValidShortcut())
+    {
+        shortcutRemapBuffer.push_back(std::vector<Shortcut>{ Shortcut(), Shortcut() });
+        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->AddShortcutToControl(originalKeys, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutDropDownStackPanel, *keyboardManagerState, (int)shortcutRemapBuffer.size() - 1, 0);
+        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->AddShortcutToControl(newKeys, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->shortcutDropDownStackPanel, *keyboardManagerState, (int)shortcutRemapBuffer.size() - 1, 1);
+    }
+    else
+    {
+        // Initialize both shortcuts as empty shortcuts
+        shortcutRemapBuffer.push_back(std::vector<Shortcut>{ Shortcut(), Shortcut() });
+    }
+
 }
 
 // Function to add a shortcut to the shortcut control as combo boxes
 void ShortcutControl::AddShortcutToControl(Shortcut& shortcut, StackPanel parent, KeyboardManagerState& keyboardManagerState, const int rowIndex, const int colIndex)
 {
+    // Delete the existing drop down menus
     parent.Children().Clear();
+    // Remove references to the old drop down objects to destroy them
+    keyDropDownControlObjects.clear();
+
     std::vector<DWORD> shortcutKeyCodes = shortcut.GetKeyCodes();
     std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyCodeList(true);
     if (shortcutKeyCodes.size() != 0)
