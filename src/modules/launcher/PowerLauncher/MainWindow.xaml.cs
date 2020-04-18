@@ -256,8 +256,14 @@ namespace PowerLauncher
             var result = ((Windows.UI.Xaml.FrameworkElement)e.OriginalSource).DataContext;
             if (result != null)
             {
-                _viewModel.Results.SelectedItem =  (ResultViewModel)result;
-                _viewModel.OpenResultCommand.Execute(null);
+                var resultVM = result as ResultViewModel;
+
+                //This may be null if the tapped item was one of the context buttons (run as admin etc).
+                if (resultVM != null)
+                {
+                    _viewModel.Results.SelectedItem = resultVM;
+                    _viewModel.OpenResultCommand.Execute(null);
+                }
             }
         }
 

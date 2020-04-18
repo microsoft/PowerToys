@@ -13,6 +13,6 @@ namespace PowerLauncher.UI
         public ResultList()
         {
             InitializeComponent();
-        }       
+        }
     }
 }
