@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "LayoutMap.h"
 
+// Function to return the unicode string name of the key
 std::wstring LayoutMap::GetKeyName(DWORD key)
 {
     std::wstring result = L"Undefined";
@@ -15,30 +16,41 @@ std::wstring LayoutMap::GetKeyName(DWORD key)
     return result;
 }
 
+// Update Keyboard layout according to input locale identifier
 void LayoutMap::UpdateLayout()
 {
     // Get keyboard layout for current thread
     HKL layout = GetKeyboardLayout(0);
-    if (layout == previousLayout) {
+    if (layout == previousLayout)
+    {
         return;
     }
     previousLayout = layout;
+    if (!isKeyCodeListGenerated)
+    {
+        unicodeKeys.clear();
+        unknownKeys.clear();
+    }
 
-    unsigned char btKeys[256] = { 0 };
+    unsigned char* btKeys = new unsigned char[256]{ 0 };
     GetKeyboardState(btKeys);
 
-    // Iterate over all the virtual key codes
-    for (int i = 0; i < 256; i++)
+    // Iterate over all the virtual key codes. virtual key 0 is not used
+    for (int i = 1; i < 256; i++)
     {
         // Get the scan code from the virtual key code
         UINT scanCode = MapVirtualKeyExW(i, MAPVK_VK_TO_VSC, layout);
-        // Get the unicode representation from the virtual key code and scan code pair to 
+        // Get the unicode representation from the virtual key code and scan code pair to
         wchar_t szBuffer[3] = { 0 };
         int result = ToUnicodeEx(i, scanCode, (BYTE*)btKeys, szBuffer, 3, 0, layout);
         // If a representation is returned
         if (result > 0)
         {
             keyboardLayoutMap[i] = szBuffer;
+            if (!isKeyCodeListGenerated)
+            {
+                unicodeKeys[i] = szBuffer;
+            }
         }
         else
         {
@@ -46,8 +58,14 @@ void LayoutMap::UpdateLayout()
             std::wstring vk = L"VK ";
             vk += std::to_wstring(i);
             keyboardLayoutMap[i] = vk;
+            if (!isKeyCodeListGenerated)
+            {
+                unknownKeys[i] = vk;
+            }
         }
     }
+
+    delete[] btKeys;
 
     // Override special key names like Shift, Ctrl etc because they don't have unicode mappings and key names like Enter, Space as they appear as "\r", " "
     // To do: localization
@@ -154,4 +172,105 @@ void LayoutMap::UpdateLayout()
     keyboardLayoutMap[VK_OEM_CLEAR] = L"Clear";
     keyboardLayoutMap[0xFF] = L"Undefined";
     // To do: Add IME key names
+}
+
+// Function to return the list of key codes in the order for the drop down. It creates it if it doesn't exist
+std::vector<DWORD> LayoutMap::GetKeyCodeList(const bool isShortcut)
+{
+    std::lock_guard<std::mutex> lock(keyboardLayoutMap_mutex);
+    UpdateLayout();
+    std::vector<DWORD> keyCodes;
+    if (!isKeyCodeListGenerated)
+    {
+        // Add modifier keys
+        keyCodes.push_back(VK_LWIN);
+        keyCodes.push_back(VK_RWIN);
+        keyCodes.push_back(VK_CONTROL);
+        keyCodes.push_back(VK_LCONTROL);
+        keyCodes.push_back(VK_RCONTROL);
+        keyCodes.push_back(VK_MENU);
+        keyCodes.push_back(VK_LMENU);
+        keyCodes.push_back(VK_RMENU);
+        keyCodes.push_back(VK_SHIFT);
+        keyCodes.push_back(VK_LSHIFT);
+        keyCodes.push_back(VK_RSHIFT);
+        // Add character keys
+        for (auto& it : unicodeKeys)
+        {
+            // If it was not renamed with a special name
+            if (it.second == keyboardLayoutMap[it.first])
+            {
+                keyCodes.push_back(it.first);
+            }
+        }
+        // Add all other special keys
+        for (int i = 1; i < 256; i++)
+        {
+            // If it is not already been added (i.e. it was either a modifier or had a unicode representation)
+            if (std::find(keyCodes.begin(), keyCodes.end(), i) == keyCodes.end())
+            {
+                // If it is any other key but it is not named as VK #
+                auto it = unknownKeys.find(i);
+                if (it == unknownKeys.end())
+                {
+                    keyCodes.push_back(i);
+                }
+                else if (unknownKeys[i] != keyboardLayoutMap[i])
+                {
+                    keyCodes.push_back(i);
+                }
+            }
+        }
+        // Add unknown keys
+        for (auto& it : unknownKeys)
+        {
+            // If it was not renamed with a special name
+            if (it.second == keyboardLayoutMap[it.first])
+            {
+                keyCodes.push_back(it.first);
+            }
+        }
+        keyCodeList = keyCodes;
+        isKeyCodeListGenerated = true;
+    }
+    else
+    {
+        keyCodes = keyCodeList;
+    }
+
+    // If it is a key list for the shortcut control then we add a "None" key at the start
+    if (isShortcut)
+    {
+        keyCodes.insert(keyCodes.begin(), 0);
+    }
+
+    return keyCodes;
+}
+
+Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> LayoutMap::GetKeyNameList(const bool isShortcut)
+{
+    std::unique_lock<std::mutex> lock(keyboardLayoutMap_mutex);
+    UpdateLayout();
+    lock.unlock();
+    Windows::Foundation::Collections::IVector<Windows::Foundation::IInspectable> keyNames = single_threaded_vector<Windows::Foundation::IInspectable>();
+    std::vector<DWORD> keyCodes = GetKeyCodeList(isShortcut);
+    lock.lock();
+    // If it is a key list for the shortcut control then we add a "None" key at the start
+    if (isShortcut)
+    {
+        keyNames.Append(winrt::box_value(L"None"));
+        for (int i = 1; i < keyCodes.size(); i++)
+        {
+            keyNames.Append(winrt::box_value(keyboardLayoutMap[keyCodes[i]].c_str()));
+        }
+    }
+    else
+    {
+        for (int i = 0; i < keyCodes.size(); i++)
+        {
+            keyNames.Append(winrt::box_value(keyboardLayoutMap[keyCodes[i]].c_str()));
+        }
+    }
+
+    return keyNames;
 }
