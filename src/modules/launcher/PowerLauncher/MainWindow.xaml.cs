@@ -19,6 +19,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.System;
 using System.Threading.Tasks;
+using Windows.UI.Xaml;
 
 namespace PowerLauncher
 {
@@ -54,7 +55,7 @@ namespace PowerLauncher
         {
         }
 
-        private void OnLoaded(object sender, RoutedEventArgs _)
+        private void OnLoaded(object sender, System.Windows.RoutedEventArgs _)
         {
             // todo is there a way to set blur only once?
             //ThemeManager.Instance.SetBlurForWindow();
@@ -135,9 +136,9 @@ namespace PowerLauncher
             e.Handled = true;
         }
 
-        private void OnContextMenusForSettingsClick(object sender, RoutedEventArgs e)
-        {
-        }
+        //private void OnContextMenusForSettingsClick(object sender, RoutedEventArgs e)
+        //{
+        //}
 
         private void OnDeactivated(object sender, EventArgs e)
         {
@@ -207,7 +208,6 @@ namespace PowerLauncher
             _launcher.DataContext = _viewModel;
             _launcher.KeyDown += _launcher_KeyDown;
             _launcher.TextBox.TextChanged += QueryTextBox_TextChanged;
-            _launcher.TextBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
             _viewModel.PropertyChanged += (o, e) =>
             {
                 if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
@@ -215,7 +215,6 @@ namespace PowerLauncher
                     if (Visibility == System.Windows.Visibility.Visible)
                     {
                         Activate();
-                        _launcher.TextBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
                         UpdatePosition();
                         _settings.ActivateTimes++;
                         if (!_viewModel.LastQuerySelected)
