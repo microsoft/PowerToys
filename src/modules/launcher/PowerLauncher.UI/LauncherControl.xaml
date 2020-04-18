@@ -409,79 +409,23 @@
             </Setter>
         </Style>
     </UserControl.Resources>
-
     <Grid 
         x:Name="PowerBar" 
         Background="{StaticResource BackdropAcrylicBrush}"
         Height="72" 
         Translation="0,0,16" 
         VerticalAlignment="Top">
-        <AutoSuggestBox 
-            x:Name="SearchBox" 
-            x:FieldModifier="public" 
+        <TextBox
+            x:Name="TextBox"
+            x:FieldModifier="public"
+            Style="{StaticResource CustomAutoSuggestBoxTextBoxStyle}"
             PlaceholderText="Launch an app"
-            FontSize="24" 
-            Style="{StaticResource CustomStyledAutoSuggestBox}" 
-            ItemsSource="{Binding Results.Results}">
-            <AutoSuggestBox.QueryIcon>
-                <SymbolIcon Symbol="Find"/>
-            </AutoSuggestBox.QueryIcon>
-            <AutoSuggestBox.ItemTemplate>
-                <DataTemplate >
-                    <Grid Height="72" Width="690" Background="Transparent" RowSpacing="0">
-                        <Interactivity:Interaction.Behaviors>
-                            <Core:EventTriggerBehavior EventName="PointerEntered">
-                                <Core:CallMethodAction TargetObject="{Binding ElementName=ShowActionButtons}" MethodName="StartAnimation"/>
-                            </Core:EventTriggerBehavior>
-                            <Core:EventTriggerBehavior EventName="PointerExited">
-                                <Core:CallMethodAction TargetObject="{Binding ElementName=HideActionsButtons}" MethodName="StartAnimation"/>
-                            </Core:EventTriggerBehavior>
-                        </Interactivity:Interaction.Behaviors>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="64" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions >
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-
-                        <Image x:Name="AppIcon" Height="36" Margin="8,0,0,0" Grid.RowSpan="2" HorizontalAlignment="Left" Source="{Binding Image}" />
-                        <TextBlock x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" VerticalAlignment="Bottom"/>
-                        <TextBlock x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Opacity="0.6" VerticalAlignment="Top"/>
-                        <StackPanel Orientation="Horizontal" Opacity="0" HorizontalAlignment="Right" Grid.RowSpan="2" Grid.Column="1">
-                            <Interactivity:Interaction.Behaviors>
-                                <ToolkitBehaviors:Fade x:Name="ShowActionButtons" Duration="250" Delay="0" AutomaticallyStart="False" Value="1" />
-                                <ToolkitBehaviors:Fade x:Name="HideActionsButtons" Duration="250" Delay="0" AutomaticallyStart="False" Value="0" />
-                            </Interactivity:Interaction.Behaviors>
-                            <Button Background="Transparent" Height="42" Width="42" BorderThickness="1" Style="{ThemeResource ButtonRevealStyle}">
-                                <ToolTipService.ToolTip>
-                                    <TextBlock Text="Run as administrator"/>
-                                </ToolTipService.ToolTip>
-                                <Button.Content>
-                                    <FontIcon FontFamily="Segoe MDL2 Assets" FontSize="16" Glyph="&#xE7EF;"/>
-                                </Button.Content>
-                            </Button>
-                            <Button Background="Transparent" Height="42" Width="42" BorderThickness="1" Style="{ThemeResource ButtonRevealStyle}">
-                                <ToolTipService.ToolTip>
-                                    <TextBlock Text="Open file location"/>
-                                </ToolTipService.ToolTip>
-                                <Button.Content>
-                                    <FontIcon FontFamily="Segoe MDL2 Assets" FontSize="16" Glyph="&#xE838;"/>
-                                </Button.Content>
-                            </Button>
-                            <Button Background="Transparent" Height="42" Width="42" BorderThickness="1" Style="{ThemeResource ButtonRevealStyle}">
-                                <ToolTipService.ToolTip>
-                                    <TextBlock Text="Open in console"/>
-                                </ToolTipService.ToolTip>
-                                <Button.Content>
-                                    <FontIcon FontFamily="Segoe MDL2 Assets" FontSize="16" Glyph="&#xE756;"/>
-                                </Button.Content>
-                            </Button>
-                        </StackPanel>
-                    </Grid>
-                </DataTemplate>
-            </AutoSuggestBox.ItemTemplate>
-        </AutoSuggestBox>
+            Height="72"
+            ScrollViewer.BringIntoViewOnFocusChange="False"
+            Canvas.ZIndex="0"
+            Margin="0" 
+            VerticalAlignment="Center"
+            FontSize="24"
+            DesiredCandidateWindowAlignment="BottomEdge" />
     </Grid>
 </UserControl>

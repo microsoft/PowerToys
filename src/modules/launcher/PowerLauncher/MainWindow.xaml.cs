@@ -16,7 +16,9 @@ using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
 using Windows.UI.Xaml.Controls;
-
+using Windows.UI.Xaml.Input;
+using Windows.System;
+using System.Threading.Tasks;
 
 namespace PowerLauncher
 {
@@ -110,31 +112,6 @@ namespace PowerLauncher
             if (e.ChangedButton == MouseButton.Left) DragMove();
         }
 
-        //private void OnPreviewMouseButtonDown(object sender, MouseButtonEventArgs e)
-        //{
-        //    if (sender != null && e.OriginalSource != null)
-        //    {
-        //        var r = (ResultListBox)sender;
-        //        var d = (DependencyObject)e.OriginalSource;
-        //        var item = ItemsControl.ContainerFromElement(r, d) as ListBoxItem;
-        //        var result = (ResultViewModel)item?.DataContext;
-        //        if (result != null)
-        //        {
-        //            if (e.ChangedButton == MouseButton.Left)
-        //            {
-        //                _viewModel.OpenResultCommand.Execute(null);
-        //            }
-        //            else if (e.ChangedButton == MouseButton.Right)
-        //            {
-        //                _viewModel.LoadContextMenuCommand.Execute(null);
-        //            }
-        //        }
-        //    }
-        //}
-
-        
-
-
         private void OnDrop(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -211,34 +188,6 @@ namespace PowerLauncher
         //    return top;
         //}
 
-        /// <summary>
-        /// Register up and down key
-        /// todo: any way to put this in xaml ?
-        /// </summary>
-        private void OnKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Down)
-            {
-                _viewModel.SelectNextItemCommand.Execute(null);
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Up)
-            {
-                _viewModel.SelectPrevItemCommand.Execute(null);
-                e.Handled = true;
-            }
-            else if (e.Key == Key.PageDown)
-            {
-                _viewModel.SelectNextPageCommand.Execute(null);
-                e.Handled = true;
-            }
-            else if (e.Key == Key.PageUp)
-            {
-                _viewModel.SelectPrevPageCommand.Execute(null);
-                e.Handled = true;
-            }
-        }
-
         //private void OnTextChanged(object sender, TextChangedEventArgs e)
         //{
         //    if (_viewModel.QueryTextCursorMovedToEnd)
@@ -249,16 +198,16 @@ namespace PowerLauncher
         //}
 
         private PowerLauncher.UI.LauncherControl _launcher = null;
-        private void WindowsXamlHost_ChildChanged(object sender, EventArgs ev)
+        private void WindowsXamlHostTextBox_ChildChanged(object sender, EventArgs ev)
         {
             if (sender == null) return;
 
             var host = (WindowsXamlHost)sender;
             _launcher = (PowerLauncher.UI.LauncherControl)host.Child;
             _launcher.DataContext = _viewModel;
-            _launcher.SearchBox.TextChanged += QueryTextBox_TextChanged;
-            _launcher.SearchBox.QuerySubmitted += AutoSuggestBox_QuerySubmitted;
-            _launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
+            _launcher.KeyDown += _launcher_KeyDown;
+            _launcher.TextBox.TextChanged += QueryTextBox_TextChanged;
+            _launcher.TextBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
             _viewModel.PropertyChanged += (o, e) =>
             {
                 if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
@@ -266,7 +215,7 @@ namespace PowerLauncher
                     if (Visibility == System.Windows.Visibility.Visible)
                     {
                         Activate();
-                        _launcher.SearchBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
+                        _launcher.TextBox.Focus(Windows.UI.Xaml.FocusState.Programmatic);
                         UpdatePosition();
                         _settings.ActivateTimes++;
                         if (!_viewModel.LastQuerySelected)
@@ -276,6 +225,72 @@ namespace PowerLauncher
                     }
                 }
             };
+        }
+
+        private UI.ResultList _resultList = null;
+        private void WindowsXamlHostListView_ChildChanged(object sender, EventArgs ev)
+        {
+            if (sender == null) return; 
+
+            var host = (WindowsXamlHost)sender;
+            _resultList = (UI.ResultList)host.Child;
+            _resultList.DataContext = _viewModel;
+            _resultList.Tapped += SuggestionsList_Tapped;
+            _resultList.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
+        }
+
+        private void _launcher_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Down)
+            {
+                _viewModel.SelectNextItemCommand.Execute(null);
+                e.Handled = true;
+            }
+            else if (e.Key == VirtualKey.Up)
+            {
+                _viewModel.SelectPrevItemCommand.Execute(null);
+                e.Handled = true;
+            }
+            else if (e.Key == VirtualKey.PageDown)
+            {
+                _viewModel.SelectNextPageCommand.Execute(null);
+                e.Handled = true;
+            }
+            else if (e.Key == VirtualKey.PageUp)
+            {
+                _viewModel.SelectPrevPageCommand.Execute(null);
+                e.Handled = true;
+            }
+        }
+
+        private void SuggestionsList_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            var result = ((Windows.UI.Xaml.FrameworkElement)e.OriginalSource).DataContext;
+            if (result != null)
+            {
+                _viewModel.Results.SelectedItem =  (ResultViewModel)result;
+                _viewModel.OpenResultCommand.Execute(null);
+            }
+        }
+
+        private void SuggestionsList_SelectionChanged(object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)
+        {
+            Windows.UI.Xaml.Controls.ListView listview = (Windows.UI.Xaml.Controls.ListView)sender;
+            _viewModel.Results.SelectedItem = (ResultViewModel) listview.SelectedItem;
+            if (e.AddedItems.Count > 0 && e.AddedItems[0] != null)
+            {
+                listview.ScrollIntoView(e.AddedItems[0]);
+            }
+        }
+
+        private void ResultsList_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            ResultViewModel result = e?.ClickedItem as ResultViewModel;
+            if(result != null)
+            {
+                _viewModel.Results.SelectedItem = result;
+                _viewModel.OpenResultCommand.Execute(null);
+            }
         }
 
         private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
@@ -291,12 +306,49 @@ namespace PowerLauncher
             }
         }
 
-        private void QueryTextBox_TextChanged(Windows.UI.Xaml.Controls.AutoSuggestBox sender, Windows.UI.Xaml.Controls.AutoSuggestBoxTextChangedEventArgs args)
+        private const int millisecondsToWait = 200;
+        private static DateTime s_lastTimeOfTyping;
+
+        private void QueryTextBox_TextChanged(object sender, Windows.UI.Xaml.Controls.TextChangedEventArgs e)
         {
-            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            var latestTimeOfTyping = DateTime.Now;
+            var text = ((Windows.UI.Xaml.Controls.TextBox)sender).Text;
+            Task.Run(() => DelayedCheck(latestTimeOfTyping, text));
+            s_lastTimeOfTyping = latestTimeOfTyping;
+        }
+
+        private async Task DelayedCheck(DateTime latestTimeOfTyping, string text)
+        {
+            await Task.Delay(millisecondsToWait);
+            if (latestTimeOfTyping.Equals(s_lastTimeOfTyping))
             {
-                _viewModel.QueryText = sender.Text;
+                await System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                 {
+                     _viewModel.QueryText = text;
+                 }));               
             }
+        }
+
+        private void WindowsXamlHost_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            //    if (sender != null && e.OriginalSource != null)
+            //    {
+            //        //var r = (ResultListBox)sender;
+            //        //var d = (DependencyObject)e.OriginalSource;
+            //        //var item = ItemsControl.ContainerFromElement(r, d) as ListBoxItem;
+            //        //var result = (ResultViewModel)item?.DataContext;
+            //        //if (result != null)
+            //        //{
+            //        //    if (e.ChangedButton == MouseButton.Left)
+            //        //    {
+            //        //        _viewModel.OpenResultCommand.Execute(null);
+            //        //    }
+            //        //    else if (e.ChangedButton == MouseButton.Right)
+            //        //    {
+            //        //        _viewModel.LoadContextMenuCommand.Execute(null);
+            //        //    }
+            //        //}
+            //    }
         }
     }
  }

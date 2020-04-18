@@ -387,9 +387,9 @@ namespace Wox.ViewModel
                     // handle the exclusiveness of plugin using action keyword
                     RemoveOldQueryResults(query);
 
-                    _lastQuery = query;                  
+                    _lastQuery = query;
                     var plugins = PluginManager.ValidPluginsForQuery(query);
-                    
+
                     Task.Run(() =>
                     {
                         // so looping will stop once it was cancelled
