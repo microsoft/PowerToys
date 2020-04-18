@@ -34,12 +34,12 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
         auto it = std::find(keyCodes.begin(), keyCodes.end(), originalKey);
         if (it != keyCodes.end())
         {
-            keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->singleKeyRemapDropDown.SetSelectedIndex(std::distance(keyCodes.begin(), it));
+            keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->singleKeyRemapDropDown.SetSelectedIndex((int32_t)std::distance(keyCodes.begin(), it));
         }
         it = std::find(keyCodes.begin(), keyCodes.end(), newKey);
         if (it != keyCodes.end())
         {
-            keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->singleKeyRemapDropDown.SetSelectedIndex(std::distance(keyCodes.begin(), it));
+            keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->singleKeyRemapDropDown.SetSelectedIndex((int32_t)std::distance(keyCodes.begin(), it));
         }
     }
     else
@@ -77,7 +77,7 @@ StackPanel SingleKeyRemapControl::getSingleKeyRemapControl()
 }
 
 // Function to create the detect remap key UI window
-void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, KeyboardManagerState& keyboardManagerState, const int rowIndex, const int colIndex)
+void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, KeyboardManagerState& keyboardManagerState, const size_t rowIndex, const size_t colIndex)
 {
     // ContentDialog for detecting remap key. This is the parent UI element.
     ContentDialog detectRemapKeyBox;
@@ -118,7 +118,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
             auto it = std::find(keyCodeList.begin(), keyCodeList.end(), detectedKey);
             if (it != keyCodeList.end())
             {
-                linkedRemapDropDown.SelectedIndex(std::distance(keyCodeList.begin(), it));
+                linkedRemapDropDown.SelectedIndex((int32_t)std::distance(keyCodeList.begin(), it));
             }
         }
 

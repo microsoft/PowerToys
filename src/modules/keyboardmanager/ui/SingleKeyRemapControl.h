@@ -22,7 +22,7 @@ public:
     // Stores the current list of remappings
     static std::vector<std::vector<DWORD>> singleKeyRemapBuffer;
 
-    SingleKeyRemapControl(const int rowIndex, const int colIndex) :
+    SingleKeyRemapControl(const size_t rowIndex, const size_t colIndex) :
         singleKeyRemapDropDown(rowIndex, colIndex, singleKeyRemapBuffer)
     {
         typeKey.Content(winrt::box_value(winrt::to_hstring("Type Key")));
@@ -50,5 +50,5 @@ public:
     StackPanel getSingleKeyRemapControl();
 
     // Function to create the detect remap keys UI window
-    void createDetectKeyWindow(IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, KeyboardManagerState& keyboardManagerState, const int rowIndex, const int colIndex);
+    void createDetectKeyWindow(IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, KeyboardManagerState& keyboardManagerState, const size_t rowIndex, const size_t colIndex);
 };

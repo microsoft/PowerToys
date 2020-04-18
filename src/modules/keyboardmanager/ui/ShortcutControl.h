@@ -29,7 +29,7 @@ public:
     // Vector to store dynamically allocated KeyDropDownControl objects to avoid early destruction
     std::vector<std::unique_ptr<KeyDropDownControl>> keyDropDownControlObjects;
 
-    ShortcutControl(const int rowIndex, const int colIndex)
+    ShortcutControl(const size_t rowIndex, const size_t colIndex)
     {
         shortcutDropDownStackPanel.RequestedTheme(ElementTheme::Light);
         shortcutDropDownStackPanel.Spacing(10);
@@ -56,11 +56,11 @@ public:
     static void AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, Shortcut originalKeys = Shortcut(), Shortcut newKeys = Shortcut());
 
     // Function to add a shortcut to the shortcut control as combo boxes
-    void AddShortcutToControl(Shortcut& shortcut, StackPanel parent, KeyboardManagerState& keyboardManagerState, const int rowIndex, const int colIndex);
+    void AddShortcutToControl(Shortcut& shortcut, StackPanel parent, KeyboardManagerState& keyboardManagerState, const size_t rowIndex, const size_t colIndex);
 
     // Function to return the stack panel element of the ShortcutControl. This is the externally visible UI element which can be used to add it to other layouts
     StackPanel getShortcutControl();
 
     // Function to create the detect shortcut UI window
-    void createDetectShortcutWindow(IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, KeyboardManagerState& keyboardManagerState, const int rowIndex, const int colIndex);
+    void createDetectShortcutWindow(IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, KeyboardManagerState& keyboardManagerState, const size_t rowIndex, const size_t colIndex);
 };

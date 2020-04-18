@@ -23,7 +23,7 @@ public:
     static KeyboardManagerState* keyboardManagerState;
 
     // Constructor for single key drop down
-    KeyDropDownControl(int rowIndex, int colIndex, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer)
+    KeyDropDownControl(size_t rowIndex, size_t colIndex, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer)
     {
         SetDefaultProperties(false);
         dropDown.SelectionChanged([&, rowIndex, colIndex](IInspectable const& sender, SelectionChangedEventArgs const& args) {
@@ -44,7 +44,7 @@ public:
     }
 
     // Constructor for shortcut drop down
-    KeyDropDownControl(int rowIndex, int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, StackPanel parent)
+    KeyDropDownControl(size_t rowIndex, size_t colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, StackPanel parent)
     {
         SetDefaultProperties(true);
         Flyout warningFlyout;
@@ -177,7 +177,7 @@ public:
     ComboBox GetComboBox();
 
     // Function to add a drop down to the shortcut stack panel
-    static void AddDropDown(StackPanel parent, const int rowIndex, const int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects);
+    static void AddDropDown(StackPanel parent, const size_t rowIndex, const size_t colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects);
 
     // Function to get the list of key codes from the shortcut combo box stack panel
     std::vector<DWORD> GetKeysFromStackPanel(StackPanel parent);

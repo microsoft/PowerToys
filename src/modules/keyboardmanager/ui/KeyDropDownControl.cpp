@@ -48,7 +48,7 @@ ComboBox KeyDropDownControl::GetComboBox()
 }
 
 // Function to add a drop down to the shortcut stack panel
-void KeyDropDownControl::AddDropDown(StackPanel parent, const int rowIndex, const int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects)
+void KeyDropDownControl::AddDropDown(StackPanel parent, const size_t rowIndex, const size_t colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects)
 {
     keyDropDownControlObjects.push_back(std::move(std::unique_ptr<KeyDropDownControl>(new KeyDropDownControl(rowIndex, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, parent))));
     // Flyout to display the warning on the drop down element
