@@ -59,11 +59,10 @@ namespace PowerToysTests
             WindowsElement errorMessage = null;
             try
             {
-                errorMessage = session.FindElementByName("FancyZones Editor Exception Handler");
+                errorMessage = WaitElementByName("FancyZones Editor Exception Handler");
                 if (errorMessage != null)
                 {
                     errorMessage.FindElementByName("OK").Click();
-                    ShortWait();
                 }
             }
             catch (OpenQA.Selenium.WebDriverException)
@@ -92,16 +91,12 @@ namespace PowerToysTests
             Assert.IsNotNull(editorButton);
 
             editorButton.Click();
-            ShortWait();
-
             TestEditorOpened();
         }
 
         void OpenEditorByHotkey()
         {
             new Actions(session).KeyDown(OpenQA.Selenium.Keys.Command).SendKeys("`").KeyUp(OpenQA.Selenium.Keys.Command).Perform();
-            ShortWait();
-
             TestEditorOpened();
         }
 

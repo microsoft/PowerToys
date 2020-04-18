@@ -5,9 +5,15 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <viewModel:FancyZonesViewModel x:Key="eventViewModel"/>
+    </Page.Resources>
 
     <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
@@ -41,69 +47,96 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Vertical">
-            <TextBlock Text="Create window layouts to help make multi-tasking easy."
+        <StackPanel Orientation="Vertical" x:Name="FZSettingsView">
+            <TextBlock x:Uid="FancyZones_Description"
                        TextWrapping="Wrap"/>
 
-            <ToggleSwitch Header="Enable FancyZones"
-                          IsOn="True"
+            <ToggleSwitch x:Uid="FancyZones_EnableToggleControl_HeaderText"
+                          IsOn="{ Binding Mode=TwoWay, Path=IsEnabled}"
                           Margin="{StaticResource SmallTopMargin}" />
 
-            <TextBlock Text="Zone behaviour"
-                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+            <TextBlock x:Uid="FancyZones_ZonBehaivior_GroupSettings"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       />
 
-            <CheckBox Content="Hold Shift key or any non-primary mouse button to enable zones while dragging"
-                          IsChecked="True"
-                          Margin="{StaticResource SmallTopMargin}"/>
+            <Button x:Uid="FancyZones_LaunchEditorButtonControl_Header"
+                    Margin="{StaticResource SmallTopMargin}"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Command = "{Binding LaunchEditorEventHandler, Source={StaticResource eventViewModel}}"
+                    IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                    />
 
-            <CheckBox Content="Override Windows Snap hotkeys (Win + arrow) to move windows between zones"
-                          IsChecked="True"
-                          Margin="{StaticResource SmallTopMargin}"/>
+            <CustomControls:HotkeySettingsControl 
+                                          x:Uid="FancyZones_HokeyEditorControl_Header"
+                                          Width="320"
+                                          HorizontalAlignment="Left"
+                                          Margin="{StaticResource SmallTopMargin}"
+                                          HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}"
+                                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"        
+                                        />
 
-            <CheckBox Content="Flash zones when the active FancyZones layout changes"
-                          IsChecked="True"
-                          Margin="{StaticResource SmallTopMargin}"/>
+            <CheckBox x:Uid="FancyZones_ShiftDragCheckBoxControl_Header"
+                      IsChecked="{ Binding Mode=TwoWay, Path=ShiftDrag}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                      />
 
-            <CheckBox Content="Keep windows in their zones when the screen resolution changes"
-                          IsChecked="True"
-                          Margin="{StaticResource SmallTopMargin}"/>
+            <CheckBox x:Uid="FancyZones_OverrideSnapHotkeysCheckBoxControl"
+                      IsChecked="{ Binding Mode=TwoWay, Path=OverrideSnapHotkeys}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
-            <CheckBox Content="During zone layout changes, windows assigned to a zone will match new size/positions"
-                          IsChecked="True"
-                          Margin="{StaticResource SmallTopMargin}"/>
+            <CheckBox x:Uid="FancyZones_ZoneSetChangeFlashZonesCheckBoxControl"
+                      IsChecked="{ Binding Mode=TwoWay, Path=ZoneSetChangeFlashZones}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
-            <CheckBox Content="Keep windows pinned to multiple desktops in the same zone when the active desktop changes"
-                          IsChecked="True"
-                          Margin="{StaticResource SmallTopMargin}"/>
+            <CheckBox x:Uid="FancyZones_DisplayChangeMoveWindowsCheckBoxControl"
+                      IsChecked="{ Binding Mode=TwoWay, Path=DisplayChangeMoveWindows}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                      />
 
-            <CheckBox Content="Move newly created windows to their last known zone"
-                          IsChecked="True"
-                          Margin="{StaticResource SmallTopMargin}"/>
+            <CheckBox x:Uid="FancyZones_ZoneSetChangeMoveWindows"
+                      IsChecked="{ Binding Mode=TwoWay, Path=ZoneSetChangeMoveWindows}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
-            <CheckBox Content="Follow mouse cursor instead of focus when launching editor in a multi screen environment"
-                          IsChecked="True"
-                          Margin="{StaticResource SmallTopMargin}"/>
+            <CheckBox x:Uid="FancyZones_KeepWindowsPinned"
+                      IsChecked="{ Binding Mode=TwoWay, Path=VirtualDesktopChangeMoveWindows}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+
+            <CheckBox x:Uid="FancyZones_VirtualDesktopChangeMoveWindows"
+                      IsChecked="{ Binding Mode=TwoWay, Path=AppLastZoneMoveWindows}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+
+            <CheckBox x:Uid="FancyZones_UseCursorPosEditorStartupScreen"
+                      IsChecked="{ Binding Mode=TwoWay, Path=UseCursorPosEditorStartupScreen}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
 
-
-
-            <TextBlock Text="Appearance" 
+            <TextBlock x:Uid="Appearancce_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <!-- TO DO: Do we still need this numberbox? The colorpicker has an Alpha/Opacity option as well so we could use that -->
-            <muxc:NumberBox Header="Zone highlight opacity (%)"
-                            Value="90"
+            <muxc:NumberBox x:Uid="FancyZones_HighlightOpacity"
+                            Value="{ Binding Mode=TwoWay, Path=HighlightOpacity}"
                             Minimum="0"
                             Maximum="100"
                             SpinButtonPlacementMode="Inline"
                             HorizontalAlignment="Left"
-                            Margin="{StaticResource SmallTopMargin}" />
-
-            <TextBlock Text="Zone highlight color (default: #0078D7)" 
+                            Margin="{StaticResource SmallTopMargin}" 
+                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+             
+            <TextBlock x:Uid="FancyZones_ZoneHighlightColor" 
                        Style="{StaticResource BodyTextBlockStyle}"
                        Margin="{StaticResource SmallTopMargin}" />
-            
-            <muxc:ColorPicker Margin="0,6,0,0"
+
+            <muxc:ColorPicker x:Name="FancyZones_ZoneHighlightColor"
+                              Margin="0,6,0,0"
                               HorizontalAlignment="Left"
                               IsMoreButtonVisible="True"
                               IsColorSliderVisible="True"
@@ -111,32 +144,103 @@
                               IsHexInputVisible="True"
                               IsAlphaEnabled="True"
                               IsAlphaSliderVisible="True"
-                              IsAlphaTextInputVisible="True" />
+                              IsAlphaTextInputVisible="True"
+                              Color="{Binding Path=ZoneHighlightColor, Mode=TwoWay, Source={StaticResource eventViewModel}}"
+                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                              DataContext="{Binding ZoneHighlightColor, Source={StaticResource eventViewModel}}"/>
 
-            <TextBlock Text="Excluded apps" 
+            <Button x:Uid="FancyZones_SaveZoneHighlightColor"
+                    Margin="{StaticResource SmallTopMargin}"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Command = "{Binding SaveZoneHighlightColorEventHandler, Source={StaticResource eventViewModel}}"
+                    CommandParameter="{Binding Color, ElementName=FancyZones_ZoneHighlightColor}"
+                    IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>            
+            
+            <TextBlock x:Uid="FancyZones_InActiveColor" 
+                       Style="{StaticResource BodyTextBlockStyle}"
+                       Margin="{StaticResource SmallTopMargin}" />
+            
+            <muxc:ColorPicker x:Name="FancyZones_InActiveColor"
+                              Margin="0,6,0,0"
+                              HorizontalAlignment="Left"
+                              IsMoreButtonVisible="True"
+                              IsColorSliderVisible="True"
+                              IsColorChannelTextInputVisible="True"
+                              IsHexInputVisible="True"
+                              IsAlphaEnabled="True"
+                              IsAlphaSliderVisible="True"
+                              IsAlphaTextInputVisible="True"
+                              Color="{Binding Path=ZoneInActiveColor, Mode=TwoWay, Source={StaticResource eventViewModel}}"
+                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" 
+                              DataContext="{Binding ZoneInActiveColor, Source={StaticResource eventViewModel}}"/>
+
+            <Button x:Uid="FancyZones_SaveZoneInActiveColor"
+                    Margin="{StaticResource SmallTopMargin}"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Command = "{Binding SaveInActiveColorEventHandler, Source={StaticResource eventViewModel}}"
+                    CommandParameter="{Binding Color, ElementName=FancyZones_InActiveColor}"
+                    IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+
+            <TextBlock x:Uid="FancyZones_BorderColor" 
+                       Style="{StaticResource BodyTextBlockStyle}"
+                       Margin="{StaticResource SmallTopMargin}" />
+            
+            <muxc:ColorPicker x:Name="FancyZones_BorderColor"
+                              Margin="0,6,0,0"
+                              HorizontalAlignment="Left"
+                              IsMoreButtonVisible="True"
+                              IsColorSliderVisible="True"
+                              IsColorChannelTextInputVisible="True"
+                              IsHexInputVisible="True"
+                              IsAlphaEnabled="True"
+                              IsAlphaSliderVisible="True"
+                              IsAlphaTextInputVisible="True"
+                              Color="{Binding Path=ZoneBorderColor, Mode=TwoWay, Source={StaticResource eventViewModel}}"
+                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                              DataContext="{Binding ZoneBorderColor, Source={StaticResource eventViewModel}}"/>
+
+            <Button x:Uid="FancyZones_SaveBorderColor"
+                    Margin="{StaticResource SmallTopMargin}"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Command = "{Binding SaveBorderColorEventHandler, Source={StaticResource eventViewModel}}"
+                    CommandParameter="{Binding Color, ElementName=FancyZones_BorderColor}"
+                    IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+            
+            <TextBlock x:Uid="FancyZones_ExcludeApps"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <TextBox Header="To exclude an application from snapping to zones add its name here (one per line). Excluded apps will react to the Windows Snap regardless of all other settings."
-                     Margin="{StaticResource SmallTopMargin}"/>
-            
-        </StackPanel>
-        
-        <StackPanel 
-            x:Name="SidePanel"
-            Orientation="Vertical"
-            HorizontalAlignment="Left"
-            Width="{StaticResource SidePanelWidth}"
-            Grid.Column="1">
+            <TextBox x:Uid="FancyZones_ExcludeApps_TextBoxControl"
+                     Margin="{StaticResource SmallTopMargin}"
+                     Text="{ Binding Mode=TwoWay, Path=ExcludedApps}"
+                     IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
-            <TextBlock
-                Text="About this feature"
-                Style="{StaticResource SettingsGroupTitleStyle}"
-                Margin="{StaticResource XSmallBottomMargin}"/>
-            <Image 
-                Source="https://user-images.githubusercontent.com/9866362/77859136-f04ae880-7207-11ea-8a7f-4295342fe319.gif" />
-            <HyperlinkButton 
-                Content="Module overview" 
-                NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/fancyzones/README.md"/>
+        </StackPanel>
+
+        <StackPanel x:Name="SidePanel"
+                    Orientation="Vertical"
+                    HorizontalAlignment="Left"
+                    Width="{StaticResource SidePanelWidth}"
+                    Grid.Column="1">
+
+            <TextBlock x:Uid="About_This_Feature"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Margin="{StaticResource XSmallBottomMargin}"/>
+            
+            <Image Source="https://user-images.githubusercontent.com/9866362/77859136-f04ae880-7207-11ea-8a7f-4295342fe319.gif" />
+
+            <HyperlinkButton x:Uid="Module_overview"
+                             NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/fancyzones/README.md"/>
+
+            <HyperlinkButton x:Uid="Give_Feedback" NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
+
+            <!--
+            <TextBlock Text="Contributors"
+                           Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+            <HyperlinkButton Content="Contributor name"/>
+            <HyperlinkButton Content="Contributor name"/>
+            <HyperlinkButton Content="Contributor name"/>
+            -->
         </StackPanel>
     </Grid>
 </Page>

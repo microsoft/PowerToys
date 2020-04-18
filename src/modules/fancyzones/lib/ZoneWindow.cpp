@@ -130,7 +130,7 @@ namespace ZoneWindowDrawUtils
         Gdiplus::Color fillColor(colorSetting.fillAlpha, GetRValue(colorSetting.fill), GetGValue(colorSetting.fill), GetBValue(colorSetting.fill));
         Gdiplus::Color borderColor(colorSetting.borderAlpha, GetRValue(colorSetting.border), GetGValue(colorSetting.border), GetBValue(colorSetting.border));
 
-        Gdiplus::Rect rectangle(zoneRect.left, zoneRect.top, zoneRect.right - zoneRect.left, zoneRect.bottom - zoneRect.top);
+        Gdiplus::Rect rectangle(zoneRect.left, zoneRect.top, zoneRect.right - zoneRect.left - 1, zoneRect.bottom - zoneRect.top - 1);
 
         Gdiplus::Pen pen(borderColor, static_cast<Gdiplus::REAL>(colorSetting.thickness));
         g.FillRectangle(new Gdiplus::SolidBrush(fillColor), rectangle);
@@ -148,7 +148,7 @@ namespace ZoneWindowDrawUtils
                            COLORREF highlightColor,
                            int zoneOpacity,
                            const std::vector<winrt::com_ptr<IZone>>& zones,
-                           const winrt::com_ptr<IZone>& highlightZone,
+                           const std::vector<int>& highlightZones,
                            bool flashMode,
                            bool drawHints) noexcept
     {
@@ -158,15 +158,22 @@ namespace ZoneWindowDrawUtils
         ColorSetting colorHighlight{ OpacitySettingToAlpha(zoneOpacity), 0, 255, 0, -2 };
         ColorSetting const colorFlash{ OpacitySettingToAlpha(zoneOpacity), RGB(81, 92, 107), 200, RGB(104, 118, 138), -2 };
 
+        std::vector<bool> isHighlighted(zones.size(), false);
+        for (int x : highlightZones)
+        {
+            isHighlighted[x] = true;
+        }
+
         for (auto iter = zones.begin(); iter != zones.end(); iter++)
         {
+            int zoneId = static_cast<int>(iter - zones.begin());
             winrt::com_ptr<IZone> zone = iter->try_as<IZone>();
             if (!zone)
             {
                 continue;
             }
 
-            if (zone != highlightZone)
+            if (!isHighlighted[zoneId])
             {
                 if (flashMode)
                 {
@@ -182,13 +189,12 @@ namespace ZoneWindowDrawUtils
                     DrawZone(hdc, colorViewer, zone, zones, flashMode);
                 }
             }
-        }
-
-        if (highlightZone)
-        {
-            colorHighlight.fill = highlightColor;
-            colorHighlight.border = zoneBorderColor;
-            DrawZone(hdc, colorHighlight, highlightZone, zones, flashMode);
+            else
+            {
+                colorHighlight.fill = highlightColor;
+                colorHighlight.border = zoneBorderColor;
+                DrawZone(hdc, colorHighlight, zone, zones, flashMode);
+            }
         }
     }
 }
@@ -199,7 +205,7 @@ public:
     ZoneWindow(HINSTANCE hinstance);
     ~ZoneWindow();
 
-    bool Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, bool flashZones);
+    bool Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, bool flashZones, bool newWorkArea);
 
     IFACEMETHODIMP MoveSizeEnter(HWND window, bool dragEnabled) noexcept;
     IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled) noexcept;
@@ -210,6 +216,8 @@ public:
     IsDragEnabled() noexcept { return m_dragEnabled; }
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByIndex(HWND window, int index) noexcept;
+    IFACEMETHODIMP_(void)
+    MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& indexSet) noexcept;
     IFACEMETHODIMP_(bool)
     MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(void)
@@ -232,13 +240,13 @@ protected:
 
 private:
     void LoadSettings() noexcept;
-    void InitializeZoneSets(MONITORINFO const& mi) noexcept;
+    void InitializeZoneSets(bool newWorkArea) noexcept;
     void CalculateZoneSet() noexcept;
     void UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept;
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
     void OnPaint(wil::unique_hdc& hdc) noexcept;
     void OnKeyUp(WPARAM wparam) noexcept;
-    winrt::com_ptr<IZone> ZoneFromPoint(POINT pt) noexcept;
+    std::vector<int> ZonesFromPoint(POINT pt) noexcept;
     void CycleActiveZoneSetInternal(DWORD wparam, Trace::ZoneWindow::InputMode mode) noexcept;
     void FlashZones() noexcept;
 
@@ -253,7 +261,7 @@ private:
     bool m_dragEnabled{};
     winrt::com_ptr<IZoneSet> m_activeZoneSet;
     std::vector<winrt::com_ptr<IZoneSet>> m_zoneSets;
-    winrt::com_ptr<IZone> m_highlightZone;
+    std::vector<int> m_highlightZone;
     WPARAM m_keyLast{};
     size_t m_keyCycle{};
     static const UINT m_showAnimationDuration = 200; // ms
@@ -289,7 +297,7 @@ ZoneWindow::~ZoneWindow()
     Gdiplus::GdiplusShutdown(gdiplusToken);
 }
 
-bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, bool flashZones)
+bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, bool flashZones, bool newWorkArea)
 {
     m_host.copy_from(host);
 
@@ -308,7 +316,7 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
 
     m_uniqueId = uniqueId;
     LoadSettings();
-    InitializeZoneSets(mi);
+    InitializeZoneSets(newWorkArea);
 
     m_window = wil::unique_hwnd{
         CreateWindowExW(WS_EX_TOOLWINDOW, L"SuperFancyZones_ZoneWindow", L"", WS_POPUP, workAreaRect.left(), workAreaRect.top(), workAreaRect.width(), workAreaRect.height(), nullptr, nullptr, hinstance, this)
@@ -363,7 +371,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnter(HWND window, bool dragEnabled) noexcept
     m_dragEnabled = dragEnabled;
     m_windowMoveSize = window;
     m_drawHints = true;
-    m_highlightZone = nullptr;
+    m_highlightZone = {};
     ShowZoneWindow();
     return S_OK;
 }
@@ -378,13 +386,13 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
 
     if (dragEnabled)
     {
-        auto highlightZone = ZoneFromPoint(ptClient);
+        auto highlightZone = ZonesFromPoint(ptClient);
         redraw = (highlightZone != m_highlightZone);
         m_highlightZone = std::move(highlightZone);
     }
-    else if (m_highlightZone)
+    else if (m_highlightZone.size())
     {
-        m_highlightZone = nullptr;
+        m_highlightZone = {};
         redraw = true;
     }
 
@@ -433,9 +441,15 @@ ZoneWindow::RestoreOrginalTransparency() noexcept
 IFACEMETHODIMP_(void)
 ZoneWindow::MoveWindowIntoZoneByIndex(HWND window, int index) noexcept
 {
+    MoveWindowIntoZoneByIndexSet(window, { index });
+}
+
+IFACEMETHODIMP_(void)
+ZoneWindow::MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& indexSet) noexcept
+{
     if (m_activeZoneSet)
     {
-        m_activeZoneSet->MoveWindowIntoZoneByIndex(window, m_window.get(), index);
+        m_activeZoneSet->MoveWindowIntoZoneByIndexSet(window, m_window.get(), indexSet, false);
     }
 }
 
@@ -518,7 +532,7 @@ ZoneWindow::HideZoneWindow() noexcept
         m_keyLast = 0;
         m_windowMoveSize = nullptr;
         m_drawHints = false;
-        m_highlightZone = nullptr;
+        m_highlightZone = {};
     }
 }
 
@@ -529,10 +543,10 @@ void ZoneWindow::LoadSettings() noexcept
     JSONHelpers::FancyZonesDataInstance().AddDevice(m_uniqueId);
 }
 
-void ZoneWindow::InitializeZoneSets(MONITORINFO const& mi) noexcept
+void ZoneWindow::InitializeZoneSets(bool newWorkArea) noexcept
 {
     auto parent = m_host->GetParentZoneWindow(m_monitor);
-    if (parent)
+    if (newWorkArea && parent)
     {
         // Update device info with device info from parent virtual desktop (if empty).
         JSONHelpers::FancyZonesDataInstance().CloneDeviceInfo(parent->UniqueId(), m_uniqueId);
@@ -685,13 +699,13 @@ void ZoneWindow::OnKeyUp(WPARAM wparam) noexcept
     }
 }
 
-winrt::com_ptr<IZone> ZoneWindow::ZoneFromPoint(POINT pt) noexcept
+std::vector<int> ZoneWindow::ZonesFromPoint(POINT pt) noexcept
 {
     if (m_activeZoneSet)
     {
-        return m_activeZoneSet->ZoneFromPoint(pt);
+        return m_activeZoneSet->ZonesFromPoint(pt);
     }
-    return nullptr;
+    return {};
 }
 
 void ZoneWindow::CycleActiveZoneSetInternal(DWORD wparam, Trace::ZoneWindow::InputMode mode) noexcept
@@ -739,7 +753,7 @@ void ZoneWindow::CycleActiveZoneSetInternal(DWORD wparam, Trace::ZoneWindow::Inp
     {
         m_host->MoveWindowsOnActiveZoneSetChange();
     }
-    m_highlightZone = nullptr;
+    m_highlightZone = {};
 }
 
 void ZoneWindow::FlashZones() noexcept
@@ -773,10 +787,10 @@ LRESULT CALLBACK ZoneWindow::s_WndProc(HWND window, UINT message, WPARAM wparam,
                                   DefWindowProc(window, message, wparam, lparam);
 }
 
-winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, bool flashZones) noexcept
+winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, bool flashZones, bool newWorkArea) noexcept
 {
     auto self = winrt::make_self<ZoneWindow>(hinstance);
-    if (self->Init(host, hinstance, monitor, uniqueId, flashZones))
+    if (self->Init(host, hinstance, monitor, uniqueId, flashZones, newWorkArea))
     {
         return self;
     }

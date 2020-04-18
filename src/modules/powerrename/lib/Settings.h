@@ -1,45 +1,136 @@
 #pragma once
 
+#include "json.h"
+
 class CSettings
 {
 public:
     static const int MAX_INPUT_STRING_LEN = 1024;
 
-    static bool GetEnabled();
-    static bool SetEnabled(_In_ bool enabled);
+    CSettings();
 
-    static bool GetShowIconOnMenu();
-    static bool SetShowIconOnMenu(_In_ bool show);
+    inline bool GetEnabled()
+    {
+        Reload();
+        return settings.enabled;
+    }
 
-    static bool GetExtendedContextMenuOnly();
-    static bool SetExtendedContextMenuOnly(_In_ bool extendedOnly);
+    inline void SetEnabled(bool enabled)
+    {
+        settings.enabled = enabled;
+        Save();
+    }
 
-    static bool GetPersistState();
-    static bool SetPersistState(_In_ bool extendedOnly);
+    inline bool GetShowIconOnMenu() const
+    {
+        return settings.showIconOnMenu;
+    }
 
-    static bool GetMRUEnabled();
-    static bool SetMRUEnabled(_In_ bool enabled);
+    inline void SetShowIconOnMenu(bool show)
+    {
+        settings.showIconOnMenu = show;
+    }
 
-    static DWORD GetMaxMRUSize();
-    static bool SetMaxMRUSize(_In_ DWORD maxMRUSize);
+    inline bool GetExtendedContextMenuOnly() const
+    {
+        return settings.extendedContextMenuOnly;
+    }
 
-    static DWORD GetFlags();
-    static bool SetFlags(_In_ DWORD flags);
+    inline void SetExtendedContextMenuOnly(bool extendedOnly)
+    {
+        settings.extendedContextMenuOnly = extendedOnly;
+    }
 
-    static bool GetSearchText(__out_ecount(cchBuf) PWSTR text, DWORD cchBuf);
-    static bool SetSearchText(_In_ PCWSTR text);
+    inline bool GetPersistState() const
+    {
+        return settings.persistState;
+    }
 
-    static bool GetReplaceText(__out_ecount(cchBuf) PWSTR text, DWORD cchBuf);
-    static bool SetReplaceText(_In_ PCWSTR text);
+    inline void SetPersistState(bool persistState)
+    {
+        settings.persistState = persistState;
+    }
+
+    inline bool GetMRUEnabled() const
+    {
+        return settings.MRUEnabled;
+    }
+
+    inline void SetMRUEnabled(bool MRUEnabled)
+    {
+        settings.MRUEnabled = MRUEnabled;
+    }
+
+    inline long GetMaxMRUSize() const
+    {
+        return settings.maxMRUSize;
+    }
+
+    inline void SetMaxMRUSize(long maxMRUSize)
+    {
+        settings.maxMRUSize = maxMRUSize;
+    }
+
+    inline long GetFlags() const
+    {
+        return settings.flags;
+    }
+
+    inline void SetFlags(long flags)
+    {
+        settings.flags = flags;
+        Save();
+    }
+
+    inline const std::wstring& GetSearchText() const
+    {
+        return settings.searchText;
+    }
+
+    inline void SetSearchText(const std::wstring& text)
+    {
+        settings.searchText = text;
+        Save();
+    }
+
+    inline const std::wstring& GetReplaceText() const
+    {
+        return settings.replaceText;
+    }
+
+    inline void SetReplaceText(const std::wstring& text)
+    {
+        settings.replaceText = text;
+        Save();
+    }
+
+    void Save();
+    void Load();
 
 private:
-    static bool GetRegBoolValue(_In_ PCWSTR valueName, _In_ bool defaultValue);
-    static bool SetRegBoolValue(_In_ PCWSTR valueName, _In_ bool value);
-    static bool SetRegDWORDValue(_In_ PCWSTR valueName, _In_ DWORD value);
-    static DWORD GetRegDWORDValue(_In_ PCWSTR valueName, _In_ DWORD defaultValue);
-    static bool SetRegStringValue(_In_ PCWSTR valueName, _In_ PCWSTR value);
-    static bool GetRegStringValue(_In_ PCWSTR valueName, __out_ecount(cchBuf) PWSTR value, DWORD cchBuf);
+    struct Settings
+    {
+        bool enabled{ true };
+        bool showIconOnMenu{ true };
+        bool extendedContextMenuOnly{ false }; // Disabled by default.
+        bool persistState{ true };
+        bool MRUEnabled{ true };
+        long maxMRUSize{ 10 };
+        long flags{ 0 };
+        std::wstring searchText{};
+        std::wstring replaceText{};
+    };
+
+    void Reload();
+    void MigrateFromRegistry();
+    void ParseJson();
+
+    Settings settings;
+    std::wstring jsonFilePath;
+    FILETIME lastLoadedTime;
 };
+
+CSettings& CSettingsInstance();
 
 HRESULT CRenameMRUSearch_CreateInstance(_Outptr_ IUnknown** ppUnk);
 HRESULT CRenameMRUReplace_CreateInstance(_Outptr_ IUnknown** ppUnk);

@@ -163,7 +163,7 @@ public:
     winrt::hstring ToHstringVK() const;
 
     // Function to return a vector of hstring for each key, in the same order as ToHstring()
-    std::vector<winrt::hstring> GetKeyVector(LayoutMap& keyboardMap);
+    std::vector<winrt::hstring> GetKeyVector(LayoutMap& keyboardMap) const;
 
     // Function to check if all the modifiers in the shortcut have been pressed down
     bool CheckModifiersKeyboardState() const;

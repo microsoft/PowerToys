@@ -134,7 +134,7 @@
     <comment>Navigation view item name for General</comment>
   </data>
   <data name="Shell_PowerLauncher.Content" xml:space="preserve">
-    <value>PowerLauncher</value>
+    <value>PowerLauncher  [Not Functional]</value>
     <comment>Navigation view item name for PowerLauncher</comment>
   </data>
   <data name="Shell_PowerRename.Content" xml:space="preserve">
@@ -142,7 +142,7 @@
     <comment>Navigation view item name for PowerRename</comment>
   </data>
   <data name="Shell_ShortcutGuide.Content" xml:space="preserve">
-    <value>Shortcut Guide</value>
+    <value>Shortcut Guide [Not Functional]</value>
     <comment>Navigation view item name for Shortcut Guide</comment>
   </data>
   <data name="Shell_PowerPreview.Content" xml:space="preserve">
@@ -154,7 +154,7 @@
     <comment>Navigation view item name for FancyZones</comment>
   </data>
   <data name="Shell_ImageResizer.Content" xml:space="preserve">
-    <value>Image Resizer</value>
+    <value>Image Resizer  [Not Functional]</value>
     <comment>Navigation view item name for Image Resizer</comment>
   </data>
   <data name="Shell_KeyboardManager.Content" xml:space="preserve">
@@ -253,5 +253,161 @@
   <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
     <value>To:</value>
     <comment>Keyboard Manager mapping keys view right header</comment>
+  </data>
+  <data name="About_This_Feature.Text" xml:space="preserve">
+    <value>About this feature</value>
+  </data>
+  <data name="Appearancce_GroupSettings.Text" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="FancyZones_Description.Text" xml:space="preserve">
+    <value>Create window layouts to help make multi-tasking easy.</value>
+  </data>
+  <data name="FancyZones_DisplayChangeMoveWindowsCheckBoxControl.Content" xml:space="preserve">
+    <value>Keep windows in their zones when the screen resolution changes</value>
+  </data>
+  <data name="FancyZones_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable FancyZones</value>
+  </data>
+  <data name="FancyZones_ExcludeApps.Text" xml:space="preserve">
+    <value>Excluded apps</value>
+  </data>
+  <data name="FancyZones_ExcludeApps_TextBoxControl.Header" xml:space="preserve">
+    <value>To exclude an application from snapping to zones add its name here (one per line). Excluded apps will react to the Windows Snap regardless of all other settings.</value>
+  </data>
+  <data name="FancyZones_HighlightOpacity.Header" xml:space="preserve">
+    <value>Zone highlight opacity (%)</value>
+  </data>
+  <data name="FancyZones_HokeyEditorControl_Header.Header" xml:space="preserve">
+    <value>Edit Hot Key/ Shortcut</value>
+  </data>
+  <data name="FancyZones_KeepWindowsPinned.Content" xml:space="preserve">
+    <value>Keep windows pinned to multiple desktops in the same zone when the active desktop changes</value>
+  </data>
+  <data name="FancyZones_LaunchEditorButtonControl_Header.Content" xml:space="preserve">
+    <value>Launch Zones Editor</value>
+  </data>
+  <data name="FancyZones_OverrideSnapHotkeysCheckBoxControl.Content" xml:space="preserve">
+    <value>Override Windows Snap hotkeys (Win + arrow) to move windows between zones</value>
+  </data>
+  <data name="FancyZones_SaveZoneHighlightColor.Content" xml:space="preserve">
+    <value>Save Zone Highlight Color Choice</value>
+  </data>
+  <data name="FancyZones_ShiftDragCheckBoxControl_Header.Content" xml:space="preserve">
+    <value>Hold Shift key or any non-primary mouse button to enable zones while dragging</value>
+  </data>
+  <data name="FancyZones_UseCursorPosEditorStartupScreen.Content" xml:space="preserve">
+    <value>Follow mouse cursor instead of focus when launching editor in a multi screen environment</value>
+  </data>
+  <data name="FancyZones_VirtualDesktopChangeMoveWindows.Content" xml:space="preserve">
+    <value>Move newly created windows to their last known zone</value>
+  </data>
+  <data name="FancyZones_ZonBehaivior_GroupSettings.Text" xml:space="preserve">
+    <value>Zone behaviour</value>
+  </data>
+  <data name="FancyZones_ZoneHighlightColor.Text" xml:space="preserve">
+    <value>Zone highlight color (default: #0078D7)</value>
+  </data>
+  <data name="FancyZones_ZoneSetChangeFlashZonesCheckBoxControl.Content" xml:space="preserve">
+    <value>Flash zones when the active FancyZones layout changes</value>
+  </data>
+  <data name="FancyZones_ZoneSetChangeMoveWindows.Content" xml:space="preserve">
+    <value>During zone layout changes, windows assigned to a zone will match new size/positions</value>
+  </data>
+  <data name="Give_Feedback.Content" xml:space="preserve">
+    <value>Give feedback</value>
+  </data>
+  <data name="Module_overview.Content" xml:space="preserve">
+    <value>Module overview</value>
+  </data>
+  <data name="AttributionTitle.Text" xml:space="preserve">
+    <value>Attribution</value>
+  </data>
+  <data name="GeneralPage_AboutPowerToysHeader.Text" xml:space="preserve">
+    <value>About PowerToys</value>
+  </data>
+  <data name="GeneralPage_CheckForUpdates.Content" xml:space="preserve">
+    <value>Check for updates</value>
+  </data>
+  <data name="GeneralPage_PrivacyStatement_URL.Content" xml:space="preserve">
+    <value>Privacy statement</value>
+  </data>
+  <data name="GeneralPage_Radio_Theme_Dark.Content" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="GeneralPage_Radio_Theme_Default.Content" xml:space="preserve">
+    <value>System default</value>
+  </data>
+  <data name="GeneralPage_Radio_Theme_Light.Content" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="GeneralPage_ReportAbug.Content" xml:space="preserve">
+    <value>Report a bug</value>
+  </data>
+  <data name="GeneralPage_RequestAFeature_URL.Content" xml:space="preserve">
+    <value>Request a feature</value>
+  </data>
+  <data name="GeneralPage_RestartAsAdmin_Button.Content" xml:space="preserve">
+    <value>Restart as admin</value>
+  </data>
+  <data name="GeneralPage_ToggleSwitch_RunAtStartUp.Header" xml:space="preserve">
+    <value>Run at startup</value>
+  </data>
+  <data name="MiscellaneousTextBlockTitle.Text" xml:space="preserve">
+    <value>Miscellaneous</value>
+  </data>
+  <data name="PowerRename_Description.Text" xml:space="preserve">
+    <value>A Windows Shell Extension for more advanced bulk renaming using search and replace or regular expressions.</value>
+  </data>
+  <data name="PowerRename_ShellIntergration.Text" xml:space="preserve">
+    <value>Shell integration</value>
+  </data>
+  <data name="PowerRename_Toggle_Enable.Header" xml:space="preserve">
+    <value>Enable PowerRename</value>
+  </data>
+  <data name="RadioButtons_Name_Theme.Header" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="PowerRename_Toggle_EnableOnContextMenu.Header" xml:space="preserve">
+    <value>Show on default context menu</value>
+  </data>
+  <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Header" xml:space="preserve">
+    <value>Only show on extended context menu (Shift + Right-click)</value>
+  </data>
+  <data name="PowerRename_Toggle_MaxDispListNum.Text" xml:space="preserve">
+    <value>Maximum numbers of items to show in recently used list</value>
+  </data>
+  <data name="PowerRename_Toggle_RestoreFlagsOnLaunch.Header" xml:space="preserve">
+    <value>Restore search, replace and flags values on launch from previous run</value>
+  </data>
+  <data name="FileEplorerPreview_ToggleSwitch_Preview_MD.Header" xml:space="preserve">
+    <value>Markdown Preview Handler</value>
+  </data>
+  <data name="FileEplorerPreview_ToggleSwitch_Preview_SVG.Header" xml:space="preserve">
+    <value>Svg Preview Handler</value>
+  </data>
+  <data name="FileExplorerPreview_Description.Text" xml:space="preserve">
+    <value>These settings allow you to manage your Windows File Explorer custom preview handlers.</value>
+  </data>
+  <data name="Miscellaneous.Text" xml:space="preserve">
+    <value>Miscellaneous</value>
+  </data>
+  <data name="OpenSource_Notice.Content" xml:space="preserve">
+    <value>Open-source notice</value>
+  </data>
+  <data name="PowerRename_Toggle_AutoComplete.Header" xml:space="preserve">
+    <value>Enable Auto Complete</value>
+  </data>
+  <data name="FancyZones_BorderColor.Text" xml:space="preserve">
+    <value>Zone border color (Default #FFFFFF)</value>
+  </data>
+  <data name="FancyZones_InActiveColor.Text" xml:space="preserve">
+    <value>Zone inactive color (Default #F5FCFF)</value>
+  </data>
+  <data name="FancyZones_SaveBorderColor.Content" xml:space="preserve">
+    <value>Save Zone Border Color Choice</value>
+  </data>
+  <data name="FancyZones_SaveZoneInActiveColor.Content" xml:space="preserve">
+    <value>Save Zone Inactive Color Choice</value>
   </data>
 </root>

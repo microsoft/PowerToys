@@ -45,7 +45,7 @@ namespace FancyZonesEditor
 
         private void OnSelectionChanged()
         {
-            Background = IsSelected ? Brushes.SteelBlue : Brushes.LightGray;
+            Background = IsSelected ? SystemParameters.WindowGlassBrush : App.Current.Resources["GridZoneBackgroundBrush"] as SolidColorBrush;
         }
 
         public bool IsSelected
@@ -60,7 +60,7 @@ namespace FancyZonesEditor
             OnSelectionChanged();
             _splitter = new Rectangle
             {
-                Fill = Brushes.DarkGray,
+                Fill = SystemParameters.WindowGlassBrush,
             };
             Body.Children.Add(_splitter);
 
@@ -101,7 +101,16 @@ namespace FancyZonesEditor
 
         private int SplitterThickness
         {
-            get { return Math.Max(((App)Application.Current).ZoneSettings.Spacing, 5); }
+            get
+            {
+                Settings settings = ((App)Application.Current).ZoneSettings;
+                if (!settings.ShowSpacing)
+                {
+                    return 1;
+                }
+
+                return Math.Max(settings.Spacing, 1);
+            }
         }
 
         private void UpdateSplitter()
@@ -146,7 +155,7 @@ namespace FancyZonesEditor
 
         protected override void OnMouseEnter(MouseEventArgs e)
         {
-            _splitter.Fill = Brushes.DarkGray;
+            _splitter.Fill = SystemParameters.WindowGlassBrush; // Active Accent color
             base.OnMouseEnter(e);
         }
 

@@ -221,7 +221,7 @@ public:
                 PowerToysSettings::CustomActionObject::from_json_string(action);
             HINSTANCE hInstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
 
-            if (action_object.get_name() == L"RemapKeyboard") 
+            if (action_object.get_name() == L"RemapKeyboard")
             {
                 if (!CheckEditKeyboardWindowActive())
                 {
@@ -394,6 +394,10 @@ public:
         keyEventArray[index].type = inputType;
         keyEventArray[index].ki.wVk = keyCode;
         keyEventArray[index].ki.dwFlags = flags;
+        if (isExtendedKey(keyCode))
+        {
+            keyEventArray[index].ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
+        }
         keyEventArray[index].ki.dwExtraInfo = extraInfo;
     }
 

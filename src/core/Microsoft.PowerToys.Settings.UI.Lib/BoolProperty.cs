@@ -6,12 +6,19 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class BoolProperty
     {
-        public bool value { get; set; }
+        public BoolProperty()
+        {
+            this.Value = false;
+        }
+
+        [JsonPropertyName("value")]
+        public bool Value { get; set; }
 
         public override string ToString()
         {

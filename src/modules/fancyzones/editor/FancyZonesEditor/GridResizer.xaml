@@ -9,10 +9,16 @@
     <Thumb.Template>
         <ControlTemplate>
             <StackPanel x:Name="Body" Grid.Column="0" Width="48" Height="48">
-                <Ellipse Height="48" Width="48" Fill="#0078D7" />
+              
+                <Ellipse x:Name="BackgroundEllipse" Height="48" Width="48" Fill="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}" />
                 <Rectangle Height="20" Width="2" Fill="White" Margin="5,-48,0,0"/>
                 <Rectangle Height="20" Width="2" Fill="White" Margin="-5,-48,0,0"/>
             </StackPanel>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="true">
+                    <Setter Property="Opacity" TargetName="BackgroundEllipse" Value="0.6"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
         </ControlTemplate>
     </Thumb.Template>
 </Thumb>

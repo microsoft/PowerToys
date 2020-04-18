@@ -72,28 +72,28 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             if (IsDown(Windows.System.VirtualKey.LeftWindows) ||
                 IsDown(Windows.System.VirtualKey.RightWindows))
             {
-                settings.win = true;
+                settings.Win = true;
             }
 
             if (IsDown(Windows.System.VirtualKey.Control))
             {
-                settings.ctrl = true;
+                settings.Ctrl = true;
             }
 
             if (IsDown(Windows.System.VirtualKey.Menu))
             {
-                settings.alt = true;
+                settings.Alt = true;
             }
 
             if (IsDown(Windows.System.VirtualKey.Shift))
             {
-                settings.shift = true;
+                settings.Shift = true;
             }
 
-            settings.key = e.Key.ToString();
+            settings.Key = e.Key.ToString();
 
             // TODO: Check that e.OriginalKey is the ScanCode. It is not clear from docs.
-            settings.code = (int)e.OriginalKey;
+            settings.Code = (int)e.OriginalKey;
             HotkeySettings = settings;
         }
     }
