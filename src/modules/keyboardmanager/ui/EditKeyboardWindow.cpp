@@ -104,7 +104,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     TextBlock keyRemapInfoHeader;
     keyRemapInfoHeader.Text(winrt::to_hstring("Select the key you want to remap, original key, and it's new output when pressed, the new key"));
     keyRemapInfoHeader.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
-    keyRemapInfoHeader.Margin({ 0, 0, 0, 10 });
+    keyRemapInfoHeader.Margin({ 10, 0, 0, 10 });
 
     // Table to display the key remaps
     Windows::UI::Xaml::Controls::StackPanel keyRemapTable;
