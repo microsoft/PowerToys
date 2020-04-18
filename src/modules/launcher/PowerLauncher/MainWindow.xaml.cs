@@ -286,6 +286,7 @@ namespace PowerLauncher
             // To populate the AutoCompleteTextBox as soon as the selection is changed or set.
             // Setting it here instead of when the text is changed as there is a delay in executing the query and populating the result
             _launcher.AutoCompleteTextBox.PlaceholderText = ListView_FirstItem(_viewModel.QueryText);
+
         }
 
         private void ResultsList_ItemClick(object sender, ItemClickEventArgs e)
@@ -332,6 +333,7 @@ namespace PowerLauncher
 
             return String.Empty;
         }
+
 
         private void QueryTextBox_TextChanged(object sender, Windows.UI.Xaml.Controls.TextChangedEventArgs e)
         {
