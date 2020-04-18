@@ -29,8 +29,9 @@ namespace Wox.ViewModel
             {
                 Result = result;
             }
+            LoadContextMenuCommand = new RelayCommand(LoadContextMenu);
         }
-        public void LoadContextMenu()
+        public void LoadContextMenu(object sender=null)
         {
             var results = PluginManager.GetContextMenusForPlugin(Result);
             var newItems = new List<ContextMenuItemViewModel>();
