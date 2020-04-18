@@ -322,7 +322,7 @@ namespace PowerLauncher
             {
                 String selectedItem = _viewModel.Results?.SelectedItem?.ToString();
                 int selectedIndex = _viewModel.Results.SelectedIndex;
-                if (selectedItem != null)
+                if (selectedItem != null && selectedIndex == 0)
                 {
                     if (selectedItem.IndexOf(input) == 0)
                     {
