@@ -283,6 +283,10 @@ namespace PowerLauncher
                 listview.ScrollIntoView(e.AddedItems[0]);
             }
 
+            int count = _viewModel?.Results?.Results.Count ?? 0;
+            int maxHeight = count < 4 ? count * 75 : 300;
+            // _resultList.MaxHeight = maxHeight;
+            _resultList.Height = maxHeight;
             // To populate the AutoCompleteTextBox as soon as the selection is changed or set.
             // Setting it here instead of when the text is changed as there is a delay in executing the query and populating the result
             _launcher.AutoCompleteTextBox.PlaceholderText = ListView_FirstItem(_viewModel.QueryText);
@@ -351,7 +355,7 @@ namespace PowerLauncher
 
         private async Task DelayedCheck(DateTime latestTimeOfTyping, string text)
         {
-            await Task.Delay(millisecondsToWait);
+           // await Task.Delay(millisecondsToWait);
             if (latestTimeOfTyping.Equals(s_lastTimeOfTyping))
             {
                 await System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
