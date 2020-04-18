@@ -239,6 +239,7 @@ namespace PowerLauncher
             _resultList.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
         }
 
+
         private void _launcher_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == VirtualKey.Down)
@@ -281,6 +282,10 @@ namespace PowerLauncher
             {
                 listview.ScrollIntoView(e.AddedItems[0]);
             }
+
+            // To populate the AutoCompleteTextBox as soon as the selection is changed or set.
+            // Setting it here instead of when the text is changed as there is a delay in executing the query and populating the result
+            _launcher.AutoCompleteTextBox.PlaceholderText = ListView_FirstItem(_viewModel.QueryText);
         }
 
         private void ResultsList_ItemClick(object sender, ItemClickEventArgs e)
@@ -309,12 +314,37 @@ namespace PowerLauncher
         private const int millisecondsToWait = 200;
         private static DateTime s_lastTimeOfTyping;
 
+        private string ListView_FirstItem(String input)
+        {
+            string s = input;
+            if (s.Length > 0)
+            {
+                String selectedItem = _viewModel.Results?.SelectedItem?.ToString();
+                int selectedIndex = _viewModel.Results.SelectedIndex;
+                if (selectedItem != null)
+                {
+                    if (selectedItem.IndexOf(input) == 0)
+                    {
+                        return selectedItem;
+                    }
+                }
+            }
+
+            return String.Empty;
+        }
+
         private void QueryTextBox_TextChanged(object sender, Windows.UI.Xaml.Controls.TextChangedEventArgs e)
         {
             var latestTimeOfTyping = DateTime.Now;
             var text = ((Windows.UI.Xaml.Controls.TextBox)sender).Text;
             Task.Run(() => DelayedCheck(latestTimeOfTyping, text));
             s_lastTimeOfTyping = latestTimeOfTyping;
+
+            //To clear the auto-suggest immediately instead of waiting for selection changed
+            if(text == String.Empty)
+            {
+                _launcher.AutoCompleteTextBox.PlaceholderText = String.Empty;
+            }
         }
 
         private async Task DelayedCheck(DateTime latestTimeOfTyping, string text)

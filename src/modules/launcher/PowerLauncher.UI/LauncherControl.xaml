@@ -416,6 +416,21 @@
         Translation="0,0,16" 
         VerticalAlignment="Top">
         <TextBox
+            x:Name="AutoCompleteTextBox"
+            x:FieldModifier="public"
+            Style="{StaticResource CustomAutoSuggestBoxTextBoxStyle}"
+            PlaceholderText="{Binding AutoCompleteText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            Height="72"
+            IsReadOnly="True"
+            AllowFocusOnInteraction="False"
+            ScrollViewer.BringIntoViewOnFocusChange="False"
+            Canvas.ZIndex="0"
+            Margin="0" 
+            VerticalAlignment="Center"
+            FontSize="24"
+            DesiredCandidateWindowAlignment="BottomEdge" />
+        
+        <TextBox
             x:Name="TextBox"
             x:FieldModifier="public"
             Style="{StaticResource CustomAutoSuggestBoxTextBoxStyle}"
