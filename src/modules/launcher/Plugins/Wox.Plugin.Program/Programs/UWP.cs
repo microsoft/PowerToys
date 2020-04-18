@@ -319,7 +319,8 @@ namespace Wox.Plugin.Program.Programs
                     new Result
                     {
                         Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
-
+                        Glyph = "\xE838",
+                        FontFamily = "Segoe MDL2 Assets",
                         Action = _ =>
                         {
                             Main.StartProcess(Process.Start, new ProcessStartInfo(Package.Location));
