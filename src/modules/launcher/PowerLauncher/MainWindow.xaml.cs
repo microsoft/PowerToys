@@ -237,8 +237,8 @@ namespace PowerLauncher
             _resultList.DataContext = _viewModel;
             _resultList.Tapped += SuggestionsList_Tapped;
             _resultList.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
+            _resultList.SuggestionsList.ContainerContentChanging += SuggestionList_UpdateListSize;
         }
-
 
         private void _launcher_KeyDown(object sender, KeyRoutedEventArgs e)
         {
@@ -274,6 +274,13 @@ namespace PowerLauncher
             }
         }
 
+        private void SuggestionList_UpdateListSize(object sender, ContainerContentChangingEventArgs e)
+        {
+            int count = _viewModel?.Results?.Results.Count ?? 0;
+            int maxHeight = count < 4 ? count * 75 : 300;
+            _resultList.Height = maxHeight;
+        }
+
         private void SuggestionsList_SelectionChanged(object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)
         {
             Windows.UI.Xaml.Controls.ListView listview = (Windows.UI.Xaml.Controls.ListView)sender;
@@ -282,10 +289,6 @@ namespace PowerLauncher
             {
                 listview.ScrollIntoView(e.AddedItems[0]);
             }
-
-            int count = _viewModel?.Results?.Results.Count ?? 0;
-            int maxHeight = count < 4 ? count * 75 : 300;
-            _resultList.Height = maxHeight;
 
             // To populate the AutoCompleteTextBox as soon as the selection is changed or set.
             // Setting it here instead of when the text is changed as there is a delay in executing the query and populating the result
