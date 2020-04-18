@@ -15,7 +15,6 @@ std::mutex editKeyboardWindowMutex;
 // Function to create the Edit Keyboard Window
 void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
 {
-
     // Window Registration
     const wchar_t szWindowClass[] = L"EditKeyboardWindow";
     if (!isEditKeyboardWindowRegistrationCompleted)
@@ -148,11 +147,45 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // Load existing remaps into UI
     std::unique_lock<std::mutex> lock(keyboardManagerState.singleKeyReMap_mutex);
-    for (const auto& it : keyboardManagerState.singleKeyReMap)
+    std::unordered_map<DWORD, DWORD> singleKeyRemapCopy = keyboardManagerState.singleKeyReMap;
+    lock.unlock();
+
+    // Pre process the table to combine L and R versions of Ctrl/Alt/Shift that are mapped to the same key
+    if (singleKeyRemapCopy.find(VK_LCONTROL) != singleKeyRemapCopy.end() && singleKeyRemapCopy.find(VK_RCONTROL) != singleKeyRemapCopy.end())
+    {
+        // If they are mapped to the same key, delete those entries and set the common version
+        if (singleKeyRemapCopy[VK_LCONTROL] == singleKeyRemapCopy[VK_RCONTROL])
+        {
+            singleKeyRemapCopy[VK_CONTROL] = singleKeyRemapCopy[VK_LCONTROL];
+            singleKeyRemapCopy.erase(VK_LCONTROL);
+            singleKeyRemapCopy.erase(VK_RCONTROL);
+        }
+    }
+    if (singleKeyRemapCopy.find(VK_LMENU) != singleKeyRemapCopy.end() && singleKeyRemapCopy.find(VK_RMENU) != singleKeyRemapCopy.end())
+    {
+        // If they are mapped to the same key, delete those entries and set the common version
+        if (singleKeyRemapCopy[VK_LMENU] == singleKeyRemapCopy[VK_RMENU])
+        {
+            singleKeyRemapCopy[VK_MENU] = singleKeyRemapCopy[VK_LMENU];
+            singleKeyRemapCopy.erase(VK_LMENU);
+            singleKeyRemapCopy.erase(VK_RMENU);
+        }
+    }
+    if (singleKeyRemapCopy.find(VK_LSHIFT) != singleKeyRemapCopy.end() && singleKeyRemapCopy.find(VK_RSHIFT) != singleKeyRemapCopy.end())
+    {
+        // If they are mapped to the same key, delete those entries and set the common version
+        if (singleKeyRemapCopy[VK_LSHIFT] == singleKeyRemapCopy[VK_RSHIFT])
+        {
+            singleKeyRemapCopy[VK_SHIFT] = singleKeyRemapCopy[VK_LSHIFT];
+            singleKeyRemapCopy.erase(VK_LSHIFT);
+            singleKeyRemapCopy.erase(VK_RSHIFT);
+        }
+    }
+
+    for (const auto& it : singleKeyRemapCopy)
     {
         SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, it.first, it.second);
     }
-    lock.unlock();
 
     // Main Header Apply button
     Button applyButton;
@@ -171,7 +204,23 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
             if (originalKey != NULL && newKey != NULL)
             {
-                bool result = keyboardManagerState.AddSingleKeyRemap(originalKey, newKey);
+                // If Ctrl/Alt/Shift are added, add their L and R versions instead to the same key
+                bool result = false;
+                switch (originalKey)
+                {
+                case VK_CONTROL:
+                    result = keyboardManagerState.AddSingleKeyRemap(VK_LCONTROL, newKey) && keyboardManagerState.AddSingleKeyRemap(VK_RCONTROL, newKey);
+                    break;
+                case VK_MENU:
+                    result = keyboardManagerState.AddSingleKeyRemap(VK_LMENU, newKey) && keyboardManagerState.AddSingleKeyRemap(VK_RMENU, newKey);
+                    break;
+                case VK_SHIFT:
+                    result = keyboardManagerState.AddSingleKeyRemap(VK_LSHIFT, newKey) && keyboardManagerState.AddSingleKeyRemap(VK_RSHIFT, newKey);
+                    break;
+                default:
+                    result = keyboardManagerState.AddSingleKeyRemap(originalKey, newKey);
+                }
+
                 if (!result)
                 {
                     isSuccess = false;
