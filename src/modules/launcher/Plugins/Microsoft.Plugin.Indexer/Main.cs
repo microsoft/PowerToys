@@ -13,7 +13,7 @@ using Microsoft.Search.Interop;
 
 namespace Microsoft.Plugin.Indexer
 {
-    class Main : IPlugin, ISavable, IPluginI18n
+    class Main : IPlugin, ISavable, IPluginI18n, IContextMenu
     {
 
         // This variable contains metadata about the Plugin
@@ -27,6 +27,8 @@ namespace Microsoft.Plugin.Indexer
 
         // To access Windows Search functionalities
         private readonly WindowsSearchAPI _api = new WindowsSearchAPI();
+
+        private IContextMenu _contextMenuLoader;
 
         // To save the configurations of plugins
         public void Save()
@@ -109,6 +111,7 @@ namespace Microsoft.Plugin.Indexer
         {
             // initialize the context of the plugin
             _context = context;
+            _contextMenuLoader = new ContextMenuLoader(context);
             _storage = new PluginJsonStorage<Settings>();
             _settings = _storage.Load();
         }
@@ -127,6 +130,9 @@ namespace Microsoft.Plugin.Indexer
             return "Returns files and folders";
         }
 
-
+        public List<Result> LoadContextMenus(Result selectedResult)
+        {
+            return _contextMenuLoader.LoadContextMenus(selectedResult);
+        }
     }
 }
