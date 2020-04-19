@@ -122,6 +122,7 @@
     <ClInclude Include="dpi_aware.h" />
     <ClInclude Include="com_object_factory.h" />
     <ClInclude Include="notifications.h" />
+    <ClInclude Include="shared_constants.h" />
     <ClInclude Include="timeutil.h" />
     <ClInclude Include="VersionHelper.h" />
     <ClInclude Include="window_helpers.h" />
