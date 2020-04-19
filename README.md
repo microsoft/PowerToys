@@ -13,7 +13,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 ### Via Github with MSI [Recommended]
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.16.0-x64.msi` to download the PowerToys installer.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.16.1-x64.msi` to download the PowerToys installer.
 
 This is our preferred method.
 
