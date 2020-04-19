@@ -128,10 +128,6 @@ namespace PowerLauncher
             e.Handled = true;
         }
 
-        //private void OnContextMenusForSettingsClick(object sender, RoutedEventArgs e)
-        //{
-        //}
-
         private void OnDeactivated(object sender, EventArgs e)
         {
             if (_settings.HideWhenDeactive)
