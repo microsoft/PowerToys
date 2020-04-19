@@ -23,7 +23,7 @@ namespace Wox.ViewModel
 
         public bool IsSelected { get; set; }
 
-        public int SelectedIndex { get; set; }
+        public int ContextMenuSelectedIndex { get; set; }
 
         const int NoSelectionIndex = -1;
 
@@ -33,7 +33,7 @@ namespace Wox.ViewModel
             {
                 Result = result;
             }
-            SelectedIndex = NoSelectionIndex;
+            ContextMenuSelectedIndex = NoSelectionIndex;
             LoadContextMenuCommand = new RelayCommand(LoadContextMenu);
         }
         public void LoadContextMenu(object sender=null)
@@ -92,36 +92,36 @@ namespace Wox.ViewModel
         //Returns false if we've already reached the last item.
         public bool SelectNextContextButton()
         {
-            if(SelectedIndex == (ContextMenuItems.Count -1))
+            if(ContextMenuSelectedIndex == (ContextMenuItems.Count -1))
             {
-                SelectedIndex = NoSelectionIndex;
+                ContextMenuSelectedIndex = NoSelectionIndex;
                 return false; 
             }
 
-            SelectedIndex++;
+            ContextMenuSelectedIndex++;
             return true;
         }
 
         //Returns false if we've already reached the first item.
         public bool SelectPrevContextButton()
         {
-            if (SelectedIndex == NoSelectionIndex)
+            if (ContextMenuSelectedIndex == NoSelectionIndex)
             {
                 return false;
             }
 
-            SelectedIndex--;
+            ContextMenuSelectedIndex--;
             return true;
         }
 
         public void SelectLastContextButton()
         {
-            SelectedIndex = ContextMenuItems.Count - 1;
+            ContextMenuSelectedIndex = ContextMenuItems.Count - 1;
         }
 
         public bool HasSelectedContextButton()
         {
-            var isContextSelected = (SelectedIndex != NoSelectionIndex);
+            var isContextSelected = (ContextMenuSelectedIndex != NoSelectionIndex);
             return isContextSelected;
         }
 
@@ -133,7 +133,7 @@ namespace Wox.ViewModel
         {
             if (HasSelectedContextButton())
             {
-                ContextMenuItems[SelectedIndex].Command.Execute(null);
+                ContextMenuItems[ContextMenuSelectedIndex].Command.Execute(null);
                 return true;
             }
 
