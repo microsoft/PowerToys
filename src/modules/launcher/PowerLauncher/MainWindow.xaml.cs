@@ -32,6 +32,10 @@ namespace PowerLauncher
         private Settings _settings;
         private MainViewModel _viewModel;
 
+        const int ROW_COUNT = 4;
+        const int ROW_HEIGHT = 75;
+        const int MAX_LIST_HEIGHT = 300;
+
         #endregion
 
         public MainWindow(Settings settings, MainViewModel mainVM)
@@ -228,6 +232,7 @@ namespace PowerLauncher
             _resultList.SuggestionsList.ContainerContentChanging += SuggestionList_UpdateListSize;
         }
 
+
         private bool IsKeyDown(VirtualKey key)
         {
             var keyState = CoreWindow.GetForCurrentThread().GetKeyState(key);
@@ -287,7 +292,7 @@ namespace PowerLauncher
         private void SuggestionList_UpdateListSize(object sender, ContainerContentChangingEventArgs e)
         {
             int count = _viewModel?.Results?.Results.Count ?? 0;
-            int maxHeight = count < 4 ? count * 75 : 300;
+            int maxHeight = count < ROW_COUNT ? count * ROW_HEIGHT : MAX_LIST_HEIGHT;
             _resultList.Height = maxHeight;
         }
 
