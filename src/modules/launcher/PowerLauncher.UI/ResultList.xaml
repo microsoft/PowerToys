@@ -63,7 +63,7 @@
                                    Grid.Column="1" 
                                    ItemsSource="{Binding ContextMenuItems}" 
                                    SelectionMode="Single"
-                                   SelectedIndex="{Binding SelectedIndex}">
+                                   SelectedIndex="{Binding ContextMenuSelectedIndex}">
                             <ListView.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <StackPanel Orientation="Horizontal"/>
