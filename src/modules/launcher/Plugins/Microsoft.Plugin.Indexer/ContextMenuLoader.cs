@@ -2,17 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
 using System.Windows;
 using Wox.Infrastructure.Logger;
-using Wox.Infrastructure.Image;
-using Wox.Plugin.SharedCommands;
+using Wox.Plugin;
+using Microsoft.Plugin.Indexer.SearchHelper;
 
-namespace Wox.Plugin.Folder
+namespace Microsoft.Plugin.Indexer
 {
     internal class ContextMenuLoader : IContextMenu
     {
         private readonly PluginInitContext _context;
+
+        public enum ResultType
+        {
+            Folder,
+            File
+        }
 
         public ContextMenuLoader(PluginInitContext context)
         {
@@ -24,13 +29,14 @@ namespace Wox.Plugin.Folder
             var contextMenus = new List<Result>();
             if (selectedResult.ContextData is SearchResult record)
             {
-                if (record.Type == ResultType.File)
+                ResultType type = Path.HasExtension(record.Path) ? ResultType.File : ResultType.Folder;
+
+                if (type == ResultType.File)
                 {
                     contextMenus.Add(CreateOpenContainingFolderResult(record));
                 }
 
-                var icoPath = (record.Type == ResultType.File) ? Main.FileImagePath : Main.FolderImagePath;
-                var fileOrFolder = (record.Type == ResultType.File) ? "file" : "folder";
+                var fileOrFolder = (type == ResultType.File) ? "file" : "folder";
                 contextMenus.Add(new Result
                 {
                     Title = "Copy path",
@@ -41,7 +47,7 @@ namespace Wox.Plugin.Folder
                     {
                         try
                         {
-                            Clipboard.SetText(record.FullPath);
+                            Clipboard.SetText(record.Path);
                             return true;
                         }
                         catch (Exception e)
@@ -51,8 +57,7 @@ namespace Wox.Plugin.Folder
                             _context.API.ShowMsg(message);
                             return false;
                         }
-                    },
-                    IcoPath = Main.CopyImagePath
+                    }
                 });
             }
 
@@ -70,11 +75,11 @@ namespace Wox.Plugin.Folder
                 {
                     try
                     {
-                        Process.Start("explorer.exe", $" /select,\"{record.FullPath}\"");
+                        Process.Start("explorer.exe", $" /select,\"{record.Path}\"");
                     }
                     catch(Exception e)
                     {
-                        var message = $"Fail to open file at {record.FullPath}";
+                        var message = $"Fail to open file at {record.Path}";
                         LogException(message, e);
                         _context.API.ShowMsg(message);
                         return false;
@@ -82,35 +87,6 @@ namespace Wox.Plugin.Folder
 
                     return true;
                 },
-                IcoPath = Main.FolderImagePath
-            };
-        }
-
-
-        private Result CreateOpenWithEditorResult(SearchResult record)
-        {
-            string editorPath = "notepad.exe"; // TODO add the ability to create a custom editor
-
-            var name = "Open With Editor: " + Path.GetFileNameWithoutExtension(editorPath);
-            return new Result
-            {
-                Title = name,
-                Action = _ =>
-                {
-                    try
-                    {
-                        Process.Start(editorPath, record.FullPath);
-                        return true;
-                    }
-                    catch (Exception e)
-                    {
-                        var message = $"Fail to editor for file at {record.FullPath}";
-                        LogException(message, e);
-                        _context.API.ShowMsg(message);
-                        return false;
-                    }
-                },
-                IcoPath = editorPath
             };
         }
 
@@ -118,32 +94,6 @@ namespace Wox.Plugin.Folder
         {
             Log.Exception($"|Wox.Plugin.Folder.ContextMenu|{message}", e);
         }
-
-        private bool CanRunAsDifferentUser(string path)
-        {
-            switch(Path.GetExtension(path))
-            {
-                case ".exe":
-                case ".bat":
-                    return true;
-
-                default:
-                    return false;
-
-            }
-        }
     }
 
-    public class SearchResult
-    {
-        public string FullPath { get; set; }
-        public ResultType Type { get; set; }
-    }
-
-    public enum ResultType
-    {
-        Volume,
-        Folder,
-        File
-    }
 }

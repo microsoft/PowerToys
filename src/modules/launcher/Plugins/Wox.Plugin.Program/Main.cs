@@ -150,21 +150,6 @@ namespace Wox.Plugin.Program
                 menuOptions = program.ContextMenus(_context.API);
             }
 
-            menuOptions.Add(
-                                new Result
-                                {
-                                    Title = _context.API.GetTranslation("wox_plugin_program_disable_program"),
-                                    Action = c =>
-                                    {
-                                        DisableProgram(program);
-                                        _context.API.ShowMsg(_context.API.GetTranslation("wox_plugin_program_disable_dlgtitle_success"),
-                                                                _context.API.GetTranslation("wox_plugin_program_disable_dlgtitle_success_message"));
-                                        return false;
-                                    },
-                                    IcoPath = "Images/disable.png"
-                                }
-                           );
-
             return menuOptions;
         }
 

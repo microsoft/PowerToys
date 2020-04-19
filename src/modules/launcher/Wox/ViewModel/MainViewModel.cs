@@ -308,8 +308,6 @@ namespace Wox.ViewModel
             if (selected != null) // SelectedItem returns null if selection is empty.
             {
                 var results = PluginManager.GetContextMenusForPlugin(selected);
-                results.Add(ContextMenuTopMost(selected));
-                results.Add(ContextMenuPluginInfo(selected.PluginID));
 
                 if (!string.IsNullOrEmpty(query))
                 {
@@ -462,66 +460,6 @@ namespace Wox.ViewModel
             }
         }
 
-
-        private Result ContextMenuTopMost(Result result)
-        {
-            Result menu;
-            if (_topMostRecord.IsTopMost(result))
-            {
-                menu = new Result
-                {
-                    Title = InternationalizationManager.Instance.GetTranslation("cancelTopMostInThisQuery"),
-                    IcoPath = "Images\\down.png",
-                    PluginDirectory = Constant.ProgramDirectory,
-                    Action = _ =>
-                    {
-                        _topMostRecord.Remove(result);
-                        App.API.ShowMsg("Success");
-                        return false;
-                    }
-                };
-            }
-            else
-            {
-                menu = new Result
-                {
-                    Title = InternationalizationManager.Instance.GetTranslation("setAsTopMostInThisQuery"),
-                    IcoPath = "Images\\up.png",
-                    PluginDirectory = Constant.ProgramDirectory,
-                    Action = _ =>
-                    {
-                        _topMostRecord.AddOrUpdate(result);
-                        App.API.ShowMsg("Success");
-                        return false;
-                    }
-                };
-            }
-            return menu;
-        }
-
-        private Result ContextMenuPluginInfo(string id)
-        {
-            var metadata = PluginManager.GetPluginForId(id).Metadata;
-            var translator = InternationalizationManager.Instance;
-
-            var author = translator.GetTranslation("author");
-            var website = translator.GetTranslation("website");
-            var version = translator.GetTranslation("version");
-            var plugin = translator.GetTranslation("plugin");
-            var title = $"{plugin}: {metadata.Name}";
-            var icon = metadata.IcoPath;
-            var subtitle = $"{author}: {metadata.Author}, {website}: {metadata.Website} {version}: {metadata.Version}";
-
-            var menu = new Result
-            {
-                Title = title,
-                IcoPath = icon,
-                SubTitle = subtitle,
-                PluginDirectory = metadata.PluginDirectory,
-                Action = _ => false
-            };
-            return menu;
-        }
 
         private bool SelectedIsFromQueryResults()
         {

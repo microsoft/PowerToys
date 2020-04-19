@@ -21,6 +21,7 @@ using Windows.System;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 
+
 namespace PowerLauncher
 {
     public partial class MainWindow
@@ -31,6 +32,10 @@ namespace PowerLauncher
         private readonly Storyboard _progressBarStoryboard = new Storyboard();
         private Settings _settings;
         private MainViewModel _viewModel;
+
+        const int ROW_COUNT = 4;
+        const int ROW_HEIGHT = 75;
+        const int MAX_LIST_HEIGHT = 300;
 
         #endregion
 
@@ -94,19 +99,6 @@ namespace PowerLauncher
             //_settings.WindowTop = Top;
             _settings.WindowLeft = Left;
         }
-
-        //private void InitProgressbarAnimation()
-        //{
-        //    var da = new DoubleAnimation(ProgressBar.X2, ActualWidth + 100, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
-        //    var da1 = new DoubleAnimation(ProgressBar.X1, ActualWidth, new Duration(new TimeSpan(0, 0, 0, 0, 1600)));
-        //    Storyboard.SetTargetProperty(da, new PropertyPath("(Line.X2)"));
-        //    Storyboard.SetTargetProperty(da1, new PropertyPath("(Line.X1)"));
-        //    _progressBarStoryboard.Children.Add(da);
-        //    _progressBarStoryboard.Children.Add(da1);
-        //    _progressBarStoryboard.RepeatBehavior = RepeatBehavior.Forever;
-        //    ProgressBar.BeginStoryboard(_progressBarStoryboard);
-        //    _viewModel.ProgressBarVisibility = Visibility.Hidden;
-        //}
 
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -236,12 +228,29 @@ namespace PowerLauncher
             _resultList.DataContext = _viewModel;
             _resultList.Tapped += SuggestionsList_Tapped;
             _resultList.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
+            _resultList.SuggestionsList.ContainerContentChanging += SuggestionList_UpdateListSize;
         }
 
 
+        private bool IsKeyDown(VirtualKey key)
+        {
+            var keyState = CoreWindow.GetForCurrentThread().GetKeyState(key);
+            return (keyState & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down;
+        }
+
         private void _launcher_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (e.Key == VirtualKey.Down)
+            if (e.Key == VirtualKey.Tab && IsKeyDown(VirtualKey.Shift))
+            {
+                _viewModel.SelectPrevItemCommand.Execute(null);
+                e.Handled = true;
+            }
+            else if (e.Key == VirtualKey.Tab)
+            {
+                _viewModel.SelectNextItemCommand.Execute(null);
+                e.Handled = true;
+            }
+            else if (e.Key == VirtualKey.Down)
             {
                 _viewModel.SelectNextItemCommand.Execute(null);
                 e.Handled = true;
@@ -268,9 +277,26 @@ namespace PowerLauncher
             var result = ((Windows.UI.Xaml.FrameworkElement)e.OriginalSource).DataContext;
             if (result != null)
             {
-                _viewModel.Results.SelectedItem =  (ResultViewModel)result;
-                _viewModel.OpenResultCommand.Execute(null);
+                var resultVM = result as ResultViewModel;
+
+                //This may be null if the tapped item was one of the context buttons (run as admin etc).
+                if (resultVM != null)
+                {
+                    _viewModel.Results.SelectedItem = resultVM;
+                    _viewModel.OpenResultCommand.Execute(null);
+                }
             }
+        }
+
+        /* Note: This function has been added because a white-background was observed when the list resized,
+         * when the number of elements were lesser than the maximum capacity of the list (ie. 4).
+         * Binding Height/MaxHeight Properties did not solve this issue.
+         */
+        private void SuggestionList_UpdateListSize(object sender, ContainerContentChangingEventArgs e)
+        {
+            int count = _viewModel?.Results?.Results.Count ?? 0;
+            int maxHeight = count < ROW_COUNT ? count * ROW_HEIGHT : MAX_LIST_HEIGHT;
+            _resultList.Height = maxHeight;
         }
 
         private void SuggestionsList_SelectionChanged(object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)

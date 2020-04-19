@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Input;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 
@@ -47,7 +48,27 @@ namespace Wox.ViewModel
 
         public int SelectedIndex { get; set; }
 
-        public ResultViewModel SelectedItem { get; set; }
+        private ResultViewModel _selectedItem;
+        public ResultViewModel SelectedItem
+        {
+            get { return _selectedItem; }
+            set
+            {
+                //value can be null when selecting an item in a virtualized list
+                if (value != null)
+                {
+                    if (_selectedItem != null)
+                    {
+                        _selectedItem.IsSelected = false;
+                    }
+
+                    _selectedItem = value;
+                    _selectedItem.LoadContextMenu();
+                    _selectedItem.IsSelected = true;
+                }
+            }
+        }
+
         public Thickness Margin { get; set; }
         public Visibility Visbility { get; set; } = Visibility.Hidden;
 

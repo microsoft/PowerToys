@@ -7,7 +7,6 @@
          xmlns:converter="clr-namespace:Wox.Converters;assembly=Wox"
          mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="100"
          d:DataContext="{d:DesignInstance vm:ResultsViewModel}"
-         MaxHeight="{Binding MaxHeight}"
          SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}"
          SelectedItem="{Binding SelectedItem, Mode=OneWayToSource}"
          HorizontalContentAlignment="Stretch" ItemsSource="{Binding Results}"
