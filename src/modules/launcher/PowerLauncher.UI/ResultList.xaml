@@ -82,6 +82,13 @@
                                         <Button.Content>
                                             <FontIcon FontFamily="{Binding FontFamily}" FontSize="16" Glyph="{Binding Glyph}"/>
                                         </Button.Content>
+                                        <Button.KeyboardAccelerators>
+                                            <KeyboardAccelerator
+                                                Key="{Binding AcceleratorKey}"
+                                                Modifiers="{Binding AcceleratorModifiers}"
+                                                IsEnabled="{Binding IsEnabled}"
+                                            />
+                                        </Button.KeyboardAccelerators>
                                     </Button>
                                 </DataTemplate>
                             </ListView.ItemTemplate>

@@ -18,6 +18,7 @@ using IStream = AppxPackaing.IStream;
 using Rect = System.Windows.Rect;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Media;
+using System.Windows.Controls;
 
 namespace Wox.Plugin.Program.Programs
 {
@@ -312,23 +313,23 @@ namespace Wox.Plugin.Program.Programs
                 return result;
             }
 
-            public List<Result> ContextMenus(IPublicAPI api)
+            public List<ContextMenuResult> ContextMenus(IPublicAPI api)
             {
-                var contextMenus = new List<Result>
+                var contextMenus = new List<ContextMenuResult>
                 {
-                    new Result
+                    new ContextMenuResult
                     {
                         Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
                         Glyph = "\xE838",
                         FontFamily = "Segoe MDL2 Assets",
+                        AcceleratorKey = "E",
+                        AcceleratorModifiers = "Control,Shift",
                         Action = _ =>
                         {
                             Main.StartProcess(Process.Start, new ProcessStartInfo(Package.Location));
 
                             return true;
-                        },
-
-                        IcoPath = "Images/folder.png"
+                        }
                     }
                 };
                 return contextMenus;
