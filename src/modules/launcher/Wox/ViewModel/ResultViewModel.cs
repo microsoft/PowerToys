@@ -23,12 +23,17 @@ namespace Wox.ViewModel
 
         public bool IsSelected { get; set; }
 
+        public int SelectedIndex { get; set; }
+
+        const int NoSelectionIndex = -1;
+
         public ResultViewModel(Result result)
         {
             if (result != null)
             {
                 Result = result;
             }
+            SelectedIndex = NoSelectionIndex;
             LoadContextMenuCommand = new RelayCommand(LoadContextMenu);
         }
         public void LoadContextMenu(object sender=null)
@@ -82,6 +87,57 @@ namespace Wox.ViewModel
                 // will get here either when icoPath has value\icon delegate is null\when had exception in delegate
                 return ImageLoader.Load(imagePath);
             }
+        }
+
+        //Returns false if we've already reached the last item.
+        public bool SelectNextContextButton()
+        {
+            if(SelectedIndex == (ContextMenuItems.Count -1))
+            {
+                SelectedIndex = NoSelectionIndex;
+                return false; 
+            }
+
+            SelectedIndex++;
+            return true;
+        }
+
+        //Returns false if we've already reached the first item.
+        public bool SelectPrevContextButton()
+        {
+            if (SelectedIndex == NoSelectionIndex)
+            {
+                return false;
+            }
+
+            SelectedIndex--;
+            return true;
+        }
+
+        public void SelectLastContextButton()
+        {
+            SelectedIndex = ContextMenuItems.Count - 1;
+        }
+
+        public bool HasSelectedContextButton()
+        {
+            var isContextSelected = (SelectedIndex != NoSelectionIndex);
+            return isContextSelected;
+        }
+
+        /// <summary>
+        ///  Triggers the action on the selected context button
+        /// </summary>
+        /// <returns>False if there is nothing selected, oherwise true</returns>
+        public bool ExecuteSelectedContextButton()
+        {
+            if (HasSelectedContextButton())
+            {
+                ContextMenuItems[SelectedIndex].Command.Execute(null);
+                return true;
+            }
+
+            return false;
         }
 
         public Result Result { get; }
