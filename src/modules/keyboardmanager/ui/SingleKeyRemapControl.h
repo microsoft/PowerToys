@@ -25,7 +25,7 @@ public:
     SingleKeyRemapControl(const size_t rowIndex, const size_t colIndex) :
         singleKeyRemapDropDown(rowIndex, colIndex, singleKeyRemapBuffer)
     {
-        typeKey.Content(winrt::box_value(winrt::to_hstring("Type Key")));
+        typeKey.Content(winrt::box_value(L"Type Key"));
         typeKey.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
         typeKey.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
         typeKey.Click([&, rowIndex, colIndex](IInspectable const& sender, RoutedEventArgs const&) {
