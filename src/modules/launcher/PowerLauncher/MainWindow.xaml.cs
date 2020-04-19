@@ -21,6 +21,9 @@ using Windows.System;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Core;
+using System.Diagnostics;
+using Windows.UI.ViewManagement;
+using Color = Windows.UI.Color;
 
 namespace PowerLauncher
 {
@@ -37,6 +40,14 @@ namespace PowerLauncher
         const int ROW_HEIGHT = 75;
         const int MAX_LIST_HEIGHT = 300;
 
+        UISettings UISettings;
+        Color currentTheme;
+        Color LightTheme = Color.FromArgb(255, 255, 255, 255);
+        Color DefaultTheme = Color.FromArgb(255, 0, 0, 0);       
+        System.Windows.Media.SolidColorBrush BorderBrushLightTheme = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 255, 255, 255));
+        System.Windows.Media.SolidColorBrush BorderBrushDefaultTheme = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 72, 72, 72));
+
+
         #endregion
 
         public MainWindow(Settings settings, MainViewModel mainVM)
@@ -45,6 +56,8 @@ namespace PowerLauncher
             _viewModel = mainVM;
             _settings = settings;
             InitializeComponent();
+            UISettings =  new UISettings();
+            currentTheme = UISettings.GetColorValue(UIColorType.Background);
         }
         public MainWindow()
         {
@@ -62,33 +75,7 @@ namespace PowerLauncher
 
         private void OnLoaded(object sender, System.Windows.RoutedEventArgs _)
         {
-            // todo is there a way to set blur only once?
-            //ThemeManager.Instance.SetBlurForWindow();
-            //WindowsInteropHelper.DisableControlBox(this);
-            //InitProgressbarAnimation();
-            //InitializePosition();
-            //// since the default main window visibility is visible
-            //// so we need set focus during startup
-            //QueryTextBox.Focus();
-
-            //_viewModel.PropertyChanged += (o, e) =>
-            //{
-            //    if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
-            //    {
-            //        if (Visibility == Visibility.Visible)
-            //        {
-            //            Activate();
-            //            QueryTextBox.Focus();
-            //            UpdatePosition();
-            //            _settings.ActivateTimes++;
-            //            if (!_viewModel.LastQuerySelected)
-            //            {
-            //                QueryTextBox.SelectAll();
-            //                _viewModel.LastQuerySelected = true;
-            //            }
-            //        }
-            //    }
-            //};
+            ApplyTheme(currentTheme);
             InitializePosition();
         }
 
@@ -168,23 +155,6 @@ namespace PowerLauncher
             return left;
         }
 
-        //private double WindowTop()
-        //{
-        //    var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
-        //    var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
-        //    var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
-        //    var top = (dip2.Y - QueryTextBox.ActualHeight) / 4 + dip1.Y;
-        //    return top;
-        //}
-
-        //private void OnTextChanged(object sender, TextChangedEventArgs e)
-        //{
-        //    if (_viewModel.QueryTextCursorMovedToEnd)
-        //    {
-        //        QueryTextBox.CaretIndex = QueryTextBox.Text.Length;
-        //        _viewModel.QueryTextCursorMovedToEnd = false;
-        //    }
-        //}
 
         private PowerLauncher.UI.LauncherControl _launcher = null;
         private void WindowsXamlHostTextBox_ChildChanged(object sender, EventArgs ev)
@@ -197,6 +167,7 @@ namespace PowerLauncher
             _launcher.KeyDown += _launcher_KeyDown;
             _launcher.TextBox.TextChanged += QueryTextBox_TextChanged;
             _launcher.TextBox.Loaded += TextBox_Loaded;
+            _launcher.ActualThemeChanged += Launcher_ActualThemeChanged;
             _viewModel.PropertyChanged += (o, e) =>
             {
                 if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
@@ -209,10 +180,37 @@ namespace PowerLauncher
                         if (!_viewModel.LastQuerySelected)
                         {
                             _viewModel.LastQuerySelected = true;
-                        }
+                        }                        
                     }
                 }
-            };
+            };           
+        }
+
+        private void ApplyTheme (Color theme)
+        {
+            if (theme == LightTheme)
+            {               
+                this.SearchBoxBorder.BorderBrush = BorderBrushLightTheme;
+                this.ListBoxBorder.BorderBrush = BorderBrushLightTheme;
+            }
+            else
+            {
+                this.SearchBoxBorder.BorderBrush = BorderBrushDefaultTheme;
+                this.ListBoxBorder.BorderBrush = BorderBrushDefaultTheme;
+            }
+        } 
+
+        private void Launcher_ActualThemeChanged(Windows.UI.Xaml.FrameworkElement sender, object args)
+        {
+            var newTheme = UISettings.GetColorValue(UIColorType.Background);
+            if(currentTheme != newTheme)
+            {               
+                if(newTheme == LightTheme)
+                    ApplyTheme(LightTheme);
+                else if (currentTheme == LightTheme)
+                    ApplyTheme(DefaultTheme);
+                currentTheme = newTheme;
+            }          
         }
 
         private void TextBox_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
@@ -234,9 +232,6 @@ namespace PowerLauncher
             _resultList.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
             _resultList.SuggestionsList.ContainerContentChanging += SuggestionList_UpdateListSize;
         }
-
-
-
 
         private bool IsKeyDown(VirtualKey key)
         {
@@ -343,7 +338,7 @@ namespace PowerLauncher
             }
         }
 
-        private const int millisecondsToWait = 200;
+        private const int millisecondsToWait = 20;
         private static DateTime s_lastTimeOfTyping;
 
         private string ListView_FirstItem(String input)
