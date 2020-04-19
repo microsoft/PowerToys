@@ -289,6 +289,10 @@ namespace PowerLauncher
             }
         }
 
+        /* Note: This function has been added because a white-background was observed when the list resized,
+         * when the number of elements were lesser than the maximum capacity of the list (ie. 4).
+         * Binding Height/MaxHeight Properties did not solve this issue.
+         */
         private void SuggestionList_UpdateListSize(object sender, ContainerContentChangingEventArgs e)
         {
             int count = _viewModel?.Results?.Results.Count ?? 0;
