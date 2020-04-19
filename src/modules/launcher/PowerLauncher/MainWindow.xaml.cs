@@ -32,6 +32,10 @@ namespace PowerLauncher
         private Settings _settings;
         private MainViewModel _viewModel;
 
+        const int ROW_COUNT = 4;
+        const int ROW_HEIGHT = 75;
+        const int MAX_LIST_HEIGHT = 300;
+
         #endregion
 
         public MainWindow(Settings settings, MainViewModel mainVM)
@@ -225,7 +229,9 @@ namespace PowerLauncher
             _resultList.DataContext = _viewModel;
             _resultList.Tapped += SuggestionsList_Tapped;
             _resultList.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
+            _resultList.SuggestionsList.ContainerContentChanging += SuggestionList_UpdateListSize;
         }
+
 
         private bool IsKeyDown(VirtualKey key)
         {
@@ -281,6 +287,17 @@ namespace PowerLauncher
                     _viewModel.OpenResultCommand.Execute(null);
                 }
             }
+        }
+
+        /* Note: This function has been added because a white-background was observed when the list resized,
+         * when the number of elements were lesser than the maximum capacity of the list (ie. 4).
+         * Binding Height/MaxHeight Properties did not solve this issue.
+         */
+        private void SuggestionList_UpdateListSize(object sender, ContainerContentChangingEventArgs e)
+        {
+            int count = _viewModel?.Results?.Results.Count ?? 0;
+            int maxHeight = count < ROW_COUNT ? count * ROW_HEIGHT : MAX_LIST_HEIGHT;
+            _resultList.Height = maxHeight;
         }
 
         private void SuggestionsList_SelectionChanged(object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)
