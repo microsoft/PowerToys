@@ -354,7 +354,7 @@
     </UserControl.Resources>
     <Grid 
         x:Name="PowerBar" 
-        Background="{StaticResource BackdropAcrylicBrush}"
+        Background="{ThemeResource BackdropAcrylicBrush}"
         Height="72" 
         Translation="0,0,16" 
         VerticalAlignment="Top">
