@@ -196,6 +196,7 @@ namespace PowerLauncher
             _launcher.DataContext = _viewModel;
             _launcher.KeyDown += _launcher_KeyDown;
             _launcher.TextBox.TextChanged += QueryTextBox_TextChanged;
+            _launcher.TextBox.Loaded += TextBox_Loaded;
             _viewModel.PropertyChanged += (o, e) =>
             {
                 if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
@@ -214,6 +215,13 @@ namespace PowerLauncher
             };
         }
 
+        private void TextBox_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            TextBox tb = (TextBox)sender;
+            tb.Focus(FocusState.Programmatic);
+            _viewModel.MainWindowVisibility = System.Windows.Visibility.Collapsed;
+        }
+
         private UI.ResultList _resultList = null;
         private void WindowsXamlHostListView_ChildChanged(object sender, EventArgs ev)
         {
@@ -226,6 +234,8 @@ namespace PowerLauncher
             _resultList.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
             _resultList.SuggestionsList.ContainerContentChanging += SuggestionList_UpdateListSize;
         }
+
+
 
 
         private bool IsKeyDown(VirtualKey key)
