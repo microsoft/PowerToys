@@ -20,7 +20,7 @@ using Windows.UI.Xaml.Input;
 using Windows.System;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
-
+using Windows.UI.Core;
 
 namespace PowerLauncher
 {
