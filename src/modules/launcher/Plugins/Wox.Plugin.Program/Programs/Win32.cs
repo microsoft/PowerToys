@@ -94,15 +94,17 @@ namespace Wox.Plugin.Program.Programs
         }
 
 
-        public List<Result> ContextMenus(IPublicAPI api)
+        public List<ContextMenuResult> ContextMenus(IPublicAPI api)
         {
-            var contextMenus = new List<Result>
+            var contextMenus = new List<ContextMenuResult>
             {
-                new Result
+                new ContextMenuResult
                 {
                     Title = api.GetTranslation("wox_plugin_program_run_as_administrator"),
                     Glyph = "\xE7EF",
                     FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = "Enter",
+                    AcceleratorModifiers = "Control,Shift",
                     Action = _ =>
                     {
                         var info = new ProcessStartInfo
@@ -116,14 +118,15 @@ namespace Wox.Plugin.Program.Programs
                         Task.Run(() => Main.StartProcess(Process.Start, info));
 
                         return true;
-                    },
-                    IcoPath = "Images/cmd.png"
+                    }
                 },
-                new Result
+                new ContextMenuResult
                 {
                     Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
                     Glyph = "\xE838",
                     FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = "E",
+                    AcceleratorModifiers = "Control,Shift",
                     Action = _ =>
                     {
 
@@ -131,8 +134,7 @@ namespace Wox.Plugin.Program.Programs
                         Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", ParentDirectory));
 
                         return true;
-                    },
-                    IcoPath = "Images/folder.png"
+                    }
                 }
             };
             return contextMenus;
