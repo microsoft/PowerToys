@@ -326,7 +326,7 @@ namespace Wox.Plugin.Program.Programs
                         AcceleratorModifiers = "Control,Shift",
                         Action = _ =>
                         {
-                            Main.StartProcess(Process.Start, new ProcessStartInfo(Package.Location));
+                            Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", Package.Location));
 
                             return true;
                         }
