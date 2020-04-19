@@ -243,12 +243,12 @@ namespace PowerLauncher
         {
             if (e.Key == VirtualKey.Tab && IsKeyDown(VirtualKey.Shift))
             {
-                _viewModel.SelectPrevItemCommand.Execute(null);
+                _viewModel.SelectPrevTabItemCommand.Execute(null);
                 e.Handled = true;
             }
             else if (e.Key == VirtualKey.Tab)
             {
-                _viewModel.SelectNextItemCommand.Execute(null);
+                    _viewModel.SelectNextTabItemCommand.Execute(null);
                 e.Handled = true;
             }
             else if (e.Key == VirtualKey.Down)
