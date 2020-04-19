@@ -19,9 +19,9 @@ namespace Wox.Plugin.Folder
             _context = context;
         }
 
-        public List<Result> LoadContextMenus(Result selectedResult)
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
-            var contextMenus = new List<Result>();
+            var contextMenus = new List<ContextMenuResult>();
             if (selectedResult.ContextData is SearchResult record)
             {
                 if (record.Type == ResultType.File)
@@ -31,12 +31,14 @@ namespace Wox.Plugin.Folder
 
                 var icoPath = (record.Type == ResultType.File) ? Main.FileImagePath : Main.FolderImagePath;
                 var fileOrFolder = (record.Type == ResultType.File) ? "file" : "folder";
-                contextMenus.Add(new Result
+                contextMenus.Add(new ContextMenuResult
                 {
                     Title = "Copy path",
                     Glyph = "\xE8C8",
                     FontFamily = "Segoe MDL2 Assets",
                     SubTitle = $"Copy the current {fileOrFolder} path to clipboard",
+                    AcceleratorKey = "C",
+                    AcceleratorModifiers = "Control",
                     Action = (context) =>
                     {
                         try
@@ -51,21 +53,22 @@ namespace Wox.Plugin.Folder
                             _context.API.ShowMsg(message);
                             return false;
                         }
-                    },
-                    IcoPath = Main.CopyImagePath
+                    }
                 });
             }
 
             return contextMenus;
         }
 
-        private Result CreateOpenContainingFolderResult(SearchResult record)
+        private ContextMenuResult CreateOpenContainingFolderResult(SearchResult record)
         {
-            return new Result
+            return new ContextMenuResult
             {
                 Title = "Open containing folder",
                 Glyph = "\xE838",
                 FontFamily = "Segoe MDL2 Assets",
+                AcceleratorKey = "E",
+                AcceleratorModifiers = "Control,Shift",
                 Action = _ =>
                 {
                     try
@@ -81,8 +84,7 @@ namespace Wox.Plugin.Folder
                     }
 
                     return true;
-                },
-                IcoPath = Main.FolderImagePath
+                }
             };
         }
 

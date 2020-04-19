@@ -1,4 +1,4 @@
-﻿<UserControl
+<UserControl
     x:Class="PowerLauncher.UI.ResultList"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -12,7 +12,7 @@
     d:DesignWidth="720">
     <Grid 
         x:Name="PowerBar" 
-        Background="{ThemeResource BackdropAcrylicBrush}"        
+        Background="{ThemeResource BackdropAcrylicBrush}"    
         Translation="0,0,16" 
         VerticalAlignment="Top">
         <ListView 
@@ -82,6 +82,13 @@
                                         <Button.Content>
                                             <FontIcon FontFamily="{Binding FontFamily}" FontSize="16" Glyph="{Binding Glyph}"/>
                                         </Button.Content>
+                                        <Button.KeyboardAccelerators>
+                                            <KeyboardAccelerator
+                                                Key="{Binding AcceleratorKey}"
+                                                Modifiers="{Binding AcceleratorModifiers}"
+                                                IsEnabled="{Binding IsEnabled}"
+                                            />
+                                        </Button.KeyboardAccelerators>
                                     </Button>
                                 </DataTemplate>
                             </ListView.ItemTemplate>

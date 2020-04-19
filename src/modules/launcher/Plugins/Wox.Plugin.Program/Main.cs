@@ -141,9 +141,9 @@ namespace Wox.Plugin.Program
             return _context.API.GetTranslation("wox_plugin_program_plugin_description");
         }
 
-        public List<Result> LoadContextMenus(Result selectedResult)
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
-            var menuOptions = new List<Result>();
+            var menuOptions = new List<ContextMenuResult>();
             var program = selectedResult.ContextData as IProgram;
             if (program != null)
             {

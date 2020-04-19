@@ -198,7 +198,7 @@ namespace Wox.Core.Plugin
             return AllPlugins.Where(p => p.Plugin is T);
         }
 
-        public static List<Result> GetContextMenusForPlugin(Result result)
+        public static List<ContextMenuResult> GetContextMenusForPlugin(Result result)
         {
             var pluginPair = _contextMenuPlugins.FirstOrDefault(o => o.Metadata.ID == result.PluginID);
             if (pluginPair != null)
@@ -209,23 +209,17 @@ namespace Wox.Core.Plugin
                 try
                 {
                     var results = plugin.LoadContextMenus(result);
-                    foreach (var r in results)
-                    {
-                        r.PluginDirectory = metadata.PluginDirectory;
-                        r.PluginID = metadata.ID;
-                        r.OriginQuery = result.OriginQuery;
-                    }
                     return results;
                 }
                 catch (Exception e)
                 {
                     Log.Exception($"|PluginManager.GetContextMenusForPlugin|Can't load context menus for plugin <{metadata.Name}>", e);
-                    return new List<Result>();
+                    return new List<ContextMenuResult>();
                 }
             }
             else
             {
-                return new List<Result>();
+                return new List<ContextMenuResult>();
             }
 
         }

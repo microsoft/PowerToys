@@ -24,9 +24,9 @@ namespace Microsoft.Plugin.Indexer
             _context = context;
         }
 
-        public List<Result> LoadContextMenus(Result selectedResult)
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
-            var contextMenus = new List<Result>();
+            var contextMenus = new List<ContextMenuResult>();
             if (selectedResult.ContextData is SearchResult record)
             {
                 ResultType type = Path.HasExtension(record.Path) ? ResultType.File : ResultType.Folder;
@@ -37,12 +37,15 @@ namespace Microsoft.Plugin.Indexer
                 }
 
                 var fileOrFolder = (type == ResultType.File) ? "file" : "folder";
-                contextMenus.Add(new Result
+                contextMenus.Add(new ContextMenuResult
                 {
                     Title = "Copy path",
                     Glyph = "\xE8C8",
                     FontFamily = "Segoe MDL2 Assets",
                     SubTitle = $"Copy the current {fileOrFolder} path to clipboard",
+                    AcceleratorKey = "C", 
+                    AcceleratorModifiers = "Control",
+
                     Action = (context) =>
                     {
                         try
@@ -64,13 +67,15 @@ namespace Microsoft.Plugin.Indexer
             return contextMenus;
         }
 
-        private Result CreateOpenContainingFolderResult(SearchResult record)
+        private ContextMenuResult CreateOpenContainingFolderResult(SearchResult record)
         {
-            return new Result
+            return new ContextMenuResult
             {
                 Title = "Open containing folder",
                 Glyph = "\xE838",
                 FontFamily = "Segoe MDL2 Assets",
+                AcceleratorKey = "E",
+                AcceleratorModifiers = "Control,Shift",
                 Action = _ =>
                 {
                     try
