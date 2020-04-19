@@ -174,7 +174,6 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
         if (isSuccess)
         {
-            keyboardManagerState.SaveConfigToFile();
             settingsMessage.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Green() });
             settingsMessage.Text(winrt::to_hstring("Remapping successful!"));
         }

@@ -19,8 +19,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public KeyboardManagerProperties()
         {
-            KeyboardConfigurations = new GenericProperty<List<string>>(new List<string> { "config-1", });
-            ActiveConfiguration = new GenericProperty<string>("config-1");
+            KeyboardConfigurations = new GenericProperty<List<string>>(new List<string> { "default", });
+            ActiveConfiguration = new GenericProperty<string>("default");
         }
 
         public string ToJsonString()

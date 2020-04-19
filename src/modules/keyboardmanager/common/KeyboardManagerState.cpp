@@ -351,8 +351,9 @@ bool KeyboardManagerState::SaveConfigToFile()
 {
     bool result = true;
     json::JsonObject configJson;
+    json::JsonObject remapShortcuts;
     json::JsonArray remapKeysArray;
-    json::JsonArray remapShortcutsArray;
+    json::JsonArray globalRemapShortcutsArray;
     std::unique_lock<std::mutex> lockSingleKeyReMap(singleKeyReMap_mutex);
     for (const auto &it : singleKeyReMap)
     {
@@ -371,12 +372,13 @@ bool KeyboardManagerState::SaveConfigToFile()
         keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(it.first.ToHstringVK()));
         keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(it.second.targetShortcut.ToHstringVK()));
 
-        remapShortcutsArray.Append(keys);
+        globalRemapShortcutsArray.Append(keys);
     }
     lockOsLevelShortcutReMap.unlock();
 
+    remapShortcuts.SetNamedValue(KeyboardManagerConstants::GlobalRemapShortcutsSettingName, globalRemapShortcutsArray);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeysArray);
-    configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsSettingName, remapShortcutsArray);
+    configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsSettingName, remapShortcuts);
 
     try
     {

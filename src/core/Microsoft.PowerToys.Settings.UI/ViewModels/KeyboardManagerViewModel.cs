@@ -91,6 +91,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (lastEventTimeDiff > TriggerExpirationThreshold)
             {
                 // Todo: Update the UI here.
+                var temp = SettingsUtils.GetSettings<KeyboadManagerConfigModel>(PowerToyName, "default.json");
             }
         }
     }

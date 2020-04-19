@@ -55,7 +55,7 @@ private:
     std::mutex currentShortcutUI_mutex;
     
     // Stores the current configuration name.
-    std::wstring currentConfig;
+    std::wstring currentConfig = KeyboardManagerConstants::DefaultConfiguration;
     std::mutex currentConfig_mutex;
 
     // Registered KeyDelay objects, used to notify delayed key events.
