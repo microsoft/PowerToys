@@ -41,7 +41,7 @@
         <Border Grid.Row="1" Name="myElement" Background="Transparent" Height="10"/>
         <Border x:Name="ListBoxBorder" Margin="10" Grid.Row="2" BorderThickness="1" CornerRadius="4" Visibility="{Binding Results.Visbility}">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="12" Opacity="0.3" ShadowDepth="40" />
+                <DropShadowEffect BlurRadius="12" Opacity="0.3" ShadowDepth="4" />
             </Border.Effect>
             <xaml:WindowsXamlHost PreviewMouseDown="WindowsXamlHost_PreviewMouseDown" InitialTypeName="PowerLauncher.UI.ResultList"  ChildChanged="WindowsXamlHostListView_ChildChanged"  />
         </Border>
