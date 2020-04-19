@@ -69,6 +69,8 @@ namespace Wox.ViewModel
             }
         }
 
+
+
         public Thickness Margin { get; set; }
         public Visibility Visbility { get; set; } = Visibility.Collapsed;
 
@@ -148,6 +150,24 @@ namespace Wox.ViewModel
         public void RemoveResultsFor(PluginMetadata metadata)
         {
             Results.RemoveAll(r => r.Result.PluginID == metadata.ID);
+        }
+
+        public void SelectNextTabItem()
+        {
+            if(!SelectedItem.SelectNextContextButton())
+            {
+                SelectNextResult();
+            }
+        }
+
+        public void SelectPrevTabItem()
+        {
+            if (!SelectedItem.SelectPrevContextButton())
+            {
+                //Tabbing backwards should highlight the last item of the previous row
+                SelectPrevResult();
+                SelectedItem.SelectLastContextButton();
+            }
         }
 
         /// <summary>
