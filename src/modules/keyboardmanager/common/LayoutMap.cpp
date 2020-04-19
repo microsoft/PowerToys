@@ -32,8 +32,9 @@ void LayoutMap::UpdateLayout()
         unknownKeys.clear();
     }
 
-    unsigned char* btKeys = new unsigned char[256]{ 0 };
-    GetKeyboardState(btKeys);
+    BYTE* btKeys = new BYTE[256]{ 0 };
+    // Only set the Caps Lock key to on for the key names in uppercase
+    btKeys[VK_CAPITAL] = 1;
 
     // Iterate over all the virtual key codes. virtual key 0 is not used
     for (int i = 1; i < 256; i++)
@@ -42,7 +43,7 @@ void LayoutMap::UpdateLayout()
         UINT scanCode = MapVirtualKeyExW(i, MAPVK_VK_TO_VSC, layout);
         // Get the unicode representation from the virtual key code and scan code pair to
         wchar_t szBuffer[3] = { 0 };
-        int result = ToUnicodeEx(i, scanCode, (BYTE*)btKeys, szBuffer, 3, 0, layout);
+        int result = ToUnicodeEx(i, scanCode, btKeys, szBuffer, 3, 0, layout);
         // If a representation is returned
         if (result > 0)
         {
