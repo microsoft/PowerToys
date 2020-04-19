@@ -130,7 +130,7 @@ namespace Microsoft.Plugin.Indexer
             return "Returns files and folders";
         }
 
-        public List<Result> LoadContextMenus(Result selectedResult)
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
             return _contextMenuLoader.LoadContextMenus(selectedResult);
         }

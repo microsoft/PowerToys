@@ -307,41 +307,9 @@ namespace Wox.ViewModel
             {
                 QueryResults();
             }
-            else if (ContextMenuSelected())
-            {
-                QueryContextMenu();
-            }
             else if (HistorySelected())
             {
                 QueryHistory();
-            }
-        }
-
-        private void QueryContextMenu()
-        {
-            const string id = "Context Menu ID";
-            var query = QueryText.ToLower().Trim();
-            ContextMenu.Clear();
-
-            var selected = Results.SelectedItem?.Result;
-
-            if (selected != null) // SelectedItem returns null if selection is empty.
-            {
-                var results = PluginManager.GetContextMenusForPlugin(selected);
-
-                if (!string.IsNullOrEmpty(query))
-                {
-                    var filtered = results.Where
-                    (
-                        r => StringMatcher.FuzzySearch(query, r.Title).IsSearchPrecisionScoreMet()
-                            || StringMatcher.FuzzySearch(query, r.SubTitle).IsSearchPrecisionScoreMet()
-                    ).ToList();
-                    ContextMenu.AddResults(filtered, id);
-                }
-                else
-                {
-                    ContextMenu.AddResults(results, id);
-                }
             }
         }
 

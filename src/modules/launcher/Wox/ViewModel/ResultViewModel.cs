@@ -47,6 +47,8 @@ namespace Wox.ViewModel
                     Title = r.Title,
                     Glyph = r.Glyph,
                     FontFamily = r.FontFamily,
+                    AcceleratorKey = r.AcceleratorKey,
+                    AcceleratorModifiers = r.AcceleratorModifiers,
                     Command = new RelayCommand(_ =>
                     {
                         bool hideWindow = r.Action != null && r.Action(new ActionContext
@@ -64,6 +66,22 @@ namespace Wox.ViewModel
             }
 
             ContextMenuItems = newItems;
+        }
+
+        internal void EnableContextMenu()
+        {
+            foreach(var i in ContextMenuItems)
+            {
+                i.IsEnabled = true;
+            }
+        }
+
+        internal void DisableContextMenu()
+        {
+            foreach (var i in ContextMenuItems)
+            {
+                i.IsEnabled = false;
+            }
         }
 
         public ImageSource Image

@@ -45,16 +45,20 @@ namespace Wox.Core.Plugin
             }
         }
 
-        public List<Result> LoadContextMenus(Result selectedResult)
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
             string output = ExecuteContextMenu(selectedResult);
             try
             {
-                return DeserializedResult(output);
+                //This should not hit. If it does it's because Wox shares the same interface for querying context menu items as well as search results. In this case please file a bug.
+                //To my knowledge we aren't supporting this JSonRPC commands in Launcher, and am not able to repro this, but I will leave this here for the time being in case I'm proven wrong. 
+                //We should remove this, or identify and test officially supported use cases and Deserialize this properly. 
+                //return DeserializedResult(output);
+                throw new NotImplementedException();
             }
             catch (Exception e)
             {
-                Log.Exception($"|JsonRPCPlugin.LoadContextMenus|Exception on result <{selectedResult}>", e);
+                Log.Exception($"|JsonRPCPlugin.LoadContextMenus| THIS IS A BUG - Exception on result <{selectedResult}>", e);
                 return null;
             }
         }
