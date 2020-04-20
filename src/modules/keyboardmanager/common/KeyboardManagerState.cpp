@@ -153,8 +153,8 @@ void KeyboardManagerState::AddKeyToLayout(const StackPanel& panel, const hstring
 
     border.Padding({ 20, 10, 20, 10 });
     border.Margin({ 0, 0, 10, 0 });
-    border.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    remapKey.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
+    // Use the base low brush to be consistent with the theme
+    border.Background(Windows::UI::Xaml::Application::Current().Resources().Lookup(box_value(L"SystemControlBackgroundBaseLowBrush")).as<Windows::UI::Xaml::Media::SolidColorBrush>());
     remapKey.FontSize(20);
     border.HorizontalAlignment(HorizontalAlignment::Left);
     border.Child(remapKey);
