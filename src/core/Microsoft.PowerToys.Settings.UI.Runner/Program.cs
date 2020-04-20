@@ -4,14 +4,14 @@
 
 using System;
 using System.Windows;
-using TwoWayIPCLibLib;
+using interop;
 
 namespace Microsoft.PowerToys.Settings.UI.Runner
 {
     public class Program
     {
         // Create an instance of the  IPC wrapper.
-        private static ITwoWayIPCManager ipcmanager = new TwoWayIPCManager();
+        private static TwoWayPipeMessageIPCManaged ipcmanager;
 
         [STAThread]
         public static void Main(string[] args)
@@ -23,7 +23,8 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 
                 if (args.Length > 1)
                 {
-                    ipcmanager.Initialize(args[1], args[0]);
+                    ipcmanager = new TwoWayPipeMessageIPCManaged(args[1], args[0]);
+                    ipcmanager.Start();
                     app.Run();
                 }
                 else
@@ -37,7 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
             }
         }
 
-        public static ITwoWayIPCManager GetTwoWayIPCManager()
+        public static TwoWayPipeMessageIPCManaged GetTwoWayIPCManager()
         {
             return ipcmanager;
         }

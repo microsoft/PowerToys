@@ -1,6 +1,10 @@
 #pragma once
 
 #include <common\keyboard_layout.h>
+#include <common\two_way_pipe_message_ipc.h>
+#include <msclr\marshal.h>
+#include <msclr\marshal_cppstd.h>
+
 using namespace System;
 
 //https://docs.microsoft.com/en-us/cpp/dotnet/how-to-wrap-native-class-for-use-by-csharp?view=vs-2019
@@ -35,6 +39,47 @@ public ref class LayoutMapManaged
 
     private:
         LayoutMap* _map;
+    };
+
+    public ref class TwoWayPipeMessageIPCManaged
+    {
+    public:
+        TwoWayPipeMessageIPCManaged(String^ inputPipeName, String^ outputPipeName)
+        {
+            _pipe = new TwoWayPipeMessageIPC(
+                msclr::interop::marshal_as<std::wstring>(inputPipeName),
+                msclr::interop::marshal_as<std::wstring>(outputPipeName),
+                nullptr);
+        }
+
+        ~TwoWayPipeMessageIPCManaged()
+        {
+            delete _pipe;
+        }
+
+        void Send(String^ msg)
+        {
+            _pipe->send(msclr::interop::marshal_as<std::wstring>(msg));
+        }
+
+        void Start()
+        {
+            _pipe->start(nullptr);
+        }
+
+        void End()
+        {
+            _pipe->end();
+        }
+        
+    protected:
+        !TwoWayPipeMessageIPCManaged()
+        {
+            delete _pipe;
+        }
+
+    private:
+        TwoWayPipeMessageIPC* _pipe;
     };
 }
 
