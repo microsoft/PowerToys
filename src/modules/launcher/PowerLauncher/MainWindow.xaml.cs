@@ -168,7 +168,7 @@ namespace PowerLauncher
                         if (!_viewModel.LastQuerySelected)
                         {
                             _viewModel.LastQuerySelected = true;
-                        }                        
+                        }          
                     }
                 }
             };           
