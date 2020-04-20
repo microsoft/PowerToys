@@ -35,12 +35,12 @@ namespace PowerLauncher.UI
 
         private void UserControl_ActualThemeChanged(FrameworkElement sender, object args)
         {
-            SolidBorderBrush = Application.Current.Resources["BorderColor"] as SolidColorBrush;
+            SolidBorderBrush = Application.Current.Resources["SystemControlHighlightAccentBrush"] as SolidColorBrush;
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            SolidBorderBrush = Application.Current.Resources["BorderColor"] as SolidColorBrush;
+            SolidBorderBrush = Application.Current.Resources["SystemControlHighlightAccentBrush"] as SolidColorBrush;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
