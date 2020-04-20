@@ -234,6 +234,11 @@
                   <Directory Id="IndexerLanguagesFolder" Name="Languages" />
                   <Directory Id="IndexerpinyindbFolder" Name="pinyindb" />
                 </Directory>
+                <Directory Id="WindowWalkerPluginFolder" Name="Wox.Plugin.WindowWalker">
+                  <Directory Id="WindowWalkerImagesFolder" Name="Images" />
+                  <Directory Id="WindowWalkerLanguagesFolder" Name="Languages" />
+                  <Directory Id="WindowWalkerpinyindbFolder" Name="pinyindb" />
+                </Directory>
               </Directory>
               <Directory Id="LauncherPropertiesFolder" Name="Properties" />
             </Directory>
@@ -694,7 +699,7 @@
       </Component>
       <Component Id="ProgramImagesComponent" Directory="ProgramImagesFolder" Guid="30D357F5-406F-47D1-BEFE-6022746469B4">
         <?foreach File in cmd.png;disable.png;folder.png;program.png;user.png?>
-          <File Id="Folder_$(var.File)" Source="$(var.BinX64Dir)\modules\launcher\Plugins\Wox.Plugin.Program\Images\$(var.File)" />
+          <File Id="Program_$(var.File)" Source="$(var.BinX64Dir)\modules\launcher\Plugins\Wox.Plugin.Program\Images\$(var.File)" />
         <?endforeach?>
       </Component>
        <Component Id="ProgramLanguagesComponent" Directory="ProgramLanguagesFolder" Guid="EBFF53B6-3602-4F55-8784-FC7DB29D3D62">
@@ -762,7 +767,24 @@
         <?endforeach?>
       </Component>
 
+      <!-- WindowWalker Plugin -->  
+      <Component Id="WindowWalkerComponent" Directory="WindowWalkerPluginFolder" Guid="EB1391C9-B701-421F-80FC-ABB2FEDFAD19">
+        <?foreach File in plugin.json;Wox.Infrastructure.dll;Wox.Plugin.dll;Wox.Plugin.WindowWalker.deps.json;Wox.Plugin.WindowWalker.dll?>
+          <File Id="WindowWalker_$(var.File)" Source="$(var.BinX64Dir)\modules\launcher\Plugins\Wox.Plugin.WindowWalker\$(var.File)" />
+        <?endforeach?>
+      </Component>
+      <Component Id="WindowWalkerImagesComponent" Directory="WindowWalkerImagesFolder" Guid="3944A7F5-77F4-4979-9911-EDE709B2F509">
+          <File Id="WindowWalkerIcon" Source="$(var.BinX64Dir)\modules\launcher\Plugins\Wox.Plugin.WindowWalker\Images\windowwalker.png" />
+      </Component>
+      <Component Id="WindowWalkerLanguagesComponent" Directory="WindowWalkerLanguagesFolder" Guid="7D9471D9-5C0A-4BD1-9A01-BAB65DD58834">
+        <File Id="WindowWalkerLanguage" Source="$(var.BinX64Dir)\modules\launcher\Plugins\Wox.Plugin.WindowWalker\Languages\en.xaml" />
+      </Component>
+      <Component Id="WindowWalkerpinyindbComponent" Directory="WindowWalkerpinyindbFolder" Guid="02C7A758-CDD4-4E27-9EC7-2ED68DC444B0">
+        <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
+          <File Id="WindowWalkerPlugin_$(var.File)" Source="$(var.BinX64Dir)\modules\launcher\Plugins\Wox.Plugin.WindowWalker\pinyindb\$(var.File)" />
+        <?endforeach?>
+      </Component>
+    
     </ComponentGroup>
   </Fragment>
-
 </Wix>
