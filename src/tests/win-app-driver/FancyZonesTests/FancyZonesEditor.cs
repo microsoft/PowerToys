@@ -17,9 +17,11 @@ namespace PowerToysTests
         protected static void OpenEditor()
         {
             new Actions(session).KeyDown(OpenQA.Selenium.Keys.Command).SendKeys("`").KeyUp(OpenQA.Selenium.Keys.Command).Perform();
+            WaitSeconds(2);
             //editorWindow = WaitElementByXPath("//Window[@Name=\"FancyZones Editor\"]");
+            editorWindow = WaitElementByName("FancyZones Editor");
             //may not find editor by name in 0.16.1
-            editorWindow = WaitElementByAccessibilityId("MainWindow1");
+            //editorWindow = WaitElementByAccessibilityId("MainWindow1");
             Assert.IsNotNull(editorWindow, "Couldn't find editor window");
         }
 
@@ -57,10 +59,10 @@ namespace PowerToysTests
         protected static void OpenCreatorWindow(string tabName, string creatorWindowName, string buttonId = "EditCustomButton")
         {
             string elementXPath = "//Text[@Name=\"" + tabName + "\"]";
-            session.FindElementByXPath(elementXPath).Click();
-            session.FindElementByAccessibilityId(buttonId).Click();
+            WaitElementByXPath(elementXPath).Click();
+            WaitElementByAccessibilityId(buttonId).Click();
 
-            WindowsElement creatorWindow = session.FindElementByName(creatorWindowName);
+            WindowsElement creatorWindow = WaitElementByName(creatorWindowName);
             Assert.IsNotNull(creatorWindow, "Creator window didn't open");
         }
 
