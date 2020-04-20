@@ -192,6 +192,7 @@ namespace Wox.ViewModel
                 else
                 {
                     Margin = new Thickness { Top = 0 };
+                    Visbility = Visibility.Collapsed;
                 }
             }
         }

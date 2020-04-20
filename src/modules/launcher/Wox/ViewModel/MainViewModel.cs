@@ -420,7 +420,6 @@ namespace Wox.ViewModel
             else
             {
                 Results.Clear();
-                Results.Visbility = Visibility.Collapsed;
             }
         }
 
@@ -603,11 +602,7 @@ namespace Wox.ViewModel
                 Results.AddResults(list, metadata.ID);
             }
 
-            if (Results.Visbility == Visibility.Visible && Results.Results.Count == 0)
-            {
-                Results.Visbility = Visibility.Collapsed;
-            }
-            else if (Results.Visbility != Visibility.Visible && list.Count > 0)
+            if (Results.Visbility != Visibility.Visible && list.Count > 0)
             {
                 Results.Visbility = Visibility.Visible;
             }
