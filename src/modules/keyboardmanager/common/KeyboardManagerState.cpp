@@ -5,6 +5,19 @@
 KeyboardManagerState::KeyboardManagerState() :
     uiState(KeyboardManagerUIState::Deactivated), currentUIWindow(nullptr), currentShortcutUI(nullptr), currentSingleKeyUI(nullptr), detectedRemapKey(NULL)
 {
+    configFile_mutex = CreateMutex(
+        NULL, // default security descriptor
+        FALSE, // mutex not owned
+        KeyboardManagerConstants::ConfigFileMutexName.c_str());
+}
+
+// Destructor
+KeyboardManagerState::~KeyboardManagerState()
+{
+    if (configFile_mutex)
+    {
+        CloseHandle(configFile_mutex);
+    }
 }
 
 // Function to check the if the UI state matches the argument state. For states with activated windows it also checks if the window is in focus.
@@ -344,4 +357,79 @@ bool KeyboardManagerState::HandleKeyDelayEvent(LowlevelKeyboardEvent* ev)
 
     keyDelays[ev->lParam->vkCode]->KeyEvent(ev);
     return true;
+}
+
+// Save the updated configuration.
+bool KeyboardManagerState::SaveConfigToFile()
+{
+    bool result = true;
+    json::JsonObject configJson;
+    json::JsonObject remapShortcuts;
+    json::JsonObject remapKeys;
+    json::JsonArray inProcessRemapKeysArray;
+    json::JsonArray globalRemapShortcutsArray;
+    std::unique_lock<std::mutex> lockSingleKeyReMap(singleKeyReMap_mutex);
+    for (const auto &it : singleKeyReMap)
+    {
+        json::JsonObject keys;
+        keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(winrt::to_hstring((unsigned int)it.first)));
+        keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(winrt::to_hstring((unsigned int)it.second)));
+
+        inProcessRemapKeysArray.Append(keys);
+    }
+    lockSingleKeyReMap.unlock();
+
+    std::unique_lock<std::mutex> lockOsLevelShortcutReMap(osLevelShortcutReMap_mutex);
+    for (const auto &it : osLevelShortcutReMap)
+    {
+        json::JsonObject keys;
+        keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(it.first.ToHstringVK()));
+        keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(it.second.targetShortcut.ToHstringVK()));
+
+        globalRemapShortcutsArray.Append(keys);
+    }
+    lockOsLevelShortcutReMap.unlock();
+
+    remapShortcuts.SetNamedValue(KeyboardManagerConstants::GlobalRemapShortcutsSettingName, globalRemapShortcutsArray);
+    remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, inProcessRemapKeysArray);
+    configJson.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeys);
+    configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsSettingName, remapShortcuts);
+
+    // Set timeout of 1sec to wait for file to get free.
+    DWORD timeout = 1000;
+    auto dwWaitResult = WaitForSingleObject(
+        configFile_mutex,
+        timeout);
+    if (dwWaitResult == WAIT_OBJECT_0)
+    {
+        try
+        {
+            json::to_file((PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + GetCurrentConfigName() + L".json"), configJson);
+        }
+        catch (...)
+        {
+            result = false;
+        }
+
+        // Make sure to release the Mutex.
+        ReleaseMutex(configFile_mutex);
+    }
+    else
+    {
+        result = false;
+    }
+
+    return result;
+}
+
+void KeyboardManagerState::SetCurrentConfigName(const std::wstring& configName)
+{
+    std::lock_guard<std::mutex> lock(currentConfig_mutex);
+    currentConfig = configName;
+}
+
+std::wstring KeyboardManagerState::GetCurrentConfigName()
+{
+    std::lock_guard<std::mutex> lock(currentConfig_mutex);
+    return currentConfig;
 }

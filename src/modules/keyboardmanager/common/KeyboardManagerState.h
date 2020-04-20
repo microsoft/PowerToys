@@ -4,9 +4,11 @@
 #include "Shortcut.h"
 #include "RemapShortcut.h"
 #include "KeyDelay.h"
+#include "KeyboardManagerConstants.h"
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <mutex>
 #include <winrt/Windows.UI.Xaml.Controls.h>
+#include <../common/settings_helpers.h>
 using namespace winrt::Windows::UI::Xaml::Controls;
 
 // Enum type to store different states of the UI
@@ -51,6 +53,13 @@ private:
     // Stores the UI element which is to be updated based on the shortcut entered
     StackPanel currentShortcutUI;
     std::mutex currentShortcutUI_mutex;
+    
+    // Stores the current configuration name.
+    std::wstring currentConfig = KeyboardManagerConstants::DefaultConfiguration;
+    std::mutex currentConfig_mutex;
+
+    // Handle of named mutex used for configuration file.
+    HANDLE configFile_mutex;
 
     // Registered KeyDelay objects, used to notify delayed key events.
     std::map<DWORD, std::unique_ptr<KeyDelay>> keyDelays;
@@ -83,6 +92,9 @@ public:
 
     // Constructor
     KeyboardManagerState();
+
+    // Destructor
+    ~KeyboardManagerState();
 
     // Function to reset the UI state members
     void ResetUIState();
@@ -157,4 +169,13 @@ public:
 
     // Reset the shortcut (backend) state after releasing a key.
     void ResetDetectedShortcutKey(DWORD key);
+
+    // Save the updated configuration.
+    bool SaveConfigToFile();
+
+    // Sets the Current Active Configuartion Name.
+    void SetCurrentConfigName(const std::wstring& configName);
+
+    // Gets the Current Active Configuartion Name.
+    std::wstring GetCurrentConfigName();
 };
