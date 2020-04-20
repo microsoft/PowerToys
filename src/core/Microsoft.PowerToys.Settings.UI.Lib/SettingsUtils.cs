@@ -11,6 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     public static class SettingsUtils
     {
         private const string DefaultFileName = "settings.json";
+        private const string DefaultModuleName = "";
 
         public static bool SettingsFolderExists(string powertoy)
         {
@@ -49,14 +50,14 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         /// Get a Deserialized object of the json settings string.
         /// </summary>
         /// <returns>Deserialized json settings object.</returns>
-        public static T GetSettings<T>(string powertoy, string fileName = DefaultFileName)
+        public static T GetSettings<T>(string powertoy = DefaultModuleName, string fileName = DefaultFileName)
         {
             var jsonSettingsString = File.ReadAllText(GetSettingsPath(powertoy, fileName));
             return JsonSerializer.Deserialize<T>(jsonSettingsString);
         }
 
         // Save settings to a json file.
-        public static void SaveSettings(string jsonSettings, string powertoy, string fileName = DefaultFileName)
+        public static void SaveSettings(string jsonSettings, string powertoy = DefaultModuleName, string fileName = DefaultFileName)
         {
             try
             {
