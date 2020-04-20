@@ -128,7 +128,9 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     shortcutTable.Children().Append(tableHeaderRow);
 
     // Message to display success/failure of saving settings.
+    Flyout applyFlyout;
     TextBlock settingsMessage;
+    applyFlyout.Content(settingsMessage);
 
     // Store handle of edit shortcuts window
     ShortcutControl::EditShortcutsWindowHandle = _hWndEditShortcutsWindow;
@@ -151,6 +153,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Apply button
     Button applyButton;
     applyButton.Content(winrt::box_value(winrt::to_hstring("Apply")));
+    applyButton.Flyout(applyFlyout);
     applyButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         bool isSuccess = true;
         // Clear existing shortcuts
@@ -181,18 +184,15 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
         if (isSuccess && saveResult)
         {
-            settingsMessage.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Green() });
             settingsMessage.Text(winrt::to_hstring("Remapping successful!"));
         }
         else if (!isSuccess && saveResult)
         {
-            settingsMessage.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Red() });
             settingsMessage.Text(winrt::to_hstring("All remappings were not successfully applied."));
         }
         else
         {
-            settingsMessage.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Red() });
-            settingsMessage.Text(winrt::to_hstring("Failed to save the remappings."));
+            settingsMessage.Text(L"Failed to save the remappings.");
         }
     });
 
@@ -259,7 +259,7 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
     return 0;
 }
 
-bool CheckEditShortcutsWindowActive() 
+bool CheckEditShortcutsWindowActive()
 {
     bool result = false;
     std::unique_lock<std::mutex> hwndLock(editShortcutsWindowMutex);
