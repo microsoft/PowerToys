@@ -420,6 +420,7 @@ namespace Wox.ViewModel
             else
             {
                 Results.Clear();
+                Results.Visbility = Visibility.Collapsed;
             }
         }
 
