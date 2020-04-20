@@ -612,9 +612,10 @@
         <?endforeach?>
       </Component>
       <Component Id="launcherImagesComponent" Directory="LauncherImagesFolder" Guid="D254220C-1DD9-4C74-8810-1AAB2F940DE8">
-        <?foreach File in app.png;app_error.png;Browser.png;calculator.png;cancel.png;close.png;cmd.png;color.png;copy.png;down.png;EXE.png;file.png;find.png;folder.png;history.png;image.png;Link.png;lock.png;logoff.png;New_Message.png;ok.png;open.png;plugin.png;recyclebin.png;restart.png;search.png;settings.png;shutdown.png;sleep.png;up.png;update.png;warning.png?>
+        <?foreach File in app.png;app_error.png;Browser.png;calculator.png;cancel.png;close.png;cmd.png;color.png;copy.png;down.png;EXE.png;file.png;find.png;folder.png;history.png;image.png;Link.png;lock.png;logoff.png;ok.png;open.png;plugin.png;recyclebin.png;restart.png;search.png;settings.png;shutdown.png;sleep.png;up.png;update.png;warning.png?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)\modules\launcher\Images\$(var.File)" />
         <?endforeach?>
+        <File Source="$(var.BinX64Dir)\modules\launcher\Images\New Message.png" />
       </Component>
       <Component Id="launcherUIControlsComponent" Directory="LauncherUIControlsFolder" Guid="9C6C3785-D6FB-468A-9BEC-130F0403E7F8">
           <File Source="$(var.BinX64Dir)\modules\launcher\Microsoft.Toolkit.Uwp.UI.Controls\Microsoft.Toolkit.Uwp.UI.Controls.xr.xml" />
@@ -633,12 +634,12 @@
       
       <!-- Calculator Plugin -->
       <Component Id="calculatorComponent" Directory="CalculatorPluginFolder" Guid="19DE1022-583C-4969-9AFC-D43CB944003D">
-        <?foreach File in plugin.json;Wox.Infrastructure.dll;Wox.Plugin.Calculator.deps.json;Wox.Plugin.Calculator.dll;Wox.Plugin.dll?>
-          <File Id="Calculator_$(var.File)" Source="$(var.BinX64Dir)\modules\launcher\Plugins\Wox.Plugin.Calculator\$(var.File)" />
+        <?foreach File in plugin.json;Wox.Infrastructure.dll;Wox.Plugin.Caculator.deps.json;Wox.Plugin.Caculator.dll;Wox.Plugin.dll?>
+          <File Id="Calculator_$(var.File)" Source="$(var.BinX64Dir)\modules\launcher\Plugins\Wox.Plugin.Caculator\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="calculatorImagesComponent" Directory="CalculatorImagesFolder" Guid="07EC9232-CF9A-4CDB-8D8E-E79DC75096C0">
-        <File Id="calculatorPluginImg" Source="$(var.BinX64Dir)\modules\launcher\Plugins\Wox.Plugin.Calculator\Images\calculator.png" />
+        <File Id="calculatorPluginImg" Source="$(var.BinX64Dir)\modules\launcher\Plugins\Wox.Plugin.Caculator\Images\calculator.png" />
       </Component>
        <Component Id="calculatorLanguagesComponent" Directory="CalculatorLanguagesFolder" Guid="2D8019E7-664F-4529-9FAA-83C8DACF0732">
         <?foreach LanguageFile in de.xaml;en.xaml;pl.xaml;tr.xaml;zh-cn.xaml;zh-tw.xaml?>
@@ -650,13 +651,13 @@
           <?else?>
             <?define IdSafeLanguage = $(var.LanguageFile)?>
           <?endif?>
-          <File Id="File_calc_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)\modules\launcher\Plugins\Wox.Plugin.Calculator\Languages\$(var.LanguageFile)" />
+          <File Id="File_calc_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)\modules\launcher\Plugins\Wox.Plugin.Caculator\Languages\$(var.LanguageFile)" />
           <?undef IdSafeLanguage?>
         <?endforeach?>
       </Component>
       <Component Id="calculatorpinyindbComponent" Directory="CalculatorpinyindbFolder" Guid="D5527670-BE9A-4AA9-9D36-1249F2184B5B">
         <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
-          <File Id="CalcPlugin_$(var.File)" Source="$(var.BinX64Dir)\modules\launcher\Plugins\Wox.Plugin.Calculator\pinyindb\$(var.File)" />
+          <File Id="CalcPlugin_$(var.File)" Source="$(var.BinX64Dir)\modules\launcher\Plugins\Wox.Plugin.Caculator\pinyindb\$(var.File)" />
         <?endforeach?>
       </Component>
     
