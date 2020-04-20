@@ -61,8 +61,8 @@ namespace FancyZonesUnitTests
         HINSTANCE m_hInst{};
         HMONITOR m_monitor{};
         MONITORINFO m_monitorInfo{};
-        MockZoneWindowHost m_zoneWindowHost{};
-        IZoneWindowHost* m_hostPtr = m_zoneWindowHost.get_strong().get();
+        winrt::com_ptr<MockZoneWindowHost> m_zoneWindowHost = winrt::make_self<MockZoneWindowHost>();
+        IZoneWindowHost* m_hostPtr = m_zoneWindowHost.get();
 
         winrt::com_ptr<IZoneWindow> m_zoneWindow;
 
@@ -391,7 +391,7 @@ namespace FancyZonesUnitTests
             m_fancyZonesData.SetDeviceInfo(m_parentUniqueId.str(), parentDeviceInfo);
 
             auto parentZoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_parentUniqueId.str(), false, false);
-            m_zoneWindowHost.m_zoneWindow = parentZoneWindow.get();
+            m_zoneWindowHost->m_zoneWindow = parentZoneWindow.get();
 
             // newWorkArea = true - zoneWindow will be cloned from parent
             auto actualZoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, true);
@@ -420,7 +420,7 @@ namespace FancyZonesUnitTests
             m_fancyZonesData.SetDeviceInfo(m_parentUniqueId.str(), parentDeviceInfo);
 
             auto parentZoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_parentUniqueId.str(), false, false);
-            m_zoneWindowHost.m_zoneWindow = parentZoneWindow.get();
+            m_zoneWindowHost->m_zoneWindow = parentZoneWindow.get();
 
             // newWorkArea = false - zoneWindow won't be cloned from parent
             auto actualZoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, false);

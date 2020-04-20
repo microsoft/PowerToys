@@ -1,2 +1,2 @@
-#include "stdafx.h"
+#include "pch.h"
 #pragma comment(lib, "windowsapp")
