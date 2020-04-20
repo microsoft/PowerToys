@@ -136,8 +136,11 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     keyRemapTable.Children().Append(tableHeaderRow);
 
+    
     // Message to display success/failure of saving settings.
+    Flyout applyFlyout;
     TextBlock settingsMessage;
+    applyFlyout.Content(settingsMessage);
 
     // Store handle of edit keyboard window
     SingleKeyRemapControl::EditKeyboardWindowHandle = _hWndEditKeyboardWindow;
@@ -162,6 +165,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     applyButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
     applyButton.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     applyButton.Content(winrt::box_value(winrt::to_hstring("Apply")));
+    applyButton.Flyout(applyFlyout);
     applyButton.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
         bool isSuccess = true;
         // Clear existing Key Remaps
@@ -188,20 +192,17 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
         if (isSuccess)
         {
-            settingsMessage.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Green() });
-            settingsMessage.Text(winrt::to_hstring("Remapping successful!"));
+            settingsMessage.Text(winrt::to_hstring("Remapping successful"));
         }
         else
         {
-            settingsMessage.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Red() });
-            settingsMessage.Text(winrt::to_hstring("All remappings were not successfully applied."));
+            settingsMessage.Text(winrt::to_hstring("All remappings were not successfully applied"));
         }
     });
 
     header.Children().Append(headerText);
     header.Children().Append(cancelButton);
     header.Children().Append(applyButton);
-    header.Children().Append(settingsMessage);
 
     // Add remap key button
     Windows::UI::Xaml::Controls::Button addRemapKey;

@@ -128,7 +128,9 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     shortcutTable.Children().Append(tableHeaderRow);
 
     // Message to display success/failure of saving settings.
+    Flyout applyFlyout;
     TextBlock settingsMessage;
+    applyFlyout.Content(settingsMessage);
 
     // Store handle of edit shortcuts window
     ShortcutControl::EditShortcutsWindowHandle = _hWndEditShortcutsWindow;
@@ -151,6 +153,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Apply button
     Button applyButton;
     applyButton.Content(winrt::box_value(winrt::to_hstring("Apply")));
+    applyButton.Flyout(applyFlyout);
     applyButton.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
         bool isSuccess = true;
         // Clear existing shortcuts
@@ -178,12 +181,10 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
         if (isSuccess)
         {
-            settingsMessage.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Green() });
             settingsMessage.Text(winrt::to_hstring("Remapping successful!"));
         }
         else
         {
-            settingsMessage.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Red() });
             settingsMessage.Text(winrt::to_hstring("All remappings were not successfully applied."));
         }
     });
