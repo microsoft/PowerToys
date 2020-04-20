@@ -40,35 +40,46 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Vertical">
-            <TextBlock Text="Shows a help overlay with Windows shortcuts when the Windows key is pressed."
+        <StackPanel Orientation="Vertical" x:Name="ShortCutGuideView">
+            <TextBlock x:Uid="ShortcutGuide_Description"
                        TextWrapping="Wrap"/>
 
-            <ToggleSwitch Header="Enable Shortcut Guide"
-                          IsOn="True"
-                          Margin="{StaticResource SmallTopMargin}" />
+            <ToggleSwitch x:Uid="ShortcutGuide_Enable"
+                          IsOn="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                          Margin="{StaticResource SmallTopMargin}"/>
 
-            <TextBlock Text="Appearance &amp; behaviour" 
+            <TextBlock x:Uid="ShortcutGuide_Appearance_Behaiviour" 
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <muxc:NumberBox Header="How long to press the Windows key before showing the Shortcut Guide"
+            <muxc:NumberBox x:Uid="ShortcutGuide_PressTime"
                             Minimum="100"
-                            Value="900"
                             SpinButtonPlacementMode="Inline"
                             HorizontalAlignment="Left"
-                            Margin="{StaticResource SmallTopMargin}" />
+                            Margin="{StaticResource SmallTopMargin}"
+                            Value="{ Binding Mode=TwoWay, Path=PressTime}"
+                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
-            <Slider Header="Opacity of the Shortcut Guide's overlay background (%)"
+            <Slider x:Uid="ShortcutGuide_OverlayOpacity"
                     Minimum="0"
                     Maximum="100"
-                    Value="70"
+                    Value="{ Binding Mode=TwoWay, Path=OverlayOpacity}"
                     HorizontalAlignment="Left"
-                    Margin="{StaticResource MediumTopMargin}"/>
+                    Margin="{StaticResource MediumTopMargin}"
+                    IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
-            <muxc:RadioButtons Header="Theme" Margin="{StaticResource SmallTopMargin}">
-                <RadioButton Content="Dark"/>
-                <RadioButton Content="Light"/>
-                <RadioButton Content="System default" IsChecked="True"/>
+
+            <muxc:RadioButtons x:Uid="RadioButtons_Name_Theme" 
+                               Margin="{StaticResource SmallTopMargin}"
+                               IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                               SelectedIndex="{ Binding Mode=TwoWay, Path=ThemeIndex}">
+                <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark"
+                             IsChecked="{ Binding Mode=TwoWay, Path=IsDarkThemeRadioButtonChecked}"/>
+
+                <RadioButton x:Uid="GeneralPage_Radio_Theme_Light" 
+                             IsChecked="{ Binding Mode=TwoWay, Path=IsLightThemeRadioButtonChecked}"/>
+
+                <RadioButton x:Uid="GeneralPage_Radio_Theme_Default"
+                             IsChecked="{ Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked}"/>
             </muxc:RadioButtons>
         </StackPanel>
 
@@ -80,12 +91,14 @@
             Grid.Column="1">
 
             <TextBlock 
-                Text="About this feature"
+                x:Uid="About_This_Feature"
                 Style="{StaticResource SettingsGroupTitleStyle}"
                 Margin="{StaticResource XSmallBottomMargin}"/>
 
+            <Image Source="https://raw.githubusercontent.com/microsoft/PowerToys/dev/build-features/doc/images/shortcut_guide/usage.png" />
+
             <HyperlinkButton 
-                Content="Module overview" 
+                x:Uid="Module_overview"
                 NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/shortcut_guide/README.md"/>
         </StackPanel>
     </Grid>

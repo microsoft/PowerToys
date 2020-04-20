@@ -418,6 +418,43 @@ std::vector<winrt::hstring> Shortcut::GetKeyVector(LayoutMap& keyboardMap) const
     return keys;
 }
 
+// Function to return the string representation of the shortcut in virtual key codes appended in a string by ";" separator.
+winrt::hstring Shortcut::ToHstringVK() const
+{
+    winrt::hstring output;
+    if (winKey != ModifierKey::Disabled && winKey != ModifierKey::Both)
+    {
+        output = output + winrt::to_hstring((unsigned int)GetWinKey(ModifierKey::Left)) + winrt::to_hstring(L";");
+    }
+    if (winKey == ModifierKey::Both)
+    {
+        output = output + winrt::to_hstring((unsigned int)KeyboardManagerConstants::VK_WIN_BOTH) + winrt::to_hstring(L";");
+    }
+    if (ctrlKey != ModifierKey::Disabled)
+    {
+        output = output + winrt::to_hstring((unsigned int)GetCtrlKey()) + winrt::to_hstring(L";");
+    }
+    if (altKey != ModifierKey::Disabled)
+    {
+        output = output + winrt::to_hstring((unsigned int)GetAltKey()) + winrt::to_hstring(L";");
+    }
+    if (shiftKey != ModifierKey::Disabled)
+    {
+        output = output + winrt::to_hstring((unsigned int)GetShiftKey()) + winrt::to_hstring(L";");
+    }
+    if (actionKey != NULL)
+    {
+        output = output + winrt::to_hstring((unsigned int)GetActionKey()) + winrt::to_hstring(L";");
+    }
+
+    if (!output.empty())
+    {
+        output = winrt::hstring(output.c_str(), output.size() - 1);
+    }
+    
+    return output;
+}
+
 // Function to return a vector of key codes in the display order
 std::vector<DWORD> Shortcut::GetKeyCodes()
 {

@@ -94,7 +94,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Cancel button
     Button cancelButton;
     cancelButton.Content(winrt::box_value(winrt::to_hstring("Cancel")));
-    cancelButton.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+    cancelButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         // Close the window since settings do not need to be saved
         PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
     });
@@ -154,7 +154,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     Button applyButton;
     applyButton.Content(winrt::box_value(winrt::to_hstring("Apply")));
     applyButton.Flyout(applyFlyout);
-    applyButton.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+    applyButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         bool isSuccess = true;
         // Clear existing shortcuts
         keyboardManagerState.ClearOSLevelShortcuts();
@@ -179,13 +179,20 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
             }
         }
 
-        if (isSuccess)
+        // Save the updated key remaps to file.
+        auto saveResult = keyboardManagerState.SaveConfigToFile();
+
+        if (isSuccess && saveResult)
         {
             settingsMessage.Text(winrt::to_hstring("Remapping successful!"));
         }
-        else
+        else if (!isSuccess && saveResult)
         {
             settingsMessage.Text(winrt::to_hstring("All remappings were not successfully applied."));
+        }
+        else
+        {
+            settingsMessage.Text(L"Failed to save the remappings.");
         }
     });
 
@@ -201,7 +208,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     plusSymbol.Glyph(L"\xE109");
     addShortcut.Content(plusSymbol);
     addShortcut.Margin({ 10 });
-    addShortcut.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+    addShortcut.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects);
     });
 

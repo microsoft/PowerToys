@@ -2,22 +2,25 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class KeyboardManagerProperties
     {
-        // Bool property to notify Keyboard Manager module if the Edit Shortcut button is pressed.
-        public BoolProperty EditShortcut { get; set; }
+        [JsonPropertyName("activeConfiguration")]
+        public GenericProperty<string> ActiveConfiguration { get; set; }
 
-        // Bool property to notify Keyboard Manager module if the Remap Keyboard button is pressed.
-        public BoolProperty RemapKeyboard { get; set; }
+        // List of all Keyboard Configurations.
+        [JsonPropertyName("keyboardConfigurations")]
+        public GenericProperty<List<string>> KeyboardConfigurations { get; set; }
 
         public KeyboardManagerProperties()
         {
-            EditShortcut = new BoolProperty();
-            RemapKeyboard = new BoolProperty();
+            KeyboardConfigurations = new GenericProperty<List<string>>(new List<string> { "default", });
+            ActiveConfiguration = new GenericProperty<string>("default");
         }
 
         public string ToJsonString()

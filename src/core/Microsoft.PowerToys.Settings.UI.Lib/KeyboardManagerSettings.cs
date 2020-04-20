@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
@@ -26,6 +27,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             Properties = new KeyboardManagerProperties();
             version = "1";
             name = ptName;
+        }
+
+        // converts the current to a json string.
+        public override string ToJsonString()
+        {
+            return JsonSerializer.Serialize(this);
         }
     }
 }

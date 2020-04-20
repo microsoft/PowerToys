@@ -1,6 +1,7 @@
 #pragma once
 #include "Helpers.h"
 #include "LayoutMap.h"
+#include "KeyboardManagerConstants.h"
 #include <interface/lowlevel_keyboard_event_data.h>
 
 // Enum type to store different states of the win key
@@ -26,6 +27,25 @@ public:
     Shortcut() :
         winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
     {
+    }
+
+    // Constructor to intialize Shortcut from it's virtual key code string representation.
+    Shortcut(const std::wstring& shortcutVK) :
+        winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
+    {
+        auto keys = KeyboardManagerHelper::splitwstring(shortcutVK, ';');
+        for (auto it : keys)
+        {
+            auto vkKeyCode = std::stoul(it);
+            if (vkKeyCode == KeyboardManagerConstants::VK_WIN_BOTH)
+            {
+                SetKey(vkKeyCode, true);
+            }
+            else
+            {
+                SetKey(vkKeyCode);
+            }
+        }
     }
 
     // Less than operator must be defined to use with std::map.
@@ -135,6 +155,12 @@ public:
     // Function to reset the state of a shortcut key based on the passed key code argument. Since there is no VK_WIN code, use the second argument for setting common win key.
     void ResetKey(const DWORD& input, const bool& isWinBoth = false);
 
+    // Function to return the string representation of the shortcut
+    winrt::hstring ToHstring(LayoutMap& keyboardMap);
+
+    // Function to return the string representation of the shortcut in virtual key codes appended in a string by ";" separator.
+    winrt::hstring ToHstringVK() const;
+    
     // Function to return a vector of hstring for each key in the display order
     std::vector<winrt::hstring> GetKeyVector(LayoutMap& keyboardMap) const;
 
