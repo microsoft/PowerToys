@@ -391,24 +391,31 @@ void Shortcut::ResetKey(const DWORD& input, const bool& isWinBoth)
     }
 }
 
-// Function to return the string representation of the shortcut
-winrt::hstring Shortcut::ToHstring(LayoutMap& keyboardMap)
+// Function to return a vector of hstring for each key in the display order
+std::vector<winrt::hstring> Shortcut::GetKeyVector(LayoutMap& keyboardMap) const
 {
-    std::vector<winrt::hstring> keys = GetKeyVector(keyboardMap);
-
-    winrt::hstring output;
-    for (auto& key : keys)
+    std::vector<winrt::hstring> keys;
+    if (winKey != ModifierKey::Disabled)
     {
-        output = output + key + winrt::to_hstring(L" ");
+        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetWinKey(ModifierKey::Left)).c_str()));
     }
-    if (keys.size() > 1)
+    if (ctrlKey != ModifierKey::Disabled)
     {
-        return winrt::hstring(output.c_str(), output.size() - 1);
+        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetCtrlKey()).c_str()));
     }
-    else
+    if (altKey != ModifierKey::Disabled)
     {
-        return output;
+        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetAltKey()).c_str()));
     }
+    if (shiftKey != ModifierKey::Disabled)
+    {
+        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetShiftKey()).c_str()));
+    }
+    if (actionKey != NULL)
+    {
+        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(actionKey).c_str()));
+    }
+    return keys;
 }
 
 // Function to return the string representation of the shortcut in virtual key codes appended in a string by ";" separator.
@@ -448,30 +455,41 @@ winrt::hstring Shortcut::ToHstringVK() const
     return output;
 }
 
-std::vector<winrt::hstring> Shortcut::GetKeyVector(LayoutMap& keyboardMap) const
+// Function to return a vector of key codes in the display order
+std::vector<DWORD> Shortcut::GetKeyCodes()
 {
-    std::vector<winrt::hstring> keys;
+    std::vector<DWORD> keys;
     if (winKey != ModifierKey::Disabled)
     {
-        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetWinKey(ModifierKey::Left)).c_str()));
+        keys.push_back(GetWinKey(ModifierKey::Left));
     }
     if (ctrlKey != ModifierKey::Disabled)
     {
-        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetCtrlKey()).c_str()));
+        keys.push_back(GetCtrlKey());
     }
     if (altKey != ModifierKey::Disabled)
     {
-        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetAltKey()).c_str()));
+        keys.push_back(GetAltKey());
     }
     if (shiftKey != ModifierKey::Disabled)
     {
-        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetShiftKey()).c_str()));
+        keys.push_back(GetShiftKey());
     }
     if (actionKey != NULL)
     {
-        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(actionKey).c_str()));
+        keys.push_back(actionKey);
     }
     return keys;
+}
+
+// Function to set a shortcut from a vector of key codes
+void Shortcut::SetKeyCodes(const std::vector<DWORD>& keys)
+{
+    Reset();
+    for (int i = 0; i < keys.size(); i++)
+    {
+        SetKey(keys[i]);
+    }
 }
 
 // Function to check if all the modifiers in the shortcut have been pressed down
@@ -577,7 +595,7 @@ bool Shortcut::CheckModifiersKeyboardState() const
 bool Shortcut::IsKeyboardStateClearExceptShortcut() const
 {
     // Iterate through all the virtual key codes - 0xFF is set to key down because of the Num Lock
-    for (int keyVal = 0; keyVal < 0xFF; keyVal++)
+    for (int keyVal = 1; keyVal < 0xFF; keyVal++)
     {
         // Skip mouse buttons. Keeping this could cause a remapping to fail if a mouse button is also pressed at the same time
         if (keyVal == VK_LBUTTON || keyVal == VK_RBUTTON || keyVal == VK_MBUTTON || keyVal == VK_XBUTTON1 || keyVal == VK_XBUTTON2)

@@ -8,7 +8,7 @@ KeyboardManagerState* SingleKeyRemapControl::keyboardManagerState = nullptr;
 std::vector<std::vector<DWORD>> SingleKeyRemapControl::singleKeyRemapBuffer;
 
 // Function to add a new row to the remap keys table. If the originalKey and newKey args are provided, then the displayed remap keys are set to those values.
-void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, const DWORD& originalKey, const DWORD& newKey)
+void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>>& keyboardRemapControlObjects, const DWORD originalKey, const DWORD newKey)
 {
     // Parent element for the row
     Windows::UI::Xaml::Controls::StackPanel tableRow;
@@ -16,20 +16,31 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, const D
     tableRow.Spacing(100);
     tableRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
 
+    // Create new SingleKeyRemapControl objects dynamically so that we does not get destructed
+    std::vector<std::unique_ptr<SingleKeyRemapControl>> newrow;
+    newrow.push_back(std::move(std::unique_ptr<SingleKeyRemapControl>(new SingleKeyRemapControl(singleKeyRemapBuffer.size(), 0))));
+    newrow.push_back(std::move(std::unique_ptr<SingleKeyRemapControl>(new SingleKeyRemapControl(singleKeyRemapBuffer.size(), 1))));
+    keyboardRemapControlObjects.push_back(std::move(newrow));
     // SingleKeyRemapControl for the original key.
-    SingleKeyRemapControl originalRemapKeyControl(singleKeyRemapBuffer.size(), 0);
-    tableRow.Children().Append(originalRemapKeyControl.getSingleKeyRemapControl());
-
-    // SingleKeyRemapControl for the new remap key.
-    SingleKeyRemapControl newRemapKeyControl(singleKeyRemapBuffer.size(), 1);
-    tableRow.Children().Append(newRemapKeyControl.getSingleKeyRemapControl());
+    tableRow.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->getSingleKeyRemapControl());
+    // SingleKeyRemapControl for the new remap key
+    tableRow.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getSingleKeyRemapControl());
 
     // Set the key text if the two keys are not null (i.e. default args)
     if (originalKey != NULL && newKey != NULL)
     {
         singleKeyRemapBuffer.push_back(std::vector<DWORD>{ originalKey, newKey });
-        originalRemapKeyControl.singleKeyRemapText.Text(winrt::to_hstring(keyboardManagerState->keyboardMap.GetKeyName(originalKey).c_str()));
-        newRemapKeyControl.singleKeyRemapText.Text(winrt::to_hstring(keyboardManagerState->keyboardMap.GetKeyName(newKey).c_str()));
+        std::vector<DWORD> keyCodes = keyboardManagerState->keyboardMap.GetKeyCodeList();
+        auto it = std::find(keyCodes.begin(), keyCodes.end(), originalKey);
+        if (it != keyCodes.end())
+        {
+            keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->singleKeyRemapDropDown.SetSelectedIndex((int32_t)std::distance(keyCodes.begin(), it));
+        }
+        it = std::find(keyCodes.begin(), keyCodes.end(), newKey);
+        if (it != keyCodes.end())
+        {
+            keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->singleKeyRemapDropDown.SetSelectedIndex((int32_t)std::distance(keyCodes.begin(), it));
+        }
     }
     else
     {
@@ -52,6 +63,8 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, const D
         parent.Children().RemoveAt(index);
         // delete the row from the buffer. Since first child of the stackpanel is the header, the effective index starts from 1
         singleKeyRemapBuffer.erase(singleKeyRemapBuffer.begin() + (index - 1));
+        // delete the SingleKeyRemapControl objects so that they get destructed
+        keyboardRemapControlObjects.erase(keyboardRemapControlObjects.begin() + (index - 1));
     });
     tableRow.Children().Append(deleteRemapKeys);
     parent.Children().Append(tableRow);
@@ -64,7 +77,7 @@ StackPanel SingleKeyRemapControl::getSingleKeyRemapControl()
 }
 
 // Function to create the detect remap key UI window
-void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, KeyboardManagerState& keyboardManagerState, const int& rowIndex, const int& colIndex)
+void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, KeyboardManagerState& keyboardManagerState, const size_t rowIndex, const size_t colIndex)
 {
     // ContentDialog for detecting remap key. This is the parent UI element.
     ContentDialog detectRemapKeyBox;
@@ -78,7 +91,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     detectRemapKeyBox.IsSecondaryButtonEnabled(false);
 
     // Get the linked text block for the "Type Key" button that was clicked
-    TextBlock linkedRemapText = KeyboardManagerHelper::getSiblingElement(sender).as<TextBlock>();
+    ComboBox linkedRemapDropDown = KeyboardManagerHelper::getSiblingElement(sender).as<ComboBox>();
 
     auto unregisterKeys = [&keyboardManagerState]() {
         std::thread t1(&KeyboardManagerState::UnregisterKeyDelay, &keyboardManagerState, VK_ESCAPE);
@@ -87,7 +100,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
         t2.detach();
     };
 
-    auto onAccept = [linkedRemapText,
+    auto onAccept = [linkedRemapDropDown,
                      detectRemapKeyBox,
                      &keyboardManagerState,
                      &singleKeyRemapBuffer,
@@ -99,8 +112,14 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
 
         if (detectedKey != NULL)
         {
-            singleKeyRemapBuffer[rowIndex][colIndex] = detectedKey;
-            linkedRemapText.Text(winrt::to_hstring(keyboardManagerState.keyboardMap.GetKeyName(detectedKey).c_str()));
+            std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyCodeList();
+            // Update the drop down list with the new language to ensure that the correct key is displayed
+            linkedRemapDropDown.ItemsSource(keyboardManagerState.keyboardMap.GetKeyNameList());
+            auto it = std::find(keyCodeList.begin(), keyCodeList.end(), detectedKey);
+            if (it != keyCodeList.end())
+            {
+                linkedRemapDropDown.SelectedIndex((int32_t)std::distance(keyCodeList.begin(), it));
+            }
         }
 
         // Reset the keyboard manager UI state

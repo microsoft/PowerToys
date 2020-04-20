@@ -1,11 +1,12 @@
 #pragma once
 #include <keyboardmanager/common/KeyboardManagerState.h>
+#include "KeyDropDownControl.h"
 
 class SingleKeyRemapControl
 {
 private:
-    // Textblock to display the selected remap key
-    TextBlock singleKeyRemapText;
+    // Drop down to display the selected remap key
+    KeyDropDownControl singleKeyRemapDropDown;
 
     // Button to type the remap key
     Button typeKey;
@@ -21,7 +22,8 @@ public:
     // Stores the current list of remappings
     static std::vector<std::vector<DWORD>> singleKeyRemapBuffer;
 
-    SingleKeyRemapControl(const int& rowIndex, const int& colIndex)
+    SingleKeyRemapControl(const size_t rowIndex, const size_t colIndex) :
+        singleKeyRemapDropDown(rowIndex, colIndex, singleKeyRemapBuffer)
     {
         typeKey.Content(winrt::box_value(winrt::to_hstring("Type Key")));
         typeKey.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
@@ -37,15 +39,16 @@ public:
         singleKeyRemapControlLayout.Spacing(10);
 
         singleKeyRemapControlLayout.Children().Append(typeKey);
-        singleKeyRemapControlLayout.Children().Append(singleKeyRemapText);
+        singleKeyRemapControlLayout.Children().Append(singleKeyRemapDropDown.GetComboBox());
+        singleKeyRemapControlLayout.UpdateLayout();
     }
 
     // Function to add a new row to the remap keys table. If the originalKey and newKey args are provided, then the displayed remap keys are set to those values.
-    static void AddNewControlKeyRemapRow(StackPanel& parent, const DWORD& originalKey = NULL, const DWORD& newKey = NULL);
+    static void AddNewControlKeyRemapRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>>& keyboardRemapControlObjects, const DWORD originalKey = NULL, const DWORD newKey = NULL);
 
     // Function to return the stack panel element of the SingleKeyRemapControl. This is the externally visible UI element which can be used to add it to other layouts
     StackPanel getSingleKeyRemapControl();
 
     // Function to create the detect remap keys UI window
-    void createDetectKeyWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, KeyboardManagerState& keyboardManagerState, const int& rowIndex, const int& colIndex);
+    void createDetectKeyWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, KeyboardManagerState& keyboardManagerState, const size_t rowIndex, const size_t colIndex);
 };

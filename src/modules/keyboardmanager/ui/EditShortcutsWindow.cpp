@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "EditShortcutsWindow.h"
 #include "ShortcutControl.h"
+#include "KeyDropDownControl.h"
 
 LRESULT CALLBACK EditShortcutsWindowProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -133,14 +134,17 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     ShortcutControl::EditShortcutsWindowHandle = _hWndEditShortcutsWindow;
     // Store keyboard manager state
     ShortcutControl::keyboardManagerState = &keyboardManagerState;
+    KeyDropDownControl::keyboardManagerState = &keyboardManagerState;
     // Clear the shortcut remap buffer
     ShortcutControl::shortcutRemapBuffer.clear();
+    // Vector to store dynamically allocated control objects to avoid early destruction
+    std::vector<std::vector<std::unique_ptr<ShortcutControl>>> keyboardRemapControlObjects;
 
     // Load existing shortcuts into UI
     std::unique_lock<std::mutex> lock(keyboardManagerState.osLevelShortcutReMap_mutex);
     for (const auto& it : keyboardManagerState.osLevelShortcutReMap)
     {
-        ShortcutControl::AddNewShortcutControlRow(shortcutTable, it.first, it.second.targetShortcut);
+        ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects, it.first, it.second.targetShortcut);
     }
     lock.unlock();
 
@@ -158,7 +162,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
             Shortcut originalShortcut = ShortcutControl::shortcutRemapBuffer[i][0];
             Shortcut newShortcut = ShortcutControl::shortcutRemapBuffer[i][1];
 
-            if (originalShortcut.IsValidShortcut() && originalShortcut.IsValidShortcut())
+            if (originalShortcut.IsValidShortcut() && newShortcut.IsValidShortcut())
             {
                 bool result = keyboardManagerState.AddOSLevelShortcut(originalShortcut, newShortcut);
                 if (!result)
@@ -205,7 +209,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     addShortcut.Content(plusSymbol);
     addShortcut.Margin({ 10 });
     addShortcut.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
-        ShortcutControl::AddNewShortcutControlRow(shortcutTable);
+        ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects);
     });
 
     xamlContainer.Children().Append(header);

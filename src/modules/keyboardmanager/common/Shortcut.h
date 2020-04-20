@@ -23,7 +23,6 @@ private:
     DWORD actionKey;
 
 public:
-
     // By default create an empty shortcut
     Shortcut() :
         winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
@@ -161,9 +160,15 @@ public:
 
     // Function to return the string representation of the shortcut in virtual key codes appended in a string by ";" separator.
     winrt::hstring ToHstringVK() const;
-
-    // Function to return a vector of hstring for each key, in the same order as ToHstring()
+    
+    // Function to return a vector of hstring for each key in the display order
     std::vector<winrt::hstring> GetKeyVector(LayoutMap& keyboardMap) const;
+
+    // Function to return a vector of key codes in the display order
+    std::vector<DWORD> GetKeyCodes();
+
+    // Function to set a shortcut from a vector of key codes
+    void SetKeyCodes(const std::vector<DWORD>& keys);
 
     // Function to check if all the modifiers in the shortcut have been pressed down
     bool CheckModifiersKeyboardState() const;
