@@ -4,8 +4,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <ProjectGuid>{59BD9891-3837-438A-958D-ADC7F91F6F7E}</ProjectGuid>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Wox.Plugin.Caculator</RootNamespace>
-    <AssemblyName>Wox.Plugin.Caculator</AssemblyName>
+    <RootNamespace>Wox.Plugin.Calculator</RootNamespace>
+    <AssemblyName>Wox.Plugin.Calculator</AssemblyName>
     <useWPF>true</useWPF>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
