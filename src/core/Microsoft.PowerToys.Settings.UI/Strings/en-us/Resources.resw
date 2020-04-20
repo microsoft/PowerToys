@@ -142,7 +142,7 @@
     <comment>Navigation view item name for PowerRename</comment>
   </data>
   <data name="Shell_ShortcutGuide.Content" xml:space="preserve">
-    <value>Shortcut Guide [Not Functional]</value>
+    <value>Shortcut Guide</value>
     <comment>Navigation view item name for Shortcut Guide</comment>
   </data>
   <data name="Shell_PowerPreview.Content" xml:space="preserve">
@@ -409,5 +409,20 @@
   </data>
   <data name="FancyZones_SaveZoneInActiveColor.Content" xml:space="preserve">
     <value>Save Zone Inactive Color Choice</value>
+  </data>
+  <data name="ShortcutGuide_Description.Text" xml:space="preserve">
+    <value>Shows a help overlay with Windows shortcuts when the Windows key is pressed.</value>
+  </data>
+  <data name="ShortcutGuide_PressTime.Header" xml:space="preserve">
+    <value>How long to press the Windows key before showing the Shortcut Guide</value>
+  </data>
+  <data name="ShortcutGuide_Appearance_Behaiviour.Text" xml:space="preserve">
+    <value>Appearance &amp; behaviour</value>
+  </data>
+  <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
+    <value>Enable Shortcut Guide</value>
+  </data>
+  <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
+    <value>Opacity of the Shortcut Guide's overlay background (%)</value>
   </data>
 </root>

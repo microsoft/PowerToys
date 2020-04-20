@@ -26,7 +26,7 @@ public:
     KeyDropDownControl(size_t rowIndex, size_t colIndex, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer)
     {
         SetDefaultProperties(false);
-        dropDown.SelectionChanged([&, rowIndex, colIndex](IInspectable const& sender, SelectionChangedEventArgs const& args) {
+        dropDown.SelectionChanged([&, rowIndex, colIndex](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args) {
             ComboBox currentDropDown = sender.as<ComboBox>();
             int selectedKeyIndex = currentDropDown.SelectedIndex();
 
@@ -53,7 +53,7 @@ public:
         dropDown.ContextFlyout().SetAttachedFlyout((FrameworkElement)dropDown, warningFlyout);
 
         // drop down selection handler
-        dropDown.SelectionChanged([&, rowIndex, colIndex, parent, warningMessage](IInspectable const& sender, SelectionChangedEventArgs const&) {
+        dropDown.SelectionChanged([&, rowIndex, colIndex, parent, warningMessage](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const&) {
             ComboBox currentDropDown = sender.as<ComboBox>();
             int selectedKeyIndex = currentDropDown.SelectedIndex();
             uint32_t dropDownIndex = -1;
@@ -62,7 +62,7 @@ public:
             if (selectedKeyIndex != -1 && keyCodeList.size() > selectedKeyIndex && dropDownFound)
             {
                 // If only 1 drop down and action key is chosen: Warn that a modifier must be chosen
-                if (parent.Children().Size() == 1 && !IsModifierKey(keyCodeList[selectedKeyIndex]))
+                if (parent.Children().Size() == 1 && !KeyboardManagerHelper::IsModifierKey(keyCodeList[selectedKeyIndex]))
                 {
                     // warn and reset the drop down
                     SetDropDownError(currentDropDown, warningMessage, L"Shortcut must start with a modifier key");
@@ -71,7 +71,7 @@ public:
                 else if (dropDownIndex == parent.Children().Size() - 1)
                 {
                     // If last drop down and a modifier is selected: add a new drop down (max of 5 drop downs should be enforced)
-                    if (IsModifierKey(keyCodeList[selectedKeyIndex]) && parent.Children().Size() < 5)
+                    if (KeyboardManagerHelper::IsModifierKey(keyCodeList[selectedKeyIndex]) && parent.Children().Size() < 5)
                     {
                         // If it matched any of the previous modifiers then reset that drop down
                         if (CheckRepeatedModifier(parent, dropDownIndex, selectedKeyIndex, keyCodeList))
@@ -86,7 +86,7 @@ public:
                         }
                     }
                     // If last drop down and a modifier is selected but there are already 5 drop downs: warn the user
-                    else if (IsModifierKey(keyCodeList[selectedKeyIndex]) && parent.Children().Size() >= 5)
+                    else if (KeyboardManagerHelper::IsModifierKey(keyCodeList[selectedKeyIndex]) && parent.Children().Size() >= 5)
                     {
                         // warn and reset the drop down
                         SetDropDownError(currentDropDown, warningMessage, L"Shortcut must contain an action key");
@@ -102,7 +102,7 @@ public:
                 // If it is the not the last drop down
                 else
                 {
-                    if (IsModifierKey(keyCodeList[selectedKeyIndex]))
+                    if (KeyboardManagerHelper::IsModifierKey(keyCodeList[selectedKeyIndex]))
                     {
                         // If it matched any of the previous modifiers then reset that drop down
                         if (CheckRepeatedModifier(parent, dropDownIndex, selectedKeyIndex, keyCodeList))

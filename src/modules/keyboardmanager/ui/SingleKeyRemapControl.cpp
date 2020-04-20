@@ -56,7 +56,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
     deleteSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
     deleteSymbol.Glyph(L"\xE74D");
     deleteRemapKeys.Content(deleteSymbol);
-    deleteRemapKeys.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+    deleteRemapKeys.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         StackPanel currentRow = sender.as<Button>().Parent().as<StackPanel>();
         uint32_t index;
         parent.Children().IndexOf(currentRow, index);
@@ -77,7 +77,7 @@ StackPanel SingleKeyRemapControl::getSingleKeyRemapControl()
 }
 
 // Function to create the detect remap key UI window
-void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, KeyboardManagerState& keyboardManagerState, const size_t rowIndex, const size_t colIndex)
+void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, KeyboardManagerState& keyboardManagerState, const size_t rowIndex, const size_t colIndex)
 {
     // ContentDialog for detecting remap key. This is the parent UI element.
     ContentDialog detectRemapKeyBox;
@@ -91,7 +91,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
     detectRemapKeyBox.IsSecondaryButtonEnabled(false);
 
     // Get the linked text block for the "Type Key" button that was clicked
-    ComboBox linkedRemapDropDown = getSiblingElement(sender).as<ComboBox>();
+    ComboBox linkedRemapDropDown = KeyboardManagerHelper::getSiblingElement(sender).as<ComboBox>();
 
     auto unregisterKeys = [&keyboardManagerState]() {
         std::thread t1(&KeyboardManagerState::UnregisterKeyDelay, &keyboardManagerState, VK_ESCAPE);
@@ -135,7 +135,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
     primaryButton.HorizontalAlignment(HorizontalAlignment::Stretch);
     primaryButton.Margin({ 2, 2, 2, 2 });
     primaryButton.Content(primaryButtonText);
-    primaryButton.Click([onAccept](IInspectable const& sender, RoutedEventArgs const&) {
+    primaryButton.Click([onAccept](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         onAccept();
     });
 
@@ -165,7 +165,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(IInspectable const& sender, Xa
     cancelButton.Margin({ 2, 2, 2, 2 });
     cancelButton.Content(cancelButtonText);
     // Cancel button
-    cancelButton.Click([detectRemapKeyBox, unregisterKeys, &keyboardManagerState](IInspectable const& sender, RoutedEventArgs const&) {
+    cancelButton.Click([detectRemapKeyBox, unregisterKeys, &keyboardManagerState](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();
         unregisterKeys();

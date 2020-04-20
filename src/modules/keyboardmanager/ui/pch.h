@@ -21,6 +21,5 @@ using namespace Windows::UI;
 using namespace Windows::UI::Composition;
 using namespace Windows::UI::Xaml::Hosting;
 using namespace Windows::Foundation::Numerics;
-using namespace Windows::Foundation;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
