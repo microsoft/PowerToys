@@ -142,7 +142,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
                 Windows::UI::Core::CoreDispatcherPriority::Normal,
                 [primaryButton] {
                     // Use the base medium low brush to be consistent with the theme
-                    primaryButton.Background((Windows::UI::Xaml::Application::Current().Resources().Lookup(box_value(L"SystemControlBackgroundBaseMediumLowBrush")).as<Windows::UI::Xaml::Media::SolidColorBrush>()));
+                    primaryButton.Background(Windows::UI::Xaml::Application::Current().Resources().Lookup(box_value(L"SystemControlBackgroundBaseMediumLowBrush")).as<Windows::UI::Xaml::Media::SolidColorBrush>());
                 });
         },
         [onAccept, detectRemapKeyBox](DWORD) {

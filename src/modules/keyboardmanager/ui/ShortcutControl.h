@@ -31,7 +31,6 @@ public:
 
     ShortcutControl(const size_t rowIndex, const size_t colIndex)
     {
-        shortcutDropDownStackPanel.RequestedTheme(ElementTheme::Light);
         shortcutDropDownStackPanel.Spacing(10);
         shortcutDropDownStackPanel.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
         KeyDropDownControl::AddDropDown(shortcutDropDownStackPanel, rowIndex, colIndex, shortcutRemapBuffer, keyDropDownControlObjects);
@@ -43,7 +42,6 @@ public:
             createDetectShortcutWindow(sender, sender.as<Button>().XamlRoot(), shortcutRemapBuffer, *keyboardManagerState, rowIndex, colIndex);
         });
 
-        shortcutControlLayout.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
         shortcutControlLayout.Margin({ 0, 0, 0, 10 });
         shortcutControlLayout.Spacing(10);
 
