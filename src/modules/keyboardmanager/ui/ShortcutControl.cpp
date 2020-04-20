@@ -101,11 +101,7 @@ StackPanel ShortcutControl::getShortcutControl()
 }
 
 // Function to create the detect shortcut UI window
-<<<<<<< HEAD
-void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, KeyboardManagerState& keyboardManagerState, const int& rowIndex, const int& colIndex)
-=======
-void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, KeyboardManagerState& keyboardManagerState, const size_t rowIndex, const size_t colIndex)
->>>>>>> dev/build-features
+void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, KeyboardManagerState& keyboardManagerState, const size_t rowIndex, const size_t colIndex)
 {
     // ContentDialog for detecting shortcuts. This is the parent UI element.
     ContentDialog detectShortcutBox;
@@ -119,11 +115,7 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
     detectShortcutBox.IsSecondaryButtonEnabled(false);
 
     // Get the linked text block for the "Type shortcut" button that was clicked
-<<<<<<< HEAD
-    TextBlock linkedShortcutText = KeyboardManagerHelper::getSiblingElement(sender).as<TextBlock>();
-=======
-    StackPanel linkedShortcutStackPanel = getSiblingElement(sender).as<StackPanel>();
->>>>>>> dev/build-features
+    StackPanel linkedShortcutStackPanel = KeyboardManagerHelper::getSiblingElement(sender).as<StackPanel>();
 
     auto unregisterKeys = [&keyboardManagerState]() {
         std::thread t1(&KeyboardManagerState::UnregisterKeyDelay, &keyboardManagerState, VK_ESCAPE);
