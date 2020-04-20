@@ -1,4 +1,4 @@
-﻿<UserControl
+<UserControl
     x:Class="PowerLauncher.UI.ResultList"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -12,7 +12,7 @@
     d:DesignWidth="720">
     <Grid 
         x:Name="PowerBar" 
-        Background="{StaticResource BackdropAcrylicBrush}"        
+        Background="{ThemeResource BackdropAcrylicBrush}"        
         Translation="0,0,16" 
         VerticalAlignment="Top">
         <ListView 
@@ -92,7 +92,7 @@
                                     </Button>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
-                         </ListView>
+                        </ListView>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>

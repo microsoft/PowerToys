@@ -21,6 +21,7 @@ using Windows.System;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Core;
+using System.Windows.Media;
 
 namespace PowerLauncher
 {
@@ -45,6 +46,7 @@ namespace PowerLauncher
             _viewModel = mainVM;
             _settings = settings;
             InitializeComponent();
+
         }
         public MainWindow()
         {
@@ -62,33 +64,6 @@ namespace PowerLauncher
 
         private void OnLoaded(object sender, System.Windows.RoutedEventArgs _)
         {
-            // todo is there a way to set blur only once?
-            //ThemeManager.Instance.SetBlurForWindow();
-            //WindowsInteropHelper.DisableControlBox(this);
-            //InitProgressbarAnimation();
-            //InitializePosition();
-            //// since the default main window visibility is visible
-            //// so we need set focus during startup
-            //QueryTextBox.Focus();
-
-            //_viewModel.PropertyChanged += (o, e) =>
-            //{
-            //    if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
-            //    {
-            //        if (Visibility == Visibility.Visible)
-            //        {
-            //            Activate();
-            //            QueryTextBox.Focus();
-            //            UpdatePosition();
-            //            _settings.ActivateTimes++;
-            //            if (!_viewModel.LastQuerySelected)
-            //            {
-            //                QueryTextBox.SelectAll();
-            //                _viewModel.LastQuerySelected = true;
-            //            }
-            //        }
-            //    }
-            //};
             InitializePosition();
         }
 
@@ -168,23 +143,6 @@ namespace PowerLauncher
             return left;
         }
 
-        //private double WindowTop()
-        //{
-        //    var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
-        //    var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
-        //    var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
-        //    var top = (dip2.Y - QueryTextBox.ActualHeight) / 4 + dip1.Y;
-        //    return top;
-        //}
-
-        //private void OnTextChanged(object sender, TextChangedEventArgs e)
-        //{
-        //    if (_viewModel.QueryTextCursorMovedToEnd)
-        //    {
-        //        QueryTextBox.CaretIndex = QueryTextBox.Text.Length;
-        //        _viewModel.QueryTextCursorMovedToEnd = false;
-        //    }
-        //}
 
         private PowerLauncher.UI.LauncherControl _launcher = null;
         private void WindowsXamlHostTextBox_ChildChanged(object sender, EventArgs ev)
@@ -197,6 +155,7 @@ namespace PowerLauncher
             _launcher.KeyDown += _launcher_KeyDown;
             _launcher.TextBox.TextChanged += QueryTextBox_TextChanged;
             _launcher.TextBox.Loaded += TextBox_Loaded;
+            _launcher.PropertyChanged += UserControl_PropertyChanged;
             _viewModel.PropertyChanged += (o, e) =>
             {
                 if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
@@ -209,10 +168,24 @@ namespace PowerLauncher
                         if (!_viewModel.LastQuerySelected)
                         {
                             _viewModel.LastQuerySelected = true;
-                        }
+                        }          
                     }
                 }
-            };
+            };           
+        }
+
+        private void UserControl_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "SolidBorderBrush")
+            {
+                if (_launcher != null)
+                {
+                    Windows.UI.Xaml.Media.SolidColorBrush uwpBrush = _launcher.SolidBorderBrush as Windows.UI.Xaml.Media.SolidColorBrush;
+                    System.Windows.Media.Color borderColor = System.Windows.Media.Color.FromArgb(uwpBrush.Color.A, uwpBrush.Color.R, uwpBrush.Color.G, uwpBrush.Color.B);
+                    this.SearchBoxBorder.BorderBrush = new SolidColorBrush(borderColor);
+                    this.ListBoxBorder.BorderBrush = new SolidColorBrush(borderColor);
+                }
+            }
         }
 
         private void TextBox_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
@@ -234,9 +207,6 @@ namespace PowerLauncher
             _resultList.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
             _resultList.SuggestionsList.ContainerContentChanging += SuggestionList_UpdateListSize;
         }
-
-
-
 
         private bool IsKeyDown(VirtualKey key)
         {

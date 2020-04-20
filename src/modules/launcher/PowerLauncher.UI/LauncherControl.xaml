@@ -5,9 +5,11 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-       xmlns:ToolkitBehaviors="using:Microsoft.Toolkit.Uwp.UI.Animations.Behaviors"
-      xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
-     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:ToolkitBehaviors="using:Microsoft.Toolkit.Uwp.UI.Animations.Behaviors"
+    xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+    ActualThemeChanged="UserControl_ActualThemeChanged"
+    Loaded="UserControl_Loaded"
     d:DesignHeight="300"
     d:DesignWidth="720">
     <UserControl.Resources>
@@ -354,7 +356,7 @@
     </UserControl.Resources>
     <Grid 
         x:Name="PowerBar" 
-        Background="{StaticResource BackdropAcrylicBrush}"
+        Background="{ThemeResource BackdropAcrylicBrush}"
         Height="72" 
         Translation="0,0,16" 
         VerticalAlignment="Top">

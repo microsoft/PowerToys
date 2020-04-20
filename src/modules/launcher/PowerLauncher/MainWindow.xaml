@@ -32,14 +32,14 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Border Margin="10" Grid.Row="0" BorderBrush="Black" BorderThickness="5" CornerRadius="4">
+        <Border x:Name="SearchBoxBorder" Margin="10" Grid.Row="0" BorderThickness="4" CornerRadius="4">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="12" Opacity="0.3" ShadowDepth="4" />
             </Border.Effect>
             <xaml:WindowsXamlHost  InitialTypeName="PowerLauncher.UI.LauncherControl" ChildChanged="WindowsXamlHostTextBox_ChildChanged" />
         </Border>
         <Border Grid.Row="1" Name="myElement" Background="Transparent" Height="10"/>
-        <Border Margin="10" Grid.Row="2" BorderBrush="Black" BorderThickness="5" CornerRadius="4" Visibility="{Binding Results.Visbility}">
+        <Border x:Name="ListBoxBorder" Margin="10" Grid.Row="2" BorderThickness="4" CornerRadius="4" Visibility="{Binding Results.Visbility}">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="12" Opacity="0.3" ShadowDepth="4" />
             </Border.Effect>
