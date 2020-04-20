@@ -12,7 +12,7 @@
     d:DesignWidth="720">
     <Grid 
         x:Name="PowerBar" 
-        Background="{ThemeResource BackdropAcrylicBrush}"    
+        Background="{ThemeResource BackdropAcrylicBrush}"        
         Translation="0,0,16" 
         VerticalAlignment="Top">
         <ListView 
@@ -92,7 +92,7 @@
                                     </Button>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
-                         </ListView>
+                        </ListView>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
