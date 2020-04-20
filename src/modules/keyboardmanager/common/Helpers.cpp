@@ -28,7 +28,7 @@ namespace KeyboardManagerHelper
         parentElement.Children().IndexOf(frameworkElement, index);
         return parentElement.Children().GetAt(index + 1);
     }
-
+    
     // Function to check if the key is a modifier key
     bool IsModifierKey(DWORD key)
     {
