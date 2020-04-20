@@ -338,7 +338,7 @@ namespace PowerLauncher
             }
         }
 
-        private const int millisecondsToWait = 20;
+        private const int millisecondsToWait = 200;
         private static DateTime s_lastTimeOfTyping;
 
         private string ListView_FirstItem(String input)
