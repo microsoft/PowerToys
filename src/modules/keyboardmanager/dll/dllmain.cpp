@@ -90,14 +90,14 @@ public:
                 if (configFile)
                 {
                     auto jsonData = *configFile;
-                    auto remapKeysData = jsonData.GetNamedArray(KeyboardManagerConstants::RemapKeysSettingName);
+                    auto remapKeysData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName);
                     auto remapShortcutsData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapShortcutsSettingName);
-                    auto globalRemapShortcuts = remapShortcutsData.GetNamedArray(KeyboardManagerConstants::GlobalRemapShortcutsSettingName);
                     keyboardManagerState.ClearSingleKeyRemaps();
 
                     if (remapKeysData)
                     {
-                        for (const auto &it : remapKeysData)
+                        auto inProcessRemapKeys = remapKeysData.GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName);
+                        for (const auto& it : inProcessRemapKeys)
                         {
                             try
                             {
@@ -113,8 +113,9 @@ public:
                     }
 
                     keyboardManagerState.ClearOSLevelShortcuts();
-                    if (globalRemapShortcuts)
+                    if (remapShortcutsData)
                     {
+                        auto globalRemapShortcuts = remapShortcutsData.GetNamedArray(KeyboardManagerConstants::GlobalRemapShortcutsSettingName);
                         for (const auto& it : globalRemapShortcuts)
                         {
                             try

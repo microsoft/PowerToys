@@ -57,12 +57,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
             return watcher;
         }
 
-        public static T GetConfigFile<T>(string moduleName, string configName)
-        {
-            var jsonSettingsString = File.ReadAllText(Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{moduleName}\\{configName}" + ".json"));
-            return JsonSerializer.Deserialize<T>(jsonSettingsString);
-        }
-
         private static string LocalApplicationDataFolder()
         {
             return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);

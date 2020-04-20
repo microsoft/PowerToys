@@ -70,7 +70,6 @@
     <Compile Include="ViewModels\GeneralViewModel.cs" />
     <Compile Include="ViewModels\FancyZonesViewModel.cs" />
     <Compile Include="ViewModels\ImageResizerViewModel.cs" />
-    <Compile Include="ViewModels\KeyboardManagerItemSelector.cs" />
     <Compile Include="ViewModels\KeyboardManagerViewModel.cs" />
     <Compile Include="ViewModels\Keys.cs" />
     <Compile Include="ViewModels\PowerPreviewViewModel.cs" />

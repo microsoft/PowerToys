@@ -3,19 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.Views;
-using Microsoft.UI.Xaml.Controls;
-using Windows.ApplicationModel.UserDataTasks;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -26,14 +21,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private const string RemapKeyboardActionValue = "Open Remap Keyboard Window";
         private const string EditShortcutActionName = "EditShortcut";
         private const string EditShortcutActionValue = "Open Edit Shortcut Window";
+        private const string JsonFileType = ".json";
+        private const string ConfigFileMutexName = "PowerToys.KeyboardManager.ConfigMutex";
+        private const int ConfigFileMutexWaitTimeoutMiliSeconds = 1000;
 
-        // This is an dummy file which will be updated by the Keyboard Manager Module after finish up writing to the configuration file.
-        private const string WatchFileName = "settings-updated.json";
-
-        // Time in miliseconds to group multiple fired events as one. Single file update can fire multiple events.
-        private const double TriggerExpirationThreshold = 100;
-
-        private DateTimeOffset lastTriggerTime = DateTimeOffset.MinValue;
         private ICommand remapKeyboardCommand;
         private ICommand editShortcutCommand;
         private FileSystemWatcher watcher;
@@ -56,7 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 SettingsUtils.SaveSettings(settings.ToJsonString(), PowerToyName);
             }
 
-            this.watcher = Helper.GetFileWatcher(PowerToyName, WatchFileName, OnConfigFileUpdate);
+            watcher = Helper.GetFileWatcher(PowerToyName, settings.Properties.ActiveConfiguration.Value + JsonFileType, OnConfigFileUpdate);
         }
 
         private async void OnRemapKeyboard()
@@ -85,13 +76,35 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void OnConfigFileUpdate()
         {
-            // Todo: update the UI data source here.
-            var lastEventTimeDiff = (DateTimeOffset.UtcNow - lastTriggerTime).TotalMilliseconds;
-            lastTriggerTime = DateTimeOffset.UtcNow;
-            if (lastEventTimeDiff > TriggerExpirationThreshold)
+            // Note: FileSystemWatcher raise notification mutiple times for single update operation.
+            // Todo: Handle duplicate events either by somehow supress them or re-read the configuration everytime since we will be updating the UI only if something is changed.
+            GetKeyboardManagerConfigFile();
+        }
+
+        private void GetKeyboardManagerConfigFile()
+        {
+            try
             {
-                // Todo: Update the UI here.
-                var temp = SettingsUtils.GetSettings<KeyboadManagerConfigModel>(PowerToyName, "default.json");
+                using (var configFileMutex = Mutex.OpenExisting(ConfigFileMutexName))
+                {
+                    if (configFileMutex.WaitOne(ConfigFileMutexWaitTimeoutMiliSeconds))
+                    {
+                        // update the UI element here.
+                        try
+                        {
+                            var config = SettingsUtils.GetSettings<KeyboadManagerConfigModel>(PowerToyName, settings.Properties.ActiveConfiguration.Value + JsonFileType);
+                        }
+                        finally
+                        {
+                            // Make sure to release the mutex.
+                            configFileMutex.ReleaseMutex();
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Failed to load the configuration.
             }
         }
     }

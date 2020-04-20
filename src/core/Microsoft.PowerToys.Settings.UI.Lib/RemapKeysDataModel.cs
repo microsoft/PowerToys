@@ -7,12 +7,9 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class KeyboadManagerConfigModel
+    public class RemapKeysDataModel
     {
-        [JsonPropertyName("remapKeys")]
-        public RemapKeysDataModel RemapKeys { get; set; }
-
-        [JsonPropertyName("remapShortcuts")]
-        public ShortcutsKeyDataModel RemapShortcuts { get; set; }
+        [JsonPropertyName("inProcess")]
+        public List<KeysDataModel> InProcessRemapKeys { get; set; }
     }
 }

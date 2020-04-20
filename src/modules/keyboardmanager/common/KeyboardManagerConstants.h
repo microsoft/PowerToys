@@ -9,10 +9,13 @@ namespace KeyboardManagerConstants
     // Name of the property use to store current active configuration.
     inline const std::wstring ActiveConfigurationSettingName = L"activeConfiguration";
 
-    // Name of the property use to store single keyremaps array.
+    // Name of the property use to store single keyremaps.
     inline const std::wstring RemapKeysSettingName = L"remapKeys";
 
-    // Name of the property use to store shortcut remaps array.
+    // Name of the property use to store single keyremaps array in case of in process approach.
+    inline const std::wstring InProcessRemapKeysSettingName = L"inProcess";
+
+    // Name of the property use to store shortcut remaps.
     inline const std::wstring RemapShortcutsSettingName = L"remapShortcuts";
 
     // Name of the property use to store global shortcut remaps array.
@@ -26,6 +29,9 @@ namespace KeyboardManagerConstants
 
     // Name of the default configuration.
     inline const std::wstring DefaultConfiguration = L"default";
+
+    // Name of the named mutex used for configuration file.
+    inline const std::wstring ConfigFileMutexName = L"PowerToys.KeyboardManager.ConfigMutex";
 
     // Name of the dummy update file.
     inline const std::wstring DummyUpdateFileName = L"settings-updated.json";

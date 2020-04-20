@@ -5,6 +5,19 @@
 KeyboardManagerState::KeyboardManagerState() :
     uiState(KeyboardManagerUIState::Deactivated), currentUIWindow(nullptr), currentShortcutUI(nullptr), currentSingleKeyUI(nullptr), detectedRemapKey(NULL)
 {
+    configFile_mutex = CreateMutex(
+        NULL, // default security descriptor
+        FALSE, // mutex not owned
+        KeyboardManagerConstants::ConfigFileMutexName.c_str());
+}
+
+// Destructor
+KeyboardManagerState::~KeyboardManagerState()
+{
+    if (configFile_mutex)
+    {
+        CloseHandle(configFile_mutex);
+    }
 }
 
 // Function to check the if the UI state matches the argument state. For states with activated windows it also checks if the window is in focus.
@@ -352,7 +365,8 @@ bool KeyboardManagerState::SaveConfigToFile()
     bool result = true;
     json::JsonObject configJson;
     json::JsonObject remapShortcuts;
-    json::JsonArray remapKeysArray;
+    json::JsonObject remapKeys;
+    json::JsonArray inProcessRemapKeysArray;
     json::JsonArray globalRemapShortcutsArray;
     std::unique_lock<std::mutex> lockSingleKeyReMap(singleKeyReMap_mutex);
     for (const auto &it : singleKeyReMap)
@@ -361,7 +375,7 @@ bool KeyboardManagerState::SaveConfigToFile()
         keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(winrt::to_hstring((unsigned int)it.first)));
         keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(winrt::to_hstring((unsigned int)it.second)));
 
-        remapKeysArray.Append(keys);
+        inProcessRemapKeysArray.Append(keys);
     }
     lockSingleKeyReMap.unlock();
 
@@ -377,17 +391,30 @@ bool KeyboardManagerState::SaveConfigToFile()
     lockOsLevelShortcutReMap.unlock();
 
     remapShortcuts.SetNamedValue(KeyboardManagerConstants::GlobalRemapShortcutsSettingName, globalRemapShortcutsArray);
-    configJson.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeysArray);
+    remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, inProcessRemapKeysArray);
+    configJson.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeys);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsSettingName, remapShortcuts);
 
-    try
+    // Set timeout of 1sec to wait for file to get free.
+    DWORD timeout = 1000;
+    auto dwWaitResult = WaitForSingleObject(
+        configFile_mutex,
+        timeout);
+    if (dwWaitResult == WAIT_OBJECT_0)
     {
-        json::to_file((PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + GetCurrentConfigName() + L".json"), configJson);
+        try
+        {
+            json::to_file((PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + GetCurrentConfigName() + L".json"), configJson);
+        }
+        catch (...)
+        {
+            result = false;
+        }
 
-        // Hack to update another dummmy file to notify the Setting Process that the Update is completed.
-        json::to_file((PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + KeyboardManagerConstants::DummyUpdateFileName), json::JsonObject{});
+        // Make sure to release the Mutex.
+        ReleaseMutex(configFile_mutex);
     }
-    catch (...)
+    else
     {
         result = false;
     }
