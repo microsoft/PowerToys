@@ -22,7 +22,7 @@ static BOOL CALLBACK GetDisplaysEnumCb(HMONITOR monitor, HDC hdc, LPRECT rect, L
     return true;
 };
 
-static BOOL CALLBACK GetDisplaysEnumCbWithToolbar(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
+static BOOL CALLBACK GetDisplaysEnumCbWithNonWorkingArea(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
 {
     MONITORINFOEX monitorInfo;
     monitorInfo.cbSize = sizeof(MONITORINFOEX);
@@ -33,10 +33,10 @@ static BOOL CALLBACK GetDisplaysEnumCbWithToolbar(HMONITOR monitor, HDC hdc, LPR
     return true;
 };
 
-std::vector<MonitorInfo> MonitorInfo::GetMonitors(bool include_toolbar)
+std::vector<MonitorInfo> MonitorInfo::GetMonitors(bool includeNonWorkingArea)
 {
     std::vector<MonitorInfo> monitors;
-    EnumDisplayMonitors(NULL, NULL, include_toolbar ? GetDisplaysEnumCbWithToolbar : GetDisplaysEnumCb, reinterpret_cast<LPARAM>(&monitors));
+    EnumDisplayMonitors(NULL, NULL, includeNonWorkingArea ? GetDisplaysEnumCbWithNonWorkingArea : GetDisplaysEnumCb, reinterpret_cast<LPARAM>(&monitors));
     std::sort(begin(monitors), end(monitors), [](const MonitorInfo& lhs, const MonitorInfo& rhs) {
         return lhs.rect < rhs.rect;
     });
@@ -48,7 +48,7 @@ static BOOL CALLBACK GetPrimaryDisplayEnumCb(HMONITOR monitor, HDC hdc, LPRECT r
     MONITORINFOEX monitorInfo;
     monitorInfo.cbSize = sizeof(MONITORINFOEX);
 
-    if (GetMonitorInfo(monitor, &monitorInfo) && monitorInfo.dwFlags & MONITORINFOF_PRIMARY)
+    if (GetMonitorInfo(monitor, &monitorInfo) && (monitorInfo.dwFlags & MONITORINFOF_PRIMARY))
     {
         reinterpret_cast<MonitorInfo*>(data)->handle = monitor;
         reinterpret_cast<MonitorInfo*>(data)->rect = monitorInfo.rcWork;

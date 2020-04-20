@@ -31,7 +31,7 @@ struct MonitorInfo : ScreenSize
     HMONITOR handle;
 
     // Returns monitor rects ordered from left to right
-    static std::vector<MonitorInfo> GetMonitors(bool include_toolbar);
+    static std::vector<MonitorInfo> GetMonitors(bool includeNonWorkingArea);
     static MonitorInfo GetPrimaryMonitor();
 };
 

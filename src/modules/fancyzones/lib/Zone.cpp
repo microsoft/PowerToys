@@ -101,8 +101,7 @@ bool allMonitorsHaveSameDpiScaling()
         UINT iteratedMonitorDpiY;
 
         if (S_OK != GetDpiForMonitor(monitors[i], MDT_EFFECTIVE_DPI, &iteratedMonitorDpiX, &iteratedMonitorDpiY) ||
-            iteratedMonitorDpiX != firstMonitorDpiX ||
-            iteratedMonitorDpiY != firstMonitorDpiY)
+            iteratedMonitorDpiX != firstMonitorDpiX)
         {
             return false;
         }
