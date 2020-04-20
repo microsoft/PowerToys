@@ -21,9 +21,7 @@ using Windows.System;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Core;
-using System.Diagnostics;
-using Windows.UI.ViewManagement;
-using Color = Windows.UI.Color;
+using System.Windows.Media;
 
 namespace PowerLauncher
 {
@@ -40,14 +38,6 @@ namespace PowerLauncher
         const int ROW_HEIGHT = 75;
         const int MAX_LIST_HEIGHT = 300;
 
-        UISettings UISettings;
-        Color currentTheme;
-        Color LightTheme = Color.FromArgb(255, 255, 255, 255);
-        Color DefaultTheme = Color.FromArgb(255, 0, 0, 0);       
-        System.Windows.Media.SolidColorBrush BorderBrushLightTheme = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 255, 255, 255));
-        System.Windows.Media.SolidColorBrush BorderBrushDefaultTheme = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 72, 72, 72));
-
-
         #endregion
 
         public MainWindow(Settings settings, MainViewModel mainVM)
@@ -56,8 +46,7 @@ namespace PowerLauncher
             _viewModel = mainVM;
             _settings = settings;
             InitializeComponent();
-            UISettings =  new UISettings();
-            currentTheme = UISettings.GetColorValue(UIColorType.Background);
+
         }
         public MainWindow()
         {
@@ -75,7 +64,6 @@ namespace PowerLauncher
 
         private void OnLoaded(object sender, System.Windows.RoutedEventArgs _)
         {
-            ApplyTheme(currentTheme);
             InitializePosition();
         }
 
@@ -167,7 +155,7 @@ namespace PowerLauncher
             _launcher.KeyDown += _launcher_KeyDown;
             _launcher.TextBox.TextChanged += QueryTextBox_TextChanged;
             _launcher.TextBox.Loaded += TextBox_Loaded;
-            _launcher.ActualThemeChanged += Launcher_ActualThemeChanged;
+            _launcher.PropertyChanged += UserControl_PropertyChanged;
             _viewModel.PropertyChanged += (o, e) =>
             {
                 if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
@@ -186,31 +174,18 @@ namespace PowerLauncher
             };           
         }
 
-        private void ApplyTheme (Color theme)
+        private void UserControl_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (theme == LightTheme)
-            {               
-                this.SearchBoxBorder.BorderBrush = BorderBrushLightTheme;
-                this.ListBoxBorder.BorderBrush = BorderBrushLightTheme;
-            }
-            else
+            if (e.PropertyName == "SolidBorderBrush")
             {
-                this.SearchBoxBorder.BorderBrush = BorderBrushDefaultTheme;
-                this.ListBoxBorder.BorderBrush = BorderBrushDefaultTheme;
+                if (_launcher != null)
+                {
+                    Windows.UI.Xaml.Media.SolidColorBrush uwpBrush = _launcher.SolidBorderBrush as Windows.UI.Xaml.Media.SolidColorBrush;
+                    System.Windows.Media.Color borderColor = System.Windows.Media.Color.FromArgb(uwpBrush.Color.A, uwpBrush.Color.R, uwpBrush.Color.G, uwpBrush.Color.B);
+                    this.SearchBoxBorder.BorderBrush = new SolidColorBrush(borderColor);
+                    this.ListBoxBorder.BorderBrush = new SolidColorBrush(borderColor);
+                }
             }
-        } 
-
-        private void Launcher_ActualThemeChanged(Windows.UI.Xaml.FrameworkElement sender, object args)
-        {
-            var newTheme = UISettings.GetColorValue(UIColorType.Background);
-            if(currentTheme != newTheme)
-            {               
-                if(newTheme == LightTheme)
-                    ApplyTheme(LightTheme);
-                else if (currentTheme == LightTheme)
-                    ApplyTheme(DefaultTheme);
-                currentTheme = newTheme;
-            }          
         }
 
         private void TextBox_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
