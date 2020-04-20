@@ -14,7 +14,7 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut)
     keyCodeList = keyboardManagerState->keyboardMap.GetKeyCodeList(isShortcut);
     dropDown.ItemsSource(keyboardManagerState->keyboardMap.GetKeyNameList(isShortcut));
     // drop down open handler - to reload the items with the latest layout
-    dropDown.DropDownOpened([&, isShortcut](IInspectable const& sender, auto args) {
+    dropDown.DropDownOpened([&, isShortcut](winrt::Windows::Foundation::IInspectable const& sender, auto args) {
         ComboBox currentDropDown = sender.as<ComboBox>();
         CheckAndUpdateKeyboardLayout(currentDropDown, isShortcut);
     });
@@ -93,7 +93,7 @@ bool KeyDropDownControl::CheckRepeatedModifier(StackPanel parent, uint32_t dropD
         if (i != dropDownIndex)
         {
             // If the key type for the newly added key matches any of the existing keys in the shortcut
-            if (GetKeyType(keyCodeList[selectedKeyIndex]) == GetKeyType(currentKeys[i]))
+            if (KeyboardManagerHelper::GetKeyType(keyCodeList[selectedKeyIndex]) == KeyboardManagerHelper::GetKeyType(currentKeys[i]))
             {
                 matchPreviousModifier = true;
                 break;

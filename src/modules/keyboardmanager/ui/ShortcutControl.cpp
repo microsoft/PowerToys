@@ -27,14 +27,13 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     // ShortcutControl for the new shortcut
     tableRow.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getShortcutControl());
 
-    
     // Delete row button
     Windows::UI::Xaml::Controls::Button deleteShortcut;
     FontIcon deleteSymbol;
     deleteSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
     deleteSymbol.Glyph(L"\xE74D");
     deleteShortcut.Content(deleteSymbol);
-    deleteShortcut.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+    deleteShortcut.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         StackPanel currentRow = sender.as<Button>().Parent().as<StackPanel>();
         uint32_t index;
         parent.Children().IndexOf(currentRow, index);
@@ -61,7 +60,6 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         // Initialize both shortcuts as empty shortcuts
         shortcutRemapBuffer.push_back(std::vector<Shortcut>{ Shortcut(), Shortcut() });
     }
-
 }
 
 // Function to add a shortcut to the shortcut control as combo boxes
@@ -101,7 +99,7 @@ StackPanel ShortcutControl::getShortcutControl()
 }
 
 // Function to create the detect shortcut UI window
-void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, KeyboardManagerState& keyboardManagerState, const size_t rowIndex, const size_t colIndex)
+void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, KeyboardManagerState& keyboardManagerState, const size_t rowIndex, const size_t colIndex)
 {
     // ContentDialog for detecting shortcuts. This is the parent UI element.
     ContentDialog detectShortcutBox;
@@ -115,7 +113,7 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
     detectShortcutBox.IsSecondaryButtonEnabled(false);
 
     // Get the linked text block for the "Type shortcut" button that was clicked
-    StackPanel linkedShortcutStackPanel = getSiblingElement(sender).as<StackPanel>();
+    StackPanel linkedShortcutStackPanel = KeyboardManagerHelper::getSiblingElement(sender).as<StackPanel>();
 
     auto unregisterKeys = [&keyboardManagerState]() {
         std::thread t1(&KeyboardManagerState::UnregisterKeyDelay, &keyboardManagerState, VK_ESCAPE);
@@ -161,7 +159,7 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
     primaryButton.Content(primaryButtonText);
 
     // OK button
-    primaryButton.Click([onAccept](IInspectable const& sender, RoutedEventArgs const&) {
+    primaryButton.Click([onAccept](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         onAccept();
     });
 
@@ -191,7 +189,7 @@ void ShortcutControl::createDetectShortcutWindow(IInspectable const& sender, Xam
     cancelButton.Margin({ 2, 2, 2, 2 });
     cancelButton.Content(cancelButtonText);
     // Cancel button
-    cancelButton.Click([detectShortcutBox, unregisterKeys, &keyboardManagerState](IInspectable const& sender, RoutedEventArgs const&) {
+    cancelButton.Click([detectShortcutBox, unregisterKeys, &keyboardManagerState](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();
         unregisterKeys();

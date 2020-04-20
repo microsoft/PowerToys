@@ -10,6 +10,8 @@
 #include <keyboardmanager/common/KeyboardManagerState.h>
 #include <keyboardmanager/common/Shortcut.h>
 #include <keyboardmanager/common/RemapShortcut.h>
+#include <keyboardmanager/common/KeyboardManagerConstants.h>
+#include <common\settings_helpers.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -64,11 +66,80 @@ public:
     // Constructor
     KeyboardManager()
     {
-        init_map();
+        // Load the initial configuration.
+        load_config();
 
         // Set the static pointer to the newest object of the class
         keyboardmanager_object_ptr = this;
     };
+
+    // Load config from the saved settings.
+    void load_config() 
+    {
+        try
+        {
+            PowerToysSettings::PowerToyValues settings =
+                PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
+            auto current_config = settings.get_string_value(KeyboardManagerConstants::ActiveConfigurationSettingName);
+
+            if (current_config)
+            {
+                keyboardManagerState.SetCurrentConfigName(*current_config);
+                // Read the config file and load the remaps.
+                auto configFile = json::from_file(PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + *current_config + L".json");
+                if (configFile)
+                {
+                    auto jsonData = *configFile;
+                    auto remapKeysData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName);
+                    auto remapShortcutsData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapShortcutsSettingName);
+                    keyboardManagerState.ClearSingleKeyRemaps();
+
+                    if (remapKeysData)
+                    {
+                        auto inProcessRemapKeys = remapKeysData.GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName);
+                        for (const auto& it : inProcessRemapKeys)
+                        {
+                            try
+                            {
+                                auto originalKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
+                                auto newRemapKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
+                                keyboardManagerState.AddSingleKeyRemap(std::stoul(originalKey.c_str()), std::stoul(newRemapKey.c_str()));
+                            }
+                            catch (...)
+                            {
+                                // Improper Key Data JSON. Try the next remap.
+                            }
+                        }
+                    }
+
+                    keyboardManagerState.ClearOSLevelShortcuts();
+                    if (remapShortcutsData)
+                    {
+                        auto globalRemapShortcuts = remapShortcutsData.GetNamedArray(KeyboardManagerConstants::GlobalRemapShortcutsSettingName);
+                        for (const auto& it : globalRemapShortcuts)
+                        {
+                            try
+                            {
+                                auto originalKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
+                                auto newRemapKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
+                                Shortcut originalSC(originalKeys.c_str());
+                                Shortcut newRemapSC(newRemapKeys.c_str());
+                                keyboardManagerState.AddOSLevelShortcut(originalSC, newRemapSC);
+                            }
+                            catch (...)
+                            {
+                                // Improper Key Data JSON. Try the next shortcut.
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch (...)
+        {
+            // Unable to load inital config.
+        }
+    }
 
     // This function is used to add the hardcoded mappings
     void init_map()
@@ -325,7 +396,7 @@ public:
         keyEventArray[index].type = inputType;
         keyEventArray[index].ki.wVk = keyCode;
         keyEventArray[index].ki.dwFlags = flags;
-        if (isExtendedKey(keyCode))
+        if (KeyboardManagerHelper::isExtendedKey(keyCode))
         {
             keyEventArray[index].ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
         }

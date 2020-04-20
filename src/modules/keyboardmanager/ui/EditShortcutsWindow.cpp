@@ -94,7 +94,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Cancel button
     Button cancelButton;
     cancelButton.Content(winrt::box_value(L"Cancel"));
-    cancelButton.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+    cancelButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         // Close the window since settings do not need to be saved
         PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
     });
@@ -128,7 +128,9 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     shortcutTable.Children().Append(tableHeaderRow);
 
     // Message to display success/failure of saving settings.
+    Flyout applyFlyout;
     TextBlock settingsMessage;
+    applyFlyout.Content(settingsMessage);
 
     // Store handle of edit shortcuts window
     ShortcutControl::EditShortcutsWindowHandle = _hWndEditShortcutsWindow;
@@ -151,7 +153,8 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Apply button
     Button applyButton;
     applyButton.Content(winrt::box_value(L"Apply"));
-    applyButton.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+    applyButton.Flyout(applyFlyout);
+    applyButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         bool isSuccess = true;
         // Clear existing shortcuts
         keyboardManagerState.ClearOSLevelShortcuts();
@@ -176,15 +179,20 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
             }
         }
 
-        if (isSuccess)
+        // Save the updated key remaps to file.
+        auto saveResult = keyboardManagerState.SaveConfigToFile();
+
+        if (isSuccess && saveResult)
         {
-            settingsMessage.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Green() });
             settingsMessage.Text(L"Remapping successful!");
+        }
+        else if (!isSuccess && saveResult)
+        {
+            settingsMessage.Text(L"All remappings were not successfully applied.");
         }
         else
         {
-            settingsMessage.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Red() });
-            settingsMessage.Text(L"All remappings were not successfully applied.");
+            settingsMessage.Text(L"Failed to save the remappings.");
         }
     });
 
@@ -200,7 +208,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     plusSymbol.Glyph(L"\xE109");
     addShortcut.Content(plusSymbol);
     addShortcut.Margin({ 10 });
-    addShortcut.Click([&](IInspectable const& sender, RoutedEventArgs const&) {
+    addShortcut.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects);
     });
 
@@ -251,7 +259,7 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
     return 0;
 }
 
-bool CheckEditShortcutsWindowActive() 
+bool CheckEditShortcutsWindowActive()
 {
     bool result = false;
     std::unique_lock<std::mutex> hwndLock(editShortcutsWindowMutex);
