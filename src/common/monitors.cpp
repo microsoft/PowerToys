@@ -11,7 +11,7 @@ bool operator==(const ScreenSize& lhs, const ScreenSize& rhs)
     return lhs_tuple == rhs_tuple;
 }
 
-static BOOL CALLBACK getDisplaysEnumCb(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
+static BOOL CALLBACK GetDisplaysEnumCb(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
 {
     MONITORINFOEX monitorInfo;
     monitorInfo.cbSize = sizeof(MONITORINFOEX);
@@ -22,7 +22,7 @@ static BOOL CALLBACK getDisplaysEnumCb(HMONITOR monitor, HDC hdc, LPRECT rect, L
     return true;
 };
 
-static BOOL CALLBACK getDisplaysEnumCbWithToolbar(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
+static BOOL CALLBACK GetDisplaysEnumCbWithToolbar(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
 {
     MONITORINFOEX monitorInfo;
     monitorInfo.cbSize = sizeof(MONITORINFOEX);
@@ -36,14 +36,14 @@ static BOOL CALLBACK getDisplaysEnumCbWithToolbar(HMONITOR monitor, HDC hdc, LPR
 std::vector<MonitorInfo> MonitorInfo::GetMonitors(bool include_toolbar)
 {
     std::vector<MonitorInfo> monitors;
-    EnumDisplayMonitors(NULL, NULL, include_toolbar ? getDisplaysEnumCbWithToolbar : getDisplaysEnumCb, reinterpret_cast<LPARAM>(&monitors));
+    EnumDisplayMonitors(NULL, NULL, include_toolbar ? GetDisplaysEnumCbWithToolbar : GetDisplaysEnumCb, reinterpret_cast<LPARAM>(&monitors));
     std::sort(begin(monitors), end(monitors), [](const MonitorInfo& lhs, const MonitorInfo& rhs) {
         return lhs.rect < rhs.rect;
     });
     return monitors;
 }
 
-static BOOL CALLBACK getPrimaryDisplayEnumCb(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
+static BOOL CALLBACK GetPrimaryDisplayEnumCb(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
 {
     MONITORINFOEX monitorInfo;
     monitorInfo.cbSize = sizeof(MONITORINFOEX);
@@ -59,6 +59,6 @@ static BOOL CALLBACK getPrimaryDisplayEnumCb(HMONITOR monitor, HDC hdc, LPRECT r
 MonitorInfo MonitorInfo::GetPrimaryMonitor()
 {
     MonitorInfo primary({}, {});
-    EnumDisplayMonitors(NULL, NULL, getPrimaryDisplayEnumCb, reinterpret_cast<LPARAM>(&primary));
+    EnumDisplayMonitors(NULL, NULL, GetPrimaryDisplayEnumCb, reinterpret_cast<LPARAM>(&primary));
     return primary;
 }
