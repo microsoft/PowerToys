@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using Mages.Core;
 
-namespace Wox.Plugin.Caculator
+namespace Wox.Plugin.Calculator
 {
     public class Main : IPlugin, IPluginI18n
     {
@@ -104,12 +104,12 @@ namespace Wox.Plugin.Caculator
 
         public string GetTranslatedPluginTitle()
         {
-            return Context.API.GetTranslation("wox_plugin_caculator_plugin_name");
+            return Context.API.GetTranslation("wox_plugin_calculator_plugin_name");
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return Context.API.GetTranslation("wox_plugin_caculator_plugin_description");
+            return Context.API.GetTranslation("wox_plugin_calculator_plugin_description");
         }
     }
 }
