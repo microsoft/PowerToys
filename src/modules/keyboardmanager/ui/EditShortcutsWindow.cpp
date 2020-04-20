@@ -252,7 +252,7 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
     return 0;
 }
 
-bool CheckEditShortcutsWindowActive() 
+bool CheckEditShortcutsWindowActive()
 {
     bool result = false;
     std::unique_lock<std::mutex> hwndLock(editShortcutsWindowMutex);

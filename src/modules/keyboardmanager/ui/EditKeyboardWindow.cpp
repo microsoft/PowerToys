@@ -136,7 +136,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     keyRemapTable.Children().Append(tableHeaderRow);
 
-    
     // Message to display success/failure of saving settings.
     Flyout applyFlyout;
     TextBlock settingsMessage;
