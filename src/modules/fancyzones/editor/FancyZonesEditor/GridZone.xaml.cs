@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -277,7 +277,14 @@ namespace FancyZonesEditor
 
         private void DoSplit(Orientation orientation, double offset)
         {
-            Split?.Invoke(this, new SplitEventArgs(orientation, offset));
+            int spacing = 0;
+            Settings settings = ((App)Application.Current).ZoneSettings;
+            if (settings.ShowSpacing)
+            {
+                spacing = settings.Spacing;
+            }
+
+            Split?.Invoke(this, new SplitEventArgs(orientation, offset, spacing));
         }
 
         private void FullSplit_Click(object sender, RoutedEventArgs e)

@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
@@ -161,23 +161,67 @@ namespace PowerToysTests
         public void CreateSplitter()
         {
             OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
-            WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
-            Assert.IsNotNull(gridEditor);
-
-            ReadOnlyCollection<AppiumWebElement> thumbs = gridEditor.FindElementsByClassName("Thumb");
-            Assert.AreEqual(3, session.FindElementsByClassName("GridZone").Count);
-            Assert.AreEqual(2, thumbs.Count);
-
-            new Actions(session).MoveToElement(thumbs[0]).MoveByOffset(-30, 0).Click().Perform();
-            Assert.AreEqual(3, gridEditor.FindElementsByClassName("Thumb").Count);
+            WaitSeconds(2);
 
             ReadOnlyCollection<WindowsElement> zones = session.FindElementsByClassName("GridZone");
+            Assert.AreEqual(3, zones.Count, "Zones count invalid");
+
+            const int defaultSpacing = 16;
+            int splitPos = zones[0].Rect.Y + zones[0].Rect.Height / 2;
+
+            new Actions(session).MoveToElement(zones[0]).Click().Perform();
+
+            zones = session.FindElementsByClassName("GridZone");
             Assert.AreEqual(4, zones.Count);
 
-            //check that zone was splitted horizontally 
-            Assert.AreNotEqual(zones[0].Rect.Height, zones[1].Rect.Height);
-            Assert.AreNotEqual(zones[3].Rect.Height, zones[1].Rect.Height);
-            Assert.AreEqual(zones[1].Rect.Height, zones[2].Rect.Height);
+            //check splitted zone 
+            Assert.AreEqual(zones[0].Rect.Top, defaultSpacing);
+            Assert.IsTrue(Math.Abs(zones[0].Rect.Bottom - splitPos + defaultSpacing / 2) <= 2);
+            Assert.IsTrue(Math.Abs(zones[3].Rect.Top - splitPos - defaultSpacing / 2) <= 2);
+            Assert.AreEqual(zones[3].Rect.Bottom, Screen.PrimaryScreen.Bounds.Bottom - defaultSpacing);
+        }
+
+        [TestMethod]
+        public void TestSplitterShiftAfterCreation()
+        {
+            OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
+            WaitSeconds(2);
+
+            ReadOnlyCollection<WindowsElement> zones = session.FindElementsByClassName("GridZone");
+            Assert.AreEqual(3, zones.Count, "Zones count invalid");
+
+            const int defaultSpacing = 16;
+
+            //create first split
+            int firstSplitPos = zones[0].Rect.Y + zones[0].Rect.Height / 4;
+            new Actions(session).MoveToElement(zones[0]).MoveByOffset(0, -(zones[0].Rect.Height / 4)).Click().Perform();
+
+            zones = session.FindElementsByClassName("GridZone");
+            Assert.AreEqual(4, zones.Count);
+
+            Assert.AreEqual(zones[0].Rect.Top, defaultSpacing);
+            Assert.IsTrue(Math.Abs(zones[0].Rect.Bottom - firstSplitPos + defaultSpacing / 2) <= 2);
+            Assert.IsTrue(Math.Abs(zones[3].Rect.Top - firstSplitPos - defaultSpacing / 2) <= 2);
+            Assert.AreEqual(zones[3].Rect.Bottom, Screen.PrimaryScreen.Bounds.Bottom - defaultSpacing);
+
+            //create second split
+            int secondSplitPos = zones[3].Rect.Y + zones[3].Rect.Height / 2;
+            int expectedTop = zones[3].Rect.Top;
+
+            new Actions(session).MoveToElement(zones[3]).Click().Perform();
+
+            zones = session.FindElementsByClassName("GridZone");
+            Assert.AreEqual(5, zones.Count);
+
+            //check first split on same position
+            Assert.AreEqual(zones[0].Rect.Top, defaultSpacing);
+            Assert.IsTrue(Math.Abs(zones[0].Rect.Bottom - firstSplitPos + defaultSpacing / 2) <= 2);
+
+            //check second split
+            Assert.AreEqual(zones[3].Rect.Top, expectedTop);
+            Assert.IsTrue(Math.Abs(zones[3].Rect.Bottom - secondSplitPos + defaultSpacing / 2) <= 2);
+            Assert.IsTrue(Math.Abs(zones[4].Rect.Top - secondSplitPos - defaultSpacing / 2) <= 2);
+            Assert.AreEqual(zones[4].Rect.Bottom, Screen.PrimaryScreen.Bounds.Bottom - defaultSpacing);
         }
 
         [TestMethod]

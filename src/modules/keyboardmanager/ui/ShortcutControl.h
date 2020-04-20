@@ -37,7 +37,7 @@ public:
         KeyDropDownControl::AddDropDown(shortcutDropDownStackPanel, rowIndex, colIndex, shortcutRemapBuffer, keyDropDownControlObjects);
 
         typeShortcut.Content(winrt::box_value(winrt::to_hstring("Type Shortcut")));
-        typeShortcut.Click([&, rowIndex, colIndex](IInspectable const& sender, RoutedEventArgs const&) {
+        typeShortcut.Click([&, rowIndex, colIndex](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
             keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectShortcutWindowActivated, EditShortcutsWindowHandle);
             // Using the XamlRoot of the typeShortcut to get the root of the XAML host
             createDetectShortcutWindow(sender, sender.as<Button>().XamlRoot(), shortcutRemapBuffer, *keyboardManagerState, rowIndex, colIndex);
@@ -62,5 +62,5 @@ public:
     StackPanel getShortcutControl();
 
     // Function to create the detect shortcut UI window
-    void createDetectShortcutWindow(IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, KeyboardManagerState& keyboardManagerState, const size_t rowIndex, const size_t colIndex);
+    void createDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, KeyboardManagerState& keyboardManagerState, const size_t rowIndex, const size_t colIndex);
 };
