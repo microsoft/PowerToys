@@ -76,11 +76,9 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
     // Creating the Xaml content. xamlContainer is the parent UI element
     Windows::UI::Xaml::Controls::StackPanel xamlContainer;
-    xamlContainer.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
 
     // Header for the window
     Windows::UI::Xaml::Controls::StackPanel header;
-    header.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
     header.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
     header.Margin({ 10, 10, 10, 30 });
     header.Spacing(10);
@@ -101,13 +99,11 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
     // Table to display the shortcuts
     Windows::UI::Xaml::Controls::StackPanel shortcutTable;
-    shortcutTable.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
     shortcutTable.Margin({ 10, 10, 10, 20 });
     shortcutTable.Spacing(10);
 
     // Header row of the shortcut table
     Windows::UI::Xaml::Controls::StackPanel tableHeaderRow;
-    tableHeaderRow.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
     tableHeaderRow.Spacing(100);
     tableHeaderRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
 
