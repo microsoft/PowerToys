@@ -11,10 +11,9 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
-        <viewModel:RemapKeysModel x:Key="dummyData"/>
         <viewModel:KeyboardManagerViewModel x:Key="eventViewModel"/>
 
-        <DataTemplate x:Name="KeysListViewTemplate" x:DataType="viewModel:RemapKeysModel">
+        <DataTemplate x:Name="KeysListViewTemplate" x:DataType="viewModel:KeysUiDataModels">
             <Grid Height="56">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="80"/>
@@ -33,8 +32,8 @@
                     <TextBlock FontWeight="SemiBold"
                                VerticalAlignment="Center"
                                TextAlignment="Center"
-                                FontSize="12"
-                                Text="{Binding From}">
+                               FontSize="12"
+                               Text="{Binding RemapFromKeys[0]}">
                     </TextBlock>
                 </Border>
                 <FontIcon Glyph="&#xE72A;"
@@ -55,7 +54,7 @@
                                TextAlignment="Center"
                                Foreground="White"
                                FontSize="12"
-                               Text="{Binding To}">
+                               Text="{Binding RemapToKeys[0]}">
                     </TextBlock>
                 </Border>
             </Grid>
@@ -129,7 +128,7 @@
 
             <ListView x:Name="RemapKeysList"
                       extensions:ListViewExtensions.AlternateColor="{ThemeResource SystemControlBackgroundListLowBrush}"
-                      ItemsSource="{StaticResource dummyData}"
+                      ItemsSource="{Binding Path=RemapKeysList}"
                       ItemTemplate="{StaticResource KeysListViewTemplate}"
                       BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
                       BorderThickness="1" 
@@ -154,7 +153,7 @@
 
             <ListView x:Name="RemapShortcutsList"
                       extensions:ListViewExtensions.AlternateColor="{ThemeResource SystemControlBackgroundListLowBrush}"
-                      ItemsSource="{StaticResource dummyData}"
+                      ItemsSource="{Binding Path=RemapKeysList}"
                       ItemTemplate="{StaticResource KeysListViewTemplate}"
                       BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
                       BorderThickness="1" 
