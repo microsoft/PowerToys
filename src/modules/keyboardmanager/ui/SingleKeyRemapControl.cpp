@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "SingleKeyRemapControl.h"
+#include "keyboardmanager/common/Helpers.h"
 
 //Both static members are initialized to null
 HWND SingleKeyRemapControl::EditKeyboardWindowHandle = nullptr;
@@ -109,7 +110,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
         {
             std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyCodeList();
             // Update the drop down list with the new language to ensure that the correct key is displayed
-            linkedRemapDropDown.ItemsSource(keyboardManagerState.keyboardMap.GetKeyNameList());
+            linkedRemapDropDown.ItemsSource(KeyboardManagerHelper::ToBoxValue(keyboardManagerState.keyboardMap.GetKeyNameList()));
             auto it = std::find(keyCodeList.begin(), keyCodeList.end(), detectedKey);
             if (it != keyCodeList.end())
             {

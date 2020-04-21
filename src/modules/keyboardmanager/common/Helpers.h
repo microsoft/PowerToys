@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <winrt/Windows.System.h>
+#include <winrt/Windows.Foundation.h>
 
 namespace KeyboardManagerHelper
 {
@@ -56,4 +57,7 @@ namespace KeyboardManagerHelper
 
     // Function to return if the key is an extended key which requires the use of the extended key flag
     bool isExtendedKey(DWORD key);
+
+    // Function to return the list of key name in the order for the drop down based on the key codes
+    winrt::Windows::Foundation::Collections::IVector<winrt::Windows::Foundation::IInspectable> ToBoxValue(const std::vector<std::wstring>& list);
 }
