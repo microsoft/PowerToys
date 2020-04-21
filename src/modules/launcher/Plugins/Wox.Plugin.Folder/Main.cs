@@ -302,7 +302,7 @@ namespace Wox.Plugin.Folder
             return _context.API.GetTranslation("wox_plugin_folder_plugin_description");
         }
 
-        public List<Result> LoadContextMenus(Result selectedResult)
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
             return _contextMenuLoader.LoadContextMenus(selectedResult);
         }

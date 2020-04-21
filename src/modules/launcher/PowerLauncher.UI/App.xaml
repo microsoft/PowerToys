@@ -13,6 +13,7 @@
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
                     <SolidColorBrush x:Key="PrimaryTextColor" Color="Black"/>
+                    <SolidColorBrush x:Key="SystemControlHighlightAccentBrush" Color="White"/>
                     <AcrylicBrush x:Key="BackdropAcrylicBrush" BackgroundSource="Backdrop" TintColor="White" TintOpacity="0.9" FallbackColor="White"/>
                     <AcrylicBrush x:Key="KeyboardShortcutAcrylicBrush" BackgroundSource="Backdrop" TintColor="White" TintOpacity="0.9" FallbackColor="White"/>
                     <SolidColorBrush x:Key="ItemBackgroundColor" Color="#FFFFFFFF"/>
@@ -22,6 +23,7 @@
 
                 <ResourceDictionary x:Key="Default">
                     <SolidColorBrush x:Key="PrimaryTextColor" Color="White"/>
+                    <SolidColorBrush x:Key="SystemControlHighlightAccentBrush" Color="#484848"/>
                     <AcrylicBrush x:Key="BackdropAcrylicBrush" BackgroundSource="Backdrop" TintColor="#88484848" TintOpacity="0.9" FallbackColor="#FF484848"/>
                     <AcrylicBrush x:Key="KeyboardShortcutAcrylicBrush" BackgroundSource="Backdrop" TintColor="Black" TintOpacity="0.9" FallbackColor="Black"/>
                     <SolidColorBrush x:Key="ItemBackgroundColor" Color="#FFFFFFFF"/>

@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Input;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 
@@ -47,9 +48,33 @@ namespace Wox.ViewModel
 
         public int SelectedIndex { get; set; }
 
-        public ResultViewModel SelectedItem { get; set; }
+        private ResultViewModel _selectedItem;
+        public ResultViewModel SelectedItem
+        {
+            get { return _selectedItem; }
+            set
+            {
+                //value can be null when selecting an item in a virtualized list
+                if (value != null)
+                {
+                    if (_selectedItem != null)
+                    {
+                        _selectedItem.IsSelected = false;
+                        _selectedItem.DisableContextMenu();
+                    }
+
+                    _selectedItem = value;
+                    _selectedItem.LoadContextMenu();
+                    _selectedItem.EnableContextMenu();
+                    _selectedItem.IsSelected = true;
+                }
+            }
+        }
+
+
+
         public Thickness Margin { get; set; }
-        public Visibility Visbility { get; set; } = Visibility.Collapsed;
+        public Visibility Visbility { get; set; } = Visibility.Hidden;
 
         #endregion
 
@@ -129,6 +154,24 @@ namespace Wox.ViewModel
             Results.RemoveAll(r => r.Result.PluginID == metadata.ID);
         }
 
+        public void SelectNextTabItem()
+        {
+            if(!SelectedItem.SelectNextContextButton())
+            {
+                SelectNextResult();
+            }
+        }
+
+        public void SelectPrevTabItem()
+        {
+            if (!SelectedItem.SelectPrevContextButton())
+            {
+                //Tabbing backwards should highlight the last item of the previous row
+                SelectPrevResult();
+                SelectedItem.SelectLastContextButton();
+            }
+        }
+
         /// <summary>
         /// To avoid deadlock, this method should not called from main thread
         /// </summary>
@@ -149,6 +192,7 @@ namespace Wox.ViewModel
                 else
                 {
                     Margin = new Thickness { Top = 0 };
+                    Visbility = Visibility.Collapsed;
                 }
             }
         }

@@ -1,5 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
+using System.Windows.Controls.Ribbon;
+using System.Windows.Input;
+using Wox.Core.Plugin;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
@@ -10,11 +17,70 @@ namespace Wox.ViewModel
 {
     public class ResultViewModel : BaseModel
     {
+        public List<ContextMenuItemViewModel> ContextMenuItems { get; set; }
+
+        public ICommand LoadContextMenuCommand { get; set; }
+
+        public bool IsSelected { get; set; }
+
+        public int ContextMenuSelectedIndex { get; set; }
+
+        const int NoSelectionIndex = -1;
+
         public ResultViewModel(Result result)
         {
             if (result != null)
             {
                 Result = result;
+            }
+            ContextMenuSelectedIndex = NoSelectionIndex;
+            LoadContextMenuCommand = new RelayCommand(LoadContextMenu);
+        }
+        public void LoadContextMenu(object sender=null)
+        {
+            var results = PluginManager.GetContextMenusForPlugin(Result);
+            var newItems = new List<ContextMenuItemViewModel>();
+            foreach (var r in results)
+            {
+                newItems.Add(new ContextMenuItemViewModel
+                {
+                    Title = r.Title,
+                    Glyph = r.Glyph,
+                    FontFamily = r.FontFamily,
+                    AcceleratorKey = r.AcceleratorKey,
+                    AcceleratorModifiers = r.AcceleratorModifiers,
+                    Command = new RelayCommand(_ =>
+                    {
+                        bool hideWindow = r.Action != null && r.Action(new ActionContext
+                        {
+                            SpecialKeyState = GlobalHotkey.Instance.CheckModifiers()
+                        });
+
+                        if (hideWindow)
+                        {
+                            //TODO - Do we hide the window
+                            // MainWindowVisibility = Visibility.Collapsed;
+                        }
+                    })
+                });
+            }
+
+            ContextMenuItems = newItems;
+        }
+
+        internal void EnableContextMenu()
+        {
+            foreach(var i in ContextMenuItems)
+            {
+                i.IsEnabled = true;
+            }
+        }
+
+        internal void DisableContextMenu()
+        {
+            foreach (var i in ContextMenuItems)
+            {
+                i.IsEnabled = false;
             }
         }
 
@@ -39,6 +105,57 @@ namespace Wox.ViewModel
                 // will get here either when icoPath has value\icon delegate is null\when had exception in delegate
                 return ImageLoader.Load(imagePath);
             }
+        }
+
+        //Returns false if we've already reached the last item.
+        public bool SelectNextContextButton()
+        {
+            if(ContextMenuSelectedIndex == (ContextMenuItems.Count -1))
+            {
+                ContextMenuSelectedIndex = NoSelectionIndex;
+                return false; 
+            }
+
+            ContextMenuSelectedIndex++;
+            return true;
+        }
+
+        //Returns false if we've already reached the first item.
+        public bool SelectPrevContextButton()
+        {
+            if (ContextMenuSelectedIndex == NoSelectionIndex)
+            {
+                return false;
+            }
+
+            ContextMenuSelectedIndex--;
+            return true;
+        }
+
+        public void SelectLastContextButton()
+        {
+            ContextMenuSelectedIndex = ContextMenuItems.Count - 1;
+        }
+
+        public bool HasSelectedContextButton()
+        {
+            var isContextSelected = (ContextMenuSelectedIndex != NoSelectionIndex);
+            return isContextSelected;
+        }
+
+        /// <summary>
+        ///  Triggers the action on the selected context button
+        /// </summary>
+        /// <returns>False if there is nothing selected, oherwise true</returns>
+        public bool ExecuteSelectedContextButton()
+        {
+            if (HasSelectedContextButton())
+            {
+                ContextMenuItems[ContextMenuSelectedIndex].Command.Execute(null);
+                return true;
+            }
+
+            return false;
         }
 
         public Result Result { get; }

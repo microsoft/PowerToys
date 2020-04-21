@@ -116,6 +116,16 @@ namespace Wox.ViewModel
                 SelectedResults.SelectPrevResult();
             });
 
+            SelectNextTabItemCommand = new RelayCommand(_ =>
+            {
+                SelectedResults.SelectNextTabItem(); 
+            });
+
+            SelectPrevTabItemCommand = new RelayCommand(_ =>
+            {
+                SelectedResults.SelectPrevTabItem();
+            });
+
             SelectNextPageCommand = new RelayCommand(_ =>
             {
                 SelectedResults.SelectNextPage();
@@ -142,27 +152,33 @@ namespace Wox.ViewModel
                     results.SelectedIndex = int.Parse(index.ToString());
                 }
 
-                var result = results.SelectedItem?.Result;
-                if (result != null) // SelectedItem returns null if selection is empty.
+                //If there is a context button selected fire the action for that button before the main command. 
+                bool didExecuteContextButton = results.SelectedItem?.ExecuteSelectedContextButton() ?? false;
+
+                if (!didExecuteContextButton)
                 {
-                    bool hideWindow = result.Action != null && result.Action(new ActionContext
+                    var result = results.SelectedItem?.Result;
+                    if (result != null) // SelectedItem returns null if selection is empty.
                     {
-                        SpecialKeyState = GlobalHotkey.Instance.CheckModifiers()
-                    });
+                        bool hideWindow = result.Action != null && result.Action(new ActionContext
+                        {
+                            SpecialKeyState = GlobalHotkey.Instance.CheckModifiers()
+                        });
 
-                    if (hideWindow)
-                    {
-                        MainWindowVisibility = Visibility.Collapsed;
-                    }
+                        if (hideWindow)
+                        {
+                            MainWindowVisibility = Visibility.Collapsed;
+                        }
 
-                    if (SelectedIsFromQueryResults())
-                    {
-                        _userSelectedRecord.Add(result);
-                        _history.Add(result.OriginQuery.RawQuery);
-                    }
-                    else
-                    {
-                        SelectedResults = Results;
+                        if (SelectedIsFromQueryResults())
+                        {
+                            _userSelectedRecord.Add(result);
+                            _history.Add(result.OriginQuery.RawQuery);
+                        }
+                        else
+                        {
+                            SelectedResults = Results;
+                        }
                     }
                 }
             });
@@ -271,6 +287,10 @@ namespace Wox.ViewModel
         public ICommand EscCommand { get; set; }
         public ICommand SelectNextItemCommand { get; set; }
         public ICommand SelectPrevItemCommand { get; set; }
+
+        public ICommand SelectNextTabItemCommand { get; set; }
+        public ICommand SelectPrevTabItemCommand { get; set; }
+
         public ICommand SelectNextPageCommand { get; set; }
         public ICommand SelectPrevPageCommand { get; set; }
         public ICommand SelectFirstResultCommand { get; set; }
@@ -287,43 +307,9 @@ namespace Wox.ViewModel
             {
                 QueryResults();
             }
-            else if (ContextMenuSelected())
-            {
-                QueryContextMenu();
-            }
             else if (HistorySelected())
             {
                 QueryHistory();
-            }
-        }
-
-        private void QueryContextMenu()
-        {
-            const string id = "Context Menu ID";
-            var query = QueryText.ToLower().Trim();
-            ContextMenu.Clear();
-
-            var selected = Results.SelectedItem?.Result;
-
-            if (selected != null) // SelectedItem returns null if selection is empty.
-            {
-                var results = PluginManager.GetContextMenusForPlugin(selected);
-                results.Add(ContextMenuTopMost(selected));
-                results.Add(ContextMenuPluginInfo(selected.PluginID));
-
-                if (!string.IsNullOrEmpty(query))
-                {
-                    var filtered = results.Where
-                    (
-                        r => StringMatcher.FuzzySearch(query, r.Title).IsSearchPrecisionScoreMet()
-                            || StringMatcher.FuzzySearch(query, r.SubTitle).IsSearchPrecisionScoreMet()
-                    ).ToList();
-                    ContextMenu.AddResults(filtered, id);
-                }
-                else
-                {
-                    ContextMenu.AddResults(results, id);
-                }
             }
         }
 
@@ -387,9 +373,9 @@ namespace Wox.ViewModel
                     // handle the exclusiveness of plugin using action keyword
                     RemoveOldQueryResults(query);
 
-                    _lastQuery = query;                  
+                    _lastQuery = query;
                     var plugins = PluginManager.ValidPluginsForQuery(query);
-                    
+
                     Task.Run(() =>
                     {
                         // so looping will stop once it was cancelled
@@ -462,66 +448,6 @@ namespace Wox.ViewModel
             }
         }
 
-
-        private Result ContextMenuTopMost(Result result)
-        {
-            Result menu;
-            if (_topMostRecord.IsTopMost(result))
-            {
-                menu = new Result
-                {
-                    Title = InternationalizationManager.Instance.GetTranslation("cancelTopMostInThisQuery"),
-                    IcoPath = "Images\\down.png",
-                    PluginDirectory = Constant.ProgramDirectory,
-                    Action = _ =>
-                    {
-                        _topMostRecord.Remove(result);
-                        App.API.ShowMsg("Success");
-                        return false;
-                    }
-                };
-            }
-            else
-            {
-                menu = new Result
-                {
-                    Title = InternationalizationManager.Instance.GetTranslation("setAsTopMostInThisQuery"),
-                    IcoPath = "Images\\up.png",
-                    PluginDirectory = Constant.ProgramDirectory,
-                    Action = _ =>
-                    {
-                        _topMostRecord.AddOrUpdate(result);
-                        App.API.ShowMsg("Success");
-                        return false;
-                    }
-                };
-            }
-            return menu;
-        }
-
-        private Result ContextMenuPluginInfo(string id)
-        {
-            var metadata = PluginManager.GetPluginForId(id).Metadata;
-            var translator = InternationalizationManager.Instance;
-
-            var author = translator.GetTranslation("author");
-            var website = translator.GetTranslation("website");
-            var version = translator.GetTranslation("version");
-            var plugin = translator.GetTranslation("plugin");
-            var title = $"{plugin}: {metadata.Name}";
-            var icon = metadata.IcoPath;
-            var subtitle = $"{author}: {metadata.Author}, {website}: {metadata.Website} {version}: {metadata.Version}";
-
-            var menu = new Result
-            {
-                Title = title,
-                IcoPath = icon,
-                SubTitle = subtitle,
-                PluginDirectory = metadata.PluginDirectory,
-                Action = _ => false
-            };
-            return menu;
-        }
 
         private bool SelectedIsFromQueryResults()
         {

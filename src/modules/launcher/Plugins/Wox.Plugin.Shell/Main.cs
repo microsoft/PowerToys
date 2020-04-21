@@ -320,29 +320,22 @@ namespace Wox.Plugin.Shell
             return _context.API.GetTranslation("wox_plugin_cmd_plugin_description");
         }
 
-        public List<Result> LoadContextMenus(Result selectedResult)
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
-            var resultlist = new List<Result>
+            var resultlist = new List<ContextMenuResult>
             {
-                new Result
-                {
-                    Title = _context.API.GetTranslation("wox_plugin_cmd_run_as_different_user"),
-                    Action = c =>
-                    {
-                        Task.Run(() =>Execute(ShellCommand.RunAsDifferentUser, PrepareProcessStartInfo(selectedResult.Title)));
-                        return true;
-                    },
-                    IcoPath = "Images/user.png"
-                },
-                new Result
+                new ContextMenuResult
                 {
                     Title = _context.API.GetTranslation("wox_plugin_cmd_run_as_administrator"),
+                    Glyph = "\xE7EF",
+                    FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = "Enter",
+                    AcceleratorModifiers = "Control,Shift",
                     Action = c =>
                     {
                         Execute(Process.Start, PrepareProcessStartInfo(selectedResult.Title, true));
                         return true;
-                    },
-                    IcoPath = Image
+                    }
                 }
             };
 

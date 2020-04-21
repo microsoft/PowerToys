@@ -141,29 +141,14 @@ namespace Wox.Plugin.Program
             return _context.API.GetTranslation("wox_plugin_program_plugin_description");
         }
 
-        public List<Result> LoadContextMenus(Result selectedResult)
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
-            var menuOptions = new List<Result>();
+            var menuOptions = new List<ContextMenuResult>();
             var program = selectedResult.ContextData as IProgram;
             if (program != null)
             {
                 menuOptions = program.ContextMenus(_context.API);
             }
-
-            menuOptions.Add(
-                                new Result
-                                {
-                                    Title = _context.API.GetTranslation("wox_plugin_program_disable_program"),
-                                    Action = c =>
-                                    {
-                                        DisableProgram(program);
-                                        _context.API.ShowMsg(_context.API.GetTranslation("wox_plugin_program_disable_dlgtitle_success"),
-                                                                _context.API.GetTranslation("wox_plugin_program_disable_dlgtitle_success_message"));
-                                        return false;
-                                    },
-                                    IcoPath = "Images/disable.png"
-                                }
-                           );
 
             return menuOptions;
         }
