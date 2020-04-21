@@ -68,14 +68,23 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
         Button currentButton = sender.as<Button>();
         uint32_t index;
         // Get index of delete button
-        parent.Children().IndexOf(currentButton, index);
+        UIElementCollection children = parent.Children();
+        children.IndexOf(currentButton, index);
+        // Change the row index of elements appearing after the current row, as we will delete the row definition
+        for (int i = index + 1; i < children.Size(); i++)
+        {
+            int32_t elementRowIndex = parent.GetRow(children.GetAt(i).as<FrameworkElement>());
+            parent.SetRow(children.GetAt(i).as<FrameworkElement>(), elementRowIndex - 1);
+        }
         parent.Children().RemoveAt(index);
         parent.Children().RemoveAt(index - 1);
         parent.Children().RemoveAt(index - 2);
 
         // Calculate row index in the buffer from the grid child index (first two children are header elements and then three children in each row)
         int bufferIndex = (index - 2) / 3;
-        // delete the row from the buffer. 
+        // Delete the row definition
+        parent.RowDefinitions().RemoveAt(bufferIndex + 1);
+        // delete the row from the buffer.
         singleKeyRemapBuffer.erase(singleKeyRemapBuffer.begin() + bufferIndex);
         // delete the SingleKeyRemapControl objects so that they get destructed
         keyboardRemapControlObjects.erase(keyboardRemapControlObjects.begin() + bufferIndex);
