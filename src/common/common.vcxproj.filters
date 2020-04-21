@@ -99,6 +99,9 @@
     <ClInclude Include="com_object_factory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="shared_constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="keyboard_layout_impl.h">
       <Filter>Header Files</Filter>
     </ClInclude>

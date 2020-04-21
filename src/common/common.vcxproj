@@ -124,6 +124,7 @@
     <ClInclude Include="keyboard_layout.h" />
     <ClInclude Include="keyboard_layout_impl.h" />
     <ClInclude Include="notifications.h" />
+    <ClInclude Include="shared_constants.h" />
     <ClInclude Include="timeutil.h" />
     <ClInclude Include="VersionHelper.h" />
     <ClInclude Include="window_helpers.h" />
