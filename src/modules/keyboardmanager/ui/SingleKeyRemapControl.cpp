@@ -65,7 +65,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
         UIElementCollection children = parent.Children();
         children.IndexOf(currentButton, index);
         // Change the row index of elements appearing after the current row, as we will delete the row definition
-        for (int i = index + 1; i < children.Size(); i++)
+        for (uint32_t i = index + 1; i < children.Size(); i++)
         {
             int32_t elementRowIndex = parent.GetRow(children.GetAt(i).as<FrameworkElement>());
             parent.SetRow(children.GetAt(i).as<FrameworkElement>(), elementRowIndex - 1);

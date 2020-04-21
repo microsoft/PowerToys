@@ -250,7 +250,9 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
     RECT rcClient;
     switch (messageCode)
     {
+    // Resize the XAML window whenever the parent window is painted or resized
     case WM_PAINT:
+    case WM_SIZE:
         GetClientRect(hWnd, &rcClient);
         SetWindowPos(hWndXamlIslandEditShortcutsWindow, 0, rcClient.left, rcClient.top, rcClient.right, rcClient.bottom, SWP_SHOWWINDOW);
         break;
