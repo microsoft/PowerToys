@@ -27,6 +27,7 @@
             ItemsSource="{Binding Results.Results, Mode=OneWay}"
             SelectionMode="Single"
             SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
+            Style="{StaticResource ListViewNoAnimations}"
             >
             <ListView.ItemTemplate>
                 <DataTemplate >
