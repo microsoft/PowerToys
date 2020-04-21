@@ -1,6 +1,6 @@
 #pragma once
 #include "Helpers.h"
-#include "LayoutMap.h"
+#include "..\common\keyboard_layout.h"
 #include "Shortcut.h"
 #include "RemapShortcut.h"
 #include "KeyDelay.h"

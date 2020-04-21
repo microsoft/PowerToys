@@ -99,6 +99,12 @@
     <ClInclude Include="com_object_factory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="keyboard_layout_impl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="keyboard_layout.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d2d_svg.cpp">
@@ -159,5 +165,11 @@
     <ClCompile Include="VersionHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="keyboard_layout.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

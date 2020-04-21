@@ -121,6 +121,8 @@
     <ClInclude Include="d2d_window.h" />
     <ClInclude Include="dpi_aware.h" />
     <ClInclude Include="com_object_factory.h" />
+    <ClInclude Include="keyboard_layout.h" />
+    <ClInclude Include="keyboard_layout_impl.h" />
     <ClInclude Include="notifications.h" />
     <ClInclude Include="timeutil.h" />
     <ClInclude Include="VersionHelper.h" />
@@ -149,6 +151,7 @@
     <ClCompile Include="d2d_window.cpp" />
     <ClCompile Include="dpi_aware.cpp" />
     <ClCompile Include="json.cpp" />
+    <ClCompile Include="keyboard_layout.cpp" />
     <ClCompile Include="monitors.cpp" />
     <ClCompile Include="notifications.cpp" />
     <ClCompile Include="on_thread_executor.cpp" />
