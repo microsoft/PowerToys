@@ -268,17 +268,23 @@
                   <Directory Id="Launcherwin10armx64nativeFolder" Name="native">
                     <Directory Id="Launcherwin10releaseFolder" Name="release">
                     </Directory>
+                    <Directory Id="Launcherwin10debugFolder" Name="debug">
+                    </Directory>
                   </Directory>
                 </Directory>
                 <Directory Id="Launcherwin10x64Folder" Name="win10-x64">
                   <Directory Id="Launcherwin10x64nativeFolder" Name="native">
                     <Directory Id="Launcherwin10x64releaseFolder" Name="release">
                     </Directory>
+                    <Directory Id="Launcherwin10x64debugFolder" Name="debug">
+                    </Directory>
                   </Directory>
                 </Directory>
                 <Directory Id="Launcherwin10x86Folder" Name="win10-x86">
                   <Directory Id="Launcherwin10x86nativeFolder" Name="native">
                     <Directory Id="Launcherwin10x86releaseFolder" Name="release">
+                    </Directory>
+                    <Directory Id="Launcherwin10x86debugFolder" Name="debug">
                     </Directory>
                   </Directory>
                 </Directory>
@@ -704,7 +710,12 @@
       </Component>
       <Component Id="win10arm64releaseruntimeComponent" Directory="Launcherwin10releaseFolder" Guid="5E5F5183-03E3-42EC-A509-0C69900F663D">
         <?foreach File in concrt140_app.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_app.dll?>
-        <File Source="$(var.BinX64Dir)\modules\launcher\runtimes\win10-arm64\native\release\$(var.File)" Id="win10arm64_$(var.File)"/>
+        <File Source="$(var.BinX64Dir)\modules\launcher\runtimes\win10-arm64\native\release\$(var.File)" Id="win10arm64_release_$(var.File)"/>
+        <?endforeach?>
+      </Component>
+      <Component Id="win10arm64debugruntimeComponent" Directory="Launcherwin10debugFolder" Guid="F6071169-E048-450D-B76F-D086DE0D9559">
+        <?foreach File in concrt140d_app.dll;msvcp140_1d_app.dll;msvcp140_2d_app.dll;msvcp140d_app.dll;vcamp140d_app.dll;vccorlib140d_app.dll;vcomp140d_app.dll;vcruntime140d_app.dll?>
+        <File Source="$(var.BinX64Dir)\modules\launcher\runtimes\win10-arm64\native\debug\$(var.File)" Id="win10arm64_debug_$(var.File)"/>
         <?endforeach?>
       </Component>
 
@@ -714,8 +725,13 @@
         <File Source="$(var.BinX64Dir)\modules\launcher\runtimes\win10-x64\native\Microsoft.Toolkit.Win32.UI.XamlHost.dll" Id="win10x64_dll"/>
       </Component>
       <Component Id="win10x64releaseruntimeComponent" Directory="Launcherwin10x64releaseFolder" Guid="F434AEBF-1212-4977-B4D8-2369CFA7AD3C">
-        <?foreach File in concrt140_app.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_app.dll?>
-        <File Source="$(var.BinX64Dir)\modules\launcher\runtimes\win10-x64\native\release\$(var.File)" Id="win10x64_$(var.File)"/>
+        <?foreach File in concrt140_app.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll?>
+        <File Source="$(var.BinX64Dir)\modules\launcher\runtimes\win10-x64\native\release\$(var.File)" Id="win10x64_release_$(var.File)"/>
+        <?endforeach?>
+      </Component>
+      <Component Id="win10x64debugruntimeComponent" Directory="Launcherwin10x64debugFolder" Guid="191950DF-10B1-412B-AD61-1E41D3904530">
+        <?foreach File in concrt140d_app.dll;msvcp140_1d_app.dll;msvcp140_2d_app.dll;msvcp140d_app.dll;vcamp140d_app.dll;vccorlib140d_app.dll;vcomp140d_app.dll;vcruntime140_1d_app.dll;vcruntime140d_app.dll?>
+        <File Source="$(var.BinX64Dir)\modules\launcher\runtimes\win10-x64\native\debug\$(var.File)" Id="win10x64_debug_$(var.File)"/>
         <?endforeach?>
       </Component>
 
@@ -725,7 +741,12 @@
       </Component>
       <Component Id="win10x86releaseruntimeComponent" Directory="Launcherwin10x86releaseFolder" Guid="D2C806C3-8291-4B44-9938-95771CC601C6">
         <?foreach File in concrt140_app.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_app.dll?>
-        <File Source="$(var.BinX64Dir)\modules\launcher\runtimes\win10-x86\native\release\$(var.File)" Id="win10x86_$(var.File)"/>
+        <File Source="$(var.BinX64Dir)\modules\launcher\runtimes\win10-x86\native\release\$(var.File)" Id="win10x86_release_$(var.File)"/>
+        <?endforeach?>
+      </Component>
+      <Component Id="win10x86debugruntimeComponent" Directory="Launcherwin10x86debugFolder" Guid="7D403F04-52CF-4A47-AD78-A502A1A481ED">
+        <?foreach File in concrt140d_app.dll;msvcp140_1d_app.dll;msvcp140_2d_app.dll;msvcp140d_app.dll;vcamp140d_app.dll;vccorlib140d_app.dll;vcomp140d_app.dll;vcruntime140d_app.dll?>
+        <File Source="$(var.BinX64Dir)\modules\launcher\runtimes\win10-x86\native\debug\$(var.File)" Id="win10x86_debug_$(var.File)"/>
         <?endforeach?>
       </Component>
 
