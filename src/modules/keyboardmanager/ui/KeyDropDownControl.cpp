@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "KeyDropDownControl.h"
+#include "keyboardmanager/common/Helpers.h"
 
 // Initialized to null
 KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;
@@ -12,7 +13,7 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut)
     // Initialise layout attribute
     previousLayout = GetKeyboardLayout(0);
     keyCodeList = keyboardManagerState->keyboardMap.GetKeyCodeList(isShortcut);
-    dropDown.ItemsSource(keyboardManagerState->keyboardMap.GetKeyNameList(isShortcut));
+    dropDown.ItemsSource(KeyboardManagerHelper::ToBoxValue(keyboardManagerState->keyboardMap.GetKeyNameList(isShortcut)));
     // drop down open handler - to reload the items with the latest layout
     dropDown.DropDownOpened([&, isShortcut](winrt::Windows::Foundation::IInspectable const& sender, auto args) {
         ComboBox currentDropDown = sender.as<ComboBox>();
@@ -30,7 +31,7 @@ void KeyDropDownControl::CheckAndUpdateKeyboardLayout(ComboBox currentDropDown, 
     if (previousLayout != layout)
     {
         keyCodeList = keyboardManagerState->keyboardMap.GetKeyCodeList(isShortcut);
-        currentDropDown.ItemsSource(keyboardManagerState->keyboardMap.GetKeyNameList(isShortcut));
+        currentDropDown.ItemsSource(KeyboardManagerHelper::ToBoxValue(keyboardManagerState->keyboardMap.GetKeyNameList(isShortcut)));
         previousLayout = layout;
     }
 }

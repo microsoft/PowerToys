@@ -31,18 +31,16 @@ public:
 
     ShortcutControl(Grid table, const size_t colIndex)
     {
-        shortcutDropDownStackPanel.RequestedTheme(ElementTheme::Light);
         shortcutDropDownStackPanel.Spacing(10);
         shortcutDropDownStackPanel.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
 
-        typeShortcut.Content(winrt::box_value(winrt::to_hstring("Type Shortcut")));
+        typeShortcut.Content(winrt::box_value(L"Type Shortcut"));
         typeShortcut.Click([&, table, colIndex](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
             keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectShortcutWindowActivated, EditShortcutsWindowHandle);
             // Using the XamlRoot of the typeShortcut to get the root of the XAML host
             createDetectShortcutWindow(sender, sender.as<Button>().XamlRoot(), shortcutRemapBuffer, *keyboardManagerState, colIndex, table);
         });
 
-        shortcutControlLayout.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
         shortcutControlLayout.Margin({ 0, 0, 0, 10 });
         shortcutControlLayout.Spacing(10);
 

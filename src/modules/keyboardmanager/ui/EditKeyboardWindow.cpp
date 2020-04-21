@@ -75,7 +75,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // Creating the Xaml content. xamlContainer is the parent UI element
     Windows::UI::Xaml::Controls::StackPanel xamlContainer;
-    xamlContainer.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
 
     // Header for the window
     Windows::UI::Xaml::Controls::RelativePanel header;
@@ -83,18 +82,15 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // Header text
     TextBlock headerText;
-    headerText.Text(winrt::to_hstring("Remap Keyboard"));
-    headerText.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
+    headerText.Text(L"Remap Keyboard");
     headerText.FontSize(30);
     headerText.Margin({ 0, 0, 0, 0 });
     header.SetAlignLeftWithPanel(headerText, true);
 
     // Header Cancel button
     Button cancelButton;
+    cancelButton.Content(winrt::box_value(L"Cancel"));
     cancelButton.Margin({ 0, 0, 10, 0 });
-    cancelButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    cancelButton.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
-    cancelButton.Content(winrt::box_value(winrt::to_hstring("Cancel")));
     cancelButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         // Close the window since settings do not need to be saved
         PostMessage(_hWndEditKeyboardWindow, WM_CLOSE, 0, 0);
@@ -102,8 +98,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     //  Text block for information about remap key section.
     TextBlock keyRemapInfoHeader;
-    keyRemapInfoHeader.Text(winrt::to_hstring("Select the key you want to remap, original key, and it's new output when pressed, the new key"));
-    keyRemapInfoHeader.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
+    keyRemapInfoHeader.Text(L"Select the key you want to remap, original key, and it's new output when pressed, the new key");
     keyRemapInfoHeader.Margin({ 10, 0, 0, 10 });
 
     // Table to display the key remaps
@@ -121,15 +116,13 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // First header textblock in the header row of the keys remap table
     TextBlock originalKeyRemapHeader;
-    originalKeyRemapHeader.Text(winrt::to_hstring("Original Key:"));
-    originalKeyRemapHeader.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
+    originalKeyRemapHeader.Text(L"Original Key:");
     originalKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
     originalKeyRemapHeader.Margin({ 0, 0, 0, 10 });
 
     // Second header textblock in the header row of the keys remap table
     TextBlock newKeyRemapHeader;
-    newKeyRemapHeader.Text(winrt::to_hstring("New Key:"));
-    newKeyRemapHeader.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
+    newKeyRemapHeader.Text(L"New Key:");
     newKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
     newKeyRemapHeader.Margin({ 0, 0, 0, 10 });
 
@@ -158,19 +151,51 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // Load existing remaps into UI
     std::unique_lock<std::mutex> lock(keyboardManagerState.singleKeyReMap_mutex);
-    for (const auto& it : keyboardManagerState.singleKeyReMap)
+    std::unordered_map<DWORD, DWORD> singleKeyRemapCopy = keyboardManagerState.singleKeyReMap;
+    lock.unlock();
+
+    // Pre process the table to combine L and R versions of Ctrl/Alt/Shift that are mapped to the same key
+    if (singleKeyRemapCopy.find(VK_LCONTROL) != singleKeyRemapCopy.end() && singleKeyRemapCopy.find(VK_RCONTROL) != singleKeyRemapCopy.end())
+    {
+        // If they are mapped to the same key, delete those entries and set the common version
+        if (singleKeyRemapCopy[VK_LCONTROL] == singleKeyRemapCopy[VK_RCONTROL])
+        {
+            singleKeyRemapCopy[VK_CONTROL] = singleKeyRemapCopy[VK_LCONTROL];
+            singleKeyRemapCopy.erase(VK_LCONTROL);
+            singleKeyRemapCopy.erase(VK_RCONTROL);
+        }
+    }
+    if (singleKeyRemapCopy.find(VK_LMENU) != singleKeyRemapCopy.end() && singleKeyRemapCopy.find(VK_RMENU) != singleKeyRemapCopy.end())
+    {
+        // If they are mapped to the same key, delete those entries and set the common version
+        if (singleKeyRemapCopy[VK_LMENU] == singleKeyRemapCopy[VK_RMENU])
+        {
+            singleKeyRemapCopy[VK_MENU] = singleKeyRemapCopy[VK_LMENU];
+            singleKeyRemapCopy.erase(VK_LMENU);
+            singleKeyRemapCopy.erase(VK_RMENU);
+        }
+    }
+    if (singleKeyRemapCopy.find(VK_LSHIFT) != singleKeyRemapCopy.end() && singleKeyRemapCopy.find(VK_RSHIFT) != singleKeyRemapCopy.end())
+    {
+        // If they are mapped to the same key, delete those entries and set the common version
+        if (singleKeyRemapCopy[VK_LSHIFT] == singleKeyRemapCopy[VK_RSHIFT])
+        {
+            singleKeyRemapCopy[VK_SHIFT] = singleKeyRemapCopy[VK_LSHIFT];
+            singleKeyRemapCopy.erase(VK_LSHIFT);
+            singleKeyRemapCopy.erase(VK_RSHIFT);
+        }
+    }
+
+    for (const auto& it : singleKeyRemapCopy)
     {
         SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects, it.first, it.second);
     }
-    lock.unlock();
 
     // Main Header Apply button
     Button applyButton;
+    applyButton.Content(winrt::box_value(L"Apply"));
     header.SetAlignRightWithPanel(applyButton, true);
     header.SetLeftOf(cancelButton, applyButton);
-    applyButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    applyButton.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
-    applyButton.Content(winrt::box_value(winrt::to_hstring("Apply")));
     applyButton.Flyout(applyFlyout);
     applyButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         bool isSuccess = true;
@@ -184,7 +209,30 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
             if (originalKey != NULL && newKey != NULL)
             {
-                bool result = keyboardManagerState.AddSingleKeyRemap(originalKey, newKey);
+                // If Ctrl/Alt/Shift are added, add their L and R versions instead to the same key
+                bool result = false;
+                bool res1, res2;
+                switch (originalKey)
+                {
+                case VK_CONTROL:
+                    res1 = keyboardManagerState.AddSingleKeyRemap(VK_LCONTROL, newKey);
+                    res2 = keyboardManagerState.AddSingleKeyRemap(VK_RCONTROL, newKey);
+                    result = res1 && res2;
+                    break;
+                case VK_MENU:
+                    res1 = keyboardManagerState.AddSingleKeyRemap(VK_LMENU, newKey);
+                    res2 = keyboardManagerState.AddSingleKeyRemap(VK_RMENU, newKey);
+                    result = res1 && res2;
+                    break;
+                case VK_SHIFT:
+                    res1 = keyboardManagerState.AddSingleKeyRemap(VK_LSHIFT, newKey);
+                    res2 = keyboardManagerState.AddSingleKeyRemap(VK_RSHIFT, newKey);
+                    result = res1 && res2;
+                    break;
+                default:
+                    result = keyboardManagerState.AddSingleKeyRemap(originalKey, newKey);
+                }
+
                 if (!result)
                 {
                     isSuccess = false;
@@ -201,11 +249,11 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
         if (isSuccess && saveResult)
         {
-            settingsMessage.Text(winrt::to_hstring("Remapping successful"));
+            settingsMessage.Text(L"Remapping successful!");
         }
         else if (!isSuccess && saveResult)
         {
-            settingsMessage.Text(winrt::to_hstring("All remappings were not successfully applied"));
+            settingsMessage.Text(L"All remappings were not successfully applied.");
         }
         else
         {
@@ -219,8 +267,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // Add remap key button
     Windows::UI::Xaml::Controls::Button addRemapKey;
-    addRemapKey.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    addRemapKey.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     FontIcon plusSymbol;
     plusSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
     plusSymbol.Glyph(L"\xE109");
