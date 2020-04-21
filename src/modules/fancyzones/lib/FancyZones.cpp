@@ -355,6 +355,8 @@ FancyZones::WindowCreated(HWND window) noexcept
     {
         for (const auto& [monitor, zoneWindow] : m_zoneWindowMap)
         {
+            // WindowCreated is also invoked when a virtual desktop switch occurs, we need a way
+            // to figure out when that happens to avoid moving windows that should not be moved.
             GUID windowDesktopId{};
             GUID zoneWindowDesktopId{};
             if (VirtualDesktopUtils::GetWindowDesktopId(window, &windowDesktopId) &&
