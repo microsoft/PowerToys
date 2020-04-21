@@ -13,12 +13,14 @@
 #include <common/common.h>
 #include <common/dpi_aware.h>
 
-#include <common/msi_to_msix_upgrade_lib/msi_to_msix_upgrade.h>
 #include <common/winstore.h>
 #include <common/notifications.h>
-#include <common/timeutil.h>
+
+#include <common/updating/updating.h>
 
 #include "update_state.h"
+#include "update_utils.h"
+#include "action_runner_utils.h"
 
 #include <winrt/Windows.System.h>
 
@@ -33,9 +35,6 @@ namespace localized_strings
 {
     const wchar_t MSI_VERSION_IS_ALREADY_RUNNING[] = L"An older version of PowerToys is already running.";
     const wchar_t OLDER_MSIX_UNINSTALLED[] = L"An older MSIX version of PowerToys was uninstalled.";
-
-    const wchar_t GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT[] = L"An update to PowerToys is available. Visit our GitHub page to get ";
-    const wchar_t GITHUB_NEW_VERSION_AGREE[] = L"Visit";
 }
 
 namespace
@@ -78,78 +77,6 @@ wil::unique_mutex_nothrow create_msix_mutex()
     return create_runner_mutex(true);
 }
 
-bool start_msi_uninstallation_sequence()
-{
-    const auto package_path = get_msi_package_path();
-
-    if (package_path.empty())
-    {
-        // No MSI version detected
-        return true;
-    }
-
-    if (!offer_msi_uninstallation())
-    {
-        // User declined to uninstall or opted for "Don't show again"
-        return false;
-    }
-
-    std::wstring action_runner_path{ winrt::Windows::ApplicationModel::Package::Current().InstalledLocation().Path() };
-    action_runner_path += L"\\action_runner.exe";
-    SHELLEXECUTEINFOW sei{ sizeof(sei) };
-    sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS };
-    sei.lpFile = action_runner_path.c_str();
-    sei.nShow = SW_SHOWNORMAL;
-    sei.lpParameters = L"-uninstall_msi";
-    ShellExecuteExW(&sei);
-    WaitForSingleObject(sei.hProcess, INFINITE);
-    DWORD exit_code = 0;
-    GetExitCodeProcess(sei.hProcess, &exit_code);
-    CloseHandle(sei.hProcess);
-    return exit_code == 0;
-}
-
-std::future<void> check_github_updates()
-{
-    const auto new_version = co_await check_for_new_github_release_async();
-    if (!new_version)
-    {
-        co_return;
-    }
-    using namespace localized_strings;
-
-    std::wstring contents = GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT;
-    contents += new_version->version_string;
-    contents += L'.';
-    notifications::show_toast_with_activations(std::move(contents), {}, { notifications::link_button{ GITHUB_NEW_VERSION_AGREE, new_version->release_page_uri.ToString().c_str() } });
-}
-
-void github_update_checking_worker()
-{
-    const int64_t update_check_period_minutes = 60 * 24;
-
-    auto state = UpdateState::load();
-    for (;;)
-    {
-        int64_t sleep_minutes_till_next_update = 0;
-        if (state.github_update_last_checked_date.has_value())
-        {
-            int64_t last_checked_minutes_ago = timeutil::diff::in_minutes(timeutil::now(), *state.github_update_last_checked_date);
-            if (last_checked_minutes_ago < 0)
-            {
-                last_checked_minutes_ago = update_check_period_minutes;
-            }
-            sleep_minutes_till_next_update = max(0, update_check_period_minutes - last_checked_minutes_ago);
-        }
-
-        std::this_thread::sleep_for(std::chrono::minutes(sleep_minutes_till_next_update));
-
-        check_github_updates().get();
-        state.github_update_last_checked_date.emplace(timeutil::now());
-        state.save();
-    }
-}
-
 void open_menu_from_another_instance()
 {
     HWND hwnd_main = FindWindow(L"PToyTrayIconWindow", NULL);
@@ -172,7 +99,7 @@ int runner(bool isProcessElevated)
     try
     {
         std::thread{ [] {
-            github_update_checking_worker();
+            github_update_worker();
         } }.detach();
 
         if (winstore::running_as_packaged())
@@ -183,13 +110,12 @@ int runner(bool isProcessElevated)
         }
         else
         {
-            std::thread{[] {
-                if(uninstall_previous_msix_version_async().get())
+            std::thread{ [] {
+                if (updating::uninstall_previous_msix_version_async().get())
                 {
                     notifications::show_toast(localized_strings::OLDER_MSIX_UNINSTALLED);
                 }
-            }}.detach();
-            
+            } }.detach();
         }
 
         notifications::register_background_toast_handler();
@@ -243,7 +169,8 @@ enum class SpecialMode
 {
     None,
     Win32ToastNotificationCOMServer,
-    ToastNotificationHandler
+    ToastNotificationHandler,
+    ReportSuccessfulUpdate
 };
 
 SpecialMode should_run_in_special_mode(const int n_cmd_args, LPWSTR* cmd_arg_list)
@@ -257,6 +184,10 @@ SpecialMode should_run_in_special_mode(const int n_cmd_args, LPWSTR* cmd_arg_lis
         else if (n_cmd_args == 2 && !wcsncmp(PT_URI_PROTOCOL_SCHEME, cmd_arg_list[i], wcslen(PT_URI_PROTOCOL_SCHEME)))
         {
             return SpecialMode::ToastNotificationHandler;
+        }
+        else if (n_cmd_args == 2 && !wcscmp(UPDATE_REPORT_SUCCESS, cmd_arg_list[i]))
+        {
+            return SpecialMode::ReportSuccessfulUpdate;
         }
     }
 
@@ -281,6 +212,19 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     {
         return disable_cant_drag_elevated_warning() ? toast_notification_handler_result::exit_success : toast_notification_handler_result::exit_error;
     }
+    else if (param == L"update_now/")
+    {
+        launch_action_runner(UPDATE_NOW_LAUNCH_STAGE1_CMDARG);
+        return toast_notification_handler_result::exit_success;
+    }
+    else if (param == L"schedule_update/")
+    {
+        UpdateState::store([](UpdateState& state) {
+            state.pending_update = true;
+        });
+
+        return toast_notification_handler_result::exit_success;
+    }
     else
     {
         return toast_notification_handler_result::exit_error;
@@ -290,6 +234,11 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     winrt::init_apartment();
+
+    if (launch_pending_update())
+    {
+        return 0;
+    }
 
     int n_cmd_args = 0;
     LPWSTR* cmd_arg_list = CommandLineToArgvW(GetCommandLineW(), &n_cmd_args);
@@ -305,6 +254,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         case toast_notification_handler_result::exit_success:
             return 0;
         }
+    case SpecialMode::ReportSuccessfulUpdate:
+        notifications::show_toast(GET_RESOURCE_STRING(IDS_AUTOUPDATE_SUCCESS));
+        break;
+
     case SpecialMode::None:
         // continue as usual
         break;

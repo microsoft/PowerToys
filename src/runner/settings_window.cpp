@@ -40,7 +40,7 @@ json::JsonObject get_all_settings()
 {
     json::JsonObject result;
 
-    result.SetNamedValue(L"general", get_general_settings());
+    result.SetNamedValue(L"general", get_general_settings().to_json());
     result.SetNamedValue(L"powertoys", get_power_toys_settings());
     return result;
 }
@@ -243,7 +243,7 @@ void run_settings_window()
     DWORD powertoys_pid = GetCurrentProcessId();
 
     // Arg 4: settings theme.
-    const std::wstring settings_theme_setting{ get_general_settings().GetNamedString(L"theme").c_str() };
+    const std::wstring settings_theme_setting{ get_general_settings().theme };
     std::wstring settings_theme;
     if (settings_theme_setting == L"dark" || (settings_theme_setting == L"system" && WindowsColors::is_dark_mode()))
     {

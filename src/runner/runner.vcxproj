@@ -105,6 +105,7 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="action_runner_utils.cpp" />
     <ClCompile Include="auto_start_helper.cpp" />
     <ClCompile Include="general_settings.cpp" />
     <ClCompile Include="lowlevel_keyboard_event.cpp" />
@@ -121,14 +122,17 @@
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="tray_icon.cpp" />
     <ClCompile Include="unhandled_exception_handler.cpp" />
+    <ClCompile Include="update_utils.cpp" />
     <ClCompile Include="update_state.cpp" />
     <ClCompile Include="win_hook_event.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="action_runner_utils.h" />
     <ClInclude Include="auto_start_helper.h" />
     <ClInclude Include="general_settings.h" />
     <ClInclude Include="lowlevel_keyboard_event.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="update_utils.h" />
     <ClInclude Include="update_state.h" />
     <ClInclude Include="powertoys_events.h" />
     <ClInclude Include="powertoy_module.h" />
@@ -234,7 +238,7 @@
     <ProjectReference Include="..\common\common.vcxproj">
       <Project>{74485049-c722-400f-abe5-86ac52d929b3}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\common\msi_to_msix_upgrade_lib\msi_to_msix_upgrade_lib.vcxproj">
+    <ProjectReference Include="..\common\updating\updating.vcxproj">
       <Project>{17da04df-e393-4397-9cf0-84dabe11032e}</Project>
     </ProjectReference>
   </ItemGroup>

@@ -22,8 +22,9 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{17DA04DF-E393-4397-9CF0-84DABE11032E}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>msitomsixupgradelib</RootNamespace>
+    <RootNamespace>updating</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>updating</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -171,11 +172,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="msi_to_msix_upgrade.h" />
+    <ClInclude Include="updating.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="msi_to_msix_upgrade.cpp" />
+    <ClCompile Include="updating.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
