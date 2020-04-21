@@ -615,9 +615,16 @@ UINT __stdcall DetectPrevInstallPathCA(MSIHANDLE hInstall)
     UINT er = ERROR_SUCCESS;
     hr = WcaInitialize(hInstall, "DetectPrevInstallPathCA");
 
-    if (auto install_path = getMsiPackageInstalledPath(POWERTOYS_UPGRADE_CODE, POWERTOYS_EXE_COMPONENT))
+    try
     {
-        MsiSetPropertyW(hInstall, L"INSTALLFOLDER", install_path->data());
+        if (auto install_path = getMsiPackageInstalledPath(POWERTOYS_UPGRADE_CODE, POWERTOYS_EXE_COMPONENT))
+        {
+            MsiSetPropertyW(hInstall, L"INSTALLFOLDER", install_path->data());
+        }
+    }
+    catch(...)
+    {
+
     }
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
     return WcaFinalize(er);
