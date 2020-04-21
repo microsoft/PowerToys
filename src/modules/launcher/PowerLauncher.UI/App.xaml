@@ -32,6 +32,14 @@
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
 
+            <Style x:Key="ListViewNoAnimations" TargetType="ListView">
+                <Setter Property="ItemContainerTransitions">
+                    <Setter.Value>
+                        <TransitionCollection/>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
             <Style x:Key="IconOnlyButton" TargetType="Button">
                 <Setter Property="Background" Value="{ThemeResource ButtonRevealBackground}" />
                 <Setter Property="Foreground" Value="{ThemeResource PrimaryTextColor}" />
