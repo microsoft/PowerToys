@@ -378,7 +378,7 @@
             x:Name="TextBox"
             x:FieldModifier="public"
             Style="{StaticResource CustomAutoSuggestBoxTextBoxStyle}"
-            PlaceholderText="Launch an app"
+            PlaceholderText="Start typing"
             Height="72"
             ScrollViewer.BringIntoViewOnFocusChange="False"
             Canvas.ZIndex="0"
