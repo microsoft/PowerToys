@@ -25,16 +25,13 @@ public:
     SingleKeyRemapControl(const size_t rowIndex, const size_t colIndex) :
         singleKeyRemapDropDown(rowIndex, colIndex, singleKeyRemapBuffer)
     {
-        typeKey.Content(winrt::box_value(winrt::to_hstring("Type Key")));
-        typeKey.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-        typeKey.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
+        typeKey.Content(winrt::box_value(L"Type Key"));
         typeKey.Click([&, rowIndex, colIndex](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
             keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectSingleKeyRemapWindowActivated, EditKeyboardWindowHandle);
             // Using the XamlRoot of the typeKey to get the root of the XAML host
             createDetectKeyWindow(sender, sender.as<Button>().XamlRoot(), singleKeyRemapBuffer, *keyboardManagerState, rowIndex, colIndex);
         });
 
-        singleKeyRemapControlLayout.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
         singleKeyRemapControlLayout.Margin({ 0, 0, 0, 10 });
         singleKeyRemapControlLayout.Spacing(10);
 

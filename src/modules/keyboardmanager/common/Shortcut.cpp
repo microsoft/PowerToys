@@ -428,7 +428,7 @@ winrt::hstring Shortcut::ToHstringVK() const
     }
     if (winKey == ModifierKey::Both)
     {
-        output = output + winrt::to_hstring((unsigned int)KeyboardManagerConstants::VK_WIN_BOTH) + winrt::to_hstring(L";");
+        output = output + winrt::to_hstring((unsigned int)CommonSharedConstants::VK_WIN_BOTH) + winrt::to_hstring(L";");
     }
     if (ctrlKey != ModifierKey::Disabled)
     {

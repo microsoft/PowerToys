@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "SingleKeyRemapControl.h"
+#include "keyboardmanager/common/Helpers.h"
 
 //Both static members are initialized to null
 HWND SingleKeyRemapControl::EditKeyboardWindowHandle = nullptr;
@@ -12,7 +13,6 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
 {
     // Parent element for the row
     Windows::UI::Xaml::Controls::StackPanel tableRow;
-    tableRow.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
     tableRow.Spacing(100);
     tableRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
 
@@ -50,8 +50,6 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
 
     // Delete row button
     Windows::UI::Xaml::Controls::Button deleteRemapKeys;
-    deleteRemapKeys.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    deleteRemapKeys.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     FontIcon deleteSymbol;
     deleteSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
     deleteSymbol.Glyph(L"\xE74D");
@@ -82,8 +80,6 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     // ContentDialog for detecting remap key. This is the parent UI element.
     ContentDialog detectRemapKeyBox;
 
-    // TODO: Hardcoded light theme, since the app is not theme aware ATM.
-    detectRemapKeyBox.RequestedTheme(ElementTheme::Light);
     // ContentDialog requires manually setting the XamlRoot (https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
     detectRemapKeyBox.XamlRoot(xamlRoot);
     detectRemapKeyBox.Title(box_value(L"Press a key on selected keyboard:"));
@@ -114,7 +110,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
         {
             std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyCodeList();
             // Update the drop down list with the new language to ensure that the correct key is displayed
-            linkedRemapDropDown.ItemsSource(keyboardManagerState.keyboardMap.GetKeyNameList());
+            linkedRemapDropDown.ItemsSource(KeyboardManagerHelper::ToBoxValue(keyboardManagerState.keyboardMap.GetKeyNameList()));
             auto it = std::find(keyCodeList.begin(), keyCodeList.end(), detectedKey);
             if (it != keyCodeList.end())
             {
@@ -129,7 +125,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     };
 
     TextBlock primaryButtonText;
-    primaryButtonText.Text(to_hstring(L"OK"));
+    primaryButtonText.Text(L"OK");
 
     Button primaryButton;
     primaryButton.HorizontalAlignment(HorizontalAlignment::Stretch);
@@ -146,7 +142,8 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
             detectRemapKeyBox.Dispatcher().RunAsync(
                 Windows::UI::Core::CoreDispatcherPriority::Normal,
                 [primaryButton] {
-                    primaryButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::DarkGray() });
+                    // Use the base medium low brush to be consistent with the theme
+                    primaryButton.Background(Windows::UI::Xaml::Application::Current().Resources().Lookup(box_value(L"SystemControlBackgroundBaseMediumLowBrush")).as<Windows::UI::Xaml::Media::SolidColorBrush>());
                 });
         },
         [onAccept, detectRemapKeyBox](DWORD) {
@@ -158,7 +155,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
         });
 
     TextBlock cancelButtonText;
-    cancelButtonText.Text(to_hstring(L"Cancel"));
+    cancelButtonText.Text(L"Cancel");
 
     Button cancelButton;
     cancelButton.HorizontalAlignment(HorizontalAlignment::Stretch);
@@ -193,7 +190,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
 
     // Header textblock
     TextBlock text;
-    text.Text(winrt::to_hstring("Key Pressed:"));
+    text.Text(L"Key Pressed:");
     text.Margin({ 0, 0, 0, 10 });
     stackPanel.Children().Append(text);
 
@@ -203,13 +200,13 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     stackPanel.Children().Append(keyStackPanel);
 
     TextBlock holdEscInfo;
-    holdEscInfo.Text(winrt::to_hstring("Hold Esc to discard"));
+    holdEscInfo.Text(L"Hold Esc to discard");
     holdEscInfo.FontSize(12);
     holdEscInfo.Margin({ 0, 20, 0, 0 });
     stackPanel.Children().Append(holdEscInfo);
 
     TextBlock holdEnterInfo;
-    holdEnterInfo.Text(winrt::to_hstring("Hold Enter to apply"));
+    holdEnterInfo.Text(L"Hold Enter to apply");
     holdEnterInfo.FontSize(12);
     holdEnterInfo.Margin({ 0, 0, 0, 0 });
     stackPanel.Children().Append(holdEnterInfo);

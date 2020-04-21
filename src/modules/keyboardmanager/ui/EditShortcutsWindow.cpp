@@ -76,24 +76,22 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
     // Creating the Xaml content. xamlContainer is the parent UI element
     Windows::UI::Xaml::Controls::StackPanel xamlContainer;
-    xamlContainer.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
 
     // Header for the window
     Windows::UI::Xaml::Controls::StackPanel header;
-    header.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
     header.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
     header.Margin({ 10, 10, 10, 30 });
     header.Spacing(10);
 
     // Header text
     TextBlock headerText;
-    headerText.Text(winrt::to_hstring("Edit Shortcuts"));
+    headerText.Text(L"Edit Shortcuts");
     headerText.FontSize(30);
     headerText.Margin({ 0, 0, 100, 0 });
 
     // Cancel button
     Button cancelButton;
-    cancelButton.Content(winrt::box_value(winrt::to_hstring("Cancel")));
+    cancelButton.Content(winrt::box_value(L"Cancel"));
     cancelButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         // Close the window since settings do not need to be saved
         PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
@@ -101,26 +99,24 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
     // Table to display the shortcuts
     Windows::UI::Xaml::Controls::StackPanel shortcutTable;
-    shortcutTable.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
     shortcutTable.Margin({ 10, 10, 10, 20 });
     shortcutTable.Spacing(10);
 
     // Header row of the shortcut table
     Windows::UI::Xaml::Controls::StackPanel tableHeaderRow;
-    tableHeaderRow.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
     tableHeaderRow.Spacing(100);
     tableHeaderRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
 
     // First header textblock in the header row of the shortcut table
     TextBlock originalShortcutHeader;
-    originalShortcutHeader.Text(winrt::to_hstring("Original Shortcut:"));
+    originalShortcutHeader.Text(L"Original Shortcut:");
     originalShortcutHeader.FontWeight(Text::FontWeights::Bold());
     originalShortcutHeader.Margin({ 0, 0, 0, 10 });
     tableHeaderRow.Children().Append(originalShortcutHeader);
 
     // Second header textblock in the header row of the shortcut table
     TextBlock newShortcutHeader;
-    newShortcutHeader.Text(winrt::to_hstring("New Shortcut:"));
+    newShortcutHeader.Text(L"New Shortcut:");
     newShortcutHeader.FontWeight(Text::FontWeights::Bold());
     newShortcutHeader.Margin({ 0, 0, 0, 10 });
     tableHeaderRow.Children().Append(newShortcutHeader);
@@ -152,7 +148,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
     // Apply button
     Button applyButton;
-    applyButton.Content(winrt::box_value(winrt::to_hstring("Apply")));
+    applyButton.Content(winrt::box_value(L"Apply"));
     applyButton.Flyout(applyFlyout);
     applyButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         bool isSuccess = true;
@@ -184,11 +180,11 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
         if (isSuccess && saveResult)
         {
-            settingsMessage.Text(winrt::to_hstring("Remapping successful!"));
+            settingsMessage.Text(L"Remapping successful!");
         }
         else if (!isSuccess && saveResult)
         {
-            settingsMessage.Text(winrt::to_hstring("All remappings were not successfully applied."));
+            settingsMessage.Text(L"All remappings were not successfully applied.");
         }
         else
         {

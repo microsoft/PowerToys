@@ -209,6 +209,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Setting
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.PowerToys.Settings.UnitTest", "src\core\Microsoft.PowerToys.Settings.UnitTest\Microsoft.PowerToys.Settings.UnitTest.csproj", "{A80355C2-780D-4245-BD80-25B8DE698EE3}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interop", "src\common\interop\interop.vcxproj", "{F055103B-F80B-4D0C-BF48-057C55620033}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "common-md-flag", "src\common\common-md-flag\common-md-flag.vcxproj", "{985B3F2F-CEED-4C0A-A249-69257E719145}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -393,6 +397,14 @@ Global
 		{A80355C2-780D-4245-BD80-25B8DE698EE3}.Release|x64.ActiveCfg = Release|x64
 		{A80355C2-780D-4245-BD80-25B8DE698EE3}.Release|x64.Build.0 = Release|x64
 		{A80355C2-780D-4245-BD80-25B8DE698EE3}.Release|x64.Deploy.0 = Release|x64
+		{F055103B-F80B-4D0C-BF48-057C55620033}.Debug|x64.ActiveCfg = Debug|x64
+		{F055103B-F80B-4D0C-BF48-057C55620033}.Debug|x64.Build.0 = Debug|x64
+		{F055103B-F80B-4D0C-BF48-057C55620033}.Release|x64.ActiveCfg = Release|x64
+		{F055103B-F80B-4D0C-BF48-057C55620033}.Release|x64.Build.0 = Release|x64
+		{985B3F2F-CEED-4C0A-A249-69257E719145}.Debug|x64.ActiveCfg = Debug|x64
+		{985B3F2F-CEED-4C0A-A249-69257E719145}.Debug|x64.Build.0 = Debug|x64
+		{985B3F2F-CEED-4C0A-A249-69257E719145}.Release|x64.ActiveCfg = Release|x64
+		{985B3F2F-CEED-4C0A-A249-69257E719145}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -446,6 +458,8 @@ Global
 		{C073B057-B157-40F0-8678-1DCD119D841C} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
 		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
 		{A80355C2-780D-4245-BD80-25B8DE698EE3} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
+		{F055103B-F80B-4D0C-BF48-057C55620033} = {1AFB6476-670D-4E80-A464-657E01DFF482}
+		{985B3F2F-CEED-4C0A-A249-69257E719145} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

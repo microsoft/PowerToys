@@ -13,7 +13,6 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
 {
     // Parent element for the row
     Windows::UI::Xaml::Controls::StackPanel tableRow;
-    tableRow.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
     tableRow.Spacing(100);
     tableRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
 
@@ -27,7 +26,6 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     // ShortcutControl for the new shortcut
     tableRow.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getShortcutControl());
 
-    
     // Delete row button
     Windows::UI::Xaml::Controls::Button deleteShortcut;
     FontIcon deleteSymbol;
@@ -61,7 +59,6 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
         // Initialize both shortcuts as empty shortcuts
         shortcutRemapBuffer.push_back(std::vector<Shortcut>{ Shortcut(), Shortcut() });
     }
-
 }
 
 // Function to add a shortcut to the shortcut control as combo boxes
@@ -106,8 +103,6 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
     // ContentDialog for detecting shortcuts. This is the parent UI element.
     ContentDialog detectShortcutBox;
 
-    // TODO: Hardcoded light theme, since the app is not theme aware ATM.
-    detectShortcutBox.RequestedTheme(ElementTheme::Light);
     // ContentDialog requires manually setting the XamlRoot (https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
     detectShortcutBox.XamlRoot(xamlRoot);
     detectShortcutBox.Title(box_value(L"Press the keys in shortcut:"));
@@ -153,7 +148,7 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
     };
 
     TextBlock primaryButtonText;
-    primaryButtonText.Text(to_hstring(L"OK"));
+    primaryButtonText.Text(L"OK");
 
     Button primaryButton;
     primaryButton.HorizontalAlignment(HorizontalAlignment::Stretch);
@@ -172,7 +167,8 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
             detectShortcutBox.Dispatcher().RunAsync(
                 Windows::UI::Core::CoreDispatcherPriority::Normal,
                 [primaryButton] {
-                    primaryButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::DarkGray() });
+                    // Use the base medium low brush to be consistent with the theme
+                    primaryButton.Background(Windows::UI::Xaml::Application::Current().Resources().Lookup(box_value(L"SystemControlBackgroundBaseMediumLowBrush")).as<Windows::UI::Xaml::Media::SolidColorBrush>());
                 });
         },
         [onAccept, detectShortcutBox](DWORD) {
@@ -184,7 +180,7 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
         });
 
     TextBlock cancelButtonText;
-    cancelButtonText.Text(to_hstring(L"Cancel"));
+    cancelButtonText.Text(L"Cancel");
 
     Button cancelButton;
     cancelButton.HorizontalAlignment(HorizontalAlignment::Stretch);
@@ -219,7 +215,7 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
 
     // Header textblock
     TextBlock text;
-    text.Text(winrt::to_hstring("Keys Pressed:"));
+    text.Text(L"Keys Pressed:");
     text.Margin({ 0, 0, 0, 10 });
     stackPanel.Children().Append(text);
 
@@ -229,13 +225,13 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
     stackPanel.Children().Append(keyStackPanel);
 
     TextBlock holdEscInfo;
-    holdEscInfo.Text(winrt::to_hstring("Hold Esc to discard"));
+    holdEscInfo.Text(L"Hold Esc to discard");
     holdEscInfo.FontSize(12);
     holdEscInfo.Margin({ 0, 20, 0, 0 });
     stackPanel.Children().Append(holdEscInfo);
 
     TextBlock holdEnterInfo;
-    holdEnterInfo.Text(winrt::to_hstring("Hold Enter to apply"));
+    holdEnterInfo.Text(L"Hold Enter to apply");
     holdEnterInfo.FontSize(12);
     holdEnterInfo.Margin({ 0, 0, 0, 0 });
     stackPanel.Children().Append(holdEnterInfo);
