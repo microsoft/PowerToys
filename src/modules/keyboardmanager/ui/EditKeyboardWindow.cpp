@@ -79,9 +79,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // Header for the window
     Windows::UI::Xaml::Controls::RelativePanel header;
-    //header.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
     header.Margin({ 10, 10, 10, 30 });
-    //header.Spacing(10);
 
     // Header text
     TextBlock headerText;
@@ -121,19 +119,12 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     keyRemapTable.ColumnDefinitions().Append(thirdColumn);
     keyRemapTable.RowDefinitions().Append(RowDefinition());
 
-    // Header row of the keys remap table
-    Windows::UI::Xaml::Controls::StackPanel tableHeaderRow;
-    tableHeaderRow.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    tableHeaderRow.Spacing(100);
-    tableHeaderRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
-
     // First header textblock in the header row of the keys remap table
     TextBlock originalKeyRemapHeader;
     originalKeyRemapHeader.Text(winrt::to_hstring("Original Key:"));
     originalKeyRemapHeader.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     originalKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
     originalKeyRemapHeader.Margin({ 0, 0, 0, 10 });
-    //tableHeaderRow.Children().Append(originalKeyRemapHeader);
 
     // Second header textblock in the header row of the keys remap table
     TextBlock newKeyRemapHeader;
@@ -141,9 +132,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     newKeyRemapHeader.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     newKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
     newKeyRemapHeader.Margin({ 0, 0, 0, 10 });
-    //tableHeaderRow.Children().Append(newKeyRemapHeader);
-    ColumnDefinition primary;
-    ColumnDefinition secondary;
 
     keyRemapTable.SetColumn(originalKeyRemapHeader, 0);
     keyRemapTable.SetRow(originalKeyRemapHeader, 0);

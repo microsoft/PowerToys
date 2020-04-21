@@ -100,32 +100,37 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     });
 
     // Table to display the shortcuts
-    Windows::UI::Xaml::Controls::StackPanel shortcutTable;
-    shortcutTable.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+    Windows::UI::Xaml::Controls::Grid shortcutTable;
+    ColumnDefinition firstColumn;
+    ColumnDefinition secondColumn;
+    ColumnDefinition thirdColumn;
     shortcutTable.Margin({ 10, 10, 10, 20 });
-    shortcutTable.Spacing(10);
-
-    // Header row of the shortcut table
-    Windows::UI::Xaml::Controls::StackPanel tableHeaderRow;
-    tableHeaderRow.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    tableHeaderRow.Spacing(100);
-    tableHeaderRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+    shortcutTable.HorizontalAlignment(HorizontalAlignment::Stretch);
+    shortcutTable.ColumnSpacing(10);
+    shortcutTable.ColumnDefinitions().Append(firstColumn);
+    shortcutTable.ColumnDefinitions().Append(secondColumn);
+    shortcutTable.ColumnDefinitions().Append(thirdColumn);
+    shortcutTable.RowDefinitions().Append(RowDefinition());
 
     // First header textblock in the header row of the shortcut table
     TextBlock originalShortcutHeader;
     originalShortcutHeader.Text(winrt::to_hstring("Original Shortcut:"));
     originalShortcutHeader.FontWeight(Text::FontWeights::Bold());
     originalShortcutHeader.Margin({ 0, 0, 0, 10 });
-    tableHeaderRow.Children().Append(originalShortcutHeader);
 
     // Second header textblock in the header row of the shortcut table
     TextBlock newShortcutHeader;
     newShortcutHeader.Text(winrt::to_hstring("New Shortcut:"));
     newShortcutHeader.FontWeight(Text::FontWeights::Bold());
     newShortcutHeader.Margin({ 0, 0, 0, 10 });
-    tableHeaderRow.Children().Append(newShortcutHeader);
 
-    shortcutTable.Children().Append(tableHeaderRow);
+    shortcutTable.SetColumn(originalShortcutHeader, 0);
+    shortcutTable.SetRow(newShortcutHeader, 0);
+    shortcutTable.SetColumn(originalShortcutHeader, 1);
+    shortcutTable.SetRow(newShortcutHeader, 0);
+
+    shortcutTable.Children().Append(originalShortcutHeader);
+    shortcutTable.Children().Append(newShortcutHeader);
 
     // Message to display success/failure of saving settings.
     Flyout applyFlyout;

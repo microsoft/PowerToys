@@ -9,23 +9,24 @@ KeyboardManagerState* ShortcutControl::keyboardManagerState = nullptr;
 std::vector<std::vector<Shortcut>> ShortcutControl::shortcutRemapBuffer;
 
 // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
-void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, Shortcut originalKeys, Shortcut newKeys)
+void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, Shortcut originalKeys, Shortcut newKeys)
 {
-    // Parent element for the row
-    Windows::UI::Xaml::Controls::StackPanel tableRow;
-    tableRow.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    tableRow.Spacing(100);
-    tableRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
-
     // Create new ShortcutControl objects dynamically so that we does not get destructed
     std::vector<std::unique_ptr<ShortcutControl>> newrow;
     newrow.push_back(std::move(std::unique_ptr<ShortcutControl>(new ShortcutControl(shortcutRemapBuffer.size(), 0))));
     newrow.push_back(std::move(std::unique_ptr<ShortcutControl>(new ShortcutControl(shortcutRemapBuffer.size(), 1))));
     keyboardRemapControlObjects.push_back(std::move(newrow));
+
+    // Add to grid
+    parent.RowDefinitions().Append(RowDefinition());
+    parent.SetColumn(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->getShortcutControl(), 0);
+    parent.SetRow(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->getShortcutControl(), parent.RowDefinitions().Size() - 1);
+    parent.SetColumn(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getShortcutControl(), 1);
+    parent.SetRow(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getShortcutControl(), parent.RowDefinitions().Size() - 1);
     // ShortcutControl for the original shortcut
-    tableRow.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->getShortcutControl());
+    parent.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->getShortcutControl());
     // ShortcutControl for the new shortcut
-    tableRow.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getShortcutControl());
+    parent.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getShortcutControl());
 
     
     // Delete row button
@@ -35,18 +36,32 @@ void ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, std::vector<s
     deleteSymbol.Glyph(L"\xE74D");
     deleteShortcut.Content(deleteSymbol);
     deleteShortcut.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
-        StackPanel currentRow = sender.as<Button>().Parent().as<StackPanel>();
+        Button currentButton = sender.as<Button>();
         uint32_t index;
-        parent.Children().IndexOf(currentRow, index);
+        // Get index of delete button
+        UIElementCollection children = parent.Children();
+        children.IndexOf(currentButton, index);
+        // Change the row index of elements appearing after the current row, as we will delete the row definition
+        for (int i = index + 1; i < children.Size(); i++)
+        {
+            int32_t elementRowIndex = parent.GetRow(children.GetAt(i).as<FrameworkElement>());
+            parent.SetRow(children.GetAt(i).as<FrameworkElement>(), elementRowIndex - 1);
+        }
         parent.Children().RemoveAt(index);
-        // delete the row from the buffer. Since first child of the stackpanel is the header, the effective index starts from 1
-        shortcutRemapBuffer.erase(shortcutRemapBuffer.begin() + (index - 1));
+        parent.Children().RemoveAt(index - 1);
+        parent.Children().RemoveAt(index - 2);
+
+        // Calculate row index in the buffer from the grid child index (first two children are header elements and then three children in each row)
+        int bufferIndex = (index - 2) / 3;
+        // Delete the row definition
+        parent.RowDefinitions().RemoveAt(bufferIndex + 1);
+        // delete the row from the buffer
+        shortcutRemapBuffer.erase(shortcutRemapBuffer.begin() + bufferIndex);
         // delete the ShortcutControl objects so that they get destructed
-        keyboardRemapControlObjects.erase(keyboardRemapControlObjects.begin() + (index - 1));
+        keyboardRemapControlObjects.erase(keyboardRemapControlObjects.begin() + bufferIndex);
     });
-    tableRow.Children().Append(deleteShortcut);
-    tableRow.UpdateLayout();
-    parent.Children().Append(tableRow);
+    parent.SetColumn(deleteShortcut, 2);
+    parent.SetRow(deleteShortcut, parent.RowDefinitions().Size() - 1);
     parent.UpdateLayout();
 
     // Set the shortcut text if the two vectors are not empty (i.e. default args)
