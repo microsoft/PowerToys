@@ -23,24 +23,9 @@ public:
     static KeyboardManagerState* keyboardManagerState;
 
     // Constructor for single key drop down
-    KeyDropDownControl(size_t rowIndex, size_t colIndex, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer)
+    KeyDropDownControl(bool isShortcut)
     {
-        SetDefaultProperties(false);
-        dropDown.SelectionChanged([&, rowIndex, colIndex](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args) {
-            ComboBox currentDropDown = sender.as<ComboBox>();
-            int selectedKeyIndex = currentDropDown.SelectedIndex();
-
-            // Check if the element was not found or the index exceeds the known keys
-            if (selectedKeyIndex != -1 && keyCodeList.size() > selectedKeyIndex)
-            {
-                singleKeyRemapBuffer[rowIndex][colIndex] = keyCodeList[selectedKeyIndex];
-            }
-            else
-            {
-                // Reset to null if the key is not found
-                singleKeyRemapBuffer[rowIndex][colIndex] = NULL;
-            }
-        });
+        SetDefaultProperties(isShortcut);
     }
 
     // Constructor for shortcut drop down
@@ -167,6 +152,32 @@ public:
 
             // Reset the buffer based on the new selected drop down items
             shortcutRemapBuffer[rowIndex][colIndex].SetKeyCodes(GetKeysFromStackPanel(parent));
+        });
+    }
+
+    // Function to set selection handler for single key remap drop down. Needs to be called after the constructor since the singleKeyControl StackPanel is null if called in the constructor
+    void SetSelectionHandler(Grid& table, StackPanel& singleKeyControl, size_t colIndex, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer)
+    {
+        dropDown.SelectionChanged([&, table, singleKeyControl, colIndex](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args) {
+            ComboBox currentDropDown = sender.as<ComboBox>();
+            int selectedKeyIndex = currentDropDown.SelectedIndex();
+            // Get row index of the single key control
+            uint32_t controlIndex;
+            bool indexFound = table.Children().IndexOf(singleKeyControl, controlIndex);
+            if (indexFound)
+            {
+                int rowIndex = (controlIndex - 2) / 3;
+                // Check if the element was not found or the index exceeds the known keys
+                if (selectedKeyIndex != -1 && keyCodeList.size() > selectedKeyIndex)
+                {
+                    singleKeyRemapBuffer[rowIndex][colIndex] = keyCodeList[selectedKeyIndex];
+                }
+                else
+                {
+                    // Reset to null if the key is not found
+                    singleKeyRemapBuffer[rowIndex][colIndex] = NULL;
+                }
+            }
         });
     }
 

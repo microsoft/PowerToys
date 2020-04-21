@@ -18,8 +18,8 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
 
     // Create new SingleKeyRemapControl objects dynamically so that we does not get destructed
     std::vector<std::unique_ptr<SingleKeyRemapControl>> newrow;
-    newrow.push_back(std::move(std::unique_ptr<SingleKeyRemapControl>(new SingleKeyRemapControl(singleKeyRemapBuffer.size(), 0))));
-    newrow.push_back(std::move(std::unique_ptr<SingleKeyRemapControl>(new SingleKeyRemapControl(singleKeyRemapBuffer.size(), 1))));
+    newrow.push_back(std::move(std::unique_ptr<SingleKeyRemapControl>(new SingleKeyRemapControl(parent, 0))));
+    newrow.push_back(std::move(std::unique_ptr<SingleKeyRemapControl>(new SingleKeyRemapControl(parent, 1))));
     keyboardRemapControlObjects.push_back(std::move(newrow));
 
     // Add to grid
@@ -74,7 +74,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
         parent.Children().RemoveAt(index - 2);
 
         // Calculate row index in the buffer from the grid child index (first two children are header elements and then three children in each row)
-        int bufferIndex = int(index / 3) - 1;
+        int bufferIndex = (index - 2) / 3;
         // delete the row from the buffer. 
         singleKeyRemapBuffer.erase(singleKeyRemapBuffer.begin() + bufferIndex);
         // delete the SingleKeyRemapControl objects so that they get destructed
@@ -92,7 +92,7 @@ StackPanel SingleKeyRemapControl::getSingleKeyRemapControl()
 }
 
 // Function to create the detect remap key UI window
-void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, KeyboardManagerState& keyboardManagerState, const size_t rowIndex, const size_t colIndex)
+void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, KeyboardManagerState& keyboardManagerState)
 {
     // ContentDialog for detecting remap key. This is the parent UI element.
     ContentDialog detectRemapKeyBox;
@@ -119,9 +119,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
                      detectRemapKeyBox,
                      &keyboardManagerState,
                      &singleKeyRemapBuffer,
-                     unregisterKeys,
-                     rowIndex,
-                     colIndex] {
+                     unregisterKeys] {
         // Save the detected key in the linked text block
         DWORD detectedKey = keyboardManagerState.GetDetectedSingleRemapKey();
 
