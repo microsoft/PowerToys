@@ -188,6 +188,7 @@ private:
     void UpdateDragState(HWND window, require_write_lock) noexcept;
     void CycleActiveZoneSet(DWORD vkCode) noexcept;
     bool OnSnapHotkey(DWORD vkCode) noexcept;
+    bool OnSwitchFocusHotkey(DWORD vkCode) noexcept;
     void MoveSizeStartInternal(HWND window, HMONITOR monitor, POINT const& ptScreen, require_write_lock) noexcept;
     void MoveSizeEndInternal(HWND window, POINT const& ptScreen, require_write_lock) noexcept;
     void MoveSizeUpdateInternal(HMONITOR monitor, POINT const& ptScreen, require_write_lock) noexcept;
@@ -202,6 +203,7 @@ private:
     std::vector<std::pair<HMONITOR, RECT>> GetRawMonitorData() noexcept;
     std::vector<HMONITOR> GetMonitorsSorted() noexcept;
     bool MoveWindowIntoZoneByDirection(HMONITOR monitor, HWND window, DWORD vkCode, bool cycle);
+    bool SwitchFocusByDirection(HMONITOR monitor, HWND window, DWORD vkCode, bool cycle);
 
     const HINSTANCE m_hinstance{};
 
@@ -395,23 +397,28 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
     if (win && !shift)
     {
         bool const ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
-        if (ctrl)
+        //if (ctrl)
+        //{
+        //    // Temporarily disable Win+Ctrl+Number functionality
+        //    //if ((info->vkCode >= '0') && (info->vkCode <= '9'))
+        //    //{
+        //    //    // Win+Ctrl+Number will cycle through ZoneSets
+        //    //    Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
+        //    //    CycleActiveZoneSet(info->vkCode);
+        //    //    return true;
+        //    //}
+        //}
+        if ((info->vkCode == VK_RIGHT) || (info->vkCode == VK_LEFT))
         {
-            // Temporarily disable Win+Ctrl+Number functionality
-            //if ((info->vkCode >= '0') && (info->vkCode <= '9'))
-            //{
-            //    // Win+Ctrl+Number will cycle through ZoneSets
-            //    Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
-            //    CycleActiveZoneSet(info->vkCode);
-            //    return true;
-            //}
-        }
-        else if ((info->vkCode == VK_RIGHT) || (info->vkCode == VK_LEFT))
-        {
+			Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
+            if (ctrl && m_settings->GetSettings()->switchFocusHotkeys)
+            {
+                // Win+Ctrl+Left, Win+Ctrl+Right will switch focus to windows in adjacent zones
+                return OnSwitchFocusHotkey(info->vkCode);
+            }
             if (m_settings->GetSettings()->overrideSnapHotkeys)
             {
                 // Win+Left, Win+Right will cycle through Zones in the active ZoneSet
-                Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
                 return OnSnapHotkey(info->vkCode);
             }
         }
@@ -915,6 +922,54 @@ void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
     }
 }
 
+bool FancyZones::OnSwitchFocusHotkey(DWORD vkCode) noexcept
+{
+    auto window = GetForegroundWindow();
+    if (IsInterestingWindow(window))
+    {
+        const HMONITOR current = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+        if (current)
+        {
+            std::vector<HMONITOR> monitorInfo = GetMonitorsSorted();
+            if (monitorInfo.size() > 1)
+            {
+                // Multi monitor environment.
+                auto currMonitorInfo = std::find(std::begin(monitorInfo), std::end(monitorInfo), current);
+                do
+                {
+                    if (SwitchFocusByDirection(*currMonitorInfo, window, vkCode, false /* cycle through zones */))
+                    {
+                        return true;
+                    }
+                    // We iterated through all zones in current monitor zone layout, move on to next one (or previous depending on direction).
+                    if (vkCode == VK_RIGHT)
+                    {
+                        currMonitorInfo = std::next(currMonitorInfo);
+                        if (currMonitorInfo == std::end(monitorInfo))
+                        {
+                            currMonitorInfo = std::begin(monitorInfo);
+                        }
+                    }
+                    else if (vkCode == VK_LEFT)
+                    {
+                        if (currMonitorInfo == std::begin(monitorInfo))
+                        {
+                            currMonitorInfo = std::end(monitorInfo);
+                        }
+                        currMonitorInfo = std::prev(currMonitorInfo);
+                    }
+                } while (*currMonitorInfo != current);
+            }
+            else
+            {
+                // Single monitor environment.
+                return SwitchFocusByDirection(current, window, vkCode, true /* cycle through zones */);
+            }
+        }
+    }
+    return false;
+}
+
 bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
 {
     auto window = GetForegroundWindow();
@@ -1259,6 +1314,17 @@ bool FancyZones::MoveWindowIntoZoneByDirection(HMONITOR monitor, HWND window, DW
     {
         const auto& zoneWindowPtr = iter->second;
         return zoneWindowPtr->MoveWindowIntoZoneByDirection(window, vkCode, cycle);
+    }
+    return false;
+}
+
+bool FancyZones::SwitchFocusByDirection(HMONITOR monitor, HWND window, DWORD vkCode, bool cycle)
+{
+    auto iter = m_zoneWindowMap.find(monitor);
+    if (iter != std::end(m_zoneWindowMap))
+    {
+        const auto& zoneWindowPtr = iter->second;
+        return zoneWindowPtr->SwitchFocusByDirection(window, vkCode, cycle);
     }
     return false;
 }

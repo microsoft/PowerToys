@@ -21,6 +21,7 @@ public:
 
     IFACEMETHODIMP_(RECT) GetZoneRect() noexcept { return m_zoneRect; }
     IFACEMETHODIMP_(bool) IsEmpty() noexcept { return m_windows.empty(); };
+    IFACEMETHODIMP_(bool) Focus() noexcept;
     IFACEMETHODIMP_(bool) ContainsWindow(HWND window) noexcept;
     IFACEMETHODIMP_(void) AddWindowToZone(HWND window, HWND zoneWindow, bool stampZone) noexcept;
     IFACEMETHODIMP_(void) RemoveWindowFromZone(HWND window, bool restoreSize) noexcept;
@@ -36,6 +37,16 @@ private:
     size_t m_id{};
     std::map<HWND, RECT> m_windows{};
 };
+
+IFACEMETHODIMP_(bool) Zone::Focus() noexcept
+{
+    if (IsEmpty())
+    {
+        return false;
+    }
+    SetFocus(m_windows.rbegin()->first);
+    return true;
+}
 
 IFACEMETHODIMP_(bool) Zone::ContainsWindow(HWND window) noexcept
 {

@@ -101,6 +101,17 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      * @returns Active zone layout for this work area.
      */
     IFACEMETHOD_(IZoneSet*, ActiveZoneSet)() = 0;
+    /**
+     * Switch window focus based on direction (using WIN + CTRL + LEFT/RIGHT arrow).
+     *
+     * @param   window Handle of window which should be assigned to zone.
+     * @param   vkCode Pressed arrow key.
+     * @param   cycle  Whether we should move window to the first zone if we reached last zone in layout.
+     *
+     * @returns Boolean which is always true if cycle argument is set, otherwise indicating if there is more
+     *          zones left in the zone layout in which window can move.
+     */
+    IFACEMETHOD_(bool, SwitchFocusByDirection)(HWND window, DWORD vkCode, bool cycle) = 0;
     IFACEMETHOD_(void, ShowZoneWindow)() = 0;
     IFACEMETHOD_(void, HideZoneWindow)() = 0;
 };

@@ -220,6 +220,8 @@ public:
     MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& indexSet) noexcept;
     IFACEMETHODIMP_(bool)
     MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle) noexcept;
+    IFACEMETHODIMP_(bool)
+    SwitchFocusByDirection(HWND window, DWORD vkCode, bool cycle) noexcept;
     IFACEMETHODIMP_(void)
     CycleActiveZoneSet(DWORD vkCode) noexcept;
     IFACEMETHODIMP_(std::wstring)
@@ -533,6 +535,25 @@ ZoneWindow::MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& in
     {
         activeZoneSet->MoveWindowIntoZoneByIndexSet(window, thisWindow, indexSet, false);
     }
+}
+
+IFACEMETHODIMP_(bool)
+ZoneWindow::SwitchFocusByDirection(HWND window, DWORD vkCode, bool cycle) noexcept
+{
+    std::shared_lock lock(m_mutex);
+    auto thisWindow = m_window.get();
+    auto activeZoneSet = m_activeZoneSet;
+    lock.unlock();
+
+    if (activeZoneSet)
+    {
+        if (activeZoneSet->SwitchFocusByDirection(window, thisWindow, vkCode, cycle))
+        {
+            SaveWindowProcessToZoneIndex(window);
+            return true;
+        }
+    }
+    return false;
 }
 
 IFACEMETHODIMP_(bool)

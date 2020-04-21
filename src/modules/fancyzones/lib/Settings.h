@@ -12,6 +12,7 @@ struct Settings
     bool zoneSetChange_flashZones = false;
     bool zoneSetChange_moveWindows = false;
     bool overrideSnapHotkeys = false;
+    bool switchFocusHotkeys = false;
     bool appLastZone_moveWindows = false;
     bool use_cursorpos_editor_startupscreen = true;
     bool showZonesOnAllMonitors = false;

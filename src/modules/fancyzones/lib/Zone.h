@@ -14,6 +14,10 @@ interface __declspec(uuid("{8228E934-B6EF-402A-9892-15A1441BF8B0}")) IZone : pub
      */
     IFACEMETHOD_(bool, IsEmpty)() = 0;
     /**
+     * @returns Boolean indicating if the zone contains any window to switch focus to
+     */
+    IFACEMETHOD_(bool, Focus)() = 0;
+    /**
      * @param   window Window handle.
      * @returns Boolean indicating if specified window is assigned to the zone.
      */
