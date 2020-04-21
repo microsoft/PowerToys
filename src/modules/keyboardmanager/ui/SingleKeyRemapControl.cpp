@@ -10,12 +10,6 @@ std::vector<std::vector<DWORD>> SingleKeyRemapControl::singleKeyRemapBuffer;
 // Function to add a new row to the remap keys table. If the originalKey and newKey args are provided, then the displayed remap keys are set to those values.
 void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>>& keyboardRemapControlObjects, const DWORD originalKey, const DWORD newKey)
 {
-    // Parent element for the row
-    //Windows::UI::Xaml::Controls::StackPanel tableRow;
-    //tableRow.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    //tableRow.Spacing(100);
-    //tableRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
-
     // Create new SingleKeyRemapControl objects dynamically so that we does not get destructed
     std::vector<std::unique_ptr<SingleKeyRemapControl>> newrow;
     newrow.push_back(std::move(std::unique_ptr<SingleKeyRemapControl>(new SingleKeyRemapControl(parent, 0))));
