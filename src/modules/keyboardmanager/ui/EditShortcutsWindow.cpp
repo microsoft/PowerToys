@@ -79,20 +79,20 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     xamlContainer.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
 
     // Header for the window
-    Windows::UI::Xaml::Controls::StackPanel header;
+    Windows::UI::Xaml::Controls::RelativePanel header;
     header.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    header.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
     header.Margin({ 10, 10, 10, 30 });
-    header.Spacing(10);
 
     // Header text
     TextBlock headerText;
     headerText.Text(winrt::to_hstring("Edit Shortcuts"));
     headerText.FontSize(30);
     headerText.Margin({ 0, 0, 100, 0 });
+    header.SetAlignLeftWithPanel(headerText, true);
 
     // Cancel button
     Button cancelButton;
+    cancelButton.Margin({ 0, 0, 10, 0 });
     cancelButton.Content(winrt::box_value(winrt::to_hstring("Cancel")));
     cancelButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         // Close the window since settings do not need to be saved
@@ -152,6 +152,8 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
     // Apply button
     Button applyButton;
+    header.SetAlignRightWithPanel(applyButton, true);
+    header.SetLeftOf(cancelButton, applyButton);
     applyButton.Content(winrt::box_value(winrt::to_hstring("Apply")));
     applyButton.Flyout(applyFlyout);
     applyButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {

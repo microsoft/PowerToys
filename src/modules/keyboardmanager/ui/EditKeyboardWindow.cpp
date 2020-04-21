@@ -78,20 +78,22 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     xamlContainer.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
 
     // Header for the window
-    Windows::UI::Xaml::Controls::StackPanel header;
-    header.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+    Windows::UI::Xaml::Controls::RelativePanel header;
+    //header.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
     header.Margin({ 10, 10, 10, 30 });
-    header.Spacing(10);
+    //header.Spacing(10);
 
     // Header text
     TextBlock headerText;
     headerText.Text(winrt::to_hstring("Remap Keyboard"));
     headerText.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     headerText.FontSize(30);
-    headerText.Margin({ 0, 0, 1000, 0 });
+    headerText.Margin({ 0, 0, 0, 0 });
+    header.SetAlignLeftWithPanel(headerText, true);
 
     // Header Cancel button
     Button cancelButton;
+    cancelButton.Margin({ 0, 0, 10, 0 });
     cancelButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
     cancelButton.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     cancelButton.Content(winrt::box_value(winrt::to_hstring("Cancel")));
@@ -107,10 +109,17 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     keyRemapInfoHeader.Margin({ 10, 0, 0, 10 });
 
     // Table to display the key remaps
-    Windows::UI::Xaml::Controls::StackPanel keyRemapTable;
-    keyRemapTable.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+    Grid keyRemapTable;
+    ColumnDefinition firstColumn;
+    ColumnDefinition secondColumn;
+    ColumnDefinition thirdColumn;
     keyRemapTable.Margin({ 10, 10, 10, 20 });
-    keyRemapTable.Spacing(10);
+    keyRemapTable.HorizontalAlignment(HorizontalAlignment::Stretch);
+    keyRemapTable.ColumnSpacing(10);
+    keyRemapTable.ColumnDefinitions().Append(firstColumn);
+    keyRemapTable.ColumnDefinitions().Append(secondColumn);
+    keyRemapTable.ColumnDefinitions().Append(thirdColumn);
+    keyRemapTable.RowDefinitions().Append(RowDefinition());
 
     // Header row of the keys remap table
     Windows::UI::Xaml::Controls::StackPanel tableHeaderRow;
@@ -124,7 +133,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     originalKeyRemapHeader.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     originalKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
     originalKeyRemapHeader.Margin({ 0, 0, 0, 10 });
-    tableHeaderRow.Children().Append(originalKeyRemapHeader);
+    //tableHeaderRow.Children().Append(originalKeyRemapHeader);
 
     // Second header textblock in the header row of the keys remap table
     TextBlock newKeyRemapHeader;
@@ -132,9 +141,17 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     newKeyRemapHeader.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     newKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
     newKeyRemapHeader.Margin({ 0, 0, 0, 10 });
-    tableHeaderRow.Children().Append(newKeyRemapHeader);
+    //tableHeaderRow.Children().Append(newKeyRemapHeader);
+    ColumnDefinition primary;
+    ColumnDefinition secondary;
 
-    keyRemapTable.Children().Append(tableHeaderRow);
+    keyRemapTable.SetColumn(originalKeyRemapHeader, 0);
+    keyRemapTable.SetRow(originalKeyRemapHeader, 0);
+    keyRemapTable.SetColumn(newKeyRemapHeader, 1);
+    keyRemapTable.SetRow(newKeyRemapHeader, 0);
+
+    keyRemapTable.Children().Append(originalKeyRemapHeader);
+    keyRemapTable.Children().Append(newKeyRemapHeader);
 
     // Message to display success/failure of saving settings.
     Flyout applyFlyout;
@@ -161,6 +178,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // Main Header Apply button
     Button applyButton;
+    header.SetAlignRightWithPanel(applyButton, true);
+    header.SetLeftOf(cancelButton, applyButton);
     applyButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
     applyButton.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     applyButton.Content(winrt::box_value(winrt::to_hstring("Apply")));

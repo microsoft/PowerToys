@@ -8,23 +8,31 @@ KeyboardManagerState* SingleKeyRemapControl::keyboardManagerState = nullptr;
 std::vector<std::vector<DWORD>> SingleKeyRemapControl::singleKeyRemapBuffer;
 
 // Function to add a new row to the remap keys table. If the originalKey and newKey args are provided, then the displayed remap keys are set to those values.
-void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>>& keyboardRemapControlObjects, const DWORD originalKey, const DWORD newKey)
+void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>>& keyboardRemapControlObjects, const DWORD originalKey, const DWORD newKey)
 {
     // Parent element for the row
-    Windows::UI::Xaml::Controls::StackPanel tableRow;
-    tableRow.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    tableRow.Spacing(100);
-    tableRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+    //Windows::UI::Xaml::Controls::StackPanel tableRow;
+    //tableRow.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+    //tableRow.Spacing(100);
+    //tableRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
 
     // Create new SingleKeyRemapControl objects dynamically so that we does not get destructed
     std::vector<std::unique_ptr<SingleKeyRemapControl>> newrow;
     newrow.push_back(std::move(std::unique_ptr<SingleKeyRemapControl>(new SingleKeyRemapControl(singleKeyRemapBuffer.size(), 0))));
     newrow.push_back(std::move(std::unique_ptr<SingleKeyRemapControl>(new SingleKeyRemapControl(singleKeyRemapBuffer.size(), 1))));
     keyboardRemapControlObjects.push_back(std::move(newrow));
+
+    // Add to grid
+    int debug = parent.RowDefinitions().Size();
+    parent.RowDefinitions().Append(RowDefinition());
+    parent.SetColumn(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->getSingleKeyRemapControl(), 0);
+    parent.SetRow(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->getSingleKeyRemapControl(), parent.RowDefinitions().Size() - 1);
+    parent.SetColumn(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getSingleKeyRemapControl(), 1);
+    parent.SetRow(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getSingleKeyRemapControl(), parent.RowDefinitions().Size() - 1);
     // SingleKeyRemapControl for the original key.
-    tableRow.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->getSingleKeyRemapControl());
+    parent.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->getSingleKeyRemapControl());
     // SingleKeyRemapControl for the new remap key
-    tableRow.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getSingleKeyRemapControl());
+    parent.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getSingleKeyRemapControl());
 
     // Set the key text if the two keys are not null (i.e. default args)
     if (originalKey != NULL && newKey != NULL)
@@ -57,17 +65,24 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
     deleteSymbol.Glyph(L"\xE74D");
     deleteRemapKeys.Content(deleteSymbol);
     deleteRemapKeys.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
-        StackPanel currentRow = sender.as<Button>().Parent().as<StackPanel>();
+        Button currentButton = sender.as<Button>();
         uint32_t index;
-        parent.Children().IndexOf(currentRow, index);
+        // Get index of delete button
+        parent.Children().IndexOf(currentButton, index);
         parent.Children().RemoveAt(index);
-        // delete the row from the buffer. Since first child of the stackpanel is the header, the effective index starts from 1
-        singleKeyRemapBuffer.erase(singleKeyRemapBuffer.begin() + (index - 1));
+        parent.Children().RemoveAt(index - 1);
+        parent.Children().RemoveAt(index - 2);
+
+        // Calculate row index in the buffer from the grid child index (first two children are header elements and then three children in each row)
+        int bufferIndex = int(index / 3) - 1;
+        // delete the row from the buffer. 
+        singleKeyRemapBuffer.erase(singleKeyRemapBuffer.begin() + bufferIndex);
         // delete the SingleKeyRemapControl objects so that they get destructed
-        keyboardRemapControlObjects.erase(keyboardRemapControlObjects.begin() + (index - 1));
+        keyboardRemapControlObjects.erase(keyboardRemapControlObjects.begin() + bufferIndex);
     });
-    tableRow.Children().Append(deleteRemapKeys);
-    parent.Children().Append(tableRow);
+    parent.SetColumn(deleteRemapKeys, 2);
+    parent.SetRow(deleteRemapKeys, parent.RowDefinitions().Size() - 1);
+    parent.Children().Append(deleteRemapKeys);
 }
 
 // Function to return the stack panel element of the SingleKeyRemapControl. This is the externally visible UI element which can be used to add it to other layouts
