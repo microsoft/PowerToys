@@ -1,7 +1,7 @@
 #pragma once
 #include "Helpers.h"
-#include "LayoutMap.h"
 #include "KeyboardManagerConstants.h"
+#include "..\common\keyboard_layout.h"
 #include <interface/lowlevel_keyboard_event_data.h>
 
 // Enum type to store different states of the win key
@@ -154,9 +154,6 @@ public:
 
     // Function to reset the state of a shortcut key based on the passed key code argument. Since there is no VK_WIN code, use the second argument for setting common win key.
     void ResetKey(const DWORD& input, const bool& isWinBoth = false);
-
-    // Function to return the string representation of the shortcut
-    winrt::hstring ToHstring(LayoutMap& keyboardMap);
 
     // Function to return the string representation of the shortcut in virtual key codes appended in a string by ";" separator.
     winrt::hstring ToHstringVK() const;

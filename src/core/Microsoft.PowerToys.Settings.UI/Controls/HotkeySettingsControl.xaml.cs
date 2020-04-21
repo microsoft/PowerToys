@@ -90,7 +90,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 settings.Shift = true;
             }
 
-            settings.Key = e.Key.ToString();
+            settings.Key = Lib.Utilities.Helper.GetKeyName((uint)e.Key);
 
             // TODO: Check that e.OriginalKey is the ScanCode. It is not clear from docs.
             settings.Code = (int)e.OriginalKey;
