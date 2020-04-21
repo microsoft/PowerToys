@@ -125,7 +125,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     };
 
     TextBlock primaryButtonText;
-    primaryButtonText.Text(to_hstring(L"OK"));
+    primaryButtonText.Text(L"OK");
 
     Button primaryButton;
     primaryButton.HorizontalAlignment(HorizontalAlignment::Stretch);
@@ -155,7 +155,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
         });
 
     TextBlock cancelButtonText;
-    cancelButtonText.Text(to_hstring(L"Cancel"));
+    cancelButtonText.Text(L"Cancel");
 
     Button cancelButton;
     cancelButton.HorizontalAlignment(HorizontalAlignment::Stretch);
@@ -190,7 +190,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
 
     // Header textblock
     TextBlock text;
-    text.Text(winrt::to_hstring("Key Pressed:"));
+    text.Text(L"Key Pressed:");
     text.Margin({ 0, 0, 0, 10 });
     stackPanel.Children().Append(text);
 
@@ -200,13 +200,13 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     stackPanel.Children().Append(keyStackPanel);
 
     TextBlock holdEscInfo;
-    holdEscInfo.Text(winrt::to_hstring("Hold Esc to discard"));
+    holdEscInfo.Text(L"Hold Esc to discard");
     holdEscInfo.FontSize(12);
     holdEscInfo.Margin({ 0, 20, 0, 0 });
     stackPanel.Children().Append(holdEscInfo);
 
     TextBlock holdEnterInfo;
-    holdEnterInfo.Text(winrt::to_hstring("Hold Enter to apply"));
+    holdEnterInfo.Text(L"Hold Enter to apply");
     holdEnterInfo.FontSize(12);
     holdEnterInfo.Margin({ 0, 0, 0, 0 });
     stackPanel.Children().Append(holdEnterInfo);

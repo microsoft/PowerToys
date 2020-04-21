@@ -35,7 +35,7 @@ public:
         shortcutDropDownStackPanel.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
         KeyDropDownControl::AddDropDown(shortcutDropDownStackPanel, rowIndex, colIndex, shortcutRemapBuffer, keyDropDownControlObjects);
 
-        typeShortcut.Content(winrt::box_value(winrt::to_hstring("Type Shortcut")));
+        typeShortcut.Content(winrt::box_value(L"Type Shortcut"));
         typeShortcut.Click([&, rowIndex, colIndex](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
             keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectShortcutWindowActivated, EditShortcutsWindowHandle);
             // Using the XamlRoot of the typeShortcut to get the root of the XAML host

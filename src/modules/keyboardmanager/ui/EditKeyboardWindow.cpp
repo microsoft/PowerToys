@@ -84,13 +84,13 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // Header text
     TextBlock headerText;
-    headerText.Text(winrt::to_hstring("Remap Keyboard"));
+    headerText.Text(L"Remap Keyboard");
     headerText.FontSize(30);
     headerText.Margin({ 0, 0, 1000, 0 });
 
     // Header Cancel button
     Button cancelButton;
-    cancelButton.Content(winrt::box_value(winrt::to_hstring("Cancel")));
+    cancelButton.Content(winrt::box_value(L"Cancel"));
     cancelButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         // Close the window since settings do not need to be saved
         PostMessage(_hWndEditKeyboardWindow, WM_CLOSE, 0, 0);
@@ -98,7 +98,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     //  Text block for information about remap key section.
     TextBlock keyRemapInfoHeader;
-    keyRemapInfoHeader.Text(winrt::to_hstring("Select the key you want to remap, original key, and it's new output when pressed, the new key"));
+    keyRemapInfoHeader.Text(L"Select the key you want to remap, original key, and it's new output when pressed, the new key");
     keyRemapInfoHeader.Margin({ 10, 0, 0, 10 });
 
     // Table to display the key remaps
@@ -113,14 +113,14 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // First header textblock in the header row of the keys remap table
     TextBlock originalKeyRemapHeader;
-    originalKeyRemapHeader.Text(winrt::to_hstring("Original Key:"));
+    originalKeyRemapHeader.Text(L"Original Key:");
     originalKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
     originalKeyRemapHeader.Margin({ 0, 0, 0, 10 });
     tableHeaderRow.Children().Append(originalKeyRemapHeader);
 
     // Second header textblock in the header row of the keys remap table
     TextBlock newKeyRemapHeader;
-    newKeyRemapHeader.Text(winrt::to_hstring("New Key:"));
+    newKeyRemapHeader.Text(L"New Key:");
     newKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
     newKeyRemapHeader.Margin({ 0, 0, 0, 10 });
     tableHeaderRow.Children().Append(newKeyRemapHeader);
@@ -186,7 +186,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // Main Header Apply button
     Button applyButton;
-    applyButton.Content(winrt::box_value(winrt::to_hstring("Apply")));
+    applyButton.Content(winrt::box_value(L"Apply"));
     applyButton.Flyout(applyFlyout);
     applyButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         bool isSuccess = true;
@@ -240,11 +240,11 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
         if (isSuccess && saveResult)
         {
-            settingsMessage.Text(winrt::to_hstring("Remapping successful"));
+            settingsMessage.Text(L"Remapping successful!");
         }
         else if (!isSuccess && saveResult)
         {
-            settingsMessage.Text(winrt::to_hstring("All remappings were not successfully applied"));
+            settingsMessage.Text(L"All remappings were not successfully applied.");
         }
         else
         {

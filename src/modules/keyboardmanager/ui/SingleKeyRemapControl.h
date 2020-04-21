@@ -25,7 +25,7 @@ public:
     SingleKeyRemapControl(const size_t rowIndex, const size_t colIndex) :
         singleKeyRemapDropDown(rowIndex, colIndex, singleKeyRemapBuffer)
     {
-        typeKey.Content(winrt::box_value(winrt::to_hstring("Type Key")));
+        typeKey.Content(winrt::box_value(L"Type Key"));
         typeKey.Click([&, rowIndex, colIndex](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
             keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectSingleKeyRemapWindowActivated, EditKeyboardWindowHandle);
             // Using the XamlRoot of the typeKey to get the root of the XAML host
