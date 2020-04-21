@@ -6,6 +6,7 @@ using System;
 using System.Windows;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
+using Windows.UI.Popups;
 
 namespace Microsoft.PowerToys.Settings.UI.Runner
 {

@@ -16,6 +16,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             this.Value = 0.0;
         }
 
+        public DoubleProperty(double value)
+        {
+            Value = value;
+        }
+
         // Gets or sets the double value of the settings configuration.
         [JsonPropertyName("value")]
         public double Value { get; set; }

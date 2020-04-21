@@ -4,30 +4,26 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class BoolProperty
+
+    public class ImageresizerSizes
     {
-        public BoolProperty()
+        [JsonPropertyName("value")]
+        public ObservableCollection<ImageSize> Value { get; set; }
+
+        public ImageresizerSizes()
         {
-            this.Value = false;
+            this.Value = new ObservableCollection<ImageSize>();
         }
 
-        public BoolProperty(bool value)
+        public ImageresizerSizes(ObservableCollection<ImageSize> value)
         {
             Value = value;
-        }
-
-        [JsonPropertyName("value")]
-        public bool Value { get; set; }
-
-        public override string ToString()
-        {
-            return JsonSerializer.Serialize(this);
         }
     }
 }
