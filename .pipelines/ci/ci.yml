@@ -3,6 +3,7 @@ trigger:
   branches:
     include:
       - master
+      - dev/build-features
   paths:
     exclude:
       - doc/*
@@ -13,6 +14,7 @@ pr:
   branches:
     include:
       - master
+      - dev/build-features
 
 #     0.0.yyMM.dd##
 #     0.0.1904.0900

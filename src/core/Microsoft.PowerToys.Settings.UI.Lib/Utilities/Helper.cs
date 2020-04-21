@@ -64,5 +64,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
 
         [DllImport("user32.dll")]
         private static extern bool AllowSetForegroundWindow(int dwProcessId);
+
+        private static interop.LayoutMapManaged layoutMap = new interop.LayoutMapManaged();
+
+        public static string GetKeyName(uint key)
+        {
+            return layoutMap.GetKeyName(key);
+        }
     }
 }

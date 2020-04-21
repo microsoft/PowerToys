@@ -2,6 +2,8 @@
 #include "Helpers.h"
 #include <sstream>
 
+using namespace winrt::Windows::Foundation;
+
 namespace KeyboardManagerHelper
 {
     // Function to split a wstring based on a delimiter and return a vector of split strings
@@ -19,7 +21,7 @@ namespace KeyboardManagerHelper
     }
 
     // Function to return the next sibling element for an element under a stack panel
-    winrt::Windows::Foundation::IInspectable getSiblingElement(winrt::Windows::Foundation::IInspectable const& element)
+    IInspectable getSiblingElement(IInspectable const& element)
     {
         FrameworkElement frameworkElement = element.as<FrameworkElement>();
         StackPanel parentElement = frameworkElement.Parent().as<StackPanel>();
@@ -74,5 +76,15 @@ namespace KeyboardManagerHelper
         default:
             return false;
         }
+    }
+    Collections::IVector<IInspectable> ToBoxValue(const std::vector<std::wstring>& list)
+    {
+        Collections::IVector<IInspectable> boxList = single_threaded_vector<IInspectable>();
+        for (auto& val : list)
+        {
+            boxList.Append(winrt::box_value(val));
+        }
+
+        return boxList;
     }
 }
