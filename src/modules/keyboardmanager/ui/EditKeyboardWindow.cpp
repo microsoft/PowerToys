@@ -75,7 +75,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // Creating the Xaml content. xamlContainer is the parent UI element
     Windows::UI::Xaml::Controls::StackPanel xamlContainer;
-    xamlContainer.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
 
     // Header for the window
     Windows::UI::Xaml::Controls::StackPanel header;
@@ -86,14 +85,11 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     // Header text
     TextBlock headerText;
     headerText.Text(winrt::to_hstring("Remap Keyboard"));
-    headerText.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     headerText.FontSize(30);
     headerText.Margin({ 0, 0, 1000, 0 });
 
     // Header Cancel button
     Button cancelButton;
-    cancelButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    cancelButton.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     cancelButton.Content(winrt::box_value(winrt::to_hstring("Cancel")));
     cancelButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         // Close the window since settings do not need to be saved
@@ -103,25 +99,21 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     //  Text block for information about remap key section.
     TextBlock keyRemapInfoHeader;
     keyRemapInfoHeader.Text(winrt::to_hstring("Select the key you want to remap, original key, and it's new output when pressed, the new key"));
-    keyRemapInfoHeader.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     keyRemapInfoHeader.Margin({ 10, 0, 0, 10 });
 
     // Table to display the key remaps
     Windows::UI::Xaml::Controls::StackPanel keyRemapTable;
-    keyRemapTable.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
     keyRemapTable.Margin({ 10, 10, 10, 20 });
     keyRemapTable.Spacing(10);
 
     // Header row of the keys remap table
     Windows::UI::Xaml::Controls::StackPanel tableHeaderRow;
-    tableHeaderRow.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
     tableHeaderRow.Spacing(100);
     tableHeaderRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
 
     // First header textblock in the header row of the keys remap table
     TextBlock originalKeyRemapHeader;
     originalKeyRemapHeader.Text(winrt::to_hstring("Original Key:"));
-    originalKeyRemapHeader.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     originalKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
     originalKeyRemapHeader.Margin({ 0, 0, 0, 10 });
     tableHeaderRow.Children().Append(originalKeyRemapHeader);
@@ -129,7 +121,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     // Second header textblock in the header row of the keys remap table
     TextBlock newKeyRemapHeader;
     newKeyRemapHeader.Text(winrt::to_hstring("New Key:"));
-    newKeyRemapHeader.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     newKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
     newKeyRemapHeader.Margin({ 0, 0, 0, 10 });
     tableHeaderRow.Children().Append(newKeyRemapHeader);
@@ -195,8 +186,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // Main Header Apply button
     Button applyButton;
-    applyButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    applyButton.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     applyButton.Content(winrt::box_value(winrt::to_hstring("Apply")));
     applyButton.Flyout(applyFlyout);
     applyButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
@@ -269,8 +258,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // Add remap key button
     Windows::UI::Xaml::Controls::Button addRemapKey;
-    addRemapKey.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    addRemapKey.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     FontIcon plusSymbol;
     plusSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
     plusSymbol.Glyph(L"\xE109");

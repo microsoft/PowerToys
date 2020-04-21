@@ -13,7 +13,6 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
 {
     // Parent element for the row
     Windows::UI::Xaml::Controls::StackPanel tableRow;
-    tableRow.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
     tableRow.Spacing(100);
     tableRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
 
@@ -51,8 +50,6 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(StackPanel& parent, std::ve
 
     // Delete row button
     Windows::UI::Xaml::Controls::Button deleteRemapKeys;
-    deleteRemapKeys.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    deleteRemapKeys.Foreground(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::Black() });
     FontIcon deleteSymbol;
     deleteSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
     deleteSymbol.Glyph(L"\xE74D");
@@ -83,8 +80,6 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     // ContentDialog for detecting remap key. This is the parent UI element.
     ContentDialog detectRemapKeyBox;
 
-    // TODO: Hardcoded light theme, since the app is not theme aware ATM.
-    detectRemapKeyBox.RequestedTheme(ElementTheme::Light);
     // ContentDialog requires manually setting the XamlRoot (https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
     detectRemapKeyBox.XamlRoot(xamlRoot);
     detectRemapKeyBox.Title(box_value(L"Press a key on selected keyboard:"));
@@ -147,7 +142,8 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
             detectRemapKeyBox.Dispatcher().RunAsync(
                 Windows::UI::Core::CoreDispatcherPriority::Normal,
                 [primaryButton] {
-                    primaryButton.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::DarkGray() });
+                    // Use the base medium low brush to be consistent with the theme
+                    primaryButton.Background(Windows::UI::Xaml::Application::Current().Resources().Lookup(box_value(L"SystemControlBackgroundBaseMediumLowBrush")).as<Windows::UI::Xaml::Media::SolidColorBrush>());
                 });
         },
         [onAccept, detectRemapKeyBox](DWORD) {
