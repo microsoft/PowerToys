@@ -30,9 +30,6 @@
     <ClInclude Include="FancyZones.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RegistryHelpers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Settings.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -5,7 +5,6 @@
 #include "ZoneWindow.h"
 #include "trace.h"
 #include "util.h"
-#include "RegistryHelpers.h"
 
 #include <ShellScalingApi.h>
 #include <mutex>

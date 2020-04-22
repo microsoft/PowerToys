@@ -98,7 +98,6 @@
     <ClInclude Include="FancyZones.h" />
     <ClInclude Include="JsonHelpers.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="RegistryHelpers.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="trace.h" />

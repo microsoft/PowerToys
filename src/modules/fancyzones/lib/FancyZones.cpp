@@ -5,7 +5,6 @@
 #include "FancyZones.h"
 #include "lib/Settings.h"
 #include "lib/ZoneWindow.h"
-#include "lib/RegistryHelpers.h"
 #include "lib/JsonHelpers.h"
 #include "lib/ZoneSet.h"
 #include "trace.h"
@@ -642,15 +641,24 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
         // then this value will be empty. This means loading the first virtual desktop's configuration can be
         // funky the first time we load up at boot since the user will not have switched virtual desktops yet.
         GUID currentVirtualDesktopId{};
-        if (SUCCEEDED(RegistryHelpers::GetCurrentVirtualDesktop(&currentVirtualDesktopId)))
+        if (VirtualDesktopUtils::GetCurrentVirtualDesktopId(&currentVirtualDesktopId))
         {
             std::unique_lock writeLock(m_lock);
             m_currentVirtualDesktopId = currentVirtualDesktopId;
         }
         else
         {
-            // TODO: Use the previous "Desktop 1" fallback
-            // Need to maintain a map of desktop name to virtual desktop uuid
+            std::vector<GUID> ids{};
+            if (VirtualDesktopUtils::GetVirtualDekstopIds(m_virtualDesktopsRegKey, ids) && !ids.empty())
+            {
+                m_currentVirtualDesktopId = ids[0];
+                wil::unique_cotaskmem_string id;
+                if (changeType == DisplayChangeType::Initialization &&
+                    SUCCEEDED_LOG(StringFromCLSID(m_currentVirtualDesktopId, &id)))
+                {
+                    JSONHelpers::FancyZonesDataInstance().UpdatePrimaryDesktopData(id.get());
+                }
+            }
         }
     }
 
@@ -1132,28 +1140,12 @@ void FancyZones::HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) no
             // if fancyZonesDestroyedEvent is signalized or WaitForMultipleObjects failed, terminate thread execution
             return;
         }
-        DWORD bufferCapacity;
-        const WCHAR* key = L"VirtualDesktopIDs";
-        // request regkey binary buffer capacity only
-        if (RegQueryValueExW(m_virtualDesktopsRegKey, key, 0, nullptr, nullptr, &bufferCapacity) != ERROR_SUCCESS)
+        std::vector<GUID> ids{};
+        if (VirtualDesktopUtils::GetVirtualDekstopIds(m_virtualDesktopsRegKey, ids))
         {
-            return;
+            std::unordered_set<GUID> idSet(std::begin(ids), std::end(ids));
+            RegisterVirtualDesktopUpdates(idSet);
         }
-        std::unique_ptr<BYTE[]> buffer = std::make_unique<BYTE[]>(bufferCapacity);
-        // request regkey binary content
-        if (RegQueryValueExW(m_virtualDesktopsRegKey, key, 0, nullptr, buffer.get(), &bufferCapacity) != ERROR_SUCCESS)
-        {
-            return;
-        }
-        const size_t guidSize = sizeof(GUID);
-        std::unordered_set<GUID> temp;
-        temp.reserve(bufferCapacity / guidSize);
-        for (size_t i = 0; i < bufferCapacity; i += guidSize)
-        {
-            GUID* guid = reinterpret_cast<GUID*>(buffer.get() + i);
-            temp.insert(*guid);
-        }
-        RegisterVirtualDesktopUpdates(temp);
     }
 }
 

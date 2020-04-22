@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "JsonHelpers.h"
-#include "RegistryHelpers.h"
 #include "ZoneSet.h"
 #include "trace.h"
 
@@ -37,11 +36,18 @@ namespace
 
     const wchar_t* FANCY_ZONES_DATA_FILE = L"zones-settings.json";
     const wchar_t* DEFAULT_GUID = L"{00000000-0000-0000-0000-000000000000}";
+    const wchar_t* REG_SETTINGS = L"Software\\SuperFancyZones";
 
     std::wstring ExtractVirtualDesktopId(const std::wstring& deviceId)
     {
         // Format: <device-id>_<resolution>_<virtual-desktop-id>
         return deviceId.substr(deviceId.rfind('_') + 1);
+    }
+
+    std::wstring ReplaceVirtualDesktopId(const std::wstring& deviceId, const std::wstring& desktopId)
+    {
+        std::wstring newId = deviceId.substr(0, deviceId.rfind('_'));
+        return newId + L"_" + desktopId;
     }
 }
 
@@ -319,6 +325,37 @@ namespace JSONHelpers
         {
             destInfo = deviceInfoMap[source];
         }
+    }
+
+    void FancyZonesData::UpdatePrimaryDesktopData(const std::wstring& desktopId)
+    {
+        std::scoped_lock lock{ dataLock };
+        for (auto& [path, data] : appZoneHistoryMap)
+        {
+            if (ExtractVirtualDesktopId(data.deviceId) == DEFAULT_GUID)
+            {
+                data.deviceId = ReplaceVirtualDesktopId(data.deviceId, desktopId);
+            }
+        }
+        std::vector<std::wstring> toReplace{};
+        for (const auto& [id, data] : deviceInfoMap)
+        {
+            if (ExtractVirtualDesktopId(id) == DEFAULT_GUID)
+            {
+                toReplace.push_back(id);
+            }
+        }
+        for (const auto& id : toReplace)
+        {
+            auto mapEntry = deviceInfoMap.extract(id);
+            mapEntry.key() = ReplaceVirtualDesktopId(id, desktopId);
+            deviceInfoMap.insert(std::move(mapEntry));
+        }
+        if (activeDeviceId == DEFAULT_GUID)
+        {
+            activeDeviceId = ReplaceVirtualDesktopId(activeDeviceId, desktopId);
+        }
+        SaveFancyZonesData();
     }
 
     int FancyZonesData::GetAppLastZoneIndex(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const
@@ -640,7 +677,7 @@ namespace JSONHelpers
     {
         std::scoped_lock lock{ dataLock };
         wchar_t key[256];
-        StringCchPrintf(key, ARRAYSIZE(key), L"%s\\%s", RegistryHelpers::REG_SETTINGS, L"Layouts");
+        StringCchPrintf(key, ARRAYSIZE(key), L"%s\\%s", REG_SETTINGS, L"Layouts");
         HKEY hkey;
         if (RegOpenKeyExW(HKEY_CURRENT_USER, key, 0, KEY_ALL_ACCESS, &hkey) == ERROR_SUCCESS)
         {
