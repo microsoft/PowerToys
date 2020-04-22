@@ -18,17 +18,19 @@
     <Platforms>x64</Platforms>
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <Win32Resource />
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     
     <!-- crutkas TODO: added for fallback, may need to be removed for WinUI3 -->
     <AssetTargetFallback>uap10.0.18362</AssetTargetFallback>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutputPath>..\..\..\$(Platform)\$(Configuration)\</OutputPath>
+    <OutputPath>..\..\..\$(Platform)\$(Configuration)\SettingsUIRunner</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutputPath>..\..\..\$(Platform)\$(Configuration)\</OutputPath>
+    <OutputPath>..\..\..\$(Platform)\$(Configuration)\SettingsUIRunner</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
