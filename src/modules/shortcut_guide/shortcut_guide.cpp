@@ -13,7 +13,7 @@ OverlayWindow* instance = nullptr;
 
 namespace
 {
-    LRESULT CALLBACK hookProc(int nCode, WPARAM wParam, LPARAM lParam)
+    LRESULT CALLBACK lowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     {
         LowlevelKeyboardEvent event;
         if (nCode == HC_ACTION)
@@ -134,12 +134,7 @@ void OverlayWindow::enable()
         winkey_popup->set_theme(theme.value);
         target_state = std::make_unique<TargetState>(pressTime.value);
         winkey_popup->initialize();
-
-        hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, hookProc, GetModuleHandle(NULL), NULL);
-        if (!hook_handle)
-        {
-            throw std::runtime_error("Cannot install keyboard listener");
-        }
+        hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, lowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
     }
     _enabled = true;
 }
@@ -157,15 +152,13 @@ void OverlayWindow::disable(bool trace_event)
         target_state->exit();
         target_state.reset();
         winkey_popup.reset();
-
-        bool success = UnhookWindowsHookEx(hook_handle);
-        if (success)
+        if (hook_handle)
         {
-            hook_handle = nullptr;
-        }
-        else
-        {
-            throw std::runtime_error("Cannot uninstall keyboard listener");
+            bool success = UnhookWindowsHookEx(hook_handle);
+            if (success)
+            {
+                hook_handle = nullptr;
+            }
         }
     }
 }
