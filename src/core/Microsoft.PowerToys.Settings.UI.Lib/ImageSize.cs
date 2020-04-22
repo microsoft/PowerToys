@@ -12,6 +12,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class ImageSize
     {
+        public ImageSize(int id)
+        {
+            Id = id;
+            Name = string.Empty;
+            Fit = (int)ResizeFit.Fit;
+            Width = 0;
+            Height = 0;
+            Unit = (int)ResizeUnit.Pixel;
+        }
+
         public ImageSize()
         {
             Id = 0;

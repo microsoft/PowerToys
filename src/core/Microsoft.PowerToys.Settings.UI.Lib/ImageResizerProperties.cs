@@ -91,4 +91,22 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         Percent = 2,
         Pixel = 3,
     }
+
+    public enum PngInterlaceOption
+    {
+        Default = 0,
+        On = 1,
+        Off = 2,
+    }
+
+    public enum TiffCompressOption
+    {
+        Default = 0,
+        None = 1,
+        Ccitt3 = 2,
+        Ccitt4 = 3,
+        Lzw = 4,
+        Rle = 5,
+        Zip = 6,
+    }
 }

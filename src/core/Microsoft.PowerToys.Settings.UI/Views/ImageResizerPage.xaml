@@ -13,7 +13,7 @@
     <Page.Resources>
         <viewModel:ImageResizerViewModel x:Key="ViewModel"/>
     </Page.Resources>
-    
+
     <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
@@ -46,22 +46,23 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <StackPanel Orientation="Vertical" x:Name="ImageResizerView">
-            <TextBlock Text="Lets you resize images by right-clicking."
+
+            <TextBlock x:Uid="ImageResizer_Description"
                        TextWrapping="Wrap"/>
 
-            <TextBlock Text="Enable" 
+            <TextBlock x:Uid="ImageResizer_EnableGroupSettingsHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
-            
-            <ToggleSwitch Header="Enable Image Resizer"
+
+            <ToggleSwitch x:Uid="ImageResizer_EnableToggle"
                           IsOn="{ Binding Mode=TwoWay, Path=IsEnabled}"
                           Margin="{StaticResource SmallTopMargin}" />
 
-            <TextBlock Text="Image Sizes" 
+            <TextBlock x:Uid="ImageResizer_CustomSizes"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
-            
 
-            <ListView x:Name="" 
-                      ItemsSource="{Binding Path=Sizes, Mode=TwoWay}"
+
+            <ListView x:Name="ImagesSizesListView" 
+                      ItemsSource="{Binding Sizes, Mode=TwoWay, Source={StaticResource ViewModel}}"
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}">
                 <ListView.ItemTemplate>
                     <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:ImageSize">
@@ -69,7 +70,7 @@
                             <TextBox Text="{x:Bind Name}" 
                                      Width="90" 
                                      Height="35" />
-                            
+
                             <ComboBox 
                                       SelectedIndex="{x:Bind Fit}"
                                       Width="90" 
@@ -78,22 +79,22 @@
                                 <ComboBoxItem>Fit</ComboBoxItem>
                                 <ComboBoxItem>Stretch</ComboBoxItem>
                             </ComboBox>
-                            
+
                             <muxc:NumberBox Value="{x:Bind Width}" 
                                             Width="68" 
                                             Height="35"/>
-                            
+
                             <TextBlock Text="x" 
                                        FontWeight="SemiBold" 
                                        TextAlignment="Center" 
                                        Margin="0,4,0,0" 
                                        Width="25" 
                                        Height="35"/>
-                            
+
                             <muxc:NumberBox Value="{x:Bind Height}" 
                                             Width="68" 
                                             Height="35"/>
-                            
+
                             <ComboBox SelectedIndex="{Binding Unit}"
                                       Width="90" 
                                       Height="35">
@@ -128,101 +129,103 @@
                               IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
                               Label="Save Sizes"
                               Margin="{StaticResource SmallTopMargin}"
+                              Command = "{Binding Remove, Source={StaticResource ViewModel}}"
                           />
             </StackPanel>
 
             <TextBlock Text="Encoding" 
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-                <ComboBox Header="Fallback encoder"
-                          SelectedIndex="1"
+            <ComboBox Header="Fallback encoder"
+                          SelectedIndex="{ Binding Mode=TwoWay, Path=Encoder}"
                           MinWidth="240"
                           Margin="{StaticResource SmallTopMargin}"
                           IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}">
-                    <ComboBoxItem>BMP Encoder</ComboBoxItem>
-                    <ComboBoxItem>GIF Encoder</ComboBoxItem>
-                    <ComboBoxItem>JPEG Encoder</ComboBoxItem>
-                    <ComboBoxItem>PNG Encoder</ComboBoxItem>
-                    <ComboBoxItem>TIFF Encoder</ComboBoxItem>
-                    <ComboBoxItem>WMPhoto Encoder</ComboBoxItem>
-                </ComboBox>
+                <ComboBoxItem>PNG Encoder</ComboBoxItem>
+                <ComboBoxItem>BMP Encoder</ComboBoxItem>
+                <ComboBoxItem>JPEG Encoder</ComboBoxItem>
+                <ComboBoxItem>TIFF Encoder</ComboBoxItem>
+                <ComboBoxItem>WMPhoto Encoder</ComboBoxItem>
+                <ComboBoxItem>GIF Encoder</ComboBoxItem>                
+            </ComboBox>
 
-                <muxc:NumberBox Header="JPEG Quality level"
+
+            <muxc:NumberBox Header="JPEG Quality level"
                             Minimum="0"
                             Maximum="100"
-                            Value="90"
+                            Value="{ Binding Mode=TwoWay, Path=JPEGQualityLevel}"
                             MinWidth="240"
                             SpinButtonPlacementMode="Inline"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallTopMargin}" 
                             IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
-                <ComboBox Header="PNG interlacing"
-                          SelectedIndex="0"
+            <ComboBox Header="PNG interlacing"
+                          SelectedIndex="{ Binding Mode=TwoWay, Path=PngInterlaceOption}"
                           MinWidth="240"
                           Margin="{StaticResource SmallTopMargin}"
                           IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}">
-                    <ComboBoxItem>Default</ComboBoxItem>
-                    <ComboBoxItem>On</ComboBoxItem>
-                    <ComboBoxItem>Off</ComboBoxItem>
-                </ComboBox>
+                <ComboBoxItem>Default</ComboBoxItem>
+                <ComboBoxItem>On</ComboBoxItem>
+                <ComboBoxItem>Off</ComboBoxItem>
+            </ComboBox>
 
-                <ComboBox Header="TIFF Compression"
-                          SelectedIndex="0"
+            <ComboBox Header="TIFF Compression"
+                          SelectedIndex="{ Binding Mode=TwoWay, Path=TiffCompressOption}"
                           MinWidth="240"
                           Margin="{StaticResource SmallTopMargin}"
                           IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}">
-                    <ComboBoxItem>Default</ComboBoxItem>
-                    <ComboBoxItem>None</ComboBoxItem>
-                    <ComboBoxItem>CCITT3</ComboBoxItem>
-                    <ComboBoxItem>CCITT4</ComboBoxItem>
-                    <ComboBoxItem>LZW</ComboBoxItem>
-                    <ComboBoxItem>RLE</ComboBoxItem>
-                    <ComboBoxItem>Zip</ComboBoxItem>
-                </ComboBox>
+                <ComboBoxItem>Default</ComboBoxItem>
+                <ComboBoxItem>None</ComboBoxItem>
+                <ComboBoxItem>CCITT3</ComboBoxItem>
+                <ComboBoxItem>CCITT4</ComboBoxItem>
+                <ComboBoxItem>LZW</ComboBoxItem>
+                <ComboBoxItem>RLE</ComboBoxItem>
+                <ComboBoxItem>Zip</ComboBoxItem>
+            </ComboBox>
 
-                <TextBlock Text="File" 
+            <TextBlock Text="File" 
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-
-                <TextBox  Header="Filename format"
-                          Text="%1 (%2)"
-                          HorizontalAlignment="Left"
-                          MinWidth="240"
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                          Margin="{StaticResource SmallTopMargin}"/>
-
-                <TextBlock Text="The following parameters can be used:"
+            <TextBlock Text="The following parameters can be used:"
                            Margin="{StaticResource SmallTopBottomMargin}"/>
 
-                <TextBlock FontSize="12">
+            <TextBlock FontSize="12">
                 <Run FontWeight="Bold">%1</Run>
                 <Run>  -  Original filename</Run>
-                </TextBlock>
-                <TextBlock FontSize="12">
+            </TextBlock>
+            <TextBlock FontSize="12">
                 <Run FontWeight="Bold">%2</Run>
                 <Run>  -  Size name</Run>
-                </TextBlock>
-                <TextBlock FontSize="12">
+            </TextBlock>
+            <TextBlock FontSize="12">
                 <Run FontWeight="Bold">%3</Run>
                 <Run>  -  Selected width</Run>
-                </TextBlock>
-                <TextBlock FontSize="12">
+            </TextBlock>
+            <TextBlock FontSize="12">
                 <Run FontWeight="Bold">%4</Run>
                 <Run>  -  Selected height</Run>
-                </TextBlock>
-                <TextBlock FontSize="12">
+            </TextBlock>
+            <TextBlock FontSize="12">
                 <Run FontWeight="Bold">%5</Run>
                 <Run>  -  Actual height</Run>
-                </TextBlock>
-                <TextBlock FontSize="12">
+            </TextBlock>
+            <TextBlock FontSize="12">
                 <Run FontWeight="Bold">%6</Run>
                 <Run>  -  Actual width</Run>
-                </TextBlock>
+            </TextBlock>
 
-                <CheckBox Content="Use original date modified" 
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                          Margin="{StaticResource SmallTopMargin}"/>
+            <TextBox  Header="Filename format"
+                      Text="{ Binding Mode=TwoWay, Path=FileName}"
+                      HorizontalAlignment="Left"
+                      MinWidth="240"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                      Margin="{StaticResource SmallTopMargin}"/>
+
+            <CheckBox Content="Use original date modified"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsChecked="{Binding Mode=TwoWay, Path=KeepDateModified}"/>
         </StackPanel>
 
         <StackPanel 
@@ -239,11 +242,11 @@
 
             <HyperlinkButton 
                 x:Uid="Module_overview"
-                NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/shortcut_guide/README.md"/>
+                NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/imageresizer/README.md"/>
 
             <HyperlinkButton x:Uid="Give_Feedback"
                              NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
-            
+
             <TextBlock 
                 x:Uid="AttributionTitle"
                 Style="{StaticResource SettingsGroupTitleStyle}" />
@@ -253,6 +256,6 @@
                 NavigateUri="https://github.com/bricelam/ImageResizer/" />
 
         </StackPanel>
-        
+
     </Grid>
 </Page>

@@ -6,14 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Views;
-using Windows.UI.Popups;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -49,12 +46,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             this._isEnabled = generalSettings.Enabled.ImageResizer;
             this._advancedSizes = Settings.Properties.ImageresizerSizes.Value;
-
-            Sizes.CollectionChanged += OnSizesCollectionChanged;
+            this._jpegQualityLevel = Settings.Properties.ImageresizerJpegQualityLevel.Value;
+            this._pngInterlaceOption = Settings.Properties.ImageresizerPngInterlaceOption.Value;
+            this._tiffCompressOption = Settings.Properties.ImageresizerTiffCompressOption.Value;
+            this._fileName = Settings.Properties.ImageresizerFileName.Value;
+            this._keepDateModified = Settings.Properties.ImageresizerKeepDateModified.Value;
         }
 
         private bool _isEnabled = false;
         private ObservableCollection<ImageSize> _advancedSizes = new ObservableCollection<ImageSize>();
+        private int _jpegQualityLevel = 0;
+        private int _pngInterlaceOption;
+        private int _tiffCompressOption;
+        private string _fileName;
+        private bool _keepDateModified;
+        private int _encoderGuidId = 0;
 
         public bool IsEnabled
         {
@@ -86,8 +92,168 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
-                _advancedSizes = value;
-                Settings.Properties.ImageresizerSizes.Value = value;
+                if (_advancedSizes != value)
+                {
+                    _advancedSizes = value;
+                    Settings.Properties.ImageresizerSizes.Value = value;
+                    OnPropertyChanged("Sizes");
+                }
+            }
+        }
+
+        public int JPEGQualityLevel
+        {
+            get
+            {
+                return _jpegQualityLevel;
+            }
+
+            set
+            {
+                if (_jpegQualityLevel != value)
+                {
+                    _jpegQualityLevel = value;
+                    Settings.Properties.ImageresizerJpegQualityLevel.Value = value;
+                    SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+                    OnPropertyChanged("JPEGQualityLevel");
+                }
+            }
+        }
+
+        public int PngInterlaceOption
+        {
+            get
+            {
+                return _pngInterlaceOption;
+            }
+
+            set
+            {
+                if (_pngInterlaceOption != value)
+                {
+                    _pngInterlaceOption = value;
+                    Settings.Properties.ImageresizerPngInterlaceOption.Value = value;
+                    SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+                    OnPropertyChanged("PngInterlaceOption");
+                }
+            }
+        }
+
+        public int TiffCompressOption
+        {
+            get
+            {
+                return _tiffCompressOption;
+            }
+
+            set
+            {
+                if (_tiffCompressOption != value)
+                {
+                    _tiffCompressOption = value;
+                    Settings.Properties.ImageresizerTiffCompressOption.Value = value;
+                    SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+                    OnPropertyChanged("TiffCompressOption");
+                }
+            }
+        }
+
+        public string FileName
+        {
+            get
+            {
+                return _fileName;
+            }
+
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    throw new System.ArgumentNullException();
+                }
+
+                _fileName = value;
+                Settings.Properties.ImageresizerFileName.Value = value;
+                SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+                OnPropertyChanged("FileName");
+            }
+        }
+
+        public bool KeepDateModified
+        {
+            get
+            {
+                return _keepDateModified;
+            }
+
+            set
+            {
+                _keepDateModified = value;
+                Settings.Properties.ImageresizerKeepDateModified.Value = value;
+                SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+                OnPropertyChanged("KeepDateModified");
+            }
+        }
+
+        public int Encoder
+        {
+            get
+            {
+                return _encoderGuidId;
+            }
+
+            set
+            {
+                if (_encoderGuidId != value)
+                {
+                    // PNG Encoder guid
+                    if (value == 0)
+                    {
+                        Settings.Properties.ImageresizerFallbackEncoder.Value = "1b7cfaf4-713f-473c-bbcd-6137425faeaf";
+                    }
+
+                    // Bitmap Encoder guid
+                    else if (value == 1)
+                    {
+                        Settings.Properties.ImageresizerFallbackEncoder.Value = "0af1d87e-fcfe-4188-bdeb-a7906471cbe3";
+                    }
+
+                    // JPEG Encoder guid
+                    else if (value == 2)
+                    {
+                        Settings.Properties.ImageresizerFallbackEncoder.Value = "19e4a5aa-5662-4fc5-a0c0-1758028e1057";
+                    }
+
+                    // Tiff encoder guid.
+                    else if (value == 3)
+                    {
+                        Settings.Properties.ImageresizerFallbackEncoder.Value = "163bcc30-e2e9-4f0b-961d-a3e9fdb788a3";
+                    }
+
+                    // Tiff encoder guid.
+                    else if (value == 4)
+                    {
+                        Settings.Properties.ImageresizerFallbackEncoder.Value = "57a37caa-367a-4540-916b-f183c5093a4b";
+                    }
+
+                    // Gif encoder guid.
+                    else if (value == 5)
+                    {
+                        Settings.Properties.ImageresizerFallbackEncoder.Value = "1f8a5601-7d4d-4cbd-9c82-1bc8d4eeb9a5";
+                    }
+
+                    _encoderGuidId = value;
+                    SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+                    OnPropertyChanged("Encoder");
+                }
+            }
+        }
+
+        public ICommand SaveSizesEventHandler
+        {
+            get
+            {
+                return new RelayCommand(SavesImageSizes);
             }
         }
 
@@ -109,7 +275,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void AddRow()
         {
-            Sizes.Add(new ImageSize());
+            ImageSize maxSize = Sizes.OrderBy(x => x.Id).Last();
+            Sizes.Add(new ImageSize(maxSize.Id + 1));
+            OnPropertyChanged("Sizes");
         }
 
         public void DeleteImageSize(int id)
@@ -118,21 +286,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 ImageSize size = Sizes.Where<ImageSize>(x => x.Id == id).First();
                 Sizes.Remove(size);
+                OnPropertyChanged("Sizes");
             }
             catch
             {
             }
         }
 
-        public void OnSizesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        public void SavesImageSizes()
         {
-            RaisePropertyChanged("Sizes");
+            OnPropertyChanged("Sizes");
+            SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
         }
 
-        public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        public void OnSizesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            OnPropertyChanged(propertyName);
-            SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+            OnPropertyChanged("Sizes");
         }
     }
 }

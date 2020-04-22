@@ -154,7 +154,7 @@
     <comment>Navigation view item name for FancyZones</comment>
   </data>
   <data name="Shell_ImageResizer.Content" xml:space="preserve">
-    <value>Image Resizer  [Not Functional]</value>
+    <value>Image Resizer</value>
     <comment>Navigation view item name for Image Resizer</comment>
   </data>
   <data name="Shell_KeyboardManager.Content" xml:space="preserve">
@@ -424,5 +424,47 @@
   </data>
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
     <value>Opacity of the Shortcut Guide's overlay background (%)</value>
+  </data>
+  <data name="ImageResizer_CustomSizes.Text" xml:space="preserve">
+    <value>Image Sizes</value>
+  </data>
+  <data name="ImageResizer_Description.Text" xml:space="preserve">
+    <value>Lets you resize images by right-clicking.</value>
+  </data>
+  <data name="ImageResizer_EnableGroupSettingsHeader.Text" xml:space="preserve">
+    <value>Enable</value>
+  </data>
+  <data name="ImageResizer_EnableToggle.Header" xml:space="preserve">
+    <value>Enable Image Resizer</value>
+  </data>
+  <data name="ImageResizer_AddSizeButton.Label" xml:space="preserve">
+    <value>
+			Add Size
+		</value>
+  </data>
+  <data name="ImageResizer_SaveSizeButton.Label" xml:space="preserve">
+    <value>
+			Save Sizes
+		</value>
+  </data>
+  <data name="ImageResizer_Encoding.Text" xml:space="preserve">
+    <value>
+			JPEG Quality level
+		</value>
+  </data>
+  <data name="ImageResizer_PNGInterlacing.Header" xml:space="preserve">
+    <value>
+			PNG interlacing
+		</value>
+  </data>
+  <data name="ImageResizer_TIFFCompression.Header" xml:space="preserve">
+    <value>
+			TIFF Compression
+		</value>
+  </data>
+  <data name="File.Text" xml:space="preserve">
+    <value>
+			File
+		</value>
   </data>
 </root>
