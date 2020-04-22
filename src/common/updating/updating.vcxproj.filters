@@ -18,7 +18,7 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="msi_to_msix_upgrade.h">
+    <ClInclude Include="updating.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -26,7 +26,7 @@
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="msi_to_msix_upgrade.cpp">
+    <ClCompile Include="updating.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
