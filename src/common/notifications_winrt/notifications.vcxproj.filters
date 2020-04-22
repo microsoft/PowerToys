@@ -19,8 +19,10 @@
     <ClInclude Include="handler_functions.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="PropertySheet.props" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="PropertySheet.props" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="BackgroundHandler.idl" />

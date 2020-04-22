@@ -169,12 +169,6 @@ namespace PowerLauncher
                         {
                             _viewModel.LastQuerySelected = true;
                         }          
-                        
-                        // to select the text so that the user can continue to type
-                        if(!String.IsNullOrEmpty(_launcher.TextBox.Text))
-                        {
-                            _launcher.TextBox.SelectAll();
-                        }
                     }
                 }
             };           
