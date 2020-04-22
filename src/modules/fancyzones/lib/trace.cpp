@@ -178,6 +178,7 @@ void Trace::SettingsChanged(const Settings& settings) noexcept
         TraceLoggingBoolean(settings.zoneSetChange_flashZones, "FlashZonesOnZoneSetChange"),
         TraceLoggingBoolean(settings.zoneSetChange_moveWindows, "MoveWindowsOnZoneSetChange"),
         TraceLoggingBoolean(settings.overrideSnapHotkeys, "OverrideSnapHotKeys"),
+        TraceLoggingBoolean(settings.switchFocusHotkeys, "SwitchFocusHotKeys"),
         TraceLoggingBoolean(settings.appLastZone_moveWindows, "MoveWindowsToLastZoneOnAppOpening"),
         TraceLoggingBoolean(settings.use_cursorpos_editor_startupscreen, "UseCursorPosOnEditorStartup"),
         TraceLoggingBoolean(settings.showZonesOnAllMonitors, "ShowZonesOnAllMonitors"),

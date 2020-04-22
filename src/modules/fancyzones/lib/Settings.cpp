@@ -36,9 +36,10 @@ private:
         PCWSTR name;
         bool* value;
         int resourceId;
-    } m_configBools[9 /* 10 */] = { // "Turning FLASHING_ZONE option off"
+    } m_configBools[10 /* 11 */] = { // "Turning FLASHING_ZONE option off"
         { L"fancyzones_shiftDrag", &m_settings.shiftDrag, IDS_SETTING_DESCRIPTION_SHIFTDRAG },
         { L"fancyzones_overrideSnapHotkeys", &m_settings.overrideSnapHotkeys, IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS },
+        { L"fancyzones_switchFocusHotkeys", &m_settings.switchFocusHotkeys, IDS_SETTING_DESCRIPTION_SWITCH_FOCUS_HOTKEYS },
         // "Turning FLASHING_ZONE option off"
         //{ L"fancyzones_zoneSetChange_flashZones", &m_settings.zoneSetChange_flashZones, IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES },
         { L"fancyzones_displayChange_moveWindows", &m_settings.displayChange_moveWindows, IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS },

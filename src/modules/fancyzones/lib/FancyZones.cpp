@@ -397,6 +397,7 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
     if (win && !shift)
     {
         bool const ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
+        bool const alt = GetAsyncKeyState(VK_MENU) & 0x8000;
         //if (ctrl)
         //{
         //    // Temporarily disable Win+Ctrl+Number functionality
@@ -411,9 +412,9 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
         if ((info->vkCode == VK_RIGHT) || (info->vkCode == VK_LEFT))
         {
 			Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
-            if (ctrl && m_settings->GetSettings()->switchFocusHotkeys)
+            if (ctrl && alt && m_settings->GetSettings()->switchFocusHotkeys)
             {
-                // Win+Ctrl+Left, Win+Ctrl+Right will switch focus to windows in adjacent zones
+                // Win+Ctrl+Alt+Left, Win+Ctrl+Alt+Right will switch focus to windows in adjacent zones
                 return OnSwitchFocusHotkey(info->vkCode);
             }
             if (m_settings->GetSettings()->overrideSnapHotkeys)

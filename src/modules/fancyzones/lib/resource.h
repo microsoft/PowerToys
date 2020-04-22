@@ -22,3 +22,4 @@
 #define IDS_CANT_DRAG_ELEVATED                                      122
 #define IDS_CANT_DRAG_ELEVATED_LEARN_MORE                           123
 #define IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN               124
+#define IDS_SETTING_DESCRIPTION_SWITCH_FOCUS_HOTKEYS                125

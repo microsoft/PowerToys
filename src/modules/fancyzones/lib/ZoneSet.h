@@ -76,6 +76,19 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      */
     IFACEMETHOD_(bool, MoveWindowIntoZoneByDirection)(HWND window, HWND zoneWindow, DWORD vkCode, bool cycle) = 0;
     /**
+     * Switch focus to zone based on direction (using WIN + Ctrl + LEFT/RIGHT arrow).
+     *
+     * @param   window     Handle of window which should be assigned to zone.
+     * @param   zoneWindow The m_window of a ZoneWindow, it's a hidden window representing the
+     *                     current monitor desktop work area.
+     * @param   vkCode     Pressed arrow key.
+     * @param   cycle      Whether we should move window to the first zone if we reached last zone in layout.
+     *
+     * @returns Boolean which is always true if cycle argument is set, otherwise indicating if there is more
+     *          zones left in the zone layout in which window can move.
+     */
+    IFACEMETHOD_(bool, SwitchFocusByDirection)(HWND window, HWND zoneWindow, DWORD vkCode, bool cycle) = 0;
+    /**
      * Assign window to the zone based on cursor coordinates.
      *
      * @param   window     Handle of window which should be assigned to zone.

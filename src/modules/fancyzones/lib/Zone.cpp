@@ -44,8 +44,12 @@ IFACEMETHODIMP_(bool) Zone::Focus() noexcept
     {
         return false;
     }
-    SetFocus(m_windows.rbegin()->first);
-    return true;
+    auto win = m_windows.begin()->first;
+    if (SetForegroundWindow(win))
+    {
+		return true;
+    }
+    return false;
 }
 
 IFACEMETHODIMP_(bool) Zone::ContainsWindow(HWND window) noexcept

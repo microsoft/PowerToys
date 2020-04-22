@@ -719,59 +719,55 @@ bool ZoneSet::CalculateGridZones(Rect workArea, JSONHelpers::GridLayoutInfo grid
 IFACEMETHODIMP_(bool)
 ZoneSet::SwitchFocusByDirection(HWND window, HWND windowZone, DWORD vkCode, bool cycle) noexcept
 {
+    winrt::com_ptr<IZone> zone;
+
     if (m_zones.empty())
     {
         return false;
     }
 
-    winrt::com_ptr<IZone> oldZone = nullptr;
-    winrt::com_ptr<IZone> newZone = nullptr;
-
     auto iter = std::find(m_zones.begin(), m_zones.end(), ZoneFromWindow(window));
     if (iter == m_zones.end())
     {
-        iter = (vkCode == VK_RIGHT) ? m_zones.begin() : m_zones.end() - 1;
+        iter = (vkCode == VK_RIGHT) ? m_zones.end() - 1 : m_zones.begin();
     }
-    else if (oldZone = iter->as<IZone>())
+
+    if (vkCode == VK_RIGHT)
     {
-        if (vkCode == VK_LEFT)
-        {
-            if (iter == m_zones.begin())
-            {
-                if (!cycle)
-                {
-                    // oldZone->RemoveWindowFromZone(window, false);
-                    return false;
-                }
-                iter = m_zones.end();
-            }
-            iter--;
-        }
-        else if (vkCode == VK_RIGHT)
+        while (1)
         {
             iter++;
             if (iter == m_zones.end())
             {
                 if (!cycle)
-                {
-                    // oldZone->RemoveWindowFromZone(window, false);
                     return false;
-                }
                 iter = m_zones.begin();
             }
+
+            if ((zone = iter->as<IZone>()) && zone->Focus())
+                break;
         }
     }
 
-    if (newZone = iter->as<IZone>())
+    if (vkCode == VK_LEFT)
     {
-        if (oldZone)
-        {
-            // oldZone->RemoveWindowFromZone(window, false);
+       
+        while (1) {
+            if (iter == m_zones.begin())
+            {
+                if (!cycle)
+                    return false;
+                iter = m_zones.end();
+            }
+            iter--;
+
+            if ((zone = iter->as<IZone>()) && zone->Focus())
+                break;
         }
-        newZone->Focus();
-        return true;
     }
-    return false;
+
+
+    return true;
 }
 
 winrt::com_ptr<IZone> ZoneSet::ZoneFromWindow(HWND window) noexcept
