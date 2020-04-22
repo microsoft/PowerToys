@@ -201,6 +201,10 @@ intptr_t OverlayWindow::signal_event(LowlevelKeyboardEvent* event)
             event->wParam == WM_KEYDOWN || event->wParam == WM_SYSKEYDOWN);
         return suppress ? 1 : 0;
     }
+    else
+    {
+        return 0;
+    }
 }
 
 void OverlayWindow::on_held()
