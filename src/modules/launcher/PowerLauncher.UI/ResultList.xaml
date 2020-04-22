@@ -13,7 +13,6 @@
     <Grid 
         x:Name="PowerBar" 
         Background="{ThemeResource BackdropAcrylicBrush}"        
-        Translation="0,0,16" 
         VerticalAlignment="Top">
         <ListView 
             x:Name="SuggestionsList"
@@ -22,13 +21,12 @@
             MinHeight="{Binding Results.MaxHeight}"
             AllowFocusOnInteraction="False"
             IsItemClickEnabled="True"
-            Margin="{ThemeResource AutoSuggestListMargin}"
+            Margin="0"
             Padding="{ThemeResource AutoSuggestListPadding}"
             ItemsSource="{Binding Results.Results, Mode=OneWay}"
             SelectionMode="Single"
             SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
-            Style="{StaticResource ListViewNoAnimations}"
-            >
+            Style="{StaticResource ListViewNoAnimations}">
             <ListView.ItemTemplate>
                 <DataTemplate >
                     <Grid Height="72" Width="690" Background="Transparent" RowSpacing="0">
