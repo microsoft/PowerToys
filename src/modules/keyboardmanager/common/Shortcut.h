@@ -37,14 +37,7 @@ public:
         for (auto it : keys)
         {
             auto vkKeyCode = std::stoul(it);
-            if (vkKeyCode == CommonSharedConstants::VK_WIN_BOTH)
-            {
-                SetKey(vkKeyCode, true);
-            }
-            else
-            {
-                SetKey(vkKeyCode);
-            }
+            SetKey(vkKeyCode);
         }
     }
 
@@ -149,15 +142,15 @@ public:
     // Function to check if the input key matches the shift key expected in the shortcut
     bool CheckShiftKey(const DWORD& input) const;
 
-    // Function to set a key in the shortcut based on the passed key code argument. Since there is no VK_WIN code, use the second argument for setting common win key. If isWinBoth is true then first arg is ignored. Returns false if it is already set to the same value. This can be used to avoid UI refreshing
-    bool SetKey(const DWORD& input, const bool& isWinBoth = false);
+    // Function to set a key in the shortcut based on the passed key code argument. Returns false if it is already set to the same value. This can be used to avoid UI refreshing
+    bool SetKey(const DWORD& input);
 
-    // Function to reset the state of a shortcut key based on the passed key code argument. Since there is no VK_WIN code, use the second argument for setting common win key.
-    void ResetKey(const DWORD& input, const bool& isWinBoth = false);
+    // Function to reset the state of a shortcut key based on the passed key code argument
+    void ResetKey(const DWORD& input);
 
     // Function to return the string representation of the shortcut in virtual key codes appended in a string by ";" separator.
     winrt::hstring ToHstringVK() const;
-    
+
     // Function to return a vector of hstring for each key in the display order
     std::vector<winrt::hstring> GetKeyVector(LayoutMap& keyboardMap) const;
 

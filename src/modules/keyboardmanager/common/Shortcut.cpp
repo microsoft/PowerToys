@@ -94,10 +94,14 @@ DWORD Shortcut::GetWinKey(const ModifierKey& input) const
         {
             return VK_RWIN;
         }
-        else
+        else if (input == ModifierKey::Left || input == ModifierKey::Disabled)
         {
             //return VK_LWIN by default
             return VK_LWIN;
+        }
+        else if (input == ModifierKey::Both)
+        {
+            return CommonSharedConstants::VK_WIN_BOTH;
         }
     }
 }
@@ -253,11 +257,11 @@ bool Shortcut::CheckShiftKey(const DWORD& input) const
     }
 }
 
-// Function to set a key in the shortcut based on the passed key code argument. Since there is no VK_WIN code, use the second argument for setting common win key. If isWinBoth is true then first arg is ignored. Returns false if it is already set to the same value. This can be used to avoid UI refreshing
-bool Shortcut::SetKey(const DWORD& input, const bool& isWinBoth)
+// Function to set a key in the shortcut based on the passed key code argument. Returns false if it is already set to the same value. This can be used to avoid UI refreshing
+bool Shortcut::SetKey(const DWORD& input)
 {
     // Since there isn't a key for a common Win key this is handled with a separate argument
-    if (isWinBoth)
+    if (input == CommonSharedConstants::VK_WIN_BOTH)
     {
         if (winKey == ModifierKey::Both)
         {
@@ -366,10 +370,10 @@ bool Shortcut::SetKey(const DWORD& input, const bool& isWinBoth)
 }
 
 // Function to reset the state of a shortcut key based on the passed key code argument. Since there is no VK_WIN code, use the second argument for setting common win key.
-void Shortcut::ResetKey(const DWORD& input, const bool& isWinBoth)
+void Shortcut::ResetKey(const DWORD& input)
 {
     // Since there isn't a key for a common Win key this is handled with a separate argument.
-    if (isWinBoth || input == VK_LWIN || input == VK_RWIN)
+    if (input == CommonSharedConstants::VK_WIN_BOTH || input == VK_LWIN || input == VK_RWIN)
     {
         winKey = ModifierKey::Disabled;
     }
@@ -397,7 +401,7 @@ std::vector<winrt::hstring> Shortcut::GetKeyVector(LayoutMap& keyboardMap) const
     std::vector<winrt::hstring> keys;
     if (winKey != ModifierKey::Disabled)
     {
-        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetWinKey(ModifierKey::Left)).c_str()));
+        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetWinKey(ModifierKey::Both)).c_str()));
     }
     if (ctrlKey != ModifierKey::Disabled)
     {
@@ -422,13 +426,9 @@ std::vector<winrt::hstring> Shortcut::GetKeyVector(LayoutMap& keyboardMap) const
 winrt::hstring Shortcut::ToHstringVK() const
 {
     winrt::hstring output;
-    if (winKey != ModifierKey::Disabled && winKey != ModifierKey::Both)
+    if (winKey != ModifierKey::Disabled)
     {
-        output = output + winrt::to_hstring((unsigned int)GetWinKey(ModifierKey::Left)) + winrt::to_hstring(L";");
-    }
-    if (winKey == ModifierKey::Both)
-    {
-        output = output + winrt::to_hstring((unsigned int)CommonSharedConstants::VK_WIN_BOTH) + winrt::to_hstring(L";");
+        output = output + winrt::to_hstring((unsigned int)GetWinKey(ModifierKey::Both)) + winrt::to_hstring(L";");
     }
     if (ctrlKey != ModifierKey::Disabled)
     {
@@ -451,7 +451,7 @@ winrt::hstring Shortcut::ToHstringVK() const
     {
         output = winrt::hstring(output.c_str(), output.size() - 1);
     }
-    
+
     return output;
 }
 
@@ -461,7 +461,7 @@ std::vector<DWORD> Shortcut::GetKeyCodes()
     std::vector<DWORD> keys;
     if (winKey != ModifierKey::Disabled)
     {
-        keys.push_back(GetWinKey(ModifierKey::Left));
+        keys.push_back(GetWinKey(ModifierKey::Both));
     }
     if (ctrlKey != ModifierKey::Disabled)
     {

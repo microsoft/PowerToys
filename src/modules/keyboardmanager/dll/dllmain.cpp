@@ -434,11 +434,11 @@ public:
 
                 if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
                 {
-                    SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)it->second, KEYEVENTF_KEYUP, KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                    SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)target, KEYEVENTF_KEYUP, KEYBOARDMANAGER_SINGLEKEY_FLAG);
                 }
                 else
                 {
-                    SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)it->second, 0, KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                    SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)target, 0, KEYBOARDMANAGER_SINGLEKEY_FLAG);
                 }
 
                 lock.unlock();
