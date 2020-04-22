@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class KeyboadManagerConfigModel
+    public class KeyboardManagerProfile
     {
         [JsonPropertyName("remapKeys")]
         public RemapKeysDataModel RemapKeys { get; set; }

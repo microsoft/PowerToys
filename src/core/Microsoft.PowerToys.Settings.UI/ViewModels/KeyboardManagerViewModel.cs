@@ -27,17 +27,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private const string EditShortcutActionName = "EditShortcut";
         private const string EditShortcutActionValue = "Open Edit Shortcut Window";
         private const string JsonFileType = ".json";
-        private const string ConfigFileMutexName = "PowerToys.KeyboardManager.ConfigMutex";
-        private const int ConfigFileMutexWaitTimeoutMiliSeconds = 1000;
+        private const string ProfileFileMutexName = "PowerToys.KeyboardManager.ConfigMutex";
+        private const int ProfileFileMutexWaitTimeoutMiliSeconds = 1000;
 
         private readonly CoreDispatcher dispatcher;
+        private readonly FileSystemWatcher watcher;
 
         private ICommand remapKeyboardCommand;
         private ICommand editShortcutCommand;
-        private FileSystemWatcher watcher;
         private KeyboardManagerSettings settings;
-        private KeyboadManagerConfigModel config;
-        private List<KeysUiDataModels> remapKeysList = new List<KeysUiDataModels>();
+        private KeyboardManagerProfile profile;
+        private GeneralSettings generalSettings;
 
         public KeyboardManagerViewModel()
         {
@@ -47,8 +47,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Todo: Be more resillent while reading and saving settings.
                 settings = SettingsUtils.GetSettings<KeyboardManagerSettings>(PowerToyName);
 
-                // Load previous configuration.
-                LoadConfiguration();
+                // Load profile.
+                if (!LoadProfile())
+                {
+                    profile = new KeyboardManagerProfile();
+                }
             }
             else
             {
@@ -56,40 +59,70 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 SettingsUtils.SaveSettings(settings.ToJsonString(), PowerToyName);
             }
 
-            watcher = Helper.GetFileWatcher(PowerToyName, settings.Properties.ActiveConfiguration.Value + JsonFileType, OnConfigFileUpdate);
+            if (SettingsUtils.SettingsExists())
+            {
+                generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+            }
+            else
+            {
+                generalSettings = new GeneralSettings();
+                SettingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
+            }
+
+            watcher = Helper.GetFileWatcher(
+                PowerToyName,
+                settings.Properties.ActiveConfiguration.Value + JsonFileType,
+                OnConfigFileUpdate);
+
         }
 
-        // store remappings
-        public List<KeysUiDataModels> RemapKeysList
+        public bool Enabled
         {
             get
             {
-                return remapKeysList;
+                return generalSettings.Enabled.KeyboardManager;
             }
 
             set
             {
-                if (remapKeysList != value)
+                if (generalSettings.Enabled.KeyboardManager != value)
                 {
-                    remapKeysList = value;
-                    OnPropertyChanged(nameof(RemapKeysList));
+                    generalSettings.Enabled.KeyboardManager = value;
+                    OnPropertyChanged(nameof(Enabled));
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettings);
+
+                    ShellPage.DefaultSndMSGCallback(outgoing.ToString());
                 }
             }
         }
 
-        public List<KeysUiDataModels> RemapShortcutsList
+        // store remappings
+        public List<KeysDataModel> RemapKeys
         {
             get
             {
-                return RemapShortcutsList;
-            }
-
-            set
-            {
-                if (RemapShortcutsList != value)
+                if (profile != null)
                 {
-                    RemapShortcutsList = value;
-                    OnPropertyChanged(nameof(RemapShortcutsList));
+                    return profile.RemapKeys.InProcessRemapKeys;
+                }
+                else
+                {
+                    return new List<KeysDataModel>();
+                }
+            }
+        }
+
+        public List<KeysDataModel> RemapShortcuts
+        {
+            get
+            {
+                if (profile != null)
+                {
+                    return profile.RemapShortcuts.GlobalRemapShortcuts;
+                }
+                else
+                {
+                    return new List<KeysDataModel>();
                 }
             }
         }
@@ -122,62 +155,54 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             await Task.CompletedTask;
         }
 
-        private void OnConfigFileUpdate()
+        private async void OnConfigFileUpdate()
         {
             // Note: FileSystemWatcher raise notification mutiple times for single update operation.
             // Todo: Handle duplicate events either by somehow supress them or re-read the configuration everytime since we will be updating the UI only if something is changed.
-            LoadConfiguration();
-        }
-
-        private void LoadConfiguration()
-        {
-            if (TryGetKeyboardManagerConfigFile())
+            if (LoadProfile())
             {
-                var data = config?.RemapKeys?.InProcessRemapKeys
-                    ?.Select(keysDataModel => new KeysUiDataModels
-                    {
-                        RemapFromKeys = new List<string> { keysDataModel.OriginalKeys },
-                        RemapToKeys = new List<string> { keysDataModel.NewRemapKeys },
-                    }).ToList() ?? new List<KeysUiDataModels>();
-
-                var notUsed = dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => { RemapKeysList = data; });
+                await dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                {
+                    OnPropertyChanged(nameof(RemapKeys));
+                    OnPropertyChanged(nameof(RemapShortcuts));
+                });
             }
         }
 
-        private bool TryGetKeyboardManagerConfigFile()
+        private bool LoadProfile()
         {
-            var sucess = true;
+            var success = true;
 
             try
             {
-                using (var configFileMutex = Mutex.OpenExisting(ConfigFileMutexName))
+                using (var profileFileMutex = Mutex.OpenExisting(ProfileFileMutexName))
                 {
-                    if (configFileMutex.WaitOne(ConfigFileMutexWaitTimeoutMiliSeconds))
+                    if (profileFileMutex.WaitOne(ProfileFileMutexWaitTimeoutMiliSeconds))
                     {
                         // update the UI element here.
                         try
                         {
-                            config = SettingsUtils.GetSettings<KeyboadManagerConfigModel>(PowerToyName, settings.Properties.ActiveConfiguration.Value + JsonFileType);
+                            profile = SettingsUtils.GetSettings<KeyboardManagerProfile>(PowerToyName, settings.Properties.ActiveConfiguration.Value + JsonFileType);
                         }
                         finally
                         {
                             // Make sure to release the mutex.
-                            configFileMutex.ReleaseMutex();
+                            profileFileMutex.ReleaseMutex();
                         }
                     }
                     else
                     {
-                        sucess = false;
+                        success = false;
                     }
                 }
             }
             catch (Exception)
             {
                 // Failed to load the configuration.
-                sucess = false;
+                success = false;
             }
 
-            return sucess;
+            return success;
         }
     }
 }
