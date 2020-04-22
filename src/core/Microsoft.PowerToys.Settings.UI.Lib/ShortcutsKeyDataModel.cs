@@ -11,5 +11,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     {
         [JsonPropertyName("global")]
         public List<KeysDataModel> GlobalRemapShortcuts { get; set; }
+
+        public ShortcutsKeyDataModel()
+        {
+            GlobalRemapShortcuts = new List<KeysDataModel>();
+        }
     }
 }

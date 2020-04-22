@@ -28,7 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private const string EditShortcutActionValue = "Open Edit Shortcut Window";
         private const string JsonFileType = ".json";
         private const string ProfileFileMutexName = "PowerToys.KeyboardManager.ConfigMutex";
-        private const int ProfileFileMutexWaitTimeoutMiliSeconds = 1000;
+        private const int ProfileFileMutexWaitTimeoutMilliseconds = 1000;
 
         private readonly CoreDispatcher dispatcher;
         private readonly FileSystemWatcher watcher;
@@ -177,7 +177,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 using (var profileFileMutex = Mutex.OpenExisting(ProfileFileMutexName))
                 {
-                    if (profileFileMutex.WaitOne(ProfileFileMutexWaitTimeoutMiliSeconds))
+                    if (profileFileMutex.WaitOne(ProfileFileMutexWaitTimeoutMilliseconds))
                     {
                         // update the UI element here.
                         try

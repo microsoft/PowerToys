@@ -13,7 +13,7 @@
 
     <Page.Resources>
         <viewModel:KeyboardManagerViewModel x:Key="eventViewModel"/>
-
+        <local:VisibleIfNotEmpty x:Key="visibleIfNotEmptyConverter" />
         <DataTemplate x:Name="KeysListViewTemplate" x:DataType="Lib:KeysDataModel">
             <StackPanel
                 Orientation="Horizontal"
@@ -151,7 +151,7 @@
 
             <ListView x:Name="RemapKeysList"
                       extensions:ListViewExtensions.AlternateColor="{ThemeResource SystemControlBackgroundListLowBrush}"
-                      ItemsSource="{Binding Path=RemapKeys}"
+                      ItemsSource="{x:Bind Path=ViewModel.RemapKeys, Mode=OneWay}"
                       ItemTemplate="{StaticResource KeysListViewTemplate}"
                       BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
                       BorderThickness="1" 
@@ -161,7 +161,9 @@
                       Margin="{StaticResource MediumTopBottomMargin}"
                       HorizontalAlignment="Left"
                       SelectionMode="None"
-                      IsSwipeEnabled="False"/>
+                      IsSwipeEnabled="False"
+                      Visibility="{x:Bind Path=ViewModel.RemapKeys, Mode=OneWay, Converter={StaticResource visibleIfNotEmptyConverter}}"
+                      /> 
 
 
             <TextBlock x:Uid="KeyboardManager_RemapShortcutsHeader"
@@ -179,7 +181,7 @@
 
             <ListView x:Name="RemapShortcutsList"
                       extensions:ListViewExtensions.AlternateColor="{ThemeResource SystemControlBackgroundListLowBrush}"
-                      ItemsSource="{Binding Path=RemapShortcuts}"
+                      ItemsSource="{x:Bind Path=ViewModel.RemapShortcuts, Mode=OneWay}"
                       ItemTemplate="{StaticResource KeysListViewTemplate}"
                       BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
                       BorderThickness="1" 
@@ -189,7 +191,9 @@
                       Margin="{StaticResource MediumTopBottomMargin}"
                       HorizontalAlignment="Left"
                       SelectionMode="None"
-                      IsSwipeEnabled="False"/>
+                      IsSwipeEnabled="False"
+                      Visibility="{x:Bind Path=ViewModel.RemapShortcuts, Mode=OneWay, Converter={StaticResource visibleIfNotEmptyConverter}}"
+                      />
         </StackPanel>
 
         <StackPanel 
