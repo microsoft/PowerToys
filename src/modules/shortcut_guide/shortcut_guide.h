@@ -34,7 +34,7 @@ public:
     void quick_hide();
     void was_hidden();
 
-    // Method called from hookProc
+    // Method called from lowLevelKeyboardProc
     intptr_t signal_event(LowlevelKeyboardEvent* event);
 
     virtual void destroy() override;
