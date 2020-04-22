@@ -13,7 +13,7 @@ OverlayWindow* instance = nullptr;
 
 namespace
 {
-    LRESULT CALLBACK lowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+    LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     {
         LowlevelKeyboardEvent event;
         if (nCode == HC_ACTION)
@@ -134,7 +134,11 @@ void OverlayWindow::enable()
         winkey_popup->set_theme(theme.value);
         target_state = std::make_unique<TargetState>(pressTime.value);
         winkey_popup->initialize();
-        hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, lowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
+        hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
+        if (!hook_handle)
+        {
+            MessageBoxW(NULL, L"Cannot install keyboard listener.", L"PowerToys - Shortcut Guide", MB_OK | MB_ICONERROR);
+        }
     }
     _enabled = true;
 }
