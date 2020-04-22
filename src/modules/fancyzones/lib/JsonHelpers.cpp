@@ -279,13 +279,13 @@ namespace JSONHelpers
     std::vector<GUID> FancyZonesData::GetVirtualDeslktopIds() const
     {
         std::vector<GUID> ids;
-        for (auto it = deviceInfoMap.begin(); it != deviceInfoMap.end(); ++it)
+        for (const auto& [id, info] : deviceInfoMap)
         {
-            const std::wstring& idStr = ExtractVirtualDesktopId(it->first);
-            GUID id;
-            if (SUCCEEDED_LOG(CLSIDFromString(idStr.c_str(), &id)))
+            const std::wstring& idStr = ExtractVirtualDesktopId(id);
+            GUID guid;
+            if (SUCCEEDED_LOG(CLSIDFromString(idStr.c_str(), &guid)))
             {
-                ids.push_back(id);    
+                ids.push_back(guid);    
             }
         }
         return ids;
