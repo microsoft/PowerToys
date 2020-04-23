@@ -266,17 +266,14 @@ namespace Wox.Plugin.Folder
 
         private static Result CreateOpenCurrentFolderResult(string incompleteName, string search)
         {
-            var firstResult = "Open current directory";
-            if (incompleteName.Length > 0)
-                firstResult = "Open " + search;
+            var firstResult = "Open " + search;
 
             var folderName = search.TrimEnd('\\').Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.None).Last();
 
             return new Result
             {
                 Title = firstResult,
-                SubTitle = $"Use > to search within {folderName}, " +
-                                $"* to search for file extensions in {folderName} or both >* to combine the search.",
+                SubTitle = $"Use > to search within the directory. Use * to search for file extensions. Or use both >*.",
                 IcoPath = search,
                 Score = 500,
                 Action = c =>
