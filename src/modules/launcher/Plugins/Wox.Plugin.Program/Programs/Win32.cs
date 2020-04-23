@@ -461,7 +461,7 @@ namespace Wox.Plugin.Program.Programs
                     var startMenu = StartMenuPrograms(settings.ProgramSuffixes);
                     programs = programs.Concat(startMenu);
                 }
-                programs.Distinct()
+
                 return programs.ToArray();
             }
 #if DEBUG //This is to make developer aware of any unhandled exception and add in handling.
