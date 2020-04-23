@@ -23,7 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 
                 if (args.Length > 1)
                 {
-                    ipcmanager = new TwoWayPipeMessageIPCManaged(args[1], args[0]);
+                    ipcmanager = new TwoWayPipeMessageIPCManaged(args[1], args[0], null);
                     ipcmanager.Start();
                     app.Run();
                 }

@@ -206,6 +206,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interop", "src\common\inter
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "common-md-flag", "src\common\common-md-flag\common-md-flag.vcxproj", "{985B3F2F-CEED-4C0A-A249-69257E719145}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "interop-tests", "src\common\interop-tests\interop-tests.csproj", "{437AD818-3F1F-4CA5-A79B-25233A157026}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -373,8 +375,6 @@ Global
 		{A7D5099E-F0FD-4BF3-8522-5A682759F915}.Release|x64.ActiveCfg = Release|x64
 		{A7D5099E-F0FD-4BF3-8522-5A682759F915}.Release|x64.Build.0 = Release|x64
 		{A7D5099E-F0FD-4BF3-8522-5A682759F915}.Release|x64.Deploy.0 = Release|x64
-		{C073B057-B157-40F0-8678-1DCD119D841C}.Debug|x64.ActiveCfg = Debug|x64
-		{C073B057-B157-40F0-8678-1DCD119D841C}.Release|x64.ActiveCfg = Release|x64
 		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Debug|x64.ActiveCfg = Debug|x64
 		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Debug|x64.Build.0 = Debug|x64
 		{B1BCC8C6-46B5-4BFA-8F22-20F32D99EC6A}.Release|x64.ActiveCfg = Release|x64
@@ -391,6 +391,10 @@ Global
 		{985B3F2F-CEED-4C0A-A249-69257E719145}.Debug|x64.Build.0 = Debug|x64
 		{985B3F2F-CEED-4C0A-A249-69257E719145}.Release|x64.ActiveCfg = Release|x64
 		{985B3F2F-CEED-4C0A-A249-69257E719145}.Release|x64.Build.0 = Release|x64
+		{437AD818-3F1F-4CA5-A79B-25233A157026}.Debug|x64.ActiveCfg = Debug|x64
+		{437AD818-3F1F-4CA5-A79B-25233A157026}.Debug|x64.Build.0 = Debug|x64
+		{437AD818-3F1F-4CA5-A79B-25233A157026}.Release|x64.ActiveCfg = Release|x64
+		{437AD818-3F1F-4CA5-A79B-25233A157026}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -444,6 +448,7 @@ Global
 		{A80355C2-780D-4245-BD80-25B8DE698EE3} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
 		{F055103B-F80B-4D0C-BF48-057C55620033} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{985B3F2F-CEED-4C0A-A249-69257E719145} = {1AFB6476-670D-4E80-A464-657E01DFF482}
+		{437AD818-3F1F-4CA5-A79B-25233A157026} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

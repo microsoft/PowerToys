@@ -4,13 +4,16 @@
 #include <common\two_way_pipe_message_ipc.h>
 #include <msclr\marshal.h>
 #include <msclr\marshal_cppstd.h>
+#include <functional>
 
 using namespace System;
+using namespace System::Runtime::InteropServices;
 
 //https://docs.microsoft.com/en-us/cpp/dotnet/how-to-wrap-native-class-for-use-by-csharp?view=vs-2019
 namespace interop
 {
-public ref class LayoutMapManaged
+public
+    ref class LayoutMapManaged
     {
     public:
         LayoutMapManaged() :
@@ -21,12 +24,11 @@ public ref class LayoutMapManaged
             delete _map;
         }
 
-        String ^ GetKeyName(DWORD key) 
-        {
+        String ^ GetKeyName(DWORD key) {
             return gcnew String(_map->GetKeyName(key).c_str());
         }
 
-        void Updatelayout()
+            void Updatelayout()
         {
             _map->UpdateLayout();
         }
@@ -41,15 +43,26 @@ public ref class LayoutMapManaged
         LayoutMap* _map;
     };
 
-    public ref class TwoWayPipeMessageIPCManaged
+public
+    ref class TwoWayPipeMessageIPCManaged
     {
     public:
-        TwoWayPipeMessageIPCManaged(String^ inputPipeName, String^ outputPipeName)
+        delegate void ReadCallback(String ^ message);
+
+        TwoWayPipeMessageIPCManaged(String ^ inputPipeName, String ^ outputPipeName, ReadCallback ^ callback)
         {
+            _wrapperCallback = gcnew InternalReadCallback(this, &TwoWayPipeMessageIPCManaged::ReadCallbackHelper);
+            _callback = callback;
+            
+            TwoWayPipeMessageIPC::callback_function cb = nullptr;
+            if (callback != nullptr)
+            {
+                cb = (TwoWayPipeMessageIPC::callback_function)(void*)Marshal::GetFunctionPointerForDelegate(_wrapperCallback);
+            }
             _pipe = new TwoWayPipeMessageIPC(
                 msclr::interop::marshal_as<std::wstring>(inputPipeName),
                 msclr::interop::marshal_as<std::wstring>(outputPipeName),
-                nullptr);
+                cb);
         }
 
         ~TwoWayPipeMessageIPCManaged()
@@ -57,7 +70,7 @@ public ref class LayoutMapManaged
             delete _pipe;
         }
 
-        void Send(String^ msg)
+        void Send(String ^ msg)
         {
             _pipe->send(msclr::interop::marshal_as<std::wstring>(msg));
         }
@@ -71,7 +84,7 @@ public ref class LayoutMapManaged
         {
             _pipe->end();
         }
-        
+
     protected:
         !TwoWayPipeMessageIPCManaged()
         {
@@ -79,7 +92,15 @@ public ref class LayoutMapManaged
         }
 
     private:
+        delegate void InternalReadCallback(const std::wstring& msg);
+
         TwoWayPipeMessageIPC* _pipe;
+        ReadCallback ^ _callback;
+        InternalReadCallback ^ _wrapperCallback;
+
+        void ReadCallbackHelper(const std::wstring& msg)
+        {
+            _callback(gcnew String(msg.c_str()));
+        }
     };
 }
-
