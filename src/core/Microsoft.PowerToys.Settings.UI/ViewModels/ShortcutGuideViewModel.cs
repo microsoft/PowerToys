@@ -81,9 +81,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     GeneralSettings generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
                     generalSettings.Enabled.ShortcutGuide = value;
                     OutGoingGeneralSettings snd = new OutGoingGeneralSettings(generalSettings);
-
                     ShellPage.DefaultSndMSGCallback(snd.ToString());
-                    RaisePropertyChanged();
+                    OnPropertyChanged("IsEnabled");
                 }
             }
         }

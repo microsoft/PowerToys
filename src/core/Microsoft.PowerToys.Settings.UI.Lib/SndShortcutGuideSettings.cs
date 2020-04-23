@@ -6,10 +6,16 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
+
     public class SndShortcutGuideSettings
     {
         [JsonPropertyName("Shortcut Guide")]
         public ShortcutGuideSettings ShortcutGuide { get; set; }
+
+        public SndShortcutGuideSettings()
+        {
+
+        }
 
         public SndShortcutGuideSettings(ShortcutGuideSettings settings)
         {

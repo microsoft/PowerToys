@@ -3,21 +3,22 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class OutGoingGeneralSettings
     {
-        public GeneralSettings general { get; set; }
+        [JsonPropertyName("general")]
+        public GeneralSettings GeneralSettings { get; set; }
 
         public OutGoingGeneralSettings()
         {
-            general = null;
         }
 
         public OutGoingGeneralSettings(GeneralSettings generalSettings)
         {
-            general = generalSettings;
+            GeneralSettings = generalSettings;
         }
 
         public override string ToString()

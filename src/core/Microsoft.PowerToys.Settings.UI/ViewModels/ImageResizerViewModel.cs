@@ -7,10 +7,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Views;
+using Windows.UI.Popups;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -167,15 +169,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    throw new System.ArgumentNullException();
-                }
+                var regex = @"[%]{1}[1-6]{1} [(]{1}[%]{1}[1-6]{1}[)]{1}";
+                Match match = Regex.Match(value.Trim(), regex);
 
-                _fileName = value;
-                Settings.Properties.ImageresizerFileName.Value = value;
-                SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
-                OnPropertyChanged("FileName");
+                if (!string.IsNullOrWhiteSpace(value) && match.Success)
+                {
+                    _fileName = value;
+                    Settings.Properties.ImageresizerFileName.Value = value;
+                    SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+                    OnPropertyChanged("FileName");
+                }
             }
         }
 

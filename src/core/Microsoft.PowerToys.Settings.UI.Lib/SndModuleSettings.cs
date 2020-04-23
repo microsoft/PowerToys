@@ -13,6 +13,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     {
         public T powertoys { get; set; }
 
+        public SndModuleSettings()
+        {
+
+        }
+
         public SndModuleSettings(T settings)
         {
             this.powertoys = settings;
