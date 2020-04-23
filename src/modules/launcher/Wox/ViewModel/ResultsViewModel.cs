@@ -65,6 +65,10 @@ namespace Wox.ViewModel
                     _selectedItem = value;
                     _selectedItem.ActivateContextButtons(ResultViewModel.ActivationType.Selection);
                 }
+                else
+                {
+                    _selectedItem = value;
+                }
             }
         }
 
