@@ -152,36 +152,38 @@ namespace Wox.ViewModel
                     results.SelectedIndex = int.Parse(index.ToString());
                 }
 
-                //If there is a context button selected fire the action for that button before the main command. 
-                bool didExecuteContextButton = results.SelectedItem?.ExecuteSelectedContextButton() ?? false;
-
-                if (!didExecuteContextButton)
+                if(results.SelectedItem != null)
                 {
-                    var result = results.SelectedItem?.Result;
-                    if (result != null && result.Action != null) // SelectedItem returns null if selection is empty.
+                    //If there is a context button selected fire the action for that button before the main command. 
+                    bool didExecuteContextButton = results.SelectedItem.ExecuteSelectedContextButton();
+
+                    if (!didExecuteContextButton)
                     {
-
-                        MainWindowVisibility = Visibility.Collapsed;
-
-                        Task.Run(() =>
+                        var result = results.SelectedItem.Result;
+                        if (result != null && result.Action != null) // SelectedItem returns null if selection is empty.
                         {
-                            result.Action(new ActionContext
+                            MainWindowVisibility = Visibility.Collapsed;
+
+                            Task.Run(() =>
                             {
-                                SpecialKeyState = GlobalHotkey.Instance.CheckModifiers()
+                                result.Action(new ActionContext
+                                {
+                                    SpecialKeyState = GlobalHotkey.Instance.CheckModifiers()
+                                });
                             });
-                        });
 
-                        if (SelectedIsFromQueryResults())
-                        {
-                            _userSelectedRecord.Add(result);
-                            _history.Add(result.OriginQuery.RawQuery);
-                        }
-                        else
-                        {
-                            SelectedResults = Results;
+                            if (SelectedIsFromQueryResults())
+                            {
+                                _userSelectedRecord.Add(result);
+                                _history.Add(result.OriginQuery.RawQuery);
+                            }
+                            else
+                            {
+                                SelectedResults = Results;
+                            }
                         }
                     }
-                }
+                }              
             });
 
             LoadContextMenuCommand = new RelayCommand(_ =>
@@ -420,7 +422,8 @@ namespace Wox.ViewModel
             }
             else
             {
-                Results.Clear();
+                Results.SelectedItem = null;
+                Results.Clear();                
                 Results.Visbility = Visibility.Collapsed;
             }
         }
