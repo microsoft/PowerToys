@@ -24,10 +24,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
             ImageresizerSizes = new ImageresizerSizes(new ObservableCollection<ImageSize>()
             {
-                new ImageSize(0, "small", ResizeFit.Fit, 854, 480, ResizeUnit.Pixel),
-                new ImageSize(1, "medium", ResizeFit.Fit, 1366, 768, ResizeUnit.Pixel),
-                new ImageSize(2, "large", ResizeFit.Fit, 1920, 1080, ResizeUnit.Pixel),
-                new ImageSize(3, "phone", ResizeFit.Fit, 320, 568, ResizeUnit.Pixel),
+                new ImageSize(0, "Small", ResizeFit.Fit, 854, 480, ResizeUnit.Pixel),
+                new ImageSize(1, "Medium", ResizeFit.Fit, 1366, 768, ResizeUnit.Pixel),
+                new ImageSize(2, "Large", ResizeFit.Fit, 1920, 1080, ResizeUnit.Pixel),
+                new ImageSize(3, "Phone", ResizeFit.Fit, 320, 568, ResizeUnit.Pixel),
             });
 
             ImageresizerKeepDateModified = new BoolProperty();
