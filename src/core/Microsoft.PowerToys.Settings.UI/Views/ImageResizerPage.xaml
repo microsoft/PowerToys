@@ -252,7 +252,7 @@
                 Style="{StaticResource SettingsGroupTitleStyle}" />
 
             <HyperlinkButton 
-                Content="Brice Lams's Image Resizer" 
+                Content="Brice Lambson" 
                 NavigateUri="https://github.com/bricelam/ImageResizer/" />
 
         </StackPanel>
