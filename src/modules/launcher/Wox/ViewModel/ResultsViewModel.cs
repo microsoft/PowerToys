@@ -68,6 +68,10 @@ namespace Wox.ViewModel
                     _selectedItem.EnableContextMenu();
                     _selectedItem.IsSelected = true;
                 }
+                else
+                {
+                    _selectedItem = value;
+                }
             }
         }
 
