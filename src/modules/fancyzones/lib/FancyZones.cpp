@@ -9,6 +9,7 @@
 #include "lib/JsonHelpers.h"
 #include "lib/ZoneSet.h"
 #include "trace.h"
+#include "VirtualDesktopUtils.h"
 
 #include <functional>
 #include <common/common.h>
@@ -349,17 +350,28 @@ FancyZones::VirtualDesktopInitialize() noexcept
 IFACEMETHODIMP_(void)
 FancyZones::WindowCreated(HWND window) noexcept
 {
+    std::shared_lock readLock(m_lock);
     if (m_settings->GetSettings()->appLastZone_moveWindows && IsInterestingWindow(window))
     {
         for (const auto& [monitor, zoneWindow] : m_zoneWindowMap)
         {
+            // WindowCreated is also invoked when a virtual desktop switch occurs, we need a way
+            // to figure out when that happens to avoid moving windows that should not be moved.
+            GUID windowDesktopId{};
+            GUID zoneWindowDesktopId{};
+            if (VirtualDesktopUtils::GetWindowDesktopId(window, &windowDesktopId) &&
+                VirtualDesktopUtils::GetZoneWindowDesktopId(zoneWindow.get(), &zoneWindowDesktopId) &&
+                (windowDesktopId != zoneWindowDesktopId))
+            {
+                return;
+            }
             const auto activeZoneSet = zoneWindow->ActiveZoneSet();
             if (activeZoneSet)
             {
                 const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
 
                 wil::unique_cotaskmem_string guidString;
-                if (SUCCEEDED_LOG(StringFromCLSID(activeZoneSet->Id(), &guidString)))
+                if (SUCCEEDED(StringFromCLSID(activeZoneSet->Id(), &guidString)))
                 {
                     int zoneIndex = fancyZonesData.GetAppLastZoneIndex(window, zoneWindow->UniqueId(), guidString.get());
                     if (zoneIndex != -1)

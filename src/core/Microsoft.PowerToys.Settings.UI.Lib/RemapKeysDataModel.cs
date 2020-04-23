@@ -11,5 +11,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     {
         [JsonPropertyName("inProcess")]
         public List<KeysDataModel> InProcessRemapKeys { get; set; }
+
+        public RemapKeysDataModel()
+        {
+            InProcessRemapKeys = new List<KeysDataModel>();
+        }
     }
 }
