@@ -518,7 +518,7 @@
         <!-- png -->
         <File Id="SettingsV2_NoiseAsset_256x256_PNG.png" Source="$(var.BinX64Dir)\SettingsUIRunner\NoiseAsset_256x256_PNG.png"/>
         <!-- pri -->
-        <?foreach File in Microsoft.Toolkit.Uwp.UI.pri;Microsoft.Toolkit.Win32.UI.XamlHost.pri;Microsoft.UI.Xaml.pri;Microsoft.Xaml.Interactions.pri;Microsoft.Xaml.Interactivity.pri;resources.pri?>
+        <?foreach File in Microsoft.Toolkit.Uwp.pri;Microsoft.Toolkit.Uwp.UI.pri;Microsoft.Toolkit.Win32.UI.XamlHost.pri;Microsoft.UI.Xaml.pri;Microsoft.Xaml.Interactions.pri;Microsoft.Xaml.Interactivity.pri;resources.pri?>
           <File Id="SettingsV2_$(var.File)" Source="$(var.BinX64Dir)\SettingsUIRunner\$(var.File)" />
         <?endforeach?>
         <!-- winmd -->
