@@ -17,7 +17,6 @@
     <Grid 
         x:Name="PowerBar"
         Background="{ThemeResource BackdropAcrylicBrush}"        
-        Translation="0,0,16" 
         VerticalAlignment="Top">
         <ListView 
             x:Name="SuggestionsList"
@@ -26,7 +25,7 @@
             MinHeight="{Binding Results.MaxHeight}"
             AllowFocusOnInteraction="False"
             IsItemClickEnabled="True"
-            Margin="{ThemeResource AutoSuggestListMargin}"
+            Margin="0"
             Padding="{ThemeResource AutoSuggestListPadding}"
             ItemsSource="{Binding Results.Results, Mode=OneWay}"
             SelectionMode="Single"
