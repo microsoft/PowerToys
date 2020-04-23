@@ -174,7 +174,7 @@ namespace Wox.Plugin.Shell
             if (_settings.Shell == Shell.Cmd)
             {
                 var arguments = _settings.LeaveShellOpen ? $"/k \"{command}\"" : $"/c \"{command}\" & pause";
-                
+
                 info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, arguments, runAsAdministratorArg);
             }
             else if (_settings.Shell == Shell.Powershell)
@@ -193,23 +193,31 @@ namespace Wox.Plugin.Shell
             }
             else if (_settings.Shell == Shell.RunCommand)
             {
-                var parts = command.Split(new[] { ' ' }, 2);
-                if (parts.Length == 2)
+                //Open explorer if the path is a file or directory
+                if(Directory.Exists(command) || File.Exists(command))
                 {
-                    var filename = parts[0];
-                    if (ExistInPath(filename))
+                    info = ShellCommand.SetProcessStartInfo("explorer.exe", arguments: command, verb: runAsAdministratorArg);
+                }
+                else
+                {
+                    var parts = command.Split(new[] { ' ' }, 2);
+                    if (parts.Length == 2)
                     {
-                        var arguments = parts[1];
-                        info = ShellCommand.SetProcessStartInfo(filename, workingDirectory, arguments, runAsAdministratorArg);
+                        var filename = parts[0];
+                        if (ExistInPath(filename))
+                        {
+                            var arguments = parts[1];
+                            info = ShellCommand.SetProcessStartInfo(filename, workingDirectory, arguments, runAsAdministratorArg);
+                        }
+                        else
+                        {
+                            info = ShellCommand.SetProcessStartInfo(command, verb: runAsAdministratorArg);
+                        }
                     }
                     else
                     {
                         info = ShellCommand.SetProcessStartInfo(command, verb: runAsAdministratorArg);
                     }
-                }
-                else
-                {
-                    info = ShellCommand.SetProcessStartInfo(command, verb: runAsAdministratorArg);
                 }
             }
             else
