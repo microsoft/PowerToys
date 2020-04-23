@@ -651,6 +651,7 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
             std::vector<GUID> ids{};
             if (VirtualDesktopUtils::GetVirtualDekstopIds(m_virtualDesktopsRegKey, ids) && !ids.empty())
             {
+                std::unique_lock writeLock(m_lock);
                 m_currentVirtualDesktopId = ids[0];
                 wil::unique_cotaskmem_string id;
                 if (changeType == DisplayChangeType::Initialization &&

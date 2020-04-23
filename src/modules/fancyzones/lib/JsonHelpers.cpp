@@ -43,12 +43,6 @@ namespace
         // Format: <device-id>_<resolution>_<virtual-desktop-id>
         return deviceId.substr(deviceId.rfind('_') + 1);
     }
-
-    std::wstring ReplaceVirtualDesktopId(const std::wstring& deviceId, const std::wstring& desktopId)
-    {
-        std::wstring newId = deviceId.substr(0, deviceId.rfind('_'));
-        return newId + L"_" + desktopId;
-    }
 }
 
 namespace JSONHelpers
@@ -329,12 +323,15 @@ namespace JSONHelpers
 
     void FancyZonesData::UpdatePrimaryDesktopData(const std::wstring& desktopId)
     {
+        auto replaceDesktopId = [&desktopId](const std::wstring& deviceId) {
+            return deviceId.substr(0, deviceId.rfind('_') + 1) + desktopId;
+        };
         std::scoped_lock lock{ dataLock };
         for (auto& [path, data] : appZoneHistoryMap)
         {
             if (ExtractVirtualDesktopId(data.deviceId) == DEFAULT_GUID)
             {
-                data.deviceId = ReplaceVirtualDesktopId(data.deviceId, desktopId);
+                data.deviceId = replaceDesktopId(data.deviceId);
             }
         }
         std::vector<std::wstring> toReplace{};
@@ -348,12 +345,12 @@ namespace JSONHelpers
         for (const auto& id : toReplace)
         {
             auto mapEntry = deviceInfoMap.extract(id);
-            mapEntry.key() = ReplaceVirtualDesktopId(id, desktopId);
+            mapEntry.key() = replaceDesktopId(id);
             deviceInfoMap.insert(std::move(mapEntry));
         }
         if (activeDeviceId == DEFAULT_GUID)
         {
-            activeDeviceId = ReplaceVirtualDesktopId(activeDeviceId, desktopId);
+            activeDeviceId = replaceDesktopId(activeDeviceId);
         }
         SaveFancyZonesData();
     }
