@@ -59,14 +59,11 @@ namespace Wox.ViewModel
                 {
                     if (_selectedItem != null)
                     {
-                        _selectedItem.IsSelected = false;
-                        _selectedItem.DisableContextMenu();
+                        _selectedItem.DeactivateContextButtons(ResultViewModel.ActivationType.Selection);
                     }
 
                     _selectedItem = value;
-                    _selectedItem.LoadContextMenu();
-                    _selectedItem.EnableContextMenu();
-                    _selectedItem.IsSelected = true;
+                    _selectedItem.ActivateContextButtons(ResultViewModel.ActivationType.Selection);
                 }
             }
         }
