@@ -11,7 +11,6 @@ using Microsoft.Win32;
 using Shell;
 using Wox.Infrastructure;
 using Wox.Plugin.Program.Logger;
-using Wox.Plugin.SharedCommands;
 
 namespace Wox.Plugin.Program.Programs
 {
@@ -22,6 +21,7 @@ namespace Wox.Plugin.Program.Programs
         public string UniqueIdentifier { get; set; }
         public string IcoPath { get; set; }
         public string FullPath { get; set; }
+        public string LnkResolvedPath { get; set; }
         public string ParentDirectory { get; set; }
         public string ExecutableName { get; set; }
         public string Description { get; set; }
@@ -53,7 +53,7 @@ namespace Wox.Plugin.Program.Programs
 
             var result = new Result
             {
-                SubTitle = FullPath,
+                SubTitle = "Win32 Application",
                 IcoPath = IcoPath,
                 Score = score,
                 ContextData = this,
@@ -190,6 +190,9 @@ namespace Wox.Plugin.Program.Programs
                     var extension = Extension(target);
                     if (extension == ExeExtension && File.Exists(target))
                     {
+                        program.LnkResolvedPath = program.FullPath;
+                        program.FullPath = target;
+
                         buffer = new StringBuilder(MAX_PATH);
                         link.GetDescription(buffer, MAX_PATH);
                         var description = buffer.ToString();
@@ -350,8 +353,11 @@ namespace Wox.Plugin.Program.Programs
 
             var programs1 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(LnkProgram);
             var programs2 = paths.AsParallel().Where(p => Extension(p) == ApplicationReferenceExtension).Select(Win32Program);
-            var programs = programs1.Concat(programs2).Where(p => p.Valid);
-            return programs;
+            var allValidPrograms = programs1.Concat(programs2).Where(p => p.Valid);
+            //var programsWithLnk = allValidPrograms.Where(x => !string.IsNullOrEmpty(x.LnkResolvedPath));
+                       
+
+            return allValidPrograms;
         }
 
         private static ParallelQuery<Win32> AppPathsPrograms(string[] suffixes)
@@ -455,7 +461,7 @@ namespace Wox.Plugin.Program.Programs
                     var startMenu = StartMenuPrograms(settings.ProgramSuffixes);
                     programs = programs.Concat(startMenu);
                 }
-
+                programs.Distinct()
                 return programs.ToArray();
             }
 #if DEBUG //This is to make developer aware of any unhandled exception and add in handling.
