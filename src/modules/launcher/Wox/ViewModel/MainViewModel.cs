@@ -155,11 +155,11 @@ namespace Wox.ViewModel
                 if(results.SelectedItem != null)
                 {
                     //If there is a context button selected fire the action for that button before the main command. 
-                    bool didExecuteContextButton = results.SelectedItem?.ExecuteSelectedContextButton() ?? false;
+                    bool didExecuteContextButton = results.SelectedItem.ExecuteSelectedContextButton();
 
                     if (!didExecuteContextButton)
                     {
-                        var result = results.SelectedItem?.Result;
+                        var result = results.SelectedItem.Result;
                         if (result != null) // SelectedItem returns null if selection is empty.
                         {
                             bool hideWindow = result.Action != null && result.Action(new ActionContext
