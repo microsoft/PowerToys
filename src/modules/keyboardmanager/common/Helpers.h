@@ -22,7 +22,7 @@ namespace KeyboardManagerHelper
     winrt::Windows::Foundation::IInspectable getSiblingElement(winrt::Windows::Foundation::IInspectable const& element);
 
     // Function to return if the key is an extended key which requires the use of the extended key flag
-    bool isExtendedKey(DWORD key);
+    bool IsExtendedKey(DWORD key);
 
     // Function to check if the key is a modifier key
     bool IsModifierKey(DWORD key);
@@ -30,8 +30,8 @@ namespace KeyboardManagerHelper
     // Function to get the type of the key
     KeyType GetKeyType(DWORD key);
 
-    // Function to return if the key is an extended key which requires the use of the extended key flag
-    bool isExtendedKey(DWORD key);
+    // Function to check if two keys are equal or cover the same set of keys. Return value depends on type of overlap
+    int DoKeysOverlap(DWORD first, DWORD second);
 
     // Function to return the list of key name in the order for the drop down based on the key codes
     winrt::Windows::Foundation::Collections::IVector<winrt::Windows::Foundation::IInspectable> ToBoxValue(const std::vector<std::wstring>& list);

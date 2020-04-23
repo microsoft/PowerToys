@@ -123,8 +123,8 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     newShortcutHeader.Margin({ 0, 0, 0, 10 });
 
     shortcutTable.SetColumn(originalShortcutHeader, 0);
-    shortcutTable.SetRow(newShortcutHeader, 0);
-    shortcutTable.SetColumn(originalShortcutHeader, 1);
+    shortcutTable.SetRow(originalShortcutHeader, 0);
+    shortcutTable.SetColumn(newShortcutHeader, 1);
     shortcutTable.SetRow(newShortcutHeader, 0);
 
     shortcutTable.Children().Append(originalShortcutHeader);

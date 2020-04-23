@@ -65,7 +65,7 @@ namespace KeyboardManagerHelper
     }
 
     // Function to return if the key is an extended key which requires the use of the extended key flag
-    bool isExtendedKey(DWORD key)
+    bool IsExtendedKey(DWORD key)
     {
         switch (key)
         {
@@ -79,6 +79,7 @@ namespace KeyboardManagerHelper
             return false;
         }
     }
+
     Collections::IVector<IInspectable> ToBoxValue(const std::vector<std::wstring>& list)
     {
         Collections::IVector<IInspectable> boxList = single_threaded_vector<IInspectable>();
@@ -88,5 +89,32 @@ namespace KeyboardManagerHelper
         }
 
         return boxList;
+    }
+
+    // Function to check if two keys are equal or cover the same set of keys. Return value depends on type of overlap
+    int DoKeysOverlap(DWORD first, DWORD second)
+    {
+        // Return 1 if the keys are same
+        if (first == second)
+        {
+            return 1;
+        }
+        else if ((GetKeyType(first) == GetKeyType(second)) && GetKeyType(first) != KeyType::Action)
+        {
+            // Return 2 if the keys are of the same modifier type and overlapping, i.e. one is L/R and other is common
+            if ((first == VK_LWIN && second == VK_RWIN) || (first == VK_LCONTROL && second == VK_RCONTROL) || (first == VK_LMENU && second == VK_RMENU) || (first == VK_LSHIFT && second == VK_RSHIFT))
+            {
+                return 0;
+            }
+            else
+            {
+                return 2;
+            }
+        }
+        // Return 0 if no overlap
+        else
+        {
+            return 0;
+        }
     }
 }

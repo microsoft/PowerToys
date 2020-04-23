@@ -39,7 +39,13 @@ void KeyDropDownControl::CheckAndUpdateKeyboardLayout(ComboBox currentDropDown, 
 // Function to set selection handler for single key remap drop down. Needs to be called after the constructor since the singleKeyControl StackPanel is null if called in the constructor
 void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyControl, size_t colIndex, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer)
 {
-    dropDown.SelectionChanged([&, table, singleKeyControl, colIndex](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args) {
+    Flyout warningFlyout;
+    TextBlock warningMessage;
+    warningFlyout.Content(warningMessage);
+    dropDown.ContextFlyout().SetAttachedFlyout((FrameworkElement)dropDown, warningFlyout);
+
+    // drop down selection handler
+    dropDown.SelectionChanged([&, table, singleKeyControl, colIndex, warningMessage](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args) {
         ComboBox currentDropDown = sender.as<ComboBox>();
         int selectedKeyIndex = currentDropDown.SelectedIndex();
         // Get row index of the single key control
@@ -51,7 +57,50 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyC
             // Check if the element was not found or the index exceeds the known keys
             if (selectedKeyIndex != -1 && keyCodeList.size() > selectedKeyIndex)
             {
-                singleKeyRemapBuffer[rowIndex][colIndex] = keyCodeList[selectedKeyIndex];
+                bool noConflict = true;
+                hstring errorMessage;
+
+                // Check if the value being set is the same as the other column
+                if (singleKeyRemapBuffer[rowIndex][std::abs(int(colIndex)-1)] == keyCodeList[selectedKeyIndex])
+                {
+                    noConflict = false;
+                    errorMessage = L"Cannot remap a key to itself";
+                }
+
+                if (noConflict && colIndex == 0)
+                {
+                    // Check if the key is already remapped to something else
+                    for (int i = 0; i < singleKeyRemapBuffer.size(); i++)
+                    {
+                        if (i != rowIndex)
+                        {
+                            int result = KeyboardManagerHelper::DoKeysOverlap(singleKeyRemapBuffer[i][0], keyCodeList[selectedKeyIndex]);
+                            if (result != 0)
+                            {
+                                noConflict = false;
+                                if (result == 1)
+                                {
+                                    errorMessage = L"Cannot remap a key more than once";
+                                }
+                                else if (result == 2)
+                                {
+                                    errorMessage = L"Cannot remap this key as it conflicts with another remapped key";
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (noConflict)
+                {
+                    singleKeyRemapBuffer[rowIndex][colIndex] = keyCodeList[selectedKeyIndex];
+                }
+                else
+                {
+                    singleKeyRemapBuffer[rowIndex][colIndex] = NULL;
+                    SetDropDownError(dropDown, warningMessage, errorMessage);
+                }
             }
             else
             {
