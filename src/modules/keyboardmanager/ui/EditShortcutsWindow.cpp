@@ -78,50 +78,57 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     Windows::UI::Xaml::Controls::StackPanel xamlContainer;
 
     // Header for the window
-    Windows::UI::Xaml::Controls::StackPanel header;
-    header.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+    Windows::UI::Xaml::Controls::RelativePanel header;
     header.Margin({ 10, 10, 10, 30 });
-    header.Spacing(10);
 
     // Header text
     TextBlock headerText;
     headerText.Text(L"Edit Shortcuts");
     headerText.FontSize(30);
     headerText.Margin({ 0, 0, 100, 0 });
+    header.SetAlignLeftWithPanel(headerText, true);
 
     // Cancel button
     Button cancelButton;
     cancelButton.Content(winrt::box_value(L"Cancel"));
+    cancelButton.Margin({ 0, 0, 10, 0 });
     cancelButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         // Close the window since settings do not need to be saved
         PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
     });
 
     // Table to display the shortcuts
-    Windows::UI::Xaml::Controls::StackPanel shortcutTable;
+    Windows::UI::Xaml::Controls::Grid shortcutTable;
+    ColumnDefinition firstColumn;
+    ColumnDefinition secondColumn;
+    ColumnDefinition thirdColumn;
     shortcutTable.Margin({ 10, 10, 10, 20 });
-    shortcutTable.Spacing(10);
-
-    // Header row of the shortcut table
-    Windows::UI::Xaml::Controls::StackPanel tableHeaderRow;
-    tableHeaderRow.Spacing(100);
-    tableHeaderRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+    shortcutTable.HorizontalAlignment(HorizontalAlignment::Stretch);
+    shortcutTable.ColumnSpacing(10);
+    shortcutTable.ColumnDefinitions().Append(firstColumn);
+    shortcutTable.ColumnDefinitions().Append(secondColumn);
+    shortcutTable.ColumnDefinitions().Append(thirdColumn);
+    shortcutTable.RowDefinitions().Append(RowDefinition());
 
     // First header textblock in the header row of the shortcut table
     TextBlock originalShortcutHeader;
     originalShortcutHeader.Text(L"Original Shortcut:");
     originalShortcutHeader.FontWeight(Text::FontWeights::Bold());
     originalShortcutHeader.Margin({ 0, 0, 0, 10 });
-    tableHeaderRow.Children().Append(originalShortcutHeader);
 
     // Second header textblock in the header row of the shortcut table
     TextBlock newShortcutHeader;
     newShortcutHeader.Text(L"New Shortcut:");
     newShortcutHeader.FontWeight(Text::FontWeights::Bold());
     newShortcutHeader.Margin({ 0, 0, 0, 10 });
-    tableHeaderRow.Children().Append(newShortcutHeader);
 
-    shortcutTable.Children().Append(tableHeaderRow);
+    shortcutTable.SetColumn(originalShortcutHeader, 0);
+    shortcutTable.SetRow(newShortcutHeader, 0);
+    shortcutTable.SetColumn(originalShortcutHeader, 1);
+    shortcutTable.SetRow(newShortcutHeader, 0);
+
+    shortcutTable.Children().Append(originalShortcutHeader);
+    shortcutTable.Children().Append(newShortcutHeader);
 
     // Message to display success/failure of saving settings.
     Flyout applyFlyout;
@@ -149,6 +156,8 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Apply button
     Button applyButton;
     applyButton.Content(winrt::box_value(L"Apply"));
+    header.SetAlignRightWithPanel(applyButton, true);
+    header.SetLeftOf(cancelButton, applyButton);
     applyButton.Flyout(applyFlyout);
     applyButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         bool isSuccess = true;
@@ -239,7 +248,9 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
     RECT rcClient;
     switch (messageCode)
     {
+    // Resize the XAML window whenever the parent window is painted or resized
     case WM_PAINT:
+    case WM_SIZE:
         GetClientRect(hWnd, &rcClient);
         SetWindowPos(hWndXamlIslandEditShortcutsWindow, 0, rcClient.left, rcClient.top, rcClient.right, rcClient.bottom, SWP_SHOWWINDOW);
         break;

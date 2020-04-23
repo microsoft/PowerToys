@@ -77,20 +77,20 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     Windows::UI::Xaml::Controls::StackPanel xamlContainer;
 
     // Header for the window
-    Windows::UI::Xaml::Controls::StackPanel header;
-    header.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+    Windows::UI::Xaml::Controls::RelativePanel header;
     header.Margin({ 10, 10, 10, 30 });
-    header.Spacing(10);
 
     // Header text
     TextBlock headerText;
     headerText.Text(L"Remap Keyboard");
     headerText.FontSize(30);
-    headerText.Margin({ 0, 0, 1000, 0 });
+    headerText.Margin({ 0, 0, 0, 0 });
+    header.SetAlignLeftWithPanel(headerText, true);
 
     // Header Cancel button
     Button cancelButton;
     cancelButton.Content(winrt::box_value(L"Cancel"));
+    cancelButton.Margin({ 0, 0, 10, 0 });
     cancelButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         // Close the window since settings do not need to be saved
         PostMessage(_hWndEditKeyboardWindow, WM_CLOSE, 0, 0);
@@ -102,30 +102,37 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     keyRemapInfoHeader.Margin({ 10, 0, 0, 10 });
 
     // Table to display the key remaps
-    Windows::UI::Xaml::Controls::StackPanel keyRemapTable;
+    Grid keyRemapTable;
+    ColumnDefinition firstColumn;
+    ColumnDefinition secondColumn;
+    ColumnDefinition thirdColumn;
     keyRemapTable.Margin({ 10, 10, 10, 20 });
-    keyRemapTable.Spacing(10);
-
-    // Header row of the keys remap table
-    Windows::UI::Xaml::Controls::StackPanel tableHeaderRow;
-    tableHeaderRow.Spacing(100);
-    tableHeaderRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+    keyRemapTable.HorizontalAlignment(HorizontalAlignment::Stretch);
+    keyRemapTable.ColumnSpacing(10);
+    keyRemapTable.ColumnDefinitions().Append(firstColumn);
+    keyRemapTable.ColumnDefinitions().Append(secondColumn);
+    keyRemapTable.ColumnDefinitions().Append(thirdColumn);
+    keyRemapTable.RowDefinitions().Append(RowDefinition());
 
     // First header textblock in the header row of the keys remap table
     TextBlock originalKeyRemapHeader;
     originalKeyRemapHeader.Text(L"Original Key:");
     originalKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
     originalKeyRemapHeader.Margin({ 0, 0, 0, 10 });
-    tableHeaderRow.Children().Append(originalKeyRemapHeader);
 
     // Second header textblock in the header row of the keys remap table
     TextBlock newKeyRemapHeader;
     newKeyRemapHeader.Text(L"New Key:");
     newKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
     newKeyRemapHeader.Margin({ 0, 0, 0, 10 });
-    tableHeaderRow.Children().Append(newKeyRemapHeader);
 
-    keyRemapTable.Children().Append(tableHeaderRow);
+    keyRemapTable.SetColumn(originalKeyRemapHeader, 0);
+    keyRemapTable.SetRow(originalKeyRemapHeader, 0);
+    keyRemapTable.SetColumn(newKeyRemapHeader, 1);
+    keyRemapTable.SetRow(newKeyRemapHeader, 0);
+
+    keyRemapTable.Children().Append(originalKeyRemapHeader);
+    keyRemapTable.Children().Append(newKeyRemapHeader);
 
     // Message to display success/failure of saving settings.
     Flyout applyFlyout;
@@ -197,6 +204,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     // Main Header Apply button
     Button applyButton;
     applyButton.Content(winrt::box_value(L"Apply"));
+    header.SetAlignRightWithPanel(applyButton, true);
+    header.SetLeftOf(cancelButton, applyButton);
     applyButton.Flyout(applyFlyout);
     applyButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         bool isSuccess = true;
@@ -315,7 +324,9 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wPar
     RECT rcClient;
     switch (messageCode)
     {
+    // Resize the XAML window whenever the parent window is painted or resized
     case WM_PAINT:
+    case WM_SIZE:
         GetClientRect(hWnd, &rcClient);
         SetWindowPos(hWndXamlIslandEditKeyboardWindow, 0, rcClient.left, rcClient.top, rcClient.right, rcClient.bottom, SWP_SHOWWINDOW);
         break;
