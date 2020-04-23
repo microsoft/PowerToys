@@ -125,14 +125,15 @@ export class GeneralSettings extends React.Component <any, any> {
         <Separator />
         <Text variant='xLarge'>General</Text>
 
-        <Stack>
+        {this.state.settings.general.is_admin &&
+        (<Stack>
           <Label>Download updates automatically</Label>
           <BoolToggleSettingsControl
             setting={{value: this.state.settings.general.download_updates_automatically}}
             on_change={this.parent_on_change}
             ref={(input) => {this.download_updates_automatically_reference=input;}}
           />
-        </Stack>
+        </Stack>)}
 
 
         <Stack>
