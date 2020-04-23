@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "keyboard_layout_impl.h"
+#include "shared_constants.h"
 
 LayoutMap::LayoutMap() :
     impl(new LayoutMap::LayoutMapImpl())
@@ -127,8 +128,8 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
     keyboardLayoutMap[VK_INSERT] = L"Insert";
     keyboardLayoutMap[VK_DELETE] = L"Delete";
     keyboardLayoutMap[VK_HELP] = L"Help";
-    keyboardLayoutMap[VK_LWIN] = L"LWin";
-    keyboardLayoutMap[VK_RWIN] = L"RWin";
+    keyboardLayoutMap[VK_LWIN] = L"Win (Left)";
+    keyboardLayoutMap[VK_RWIN] = L"Win (Right)";
     keyboardLayoutMap[VK_APPS] = L"Menu";
     keyboardLayoutMap[VK_SLEEP] = L"Sleep";
     keyboardLayoutMap[VK_NUMPAD0] = L"NumPad 0";
@@ -168,12 +169,12 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
     keyboardLayoutMap[VK_F24] = L"F24";
     keyboardLayoutMap[VK_NUMLOCK] = L"Num Lock";
     keyboardLayoutMap[VK_SCROLL] = L"Scroll Lock";
-    keyboardLayoutMap[VK_LSHIFT] = L"LShift";
-    keyboardLayoutMap[VK_RSHIFT] = L"RShift";
-    keyboardLayoutMap[VK_LCONTROL] = L"LCtrl";
-    keyboardLayoutMap[VK_RCONTROL] = L"RCtrl";
-    keyboardLayoutMap[VK_LMENU] = L"LAlt";
-    keyboardLayoutMap[VK_RMENU] = L"RAlt";
+    keyboardLayoutMap[VK_LSHIFT] = L"Shift (Left)";
+    keyboardLayoutMap[VK_RSHIFT] = L"Shift (Right)";
+    keyboardLayoutMap[VK_LCONTROL] = L"Ctrl (Left)";
+    keyboardLayoutMap[VK_RCONTROL] = L"Ctrl (Right)";
+    keyboardLayoutMap[VK_LMENU] = L"Alt (Left)";
+    keyboardLayoutMap[VK_RMENU] = L"Alt (Right)";
     keyboardLayoutMap[VK_BROWSER_BACK] = L"Browser Back";
     keyboardLayoutMap[VK_BROWSER_FORWARD] = L"Browser Forward";
     keyboardLayoutMap[VK_BROWSER_REFRESH] = L"Browser Refresh";
@@ -202,6 +203,7 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
     keyboardLayoutMap[VK_PA1] = L"PA1";
     keyboardLayoutMap[VK_OEM_CLEAR] = L"Clear";
     keyboardLayoutMap[0xFF] = L"Undefined";
+    keyboardLayoutMap[CommonSharedConstants::VK_WIN_BOTH] = L"Win";
     // To do: Add IME key names
 }
 
@@ -214,6 +216,7 @@ std::vector<DWORD> LayoutMap::LayoutMapImpl::GetKeyCodeList(const bool isShortcu
     if (!isKeyCodeListGenerated)
     {
         // Add modifier keys
+        keyCodes.push_back(CommonSharedConstants::VK_WIN_BOTH);
         keyCodes.push_back(VK_LWIN);
         keyCodes.push_back(VK_RWIN);
         keyCodes.push_back(VK_CONTROL);

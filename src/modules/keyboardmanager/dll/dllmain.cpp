@@ -74,7 +74,7 @@ public:
     };
 
     // Load config from the saved settings.
-    void load_config() 
+    void load_config()
     {
         try
         {
@@ -423,13 +423,22 @@ public:
                 int key_count = 1;
                 LPINPUT keyEventList = new INPUT[size_t(key_count)]();
                 memset(keyEventList, 0, sizeof(keyEventList));
+
+                // Handle remaps to VK_WIN_BOTH
+                DWORD target = it->second;
+                // If a key is remapped to VK_WIN_BOTH, we send VK_LWIN instead
+                if (target == CommonSharedConstants::VK_WIN_BOTH)
+                {
+                    target = VK_LWIN;
+                }
+
                 if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
                 {
-                    SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)it->second, KEYEVENTF_KEYUP, KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                    SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)target, KEYEVENTF_KEYUP, KEYBOARDMANAGER_SINGLEKEY_FLAG);
                 }
                 else
                 {
-                    SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)it->second, 0, KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                    SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)target, 0, KEYBOARDMANAGER_SINGLEKEY_FLAG);
                 }
 
                 lock.unlock();
