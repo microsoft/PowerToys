@@ -33,6 +33,8 @@ namespace Wox.ViewModel
 
         public bool IsSelected { get; set; }
 
+        public bool IsHovered { get; set; }
+
         public bool AreContextButtonsActive { get; set; }
 
         public int ContextMenuSelectedIndex { get; set; }
@@ -76,6 +78,10 @@ namespace Wox.ViewModel
                 IsSelected = true;
                 EnableContextMenuAcceleratorKeys();
             }
+            else if(activationType == ActivationType.Hover)
+            {
+                IsHovered = true;
+            }
         }
 
 
@@ -91,13 +97,17 @@ namespace Wox.ViewModel
 
         public void DeactivateContextButtons(ActivationType activationType)
         {
-            AreContextButtonsActive = false;
-
             if (activationType == ActivationType.Selection)
             {
                 IsSelected = false;
                 DisableContextMenuAcceleratorkeys();
             }
+            else if (activationType == ActivationType.Hover)
+            {
+                IsHovered = false;
+            }
+
+            AreContextButtonsActive = IsSelected || IsHovered;
         }
 
 
