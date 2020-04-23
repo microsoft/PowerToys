@@ -14,6 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         private const string POWERTOYNAME = "PowerLauncher";
         private PowerLauncherSettings settings;
+        private GeneralSettings generalSettings;
 
         public PowerLauncherViewModel()
         {
@@ -24,6 +25,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 settings = new PowerLauncherSettings();
+            }
+
+            if (SettingsUtils.SettingsExists())
+            {
+                generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+            }
+            else
+            {
+                generalSettings = new GeneralSettings();
+                SettingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
             }
         }
 
@@ -49,15 +60,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return settings.properties.enable_powerlauncher;
+                return generalSettings.Enabled.PowerLauncher;
             }
 
             set
             {
-                if (settings.properties.enable_powerlauncher != value)
+                if (generalSettings.Enabled.PowerLauncher != value)
                 {
-                    settings.properties.enable_powerlauncher = value;
-                    UpdateSettings();
+                    generalSettings.Enabled.PowerLauncher = value;
+                    OnPropertyChanged(nameof(EnablePowerLauncher));
+                    SettingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettings);
+                    ShellPage.DefaultSndMSGCallback(outgoing.ToString());
                 }
             }
         }
