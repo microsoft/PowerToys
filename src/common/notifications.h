@@ -22,6 +22,7 @@ namespace notifications
 
     struct snooze_button
     {
+        std::wstring snooze_title;
         std::vector<snooze_duration> durations;
     };
 

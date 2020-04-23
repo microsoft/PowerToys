@@ -213,7 +213,14 @@ void notifications::show_toast_with_activations(std::wstring message, std::wstri
                                toast_xml += selection_id;
                                toast_xml += LR"(" type="selection" defaultInput=")";
                                toast_xml += std::to_wstring(b.durations[0].minutes);
-                               toast_xml += LR"(">)";
+                               toast_xml += L'"';
+                               if (!b.snooze_title.empty())
+                               {
+                                   toast_xml += LR"( title=")";
+                                   toast_xml += b.snooze_title;
+                                   toast_xml += L'"';
+                               }
+                               toast_xml += L'>';
                                for (const auto& duration : b.durations)
                                {
                                    toast_xml += LR"(<selection id=")";
