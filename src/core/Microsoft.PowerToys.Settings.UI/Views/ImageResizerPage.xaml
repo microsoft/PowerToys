@@ -75,9 +75,9 @@
                                       SelectedIndex="{x:Bind Fit}"
                                       Width="90" 
                                       Height="35">
-                                <ComboBoxItem>Fill</ComboBoxItem>
-                                <ComboBoxItem>Fit</ComboBoxItem>
-                                <ComboBoxItem>Stretch</ComboBoxItem>
+                                <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fill" />
+                                <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fit" />
+                                <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Stretch" />
                             </ComboBox>
 
                             <muxc:NumberBox Value="{x:Bind Width}" 
@@ -98,10 +98,10 @@
                             <ComboBox SelectedIndex="{Binding Unit}"
                                       Width="90" 
                                       Height="35">
-                                <ComboBoxItem>Centimeters</ComboBoxItem>
-                                <ComboBoxItem>Inches</ComboBoxItem>
-                                <ComboBoxItem>Percent</ComboBoxItem>
-                                <ComboBoxItem >Pixels</ComboBoxItem>
+                                <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_CM" />
+                                <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Inches" />
+                                <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Percent" />
+                                <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Pixels" />
                             </ComboBox>
                             <AppBarButton x:Name="RemoveButton" 
                                           Background="Transparent" 
@@ -141,12 +141,12 @@
                           MinWidth="240"
                           Margin="{StaticResource SmallTopMargin}"
                           IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}">
-                <ComboBoxItem>PNG Encoder</ComboBoxItem>
-                <ComboBoxItem>BMP Encoder</ComboBoxItem>
-                <ComboBoxItem>JPEG Encoder</ComboBoxItem>
-                <ComboBoxItem>TIFF Encoder</ComboBoxItem>
-                <ComboBoxItem>WMPhoto Encoder</ComboBoxItem>
-                <ComboBoxItem>GIF Encoder</ComboBoxItem>                
+                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_PNG">PNG Encoder</ComboBoxItem>
+                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_BMP">BMP Encoder</ComboBoxItem>
+                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_JPEG">JPEG Encoder</ComboBoxItem>
+                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_TIFF">TIFF Encoder</ComboBoxItem>
+                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_WMPhoto">WMPhoto Encoder</ComboBoxItem>
+                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_GIF">GIF Encoder</ComboBoxItem>                
             </ComboBox>
 
 
@@ -165,9 +165,9 @@
                           MinWidth="240"
                           Margin="{StaticResource SmallTopMargin}"
                           IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}">
-                <ComboBoxItem>Default</ComboBoxItem>
-                <ComboBoxItem>On</ComboBoxItem>
-                <ComboBoxItem>Off</ComboBoxItem>
+                <ComboBoxItem x:Uid="Default"/>
+                <ComboBoxItem x:Uid="On"/>
+                <ComboBoxItem x:Uid="Off"/>
             </ComboBox>
 
             <ComboBox Header="TIFF Compression"
@@ -175,13 +175,13 @@
                           MinWidth="240"
                           Margin="{StaticResource SmallTopMargin}"
                           IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}">
-                <ComboBoxItem>Default</ComboBoxItem>
-                <ComboBoxItem>None</ComboBoxItem>
-                <ComboBoxItem>CCITT3</ComboBoxItem>
-                <ComboBoxItem>CCITT4</ComboBoxItem>
-                <ComboBoxItem>LZW</ComboBoxItem>
-                <ComboBoxItem>RLE</ComboBoxItem>
-                <ComboBoxItem>Zip</ComboBoxItem>
+                <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Default"/>
+                <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_None"/>
+                <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_CCITT3"/>
+                <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_CCITT4"/>
+                <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_LZW"/>
+                <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_RLE"/>
+                <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Zip"/>
             </ComboBox>
 
             <TextBlock Text="File" 

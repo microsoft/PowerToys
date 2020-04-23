@@ -455,4 +455,73 @@
   <data name="File.Text" xml:space="preserve">
     <value>File</value>
   </data>
+  <data name="Default.Content" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="ImageResizer_ENCODER_TIFF_CCITT3.Content" xml:space="preserve">
+    <value>CCITT3</value>
+  </data>
+  <data name="ImageResizer_ENCODER_TIFF_CCITT4.Content" xml:space="preserve">
+    <value>CCITT4</value>
+  </data>
+  <data name="ImageResizer_ENCODER_TIFF_Default.Content" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="ImageResizer_ENCODER_TIFF_LZW.Content" xml:space="preserve">
+    <value>LZW</value>
+  </data>
+  <data name="ImageResizer_ENCODER_TIFF_None.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="ImageResizer_ENCODER_TIFF_RLE.Content" xml:space="preserve">
+    <value>RLE</value>
+  </data>
+  <data name="ImageResizer_ENCODER_TIFF_Zip.Content" xml:space="preserve">
+    <value>Zip</value>
+  </data>
+  <data name="ImageResizer_FallbackEncoder_BMP.Content" xml:space="preserve">
+    <value>BMP Encoder</value>
+  </data>
+  <data name="ImageResizer_FallbackEncoder_GIF.Content" xml:space="preserve">
+    <value>GIF Encoder</value>
+  </data>
+  <data name="ImageResizer_FallbackEncoder_JPEG.Content" xml:space="preserve">
+    <value>JPEG Encoder</value>
+  </data>
+  <data name="ImageResizer_FallbackEncoder_PNG.Content" xml:space="preserve">
+    <value>PNG Encoder</value>
+  </data>
+  <data name="ImageResizer_FallbackEncoder_TIFF.Content" xml:space="preserve">
+    <value>TIFF Encoder</value>
+  </data>
+  <data name="ImageResizer_FallbackEncoder_WMPhoto.Content" xml:space="preserve">
+    <value>WMPhoto Encoder</value>
+  </data>
+  <data name="ImageResizer_Sizes_Fit_Fill.Content" xml:space="preserve">
+    <value>Fill</value>
+  </data>
+  <data name="ImageResizer_Sizes_Fit_Fit.Content" xml:space="preserve">
+    <value>Fit</value>
+  </data>
+  <data name="ImageResizer_Sizes_Fit_Stretch.Content" xml:space="preserve">
+    <value>Stretch</value>
+  </data>
+  <data name="ImageResizer_Sizes_Units_CM.Content" xml:space="preserve">
+    <value>Centimeters</value>
+  </data>
+  <data name="ImageResizer_Sizes_Units_Inches.Content" xml:space="preserve">
+    <value>Inches</value>
+  </data>
+  <data name="ImageResizer_Sizes_Units_Percent.Content" xml:space="preserve">
+    <value>Percent</value>
+  </data>
+  <data name="ImageResizer_Sizes_Units_Pixels.Content" xml:space="preserve">
+    <value>Pixels</value>
+  </data>
+  <data name="Off.Content" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="On.Content" xml:space="preserve">
+    <value>On</value>
+  </data>
 </root>

@@ -144,6 +144,9 @@ namespace ViewModelTests
             {
                 viewModel.FileName = invalidName;
                 Assert.AreNotEqual(invalidName, viewModel.FileName);
+                
+                ImageResizerSettings settings = SettingsUtils.GetSettings<ImageResizerSettings>(Module);
+                Assert.AreNotEqual(invalidName, settings.Properties.ImageresizerFileName.Value);
             }
         }
 
