@@ -213,7 +213,14 @@ namespace Wox.Infrastructure
             {
                 int count = query.Count(c => !char.IsWhiteSpace(c));
                 int threshold = 4;
-                score += count <= threshold ? 10 * count : threshold * 10 + (count - threshold) * 5;
+                if(count <= threshold)
+                {
+                    score += count * 10;
+                }
+                else
+                {
+                    score += threshold * 10 + (count - threshold) * 5;
+                }
             }
 
             return score;
