@@ -438,33 +438,21 @@
     <value>Enable Image Resizer</value>
   </data>
   <data name="ImageResizer_AddSizeButton.Label" xml:space="preserve">
-    <value>
-			Add Size
-		</value>
+    <value>Add Size</value>
   </data>
   <data name="ImageResizer_SaveSizeButton.Label" xml:space="preserve">
-    <value>
-			Save Sizes
-		</value>
+    <value>Save Sizes</value>
   </data>
   <data name="ImageResizer_Encoding.Text" xml:space="preserve">
-    <value>
-			JPEG Quality level
-		</value>
+    <value>JPEG Quality level</value>
   </data>
   <data name="ImageResizer_PNGInterlacing.Header" xml:space="preserve">
-    <value>
-			PNG interlacing
-		</value>
+    <value>PNG interlacing</value>
   </data>
   <data name="ImageResizer_TIFFCompression.Header" xml:space="preserve">
-    <value>
-			TIFF Compression
-		</value>
+    <value>TIFF Compression</value>
   </data>
   <data name="File.Text" xml:space="preserve">
-    <value>
-			File
-		</value>
+    <value>File</value>
   </data>
 </root>
