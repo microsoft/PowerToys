@@ -13,4 +13,6 @@ struct VersionHelper
     int major;
     int minor;
     int revision;
+
+    std::wstring to_string() const;
 };
