@@ -147,7 +147,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     std::unordered_map<DWORD, DWORD> singleKeyRemapCopy = keyboardManagerState.singleKeyReMap;
     lock.unlock();
 
-    // Pre process the table to combine L and R versions of Ctrl/Alt/Shift that are mapped to the same key
+    // Pre process the table to combine L and R versions of Ctrl/Alt/Shift/Win that are mapped to the same key
     if (singleKeyRemapCopy.find(VK_LCONTROL) != singleKeyRemapCopy.end() && singleKeyRemapCopy.find(VK_RCONTROL) != singleKeyRemapCopy.end())
     {
         // If they are mapped to the same key, delete those entries and set the common version
@@ -176,6 +176,16 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
             singleKeyRemapCopy[VK_SHIFT] = singleKeyRemapCopy[VK_LSHIFT];
             singleKeyRemapCopy.erase(VK_LSHIFT);
             singleKeyRemapCopy.erase(VK_RSHIFT);
+        }
+    }
+    if (singleKeyRemapCopy.find(VK_LWIN) != singleKeyRemapCopy.end() && singleKeyRemapCopy.find(VK_RWIN) != singleKeyRemapCopy.end())
+    {
+        // If they are mapped to the same key, delete those entries and set the common version
+        if (singleKeyRemapCopy[VK_LWIN] == singleKeyRemapCopy[VK_RWIN])
+        {
+            singleKeyRemapCopy[CommonSharedConstants::VK_WIN_BOTH] = singleKeyRemapCopy[VK_LWIN];
+            singleKeyRemapCopy.erase(VK_LWIN);
+            singleKeyRemapCopy.erase(VK_RWIN);
         }
     }
 
@@ -218,6 +228,11 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
                 case VK_SHIFT:
                     res1 = keyboardManagerState.AddSingleKeyRemap(VK_LSHIFT, newKey);
                     res2 = keyboardManagerState.AddSingleKeyRemap(VK_RSHIFT, newKey);
+                    result = res1 && res2;
+                    break;
+                case CommonSharedConstants::VK_WIN_BOTH:
+                    res1 = keyboardManagerState.AddSingleKeyRemap(VK_LWIN, newKey);
+                    res2 = keyboardManagerState.AddSingleKeyRemap(VK_RWIN, newKey);
                     result = res1 && res2;
                     break;
                 default:

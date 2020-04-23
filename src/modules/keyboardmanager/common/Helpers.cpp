@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Helpers.h"
 #include <sstream>
+#include "../common/shared_constants.h"
 
 using namespace winrt::Windows::Foundation;
 
@@ -42,6 +43,7 @@ namespace KeyboardManagerHelper
     {
         switch (key)
         {
+        case CommonSharedConstants::VK_WIN_BOTH:
         case VK_LWIN:
         case VK_RWIN:
             return KeyType::Win;

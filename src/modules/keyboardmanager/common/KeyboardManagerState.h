@@ -1,6 +1,6 @@
 #pragma once
 #include "Helpers.h"
-#include "..\common\keyboard_layout.h"
+#include "../common/keyboard_layout.h"
 #include "Shortcut.h"
 #include "RemapShortcut.h"
 #include "KeyDelay.h"
@@ -9,6 +9,7 @@
 #include <mutex>
 #include <winrt/Windows.UI.Xaml.Controls.h>
 #include <../common/settings_helpers.h>
+
 using namespace winrt::Windows::UI::Xaml::Controls;
 
 // Enum type to store different states of the UI
