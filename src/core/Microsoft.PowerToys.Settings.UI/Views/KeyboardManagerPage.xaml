@@ -7,58 +7,79 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:extensions="using:Microsoft.Toolkit.Uwp.UI.Extensions"
+    xmlns:Lib="using:Microsoft.PowerToys.Settings.UI.Lib"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
-        <viewModel:RemapKeysModel x:Key="dummyData"/>
         <viewModel:KeyboardManagerViewModel x:Key="eventViewModel"/>
-
-        <DataTemplate x:Name="KeysListViewTemplate" x:DataType="viewModel:RemapKeysModel">
-            <Grid Height="56">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="80"/>
-                    <ColumnDefinition Width="80"/>
-                    <ColumnDefinition Width="120"/>
-                </Grid.ColumnDefinitions>
-                <Border 
-                        Background="{ThemeResource SystemBaseLowColor}"
-                        CornerRadius="4"
-                        Grid.Column="0"
-                        Padding="14,0,14,0"
-                        Margin="0,0,0,0"
-                        Height="36"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Left">
-                    <TextBlock FontWeight="SemiBold"
-                               VerticalAlignment="Center"
-                               TextAlignment="Center"
-                                FontSize="12"
-                                Text="{Binding From}">
-                    </TextBlock>
-                </Border>
+        <local:VisibleIfNotEmpty x:Key="visibleIfNotEmptyConverter" />
+        <DataTemplate x:Name="KeysListViewTemplate" x:DataType="Lib:KeysDataModel">
+            <StackPanel
+                Orientation="Horizontal"
+                Height="56">
+                <ItemsControl
+                    ItemsSource="{x:Bind GetOriginalKeys()}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border
+                                Background="{ThemeResource SystemBaseLowColor}"
+                                CornerRadius="4"
+                                Padding="14,0,14,0"
+                                Margin="5,0,5,0"
+                                Height="36"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Left">
+                                <TextBlock
+                                    FontWeight="SemiBold"
+                                    VerticalAlignment="Center"
+                                    TextAlignment="Center"
+                                    FontSize="12"
+                                    Text="{Binding}" />
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
                 <FontIcon Glyph="&#xE72A;"
                           Grid.Column="1"
                           FontSize="14"
-                          VerticalAlignment="Center" />
-
-                <Border Background="{ThemeResource SystemAccentColor}"
-                        CornerRadius="4"
-                        Grid.Column="2"
-                        Padding="14,0,14,0"
-                        Margin="20,0,0,0"
-                        Height="36"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Left">
-                    <TextBlock FontWeight="SemiBold"
-                               VerticalAlignment="Center"
-                               TextAlignment="Center"
-                               Foreground="White"
-                               FontSize="12"
-                               Text="{Binding To}">
-                    </TextBlock>
-                </Border>
-            </Grid>
+                          VerticalAlignment="Center" 
+                          Margin="5,0,5,0"/>
+                <ItemsControl
+                    ItemsSource="{x:Bind GetNewRemapKeys()}"
+                    Grid.Column="2">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border
+                                Background="{ThemeResource SystemAccentColor}"
+                                CornerRadius="4"
+                                Padding="14,0,14,0"
+                                Margin="5,0,5,0"
+                                Height="36"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Left">
+                                <TextBlock
+                                    FontWeight="SemiBold"
+                                    VerticalAlignment="Center"
+                                    TextAlignment="Center"
+                                    Foreground="White"
+                                    FontSize="12"
+                                    Text="{Binding}" />
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
         </DataTemplate>
     </Page.Resources>
 
@@ -99,7 +120,7 @@
                        TextWrapping="Wrap"/>
 
             <ToggleSwitch x:Uid="KeyboardManager_EnableToggle"
-                          IsOn="True"
+                          IsOn="{x:Bind Path=ViewModel.Enabled, Mode=TwoWay}"
                           Margin="{StaticResource SmallTopMargin}" />
 
             <!--<TextBlock x:Uid="KeyboardManager_ConfigHeader"
@@ -125,20 +146,24 @@
             <Button x:Uid="KeyboardManager_RemapKeyboardButton"
                     Margin="{StaticResource SmallTopMargin}"
                     Style="{StaticResource ButtonRevealStyle}"
-                    Command="{Binding Path=RemapKeyboardCommand}"/>
+                    Command="{Binding Path=RemapKeyboardCommand}"
+                    IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>
 
             <ListView x:Name="RemapKeysList"
                       extensions:ListViewExtensions.AlternateColor="{ThemeResource SystemControlBackgroundListLowBrush}"
-                      ItemsSource="{StaticResource dummyData}"
+                      ItemsSource="{x:Bind Path=ViewModel.RemapKeys, Mode=OneWay}"
                       ItemTemplate="{StaticResource KeysListViewTemplate}"
                       BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
                       BorderThickness="1" 
-                      Width="350"
+                      CornerRadius="4"
+                      MinWidth="350"
                       MaxHeight="200"
                       Margin="{StaticResource MediumTopBottomMargin}"
                       HorizontalAlignment="Left"
                       SelectionMode="None"
-                      IsSwipeEnabled="False"/>
+                      IsSwipeEnabled="False"
+                      Visibility="{x:Bind Path=ViewModel.RemapKeys, Mode=OneWay, Converter={StaticResource visibleIfNotEmptyConverter}}"
+                      /> 
 
 
             <TextBlock x:Uid="KeyboardManager_RemapShortcutsHeader"
@@ -150,23 +175,25 @@
             <Button x:Uid="KeyboardManager_RemapShortcutsButton"
                     Margin="{StaticResource SmallTopMargin}"
                     Style="{StaticResource ButtonRevealStyle}"
-                    Command="{Binding Path=EditShortcutCommand}"/>
+                    Command="{Binding Path=EditShortcutCommand}"
+                    IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"
+                    />
 
             <ListView x:Name="RemapShortcutsList"
                       extensions:ListViewExtensions.AlternateColor="{ThemeResource SystemControlBackgroundListLowBrush}"
-                      ItemsSource="{StaticResource dummyData}"
+                      ItemsSource="{x:Bind Path=ViewModel.RemapShortcuts, Mode=OneWay}"
                       ItemTemplate="{StaticResource KeysListViewTemplate}"
                       BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
                       BorderThickness="1" 
                       CornerRadius="4"
-                      Width="350"
+                      MinWidth="350"
                       MaxHeight="200"
                       Margin="{StaticResource MediumTopBottomMargin}"
                       HorizontalAlignment="Left"
                       SelectionMode="None"
-                      IsSwipeEnabled="False"/>
-
-
+                      IsSwipeEnabled="False"
+                      Visibility="{x:Bind Path=ViewModel.RemapShortcuts, Mode=OneWay, Converter={StaticResource visibleIfNotEmptyConverter}}"
+                      />
         </StackPanel>
 
         <StackPanel 

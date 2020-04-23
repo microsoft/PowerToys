@@ -42,6 +42,12 @@
     <ClCompile Include="update_state.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="update_utils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="action_runner_utils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -83,6 +89,12 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="update_state.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="update_utils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="action_runner_utils.h">
       <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>

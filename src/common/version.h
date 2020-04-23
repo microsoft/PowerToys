@@ -2,7 +2,7 @@
 
 #define STRINGIZE2(s) #s
 #define STRINGIZE(s) STRINGIZE2(s)
- 
+
 #include "Generated Files\version_gen.h"
 
 #define FILE_VERSION VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION, 0
@@ -14,3 +14,12 @@
 #define COMPANY_NAME "Microsoft Corporation"
 
 #define COPYRIGHT_NOTE "Copyright (C) 2019 Microsoft Corporation"
+
+enum class version_architecture
+{
+    x64,
+    arm
+};
+
+version_architecture get_current_architecture();
+const wchar_t* get_architecture_string(const version_architecture);
