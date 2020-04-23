@@ -17,8 +17,6 @@ namespace Wox.Plugin.Folder
         public const string DeleteFileFolderImagePath = "Images\\deletefilefolder.png";
         public const string CopyImagePath = "Images\\copy.png";
 
-        private string DefaultFolderSubtitleString = "Ctrl + Enter to open the directory";
-
         private const string _fileExplorerProgramName = "explorer";
         private static List<string> _driverNames;
         private PluginInitContext _context;
@@ -129,7 +127,7 @@ namespace Wox.Plugin.Folder
             var userFolderLinks = _settings.FolderLinks.Where(
                 x => x.Nickname.StartsWith(search, StringComparison.OrdinalIgnoreCase));
             var results = userFolderLinks.Select(item =>
-                CreateFolderResult(item.Nickname, DefaultFolderSubtitleString, item.Path, query)).ToList();
+                CreateFolderResult(item.Nickname, item.Path, item.Path, query)).ToList();
             return results;
         }
 
@@ -202,8 +200,6 @@ namespace Wox.Plugin.Folder
             var folderList = new List<Result>();
             var fileList = new List<Result>();
 
-            var folderSubtitleString = DefaultFolderSubtitleString;
-
             try
             {
                 // search folder and add results
@@ -216,8 +212,7 @@ namespace Wox.Plugin.Folder
 
                     if(fileSystemInfo is DirectoryInfo)
                     {
-                        if (searchOption == SearchOption.AllDirectories)
-                            folderSubtitleString = fileSystemInfo.FullName;
+                        var folderSubtitleString = fileSystemInfo.FullName;
 
                         folderList.Add(CreateFolderResult(fileSystemInfo.Name, folderSubtitleString, fileSystemInfo.FullName, query));
                     }
@@ -280,8 +275,8 @@ namespace Wox.Plugin.Folder
             return new Result
             {
                 Title = firstResult,
-                SubTitle = $"Use > to search files and subfolders within {folderName}, " +
-                                $"* to search for file extensions in {folderName} or both >* to combine the search",
+                SubTitle = $"Use > to search within {folderName}, " +
+                                $"* to search for file extensions in {folderName} or both >* to combine the search.",
                 IcoPath = search,
                 Score = 500,
                 Action = c =>
