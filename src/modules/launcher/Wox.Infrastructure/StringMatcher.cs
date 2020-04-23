@@ -212,8 +212,15 @@ namespace Wox.Infrastructure
             if (allSubstringsContainedInCompareString)
             {
                 int count = query.Count(c => !char.IsWhiteSpace(c));
-                int factor = count < 4 ? 10 : 5;
-                score += factor * count;
+                int threshold = 4;
+                if(count <= threshold)
+                {
+                    score += count * 10;
+                }
+                else
+                {
+                    score += threshold * 10 + (count - threshold) * 5;
+                }
             }
 
             return score;
