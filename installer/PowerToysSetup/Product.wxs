@@ -17,10 +17,10 @@
     <MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed." />
 
     <Upgrade Id="42B84BF7-5FBF-473B-9C8B-049DC16F7708">
-      <UpgradeVersion
+      <UpgradeVersion OnlyDetect="no"
          Minimum="0.11.0" Maximum="$(var.Version)"
-         Property="PREVIOUSVERSIONSINSTALLED"
-         IncludeMinimum="yes" IncludeMaximum="no" />
+         Property="PREVIOUSFOUND"
+         IncludeMinimum="yes" IncludeMaximum="yes" />
     </Upgrade>
 
     <MediaTemplate EmbedCab="yes" />
