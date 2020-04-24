@@ -240,7 +240,6 @@ namespace updating
             std::filesystem::create_directories(installer_download_dst, _);
             installer_download_dst /= new_version->msi_filename;
 
-
             bool download_success = false;
             for (size_t i = 0; i < MAX_DOWNLOAD_ATTEMPTS; ++i)
             {
@@ -270,7 +269,12 @@ namespace updating
             std::wstring new_version_ready{ GITHUB_NEW_VERSION_READY_TO_INSTALL };
             new_version_ready += current_version_to_next_version;
 
-            notifications::show_toast_with_activations(std::move(new_version_ready), {}, { notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_NOW, L"powertoys://update_now/" }, notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART, L"powertoys://schedule_update/" }, notifications::snooze_button{ GITHUB_NEW_VERSION_SNOOZE_TITLE, { { GITHUB_NEW_VERSION_UPDATE_SNOOZE_1D, 24 * 60 }, { GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D, 120 * 60 } } } }, std::move(toast_params));
+            notifications::show_toast_with_activations(std::move(new_version_ready),
+                                                       {},
+                                                       { notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_NOW, L"powertoys://update_now/" },
+                                                         notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART, L"powertoys://schedule_update/" },
+                                                         notifications::snooze_button{ GITHUB_NEW_VERSION_SNOOZE_TITLE, { { GITHUB_NEW_VERSION_UPDATE_SNOOZE_1D, 24 * 60 }, { GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D, 120 * 60 } } } },
+                                                       std::move(toast_params));
         }
         else
         {
