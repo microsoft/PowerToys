@@ -33,6 +33,11 @@ namespace
     constexpr std::wstring_view WIN32_AUMID = L"Microsoft.PowerToysWin32";
 }
 
+namespace localized_strings 
+{
+    constexpr std::wstring_view SNOOZE_BUTTON = L"Snooze";
+}
+
 static DWORD loop_thread_id()
 {
     static const DWORD thread_id = GetCurrentThreadId();
@@ -276,7 +281,9 @@ void notifications::show_toast_with_activations(std::wstring message, std::wstri
                                toast_xml += selection_id;
                                toast_xml += '"';
                            }
-                           toast_xml += LR"( content="" />)";
+                           toast_xml += LR"( content=")";
+                           toast_xml += localized_strings::SNOOZE_BUTTON;
+                           toast_xml += LR"(" />)";
                        } },
                    actions[i]);
     }

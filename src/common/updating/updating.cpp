@@ -48,7 +48,7 @@ namespace localized_strings
 
     const wchar_t GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT[] = L"An update to PowerToys is available. Visit our GitHub page to update.\n";
     const wchar_t GITHUB_NEW_VERSION_AGREE[] = L"Visit";
-    const wchar_t GITHUB_NEW_VERSION_SNOOZE_TITLE[] = L"You can snooze it to be reminded in:";
+    const wchar_t GITHUB_NEW_VERSION_SNOOZE_TITLE[] = L"Click Snooze to be reminded in:";
     const wchar_t GITHUB_NEW_VERSION_UPDATE_SNOOZE_1D[] = L"1 day";
     const wchar_t GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D[] = L"5 days";
 }
