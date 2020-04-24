@@ -160,17 +160,17 @@ namespace Wox.ViewModel
                     if (!didExecuteContextButton)
                     {
                         var result = results.SelectedItem.Result;
-                        if (result != null) // SelectedItem returns null if selection is empty.
+                        if (result != null && result.Action != null) // SelectedItem returns null if selection is empty.
                         {
-                            bool hideWindow = result.Action != null && result.Action(new ActionContext
-                            {
-                                SpecialKeyState = GlobalHotkey.Instance.CheckModifiers()
-                            });
+                            MainWindowVisibility = Visibility.Collapsed;
 
-                            if (hideWindow)
+                            Task.Run(() =>
                             {
-                                MainWindowVisibility = Visibility.Collapsed;
-                            }
+                                result.Action(new ActionContext
+                                {
+                                    SpecialKeyState = GlobalHotkey.Instance.CheckModifiers()
+                                });
+                            });
 
                             if (SelectedIsFromQueryResults())
                             {
