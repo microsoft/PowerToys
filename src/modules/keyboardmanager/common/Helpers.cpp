@@ -119,10 +119,12 @@ namespace KeyboardManagerHelper
     }
 
     // Function to return the error message
-    hstring GetErrorMessage(ErrorType errorType)
+    winrt::hstring GetErrorMessage(ErrorType errorType)
     {
         switch (errorType)
         {
+        case ErrorType::NoError:
+            return L"Remapping successful";
         case ErrorType::SameKeyPreviouslyMapped:
             return L"Cannot remap a key more than once";
         case ErrorType::MapToSameKey:
@@ -130,10 +132,19 @@ namespace KeyboardManagerHelper
         case ErrorType::ConflictingModifierKey:
             return L"Cannot remap this key as it conflicts with another remapped key";
         case ErrorType::SameShortcutPreviouslyMapped:
+            return L"Cannot remap a shortcut more than once";
         case ErrorType::MapToSameShortcut:
+            return L"Cannot remap a shortcut to itself";
         case ErrorType::ConflictingModifierShortcut:
+            return L"Cannot remap this shortcut as it conflicts with another remapped shortcut";
         case ErrorType::WinL:
+            return L"Cannot remap from/to Win L";
         case ErrorType::CtrlAltDel:
+            return L"Cannot remap from/to Ctrl Alt Del";
+        case ErrorType::RemapUnsuccessful:
+            return L"Some remappings were not applied";
+        case ErrorType::SaveFailed:
+            return L"Failed to save the remappings";
         }
     }
 }

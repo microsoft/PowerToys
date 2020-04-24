@@ -773,27 +773,27 @@ KeyboardManagerHelper::ErrorType Shortcut::DoKeysOverlap(const Shortcut& first, 
         // If the shortcuts are equal
         if (first == second)
         {
-            return KeyboardManagerHelper::ErrorType::SameKeysPreviouslyMapped;
+            return KeyboardManagerHelper::ErrorType::SameShortcutPreviouslyMapped;
         }
         // If both have win key modifiers and one is the both version then there will be an overlap
         else if (first.winKey != ModifierKey::Disabled && second.winKey != ModifierKey::Disabled && (first.winKey == ModifierKey::Both || second.winKey == ModifierKey::Both))
         {
-            return KeyboardManagerHelper::ErrorType::ConflictingModifiers;
+            return KeyboardManagerHelper::ErrorType::ConflictingModifierShortcut;
         }
         // If both have ctrl key modifiers and one is the both version then there will be an overlap
         else if (first.ctrlKey != ModifierKey::Disabled && second.ctrlKey != ModifierKey::Disabled && (first.ctrlKey == ModifierKey::Both || second.ctrlKey == ModifierKey::Both))
         {
-            return KeyboardManagerHelper::ErrorType::ConflictingModifiers;
+            return KeyboardManagerHelper::ErrorType::ConflictingModifierShortcut;
         }
         // If both have alt key modifiers and one is the both version then there will be an overlap
         else if (first.altKey != ModifierKey::Disabled && second.altKey != ModifierKey::Disabled && (first.altKey == ModifierKey::Both || second.altKey == ModifierKey::Both))
         {
-            return KeyboardManagerHelper::ErrorType::ConflictingModifiers;
+            return KeyboardManagerHelper::ErrorType::ConflictingModifierShortcut;
         }
         // If both have shift key modifiers and one is the both version then there will be an overlap
         else if (first.shiftKey != ModifierKey::Disabled && second.shiftKey != ModifierKey::Disabled && (first.shiftKey == ModifierKey::Both || second.shiftKey == ModifierKey::Both))
         {
-            return KeyboardManagerHelper::ErrorType::ConflictingModifiers;
+            return KeyboardManagerHelper::ErrorType::ConflictingModifierShortcut;
         }
     }
 

@@ -160,7 +160,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     header.SetLeftOf(cancelButton, applyButton);
     applyButton.Flyout(applyFlyout);
     applyButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
-        bool isSuccess = true;
+        KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
         // Clear existing shortcuts
         keyboardManagerState.ClearOSLevelShortcuts();
 
@@ -175,30 +175,22 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
                 bool result = keyboardManagerState.AddOSLevelShortcut(originalShortcut, newShortcut);
                 if (!result)
                 {
-                    isSuccess = false;
+                    isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
                 }
             }
             else
             {
-                isSuccess = false;
+                isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
             }
         }
 
         // Save the updated key remaps to file.
-        auto saveResult = keyboardManagerState.SaveConfigToFile();
-
-        if (isSuccess && saveResult)
+        bool saveResult = keyboardManagerState.SaveConfigToFile();
+        if (!saveResult)
         {
-            settingsMessage.Text(L"Remapping successful!");
+            isSuccess = KeyboardManagerHelper::ErrorType::SaveFailed;
         }
-        else if (!isSuccess && saveResult)
-        {
-            settingsMessage.Text(L"All remappings were not successfully applied.");
-        }
-        else
-        {
-            settingsMessage.Text(L"Failed to save the remappings.");
-        }
+        settingsMessage.Text(KeyboardManagerHelper::GetErrorMessage(isSuccess));
     });
 
     header.Children().Append(headerText);

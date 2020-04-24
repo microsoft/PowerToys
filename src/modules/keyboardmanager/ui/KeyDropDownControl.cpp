@@ -60,7 +60,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyC
                 KeyboardManagerHelper::ErrorType errorType = KeyboardManagerHelper::ErrorType::NoError;
 
                 // Check if the value being set is the same as the other column
-                if (singleKeyRemapBuffer[rowIndex][std::abs(int(colIndex)-1)] == keyCodeList[selectedKeyIndex])
+                if (singleKeyRemapBuffer[rowIndex][std::abs(int(colIndex) - 1)] == keyCodeList[selectedKeyIndex])
                 {
                     errorType = KeyboardManagerHelper::ErrorType::MapToSameKey;
                 }
@@ -118,6 +118,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
         // Get row index of the single key control
         uint32_t controlIndex;
         bool controlIindexFound = table.Children().IndexOf(shortcutControl, controlIndex);
+        KeyboardManagerHelper::ErrorType errorType = KeyboardManagerHelper::ErrorType::NoError;
 
         if (controlIindexFound)
         {

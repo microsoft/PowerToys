@@ -26,7 +26,9 @@ namespace KeyboardManagerHelper
         MapToSameShortcut,
         ConflictingModifierShortcut,
         WinL,
-        CtrlAltDel
+        CtrlAltDel,
+        RemapUnsuccessful,
+        SaveFailed
     };
 
     // Function to split a wstring based on a delimiter and return a vector of split strings
@@ -48,7 +50,7 @@ namespace KeyboardManagerHelper
     ErrorType DoKeysOverlap(DWORD first, DWORD second);
 
     // Function to return the error message
-    hstring GetErrorMessage(ErrorType errorType);
+    winrt::hstring GetErrorMessage(ErrorType errorType);
 
     // Function to return the list of key name in the order for the drop down based on the key codes
     winrt::Windows::Foundation::Collections::IVector<winrt::Windows::Foundation::IInspectable> ToBoxValue(const std::vector<std::wstring>& list);
