@@ -289,21 +289,24 @@ namespace Wox.Plugin.Shell
 
         bool API_GlobalKeyboardEvent(int keyevent, int vkcode, SpecialKeyState state)
         {
-            if (_settings.ReplaceWinR)
-            {
-                if (keyevent == (int)KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
-                {
-                    _winRStroked = true;
-                    OnWinRPressed();
-                    return false;
-                }
-                if (keyevent == (int)KeyEvent.WM_KEYUP && _winRStroked && vkcode == (int)Keys.LWin)
-                {
-                    _winRStroked = false;
-                    _keyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.LWIN, VirtualKeyCode.BACK);
-                    return false;
-                }
-            }
+            // not overriding Win+R 
+            // crutkas we need to earn the right for Win+R override
+
+            //if (_settings.ReplaceWinR)
+            //{
+            //    if (keyevent == (int)KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
+            //    {
+            //        _winRStroked = true;
+            //        OnWinRPressed();
+            //        return false;
+            //    }
+            //    if (keyevent == (int)KeyEvent.WM_KEYUP && _winRStroked && vkcode == (int)Keys.LWin)
+            //    {
+            //        _winRStroked = false;
+            //        _keyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.LWIN, VirtualKeyCode.BACK);
+            //        return false;
+            //    }
+            //}
             return true;
         }
 
