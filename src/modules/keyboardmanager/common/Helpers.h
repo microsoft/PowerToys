@@ -15,6 +15,20 @@ namespace KeyboardManagerHelper
         Action
     };
 
+    // Type to store codes for different errors
+    enum class ErrorType
+    {
+        NoError,
+        SameKeyPreviouslyMapped,
+        MapToSameKey,
+        ConflictingModifierKey,
+        SameShortcutPreviouslyMapped,
+        MapToSameShortcut,
+        ConflictingModifierShortcut,
+        WinL,
+        CtrlAltDel
+    };
+
     // Function to split a wstring based on a delimiter and return a vector of split strings
     std::vector<std::wstring> splitwstring(const std::wstring& input, wchar_t delimiter);
 
@@ -31,7 +45,10 @@ namespace KeyboardManagerHelper
     KeyType GetKeyType(DWORD key);
 
     // Function to check if two keys are equal or cover the same set of keys. Return value depends on type of overlap
-    int DoKeysOverlap(DWORD first, DWORD second);
+    ErrorType DoKeysOverlap(DWORD first, DWORD second);
+
+    // Function to return the error message
+    hstring GetErrorMessage(ErrorType errorType);
 
     // Function to return the list of key name in the order for the drop down based on the key codes
     winrt::Windows::Foundation::Collections::IVector<winrt::Windows::Foundation::IInspectable> ToBoxValue(const std::vector<std::wstring>& list);

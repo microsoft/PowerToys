@@ -41,6 +41,20 @@ public:
         }
     }
 
+    // == operator
+    inline bool operator==(const Shortcut& sc) const
+    {
+        // Compare win key first
+        if (winKey == sc.winKey && ctrlKey == sc.ctrlKey && altKey == sc.altKey && shiftKey == sc.shiftKey && actionKey == sc.actionKey)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     // Less than operator must be defined to use with std::map.
     inline bool operator<(const Shortcut& sc) const
     {
@@ -170,5 +184,8 @@ public:
     int GetCommonModifiersCount(const Shortcut& input) const;
 
     // Function to check if the two shortcuts are equal or cover the same set of keys. Return value depends on type of overlap
-    static int DoKeysOverlap(const Shortcut& first, const Shortcut& second);
+    static KeyboardManagerHelper::ErrorType DoKeysOverlap(const Shortcut& first, const Shortcut& second);
+
+    // Function to check if the shortcut is illegal (i.e. Win+L or Ctrl+Alt+Del)
+    KeyboardManagerHelper::ErrorType IsShortcutIllegal() const;
 };

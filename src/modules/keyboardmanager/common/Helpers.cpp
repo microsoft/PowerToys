@@ -92,29 +92,48 @@ namespace KeyboardManagerHelper
     }
 
     // Function to check if two keys are equal or cover the same set of keys. Return value depends on type of overlap
-    int DoKeysOverlap(DWORD first, DWORD second)
+    ErrorType DoKeysOverlap(DWORD first, DWORD second)
     {
-        // Return 1 if the keys are same
+        // If the keys are same
         if (first == second)
         {
-            return 1;
+            return ErrorType::SameKeyPreviouslyMapped;
         }
         else if ((GetKeyType(first) == GetKeyType(second)) && GetKeyType(first) != KeyType::Action)
         {
-            // Return 2 if the keys are of the same modifier type and overlapping, i.e. one is L/R and other is common
+            // If the keys are of the same modifier type and overlapping, i.e. one is L/R and other is common
             if ((first == VK_LWIN && second == VK_RWIN) || (first == VK_LCONTROL && second == VK_RCONTROL) || (first == VK_LMENU && second == VK_RMENU) || (first == VK_LSHIFT && second == VK_RSHIFT))
             {
-                return 0;
+                return ErrorType::NoError;
             }
             else
             {
-                return 2;
+                return ErrorType::ConflictingModifierKey;
             }
         }
-        // Return 0 if no overlap
+        // If no overlap
         else
         {
-            return 0;
+            return ErrorType::NoError;
+        }
+    }
+
+    // Function to return the error message
+    hstring GetErrorMessage(ErrorType errorType)
+    {
+        switch (errorType)
+        {
+        case ErrorType::SameKeyPreviouslyMapped:
+            return L"Cannot remap a key more than once";
+        case ErrorType::MapToSameKey:
+            return L"Cannot remap a key to itself";
+        case ErrorType::ConflictingModifierKey:
+            return L"Cannot remap this key as it conflicts with another remapped key";
+        case ErrorType::SameShortcutPreviouslyMapped:
+        case ErrorType::MapToSameShortcut:
+        case ErrorType::ConflictingModifierShortcut:
+        case ErrorType::WinL:
+        case ErrorType::CtrlAltDel:
         }
     }
 }

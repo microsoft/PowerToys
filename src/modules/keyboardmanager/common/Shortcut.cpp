@@ -765,14 +765,55 @@ int Shortcut::GetCommonModifiersCount(const Shortcut& input) const
     return commonElements;
 }
 
-//// Function to check if the two shortcuts are equal or cover the same set of keys. Return value depends on type of overlap
-//int Shortcut::DoKeysOverlap(const Shortcut& first, const Shortcut& second)
-//{
-//    if (first.IsValidShortcut() && second.IsValidShortcut())
-//    {
-//        if (first.winKey == second.winKey && first.ctrlKey == second.ctrlKey && first.altKey == second.altKey && first.shiftKey == second.shiftKey && first.actionKey == second.actionKey)
-//        {
-//            
-//        }
-//    }
-//}
+// Function to check if the two shortcuts are equal or cover the same set of keys. Return value depends on type of overlap
+KeyboardManagerHelper::ErrorType Shortcut::DoKeysOverlap(const Shortcut& first, const Shortcut& second)
+{
+    if (first.IsValidShortcut() && second.IsValidShortcut())
+    {
+        // If the shortcuts are equal
+        if (first == second)
+        {
+            return KeyboardManagerHelper::ErrorType::SameKeysPreviouslyMapped;
+        }
+        // If both have win key modifiers and one is the both version then there will be an overlap
+        else if (first.winKey != ModifierKey::Disabled && second.winKey != ModifierKey::Disabled && (first.winKey == ModifierKey::Both || second.winKey == ModifierKey::Both))
+        {
+            return KeyboardManagerHelper::ErrorType::ConflictingModifiers;
+        }
+        // If both have ctrl key modifiers and one is the both version then there will be an overlap
+        else if (first.ctrlKey != ModifierKey::Disabled && second.ctrlKey != ModifierKey::Disabled && (first.ctrlKey == ModifierKey::Both || second.ctrlKey == ModifierKey::Both))
+        {
+            return KeyboardManagerHelper::ErrorType::ConflictingModifiers;
+        }
+        // If both have alt key modifiers and one is the both version then there will be an overlap
+        else if (first.altKey != ModifierKey::Disabled && second.altKey != ModifierKey::Disabled && (first.altKey == ModifierKey::Both || second.altKey == ModifierKey::Both))
+        {
+            return KeyboardManagerHelper::ErrorType::ConflictingModifiers;
+        }
+        // If both have shift key modifiers and one is the both version then there will be an overlap
+        else if (first.shiftKey != ModifierKey::Disabled && second.shiftKey != ModifierKey::Disabled && (first.shiftKey == ModifierKey::Both || second.shiftKey == ModifierKey::Both))
+        {
+            return KeyboardManagerHelper::ErrorType::ConflictingModifiers;
+        }
+    }
+
+    return KeyboardManagerHelper::ErrorType::NoError;
+}
+
+// Function to check if the shortcut is illegal (i.e. Win+L or Ctrl+Alt+Del)
+KeyboardManagerHelper::ErrorType Shortcut::IsShortcutIllegal() const
+{
+    // Win+L
+    if (winKey != ModifierKey::Disabled && ctrlKey == ModifierKey::Disabled && altKey == ModifierKey::Disabled && shiftKey == ModifierKey::Disabled && actionKey == 0x4C)
+    {
+        return KeyboardManagerHelper::ErrorType::WinL;
+    }
+
+    // Ctrl+Alt+Del
+    if (winKey == ModifierKey::Disabled && ctrlKey != ModifierKey::Disabled && altKey != ModifierKey::Disabled && shiftKey == ModifierKey::Disabled && actionKey == VK_DELETE)
+    {
+        return KeyboardManagerHelper::ErrorType::CtrlAltDel;
+    }
+
+    return KeyboardManagerHelper::ErrorType::NoError;
+}

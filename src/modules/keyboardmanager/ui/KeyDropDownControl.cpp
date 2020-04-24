@@ -42,7 +42,6 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyC
     Flyout warningFlyout;
     TextBlock warningMessage;
     warningFlyout.Content(warningMessage);
-    warningFlyout.ShowMode(Primitives::FlyoutShowMode::Transient);
     dropDown.ContextFlyout().SetAttachedFlyout((FrameworkElement)dropDown, warningFlyout);
 
     // drop down selection handler
@@ -58,49 +57,39 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyC
             // Check if the element was not found or the index exceeds the known keys
             if (selectedKeyIndex != -1 && keyCodeList.size() > selectedKeyIndex)
             {
-                bool noConflict = true;
-                hstring errorMessage;
+                KeyboardManagerHelper::ErrorType errorType = KeyboardManagerHelper::ErrorType::NoError;
 
                 // Check if the value being set is the same as the other column
                 if (singleKeyRemapBuffer[rowIndex][std::abs(int(colIndex)-1)] == keyCodeList[selectedKeyIndex])
                 {
-                    noConflict = false;
-                    errorMessage = L"Cannot remap a key to itself";
+                    errorType = KeyboardManagerHelper::ErrorType::MapToSameKey;
                 }
 
-                if (noConflict && colIndex == 0)
+                if (errorType == KeyboardManagerHelper::ErrorType::NoError && colIndex == 0)
                 {
                     // Check if the key is already remapped to something else
                     for (int i = 0; i < singleKeyRemapBuffer.size(); i++)
                     {
                         if (i != rowIndex)
                         {
-                            int result = KeyboardManagerHelper::DoKeysOverlap(singleKeyRemapBuffer[i][0], keyCodeList[selectedKeyIndex]);
-                            if (result != 0)
+                            KeyboardManagerHelper::ErrorType result = KeyboardManagerHelper::DoKeysOverlap(singleKeyRemapBuffer[i][0], keyCodeList[selectedKeyIndex]);
+                            if (result != KeyboardManagerHelper::ErrorType::NoError)
                             {
-                                noConflict = false;
-                                if (result == 1)
-                                {
-                                    errorMessage = L"Cannot remap a key more than once";
-                                }
-                                else if (result == 2)
-                                {
-                                    errorMessage = L"Cannot remap this key as it conflicts with another remapped key";
-                                }
+                                errorType = result;
                                 break;
                             }
                         }
                     }
                 }
 
-                if (noConflict)
+                if (errorType == KeyboardManagerHelper::ErrorType::NoError)
                 {
                     singleKeyRemapBuffer[rowIndex][colIndex] = keyCodeList[selectedKeyIndex];
                 }
                 else
                 {
                     singleKeyRemapBuffer[rowIndex][colIndex] = NULL;
-                    SetDropDownError(dropDown, warningMessage, errorMessage);
+                    SetDropDownError(dropDown, warningMessage, KeyboardManagerHelper::GetErrorMessage(errorType));
                 }
             }
             else
