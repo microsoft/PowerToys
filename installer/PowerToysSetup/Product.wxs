@@ -657,6 +657,37 @@
           <File Id="CalcPlugin_$(var.File)" Source="$(var.BinX64Dir)\modules\launcher\Plugins\Wox.Plugin.Caculator\pinyindb\$(var.File)" />
         <?endforeach?>
       </Component>
+
+      <!-- Folder Plugin -->
+      <Component Id="FolderComponent" Directory="FolderPluginFolder" Guid="453D6C29-8F0D-46EC-B210-82E6AF547039">
+        <?foreach File in plugin.json;Wox.Infrastructure.dll;Wox.Plugin.Folder.deps.json;Wox.Plugin.Folder.dll;Wox.Plugin.dll?>
+        <File Id="Folder_$(var.File)" Source="$(var.BinX64Dir)\modules\launcher\Plugins\Wox.Plugin.Folder\$(var.File)" />
+        <?endforeach?>
+      </Component>
+      <Component Id="FolderImagesComponent" Directory="FolderPluginImagesFolder" Guid="6C5226EB-E312-4768-B4D1-B1D3ACFCCBDF">
+        <?foreach File in copy.png;deletefilefolder.png;file.png;folder.png;user.png?>
+          <File Id="FolderPlugin_$(var.File)" Source="$(var.BinX64Dir)\modules\launcher\Plugins\Wox.Plugin.Folder\Images\$(var.File)" />
+        <?endforeach?>
+      </Component>
+      <Component Id="FolderPluginLanguagesComponent" Directory="FolderPluginLanguagesFolder" Guid="6316D847-5FD2-488B-A60E-5517BF95A25C">
+        <?foreach LanguageFile in de.xaml;en.xaml;pl.xaml;tr.xaml;zh-cn.xaml;zh-tw.xaml?>
+          <!--NB: Ids can't contain hyphens-->
+          <?if $(var.LanguageFile) = zh-cn.xaml?>
+            <?define IdSafeLanguage = zh_cn.xaml?>
+          <?elseif $(var.LanguageFile) = zh-tw.xaml?>
+            <?define IdSafeLanguage = zh_tw.xaml?>
+          <?else?>
+            <?define IdSafeLanguage = $(var.LanguageFile)?>
+          <?endif?>
+            <File Id="File_Folder_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)\modules\launcher\Plugins\Wox.Plugin.Folder\Languages\$(var.LanguageFile)" />
+          <?undef IdSafeLanguage?>
+        <?endforeach?>
+      </Component>
+      <Component Id="FolderPluginpinyindbComponent" Directory="FolderPluginpinyindbFolder" Guid="233BE087-B9DC-408A-8809-593C42DE8B1B">
+        <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
+          <File Id="FolderPlugin_$(var.File)" Source="$(var.BinX64Dir)\modules\launcher\Plugins\Wox.Plugin.Folder\pinyindb\$(var.File)" />
+        <?endforeach?>
+      </Component>
     
       <!-- Program Plugin -->
       <Component Id="ProgramComponent" Directory="ProgramPluginFolder" Guid="3C5CA6E6-3D36-4F4E-B40E-38AA5E5CB799">
