@@ -764,3 +764,15 @@ int Shortcut::GetCommonModifiersCount(const Shortcut& input) const
 
     return commonElements;
 }
+
+//// Function to check if the two shortcuts are equal or cover the same set of keys. Return value depends on type of overlap
+//int Shortcut::DoKeysOverlap(const Shortcut& first, const Shortcut& second)
+//{
+//    if (first.IsValidShortcut() && second.IsValidShortcut())
+//    {
+//        if (first.winKey == second.winKey && first.ctrlKey == second.ctrlKey && first.altKey == second.altKey && first.shiftKey == second.shiftKey && first.actionKey == second.actionKey)
+//        {
+//            
+//        }
+//    }
+//}

@@ -138,6 +138,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     Flyout applyFlyout;
     TextBlock settingsMessage;
     applyFlyout.Content(settingsMessage);
+    applyFlyout.ShowMode(Primitives::FlyoutShowMode::TransientWithDismissOnPointerMoveAway);
 
     // Store handle of edit keyboard window
     SingleKeyRemapControl::EditKeyboardWindowHandle = _hWndEditKeyboardWindow;

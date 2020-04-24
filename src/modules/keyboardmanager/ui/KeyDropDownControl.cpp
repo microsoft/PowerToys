@@ -42,6 +42,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyC
     Flyout warningFlyout;
     TextBlock warningMessage;
     warningFlyout.Content(warningMessage);
+    warningFlyout.ShowMode(Primitives::FlyoutShowMode::Transient);
     dropDown.ContextFlyout().SetAttachedFlyout((FrameworkElement)dropDown, warningFlyout);
 
     // drop down selection handler

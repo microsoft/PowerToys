@@ -168,4 +168,7 @@ public:
 
     // Function to get the number of modifiers that are common between the current shortcut and the shortcut in the argument
     int GetCommonModifiersCount(const Shortcut& input) const;
+
+    // Function to check if the two shortcuts are equal or cover the same set of keys. Return value depends on type of overlap
+    static int DoKeysOverlap(const Shortcut& first, const Shortcut& second);
 };
