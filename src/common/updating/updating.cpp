@@ -229,7 +229,7 @@ namespace updating
             co_return;
         }
         using namespace localized_strings;
-        auto current_version_to_next_version = VersionHelper{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION }.to_string();
+        auto current_version_to_next_version = VersionHelper{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION }.toWstring();
         current_version_to_next_version += L" -> ";
         current_version_to_next_version += new_version->version_string;
 
