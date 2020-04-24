@@ -235,16 +235,9 @@ namespace Wox
                 e.Handled = true;
             }
         }
-
         private void OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            if (_viewModel.QueryTextCursorMovedToEnd)
-            {
-                QueryTextBox.CaretIndex = QueryTextBox.Text.Length;
-                _viewModel.QueryTextCursorMovedToEnd = false;
-            }
+           
         }
-
-
     }
 }
