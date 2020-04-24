@@ -473,10 +473,10 @@ namespace Wox.Plugin.Program.Programs
                 var programsWithoutLnk = programs.Where(x => string.IsNullOrEmpty(x.LnkResolvedPath));
                 var programsAsList = programs.ToList();
 
-                Parallel.ForEach(programsWithoutLnk, (app) =>
+                foreach(var app in programsWithoutLnk)
                 {
                     programsAsList.RemoveAll(x => (x.FullPath == app.FullPath) && string.IsNullOrEmpty(x.LnkResolvedPath));
-                });
+                }
 
                 return programsAsList.ToArray();
             }
