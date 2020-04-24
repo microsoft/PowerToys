@@ -51,7 +51,6 @@ namespace Wox.ViewModel
         {
             _saved = false;
             _queryTextBeforeLeaveResults = "";
-            _queryText = "";
             _lastQuery = new Query();
 
             _settings = settings;
@@ -223,29 +222,30 @@ namespace Wox.ViewModel
         public ResultsViewModel ContextMenu { get; private set; }
         public ResultsViewModel History { get; private set; }
 
-        private string _queryText;
-        public string QueryText
-        {
-            get { return _queryText; }
-            set
-            {
-                _queryText = value;
-                Query();
-            }
-        }
+        public string SystemQueryText { get; set; }
+
+        public string QueryText { get; set; }
+      
 
         /// <summary>
         /// we need move cursor to end when we manually changed query
-        /// but we don't want to move cursor to end when query is updated from TextBox
+        /// but we don't want to move cursor to end when query is updated from TextBox. 
+        /// Also we don't want to force the results to change unless explicity told to.
         /// </summary>
         /// <param name="queryText"></param>
-        public void ChangeQueryText(string queryText)
+        /// <param name="requery">Optional Parameter that if true, will automatically execute a query against the updated text</param>
+        public void ChangeQueryText(string queryText, bool requery=false)
         {
-            QueryTextCursorMovedToEnd = true;
+            QueryTextUpdateBySystem = true;
             QueryText = queryText;
+
+            if(requery)
+            {
+               Query();
+            }
         }
         public bool LastQuerySelected { get; set; }
-        public bool QueryTextCursorMovedToEnd { get; set; }
+        public bool QueryTextUpdateBySystem { get; set; }
 
         private ResultsViewModel _selectedResults;
         private ResultsViewModel SelectedResults

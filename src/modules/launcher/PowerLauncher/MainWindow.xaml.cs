@@ -350,21 +350,25 @@ namespace PowerLauncher
 
         private void QueryTextBox_TextChanged(object sender, Windows.UI.Xaml.Controls.TextChangedEventArgs e)
         {
-            var latestTimeOfTyping = DateTime.Now;
             var text = ((Windows.UI.Xaml.Controls.TextBox)sender).Text;
-            Task.Run(() => DelayedCheck(latestTimeOfTyping, text));
-            s_lastTimeOfTyping = latestTimeOfTyping;
-
             //To clear the auto-suggest immediately instead of waiting for selection changed
-            if(text == String.Empty)
+            if (text == String.Empty)
             {
                 _launcher.AutoCompleteTextBox.PlaceholderText = String.Empty;
             }
 
-            if (_viewModel.QueryTextCursorMovedToEnd)
+            if (_viewModel.QueryTextUpdateBySystem)
             {
                 _launcher.TextBox.SelectionStart = _launcher.TextBox.Text.Length;
-                _viewModel.QueryTextCursorMovedToEnd = false;
+                _viewModel.QueryTextUpdateBySystem = false;
+            }
+            else
+            {
+                _viewModel.QueryText = text;
+                var latestTimeOfTyping = DateTime.Now;
+
+                Task.Run(() => DelayedCheck(latestTimeOfTyping, text));
+                s_lastTimeOfTyping = latestTimeOfTyping;
             }
         }
 
@@ -375,7 +379,7 @@ namespace PowerLauncher
             {
                 await System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                  {
-                     _viewModel.QueryText = text;
+                     _viewModel.Query();
                  }));               
             }
         }
