@@ -53,7 +53,7 @@ namespace Wox.Plugin.Program.Programs
 
             var result = new Result
             {
-                SubTitle = "Win32 Application",
+                SubTitle = "Win32 application",
                 IcoPath = IcoPath,
                 Score = score,
                 ContextData = this,
@@ -148,8 +148,9 @@ namespace Wox.Plugin.Program.Programs
                 var p = new Win32
                 {
                     Name = Path.GetFileNameWithoutExtension(path),
+                    ExecutableName = Path.GetFileName(path),
                     IcoPath = path,
-                    FullPath = path,
+                    FullPath = path.ToLower(),
                     UniqueIdentifier = path,
                     ParentDirectory = Directory.GetParent(path).FullName,
                     Description = string.Empty,
@@ -191,7 +192,8 @@ namespace Wox.Plugin.Program.Programs
                     if (extension == ExeExtension && File.Exists(target))
                     {
                         program.LnkResolvedPath = program.FullPath;
-                        program.FullPath = target;
+                        program.FullPath = Path.GetFullPath(target).ToLower();
+                        program.ExecutableName = Path.GetFileName(target);
 
                         buffer = new StringBuilder(MAX_PATH);
                         link.GetDescription(buffer, MAX_PATH);
@@ -239,10 +241,12 @@ namespace Wox.Plugin.Program.Programs
             {
                 var program = Win32Program(path);
                 var info = FileVersionInfo.GetVersionInfo(path);
+
                 if (!string.IsNullOrEmpty(info.FileDescription))
                 {
                     program.Description = info.FileDescription;
                 }
+
                 return program;
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
@@ -257,10 +261,14 @@ namespace Wox.Plugin.Program.Programs
         private static IEnumerable<string> ProgramPaths(string directory, string[] suffixes)
         {
             if (!Directory.Exists(directory))
+            {
                 return new string[] { };
+            }
+
             var files = new List<string>();
             var folderQueue = new Queue<string>();
             folderQueue.Enqueue(directory);
+            
             do
             {
                 var currentDirectory = folderQueue.Dequeue();
@@ -298,12 +306,14 @@ namespace Wox.Plugin.Program.Programs
                                                 $"|Permission denied when trying to load programs from {currentDirectory}", e);
                 }
             } while (folderQueue.Any());
+
             return files;
         }
 
         private static string Extension(string path)
         {
             var extension = Path.GetExtension(path)?.ToLower();
+
             if (!string.IsNullOrEmpty(extension))
             {
                 return extension.Substring(1);
@@ -353,11 +363,8 @@ namespace Wox.Plugin.Program.Programs
 
             var programs1 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(LnkProgram);
             var programs2 = paths.AsParallel().Where(p => Extension(p) == ApplicationReferenceExtension).Select(Win32Program);
-            var allValidPrograms = programs1.Concat(programs2).Where(p => p.Valid);
-            //var programsWithLnk = allValidPrograms.Where(x => !string.IsNullOrEmpty(x.LnkResolvedPath));
-                       
 
-            return allValidPrograms;
+            return programs1.Concat(programs2).Where(p => p.Valid);
         }
 
         private static ParallelQuery<Win32> AppPathsPrograms(string[] suffixes)
@@ -450,6 +457,7 @@ namespace Wox.Plugin.Program.Programs
 
                 var unregistered = UnregisteredPrograms(settings.ProgramSources, settings.ProgramSuffixes);
                 programs = programs.Concat(unregistered);
+
                 if (settings.EnableRegistrySource)
                 {
                     var appPaths = AppPathsPrograms(settings.ProgramSuffixes);
@@ -462,7 +470,15 @@ namespace Wox.Plugin.Program.Programs
                     programs = programs.Concat(startMenu);
                 }
 
-                return programs.ToArray();
+                var programsWithoutLnk = programs.Where(x => string.IsNullOrEmpty(x.LnkResolvedPath));
+                var programsAsList = programs.ToList();
+
+                Parallel.ForEach(programsWithoutLnk, (app) =>
+                {
+                    programsAsList.RemoveAll(x => (x.FullPath == app.FullPath) && string.IsNullOrEmpty(x.LnkResolvedPath));
+                });
+
+                return programsAsList.ToArray();
             }
 #if DEBUG //This is to make developer aware of any unhandled exception and add in handling.
             catch (Exception e)
