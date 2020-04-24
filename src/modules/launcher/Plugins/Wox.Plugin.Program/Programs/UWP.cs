@@ -282,7 +282,7 @@ namespace Wox.Plugin.Program.Programs
 
                 var result = new Result
                 {
-                    SubTitle = "UWP Application",
+                    SubTitle = "UWP application",
                     Icon = Logo,
                     Score = score,
                     ContextData = this,
