@@ -7,6 +7,7 @@
 #include "resource.h"
 #include <common/dpi_aware.h>
 #include <common/common.h>
+#include <Sddl.h>
 
 #include "trace.h"
 
