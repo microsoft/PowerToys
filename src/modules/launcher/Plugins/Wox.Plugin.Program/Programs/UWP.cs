@@ -282,7 +282,7 @@ namespace Wox.Plugin.Program.Programs
 
                 var result = new Result
                 {
-                    SubTitle = Package.Location,
+                    SubTitle = "UWP Application",
                     Icon = Logo,
                     Score = score,
                     ContextData = this,
@@ -298,12 +298,6 @@ namespace Wox.Plugin.Program.Programs
                 {
                     result.Title = Description;
                     result.TitleHighlightData = StringMatcher.FuzzySearch(query, Description).MatchData;
-                }
-                else if (!string.IsNullOrEmpty(Description))
-                {
-                    var title = $"{DisplayName}: {Description}";
-                    result.Title = title;
-                    result.TitleHighlightData = StringMatcher.FuzzySearch(query, title).MatchData;
                 }
                 else
                 {
