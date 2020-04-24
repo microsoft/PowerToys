@@ -237,9 +237,9 @@ namespace updating
         {
             auto installer_download_dst = get_pending_updates_path();
             std::error_code _;
+            std::filesystem::create_directories(installer_download_dst, _);
             installer_download_dst /= new_version->msi_filename;
 
-            std::filesystem::create_directories(installer_download_dst, _);
 
             bool download_success = false;
             for (size_t i = 0; i < MAX_DOWNLOAD_ATTEMPTS; ++i)
