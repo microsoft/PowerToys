@@ -5,7 +5,10 @@ namespace Wox.Plugin.Shell
     public class Settings
     {
         public Shell Shell { get; set; } = Shell.RunCommand;
-        public bool ReplaceWinR { get; set; } = true;
+        
+        // not overriding Win+R 
+        // crutkas we need to earn the right for Win+R override
+        public bool ReplaceWinR { get; set; } = false;
         public bool LeaveShellOpen { get; set; }
         public bool RunAsAdministrator { get; set; } = false;
 
