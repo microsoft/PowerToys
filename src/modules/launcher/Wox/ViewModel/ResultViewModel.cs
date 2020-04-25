@@ -255,7 +255,8 @@ namespace Wox.ViewModel
 
         public override string ToString()
         {
-            return Result.Title.ToString();
+            var display = String.IsNullOrEmpty(Result.QueryTextDisplay) ? Result.Title : Result.QueryTextDisplay;
+            return display;
         }
     }
 }

@@ -94,29 +94,8 @@ namespace Wox.Plugin.Folder
                 Title = title,
                 IcoPath = path,
                 SubTitle = subtitle,
+                QueryTextDisplay = path,
                 TitleHighlightData = StringMatcher.FuzzySearch(query.Search, title).MatchData,
-                Action = c =>
-                {
-                    if (c.SpecialKeyState.CtrlPressed)
-                    {
-                        try
-                        {
-                            Process.Start(_fileExplorerProgramName, path);
-                            return true;
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show(ex.Message, "Could not start " + path);
-                            return false;
-                        }
-                    }
-
-                    string changeTo = path.EndsWith("\\") ? path : path + "\\";
-                    changeTo = string.IsNullOrEmpty(query.ActionKeyword) ? changeTo : query.ActionKeyword + " " + changeTo;
-                    bool requery = true;
-                    _context.API.ChangeQuery(changeTo, requery);
-                    return false;
-                },
                 ContextData = new SearchResult { Type = ResultType.Folder, FullPath = path }
             };
         }
