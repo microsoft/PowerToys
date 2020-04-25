@@ -96,7 +96,12 @@ namespace Wox.Plugin.Folder
                 SubTitle = subtitle,
                 QueryTextDisplay = path,
                 TitleHighlightData = StringMatcher.FuzzySearch(query.Search, title).MatchData,
-                ContextData = new SearchResult { Type = ResultType.Folder, FullPath = path }
+                ContextData = new SearchResult { Type = ResultType.Folder, FullPath = path },
+                Action = c =>
+                {
+                    Process.Start(_fileExplorerProgramName, path);
+                    return true;
+                }
             };
         }
 
