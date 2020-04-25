@@ -71,6 +71,25 @@ namespace Wox.ViewModel
             InitializeKeyCommands();
             RegisterResultsUpdatedEvent();
 
+            _settings.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(Settings.Hotkey))
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        if (_settings.PreviousHotkey != "")
+                        {
+                            RemoveHotkey(_settings.PreviousHotkey);
+                        }
+
+                        if (_settings.Hotkey != "")
+                        {
+                            SetHotkey(_settings.Hotkey, OnHotkey);
+                        }
+                    });
+                }
+            };
+
             SetHotkey(_settings.Hotkey, OnHotkey);
             SetCustomPluginHotkey();
         }
@@ -118,7 +137,7 @@ namespace Wox.ViewModel
 
             SelectNextTabItemCommand = new RelayCommand(_ =>
             {
-                SelectedResults.SelectNextTabItem(); 
+                SelectedResults.SelectNextTabItem();
             });
 
             SelectPrevTabItemCommand = new RelayCommand(_ =>

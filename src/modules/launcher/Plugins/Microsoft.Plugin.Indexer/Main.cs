@@ -10,10 +10,12 @@ using System.ComponentModel;
 using Wox.Infrastructure.Storage;
 using Microsoft.Plugin.Indexer.SearchHelper;
 using Microsoft.Search.Interop;
+using Microsoft.PowerToys.Settings.UI.Lib;
+using System.Windows.Controls;
 
 namespace Microsoft.Plugin.Indexer
 {
-    class Main : IPlugin, ISavable, IPluginI18n, IContextMenu
+    class Main : ISettingProvider, IPlugin, ISavable, IPluginI18n, IContextMenu
     {
 
         // This variable contains metadata about the Plugin
@@ -134,5 +136,14 @@ namespace Microsoft.Plugin.Indexer
         {
             return _contextMenuLoader.LoadContextMenus(selectedResult);
         }
+        public void UpdateSettings(PowerLauncherSettings settings)
+        {
+            _settings.MaxSearchCount = settings.properties.maximum_number_of_results;
+        }
+        public Control CreateSettingPanel()
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

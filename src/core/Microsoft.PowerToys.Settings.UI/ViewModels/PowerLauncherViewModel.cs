@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class PowerLauncherViewModel : Observable
     {
-        private const string POWERTOYNAME = "PowerLauncher";
+        private const string POWERTOYNAME = "Launcher";
         private PowerLauncherSettings settings;
         private GeneralSettings generalSettings;
 
@@ -51,9 +51,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SettingsUtils.SaveSettings(JsonSerializer.Serialize(settings, options), POWERTOYNAME);
 
             // Propagate changes to Power Launcher through IPC
-            var propertiesJson = JsonSerializer.Serialize(settings.properties);
-            ShellPage.DefaultSndMSGCallback(
-                string.Format("{{ \"{0}\": {1} }}", POWERTOYNAME, JsonSerializer.Serialize(settings.properties)));
         }
 
         public bool EnablePowerLauncher

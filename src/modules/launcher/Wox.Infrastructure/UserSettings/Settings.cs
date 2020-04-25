@@ -9,7 +9,30 @@ namespace Wox.Infrastructure.UserSettings
 {
     public class Settings : BaseModel
     {
-        public string Hotkey { get; set; } = "Alt + Space";
+        private string _hotkey = "Alt + Space";
+        private string _previousHotkey = "";
+        public string PreviousHotkey {
+            get
+            {
+                return _previousHotkey;
+            }
+        }
+        public string Hotkey 
+        {
+            get
+            {
+                return _hotkey;
+            }
+            set
+            {
+                if (_hotkey != value)
+                {
+                    _previousHotkey = _hotkey;
+                    _hotkey = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public string Language { get; set; } = "en";
         public string Theme { get; set; } = "Dark";
         public string QueryBoxFont { get; set; } = FontFamily.GenericSansSerif.Name;

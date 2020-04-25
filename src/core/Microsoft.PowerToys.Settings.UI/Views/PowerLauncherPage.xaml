@@ -60,7 +60,7 @@
                       SelectedItem="{x:Bind Mode=TwoWay, Path=SelectedSearchResultPreference}"
                       SelectedValuePath="Item2"
                       DisplayMemberPath="Item1"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                      IsEnabled="False"
                       />
 
             <ComboBox x:Uid="PowerLauncher_SearchTypePreference"
@@ -70,7 +70,7 @@
                       SelectedItem="{x:Bind Mode=TwoWay, Path=SelectedSearchTypePreference}"
                       SelectedValuePath="Item2"
                       DisplayMemberPath="Item1"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                      IsEnabled="False"
                       />
 
             <muxc:NumberBox x:Uid="PowerLauncher_MaximumNumberOfResults" 
@@ -99,21 +99,21 @@
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{x:Bind Path=ViewModel.OpenFileLocation, Mode=TwoWay}"
-                                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                                          IsEnabled="False"
                                         />
             <Custom:HotkeySettingsControl x:Uid="PowerLauncher_CopyPathLocation"
                                           Width="320"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{x:Bind Path=ViewModel.CopyPathLocation, Mode=TwoWay}"
-                                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                                          IsEnabled="False"
                                         />
             <Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenConsole"
                                           Width="320"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{x:Bind Path=ViewModel.OpenConsole, Mode=TwoWay}"
-                                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                                          IsEnabled="False"
                                         />
 
             <CheckBox x:Uid="PowerLauncher_OverrideWinRKey" 
@@ -125,7 +125,7 @@
             <CheckBox x:Uid="PowerLauncher_OverrideWinSKey"
                       Margin="{StaticResource SmallTopMargin}"
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideWinSKey}"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                      IsEnabled="False"
                       />
         </StackPanel>
         <StackPanel

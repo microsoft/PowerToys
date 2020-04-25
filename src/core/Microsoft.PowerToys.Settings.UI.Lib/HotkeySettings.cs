@@ -64,5 +64,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             output.Append(Key);
             return output.ToString();
         }
+
+        public bool IsValid()
+        {
+            return (Alt || Ctrl || Win || Shift) && Code != 0;
+        }
+
+        public bool IsEmpty()
+        {
+            return !Alt && !Ctrl && !Win && !Shift && Code == 0;
+        }
     }
 }

@@ -1,3 +1,4 @@
+using Microsoft.PowerToys.Settings.UI.Lib;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -194,6 +195,10 @@ namespace Wox.Plugin.Program
         public void ReloadData()
         {
             IndexPrograms();
+        }
+
+        public void UpdateSettings(PowerLauncherSettings settings)
+        {
         }
     }
 }

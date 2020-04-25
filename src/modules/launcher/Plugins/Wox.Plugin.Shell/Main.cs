@@ -1,3 +1,4 @@
+using Microsoft.PowerToys.Settings.UI.Lib;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -340,6 +341,11 @@ namespace Wox.Plugin.Shell
             };
 
             return resultlist;
+        }
+
+        public void UpdateSettings(PowerLauncherSettings settings)
+        {
+            _settings.ReplaceWinR = settings.properties.override_win_r_key;
         }
     }
 }
