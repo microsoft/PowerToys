@@ -210,8 +210,14 @@ namespace PowerLauncher
             _resultList = (UI.ResultList)host.Child;
             _resultList.DataContext = _viewModel;
             _resultList.Tapped += SuggestionsList_Tapped;
+            _resultList.SuggestionsList.Loaded += SuggestionsList_Loaded;
             _resultList.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
             _resultList.SuggestionsList.ContainerContentChanging += SuggestionList_UpdateListSize;
+        }
+
+        private void SuggestionsList_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            _viewModel.ColdStartFix();
         }
 
         private bool IsKeyDown(VirtualKey key)

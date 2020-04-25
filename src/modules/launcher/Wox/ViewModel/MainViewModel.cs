@@ -613,6 +613,32 @@ namespace Wox.ViewModel
             }
         }
 
+        public void ColdStartFix()
+        {
+            // Fix Cold start for List view xaml island
+            List<Result> list = new List<Result>();
+            Result r = new Result
+            {
+                Title = "hello"
+            };
+            list.Add(r);
+            Results.AddResults(list, "0");
+            Results.Clear();
+            MainWindowVisibility = System.Windows.Visibility.Collapsed;
+
+            // Fix Cold start for plugins
+            string s = "m";
+            var query = QueryBuilder.Build(s.Trim(), PluginManager.NonGlobalPlugins);
+            var plugins = PluginManager.ValidPluginsForQuery(query);
+            foreach (PluginPair plugin in plugins)
+            {
+                if (!plugin.Metadata.Disabled && plugin.Metadata.Name != "Window Walker")
+                {
+                    var _ = PluginManager.QueryForPlugin(plugin, query);
+                }
+            };
+        }
+
         #endregion
     }
 }
