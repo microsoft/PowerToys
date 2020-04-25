@@ -8,10 +8,14 @@
     xmlns:ToolkitBehaviors="using:Microsoft.Toolkit.Uwp.UI.Animations.Behaviors"
     xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     d:DesignHeight="300"
     d:DesignWidth="720">
+    <UserControl.Resources>
+        <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+    </UserControl.Resources>
     <Grid 
-        x:Name="PowerBar" 
+        x:Name="PowerBar"
         Background="{ThemeResource BackdropAcrylicBrush}"        
         VerticalAlignment="Top">
         <ListView 
@@ -26,23 +30,17 @@
             ItemsSource="{Binding Results.Results, Mode=OneWay}"
             SelectionMode="Single"
             SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
-            Style="{StaticResource ListViewNoAnimations}">
+            Style="{StaticResource ListViewNoAnimations}"
+            >
             <ListView.ItemTemplate>
                 <DataTemplate >
                     <Grid Height="72" Width="690" Background="Transparent" RowSpacing="0">
                         <Interactivity:Interaction.Behaviors>
-                            <Core:DataTriggerBehavior Binding="{Binding IsSelected}" ComparisonCondition="Equal" Value="true" >
-                                <Core:CallMethodAction TargetObject="{Binding ElementName=ShowActionButtons}" MethodName="StartAnimation"/>
-                            </Core:DataTriggerBehavior>
-                            <Core:DataTriggerBehavior Binding="{Binding IsSelected}" ComparisonCondition="Equal" Value="false">
-                                <Core:CallMethodAction TargetObject="{Binding ElementName=HideActionsButtons}" MethodName="StartAnimation"/>
-                            </Core:DataTriggerBehavior>
                             <Core:EventTriggerBehavior EventName="PointerEntered">
-                                <Core:CallMethodAction TargetObject="{Binding ElementName=ShowActionButtons}" MethodName="StartAnimation"/>
-                                <Core:InvokeCommandAction Command="{Binding LoadContextMenuCommand}"/>
+                                <Core:InvokeCommandAction Command="{Binding ActivateContextButtonsHoverCommand}"/>
                             </Core:EventTriggerBehavior>
                             <Core:EventTriggerBehavior EventName="PointerExited">
-                                <Core:CallMethodAction TargetObject="{Binding ElementName=HideActionsButtons}" MethodName="StartAnimation"/>
+                                <Core:InvokeCommandAction Command="{Binding DeactivateContextButtonsHoverCommand}"/>
                             </Core:EventTriggerBehavior>
                         </Interactivity:Interaction.Behaviors>
                         <Grid.ColumnDefinitions>
@@ -64,16 +62,12 @@
                                    Grid.Column="1"
                                    Margin="0,0,42,0"
                                    Height="46"
+                                   Visibility="{Binding AreContextButtonsActive, Converter={StaticResource BoolToVisibilityConverter}}"
                                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
                                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"                       
                                    ItemsSource="{Binding ContextMenuItems}" 
                                    SelectionMode="Single"
                                    SelectedIndex="{Binding ContextMenuSelectedIndex}">
-
-                            <Interactivity:Interaction.Behaviors>
-                                <ToolkitBehaviors:Fade x:Name="ShowActionButtons" Duration="250" Delay="0" AutomaticallyStart="False" Value="1" />
-                                <ToolkitBehaviors:Fade x:Name="HideActionsButtons" Duration="250" Delay="0" AutomaticallyStart="False" Value="0" />
-                            </Interactivity:Interaction.Behaviors>
                             <GridView.ItemTemplate>
                                 <DataTemplate>
                                     <Button Command="{Binding Command}" VerticalAlignment="Center" CornerRadius="4" Height="42" Width="42" BorderThickness="1" Style="{ThemeResource ButtonRevealStyle}">
@@ -87,7 +81,7 @@
                                             <KeyboardAccelerator
                                                 Key="{Binding AcceleratorKey}"
                                                 Modifiers="{Binding AcceleratorModifiers}"
-                                                IsEnabled="{Binding IsEnabled}"
+                                                IsEnabled="{Binding IsAcceleratorKeyEnabled}"
                                             />
                                         </Button.KeyboardAccelerators>
                                     </Button>

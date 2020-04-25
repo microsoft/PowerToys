@@ -354,6 +354,12 @@ namespace PowerLauncher
             {
                 _launcher.AutoCompleteTextBox.PlaceholderText = String.Empty;
             }
+
+            if (_viewModel.QueryTextCursorMovedToEnd)
+            {
+                _launcher.TextBox.SelectionStart = _launcher.TextBox.Text.Length;
+                _viewModel.QueryTextCursorMovedToEnd = false;
+            }
         }
 
         private async Task DelayedCheck(DateTime latestTimeOfTyping, string text)

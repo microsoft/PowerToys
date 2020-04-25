@@ -73,7 +73,8 @@ namespace Wox.Plugin.Program
             UWP.Application[] uwps;
 
             lock (IndexLock)
-            { // just take the reference inside the lock to eliminate query time issues.
+            { 
+                // just take the reference inside the lock to eliminate query time issues.
                 win32 = _win32s;
                 uwps = _uwps;
             }
@@ -119,7 +120,6 @@ namespace Wox.Plugin.Program
         public static void IndexPrograms()
         {
             var t1 = Task.Run(() => IndexWin32Programs());
-
             var t2 = Task.Run(() => IndexUWPPrograms());
 
             Task.WaitAll(t1, t2);
@@ -154,32 +154,8 @@ namespace Wox.Plugin.Program
             return menuOptions;
         }
 
-        private void DisableProgram(IProgram programToDelete)
-        {
-            if (_settings.DisabledProgramSources.Any(x => x.UniqueIdentifier == programToDelete.UniqueIdentifier))
-                return;
-
-            if (_uwps.Any(x => x.UniqueIdentifier == programToDelete.UniqueIdentifier))
-                _uwps.Where(x => x.UniqueIdentifier == programToDelete.UniqueIdentifier).FirstOrDefault().Enabled = false;
-
-            if (_win32s.Any(x => x.UniqueIdentifier == programToDelete.UniqueIdentifier))
-                _win32s.Where(x => x.UniqueIdentifier == programToDelete.UniqueIdentifier).FirstOrDefault().Enabled = false;
-
-            _settings.DisabledProgramSources
-                     .Add(
-                             new Settings.DisabledProgramSource
-                             {
-                                 Name = programToDelete.Name,
-                                 Location = programToDelete.Location,
-                                 UniqueIdentifier = programToDelete.UniqueIdentifier,
-                                 Enabled = false
-                             }
-                         );
-        }
-
         public static void StartProcess(Func<ProcessStartInfo, Process> runProcess, ProcessStartInfo info)
         {
-            bool hide;
             try
             {
                 runProcess(info);

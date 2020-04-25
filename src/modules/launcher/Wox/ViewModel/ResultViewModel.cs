@@ -17,11 +17,25 @@ namespace Wox.ViewModel
 {
     public class ResultViewModel : BaseModel
     {
+        public enum ActivationType
+        {
+            Selection,
+            Hover
+        };
+
         public List<ContextMenuItemViewModel> ContextMenuItems { get; set; }
 
-        public ICommand LoadContextMenuCommand { get; set; }
+        public ICommand ActivateContextButtonsHoverCommand { get; set; }
+        public ICommand ActivateContextButtonsSelectionCommand { get; set; }
+        public ICommand DeactivateContextButtonsHoverCommand { get; set; }
+
+        public ICommand DeactivateContextButtonsSelectionCommand { get; set; }
 
         public bool IsSelected { get; set; }
+
+        public bool IsHovered { get; set; }
+
+        public bool AreContextButtonsActive { get; set; }
 
         public int ContextMenuSelectedIndex { get; set; }
 
@@ -34,9 +48,70 @@ namespace Wox.ViewModel
                 Result = result;
             }
             ContextMenuSelectedIndex = NoSelectionIndex;
-            LoadContextMenuCommand = new RelayCommand(LoadContextMenu);
+            ActivateContextButtonsHoverCommand = new RelayCommand(ActivateContextButtonsHoverAction);
+            ActivateContextButtonsSelectionCommand = new RelayCommand(ActivateContextButtonsSelectionAction);
+            DeactivateContextButtonsHoverCommand = new RelayCommand(DeactivateContextButtonsHoverAction);
+            DeactivateContextButtonsSelectionCommand = new RelayCommand(DeactivateContextButtonsSelectionAction);
         }
-        public void LoadContextMenu(object sender=null)
+
+        private void ActivateContextButtonsHoverAction(object sender)
+        {
+            ActivateContextButtons(ActivationType.Hover);
+        }
+
+        private void ActivateContextButtonsSelectionAction(object sender)
+        {
+            ActivateContextButtons(ActivationType.Selection);
+        }
+        public void ActivateContextButtons(ActivationType activationType)
+        {
+            
+            if (ContextMenuItems == null)
+            {
+                LoadContextMenu();
+            }
+
+            AreContextButtonsActive = true;
+
+            if (activationType == ActivationType.Selection)
+            {
+                IsSelected = true;
+                EnableContextMenuAcceleratorKeys();
+            }
+            else if(activationType == ActivationType.Hover)
+            {
+                IsHovered = true;
+            }
+        }
+
+
+        private void DeactivateContextButtonsHoverAction(object sender)
+        {
+            DeactivateContextButtons(ActivationType.Hover);
+        }
+
+        private void DeactivateContextButtonsSelectionAction(object sender)
+        {
+            DeactivateContextButtons(ActivationType.Selection);
+        }
+
+        public void DeactivateContextButtons(ActivationType activationType)
+        {
+            if (activationType == ActivationType.Selection)
+            {
+                IsSelected = false;
+                DisableContextMenuAcceleratorkeys();
+            }
+            else if (activationType == ActivationType.Hover)
+            {
+                IsHovered = false;
+            }
+
+            AreContextButtonsActive = IsSelected || IsHovered;
+        }
+
+
+        public void LoadContextMenu()
         {
             var results = PluginManager.GetContextMenusForPlugin(Result);
             var newItems = new List<ContextMenuItemViewModel>();
@@ -68,19 +143,19 @@ namespace Wox.ViewModel
             ContextMenuItems = newItems;
         }
 
-        internal void EnableContextMenu()
+        private void EnableContextMenuAcceleratorKeys()
         {
             foreach(var i in ContextMenuItems)
             {
-                i.IsEnabled = true;
+                i.IsAcceleratorKeyEnabled = true;
             }
         }
 
-        internal void DisableContextMenu()
+        private void DisableContextMenuAcceleratorkeys()
         {
             foreach (var i in ContextMenuItems)
             {
-                i.IsEnabled = false;
+                i.IsAcceleratorKeyEnabled = false;
             }
         }
 

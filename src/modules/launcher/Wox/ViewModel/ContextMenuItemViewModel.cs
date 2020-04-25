@@ -12,6 +12,6 @@ namespace Wox.ViewModel
         public ICommand Command { get; set; }
         public string AcceleratorKey { get; set; }
         public string AcceleratorModifiers { get; set; }
-        public bool IsEnabled { get; set; }
+        public bool IsAcceleratorKeyEnabled { get; set; }
     }
 }
