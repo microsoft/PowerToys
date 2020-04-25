@@ -180,11 +180,27 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
                 if (!result)
                 {
                     isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
+                    // Show tooltip warning on the problematic row
+                    uint32_t warningIndex;
+                    // 2 at start, 4 in each row, and last element of each row
+                    warningIndex = 1 + (i + 1) * 4;
+                    FontIcon warning = shortcutTable.Children().GetAt(warningIndex).as<FontIcon>();
+                    ToolTip t = ToolTipService::GetToolTip(warning).as<ToolTip>();
+                    t.Content(box_value(KeyboardManagerHelper::GetErrorMessage(KeyboardManagerHelper::ErrorType::ConflictingModifierShortcut)));
+                    warning.Visibility(Visibility::Visible);
                 }
             }
             else
             {
                 isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
+                // Show tooltip warning on the problematic row
+                uint32_t warningIndex;
+                // 2 at start, 4 in each row, and last element of each row
+                warningIndex = 1 + (i + 1) * 4;
+                FontIcon warning = shortcutTable.Children().GetAt(warningIndex).as<FontIcon>();
+                ToolTip t = ToolTipService::GetToolTip(warning).as<ToolTip>();
+                t.Content(box_value(KeyboardManagerHelper::GetErrorMessage(KeyboardManagerHelper::ErrorType::MissingKey)));
+                warning.Visibility(Visibility::Visible);
             }
         }
 
