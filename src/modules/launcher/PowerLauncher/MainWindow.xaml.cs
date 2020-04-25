@@ -239,21 +239,25 @@ namespace PowerLauncher
             if (e.Key == VirtualKey.Tab && IsKeyDown(VirtualKey.Shift))
             {
                 _viewModel.SelectPrevTabItemCommand.Execute(null);
+                UpdateTextBoxToSelectedItem();
                 e.Handled = true;
             }
             else if (e.Key == VirtualKey.Tab)
             {
-                    _viewModel.SelectNextTabItemCommand.Execute(null);
+                _viewModel.SelectNextTabItemCommand.Execute(null);
+                UpdateTextBoxToSelectedItem();
                 e.Handled = true;
             }
             else if (e.Key == VirtualKey.Down)
             {
                 _viewModel.SelectNextItemCommand.Execute(null);
+                UpdateTextBoxToSelectedItem();
                 e.Handled = true;
             }
             else if (e.Key == VirtualKey.Up)
             {
                 _viewModel.SelectPrevItemCommand.Execute(null);
+                UpdateTextBoxToSelectedItem();
                 e.Handled = true;
             }
             else if (e.Key == VirtualKey.PageDown)
@@ -265,6 +269,15 @@ namespace PowerLauncher
             {
                 _viewModel.SelectPrevPageCommand.Execute(null);
                 e.Handled = true;
+            }
+        }
+
+        private void UpdateTextBoxToSelectedItem()
+        {
+            var itemText = _viewModel?.Results?.SelectedItem?.ToString() ?? null;
+            if (!String.IsNullOrEmpty(itemText))
+            {
+                _viewModel.ChangeQueryText(itemText);
             }
         }
 
