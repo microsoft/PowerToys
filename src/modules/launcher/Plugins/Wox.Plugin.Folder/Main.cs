@@ -257,6 +257,7 @@ namespace Wox.Plugin.Folder
             return new Result
             {
                 Title = firstResult,
+                QueryTextDisplay = search,
                 SubTitle = $"Use > to search within the directory. Use * to search for file extensions. Or use both >*.",
                 IcoPath = search,
                 Score = 500,
