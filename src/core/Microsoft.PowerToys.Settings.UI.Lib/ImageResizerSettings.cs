@@ -30,7 +30,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public string ToJsonString()
         {
-            return JsonSerializer.Serialize(this);
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+            };
+            return JsonSerializer.Serialize(this, options);
         }
     }
 }

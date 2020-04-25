@@ -72,8 +72,8 @@ namespace ViewModelTests
             viewModel.JPEGQualityLevel = 10;
 
             // Assert
-            ImageResizerSettings settings = SettingsUtils.GetSettings<ImageResizerSettings>(Module);
-            Assert.AreEqual(10, settings.Properties.ImageresizerJpegQualityLevel.Value);
+            viewModel = new ImageResizerViewModel();
+            Assert.AreEqual(10, viewModel.JPEGQualityLevel);
         }
 
         [TestMethod]
@@ -86,8 +86,8 @@ namespace ViewModelTests
             viewModel.PngInterlaceOption = 10;
 
             // Assert
-            ImageResizerSettings settings = SettingsUtils.GetSettings<ImageResizerSettings>(Module);
-            Assert.AreEqual(10, settings.Properties.ImageresizerPngInterlaceOption.Value);
+            viewModel = new ImageResizerViewModel();
+            Assert.AreEqual(10, viewModel.PngInterlaceOption);
         }
 
         [TestMethod]
@@ -100,8 +100,8 @@ namespace ViewModelTests
             viewModel.TiffCompressOption = 10;
 
             // Assert
-            ImageResizerSettings settings = SettingsUtils.GetSettings<ImageResizerSettings>(Module);
-            Assert.AreEqual(10, settings.Properties.ImageresizerTiffCompressOption.Value);
+            viewModel = new ImageResizerViewModel();
+            Assert.AreEqual(10, viewModel.TiffCompressOption);
         }
 
         [TestMethod]
@@ -115,8 +115,8 @@ namespace ViewModelTests
             viewModel.FileName = exptectedValue;
 
             // Assert
-            ImageResizerSettings settings = SettingsUtils.GetSettings<ImageResizerSettings>(Module);
-            Assert.AreEqual(exptectedValue, settings.Properties.ImageresizerFileName.Value);
+            viewModel = new ImageResizerViewModel();
+            Assert.AreEqual(exptectedValue, viewModel.FileName);
         }
 
         [TestMethod]
@@ -142,6 +142,7 @@ namespace ViewModelTests
             // act and Assert
             foreach (string invalidName in invalidNames)
             {
+                viewModel = new ImageResizerViewModel();
                 viewModel.FileName = invalidName;
                 Assert.AreNotEqual(invalidName, viewModel.FileName);
                 
@@ -175,8 +176,8 @@ namespace ViewModelTests
             viewModel.Encoder = 3;
 
             // Assert
-            ImageResizerSettings settings = SettingsUtils.GetSettings<ImageResizerSettings>(Module);
-            Assert.AreEqual("163bcc30-e2e9-4f0b-961d-a3e9fdb788a3", settings.Properties.ImageresizerFallbackEncoder.Value);
+            viewModel = new ImageResizerViewModel();
+            Assert.AreEqual("163bcc30-e2e9-4f0b-961d-a3e9fdb788a3", viewModel.GetEncoderGuid(viewModel.Encoder));
             Assert.AreEqual(3, viewModel.Encoder);
         }
 

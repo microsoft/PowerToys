@@ -53,8 +53,8 @@
             <TextBlock x:Uid="ImageResizer_EnableGroupSettingsHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <ToggleSwitch x:Uid="ImageResizer_EnableToggle"
-                          IsOn="{ Binding Mode=TwoWay, Path=IsEnabled}"
+            <!--x:Uid="ImageResizer_EnableToggle"-->
+            <ToggleSwitch IsOn="{ Binding Mode=TwoWay, Path=IsEnabled}"
                           Margin="{StaticResource SmallTopMargin}" />
 
             <TextBlock x:Uid="ImageResizer_CustomSizes"
@@ -63,41 +63,79 @@
 
             <ListView x:Name="ImagesSizesListView" 
                       ItemsSource="{Binding Sizes, Mode=TwoWay, Source={StaticResource ViewModel}}"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}">
-                <ListView.ItemTemplate>
-                    <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:ImageSize">
-                        <StackPanel Orientation="Horizontal" Spacing="4" >
-                            <TextBox Text="{x:Bind Name}" 
-                                     Width="90" 
-                                     Height="35" />
+                      Padding="0"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                      Margin="0"
+                      >
 
-                            <ComboBox 
-                                      SelectedIndex="{x:Bind Fit}"
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}"/>
+                        <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}"/>
+                        <Setter Property="Background" Value="{ThemeResource ListViewItemBackground}"/>
+                        <Setter Property="Foreground" Value="{ThemeResource ListViewItemForeground}"/>
+                        <Setter Property="TabNavigation" Value="Local"/>
+                        <Setter Property="IsHoldingEnabled" Value="True"/>
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        <Setter Property="MinWidth" Value="{ThemeResource ListViewItemMinWidth}"/>
+                        <Setter Property="MinHeight" Value="0"/>
+                        <Setter Property="AllowDrop" Value="False"/>
+                        <Setter Property="UseSystemFocusVisuals" Value="True"/>
+                        <Setter Property="FocusVisualMargin" Value="0"/>
+                        <Setter Property="FocusVisualPrimaryBrush" Value="{ThemeResource ListViewItemFocusVisualPrimaryBrush}"/>
+                        <Setter Property="FocusVisualPrimaryThickness" Value="2"/>
+                        <Setter Property="FocusVisualSecondaryBrush" Value="{ThemeResource ListViewItemFocusVisualSecondaryBrush}"/>
+                        <Setter Property="FocusVisualSecondaryThickness" Value="1"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListViewItem">
+                                    <ListViewItemPresenter CheckBrush="{ThemeResource ListViewItemCheckBrush}" ContentMargin="{TemplateBinding Padding}" CheckMode="{ThemeResource ListViewItemCheckMode}" ContentTransitions="{TemplateBinding ContentTransitions}" CheckBoxBrush="{ThemeResource ListViewItemCheckBoxBrush}" DragForeground="{ThemeResource ListViewItemDragForeground}" DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}" DragBackground="{ThemeResource ListViewItemDragBackground}" DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}" FocusVisualPrimaryBrush="{TemplateBinding FocusVisualPrimaryBrush}" FocusVisualSecondaryThickness="{TemplateBinding FocusVisualSecondaryThickness}" FocusBorderBrush="{ThemeResource ListViewItemFocusBorderBrush}" FocusVisualMargin="{TemplateBinding FocusVisualMargin}" FocusVisualPrimaryThickness="{TemplateBinding FocusVisualPrimaryThickness}" FocusSecondaryBorderBrush="{ThemeResource ListViewItemFocusSecondaryBorderBrush}" FocusVisualSecondaryBrush="{TemplateBinding FocusVisualSecondaryBrush}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" Control.IsTemplateFocusTarget="True" PointerOverForeground="{ThemeResource ListViewItemForegroundPointerOver}" PressedBackground="{ThemeResource ListViewItemBackgroundPressed}" PlaceholderBackground="{ThemeResource ListViewItemPlaceholderBackground}" PointerOverBackground="{ThemeResource ListViewItemBackgroundPointerOver}" ReorderHintOffset="{ThemeResource ListViewItemReorderHintThemeOffset}" SelectedPressedBackground="{ThemeResource ListViewItemBackgroundSelectedPressed}" SelectionCheckMarkVisualEnabled="{ThemeResource ListViewItemSelectionCheckMarkVisualEnabled}" SelectedForeground="{ThemeResource ListViewItemForegroundSelected}" SelectedPointerOverBackground="{ThemeResource ListViewItemBackgroundSelectedPointerOver}" SelectedBackground="{ThemeResource ListViewItemBackgroundSelected}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+
+                </ListView.ItemContainerStyle>
+                <ListView.ItemTemplate>
+                    <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:ImageSize" >
+                        <StackPanel Orientation="Horizontal" Padding="0" Spacing="4">
+                            <TextBox Text="{x:Bind Path=Name, Mode=TwoWay}" 
+                                     Width="90" 
+                                     Height="35" 
+                                     Margin="{StaticResource SmallTopMargin}"/>
+
+                            <ComboBox SelectedIndex="{x:Bind Path=Fit, Mode=TwoWay}"
                                       Width="90" 
-                                      Height="35">
+                                      Height="35"
+                                      Margin="{StaticResource SmallTopMargin}">
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fill" />
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fit" />
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Stretch" />
                             </ComboBox>
 
-                            <muxc:NumberBox Value="{x:Bind Width}" 
-                                            Width="68" 
-                                            Height="35"/>
+                            <muxc:NumberBox Value="{x:Bind Path=Width, Mode=TwoWay}" 
+                                            Width="68"
+                                            Height="34"
+                                            Margin="{StaticResource SmallTopMargin}"/>
 
                             <TextBlock Text="x" 
                                        FontWeight="SemiBold" 
                                        TextAlignment="Center" 
-                                       Margin="0,4,0,0" 
+                                       Margin="{StaticResource SmallTopMargin}" 
                                        Width="25" 
                                        Height="35"/>
 
-                            <muxc:NumberBox Value="{x:Bind Height}" 
+                            <muxc:NumberBox Value="{x:Bind Path=Height, Mode=TwoWay}" 
                                             Width="68" 
-                                            Height="35"/>
+                                            Height="34"
+                                            Margin="{StaticResource SmallTopMargin}"/>
 
-                            <ComboBox SelectedIndex="{Binding Unit}"
+                            <ComboBox SelectedIndex="{Binding Path=Unit, Mode=TwoWay}"
                                       Width="90" 
-                                      Height="35">
+                                      Height="35"
+                                      Margin="{StaticResource SmallTopMargin}">
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_CM" />
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Inches" />
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Percent" />
@@ -108,12 +146,14 @@
                                           Command = "{Binding DeleteImageSizeEventHandler, Source={StaticResource ViewModel}}"
                                           CommandParameter="{Binding Id}"                                          
                                           Icon="Delete" 
-                                          Width="68" 
-                                          Height="35"/>
+                                          Width="52" 
+                                          Height="32"
+                                          Margin="{StaticResource SmallTopMargin}" Padding="0,0,50,100" UseLayoutRounding="False"/>
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
+
 
             <StackPanel Orientation="Horizontal">
                 <AppBarButton Icon="Add"
@@ -123,30 +163,22 @@
                               Margin="{StaticResource SmallTopMargin}"
                               Command = "{Binding AddImageSizeEventHandler, Source={StaticResource ViewModel}}"
                           />
-
-                <AppBarButton Icon="Save"
-                              x:Name="SaveSizeButton"
-                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                              Label="Save Sizes"
-                              Margin="{StaticResource SmallTopMargin}"
-                              Command = "{Binding Remove, Source={StaticResource ViewModel}}"
-                          />
             </StackPanel>
 
             <TextBlock Text="Encoding" 
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <ComboBox Header="Fallback encoder"
-                          SelectedIndex="{ Binding Mode=TwoWay, Path=Encoder}"
+                          SelectedIndex="{Binding Mode=TwoWay, Path=Encoder}"
                           MinWidth="240"
                           Margin="{StaticResource SmallTopMargin}"
                           IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}">
-                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_PNG">PNG Encoder</ComboBoxItem>
-                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_BMP">BMP Encoder</ComboBoxItem>
-                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_JPEG">JPEG Encoder</ComboBoxItem>
-                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_TIFF">TIFF Encoder</ComboBoxItem>
-                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_WMPhoto">WMPhoto Encoder</ComboBoxItem>
-                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_GIF">GIF Encoder</ComboBoxItem>                
+                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_PNG" />
+                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_BMP" />
+                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_JPEG" />
+                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_TIFF" />
+                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_WMPhoto" />
+                <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_GIF" />
             </ComboBox>
 
 

@@ -4,13 +4,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class ImageSize
+    public class ImageSize : INotifyPropertyChanged
     {
         public ImageSize(int id)
         {
@@ -42,22 +44,140 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             Unit = (int)unit;
         }
 
-        public int Id { get; set; }
+        private int _id;
+        private string _name;
+        private int _fit;
+        private double _height;
+        private double _width;
+        private int _unit;
+
+        public int Id
+        {
+            get
+            {
+                return _id;
+            }
+
+            set
+            {
+                if (_id != value)
+                {
+                    _id = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         [JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string Name
+        {
+            get
+            {
+                return _name;
+            }
+
+            set
+            {
+                if (_name != value)
+                {
+                    _name = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         [JsonPropertyName("fit")]
-        public int Fit { get; set; }
+        public int Fit
+        {
+            get
+            {
+                return _fit;
+            }
+
+            set
+            {
+                if (_fit != value)
+                {
+                    _fit = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         [JsonPropertyName("width")]
-        public double Width { get; set; }
+        public double Width
+        {
+            get
+            {
+                return _width;
+            }
+
+            set
+            {
+                if (_width != value)
+                {
+                    _width = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         [JsonPropertyName("height")]
-        public double Height { get; set; }
+        public double Height
+        {
+            get
+            {
+                return _height;
+            }
+
+            set
+            {
+                if (_height != value)
+                {
+                    _height = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         [JsonPropertyName("unit")]
-        public int Unit { get; set; }
+        public int Unit
+        {
+            get
+            {
+                return _unit;
+            }
+
+            set
+            {
+                if (_unit != value)
+                {
+                    _unit = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            var handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+        public void Update(ImageSize modifiedSize)
+        {
+            Id = modifiedSize.Id;
+            Name = modifiedSize.Name;
+            Fit = modifiedSize.Fit;
+            Width = modifiedSize.Width;
+            Height = modifiedSize.Height;
+            Unit = modifiedSize.Unit;
+        }
 
         public string ToJsonString()
         {

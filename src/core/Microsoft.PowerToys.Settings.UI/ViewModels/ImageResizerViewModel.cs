@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
@@ -53,6 +54,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             this._tiffCompressOption = Settings.Properties.ImageresizerTiffCompressOption.Value;
             this._fileName = Settings.Properties.ImageresizerFileName.Value;
             this._keepDateModified = Settings.Properties.ImageresizerKeepDateModified.Value;
+            this._encoderGuidId = GetEncoderIndex(Settings.Properties.ImageresizerFallbackEncoder.Value);
+
+            int i = 0;
+            foreach (ImageSize size in _advancedSizes)
+            {
+                size.Id = i;
+                i++;
+                size.PropertyChanged += Size_PropertyChanged;
+            }
         }
 
         private bool _isEnabled = false;
@@ -94,12 +104,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
-                if (_advancedSizes != value)
-                {
-                    _advancedSizes = value;
-                    Settings.Properties.ImageresizerSizes.Value = value;
-                    OnPropertyChanged("Sizes");
-                }
+                _advancedSizes = value;
+                Settings.Properties.ImageresizerSizes.Value = value;
+                SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+                OnPropertyChanged("Sizes");
             }
         }
 
@@ -209,43 +217,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (_encoderGuidId != value)
                 {
-                    // PNG Encoder guid
-                    if (value == 0)
-                    {
-                        Settings.Properties.ImageresizerFallbackEncoder.Value = "1b7cfaf4-713f-473c-bbcd-6137425faeaf";
-                    }
-
-                    // Bitmap Encoder guid
-                    else if (value == 1)
-                    {
-                        Settings.Properties.ImageresizerFallbackEncoder.Value = "0af1d87e-fcfe-4188-bdeb-a7906471cbe3";
-                    }
-
-                    // JPEG Encoder guid
-                    else if (value == 2)
-                    {
-                        Settings.Properties.ImageresizerFallbackEncoder.Value = "19e4a5aa-5662-4fc5-a0c0-1758028e1057";
-                    }
-
-                    // Tiff encoder guid.
-                    else if (value == 3)
-                    {
-                        Settings.Properties.ImageresizerFallbackEncoder.Value = "163bcc30-e2e9-4f0b-961d-a3e9fdb788a3";
-                    }
-
-                    // Tiff encoder guid.
-                    else if (value == 4)
-                    {
-                        Settings.Properties.ImageresizerFallbackEncoder.Value = "57a37caa-367a-4540-916b-f183c5093a4b";
-                    }
-
-                    // Gif encoder guid.
-                    else if (value == 5)
-                    {
-                        Settings.Properties.ImageresizerFallbackEncoder.Value = "1f8a5601-7d4d-4cbd-9c82-1bc8d4eeb9a5";
-                    }
-
                     _encoderGuidId = value;
+                    Settings.Properties.ImageresizerFallbackEncoder.Value = GetEncoderGuid(value);
                     SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
                     OnPropertyChanged("Encoder");
                 }
@@ -278,8 +251,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void AddRow()
         {
-            ImageSize maxSize = Sizes.OrderBy(x => x.Id).Last();
-            Sizes.Add(new ImageSize(maxSize.Id + 1));
+            ObservableCollection<ImageSize> imageSizes = Sizes;
+            ImageSize maxSize = imageSizes.OrderBy(x => x.Id).Last();
+            ImageSize newSize = new ImageSize(maxSize.Id + 1);
+            newSize.PropertyChanged += Size_PropertyChanged;
+            imageSizes.Add(newSize);
+            Sizes = imageSizes;
             OnPropertyChanged("Sizes");
         }
 
@@ -288,7 +265,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             try
             {
                 ImageSize size = Sizes.Where<ImageSize>(x => x.Id == id).First();
-                Sizes.Remove(size);
+                ObservableCollection<ImageSize> imageSizes = Sizes;
+                imageSizes.Remove(size);
+                Sizes = imageSizes;
                 OnPropertyChanged("Sizes");
             }
             catch
@@ -298,12 +277,97 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void SavesImageSizes()
         {
-            OnPropertyChanged("Sizes");
             SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
         }
 
-        public void OnSizesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        public string GetEncoderGuid(int value)
         {
+            // PNG Encoder guid
+            if (value == 0)
+            {
+                return "1b7cfaf4-713f-473c-bbcd-6137425faeaf";
+            }
+
+            // Bitmap Encoder guid
+            else if (value == 1)
+            {
+                return "0af1d87e-fcfe-4188-bdeb-a7906471cbe3";
+            }
+
+            // JPEG Encoder guid
+            else if (value == 2)
+            {
+                return "19e4a5aa-5662-4fc5-a0c0-1758028e1057";
+            }
+
+            // Tiff encoder guid.
+            else if (value == 3)
+            {
+                return "163bcc30-e2e9-4f0b-961d-a3e9fdb788a3";
+            }
+
+            // Tiff encoder guid.
+            else if (value == 4)
+            {
+                return "57a37caa-367a-4540-916b-f183c5093a4b";
+            }
+
+            // Gif encoder guid.
+            else if (value == 5)
+            {
+                return "1f8a5601-7d4d-4cbd-9c82-1bc8d4eeb9a5";
+            }
+
+            return null;
+        }
+
+        public int GetEncoderIndex(string guid)
+        {
+            // PNG Encoder guid
+            if (guid == "1b7cfaf4-713f-473c-bbcd-6137425faeaf")
+            {
+                return 0;
+            }
+
+            // Bitmap Encoder guid
+            else if (guid == "0af1d87e-fcfe-4188-bdeb-a7906471cbe3")
+            {
+                return 1;
+            }
+
+            // JPEG Encoder guid
+            else if (guid == "19e4a5aa-5662-4fc5-a0c0-1758028e1057")
+            {
+                return 2;
+            }
+
+            // Tiff encoder guid.
+            else if (guid == "163bcc30-e2e9-4f0b-961d-a3e9fdb788a3")
+            {
+                return 3;
+            }
+
+            // Tiff encoder guid.
+            else if (guid == "57a37caa-367a-4540-916b-f183c5093a4b")
+            {
+                return 4;
+            }
+
+            // Gif encoder guid.
+            else if (guid == "1f8a5601-7d4d-4cbd-9c82-1bc8d4eeb9a5")
+            {
+                return 5;
+            }
+
+            return -1;
+        }
+
+        public void Size_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            ImageSize modifiedSize = (ImageSize)sender;
+            ObservableCollection<ImageSize> imageSizes = Sizes;
+            imageSizes.Where<ImageSize>(x => x.Id == modifiedSize.Id).First().Update(modifiedSize);
+            Sizes = imageSizes;
             OnPropertyChanged("Sizes");
         }
     }
