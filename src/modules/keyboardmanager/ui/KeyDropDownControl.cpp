@@ -113,13 +113,8 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyC
 // Function to set selection handler for shortcut drop down. Needs to be called after the constructor since the shortcutControl StackPanel is null if called in the constructor
 void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutControl, StackPanel parent, int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects)
 {
-    Flyout warningFlyout;
-    TextBlock warningMessage;
-    warningFlyout.Content(warningMessage);
-    dropDown.ContextFlyout().SetAttachedFlyout((FrameworkElement)dropDown, warningFlyout);
-
     // drop down selection handler
-    dropDown.SelectionChanged([&, table, shortcutControl, colIndex, parent, warningMessage](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const&) {
+    dropDown.SelectionChanged([&, table, shortcutControl, colIndex, parent](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const&) {
         ComboBox currentDropDown = sender.as<ComboBox>();
         int selectedKeyIndex = currentDropDown.SelectedIndex();
         uint32_t dropDownIndex = -1;
@@ -371,7 +366,7 @@ bool KeyDropDownControl::CheckRepeatedModifier(StackPanel parent, uint32_t dropD
     return matchPreviousModifier;
 }
 
-// Function to set the flyout warning message
+// Function to set the warning message
 void KeyDropDownControl::SetDropDownError(ComboBox currentDropDown, hstring message)
 {
     currentDropDown.SelectedIndex(-1);
