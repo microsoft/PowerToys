@@ -27,12 +27,21 @@
     <ClInclude Include="..\keyboard_layout_impl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\two_way_pipe_message_ipc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\two_way_pipe_message_ipc_impl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\keyboard_layout.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\two_way_pipe_message_ipc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
