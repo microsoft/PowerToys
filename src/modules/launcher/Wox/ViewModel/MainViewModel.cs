@@ -222,9 +222,9 @@ namespace Wox.ViewModel
         public ResultsViewModel ContextMenu { get; private set; }
         public ResultsViewModel History { get; private set; }
 
-        public string SystemQueryText { get; set; }
+        public string SystemQueryText { get; set; } = String.Empty;
 
-        public string QueryText { get; set; }
+        public string QueryText { get; set; } = String.Empty;
       
 
         /// <summary>
