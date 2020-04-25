@@ -102,12 +102,16 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     ColumnDefinition firstColumn;
     ColumnDefinition secondColumn;
     ColumnDefinition thirdColumn;
+    thirdColumn.MaxWidth(100);
+    ColumnDefinition fourthColumn;
+    fourthColumn.MaxWidth(100);
     shortcutTable.Margin({ 10, 10, 10, 20 });
     shortcutTable.HorizontalAlignment(HorizontalAlignment::Stretch);
     shortcutTable.ColumnSpacing(10);
     shortcutTable.ColumnDefinitions().Append(firstColumn);
     shortcutTable.ColumnDefinitions().Append(secondColumn);
     shortcutTable.ColumnDefinitions().Append(thirdColumn);
+    shortcutTable.ColumnDefinitions().Append(fourthColumn);
     shortcutTable.RowDefinitions().Append(RowDefinition());
 
     // First header textblock in the header row of the shortcut table

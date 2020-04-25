@@ -28,7 +28,13 @@ namespace KeyboardManagerHelper
         WinL,
         CtrlAltDel,
         RemapUnsuccessful,
-        SaveFailed
+        SaveFailed,
+        MissingKey,
+        ShortcutStartWithModifier,
+        ShortcutCannotHaveRepeatedModifier,
+        ShortcutAtleast2Keys,
+        ShortcutOneActionKey,
+        ShortcutNotMoreThanOneActionKey
     };
 
     // Function to split a wstring based on a delimiter and return a vector of split strings

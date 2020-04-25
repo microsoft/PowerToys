@@ -145,6 +145,18 @@ namespace KeyboardManagerHelper
             return L"Some remappings were not applied";
         case ErrorType::SaveFailed:
             return L"Failed to save the remappings";
+        case ErrorType::MissingKey:
+            return L"Incomplete remapping";
+        case ErrorType::ShortcutStartWithModifier:
+            return L"Shortcut must start with a modifier key";
+        case ErrorType::ShortcutCannotHaveRepeatedModifier:
+            return L"Shortcut cannot contain a repeated modifier";
+        case ErrorType::ShortcutAtleast2Keys:
+            return L"Shortcut must have atleast 2 keys";
+        case ErrorType::ShortcutOneActionKey:
+            return L"Shortcut must contain an action key";
+        case ErrorType::ShortcutNotMoreThanOneActionKey:
+            return L"Shortcut cannot have more than one action key";
         }
     }
 }

@@ -106,12 +106,16 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     ColumnDefinition firstColumn;
     ColumnDefinition secondColumn;
     ColumnDefinition thirdColumn;
+    thirdColumn.MaxWidth(100);
+    ColumnDefinition fourthColumn;
+    fourthColumn.MaxWidth(100);
     keyRemapTable.Margin({ 10, 10, 10, 20 });
     keyRemapTable.HorizontalAlignment(HorizontalAlignment::Stretch);
     keyRemapTable.ColumnSpacing(10);
     keyRemapTable.ColumnDefinitions().Append(firstColumn);
     keyRemapTable.ColumnDefinitions().Append(secondColumn);
     keyRemapTable.ColumnDefinitions().Append(thirdColumn);
+    keyRemapTable.ColumnDefinitions().Append(fourthColumn);
     keyRemapTable.RowDefinitions().Append(RowDefinition());
 
     // First header textblock in the header row of the keys remap table
