@@ -351,8 +351,7 @@ namespace PowerLauncher
 
         private string ListView_FirstItem(String input)
         {
-            string s = input;
-            if (s.Length > 0)
+            if (!String.IsNullOrEmpty(input))
             {
                 String selectedItem = _viewModel.Results?.SelectedItem?.ToString();
                 int selectedIndex = _viewModel.Results.SelectedIndex;
