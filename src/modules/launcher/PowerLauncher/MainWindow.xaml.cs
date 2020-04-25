@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Core;
 using System.Windows.Media;
+using Windows.UI.Xaml.Data;
 
 namespace PowerLauncher
 {
@@ -33,11 +34,10 @@ namespace PowerLauncher
         private readonly Storyboard _progressBarStoryboard = new Storyboard();
         private Settings _settings;
         private MainViewModel _viewModel;
-
+        private bool _isTextSetProgramatically;
         const int ROW_COUNT = 4;
         const int ROW_HEIGHT = 75;
         const int MAX_LIST_HEIGHT = 300;
-
         #endregion
 
         public MainWindow(Settings settings, MainViewModel mainVM)
@@ -60,6 +60,7 @@ namespace PowerLauncher
 
         private void OnInitialized(object sender, EventArgs e)
         {
+
         }
 
         private void OnLoaded(object sender, System.Windows.RoutedEventArgs _)
@@ -153,7 +154,7 @@ namespace PowerLauncher
             _launcher = (PowerLauncher.UI.LauncherControl)host.Child;
             _launcher.DataContext = _viewModel;
             _launcher.KeyDown += _launcher_KeyDown;
-            _launcher.TextBox.TextChanged += QueryTextBox_TextChanged;
+            _launcher.TextBox.TextChanging += QueryTextBox_TextChanging;
             _launcher.TextBox.Loaded += TextBox_Loaded;
             _launcher.PropertyChanged += UserControl_PropertyChanged;
             _viewModel.PropertyChanged += (o, e) =>
@@ -177,8 +178,15 @@ namespace PowerLauncher
                         }
                     }
                 }
+                else if(e.PropertyName == nameof(MainViewModel.SystemQueryText))
+                {
+                    this._isTextSetProgramatically = true;
+                    _launcher.TextBox.Text = _viewModel.SystemQueryText;
+                }
             };           
         }
+
+       
 
         private void UserControl_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -347,8 +355,36 @@ namespace PowerLauncher
             return String.Empty;
         }
 
+        private void QueryTextBox_TextChanging(TextBox sender, TextBoxTextChangingEventArgs args)
+        {
+            ClearAllQueryTextChangedHanlders();
+          
+            if(this._isTextSetProgramatically)
+            {
+                this._launcher.TextBox.TextChanged += QueryTextBox_TextChangedProgramatically;
+            }
+            else
+            {
+                this._launcher.TextBox.TextChanged += QueryTextBox_TextChangedByUserInput;
+            }
+        }
 
-        private void QueryTextBox_TextChanged(object sender, Windows.UI.Xaml.Controls.TextChangedEventArgs e)
+        private void ClearAllQueryTextChangedHanlders()
+        {
+            this._launcher.TextBox.TextChanged -= QueryTextBox_TextChangedProgramatically;
+            this._launcher.TextBox.TextChanged -= QueryTextBox_TextChangedByUserInput;
+        }
+
+        private void QueryTextBox_TextChangedProgramatically(object sender, Windows.UI.Xaml.Controls.TextChangedEventArgs e)
+        {
+            var textBox = ((Windows.UI.Xaml.Controls.TextBox)sender);
+            textBox.SelectionStart = textBox.Text.Length;
+
+            this._isTextSetProgramatically = false;
+        }
+
+
+        private void QueryTextBox_TextChangedByUserInput(object sender, Windows.UI.Xaml.Controls.TextChangedEventArgs e)
         {
             var text = ((Windows.UI.Xaml.Controls.TextBox)sender).Text;
             //To clear the auto-suggest immediately instead of waiting for selection changed
@@ -357,19 +393,11 @@ namespace PowerLauncher
                 _launcher.AutoCompleteTextBox.PlaceholderText = String.Empty;
             }
 
-            if (_viewModel.QueryTextUpdateBySystem)
-            {
-                _launcher.TextBox.SelectionStart = _launcher.TextBox.Text.Length;
-                _viewModel.QueryTextUpdateBySystem = false;
-            }
-            else
-            {
-                _viewModel.QueryText = text;
-                var latestTimeOfTyping = DateTime.Now;
+            _viewModel.QueryText = text;
+            var latestTimeOfTyping = DateTime.Now;
 
-                Task.Run(() => DelayedCheck(latestTimeOfTyping, text));
-                s_lastTimeOfTyping = latestTimeOfTyping;
-            }
+            Task.Run(() => DelayedCheck(latestTimeOfTyping, text));
+            s_lastTimeOfTyping = latestTimeOfTyping;
         }
 
         private async Task DelayedCheck(DateTime latestTimeOfTyping, string text)
@@ -378,13 +406,13 @@ namespace PowerLauncher
             if (latestTimeOfTyping.Equals(s_lastTimeOfTyping))
             {
                 await System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                 {
-                     _viewModel.Query();
-                 }));               
+                {
+                    _viewModel.Query();
+                }));
             }
         }
 
-        private void WindowsXamlHost_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+private void WindowsXamlHost_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             //    if (sender != null && e.OriginalSource != null)
             //    {

@@ -236,16 +236,15 @@ namespace Wox.ViewModel
         /// <param name="requery">Optional Parameter that if true, will automatically execute a query against the updated text</param>
         public void ChangeQueryText(string queryText, bool requery=false)
         {
-            QueryTextUpdateBySystem = true;
-            QueryText = queryText;
-
+            SystemQueryText = queryText;
+            
             if(requery)
             {
-               Query();
+                QueryText = queryText;
+                Query();
             }
         }
         public bool LastQuerySelected { get; set; }
-        public bool QueryTextUpdateBySystem { get; set; }
 
         private ResultsViewModel _selectedResults;
         private ResultsViewModel SelectedResults
