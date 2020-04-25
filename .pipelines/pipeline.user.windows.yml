@@ -46,6 +46,7 @@ build:
           include:
             - 'PowerToys.exe'
             - 'PowerToysSettings.exe'
+            - 'action_runner.exe'
             - 'modules\FancyZonesEditor.exe'
             - 'modules\fancyzones.dll'
             - 'modules\shortcut_guide.dll'

@@ -1,17 +1,5 @@
 #include "stdafx.h"
 
-#define SECURITY_WIN32
-#include <Security.h>
-#pragma comment(lib, "Secur32.lib")
-#include <Lmcons.h>
-
-#include <comdef.h>
-#include <taskschd.h>
-#pragma comment(lib, "taskschd.lib")
-#pragma comment(lib, "comsupp.lib")
-
-#include <iostream>
-#include <strutil.h>
 #include <ProjectTelemetry.h>
 
 using namespace std;
@@ -25,6 +13,9 @@ TRACELOGGING_DEFINE_PROVIDER(
 
 const DWORD USERNAME_DOMAIN_LEN = DNLEN + UNLEN + 2; // Domain Name + '\' + User Name + '\0'
 const DWORD USERNAME_LEN = UNLEN + 1; // User Name + '\0'
+
+static const wchar_t* POWERTOYS_EXE_COMPONENT = L"{A2C66D91-3485-4D00-B04D-91844E6B345B}";
+static const wchar_t* POWERTOYS_UPGRADE_CODE = L"{42B84BF7-5FBF-473B-9C8B-049DC16F7708}";
 
 // Creates a Scheduled Task to run at logon for the current user.
 // The path of the executable to run should be passed as the CustomActionData (Value).
@@ -47,6 +38,8 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
     ITaskSettings* pSettings = NULL;
     ITriggerCollection* pTriggerCollection = NULL;
     IRegisteredTask* pRegisteredTask = NULL;
+
+    LPWSTR wszExecutablePath = NULL;
 
     hr = WcaInitialize(hInstall, "CreateScheduledTaskCA");
     ExitOnFailure(hr, "Failed to initialize");
@@ -77,7 +70,6 @@ UINT __stdcall CreateScheduledTaskCA(MSIHANDLE hInstall)
     wstrTaskName += username;
 
     // Get the executable path passed to the custom action.
-    LPWSTR wszExecutablePath = NULL;
     hr = WcaGetProperty(L"CustomActionData", &wszExecutablePath);
     ExitOnFailure(hr, "Failed to get the executable path from CustomActionData.");
 
@@ -567,6 +559,73 @@ UINT __stdcall TelemetryLogRepairFailCA(MSIHANDLE hInstall)
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 
 LExit:
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+std::optional<std::wstring> getMsiPackageInstalledPath(const wchar_t* product_upgrade_code, const wchar_t* file_component)
+{
+    constexpr size_t guid_length = 39;
+    wchar_t product_ID[guid_length];
+    if (const bool found = ERROR_SUCCESS == MsiEnumRelatedProductsW(product_upgrade_code, 0, 0, product_ID); !found)
+    {
+        return std::nullopt;
+    }
+
+    if (const bool installed = INSTALLSTATE_DEFAULT == MsiQueryProductStateW(product_ID); !installed)
+    {
+        return std::nullopt;
+    }
+
+    DWORD buf_size = MAX_PATH;
+    wchar_t buf[MAX_PATH];
+    if (ERROR_SUCCESS == MsiGetProductInfoW(product_ID, INSTALLPROPERTY_INSTALLLOCATION, buf, &buf_size) && buf_size)
+    {
+        return buf;
+    }
+
+    DWORD package_path_size = 0;
+
+    if (ERROR_SUCCESS != MsiGetProductInfoW(product_ID, INSTALLPROPERTY_LOCALPACKAGE, nullptr, &package_path_size))
+    {
+        return std::nullopt;
+    }
+    std::wstring package_path(++package_path_size, L'\0');
+
+    if (ERROR_SUCCESS != MsiGetProductInfoW(product_ID, INSTALLPROPERTY_LOCALPACKAGE, package_path.data(), &package_path_size))
+    {
+        return std::nullopt;
+    }
+    package_path.resize(size(package_path) - 1); // trim additional \0 which we got from MsiGetProductInfoW
+
+    wchar_t path[256];
+    DWORD path_size = 256;
+    MsiGetComponentPathW(product_ID, file_component, path, &path_size);
+    if (!path_size)
+    {
+        return std::nullopt;
+    }
+    PathCchRemoveFileSpec(path, path_size);
+    return path;
+}
+
+UINT __stdcall DetectPrevInstallPathCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    hr = WcaInitialize(hInstall, "DetectPrevInstallPathCA");
+
+    try
+    {
+        if (auto install_path = getMsiPackageInstalledPath(POWERTOYS_UPGRADE_CODE, POWERTOYS_EXE_COMPONENT))
+        {
+            MsiSetPropertyW(hInstall, L"INSTALLFOLDER", install_path->data());
+        }
+    }
+    catch(...)
+    {
+
+    }
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
     return WcaFinalize(er);
 }
