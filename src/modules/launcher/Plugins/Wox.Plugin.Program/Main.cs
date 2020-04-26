@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Security.Permissions;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Controls;
