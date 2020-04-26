@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class PowerPreviewViewModel : Observable
     {
-        private const string ModuleName = "File Explorer Preview";
+        private const string ModuleName = "File Explorer";
 
         private PowerPreviewSettings Settings { get; set; }
 

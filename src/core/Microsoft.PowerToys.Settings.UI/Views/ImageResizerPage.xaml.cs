@@ -15,7 +15,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             InitializeComponent();
             ViewModel = new ImageResizerViewModel();
-            this.ImageResizerView.DataContext = ViewModel;
         }
     }
 }

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
@@ -24,6 +25,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public ImageresizerSizes(ObservableCollection<ImageSize> value)
         {
             Value = value;
+        }
+
+        public string ToJsonString()
+        {
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+            };
+            return JsonSerializer.Serialize(this, options);
         }
     }
 }

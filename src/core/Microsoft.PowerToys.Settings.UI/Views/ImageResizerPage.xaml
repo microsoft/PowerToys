@@ -54,7 +54,7 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <!--x:Uid="ImageResizer_EnableToggle"-->
-            <ToggleSwitch IsOn="{ Binding Mode=TwoWay, Path=IsEnabled}"
+            <ToggleSwitch IsOn="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"
                           Margin="{StaticResource SmallTopMargin}" />
 
             <TextBlock x:Uid="ImageResizer_CustomSizes"
@@ -64,7 +64,7 @@
             <ListView x:Name="ImagesSizesListView" 
                       ItemsSource="{Binding Sizes, Mode=TwoWay, Source={StaticResource ViewModel}}"
                       Padding="0"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"
                       Margin="0"
                       >
 
@@ -158,7 +158,7 @@
             <StackPanel Orientation="Horizontal">
                 <AppBarButton Icon="Add"
                               x:Name="AddSizeButton"
-                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" 
+                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}" 
                               Label="Add Size"
                               Margin="{StaticResource SmallTopMargin}"
                               Command = "{Binding AddImageSizeEventHandler, Source={StaticResource ViewModel}}"
@@ -169,10 +169,10 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <ComboBox Header="Fallback encoder"
-                          SelectedIndex="{Binding Mode=TwoWay, Path=Encoder}"
+                          SelectedIndex="{Binding Path=Encoder, Mode=TwoWay, Source={StaticResource ViewModel}}"
                           MinWidth="240"
                           Margin="{StaticResource SmallTopMargin}"
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}">
+                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}">
                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_PNG" />
                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_BMP" />
                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_JPEG" />
@@ -185,28 +185,28 @@
             <muxc:NumberBox Header="JPEG Quality level"
                             Minimum="0"
                             Maximum="100"
-                            Value="{ Binding Mode=TwoWay, Path=JPEGQualityLevel}"
+                            Value="{ Binding Mode=TwoWay, Path=JPEGQualityLevel, Source={StaticResource ViewModel}}"
                             MinWidth="240"
                             SpinButtonPlacementMode="Inline"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallTopMargin}" 
-                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"/>
 
             <ComboBox Header="PNG interlacing"
-                          SelectedIndex="{ Binding Mode=TwoWay, Path=PngInterlaceOption}"
+                          SelectedIndex="{ Binding Mode=TwoWay, Path=PngInterlaceOption, Source={StaticResource ViewModel}}"
                           MinWidth="240"
                           Margin="{StaticResource SmallTopMargin}"
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}">
+                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}">
                 <ComboBoxItem x:Uid="Default"/>
                 <ComboBoxItem x:Uid="On"/>
                 <ComboBoxItem x:Uid="Off"/>
             </ComboBox>
 
             <ComboBox Header="TIFF Compression"
-                          SelectedIndex="{ Binding Mode=TwoWay, Path=TiffCompressOption}"
+                          SelectedIndex="{ Binding Mode=TwoWay, Path=TiffCompressOption, Source={StaticResource ViewModel}}"
                           MinWidth="240"
                           Margin="{StaticResource SmallTopMargin}"
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}">
+                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}">
                 <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Default"/>
                 <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_None"/>
                 <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_CCITT3"/>
@@ -248,16 +248,16 @@
             </TextBlock>
 
             <TextBox  Header="Filename format"
-                      Text="{ Binding Mode=TwoWay, Path=FileName}"
+                      Text="{ Binding Mode=TwoWay, Path=FileName, Source={StaticResource ViewModel}}"
                       HorizontalAlignment="Left"
                       MinWidth="240"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"
                       Margin="{StaticResource SmallTopMargin}"/>
 
             <CheckBox Content="Use original date modified"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"
                       Margin="{StaticResource SmallTopMargin}"
-                      IsChecked="{Binding Mode=TwoWay, Path=KeepDateModified}"/>
+                      IsChecked="{Binding Mode=TwoWay, Path=KeepDateModified, Source={StaticResource ViewModel}}"/>
         </StackPanel>
 
         <StackPanel 

@@ -104,8 +104,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
+                SettingsUtils.SaveSettings(Settings.Properties.ImageresizerSizes.ToJsonString(), ModuleName, "sizes.json");
                 _advancedSizes = value;
-                Settings.Properties.ImageresizerSizes.Value = value;
+                Settings.Properties.ImageresizerSizes = new ImageresizerSizes(value);
                 SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
                 OnPropertyChanged("Sizes");
             }
@@ -218,6 +219,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_encoderGuidId != value)
                 {
                     _encoderGuidId = value;
+                    SettingsUtils.SaveSettings(Settings.Properties.ImageresizerSizes.ToJsonString(), ModuleName, "sizes.json");
                     Settings.Properties.ImageresizerFallbackEncoder.Value = GetEncoderGuid(value);
                     SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
                     OnPropertyChanged("Encoder");

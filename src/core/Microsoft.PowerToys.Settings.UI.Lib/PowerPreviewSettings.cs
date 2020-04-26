@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         {
             properties = new PowerPreviewProperties();
             version = "1";
-            name = "_unset_";
+            name = "File Explorer";
         }
 
         public PowerPreviewSettings(string ptName)
