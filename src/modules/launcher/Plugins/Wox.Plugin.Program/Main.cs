@@ -188,9 +188,8 @@ namespace Wox.Plugin.Program
             _watcher.Path = resolvedPath;
 
             //Filter to create and deletes of 'microsoft.system.package.metadata' directories. 
-            _watcher.NotifyFilter = NotifyFilters.DirectoryName;
+            _watcher.NotifyFilter = NotifyFilters.DirectoryName | NotifyFilters.FileName;
             _watcher.IncludeSubdirectories = true;
-            _watcher.Filter = "microsoft.system.package.metadata";
 
             // Add event handlers.
             _watcher.Created += OnChanged;
