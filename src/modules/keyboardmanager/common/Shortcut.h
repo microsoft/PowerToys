@@ -44,15 +44,7 @@ public:
     // == operator
     inline bool operator==(const Shortcut& sc) const
     {
-        // Compare win key first
-        if (winKey == sc.winKey && ctrlKey == sc.ctrlKey && altKey == sc.altKey && shiftKey == sc.shiftKey && actionKey == sc.actionKey)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return (winKey == sc.winKey && ctrlKey == sc.ctrlKey && altKey == sc.altKey && shiftKey == sc.shiftKey && actionKey == sc.actionKey);
     }
 
     // Less than operator must be defined to use with std::map.
