@@ -126,6 +126,7 @@
     <Compile Include="UnitTestApp.xaml.cs">
       <DependentUpon>UnitTestApp.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModelTests\PowerLauncherViewModelTest.cs" />
     <Compile Include="ViewModelTests\ShortcutGuideViewModelTest.cs" />
   </ItemGroup>
   <ItemGroup>
