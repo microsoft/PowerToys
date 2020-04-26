@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Security.Permissions;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows.Controls;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
@@ -18,6 +21,9 @@ namespace Wox.Plugin.Program
         internal static Win32[] _win32s { get; set; }
         internal static UWP.Application[] _uwps { get; set; }
         internal static Settings _settings { get; set; }
+
+        FileSystemWatcher _watcher = null;
+        System.Timers.Timer _timer = null;
 
         private static bool IsStartupIndexProgramsRequired => _settings.LastIndexTime.AddDays(3) < DateTime.Today;
 
@@ -57,6 +63,9 @@ namespace Wox.Plugin.Program
             Task.WaitAll(a, b);
 
             _settings.LastIndexTime = DateTime.Today;
+
+            InitializeFileWatchers();
+            InitializeTimer();
         }
 
         public void Save()
@@ -72,7 +81,7 @@ namespace Wox.Plugin.Program
             UWP.Application[] uwps;
 
             lock (IndexLock)
-            { 
+            {
                 // just take the reference inside the lock to eliminate query time issues.
                 win32 = _win32s;
                 uwps = _uwps;
@@ -170,6 +179,55 @@ namespace Wox.Plugin.Program
         public void ReloadData()
         {
             IndexPrograms();
+        }
+
+        void InitializeFileWatchers()
+        {
+            // Create a new FileSystemWatcher and set its properties.
+            _watcher = new FileSystemWatcher();
+            var resolvedPath = Environment.ExpandEnvironmentVariables("%ProgramFiles%");
+            _watcher.Path = resolvedPath;
+
+            //Filter to create and deletes of 'microsoft.system.package.metadata' directories. 
+            _watcher.NotifyFilter = NotifyFilters.DirectoryName;
+            _watcher.IncludeSubdirectories = true;
+            _watcher.Filter = "microsoft.system.package.metadata";
+
+            // Add event handlers.
+            _watcher.Created += OnChanged;
+            _watcher.Deleted += OnChanged;
+
+            // Begin watching.
+            _watcher.EnableRaisingEvents = true;
+        }
+
+        void InitializeTimer()
+        {
+            //multiple file writes occur on install / unistall.  Adding a delay before actually indexing.
+            var delayInterval = 5000; 
+            _timer = new System.Timers.Timer(delayInterval);
+            _timer.Enabled = true;
+            _timer.AutoReset = false;
+            _timer.Elapsed += FileWatchElapsedTimer;
+            _timer.Stop();
+        }
+
+        //When a watched directory changes then reset the timer.
+        private void OnChanged(object source, FileSystemEventArgs e)
+        {
+            Log.Debug($"|Wox.Plugin.Program.Main|Directory Changed: {e.FullPath} {e.ChangeType} - Resetting timer.");
+            _timer.Stop();
+            _timer.Start();
+        }
+
+        private void FileWatchElapsedTimer(object sender, ElapsedEventArgs e)
+        {
+            Task.Run(() =>
+            {
+                Log.Debug($"|Wox.Plugin.Program.Main| ReIndexing UWP Programs");
+                IndexUWPPrograms();
+                Log.Debug($"|Wox.Plugin.Program.Main| Done ReIndexing");
+            });
         }
     }
 }
