@@ -41,7 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 $"Microsoft\\PowerToys\\{powertoy}\\{fileName}");
         }
 
-        public static bool SettingsExists(string powertoy, string fileName = DefaultFileName)
+        public static bool SettingsExists(string powertoy = DefaultModuleName, string fileName = DefaultFileName)
         {
             return File.Exists(GetSettingsPath(powertoy, fileName));
         }

@@ -44,9 +44,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -90,7 +94,6 @@
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="KeyboardManagerState.cpp" />
     <ClCompile Include="KeyDelay.cpp" />
-    <ClCompile Include="LayoutMap.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -103,7 +106,6 @@
     <ClInclude Include="KeyboardManagerConstants.h" />
     <ClInclude Include="KeyboardManagerState.h" />
     <ClInclude Include="KeyDelay.h" />
-    <ClInclude Include="LayoutMap.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RemapShortcut.h" />
     <ClInclude Include="Shortcut.h" />

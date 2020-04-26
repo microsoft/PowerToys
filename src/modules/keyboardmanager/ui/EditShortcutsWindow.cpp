@@ -76,56 +76,63 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
     // Creating the Xaml content. xamlContainer is the parent UI element
     Windows::UI::Xaml::Controls::StackPanel xamlContainer;
-    xamlContainer.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
 
     // Header for the window
-    Windows::UI::Xaml::Controls::StackPanel header;
-    header.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    header.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+    Windows::UI::Xaml::Controls::RelativePanel header;
     header.Margin({ 10, 10, 10, 30 });
-    header.Spacing(10);
 
     // Header text
     TextBlock headerText;
-    headerText.Text(winrt::to_hstring("Edit Shortcuts"));
+    headerText.Text(L"Edit Shortcuts");
     headerText.FontSize(30);
     headerText.Margin({ 0, 0, 100, 0 });
+    header.SetAlignLeftWithPanel(headerText, true);
 
     // Cancel button
     Button cancelButton;
-    cancelButton.Content(winrt::box_value(winrt::to_hstring("Cancel")));
+    cancelButton.Content(winrt::box_value(L"Cancel"));
+    cancelButton.Margin({ 0, 0, 10, 0 });
     cancelButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         // Close the window since settings do not need to be saved
         PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
     });
 
     // Table to display the shortcuts
-    Windows::UI::Xaml::Controls::StackPanel shortcutTable;
-    shortcutTable.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+    Windows::UI::Xaml::Controls::Grid shortcutTable;
+    ColumnDefinition firstColumn;
+    ColumnDefinition secondColumn;
+    ColumnDefinition thirdColumn;
+    thirdColumn.MaxWidth(100);
+    ColumnDefinition fourthColumn;
+    fourthColumn.MaxWidth(100);
     shortcutTable.Margin({ 10, 10, 10, 20 });
-    shortcutTable.Spacing(10);
-
-    // Header row of the shortcut table
-    Windows::UI::Xaml::Controls::StackPanel tableHeaderRow;
-    tableHeaderRow.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
-    tableHeaderRow.Spacing(100);
-    tableHeaderRow.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+    shortcutTable.HorizontalAlignment(HorizontalAlignment::Stretch);
+    shortcutTable.ColumnSpacing(10);
+    shortcutTable.ColumnDefinitions().Append(firstColumn);
+    shortcutTable.ColumnDefinitions().Append(secondColumn);
+    shortcutTable.ColumnDefinitions().Append(thirdColumn);
+    shortcutTable.ColumnDefinitions().Append(fourthColumn);
+    shortcutTable.RowDefinitions().Append(RowDefinition());
 
     // First header textblock in the header row of the shortcut table
     TextBlock originalShortcutHeader;
-    originalShortcutHeader.Text(winrt::to_hstring("Original Shortcut:"));
+    originalShortcutHeader.Text(L"Original Shortcut:");
     originalShortcutHeader.FontWeight(Text::FontWeights::Bold());
     originalShortcutHeader.Margin({ 0, 0, 0, 10 });
-    tableHeaderRow.Children().Append(originalShortcutHeader);
 
     // Second header textblock in the header row of the shortcut table
     TextBlock newShortcutHeader;
-    newShortcutHeader.Text(winrt::to_hstring("New Shortcut:"));
+    newShortcutHeader.Text(L"New Shortcut:");
     newShortcutHeader.FontWeight(Text::FontWeights::Bold());
     newShortcutHeader.Margin({ 0, 0, 0, 10 });
-    tableHeaderRow.Children().Append(newShortcutHeader);
 
-    shortcutTable.Children().Append(tableHeaderRow);
+    shortcutTable.SetColumn(originalShortcutHeader, 0);
+    shortcutTable.SetRow(originalShortcutHeader, 0);
+    shortcutTable.SetColumn(newShortcutHeader, 1);
+    shortcutTable.SetRow(newShortcutHeader, 0);
+
+    shortcutTable.Children().Append(originalShortcutHeader);
+    shortcutTable.Children().Append(newShortcutHeader);
 
     // Message to display success/failure of saving settings.
     Flyout applyFlyout;
@@ -152,10 +159,12 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
     // Apply button
     Button applyButton;
-    applyButton.Content(winrt::box_value(winrt::to_hstring("Apply")));
+    applyButton.Content(winrt::box_value(L"Apply"));
+    header.SetAlignRightWithPanel(applyButton, true);
+    header.SetLeftOf(cancelButton, applyButton);
     applyButton.Flyout(applyFlyout);
     applyButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
-        bool isSuccess = true;
+        KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
         // Clear existing shortcuts
         keyboardManagerState.ClearOSLevelShortcuts();
 
@@ -170,30 +179,31 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
                 bool result = keyboardManagerState.AddOSLevelShortcut(originalShortcut, newShortcut);
                 if (!result)
                 {
-                    isSuccess = false;
+                    isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
+                    // Tooltip is already shown for this row
                 }
             }
             else
             {
-                isSuccess = false;
+                isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
+                // Show tooltip warning on the problematic row
+                uint32_t warningIndex;
+                // 2 at start, 4 in each row, and last element of each row
+                warningIndex = 1 + (i + 1) * 4;
+                FontIcon warning = shortcutTable.Children().GetAt(warningIndex).as<FontIcon>();
+                ToolTip t = ToolTipService::GetToolTip(warning).as<ToolTip>();
+                t.Content(box_value(KeyboardManagerHelper::GetErrorMessage(KeyboardManagerHelper::ErrorType::MissingKey)));
+                warning.Visibility(Visibility::Visible);
             }
         }
 
         // Save the updated key remaps to file.
-        auto saveResult = keyboardManagerState.SaveConfigToFile();
-
-        if (isSuccess && saveResult)
+        bool saveResult = keyboardManagerState.SaveConfigToFile();
+        if (!saveResult)
         {
-            settingsMessage.Text(winrt::to_hstring("Remapping successful!"));
+            isSuccess = KeyboardManagerHelper::ErrorType::SaveFailed;
         }
-        else if (!isSuccess && saveResult)
-        {
-            settingsMessage.Text(winrt::to_hstring("All remappings were not successfully applied."));
-        }
-        else
-        {
-            settingsMessage.Text(L"Failed to save the remappings.");
-        }
+        settingsMessage.Text(KeyboardManagerHelper::GetErrorMessage(isSuccess));
     });
 
     header.Children().Append(headerText);
@@ -243,7 +253,9 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
     RECT rcClient;
     switch (messageCode)
     {
+    // Resize the XAML window whenever the parent window is painted or resized
     case WM_PAINT:
+    case WM_SIZE:
         GetClientRect(hWnd, &rcClient);
         SetWindowPos(hWndXamlIslandEditShortcutsWindow, 0, rcClient.left, rcClient.top, rcClient.right, rcClient.bottom, SWP_SHOWWINDOW);
         break;
