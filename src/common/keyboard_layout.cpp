@@ -215,19 +215,6 @@ std::vector<DWORD> LayoutMap::LayoutMapImpl::GetKeyCodeList(const bool isShortcu
     std::vector<DWORD> keyCodes;
     if (!isKeyCodeListGenerated)
     {
-        // Add modifier keys
-        keyCodes.push_back(CommonSharedConstants::VK_WIN_BOTH);
-        keyCodes.push_back(VK_LWIN);
-        keyCodes.push_back(VK_RWIN);
-        keyCodes.push_back(VK_CONTROL);
-        keyCodes.push_back(VK_LCONTROL);
-        keyCodes.push_back(VK_RCONTROL);
-        keyCodes.push_back(VK_MENU);
-        keyCodes.push_back(VK_LMENU);
-        keyCodes.push_back(VK_RMENU);
-        keyCodes.push_back(VK_SHIFT);
-        keyCodes.push_back(VK_LSHIFT);
-        keyCodes.push_back(VK_RSHIFT);
         // Add character keys
         for (auto& it : unicodeKeys)
         {
@@ -237,7 +224,23 @@ std::vector<DWORD> LayoutMap::LayoutMapImpl::GetKeyCodeList(const bool isShortcu
                 keyCodes.push_back(it.first);
             }
         }
+
+        // Add modifier keys in alphabetical order
+        keyCodes.push_back(VK_MENU);
+        keyCodes.push_back(VK_LMENU);
+        keyCodes.push_back(VK_RMENU);
+        keyCodes.push_back(VK_CONTROL);
+        keyCodes.push_back(VK_LCONTROL);
+        keyCodes.push_back(VK_RCONTROL);
+        keyCodes.push_back(VK_SHIFT);
+        keyCodes.push_back(VK_LSHIFT);
+        keyCodes.push_back(VK_RSHIFT);
+        keyCodes.push_back(CommonSharedConstants::VK_WIN_BOTH);
+        keyCodes.push_back(VK_LWIN);
+        keyCodes.push_back(VK_RWIN);
+
         // Add all other special keys
+        std::vector<DWORD> specialKeys;
         for (int i = 1; i < 256; i++)
         {
             // If it is not already been added (i.e. it was either a modifier or had a unicode representation)
@@ -247,14 +250,24 @@ std::vector<DWORD> LayoutMap::LayoutMapImpl::GetKeyCodeList(const bool isShortcu
                 auto it = unknownKeys.find(i);
                 if (it == unknownKeys.end())
                 {
-                    keyCodes.push_back(i);
+                    specialKeys.push_back(i);
                 }
                 else if (unknownKeys[i] != keyboardLayoutMap[i])
                 {
-                    keyCodes.push_back(i);
+                    specialKeys.push_back(i);
                 }
             }
         }
+
+        // Sort the special keys in alphabetical order
+        std::sort(specialKeys.begin(), specialKeys.end(), [&](const DWORD& lhs, const DWORD& rhs) {
+            return keyboardLayoutMap[lhs] < keyboardLayoutMap[rhs];
+        });
+        for (int i = 0; i < specialKeys.size(); i++)
+        {
+            keyCodes.push_back(specialKeys[i]);
+        }
+
         // Add unknown keys
         for (auto& it : unknownKeys)
         {
@@ -285,20 +298,21 @@ std::vector<std::wstring> LayoutMap::LayoutMapImpl::GetKeyNameList(const bool is
 {
     std::vector<std::wstring> keyNames;
     std::vector<DWORD> keyCodes = GetKeyCodeList(isShortcut);
+    std::lock_guard<std::mutex> lock(keyboardLayoutMap_mutex);
     // If it is a key list for the shortcut control then we add a "None" key at the start
     if (isShortcut)
     {
         keyNames.push_back(L"None");
         for (int i = 1; i < keyCodes.size(); i++)
         {
-            keyNames.push_back(GetKeyName(keyCodes[i]));
+            keyNames.push_back(keyboardLayoutMap[keyCodes[i]]);
         }
     }
     else
     {
         for (int i = 0; i < keyCodes.size(); i++)
         {
-            keyNames.push_back(GetKeyName(keyCodes[i]));
+            keyNames.push_back(keyboardLayoutMap[keyCodes[i]]);
         }
     }
 

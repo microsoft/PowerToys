@@ -22,8 +22,8 @@ public:
     // Stores the current list of remappings
     static std::vector<std::vector<DWORD>> singleKeyRemapBuffer;
 
-    SingleKeyRemapControl(Grid table, const size_t colIndex) :
-        singleKeyRemapDropDown(false)
+    SingleKeyRemapControl(Grid table, const int colIndex, FontIcon warning, ToolTip toolTip) :
+        singleKeyRemapDropDown(false, warning, toolTip)
     {
         typeKey.Content(winrt::box_value(L"Type Key"));
         typeKey.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {

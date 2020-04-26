@@ -106,12 +106,16 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     ColumnDefinition firstColumn;
     ColumnDefinition secondColumn;
     ColumnDefinition thirdColumn;
+    thirdColumn.MaxWidth(100);
+    ColumnDefinition fourthColumn;
+    fourthColumn.MaxWidth(100);
     keyRemapTable.Margin({ 10, 10, 10, 20 });
     keyRemapTable.HorizontalAlignment(HorizontalAlignment::Stretch);
     keyRemapTable.ColumnSpacing(10);
     keyRemapTable.ColumnDefinitions().Append(firstColumn);
     keyRemapTable.ColumnDefinitions().Append(secondColumn);
     keyRemapTable.ColumnDefinitions().Append(thirdColumn);
+    keyRemapTable.ColumnDefinitions().Append(fourthColumn);
     keyRemapTable.RowDefinitions().Append(RowDefinition());
 
     // First header textblock in the header row of the keys remap table
@@ -208,7 +212,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     header.SetLeftOf(cancelButton, applyButton);
     applyButton.Flyout(applyFlyout);
     applyButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
-        bool isSuccess = true;
+        KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
         // Clear existing Key Remaps
         keyboardManagerState.ClearSingleKeyRemaps();
 
@@ -250,30 +254,31 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
                 if (!result)
                 {
-                    isSuccess = false;
+                    isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
+                    // Tooltip is already shown for this row
                 }
             }
             else
             {
-                isSuccess = false;
+                isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
+                // Show tooltip warning on the problematic row
+                uint32_t warningIndex;
+                // 2 at start, 4 in each row, and last element of each row
+                warningIndex = 1 + (i + 1) * 4;
+                FontIcon warning = keyRemapTable.Children().GetAt(warningIndex).as<FontIcon>();
+                ToolTip t = ToolTipService::GetToolTip(warning).as<ToolTip>();
+                t.Content(box_value(KeyboardManagerHelper::GetErrorMessage(KeyboardManagerHelper::ErrorType::MissingKey)));
+                warning.Visibility(Visibility::Visible);
             }
         }
 
         // Save the updated shortcuts remaps to file.
-        auto saveResult = keyboardManagerState.SaveConfigToFile();
-
-        if (isSuccess && saveResult)
+        bool saveResult = keyboardManagerState.SaveConfigToFile();
+        if (!saveResult)
         {
-            settingsMessage.Text(L"Remapping successful!");
+            isSuccess = KeyboardManagerHelper::ErrorType::SaveFailed;
         }
-        else if (!isSuccess && saveResult)
-        {
-            settingsMessage.Text(L"All remappings were not successfully applied.");
-        }
-        else
-        {
-            settingsMessage.Text(L"Failed to save the remappings.");
-        }
+        settingsMessage.Text(KeyboardManagerHelper::GetErrorMessage(isSuccess));
     });
 
     header.Children().Append(headerText);

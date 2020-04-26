@@ -11,10 +11,16 @@ std::vector<std::vector<Shortcut>> ShortcutControl::shortcutRemapBuffer;
 // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
 void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, Shortcut originalKeys, Shortcut newKeys)
 {
+    // Warning icon for the row
+    ToolTip warningMessage;
+    FontIcon warningIcon;
+    warningIcon.Visibility(Visibility::Collapsed);
+    warningMessage.Content(box_value(KeyboardManagerConstants::ToolTipInitialContent));
+
     // Create new ShortcutControl objects dynamically so that we does not get destructed
     std::vector<std::unique_ptr<ShortcutControl>> newrow;
-    newrow.push_back(std::move(std::unique_ptr<ShortcutControl>(new ShortcutControl(parent, 0))));
-    newrow.push_back(std::move(std::unique_ptr<ShortcutControl>(new ShortcutControl(parent, 1))));
+    newrow.push_back(std::move(std::unique_ptr<ShortcutControl>(new ShortcutControl(parent, 0, warningIcon, warningMessage))));
+    newrow.push_back(std::move(std::unique_ptr<ShortcutControl>(new ShortcutControl(parent, 1, warningIcon, warningMessage))));
     keyboardRemapControlObjects.push_back(std::move(newrow));
 
     // Add to grid
@@ -40,18 +46,20 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
         // Get index of delete button
         UIElementCollection children = parent.Children();
         children.IndexOf(currentButton, index);
+        uint32_t lastIndexInRow = index + 1;
         // Change the row index of elements appearing after the current row, as we will delete the row definition
-        for (uint32_t i = index + 1; i < children.Size(); i++)
+        for (uint32_t i = lastIndexInRow + 1; i < children.Size(); i++)
         {
             int32_t elementRowIndex = parent.GetRow(children.GetAt(i).as<FrameworkElement>());
             parent.SetRow(children.GetAt(i).as<FrameworkElement>(), elementRowIndex - 1);
         }
-        parent.Children().RemoveAt(index);
-        parent.Children().RemoveAt(index - 1);
-        parent.Children().RemoveAt(index - 2);
+        parent.Children().RemoveAt(lastIndexInRow);
+        parent.Children().RemoveAt(lastIndexInRow - 1);
+        parent.Children().RemoveAt(lastIndexInRow - 2);
+        parent.Children().RemoveAt(lastIndexInRow - 3);
 
         // Calculate row index in the buffer from the grid child index (first two children are header elements and then three children in each row)
-        int bufferIndex = (index - 2) / 3;
+        int bufferIndex = (lastIndexInRow - 2) / 4;
         // Delete the row definition
         parent.RowDefinitions().RemoveAt(bufferIndex + 1);
         // delete the row from the buffer
@@ -62,14 +70,22 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     parent.SetColumn(deleteShortcut, 2);
     parent.SetRow(deleteShortcut, parent.RowDefinitions().Size() - 1);
     parent.Children().Append(deleteShortcut);
+
+    warningIcon.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
+    warningIcon.Glyph(L"\xE783");
+    warningIcon.HorizontalAlignment(HorizontalAlignment::Left);
+    ToolTipService::SetToolTip(warningIcon, warningMessage);
+    parent.SetColumn(warningIcon, 3);
+    parent.SetRow(warningIcon, parent.RowDefinitions().Size() - 1);
+    parent.Children().Append(warningIcon);
     parent.UpdateLayout();
 
     // Set the shortcut text if the two vectors are not empty (i.e. default args)
     if (originalKeys.IsValidShortcut() && newKeys.IsValidShortcut())
     {
         shortcutRemapBuffer.push_back(std::vector<Shortcut>{ Shortcut(), Shortcut() });
-        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->AddShortcutToControl(originalKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutDropDownStackPanel, *keyboardManagerState, 0);
-        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->AddShortcutToControl(newKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->shortcutDropDownStackPanel, *keyboardManagerState, 1);
+        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->AddShortcutToControl(originalKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutDropDownStackPanel, *keyboardManagerState, 0, warningIcon, warningMessage);
+        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->AddShortcutToControl(newKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->shortcutDropDownStackPanel, *keyboardManagerState, 1, warningIcon, warningMessage);
     }
     else
     {
@@ -79,7 +95,7 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
 }
 
 // Function to add a shortcut to the shortcut control as combo boxes
-void ShortcutControl::AddShortcutToControl(Shortcut& shortcut, Grid table, StackPanel parent, KeyboardManagerState& keyboardManagerState, const size_t colIndex)
+void ShortcutControl::AddShortcutToControl(Shortcut& shortcut, Grid table, StackPanel parent, KeyboardManagerState& keyboardManagerState, const int colIndex, FontIcon warning, ToolTip toolTip)
 {
     // Delete the existing drop down menus
     parent.Children().Clear();
@@ -90,7 +106,7 @@ void ShortcutControl::AddShortcutToControl(Shortcut& shortcut, Grid table, Stack
     std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyCodeList(true);
     if (shortcutKeyCodes.size() != 0)
     {
-        KeyDropDownControl::AddDropDown(table, shortcutControlLayout, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects);
+        KeyDropDownControl::AddDropDown(table, shortcutControlLayout, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, warning, toolTip);
         for (int i = 0; i < shortcutKeyCodes.size(); i++)
         {
             // New drop down gets added automatically when the SelectedIndex is set
@@ -115,7 +131,7 @@ StackPanel ShortcutControl::getShortcutControl()
 }
 
 // Function to create the detect shortcut UI window
-void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, KeyboardManagerState& keyboardManagerState, const size_t colIndex, Grid table)
+void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, KeyboardManagerState& keyboardManagerState, const int colIndex, Grid table, FontIcon warning, ToolTip toolTip)
 {
     // ContentDialog for detecting shortcuts. This is the parent UI element.
     ContentDialog detectShortcutBox;
@@ -148,14 +164,16 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
                      &shortcutRemapBuffer,
                      unregisterKeys,
                      colIndex,
-                     table] {
+                     table,
+                     warning,
+                     toolTip] {
         // Save the detected shortcut in the linked text block
         Shortcut detectedShortcutKeys = keyboardManagerState.GetDetectedShortcut();
 
         if (!detectedShortcutKeys.IsEmpty())
         {
             // The shortcut buffer gets set in this function
-            AddShortcutToControl(detectedShortcutKeys, table, linkedShortcutStackPanel, keyboardManagerState, colIndex);
+            AddShortcutToControl(detectedShortcutKeys, table, linkedShortcutStackPanel, keyboardManagerState, colIndex, warning, toolTip);
         }
 
         // Reset the keyboard manager UI state

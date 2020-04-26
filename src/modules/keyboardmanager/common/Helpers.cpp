@@ -65,7 +65,7 @@ namespace KeyboardManagerHelper
     }
 
     // Function to return if the key is an extended key which requires the use of the extended key flag
-    bool isExtendedKey(DWORD key)
+    bool IsExtendedKey(DWORD key)
     {
         switch (key)
         {
@@ -79,6 +79,7 @@ namespace KeyboardManagerHelper
             return false;
         }
     }
+
     Collections::IVector<IInspectable> ToBoxValue(const std::vector<std::wstring>& list)
     {
         Collections::IVector<IInspectable> boxList = single_threaded_vector<IInspectable>();
@@ -88,5 +89,74 @@ namespace KeyboardManagerHelper
         }
 
         return boxList;
+    }
+
+    // Function to check if two keys are equal or cover the same set of keys. Return value depends on type of overlap
+    ErrorType DoKeysOverlap(DWORD first, DWORD second)
+    {
+        // If the keys are same
+        if (first == second)
+        {
+            return ErrorType::SameKeyPreviouslyMapped;
+        }
+        else if ((GetKeyType(first) == GetKeyType(second)) && GetKeyType(first) != KeyType::Action)
+        {
+            // If the keys are of the same modifier type and overlapping, i.e. one is L/R and other is common
+            if ((first == VK_LWIN && second == VK_RWIN) || (first == VK_LCONTROL && second == VK_RCONTROL) || (first == VK_LMENU && second == VK_RMENU) || (first == VK_LSHIFT && second == VK_RSHIFT))
+            {
+                return ErrorType::NoError;
+            }
+            else
+            {
+                return ErrorType::ConflictingModifierKey;
+            }
+        }
+        // If no overlap
+        else
+        {
+            return ErrorType::NoError;
+        }
+    }
+
+    // Function to return the error message
+    winrt::hstring GetErrorMessage(ErrorType errorType)
+    {
+        switch (errorType)
+        {
+        case ErrorType::NoError:
+            return L"Remapping successful";
+        case ErrorType::SameKeyPreviouslyMapped:
+            return L"Cannot remap a key more than once";
+        case ErrorType::MapToSameKey:
+            return L"Cannot remap a key to itself";
+        case ErrorType::ConflictingModifierKey:
+            return L"Cannot remap this key as it conflicts with another remapped key";
+        case ErrorType::SameShortcutPreviouslyMapped:
+            return L"Cannot remap a shortcut more than once";
+        case ErrorType::MapToSameShortcut:
+            return L"Cannot remap a shortcut to itself";
+        case ErrorType::ConflictingModifierShortcut:
+            return L"Cannot remap this shortcut as it conflicts with another remapped shortcut";
+        case ErrorType::WinL:
+            return L"Cannot remap from/to Win L";
+        case ErrorType::CtrlAltDel:
+            return L"Cannot remap from/to Ctrl Alt Del";
+        case ErrorType::RemapUnsuccessful:
+            return L"Some remappings were not applied";
+        case ErrorType::SaveFailed:
+            return L"Failed to save the remappings";
+        case ErrorType::MissingKey:
+            return L"Incomplete remapping";
+        case ErrorType::ShortcutStartWithModifier:
+            return L"Shortcut must start with a modifier key";
+        case ErrorType::ShortcutCannotHaveRepeatedModifier:
+            return L"Shortcut cannot contain a repeated modifier";
+        case ErrorType::ShortcutAtleast2Keys:
+            return L"Shortcut must have atleast 2 keys";
+        case ErrorType::ShortcutOneActionKey:
+            return L"Shortcut must contain an action key";
+        case ErrorType::ShortcutNotMoreThanOneActionKey:
+            return L"Shortcut cannot have more than one action key";
+        }
     }
 }
