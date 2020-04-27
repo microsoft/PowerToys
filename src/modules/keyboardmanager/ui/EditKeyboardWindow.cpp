@@ -73,9 +73,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     // Update the xaml island window size becuase initially is 0,0
     SetWindowPos(hWndXamlIslandEditKeyboardWindow, 0, 0, 0, 400, 400, SWP_SHOWWINDOW);
 
-    // Creating the Xaml content. xamlContainer is the parent UI element
-    Windows::UI::Xaml::Controls::StackPanel xamlContainer;
-
     // Header for the window
     Windows::UI::Xaml::Controls::RelativePanel header;
     header.Margin({ 10, 10, 10, 30 });
@@ -291,15 +288,29 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     plusSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
     plusSymbol.Glyph(L"\xE109");
     addRemapKey.Content(plusSymbol);
-    addRemapKey.Margin({ 10 });
+    addRemapKey.Margin({ 10, 0, 0, 25 });
     addRemapKey.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects);
     });
 
+    StackPanel mappingsPanel;
+    mappingsPanel.Children().Append(keyRemapInfoHeader);
+    mappingsPanel.Children().Append(keyRemapTable);
+    mappingsPanel.Children().Append(addRemapKey);
+
+    ScrollViewer scrollViewer;
+    scrollViewer.Content(mappingsPanel);
+
+    // Creating the Xaml content. xamlContainer is the parent UI element
+    RelativePanel xamlContainer;
+    xamlContainer.SetBelow(scrollViewer, header);
+    xamlContainer.SetAlignLeftWithPanel(header, true);
+    xamlContainer.SetAlignRightWithPanel(header, true);
+    xamlContainer.SetAlignLeftWithPanel(scrollViewer, true);
+    xamlContainer.SetAlignRightWithPanel(scrollViewer, true);
     xamlContainer.Children().Append(header);
-    xamlContainer.Children().Append(keyRemapInfoHeader);
-    xamlContainer.Children().Append(keyRemapTable);
-    xamlContainer.Children().Append(addRemapKey);
+    xamlContainer.Children().Append(scrollViewer);
+
     xamlContainer.UpdateLayout();
     desktopSource.Content(xamlContainer);
 

@@ -74,9 +74,6 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Update the xaml island window size becuase initially is 0,0
     SetWindowPos(hWndXamlIslandEditShortcutsWindow, 0, 0, 0, 400, 400, SWP_SHOWWINDOW);
 
-    // Creating the Xaml content. xamlContainer is the parent UI element
-    Windows::UI::Xaml::Controls::StackPanel xamlContainer;
-
     // Header for the window
     Windows::UI::Xaml::Controls::RelativePanel header;
     header.Margin({ 10, 10, 10, 30 });
@@ -216,14 +213,27 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     plusSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
     plusSymbol.Glyph(L"\xE109");
     addShortcut.Content(plusSymbol);
-    addShortcut.Margin({ 10 });
+    addShortcut.Margin({ 10, 0, 0, 25 });
     addShortcut.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects);
     });
 
+    StackPanel mappingsPanel;
+    mappingsPanel.Children().Append(shortcutTable);
+    mappingsPanel.Children().Append(addShortcut);
+
+    ScrollViewer scrollViewer;
+    scrollViewer.Content(mappingsPanel);
+
+    RelativePanel xamlContainer;
+    xamlContainer.SetBelow(scrollViewer, header);
+    xamlContainer.SetAlignLeftWithPanel(header, true);
+    xamlContainer.SetAlignRightWithPanel(header, true);
+    xamlContainer.SetAlignLeftWithPanel(scrollViewer, true);
+    xamlContainer.SetAlignRightWithPanel(scrollViewer, true);
     xamlContainer.Children().Append(header);
-    xamlContainer.Children().Append(shortcutTable);
-    xamlContainer.Children().Append(addShortcut);
+    xamlContainer.Children().Append(scrollViewer);
+
     xamlContainer.UpdateLayout();
     desktopSource.Content(xamlContainer);
 
