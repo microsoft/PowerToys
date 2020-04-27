@@ -27,3 +27,14 @@ VersionHelper::VersionHelper(int major, int minor, int revision) :
     revision(revision)
 {
 }
+
+std::wstring VersionHelper::toWstring() const
+{
+    std::wstring result{ L"v" };
+    result += std::to_wstring(major);
+    result += L'.';
+    result += std::to_wstring(minor);
+    result += L'.';
+    result += std::to_wstring(revision);
+    return result;
+}
