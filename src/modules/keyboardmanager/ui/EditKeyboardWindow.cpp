@@ -73,9 +73,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     // Update the xaml island window size becuase initially is 0,0
     SetWindowPos(hWndXamlIslandEditKeyboardWindow, 0, 0, 0, 400, 400, SWP_SHOWWINDOW);
 
-    // Creating the Xaml content. xamlContainer is the parent UI element
-    Windows::UI::Xaml::Controls::StackPanel xamlContainer;
-
     // Header for the window
     Windows::UI::Xaml::Controls::RelativePanel header;
     header.Margin({ 10, 10, 10, 30 });
@@ -296,12 +293,18 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects);
     });
 
+    // Creating the Xaml content. xamlContainer is the parent UI element
+    Windows::UI::Xaml::Controls::StackPanel xamlContainer;
     xamlContainer.Children().Append(header);
     xamlContainer.Children().Append(keyRemapInfoHeader);
     xamlContainer.Children().Append(keyRemapTable);
     xamlContainer.Children().Append(addRemapKey);
-    xamlContainer.UpdateLayout();
-    desktopSource.Content(xamlContainer);
+
+    ScrollViewer scrollViewer;
+    scrollViewer.Content(xamlContainer);
+
+    scrollViewer.UpdateLayout();
+    desktopSource.Content(scrollViewer);
 
     ////End XAML Island section
     if (_hWndEditKeyboardWindow)
