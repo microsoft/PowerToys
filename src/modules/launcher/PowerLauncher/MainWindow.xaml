@@ -15,7 +15,6 @@
         AllowDrop="True"
         ShowInTaskbar="False"
         Icon="Images/app.png"
-        Background="Transparent"
         AllowsTransparency="True"
         DpiChanged="Window_DpiChanged"
         Loaded="OnLoaded"
@@ -24,7 +23,8 @@
         Drop="OnDrop"
         LocationChanged="OnLocationChanged"
         Deactivated="OnDeactivated"
-        Width="720"        
+        Background="Transparent"
+        Width="720"
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         d:DataContext="{d:DesignInstance vm:MainViewModel}">
     <Grid Width="720">
@@ -41,7 +41,9 @@
             <Border.Effect>
                 <DropShadowEffect BlurRadius="12" Opacity="0.4" ShadowDepth="4" />
             </Border.Effect>
-            <xaml:WindowsXamlHost 
+            <xaml:WindowsXamlHost
+                Height="60"
+                x:Name="SearchBox" 
                 InitialTypeName="PowerLauncher.UI.LauncherControl" 
                 ChildChanged="WindowsXamlHostTextBox_ChildChanged" />
         </Border>
@@ -55,7 +57,8 @@
             <Border.Effect>
                 <DropShadowEffect BlurRadius="12" Opacity="0.4" ShadowDepth="4" />
             </Border.Effect>
-            <xaml:WindowsXamlHost 
+            <xaml:WindowsXamlHost
+                x:Name="ListBox"
                 InitialTypeName="PowerLauncher.UI.ResultList" 
                 ChildChanged="WindowsXamlHostListView_ChildChanged" 
                 PreviewMouseDown="WindowsXamlHost_PreviewMouseDown" />

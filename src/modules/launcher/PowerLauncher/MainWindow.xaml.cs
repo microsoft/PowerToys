@@ -80,9 +80,14 @@ namespace PowerLauncher
                 dpiX = source.CompositionTarget.TransformToDevice.M11;
                 dpiY = source.CompositionTarget.TransformToDevice.M22;
             }
+
             var location = Screen.PrimaryScreen.WorkingArea;
-            this.Left = (location.Width / (2 * dpiX) - this.Width / 2);
-            this.Top = (location.Height / (2 * dpiY) - (this.Height + 16 + MAX_LIST_HEIGHT) / 2);
+            var totalHeight = this.SearchBoxBorder.Margin.Top + this.SearchBoxBorder.Margin.Bottom + this.SearchBox.Height + this.ListBoxBorder.Margin.Top + this.ListBoxBorder.Margin.Bottom + MAX_LIST_HEIGHT;
+            this.Top = (location.Height / (2 * dpiY) - totalHeight / 2);
+            this.Left = (location.Width / (2 * dpiX) - this.Width / 2);         
+
+            _settings.WindowTop = Top;
+            _settings.WindowLeft = Left;
         }
 
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
@@ -130,8 +135,7 @@ namespace PowerLauncher
             }
             else
             {
-                Left = WindowLeft();
-                //Top = WindowTop();
+                InitializePosition();
             }
         }
 
@@ -143,16 +147,6 @@ namespace PowerLauncher
                 _settings.WindowTop = Top;
             }
         }
-
-        private double WindowLeft()
-        {
-            var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
-            var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.X, 0);
-            var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
-            var left = (dip2.X - ActualWidth) / 2 + dip1.X;
-            return left;
-        }
-
 
         private PowerLauncher.UI.LauncherControl _launcher = null;
         private void WindowsXamlHostTextBox_ChildChanged(object sender, EventArgs ev)
