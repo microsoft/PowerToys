@@ -23,6 +23,8 @@ using Windows.UI.Xaml;
 using Windows.UI.Core;
 using System.Windows.Media;
 using Windows.UI.Xaml.Data;
+using System.Diagnostics;
+using Mages.Core.Runtime.Converters;
 
 namespace PowerLauncher
 {
@@ -70,10 +72,9 @@ namespace PowerLauncher
 
         private void InitializePosition()
         {
-            //Top = WindowTop();
-            Left = WindowLeft();
-            //_settings.WindowTop = Top;
-            _settings.WindowLeft = Left;
+            var location = Screen.PrimaryScreen.WorkingArea;
+            this.Left = location.X;
+            this.Top = location.Y;
         }
 
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
@@ -176,6 +177,9 @@ namespace PowerLauncher
                         {
                             _launcher.TextBox.SelectAll();
                         }
+                        this.Left = 0;
+                        this.Top = 0;
+                        Debug.WriteLine("Left:" + this.Left + " Right:" + this.Top);
                     }
                 }
                 else if(e.PropertyName == nameof(MainViewModel.SystemQueryText))

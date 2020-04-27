@@ -15,6 +15,7 @@
         AllowDrop="True"
         ShowInTaskbar="False"
         Icon="Images/app.png"
+        Background="Orange"
         AllowsTransparency="True"
         Loaded="OnLoaded"
         Initialized="OnInitialized"
@@ -22,7 +23,6 @@
         Drop="OnDrop"
         LocationChanged="OnLocationChanged"
         Deactivated="OnDeactivated"
-        Background="Transparent"
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         d:DataContext="{d:DesignInstance vm:MainViewModel}">
     <Grid Width="720">
