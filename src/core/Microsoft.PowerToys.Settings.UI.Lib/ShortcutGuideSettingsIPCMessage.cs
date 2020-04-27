@@ -10,25 +10,22 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class PowerPreviewSettings : BasePTModuleSettings
+    public class ShortcutGuideSettingsIPCMessage
     {
-        public PowerPreviewProperties properties { get; set; }
+        [JsonPropertyName("powertoys")]
+        public SndShortcutGuideSettings Powertoys { get; set; }
 
-        public PowerPreviewSettings()
+        public ShortcutGuideSettingsIPCMessage()
         {
-            properties = new PowerPreviewProperties();
-            version = "1";
-            name = "File Explorer";
+
         }
 
-        public PowerPreviewSettings(string ptName)
+        public ShortcutGuideSettingsIPCMessage(SndShortcutGuideSettings settings)
         {
-            properties = new PowerPreviewProperties();
-            version = "1";
-            name = ptName;
+            this.Powertoys = settings;
         }
 
-        public override string ToJsonString()
+        public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);
         }

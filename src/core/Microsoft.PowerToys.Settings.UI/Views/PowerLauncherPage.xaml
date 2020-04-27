@@ -43,7 +43,8 @@
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Vertical">
-            <TextBlock x:Uid="PowerLauncher_Description" Style="{StaticResource BodyTextBlockStyle}"
+            <TextBlock x:Uid="PowerLauncher_Description"
+                       Style="{StaticResource BodyTextBlockStyle}"
                        TextWrapping="Wrap"/>
 
             <ToggleSwitch x:Uid="PowerLauncher_EnablePowerLauncher" 

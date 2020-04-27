@@ -1,4 +1,5 @@
 using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UnitTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics;
@@ -7,7 +8,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Microsoft.PowerToys.Settings.UnitTest
+namespace CommonLibTest
 {
     [TestClass]
     public class SettingsUtilsTests
