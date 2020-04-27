@@ -67,12 +67,13 @@ json::JsonObject load_general_settings()
 
 GeneralSettings get_general_settings()
 {
+    const bool is_user_admin = check_user_is_admin();
     GeneralSettings settings{
         .isPackaged = winstore::running_as_packaged(),
         .isElevated = is_process_elevated(),
         .isRunElevated = run_as_elevated,
-        .isAdmin = check_user_is_admin(),
-        .downloadUpdatesAutomatically = download_updates_automatically,
+        .isAdmin = is_user_admin,
+        .downloadUpdatesAutomatically = download_updates_automatically && is_user_admin,
         .theme = settings_theme,
         .systemTheme = WindowsColors::is_dark_mode() ? L"dark" : L"light",
         .powerToysVersion = get_product_version()

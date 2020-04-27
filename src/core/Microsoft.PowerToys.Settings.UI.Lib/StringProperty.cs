@@ -18,6 +18,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             this.Value = string.Empty;
         }
 
+        public StringProperty(string value)
+        {
+            Value = value;
+        }
+
         // Gets or sets the integer value of the settings configuration.
         [JsonPropertyName("value")]
         public string Value { get; set; }

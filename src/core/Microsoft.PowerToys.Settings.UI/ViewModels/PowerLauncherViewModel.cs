@@ -12,15 +12,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class PowerLauncherViewModel : Observable
     {
-        private const string POWERTOYNAME = "Launcher";
         private PowerLauncherSettings settings;
         private GeneralSettings generalSettings;
 
+        public delegate void SendCallback(PowerLauncherSettings settings);
+
+        private readonly SendCallback callback;
+
         public PowerLauncherViewModel()
         {
-            if (SettingsUtils.SettingsExists(POWERTOYNAME))
+            if (SettingsUtils.SettingsExists(PowerLauncherSettings.POWERTOYNAME))
             {
-                settings = SettingsUtils.GetSettings<PowerLauncherSettings>(POWERTOYNAME);
+                settings = SettingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.POWERTOYNAME);
             }
             else
             {
@@ -36,6 +39,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 generalSettings = new GeneralSettings();
                 SettingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
             }
+            callback = (PowerLauncherSettings settings) =>
+            {
+                // Propagate changes to Power Launcher through IPC
+                var propertiesJson = JsonSerializer.Serialize(settings.properties);
+                ShellPage.DefaultSndMSGCallback(
+                    string.Format("{{ \"{0}\": {1} }}", PowerLauncherSettings.POWERTOYNAME, JsonSerializer.Serialize(settings.properties)));
+            };
+        }
+
+        public PowerLauncherViewModel(PowerLauncherSettings settings, SendCallback callback)
+        {
+            this.settings = settings;
+            this.callback = callback;
         }
 
         private void UpdateSettings([CallerMemberName] string propertyName = null)
@@ -43,14 +59,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Notify UI of property change
             OnPropertyChanged(propertyName);
 
-            // Save settings to file
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-            };
-            SettingsUtils.SaveSettings(JsonSerializer.Serialize(settings, options), POWERTOYNAME);
-
-            // Propagate changes to Power Launcher through IPC
+            settings.Save();
+            callback(settings);
         }
 
         public bool EnablePowerLauncher

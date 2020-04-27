@@ -10,10 +10,10 @@ using System.IO;
 using System.Text.Json;
 using Windows.UI.Popups;
 
-namespace Microsoft.PowerToys.Settings.UnitTest.ViewModelTests
+namespace ViewModelTests
 {
     [TestClass]
-    public class ShortcutGuideViewModelTest
+    public class ShortcutGuide
     {
         [TestInitialize]
         public void Setup()
@@ -28,6 +28,22 @@ namespace Microsoft.PowerToys.Settings.UnitTest.ViewModelTests
             SettingsUtils.SaveSettings(shortcutGuide.ToJsonString(), shortcutGuide.Name);
         }
 
+        [TestCleanup]
+        public void CleanUp()
+        {
+            // delete folder created.
+            string file_name = "\\test";
+            if (SettingsUtils.SettingsFolderExists(file_name))
+            {
+                DeleteFolder(file_name);
+            }
+        }
+
+        public void DeleteFolder(string powertoy)
+        {
+            Directory.Delete(Path.Combine(SettingsUtils.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"), true);
+        }
+
         [TestMethod]
         public void IsEnabled_ShouldEnableModule_WhenSuccessful()
         {
@@ -39,7 +55,7 @@ namespace Microsoft.PowerToys.Settings.UnitTest.ViewModelTests
             ShellPage.DefaultSndMSGCallback = msg =>
             {
                 OutGoingGeneralSettings snd = JsonSerializer.Deserialize<OutGoingGeneralSettings>(msg);
-                Assert.IsTrue(snd.general.Enabled.ShortcutGuide);
+                Assert.IsTrue(snd.GeneralSettings.Enabled.ShortcutGuide);
             };
 
             // Act
@@ -56,9 +72,8 @@ namespace Microsoft.PowerToys.Settings.UnitTest.ViewModelTests
             // Initilize mock function of sending IPC message.
             ShellPage.DefaultSndMSGCallback = msg =>
             {
-                SndModuleSettings<ShortcutGuideSettings> snd = JsonSerializer.Deserialize<SndModuleSettings<ShortcutGuideSettings>>(msg);
-                Assert.AreEqual("dark", snd.powertoys.Properties.Theme.Value);
-                Assert.AreEqual("hey", msg);
+                ShortcutGuideSettingsIPCMessage snd = JsonSerializer.Deserialize<ShortcutGuideSettingsIPCMessage>(msg);
+                Assert.AreEqual("dark", snd.Powertoys.ShortcutGuide.Properties.Theme.Value);
             };
 
             // Act
@@ -75,9 +90,8 @@ namespace Microsoft.PowerToys.Settings.UnitTest.ViewModelTests
             // Initilize mock function of sending IPC message.
             ShellPage.DefaultSndMSGCallback = msg =>
             {
-                SndModuleSettings<ShortcutGuideSettings> snd = JsonSerializer.Deserialize<SndModuleSettings<ShortcutGuideSettings>>(msg);
-                // https://stackoverflow.com/questions/59198417/deserialization-of-reference-types-without-parameterless-constructor-is-not-supp
-                Assert.AreEqual(100, snd.powertoys.Properties.PressTime.Value);
+                ShortcutGuideSettingsIPCMessage snd = JsonSerializer.Deserialize<ShortcutGuideSettingsIPCMessage>(msg);
+                Assert.AreEqual(100, snd.Powertoys.ShortcutGuide.Properties.PressTime.Value);
             };
 
             // Act
@@ -94,10 +108,9 @@ namespace Microsoft.PowerToys.Settings.UnitTest.ViewModelTests
             // Initilize mock function of sending IPC message.
             ShellPage.DefaultSndMSGCallback = msg =>
             {
-                SndModuleSettings<ShortcutGuideSettings> snd = JsonSerializer.Deserialize<SndModuleSettings<ShortcutGuideSettings>>(msg);
+                ShortcutGuideSettingsIPCMessage snd = JsonSerializer.Deserialize<ShortcutGuideSettingsIPCMessage>(msg);
                 // Serialisation not working as expected in the test project:
-                // https://stackoverflow.com/questions/59198417/deserialization-of-reference-types-without-parameterless-constructor-is-not-supp
-                Assert.AreEqual(100, snd.powertoys.Properties.OverlayOpacity.Value);
+                Assert.AreEqual(100, snd.Powertoys.ShortcutGuide.Properties.OverlayOpacity.Value);
             };
 
             // Act

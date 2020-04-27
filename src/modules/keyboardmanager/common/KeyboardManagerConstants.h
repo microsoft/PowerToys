@@ -35,4 +35,7 @@ namespace KeyboardManagerConstants
 
     // Name of the dummy update file.
     inline const std::wstring DummyUpdateFileName = L"settings-updated.json";
+
+    // Initial value for tooltip
+    inline const winrt::hstring ToolTipInitialContent = L"Initialised";
 }

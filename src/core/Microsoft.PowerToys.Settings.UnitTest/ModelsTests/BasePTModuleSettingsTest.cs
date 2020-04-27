@@ -1,10 +1,11 @@
 using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UnitTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 using System;
 
-namespace Microsoft.PowerToys.Settings.UnitTest
+namespace CommonLibTest
 {
     [TestClass]
     public class BasePTModuleSettingsTest

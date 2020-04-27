@@ -73,9 +73,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     // Update the xaml island window size becuase initially is 0,0
     SetWindowPos(hWndXamlIslandEditKeyboardWindow, 0, 0, 0, 400, 400, SWP_SHOWWINDOW);
 
-    // Creating the Xaml content. xamlContainer is the parent UI element
-    Windows::UI::Xaml::Controls::StackPanel xamlContainer;
-
     // Header for the window
     Windows::UI::Xaml::Controls::RelativePanel header;
     header.Margin({ 10, 10, 10, 30 });
@@ -106,12 +103,16 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     ColumnDefinition firstColumn;
     ColumnDefinition secondColumn;
     ColumnDefinition thirdColumn;
+    thirdColumn.MaxWidth(100);
+    ColumnDefinition fourthColumn;
+    fourthColumn.MaxWidth(100);
     keyRemapTable.Margin({ 10, 10, 10, 20 });
     keyRemapTable.HorizontalAlignment(HorizontalAlignment::Stretch);
     keyRemapTable.ColumnSpacing(10);
     keyRemapTable.ColumnDefinitions().Append(firstColumn);
     keyRemapTable.ColumnDefinitions().Append(secondColumn);
     keyRemapTable.ColumnDefinitions().Append(thirdColumn);
+    keyRemapTable.ColumnDefinitions().Append(fourthColumn);
     keyRemapTable.RowDefinitions().Append(RowDefinition());
 
     // First header textblock in the header row of the keys remap table
@@ -208,7 +209,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     header.SetLeftOf(cancelButton, applyButton);
     applyButton.Flyout(applyFlyout);
     applyButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
-        bool isSuccess = true;
+        KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
         // Clear existing Key Remaps
         keyboardManagerState.ClearSingleKeyRemaps();
 
@@ -250,30 +251,31 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
                 if (!result)
                 {
-                    isSuccess = false;
+                    isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
+                    // Tooltip is already shown for this row
                 }
             }
             else
             {
-                isSuccess = false;
+                isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
+                // Show tooltip warning on the problematic row
+                uint32_t warningIndex;
+                // 2 at start, 4 in each row, and last element of each row
+                warningIndex = 1 + (i + 1) * 4;
+                FontIcon warning = keyRemapTable.Children().GetAt(warningIndex).as<FontIcon>();
+                ToolTip t = ToolTipService::GetToolTip(warning).as<ToolTip>();
+                t.Content(box_value(KeyboardManagerHelper::GetErrorMessage(KeyboardManagerHelper::ErrorType::MissingKey)));
+                warning.Visibility(Visibility::Visible);
             }
         }
 
         // Save the updated shortcuts remaps to file.
-        auto saveResult = keyboardManagerState.SaveConfigToFile();
-
-        if (isSuccess && saveResult)
+        bool saveResult = keyboardManagerState.SaveConfigToFile();
+        if (!saveResult)
         {
-            settingsMessage.Text(L"Remapping successful!");
+            isSuccess = KeyboardManagerHelper::ErrorType::SaveFailed;
         }
-        else if (!isSuccess && saveResult)
-        {
-            settingsMessage.Text(L"All remappings were not successfully applied.");
-        }
-        else
-        {
-            settingsMessage.Text(L"Failed to save the remappings.");
-        }
+        settingsMessage.Text(KeyboardManagerHelper::GetErrorMessage(isSuccess));
     });
 
     header.Children().Append(headerText);
@@ -286,15 +288,29 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     plusSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
     plusSymbol.Glyph(L"\xE109");
     addRemapKey.Content(plusSymbol);
-    addRemapKey.Margin({ 10 });
+    addRemapKey.Margin({ 10, 0, 0, 25 });
     addRemapKey.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects);
     });
 
+    StackPanel mappingsPanel;
+    mappingsPanel.Children().Append(keyRemapInfoHeader);
+    mappingsPanel.Children().Append(keyRemapTable);
+    mappingsPanel.Children().Append(addRemapKey);
+
+    ScrollViewer scrollViewer;
+    scrollViewer.Content(mappingsPanel);
+
+    // Creating the Xaml content. xamlContainer is the parent UI element
+    RelativePanel xamlContainer;
+    xamlContainer.SetBelow(scrollViewer, header);
+    xamlContainer.SetAlignLeftWithPanel(header, true);
+    xamlContainer.SetAlignRightWithPanel(header, true);
+    xamlContainer.SetAlignLeftWithPanel(scrollViewer, true);
+    xamlContainer.SetAlignRightWithPanel(scrollViewer, true);
     xamlContainer.Children().Append(header);
-    xamlContainer.Children().Append(keyRemapInfoHeader);
-    xamlContainer.Children().Append(keyRemapTable);
-    xamlContainer.Children().Append(addRemapKey);
+    xamlContainer.Children().Append(scrollViewer);
+
     xamlContainer.UpdateLayout();
     desktopSource.Content(xamlContainer);
 

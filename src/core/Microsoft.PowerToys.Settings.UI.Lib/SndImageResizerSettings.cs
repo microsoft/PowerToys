@@ -10,22 +10,18 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class BoolProperty
+
+    public class SndImageResizerSettings
     {
-        public BoolProperty()
+        [JsonPropertyName("Image Resizer")]
+        public ImageResizerSettings ImageResizer { get; set; }
+
+        public SndImageResizerSettings(ImageResizerSettings settings)
         {
-            this.Value = false;
+            this.ImageResizer = settings;
         }
 
-        public BoolProperty(bool value)
-        {
-            Value = value;
-        }
-
-        [JsonPropertyName("value")]
-        public bool Value { get; set; }
-
-        public override string ToString()
+        public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);
         }

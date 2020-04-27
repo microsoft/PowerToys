@@ -12,6 +12,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("Shortcut Guide")]
         public ShortcutGuideSettings ShortcutGuide { get; set; }
 
+        public SndShortcutGuideSettings()
+        {
+
+        }
+
         public SndShortcutGuideSettings(ShortcutGuideSettings settings)
         {
             this.ShortcutGuide = settings;

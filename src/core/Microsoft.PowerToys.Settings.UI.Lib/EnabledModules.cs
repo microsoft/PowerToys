@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("FancyZones")]
         public bool FancyZones { get; set; }
 
-        [JsonPropertyName("ImageResizer")]
+        [JsonPropertyName("Image Resizer")]
         public bool ImageResizer { get; set; }
 
         [JsonPropertyName("File Explorer Preview")]
