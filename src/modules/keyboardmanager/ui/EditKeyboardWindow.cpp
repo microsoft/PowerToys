@@ -293,18 +293,26 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects);
     });
 
-    // Creating the Xaml content. xamlContainer is the parent UI element
-    Windows::UI::Xaml::Controls::StackPanel xamlContainer;
-    xamlContainer.Children().Append(header);
-    xamlContainer.Children().Append(keyRemapInfoHeader);
-    xamlContainer.Children().Append(keyRemapTable);
-    xamlContainer.Children().Append(addRemapKey);
+    StackPanel mappingsPanel;
+    mappingsPanel.Children().Append(keyRemapInfoHeader);
+    mappingsPanel.Children().Append(keyRemapTable);
+    mappingsPanel.Children().Append(addRemapKey);
 
     ScrollViewer scrollViewer;
-    scrollViewer.Content(xamlContainer);
+    scrollViewer.Content(mappingsPanel);
 
-    scrollViewer.UpdateLayout();
-    desktopSource.Content(scrollViewer);
+    // Creating the Xaml content. xamlContainer is the parent UI element
+    RelativePanel xamlContainer;
+    xamlContainer.SetBelow(scrollViewer, header);
+    xamlContainer.SetAlignLeftWithPanel(header, true);
+    xamlContainer.SetAlignRightWithPanel(header, true);
+    xamlContainer.SetAlignLeftWithPanel(scrollViewer, true);
+    xamlContainer.SetAlignRightWithPanel(scrollViewer, true);
+    xamlContainer.Children().Append(header);
+    xamlContainer.Children().Append(scrollViewer);
+
+    xamlContainer.UpdateLayout();
+    desktopSource.Content(xamlContainer);
 
     ////End XAML Island section
     if (_hWndEditKeyboardWindow)

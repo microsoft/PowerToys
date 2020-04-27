@@ -218,17 +218,24 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects);
     });
 
-    // Creating the Xaml content. xamlContainer is the parent UI element
-    Windows::UI::Xaml::Controls::StackPanel xamlContainer;
-    xamlContainer.Children().Append(header);
-    xamlContainer.Children().Append(shortcutTable);
-    xamlContainer.Children().Append(addShortcut);
-    xamlContainer.UpdateLayout();
+    StackPanel mappingsPanel;
+    mappingsPanel.Children().Append(shortcutTable);
+    mappingsPanel.Children().Append(addShortcut);
 
     ScrollViewer scrollViewer;
-    scrollViewer.Content(xamlContainer);
-    scrollViewer.UpdateLayout();
-    desktopSource.Content(scrollViewer);
+    scrollViewer.Content(mappingsPanel);
+
+    RelativePanel xamlContainer;
+    xamlContainer.SetBelow(scrollViewer, header);
+    xamlContainer.SetAlignLeftWithPanel(header, true);
+    xamlContainer.SetAlignRightWithPanel(header, true);
+    xamlContainer.SetAlignLeftWithPanel(scrollViewer, true);
+    xamlContainer.SetAlignRightWithPanel(scrollViewer, true);
+    xamlContainer.Children().Append(header);
+    xamlContainer.Children().Append(scrollViewer);
+
+    xamlContainer.UpdateLayout();
+    desktopSource.Content(xamlContainer);
 
     ////End XAML Island section
     if (_hWndEditShortcutsWindow)
