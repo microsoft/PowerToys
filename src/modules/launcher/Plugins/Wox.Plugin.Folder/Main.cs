@@ -94,30 +94,14 @@ namespace Wox.Plugin.Folder
                 Title = title,
                 IcoPath = path,
                 SubTitle = subtitle,
+                QueryTextDisplay = path,
                 TitleHighlightData = StringMatcher.FuzzySearch(query.Search, title).MatchData,
+                ContextData = new SearchResult { Type = ResultType.Folder, FullPath = path },
                 Action = c =>
                 {
-                    if (c.SpecialKeyState.CtrlPressed)
-                    {
-                        try
-                        {
-                            Process.Start(_fileExplorerProgramName, path);
-                            return true;
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show(ex.Message, "Could not start " + path);
-                            return false;
-                        }
-                    }
-
-                    string changeTo = path.EndsWith("\\") ? path : path + "\\";
-                    _context.API.ChangeQuery(string.IsNullOrEmpty(query.ActionKeyword) ?
-                        changeTo :
-                        query.ActionKeyword + " " + changeTo);
-                    return false;
-                },
-                ContextData = new SearchResult { Type = ResultType.Folder, FullPath = path }
+                    Process.Start(_fileExplorerProgramName, path);
+                    return true;
+                }
             };
         }
 
@@ -273,6 +257,7 @@ namespace Wox.Plugin.Folder
             return new Result
             {
                 Title = firstResult,
+                QueryTextDisplay = search,
                 SubTitle = $"Use > to search within the directory. Use * to search for file extensions. Or use both >*.",
                 IcoPath = search,
                 Score = 500,

@@ -18,6 +18,11 @@ namespace Wox.Plugin
 
         public string FontFamily { get; set; }
 
+        /// <summary>
+        /// The text that will get displayed in the Search text box, when this item is selected in the result list.
+        /// </summary>
+        public string QueryTextDisplay { get; set; }
+
         public string IcoPath
         {
             get { return _icoPath; }

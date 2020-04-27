@@ -51,7 +51,6 @@ namespace Wox.ViewModel
         {
             _saved = false;
             _queryTextBeforeLeaveResults = "";
-            _queryText = "";
             _lastQuery = new Query();
 
             _settings = settings;
@@ -179,17 +178,17 @@ namespace Wox.ViewModel
                     if (!didExecuteContextButton)
                     {
                         var result = results.SelectedItem.Result;
-                        if (result != null) // SelectedItem returns null if selection is empty.
+                        if (result != null && result.Action != null) // SelectedItem returns null if selection is empty.
                         {
-                            bool hideWindow = result.Action != null && result.Action(new ActionContext
-                            {
-                                SpecialKeyState = GlobalHotkey.Instance.CheckModifiers()
-                            });
+                            MainWindowVisibility = Visibility.Collapsed;
 
-                            if (hideWindow)
+                            Task.Run(() =>
                             {
-                                MainWindowVisibility = Visibility.Collapsed;
-                            }
+                                result.Action(new ActionContext
+                                {
+                                    SpecialKeyState = GlobalHotkey.Instance.CheckModifiers()
+                                });
+                            });
 
                             if (SelectedIsFromQueryResults())
                             {
@@ -242,29 +241,29 @@ namespace Wox.ViewModel
         public ResultsViewModel ContextMenu { get; private set; }
         public ResultsViewModel History { get; private set; }
 
-        private string _queryText;
-        public string QueryText
-        {
-            get { return _queryText; }
-            set
-            {
-                _queryText = value;
-                Query();
-            }
-        }
+        public string SystemQueryText { get; set; } = String.Empty;
+
+        public string QueryText { get; set; } = String.Empty;
+      
 
         /// <summary>
         /// we need move cursor to end when we manually changed query
-        /// but we don't want to move cursor to end when query is updated from TextBox
+        /// but we don't want to move cursor to end when query is updated from TextBox. 
+        /// Also we don't want to force the results to change unless explicity told to.
         /// </summary>
         /// <param name="queryText"></param>
-        public void ChangeQueryText(string queryText)
+        /// <param name="requery">Optional Parameter that if true, will automatically execute a query against the updated text</param>
+        public void ChangeQueryText(string queryText, bool requery=false)
         {
-            QueryTextCursorMovedToEnd = true;
-            QueryText = queryText;
+            SystemQueryText = queryText;
+            
+            if(requery)
+            {
+                QueryText = queryText;
+                Query();
+            }
         }
         public bool LastQuerySelected { get; set; }
-        public bool QueryTextCursorMovedToEnd { get; set; }
 
         private ResultsViewModel _selectedResults;
         private ResultsViewModel SelectedResults
@@ -630,6 +629,32 @@ namespace Wox.ViewModel
             {
                 Results.Visbility = Visibility.Visible;
             }
+        }
+
+        public void ColdStartFix()
+        {
+            // Fix Cold start for List view xaml island
+            List<Result> list = new List<Result>();
+            Result r = new Result
+            {
+                Title = "hello"
+            };
+            list.Add(r);
+            Results.AddResults(list, "0");
+            Results.Clear();
+            MainWindowVisibility = System.Windows.Visibility.Collapsed;
+
+            // Fix Cold start for plugins
+            string s = "m";
+            var query = QueryBuilder.Build(s.Trim(), PluginManager.NonGlobalPlugins);
+            var plugins = PluginManager.ValidPluginsForQuery(query);
+            foreach (PluginPair plugin in plugins)
+            {
+                if (!plugin.Metadata.Disabled && plugin.Metadata.Name != "Window Walker")
+                {
+                    var _ = PluginManager.QueryForPlugin(plugin, query);
+                }
+            };
         }
 
         #endregion

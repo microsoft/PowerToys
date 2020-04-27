@@ -375,7 +375,6 @@
             x:FieldModifier="public"
             Style="{StaticResource CustomAutoSuggestBoxTextBoxStyle}"
             PlaceholderText="Start typing"
-            Text="{Binding QueryText}"
             Height="60"
             ScrollViewer.BringIntoViewOnFocusChange="False"
             Canvas.ZIndex="0"

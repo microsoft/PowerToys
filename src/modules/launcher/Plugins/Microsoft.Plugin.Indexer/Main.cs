@@ -88,6 +88,13 @@ namespace Microsoft.Plugin.Indexer
                             return hide;
                         };
                         r.ContextData = searchResult;
+
+                        //If the result is a directory, then it's display should show a directory.
+                        if(Directory.Exists(path))
+                        {
+                            r.QueryTextDisplay = path;
+                        }
+
                         results.Add(r);
                     }
                 }
