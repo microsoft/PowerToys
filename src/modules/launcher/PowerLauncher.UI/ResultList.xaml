@@ -13,12 +13,41 @@
     d:DesignWidth="720">
     <UserControl.Resources>
         <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+        <Style x:Key="CommandButtonGridViewItemContainerStyle" TargetType="GridViewItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Margin" Value="0,0,0,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridViewItem">
+                        <ListViewItemPresenter x:Name="Root" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="Selected"/>
+                                    <VisualState x:Name="PointerOver"/>
+                                    <VisualState x:Name="PointerOverSelected"/>
+                                    <VisualState x:Name="PointerOverPressed"/>
+                                    <VisualState x:Name="Pressed"/>
+                                    <VisualState x:Name="PressedSelected"/>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="DisabledStates">
+                                    <VisualState x:Name="Enabled"/>
+                                    <VisualState x:Name="Disabled"/>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </ListViewItemPresenter>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
+    
     <Grid 
         x:Name="PowerBar"
         Background="{ThemeResource BackdropAcrylicBrush}"        
         VerticalAlignment="Top">
-        <ListView 
+
+        <ListView
             x:Name="SuggestionsList"
             x:FieldModifier="public"
             MaxHeight="{Binding Results.MaxHeight}"
@@ -55,6 +84,7 @@
                         <TextBlock x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" VerticalAlignment="Bottom"/>
                         <TextBlock x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Opacity="0.6" VerticalAlignment="Top"/>
                         <GridView 
+                                   ItemContainerStyle="{StaticResource CommandButtonGridViewItemContainerStyle}"
                                    HorizontalAlignment="Right" 
                                    VerticalAlignment="Center"
                                    CornerRadius="4"
@@ -70,7 +100,7 @@
                                    SelectedIndex="{Binding ContextMenuSelectedIndex}">
                             <GridView.ItemTemplate>
                                 <DataTemplate>
-                                    <Button Command="{Binding Command}" VerticalAlignment="Center" CornerRadius="4" Height="42" Width="42" BorderThickness="1" Style="{ThemeResource ButtonRevealStyle}">
+                                    <Button Command="{Binding Command}" VerticalAlignment="Center" CornerRadius="4" Height="42" Width="42" BorderThickness="1" Style="{ThemeResource IconOnlyButton}">
                                         <ToolTipService.ToolTip>
                                             <TextBlock Text="{Binding Title}"/>
                                         </ToolTipService.ToolTip>
