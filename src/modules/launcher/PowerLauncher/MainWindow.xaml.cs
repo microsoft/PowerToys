@@ -451,7 +451,6 @@ private void WindowsXamlHost_PreviewMouseDown(object sender, MouseButtonEventArg
 
         private void Window_DpiChanged(object sender, DpiChangedEventArgs e)
         {
-            Debug.WriteLine("DPI changed");
             InitializePosition();
         }
     }
