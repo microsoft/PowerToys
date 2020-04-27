@@ -8,10 +8,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json;
 
-namespace Microsoft.PowerToys.Settings.UnitTest.ViewModelTests
+namespace ViewModelTests
 {
     [TestClass]
-    public class PowerLauncherViewModelTest
+    public class PowerLauncher
     {
         class PowerLauncherSettingsMock : PowerLauncherSettings
         {
