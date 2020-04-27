@@ -72,9 +72,17 @@ namespace PowerLauncher
 
         private void InitializePosition()
         {
+            double dpiX = 1, dpiY = 1;
+
+            PresentationSource source = PresentationSource.FromVisual(this);
+            if (source != null)
+            {
+                dpiX = source.CompositionTarget.TransformToDevice.M11;
+                dpiY = source.CompositionTarget.TransformToDevice.M22;
+            }
             var location = Screen.PrimaryScreen.WorkingArea;
-            this.Left = location.X;
-            this.Top = location.Y;
+            this.Left = (location.Width / (2 * dpiX) - this.Width / 2);
+            this.Top = (location.Height / (2 * dpiY) - (this.Height + 16 + MAX_LIST_HEIGHT) / 2);
         }
 
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
@@ -177,9 +185,6 @@ namespace PowerLauncher
                         {
                             _launcher.TextBox.SelectAll();
                         }
-                        this.Left = 0;
-                        this.Top = 0;
-                        Debug.WriteLine("Left:" + this.Left + " Right:" + this.Top);
                     }
                 }
                 else if(e.PropertyName == nameof(MainViewModel.SystemQueryText))
@@ -448,6 +453,12 @@ private void WindowsXamlHost_PreviewMouseDown(object sender, MouseButtonEventArg
             //        //    }
             //        //}
             //    }
+        }
+
+        private void Window_DpiChanged(object sender, DpiChangedEventArgs e)
+        {
+            Debug.WriteLine("DPI changed");
+            InitializePosition();
         }
     }
  }

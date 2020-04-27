@@ -15,14 +15,16 @@
         AllowDrop="True"
         ShowInTaskbar="False"
         Icon="Images/app.png"
-        Background="Orange"
+        Background="Transparent"
         AllowsTransparency="True"
+        DpiChanged="Window_DpiChanged"
         Loaded="OnLoaded"
         Initialized="OnInitialized"
         Closing="OnClosing"
         Drop="OnDrop"
         LocationChanged="OnLocationChanged"
         Deactivated="OnDeactivated"
+        Width="720"        
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         d:DataContext="{d:DesignInstance vm:MainViewModel}">
     <Grid Width="720">
@@ -33,7 +35,7 @@
         <Border 
             x:Name="SearchBoxBorder" 
             Grid.Row="0" 
-            Margin="8" 
+            Margin="0,0,0,8" 
             BorderThickness="4" 
             CornerRadius="4">
             <Border.Effect>
@@ -46,7 +48,7 @@
         <Border 
             x:Name="ListBoxBorder"
             Grid.Row="1" 
-            Margin="8" 
+            Margin="0,8,0,0"
             BorderThickness="4"
             CornerRadius="4" 
             Visibility="{Binding Results.Visbility}">
