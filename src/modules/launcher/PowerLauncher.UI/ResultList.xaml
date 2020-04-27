@@ -60,7 +60,7 @@
                                    CornerRadius="4"
                                    Grid.RowSpan="2" 
                                    Grid.Column="1"
-                                   Margin="0,0,42,0"
+                                   Margin="0,0,17,0"
                                    Height="46"
                                    Visibility="{Binding AreContextButtonsActive, Converter={StaticResource BoolToVisibilityConverter}}"
                                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
