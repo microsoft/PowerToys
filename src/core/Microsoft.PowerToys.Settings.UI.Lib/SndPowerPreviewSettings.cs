@@ -12,12 +12,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class SndPowerPreviewSettings
     {
-        [JsonPropertyName("File Explorer Preview")]
-        public PowerPreviewSettings File_Explorer_Preview { get; set; }
+        [JsonPropertyName("File Explorer")]
+        public PowerPreviewSettings FileExplorerPreviewSettings { get; set; }
+
+        public SndPowerPreviewSettings()
+        {
+        }
 
         public SndPowerPreviewSettings(PowerPreviewSettings settings)
         {
-            File_Explorer_Preview = settings;
+            FileExplorerPreviewSettings = settings;
         }
 
         public string ToJsonString()

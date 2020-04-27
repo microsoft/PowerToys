@@ -46,11 +46,11 @@
 
             <ToggleSwitch x:Uid="FileEplorerPreview_ToggleSwitch_Preview_SVG"
                           Margin="{StaticResource SmallTopMargin}"
-                          IsOn="{Binding Mode=TwoWay, Path=SVGRenderIsEnebled}" />
+                          IsOn="{Binding Mode=TwoWay, Path=SVGRenderIsEnabled}" />
 
             <ToggleSwitch x:Uid="FileEplorerPreview_ToggleSwitch_Preview_MD"
                           Margin="{StaticResource SmallTopMargin}"
-                          IsOn="{Binding Mode=TwoWay, Path=MDRenderIsEnebled}" />
+                          IsOn="{Binding Mode=TwoWay, Path=MDRenderIsEnabled}" />
 
         </StackPanel>
         <StackPanel x:Name="SidePanel"

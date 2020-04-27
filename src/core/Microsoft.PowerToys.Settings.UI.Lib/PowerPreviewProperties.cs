@@ -2,9 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -12,14 +9,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class PowerPreviewProperties
     {
-        public BoolProperty IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL { get; set; }
+        [JsonPropertyName("svg-previewer-toggle-setting")]
+        public BoolProperty EnableSvg { get; set; }
 
-        public BoolProperty PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID { get; set; }
+        [JsonPropertyName("md-previewer-toggle-setting")]
+        public BoolProperty EnableMd { get; set; }
 
         public PowerPreviewProperties()
         {
-            IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL = new BoolProperty();
-            PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID = new BoolProperty();
+            EnableSvg = new BoolProperty();
+            EnableMd = new BoolProperty();
         }
 
         public override string ToString()

@@ -211,15 +211,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             await Launcher.LaunchUriAsync(new Uri("https://github.com/microsoft/PowerToys/releases"));
         }
 
-        private void Restart_Elevated()
+        public void Restart_Elevated()
         {
             GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-            settings.RunElevated = true;
+            settings.CustomActionName = "restart_elevation";
+
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
+            GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
             if (ShellPage.DefaultSndMSGCallback != null)
             {
-                ShellPage.DefaultSndMSGCallback(outsettings.ToString());
+                ShellPage.DefaultSndMSGCallback(customaction.ToString());
             }
         }
     }
