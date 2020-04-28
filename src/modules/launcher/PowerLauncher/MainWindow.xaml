@@ -33,12 +33,12 @@
         </Grid.RowDefinitions>
         <Border 
             x:Name="SearchBoxBorder" 
-            Grid.Row="0" 
-            Margin="0,0,0,8" 
+            Grid.Row="0"
+            Margin="24,24,24,8"  
             BorderThickness="4" 
             CornerRadius="4">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="12" Opacity="0.4" ShadowDepth="4" />
+                <DropShadowEffect BlurRadius="12" Opacity="0.4" ShadowDepth="0" />
             </Border.Effect>
             <xaml:WindowsXamlHost
                 Height="60"
@@ -48,13 +48,13 @@
         </Border>
         <Border 
             x:Name="ListBoxBorder"
-            Grid.Row="1" 
-            Margin="0,8,0,0"
+            Grid.Row="1"
+            Margin="24,8,24,24" 
             BorderThickness="4"
             CornerRadius="4" 
             Visibility="{Binding Results.Visbility}">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="12" Opacity="0.4" ShadowDepth="4" />
+                <DropShadowEffect BlurRadius="12" Opacity="0.4" ShadowDepth="0" />
             </Border.Effect>
             <xaml:WindowsXamlHost
                 x:Name="ListBox"
