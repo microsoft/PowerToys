@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "util.h"
 
+#include <common/common.h>
 #include <common/dpi_aware.h>
 
 typedef BOOL(WINAPI* GetDpiForMonitorInternalFunc)(HMONITOR, UINT, UINT*, UINT*);
@@ -134,4 +135,20 @@ void SizeWindowToRect(HWND window, RECT rect) noexcept
     // Do it again, allowing Windows to resize the window and set correct scaling
     // This fixes Issue #365
     ::SetWindowPlacement(window, &placement);
+}
+
+bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& exludedApps) noexcept
+{
+    auto filtered = get_fancyzones_filtered_window(window);
+    if (!filtered.zonable)
+    {
+        return false;
+    }
+    // Filter out user specified apps
+    CharUpperBuffW(filtered.process_path.data(), (DWORD)filtered.process_path.length());
+    if (find_app_name_in_path(filtered.process_path, exludedApps))
+    {
+        return false;
+    }
+    return true;
 }
