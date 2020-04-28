@@ -294,8 +294,6 @@ ZoneWindow::ZoneWindow(HINSTANCE hinstance)
 
 ZoneWindow::~ZoneWindow()
 {
-    RestoreOrginalTransparency();
-
     Gdiplus::GdiplusShutdown(m_gdiplusToken);
 }
 
