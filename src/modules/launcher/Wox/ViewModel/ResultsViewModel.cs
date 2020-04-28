@@ -21,7 +21,7 @@ namespace Wox.ViewModel
         private readonly object _addResultsLock = new object();
         private readonly object _collectionLock = new object();
         private readonly Settings _settings;
-        private int MaxResults => _settings?.MaxResultsToShow ?? 6;
+        // private int MaxResults => _settings?.MaxResultsToShow ?? 6;
 
         public ResultsViewModel()
         {
@@ -35,7 +35,10 @@ namespace Wox.ViewModel
             {
                 if (e.PropertyName == nameof(_settings.MaxResultsToShow))
                 {
-                    OnPropertyChanged(nameof(MaxHeight));
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        OnPropertyChanged(nameof(MaxHeight));
+                    });
                 }
             };
         }
@@ -44,8 +47,13 @@ namespace Wox.ViewModel
 
         #region Properties
 
-        public int MaxHeight => MaxResults * 50;
-
+        public int MaxHeight
+        {
+            get
+            {
+                return _settings.MaxResultsToShow * 75;
+            }
+        }
         public int SelectedIndex { get; set; }
 
         private ResultViewModel _selectedItem;
@@ -127,12 +135,12 @@ namespace Wox.ViewModel
 
         public void SelectNextPage()
         {
-            SelectedIndex = NewIndex(SelectedIndex + MaxResults);
+            SelectedIndex = NewIndex(SelectedIndex + _settings.MaxResultsToShow);
         }
 
         public void SelectPrevPage()
         {
-            SelectedIndex = NewIndex(SelectedIndex - MaxResults);
+            SelectedIndex = NewIndex(SelectedIndex - _settings.MaxResultsToShow);
         }
 
         public void SelectFirstResult()

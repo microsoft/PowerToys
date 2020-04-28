@@ -28,6 +28,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 settings = new PowerLauncherSettings();
+                settings.properties.open_powerlauncher.Alt = true;
+                settings.properties.open_powerlauncher.Code = (int)Windows.System.VirtualKey.Space;
             }
 
             if (SettingsUtils.SettingsExists())
@@ -42,9 +44,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             callback = (PowerLauncherSettings settings) =>
             {
                 // Propagate changes to Power Launcher through IPC
-                var propertiesJson = JsonSerializer.Serialize(settings.properties);
                 ShellPage.DefaultSndMSGCallback(
-                    string.Format("{{ \"{0}\": {1} }}", PowerLauncherSettings.POWERTOYNAME, JsonSerializer.Serialize(settings.properties)));
+                    string.Format("{{ \"powertoys\": {{ \"{0}\": {1} }} }}", PowerLauncherSettings.POWERTOYNAME, settings.ToJsonString()));
             };
         }
 
@@ -76,7 +77,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     generalSettings.Enabled.PowerLauncher = value;
                     OnPropertyChanged(nameof(EnablePowerLauncher));
-                    SettingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettings);
                     ShellPage.DefaultSndMSGCallback(outgoing.ToString());
                 }
