@@ -47,12 +47,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("enabled")]
         public EnabledModules Enabled { get; set; }
 
+        [JsonPropertyName("download_updates_automatically")]
+        public bool AutoDownloadUpdates { get; set; }
+
         public GeneralSettings()
         {
             this.Packaged = false;
             this.Startup = false;
             this.IsAdmin = false;
             this.IsElevated = false;
+            this.AutoDownloadUpdates = false;
             this.Theme = "system";
             this.SystemTheme = "light";
             this.PowertoysVersion = "v0.15.3";

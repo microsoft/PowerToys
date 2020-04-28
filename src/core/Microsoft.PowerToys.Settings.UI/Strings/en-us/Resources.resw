@@ -524,4 +524,16 @@
   <data name="On.Content" xml:space="preserve">
     <value>On</value>
   </data>
+  <data name="GeneralPage_ToggleSwitch_AlwaysRunElevated.Header" xml:space="preserve">
+    <value>Always Run as Admin</value>
+  </data>
+  <data name="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link.Content" xml:space="preserve">
+    <value>Learn about Admin mode</value>
+  </data>
+  <data name="GeneralPage_ToggleSwitch_AutoDownloadUpdates.Header" xml:space="preserve">
+    <value>Download updates automatically</value>
+  </data>
+  <data name="GeneralPage_ToggleSwitch_RunningAsAdminNote.Text" xml:space="preserve">
+    <value>Currently running as administrator</value>
+  </data>
 </root>
