@@ -16,7 +16,6 @@
         ShowInTaskbar="False"
         Icon="Images/app.png"
         AllowsTransparency="True"
-        DpiChanged="Window_DpiChanged"
         Loaded="OnLoaded"
         Initialized="OnInitialized"
         Closing="OnClosing"
