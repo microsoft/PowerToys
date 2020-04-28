@@ -62,13 +62,10 @@ namespace PowerLauncher
                         shellSettings.UpdateSettings(overloadSettings);
                     }
 
-                    var indexer = PluginManager.AllPlugins.Find(pp => pp.Metadata.Name == "Windows Indexer Plugin");
-                    if (indexer != null)
+                    if (_settings.MaxResultsToShow != overloadSettings.properties.maximum_number_of_results)
                     {
-                        var indexerSettings = indexer.Plugin as ISettingProvider;
-                        indexerSettings.UpdateSettings(overloadSettings);
+                        _settings.MaxResultsToShow = overloadSettings.properties.maximum_number_of_results;
                     }
-
                 }
                 catch (Exception e)
                 {

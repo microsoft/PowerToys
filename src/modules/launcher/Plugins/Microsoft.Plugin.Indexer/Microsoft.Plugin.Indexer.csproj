@@ -43,6 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\core\Microsoft.PowerToys.Settings.UI.Lib\Microsoft.PowerToys.Settings.UI.Lib.csproj" />
     <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
   </ItemGroup>
 

@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             this.FileExplorerPreview = false;
             this.PowerRename = false;
             this.ShortcutGuide = false;
-            this.PowerLauncher = false;
+            this.PowerLauncher = true;
         }
 
         [JsonPropertyName("FancyZones")]

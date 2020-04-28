@@ -82,7 +82,23 @@ namespace Wox.Infrastructure.UserSettings
 
         public double WindowLeft { get; set; }
         public double WindowTop { get; set; }
-        public int MaxResultsToShow { get; set; } = 6;
+
+        private int _maxResultsToShow = 6;
+        public int MaxResultsToShow 
+        {
+            get
+            {
+                return _maxResultsToShow;
+            }
+            set
+            {
+                if (_maxResultsToShow != value)
+                {
+                    _maxResultsToShow = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public int ActivateTimes { get; set; }
 
         // Order defaults to 0 or -1, so 1 will let this property appear last
