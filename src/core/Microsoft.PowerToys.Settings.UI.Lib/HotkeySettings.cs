@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -61,7 +62,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 output.Append("Shift + ");
             }
 
-            output.Append(Key);
+            var localKey = Helper.GetKeyName((uint) Code);
+            output.Append(localKey);
             return output.ToString();
         }
 
