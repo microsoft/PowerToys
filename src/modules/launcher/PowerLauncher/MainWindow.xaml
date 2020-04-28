@@ -33,11 +33,11 @@
         <Border 
             x:Name="SearchBoxBorder" 
             Grid.Row="0" 
-            Margin="8" 
+            Margin="24,24,24,8"  
             BorderThickness="4" 
             CornerRadius="4">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="12" Opacity="0.4" ShadowDepth="4" />
+                <DropShadowEffect BlurRadius="12" Opacity="0.4" ShadowDepth="0" />
             </Border.Effect>
             <xaml:WindowsXamlHost 
                 InitialTypeName="PowerLauncher.UI.LauncherControl" 
@@ -46,12 +46,12 @@
         <Border 
             x:Name="ListBoxBorder"
             Grid.Row="1" 
-            Margin="8" 
+            Margin="24,8,24,24" 
             BorderThickness="4"
             CornerRadius="4" 
             Visibility="{Binding Results.Visbility}">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="12" Opacity="0.4" ShadowDepth="4" />
+                <DropShadowEffect BlurRadius="12" Opacity="0.4" ShadowDepth="0" />
             </Border.Effect>
             <xaml:WindowsXamlHost 
                 InitialTypeName="PowerLauncher.UI.ResultList" 
