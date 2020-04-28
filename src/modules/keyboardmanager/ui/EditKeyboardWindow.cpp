@@ -2,6 +2,7 @@
 #include "EditKeyboardWindow.h"
 #include "SingleKeyRemapControl.h"
 #include "KeyDropDownControl.h"
+#include "XamlBridge.h"
 
 LRESULT CALLBACK EditKeyboardWindowProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -12,6 +13,8 @@ bool isEditKeyboardWindowRegistrationCompleted = false;
 // Holds the native window handle of EditKeyboard Window.
 HWND hwndEditKeyboardNativeWindow = nullptr;
 std::mutex editKeyboardWindowMutex;
+// Stores a pointer to the Xaml Bridge object so that it can be accessed from the window procedure
+XamlBridge* xamlBridgePtr = nullptr;
 
 // Function to create the Edit Keyboard Window
 void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
@@ -60,18 +63,15 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     hwndEditKeyboardNativeWindow = _hWndEditKeyboardWindow;
     hwndLock.unlock();
 
-    // This DesktopWindowXamlSource is the object that enables a non-UWP desktop application
-    // to host UWP controls in any UI element that is associated with a window handle (HWND).
-    DesktopWindowXamlSource desktopSource;
-    // Get handle to corewindow
-    auto interop = desktopSource.as<IDesktopWindowXamlSourceNative>();
-    // Parent the DesktopWindowXamlSource object to current window
-    check_hresult(interop->AttachToWindow(_hWndEditKeyboardWindow));
+    // Create the xaml bridge object
+    XamlBridge xamlBridge(_hWndEditKeyboardWindow);
+    // DesktopSource needs to be declared before the RelativePanel xamlContainer object to avoid errors
+    winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource desktopSource;
+    // Create the desktop window xaml source object and set its content
+    hWndXamlIslandEditKeyboardWindow = xamlBridge.InitDesktopWindowsXamlSource(desktopSource);
 
-    // Get the new child window's hwnd
-    interop->get_WindowHandle(&hWndXamlIslandEditKeyboardWindow);
-    // Update the xaml island window size becuase initially is 0,0
-    SetWindowPos(hWndXamlIslandEditKeyboardWindow, 0, 0, 0, 400, 400, SWP_SHOWWINDOW);
+    // Set the pointer to the xaml bridge object
+    xamlBridgePtr = &xamlBridge;
 
     // Header for the window
     Windows::UI::Xaml::Controls::RelativePanel header;
@@ -310,10 +310,9 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     xamlContainer.SetAlignRightWithPanel(scrollViewer, true);
     xamlContainer.Children().Append(header);
     xamlContainer.Children().Append(scrollViewer);
-
     xamlContainer.UpdateLayout();
-    desktopSource.Content(xamlContainer);
 
+    desktopSource.Content(xamlContainer);
     ////End XAML Island section
     if (_hWndEditKeyboardWindow)
     {
@@ -322,17 +321,16 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     }
 
     // Message loop:
-    MSG msg = {};
-    while (GetMessage(&msg, NULL, 0, 0))
-    {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
-    desktopSource.Close();
+    xamlBridge.MessageLoop();
 
+    // Reset pointers to nullptr
+    xamlBridgePtr = nullptr;
     hWndXamlIslandEditKeyboardWindow = nullptr;
     hwndLock.lock();
     hwndEditKeyboardNativeWindow = nullptr;
+
+    // Cannot be done in WM_DESTROY because that causes crashes due to fatal app exit
+    xamlBridge.ClearXamlIslands();
 }
 
 LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wParam, LPARAM lParam)
@@ -346,10 +344,17 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wPar
         GetClientRect(hWnd, &rcClient);
         SetWindowPos(hWndXamlIslandEditKeyboardWindow, 0, rcClient.left, rcClient.top, rcClient.right, rcClient.bottom, SWP_SHOWWINDOW);
         break;
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
     default:
+        // If the Xaml Bridge object exists, then use it's message handler to handle keyboard focus operations
+        if (xamlBridgePtr != nullptr)
+        {
+            return xamlBridgePtr->MessageHandler(messageCode, wParam, lParam);
+        }
+        else if (messageCode == WM_DESTROY)
+        {
+            PostQuitMessage(0);
+            break;
+        }
         return DefWindowProc(hWnd, messageCode, wParam, lParam);
         break;
     }
@@ -357,6 +362,7 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wPar
     return 0;
 }
 
+// Function to check if there is already a window active if yes bring to foreground
 bool CheckEditKeyboardWindowActive()
 {
     bool result = false;

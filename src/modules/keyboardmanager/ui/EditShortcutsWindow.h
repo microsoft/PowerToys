@@ -6,5 +6,5 @@
 // Function to create the Edit Shortcuts Window
 void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState);
 
-// Function to check if there is already a window active if yes bring to foreground.
+// Function to check if there is already a window active if yes bring to foreground
 bool CheckEditShortcutsWindowActive();

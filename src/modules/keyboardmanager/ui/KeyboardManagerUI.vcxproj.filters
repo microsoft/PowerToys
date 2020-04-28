@@ -7,6 +7,7 @@
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="SingleKeyRemapControl.cpp" />
     <ClCompile Include="KeyDropDownControl.cpp" />
+    <ClCompile Include="XamlBridge.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EditKeyboardWindow.h" />
@@ -15,6 +16,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="SingleKeyRemapControl.h" />
     <ClInclude Include="KeyDropDownControl.h" />
+    <ClInclude Include="XamlBridge.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
