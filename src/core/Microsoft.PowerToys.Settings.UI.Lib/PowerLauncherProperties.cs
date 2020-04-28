@@ -6,8 +6,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class PowerLauncherProperties
     {
-        public bool enable_powerlauncher { get; set; }
-
         public string search_result_preference { get; set; }
 
         public string search_type_preference { get; set; }

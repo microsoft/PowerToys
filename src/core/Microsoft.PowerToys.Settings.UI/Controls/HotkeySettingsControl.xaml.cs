@@ -23,6 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 null);
 
         private HotkeySettings hotkeySettings;
+        private HotkeySettings internalSettings = new HotkeySettings();
 
         public HotkeySettings HotkeySettings
         {
@@ -45,7 +46,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public HotkeySettingsControl()
         {
             InitializeComponent();
+            internalSettings = new HotkeySettings();
+
             HotkeyTextBox.PreviewKeyDown += HotkeyTextBox_KeyDown;
+            HotkeyTextBox.LostFocus += HotkeyTextBox_LosingFocus;
         }
 
         private static bool IsDown(Windows.System.VirtualKey key)
@@ -63,6 +67,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 e.Key == Windows.System.VirtualKey.Menu ||
                 e.Key == Windows.System.VirtualKey.Shift)
             {
+                return;
+            }
+
+            if (e.Key == Windows.System.VirtualKey.Escape)
+            {
+                internalSettings = new HotkeySettings();
+                HotkeySettings = new HotkeySettings();
                 return;
             }
 
@@ -92,9 +103,19 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             settings.Key = Lib.Utilities.Helper.GetKeyName((uint)e.Key);
 
-            // TODO: Check that e.OriginalKey is the ScanCode. It is not clear from docs.
             settings.Code = (int)e.OriginalKey;
-            HotkeySettings = settings;
+            internalSettings = settings;
+            HotkeyTextBox.Text = internalSettings.ToString();
+        }
+
+        private void HotkeyTextBox_LosingFocus(object sender, RoutedEventArgs e)
+        {
+            if (internalSettings.IsValid() || internalSettings.IsEmpty())
+            {
+                HotkeySettings = internalSettings;
+            }
+
+            HotkeyTextBox.Text = hotkeySettings.ToString();
         }
     }
 }

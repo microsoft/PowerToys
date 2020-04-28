@@ -1,0 +1,66 @@
+﻿<Window x:Class="PowerLauncher.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Wox.ViewModel;assembly=Wox"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+        mc:Ignorable="d"
+        xmlns:xaml="clr-namespace:Microsoft.Toolkit.Wpf.UI.XamlHost;assembly=Microsoft.Toolkit.Wpf.UI.XamlHost"
+        Title="PowerLaunch"
+        Topmost="True"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        WindowStartupLocation="Manual"
+        AllowDrop="True"
+        ShowInTaskbar="False"
+        Icon="Images/app.png"
+        AllowsTransparency="True"
+        Loaded="OnLoaded"
+        Initialized="OnInitialized"
+        Closing="OnClosing"
+        Drop="OnDrop"
+        LocationChanged="OnLocationChanged"
+        Deactivated="OnDeactivated"
+        Background="Transparent"
+        Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+        d:DataContext="{d:DesignInstance vm:MainViewModel}">
+    <Grid Width="720">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Border 
+            x:Name="SearchBoxBorder" 
+            Grid.Row="0" 
+            Margin="8" 
+            BorderThickness="4" 
+            CornerRadius="4">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="12" Opacity="0.4" ShadowDepth="4" />
+            </Border.Effect>
+            <xaml:WindowsXamlHost 
+                InitialTypeName="PowerLauncher.UI.LauncherControl" 
+                ChildChanged="WindowsXamlHostTextBox_ChildChanged" />
+        </Border>
+        <Border 
+            x:Name="ListBoxBorder"
+            Grid.Row="1" 
+            Margin="8" 
+            BorderThickness="4"
+            CornerRadius="4" 
+            Visibility="{Binding Results.Visbility}">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="12" Opacity="0.4" ShadowDepth="4" />
+            </Border.Effect>
+            <xaml:WindowsXamlHost 
+                InitialTypeName="PowerLauncher.UI.ResultList" 
+                ChildChanged="WindowsXamlHostListView_ChildChanged" 
+                PreviewMouseDown="WindowsXamlHost_PreviewMouseDown" />
+        </Border>
+    </Grid> 
+    <Window.InputBindings>
+        <KeyBinding Key="Escape" Command="{Binding EscCommand}" />
+        <KeyBinding Key="Enter" Command="{Binding OpenResultCommand}" />
+    </Window.InputBindings>
+</Window>
