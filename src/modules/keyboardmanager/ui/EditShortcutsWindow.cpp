@@ -14,7 +14,7 @@ bool isEditShortcutsWindowRegistrationCompleted = false;
 HWND hwndEditShortcutsNativeWindow = nullptr;
 std::mutex editShortcutsWindowMutex;
 // Stores a pointer to the Xaml Bridge object so that it can be accessed from the window procedure
-XamlBridge* xamlBridgePtr = nullptr;
+static XamlBridge* xamlBridgePtr = nullptr;
 
 // Function to create the Edit Shortcuts Window
 void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)

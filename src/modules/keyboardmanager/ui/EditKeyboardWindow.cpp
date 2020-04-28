@@ -14,7 +14,7 @@ bool isEditKeyboardWindowRegistrationCompleted = false;
 HWND hwndEditKeyboardNativeWindow = nullptr;
 std::mutex editKeyboardWindowMutex;
 // Stores a pointer to the Xaml Bridge object so that it can be accessed from the window procedure
-XamlBridge* xamlBridgePtr = nullptr;
+static XamlBridge* xamlBridgePtr = nullptr;
 
 // Function to create the Edit Keyboard Window
 void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
