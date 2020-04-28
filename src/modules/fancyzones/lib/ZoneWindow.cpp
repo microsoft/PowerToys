@@ -499,23 +499,28 @@ ZoneWindow::SaveWindowProcessToZoneIndex(HWND window) noexcept
 IFACEMETHODIMP_(void)
 ZoneWindow::ShowZoneWindow() noexcept
 {
-    if (m_window)
+    auto window = m_window.get();
+    if (!window)
     {
-        m_flashMode = false;
-
-        UINT flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
-
-        HWND windowInsertAfter = m_windowMoveSize;
-        if (windowInsertAfter == nullptr)
-        {
-            windowInsertAfter = HWND_TOPMOST;
-        }
-
-        SetWindowPos(m_window.get(), windowInsertAfter, 0, 0, 0, 0, flags);
-
-        AnimateWindow(m_window.get(), m_showAnimationDuration, AW_BLEND);
-        InvalidateRect(m_window.get(), nullptr, true);
+        return;
     }
+
+    m_flashMode = false;
+
+    UINT flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
+
+    HWND windowInsertAfter = m_windowMoveSize;
+    if (windowInsertAfter == nullptr)
+    {
+        windowInsertAfter = HWND_TOPMOST;
+    }
+
+    SetWindowPos(window, windowInsertAfter, 0, 0, 0, 0, flags);
+
+    std::thread{ [=]() {
+        AnimateWindow(window, m_showAnimationDuration, AW_BLEND);
+        InvalidateRect(window, nullptr, true);
+    } }.detach();
 }
 
 IFACEMETHODIMP_(void)
