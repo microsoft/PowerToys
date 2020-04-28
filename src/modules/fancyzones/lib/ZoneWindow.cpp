@@ -365,8 +365,6 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnter(HWND window, bool dragEnabled) noexcept
         decltype(m_draggedWindowInitialAlpha) draggedWindowInitialAlpha;
         decltype(m_draggedWindowDwFlags) draggedWindowDwFlags;
 
-        RestoreOrginalTransparency();
-
         draggedWindowExstyle = GetWindowLong(window, GWL_EXSTYLE);
 
         draggedWindow = window;
