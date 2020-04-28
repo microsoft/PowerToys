@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         {
             properties = new PowerLauncherProperties();
             version = "1";
-            name = "_unset_";
+            name = POWERTOYNAME;
         }
 
         public virtual void Save()
