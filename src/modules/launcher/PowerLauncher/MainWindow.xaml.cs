@@ -72,20 +72,8 @@ namespace PowerLauncher
 
         private void InitializePosition()
         {
-            double dpiX = 1, dpiY = 1;
-
-            PresentationSource source = PresentationSource.FromVisual(this);
-            if (source != null)
-            {
-                dpiX = source.CompositionTarget.TransformToDevice.M11;
-                dpiY = source.CompositionTarget.TransformToDevice.M22;
-            }
-
-            var location = Screen.PrimaryScreen.WorkingArea;
-            var totalHeight = this.SearchBoxBorder.Margin.Top + this.SearchBoxBorder.Margin.Bottom + this.SearchBox.Height + this.ListBoxBorder.Margin.Top + this.ListBoxBorder.Margin.Bottom + MAX_LIST_HEIGHT;
-            this.Top = (location.Height / (2 * dpiY) - totalHeight / 2);
-            this.Left = (location.Width / (2 * dpiX) - this.Width / 2);         
-
+            Top = WindowTop();
+            Left = WindowLeft();
             _settings.WindowTop = Top;
             _settings.WindowLeft = Left;
         }
@@ -135,7 +123,8 @@ namespace PowerLauncher
             }
             else
             {
-                InitializePosition();
+                Left = WindowLeft();
+                Top = WindowTop();
             }
         }
 
@@ -146,6 +135,25 @@ namespace PowerLauncher
                 _settings.WindowLeft = Left;
                 _settings.WindowTop = Top;
             }
+        }
+
+        private double WindowLeft()
+        {
+            var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
+            var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.X, 0);
+            var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
+            var left = (dip2.X - this.Width) / 2 + dip1.X;
+            return left;
+        }
+
+        private double WindowTop()
+        {
+            var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
+            var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
+            var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
+            var totalHeight = this.SearchBoxBorder.Margin.Top + this.SearchBoxBorder.Margin.Bottom + this.SearchBox.Height + this.ListBoxBorder.Margin.Top + this.ListBoxBorder.Margin.Bottom + MAX_LIST_HEIGHT;
+            var top = (dip2.Y - totalHeight) / 4 + dip1.Y;
+            return top;
         }
 
         private PowerLauncher.UI.LauncherControl _launcher = null;
