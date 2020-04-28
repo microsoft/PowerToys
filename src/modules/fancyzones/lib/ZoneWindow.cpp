@@ -292,8 +292,6 @@ ZoneWindow::ZoneWindow(HINSTANCE hinstance)
 
 ZoneWindow::~ZoneWindow()
 {
-    RestoreOrginalTransparency();
-
     Gdiplus::GdiplusShutdown(gdiplusToken);
 }
 
@@ -354,8 +352,6 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnter(HWND window, bool dragEnabled) noexcept
 
     if (m_host->isMakeDraggedWindowTransparentActive())
     {
-        RestoreOrginalTransparency();
-
         draggedWindowExstyle = GetWindowLong(window, GWL_EXSTYLE);
 
         draggedWindow = window;
