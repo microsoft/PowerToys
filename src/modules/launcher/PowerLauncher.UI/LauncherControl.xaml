@@ -82,7 +82,7 @@
                             <Border 
                                 x:Name="BorderElement"
                                 Grid.Row="1" 
-                                Background="{TemplateBinding Background}"
+                                Background="Transparent"
                                 BorderBrush="{TemplateBinding BorderBrush}"                     
                                 Grid.ColumnSpan="3"
                                 Grid.RowSpan="1" />
@@ -124,7 +124,7 @@
         </Style>
     </UserControl.Resources>
     <Grid 
-        Background="{ThemeResource TextControlBackground}"
+        Background="{StaticResource BackdropAcrylicBrush}"
         Height="60"
         VerticalAlignment="Top">
         
@@ -136,7 +136,7 @@
         <TextBlock
             x:Name="AutoCompleteTextBlock"
             x:FieldModifier="public"
-            Opacity="0.6" 
+            Opacity="0.6"
             Foreground="{ThemeResource TextControlPlaceholderForeground}"
             AllowFocusOnInteraction="False"
             ScrollViewer.BringIntoViewOnFocusChange="False"

@@ -322,29 +322,6 @@ namespace PowerLauncher
             _launcher.AutoCompleteTextBlock.Text = ListView_FirstItem(_viewModel.QueryText);
         }
 
-        private void ResultsList_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            ResultViewModel result = e?.ClickedItem as ResultViewModel;
-            if(result != null)
-            {
-                _viewModel.Results.SelectedItem = result;
-                _viewModel.OpenResultCommand.Execute(null);
-            }
-        }
-
-        //private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
-        //{
-        //    if (args != null && args.ChosenSuggestion != null)
-        //    {
-        //        ResultViewModel result = (ResultViewModel)args.ChosenSuggestion;
-        //        if (result != null)
-        //        {
-        //            _viewModel.Results.SelectedItem = result;
-        //            _viewModel.OpenResultCommand.Execute(null);
-        //        }
-        //    }
-        //}
-
         private const int millisecondsToWait = 200;
         private static DateTime s_lastTimeOfTyping;
 
@@ -399,10 +376,10 @@ namespace PowerLauncher
         {
             var text = ((Windows.UI.Xaml.Controls.TextBox)sender).Text;
             //To clear the auto-suggest immediately instead of waiting for selection changed
-            //if (text == String.Empty)
-            //{
-            //    _launcher.AutoCompleteTextBox.Text = String.Empty;
-            //}
+            if (text == String.Empty)
+            {
+                _launcher.AutoCompleteTextBlock.Text = String.Empty;
+            }
 
             _viewModel.QueryText = text;
             var latestTimeOfTyping = DateTime.Now;

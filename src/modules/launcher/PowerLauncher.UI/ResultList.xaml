@@ -43,7 +43,8 @@
     </UserControl.Resources>
     
     <Grid 
-        x:Name="PowerBar"    
+        x:Name="PowerBar"  
+        Background="{StaticResource BackdropAcrylicBrush}"
         VerticalAlignment="Top">
 
         <ListView

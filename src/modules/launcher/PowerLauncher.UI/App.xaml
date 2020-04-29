@@ -12,13 +12,17 @@
             </ResourceDictionary.MergedDictionaries>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
+                    <Color x:Key="BackgroundColor">#FFf2f1f2</Color>
                     <SolidColorBrush x:Key="PrimaryTextColor" Color="Black"/>
-                    <SolidColorBrush x:Key="SystemChromeLow" Color="{ThemeResource SystemChromeLowColor}" />
+                    <SolidColorBrush x:Key="SystemChromeLow" Color="{StaticResource BackgroundColor}" />
+                    <AcrylicBrush x:Key="BackdropAcrylicBrush" BackgroundSource="Backdrop" TintColor="{StaticResource BackgroundColor}" TintOpacity="0.9" FallbackColor="{StaticResource BackgroundColor}"/>
                 </ResourceDictionary>
 
                 <ResourceDictionary x:Key="Default">
                     <SolidColorBrush x:Key="PrimaryTextColor" Color="White"/>
-                    <SolidColorBrush x:Key="SystemChromeLow" Color="{ThemeResource SystemChromeLowColor}" />
+                    <Color x:Key="BackgroundColor">#FF484848</Color>
+                    <SolidColorBrush x:Key="SystemChromeLow" Color="{ThemeResource BackgroundColor}" />
+                    <AcrylicBrush x:Key="BackdropAcrylicBrush" BackgroundSource="Backdrop" TintColor="{StaticResource BackgroundColor}" TintOpacity="0.9" FallbackColor="{StaticResource BackgroundColor}"/>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
 
