@@ -391,6 +391,7 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
     //    return false;
     //}
 
+    std::shared_lock readLock(m_lock);
     if (m_windowMoveHandler.IsDragEnabled() && shift)
     {
         return true;
@@ -782,6 +783,7 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
                 auto currMonitorInfo = std::find(std::begin(monitorInfo), std::end(monitorInfo), current);
                 do
                 {
+                    std::unique_lock writeLock(m_lock);
                     if (m_windowMoveHandler.MoveWindowIntoZoneByDirection(*currMonitorInfo, window, vkCode, false /* cycle through zones */, m_zoneWindowMap))
                     {
                         return true;
@@ -808,6 +810,7 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
             else
             {
                 // Single monitor environment.
+                std::unique_lock writeLock(m_lock);
                 return m_windowMoveHandler.MoveWindowIntoZoneByDirection(current, window, vkCode, true /* cycle through zones */, m_zoneWindowMap);
             }
         }
