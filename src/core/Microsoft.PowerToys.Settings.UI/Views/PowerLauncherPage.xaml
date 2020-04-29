@@ -119,8 +119,8 @@
 
             <CheckBox x:Uid="PowerLauncher_OverrideWinRKey" 
                       Margin="{StaticResource SmallTopMargin}"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideWinRKey}"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                      IsChecked="False"
+                      IsEnabled="False"
                       />
 
             <CheckBox x:Uid="PowerLauncher_OverrideWinSKey"
