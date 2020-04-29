@@ -7,7 +7,6 @@
 #include <msi.h>
 #include <common/common.h>
 #include <common/json.h>
-#include <common/version.h>
 #include <common/settings_helpers.h>
 #include <common/winstore.h>
 #include <common/notifications.h>

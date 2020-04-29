@@ -4,7 +4,6 @@
 #include <filesystem>
 #include "tray_icon.h"
 #include "powertoy_module.h"
-#include "lowlevel_keyboard_event.h"
 #include "trace.h"
 #include "general_settings.h"
 #include "restart_elevated.h"
@@ -25,7 +24,6 @@
 #include <winrt/Windows.System.h>
 
 #if _DEBUG && _WIN64
-#include "unhandled_exception_handler.h"
 #endif
 #include <common/notifications/fancyzones_notifications.h>
 
