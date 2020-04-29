@@ -583,6 +583,7 @@
         <?foreach File in Logo.scale-200.png;SplashScreen.png;StoreLogo.scale-100.png?>
           <File Source="$(var.BinX64Dir)SettingsUIRunner\Assets\$(var.File)" />
         <?endforeach?>
+        <File Id="SettingsV2_StoreLogo" Source="$(var.BinX64Dir)SettingsUIRunner\Assets\StoreLogo.png" />
         <File Id="Square150x150Logo" Source="$(var.BinX64Dir)SettingsUIRunner\Assets\Square150x150Logo.scale-200.png" />
         <File Id="Square44x44Logo_targetsize_24_altform_unplated" Source="$(var.BinX64Dir)SettingsUIRunner\Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
         <File Id="Wide310x150Logo" Source="$(var.BinX64Dir)SettingsUIRunner\Assets\Wide310x150Logo.scale-200.png" />
