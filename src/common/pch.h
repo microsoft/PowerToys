@@ -1,4 +1,5 @@
 #include <winrt/base.h>
+#include <winrt/Windows.Foundation.Collections.h>
 #include <Windows.h>
 #include <dxgi1_3.h>
 #include <d3d11_2.h>

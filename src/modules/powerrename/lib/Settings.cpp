@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "Settings.h"
 #include "PowerRenameInterfaces.h"
 #include "settings_helpers.h"

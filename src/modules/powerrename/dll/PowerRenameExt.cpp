@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "PowerRenameExt.h"
 #include <PowerRenameUI.h>
 #include <PowerRenameItem.h>

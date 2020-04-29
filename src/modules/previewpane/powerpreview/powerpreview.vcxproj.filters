@@ -23,5 +23,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="powerpreview.def" />
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

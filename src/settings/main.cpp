@@ -39,8 +39,6 @@ HWND g_main_wnd = nullptr;
 WebViewControl g_webview = nullptr;
 WebViewControlProcess g_webview_process = nullptr;
 
-StreamUriResolverFromFile local_uri_resolver;
-
 // Windows message for receiving copied data to send to the webview.
 UINT wm_data_for_webview = 0;
 
@@ -70,12 +68,13 @@ void NavigateToLocalhostReactServer()
 
 void NavigateToUri(_In_ LPCWSTR uri_as_string)
 {
+    auto uri_resolver = winrt::make_self<StreamUriResolverFromFile>();
     // initialize the base_path for the html content relative to the executable.
-    WINRT_VERIFY(GetModuleFileName(nullptr, local_uri_resolver.base_path, MAX_PATH));
-    WINRT_VERIFY(PathRemoveFileSpec(local_uri_resolver.base_path));
-    wcscat_s(local_uri_resolver.base_path, URI_CONTENT_ID);
+    WINRT_VERIFY(GetModuleFileName(nullptr, uri_resolver->base_path, MAX_PATH));
+    WINRT_VERIFY(PathRemoveFileSpec(uri_resolver->base_path));
+    wcscat_s(uri_resolver->base_path, URI_CONTENT_ID);
     Uri url = g_webview.BuildLocalStreamUri(hstring(URI_CONTENT_ID), hstring(uri_as_string));
-    g_webview.NavigateToLocalStreamUri(url, local_uri_resolver);
+    g_webview.NavigateToLocalStreamUri(url, *uri_resolver);
 }
 
 Rect client_rect_to_bounds_rect(_In_ HWND hwnd)
