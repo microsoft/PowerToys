@@ -92,7 +92,7 @@ Our plan for all the [goals and utilities for v1.0 detailed over here in the wik
 
 ### April 2020 Update
 
-Our goals for 0.17 release cycle was updatability and stability.
+Our goals for 0.17 release cycle were updatability and stability.
 
 **Auto-updating:** We just added in the code for doing updating, so the first chance to experience this will be when 0.18 is release. We’re also seeing how aggressive everyone wants with this so right now, you’ll have to click “Install” for it to kick off the installer. This is something we’d love feedback on.
 
