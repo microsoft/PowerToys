@@ -137,7 +137,7 @@ void SizeWindowToRect(HWND window, RECT rect) noexcept
     ::SetWindowPlacement(window, &placement);
 }
 
-bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& exludedApps) noexcept
+bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& excludedApps) noexcept
 {
     auto filtered = get_fancyzones_filtered_window(window);
     if (!filtered.zonable)
@@ -146,7 +146,7 @@ bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& exludedAp
     }
     // Filter out user specified apps
     CharUpperBuffW(filtered.process_path.data(), (DWORD)filtered.process_path.length());
-    if (find_app_name_in_path(filtered.process_path, exludedApps))
+    if (find_app_name_in_path(filtered.process_path, excludedApps))
     {
         return false;
     }
