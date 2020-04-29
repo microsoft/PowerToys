@@ -37,7 +37,7 @@
             BorderThickness="4" 
             CornerRadius="4">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="12" Opacity="0.4" ShadowDepth="0" />
+                <DropShadowEffect BlurRadius="16" Opacity="0.8" ShadowDepth="0" />
             </Border.Effect>
             <xaml:WindowsXamlHost 
                 InitialTypeName="PowerLauncher.UI.LauncherControl" 
@@ -51,7 +51,7 @@
             CornerRadius="4" 
             Visibility="{Binding Results.Visbility}">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="12" Opacity="0.4" ShadowDepth="0" />
+                <DropShadowEffect BlurRadius="16" Opacity="0.8" ShadowDepth="0" />
             </Border.Effect>
             <xaml:WindowsXamlHost 
                 InitialTypeName="PowerLauncher.UI.ResultList" 

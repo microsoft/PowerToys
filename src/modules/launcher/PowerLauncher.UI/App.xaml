@@ -36,7 +36,7 @@
 
             <Style x:Key="IconOnlyButton" TargetType="Button">
                 <Setter Property="Background" Value="{ThemeResource ButtonRevealBackground}" />
-                <Setter Property="Foreground" Value="{ThemeResource PrimaryTextColor}" />
+                <!--<Setter Property="Foreground" Value="{ThemeResource PrimaryTextColor}" />-->
                 <!--<Setter Property="BorderBrush" Value="0" />-->
                 <Setter Property="BorderThickness" Value="{ThemeResource ButtonRevealBorderThemeThickness}" />
                 <Setter Property="Padding" Value="{ThemeResource ButtonPadding}" />

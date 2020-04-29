@@ -44,7 +44,7 @@
     
     <Grid 
         x:Name="PowerBar"  
-        Background="{StaticResource BackdropAcrylicBrush}"
+        Background="{ThemeResource BackdropAcrylicBrush}"
         VerticalAlignment="Top">
 
         <ListView

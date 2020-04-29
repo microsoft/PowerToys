@@ -400,7 +400,7 @@ namespace PowerLauncher
             }
         }
 
-private void WindowsXamlHost_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        private void WindowsXamlHost_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             //    if (sender != null && e.OriginalSource != null)
             //    {

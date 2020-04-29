@@ -124,7 +124,7 @@
         </Style>
     </UserControl.Resources>
     <Grid 
-        Background="{StaticResource BackdropAcrylicBrush}"
+        Background="{ThemeResource BackdropAcrylicBrush}"
         Height="60"
         VerticalAlignment="Top">
         
