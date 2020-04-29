@@ -258,7 +258,7 @@ namespace FancyZonesUnitTests
                 }
     };
 
-    TEST_CLASS (FancyZonesIFancyZonesCallbackUnitTests)
+    TEST_CLASS (FZIFancyZonesCallbackUnitTests)
     {
         HINSTANCE m_hInst{};
         std::wstring m_settingsLocation = L"FancyZonesUnitTests";
