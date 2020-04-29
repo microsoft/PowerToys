@@ -1,0 +1,15 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:String x:Key="wox_plugin_folder_delete">Sil</system:String>
+    <system:String x:Key="wox_plugin_folder_edit">Düzenle</system:String>
+    <system:String x:Key="wox_plugin_folder_add">Ekle</system:String>
+    <system:String x:Key="wox_plugin_folder_folder_path">Klasör Konumu</system:String>
+    <system:String x:Key="wox_plugin_folder_select_folder_link_warning">Lütfen bir klasör bağlantısı seçin</system:String>
+    <system:String x:Key="wox_plugin_folder_delete_folder_link">{0} bağlantısını silmek istediğinize emin misiniz?</system:String>
+
+    <system:String x:Key="wox_plugin_folder_plugin_name">Klasör</system:String>
+    <system:String x:Key="wox_plugin_folder_plugin_description">Favori klasörünüzü doğrudan Wox'tan açın</system:String>
+
+</ResourceDictionary>

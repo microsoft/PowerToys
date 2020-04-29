@@ -16,6 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             this.FileExplorerPreview = false;
             this.PowerRename = false;
             this.ShortcutGuide = false;
+            this.PowerLauncher = true;
         }
 
         [JsonPropertyName("FancyZones")]
@@ -34,6 +35,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         [JsonPropertyName("Keyboard Manager")]
         public bool KeyboardManager { get; set; }
+
+        [JsonPropertyName("Launcher")]
+        public bool PowerLauncher { get; set; }
 
         public string ToJsonString()
         {
