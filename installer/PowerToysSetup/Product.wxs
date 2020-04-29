@@ -533,7 +533,7 @@
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2AssetsInstallFolder" FileSource="$(var.BinX64Dir)\SettingsUIRunner\Assets">
       <Component Id="SettingsV2Assets" Guid="705B863B-D813-49B9-BAA1-210DA913F765" Win64="yes">
-        <?foreach File in Logo.scale-200.png;SplashScreen.png;Square150x150Logo.scale-200.png;Square44x44Logo.scale-200.png;Square44x44Logo.targetsize-24_altform-unplated.png;StoreLogo.png;StoreLogo.scale-100.png;Wide310x150Logo.scale-200.png?>
+        <?foreach File in Logo.scale-200.png;SplashScreen.png;Square150x150Logo.scale-200.png;Square44x44Logo.scale-200.png;Square44x44Logo.targetsize-24_altform-unplated.png;StoreLogo.scale-100.png;Wide310x150Logo.scale-200.png?>
           <File Source="$(var.BinX64Dir)\SettingsUIRunner\Assets\$(var.File)" />
         <?endforeach?>
       </Component>
