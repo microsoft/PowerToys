@@ -156,8 +156,6 @@ namespace PowerLauncher
             var dpi1 = screen.WorkingArea.X / dpiX;
             var dpi2 = screen.WorkingArea.Width / dpiX;
             var left = (dpi2 - this.Width) / 2 + dpi1;
-            Debug.WriteLine("WorkingAreaX :" + screen.WorkingArea.X + " WorkingAreaWidth :" + screen.WorkingArea.Width + " width :" + Width);
-            Debug.WriteLine("Left :" + left + " DPiX :" + dpiX);
             return left;
         }
 
@@ -170,7 +168,6 @@ namespace PowerLauncher
             var dpi2 = screen.WorkingArea.Height / dpiY;
             var totalHeight = this.SearchBoxBorder.Margin.Top + this.SearchBoxBorder.Margin.Bottom + this.SearchBox.Height + this.ListBoxBorder.Margin.Top + this.ListBoxBorder.Margin.Bottom + MAX_LIST_HEIGHT;
             var top = (dpi2 - totalHeight) / 4 + dpi1;
-            Debug.WriteLine("Top :" + top + " DPiY :" + dpiY);
             return top;
         }
 
