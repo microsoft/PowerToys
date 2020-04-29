@@ -17,7 +17,6 @@ public:
     WindowMoveHandlerPrivate(const winrt::com_ptr<IFancyZonesSettings>& settings) :
         m_settings(settings)
     {};
-    ~WindowMoveHandlerPrivate() = default;
 
     bool IsDragEnabled() const noexcept
     {
