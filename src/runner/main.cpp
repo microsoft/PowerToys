@@ -127,7 +127,6 @@ int runner(bool isProcessElevated)
             L"shortcut_guide.dll",
             L"fancyzones.dll",
             L"PowerRenameExt.dll",
-            L"Microsoft.Launcher.dll",
             L"ImageResizerExt.dll",
             L"powerpreview.dll",
             L"WindowWalker.dll",

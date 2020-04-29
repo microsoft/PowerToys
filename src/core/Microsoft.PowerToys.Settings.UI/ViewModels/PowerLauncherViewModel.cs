@@ -13,7 +13,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     public class PowerLauncherViewModel : Observable
     {
         private PowerLauncherSettings settings;
-        private GeneralSettings generalSettings;
 
         public delegate void SendCallback(PowerLauncherSettings settings);
 
@@ -21,12 +20,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public PowerLauncherViewModel()
         {
-            callback = (PowerLauncherSettings settings) =>
-            {
-                // Propagate changes to Power Launcher through IPC
-                ShellPage.DefaultSndMSGCallback(
-                    string.Format("{{ \"powertoys\": {{ \"{0}\": {1} }} }}", PowerLauncherSettings.POWERTOYNAME, JsonSerializer.Serialize(settings)));
-            };
             if (SettingsUtils.SettingsExists(PowerLauncherSettings.POWERTOYNAME))
             {
                 settings = SettingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.POWERTOYNAME);
@@ -34,20 +27,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 settings = new PowerLauncherSettings();
-                settings.properties.open_powerlauncher.Alt = true;
-                settings.properties.open_powerlauncher.Code = (int)Windows.System.VirtualKey.Space;
-                settings.properties.maximum_number_of_results = 4;
-                callback(settings);
             }
 
-            if (SettingsUtils.SettingsExists())
+            callback = (PowerLauncherSettings settings) =>
             {
-                generalSettings = SettingsUtils.GetSettings<GeneralSettings>();
-            }
-            else
-            {
-                generalSettings = new GeneralSettings();
-            }
+                // Propagate changes to Power Launcher through IPC
+                var propertiesJson = JsonSerializer.Serialize(settings.properties);
+                ShellPage.DefaultSndMSGCallback(
+                    string.Format("{{ \"{0}\": {1} }}", PowerLauncherSettings.POWERTOYNAME, JsonSerializer.Serialize(settings.properties)));
+            };
         }
 
         public PowerLauncherViewModel(PowerLauncherSettings settings, SendCallback callback)
@@ -61,6 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Notify UI of property change
             OnPropertyChanged(propertyName);
 
+            settings.Save();
             callback(settings);
         }
 
@@ -68,17 +57,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return generalSettings.Enabled.PowerLauncher;
+                return settings.properties.enable_powerlauncher;
             }
 
             set
             {
-                if (generalSettings.Enabled.PowerLauncher != value)
+                if (settings.properties.enable_powerlauncher != value)
                 {
-                    generalSettings.Enabled.PowerLauncher = value;
-                    OnPropertyChanged(nameof(EnablePowerLauncher));
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettings);
-                    ShellPage.DefaultSndMSGCallback(outgoing.ToString());
+                    settings.properties.enable_powerlauncher = value;
+                    UpdateSettings();
                 }
             }
         }

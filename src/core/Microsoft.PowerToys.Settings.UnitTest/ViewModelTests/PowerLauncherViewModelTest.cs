@@ -48,6 +48,17 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void IsEnabled_ShouldEnableModule()
+        {
+            viewModel.EnablePowerLauncher = true;
+
+            Assert.AreEqual(sendCallbackMock.TimesSent, 1);
+            Assert.AreEqual(mockSettings.TimesSaved, 1);
+
+            Assert.IsTrue(mockSettings.properties.enable_powerlauncher == true);
+        }
+
+        [TestMethod]
         public void SearchPreference_ShouldUpdatePreferences()
         {
             viewModel.SearchResultPreference = "SearchOptionsAreNotValidated";

@@ -8,7 +8,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class PowerLauncherSettings : BasePTModuleSettings
     {
-        public const string POWERTOYNAME = "Launcher";
+        public const string POWERTOYNAME = "PowerLauncher";
 
         public PowerLauncherProperties properties { get; set; }
 
@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         {
             properties = new PowerLauncherProperties();
             version = "1";
-            name = POWERTOYNAME;
+            name = "_unset_";
         }
 
         public virtual void Save()

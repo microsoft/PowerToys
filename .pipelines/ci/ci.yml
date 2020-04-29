@@ -4,7 +4,6 @@ trigger:
     include:
       - master
       - dev/build-features
-      - dev/PowerLauncher
   paths:
     exclude:
       - doc/*
@@ -16,7 +15,6 @@ pr:
     include:
       - master
       - dev/build-features
-      - dev/PowerLauncher
 
 #     0.0.yyMM.dd##
 #     0.0.1904.0900
