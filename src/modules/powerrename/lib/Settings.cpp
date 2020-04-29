@@ -240,7 +240,7 @@ void MRUListHandler::ParseJson()
                 else
                 {
                     std::vector<std::wstring> temp;
-                    for (uint32_t i = 0; i < min(jsonArray.Size(), size); ++i)
+                    for (long i = 0; i < min((long)jsonArray.Size(), size); ++i)
                     {
                         int idx = (oldPushIdx + oldSize - (i + 1)) % oldSize;
                         temp.push_back(std::wstring(jsonArray.GetStringAt(idx)));
