@@ -2,6 +2,8 @@
 #include <Windows.h>
 #include <shellapi.h>
 
+#include <string_view>
+
 #include <common/common.h>
 #include <common/updating/updating.h>
 

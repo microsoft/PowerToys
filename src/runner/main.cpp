@@ -24,6 +24,7 @@
 #include <winrt/Windows.System.h>
 
 #if _DEBUG && _WIN64
+#include "unhandled_exception_handler.h"
 #endif
 #include <common/notifications/fancyzones_notifications.h>
 
