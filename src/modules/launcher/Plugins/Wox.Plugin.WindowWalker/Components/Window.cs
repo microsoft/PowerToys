@@ -307,7 +307,7 @@ namespace Wox.Plugin.WindowWalker.Components
         public void SwitchToWindow()
         {
             // The following block is necessary because
-            // 1) There is a weird flashing behaviour when trying
+            // 1) There is a weird flashing behavior when trying
             //    to use ShowWindow for switching tabs in IE
             // 2) SetForegroundWindow fails on minimized windows
             if (ProcessName.ToLower().Equals("iexplore.exe") || !Minimized)

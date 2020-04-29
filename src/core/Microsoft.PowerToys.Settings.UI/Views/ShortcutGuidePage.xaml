@@ -48,7 +48,7 @@
                           IsOn="{ Binding Mode=TwoWay, Path=IsEnabled}"
                           Margin="{StaticResource SmallTopMargin}"/>
 
-            <TextBlock x:Uid="ShortcutGuide_Appearance_Behaiviour" 
+            <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior" 
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <muxc:NumberBox x:Uid="ShortcutGuide_PressTime"
