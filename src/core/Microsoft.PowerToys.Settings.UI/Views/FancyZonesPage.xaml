@@ -55,7 +55,7 @@
                           IsOn="{ Binding Mode=TwoWay, Path=IsEnabled}"
                           Margin="{StaticResource SmallTopMargin}" />
 
-            <TextBlock x:Uid="FancyZones_ZonBehaivior_GroupSettings"
+            <TextBlock x:Uid="FancyZones_ZoneBehavior_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        />
 

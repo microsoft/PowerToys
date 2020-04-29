@@ -1,0 +1,14 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+   <Target Name="KillPowerLauncher" BeforeTargets="PreBuildEvent;BeforeClean">
+    <Message Text="Killing process 'PowerLauncher.exe'" Importance="normal" ContinueOnError="true" />
+     <Exec Command="taskkill /F /IM PowerLauncher.exe"
+              IgnoreExitCode="true"
+              IgnoreStandardErrorWarningFormat="true">
+       <Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
+     </Exec>
+     <Error Text="Cannot kill PowerLauncher.exe process." Condition="$(ErrorCode) == 1"/>
+     <Message Text="Process PowerLauncher.exe does not exist." Condition="$(ErrorCode) == 128"/>
+  </Target>
+
+</Project>

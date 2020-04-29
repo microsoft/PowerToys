@@ -1,0 +1,12 @@
+{
+    "ID":"B4D3B69656E14D44865C8D818EAE47C4",
+    "ActionKeyword":"*",
+    "Name":"Folder",
+    "Description":"Open favorite folder from wox directorily",
+    "Author":"qianlifeng",
+    "Version":"1.0.0",
+    "Language":"csharp",
+    "Website":"http://www.wox.one/plugin",
+    "ExecuteFileName":"Wox.Plugin.Folder.dll",
+    "IcoPath":"Images\\folder.png"
+}

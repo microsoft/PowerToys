@@ -76,7 +76,7 @@ public:
     std::unordered_map<DWORD, DWORD> singleKeyReMap;
     std::mutex singleKeyReMap_mutex;
 
-    // Stores keys which need to be changed from toggle behaviour to modifier behaviour. Eg. Caps Lock
+    // Stores keys which need to be changed from toggle behavior to modifier behavior. Eg. Caps Lock
     std::unordered_map<DWORD, bool> singleKeyToggleToMod;
     std::mutex singleKeyToggleToMod_mutex;
 

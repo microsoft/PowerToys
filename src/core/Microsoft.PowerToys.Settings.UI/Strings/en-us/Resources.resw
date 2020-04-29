@@ -134,7 +134,7 @@
     <comment>Navigation view item name for General</comment>
   </data>
   <data name="Shell_PowerLauncher.Content" xml:space="preserve">
-    <value>PowerLauncher  [Not Functional]</value>
+    <value>PowerLauncher</value>
     <comment>Navigation view item name for PowerLauncher</comment>
   </data>
   <data name="Shell_PowerRename.Content" xml:space="preserve">
@@ -302,8 +302,8 @@
   <data name="FancyZones_VirtualDesktopChangeMoveWindows.Content" xml:space="preserve">
     <value>Move newly created windows to their last known zone</value>
   </data>
-  <data name="FancyZones_ZonBehaivior_GroupSettings.Text" xml:space="preserve">
-    <value>Zone behaviour</value>
+  <data name="FancyZones_ZoneBehavior_GroupSettings.Text" xml:space="preserve">
+    <value>Zone Behavior</value>
   </data>
   <data name="FancyZones_ZoneHighlightColor.Text" xml:space="preserve">
     <value>Zone highlight color (default: #0078D7)</value>
@@ -416,8 +416,8 @@
   <data name="ShortcutGuide_PressTime.Header" xml:space="preserve">
     <value>How long to press the Windows key before showing the Shortcut Guide</value>
   </data>
-  <data name="ShortcutGuide_Appearance_Behaiviour.Text" xml:space="preserve">
-    <value>Appearance &amp; behaviour</value>
+  <data name="ShortcutGuide_Appearance_Behavior.Text" xml:space="preserve">
+    <value>Appearance &amp; Behavior</value>
   </data>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
     <value>Enable Shortcut Guide</value>
