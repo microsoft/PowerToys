@@ -11,6 +11,37 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
+namespace WindowMoveHandlerUtils
+{
+    bool IsCursorTypeIndicatingSizeEvent()
+    {
+        CURSORINFO cursorInfo = { 0 };
+        cursorInfo.cbSize = sizeof(cursorInfo);
+
+        if (::GetCursorInfo(&cursorInfo))
+        {
+            if (::LoadCursor(NULL, IDC_SIZENS) == cursorInfo.hCursor)
+            {
+                return true;
+            }
+            if (::LoadCursor(NULL, IDC_SIZEWE) == cursorInfo.hCursor)
+            {
+                return true;
+            }
+            if (::LoadCursor(NULL, IDC_SIZENESW) == cursorInfo.hCursor)
+            {
+                return true;
+            }
+            if (::LoadCursor(NULL, IDC_SIZENWSE) == cursorInfo.hCursor)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+
 class WindowMoveHandlerPrivate
 {
 public:
@@ -37,8 +68,6 @@ public:
 
 private:
     void UpdateDragState(HWND window) noexcept;
-
-    bool IsCursorTypeIndicatingSizeEvent();
 
 private:
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
@@ -98,7 +127,7 @@ bool WindowMoveHandler::MoveWindowIntoZoneByDirection(HMONITOR monitor, HWND win
 
 void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
 {
-    if (!IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray) || IsCursorTypeIndicatingSizeEvent())
+    if (!IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray) || WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
     {
         return;
     }
@@ -330,31 +359,4 @@ void WindowMoveHandlerPrivate::UpdateDragState(HWND window) noexcept
             warning_shown = true;
         }
     }
-}
-
-bool WindowMoveHandlerPrivate::IsCursorTypeIndicatingSizeEvent()
-{
-    CURSORINFO cursorInfo = { 0 };
-    cursorInfo.cbSize = sizeof(cursorInfo);
-
-    if (::GetCursorInfo(&cursorInfo))
-    {
-        if (::LoadCursor(NULL, IDC_SIZENS) == cursorInfo.hCursor)
-        {
-            return true;
-        }
-        if (::LoadCursor(NULL, IDC_SIZEWE) == cursorInfo.hCursor)
-        {
-            return true;
-        }
-        if (::LoadCursor(NULL, IDC_SIZENESW) == cursorInfo.hCursor)
-        {
-            return true;
-        }
-        if (::LoadCursor(NULL, IDC_SIZENWSE) == cursorInfo.hCursor)
-        {
-            return true;
-        }
-    }
-    return false;
 }
