@@ -183,8 +183,8 @@ namespace PowerLauncher
             _launcher = (PowerLauncher.UI.LauncherControl)host.Child;
             _launcher.DataContext = _viewModel;
             _launcher.KeyDown += _launcher_KeyDown;
-            _launcher.TextBox.TextChanging += QueryTextBox_TextChanging;
-            _launcher.TextBox.Loaded += TextBox_Loaded;
+            _launcher.QueryTextBox.TextChanging += QueryTextBox_TextChanging;
+            _launcher.QueryTextBox.Loaded += TextBox_Loaded;
             _launcher.PropertyChanged += UserControl_PropertyChanged;
             _viewModel.PropertyChanged += (o, e) =>
             {
@@ -201,16 +201,16 @@ namespace PowerLauncher
                         }          
                         
                         // to select the text so that the user can continue to type
-                        if(!String.IsNullOrEmpty(_launcher.TextBox.Text))
+                        if(!String.IsNullOrEmpty(_launcher.QueryTextBox.Text))
                         {
-                            _launcher.TextBox.SelectAll();
+                            _launcher.QueryTextBox.SelectAll();
                         }
                     }
                 }
                 else if(e.PropertyName == nameof(MainViewModel.SystemQueryText))
                 {
                     this._isTextSetProgramatically = true;
-                    _launcher.TextBox.Text = _viewModel.SystemQueryText;
+                    _launcher.QueryTextBox.Text = _viewModel.SystemQueryText;
                 }
             };           
         }
@@ -346,31 +346,7 @@ namespace PowerLauncher
 
             // To populate the AutoCompleteTextBox as soon as the selection is changed or set.
             // Setting it here instead of when the text is changed as there is a delay in executing the query and populating the result
-            _launcher.AutoCompleteTextBox.PlaceholderText = ListView_FirstItem(_viewModel.QueryText);
-
-        }
-
-        private void ResultsList_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            ResultViewModel result = e?.ClickedItem as ResultViewModel;
-            if(result != null)
-            {
-                _viewModel.Results.SelectedItem = result;
-                _viewModel.OpenResultCommand.Execute(null);
-            }
-        }
-
-        private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
-        {
-            if (args != null && args.ChosenSuggestion != null)
-            {
-                ResultViewModel result = (ResultViewModel)args.ChosenSuggestion;
-                if (result != null)
-                {
-                    _viewModel.Results.SelectedItem = result;
-                    _viewModel.OpenResultCommand.Execute(null);
-                }
-            }
+            _launcher.AutoCompleteTextBlock.Text = ListView_FirstItem(_viewModel.QueryText);
         }
 
         private const int millisecondsToWait = 200;
@@ -400,18 +376,18 @@ namespace PowerLauncher
           
             if(this._isTextSetProgramatically)
             {
-                this._launcher.TextBox.TextChanged += QueryTextBox_TextChangedProgramatically;
+                this._launcher.QueryTextBox.TextChanged += QueryTextBox_TextChangedProgramatically;
             }
             else
             {
-                this._launcher.TextBox.TextChanged += QueryTextBox_TextChangedByUserInput;
+                this._launcher.QueryTextBox.TextChanged += QueryTextBox_TextChangedByUserInput;
             }
         }
 
         private void ClearAllQueryTextChangedHanlders()
         {
-            this._launcher.TextBox.TextChanged -= QueryTextBox_TextChangedProgramatically;
-            this._launcher.TextBox.TextChanged -= QueryTextBox_TextChangedByUserInput;
+            this._launcher.QueryTextBox.TextChanged -= QueryTextBox_TextChangedProgramatically;
+            this._launcher.QueryTextBox.TextChanged -= QueryTextBox_TextChangedByUserInput;
         }
 
         private void QueryTextBox_TextChangedProgramatically(object sender, Windows.UI.Xaml.Controls.TextChangedEventArgs e)
@@ -429,7 +405,7 @@ namespace PowerLauncher
             //To clear the auto-suggest immediately instead of waiting for selection changed
             if (text == String.Empty)
             {
-                _launcher.AutoCompleteTextBox.PlaceholderText = String.Empty;
+                _launcher.AutoCompleteTextBlock.Text = String.Empty;
             }
 
             _viewModel.QueryText = text;
@@ -451,7 +427,7 @@ namespace PowerLauncher
             }
         }
 
-private void WindowsXamlHost_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        private void WindowsXamlHost_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             //    if (sender != null && e.OriginalSource != null)
             //    {

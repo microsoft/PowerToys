@@ -43,8 +43,8 @@
     </UserControl.Resources>
     
     <Grid 
-        x:Name="PowerBar"
-        Background="{ThemeResource BackdropAcrylicBrush}"        
+        x:Name="PowerBar"  
+        Background="{ThemeResource BackdropAcrylicBrush}"
         VerticalAlignment="Top">
 
         <ListView
@@ -59,11 +59,10 @@
             ItemsSource="{Binding Results.Results, Mode=OneWay}"
             SelectionMode="Single"
             SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
-            Style="{StaticResource ListViewNoAnimations}"
-            >
+            Style="{StaticResource ListViewNoAnimations}">
             <ListView.ItemTemplate>
                 <DataTemplate >
-                    <Grid Height="72" Width="690" Background="Transparent" RowSpacing="0">
+                    <Grid Height="72" Width="642" Background="Transparent" RowSpacing="0">
                         <Interactivity:Interaction.Behaviors>
                             <Core:EventTriggerBehavior EventName="PointerEntered">
                                 <Core:InvokeCommandAction Command="{Binding ActivateContextButtonsHoverCommand}"/>
@@ -81,7 +80,7 @@
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <Image x:Name="AppIcon" Height="36" Grid.RowSpan="2" Margin="-8,0,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />
+                        <Image x:Name="AppIcon" Height="36" MaxWidth="56" Grid.RowSpan="2" Margin="-8,0,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />
                         <TextBlock x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" Margin="0,0,0,-2" VerticalAlignment="Bottom"/>
                         <TextBlock x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Opacity="0.6" Margin="0,2,0,0" VerticalAlignment="Top"/>
                         <GridView 
@@ -91,8 +90,7 @@
                                    CornerRadius="4"
                                    Grid.RowSpan="2" 
                                    Grid.Column="2"
-                                   Margin="8,0,17,0"
-                                   Height="46"
+                                   Margin="8,8,0,0"
                                    Visibility="{Binding AreContextButtonsActive, Converter={StaticResource BoolToVisibilityConverter}}"
                                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
                                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"                       
