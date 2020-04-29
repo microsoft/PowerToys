@@ -25,6 +25,7 @@ using System.Windows.Media;
 using Windows.UI.Xaml.Data;
 using System.Diagnostics;
 using Mages.Core.Runtime.Converters;
+using System.Runtime.InteropServices;
 
 namespace PowerLauncher
 {
@@ -40,6 +41,8 @@ namespace PowerLauncher
         const int ROW_COUNT = 4;
         const int ROW_HEIGHT = 75;
         const int MAX_LIST_HEIGHT = 300;
+        bool isDPIChanged = false;
+
         #endregion
 
         public MainWindow(Settings settings, MainViewModel mainVM)
@@ -110,8 +113,16 @@ namespace PowerLauncher
         {
             if (_settings.HideWhenDeactive)
             {
-                Hide();
-            }
+                if (isDPIChanged)
+                {
+                    Activate();
+                    isDPIChanged = false;
+                }
+                else
+                {
+                    Hide();
+                }
+            }              
         }
 
         private void UpdatePosition()
@@ -140,19 +151,26 @@ namespace PowerLauncher
         private double WindowLeft()
         {
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
-            var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.X, 0);
-            var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
-            var left = (dip2.X - ActualWidth) / 2 + dip1.X;
+            DPIhelper.GetDpi(screen, DpiType.Effective, out uint x, out _);
+            var dpiX = ((double)x) / 96;
+            var dpi1 = screen.WorkingArea.X / dpiX;
+            var dpi2 = screen.WorkingArea.Width / dpiX;
+            var left = (dpi2 - this.Width) / 2 + dpi1;
+            Debug.WriteLine("WorkingAreaX :" + screen.WorkingArea.X + " WorkingAreaWidth :" + screen.WorkingArea.Width + " width :" + Width);
+            Debug.WriteLine("Left :" + left + " DPiX :" + dpiX);
             return left;
         }
 
         private double WindowTop()
-        {
+        {            
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
-            var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
-            var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
+            DPIhelper.GetDpi(screen, DpiType.Effective, out _, out uint y);
+            var dpiY = ((double)y) / 96;
+            var dpi1 = screen.WorkingArea.Y / dpiY;
+            var dpi2 = screen.WorkingArea.Height / dpiY;
             var totalHeight = this.SearchBoxBorder.Margin.Top + this.SearchBoxBorder.Margin.Bottom + this.SearchBox.Height + this.ListBoxBorder.Margin.Top + this.ListBoxBorder.Margin.Bottom + MAX_LIST_HEIGHT;
-            var top = (dip2.Y - totalHeight) / 4 + dip1.Y;
+            var top = (dpi2 - totalHeight) / 4 + dpi1;
+            Debug.WriteLine("Top :" + top + " DPiY :" + dpiY);
             return top;
         }
 
@@ -196,8 +214,6 @@ namespace PowerLauncher
                 }
             };           
         }
-
-       
 
         private void UserControl_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -455,6 +471,11 @@ private void WindowsXamlHost_PreviewMouseDown(object sender, MouseButtonEventArg
             //        //    }
             //        //}
             //    }
+        }
+
+        private void Window_DpiChanged(object sender, DpiChangedEventArgs e)
+        {
+            isDPIChanged = true;
         }
     }
  }

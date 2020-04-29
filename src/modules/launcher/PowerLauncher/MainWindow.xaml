@@ -23,6 +23,7 @@
         LocationChanged="OnLocationChanged"
         Deactivated="OnDeactivated"
         Background="Transparent"
+        DpiChanged="Window_DpiChanged"
         Width="720"
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         d:DataContext="{d:DesignInstance vm:MainViewModel}">
