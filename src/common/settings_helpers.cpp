@@ -41,7 +41,7 @@ namespace PTSettingsHelper
         return get_module_save_folder_location(powertoy_name) + settings_filename;
     }
 
-    std::wstring get_powertoys_general_save_file_location()
+    std::wstring get_pt_general_save_file_location()
     {
         return get_root_save_folder_location() + settings_filename;
     }
@@ -61,13 +61,13 @@ namespace PTSettingsHelper
 
     void save_general_settings(const json::JsonObject& settings)
     {
-        const std::wstring save_file_location = get_powertoys_general_save_file_location();
+        const std::wstring save_file_location = get_pt_general_save_file_location();
         json::to_file(save_file_location, settings);
     }
 
     json::JsonObject load_general_settings()
     {
-        const std::wstring save_file_location = get_powertoys_general_save_file_location();
+        const std::wstring save_file_location = get_pt_general_save_file_location();
         auto saved_settings = json::from_file(save_file_location);
         return saved_settings.has_value() ? std::move(*saved_settings) : json::JsonObject{};
     }

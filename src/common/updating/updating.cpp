@@ -170,7 +170,7 @@ namespace updating
         }
     }
 
-    std::future<bool> uninstall_previous_msix_version_async()
+    std::future<bool> uninstall_prev_msix_ver_async()
     {
         winrt::Windows::Management::Deployment::PackageManager package_manager;
 

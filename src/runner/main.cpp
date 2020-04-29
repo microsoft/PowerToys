@@ -111,7 +111,7 @@ int runner(bool isProcessElevated)
         else
         {
             std::thread{ [] {
-                if (updating::uninstall_previous_msix_version_async().get())
+                if (updating::uninstall_prev_msix_ver_async().get())
                 {
                     notifications::show_toast(localized_strings::OLDER_MSIX_UNINSTALLED);
                 }
