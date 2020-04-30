@@ -617,6 +617,7 @@ void D2DOverlayWindow::hide_thumbnail()
     DwmUpdateThumbnailProperties(thumbnail, &thumb_properties);
 }
 
+
 void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
 {
     if (!winkey_held() || is_start_visible())
