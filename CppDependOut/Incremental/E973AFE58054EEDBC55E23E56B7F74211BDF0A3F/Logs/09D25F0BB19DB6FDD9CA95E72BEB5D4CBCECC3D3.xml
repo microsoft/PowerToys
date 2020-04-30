@@ -1,7 +1,0 @@
-<log>
- <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\fancyzones\lib/pch.h" line="6" col="10" msg="&apos;winrt/base.h&apos; file not found" />
- <error level="warning" id="warn_doc_param_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil/common.h" line="654" col="12" msg="parameter &apos;val&apos; not found in the function declaration" />
- <error level="warning" id="warn_doc_tparam_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil\resource.h" line="908" col="13" msg="template parameter &apos;ValueType:&apos; not found in the template declaration" />
- <error level="warning" id="warn_doc_tparam_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil\resource.h" line="909" col="13" msg="template parameter &apos;ArrayDeleter:&apos; not found in the template declaration" />
- <error level="warning" id="warn_doc_tparam_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil\resource.h" line="910" col="13" msg="template parameter &apos;ElementDeleter:&apos; not found in the template declaration" />
-</log>

@@ -1,5 +1,0 @@
-<log>
- <error level="warning" id="warn_missing_variable_declarations" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\ImageResizerExt_i.c" line="69" col="1" msg="no previous extern declaration for non-static variable &apos;LIBID_ImageResizerExtLib&apos;" />
- <error level="warning" id="warn_missing_variable_declarations" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\ImageResizerExt_i.c" line="72" col="1" msg="no previous extern declaration for non-static variable &apos;CLSID_ContextMenuHandler&apos;" />
- <error level="warning" id="pp_macro_not_used" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\ImageResizerExt_i.c" line="60" col="9" msg="macro is not used" />
-</log>

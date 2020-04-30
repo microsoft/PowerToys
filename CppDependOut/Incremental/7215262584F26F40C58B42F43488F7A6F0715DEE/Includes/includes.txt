@@ -1,6 +1,0 @@
-d:\new folder (2)\powertoys-1\tools\project_template\moduletemplate\pch.h
-d:\new folder (2)\powertoys-1\tools\project_template\moduletemplate\resource.h
-d:\new folder (2)\powertoys-1\tools\project_template\moduletemplate\trace.h
-d:\new folder (2)\powertoys-1\tools\project_template\moduletemplate\dllmain.cpp
-d:\new folder (2)\powertoys-1\tools\project_template\moduletemplate\pch.cpp
-d:\new folder (2)\powertoys-1\tools\project_template\moduletemplate\trace.cpp

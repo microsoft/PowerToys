@@ -1,6 +1,0 @@
-d:\new folder (2)\powertoys-1\src\modules\powerrename\testapp\resource.h
-d:\new folder (2)\powertoys-1\src\modules\powerrename\testapp\powerrenametest.h
-d:\new folder (2)\powertoys-1\src\modules\powerrename\testapp\stdafx.h
-d:\new folder (2)\powertoys-1\src\modules\powerrename\testapp\targetver.h
-d:\new folder (2)\powertoys-1\src\modules\powerrename\testapp\powerrenametest.cpp
-d:\new folder (2)\powertoys-1\src\modules\powerrename\testapp\stdafx.cpp

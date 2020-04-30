@@ -1,4 +1,0 @@
-<log>
- <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\UnitTests-CommonLib/pch.h" line="12" col="10" msg="&apos;winrt\base.h&apos; file not found" />
- <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\UnitTests-CommonLib/pch.h" line="14" col="10" msg="&apos;CppUnitTest.h&apos; file not found" />
-</log>

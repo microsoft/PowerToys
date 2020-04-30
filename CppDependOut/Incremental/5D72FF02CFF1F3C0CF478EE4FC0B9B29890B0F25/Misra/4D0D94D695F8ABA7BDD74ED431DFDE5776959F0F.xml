@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<cppdepend-plugin tool="Misra">
-<file path="d:\new folder\cppdepend\defaulttoolchain\compiler\include\c++\atomic"><violation beginline="85" endline="85" rule="Rule7-5-4" ruleset="Declarations">
-</violation><violation beginline="85" endline="85" rule="Rule7-5-4" ruleset="Declarations">
-</violation><violation beginline="77" endline="77" rule="Rule7-5-4" ruleset="Declarations">
-</violation></file></cppdepend-plugin>

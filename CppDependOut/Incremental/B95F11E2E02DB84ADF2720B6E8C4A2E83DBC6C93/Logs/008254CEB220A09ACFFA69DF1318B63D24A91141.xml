@@ -1,8 +1,0 @@
-<log>
- <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests/stdafx.h" line="5" col="10" msg="&apos;atlbase.h&apos; file not found" />
- <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests/stdafx.h" line="8" col="10" msg="&apos;CppUnitTest.h&apos; file not found" />
- <error level="warning" id="pp_nonportable_path" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\TestFileHelper.cpp" line="5" col="10" msg="non-portable path to file &apos;&lt;objbase.h&gt;&apos;; specified path differs in case from file name on disk" />
- <error level="error" id="err_redefinition_different_kind" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\TestFileHelper.cpp" line="19" col="23" msg="redefinition of &apos;AddFile&apos; as different kind of symbol" />
- <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\TestFileHelper.cpp" line="19" col="31" msg="use of undeclared identifier &apos;_In_&apos;" />
- <error level="error" id="err_invalid_token_after_toplevel_declarator" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\TestFileHelper.cpp" line="19" col="60" msg="expected &apos;;&apos; after top level declarator" />
-</log>

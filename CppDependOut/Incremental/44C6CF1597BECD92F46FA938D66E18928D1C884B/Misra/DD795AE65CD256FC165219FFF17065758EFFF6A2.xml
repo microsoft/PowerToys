@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<cppdepend-plugin tool="Misra">
-<file path="d:\new folder (2)\powertoys-1\src\settings\streamuriresolverfromfile.cpp"><violation beginline="22" endline="22" rule="Rule4-10-2" ruleset="Expressions">
-</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\winuser.h"><violation beginline="4049" endline="4049" rule="Rule7-5-4" ruleset="Declarations">
-</violation></file></cppdepend-plugin>

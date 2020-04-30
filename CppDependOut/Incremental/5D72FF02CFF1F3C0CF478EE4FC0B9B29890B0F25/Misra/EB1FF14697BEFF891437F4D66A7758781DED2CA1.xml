@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<cppdepend-plugin tool="Misra">
-<file path="d:\new folder (2)\powertoys-1\src\common\winstore.cpp"><violation beginline="56" endline="56" rule="Rule6-4-4" ruleset="Statements">
-</violation><violation beginline="66" endline="66" rule="emptycatch" ruleset="Statements">
-</violation></file></cppdepend-plugin>

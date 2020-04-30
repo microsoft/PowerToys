@@ -1,5 +1,0 @@
-<Externals>
-<cr namespace="std.__cxx11" access="none" kind="class" name="basic_string" id="0fe01663a4ff657d8958ff0f4c4a7f15_eec936a7b808facd5a6a87bf310b7f8c" file="3" linestart="71" lineend="71"/>
-<cr namespace="std" access="none" kind="class" name="basic_ifstream" id="24a75d2f4f5489939fbe33deb881303f_99ad18f8609de6682f9f2a3400ac0853" file="4" linestart="116" lineend="116"/>
-<cr namespace="std" access="none" depth="0" kind="class" name="basic_string_view" id="df47234c6daf9fd95cf42a2a2dec91fe_07f8e08c9a476b4fd38a8dd303104d48" file="5" linestart="71" lineend="421"/>
-</Externals>

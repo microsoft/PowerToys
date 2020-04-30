@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<cppdepend-plugin tool="Misra">
-<file path="d:\new folder (2)\powertoys-1\src\modules\powerrename\unittests\mockpowerrenameitem.cpp"><violation beginline="7" endline="7" rule="Rule18-4-1" ruleset="Library">
-</violation></file><file path="d:\new folder (2)\powertoys-1\src\modules\powerrename\unittests\mockpowerrenameitem.h"><violation beginline="6" endline="6" rule="Rule10-3-2" ruleset="Classes">
-</violation></file></cppdepend-plugin>

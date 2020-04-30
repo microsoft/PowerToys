@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<cppdepend-plugin tool="Misra">
-<file path="d:\new folder\cppdepend\defaulttoolchain\compiler\include\c++\bits\basic_string.h"><violation beginline="6443" endline="6443" rule="Rule7-5-4" ruleset="Declarations">
-</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\compiler\include\c++\bits\stl_iterator.h"><violation beginline="761" endline="761" rule="Rule7-5-4" ruleset="Declarations">
-</violation></file></cppdepend-plugin>

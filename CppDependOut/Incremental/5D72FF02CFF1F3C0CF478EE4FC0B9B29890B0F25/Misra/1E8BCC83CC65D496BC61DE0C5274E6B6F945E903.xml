@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<cppdepend-plugin tool="Misra">
-<file path="d:\new folder (2)\powertoys-1\src\common\json.cpp"><violation beginline="21" endline="21" rule="emptycatch" ruleset="Statements">
-</violation></file></cppdepend-plugin>

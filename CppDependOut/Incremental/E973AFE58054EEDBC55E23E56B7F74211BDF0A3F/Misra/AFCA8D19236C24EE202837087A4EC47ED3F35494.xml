@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<cppdepend-plugin tool="Misra">
-<file path="d:\new folder (2)\powertoys-1\src\modules\fancyzones\lib\trace.cpp"><violation beginline="7" endline="7" rule="Rule4-10-2" ruleset="Expressions">
-</violation><violation beginline="7" endline="7" rule="Rule4-10-2" ruleset="Expressions">
-</violation></file><file path="d:\windows kits\10\include\10.0.17763.0\shared\traceloggingprovider.h"><violation beginline="2351" endline="2351" rule="Rule7-5-4" ruleset="Declarations">
-</violation></file><file path="d:\windows kits\10\include\10.0.17763.0\um\fileapi.h"><violation beginline="143" endline="143" rule="Rule7-5-4" ruleset="Declarations">
-</violation></file></cppdepend-plugin>

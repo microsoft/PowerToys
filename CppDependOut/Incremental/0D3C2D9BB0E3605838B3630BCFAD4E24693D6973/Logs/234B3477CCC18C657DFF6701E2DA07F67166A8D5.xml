@@ -1,3 +1,0 @@
-<log>
- <error level="warning" id="warn_cxx98_compat_no_newline_eof" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\ui\stdafx.cpp" line="1" col="20" msg="C++98 requires newline at end of file" />
-</log>

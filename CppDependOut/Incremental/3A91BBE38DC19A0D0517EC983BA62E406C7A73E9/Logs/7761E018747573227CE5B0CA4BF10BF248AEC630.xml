@@ -1,3 +1,0 @@
-<log>
- <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\UWPui/stdafx.h" line="6" col="10" msg="&apos;winrt/base.h&apos; file not found" />
-</log>

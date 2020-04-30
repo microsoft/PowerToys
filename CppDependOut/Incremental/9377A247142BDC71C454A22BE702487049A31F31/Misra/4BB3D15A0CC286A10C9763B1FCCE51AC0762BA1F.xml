@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<cppdepend-plugin tool="Misra">
-<file path="d:\new folder (2)\powertoys-1\src\common\settings_helpers.h"><violation beginline="10" endline="10" rule="Rule7-5-4" ruleset="Declarations">
-</violation><violation beginline="10" endline="10" rule="Rule7-5-4" ruleset="Declarations">
-</violation></file></cppdepend-plugin>

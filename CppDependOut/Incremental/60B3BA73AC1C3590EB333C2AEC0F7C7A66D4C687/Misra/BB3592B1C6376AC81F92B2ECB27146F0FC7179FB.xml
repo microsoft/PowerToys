@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<cppdepend-plugin tool="Misra">
-<file path="d:\new folder (2)\powertoys-1\src\modules\powerrename\lib\settings.h"><violation beginline="124" endline="124" rule="Rule7-5-4" ruleset="Declarations">
-</violation><violation beginline="107" endline="107" rule="Rule7-5-4" ruleset="Declarations">
-</violation><violation beginline="107" endline="107" rule="Rule7-5-4" ruleset="Declarations">
-</violation><violation beginline="107" endline="107" rule="Rule7-5-4" ruleset="Declarations">
-</violation><violation beginline="107" endline="107" rule="Rule7-5-4" ruleset="Declarations">
-</violation></file></cppdepend-plugin>

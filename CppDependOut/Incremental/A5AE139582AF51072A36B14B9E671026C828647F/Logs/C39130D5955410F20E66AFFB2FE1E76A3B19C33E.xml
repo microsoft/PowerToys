@@ -1,8 +1,0 @@
-<log>
- <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\UnitTests-CommonLib/pch.h" line="12" col="10" msg="&apos;winrt\base.h&apos; file not found" />
- <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\UnitTests-CommonLib/pch.h" line="14" col="10" msg="&apos;CppUnitTest.h&apos; file not found" />
- <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\UnitTests-CommonLib\UnitTestsCommon.cpp" line="4" col="17" msg="use of undeclared identifier &apos;Microsoft&apos;" />
- <error level="warning" id="warn_redundant_parens_around_declarator" file="D:\New folder (2)\PowerToys-1\src\common\UnitTests-CommonLib\UnitTestsCommon.cpp" line="8" col="16" msg="redundant parentheses surrounding declarator" />
- <error level="warning" id="warn_cxx98_compat_generalized_initializer_lists" file="D:\New folder (2)\PowerToys-1\src\common\UnitTests-CommonLib\UnitTestsCommon.cpp" line="9" col="5" msg="generalized initializer lists are incompatible with C++98" />
- <error level="error" id="err_expected_lparen_after_type" file="D:\New folder (2)\PowerToys-1\src\common\UnitTests-CommonLib\UnitTestsCommon.cpp" line="10" col="35" msg="expected &apos;(&apos; for function-style cast or type construction" />
-</log>
