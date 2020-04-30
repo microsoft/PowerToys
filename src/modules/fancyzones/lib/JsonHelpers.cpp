@@ -323,6 +323,12 @@ namespace JSONHelpers
 
     void FancyZonesData::UpdatePrimaryDesktopData(const std::wstring& desktopId)
     {
+        // Explorer persists current virtual desktop identifier to registrye on a per session basis,
+        // but only after first virtual desktop switch happens. If the user hasn't switched virtual
+        // desktops in this session value in registry will be empty and we will use default GUID in
+        // that case (00000000-0000-0000-0000-000000000000).
+        // This method will go through all our persisted data with default GUID and update it with
+        // valid one.
         auto replaceDesktopId = [&desktopId](const std::wstring& deviceId) {
             return deviceId.substr(0, deviceId.rfind('_') + 1) + desktopId;
         };
