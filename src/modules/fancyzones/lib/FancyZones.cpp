@@ -202,8 +202,6 @@ private:
 
     const HINSTANCE m_hinstance{};
 
-    HKEY m_virtualDesktopsRegKey{ nullptr };
-
     mutable std::shared_mutex m_lock;
     HWND m_window{};
     WindowMoveHandler m_windowMoveHandler;
@@ -263,12 +261,9 @@ FancyZones::Run() noexcept
                       } })
         .wait();
 
-    if (RegOpenKeyEx(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops", 0, KEY_ALL_ACCESS, &m_virtualDesktopsRegKey) == ERROR_SUCCESS)
-    {
-        m_terminateVirtualDesktopTrackerEvent.reset(CreateEvent(nullptr, FALSE, FALSE, nullptr));
-        m_virtualDesktopTrackerThread.submit(
-            OnThreadExecutor::task_t{ std::bind(&FancyZones::HandleVirtualDesktopUpdates, this, m_terminateVirtualDesktopTrackerEvent.get()) });
-    }
+    m_terminateVirtualDesktopTrackerEvent.reset(CreateEvent(nullptr, FALSE, FALSE, nullptr));
+    m_virtualDesktopTrackerThread.submit(
+        OnThreadExecutor::task_t{ std::bind(&FancyZones::HandleVirtualDesktopUpdates, this, m_terminateVirtualDesktopTrackerEvent.get()) });
 }
 
 // IFancyZones
@@ -287,11 +282,7 @@ FancyZones::Destroy() noexcept
     {
         SetEvent(m_terminateVirtualDesktopTrackerEvent.get());
     }
-    if (m_virtualDesktopsRegKey)
-    {
-        RegCloseKey(m_virtualDesktopsRegKey);
-        m_virtualDesktopsRegKey = nullptr;
-    }
+    VirtualDesktopUtils::CloseVirtualDesktopsRegKey();
 }
 
 // IFancyZonesCallback
@@ -613,20 +604,11 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
         {
             std::unique_lock writeLock(m_lock);
             m_currentVirtualDesktopId = currentVirtualDesktopId;
-        }
-        else
-        {
-            std::vector<GUID> ids{};
-            if (VirtualDesktopUtils::GetVirtualDekstopIds(m_virtualDesktopsRegKey, ids) && !ids.empty())
+            wil::unique_cotaskmem_string id;
+            if (changeType == DisplayChangeType::Initialization &&
+                SUCCEEDED_LOG(StringFromCLSID(m_currentVirtualDesktopId, &id)))
             {
-                std::unique_lock writeLock(m_lock);
-                m_currentVirtualDesktopId = ids[0];
-                wil::unique_cotaskmem_string id;
-                if (changeType == DisplayChangeType::Initialization &&
-                    SUCCEEDED_LOG(StringFromCLSID(m_currentVirtualDesktopId, &id)))
-                {
-                    JSONHelpers::FancyZonesDataInstance().UpdatePrimaryDesktopData(id.get());
-                }
+                JSONHelpers::FancyZonesDataInstance().UpdatePrimaryDesktopData(id.get());
             }
         }
     }
@@ -829,11 +811,16 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
 
 void FancyZones::HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) noexcept
 {
+    HKEY virtualDesktopsRegKey = VirtualDesktopUtils::GetVirtualDesktopsRegKey();
+    if (!virtualDesktopsRegKey)
+    {
+        return;
+    }
     HANDLE regKeyEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
     HANDLE events[2] = { regKeyEvent, fancyZonesDestroyedEvent };
     while (1)
     {
-        if (RegNotifyChangeKeyValue(m_virtualDesktopsRegKey, TRUE, REG_NOTIFY_CHANGE_LAST_SET, regKeyEvent, TRUE) != ERROR_SUCCESS)
+        if (RegNotifyChangeKeyValue(virtualDesktopsRegKey, TRUE, REG_NOTIFY_CHANGE_LAST_SET, regKeyEvent, TRUE) != ERROR_SUCCESS)
         {
             return;
         }
@@ -843,7 +830,7 @@ void FancyZones::HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) no
             return;
         }
         std::vector<GUID> ids{};
-        if (VirtualDesktopUtils::GetVirtualDekstopIds(m_virtualDesktopsRegKey, ids))
+        if (VirtualDesktopUtils::GetVirtualDekstopIds(ids))
         {
             std::unordered_set<GUID> idSet(std::begin(ids), std::end(ids));
             RegisterVirtualDesktopUpdates(idSet);
