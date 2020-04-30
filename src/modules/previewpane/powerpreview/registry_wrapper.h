@@ -6,8 +6,8 @@ namespace PowerPreviewSettings
     class RegistryWrapper : public RegistryWrapperIface
     {
     public:
-        virtual LONG SetRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName, DWORD dwType, CONST BYTE* data, DWORD cbData);
-        virtual LONG DeleteRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName);
-        virtual LONG GetRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName, DWORD dwType, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData);
+        LONG SetRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName, DWORD dwType, CONST BYTE* data, DWORD cbData) override;
+        LONG DeleteRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName) override;
+        LONG GetRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName, DWORD dwType, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData) override;
     };
 }
