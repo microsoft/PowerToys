@@ -15,7 +15,7 @@ IFACEMETHODIMP_(ULONG) CPowerRenameRegEx::AddRef()
 
 IFACEMETHODIMP_(ULONG) CPowerRenameRegEx::Release()
 {
-    long refCount = InterlockedDecrement(&m_refCount);
+    long refCount =  InterlockedDecrement(&m_refCount);
 
     if (refCount == 0)
     {
