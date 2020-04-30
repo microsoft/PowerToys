@@ -242,7 +242,10 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     {
         ShowWindow(_hWndEditShortcutsWindow, SW_SHOW);
         UpdateWindow(_hWndEditShortcutsWindow);
+        SetForegroundWindow(_hWndEditShortcutsWindow);
     }
+
+    SetFocus(hWndXamlIslandEditShortcutsWindow);
 
     // Message loop:
     xamlBridge.MessageLoop();
@@ -268,6 +271,12 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
         GetClientRect(hWnd, &rcClient);
         SetWindowPos(hWndXamlIslandEditShortcutsWindow, 0, rcClient.left, rcClient.top, rcClient.right, rcClient.bottom, SWP_SHOWWINDOW);
         break;
+    case WM_SETFOCUS:
+        if (hWndXamlIslandEditShortcutsWindow != 0)
+        {
+            SetFocus(hWndXamlIslandEditShortcutsWindow);
+        }
+        return DefWindowProc(hWnd, messageCode, wParam, lParam);
     default:
         // If the Xaml Bridge object exists, then use it's message handler to handle keyboard focus operations
         if (xamlBridgePtr != nullptr)
