@@ -30,7 +30,7 @@ namespace MarkdownPreviewHandler
         /// <summary>
         /// Initializes a new instance of the <see cref="MarkdownTelemetry"/> class.
         /// </summary>
-        public MarkdownTelemetry()
+        private MarkdownTelemetry()
             : base(EventSourceName)
         {
             return;
