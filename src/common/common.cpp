@@ -394,7 +394,7 @@ bool is_process_elevated(const bool use_cached_value)
 bool drop_elevated_privileges()
 {
     HANDLE token = nullptr;
-    LPCTSTR lpszPrivilege = SE_SECURITY_NAME;
+
     if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_DEFAULT | WRITE_OWNER, &token))
     {
         return false;
@@ -637,12 +637,11 @@ std::wstring get_module_filename(HMODULE mod)
 std::wstring get_module_folderpath(HMODULE mod)
 {
     wchar_t buffer[MAX_PATH + 1];
-    DWORD actual_length = GetModuleFileNameW(mod, buffer, MAX_PATH);
+    //DWORD actual_length = GetModuleFileNameW(mod, buffer, MAX_PATH);
     if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
     {
         const DWORD long_path_length = 0xFFFF; // should be always enough
         std::wstring long_filename(long_path_length, L'\0');
-        actual_length = GetModuleFileNameW(mod, long_filename.data(), long_path_length);
         PathRemoveFileSpecW(long_filename.data());
         long_filename.resize(std::wcslen(long_filename.data()));
         long_filename.shrink_to_fit();

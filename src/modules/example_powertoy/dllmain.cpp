@@ -232,14 +232,12 @@ public:
     {
         if (wcscmp(name, ll_keyboard) == 0)
         {
-            auto& event = *(reinterpret_cast<LowlevelKeyboardEvent*>(data));
             // Return 1 if the keypress is to be suppressed (not forwarded to Windows),
             // otherwise return 0.
             return 0;
         }
         else if (wcscmp(name, win_hook_event) == 0)
         {
-            auto& event = *(reinterpret_cast<WinHookEvent*>(data));
             // Return value is ignored
             return 0;
         }

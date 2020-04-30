@@ -45,7 +45,6 @@ bool IsProcessOfWindowElevated(HWND window)
                                              pid) };
 
     wil::unique_handle token;
-    bool elevated = false;
 
     if (OpenProcessToken(hProcess.get(), TOKEN_QUERY, &token))
     {

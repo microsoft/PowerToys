@@ -338,7 +338,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         modules();
 
         auto general_settings = load_general_settings();
-        int rvalue = 0;
         const bool elevated = is_process_elevated();
         if ((elevated ||
              general_settings.GetNamedBoolean(L"run_elevated", false) == false ||

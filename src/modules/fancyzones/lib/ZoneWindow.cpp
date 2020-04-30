@@ -824,7 +824,6 @@ void ZoneWindow::OnKeyUp(WPARAM wparam) noexcept
     auto window = m_window.get();
     lock.unlock();
 
-    bool fRedraw = false;
     Trace::ZoneWindow::KeyUp(wparam);
 
     if ((wparam >= '0') && (wparam <= '9'))
