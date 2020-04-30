@@ -219,6 +219,7 @@ private:
     static UINT WM_PRIV_VDCHANGED; // Message to get back on to the UI thread when virtual desktop changes
     static UINT WM_PRIV_VDINIT; // Message to get back to the UI thread when FancyZones are initialized
     static UINT WM_PRIV_EDITOR; // Message to get back on to the UI thread when the editor exits
+    static UINT WM_PRIV_VDUPDATE; // Message to get back on the UI thread on virtual desktops update
 
     // Did we terminate the editor or was it closed cleanly?
     enum class EditorExitKind : byte
@@ -231,6 +232,7 @@ private:
 UINT FancyZones::WM_PRIV_VDCHANGED = RegisterWindowMessage(L"{128c2cb0-6bdf-493e-abbe-f8705e04aa95}");
 UINT FancyZones::WM_PRIV_VDINIT = RegisterWindowMessage(L"{469818a8-00fa-4069-b867-a1da484fcd9a}");
 UINT FancyZones::WM_PRIV_EDITOR = RegisterWindowMessage(L"{87543824-7080-4e91-9d9c-0404642fc7b6}");
+UINT FancyZones::WM_PRIV_VDUPDATE = RegisterWindowMessage(L"{b8b72b46-f42f-4c26-9e20-29336cf2f22e}");
 
 // IFancyZones
 IFACEMETHODIMP_(void)
@@ -580,6 +582,14 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
                 m_terminateEditorEvent.release();
             }
         }
+        else if (message == WM_PRIV_VDUPDATE)
+        {
+            std::vector<GUID> ids{};
+            if (VirtualDesktopUtils::GetVirtualDekstopIds(ids))
+            {
+                std::unordered_set<GUID> idSet(std::begin(ids), std::end(ids));
+            }
+        }
         else
         {
             return DefWindowProc(window, message, wparam, lparam);
@@ -829,6 +839,7 @@ void FancyZones::HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) no
             // if fancyZonesDestroyedEvent is signalized or WaitForMultipleObjects failed, terminate thread execution
             return;
         }
+        PostMessage(m_window, WM_PRIV_VDUPDATE, 0, 0);
         std::vector<GUID> ids{};
         if (VirtualDesktopUtils::GetVirtualDekstopIds(ids))
         {
