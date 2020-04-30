@@ -1,0 +1,36 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll/targetver.h" line="3" col="10" msg="&apos;winsdkver.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll/stdafx.h" line="15" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll/stdafx.h" line="16" col="10" msg="&apos;atlbase.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll/stdafx.h" line="17" col="10" msg="&apos;atlcom.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll/stdafx.h" line="18" col="10" msg="&apos;atlfile.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll/stdafx.h" line="19" col="10" msg="&apos;atlstr.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\Telemetry\ProjectTelemetry.h" line="3" col="10" msg="&apos;TraceLoggingProvider.h&apos; file not found" />
+ <error level="error" id="err_missing_type_specifier" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="4" col="1" msg="C++ requires a type specifier for all declarations" />
+ <error level="warning" id="warn_unused_expr" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="8" col="6" msg="expression result unused" />
+ <error level="warning" id="warn_comma_operator" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="8" col="16" msg="possible misuse of comma operator here" />
+ <error level="warning" id="warn_unused_expr" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="8" col="18" msg="expression result unused" />
+ <error level="warning" id="warn_comma_operator" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="8" col="24" msg="possible misuse of comma operator here" />
+ <error level="warning" id="warn_unused_expr" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="8" col="26" msg="expression result unused" />
+ <error level="warning" id="warn_comma_operator" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="8" col="32" msg="possible misuse of comma operator here" />
+ <error level="warning" id="warn_unused_expr" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="8" col="34" msg="expression result unused" />
+ <error level="warning" id="warn_comma_operator" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="8" col="38" msg="possible misuse of comma operator here" />
+ <error level="warning" id="warn_unused_expr" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="8" col="40" msg="expression result unused" />
+ <error level="warning" id="warn_comma_operator" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="8" col="44" msg="possible misuse of comma operator here" />
+ <error level="warning" id="warn_unused_expr" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="8" col="46" msg="expression result unused" />
+ <error level="warning" id="warn_comma_operator" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="8" col="50" msg="possible misuse of comma operator here" />
+ <error level="warning" id="warn_unused_expr" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="8" col="52" msg="expression result unused" />
+ <error level="warning" id="warn_comma_operator" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="8" col="56" msg="possible misuse of comma operator here" />
+ <error level="warning" id="warn_unused_expr" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="8" col="58" msg="expression result unused" />
+ <error level="warning" id="warn_comma_operator" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="8" col="62" msg="possible misuse of comma operator here" />
+ <error level="warning" id="warn_unused_expr" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="8" col="64" msg="expression result unused" />
+ <error level="warning" id="warn_comma_operator" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="8" col="68" msg="possible misuse of comma operator here" />
+ <error level="warning" id="warn_unused_expr" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="8" col="70" msg="expression result unused" />
+ <error level="warning" id="warn_comma_operator" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="8" col="74" msg="possible misuse of comma operator here" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="9" col="5" msg="use of undeclared identifier &apos;TraceLoggingOptionGroup&apos;" />
+ <error level="warning" id="warn_cxx98_compat_noexcept_decl" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="11" col="32" msg="noexcept specifications are incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_noexcept_decl" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="16" col="34" msg="noexcept specifications are incompatible with C++98" />
+ <error level="error" id="err_typecheck_decl_incomplete_type" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="21" col="13" msg="variable has incomplete type &apos;void&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="21" col="32" msg="use of undeclared identifier &apos;_In_&apos;" />
+ <error level="error" id="err_invalid_token_after_toplevel_declarator" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\trace.cpp" line="21" col="50" msg="expected &apos;;&apos; after top level declarator" />
+</log>

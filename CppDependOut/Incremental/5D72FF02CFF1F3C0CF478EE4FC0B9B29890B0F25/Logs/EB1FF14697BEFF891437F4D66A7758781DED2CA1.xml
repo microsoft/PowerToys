@@ -1,0 +1,35 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="1" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="3" col="10" msg="&apos;dxgi1_3.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="4" col="10" msg="&apos;d3d11_2.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="5" col="10" msg="&apos;d2d1_3.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="6" col="10" msg="&apos;d2d1_3helper.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="7" col="10" msg="&apos;d2d1helper.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="8" col="10" msg="&apos;dwrite.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="9" col="10" msg="&apos;dcomp.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="10" col="10" msg="&apos;dwmapi.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/winstore.h" line="5" col="10" msg="&apos;winrt/Windows.ApplicationModel.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="4" col="10" msg="&apos;appmodel.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="6" col="10" msg="&apos;winrt/Windows.ApplicationModel.h&apos; file not found" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="8" col="7" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="20" col="15" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="20" col="76" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="20" col="25" msg="use of undeclared identifier &apos;GetPackageFamilyName&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="21" col="22" msg="use of undeclared identifier &apos;APPMODEL_ERROR_NO_PACKAGE&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="24" col="17" msg="use of undeclared identifier &apos;StartupTaskState&apos;" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="26" col="15" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="26" col="34" msg="use of undeclared identifier &apos;co_await&apos;" />
+ <error level="warning" id="warn_decl_shadow" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="27" col="19" msg="declaration shadows a local variable" />
+ <error level="error" id="err_expected_semi_declaration" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="27" col="30" msg="expected &apos;;&apos; at end of declaration" />
+ <error level="error" id="err_template_instantiate_undefined" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="30" col="23" msg="implicit instantiation of undefined template &apos;std::future&lt;void&gt;&apos;" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="32" col="15" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="32" col="34" msg="use of undeclared identifier &apos;co_await&apos;" />
+ <error level="warning" id="warn_cxx98_compat_scoped_enum" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="33" col="14" msg="scoped enumerations are incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_enumerator_list_comma" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="37" col="20" msg="commas at the end of enumerator lists are incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_enum_nested_name_spec" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="38" col="27" msg="enumeration type in nested name specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_enum_nested_name_spec" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="58" col="18" msg="enumeration type in nested name specifier is incompatible with C++98" />
+ <error level="warning" id="warn_decl_shadow" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="59" col="26" msg="declaration shadows a local variable" />
+ <error level="error" id="err_expected_semi_declaration" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="59" col="37" msg="expected &apos;;&apos; at end of declaration" />
+ <error level="warning" id="warn_cxx98_compat_enum_nested_name_spec" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="61" col="18" msg="enumeration type in nested name specifier is incompatible with C++98" />
+ <error level="warning" id="warn_missing_case" file="D:\New folder (2)\PowerToys-1\src\common\winstore.cpp" line="56" col="21" msg="enumeration value &apos;none&apos; not handled in switch" />
+</log>

@@ -1,0 +1,35 @@
+<Externals>
+<tm namespace="std" access="none" kind="class" name="allocator" id="2d38690b2257f19f01e89f337ab9048b_07566aa809aee0bdf1c0fac16e19fa85" file="3" linestart="63" lineend="64">
+<template_parameters>
+<ttp name="" id="2d38690b2257f19f01e89f337ab9048b_7616e420bc7988a0fdef4434c8dab66a" depth="0" index="0" proto="type-parameter-0-0"/>
+</template_parameters>
+<cr namespace="std" access="none" kind="class" name="allocator" id="2d38690b2257f19f01e89f337ab9048b_07566aa809aee0bdf1c0fac16e19fa85" file="3" linestart="64" lineend="64"/>
+</tm>
+<cr namespace="std.__cxx11" access="none" kind="class" name="basic_string" id="0fe01663a4ff657d8958ff0f4c4a7f15_eec936a7b808facd5a6a87bf310b7f8c" file="4" linestart="71" lineend="71"/>
+<cts Spec="&lt;wchar_t&gt;" namespace="std" access="none" depth="0" pod="true" kind="struct" name="char_traits" id="c2a96564ec10c61396c50cb698dc4960_7d637fda5b9c2af11eaf2c7631b154c8" file="5" linestart="387" lineend="492" previous="0fe01663a4ff657d8958ff0f4c4a7f15_7d637fda5b9c2af11eaf2c7631b154c8"/>
+<tm namespace="std.__cxx11" access="none" depth="0" kind="class" name="basic_string" id="2c76fab9e4d6ac987a1750ece3a201cc_0f870db7a9e3f80681e1e50f59c3f3e1" file="6" linestart="76" lineend="3027" previous="0fe01663a4ff657d8958ff0f4c4a7f15_0f870db7a9e3f80681e1e50f59c3f3e1">
+<template_parameters>
+<ttp name="_CharT" id="2c76fab9e4d6ac987a1750ece3a201cc_41aab7ea0b2a4f5399789cbb735bff07" depth="0" index="0" proto="type-parameter-0-0"/>
+<ttp name="_Traits" id="2c76fab9e4d6ac987a1750ece3a201cc_3a060dd87f1183c8aa805887fa645f27" depth="0" index="1" proto="type-parameter-0-1"/>
+<ttp name="_Alloc" id="2c76fab9e4d6ac987a1750ece3a201cc_9c7a236a234ceda5d84f65309cc08d1d" depth="0" index="2" proto="type-parameter-0-2"/>
+</template_parameters>
+<cr namespace="std.__cxx11" access="none" depth="0" kind="class" name="basic_string" id="2c76fab9e4d6ac987a1750ece3a201cc_eec936a7b808facd5a6a87bf310b7f8c" file="6" linestart="77" lineend="3027" previous="0fe01663a4ff657d8958ff0f4c4a7f15_eec936a7b808facd5a6a87bf310b7f8c">
+<cr access="public" kind="class" name="basic_string" id="2c76fab9e4d6ac987a1750ece3a201cc_603e5586ba4340527f4b759c0ded4f93" file="6" linestart="77" lineend="77"/>
+<e parent="2c76fab9e4d6ac987a1750ece3a201cc_eec936a7b808facd5a6a87bf310b7f8c" access="private" name="" id="2c76fab9e4d6ac987a1750ece3a201cc_106ac808f271d67a4150e50dd05602d0" file="6" linestart="158" lineend="158">
+<promotion_type>
+<bt name="&lt;dependent type&gt;"/>
+</promotion_type>
+<integer_type>
+<bt name="int"/>
+</integer_type>
+</e>
+<c name="basic_string&lt;_CharT, _Traits, _Alloc&gt;" id="2c76fab9e4d6ac987a1750ece3a201cc_61ce908af03ab919fc3d2ffb7a036d2e" file="6" linestart="420" lineend="423" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+<initlist id="2c76fab9e4d6ac987a1750ece3a201cc_f5cef7c408d7b48a39b25df9e50585f4"/>
+</c>
+</cr>
+</tm>
+<cr access="public" depth="0" kind="struct" name="GeneralSettings" id="5118b955c4f0b227c4f3027a98d22d38_34a3b421ec64006850184a3468953a67" file="7" linestart="5" lineend="20" previous="80e8b2906b980e2e38825c0a1bfe8804_34a3b421ec64006850184a3468953a67"/>
+</Externals>

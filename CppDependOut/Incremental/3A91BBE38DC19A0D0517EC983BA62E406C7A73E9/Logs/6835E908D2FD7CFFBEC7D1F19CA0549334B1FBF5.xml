@@ -1,0 +1,69 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll/stdafx.h" line="7" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\json.h" line="3" col="10" msg="&apos;winrt/Windows.Foundation.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\json.h" line="4" col="10" msg="&apos;winrt/Windows.Data.Json.h&apos; file not found" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="29" col="14" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="36" col="12" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="37" col="18" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="52" col="16" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="56" col="12" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="64" col="16" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="68" col="16" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="70" col="18" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="81" col="26" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="86" col="53" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="86" col="53" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="86" col="53" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="86" col="27" msg="use of old-style cast" />
+ <error level="warning" id="warn_zero_as_null_pointer_constant" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="90" col="35" msg="zero as null pointer constant" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="105" col="18" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="105" col="18" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="105" col="18" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="105" col="18" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="114" col="18" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="117" col="10" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="118" col="10" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="118" col="10" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="122" col="28" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="122" col="35" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="123" col="13" msg="use of old-style cast" />
+ <error level="warning" id="ext_token_used" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="126" col="56" msg="extension used" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="127" col="17" msg="use of old-style cast" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="129" col="107" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="129" col="118" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="129" col="125" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="130" col="21" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="136" col="17" msg="use of old-style cast" />
+ <error level="warning" id="ext_token_used" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="151" col="69" msg="extension used" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="152" col="9" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="157" col="13" msg="use of old-style cast" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="161" col="53" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="ext_token_used" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="161" col="62" msg="extension used" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="162" col="17" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="166" col="21" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="172" col="25" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="176" col="29" msg="use of old-style cast" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="208" col="21" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="209" col="16" msg="use of old-style cast" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="220" col="20" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="221" col="12" msg="use of old-style cast" />
+ <error level="warning" id="ext_token_used" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="226" col="25" msg="extension used" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="227" col="12" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="233" col="12" msg="use of old-style cast" />
+ <error level="warning" id="warn_unused_parameter" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="230" col="63" msg="unused parameter &apos;psiItemArray&apos;" />
+ <error level="warning" id="warn_unused_parameter" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="230" col="82" msg="unused parameter &apos;fOkToBeSlow&apos;" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="247" col="32" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="247" col="39" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="248" col="9" msg="use of old-style cast" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="250" col="35" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="ext_token_used" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="251" col="52" msg="extension used" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="252" col="14" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="254" col="20" msg="use of old-style cast" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="258" col="99" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="258" col="110" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="258" col="117" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="261" col="12" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="267" col="12" msg="use of old-style cast" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="272" col="15" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll\PowerRenameExt.cpp" line="273" col="12" msg="use of old-style cast" />
+</log>

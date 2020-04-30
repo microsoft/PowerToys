@@ -1,0 +1,8 @@
+<Externals>
+<f name="GetSysColor" id="d6af13e926cf1e04cead7eb9027d8e57_ee14d1cc1ff0c1772f4b627e1fc38528" file="3" linestart="3851" lineend="3851" extC="true" access="none">
+<Attributed/>
+<p name="" proto="int" isLiteral="true" isPrimitive="true" access2="none">
+<bt name="int"/>
+</p>
+</f>
+</Externals>

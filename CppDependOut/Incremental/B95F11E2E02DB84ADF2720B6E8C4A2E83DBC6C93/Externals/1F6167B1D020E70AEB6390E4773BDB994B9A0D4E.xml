@@ -1,0 +1,22 @@
+<Externals>
+<cr access="none" depth="0" kind="struct" name="IUnknown" id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119" file="3" linestart="24" lineend="29"/>
+<cr access="none" depth="1" kind="interface" name="IPowerRenameManagerEvents" id="42f8454215ba1fc82054d14e9d4d1f4b_25994a146d40f920cb9635cead47e31c" file="4" linestart="65" lineend="76">
+<base access="public">
+<rt>
+<cr id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</base>
+<c name="IPowerRenameManagerEvents" id="42f8454215ba1fc82054d14e9d4d1f4b_f6535679fe0d69eecf2f94e530a0d6cf" file="4" linestart="65" lineend="65" implicit="true" access="public" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+</c>
+</cr>
+<cr access="public" depth="2" kind="class" name="CMockPowerRenameManagerEvents" id="9dc07df17286e4e79f1c21dc6c57a52f_a9083af8aea419e0f96413f5a926b17a" file="2" linestart="4" lineend="45">
+<base access="public">
+<rt>
+<cr id="42f8454215ba1fc82054d14e9d4d1f4b_25994a146d40f920cb9635cead47e31c"/>
+</rt>
+</base>
+</cr>
+</Externals>

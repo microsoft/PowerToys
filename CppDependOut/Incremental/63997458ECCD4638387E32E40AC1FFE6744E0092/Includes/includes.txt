@@ -1,0 +1,3 @@
+d:\new folder (2)\powertoys-1\src\modules\previewpane\powerpreviewtest\pch.h
+d:\new folder (2)\powertoys-1\src\modules\previewpane\powerpreviewtest\fileexplorerpreviewsettingstest.cpp
+d:\new folder (2)\powertoys-1\src\modules\previewpane\powerpreviewtest\pch.cpp

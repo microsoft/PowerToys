@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cppdepend-plugin tool="Misra">
+<file path="d:\new folder (2)\powertoys-1\src\common\com_object_factory.h"><violation beginline="11" endline="11" rule="Rule10-3-2" ruleset="Classes">
+</violation><violation beginline="20" endline="20" rule="Rule10-3-2" ruleset="Classes">
+</violation><violation beginline="25" endline="25" rule="Rule10-3-2" ruleset="Classes">
+</violation><violation beginline="31" endline="31" rule="Rule10-3-2" ruleset="Classes">
+</violation><violation beginline="50" endline="50" rule="Rule6-6-5" ruleset="Statements">
+</violation><violation beginline="53" endline="53" rule="Rule10-3-2" ruleset="Classes">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\common\common.h"><violation beginline="43" endline="43" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\common\notifications.cpp"><violation beginline="36" endline="36" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="84" endline="84" rule="Rule6-6-5" ruleset="Statements">
+</violation><violation beginline="36" endline="36" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="138" endline="138" rule="Rule6-6-5" ruleset="Statements">
+</violation><violation beginline="142" endline="142" rule="emptycatch" ruleset="Statements">
+</violation><violation beginline="160" endline="160" rule="Rule6-4-4" ruleset="Statements">
+</violation><violation beginline="207" endline="207" rule="Rule5-14-1" ruleset="Statements">
+</violation><violation beginline="262" endline="262" rule="Rule5-14-1" ruleset="Statements">
+</violation><violation beginline="154" endline="154" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="287" endline="287" rule="Rule5-14-1" ruleset="Statements">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\common\notifications.h"><violation beginline="50" endline="50" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\common\winstore.h"><violation beginline="11" endline="11" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="11" endline="11" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\objbase.h"><violation beginline="115" endline="115" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\winbase.h"><violation beginline="1683" endline="1683" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="2049" endline="2049" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="1818" endline="1818" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\winuser.h"><violation beginline="4108" endline="4108" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file></cppdepend-plugin>

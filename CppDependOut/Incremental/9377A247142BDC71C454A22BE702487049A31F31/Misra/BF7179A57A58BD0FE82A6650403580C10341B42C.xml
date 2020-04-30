@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cppdepend-plugin tool="Misra">
+<file path="d:\new folder (2)\powertoys-1\src\common\common.h"><violation beginline="92" endline="92" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\common\winstore.h"><violation beginline="11" endline="11" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\shellapi.h"><violation beginline="314" endline="314" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file></cppdepend-plugin>

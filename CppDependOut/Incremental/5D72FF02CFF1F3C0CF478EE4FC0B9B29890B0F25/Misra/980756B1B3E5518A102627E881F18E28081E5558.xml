@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cppdepend-plugin tool="Misra">
+<file path="d:\new folder (2)\powertoys-1\src\common\settings_helpers.cpp"><violation beginline="39" endline="39" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="39" endline="39" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="44" endline="44" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="44" endline="44" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\compiler\include\c++\bits\fs_ops.h"><violation beginline="119" endline="119" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="82" endline="82" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="119" endline="119" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="82" endline="82" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\objbase.h"><violation beginline="158" endline="158" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file></cppdepend-plugin>

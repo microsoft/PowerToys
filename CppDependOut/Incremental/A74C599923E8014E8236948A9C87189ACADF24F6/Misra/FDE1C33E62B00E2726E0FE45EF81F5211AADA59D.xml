@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cppdepend-plugin tool="Misra">
+<file path="d:\new folder (2)\powertoys-1\src\modules\shortcut_guide\dllmain.cpp"><violation beginline="10" endline="10" rule="Rule6-4-4" ruleset="Statements">
+</violation><violation beginline="29" endline="29" rule="Rule18-4-1" ruleset="Library">
+</violation><violation beginline="34" endline="34" rule="Rule6-6-5" ruleset="Statements">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\modules\shortcut_guide\overlay_window.h"><violation beginline="52" endline="52" rule="Rule10-3-2" ruleset="Classes">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\modules\shortcut_guide\trace.h"><violation beginline="6" endline="6" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="7" endline="7" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file></cppdepend-plugin>

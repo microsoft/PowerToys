@@ -1,0 +1,5 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll/stdafx.h" line="7" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll/stdafx.h" line="11" col="10" msg="&apos;atlbase.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll/CLSID.h" line="4" col="10" msg="&apos;guiddef.h&apos; file not found" />
+</log>

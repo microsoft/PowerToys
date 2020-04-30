@@ -1,0 +1,14 @@
+d:\new folder (2)\powertoys-1\src\modules\previewpane\powerpreview\clsid.h
+d:\new folder (2)\powertoys-1\src\modules\previewpane\powerpreview\pch.h
+d:\new folder (2)\powertoys-1\src\modules\previewpane\powerpreview\registry_wrapper.h
+d:\new folder (2)\powertoys-1\src\modules\previewpane\powerpreview\registry_wrapper_interface.h
+d:\new folder (2)\powertoys-1\src\modules\previewpane\powerpreview\resource.h
+d:\new folder (2)\powertoys-1\src\modules\previewpane\powerpreview\settings.h
+d:\new folder (2)\powertoys-1\src\modules\previewpane\powerpreview\trace.h
+d:\new folder (2)\powertoys-1\src\modules\previewpane\powerpreview\powerpreview.h
+d:\new folder (2)\powertoys-1\src\modules\previewpane\powerpreview\dllmain.cpp
+d:\new folder (2)\powertoys-1\src\modules\previewpane\powerpreview\pch.cpp
+d:\new folder (2)\powertoys-1\src\modules\previewpane\powerpreview\powerpreview.cpp
+d:\new folder (2)\powertoys-1\src\modules\previewpane\powerpreview\registry_wrapper.cpp
+d:\new folder (2)\powertoys-1\src\modules\previewpane\powerpreview\settings.cpp
+d:\new folder (2)\powertoys-1\src\modules\previewpane\powerpreview\trace.cpp

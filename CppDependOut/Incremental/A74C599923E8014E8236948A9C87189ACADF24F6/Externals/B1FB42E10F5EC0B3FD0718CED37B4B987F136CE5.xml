@@ -1,0 +1,597 @@
+<Externals>
+<tm namespace="std" access="none" depth="0" pod="true" kind="struct" name="ratio" id="32ad324a4ab5bc2d297b9c894acf4fdf_1c3b560c386a83bf953723a472b524c4" file="3" linestart="262" lineend="277">
+<template_parameters/>
+<cr namespace="std" access="none" depth="0" pod="true" kind="struct" name="ratio" id="32ad324a4ab5bc2d297b9c894acf4fdf_1c3b560c386a83bf953723a472b524c4" file="3" linestart="263" lineend="277">
+<cr access="public" kind="struct" name="ratio" id="32ad324a4ab5bc2d297b9c894acf4fdf_882fc573b0413eb81ebf9c84fe661dff" file="3" linestart="263" lineend="263"/>
+</cr>
+</tm>
+<tm namespace="std.chrono" access="none" depth="0" kind="struct" name="duration" id="1efed94a769aad940e3135025e917467_076a47f4cecce56e910cbb80823bae8c" file="4" linestart="301" lineend="446" previous="1efed94a769aad940e3135025e917467_076a47f4cecce56e910cbb80823bae8c">
+<template_parameters>
+<ttp name="_Rep" id="1efed94a769aad940e3135025e917467_f1f8338ce86bcf333def77d3231bcdae" depth="0" index="0" proto="type-parameter-0-0"/>
+<ttp name="_Period" id="1efed94a769aad940e3135025e917467_b9b29e985461001a4855ba0e7fd30e03" depth="0" index="1" proto="type-parameter-0-1"/>
+</template_parameters>
+<cr namespace="std.chrono" access="none" depth="0" kind="struct" name="duration" id="1efed94a769aad940e3135025e917467_762c69b760853feab6dc8ded898a2542" file="4" linestart="302" lineend="446" previous="1efed94a769aad940e3135025e917467_762c69b760853feab6dc8ded898a2542">
+<cr access="public" kind="struct" name="duration" id="1efed94a769aad940e3135025e917467_7cfacc3a4c730d89b56f6a80cb461d9f" file="4" linestart="302" lineend="302"/>
+<ft name="duration&lt;_Rep, _Period&gt;" id="1efed94a769aad940e3135025e917467_076a47f4cecce56e910cbb80823bae8c" file="4" linestart="330" lineend="334">
+<template_parameters>
+<ttp name="_Rep2" id="1efed94a769aad940e3135025e917467_7749108fd33144186159f8eb8f3fda3e" depth="1" index="0" proto="type-parameter-1-0"/>
+<ttp name="" id="1efed94a769aad940e3135025e917467_92d7bb6ba58e469786d087371a84092f" depth="1" index="1" proto="type-parameter-1-1">
+<tss>
+<templatebase id="02c383f9c390d2cbfa7b34cc9692f9be_ab9aa3de0d3ee3f70550d921e1cf2562"/>
+<template_arguments>
+<tss>
+<templatebase id="02c383f9c390d2cbfa7b34cc9692f9be_a58204fcef199bc5fd7270a53c56df73"/>
+<template_arguments>
+<lrf>
+<QualType const="true">
+<ttp/>
+</QualType>
+</lrf>
+<Tdef>
+<ttp/>
+</Tdef>
+</template_arguments>
+</tss>
+<tss>
+<templatebase id="02c383f9c390d2cbfa7b34cc9692f9be_cc4175917994503d4a11e60658542cef"/>
+<template_arguments>
+<tss>
+<templatebase id="1efed94a769aad940e3135025e917467_a72ffe607c0308fafc2425e7ef607ce6"/>
+<template_arguments>
+<Tdef>
+<ttp/>
+</Tdef>
+</template_arguments>
+</tss>
+<tss>
+<templatebase id="02c383f9c390d2cbfa7b34cc9692f9be_368585eae873c1630747dbd158160ea1"/>
+<template_arguments>
+<tss>
+<templatebase id="1efed94a769aad940e3135025e917467_a72ffe607c0308fafc2425e7ef607ce6"/>
+<template_arguments>
+<ttp/>
+</template_arguments>
+</tss>
+</template_arguments>
+</tss>
+</template_arguments>
+</tss>
+</template_arguments>
+</tss>
+</ttp>
+</template_parameters>
+<c name="duration&lt;_Rep, _Period&gt;" id="1efed94a769aad940e3135025e917467_63222cdcf0ea6e7d5dc927719967d9a7" file="4" linestart="333" lineend="334" explicit="true" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+<p name="__rep" proto="const _Rep2 &amp;" isRef="true" access2="none">
+<lrf>
+<QualType const="true">
+<ttp/>
+</QualType>
+</lrf>
+</p>
+<initlist id="1efed94a769aad940e3135025e917467_bb8325475c43efd014f6668bcca903d2"/>
+</c>
+</ft>
+<m name="operator=" id="1efed94a769aad940e3135025e917467_5df39fa72c5762978d392f0a1f88cc45" file="4" linestart="344" lineend="344" operator="true" access="public" isdef="true">
+<fpt cc="cdecl" proto="duration&lt;_Rep, _Period&gt; &amp;">
+<lrf>
+<InjectedClassName>
+<cr id="1efed94a769aad940e3135025e917467_762c69b760853feab6dc8ded898a2542"/>
+</InjectedClassName>
+</lrf>
+</fpt>
+<p name="" proto="const duration&lt;_Rep, _Period&gt; &amp;" isRef="true" access2="none">
+<lrf>
+<QualType const="true">
+<InjectedClassName>
+<cr id="1efed94a769aad940e3135025e917467_762c69b760853feab6dc8ded898a2542"/>
+</InjectedClassName>
+</QualType>
+</lrf>
+</p>
+</m>
+</cr>
+</tm>
+<cr namespace="std.chrono" access="none" depth="0" kind="struct" name="time_point" id="1efed94a769aad940e3135025e917467_a93a40d4265641d71ae146e65145af71" file="4" linestart="616" lineend="668" previous="1efed94a769aad940e3135025e917467_a93a40d4265641d71ae146e65145af71"/>
+<cr namespace="std.chrono._V2" access="none" depth="0" pod="true" kind="struct" name="system_clock" id="1efed94a769aad940e3135025e917467_2bae53441106f75345f6694b7ad489d2" file="4" linestart="818" lineend="849">
+<m name="now" id="1efed94a769aad940e3135025e917467_08637828f6a31d071d547b0fe1a7fc65" file="4" linestart="831" lineend="832" access="public" storage="static">
+<fpt cc="cdecl" proto="time_point">
+<Tdef>
+<ety>
+<tss>
+<templatebase id="1efed94a769aad940e3135025e917467_a93a40d4265641d71ae146e65145af71"/>
+<template_arguments>
+<rt>
+<cr id="1efed94a769aad940e3135025e917467_2bae53441106f75345f6694b7ad489d2"/>
+</rt>
+<Tdef>
+<ety>
+<Tdef>
+<tss>
+<templatebase id="1efed94a769aad940e3135025e917467_762c69b760853feab6dc8ded898a2542"/>
+<template_arguments>
+<Tdef>
+<bt name="long long"/>
+</Tdef>
+<Tdef>
+<tss>
+<templatebase id="32ad324a4ab5bc2d297b9c894acf4fdf_1c3b560c386a83bf953723a472b524c4"/>
+<template_arguments/>
+</tss>
+</Tdef>
+</template_arguments>
+</tss>
+</Tdef>
+</ety>
+</Tdef>
+</template_arguments>
+</tss>
+</ety>
+</Tdef>
+</fpt>
+</m>
+</cr>
+<tm namespace="std" access="none" depth="1" kind="class" name="deque" id="880416407e5c5abe78b7c78f6d907a77_936b3721bb2dae502758d4d22ace95d0" file="5" linestart="831" lineend="2253">
+<template_parameters>
+<ttp name="_Tp" id="880416407e5c5abe78b7c78f6d907a77_83104d49b77b8504c5db0bdee8eae015" depth="0" index="0" proto="type-parameter-0-0"/>
+<ttp name="_Alloc" id="880416407e5c5abe78b7c78f6d907a77_9778884ffce91553696ae5e0853e3a8c" depth="0" index="1" proto="type-parameter-0-1">
+<ety>
+<tss>
+<templatebase id="2002a20516add8400acbc167de68ef8a_07566aa809aee0bdf1c0fac16e19fa85"/>
+<template_arguments>
+<ttp/>
+</template_arguments>
+</tss>
+</ety>
+</ttp>
+</template_parameters>
+<cr namespace="std" access="none" depth="1" kind="class" name="deque" id="880416407e5c5abe78b7c78f6d907a77_936b3721bb2dae502758d4d22ace95d0" file="5" linestart="832" lineend="2253">
+<base access="protected">
+<tss>
+<templatebase id="880416407e5c5abe78b7c78f6d907a77_d2a5956558a816149d3e942c93d96b43"/>
+<template_arguments>
+<ttp/>
+<ttp/>
+</template_arguments>
+</tss>
+</base>
+<cr access="public" kind="class" name="deque" id="880416407e5c5abe78b7c78f6d907a77_27f95d8c28b8df70cb7e61aab87a886e" file="5" linestart="832" lineend="832"/>
+<m name="empty" id="880416407e5c5abe78b7c78f6d907a77_4d4a4af48bed28c3376043523c5de07b" file="5" linestart="1366" lineend="1368" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" const="true" proto="bool">
+<bt name="bool"/>
+</fpt>
+</m>
+<m name="front" id="880416407e5c5abe78b7c78f6d907a77_993fa0446378ac8ae15bf2deea8d51ee" file="5" linestart="1460" lineend="1465" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="reference">
+<Tdef>
+<DependentName/>
+</Tdef>
+</fpt>
+</m>
+<m name="back" id="880416407e5c5abe78b7c78f6d907a77_93f64ff972d6f688f11020dd38ca6569" file="5" linestart="1482" lineend="1489" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="reference">
+<Tdef>
+<DependentName/>
+</Tdef>
+</fpt>
+</m>
+<m name="push_back" id="880416407e5c5abe78b7c78f6d907a77_5bfdae5b1fe59e3024df9b0a5563477d" file="5" linestart="1566" lineend="1568" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+<p name="__x" proto="value_type &amp;&amp;" isRef="true" access2="none">
+<rrf>
+<Tdef>
+<ttp/>
+</Tdef>
+</rrf>
+</p>
+</m>
+<m name="pop_front" id="880416407e5c5abe78b7c78f6d907a77_aa21369cd1680056dee7300dec8a9119" file="5" linestart="1587" lineend="1600" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+</m>
+<m name="clear" id="880416407e5c5abe78b7c78f6d907a77_768b17735f06f156a4b3d010f0a4762f" file="5" linestart="1849" lineend="1851" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+</m>
+</cr>
+</tm>
+<cr access="none" depth="1" kind="class" name="OverlayWindow" id="449583080991b137b0515a8b2061f30f_6b689b544a270174d6b52258d39ae3c2" file="6" linestart="13" lineend="71" previous="449583080991b137b0515a8b2061f30f_6b689b544a270174d6b52258d39ae3c2">
+<base access="public">
+<rt>
+<cr id="5d422ad2288de4eb4acac8032cfda16e_f6de960c4b71fa203792b1b7000bea4b"/>
+</rt>
+</base>
+<m name="on_held" id="449583080991b137b0515a8b2061f30f_1830bbf6f6c0545fb781ee435a3c94e2" file="6" linestart="30" lineend="30" access="public">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+</m>
+<m name="on_held_press" id="449583080991b137b0515a8b2061f30f_c3810f0abd7b341793cdfef46068768b" file="6" linestart="31" lineend="31" access="public">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+<p name="vkCode" proto="DWORD" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned long"/>
+</Tdef>
+</p>
+</m>
+<m name="quick_hide" id="449583080991b137b0515a8b2061f30f_1f8eadfb08c6399bcca8244ecdf9d805" file="6" linestart="32" lineend="32" access="public">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+</m>
+</cr>
+<cr access="none" depth="0" pod="true" kind="struct" name="KeyEvent" id="729d7a669869a17bfb003267ff7c8993_91925f976ace3bc8b5e052ddd7f5609a" file="2" linestart="9" lineend="13">
+<c name="KeyEvent" id="729d7a669869a17bfb003267ff7c8993_18a9a0adef1ad618a9a97a45d5874d1e" file="2" linestart="9" lineend="9" copyconst="true" implicit="true" access="public" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+<p name="" proto="const KeyEvent &amp;" isRef="true" isLiteral="true" access2="none">
+<lrf>
+<QualType const="true">
+<rt>
+<cr id="729d7a669869a17bfb003267ff7c8993_91925f976ace3bc8b5e052ddd7f5609a"/>
+</rt>
+</QualType>
+</lrf>
+</p>
+</c>
+<c name="KeyEvent" id="729d7a669869a17bfb003267ff7c8993_6477deb200c4a660782c70f8014b968d" file="2" linestart="9" lineend="9" implicit="true" access="public" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+<p name="" proto="KeyEvent &amp;&amp;" isRef="true" isLiteral="true" access2="none">
+<rrf>
+<rt>
+<cr id="729d7a669869a17bfb003267ff7c8993_91925f976ace3bc8b5e052ddd7f5609a"/>
+</rt>
+</rrf>
+</p>
+</c>
+</cr>
+<cr access="none" depth="0" pod="true" kind="struct" name="tagINPUT" id="d6af13e926cf1e04cead7eb9027d8e57_272d27cfdabcc076931e0738e252749e" file="7" linestart="4383" lineend="4390">
+<fl name="type" id="d6af13e926cf1e04cead7eb9027d8e57_c1188c64331807f6d1f41089771e8d29" file="7" linestart="4384" lineend="4384" isLiteral="true" access="public" proto="DWORD">
+<Tdef>
+<bt name="unsigned long"/>
+</Tdef>
+</fl>
+</cr>
+<f namespace="std.chrono" name="operator-" id="1efed94a769aad940e3135025e917467_a60fd1adc719e44359e945165eb35df3" file="4" linestart="463" lineend="472" operator="true" access="none" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="typename common_type&lt;duration&lt;_Rep1, _Period1&gt;, duration&lt;_Rep2, _Period2&gt; &gt;::type">
+<DependentName/>
+</fpt>
+<p name="__lhs" proto="const duration&lt;_Rep1, _Period1&gt; &amp;" isRef="true" access2="none">
+<lrf>
+<QualType const="true">
+<tss>
+<templatebase id="1efed94a769aad940e3135025e917467_762c69b760853feab6dc8ded898a2542"/>
+<template_arguments>
+<ttp/>
+<ttp/>
+</template_arguments>
+</tss>
+</QualType>
+</lrf>
+</p>
+<p name="__rhs" proto="const duration&lt;_Rep2, _Period2&gt; &amp;" isRef="true" access2="none">
+<lrf>
+<QualType const="true">
+<tss>
+<templatebase id="1efed94a769aad940e3135025e917467_762c69b760853feab6dc8ded898a2542"/>
+<template_arguments>
+<ttp/>
+<ttp/>
+</template_arguments>
+</tss>
+</QualType>
+</lrf>
+</p>
+</f>
+<ft name="operator-" id="1efed94a769aad940e3135025e917467_a450f77675f2a425b3efe3bb9bc60b80" file="4" linestart="461" lineend="472">
+<template_parameters>
+<ttp name="_Rep1" id="1efed94a769aad940e3135025e917467_c9aa124948c59ab422434f6930be1999" depth="0" index="0" proto="type-parameter-0-0"/>
+<ttp name="_Period1" id="1efed94a769aad940e3135025e917467_90ac7b710703498bee7d596fee040396" depth="0" index="1" proto="type-parameter-0-1"/>
+<ttp name="_Rep2" id="1efed94a769aad940e3135025e917467_3a51145b56de6d5417fe5610c9c2f3f0" depth="0" index="2" proto="type-parameter-0-2"/>
+<ttp name="_Period2" id="1efed94a769aad940e3135025e917467_b9a6c2ff40e9d502f01519a461014bdb" depth="0" index="3" proto="type-parameter-0-3"/>
+</template_parameters>
+<f namespace="std.chrono" name="operator-" id="1efed94a769aad940e3135025e917467_a60fd1adc719e44359e945165eb35df3" file="4" linestart="463" lineend="472" operator="true" access="none" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="typename common_type&lt;duration&lt;_Rep1, _Period1&gt;, duration&lt;_Rep2, _Period2&gt; &gt;::type">
+<DependentName/>
+</fpt>
+<p name="__lhs" proto="const duration&lt;_Rep1, _Period1&gt; &amp;" isRef="true" access2="none">
+<lrf>
+<QualType const="true">
+<tss>
+<templatebase id="1efed94a769aad940e3135025e917467_762c69b760853feab6dc8ded898a2542"/>
+<template_arguments>
+<ttp/>
+<ttp/>
+</template_arguments>
+</tss>
+</QualType>
+</lrf>
+</p>
+<p name="__rhs" proto="const duration&lt;_Rep2, _Period2&gt; &amp;" isRef="true" access2="none">
+<lrf>
+<QualType const="true">
+<tss>
+<templatebase id="1efed94a769aad940e3135025e917467_762c69b760853feab6dc8ded898a2542"/>
+<template_arguments>
+<ttp/>
+<ttp/>
+</template_arguments>
+</tss>
+</QualType>
+</lrf>
+</p>
+</f>
+</ft>
+<f namespace="std.chrono" name="operator&lt;" id="1efed94a769aad940e3135025e917467_7363817f6dc6a6cf3201d933add6b917" file="4" linestart="558" lineend="566" operator="true" access="none" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="bool">
+<bt name="bool"/>
+</fpt>
+<p name="__lhs" proto="const duration&lt;_Rep1, _Period1&gt; &amp;" isRef="true" access2="none">
+<lrf>
+<QualType const="true">
+<tss>
+<templatebase id="1efed94a769aad940e3135025e917467_762c69b760853feab6dc8ded898a2542"/>
+<template_arguments>
+<ttp/>
+<ttp/>
+</template_arguments>
+</tss>
+</QualType>
+</lrf>
+</p>
+<p name="__rhs" proto="const duration&lt;_Rep2, _Period2&gt; &amp;" isRef="true" access2="none">
+<lrf>
+<QualType const="true">
+<tss>
+<templatebase id="1efed94a769aad940e3135025e917467_762c69b760853feab6dc8ded898a2542"/>
+<template_arguments>
+<ttp/>
+<ttp/>
+</template_arguments>
+</tss>
+</QualType>
+</lrf>
+</p>
+</f>
+<ft name="operator&lt;" id="1efed94a769aad940e3135025e917467_4c66053dcf5ae901e890fea0d0198d0a" file="4" linestart="556" lineend="566">
+<template_parameters>
+<ttp name="_Rep1" id="1efed94a769aad940e3135025e917467_c07ef22905ea232d0ceac23e45cfb0de" depth="0" index="0" proto="type-parameter-0-0"/>
+<ttp name="_Period1" id="1efed94a769aad940e3135025e917467_971b6bdfb299b1f2f8b4247c1ffdba05" depth="0" index="1" proto="type-parameter-0-1"/>
+<ttp name="_Rep2" id="1efed94a769aad940e3135025e917467_7395cda43b4dcc9d4fc2912a3a29a4b6" depth="0" index="2" proto="type-parameter-0-2"/>
+<ttp name="_Period2" id="1efed94a769aad940e3135025e917467_a40844e398d4a564255eac8da0b46304" depth="0" index="3" proto="type-parameter-0-3"/>
+</template_parameters>
+<f namespace="std.chrono" name="operator&lt;" id="1efed94a769aad940e3135025e917467_7363817f6dc6a6cf3201d933add6b917" file="4" linestart="558" lineend="566" operator="true" access="none" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="bool">
+<bt name="bool"/>
+</fpt>
+<p name="__lhs" proto="const duration&lt;_Rep1, _Period1&gt; &amp;" isRef="true" access2="none">
+<lrf>
+<QualType const="true">
+<tss>
+<templatebase id="1efed94a769aad940e3135025e917467_762c69b760853feab6dc8ded898a2542"/>
+<template_arguments>
+<ttp/>
+<ttp/>
+</template_arguments>
+</tss>
+</QualType>
+</lrf>
+</p>
+<p name="__rhs" proto="const duration&lt;_Rep2, _Period2&gt; &amp;" isRef="true" access2="none">
+<lrf>
+<QualType const="true">
+<tss>
+<templatebase id="1efed94a769aad940e3135025e917467_762c69b760853feab6dc8ded898a2542"/>
+<template_arguments>
+<ttp/>
+<ttp/>
+</template_arguments>
+</tss>
+</QualType>
+</lrf>
+</p>
+</f>
+</ft>
+<f namespace="std.chrono" name="operator&gt;" id="1efed94a769aad940e3135025e917467_d0030bdced45cdde68dbbbf6d31e7c17" file="4" linestart="584" lineend="587" operator="true" access="none" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="bool">
+<bt name="bool"/>
+</fpt>
+<p name="__lhs" proto="const duration&lt;_Rep1, _Period1&gt; &amp;" isRef="true" access2="none">
+<lrf>
+<QualType const="true">
+<tss>
+<templatebase id="1efed94a769aad940e3135025e917467_762c69b760853feab6dc8ded898a2542"/>
+<template_arguments>
+<ttp/>
+<ttp/>
+</template_arguments>
+</tss>
+</QualType>
+</lrf>
+</p>
+<p name="__rhs" proto="const duration&lt;_Rep2, _Period2&gt; &amp;" isRef="true" access2="none">
+<lrf>
+<QualType const="true">
+<tss>
+<templatebase id="1efed94a769aad940e3135025e917467_762c69b760853feab6dc8ded898a2542"/>
+<template_arguments>
+<ttp/>
+<ttp/>
+</template_arguments>
+</tss>
+</QualType>
+</lrf>
+</p>
+</f>
+<ft name="operator&gt;" id="1efed94a769aad940e3135025e917467_ff957a7b390408856936a411e4c7e180" file="4" linestart="582" lineend="587">
+<template_parameters>
+<ttp name="_Rep1" id="1efed94a769aad940e3135025e917467_d23c90dc753ef68375737da285a68f2b" depth="0" index="0" proto="type-parameter-0-0"/>
+<ttp name="_Period1" id="1efed94a769aad940e3135025e917467_198349b617c6fdf3ce2d9282638d2329" depth="0" index="1" proto="type-parameter-0-1"/>
+<ttp name="_Rep2" id="1efed94a769aad940e3135025e917467_8fb0e67b49d509a2d34e70bea9c02c7c" depth="0" index="2" proto="type-parameter-0-2"/>
+<ttp name="_Period2" id="1efed94a769aad940e3135025e917467_1e5e369e752da1f4df70c197f43e5753" depth="0" index="3" proto="type-parameter-0-3"/>
+</template_parameters>
+<f namespace="std.chrono" name="operator&gt;" id="1efed94a769aad940e3135025e917467_d0030bdced45cdde68dbbbf6d31e7c17" file="4" linestart="584" lineend="587" operator="true" access="none" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="bool">
+<bt name="bool"/>
+</fpt>
+<p name="__lhs" proto="const duration&lt;_Rep1, _Period1&gt; &amp;" isRef="true" access2="none">
+<lrf>
+<QualType const="true">
+<tss>
+<templatebase id="1efed94a769aad940e3135025e917467_762c69b760853feab6dc8ded898a2542"/>
+<template_arguments>
+<ttp/>
+<ttp/>
+</template_arguments>
+</tss>
+</QualType>
+</lrf>
+</p>
+<p name="__rhs" proto="const duration&lt;_Rep2, _Period2&gt; &amp;" isRef="true" access2="none">
+<lrf>
+<QualType const="true">
+<tss>
+<templatebase id="1efed94a769aad940e3135025e917467_762c69b760853feab6dc8ded898a2542"/>
+<template_arguments>
+<ttp/>
+<ttp/>
+</template_arguments>
+</tss>
+</QualType>
+</lrf>
+</p>
+</f>
+</ft>
+<f namespace="std.chrono" name="operator-" id="1efed94a769aad940e3135025e917467_4713279577db26c69d70d820bf244830" file="4" linestart="751" lineend="754" operator="true" access="none" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="typename common_type&lt;_Dur1, _Dur2&gt;::type">
+<DependentName/>
+</fpt>
+<p name="__lhs" proto="const time_point&lt;_Clock, _Dur1&gt; &amp;" isRef="true" access2="none">
+<lrf>
+<QualType const="true">
+<tss>
+<templatebase id="1efed94a769aad940e3135025e917467_a93a40d4265641d71ae146e65145af71"/>
+<template_arguments>
+<ttp/>
+<ttp/>
+</template_arguments>
+</tss>
+</QualType>
+</lrf>
+</p>
+<p name="__rhs" proto="const time_point&lt;_Clock, _Dur2&gt; &amp;" isRef="true" access2="none">
+<lrf>
+<QualType const="true">
+<tss>
+<templatebase id="1efed94a769aad940e3135025e917467_a93a40d4265641d71ae146e65145af71"/>
+<template_arguments>
+<ttp/>
+<ttp/>
+</template_arguments>
+</tss>
+</QualType>
+</lrf>
+</p>
+</f>
+<ft name="operator-" id="1efed94a769aad940e3135025e917467_a450f77675f2a425b3efe3bb9bc60b80" file="4" linestart="750" lineend="754">
+<template_parameters>
+<ttp name="_Clock" id="1efed94a769aad940e3135025e917467_d2955d255ea0fc5bacfab652a29d8831" depth="0" index="0" proto="type-parameter-0-0"/>
+<ttp name="_Dur1" id="1efed94a769aad940e3135025e917467_41ee05de22436c817e47839f517de02d" depth="0" index="1" proto="type-parameter-0-1"/>
+<ttp name="_Dur2" id="1efed94a769aad940e3135025e917467_44de306d33057f18ebe5f9909fc87875" depth="0" index="2" proto="type-parameter-0-2"/>
+</template_parameters>
+<f namespace="std.chrono" name="operator-" id="1efed94a769aad940e3135025e917467_4713279577db26c69d70d820bf244830" file="4" linestart="751" lineend="754" operator="true" access="none" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="typename common_type&lt;_Dur1, _Dur2&gt;::type">
+<DependentName/>
+</fpt>
+<p name="__lhs" proto="const time_point&lt;_Clock, _Dur1&gt; &amp;" isRef="true" access2="none">
+<lrf>
+<QualType const="true">
+<tss>
+<templatebase id="1efed94a769aad940e3135025e917467_a93a40d4265641d71ae146e65145af71"/>
+<template_arguments>
+<ttp/>
+<ttp/>
+</template_arguments>
+</tss>
+</QualType>
+</lrf>
+</p>
+<p name="__rhs" proto="const time_point&lt;_Clock, _Dur2&gt; &amp;" isRef="true" access2="none">
+<lrf>
+<QualType const="true">
+<tss>
+<templatebase id="1efed94a769aad940e3135025e917467_a93a40d4265641d71ae146e65145af71"/>
+<template_arguments>
+<ttp/>
+<ttp/>
+</template_arguments>
+</tss>
+</QualType>
+</lrf>
+</p>
+</f>
+</ft>
+<v name="instance" proto="class OverlayWindow *" isPtr="true" isLiteral="true" id="449583080991b137b0515a8b2061f30f_a9851cac700506319a069e87979c1469" file="6" linestart="9" lineend="9" storage="extern" access2="none">
+<pt>
+<ety>
+<rt>
+<cr id="449583080991b137b0515a8b2061f30f_6b689b544a270174d6b52258d39ae3c2"/>
+</rt>
+</ety>
+</pt>
+</v>
+<f name="is_start_visible" id="07ad16e03c134f33abaf8a0d5e013b37_a3450f79bf2dcfc79ecbe63a97a816f2" file="8" linestart="3" lineend="3" access="none">
+<fpt cc="cdecl" proto="bool">
+<bt name="bool"/>
+</fpt>
+</f>
+<f name="winkey_held" id="af8c34d613a48357e39780ababd33707_d0b526a970477cc6f8d2aaa2dd9556f8" file="9" linestart="2" lineend="2" access="none">
+<fpt cc="cdecl" proto="bool">
+<bt name="bool"/>
+</fpt>
+</f>
+<f name="only_winkey_key_held" id="af8c34d613a48357e39780ababd33707_6cd2c98e35f5f6433a5ec03f18cbbcd7" file="9" linestart="3" lineend="3" access="none">
+<fpt cc="cdecl" proto="bool">
+<bt name="bool"/>
+</fpt>
+</f>
+<f name="GetKeyState" id="d6af13e926cf1e04cead7eb9027d8e57_d34770b34c5b6a59d425bdf489c59755" file="7" linestart="3808" lineend="3808" extC="true" access="none">
+<Attributed/>
+<p name="" proto="int" isLiteral="true" isPrimitive="true" access2="none">
+<bt name="int"/>
+</p>
+</f>
+<f name="SendInput" id="d6af13e926cf1e04cead7eb9027d8e57_a2efc67226cb89908b7fdfe655f1ed88" file="7" linestart="4392" lineend="4392" extC="true" access="none">
+<Attributed/>
+<p name="" proto="UINT" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned int"/>
+</Tdef>
+</p>
+<p name="" proto="LPINPUT" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="d6af13e926cf1e04cead7eb9027d8e57_272d27cfdabcc076931e0738e252749e"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+<p name="" proto="int" isLiteral="true" isPrimitive="true" access2="none">
+<bt name="int"/>
+</p>
+</f>
+</Externals>

@@ -1,0 +1,5 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp/stdafx.h" line="14" col="10" msg="&apos;atlbase.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp/stdafx.h" line="15" col="10" msg="&apos;strsafe.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp/stdafx.h" line="16" col="10" msg="&apos;pathcch.h&apos; file not found" />
+</log>

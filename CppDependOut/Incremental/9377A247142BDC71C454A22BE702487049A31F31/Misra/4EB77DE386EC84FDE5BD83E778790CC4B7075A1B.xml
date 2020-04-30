@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cppdepend-plugin tool="Misra">
+<file path="d:\new folder (2)\powertoys-1\src\common\common.h"><violation beginline="64" endline="64" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\common\winstore.h"><violation beginline="11" endline="11" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="11" endline="11" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\modules\interface\powertoy_module_interface.h"><violation beginline="75" endline="75" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\runner\auto_start_helper.h"><violation beginline="5" endline="5" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="3" endline="3" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="5" endline="5" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="4" endline="4" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="5" endline="5" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="4" endline="4" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="5" endline="5" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\runner\general_settings.cpp"><violation beginline="58" endline="58" rule="Rule5-14-1" ruleset="Statements">
+</violation><violation beginline="83" endline="83" rule="Rule7-3-4" ruleset="Declarations">
+</violation><violation beginline="222" endline="222" rule="emptycatch" ruleset="Statements">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\runner\powertoys_events.h"><violation beginline="14" endline="14" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="25" endline="25" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="11" endline="11" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="25" endline="25" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\runner\trace.h"><violation beginline="11" endline="11" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\winbase.h"><violation beginline="1624" endline="1624" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file></cppdepend-plugin>

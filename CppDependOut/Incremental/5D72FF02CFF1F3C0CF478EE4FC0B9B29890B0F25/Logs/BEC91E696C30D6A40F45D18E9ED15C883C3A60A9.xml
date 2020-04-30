@@ -1,0 +1,40 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="1" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="3" col="10" msg="&apos;dxgi1_3.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="4" col="10" msg="&apos;d3d11_2.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="5" col="10" msg="&apos;d2d1_3.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="6" col="10" msg="&apos;d2d1_3helper.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="7" col="10" msg="&apos;d2d1helper.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="8" col="10" msg="&apos;dwrite.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="9" col="10" msg="&apos;dcomp.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="10" col="10" msg="&apos;dwmapi.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/d2d_text.h" line="2" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/d2d_text.h" line="3" col="10" msg="&apos;dwrite.h&apos; file not found" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="6" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="ext_token_used" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="6" col="74" msg="extension used" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="6" col="46" msg="use of undeclared identifier &apos;DWRITE_FACTORY_TYPE_SHARED&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="8" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="8" col="51" msg="use of undeclared identifier &apos;DWRITE_TEXT_ALIGNMENT_CENTER&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="9" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="9" col="56" msg="use of undeclared identifier &apos;DWRITE_PARAGRAPH_ALIGNMENT_CENTER&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="14" col="14" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="15" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="16" col="52" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="17" col="52" msg="use of undeclared identifier &apos;DWRITE_FONT_WEIGHT_NORMAL&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="18" col="52" msg="use of undeclared identifier &apos;DWRITE_FONT_STYLE_NORMAL&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="19" col="52" msg="use of undeclared identifier &apos;DWRITE_FONT_STRETCH_NORMAL&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="23" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="23" col="56" msg="use of undeclared identifier &apos;DWRITE_PARAGRAPH_ALIGNMENT_CENTER&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="29" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="29" col="51" msg="use of undeclared identifier &apos;DWRITE_TEXT_ALIGNMENT_LEADING&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="35" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="35" col="51" msg="use of undeclared identifier &apos;DWRITE_TEXT_ALIGNMENT_CENTER&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="41" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="41" col="51" msg="use of undeclared identifier &apos;DWRITE_TEXT_ALIGNMENT_TRAILING&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="47" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="47" col="20" msg="use of undeclared identifier &apos;ID2D1SolidColorBrush&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="47" col="42" msg="use of undeclared identifier &apos;brush&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="48" col="42" msg="use of undeclared identifier &apos;brush&apos;" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="50" col="22" msg="use of old-style cast" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_text.cpp" line="53" col="22" msg="use of undeclared identifier &apos;brush&apos;" />
+</log>

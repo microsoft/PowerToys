@@ -1,0 +1,66 @@
+<Externals>
+<cr access="none" depth="0" kind="struct" name="IUnknown" id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119" file="5" linestart="24" lineend="29"/>
+<cr access="none" depth="1" kind="interface" name="IDataObject" id="d00d02ed27e4a0507f43e96e0c344c2f_9e5a759c5dd9bed031ab92f25308f104" file="6" linestart="734" lineend="748" previous="a6a61018e22cb82116e37f397528ec1f_cd9c9cc609ebb718f9ef14f15f2940e8">
+<base access="public">
+<rt>
+<cr id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</base>
+</cr>
+<cr access="none" depth="1" kind="interface" name="IPowerRenameRegExEvents" id="42f8454215ba1fc82054d14e9d4d1f4b_3c1635e0ac0319df6c996ffb448faa4e" file="3" linestart="17" lineend="23">
+<base access="public">
+<rt>
+<cr id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</base>
+</cr>
+<cr access="none" depth="1" kind="interface" name="IPowerRenameRegEx" id="42f8454215ba1fc82054d14e9d4d1f4b_938502d6f908fc571c887cdf72283a67" file="3" linestart="25" lineend="37">
+<base access="public">
+<rt>
+<cr id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</base>
+</cr>
+<cr access="none" depth="1" kind="interface" name="IPowerRenameItem" id="42f8454215ba1fc82054d14e9d4d1f4b_1df9cec061dd3ecda66fef46c0c387cc" file="3" linestart="39" lineend="57">
+<base access="public">
+<rt>
+<cr id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</base>
+</cr>
+<cr access="none" depth="1" kind="interface" name="IPowerRenameItemFactory" id="42f8454215ba1fc82054d14e9d4d1f4b_fb4b72f36eb6b2fc26dffdd52f1bb11b" file="3" linestart="59" lineend="63">
+<base access="public">
+<rt>
+<cr id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</base>
+</cr>
+<cr access="none" depth="1" kind="interface" name="IPowerRenameManagerEvents" id="42f8454215ba1fc82054d14e9d4d1f4b_25994a146d40f920cb9635cead47e31c" file="3" linestart="65" lineend="76">
+<base access="public">
+<rt>
+<cr id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</base>
+</cr>
+<cr access="none" depth="1" kind="interface" name="IPowerRenameManager" id="42f8454215ba1fc82054d14e9d4d1f4b_066e4071d7e66483e360a5d18abde933" file="3" linestart="78" lineend="100">
+<base access="public">
+<rt>
+<cr id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</base>
+</cr>
+<cr access="none" depth="1" kind="interface" name="IPowerRenameUI" id="42f8454215ba1fc82054d14e9d4d1f4b_cbfa9c12d210284468004a4e0edfa970" file="3" linestart="102" lineend="108">
+<base access="public">
+<rt>
+<cr id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</base>
+</cr>
+<cr access="none" depth="1" kind="interface" name="IPowerRenameMRU" id="42f8454215ba1fc82054d14e9d4d1f4b_5fada9229b67a70f596192428e6c00cf" file="3" linestart="110" lineend="114">
+<base access="public">
+<rt>
+<cr id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</base>
+</cr>
+</Externals>

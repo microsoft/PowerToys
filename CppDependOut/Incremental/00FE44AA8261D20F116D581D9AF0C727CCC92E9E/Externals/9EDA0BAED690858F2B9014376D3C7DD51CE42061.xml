@@ -1,0 +1,132 @@
+<Externals>
+<cr access="none" depth="0" pod="true" kind="struct" name="_GUID" id="4d9027295e8207e170809a59b84611cc_f89893169cf243a3173a4e8aff5ae00c" file="3" linestart="1796" lineend="1801">
+<c name="_GUID" id="4d9027295e8207e170809a59b84611cc_63a2d0e1fd41f26c468970e091df51c1" file="3" linestart="1796" lineend="1796" copyconst="true" implicit="true" access="public" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+<p name="" proto="const _GUID &amp;" isRef="true" isLiteral="true" access2="none">
+<lrf>
+<QualType const="true">
+<rt>
+<cr id="4d9027295e8207e170809a59b84611cc_f89893169cf243a3173a4e8aff5ae00c"/>
+</rt>
+</QualType>
+</lrf>
+</p>
+</c>
+</cr>
+<cr access="none" depth="0" pod="true" kind="struct" name="HICON__" id="228fff524dba0a110b01fceb645a8261_888bbf4b5945f94542db33c420f409be" file="4" linestart="296" lineend="296"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="HINSTANCE__" id="228fff524dba0a110b01fceb645a8261_b32e96600c60ce6f9f5e96e0415e5440" file="4" linestart="307" lineend="307"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="HWND__" id="228fff524dba0a110b01fceb645a8261_5847ad6971421591ff7da5abaa1ba10e" file="4" linestart="315" lineend="315"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="tagPOINT" id="228fff524dba0a110b01fceb645a8261_b1f566919980e6677cca1e90cfed007f" file="4" linestart="338" lineend="341"/>
+<cr access="none" depth="0" kind="struct" name="IUnknown" id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119" file="5" linestart="24" lineend="29"/>
+<e access="none" name="tagCOINIT" id="0ae54b1a13f8cb30af63c69dccceae9e_beac92a010919c0a716bf76ba214eb1c" file="6" linestart="89" lineend="94">
+<promotion_type>
+<bt name="int"/>
+</promotion_type>
+<integer_type>
+<bt name="int"/>
+</integer_type>
+<ec name="COINIT_APARTMENTTHREADED" id="0ae54b1a13f8cb30af63c69dccceae9e_65d0d15d1bd7351e64643f39eb0d1648" file="6" linestart="90" lineend="90">
+<et>
+<e id="0ae54b1a13f8cb30af63c69dccceae9e_beac92a010919c0a716bf76ba214eb1c"/>
+</et>
+</ec>
+<ec name="COINIT_DISABLE_OLE1DDE" id="0ae54b1a13f8cb30af63c69dccceae9e_51ae6749544cecf7b54bd6c9f77e918c" file="6" linestart="92" lineend="92">
+<et>
+<e id="0ae54b1a13f8cb30af63c69dccceae9e_beac92a010919c0a716bf76ba214eb1c"/>
+</et>
+</ec>
+</e>
+<cr access="none" depth="1" kind="interface" name="IDropTarget" id="dc906e0aca287fd08c1124a32578ad56_7a1f1033a82097fdaf51dda0b321f386" file="7" linestart="422" lineend="431" previous="dc906e0aca287fd08c1124a32578ad56_3ac783aa819106bfb573da7bf373918e">
+<base access="public">
+<rt>
+<cr id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</base>
+</cr>
+<cr access="none" depth="1" kind="interface" name="IPowerRenameManagerEvents" id="42f8454215ba1fc82054d14e9d4d1f4b_25994a146d40f920cb9635cead47e31c" file="8" linestart="65" lineend="76">
+<base access="public">
+<rt>
+<cr id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</base>
+</cr>
+<cr access="none" depth="1" kind="interface" name="IPowerRenameUI" id="42f8454215ba1fc82054d14e9d4d1f4b_cbfa9c12d210284468004a4e0edfa970" file="8" linestart="102" lineend="108">
+<base access="public">
+<rt>
+<cr id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</base>
+</cr>
+<f name="DeleteObject" id="d11c91ecd0cf0ccac086e5141d1f6fe8_610b73c4b1e2bda4b0757ef8eeaf0c22" file="9" linestart="3090" lineend="3090" extC="true" access="none">
+<Attributed/>
+<p name="" proto="HGDIOBJ" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<bt name="void"/>
+</pt>
+</Tdef>
+</p>
+</f>
+<f name="GetWindowLongPtrW" id="d6af13e926cf1e04cead7eb9027d8e57_b3cec07176d8dd4a106711859141d5cf" file="10" linestart="3868" lineend="3868" extC="true" access="none">
+<Attributed/>
+<p name="" proto="HWND" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="228fff524dba0a110b01fceb645a8261_5847ad6971421591ff7da5abaa1ba10e"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+<p name="" proto="int" isLiteral="true" isPrimitive="true" access2="none">
+<bt name="int"/>
+</p>
+</f>
+<f name="SetWindowLongPtrW" id="d6af13e926cf1e04cead7eb9027d8e57_fe75d3caad027ca652e29f39c50e295d" file="10" linestart="4255" lineend="4255" extC="true" access="none">
+<Attributed/>
+<p name="" proto="HWND" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="228fff524dba0a110b01fceb645a8261_5847ad6971421591ff7da5abaa1ba10e"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+<p name="" proto="int" isLiteral="true" isPrimitive="true" access2="none">
+<bt name="int"/>
+</p>
+<p name="" proto="LONG_PTR" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="long long"/>
+</Tdef>
+</p>
+</f>
+<f name="CoInitializeEx" id="0ae54b1a13f8cb30af63c69dccceae9e_73b7a3e383483d09c9fcc22edc290be2" file="6" linestart="102" lineend="102" extC="true" access="none">
+<Attributed/>
+<p name="" proto="LPVOID" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<bt name="void"/>
+</pt>
+</Tdef>
+</p>
+<p name="" proto="DWORD" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned long"/>
+</Tdef>
+</p>
+</f>
+<f name="CoUninitialize" id="0ae54b1a13f8cb30af63c69dccceae9e_7d1916d4115b043c13f84ce63a39edc1" file="6" linestart="103" lineend="103" extC="true" access="none">
+<Attributed/>
+</f>
+<f name="OleUninitialize" id="0c201e997c3402c66910b27dd2cc1117_3c274a4b509295d119e28cf5a947ad71" file="11" linestart="49" lineend="49" extC="true" access="none">
+<Attributed/>
+</f>
+</Externals>

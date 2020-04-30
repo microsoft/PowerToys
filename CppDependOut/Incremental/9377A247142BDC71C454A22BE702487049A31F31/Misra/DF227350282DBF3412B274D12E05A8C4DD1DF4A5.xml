@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cppdepend-plugin tool="Misra">
+<file path="d:\new folder (2)\powertoys-1\src\runner\auto_start_helper.cpp"><violation beginline="76" endline="76" rule="Rule4-10-2" ruleset="Expressions">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\winbase.h"><violation beginline="1718" endline="1718" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="1755" endline="1755" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="1718" endline="1718" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="1755" endline="1755" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="1768" endline="1768" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="1718" endline="1718" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="1755" endline="1755" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="1718" endline="1718" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="1755" endline="1755" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file></cppdepend-plugin>

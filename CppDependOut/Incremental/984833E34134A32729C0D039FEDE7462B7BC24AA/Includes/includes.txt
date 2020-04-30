@@ -1,0 +1,6 @@
+d:\new folder (2)\powertoys-1\src\modules\example_powertoy\pch.h
+d:\new folder (2)\powertoys-1\src\modules\example_powertoy\resource.h
+d:\new folder (2)\powertoys-1\src\modules\example_powertoy\trace.h
+d:\new folder (2)\powertoys-1\src\modules\example_powertoy\dllmain.cpp
+d:\new folder (2)\powertoys-1\src\modules\example_powertoy\pch.cpp
+d:\new folder (2)\powertoys-1\src\modules\example_powertoy\trace.cpp

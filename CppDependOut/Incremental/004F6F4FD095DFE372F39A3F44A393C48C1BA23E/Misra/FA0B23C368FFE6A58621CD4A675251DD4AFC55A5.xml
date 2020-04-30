@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cppdepend-plugin tool="Misra">
+<file path="d:\new folder (2)\powertoys-1\src\common\settings_objects.h"><violation beginline="82" endline="82" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="82" endline="82" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\modules\previewpane\powerpreview\registry_wrapper_interface.h"><violation beginline="7" endline="7" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="10" endline="10" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\modules\previewpane\powerpreview\settings.cpp"><violation beginline="30" endline="30" rule="Rule4-10-2" ruleset="Expressions">
+</violation><violation beginline="36" endline="36" rule="Rule10-3-2" ruleset="Classes">
+</violation><violation beginline="41" endline="41" rule="Rule10-3-2" ruleset="Classes">
+</violation><violation beginline="46" endline="46" rule="Rule10-3-2" ruleset="Classes">
+</violation><violation beginline="51" endline="51" rule="Rule10-3-2" ruleset="Classes">
+</violation><violation beginline="56" endline="56" rule="Rule10-3-2" ruleset="Classes">
+</violation><violation beginline="61" endline="61" rule="Rule10-3-2" ruleset="Classes">
+</violation><violation beginline="67" endline="67" rule="Rule10-3-2" ruleset="Classes">
+</violation><violation beginline="78" endline="78" rule="Rule10-3-2" ruleset="Classes">
+</violation><violation beginline="119" endline="119" rule="Rule10-3-2" ruleset="Classes">
+</violation><violation beginline="125" endline="125" rule="Rule10-3-2" ruleset="Classes">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\modules\previewpane\powerpreview\settings.h"><violation beginline="34" endline="34" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="33" endline="33" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\modules\previewpane\powerpreview\trace.h"><violation beginline="11" endline="11" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="12" endline="12" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="11" endline="11" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file></cppdepend-plugin>

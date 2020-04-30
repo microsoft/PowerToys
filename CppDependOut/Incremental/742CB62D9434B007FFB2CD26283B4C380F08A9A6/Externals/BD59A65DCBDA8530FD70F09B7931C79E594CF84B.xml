@@ -1,0 +1,88 @@
+<Externals>
+<e access="none" name="tagDVASPECT" id="7da3464f85563bc79f0b8f5df73e769d_0ea0a6059b652aa7230611a5e3860762" file="3" linestart="93" lineend="98">
+<promotion_type>
+<bt name="int"/>
+</promotion_type>
+<integer_type>
+<bt name="int"/>
+</integer_type>
+<ec name="DVASPECT_CONTENT" id="7da3464f85563bc79f0b8f5df73e769d_206d2a9f1819942bfafe2fbbdf37aaa8" file="3" linestart="94" lineend="94">
+<et>
+<e id="7da3464f85563bc79f0b8f5df73e769d_0ea0a6059b652aa7230611a5e3860762"/>
+</et>
+</ec>
+</e>
+<cr access="none" depth="0" pod="true" kind="struct" name="tagFORMATETC" id="d00d02ed27e4a0507f43e96e0c344c2f_6393888f23eed88f337210a2ccd28d39" file="4" linestart="105" lineend="111"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="tagSTGMEDIUM" id="d00d02ed27e4a0507f43e96e0c344c2f_c809e06bcb45ac0e569c5170affd17d9" file="4" linestart="192" lineend="204"/>
+<e access="none" name="tagTYMED" id="d00d02ed27e4a0507f43e96e0c344c2f_beba4bc710ea76c5af81c426146b78f2" file="4" linestart="243" lineend="246">
+<promotion_type>
+<bt name="int"/>
+</promotion_type>
+<integer_type>
+<bt name="int"/>
+</integer_type>
+<ec name="TYMED_HGLOBAL" id="d00d02ed27e4a0507f43e96e0c344c2f_97db30ca6fafd1c76ecb8f23c9027b8f" file="4" linestart="244" lineend="244">
+<et>
+<e id="d00d02ed27e4a0507f43e96e0c344c2f_beba4bc710ea76c5af81c426146b78f2"/>
+</et>
+</ec>
+</e>
+<cr access="none" depth="1" kind="interface" name="IDataObject" id="d00d02ed27e4a0507f43e96e0c344c2f_9e5a759c5dd9bed031ab92f25308f104" file="4" linestart="734" lineend="748" previous="a6a61018e22cb82116e37f397528ec1f_cd9c9cc609ebb718f9ef14f15f2940e8">
+<base access="public">
+<rt>
+<cr id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</base>
+<m name="GetData" id="d00d02ed27e4a0507f43e96e0c344c2f_14832841b1989593c01c386416c564c5" file="4" linestart="739" lineend="739" pure="true" virtual="true" access="public">
+<Attributed/>
+<p name="" proto="FORMATETC *" isPtr="true" isLiteral="true" access2="none">
+<pt>
+<Tdef>
+<ety>
+<rt>
+<cr id="d00d02ed27e4a0507f43e96e0c344c2f_6393888f23eed88f337210a2ccd28d39"/>
+</rt>
+</ety>
+</Tdef>
+</pt>
+</p>
+<p name="" proto="STGMEDIUM *" isPtr="true" isLiteral="true" access2="none">
+<pt>
+<Tdef>
+<ety>
+<rt>
+<cr id="d00d02ed27e4a0507f43e96e0c344c2f_c809e06bcb45ac0e569c5170affd17d9"/>
+</rt>
+</ety>
+</Tdef>
+</pt>
+</p>
+</m>
+</cr>
+<f name="malloc" id="4ed09130960b7b418ae3ae4dbd95bc03_ce29b3b7be14c0f0acda69d94481373b" file="5" linestart="503" lineend="503" extC="true" imported="true" access="none">
+<fpt cc="cdecl" proto="void *">
+<pt>
+<bt name="void"/>
+</pt>
+</fpt>
+<p name="" proto="size_t" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned long long"/>
+</Tdef>
+</p>
+</f>
+<f name="ReleaseStgMedium" id="0c201e997c3402c66910b27dd2cc1117_55a2f4c5a55a7fbac0bbc52dd25b609d" file="6" linestart="81" lineend="81" extC="true" access="none">
+<Attributed/>
+<p name="" proto="LPSTGMEDIUM" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="d00d02ed27e4a0507f43e96e0c344c2f_c809e06bcb45ac0e569c5170affd17d9"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+</f>
+</Externals>

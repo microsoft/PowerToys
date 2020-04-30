@@ -1,0 +1,84 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="2" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="4" col="10" msg="&apos;dxgi1_3.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="5" col="10" msg="&apos;d3d11_2.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="6" col="10" msg="&apos;d2d1_3.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="7" col="10" msg="&apos;d2d1_3helper.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="8" col="10" msg="&apos;d2d1helper.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="9" col="10" msg="&apos;dwrite.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="10" col="10" msg="&apos;dcomp.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="11" col="10" msg="&apos;dwmapi.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\Telemetry\ProjectTelemetry.h" line="3" col="10" msg="&apos;TraceLoggingProvider.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="27" col="10" msg="&apos;winrt/Windows.ApplicationModel.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="28" col="10" msg="&apos;winrt/Windows.Storage.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil/common.h" line="88" col="10" msg="&apos;sal.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil/result_macros.h" line="123" col="10" msg="&apos;strsafe.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil/result_macros.h" line="124" col="10" msg="&apos;intrin.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil/result_macros.h" line="125" col="10" msg="&apos;new.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil/wistd_functional.h" line="40" col="10" msg="&apos;intrin.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil/wistd_functional.h" line="41" col="10" msg="&apos;new.h&apos; file not found" />
+ <error level="warning" id="warn_doc_tparam_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil/resource.h" line="908" col="13" msg="template parameter &apos;ValueType:&apos; not found in the template declaration" />
+ <error level="warning" id="warn_doc_tparam_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil/resource.h" line="909" col="13" msg="template parameter &apos;ArrayDeleter:&apos; not found in the template declaration" />
+ <error level="warning" id="warn_doc_tparam_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil/resource.h" line="910" col="13" msg="template parameter &apos;ElementDeleter:&apos; not found in the template declaration" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="2" col="10" msg="&apos;ShellScalingApi.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/json.h" line="3" col="10" msg="&apos;winrt/Windows.Foundation.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/json.h" line="4" col="10" msg="&apos;winrt/Windows.Data.Json.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/winstore.h" line="5" col="10" msg="&apos;winrt/Windows.ApplicationModel.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/updating/updating.h" line="8" col="10" msg="&apos;winrt/Windows.Foundation.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="25" col="10" msg="&apos;winrt/Windows.System.h&apos; file not found" />
+ <error level="warning" id="warn_pp_undef_identifier" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="27" col="5" msg="&apos;_DEBUG&apos; is not defined, evaluates to 0" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/notifications/../timeutil.h" line="8" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="warning" id="warn_zero_as_null_pointer_constant" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="52" col="23" msg="zero as null pointer constant" />
+ <error level="warning" id="warn_missing_prototype" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="48" col="6" msg="no previous prototype for function &apos;chdir_current_executable&apos;" />
+ <error level="warning" id="warn_cxx98_compat_generalized_initializer_lists" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="65" col="37" msg="generalized initializer lists are incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="65" col="52" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_no_member" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="67" col="58" msg="no member named &apos;unique_mutex_nothrow&apos; in namespace &apos;wil&apos;" />
+ <error level="error" id="err_expected" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="67" col="78" msg="expected &apos;:&apos;" />
+ <error level="error" id="err_init_list_bin_op" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="67" col="78" msg="initializer list cannot be used on the right hand side of operator &apos;:&apos;" />
+ <error level="warning" id="warn_zero_as_null_pointer_constant" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="82" col="56" msg="zero as null pointer constant" />
+ <error level="warning" id="warn_missing_prototype" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="80" col="6" msg="no previous prototype for function &apos;open_menu_from_another_instance&apos;" />
+ <error level="warning" id="warn_pp_undef_identifier" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="90" col="5" msg="&apos;_DEBUG&apos; is not defined, evaluates to 0" />
+ <error level="error" id="err_no_member" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="101" col="14" msg="no member named &apos;thread&apos; in namespace &apos;std&apos;" />
+ <error level="error" id="err_no_member" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="107" col="18" msg="no member named &apos;thread&apos; in namespace &apos;std&apos;" />
+ <error level="error" id="err_no_member" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="113" col="18" msg="no member named &apos;thread&apos; in namespace &apos;std&apos;" />
+ <error level="warning" id="warn_cxx98_compat_initializer_list_init" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="126" col="55" msg="initialization of initializer_list object is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="134" col="14" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_for_range" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="134" col="25" msg="range-based for loop is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="142" col="17" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="159" col="21" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_missing_prototype" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="86" col="5" msg="no previous prototype for function &apos;runner&apos;" />
+ <error level="warning" id="warn_cxx98_compat_scoped_enum" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="168" col="6" msg="scoped enumerations are incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_enum_nested_name_spec" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="182" col="20" msg="enumeration type in nested name specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_enum_nested_name_spec" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="186" col="20" msg="enumeration type in nested name specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_enum_nested_name_spec" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="190" col="20" msg="enumeration type in nested name specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_enum_nested_name_spec" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="194" col="12" msg="enumeration type in nested name specifier is incompatible with C++98" />
+ <error level="warning" id="warn_missing_prototype" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="176" col="13" msg="no previous prototype for function &apos;should_run_in_special_mode&apos;" />
+ <error level="warning" id="warn_mixed_sign_comparison" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="178" col="26" msg="comparison of integers of different signs: &apos;size_t&apos; (aka &apos;unsigned long long&apos;) and &apos;const int&apos;" />
+ <error level="warning" id="warn_missing_prototype" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="197" col="5" msg="no previous prototype for function &apos;win32_toast_notification_COM_server_mode&apos;" />
+ <error level="warning" id="warn_cxx98_compat_scoped_enum" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="203" col="6" msg="scoped enumerations are incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_enum_nested_name_spec" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="213" col="55" msg="enumeration type in nested name specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_enum_nested_name_spec" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="213" col="105" msg="enumeration type in nested name specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_enum_nested_name_spec" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="218" col="16" msg="enumeration type in nested name specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_lambda" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="222" col="28" msg="lambda expressions are incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_enum_nested_name_spec" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="226" col="16" msg="enumeration type in nested name specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_enum_nested_name_spec" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="230" col="16" msg="enumeration type in nested name specifier is incompatible with C++98" />
+ <error level="warning" id="warn_missing_prototype" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="209" col="35" msg="no previous prototype for function &apos;toast_notification_handler&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="236" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="warn_cxx98_compat_enum_nested_name_spec" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="247" col="10" msg="enumeration type in nested name specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_enum_nested_name_spec" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="249" col="10" msg="enumeration type in nested name specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_enum_nested_name_spec" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="252" col="14" msg="enumeration type in nested name specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_enum_nested_name_spec" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="254" col="14" msg="enumeration type in nested name specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_enum_nested_name_spec" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="257" col="10" msg="enumeration type in nested name specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_enum_nested_name_spec" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="261" col="10" msg="enumeration type in nested name specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="327" col="30" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="340" col="9" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="warning" id="warn_unused_variable" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="341" col="13" msg="unused variable &apos;rvalue&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="358" col="21" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="365" col="25" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="370" col="26" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="377" col="13" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="379" col="25" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_unused_parameter" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="234" col="30" msg="unused parameter &apos;hInstance&apos;" />
+ <error level="warning" id="warn_unused_parameter" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="234" col="51" msg="unused parameter &apos;hPrevInstance&apos;" />
+ <error level="warning" id="warn_unused_parameter" file="D:\New folder (2)\PowerToys-1\src\runner\main.cpp" line="234" col="87" msg="unused parameter &apos;nCmdShow&apos;" />
+</log>

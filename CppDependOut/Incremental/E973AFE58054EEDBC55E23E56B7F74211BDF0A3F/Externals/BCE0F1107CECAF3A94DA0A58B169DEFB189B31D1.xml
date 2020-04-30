@@ -1,0 +1,118 @@
+<Externals>
+<cr access="none" depth="0" pod="true" kind="struct" name="HWND__" id="49d0eb91eac919f4125e4f7d62e92988_5847ad6971421591ff7da5abaa1ba10e" file="5" linestart="39" lineend="39"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="tagPOINT" id="49d0eb91eac919f4125e4f7d62e92988_b1f566919980e6677cca1e90cfed007f" file="5" linestart="174" lineend="178"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="HINSTANCE__" id="865513406945be266f25f771d4c57f4b_b32e96600c60ce6f9f5e96e0415e5440" file="6" linestart="250" lineend="250"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="HMONITOR__" id="49d0eb91eac919f4125e4f7d62e92988_cd8f3f92dfa9b17b2ba448ecf80a5420" file="5" linestart="110" lineend="110"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="tagKBDLLHOOKSTRUCT" id="999dff613f8bf2d78d6e817a34081caa_50175d40fdbecc07f3b91eda501b3f2a" file="7" linestart="1100" lineend="1106"/>
+<cr access="none" depth="0" kind="struct" name="IUnknown" id="2a9d32b72df262d510a84e089956cfdf_6b30c935079209804768d2401c9e7119" file="8" linestart="108" lineend="134" previous="2a9d32b72df262d510a84e089956cfdf_6b30c935079209804768d2401c9e7119"/>
+<cr namespace="PowerToysSettings" access="public" depth="0" kind="class" name="Settings" id="0b2fb77c683161a6934d059529c650eb_dd0b5920892c4b24f3f53351df1e2753" file="9" linestart="9" lineend="65"/>
+<cr namespace="PowerToysSettings" access="public" depth="0" kind="class" name="PowerToyValues" id="0b2fb77c683161a6934d059529c650eb_2461d2783bcf1e9b4cd2fbf82b525d4c" file="9" linestart="67" lineend="96"/>
+<cr namespace="PowerToysSettings" access="public" depth="0" pod="true" kind="class" name="CustomActionObject" id="0b2fb77c683161a6934d059529c650eb_0b1da6b55e2223c5b2145349a1de6640" file="9" linestart="98" lineend="113"/>
+<cr namespace="PowerToysSettings" access="public" depth="0" pod="true" kind="class" name="HotkeyObject" id="0b2fb77c683161a6934d059529c650eb_c47da1c0917aae1d2a6e87f396c46443" file="9" linestart="115" lineend="220" previous="0b2fb77c683161a6934d059529c650eb_c47da1c0917aae1d2a6e87f396c46443"/>
+<cr access="public" depth="0" kind="struct" name="Settings" id="d9bf7c5f486a397a31c22350b3792488_0690bc5e6bf319d5f4b8edbdcc1a5a74" file="2" linestart="6" lineend="26"/>
+<cr access="none" depth="1" kind="interface" name="IFancyZonesSettings" id="d9bf7c5f486a397a31c22350b3792488_f69417dbd2df5b39218bb22117535364" file="2" linestart="28" lineend="36">
+<base access="public">
+<Tdef>
+<ety>
+<rt>
+<cr id="2a9d32b72df262d510a84e089956cfdf_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</ety>
+</Tdef>
+</base>
+</cr>
+<cr access="none" depth="1" kind="interface" name="IFancyZones" id="e186b9322b1d4957ca45d1f056872dfc_4e2b5342364cf3bdd0046bb191fe1f16" file="3" linestart="7" lineend="17">
+<base access="public">
+<Tdef>
+<ety>
+<rt>
+<cr id="2a9d32b72df262d510a84e089956cfdf_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</ety>
+</Tdef>
+</base>
+</cr>
+<cr access="none" depth="1" kind="interface" name="IFancyZonesCallback" id="e186b9322b1d4957ca45d1f056872dfc_c9b5e526151053ac110d720791dd81e2" file="3" linestart="22" lineend="81" previous="d9bf7c5f486a397a31c22350b3792488_9756ccb5b126466db7cb016f875d2437">
+<base access="public">
+<Tdef>
+<ety>
+<rt>
+<cr id="2a9d32b72df262d510a84e089956cfdf_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</ety>
+</Tdef>
+</base>
+<m name="ToggleEditor" id="e186b9322b1d4957ca45d1f056872dfc_e3ebcabfd5dd6f802b1f6e049468cd4f" file="3" linestart="76" lineend="76" pure="true" virtual="true" access="public">
+<Attributed/>
+</m>
+<m name="SettingsChanged" id="e186b9322b1d4957ca45d1f056872dfc_1cc423710a1a38eec2db45b85168fc9b" file="3" linestart="80" lineend="80" pure="true" virtual="true" access="public">
+<Attributed/>
+</m>
+</cr>
+<cr access="none" depth="1" kind="interface" name="IZoneWindowHost" id="e186b9322b1d4957ca45d1f056872dfc_104bf1d440e803819853c7f38101f376" file="3" linestart="86" lineend="116">
+<base access="public">
+<Tdef>
+<ety>
+<rt>
+<cr id="2a9d32b72df262d510a84e089956cfdf_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</ety>
+</Tdef>
+</base>
+</cr>
+<f name="_ReturnAddress" id="3360183e3ee3eb40f86bcace6ec410f3_df0b5e2b11867cb745b6da9a309b4362" file="10" linestart="142" lineend="142" extC="true" implicit="true" access="none" storage="extern">
+<fpt cc="cdecl" proto="void *">
+<pt>
+<bt name="void"/>
+</pt>
+</fpt>
+</f>
+<f namespace="wil.details.in1diag5" name="Log_CaughtException" id="0ea31a18b67cb502d39e98bbfdb3367e_cba559fcb946cdfcb5c00e3ee9383f9e" file="11" linestart="3751" lineend="3755" access="none" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="HRESULT">
+<Tdef>
+<bt name="long"/>
+</Tdef>
+</fpt>
+<p name="callerReturnAddress" proto="void *" isPtr="true" isLiteral="true" access2="none">
+<pt>
+<bt name="void"/>
+</pt>
+</p>
+<p name="lineNumber" proto="unsigned int" isLiteral="true" isPrimitive="true" access2="none">
+<bt name="unsigned int"/>
+</p>
+<p name="fileName" proto="PCSTR" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<QualType const="true">
+<Tdef>
+<bt name="char"/>
+</Tdef>
+</QualType>
+</pt>
+</Tdef>
+</p>
+<p name="functionName" proto="PCSTR" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<QualType const="true">
+<Tdef>
+<bt name="char"/>
+</Tdef>
+</QualType>
+</pt>
+</Tdef>
+</p>
+<p name="code" proto="PCSTR" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<QualType const="true">
+<Tdef>
+<bt name="char"/>
+</Tdef>
+</QualType>
+</pt>
+</Tdef>
+</p>
+</f>
+</Externals>

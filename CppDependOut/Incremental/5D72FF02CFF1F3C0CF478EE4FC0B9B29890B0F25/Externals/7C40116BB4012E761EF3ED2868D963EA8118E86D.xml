@@ -1,0 +1,145 @@
+<Externals>
+<cr access="none" depth="0" pod="true" kind="struct" name="HWND__" id="228fff524dba0a110b01fceb645a8261_5847ad6971421591ff7da5abaa1ba10e" file="4" linestart="315" lineend="315"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="HBRUSH__" id="228fff524dba0a110b01fceb645a8261_6d733b9d54e76d1ff44d0e31c89aff93" file="4" linestart="289" lineend="289"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="_WNDCLASSW" id="d6af13e926cf1e04cead7eb9027d8e57_05c21cc049d585827f3d0259017ef85a" file="5" linestart="2868" lineend="2879">
+<fl name="lpfnWndProc" id="d6af13e926cf1e04cead7eb9027d8e57_8b3aca206fb8cb4d051b17817976b5ce" file="5" linestart="2870" lineend="2870" isPtr="true" isLiteral="true" access="public" proto="WNDPROC">
+<Tdef>
+<pt>
+<Attributed/>
+</pt>
+</Tdef>
+</fl>
+<fl name="cbWndExtra" id="d6af13e926cf1e04cead7eb9027d8e57_e53dfa16efef2ae1be7d3a3c5fbc3273" file="5" linestart="2872" lineend="2872" isLiteral="true" access="public" proto="int">
+<bt name="int"/>
+</fl>
+<fl name="hbrBackground" id="d6af13e926cf1e04cead7eb9027d8e57_5b5132b0fd2cf38dd62c899d1f318385" file="5" linestart="2876" lineend="2876" isPtr="true" isLiteral="true" access="public" proto="HBRUSH">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="228fff524dba0a110b01fceb645a8261_6d733b9d54e76d1ff44d0e31c89aff93"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</fl>
+<fl name="lpszClassName" id="d6af13e926cf1e04cead7eb9027d8e57_17f8ccf6b427379a011619e47f05961b" file="5" linestart="2878" lineend="2878" isPtr="true" isLiteral="true" access="public" proto="LPCWSTR">
+<Tdef>
+<pt>
+<QualType const="true">
+<Tdef>
+<bt name="wchar_t"/>
+</Tdef>
+</QualType>
+</pt>
+</Tdef>
+</fl>
+</cr>
+<cr namespace="std" access="none" depth="0" kind="class" name="unique_ptr" id="c85e10c42164337d7b6f7da3e4d2d278_1e604289ea34d6bd69454849772d0a37" file="6" linestart="160" lineend="396"/>
+<ctps Spec="&lt;type-parameter-0-0 [], type-parameter-0-1&gt;" namespace="std" access="none" depth="0" kind="class" name="unique_ptr" id="c85e10c42164337d7b6f7da3e4d2d278_62cb728f13c990ed9a37ff4966cc0481" file="6" linestart="402" lineend="665">
+<m name="get" id="c85e10c42164337d7b6f7da3e4d2d278_d61260d8bd08542a76b6f4cc8828fe6a" file="6" linestart="592" lineend="594" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" const="true" proto="pointer">
+<Tdef>
+<DependentName/>
+</Tdef>
+</fpt>
+</m>
+</ctps>
+<f name="GetWindowThreadProcessId" id="c475ed4c0e2545c00c9867663d20e5e1_03f868cfcb6a964140a46a473afa37fc" file="7" linestart="1926" lineend="1926" extC="true" access="none">
+<Attributed/>
+<p name="" proto="HWND" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="228fff524dba0a110b01fceb645a8261_5847ad6971421591ff7da5abaa1ba10e"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+<p name="" proto="PDWORD" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<Tdef>
+<bt name="unsigned long"/>
+</Tdef>
+</pt>
+</Tdef>
+</p>
+</f>
+<f name="DefWindowProcW" id="d6af13e926cf1e04cead7eb9027d8e57_13514edaeab0b70be6ca35dc8333cbc9" file="5" linestart="3600" lineend="3600" extC="true" access="none">
+<Attributed/>
+<p name="" proto="HWND" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="228fff524dba0a110b01fceb645a8261_5847ad6971421591ff7da5abaa1ba10e"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+<p name="" proto="UINT" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned int"/>
+</Tdef>
+</p>
+<p name="" proto="WPARAM" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<Tdef>
+<bt name="unsigned long long"/>
+</Tdef>
+</Tdef>
+</p>
+<p name="" proto="LPARAM" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<Tdef>
+<bt name="long long"/>
+</Tdef>
+</Tdef>
+</p>
+</f>
+<f name="RegisterClassW" id="d6af13e926cf1e04cead7eb9027d8e57_384f67be1227df11ad4892ccd9d213d2" file="5" linestart="4122" lineend="4122" extC="true" access="none">
+<Attributed/>
+<p name="" proto="const WNDCLASSW *" isPtr="true" isLiteral="true" access2="none">
+<pt>
+<QualType const="true">
+<Tdef>
+<ety>
+<rt>
+<cr id="d6af13e926cf1e04cead7eb9027d8e57_05c21cc049d585827f3d0259017ef85a"/>
+</rt>
+</ety>
+</Tdef>
+</QualType>
+</pt>
+</p>
+</f>
+<f namespace="std" name="make_unique" id="c85e10c42164337d7b6f7da3e4d2d278_8497454dc034df3d202702c87b70897c" file="6" linestart="835" lineend="837" access="none" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="typename _MakeUniq&lt;_Tp&gt;::__array">
+<DependentName/>
+</fpt>
+<p name="__num" proto="size_t" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned long long"/>
+</Tdef>
+</p>
+</f>
+<ft name="make_unique" id="c85e10c42164337d7b6f7da3e4d2d278_04d109bb6d930ce724082fe4e9619ed8" file="6" linestart="834" lineend="837">
+<template_parameters>
+<ttp name="_Tp" id="c85e10c42164337d7b6f7da3e4d2d278_e3d760b91f38b5c188b71b2eb0eb409d" depth="0" index="0" proto="type-parameter-0-0"/>
+</template_parameters>
+<f namespace="std" name="make_unique" id="c85e10c42164337d7b6f7da3e4d2d278_8497454dc034df3d202702c87b70897c" file="6" linestart="835" lineend="837" access="none" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="typename _MakeUniq&lt;_Tp&gt;::__array">
+<DependentName/>
+</fpt>
+<p name="__num" proto="size_t" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned long long"/>
+</Tdef>
+</p>
+</f>
+</ft>
+</Externals>

@@ -1,0 +1,160 @@
+<Externals>
+<cr access="none" depth="0" pod="true" kind="struct" name="_SHELLEXECUTEINFOW" id="c7b2aae4682928ba4d0e12fe0e2f01e7_dbca307ca110f0c8fa2f1c8148a0e0f0" file="3" linestart="233" lineend="249">
+<fl name="lpFile" id="c7b2aae4682928ba4d0e12fe0e2f01e7_921c16c80dd06657808c192e1f94f335" file="3" linestart="238" lineend="238" isPtr="true" isLiteral="true" access="public" proto="LPCWSTR">
+<Tdef>
+<pt>
+<QualType const="true">
+<Tdef>
+<bt name="wchar_t"/>
+</Tdef>
+</QualType>
+</pt>
+</Tdef>
+</fl>
+<fl name="lpParameters" id="c7b2aae4682928ba4d0e12fe0e2f01e7_70579808a9a42402cb828e4839adfc47" file="3" linestart="239" lineend="239" isPtr="true" isLiteral="true" access="public" proto="LPCWSTR">
+<Tdef>
+<pt>
+<QualType const="true">
+<Tdef>
+<bt name="wchar_t"/>
+</Tdef>
+</QualType>
+</pt>
+</Tdef>
+</fl>
+<fl name="nShow" id="c7b2aae4682928ba4d0e12fe0e2f01e7_ed9cbbcb79b5cd0e5323ee4e03a30fac" file="3" linestart="241" lineend="241" isLiteral="true" access="public" proto="int">
+<bt name="int"/>
+</fl>
+<c name="_SHELLEXECUTEINFOW" id="c7b2aae4682928ba4d0e12fe0e2f01e7_fc75968afdf2a6d06db485dd2bee022a" file="3" linestart="233" lineend="233" implicit="true" access="public" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+<p name="" proto="_SHELLEXECUTEINFOW &amp;&amp;" isRef="true" isLiteral="true" access2="none">
+<rrf>
+<rt>
+<cr id="c7b2aae4682928ba4d0e12fe0e2f01e7_dbca307ca110f0c8fa2f1c8148a0e0f0"/>
+</rt>
+</rrf>
+</p>
+</c>
+</cr>
+<tm namespace="std" access="none" kind="class" name="allocator" id="2d38690b2257f19f01e89f337ab9048b_07566aa809aee0bdf1c0fac16e19fa85" file="4" linestart="63" lineend="64">
+<template_parameters>
+<ttp name="" id="2d38690b2257f19f01e89f337ab9048b_7616e420bc7988a0fdef4434c8dab66a" depth="0" index="0" proto="type-parameter-0-0"/>
+</template_parameters>
+<cr namespace="std" access="none" kind="class" name="allocator" id="2d38690b2257f19f01e89f337ab9048b_07566aa809aee0bdf1c0fac16e19fa85" file="4" linestart="64" lineend="64"/>
+</tm>
+<cr namespace="std.__cxx11" access="none" kind="class" name="basic_string" id="0fe01663a4ff657d8958ff0f4c4a7f15_eec936a7b808facd5a6a87bf310b7f8c" file="5" linestart="71" lineend="71"/>
+<cts Spec="&lt;wchar_t&gt;" namespace="std" access="none" depth="0" pod="true" kind="struct" name="char_traits" id="c2a96564ec10c61396c50cb698dc4960_7d637fda5b9c2af11eaf2c7631b154c8" file="6" linestart="387" lineend="492" previous="0fe01663a4ff657d8958ff0f4c4a7f15_7d637fda5b9c2af11eaf2c7631b154c8"/>
+<tm namespace="std.__cxx11" access="none" depth="0" kind="class" name="basic_string" id="2c76fab9e4d6ac987a1750ece3a201cc_0f870db7a9e3f80681e1e50f59c3f3e1" file="7" linestart="76" lineend="3027" previous="0fe01663a4ff657d8958ff0f4c4a7f15_0f870db7a9e3f80681e1e50f59c3f3e1">
+<template_parameters>
+<ttp name="_CharT" id="2c76fab9e4d6ac987a1750ece3a201cc_41aab7ea0b2a4f5399789cbb735bff07" depth="0" index="0" proto="type-parameter-0-0"/>
+<ttp name="_Traits" id="2c76fab9e4d6ac987a1750ece3a201cc_3a060dd87f1183c8aa805887fa645f27" depth="0" index="1" proto="type-parameter-0-1"/>
+<ttp name="_Alloc" id="2c76fab9e4d6ac987a1750ece3a201cc_9c7a236a234ceda5d84f65309cc08d1d" depth="0" index="2" proto="type-parameter-0-2"/>
+</template_parameters>
+<cr namespace="std.__cxx11" access="none" depth="0" kind="class" name="basic_string" id="2c76fab9e4d6ac987a1750ece3a201cc_eec936a7b808facd5a6a87bf310b7f8c" file="7" linestart="77" lineend="3027" previous="0fe01663a4ff657d8958ff0f4c4a7f15_eec936a7b808facd5a6a87bf310b7f8c">
+<cr access="public" kind="class" name="basic_string" id="2c76fab9e4d6ac987a1750ece3a201cc_603e5586ba4340527f4b759c0ded4f93" file="7" linestart="77" lineend="77"/>
+<e parent="2c76fab9e4d6ac987a1750ece3a201cc_eec936a7b808facd5a6a87bf310b7f8c" access="private" name="" id="2c76fab9e4d6ac987a1750ece3a201cc_106ac808f271d67a4150e50dd05602d0" file="7" linestart="158" lineend="158">
+<promotion_type>
+<bt name="&lt;dependent type&gt;"/>
+</promotion_type>
+<integer_type>
+<bt name="int"/>
+</integer_type>
+</e>
+<c name="basic_string&lt;_CharT, _Traits, _Alloc&gt;" id="2c76fab9e4d6ac987a1750ece3a201cc_61ce908af03ab919fc3d2ffb7a036d2e" file="7" linestart="420" lineend="423" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+<initlist id="2c76fab9e4d6ac987a1750ece3a201cc_f5cef7c408d7b48a39b25df9e50585f4"/>
+</c>
+<m name="operator=" id="2c76fab9e4d6ac987a1750ece3a201cc_433342208e4e283b9bbdd3305c049755" file="7" linestart="731" lineend="779" operator="true" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="basic_string&lt;_CharT, _Traits, _Alloc&gt; &amp;">
+<lrf>
+<InjectedClassName>
+<cr id="2c76fab9e4d6ac987a1750ece3a201cc_eec936a7b808facd5a6a87bf310b7f8c"/>
+</InjectedClassName>
+</lrf>
+</fpt>
+<p name="__str" proto="basic_string&lt;_CharT, _Traits, _Alloc&gt; &amp;&amp;" isRef="true" access2="none">
+<rrf>
+<InjectedClassName>
+<cr id="2c76fab9e4d6ac987a1750ece3a201cc_eec936a7b808facd5a6a87bf310b7f8c"/>
+</InjectedClassName>
+</rrf>
+</p>
+</m>
+<m name="operator+=" id="2c76fab9e4d6ac987a1750ece3a201cc_4bce695cd49f241a8b37a819de8f75af" file="7" linestart="1167" lineend="1169" operator="true" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="basic_string&lt;_CharT, _Traits, _Alloc&gt; &amp;">
+<lrf>
+<InjectedClassName>
+<cr id="2c76fab9e4d6ac987a1750ece3a201cc_eec936a7b808facd5a6a87bf310b7f8c"/>
+</InjectedClassName>
+</lrf>
+</fpt>
+<p name="__s" proto="const _CharT *" isPtr="true" access2="none">
+<pt>
+<QualType const="true">
+<ttp/>
+</QualType>
+</pt>
+</p>
+</m>
+<m name="c_str" id="2c76fab9e4d6ac987a1750ece3a201cc_55a074929b1c9c933e9f120a6a584221" file="7" linestart="2280" lineend="2282" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" const="true" proto="const _CharT *">
+<pt>
+<QualType const="true">
+<ttp/>
+</QualType>
+</pt>
+</fpt>
+</m>
+</cr>
+</tm>
+<f name="ShellExecuteExW" id="c7b2aae4682928ba4d0e12fe0e2f01e7_173cd637dcba0facfeb73f6c56bdb748" file="3" linestart="314" lineend="314" extC="true" access="none">
+<Attributed/>
+<p name="" proto="LPSHELLEXECUTEINFOW" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="c7b2aae4682928ba4d0e12fe0e2f01e7_dbca307ca110f0c8fa2f1c8148a0e0f0"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+</f>
+<f name="get_module_folderpath" id="1977ecc92c867c7d642184e649b8c0f1_54d6a1b44c8d2e15528eaf67134f9672" file="8" linestart="92" lineend="92" access="none">
+<fpt cc="cdecl" proto="std::wstring">
+<ety>
+<Tdef>
+<tss>
+<templatebase id="0fe01663a4ff657d8958ff0f4c4a7f15_eec936a7b808facd5a6a87bf310b7f8c"/>
+<template_arguments>
+<bt name="wchar_t"/>
+</template_arguments>
+</tss>
+</Tdef>
+</ety>
+</fpt>
+<p name="mod" proto="HMODULE" isPtr="true" isLiteral="true" init="true" access2="none">
+<Tdef>
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="228fff524dba0a110b01fceb645a8261_b32e96600c60ce6f9f5e96e0415e5440"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</Tdef>
+</p>
+</f>
+<f namespace="winstore" name="running_as_packaged" id="e38af6c3554436ab0534d4f9e7d7e69a_243289e9d811022f6c66b08c4542ce46" file="9" linestart="11" lineend="11" access="none">
+<fpt cc="cdecl" proto="bool">
+<bt name="bool"/>
+</fpt>
+</f>
+</Externals>

@@ -1,0 +1,15 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\fancyzones\tests\UnitTests/pch.h" line="12" col="10" msg="&apos;winrt\base.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\fancyzones\lib\pch.h" line="6" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="warning" id="warn_doc_param_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil/common.h" line="654" col="12" msg="parameter &apos;val&apos; not found in the function declaration" />
+ <error level="warning" id="warn_doc_tparam_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil\resource.h" line="908" col="13" msg="template parameter &apos;ValueType:&apos; not found in the template declaration" />
+ <error level="warning" id="warn_doc_tparam_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil\resource.h" line="909" col="13" msg="template parameter &apos;ArrayDeleter:&apos; not found in the template declaration" />
+ <error level="warning" id="warn_doc_tparam_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil\resource.h" line="910" col="13" msg="template parameter &apos;ElementDeleter:&apos; not found in the template declaration" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\fancyzones\tests\UnitTests/pch.h" line="15" col="10" msg="&apos;CppUnitTest.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/json.h" line="3" col="10" msg="&apos;winrt/Windows.Foundation.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/json.h" line="4" col="10" msg="&apos;winrt/Windows.Data.Json.h&apos; file not found" />
+ <error level="error" id="err_no_member" file="D:\New folder (2)\PowerToys-1\src\modules\fancyzones\tests\UnitTests\Zone.Spec.cpp" line="7" col="28" msg="no member named &apos;VisualStudio&apos; in namespace &apos;Microsoft&apos;" />
+ <error level="warning" id="warn_redundant_parens_around_declarator" file="D:\New folder (2)\PowerToys-1\src\modules\fancyzones\tests\UnitTests\Zone.Spec.cpp" line="11" col="15" msg="redundant parentheses surrounding declarator" />
+ <error level="warning" id="warn_cxx98_compat_generalized_initializer_lists" file="D:\New folder (2)\PowerToys-1\src\modules\fancyzones\tests\UnitTests\Zone.Spec.cpp" line="12" col="5" msg="generalized initializer lists are incompatible with C++98" />
+ <error level="error" id="err_expected_expression" file="D:\New folder (2)\PowerToys-1\src\modules\fancyzones\tests\UnitTests\Zone.Spec.cpp" line="13" col="5" msg="expected expression" />
+</log>

@@ -1,0 +1,28 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests/stdafx.h" line="5" col="10" msg="&apos;atlbase.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests/stdafx.h" line="8" col="10" msg="&apos;CppUnitTest.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\lib/stdafx.h" line="14" col="10" msg="&apos;atlbase.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\lib/stdafx.h" line="15" col="10" msg="&apos;strsafe.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\lib/stdafx.h" line="16" col="10" msg="&apos;pathcch.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\telemetry\ProjectTelemetry.h" line="3" col="10" msg="&apos;TraceLoggingProvider.h&apos; file not found" />
+ <error level="error" id="err_expected" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\MockPowerRenameItem.cpp" line="4" col="62" msg="expected &apos;)&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\MockPowerRenameItem.cpp" line="6" col="6" msg="use of undeclared identifier &apos;ppItem&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\MockPowerRenameItem.cpp" line="6" col="15" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\MockPowerRenameItem.cpp" line="11" col="23" msg="use of undeclared identifier &apos;path&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\MockPowerRenameItem.cpp" line="11" col="29" msg="use of undeclared identifier &apos;originalName&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\MockPowerRenameItem.cpp" line="11" col="43" msg="use of undeclared identifier &apos;depth&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\MockPowerRenameItem.cpp" line="11" col="50" msg="use of undeclared identifier &apos;isFolder&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\MockPowerRenameItem.cpp" line="12" col="51" msg="use of undeclared identifier &apos;ppItem&apos;" />
+ <error level="error" id="err_ambiguous_member_multiple_subobjects" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\MockPowerRenameItem.cpp" line="13" col="18" msg="non-static member &apos;Release&apos; found in multiple base-class subobjects of type &apos;IUnknown&apos;:
+    class CMockPowerRenameItem -&gt; class CPowerRenameItem -&gt; struct IPowerRenameItem -&gt; struct IUnknown
+    class CMockPowerRenameItem -&gt; class CPowerRenameItem -&gt; struct IPowerRenameItemFactory -&gt; struct IUnknown" />
+ <error level="error" id="err_expected" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\MockPowerRenameItem.cpp" line="19" col="49" msg="expected &apos;)&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\MockPowerRenameItem.cpp" line="21" col="9" msg="use of undeclared identifier &apos;path&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\MockPowerRenameItem.cpp" line="21" col="17" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\MockPowerRenameItem.cpp" line="23" col="18" msg="use of undeclared identifier &apos;path&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\MockPowerRenameItem.cpp" line="26" col="9" msg="use of undeclared identifier &apos;originalName&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\MockPowerRenameItem.cpp" line="26" col="25" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\MockPowerRenameItem.cpp" line="28" col="18" msg="use of undeclared identifier &apos;originalName&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\MockPowerRenameItem.cpp" line="31" col="15" msg="use of undeclared identifier &apos;depth&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\MockPowerRenameItem.cpp" line="32" col="18" msg="use of undeclared identifier &apos;isFolder&apos;" />
+</log>

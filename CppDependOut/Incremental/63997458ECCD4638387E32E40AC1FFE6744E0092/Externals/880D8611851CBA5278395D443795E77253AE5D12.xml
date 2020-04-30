@@ -1,0 +1,556 @@
+<Externals>
+<cr access="none" depth="0" pod="true" kind="struct" name="_GUID" id="9b4065beae7301f3ce15eeac62e9413d_f89893169cf243a3173a4e8aff5ae00c" file="6" linestart="22" lineend="27"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="HKEY__" id="865513406945be266f25f771d4c57f4b_468bb9fd62aacca3b67fc1e438257ec9" file="7" linestart="247" lineend="247"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="_IMAGE_DOS_HEADER" id="dd9ef5f22bf11a6e9403d3fee86f6d4b_e3cd0928cefec93e590f2be3a6acda60" file="8" linestart="16567" lineend="16587"/>
+<cr namespace="PowerToysSettings" access="public" depth="0" kind="class" name="PowerToyValues" id="0b2fb77c683161a6934d059529c650eb_2461d2783bcf1e9b4cd2fbf82b525d4c" file="9" linestart="67" lineend="96"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="_EVENT_DATA_DESCRIPTOR" id="b6a0319dc9ca25828b62f42246cfe48d_5cd401b60068c4b537fe94e2d0e06e1e" file="10" linestart="177" lineend="190">
+<c name="_EVENT_DATA_DESCRIPTOR" id="b6a0319dc9ca25828b62f42246cfe48d_d9f9d60e6109c3c679a25d5ab520ee5d" file="10" linestart="177" lineend="177" implicit="true" access="public" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+</c>
+</cr>
+<e access="none" name="TlgIn_t" id="8df20089ebc07a8a99d56e5dffe8bfe2_d491343582a5da80d69c767a59d711e0" file="11" linestart="1714" lineend="1754">
+<promotion_type>
+<bt name="int"/>
+</promotion_type>
+<integer_type>
+<bt name="int"/>
+</integer_type>
+<ec name="TlgInUNICODESTRING" id="8df20089ebc07a8a99d56e5dffe8bfe2_146bc69c8afb975ffc93e28e8f3c0805" file="11" linestart="1717" lineend="1717">
+<et>
+<e id="8df20089ebc07a8a99d56e5dffe8bfe2_d491343582a5da80d69c767a59d711e0"/>
+</et>
+</ec>
+<ec name="TlgInANSISTRING" id="8df20089ebc07a8a99d56e5dffe8bfe2_b3ebdb69cb881badd11acdbdfcaf7f9a" file="11" linestart="1718" lineend="1718">
+<et>
+<e id="8df20089ebc07a8a99d56e5dffe8bfe2_d491343582a5da80d69c767a59d711e0"/>
+</et>
+</ec>
+<ec name="TlgInUINT8" id="8df20089ebc07a8a99d56e5dffe8bfe2_db1e1f5b31ea63ea54b95b6d18b17121" file="11" linestart="1720" lineend="1720">
+<et>
+<e id="8df20089ebc07a8a99d56e5dffe8bfe2_d491343582a5da80d69c767a59d711e0"/>
+</et>
+</ec>
+<ec name="TlgInUINT64" id="8df20089ebc07a8a99d56e5dffe8bfe2_4367cbc8dabd68ef7345fff0f5e9f6f1" file="11" linestart="1726" lineend="1726">
+<et>
+<e id="8df20089ebc07a8a99d56e5dffe8bfe2_d491343582a5da80d69c767a59d711e0"/>
+</et>
+</ec>
+</e>
+<e access="none" name="TlgOut_t" id="8df20089ebc07a8a99d56e5dffe8bfe2_6d6bc9f7305116a1f89b9c1723da6de5" file="11" linestart="1772" lineend="1800">
+<promotion_type>
+<bt name="int"/>
+</promotion_type>
+<integer_type>
+<bt name="int"/>
+</integer_type>
+<ec name="TlgOutBOOLEAN" id="8df20089ebc07a8a99d56e5dffe8bfe2_0ca7058ae4acd124f5a46cf3e4b07a2c" file="11" linestart="1777" lineend="1777">
+<et>
+<e id="8df20089ebc07a8a99d56e5dffe8bfe2_6d6bc9f7305116a1f89b9c1723da6de5"/>
+</et>
+</ec>
+</e>
+<e access="none" name="_TlgBlob_t" id="8df20089ebc07a8a99d56e5dffe8bfe2_4ba22234f86f851f5946bc1603eea3ee" file="11" linestart="1991" lineend="2000">
+<promotion_type>
+<bt name="int"/>
+</promotion_type>
+<integer_type>
+<bt name="int"/>
+</integer_type>
+<ec name="_TlgBlobEvent3" id="8df20089ebc07a8a99d56e5dffe8bfe2_fecf3e41a62b5f4c0264c3b3ddc79096" file="11" linestart="1996" lineend="1996">
+<et>
+<e id="8df20089ebc07a8a99d56e5dffe8bfe2_4ba22234f86f851f5946bc1603eea3ee"/>
+</et>
+</ec>
+<ec name="_TlgBlobProvider3" id="8df20089ebc07a8a99d56e5dffe8bfe2_072c0a3eed5421e8f6bf2dfe259af9e2" file="11" linestart="1997" lineend="1997">
+<et>
+<e id="8df20089ebc07a8a99d56e5dffe8bfe2_4ba22234f86f851f5946bc1603eea3ee"/>
+</et>
+</ec>
+</e>
+<e access="none" name="_TlgOptions_t" id="8df20089ebc07a8a99d56e5dffe8bfe2_82292d16174228944b5ea45b6ae681f1" file="11" linestart="2008" lineend="2012">
+<promotion_type>
+<bt name="int"/>
+</promotion_type>
+<integer_type>
+<bt name="int"/>
+</integer_type>
+<ec name="_TlgOptionGroup" id="8df20089ebc07a8a99d56e5dffe8bfe2_00ef1ff3fce9106658c4819ce73b0126" file="11" linestart="2011" lineend="2011">
+<et>
+<e id="8df20089ebc07a8a99d56e5dffe8bfe2_82292d16174228944b5ea45b6ae681f1"/>
+</et>
+</ec>
+</e>
+<cr access="none" depth="0" pod="true" kind="struct" name="_TlgProviderMetadata_t" id="8df20089ebc07a8a99d56e5dffe8bfe2_fb0be54259b7ebed8ea181e9267fee06" file="11" linestart="2040" lineend="2054">
+<fl name="RemainingSize" id="8df20089ebc07a8a99d56e5dffe8bfe2_c00efbb08311c713d3f5042f9b00d028" file="11" linestart="2045" lineend="2045" isLiteral="true" access="public" proto="UINT16">
+<Tdef>
+<bt name="unsigned short"/>
+</Tdef>
+</fl>
+</cr>
+<cr access="none" depth="0" pod="true" kind="struct" name="_TlgProvider_t" id="8df20089ebc07a8a99d56e5dffe8bfe2_d0108e5192554f0bf03d39d881cd083a" file="11" linestart="2097" lineend="2106" previous="8df20089ebc07a8a99d56e5dffe8bfe2_d0108e5192554f0bf03d39d881cd083a">
+<fl name="LevelPlus1" id="8df20089ebc07a8a99d56e5dffe8bfe2_703c4720891bf32936f2eb52c40bf67a" file="11" linestart="2099" lineend="2099" isLiteral="true" access="public" proto="UINT32">
+<Tdef>
+<bt name="unsigned int"/>
+</Tdef>
+</fl>
+</cr>
+<tm namespace="std" access="none" kind="class" name="allocator" id="2d061bb835685dbcdb7e6ee6fcc6f820_07566aa809aee0bdf1c0fac16e19fa85" file="12" linestart="166" lineend="167" previous="9a2ba64ab4a38b66d74fa8e847e9e38d_07566aa809aee0bdf1c0fac16e19fa85">
+<template_parameters>
+<ttp name="_Ty" id="2d061bb835685dbcdb7e6ee6fcc6f820_5dabb8add95e1f50264087371ebe1436" depth="0" index="0" proto="type-parameter-0-0"/>
+</template_parameters>
+<cr namespace="std" access="none" kind="class" name="allocator" id="2d061bb835685dbcdb7e6ee6fcc6f820_07566aa809aee0bdf1c0fac16e19fa85" file="12" linestart="167" lineend="167" previous="9a2ba64ab4a38b66d74fa8e847e9e38d_07566aa809aee0bdf1c0fac16e19fa85"/>
+</tm>
+<cr namespace="std" access="none" depth="1" kind="struct" name="char_traits" id="80a77c2f3be01933cb9a105626861106_bf3447e13ccfc57e5fa847f5d78e7639" file="13" linestart="249" lineend="249" previous="2d061bb835685dbcdb7e6ee6fcc6f820_bf3447e13ccfc57e5fa847f5d78e7639">
+<base access="public">
+<tss>
+<templatebase id="80a77c2f3be01933cb9a105626861106_0e14667e7fa909cae787013e4a665cda"/>
+<template_arguments>
+<ttp/>
+<bt name="long"/>
+</template_arguments>
+</tss>
+</base>
+</cr>
+<cts Spec="&lt;wchar_t&gt;" namespace="std" access="none" depth="1" kind="struct" name="char_traits" id="80a77c2f3be01933cb9a105626861106_7d637fda5b9c2af11eaf2c7631b154c8" file="13" linestart="266" lineend="267" previous="2d061bb835685dbcdb7e6ee6fcc6f820_7d637fda5b9c2af11eaf2c7631b154c8">
+<base access="public">
+<tss>
+<templatebase id="80a77c2f3be01933cb9a105626861106_6c28c477699334033382c49986a44faf"/>
+<template_arguments>
+<bt name="wchar_t"/>
+</template_arguments>
+</tss>
+</base>
+</cts>
+<tm namespace="std" access="none" depth="0" kind="class" name="basic_string" id="80a77c2f3be01933cb9a105626861106_6ecc822215ca97386606c5e8e95c56fb" file="13" linestart="2203" lineend="4247">
+<template_parameters>
+<ttp name="_Elem" id="80a77c2f3be01933cb9a105626861106_6ce5f3d7a6604198db996db8a0c30d56" depth="0" index="0" proto="type-parameter-0-0"/>
+<ttp name="_Traits" id="80a77c2f3be01933cb9a105626861106_0848502ecd25a9f13f4e0193e32d34a7" depth="0" index="1" proto="type-parameter-0-1">
+<tss>
+<templatebase id="80a77c2f3be01933cb9a105626861106_bf3447e13ccfc57e5fa847f5d78e7639"/>
+<template_arguments>
+<ttp/>
+</template_arguments>
+</tss>
+</ttp>
+<ttp name="_Alloc" id="80a77c2f3be01933cb9a105626861106_1b1916e3e4f4425c31a3e08f8b2a094e" depth="0" index="2" proto="type-parameter-0-2">
+<tss>
+<templatebase id="2d061bb835685dbcdb7e6ee6fcc6f820_07566aa809aee0bdf1c0fac16e19fa85"/>
+<template_arguments>
+<ttp/>
+</template_arguments>
+</tss>
+</ttp>
+</template_parameters>
+<cr namespace="std" access="none" depth="0" kind="class" name="basic_string" id="80a77c2f3be01933cb9a105626861106_6ecc822215ca97386606c5e8e95c56fb" file="13" linestart="2204" lineend="4247">
+<cr access="public" kind="class" name="basic_string" id="80a77c2f3be01933cb9a105626861106_7808f3d3e2ddb7f603f560a243578200" file="13" linestart="2204" lineend="2204"/>
+<c name="basic_string&lt;_Elem, _Traits, _Alloc&gt;" id="80a77c2f3be01933cb9a105626861106_3053f3db86d2b4d3af8b039438cb09cc" file="13" linestart="2271" lineend="2277" copyconst="true" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+<p name="_Right" proto="const basic_string&lt;_Elem, _Traits, _Alloc&gt; &amp;" isRef="true" access2="none">
+<lrf>
+<QualType const="true">
+<InjectedClassName>
+<cr id="80a77c2f3be01933cb9a105626861106_6ecc822215ca97386606c5e8e95c56fb"/>
+</InjectedClassName>
+</QualType>
+</lrf>
+</p>
+<initlist id="80a77c2f3be01933cb9a105626861106_216e019e09551f0315f4ea59cfc5d863"/>
+</c>
+<m name="c_str" id="80a77c2f3be01933cb9a105626861106_65d516408dbbf5d49be55f4917fbb4c6" file="13" linestart="3575" lineend="3577" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" const="true" proto="const _Elem *">
+<pt>
+<QualType const="true">
+<ttp/>
+</QualType>
+</pt>
+</fpt>
+</m>
+<m name="length" id="80a77c2f3be01933cb9a105626861106_5dbeba0b2815ef6f17bf6bb4100ba234" file="13" linestart="3589" lineend="3591" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" const="true" proto="size_type">
+<Tdef>
+<DependentName/>
+</Tdef>
+</fpt>
+</m>
+</cr>
+</tm>
+<cr access="none" depth="0" kind="class" name="RegistryWrapperIface" id="5bbbb5733ff51f897d1fe4b43d1c9877_26c662fc3c9302ead6a4fea2df365414" file="14" linestart="3" lineend="14">
+<m name="SetRegistryValue" id="5bbbb5733ff51f897d1fe4b43d1c9877_ceda9b9922659e76988ba237e9eb8f06" file="14" linestart="7" lineend="7" pure="true" virtual="true" access="public">
+<fpt cc="cdecl" proto="LONG">
+<Tdef>
+<bt name="long"/>
+</Tdef>
+</fpt>
+<p name="keyScope" proto="HKEY" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="865513406945be266f25f771d4c57f4b_468bb9fd62aacca3b67fc1e438257ec9"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+<p name="subKey" proto="LPCWSTR" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<QualType const="true">
+<Tdef>
+<bt name="wchar_t"/>
+</Tdef>
+</QualType>
+</pt>
+</Tdef>
+</p>
+<p name="valueName" proto="LPCWSTR" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<QualType const="true">
+<Tdef>
+<bt name="wchar_t"/>
+</Tdef>
+</QualType>
+</pt>
+</Tdef>
+</p>
+<p name="dwType" proto="DWORD" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned long"/>
+</Tdef>
+</p>
+<p name="data" proto="const BYTE *" isPtr="true" isLiteral="true" access2="none">
+<pt>
+<QualType const="true">
+<Tdef>
+<bt name="unsigned char"/>
+</Tdef>
+</QualType>
+</pt>
+</p>
+<p name="cbData" proto="DWORD" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned long"/>
+</Tdef>
+</p>
+</m>
+<m name="DeleteRegistryValue" id="5bbbb5733ff51f897d1fe4b43d1c9877_a159b4fe65dc7957679d373ed59e4df8" file="14" linestart="10" lineend="10" pure="true" virtual="true" access="public">
+<fpt cc="cdecl" proto="LONG">
+<Tdef>
+<bt name="long"/>
+</Tdef>
+</fpt>
+<p name="keyScope" proto="HKEY" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="865513406945be266f25f771d4c57f4b_468bb9fd62aacca3b67fc1e438257ec9"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+<p name="subKey" proto="LPCWSTR" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<QualType const="true">
+<Tdef>
+<bt name="wchar_t"/>
+</Tdef>
+</QualType>
+</pt>
+</Tdef>
+</p>
+<p name="valueName" proto="LPCWSTR" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<QualType const="true">
+<Tdef>
+<bt name="wchar_t"/>
+</Tdef>
+</QualType>
+</pt>
+</Tdef>
+</p>
+</m>
+</cr>
+<f name="TraceLoggingUnregister" id="8df20089ebc07a8a99d56e5dffe8bfe2_d1b9d83b7d266668c83f72636bbca8a1" file="11" linestart="322" lineend="324" extC="true" access="none" inline="true" hasbody="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+<exception_specifiers nothrow="true"/>
+</fpt>
+<p name="hProvider" proto="TraceLoggingHProvider" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<QualType const="true">
+<ety>
+<rt>
+<cr id="8df20089ebc07a8a99d56e5dffe8bfe2_d0108e5192554f0bf03d39d881cd083a"/>
+</rt>
+</ety>
+</QualType>
+</pt>
+</Tdef>
+</p>
+</f>
+<f name="TraceLoggingRegister" id="8df20089ebc07a8a99d56e5dffe8bfe2_83e9be482ec22fd7c58bde9eaa8e1edf" file="11" linestart="340" lineend="342" extC="true" access="none" inline="true" hasbody="true">
+<fpt cc="cdecl" proto="TLG_STATUS">
+<Tdef>
+<Tdef>
+<bt name="long"/>
+</Tdef>
+</Tdef>
+<exception_specifiers nothrow="true"/>
+</fpt>
+<p name="hProvider" proto="TraceLoggingHProvider" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<QualType const="true">
+<ety>
+<rt>
+<cr id="8df20089ebc07a8a99d56e5dffe8bfe2_d0108e5192554f0bf03d39d881cd083a"/>
+</rt>
+</ety>
+</QualType>
+</pt>
+</Tdef>
+</p>
+</f>
+<f name="__annotation" id="8df20089ebc07a8a99d56e5dffe8bfe2_9c23bdc766fbe8db1d6d3514c67a9bcc" file="11" linestart="2351" lineend="2351" extC="true" implicit="true" variadic="true" access="none" storage="extern">
+<fpt cc="cdecl" proto="const wchar_t *">
+<pt>
+<QualType const="true">
+<bt name="wchar_t"/>
+</QualType>
+</pt>
+</fpt>
+</f>
+<f name="_TlgWrite" id="8df20089ebc07a8a99d56e5dffe8bfe2_21b20a66e3674ef9d29235f1cbab08dc" file="11" linestart="2555" lineend="2572" extC="true" access="none" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="TLG_STATUS">
+<Tdef>
+<Tdef>
+<bt name="long"/>
+</Tdef>
+</Tdef>
+<exception_specifiers nothrow="true"/>
+</fpt>
+<p name="hProvider" proto="TraceLoggingHProvider" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<QualType const="true">
+<ety>
+<rt>
+<cr id="8df20089ebc07a8a99d56e5dffe8bfe2_d0108e5192554f0bf03d39d881cd083a"/>
+</rt>
+</ety>
+</QualType>
+</pt>
+</Tdef>
+</p>
+<p name="pEventMetadata" proto="const __unaligned void *" isPtr="true" isLiteral="true" access2="none">
+<pt>
+<QualType const="true">
+<bt name="void"/>
+</QualType>
+</pt>
+</p>
+<p name="pActivityId" proto="LPCGUID" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<QualType const="true">
+<Tdef>
+<ety>
+<rt>
+<cr id="9b4065beae7301f3ce15eeac62e9413d_f89893169cf243a3173a4e8aff5ae00c"/>
+</rt>
+</ety>
+</Tdef>
+</QualType>
+</pt>
+</Tdef>
+</p>
+<p name="pRelatedActivityId" proto="LPCGUID" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<QualType const="true">
+<Tdef>
+<ety>
+<rt>
+<cr id="9b4065beae7301f3ce15eeac62e9413d_f89893169cf243a3173a4e8aff5ae00c"/>
+</rt>
+</ety>
+</Tdef>
+</QualType>
+</pt>
+</Tdef>
+</p>
+<p name="cData" proto="UINT32" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned int"/>
+</Tdef>
+</p>
+<p name="pData" proto="EVENT_DATA_DESCRIPTOR *" isPtr="true" isLiteral="true" access2="none">
+<pt>
+<Tdef>
+<ety>
+<rt>
+<cr id="b6a0319dc9ca25828b62f42246cfe48d_5cd401b60068c4b537fe94e2d0e06e1e"/>
+</rt>
+</ety>
+</Tdef>
+</pt>
+</p>
+</f>
+<f name="_TlgKeywordOn" id="8df20089ebc07a8a99d56e5dffe8bfe2_459430e47749dc69093f6f6331a37bfd" file="11" linestart="2603" lineend="2611" extC="true" access="none" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="BOOLEAN">
+<Tdef>
+<Tdef>
+<bt name="unsigned char"/>
+</Tdef>
+</Tdef>
+<exception_specifiers nothrow="true"/>
+</fpt>
+<p name="hProvider" proto="TraceLoggingHProvider" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<QualType const="true">
+<ety>
+<rt>
+<cr id="8df20089ebc07a8a99d56e5dffe8bfe2_d0108e5192554f0bf03d39d881cd083a"/>
+</rt>
+</ety>
+</QualType>
+</pt>
+</Tdef>
+</p>
+<p name="keyword" proto="ULONGLONG" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned long long"/>
+</Tdef>
+</p>
+</f>
+<f name="_TlgCreateSz" id="8df20089ebc07a8a99d56e5dffe8bfe2_ecaed7795b1d866adcc95468ca46de8c" file="11" linestart="2637" lineend="2650" extC="true" access="none" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+<exception_specifiers nothrow="true"/>
+</fpt>
+<p name="pDesc" proto="PEVENT_DATA_DESCRIPTOR" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="b6a0319dc9ca25828b62f42246cfe48d_5cd401b60068c4b537fe94e2d0e06e1e"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+<p name="psz" proto="LPCSTR" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<QualType const="true">
+<Tdef>
+<bt name="char"/>
+</Tdef>
+</QualType>
+</pt>
+</Tdef>
+</p>
+</f>
+<f name="_TlgCreateWsz" id="8df20089ebc07a8a99d56e5dffe8bfe2_b1d50dd17f09eaf48817694224e1df2a" file="11" linestart="2653" lineend="2666" extC="true" access="none" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+<exception_specifiers nothrow="true"/>
+</fpt>
+<p name="pDesc" proto="PEVENT_DATA_DESCRIPTOR" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="b6a0319dc9ca25828b62f42246cfe48d_5cd401b60068c4b537fe94e2d0e06e1e"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+<p name="pwsz" proto="LPCWSTR" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<QualType const="true">
+<Tdef>
+<bt name="wchar_t"/>
+</Tdef>
+</QualType>
+</pt>
+</Tdef>
+</p>
+</f>
+<f name="_TlgCreateDesc" id="8df20089ebc07a8a99d56e5dffe8bfe2_0277a82730f114c1b02d0f57dd7315a1" file="11" linestart="2748" lineend="2751" access="none" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+<p name="pDesc" proto="PEVENT_DATA_DESCRIPTOR" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="b6a0319dc9ca25828b62f42246cfe48d_5cd401b60068c4b537fe94e2d0e06e1e"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+<p name="val" proto="const T &amp;" isRef="true" access2="none">
+<lrf>
+<QualType const="true">
+<ttp/>
+</QualType>
+</lrf>
+</p>
+</f>
+<ft name="_TlgCreateDesc" id="8df20089ebc07a8a99d56e5dffe8bfe2_42f00634663e0d184763bf6fe3dfeb22" file="11" linestart="2746" lineend="2751">
+<template_parameters>
+<ttp name="T" id="8df20089ebc07a8a99d56e5dffe8bfe2_7eeef644db389d21c2d7628b1ec88d23" depth="0" index="0" proto="type-parameter-0-0"/>
+</template_parameters>
+<f name="_TlgCreateDesc" id="8df20089ebc07a8a99d56e5dffe8bfe2_0277a82730f114c1b02d0f57dd7315a1" file="11" linestart="2748" lineend="2751" access="none" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+<p name="pDesc" proto="PEVENT_DATA_DESCRIPTOR" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="b6a0319dc9ca25828b62f42246cfe48d_5cd401b60068c4b537fe94e2d0e06e1e"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+<p name="val" proto="const T &amp;" isRef="true" access2="none">
+<lrf>
+<QualType const="true">
+<ttp/>
+</QualType>
+</lrf>
+</p>
+</f>
+</ft>
+<v name="value" proto="const T" const="true" id="8df20089ebc07a8a99d56e5dffe8bfe2_34a673abd2b52369ee56bf86e8a63b52" file="11" linestart="3510" lineend="3510" storage="static" init="true" access2="public">
+<QualType const="true">
+<ttp/>
+</QualType>
+</v>
+<v name="value" proto="const UINT8" const="true" isLiteral="true" isPrimitive="true" id="8df20089ebc07a8a99d56e5dffe8bfe2_de47d6b238aa586d1253cb455326ab2d" file="11" linestart="2941" lineend="2942" storage="static" init="true" access2="public">
+<QualType const="true">
+<Tdef>
+<bt name="unsigned char"/>
+</Tdef>
+</QualType>
+</v>
+</Externals>

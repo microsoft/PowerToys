@@ -1,0 +1,190 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\settings/pch.h" line="7" col="10" msg="&apos;winrt\windows.system.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\settings/pch.h" line="8" col="10" msg="&apos;winrt\windows.web.ui.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\settings/pch.h" line="9" col="10" msg="&apos;winrt\windows.web.ui.interop.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\settings/pch.h" line="10" col="10" msg="&apos;winrt\windows.ui.xaml.controls.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\settings/pch.h" line="11" col="10" msg="&apos;winrt\windows.foundation.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\settings/pch.h" line="12" col="10" msg="&apos;winrt\windows.web.http.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\settings/pch.h" line="13" col="10" msg="&apos;winrt\windows.web.http.headers.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\settings/pch.h" line="14" col="10" msg="&apos;winrt\Windows.Storage.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\settings/pch.h" line="15" col="10" msg="&apos;winrt\Windows.Storage.Streams.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\settings/pch.h" line="17" col="10" msg="&apos;strsafe.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\Telemetry\ProjectTelemetry.h" line="3" col="10" msg="&apos;TraceLoggingProvider.h&apos; file not found" />
+ <error level="warning" id="pp_nonportable_path" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="2" col="10" msg="non-portable path to file &apos;&lt;commdlg.h&gt;&apos;; specified path differs in case from file name on disk" />
+ <error level="warning" id="pp_nonportable_path" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="4" col="10" msg="non-portable path to file &apos;&lt;shellapi.h&gt;&apos;; specified path differs in case from file name on disk" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/two_way_pipe_message_ipc.h" line="4" col="10" msg="&apos;WinSafer.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="6" col="10" msg="&apos;ShellScalingApi.h&apos; file not found" />
+ <error level="error" id="err_expected_namespace_name" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="28" col="17" msg="expected namespace name" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="29" col="17" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="30" col="17" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="31" col="17" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="32" col="17" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="33" col="17" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="34" col="17" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="35" col="17" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="37" col="21" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_missing_variable_declarations" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="37" col="11" msg="no previous extern declaration for non-static variable &apos;g_hinst&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="38" col="19" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_missing_variable_declarations" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="38" col="6" msg="no previous extern declaration for non-static variable &apos;g_main_wnd&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="39" col="28" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="40" col="43" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_missing_variable_declarations" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="42" col="27" msg="no previous extern declaration for non-static variable &apos;local_uri_resolver&apos;" />
+ <error level="warning" id="warn_missing_variable_declarations" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="45" col="6" msg="no previous extern declaration for non-static variable &apos;wm_data_for_webview&apos;" />
+ <error level="warning" id="warn_missing_variable_declarations" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="50" col="6" msg="no previous extern declaration for non-static variable &apos;wm_destroy_window&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="53" col="40" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_missing_variable_declarations" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="53" col="23" msg="no previous extern declaration for non-static variable &apos;g_message_pipe&apos;" />
+ <error level="warning" id="warn_missing_variable_declarations" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="56" col="6" msg="no previous extern declaration for non-static variable &apos;g_waiting_for_close_confirmation&apos;" />
+ <error level="warning" id="warn_missing_variable_declarations" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="59" col="6" msg="no previous extern declaration for non-static variable &apos;g_start_in_dark_mode&apos;" />
+ <error level="error" id="err_expected" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="71" col="33" msg="expected &apos;)&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="74" col="36" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="74" col="5" msg="use of undeclared identifier &apos;WINRT_VERIFY&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="75" col="5" msg="use of undeclared identifier &apos;WINRT_VERIFY&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="76" col="5" msg="use of undeclared identifier &apos;wcscat_s&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="77" col="45" msg="use of undeclared identifier &apos;hstring&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="77" col="78" msg="use of undeclared identifier &apos;uri_as_string&apos;" />
+ <error level="error" id="err_expected" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="81" col="43" msg="expected &apos;)&apos;" />
+ <error level="warning" id="warn_missing_field_initializers" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="83" col="28" msg="missing field &apos;top&apos; initializer" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="84" col="32" msg="use of undeclared identifier &apos;hwnd&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="99" col="47" msg="use of undeclared identifier &apos;IWebViewControlSite&apos;" />
+ <error level="warning" id="warn_missing_prototype" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="96" col="6" msg="no previous prototype for function &apos;resize_web_view&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="107" col="23" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="114" col="27" msg="use of old-style cast" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="119" col="9" msg="use of undeclared identifier &apos;wcscpy_s&apos;" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="122" col="27" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="123" col="67" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="123" col="87" msg="use of old-style cast" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="123" col="9" msg="use of undeclared identifier &apos;WINRT_VERIFY&apos;" />
+ <error level="warning" id="warn_missing_prototype" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="105" col="6" msg="no previous prototype for function &apos;send_message_to_webview&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="129" col="27" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_missing_prototype" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="127" col="6" msg="no previous prototype for function &apos;send_message_to_powertoys_runner&apos;" />
+ <error level="error" id="err_no_member" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="208" col="14" msg="no member named &apos;thread&apos; in namespace &apos;std&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="216" col="13" msg="use of undeclared identifier &apos;WINRT_VERIFY&apos;" />
+ <error level="warning" id="warn_missing_prototype" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="203" col="6" msg="no previous prototype for function &apos;receive_message_from_webview&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="230" col="29" msg="use of undeclared identifier &apos;WebViewControlProcess&apos;" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="231" col="9" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="231" col="73" msg="use of old-style cast" />
+ <error level="warning" id="warn_cxx98_compat_lambda" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="232" col="32" msg="lambda expressions are incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="232" col="52" msg="use of undeclared identifier &apos;WebViewControl&apos;" />
+ <error level="error" id="err_expected" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="232" col="68" msg="expected &apos;)&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="233" col="17" msg="use of undeclared identifier &apos;status&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="233" col="27" msg="use of undeclared identifier &apos;AsyncStatus&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="235" col="30" msg="use of undeclared identifier &apos;sender&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="235" col="40" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="236" col="29" msg="use of undeclared identifier &apos;sender&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="237" col="43" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_lambda" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="244" col="46" msg="lambda expressions are incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="246" col="27" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="251" col="31" msg="use of undeclared identifier &apos;Uri&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="252" col="21" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="warn_redundant_parens_around_declarator" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="252" col="69" msg="redundant parentheses surrounding declarator" />
+ <error level="warning" id="warn_decl_shadow" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="252" col="70" msg="declaration shadows a local variable" />
+ <error level="warning" id="warn_unused_parameter" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="244" col="66" msg="unused parameter &apos;sender_requester&apos;" />
+ <error level="warning" id="warn_unused_parameter" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="244" col="126" msg="unused parameter &apos;args&apos;" />
+ <error level="warning" id="warn_cxx98_compat_lambda" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="255" col="42" msg="lambda expressions are incompatible with C++98" />
+ <error level="error" id="err_expected" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="255" col="108" msg="expected &apos;)&apos;" />
+ <error level="warning" id="warn_unused_parameter" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="255" col="62" msg="unused parameter &apos;sender&apos;" />
+ <error level="warning" id="warn_cxx98_compat_lambda" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="258" col="40" msg="lambda expressions are incompatible with C++98" />
+ <error level="error" id="err_expected" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="258" col="118" msg="expected &apos;)&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="260" col="49" msg="use of undeclared identifier &apos;args_script_notify&apos;" />
+ <error level="warning" id="warn_unused_parameter" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="258" col="60" msg="unused parameter &apos;sender_script_notify&apos;" />
+ <error level="warning" id="warn_cxx98_compat_lambda" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="263" col="49" msg="lambda expressions are incompatible with C++98" />
+ <error level="error" id="err_expected" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="263" col="122" msg="expected &apos;)&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="264" col="25" msg="use of undeclared identifier &apos;args&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="264" col="46" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="267" col="31" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="267" col="68" msg="use of undeclared identifier &apos;hstring&apos;" />
+ <error level="warning" id="warn_cxx98_compat_generalized_initializer_lists" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="267" col="99" msg="generalized initializer lists are incompatible with C++98" />
+ <error level="warning" id="warn_unused_parameter" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="263" col="69" msg="unused parameter &apos;sender&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="279" col="22" msg="use of undeclared identifier &apos;status&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="279" col="32" msg="use of undeclared identifier &apos;AsyncStatus&apos;" />
+ <error level="warning" id="warn_zero_as_null_pointer_constant" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="281" col="28" msg="zero as null pointer constant" />
+ <error level="warning" id="warn_cxx98_compat_enum_nested_name_spec" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="282" col="49" msg="enumeration type in nested name specifier is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="285" col="22" msg="use of undeclared identifier &apos;status&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="285" col="32" msg="use of undeclared identifier &apos;AsyncStatus&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="289" col="22" msg="use of undeclared identifier &apos;status&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="289" col="32" msg="use of undeclared identifier &apos;AsyncStatus&apos;" />
+ <error level="error" id="err_expected" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="295" col="26" msg="expected &apos;)&apos;" />
+ <error level="warning" id="warn_cxx98_compat_enum_nested_name_spec" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="297" col="41" msg="enumeration type in nested name specifier is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="299" col="34" msg="use of undeclared identifier &apos;ARRAYSIZE&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="299" col="70" msg="use of undeclared identifier &apos;e&apos;" />
+ <error level="warning" id="warn_missing_prototype" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="226" col="6" msg="no previous prototype for function &apos;initialize_webview&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="319" col="30" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="321" col="23" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="321" col="60" msg="use of undeclared identifier &apos;hstring&apos;" />
+ <error level="warning" id="warn_cxx98_compat_generalized_initializer_lists" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="321" col="91" msg="generalized initializer lists are incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="333" col="26" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="342" col="10" msg="use of undeclared identifier &apos;WM_DPICHANGED&apos;" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="345" col="36" msg="use of old-style cast" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="347" col="22" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="358" col="9" msg="use of undeclared identifier &apos;EnableNonClientDpiScaling&apos;" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="364" col="35" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="367" col="41" msg="use of old-style cast" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="368" col="34" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="370" col="27" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="370" col="64" msg="use of undeclared identifier &apos;hstring&apos;" />
+ <error level="warning" id="warn_cxx98_compat_generalized_initializer_lists" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="370" col="103" msg="generalized initializer lists are incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="370" col="105" msg="use of undeclared identifier &apos;hstring&apos;" />
+ <error level="warning" id="warn_missing_prototype" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="304" col="18" msg="no previous prototype for function &apos;wnd_proc_static&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="401" col="31" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="402" col="71" msg="use of old-style cast" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="403" col="25" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="405" col="20" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="407" col="5" msg="use of undeclared identifier &apos;WINRT_VERIFY&apos;" />
+ <error level="warning" id="warn_missing_prototype" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="390" col="6" msg="no previous prototype for function &apos;register_classes&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="414" col="30" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="414" col="5" msg="use of undeclared identifier &apos;WINRT_VERIFY&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="415" col="5" msg="use of undeclared identifier &apos;WINRT_VERIFY&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="419" col="23" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="421" col="12" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="421" col="12" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="421" col="12" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_missing_prototype" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="410" col="6" msg="no previous prototype for function &apos;create_main_window&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="438" col="20" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="446" col="17" msg="use of undeclared identifier &apos;WINRT_VERIFY&apos;" />
+ <error level="warning" id="warn_missing_prototype" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="435" col="6" msg="no previous prototype for function &apos;wait_on_parent_process_thread&apos;" />
+ <error level="warning" id="warn_impcast_integer_sign" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="458" col="17" msg="implicit conversion changes signedness: &apos;long&apos; to &apos;DWORD&apos; (aka &apos;unsigned long&apos;)" />
+ <error level="error" id="err_no_member" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="459" col="10" msg="no member named &apos;thread&apos; in namespace &apos;std&apos;" />
+ <error level="warning" id="warn_missing_prototype" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="456" col="6" msg="no previous prototype for function &apos;quit_when_parent_terminates&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="479" col="31" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="485" col="20" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_missing_prototype" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="464" col="6" msg="no previous prototype for function &apos;parse_args&apos;" />
+ <error level="warning" id="warn_cxx98_compat_generalized_initializer_lists" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="508" col="42" msg="generalized initializer lists are incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_empty_scalar_initializer" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="508" col="42" msg="scalar initialized from empty initializer list is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="509" col="84" msg="use of undeclared identifier &apos;SDDL_REVISION_1&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="509" col="120" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="514" col="5" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_lambda" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="514" col="36" msg="lambda expressions are incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_template_arg_local_type" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="514" col="19" msg="local type &apos;(lambda at D:\New folder (2)\PowerToys-1\src\settings\main.cpp:514:36)&apos; as template argument is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="524" col="43" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="524" col="71" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="524" col="92" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="524" col="113" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="524" col="135" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_generalized_initializer_lists" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="532" col="51" msg="generalized initializer lists are incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_ctor_list_init" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="532" col="51" msg="constructor call from initializer list is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_generalized_initializer_lists" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="533" col="28" msg="generalized initializer lists are incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_ctor_list_init" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="533" col="28" msg="constructor call from initializer list is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_generalized_initializer_lists" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="534" col="28" msg="generalized initializer lists are incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_ctor_list_init" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="534" col="28" msg="constructor call from initializer list is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_generalized_initializer_lists" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="535" col="29" msg="generalized initializer lists are incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_ctor_list_init" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="535" col="29" msg="constructor call from initializer list is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_generalized_initializer_lists" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="536" col="29" msg="generalized initializer lists are incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_ctor_list_init" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="536" col="29" msg="constructor call from initializer list is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="553" col="13" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="553" col="13" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="553" col="13" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="553" col="13" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_missing_prototype" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="496" col="6" msg="no previous prototype for function &apos;initialize_com_security_policy_for_webview&apos;" />
+ <error level="error" id="err_expected" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="565" col="35" msg="expected &apos;)&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="568" col="18" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_zero_as_null_pointer_constant" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="576" col="24" msg="zero as null pointer constant" />
+ <error level="warning" id="warn_cxx98_compat_enum_nested_name_spec" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="577" col="45" msg="enumeration type in nested name specifier is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="582" col="15" msg="use of undeclared identifier &apos;hInstance&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="584" col="22" msg="use of undeclared identifier &apos;hInstance&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="585" col="37" msg="use of undeclared identifier &apos;hInstance&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="586" col="23" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_zero_as_null_pointer_constant" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="588" col="20" msg="zero as null pointer constant" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="591" col="24" msg="use of undeclared identifier &apos;nShowCmd&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="595" col="29" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\settings\main.cpp" line="602" col="12" msg="use of old-style cast" />
+</log>

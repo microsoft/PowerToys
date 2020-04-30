@@ -1,0 +1,13 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll/targetver.h" line="3" col="10" msg="&apos;winsdkver.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll/stdafx.h" line="15" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll/stdafx.h" line="16" col="10" msg="&apos;atlbase.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll/stdafx.h" line="17" col="10" msg="&apos;atlcom.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll/stdafx.h" line="18" col="10" msg="&apos;atlfile.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll/stdafx.h" line="19" col="10" msg="&apos;atlstr.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\Telemetry\ProjectTelemetry.h" line="3" col="10" msg="&apos;TraceLoggingProvider.h&apos; file not found" />
+ <error level="error" id="err_redefinition_different_kind" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\Settings.cpp" line="14" col="17" msg="redefinition of &apos;SetEnabled&apos; as different kind of symbol" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\Settings.cpp" line="14" col="28" msg="use of undeclared identifier &apos;_In_&apos;" />
+ <error level="error" id="err_invalid_token_after_toplevel_declarator" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\Settings.cpp" line="14" col="46" msg="expected &apos;;&apos; after top level declarator" />
+ <error level="warning" id="warn_cxx98_compat_no_newline_eof" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\Settings.cpp" line="66" col="2" msg="C++98 requires newline at end of file" />
+</log>

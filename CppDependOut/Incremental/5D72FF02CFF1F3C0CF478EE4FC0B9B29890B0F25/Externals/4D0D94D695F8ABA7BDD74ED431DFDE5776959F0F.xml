@@ -1,0 +1,54 @@
+<Externals>
+<cts Spec="&lt;bool&gt;" namespace="std" access="none" depth="0" kind="struct" name="atomic" id="3cad2073208e4923f515e818c19c832a_6cf4c9f3dd5a7ac6661bbc26093f1cd8" file="3" linestart="62" lineend="165">
+<c name="atomic" id="3cad2073208e4923f515e818c19c832a_1b138e1011f722a08ef555551f57f225" file="3" linestart="75" lineend="75" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+<p name="__i" proto="bool" isLiteral="true" isPrimitive="true" access2="none">
+<bt name="bool"/>
+</p>
+<initlist id="3cad2073208e4923f515e818c19c832a_be3d6f5d3fb48c93c5955f18f56d6022">
+<template_arguments>
+<bt name="bool"/>
+</template_arguments>
+</initlist>
+</c>
+<m name="operator=" id="3cad2073208e4923f515e818c19c832a_2d9405b902bc004c68b78d9f1f3cecf7" file="3" linestart="77" lineend="79" operator="true" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="bool">
+<bt name="bool"/>
+</fpt>
+<p name="__i" proto="bool" isLiteral="true" isPrimitive="true" access2="none">
+<bt name="bool"/>
+</p>
+</m>
+<cv name="operator bool" id="3cad2073208e4923f515e818c19c832a_96773a8ce14049a260f8534766f5568a" file="3" linestart="85" lineend="86" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" const="true" proto="bool">
+<bt name="bool"/>
+</fpt>
+</cv>
+</cts>
+<cr namespace="std" access="none" depth="0" kind="struct" name="atomic" id="3cad2073208e4923f515e818c19c832a_a546984e5c6076b3e2f91aa61efac865" file="3" linestart="174" lineend="347" previous="3cad2073208e4923f515e818c19c832a_a546984e5c6076b3e2f91aa61efac865"/>
+<cr namespace="std" access="none" kind="class" name="future" id="b0140a9dd5e3c112126e5f39eec85aaa_93031427951e8291f40c027f5aa4f04d" file="4" linestart="125" lineend="125"/>
+<cr namespace="std" access="none" kind="class" name="packaged_task" id="b0140a9dd5e3c112126e5f39eec85aaa_c509a10f7e51e2f2e47c45dbf6a15757" file="4" linestart="131" lineend="131"/>
+<tm namespace="std" access="none" depth="0" kind="class" name="queue" id="ea971232489cf84385e8429685a15965_95f4b159b8f99bc1b91d32b1e71a5db5" file="5" linestart="95" lineend="303">
+<template_parameters>
+<ttp name="_Tp" id="ea971232489cf84385e8429685a15965_0563c874dcfe91cac5414a12754e6474" depth="0" index="0" proto="type-parameter-0-0"/>
+<ttp name="_Sequence" id="ea971232489cf84385e8429685a15965_8f79fca9839f7fd0773459ec701c98f2" depth="0" index="1" proto="type-parameter-0-1">
+<tss>
+<templatebase id="880416407e5c5abe78b7c78f6d907a77_936b3721bb2dae502758d4d22ace95d0"/>
+<template_arguments>
+<ttp/>
+</template_arguments>
+</tss>
+</ttp>
+</template_parameters>
+<cr namespace="std" access="none" depth="0" kind="class" name="queue" id="ea971232489cf84385e8429685a15965_95f4b159b8f99bc1b91d32b1e71a5db5" file="5" linestart="96" lineend="303">
+<cr access="public" kind="class" name="queue" id="ea971232489cf84385e8429685a15965_e33d80c1581fac8f8b728d1d34bccdd1" file="5" linestart="96" lineend="96"/>
+<m name="pop" id="ea971232489cf84385e8429685a15965_1f7f87fa26e3276fddad4a14388ed660" file="5" linestart="283" lineend="288" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+</m>
+</cr>
+</tm>
+</Externals>

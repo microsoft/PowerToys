@@ -1,0 +1,59 @@
+<Externals>
+<tm namespace="std" access="none" depth="0" kind="class" name="vector" id="6f3f82aee20b82c84f02b01a0d6eccb3_3d0ab7465d6b9448b8c01dc907d3e25b" file="2" linestart="411" lineend="1750">
+<template_parameters>
+<ttp name="_Ty" id="6f3f82aee20b82c84f02b01a0d6eccb3_2d25604cf0b65876a3833653b86272f8" depth="0" index="0" proto="type-parameter-0-0"/>
+<ttp name="_Alloc" id="6f3f82aee20b82c84f02b01a0d6eccb3_415b2c0180cb321c6095aa8e8e14a027" depth="0" index="1" proto="type-parameter-0-1">
+<tss>
+<templatebase id="2d061bb835685dbcdb7e6ee6fcc6f820_07566aa809aee0bdf1c0fac16e19fa85"/>
+<template_arguments>
+<ttp/>
+</template_arguments>
+</tss>
+</ttp>
+</template_parameters>
+<cr namespace="std" access="none" depth="0" kind="class" name="vector" id="6f3f82aee20b82c84f02b01a0d6eccb3_3d0ab7465d6b9448b8c01dc907d3e25b" file="2" linestart="412" lineend="1750">
+<cr access="public" kind="class" name="vector" id="6f3f82aee20b82c84f02b01a0d6eccb3_c48c2bde2c144b6d614d5912fe2271ba" file="2" linestart="412" lineend="412"/>
+<m name="size" id="6f3f82aee20b82c84f02b01a0d6eccb3_4d302b215534245d1eabe876b749053e" file="2" linestart="1482" lineend="1485" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" const="true" proto="size_type">
+<Tdef>
+<DependentName/>
+</Tdef>
+</fpt>
+</m>
+</cr>
+</tm>
+<cr namespace="PowerToysSettings" access="public" depth="0" pod="true" kind="class" name="HotkeyObject" id="0b2fb77c683161a6934d059529c650eb_c47da1c0917aae1d2a6e87f396c46443" file="3" linestart="115" lineend="220" previous="0b2fb77c683161a6934d059529c650eb_c47da1c0917aae1d2a6e87f396c46443"/>
+<cr access="public" depth="0" kind="struct" name="Settings" id="d9bf7c5f486a397a31c22350b3792488_0690bc5e6bf319d5f4b8edbdcc1a5a74" file="4" linestart="6" lineend="26">
+<fl name="excludedAppsArray" id="d9bf7c5f486a397a31c22350b3792488_f4c968400479b3ca48a32cc556608a7d" file="4" linestart="25" lineend="25" access="public" proto="std::vector&lt;std::wstring&gt;">
+<ety>
+<tss>
+<templatebase id="6f3f82aee20b82c84f02b01a0d6eccb3_3d0ab7465d6b9448b8c01dc907d3e25b"/>
+<template_arguments>
+<ety>
+<Tdef>
+<tss>
+<templatebase id="80a77c2f3be01933cb9a105626861106_6ecc822215ca97386606c5e8e95c56fb"/>
+<template_arguments>
+<bt name="wchar_t"/>
+<tss>
+<templatebase id="80a77c2f3be01933cb9a105626861106_bf3447e13ccfc57e5fa847f5d78e7639"/>
+<template_arguments>
+<bt name="wchar_t"/>
+</template_arguments>
+</tss>
+<tss>
+<templatebase id="2d061bb835685dbcdb7e6ee6fcc6f820_07566aa809aee0bdf1c0fac16e19fa85"/>
+<template_arguments>
+<bt name="wchar_t"/>
+</template_arguments>
+</tss>
+</template_arguments>
+</tss>
+</Tdef>
+</ety>
+</template_arguments>
+</tss>
+</ety>
+</fl>
+</cr>
+</Externals>

@@ -1,0 +1,14 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\UWPui/stdafx.h" line="6" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\dll/stdafx.h" line="7" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\com_object_factory.h" line="4" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="warning" id="warn_missing_variable_declarations" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\UWPui\PowerRenameUWPUI.cpp" line="9" col="20" msg="no previous extern declaration for non-static variable &apos;g_dwModuleRefCount&apos;" />
+ <error level="warning" id="warn_missing_variable_declarations" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\UWPui\PowerRenameUWPUI.cpp" line="11" col="7" msg="no previous extern declaration for non-static variable &apos;main_thread_id&apos;" />
+ <error level="warning" id="warn_zero_as_null_pointer_constant" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\UWPui\PowerRenameUWPUI.cpp" line="26" col="21" msg="zero as null pointer constant" />
+ <error level="warning" id="warn_missing_variable_declarations" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\UWPui\PowerRenameUWPUI.cpp" line="26" col="11" msg="no previous extern declaration for non-static variable &apos;g_hInst&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\UWPui\PowerRenameUWPUI.cpp" line="35" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\UWPui\PowerRenameUWPUI.cpp" line="39" col="10" msg="use of old-style cast" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\UWPui\PowerRenameUWPUI.cpp" line="48" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="warn_unused_parameter" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\UWPui\PowerRenameUWPUI.cpp" line="31" col="35" msg="unused parameter &apos;lpCmdLine&apos;" />
+ <error level="warning" id="warn_unused_parameter" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\UWPui\PowerRenameUWPUI.cpp" line="32" col="32" msg="unused parameter &apos;nCmdShow&apos;" />
+</log>

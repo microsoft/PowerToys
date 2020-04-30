@@ -1,0 +1,280 @@
+<Externals>
+<cr access="none" depth="0" pod="true" kind="struct" name="tagRECT" id="228fff524dba0a110b01fceb645a8261_25ee654fc4d784a3297c9294d415801a" file="4" linestart="324" lineend="329">
+<fl name="left" id="228fff524dba0a110b01fceb645a8261_68763ea24d656ab6c4c6088ea2589e6f" file="4" linestart="325" lineend="325" isLiteral="true" access="public" proto="LONG">
+<Tdef>
+<bt name="long"/>
+</Tdef>
+</fl>
+<fl name="top" id="228fff524dba0a110b01fceb645a8261_5f4e52ba5259de9ed0e5f971be56b24f" file="4" linestart="326" lineend="326" isLiteral="true" access="public" proto="LONG">
+<Tdef>
+<bt name="long"/>
+</Tdef>
+</fl>
+<fl name="right" id="228fff524dba0a110b01fceb645a8261_b80ec37a097701582ac5286a54f80527" file="4" linestart="327" lineend="327" isLiteral="true" access="public" proto="LONG">
+<Tdef>
+<bt name="long"/>
+</Tdef>
+</fl>
+<fl name="bottom" id="228fff524dba0a110b01fceb645a8261_a58902863f5a3722f017ccd6b10ded4a" file="4" linestart="328" lineend="328" isLiteral="true" access="public" proto="LONG">
+<Tdef>
+<bt name="long"/>
+</Tdef>
+</fl>
+</cr>
+<cr access="none" depth="0" pod="true" kind="struct" name="HBITMAP__" id="228fff524dba0a110b01fceb645a8261_cd3e4402bde94221fa20f02a2a45fe4c" file="4" linestart="288" lineend="288"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="HDC__" id="228fff524dba0a110b01fceb645a8261_94bef293ec909b1e002d49c3d83c54ec" file="4" linestart="291" lineend="291"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="_SHFILEINFOW" id="c7b2aae4682928ba4d0e12fe0e2f01e7_ab779bcbe90aeaa787f09949474b4b82" file="5" linestart="277" lineend="283"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="tagBITMAPINFOHEADE" id="d11c91ecd0cf0ccac086e5141d1f6fe8_1176743bd112e94e7f10e05cb90d3dd3" file="6" linestart="1437" lineend="1449">
+<fl name="biSize" id="d11c91ecd0cf0ccac086e5141d1f6fe8_7a78408902b869b68c9534b77d05c6d7" file="6" linestart="1438" lineend="1438" isLiteral="true" access="public" proto="DWORD">
+<Tdef>
+<bt name="unsigned long"/>
+</Tdef>
+</fl>
+<fl name="biWidth" id="d11c91ecd0cf0ccac086e5141d1f6fe8_135b35380c49c40f33dd1a7cd63fc944" file="6" linestart="1439" lineend="1439" isLiteral="true" access="public" proto="LONG">
+<Tdef>
+<bt name="long"/>
+</Tdef>
+</fl>
+<fl name="biHeight" id="d11c91ecd0cf0ccac086e5141d1f6fe8_cf2815f688152b275ef7b65aeeac68f6" file="6" linestart="1440" lineend="1440" isLiteral="true" access="public" proto="LONG">
+<Tdef>
+<bt name="long"/>
+</Tdef>
+</fl>
+<fl name="biPlanes" id="d11c91ecd0cf0ccac086e5141d1f6fe8_ece3cf4ca6ef0d0ff7cf1b9f20f328de" file="6" linestart="1441" lineend="1441" isLiteral="true" access="public" proto="WORD">
+<Tdef>
+<bt name="unsigned short"/>
+</Tdef>
+</fl>
+<fl name="biBitCount" id="d11c91ecd0cf0ccac086e5141d1f6fe8_0c6b2987c327804c0292c840b24bfa74" file="6" linestart="1442" lineend="1442" isLiteral="true" access="public" proto="WORD">
+<Tdef>
+<bt name="unsigned short"/>
+</Tdef>
+</fl>
+<fl name="biCompression" id="d11c91ecd0cf0ccac086e5141d1f6fe8_88cc89523d9a48097106735671f16fb2" file="6" linestart="1443" lineend="1443" isLiteral="true" access="public" proto="DWORD">
+<Tdef>
+<bt name="unsigned long"/>
+</Tdef>
+</fl>
+</cr>
+<cr access="none" depth="0" pod="true" kind="struct" name="tagBITMAPINFO" id="d11c91ecd0cf0ccac086e5141d1f6fe8_9fad0d6d33f010260f6dbc4bee35ee95" file="6" linestart="1458" lineend="1461">
+<fl name="bmiHeader" id="d11c91ecd0cf0ccac086e5141d1f6fe8_ae3fa3175f4ded104e6f5ed33b7e1f75" file="6" linestart="1459" lineend="1459" isLiteral="true" access="public" proto="BITMAPINFOHEADER">
+<Tdef>
+<ety>
+<rt>
+<cr id="d11c91ecd0cf0ccac086e5141d1f6fe8_1176743bd112e94e7f10e05cb90d3dd3"/>
+</rt>
+</ety>
+</Tdef>
+</fl>
+<c name="tagBITMAPINFO" id="d11c91ecd0cf0ccac086e5141d1f6fe8_4af8d0c5bc2bf3f91675c25d7f74763e" file="6" linestart="1458" lineend="1458" implicit="true" access="public" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+</c>
+</cr>
+<cr namespace="std" access="none" depth="0" kind="class" name="unique_ptr" id="c85e10c42164337d7b6f7da3e4d2d278_1e604289ea34d6bd69454849772d0a37" file="7" linestart="160" lineend="396"/>
+<ctps Spec="&lt;type-parameter-0-0 [], type-parameter-0-1&gt;" namespace="std" access="none" depth="0" kind="class" name="unique_ptr" id="c85e10c42164337d7b6f7da3e4d2d278_62cb728f13c990ed9a37ff4966cc0481" file="7" linestart="402" lineend="665">
+<m name="get" id="c85e10c42164337d7b6f7da3e4d2d278_d61260d8bd08542a76b6f4cc8828fe6a" file="7" linestart="592" lineend="594" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" const="true" proto="pointer">
+<Tdef>
+<DependentName/>
+</Tdef>
+</fpt>
+</m>
+</ctps>
+<cr access="none" kind="struct" name="_IMAGELIST" id="954b415975925701387df2d8846a81f7_26485c3ac9cc7214e3bbd02af3276327" file="8" linestart="2644" lineend="2644"/>
+<f name="memset" id="e342a3d0dfceb8fa56039de0d0e5f225_01f056bb0311297cf054435e7cf7ee95" file="9" linestart="74" lineend="74" extC="true" imported="true" access="none">
+<fpt cc="cdecl" proto="void *">
+<pt>
+<bt name="void"/>
+</pt>
+</fpt>
+<p name="" proto="void *" isPtr="true" isLiteral="true" access2="none">
+<pt>
+<bt name="void"/>
+</pt>
+</p>
+<p name="" proto="int" isLiteral="true" isPrimitive="true" access2="none">
+<bt name="int"/>
+</p>
+<p name="" proto="size_t" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned long long"/>
+</Tdef>
+</p>
+</f>
+<f name="SelectObject" id="d11c91ecd0cf0ccac086e5141d1f6fe8_ed4e1e68f86b82a605688c266299249d" file="6" linestart="3404" lineend="3404" extC="true" access="none">
+<Attributed/>
+<p name="" proto="HDC" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="228fff524dba0a110b01fceb645a8261_94bef293ec909b1e002d49c3d83c54ec"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+<p name="" proto="HGDIOBJ" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<bt name="void"/>
+</pt>
+</Tdef>
+</p>
+</f>
+<f name="CreateCompatibleDC" id="d11c91ecd0cf0ccac086e5141d1f6fe8_97d66bb27cacfc858d28ae5638ada704" file="6" linestart="3015" lineend="3015" extC="true" access="none">
+<Attributed/>
+<p name="" proto="HDC" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="228fff524dba0a110b01fceb645a8261_94bef293ec909b1e002d49c3d83c54ec"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+</f>
+<f name="CreateDIBSection" id="d11c91ecd0cf0ccac086e5141d1f6fe8_dfc00ccbdb0bbe20bc975531e8fdd6a7" file="6" linestart="3027" lineend="3028" extC="true" access="none">
+<Attributed/>
+<p name="" proto="HDC" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="228fff524dba0a110b01fceb645a8261_94bef293ec909b1e002d49c3d83c54ec"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+<p name="" proto="const BITMAPINFO *" isPtr="true" isLiteral="true" access2="none">
+<pt>
+<QualType const="true">
+<Tdef>
+<ety>
+<rt>
+<cr id="d11c91ecd0cf0ccac086e5141d1f6fe8_9fad0d6d33f010260f6dbc4bee35ee95"/>
+</rt>
+</ety>
+</Tdef>
+</QualType>
+</pt>
+</p>
+<p name="" proto="UINT" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned int"/>
+</Tdef>
+</p>
+<p name="" proto="void **" isPtr="true" isLiteral="true" access2="none">
+<pt>
+<pt>
+<bt name="void"/>
+</pt>
+</pt>
+</p>
+<p name="" proto="HANDLE" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<bt name="void"/>
+</pt>
+</Tdef>
+</p>
+<p name="" proto="DWORD" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned long"/>
+</Tdef>
+</p>
+</f>
+<f name="DeleteDC" id="d11c91ecd0cf0ccac086e5141d1f6fe8_ffaf97bdbcf8ac7f60ec7353a1c82510" file="6" linestart="3087" lineend="3087" extC="true" access="none">
+<Attributed/>
+<p name="" proto="HDC" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="228fff524dba0a110b01fceb645a8261_94bef293ec909b1e002d49c3d83c54ec"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+</f>
+<f name="DeleteObject" id="d11c91ecd0cf0ccac086e5141d1f6fe8_610b73c4b1e2bda4b0757ef8eeaf0c22" file="6" linestart="3090" lineend="3090" extC="true" access="none">
+<Attributed/>
+<p name="" proto="HGDIOBJ" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<bt name="void"/>
+</pt>
+</Tdef>
+</p>
+</f>
+<f name="GetDC" id="d6af13e926cf1e04cead7eb9027d8e57_3caef3f327a58b760f95932ff9040311" file="10" linestart="3776" lineend="3776" extC="true" access="none">
+<Attributed/>
+<p name="" proto="HWND" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="228fff524dba0a110b01fceb645a8261_5847ad6971421591ff7da5abaa1ba10e"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+</f>
+<f name="ReleaseDC" id="d6af13e926cf1e04cead7eb9027d8e57_dd06e7d56a596271a1c5bfeb28930fbf" file="10" linestart="4139" lineend="4139" extC="true" access="none">
+<Attributed/>
+<p name="" proto="HWND" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="228fff524dba0a110b01fceb645a8261_5847ad6971421591ff7da5abaa1ba10e"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+<p name="" proto="HDC" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="228fff524dba0a110b01fceb645a8261_94bef293ec909b1e002d49c3d83c54ec"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+</f>
+<f namespace="std" name="make_unique" id="c85e10c42164337d7b6f7da3e4d2d278_8497454dc034df3d202702c87b70897c" file="7" linestart="835" lineend="837" access="none" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="typename _MakeUniq&lt;_Tp&gt;::__array">
+<DependentName/>
+</fpt>
+<p name="__num" proto="size_t" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned long long"/>
+</Tdef>
+</p>
+</f>
+<ft name="make_unique" id="c85e10c42164337d7b6f7da3e4d2d278_04d109bb6d930ce724082fe4e9619ed8" file="7" linestart="834" lineend="837">
+<template_parameters>
+<ttp name="_Tp" id="c85e10c42164337d7b6f7da3e4d2d278_e3d760b91f38b5c188b71b2eb0eb409d" depth="0" index="0" proto="type-parameter-0-0"/>
+</template_parameters>
+<f namespace="std" name="make_unique" id="c85e10c42164337d7b6f7da3e4d2d278_8497454dc034df3d202702c87b70897c" file="7" linestart="835" lineend="837" access="none" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="typename _MakeUniq&lt;_Tp&gt;::__array">
+<DependentName/>
+</fpt>
+<p name="__num" proto="size_t" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned long long"/>
+</Tdef>
+</p>
+</f>
+</ft>
+</Externals>

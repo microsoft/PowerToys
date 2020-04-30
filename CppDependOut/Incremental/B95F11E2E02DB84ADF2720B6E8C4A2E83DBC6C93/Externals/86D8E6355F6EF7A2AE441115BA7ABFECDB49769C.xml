@@ -1,0 +1,69 @@
+<Externals>
+<cr access="none" depth="0" pod="true" kind="struct" name="_IMAGE_DOS_HEADER" id="4d9027295e8207e170809a59b84611cc_e3cd0928cefec93e590f2be3a6acda60" file="3" linestart="3096" lineend="3116"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="HINSTANCE__" id="228fff524dba0a110b01fceb645a8261_b32e96600c60ce6f9f5e96e0415e5440" file="4" linestart="307" lineend="307"/>
+<cr namespace="std.filesystem.__cxx11" access="none" depth="0" kind="class" name="path" id="93ea427d8b58a2a073f702d0e48f9c15_58ebd722337279435d830db92277b9a7" file="5" linestart="66" lineend="501" previous="32ea3a6f99ee5419990e6a50196a33da_58ebd722337279435d830db92277b9a7">
+<tm parent="93ea427d8b58a2a073f702d0e48f9c15_58ebd722337279435d830db92277b9a7" access="none" depth="1" kind="struct" name="__is_encoded_char" id="93ea427d8b58a2a073f702d0e48f9c15_be97769ae3b1c0fa600d1411251d12ae" file="5" linestart="68" lineend="69">
+<template_parameters>
+<ttp name="_CharT" id="93ea427d8b58a2a073f702d0e48f9c15_138e96361ab7400ea011eee4ce73bd28" depth="0" index="0" proto="type-parameter-0-0"/>
+</template_parameters>
+</tm>
+<tm access="none" kind="struct" name="__constructible_from" id="93ea427d8b58a2a073f702d0e48f9c15_b78c3c845ea507ca90167fb2d7c03c2c" file="5" linestart="94" lineend="95">
+<template_parameters>
+<ttp name="_Tp1" id="93ea427d8b58a2a073f702d0e48f9c15_93f9cbe0a0789f3f6edeef8220004bae" depth="0" index="0" proto="type-parameter-0-0"/>
+<ttp name="_Tp2" id="93ea427d8b58a2a073f702d0e48f9c15_a5dd1aeaac86771d56dacc298890c903" depth="0" index="1" proto="type-parameter-0-1"/>
+</template_parameters>
+</tm>
+<e parent="93ea427d8b58a2a073f702d0e48f9c15_58ebd722337279435d830db92277b9a7" access="public" name="format" id="93ea427d8b58a2a073f702d0e48f9c15_898bc4925d9420e853623f157d49cd18" file="5" linestart="159" lineend="159">
+<promotion_type>
+<bt name="int"/>
+</promotion_type>
+<integer_type>
+<bt name="int"/>
+</integer_type>
+</e>
+<c name="path" id="93ea427d8b58a2a073f702d0e48f9c15_8f27705051e2b7b62b11e0dfa8a32ba3" file="5" linestart="165" lineend="165" copyconst="true" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+<p name="__p" proto="const std::filesystem::__cxx11::path &amp;" isRef="true" isLiteral="true" access2="none">
+<lrf>
+<QualType const="true">
+<rt>
+<cr id="93ea427d8b58a2a073f702d0e48f9c15_58ebd722337279435d830db92277b9a7"/>
+</rt>
+</QualType>
+</lrf>
+</p>
+</c>
+<e parent="93ea427d8b58a2a073f702d0e48f9c15_58ebd722337279435d830db92277b9a7" access="private" name="_Type" id="93ea427d8b58a2a073f702d0e48f9c15_5d8922c8c0cf617b2709133f20282483" file="5" linestart="395" lineend="397" scoped="true" fixed="true">
+<promotion_type>
+<bt name="int"/>
+</promotion_type>
+<integer_type>
+<bt name="unsigned char"/>
+</integer_type>
+</e>
+<e parent="93ea427d8b58a2a073f702d0e48f9c15_58ebd722337279435d830db92277b9a7" access="private" name="_Split" id="93ea427d8b58a2a073f702d0e48f9c15_acd998f424d355c8c7584f87711b937a" file="5" linestart="404" lineend="404" scoped="true" fixed="true">
+<promotion_type>
+<bt name="int"/>
+</promotion_type>
+<integer_type>
+<bt name="int"/>
+</integer_type>
+</e>
+<tm access="none" kind="struct" name="_Cvt" id="93ea427d8b58a2a073f702d0e48f9c15_5b049eab3ab6dfaf8788232c3361aa8f" file="5" linestart="422" lineend="423">
+<template_parameters>
+<ttp name="_CharT" id="93ea427d8b58a2a073f702d0e48f9c15_fe93ec81cc7aa75f0e2f50972a3c325b" depth="0" index="0" proto="type-parameter-0-0"/>
+</template_parameters>
+</tm>
+</cr>
+<cr access="none" depth="0" kind="class" name="CTestFileHelper" id="1a752bf1b87d08ccc934a739efddaeb9_31a44570d28c7285ba4705cf73aa2c8b" file="2" linestart="7" lineend="24">
+<fl name="_tempDirectory" id="1a752bf1b87d08ccc934a739efddaeb9_6eea96725a987a71a86993b78d335562" file="2" linestart="23" lineend="23" access="private" proto="std::filesystem::path">
+<ety>
+<rt>
+<cr id="93ea427d8b58a2a073f702d0e48f9c15_58ebd722337279435d830db92277b9a7"/>
+</rt>
+</ety>
+</fl>
+</cr>
+</Externals>

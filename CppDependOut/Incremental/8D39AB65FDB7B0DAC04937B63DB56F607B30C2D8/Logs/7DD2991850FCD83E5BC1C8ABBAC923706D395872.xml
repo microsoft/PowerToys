@@ -1,0 +1,5 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\notifications/framework.h" line="6" col="10" msg="&apos;winrt/Windows.ApplicationModel.Background.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\notifications/framework.h" line="7" col="10" msg="&apos;winrt/Windows.Foundation.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\notifications/framework.h" line="8" col="10" msg="&apos;winrt/Windows.UI.Notifications.h&apos; file not found" />
+</log>

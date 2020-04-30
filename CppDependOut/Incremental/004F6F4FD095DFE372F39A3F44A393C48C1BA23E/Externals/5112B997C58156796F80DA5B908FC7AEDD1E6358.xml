@@ -1,0 +1,121 @@
+<Externals>
+<cr access="none" depth="0" pod="true" kind="struct" name="HKEY__" id="228fff524dba0a110b01fceb645a8261_468bb9fd62aacca3b67fc1e438257ec9" file="3" linestart="297" lineend="297"/>
+<cr access="none" depth="0" kind="class" name="RegistryWrapperIface" id="5bbbb5733ff51f897d1fe4b43d1c9877_26c662fc3c9302ead6a4fea2df365414" file="4" linestart="3" lineend="14"/>
+<f name="RegOpenKeyExW" id="7f9d8c079f163980046867080fd12f42_0a6ff78e2d59100b519296d09a0492d4" file="5" linestart="200" lineend="200" extC="true" access="none">
+<Attributed/>
+<p name="" proto="HKEY" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="228fff524dba0a110b01fceb645a8261_468bb9fd62aacca3b67fc1e438257ec9"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+<p name="" proto="LPCWSTR" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<QualType const="true">
+<Tdef>
+<bt name="wchar_t"/>
+</Tdef>
+</QualType>
+</pt>
+</Tdef>
+</p>
+<p name="" proto="DWORD" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned long"/>
+</Tdef>
+</p>
+<p name="" proto="REGSAM" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<Tdef>
+<Tdef>
+<bt name="unsigned long"/>
+</Tdef>
+</Tdef>
+</Tdef>
+</p>
+<p name="" proto="PHKEY" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="228fff524dba0a110b01fceb645a8261_468bb9fd62aacca3b67fc1e438257ec9"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</pt>
+</Tdef>
+</p>
+</f>
+<f name="RegSetValueExW" id="7f9d8c079f163980046867080fd12f42_3c1a538c2feb2dd6c2ec2118390605e3" file="5" linestart="258" lineend="260" extC="true" access="none">
+<Attributed/>
+<p name="" proto="HKEY" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="228fff524dba0a110b01fceb645a8261_468bb9fd62aacca3b67fc1e438257ec9"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+<p name="" proto="LPCWSTR" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<QualType const="true">
+<Tdef>
+<bt name="wchar_t"/>
+</Tdef>
+</QualType>
+</pt>
+</Tdef>
+</p>
+<p name="" proto="DWORD" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned long"/>
+</Tdef>
+</p>
+<p name="" proto="DWORD" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned long"/>
+</Tdef>
+</p>
+<p name="" proto="const BYTE *" isPtr="true" isLiteral="true" access2="none">
+<pt>
+<QualType const="true">
+<Tdef>
+<bt name="unsigned char"/>
+</Tdef>
+</QualType>
+</pt>
+</p>
+<p name="" proto="DWORD" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned long"/>
+</Tdef>
+</p>
+</f>
+<f name="RegCloseKey" id="7f9d8c079f163980046867080fd12f42_e45f7b0cb2c579980411a1cc53ca77f7" file="5" linestart="133" lineend="133" extC="true" access="none">
+<Attributed/>
+<p name="" proto="HKEY" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="228fff524dba0a110b01fceb645a8261_468bb9fd62aacca3b67fc1e438257ec9"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+</f>
+</Externals>

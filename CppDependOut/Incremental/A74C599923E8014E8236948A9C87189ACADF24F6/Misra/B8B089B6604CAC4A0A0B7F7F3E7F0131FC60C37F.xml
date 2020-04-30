@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cppdepend-plugin tool="Misra">
+<file path="d:\new folder (2)\powertoys-1\src\common\animation.h"><violation beginline="24" endline="24" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="26" endline="26" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="26" endline="26" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="27" endline="27" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="27" endline="27" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="27" endline="27" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="28" endline="28" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="26" endline="26" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="27" endline="27" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\common\common.h"><violation beginline="13" endline="13" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="61" endline="61" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="13" endline="13" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\common\d2d_svg.h"><violation beginline="13" endline="13" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="13" endline="13" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="13" endline="13" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="13" endline="13" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="17" endline="17" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="17" endline="17" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="17" endline="17" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="17" endline="17" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="17" endline="17" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="17" endline="17" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="17" endline="17" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="17" endline="17" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="16" endline="16" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="15" endline="15" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\common\monitors.h"><violation beginline="34" endline="34" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="5" endline="5" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="10" endline="10" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="12" endline="12" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="35" endline="35" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="15" endline="15" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="15" endline="15" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="14" endline="14" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="14" endline="14" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="5" endline="5" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="15" endline="15" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="14" endline="14" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\common\start_visible.h"><violation beginline="3" endline="3" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\common\windows_colors.h"><violation beginline="22" endline="22" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="22" endline="22" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\modules\shortcut_guide\keyboard_state.h"><violation beginline="2" endline="2" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\modules\shortcut_guide\overlay_window.cpp"><violation beginline="70" endline="70" rule="Rule6-6-5" ruleset="Statements">
+</violation><violation beginline="313" endline="313" rule="Rule6-6-5" ruleset="Statements">
+</violation><violation beginline="325" endline="325" rule="Rule6-4-4" ruleset="Statements">
+</violation><violation beginline="401" endline="401" rule="Rule10-3-2" ruleset="Classes">
+</violation><violation beginline="406" endline="406" rule="Rule10-3-2" ruleset="Classes">
+</violation><violation beginline="426" endline="426" rule="Rule10-3-2" ruleset="Classes">
+</violation><violation beginline="481" endline="481" rule="Rule10-3-2" ruleset="Classes">
+</violation><violation beginline="510" endline="510" rule="Rule10-3-2" ruleset="Classes">
+</violation><violation beginline="607" endline="607" rule="Rule6-6-5" ruleset="Statements">
+</violation><violation beginline="622" endline="622" rule="Rule5-14-1" ruleset="Statements">
+</violation><violation beginline="673" endline="673" rule="Rule5-14-1" ruleset="Statements">
+</violation><violation beginline="682" endline="682" rule="Rule5-14-1" ruleset="Statements">
+</violation><violation beginline="682" endline="682" rule="Rule5-14-1" ruleset="Statements">
+</violation><violation beginline="697" endline="697" rule="Rule5-14-1" ruleset="Statements">
+</violation><violation beginline="795" endline="795" rule="Rule6-4-4" ruleset="Statements">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\modules\shortcut_guide\overlay_window.h"><violation beginline="52" endline="52" rule="Rule10-3-2" ruleset="Classes">
+</violation><violation beginline="58" endline="58" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\modules\shortcut_guide\shortcut_guide.h"><violation beginline="33" endline="33" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\modules\shortcut_guide\trace.h"><violation beginline="8" endline="8" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\compiler\include\c++\chrono"><violation beginline="616" endline="616" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="866" endline="866" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="866" endline="866" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="616" endline="616" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\shellapi.h"><violation beginline="306" endline="306" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\windef.h"><violation beginline="324" endline="324" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="324" endline="324" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="324" endline="324" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="324" endline="324" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\winuser.h"><violation beginline="4283" endline="4283" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="4471" endline="4471" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="3764" endline="3764" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file></cppdepend-plugin>

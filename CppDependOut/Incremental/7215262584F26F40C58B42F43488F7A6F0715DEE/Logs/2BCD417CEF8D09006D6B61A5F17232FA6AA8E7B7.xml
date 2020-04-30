@@ -1,0 +1,4 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\Telemetry\ProjectTelemetry.h" line="3" col="10" msg="&apos;TraceLoggingProvider.h&apos; file not found" />
+ <error level="warning" id="warn_cxx98_compat_no_newline_eof" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\pch.cpp" line="2" col="35" msg="C++98 requires newline at end of file" />
+</log>

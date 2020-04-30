@@ -1,0 +1,263 @@
+<Externals>
+<cr access="none" depth="0" pod="true" kind="struct" name="_GUID" id="4d9027295e8207e170809a59b84611cc_f89893169cf243a3173a4e8aff5ae00c" file="3" linestart="1796" lineend="1801"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="HBITMAP__" id="228fff524dba0a110b01fceb645a8261_cd3e4402bde94221fa20f02a2a45fe4c" file="4" linestart="288" lineend="288"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="HICON__" id="228fff524dba0a110b01fceb645a8261_888bbf4b5945f94542db33c420f409be" file="4" linestart="296" lineend="296"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="HMENU__" id="228fff524dba0a110b01fceb645a8261_78296f1e75f19b646c8167a55da27936" file="4" linestart="305" lineend="305"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="HINSTANCE__" id="228fff524dba0a110b01fceb645a8261_b32e96600c60ce6f9f5e96e0415e5440" file="4" linestart="307" lineend="307"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="HWND__" id="228fff524dba0a110b01fceb645a8261_5847ad6971421591ff7da5abaa1ba10e" file="4" linestart="315" lineend="315"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="tagMENUITEMINFOW" id="d6af13e926cf1e04cead7eb9027d8e57_63ba1a53cadc51ea3de397621fafb45e" file="5" linestart="2934" lineend="2949">
+<fl name="cbSize" id="d6af13e926cf1e04cead7eb9027d8e57_bc612c8a548e4d33428e08a73c466bf7" file="5" linestart="2935" lineend="2935" isLiteral="true" access="public" proto="UINT">
+<Tdef>
+<bt name="unsigned int"/>
+</Tdef>
+</fl>
+<fl name="fMask" id="d6af13e926cf1e04cead7eb9027d8e57_8ef944bd428e9fc54890e18523974f66" file="5" linestart="2936" lineend="2936" isLiteral="true" access="public" proto="UINT">
+<Tdef>
+<bt name="unsigned int"/>
+</Tdef>
+</fl>
+<fl name="fType" id="d6af13e926cf1e04cead7eb9027d8e57_803761801e438f69dbdeff32f7bd8d18" file="5" linestart="2937" lineend="2937" isLiteral="true" access="public" proto="UINT">
+<Tdef>
+<bt name="unsigned int"/>
+</Tdef>
+</fl>
+<fl name="fState" id="d6af13e926cf1e04cead7eb9027d8e57_bd712c6ce9fc93265850cb75d30f28dc" file="5" linestart="2938" lineend="2938" isLiteral="true" access="public" proto="UINT">
+<Tdef>
+<bt name="unsigned int"/>
+</Tdef>
+</fl>
+<fl name="wID" id="d6af13e926cf1e04cead7eb9027d8e57_398c396e0a6b0bdc09ff5e0fa56ebf6e" file="5" linestart="2939" lineend="2939" isLiteral="true" access="public" proto="UINT">
+<Tdef>
+<bt name="unsigned int"/>
+</Tdef>
+</fl>
+<fl name="dwTypeData" id="d6af13e926cf1e04cead7eb9027d8e57_03153e5e578dd956cf58ae3ca699037b" file="5" linestart="2944" lineend="2944" isPtr="true" isLiteral="true" access="public" proto="LPWSTR">
+<Tdef>
+<pt>
+<Tdef>
+<bt name="wchar_t"/>
+</Tdef>
+</pt>
+</Tdef>
+</fl>
+<fl name="hbmpItem" id="d6af13e926cf1e04cead7eb9027d8e57_d846508f66ba82f72b2162d1e8ce8fd9" file="5" linestart="2947" lineend="2947" isPtr="true" isLiteral="true" access="public" proto="HBITMAP">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="228fff524dba0a110b01fceb645a8261_cd3e4402bde94221fa20f02a2a45fe4c"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</fl>
+<c name="tagMENUITEMINFOW" id="d6af13e926cf1e04cead7eb9027d8e57_105d349ab6046be008b9e7d3a7488bde" file="5" linestart="2934" lineend="2934" implicit="true" access="public" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+</c>
+</cr>
+<cr access="none" depth="1" kind="interface" name="IBindCtx" id="d00d02ed27e4a0507f43e96e0c344c2f_7a579d0015bbe6d130e693a4c7a38565" file="6" linestart="620" lineend="635" previous="a6a61018e22cb82116e37f397528ec1f_1c8fb9edf52b7f478cca6f95e697fc35">
+<base access="public">
+<rt>
+<cr id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</base>
+</cr>
+<cr access="none" depth="0" kind="struct" name="IUnknown" id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119" file="7" linestart="24" lineend="29"/>
+<cr access="none" depth="2" kind="interface" name="IStream" id="d00d02ed27e4a0507f43e96e0c344c2f_6017432a34fd76e07e5ba20e9a2352df" file="6" linestart="478" lineend="494" previous="a6a61018e22cb82116e37f397528ec1f_6b739537a592c4490ee1e449fc2da8ea">
+<base access="public">
+<rt>
+<cr id="d00d02ed27e4a0507f43e96e0c344c2f_2151a76ba54511981bdc847f39fa519f"/>
+</rt>
+</base>
+<m name="Release" id="d00d02ed27e4a0507f43e96e0c344c2f_bfd4b871b3b180b20bb01867e6c26d80" file="6" linestart="482" lineend="482" pure="true" virtual="true" access="public">
+<Attributed/>
+</m>
+</cr>
+<cr access="none" depth="1" kind="interface" name="IContextMenu" id="50275327740f99a7b25462114bd2256a_87aa002dad55965ee8646c24b9588410" file="8" linestart="590" lineend="598">
+<base access="public">
+<rt>
+<cr id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</base>
+<c name="IContextMenu" id="50275327740f99a7b25462114bd2256a_96eab31a9e119598ddf0463236caab57" file="8" linestart="590" lineend="590" implicit="true" access="public" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+</c>
+</cr>
+<cr access="none" depth="1" kind="interface" name="IShellExtInit" id="50275327740f99a7b25462114bd2256a_bab769590f8a94ba1330ca802dadca8a" file="8" linestart="733" lineend="739">
+<base access="public">
+<rt>
+<cr id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</base>
+<c name="IShellExtInit" id="50275327740f99a7b25462114bd2256a_512dd19cd49aef99fca34fc0f75d3c6f" file="8" linestart="733" lineend="733" implicit="true" access="public" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+</c>
+</cr>
+<cr access="none" depth="0" kind="class" name="CSettings" id="fe568b0ab8f3c602238756d2ec65148c_6f23501a35a7d5a24bcad210579b9b4a" file="9" linestart="5" lineend="131">
+<m name="GetEnabled" id="fe568b0ab8f3c602238756d2ec65148c_42c59a805dd4a2f4fa1746f3d5574cc9" file="9" linestart="12" lineend="16" access="public" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="bool">
+<bt name="bool"/>
+</fpt>
+</m>
+<m name="GetShowIconOnMenu" id="fe568b0ab8f3c602238756d2ec65148c_e7c83117e5570f94ffa45dba02b033e4" file="9" linestart="24" lineend="27" access="public" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" const="true" proto="bool">
+<bt name="bool"/>
+</fpt>
+</m>
+</cr>
+<cr access="none" depth="0" pod="true" kind="class" name="Trace" id="9c2df643854cad8aae2bd6f63bb70650_8fb9d53b5587e218b6c209feb50e0764" file="10" linestart="3" lineend="18">
+<m name="Invoked" id="9c2df643854cad8aae2bd6f63bb70650_e7f461984d00ff68f7b65bfbe6d44844" file="10" linestart="7" lineend="7" access="public" storage="static">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+</m>
+</cr>
+<cr access="none" depth="0" pod="true" kind="struct" name="InvokeStruct" id="bd4a7e687a77e9a132094e81cc276650_060c56451476b18937ff94fddff2149a" file="1" linestart="15" lineend="19">
+<c name="InvokeStruct" id="bd4a7e687a77e9a132094e81cc276650_eb11a8d964878f7f50a162c05dd93c0b" file="1" linestart="15" lineend="15" implicit="true" access="public" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+</c>
+</cr>
+<f name="GetLastError" id="c475ed4c0e2545c00c9867663d20e5e1_9c41c0c7b8d2563e1f5e7978c11684a8" file="11" linestart="1755" lineend="1755" extC="true" access="none">
+<Attributed/>
+</f>
+<f name="DeleteObject" id="d11c91ecd0cf0ccac086e5141d1f6fe8_610b73c4b1e2bda4b0757ef8eeaf0c22" file="12" linestart="3090" lineend="3090" extC="true" access="none">
+<Attributed/>
+<p name="" proto="HGDIOBJ" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<bt name="void"/>
+</pt>
+</Tdef>
+</p>
+</f>
+<f name="DestroyIcon" id="d6af13e926cf1e04cead7eb9027d8e57_cb8f4cdda38f586d8c1e668b14acef1d" file="5" linestart="3607" lineend="3607" extC="true" access="none">
+<Attributed/>
+<p name="" proto="HICON" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="228fff524dba0a110b01fceb645a8261_888bbf4b5945f94542db33c420f409be"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+</f>
+<f name="LoadImageW" id="d6af13e926cf1e04cead7eb9027d8e57_13275b5477478ce4f7d9fbc3ef6168b8" file="5" linestart="4011" lineend="4011" extC="true" access="none">
+<Attributed/>
+<p name="" proto="HINSTANCE" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="228fff524dba0a110b01fceb645a8261_b32e96600c60ce6f9f5e96e0415e5440"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+<p name="" proto="LPCWSTR" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<QualType const="true">
+<Tdef>
+<bt name="wchar_t"/>
+</Tdef>
+</QualType>
+</pt>
+</Tdef>
+</p>
+<p name="" proto="UINT" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned int"/>
+</Tdef>
+</p>
+<p name="" proto="int" isLiteral="true" isPrimitive="true" access2="none">
+<bt name="int"/>
+</p>
+<p name="" proto="int" isLiteral="true" isPrimitive="true" access2="none">
+<bt name="int"/>
+</p>
+<p name="" proto="UINT" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned int"/>
+</Tdef>
+</p>
+</f>
+<f name="InsertMenuItemW" id="d6af13e926cf1e04cead7eb9027d8e57_5c5d71dc0fefd9b2c6a58277f8ef0162" file="5" linestart="3945" lineend="3945" extC="true" access="none">
+<Attributed/>
+<p name="" proto="HMENU" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<ety>
+<rt>
+<cr id="228fff524dba0a110b01fceb645a8261_78296f1e75f19b646c8167a55da27936"/>
+</rt>
+</ety>
+</pt>
+</Tdef>
+</p>
+<p name="" proto="UINT" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned int"/>
+</Tdef>
+</p>
+<p name="" proto="BOOL" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<Tdef>
+<bt name="int"/>
+</Tdef>
+</Tdef>
+</p>
+<p name="" proto="LPCMENUITEMINFOW" isPtr="true" isLiteral="true" access2="none">
+<Tdef>
+<pt>
+<QualType const="true">
+<Tdef>
+<ety>
+<rt>
+<cr id="d6af13e926cf1e04cead7eb9027d8e57_63ba1a53cadc51ea3de397621fafb45e"/>
+</rt>
+</ety>
+</Tdef>
+</QualType>
+</pt>
+</Tdef>
+</p>
+</f>
+<f name="ModuleAddRef" id="840080d45cb3900c3cca2eea1b935679_6a4146247f72624add4e6a33fed603f4" file="13" linestart="16" lineend="16" access="none">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+</f>
+<f name="ModuleRelease" id="840080d45cb3900c3cca2eea1b935679_65f79756f3036924ace7839c6dbef3ee" file="13" linestart="17" lineend="17" access="none">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+</f>
+<v namespace="std" name="nothrow" proto="const std::nothrow_t" const="true" isLiteral="true" id="a65ec3d77817118cb62686576c5d1002_ef8f5ab1bea7b627185464f4bf264146" file="14" linestart="93" lineend="93" storage="extern" access2="none">
+<QualType const="true">
+<rt>
+<cr id="a65ec3d77817118cb62686576c5d1002_0301b6996895370532450fe8e1b088d4"/>
+</rt>
+</QualType>
+</v>
+<f name="CSettingsInstance" id="fe568b0ab8f3c602238756d2ec65148c_9895fc3330bc849c1ec55c3f43b14eb1" file="9" linestart="133" lineend="133" access="none">
+<fpt cc="cdecl" proto="CSettings &amp;">
+<lrf>
+<rt>
+<cr id="fe568b0ab8f3c602238756d2ec65148c_6f23501a35a7d5a24bcad210579b9b4a"/>
+</rt>
+</lrf>
+</fpt>
+</f>
+</Externals>

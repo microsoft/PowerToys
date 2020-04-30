@@ -1,0 +1,94 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="1" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="3" col="10" msg="&apos;dxgi1_3.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="4" col="10" msg="&apos;d3d11_2.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="5" col="10" msg="&apos;d2d1_3.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="6" col="10" msg="&apos;d2d1_3helper.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="7" col="10" msg="&apos;d2d1helper.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="8" col="10" msg="&apos;dwrite.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="9" col="10" msg="&apos;dcomp.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="10" col="10" msg="&apos;dwmapi.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/d2d_window.h" line="2" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/d2d_window.h" line="4" col="10" msg="&apos;dxgi1_3.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/d2d_window.h" line="5" col="10" msg="&apos;d3d11_2.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/d2d_window.h" line="6" col="10" msg="&apos;d2d1_3.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/d2d_window.h" line="7" col="10" msg="&apos;d2d1_3helper.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/d2d_window.h" line="8" col="10" msg="&apos;d2d1helper.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/d2d_window.h" line="9" col="10" msg="&apos;dcomp.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/d2d_window.h" line="10" col="10" msg="&apos;dwmapi.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/d2d_svg.h" line="2" col="10" msg="&apos;d2d1_3.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/d2d_svg.h" line="3" col="10" msg="&apos;d2d1_3helper.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/d2d_svg.h" line="4" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="10" col="29" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="16" col="63" msg="use of undeclared identifier &apos;WS_EX_NOREDIRECTIONBITMAP&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="24" col="28" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="25" col="28" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="28" col="5" msg="use of undeclared identifier &apos;WINRT_VERIFY&apos;" />
+ <error level="warning" id="warn_impcast_integer_sign" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="40" col="38" msg="implicit conversion changes signedness: &apos;UINT&apos; (aka &apos;unsigned int&apos;) to &apos;int&apos;" />
+ <error level="warning" id="warn_impcast_integer_sign" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="40" col="41" msg="implicit conversion changes signedness: &apos;UINT&apos; (aka &apos;unsigned int&apos;) to &apos;int&apos;" />
+ <error level="warning" id="warn_impcast_integer_sign" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="40" col="44" msg="implicit conversion changes signedness: &apos;UINT&apos; (aka &apos;unsigned int&apos;) to &apos;int&apos;" />
+ <error level="warning" id="warn_impcast_integer_sign" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="40" col="51" msg="implicit conversion changes signedness: &apos;UINT&apos; (aka &apos;unsigned int&apos;) to &apos;int&apos;" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="58" col="5" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="63" col="42" msg="use of undeclared identifier &apos;D2D1_DEBUG_LEVEL_INFORMATION&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="67" col="9" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="ext_token_used" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="68" col="48" msg="extension used" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="67" col="48" msg="use of undeclared identifier &apos;D2D1_FACTORY_TYPE_MULTI_THREADED&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="73" col="14" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="74" col="18" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="75" col="20" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="76" col="19" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="77" col="18" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="78" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="78" col="44" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="79" col="44" msg="use of undeclared identifier &apos;D3D_DRIVER_TYPE_HARDWARE&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="80" col="44" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="81" col="44" msg="use of undeclared identifier &apos;D3D11_CREATE_DEVICE_BGRA_SUPPORT&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="82" col="44" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="84" col="44" msg="use of undeclared identifier &apos;D3D11_SDK_VERSION&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="86" col="44" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="87" col="44" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="88" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="ext_token_used" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="88" col="53" msg="extension used" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="89" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="ext_token_used" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="89" col="48" msg="extension used" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="90" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="91" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="91" col="58" msg="use of undeclared identifier &apos;D2D1_DEVICE_CONTEXT_OPTIONS_NONE&apos;" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="98" col="5" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="110" col="29" msg="use of undeclared identifier &apos;DXGI_FORMAT_B8G8R8A8_UNORM&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="111" col="34" msg="use of undeclared identifier &apos;DXGI_USAGE_RENDER_TARGET_OUTPUT&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="112" col="33" msg="use of undeclared identifier &apos;DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="115" col="32" msg="use of undeclared identifier &apos;DXGI_ALPHA_MODE_PREMULTIPLIED&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="118" col="23" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="119" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="121" col="70" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="123" col="26" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="124" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="ext_token_used" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="125" col="51" msg="extension used" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="128" col="26" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="129" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="131" col="26" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="132" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="133" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="134" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="136" col="20" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="137" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="ext_token_used" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="137" col="56" msg="extension used" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="139" col="40" msg="use of undeclared identifier &apos;D2D1_ALPHA_MODE_PREMULTIPLIED&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="140" col="37" msg="use of undeclared identifier &apos;DXGI_FORMAT_B8G8R8A8_UNORM&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="141" col="32" msg="use of undeclared identifier &apos;D2D1_BITMAP_OPTIONS_TARGET&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="141" col="61" msg="use of undeclared identifier &apos;D2D1_BITMAP_OPTIONS_CANNOT_DRAW&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="143" col="18" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="144" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="153" col="5" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="158" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="159" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="160" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="165" col="5" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="170" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="171" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="172" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="192" col="9" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="198" col="45" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\common\d2d_window.cpp" line="198" col="72" msg="use of old-style cast" />
+</log>

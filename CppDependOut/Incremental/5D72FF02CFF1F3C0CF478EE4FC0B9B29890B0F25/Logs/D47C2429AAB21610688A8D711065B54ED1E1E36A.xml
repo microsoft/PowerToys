@@ -1,0 +1,94 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="1" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="3" col="10" msg="&apos;dxgi1_3.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="4" col="10" msg="&apos;d3d11_2.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="5" col="10" msg="&apos;d2d1_3.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="6" col="10" msg="&apos;d2d1_3helper.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="7" col="10" msg="&apos;d2d1helper.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="8" col="10" msg="&apos;dwrite.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="9" col="10" msg="&apos;dcomp.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="10" col="10" msg="&apos;dwmapi.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/d2d_svg.h" line="2" col="10" msg="&apos;d2d1_3.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/d2d_svg.h" line="3" col="10" msg="&apos;d2d1_3helper.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/d2d_svg.h" line="4" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="6" col="11" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="7" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_ref_non_value" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="7" col="20" msg="&apos;IStream&apos; does not refer to a value" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="7" col="29" msg="use of undeclared identifier &apos;svg_stream&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="8" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="12" col="49" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="13" col="49" msg="use of undeclared identifier &apos;svg_stream&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="15" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="16" col="9" msg="use of undeclared identifier &apos;svg_stream&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="17" col="9" msg="use of undeclared identifier &apos;D2D1&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="20" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="20" col="20" msg="use of undeclared identifier &apos;ID2D1SvgElement&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="20" col="37" msg="use of undeclared identifier &apos;root&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="21" col="18" msg="use of undeclared identifier &apos;root&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="23" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="23" col="26" msg="use of undeclared identifier &apos;root&apos;" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="24" col="17" msg="use of old-style cast" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="25" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="25" col="26" msg="use of undeclared identifier &apos;root&apos;" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="26" col="18" msg="use of old-style cast" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="33" col="17" msg="use of undeclared identifier &apos;D2D1&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="34" col="29" msg="use of undeclared identifier &apos;D2D1&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="37" col="18" msg="use of undeclared identifier &apos;min&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="40" col="22" msg="use of undeclared identifier &apos;min&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="42" col="29" msg="use of undeclared identifier &apos;D2D1&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="42" col="77" msg="use of undeclared identifier &apos;D2D1&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="43" col="29" msg="use of undeclared identifier &apos;D2D1&apos;" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="43" col="59" msg="use of old-style cast" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="43" col="69" msg="use of old-style cast" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="49" col="5" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="49" col="22" msg="use of undeclared identifier &apos;D2D1&apos;" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="50" col="5" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="50" col="22" msg="use of undeclared identifier &apos;D2D1&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="51" col="24" msg="use of undeclared identifier &apos;ID2D1SvgElement&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="51" col="42" msg="use of undeclared identifier &apos;element&apos;" />
+ <error level="error" id="err_missing_type_specifier" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="51" col="52" msg="C++ requires a type specifier for all declarations" />
+ <error level="warning" id="warn_cxx98_compat_lambda" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="51" col="62" msg="lambda expressions are incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="57" col="13" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="57" col="28" msg="use of undeclared identifier &apos;ID2D1SvgPaint&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="57" col="43" msg="use of undeclared identifier &apos;paint&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="58" col="49" msg="use of undeclared identifier &apos;paint&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="59" col="13" msg="use of undeclared identifier &apos;paint&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="62" col="17" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="65" col="9" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="65" col="24" msg="use of undeclared identifier &apos;ID2D1SvgElement&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="65" col="41" msg="use of undeclared identifier &apos;sub&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="66" col="32" msg="use of undeclared identifier &apos;sub&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="67" col="16" msg="use of undeclared identifier &apos;sub&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="69" col="21" msg="use of undeclared identifier &apos;sub&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="70" col="13" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="70" col="28" msg="use of undeclared identifier &apos;ID2D1SvgElement&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="70" col="45" msg="use of undeclared identifier &apos;next&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="71" col="35" msg="use of undeclared identifier &apos;sub&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="71" col="46" msg="use of undeclared identifier &apos;next&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="72" col="13" msg="use of undeclared identifier &apos;sub&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="72" col="19" msg="use of undeclared identifier &apos;next&apos;" />
+ <error level="warning" id="warn_unused_parameter" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="51" col="83" msg="unused parameter &apos;element&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="75" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="75" col="20" msg="use of undeclared identifier &apos;ID2D1SvgElement&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="75" col="37" msg="use of undeclared identifier &apos;root&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="76" col="18" msg="use of undeclared identifier &apos;root&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="77" col="13" msg="use of undeclared identifier &apos;root&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="93" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="93" col="20" msg="use of undeclared identifier &apos;ID2D1SvgElement&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="93" col="37" msg="use of undeclared identifier &apos;element&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="94" col="34" msg="use of undeclared identifier &apos;element&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="96" col="10" msg="use of undeclared identifier &apos;element&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="98" col="5" msg="use of undeclared identifier &apos;element&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="98" col="54" msg="use of undeclared identifier &apos;D2D1_SVG_DISPLAY&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="98" col="98" msg="use of undeclared identifier &apos;D2D1_SVG_DISPLAY&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="102" col="1" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="102" col="16" msg="use of undeclared identifier &apos;ID2D1SvgElement&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="104" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="104" col="20" msg="use of undeclared identifier &apos;ID2D1SvgElement&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="104" col="37" msg="use of undeclared identifier &apos;element&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="105" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="105" col="59" msg="use of undeclared identifier &apos;element&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="106" col="12" msg="use of undeclared identifier &apos;element&apos;" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="112" col="5" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\common\d2d_svg.cpp" line="113" col="5" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+</log>

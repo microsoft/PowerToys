@@ -1,0 +1,21 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="1" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="3" col="10" msg="&apos;dxgi1_3.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="4" col="10" msg="&apos;d3d11_2.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="5" col="10" msg="&apos;d2d1_3.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="6" col="10" msg="&apos;d2d1_3helper.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="7" col="10" msg="&apos;d2d1helper.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="8" col="10" msg="&apos;dwrite.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="9" col="10" msg="&apos;dcomp.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/pch.h" line="10" col="10" msg="&apos;dwmapi.h&apos; file not found" />
+ <error level="warning" id="warn_initializer_out_of_order" file="D:\New folder (2)\PowerToys-1\src\common\animation.cpp" line="5" col="5" msg="field &apos;duration&apos; will be initialized after field &apos;start_value&apos;" />
+ <error level="warning" id="warn_initializer_out_of_order" file="D:\New folder (2)\PowerToys-1\src\common\animation.cpp" line="5" col="45" msg="field &apos;end_value&apos; will be initialized after field &apos;start&apos;" />
+ <error level="warning" id="warn_ctor_parm_shadows_field" file="D:\New folder (2)\PowerToys-1\src\common\animation.cpp" line="4" col="29" msg="constructor parameter &apos;duration&apos; shadows the field &apos;duration&apos; of &apos;Animation&apos;" />
+ <error level="warning" id="warn_ctor_parm_shadows_field" file="D:\New folder (2)\PowerToys-1\src\common\animation.cpp" line="4" col="46" msg="constructor parameter &apos;start&apos; shadows the field &apos;start&apos; of &apos;Animation&apos;" />
+ <error level="warning" id="warn_decl_shadow" file="D:\New folder (2)\PowerToys-1\src\common\animation.cpp" line="11" col="30" msg="declaration shadows a field of &apos;Animation&apos;" />
+ <error level="warning" id="warn_decl_shadow" file="D:\New folder (2)\PowerToys-1\src\common\animation.cpp" line="16" col="30" msg="declaration shadows a field of &apos;Animation&apos;" />
+ <error level="warning" id="warn_decl_shadow" file="D:\New folder (2)\PowerToys-1\src\common\animation.cpp" line="16" col="47" msg="declaration shadows a field of &apos;Animation&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\animation.cpp" line="25" col="16" msg="use of undeclared identifier &apos;pow&apos;" />
+ <error level="warning" id="warn_unreachable_default" file="D:\New folder (2)\PowerToys-1\src\common\animation.cpp" line="35" col="5" msg="default label in switch which covers all enumeration values" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\common\animation.cpp" line="42" col="5" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+</log>

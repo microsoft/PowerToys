@@ -1,0 +1,102 @@
+<Externals>
+<cr access="none" depth="0" pod="true" kind="struct" name="_GUID" id="4d9027295e8207e170809a59b84611cc_f89893169cf243a3173a4e8aff5ae00c" file="4" linestart="1796" lineend="1801"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="_IMAGE_DOS_HEADER" id="4d9027295e8207e170809a59b84611cc_e3cd0928cefec93e590f2be3a6acda60" file="4" linestart="3096" lineend="3116"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="HBITMAP__" id="228fff524dba0a110b01fceb645a8261_cd3e4402bde94221fa20f02a2a45fe4c" file="5" linestart="288" lineend="288"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="HMENU__" id="228fff524dba0a110b01fceb645a8261_78296f1e75f19b646c8167a55da27936" file="5" linestart="305" lineend="305"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="HINSTANCE__" id="228fff524dba0a110b01fceb645a8261_b32e96600c60ce6f9f5e96e0415e5440" file="5" linestart="307" lineend="307"/>
+<cr access="none" depth="0" kind="struct" name="IUnknown" id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119" file="6" linestart="24" lineend="29"/>
+<cr access="none" depth="1" kind="interface" name="IClassFactory" id="fea5ad472c9c146700639e2cc6165bd7_e5ff6f4cdda008c74f5676c7a4bf09a6" file="6" linestart="36" lineend="43">
+<base access="public">
+<rt>
+<cr id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</base>
+</cr>
+<cr access="none" depth="1" kind="interface" name="IBindCtx" id="d00d02ed27e4a0507f43e96e0c344c2f_7a579d0015bbe6d130e693a4c7a38565" file="7" linestart="620" lineend="635" previous="a6a61018e22cb82116e37f397528ec1f_1c8fb9edf52b7f478cca6f95e697fc35">
+<base access="public">
+<rt>
+<cr id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</base>
+</cr>
+<cr access="none" depth="1" kind="interface" name="IContextMenu" id="50275327740f99a7b25462114bd2256a_87aa002dad55965ee8646c24b9588410" file="8" linestart="590" lineend="598">
+<base access="public">
+<rt>
+<cr id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</base>
+</cr>
+<cr access="none" depth="1" kind="interface" name="IShellExtInit" id="50275327740f99a7b25462114bd2256a_bab769590f8a94ba1330ca802dadca8a" file="8" linestart="733" lineend="739">
+<base access="public">
+<rt>
+<cr id="fea5ad472c9c146700639e2cc6165bd7_6b30c935079209804768d2401c9e7119"/>
+</rt>
+</base>
+</cr>
+<cr access="public" depth="2" kind="class" name="CPowerRenameMenu" id="b43c2eb64b9c8b32dbc608df85e80877_aba41d794134331b71de31b898ad66e8" file="3" linestart="4" lineend="75">
+<base access="public">
+<rt>
+<cr id="50275327740f99a7b25462114bd2256a_bab769590f8a94ba1330ca802dadca8a"/>
+</rt>
+</base>
+<base access="public">
+<rt>
+<cr id="50275327740f99a7b25462114bd2256a_87aa002dad55965ee8646c24b9588410"/>
+</rt>
+</base>
+</cr>
+<cr access="none" depth="0" kind="class" name="PowertoyModuleIface" id="5d422ad2288de4eb4acac8032cfda16e_f6de960c4b71fa203792b1b7000bea4b" file="9" linestart="33" lineend="76"/>
+<cr access="none" depth="0" pod="true" kind="class" name="Trace" id="9c2df643854cad8aae2bd6f63bb70650_8fb9d53b5587e218b6c209feb50e0764" file="10" linestart="3" lineend="18">
+<m name="RegisterProvider" id="9c2df643854cad8aae2bd6f63bb70650_d99fd214d0bee60a94248cf04d50cb57" file="10" linestart="5" lineend="5" access="public" storage="static">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+</m>
+<m name="UnregisterProvider" id="9c2df643854cad8aae2bd6f63bb70650_e44b3c96f0c3d768b33b500280b3f78f" file="10" linestart="6" lineend="6" access="public" storage="static">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+</m>
+</cr>
+<tm namespace="std" access="none" depth="0" kind="struct" name="__atomic_base" id="98d671e173464ca81a1f4ff411a47be7_1a69d332916db3ab00084ee5f2f5b473" file="11" linestart="237" lineend="560" previous="98d671e173464ca81a1f4ff411a47be7_1a69d332916db3ab00084ee5f2f5b473">
+<template_parameters>
+<ttp name="_ITp" id="98d671e173464ca81a1f4ff411a47be7_c009b56c84295c8778bfbbf3fde2b976" depth="0" index="0" proto="type-parameter-0-0"/>
+</template_parameters>
+<cr namespace="std" access="none" depth="0" kind="struct" name="__atomic_base" id="98d671e173464ca81a1f4ff411a47be7_1a69d332916db3ab00084ee5f2f5b473" file="11" linestart="238" lineend="560" previous="98d671e173464ca81a1f4ff411a47be7_1a69d332916db3ab00084ee5f2f5b473">
+<cr access="public" kind="struct" name="__atomic_base" id="98d671e173464ca81a1f4ff411a47be7_20198f5c0d3763b9ccf5d05933133d0c" file="11" linestart="238" lineend="238"/>
+<cv name="operator __int_type" id="98d671e173464ca81a1f4ff411a47be7_44f331f1f3adba28d982a3cfd8a6f5eb" file="11" linestart="258" lineend="259" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" const="true" proto="__int_type">
+<Tdef>
+<ttp/>
+</Tdef>
+</fpt>
+</cv>
+</cr>
+</tm>
+<cr namespace="std" access="none" depth="0" kind="struct" name="atomic" id="3cad2073208e4923f515e818c19c832a_a546984e5c6076b3e2f91aa61efac865" file="12" linestart="174" lineend="347" previous="3cad2073208e4923f515e818c19c832a_a546984e5c6076b3e2f91aa61efac865"/>
+<cts Spec="&lt;unsigned long&gt;" namespace="std" access="none" depth="1" kind="struct" name="atomic" id="3cad2073208e4923f515e818c19c832a_f81fcd6e6eb454661dc0d5c3a1694b9c" file="12" linestart="729" lineend="749">
+<base access="public">
+<tss>
+<templatebase id="98d671e173464ca81a1f4ff411a47be7_1a69d332916db3ab00084ee5f2f5b473"/>
+<template_arguments>
+<bt name="unsigned long"/>
+</template_arguments>
+</tss>
+</base>
+<c name="atomic" id="3cad2073208e4923f515e818c19c832a_e31df1d3f7f12eaee1e19e459c1cf184" file="12" linestart="741" lineend="741" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+<p name="__i" proto="__integral_type" isLiteral="true" isPrimitive="true" access2="none">
+<Tdef>
+<bt name="unsigned long"/>
+</Tdef>
+</p>
+</c>
+</cts>
+<f name="ModuleAddRef" id="840080d45cb3900c3cca2eea1b935679_6a4146247f72624add4e6a33fed603f4" file="13" linestart="16" lineend="16" access="none">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+</f>
+</Externals>

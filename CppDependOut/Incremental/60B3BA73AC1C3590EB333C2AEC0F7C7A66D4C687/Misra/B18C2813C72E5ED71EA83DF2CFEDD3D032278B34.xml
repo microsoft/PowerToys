@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cppdepend-plugin tool="Misra">
+<file path="d:\new folder (2)\powertoys-1\src\modules\powerrename\lib\powerrenamemanager.cpp"><violation beginline="515" endline="515" rule="Rule6-6-5" ruleset="Statements">
+</violation><violation beginline="520" endline="520" rule="Rule18-4-1" ruleset="Library">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\modules\powerrename\lib\powerrenamemanager.h"><violation beginline="73" endline="73" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="74" endline="74" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="62" endline="62" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="63" endline="63" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\objbase.h"><violation beginline="158" endline="158" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\winbase.h"><violation beginline="2326" endline="2326" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="2467" endline="2467" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\winuser.h"><violation beginline="4096" endline="4096" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="4311" endline="4311" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="3635" endline="3635" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file></cppdepend-plugin>

@@ -1,0 +1,11 @@
+d:\new folder (2)\powertoys-1\src\modules\fancyzones\tests\unittests\pch.h
+d:\new folder (2)\powertoys-1\src\modules\fancyzones\tests\unittests\util.h
+d:\new folder (2)\powertoys-1\src\modules\fancyzones\tests\unittests\fancyzones.spec.cpp
+d:\new folder (2)\powertoys-1\src\modules\fancyzones\tests\unittests\fancyzonessettings.spec.cpp
+d:\new folder (2)\powertoys-1\src\modules\fancyzones\tests\unittests\jsonhelpers.tests.cpp
+d:\new folder (2)\powertoys-1\src\modules\fancyzones\tests\unittests\pch.cpp
+d:\new folder (2)\powertoys-1\src\modules\fancyzones\tests\unittests\util.spec.cpp
+d:\new folder (2)\powertoys-1\src\modules\fancyzones\tests\unittests\util.cpp
+d:\new folder (2)\powertoys-1\src\modules\fancyzones\tests\unittests\zone.spec.cpp
+d:\new folder (2)\powertoys-1\src\modules\fancyzones\tests\unittests\zoneset.spec.cpp
+d:\new folder (2)\powertoys-1\src\modules\fancyzones\tests\unittests\zonewindow.spec.cpp

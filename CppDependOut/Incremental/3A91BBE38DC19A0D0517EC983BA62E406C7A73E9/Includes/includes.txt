@@ -1,0 +1,6 @@
+d:\new folder (2)\powertoys-1\src\modules\powerrename\ui\resource.h
+d:\new folder (2)\powertoys-1\src\modules\powerrename\uwpui\stdafx.h
+d:\new folder (2)\powertoys-1\src\modules\powerrename\uwpui\targetver.h
+d:\new folder (2)\powertoys-1\src\modules\powerrename\dll\powerrenameext.cpp
+d:\new folder (2)\powertoys-1\src\modules\powerrename\uwpui\powerrenameuwpui.cpp
+d:\new folder (2)\powertoys-1\src\modules\powerrename\uwpui\stdafx.cpp

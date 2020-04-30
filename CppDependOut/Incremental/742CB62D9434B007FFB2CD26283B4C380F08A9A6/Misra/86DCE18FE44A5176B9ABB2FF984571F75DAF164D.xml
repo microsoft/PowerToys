@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cppdepend-plugin tool="Misra">
+<file path="d:\new folder (2)\powertoys-1\src\common\settings_objects.h"><violation beginline="21" endline="21" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="20" endline="20" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="57" endline="57" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\modules\imageresizer\dll\dllmain.cpp"><violation beginline="12" endline="12" rule="Rule4-10-2" ruleset="Expressions">
+</violation><violation beginline="16" endline="16" rule="Rule6-4-4" ruleset="Statements">
+</violation><violation beginline="51" endline="51" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="120" endline="120" rule="Rule18-4-1" ruleset="Library">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\modules\imageresizer\dll\settings.h"><violation beginline="6" endline="6" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\modules\imageresizer\dll\trace.h"><violation beginline="6" endline="6" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="7" endline="7" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file></cppdepend-plugin>

@@ -1,0 +1,22 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll/targetver.h" line="3" col="10" msg="&apos;winsdkver.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll/stdafx.h" line="15" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll/stdafx.h" line="16" col="10" msg="&apos;atlbase.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll/stdafx.h" line="17" col="10" msg="&apos;atlcom.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll/stdafx.h" line="18" col="10" msg="&apos;atlfile.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll/stdafx.h" line="19" col="10" msg="&apos;atlstr.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\Telemetry\ProjectTelemetry.h" line="3" col="10" msg="&apos;TraceLoggingProvider.h&apos; file not found" />
+ <error level="warning" id="warn_redundant_parens_around_declarator" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\ImageResizerExt.cpp" line="6" col="21" msg="redundant parentheses surrounding declarator" />
+ <error level="error" id="err_invalid_token_after_toplevel_declarator" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\ImageResizerExt.cpp" line="6" col="32" msg="expected &apos;;&apos; after top level declarator" />
+ <error level="error" id="err_no_member" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\ImageResizerExt.cpp" line="8" col="23" msg="no member named &apos;DllCanUnloadNow&apos; in &apos;CImageResizerExtModule&apos;" />
+ <error level="error" id="err_expected_unqualified_id" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\ImageResizerExt.cpp" line="11" col="16" msg="expected unqualified-id" />
+ <error level="error" id="err_no_member" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\ImageResizerExt.cpp" line="18" col="23" msg="no member named &apos;DllRegisterServer&apos; in &apos;CImageResizerExtModule&apos;" />
+ <error level="warning" id="warn_missing_prototype" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\ImageResizerExt.cpp" line="16" col="8" msg="no previous prototype for function &apos;DllRegisterServer&apos;" />
+ <error level="error" id="err_no_member" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\ImageResizerExt.cpp" line="23" col="23" msg="no member named &apos;DllUnregisterServer&apos; in &apos;CImageResizerExtModule&apos;" />
+ <error level="warning" id="warn_missing_prototype" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\ImageResizerExt.cpp" line="21" col="8" msg="no previous prototype for function &apos;DllUnregisterServer&apos;" />
+ <error level="error" id="err_expected" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\ImageResizerExt.cpp" line="26" col="51" msg="expected &apos;)&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\ImageResizerExt.cpp" line="31" col="9" msg="use of undeclared identifier &apos;pszCmdLine&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\ImageResizerExt.cpp" line="33" col="49" msg="use of undeclared identifier &apos;_countof&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\ImageResizerExt.cpp" line="33" col="23" msg="use of undeclared identifier &apos;pszCmdLine&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\imageresizer\dll\ImageResizerExt.cpp" line="35" col="13" msg="use of undeclared identifier &apos;ATL&apos;" />
+</log>

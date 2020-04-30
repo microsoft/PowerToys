@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cppdepend-plugin tool="Misra">
+<file path="d:\new folder (2)\powertoys-1\src\modules\interface\powertoy_module_interface.h"><violation beginline="72" endline="72" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="67" endline="67" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\runner\lowlevel_keyboard_event.h"><violation beginline="4" endline="4" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="5" endline="5" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\runner\system_menu_helper.h"><violation beginline="21" endline="21" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="43" endline="43" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="20" endline="20" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="43" endline="43" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="25" endline="25" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="43" endline="43" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="26" endline="26" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="43" endline="43" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="18" endline="18" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="43" endline="43" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\runner\win_hook_event.h"><violation beginline="5" endline="5" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="6" endline="6" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\winuser.h"><violation beginline="3790" endline="3790" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file></cppdepend-plugin>

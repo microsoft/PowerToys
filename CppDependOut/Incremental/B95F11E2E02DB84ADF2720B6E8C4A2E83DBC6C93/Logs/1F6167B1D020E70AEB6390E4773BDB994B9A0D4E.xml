@@ -1,0 +1,11 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests/stdafx.h" line="5" col="10" msg="&apos;atlbase.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests/stdafx.h" line="8" col="10" msg="&apos;CppUnitTest.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\lib/stdafx.h" line="14" col="10" msg="&apos;atlbase.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\lib/stdafx.h" line="15" col="10" msg="&apos;strsafe.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\lib/stdafx.h" line="16" col="10" msg="&apos;pathcch.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\telemetry\ProjectTelemetry.h" line="3" col="10" msg="&apos;TraceLoggingProvider.h&apos; file not found" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\MockPowerRenameManagerEvents.cpp" line="5" col="62" msg="use of undeclared identifier &apos;__in&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\MockPowerRenameManagerEvents.cpp" line="5" col="80" msg="use of undeclared identifier &apos;__deref_out&apos;" />
+ <error level="error" id="err_invalid_token_after_toplevel_declarator" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\MockPowerRenameManagerEvents.cpp" line="5" col="103" msg="expected &apos;;&apos; after top level declarator" />
+</log>

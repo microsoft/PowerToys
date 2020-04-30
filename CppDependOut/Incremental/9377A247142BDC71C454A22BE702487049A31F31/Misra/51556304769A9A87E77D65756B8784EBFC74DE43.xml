@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cppdepend-plugin tool="Misra">
+<file path="d:\new folder (2)\powertoys-1\src\modules\interface\powertoy_module_interface.h"><violation beginline="75" endline="75" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="51" endline="51" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="51" endline="51" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="45" endline="45" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\runner\powertoys_events.h"><violation beginline="14" endline="14" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="25" endline="25" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="11" endline="11" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="25" endline="25" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="10" endline="10" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="25" endline="25" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="13" endline="13" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="25" endline="25" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\runner\system_menu_helper.h"><violation beginline="23" endline="23" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="43" endline="43" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\winbase.h"><violation beginline="1624" endline="1624" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file></cppdepend-plugin>

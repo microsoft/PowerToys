@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cppdepend-plugin tool="Misra">
+<file path="d:\new folder (2)\powertoys-1\src\common\common.h"><violation beginline="46" endline="46" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="89" endline="89" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="43" endline="43" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="64" endline="64" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="64" endline="64" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\common\dpi_aware.h"><violation beginline="11" endline="11" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\common\notifications.h"><violation beginline="13" endline="13" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="15" endline="15" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="49" endline="49" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\common\notifications\fancyzones_notifications.h"><violation beginline="16" endline="16" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\common\winstore.h"><violation beginline="11" endline="11" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="11" endline="11" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\runner\action_runner_utils.h"><violation beginline="6" endline="6" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\runner\general_settings.h"><violation beginline="25" endline="25" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\runner\main.cpp"><violation beginline="52" endline="52" rule="Rule4-10-2" ruleset="Expressions">
+</violation><violation beginline="82" endline="82" rule="Rule4-10-2" ruleset="Expressions">
+</violation><violation beginline="48" endline="48" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="145" endline="145" rule="emptycatch" ruleset="Statements">
+</violation><violation beginline="184" endline="184" rule="Rule5-14-1" ruleset="Statements">
+</violation><violation beginline="186" endline="186" rule="Rule6-6-5" ruleset="Statements">
+</violation><violation beginline="188" endline="188" rule="Rule5-14-1" ruleset="Statements">
+</violation><violation beginline="218" endline="218" rule="Rule6-6-5" ruleset="Statements">
+</violation><violation beginline="245" endline="245" rule="Rule6-4-4" ruleset="Statements">
+</violation><violation beginline="176" endline="176" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="248" endline="248" rule="Rule6-6-5" ruleset="Statements">
+</violation><violation beginline="197" endline="197" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="250" endline="250" rule="Rule6-4-4" ruleset="Statements">
+</violation><violation beginline="209" endline="209" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="80" endline="80" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="80" endline="80" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="80" endline="80" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="80" endline="80" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="86" endline="86" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\runner\powertoy_module.h"><violation beginline="52" endline="52" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\runner\powertoys_events.h"><violation beginline="25" endline="25" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\runner\restart_elevated.h"><violation beginline="2" endline="2" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="4" endline="4" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="5" endline="5" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="6" endline="6" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\runner\system_menu_helper.h"><violation beginline="43" endline="43" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\runner\trace.h"><violation beginline="8" endline="8" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="10" endline="10" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="9" endline="9" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\runner\tray_icon.h"><violation beginline="3" endline="3" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="5" endline="5" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\runner\update_state.h"><violation beginline="15" endline="15" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\runner\update_utils.h"><violation beginline="5" endline="5" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="3" endline="3" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\compiler\include\c++\bits\fs_dir.h"><violation beginline="401" endline="401" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="405" endline="405" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="416" endline="416" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="379" endline="379" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="377" endline="377" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="145" endline="145" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="145" endline="145" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="145" endline="145" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\compiler\include\c++\bits\fs_path.h"><violation beginline="547" endline="547" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="321" endline="321" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\compiler\include\c++\stdexcept"><violation beginline="220" endline="220" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="220" endline="220" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\shellapi.h"><violation beginline="291" endline="291" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\shlwapi.h"><violation beginline="308" endline="308" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\wchar.h"><violation beginline="411" endline="411" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="417" endline="417" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="415" endline="415" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="411" endline="411" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="415" endline="415" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\winbase.h"><violation beginline="923" endline="923" rule="Rule9-5-1" ruleset="Classes">
+</violation><violation beginline="939" endline="939" rule="Rule9-5-1" ruleset="Classes">
+</violation><violation beginline="1124" endline="1124" rule="Rule9-5-1" ruleset="Classes">
+</violation><violation beginline="1175" endline="1175" rule="Rule9-5-1" ruleset="Classes">
+</violation><violation beginline="1203" endline="1203" rule="Rule9-5-1" ruleset="Classes">
+</violation><violation beginline="1768" endline="1768" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="2309" endline="2309" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="1755" endline="1755" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="1908" endline="1908" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="1650" endline="1650" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\winnt.h"><violation beginline="2466" endline="2466" rule="Rule9-5-1" ruleset="Classes">
+</violation><violation beginline="2452" endline="2452" rule="Rule9-5-1" ruleset="Classes">
+</violation><violation beginline="3628" endline="3628" rule="Rule9-5-1" ruleset="Classes">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\winuser.h"><violation beginline="3720" endline="3720" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="4104" endline="4104" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="4049" endline="4049" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="4049" endline="4049" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="4049" endline="4049" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file></cppdepend-plugin>

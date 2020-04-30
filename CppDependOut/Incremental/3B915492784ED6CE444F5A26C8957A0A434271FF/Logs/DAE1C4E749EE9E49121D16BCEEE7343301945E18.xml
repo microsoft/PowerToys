@@ -1,0 +1,14 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\notifications_winrt/pch.h" line="3" col="10" msg="&apos;winrt/Windows.ApplicationModel.Background.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\notifications_winrt/pch.h" line="4" col="10" msg="&apos;winrt/Windows.Data.Xml.Dom.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\notifications_winrt/pch.h" line="5" col="10" msg="&apos;winrt/Windows.Foundation.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\notifications_winrt/pch.h" line="6" col="10" msg="&apos;winrt/Windows.Foundation.Collections.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\notifications_winrt/pch.h" line="7" col="10" msg="&apos;winrt/Windows.UI.Notifications.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\notifications_winrt\handler_functions.cpp" line="5" col="10" msg="&apos;winrt/Windows.System.h&apos; file not found" />
+ <error level="warning" id="warn_cxx98_compat_alias_declaration" file="D:\New folder (2)\PowerToys-1\src\common\notifications_winrt\handler_functions.cpp" line="7" col="28" msg="alias declarations are incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\common\notifications_winrt\handler_functions.cpp" line="16" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="warn_cxx98_compat_generalized_initializer_lists" file="D:\New folder (2)\PowerToys-1\src\common\notifications_winrt\handler_functions.cpp" line="16" col="58" msg="generalized initializer lists are incompatible with C++98" />
+ <error level="error" id="err_no_member" file="D:\New folder (2)\PowerToys-1\src\common\notifications_winrt\handler_functions.cpp" line="18" col="35" msg="no member named &apos;stoi&apos; in namespace &apos;std&apos;" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\common\notifications_winrt\handler_functions.cpp" line="19" col="5" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\common\notifications_winrt\handler_functions.cpp" line="21" col="11" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+</log>

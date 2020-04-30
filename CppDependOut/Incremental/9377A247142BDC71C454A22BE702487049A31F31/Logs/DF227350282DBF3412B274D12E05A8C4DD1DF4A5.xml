@@ -1,0 +1,82 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="2" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="4" col="10" msg="&apos;dxgi1_3.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="5" col="10" msg="&apos;d3d11_2.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="6" col="10" msg="&apos;d2d1_3.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="7" col="10" msg="&apos;d2d1_3helper.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="8" col="10" msg="&apos;d2d1helper.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="9" col="10" msg="&apos;dwrite.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="10" col="10" msg="&apos;dcomp.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="11" col="10" msg="&apos;dwmapi.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\Telemetry\ProjectTelemetry.h" line="3" col="10" msg="&apos;TraceLoggingProvider.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="27" col="10" msg="&apos;winrt/Windows.ApplicationModel.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner/pch.h" line="28" col="10" msg="&apos;winrt/Windows.Storage.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil/common.h" line="88" col="10" msg="&apos;sal.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil/result_macros.h" line="123" col="10" msg="&apos;strsafe.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil/result_macros.h" line="124" col="10" msg="&apos;intrin.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil/result_macros.h" line="125" col="10" msg="&apos;new.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil/wistd_functional.h" line="40" col="10" msg="&apos;intrin.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil/wistd_functional.h" line="41" col="10" msg="&apos;new.h&apos; file not found" />
+ <error level="warning" id="warn_doc_tparam_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil/resource.h" line="908" col="13" msg="template parameter &apos;ValueType:&apos; not found in the template declaration" />
+ <error level="warning" id="warn_doc_tparam_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil/resource.h" line="909" col="13" msg="template parameter &apos;ArrayDeleter:&apos; not found in the template declaration" />
+ <error level="warning" id="warn_doc_tparam_not_found" file="D:\New folder (2)\PowerToys-1\packages\Microsoft.Windows.ImplementationLibrary.1.0.190716.2\include\wil/resource.h" line="910" col="13" msg="template parameter &apos;ElementDeleter:&apos; not found in the template declaration" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/json.h" line="3" col="10" msg="&apos;winrt/Windows.Foundation.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/json.h" line="4" col="10" msg="&apos;winrt/Windows.Data.Json.h&apos; file not found" />
+ <error level="warning" id="pp_nonportable_path" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="6" col="10" msg="non-portable path to file &apos;&lt;lmcons.h&gt;&apos;; specified path differs in case from file name on disk" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="8" col="10" msg="&apos;comdef.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="9" col="10" msg="&apos;taskschd.h&apos; file not found" />
+ <error level="warning" id="pp_nonportable_path" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="13" col="10" msg="non-portable path to file &apos;&lt;shlobj.h&gt;&apos;; specified path differs in case from file name on disk" />
+ <error level="warning" id="warn_cxx98_compat_variadic_macro" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="17" col="29" msg="variadic macros are incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_variadic_macro" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="22" col="33" msg="variadic macros are incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="67" col="5" msg="use of undeclared identifier &apos;wcscat_s&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="68" col="5" msg="use of undeclared identifier &apos;wcscat_s&apos;" />
+ <error level="warning" id="warn_zero_as_null_pointer_constant" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="76" col="23" msg="zero as null pointer constant" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="80" col="27" msg="use of undeclared identifier &apos;CLSID_TaskScheduler&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="83" col="27" msg="use of undeclared identifier &apos;IID_ITaskService&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="88" col="28" msg="use of undeclared identifier &apos;_variant_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="88" col="42" msg="use of undeclared identifier &apos;_variant_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="88" col="56" msg="use of undeclared identifier &apos;_variant_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="88" col="70" msg="use of undeclared identifier &apos;_variant_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="93" col="30" msg="use of undeclared identifier &apos;_bstr_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="98" col="34" msg="use of undeclared identifier &apos;_bstr_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="100" col="40" msg="use of undeclared identifier &apos;_bstr_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="100" col="65" msg="use of undeclared identifier &apos;_variant_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="111" col="35" msg="use of undeclared identifier &apos;_bstr_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="133" col="31" msg="use of undeclared identifier &apos;_bstr_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="145" col="44" msg="use of undeclared identifier &apos;_bstr_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="159" col="41" msg="use of undeclared identifier &apos;TASK_TRIGGER_LOGON&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="163" col="13" msg="use of undeclared identifier &apos;IID_ILogonTrigger&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="167" col="36" msg="use of undeclared identifier &apos;_bstr_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="171" col="39" msg="use of undeclared identifier &apos;_bstr_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="175" col="40" msg="use of undeclared identifier &apos;_bstr_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="192" col="40" msg="use of undeclared identifier &apos;TASK_ACTION_EXEC&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="198" col="13" msg="use of undeclared identifier &apos;IID_IExecAction&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="203" col="36" msg="use of undeclared identifier &apos;_bstr_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="216" col="33" msg="use of undeclared identifier &apos;_bstr_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="218" col="37" msg="use of undeclared identifier &apos;_bstr_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="220" col="40" msg="use of undeclared identifier &apos;TASK_LOGON_INTERACTIVE_TOKEN&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="224" col="43" msg="use of undeclared identifier &apos;_TASK_RUNLEVEL&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="228" col="43" msg="use of undeclared identifier &apos;_TASK_RUNLEVEL&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="238" col="13" msg="use of undeclared identifier &apos;_bstr_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="240" col="13" msg="use of undeclared identifier &apos;TASK_CREATE_OR_UPDATE&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="241" col="13" msg="use of undeclared identifier &apos;_variant_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="242" col="13" msg="use of undeclared identifier &apos;_variant_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="243" col="13" msg="use of undeclared identifier &apos;TASK_LOGON_INTERACTIVE_TOKEN&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="291" col="27" msg="use of undeclared identifier &apos;CLSID_TaskScheduler&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="294" col="27" msg="use of undeclared identifier &apos;IID_ITaskService&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="299" col="28" msg="use of undeclared identifier &apos;_variant_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="299" col="42" msg="use of undeclared identifier &apos;_variant_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="299" col="56" msg="use of undeclared identifier &apos;_variant_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="299" col="70" msg="use of undeclared identifier &apos;_variant_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="304" col="30" msg="use of undeclared identifier &apos;_bstr_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="316" col="35" msg="use of undeclared identifier &apos;_bstr_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="320" col="42" msg="use of undeclared identifier &apos;_bstr_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="356" col="27" msg="use of undeclared identifier &apos;CLSID_TaskScheduler&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="359" col="27" msg="use of undeclared identifier &apos;IID_ITaskService&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="364" col="28" msg="use of undeclared identifier &apos;_variant_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="364" col="42" msg="use of undeclared identifier &apos;_variant_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="364" col="56" msg="use of undeclared identifier &apos;_variant_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="364" col="70" msg="use of undeclared identifier &apos;_variant_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="369" col="30" msg="use of undeclared identifier &apos;_bstr_t&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\runner\auto_start_helper.cpp" line="376" col="35" msg="use of undeclared identifier &apos;_bstr_t&apos;" />
+</log>

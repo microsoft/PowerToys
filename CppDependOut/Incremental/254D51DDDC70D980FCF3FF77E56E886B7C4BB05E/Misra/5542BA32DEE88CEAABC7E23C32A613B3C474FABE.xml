@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cppdepend-plugin tool="Misra">
+<file path="c:\program files (x86)\microsoft visual studio\2019\professional\vc\tools\msvc\14.25.28610\include\filesystem"><violation beginline="1399" endline="1399" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="3977" endline="3977" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="3289" endline="3289" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="2690" endline="2690" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="2694" endline="2694" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="2672" endline="2672" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="2653" endline="2653" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="2645" endline="2645" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="951" endline="951" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="2166" endline="2166" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="956" endline="956" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="956" endline="956" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="3571" endline="3571" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="c:\program files (x86)\microsoft visual studio\2019\professional\vc\tools\msvc\14.25.28610\include\system_error"><violation beginline="156" endline="156" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\action_runner\action_runner.cpp"><violation beginline="26" endline="26" rule="Rule6-6-5" ruleset="Statements">
+</violation><violation beginline="52" endline="52" rule="Rule6-6-5" ruleset="Statements">
+</violation><violation beginline="43" endline="43" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="94" endline="94" rule="Rule6-6-5" ruleset="Statements">
+</violation><violation beginline="120" endline="120" rule="Rule6-6-5" ruleset="Statements">
+</violation><violation beginline="137" endline="137" rule="Rule6-6-5" ruleset="Statements">
+</violation><violation beginline="17" endline="17" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="55" endline="55" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="55" endline="55" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="149" endline="149" rule="Rule7-3-4" ruleset="Declarations">
+</violation><violation beginline="102" endline="102" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\common\common.h"><violation beginline="91" endline="91" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="92" endline="92" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\common\updating\updating.h"><violation beginline="12" endline="12" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="13" endline="13" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="28" endline="28" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\windows kits\10\include\10.0.17763.0\um\msi.h"><violation beginline="644" endline="644" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\windows kits\10\include\10.0.17763.0\um\processenv.h"><violation beginline="90" endline="90" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\windows kits\10\include\10.0.17763.0\um\shellapi.h"><violation beginline="494" endline="494" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="494" endline="494" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="494" endline="494" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="103" endline="103" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\windows kits\10\include\10.0.17763.0\um\winbase.h"><violation beginline="1514" endline="1514" rule="Rule9-5-1" ruleset="Classes">
+</violation><violation beginline="5505" endline="5505" rule="Rule9-5-1" ruleset="Classes">
+</violation><violation beginline="8576" endline="8576" rule="Rule9-5-1" ruleset="Classes">
+</violation><violation beginline="8813" endline="8813" rule="Rule9-5-1" ruleset="Classes">
+</violation><violation beginline="8862" endline="8862" rule="Rule9-5-1" ruleset="Classes">
+</violation></file><file path="d:\windows kits\10\include\10.0.17763.0\um\winnt.h"><violation beginline="22242" endline="22242" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="22276" endline="22276" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="22286" endline="22286" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="22317" endline="22317" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="22326" endline="22326" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="22348" endline="22348" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="22370" endline="22370" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="22360" endline="22360" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="823" endline="823" rule="Rule9-5-1" ruleset="Classes">
+</violation><violation beginline="843" endline="843" rule="Rule9-5-1" ruleset="Classes">
+</violation></file><file path="d:\windows kits\10\include\10.0.17763.0\um\winuser.h"><violation beginline="9825" endline="9825" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="3639" endline="3639" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file></cppdepend-plugin>

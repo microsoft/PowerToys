@@ -1,0 +1,29 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\settings/pch.h" line="7" col="10" msg="&apos;winrt\windows.system.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\settings/pch.h" line="8" col="10" msg="&apos;winrt\windows.web.ui.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\settings/pch.h" line="9" col="10" msg="&apos;winrt\windows.web.ui.interop.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\settings/pch.h" line="10" col="10" msg="&apos;winrt\windows.ui.xaml.controls.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\settings/pch.h" line="11" col="10" msg="&apos;winrt\windows.foundation.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\settings/pch.h" line="12" col="10" msg="&apos;winrt\windows.web.http.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\settings/pch.h" line="13" col="10" msg="&apos;winrt\windows.web.http.headers.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\settings/pch.h" line="14" col="10" msg="&apos;winrt\Windows.Storage.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\settings/pch.h" line="15" col="10" msg="&apos;winrt\Windows.Storage.Streams.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\settings/pch.h" line="17" col="10" msg="&apos;strsafe.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\Telemetry\ProjectTelemetry.h" line="3" col="10" msg="&apos;TraceLoggingProvider.h&apos; file not found" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\StreamURIResolverFromFile.cpp" line="4" col="1" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\StreamURIResolverFromFile.cpp" line="4" col="45" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\StreamURIResolverFromFile.cpp" line="4" col="143" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\StreamURIResolverFromFile.cpp" line="6" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\StreamURIResolverFromFile.cpp" line="6" col="53" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\StreamURIResolverFromFile.cpp" line="6" col="116" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\StreamURIResolverFromFile.cpp" line="8" col="5" msg="use of undeclared identifier &apos;std&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\StreamURIResolverFromFile.cpp" line="11" col="5" msg="use of undeclared identifier &apos;std&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\StreamURIResolverFromFile.cpp" line="12" col="5" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\settings\StreamURIResolverFromFile.cpp" line="12" col="49" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\StreamURIResolverFromFile.cpp" line="16" col="36" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\StreamURIResolverFromFile.cpp" line="18" col="12" msg="use of undeclared identifier &apos;winrt&apos;" />
+ <error level="error" id="err_expected" file="D:\New folder (2)\PowerToys-1\src\settings\StreamURIResolverFromFile.cpp" line="18" col="33" msg="expected &apos;)&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\StreamURIResolverFromFile.cpp" line="21" col="34" msg="use of undeclared identifier &apos;ARRAYSIZE&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\settings\StreamURIResolverFromFile.cpp" line="21" col="70" msg="use of undeclared identifier &apos;e&apos;" />
+ <error level="warning" id="warn_zero_as_null_pointer_constant" file="D:\New folder (2)\PowerToys-1\src\settings\StreamURIResolverFromFile.cpp" line="22" col="20" msg="zero as null pointer constant" />
+</log>

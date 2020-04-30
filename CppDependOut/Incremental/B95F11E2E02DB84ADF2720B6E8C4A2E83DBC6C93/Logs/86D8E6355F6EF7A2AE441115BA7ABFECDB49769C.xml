@@ -1,0 +1,17 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests/stdafx.h" line="5" col="10" msg="&apos;atlbase.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests/stdafx.h" line="8" col="10" msg="&apos;CppUnitTest.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\PowerRenameManagerTests.cpp" line="2" col="10" msg="&apos;CppUnitTest.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\lib/stdafx.h" line="14" col="10" msg="&apos;atlbase.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\lib/stdafx.h" line="15" col="10" msg="&apos;strsafe.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\lib/stdafx.h" line="16" col="10" msg="&apos;pathcch.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\telemetry\ProjectTelemetry.h" line="3" col="10" msg="&apos;TraceLoggingProvider.h&apos; file not found" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\PowerRenameManagerTests.cpp" line="12" col="17" msg="use of undeclared identifier &apos;Microsoft&apos;" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\PowerRenameManagerTests.cpp" line="18" col="21" msg="use of old-style cast" />
+ <error level="warning" id="warn_cast_align" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\PowerRenameManagerTests.cpp" line="18" col="21" msg="cast from &apos;IMAGE_DOS_HEADER *&apos; (aka &apos;_IMAGE_DOS_HEADER *&apos;) to &apos;HINSTANCE&apos; (aka &apos;HINSTANCE__ *&apos;) increases required alignment from 2 to 4" />
+ <error level="warning" id="warn_missing_variable_declarations" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\PowerRenameManagerTests.cpp" line="18" col="11" msg="no previous extern declaration for non-static variable &apos;g_hInst&apos;" />
+ <error level="warning" id="warn_redundant_parens_around_declarator" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\PowerRenameManagerTests.cpp" line="22" col="15" msg="redundant parentheses surrounding declarator" />
+ <error level="warning" id="warn_cxx98_compat_generalized_initializer_lists" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\PowerRenameManagerTests.cpp" line="23" col="5" msg="generalized initializer lists are incompatible with C++98" />
+ <error level="error" id="err_expected_expression" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\PowerRenameManagerTests.cpp" line="24" col="5" msg="expected expression" />
+ <error level="warning" id="warn_cxx98_compat_no_newline_eof" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\PowerRenameManagerTests.cpp" line="233" col="2" msg="C++98 requires newline at end of file" />
+</log>

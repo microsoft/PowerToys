@@ -1,0 +1,102 @@
+<Externals>
+<cr access="none" depth="0" pod="true" kind="struct" name="tagPOINT" id="49d0eb91eac919f4125e4f7d62e92988_b1f566919980e6677cca1e90cfed007f" file="2" linestart="174" lineend="178"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="HWND__" id="49d0eb91eac919f4125e4f7d62e92988_5847ad6971421591ff7da5abaa1ba10e" file="2" linestart="39" lineend="39"/>
+<cr access="none" depth="0" pod="true" kind="struct" name="tagMONITORINFO" id="999dff613f8bf2d78d6e817a34081caa_4525c87e356b2884cbb476984c13a738" file="3" linestart="13270" lineend="13276"/>
+<cr access="none" depth="0" kind="struct" name="Rect" id="1a2ea0a9873a37bb2d5f180181966dab_05cf51c91962c8112252019ea2739cbe" file="4" linestart="5" lineend="33"/>
+<tm namespace="std" access="none" depth="0" kind="class" name="allocator" id="9a2ba64ab4a38b66d74fa8e847e9e38d_07566aa809aee0bdf1c0fac16e19fa85" file="5" linestart="737" lineend="805" previous="9a2ba64ab4a38b66d74fa8e847e9e38d_07566aa809aee0bdf1c0fac16e19fa85">
+<template_parameters>
+<ttp name="_Ty" id="9a2ba64ab4a38b66d74fa8e847e9e38d_5dabb8add95e1f50264087371ebe1436" depth="0" index="0" proto="type-parameter-0-0"/>
+</template_parameters>
+<cr namespace="std" access="none" depth="0" kind="class" name="allocator" id="9a2ba64ab4a38b66d74fa8e847e9e38d_07566aa809aee0bdf1c0fac16e19fa85" file="5" linestart="738" lineend="805" previous="9a2ba64ab4a38b66d74fa8e847e9e38d_07566aa809aee0bdf1c0fac16e19fa85">
+<cr access="public" kind="class" name="allocator" id="9a2ba64ab4a38b66d74fa8e847e9e38d_634dfb1dd5db9fd3e76cd8814f018ced" file="5" linestart="738" lineend="738"/>
+<tm parent="9a2ba64ab4a38b66d74fa8e847e9e38d_07566aa809aee0bdf1c0fac16e19fa85" access="none" depth="0" pod="true" kind="struct" name="rebind" id="9a2ba64ab4a38b66d74fa8e847e9e38d_38c2be5a786a253bb82af3c54854f921" file="5" linestart="759" lineend="762">
+<template_parameters>
+<ttp name="_Other" id="9a2ba64ab4a38b66d74fa8e847e9e38d_5cb4d687f09ee7cb5b3575605cef20a8" depth="1" index="0" proto="type-parameter-1-0"/>
+</template_parameters>
+</tm>
+</cr>
+</tm>
+<tm namespace="std" access="none" depth="0" kind="class" name="vector" id="6f3f82aee20b82c84f02b01a0d6eccb3_3d0ab7465d6b9448b8c01dc907d3e25b" file="6" linestart="411" lineend="1750">
+<template_parameters>
+<ttp name="_Ty" id="6f3f82aee20b82c84f02b01a0d6eccb3_2d25604cf0b65876a3833653b86272f8" depth="0" index="0" proto="type-parameter-0-0"/>
+<ttp name="_Alloc" id="6f3f82aee20b82c84f02b01a0d6eccb3_415b2c0180cb321c6095aa8e8e14a027" depth="0" index="1" proto="type-parameter-0-1">
+<tss>
+<templatebase id="9a2ba64ab4a38b66d74fa8e847e9e38d_07566aa809aee0bdf1c0fac16e19fa85"/>
+<template_arguments>
+<ttp/>
+</template_arguments>
+</tss>
+</ttp>
+</template_parameters>
+<cr namespace="std" access="none" depth="0" kind="class" name="vector" id="6f3f82aee20b82c84f02b01a0d6eccb3_3d0ab7465d6b9448b8c01dc907d3e25b" file="6" linestart="412" lineend="1750">
+<cr access="public" kind="class" name="vector" id="6f3f82aee20b82c84f02b01a0d6eccb3_c48c2bde2c144b6d614d5912fe2271ba" file="6" linestart="412" lineend="412"/>
+<c name="vector&lt;_Ty, _Alloc&gt;" id="6f3f82aee20b82c84f02b01a0d6eccb3_85a8e78b3bbb1054841140fa6b42e0b8" file="6" linestart="512" lineend="517" access="public" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+<p name="_Ilist" proto="initializer_list&lt;_Ty&gt;" access2="none">
+<tss>
+<templatebase id="8c1ee144fc4a7f6a9eb3d2f21e678224_d0df8863f0ca3fe8bec9984b396fa3d7"/>
+<template_arguments>
+<ttp/>
+</template_arguments>
+</tss>
+</p>
+<p name="_Al" proto="const _Alloc &amp;" isRef="true" init="true" access2="none">
+<lrf>
+<QualType const="true">
+<ttp/>
+</QualType>
+</lrf>
+</p>
+<initlist id="6f3f82aee20b82c84f02b01a0d6eccb3_6401e866e9fbb5baba5cb1489ab9761b"/>
+</c>
+</cr>
+</tm>
+<cr namespace="JSONHelpers" access="none" depth="0" kind="class" name="GridLayoutInfo" id="1e717827e52622f140e706fe65d206de_f994173ccdbd89393360a88290067946" file="7" linestart="63" lineend="105">
+<c name="GridLayoutInfo" id="1e717827e52622f140e706fe65d206de_706087b2a86ee01fc6559bb5d22a46c5" file="7" linestart="81" lineend="81" access="public">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+<p name="info" proto="const JSONHelpers::GridLayoutInfo::Minimal &amp;" isRef="true" isLiteral="true" access2="none">
+<lrf>
+<QualType const="true">
+<rt>
+<cr id="1e717827e52622f140e706fe65d206de_d7ea1bb91c16fba07fddb269d8d3e65b"/>
+</rt>
+</QualType>
+</lrf>
+</p>
+</c>
+<c name="GridLayoutInfo" id="1e717827e52622f140e706fe65d206de_bdfc5fe7562e206888c811d79eeb9b81" file="7" linestart="82" lineend="82" access="public">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+<p name="info" proto="const JSONHelpers::GridLayoutInfo::Full &amp;" isRef="true" isLiteral="true" access2="none">
+<lrf>
+<QualType const="true">
+<rt>
+<cr id="1e717827e52622f140e706fe65d206de_407722a4a85a07a93e9203db65f7b967"/>
+</rt>
+</QualType>
+</lrf>
+</p>
+</c>
+</cr>
+<cr access="none" depth="0" kind="struct" name="ZoneSetConfig" id="8e2496b091fb1226dc6dd71194adfc06_aefb3f3ca425db3f21daf50eb4925d41" file="8" linestart="112" lineend="130">
+<c name="ZoneSetConfig" id="8e2496b091fb1226dc6dd71194adfc06_5eb7060039c475b8b4ed2b887ba6fd60" file="8" linestart="112" lineend="112" copyconst="true" implicit="true" access="public" inline="true" hasbody="true" isdef="true">
+<fpt cc="cdecl" proto="void">
+<bt name="void"/>
+</fpt>
+<p name="" proto="const ZoneSetConfig &amp;" isRef="true" isLiteral="true" access2="none">
+<lrf>
+<QualType const="true">
+<rt>
+<cr id="8e2496b091fb1226dc6dd71194adfc06_aefb3f3ca425db3f21daf50eb4925d41"/>
+</rt>
+</QualType>
+</lrf>
+</p>
+</c>
+</cr>
+</Externals>

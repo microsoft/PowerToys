@@ -1,0 +1,25 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\telemetry\ProjectTelemetry.h" line="3" col="10" msg="&apos;TraceLoggingProvider.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\pch.h" line="1" col="10" msg="&apos;winrt/base.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\pch.h" line="3" col="10" msg="&apos;dxgi1_3.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\pch.h" line="4" col="10" msg="&apos;d3d11_2.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\pch.h" line="5" col="10" msg="&apos;d2d1_3.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\pch.h" line="6" col="10" msg="&apos;d2d1_3helper.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\pch.h" line="7" col="10" msg="&apos;d2d1helper.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\pch.h" line="8" col="10" msg="&apos;dwrite.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\pch.h" line="9" col="10" msg="&apos;dcomp.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\pch.h" line="10" col="10" msg="&apos;dwmapi.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/json.h" line="3" col="10" msg="&apos;winrt/Windows.Foundation.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common/json.h" line="4" col="10" msg="&apos;winrt/Windows.Data.Json.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\previewpane\powerpreview\settings.cpp" line="6" col="10" msg="&apos;atlstr.h&apos; file not found" />
+ <error level="warning" id="warn_initializer_out_of_order" file="D:\New folder (2)\PowerToys-1\src\modules\previewpane\powerpreview\settings.cpp" line="22" col="9" msg="field &apos;m_clsid&apos; will be initialized after field &apos;m_registryValueData&apos;" />
+ <error level="warning" id="warn_zero_as_null_pointer_constant" file="D:\New folder (2)\PowerToys-1\src\modules\previewpane\powerpreview\settings.cpp" line="30" col="40" msg="zero as null pointer constant" />
+ <error level="warning" id="warn_delete_abstract_non_virtual_dtor" file="D:\New folder (2)\PowerToys-1\src\modules\previewpane\powerpreview\settings.cpp" line="32" col="13" msg="delete called on &apos;RegistryWrapperIface&apos; that is abstract but has non-virtual destructor" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\modules\previewpane\powerpreview\settings.cpp" line="69" col="9" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\modules\previewpane\powerpreview\settings.cpp" line="80" col="9" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\modules\previewpane\powerpreview\settings.cpp" line="83" col="13" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="warning" id="warn_cxx98_compat_auto_type_specifier" file="D:\New folder (2)\PowerToys-1\src\modules\previewpane\powerpreview\settings.cpp" line="84" col="13" msg="&apos;auto&apos; type specifier is incompatible with C++98" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\previewpane\powerpreview\settings.cpp" line="122" col="128" msg="use of old-style cast" />
+ <error level="warning" id="warn_cast_qual" file="D:\New folder (2)\PowerToys-1\src\modules\previewpane\powerpreview\settings.cpp" line="122" col="136" msg="cast from &apos;const wchar_t *&apos; to &apos;unsigned char *&apos; drops const qualifier" />
+ <error level="warning" id="warn_old_style_cast" file="D:\New folder (2)\PowerToys-1\src\modules\previewpane\powerpreview\settings.cpp" line="122" col="174" msg="use of old-style cast" />
+</log>

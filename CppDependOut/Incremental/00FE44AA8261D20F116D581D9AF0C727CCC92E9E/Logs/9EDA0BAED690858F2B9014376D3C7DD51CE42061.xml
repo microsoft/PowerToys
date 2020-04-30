@@ -1,0 +1,39 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp/stdafx.h" line="14" col="10" msg="&apos;atlbase.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp/stdafx.h" line="15" col="10" msg="&apos;strsafe.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp/stdafx.h" line="16" col="10" msg="&apos;pathcch.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\lib/stdafx.h" line="14" col="10" msg="&apos;atlbase.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\lib/stdafx.h" line="15" col="10" msg="&apos;strsafe.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\lib/stdafx.h" line="16" col="10" msg="&apos;pathcch.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\telemetry\ProjectTelemetry.h" line="3" col="10" msg="&apos;TraceLoggingProvider.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\json.h" line="3" col="10" msg="&apos;winrt/Windows.Foundation.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\json.h" line="4" col="10" msg="&apos;winrt/Windows.Data.Json.h&apos; file not found" />
+ <error level="warning" id="pp_nonportable_path" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="10" col="10" msg="non-portable path to file &apos;&lt;shobjidl.h&gt;&apos;; specified path differs in case from file name on disk" />
+ <error level="warning" id="warn_missing_variable_declarations" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="15" col="11" msg="no previous extern declaration for non-static variable &apos;g_hInst&apos;" />
+ <error level="warning" id="ext_token_used" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="23" col="44" msg="extension used" />
+ <error level="warning" id="warn_global_constructor" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="23" col="20" msg="declaration requires a global constructor" />
+ <error level="error" id="err_expected" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="28" col="20" msg="expected &apos;)&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="33" col="15" msg="use of undeclared identifier &apos;hInstance&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="34" col="33" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="38" col="9" msg="use of undeclared identifier &apos;CComPtr&apos;" />
+ <error level="error" id="err_ref_non_value" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="38" col="17" msg="&apos;IPowerRenameManager&apos; does not refer to a value" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="38" col="38" msg="use of undeclared identifier &apos;spsrm&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="39" col="13" msg="use of undeclared identifier &apos;spsrm&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="42" col="13" msg="use of undeclared identifier &apos;CComPtr&apos;" />
+ <error level="error" id="err_ref_non_value" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="42" col="21" msg="&apos;IPowerRenameItemFactory&apos; does not refer to a value" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="42" col="46" msg="use of undeclared identifier &apos;spsrif&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="43" col="17" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="43" col="17" msg="use of undeclared identifier &apos;spsrif&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="46" col="21" msg="use of undeclared identifier &apos;spsrm&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="46" col="21" msg="use of undeclared identifier &apos;spsrif&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="49" col="21" msg="use of undeclared identifier &apos;CComPtr&apos;" />
+ <error level="error" id="err_ref_non_value" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="49" col="29" msg="&apos;IPowerRenameUI&apos; does not refer to a value" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="49" col="45" msg="use of undeclared identifier &apos;spsrui&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="50" col="25" msg="use of undeclared identifier &apos;spsrm&apos;" />
+ <error level="warning" id="warn_cxx98_compat_nullptr" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="50" col="25" msg="&apos;nullptr&apos; is incompatible with C++98" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="50" col="25" msg="use of undeclared identifier &apos;spsrui&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="53" col="25" msg="use of undeclared identifier &apos;spsrui&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="54" col="25" msg="use of undeclared identifier &apos;spsrui&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="57" col="25" msg="use of undeclared identifier &apos;spsrm&apos;" />
+ <error level="warning" id="warn_cxx98_compat_no_newline_eof" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\testapp\PowerRenameTest.cpp" line="65" col="2" msg="C++98 requires newline at end of file" />
+</log>

@@ -1,0 +1,28 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\Telemetry\ProjectTelemetry.h" line="3" col="10" msg="&apos;TraceLoggingProvider.h&apos; file not found" />
+ <error level="error" id="err_missing_type_specifier" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="4" col="1" msg="C++ requires a type specifier for all declarations" />
+ <error level="warning" id="warn_unused_expr" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="8" col="6" msg="expression result unused" />
+ <error level="warning" id="warn_comma_operator" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="8" col="16" msg="possible misuse of comma operator here" />
+ <error level="warning" id="warn_unused_expr" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="8" col="18" msg="expression result unused" />
+ <error level="warning" id="warn_comma_operator" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="8" col="24" msg="possible misuse of comma operator here" />
+ <error level="warning" id="warn_unused_expr" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="8" col="26" msg="expression result unused" />
+ <error level="warning" id="warn_comma_operator" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="8" col="32" msg="possible misuse of comma operator here" />
+ <error level="warning" id="warn_unused_expr" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="8" col="34" msg="expression result unused" />
+ <error level="warning" id="warn_comma_operator" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="8" col="38" msg="possible misuse of comma operator here" />
+ <error level="warning" id="warn_unused_expr" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="8" col="40" msg="expression result unused" />
+ <error level="warning" id="warn_comma_operator" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="8" col="44" msg="possible misuse of comma operator here" />
+ <error level="warning" id="warn_unused_expr" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="8" col="46" msg="expression result unused" />
+ <error level="warning" id="warn_comma_operator" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="8" col="50" msg="possible misuse of comma operator here" />
+ <error level="warning" id="warn_unused_expr" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="8" col="52" msg="expression result unused" />
+ <error level="warning" id="warn_comma_operator" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="8" col="56" msg="possible misuse of comma operator here" />
+ <error level="warning" id="warn_unused_expr" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="8" col="58" msg="expression result unused" />
+ <error level="warning" id="warn_comma_operator" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="8" col="62" msg="possible misuse of comma operator here" />
+ <error level="warning" id="warn_unused_expr" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="8" col="64" msg="expression result unused" />
+ <error level="warning" id="warn_comma_operator" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="8" col="68" msg="possible misuse of comma operator here" />
+ <error level="warning" id="warn_unused_expr" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="8" col="70" msg="expression result unused" />
+ <error level="warning" id="warn_comma_operator" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="8" col="74" msg="possible misuse of comma operator here" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="9" col="5" msg="use of undeclared identifier &apos;TraceLoggingOptionGroup&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="26" col="9" msg="use of undeclared identifier &apos;TraceLoggingUInt64&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="27" col="9" msg="use of undeclared identifier &apos;TraceLoggingBoolean&apos;" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\tools\project_template\ModuleTemplate\trace.cpp" line="28" col="9" msg="use of undeclared identifier &apos;TraceLoggingKeyword&apos;" />
+</log>

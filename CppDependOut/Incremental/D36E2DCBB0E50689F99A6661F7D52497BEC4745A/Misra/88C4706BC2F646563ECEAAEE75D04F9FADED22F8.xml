@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cppdepend-plugin tool="Misra">
+<file path="d:\new folder (2)\powertoys-1\src\common\common.h"><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="95" endline="95" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\common\settings_objects.h"><violation beginline="18" endline="18" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="21" endline="21" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="20" endline="20" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="57" endline="57" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="101" endline="101" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="71" endline="71" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="88" endline="88" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="72" endline="72" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\modules\windowwalker\dll\dllmain.cpp"><violation beginline="13" endline="13" rule="Rule6-4-4" ruleset="Statements">
+</violation><violation beginline="45" endline="45" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="70" endline="70" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="111" endline="111" rule="emptycatch" ruleset="Statements">
+</violation><violation beginline="128" endline="128" rule="emptycatch" ruleset="Statements">
+</violation><violation beginline="181" endline="181" rule="Rule6-6-5" ruleset="Statements">
+</violation><violation beginline="70" endline="70" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="205" endline="205" rule="emptycatch" ruleset="Statements">
+</violation><violation beginline="213" endline="213" rule="Rule18-4-1" ruleset="Library">
+</violation></file><file path="d:\new folder (2)\powertoys-1\src\modules\windowwalker\dll\trace.h"><violation beginline="6" endline="6" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="7" endline="7" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="8" endline="8" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="8" endline="8" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\shellapi.h"><violation beginline="314" endline="314" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\wchar.h"><violation beginline="411" endline="411" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="411" endline="411" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file><file path="d:\new folder\cppdepend\defaulttoolchain\include\winbase.h"><violation beginline="2419" endline="2419" rule="Rule7-5-4" ruleset="Declarations">
+</violation><violation beginline="2419" endline="2419" rule="Rule7-5-4" ruleset="Declarations">
+</violation></file></cppdepend-plugin>

@@ -1,0 +1,13 @@
+<log>
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests/stdafx.h" line="5" col="10" msg="&apos;atlbase.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests/stdafx.h" line="8" col="10" msg="&apos;CppUnitTest.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\PowerRenameRegExTests.cpp" line="2" col="10" msg="&apos;CppUnitTest.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\lib/stdafx.h" line="14" col="10" msg="&apos;atlbase.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\lib/stdafx.h" line="15" col="10" msg="&apos;strsafe.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\lib/stdafx.h" line="16" col="10" msg="&apos;pathcch.h&apos; file not found" />
+ <error level="error" id="err_pp_file_not_found" file="D:\New folder (2)\PowerToys-1\src\common\telemetry\ProjectTelemetry.h" line="3" col="10" msg="&apos;TraceLoggingProvider.h&apos; file not found" />
+ <error level="error" id="err_undeclared_var_use" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\PowerRenameRegExTests.cpp" line="7" col="17" msg="use of undeclared identifier &apos;Microsoft&apos;" />
+ <error level="warning" id="warn_redundant_parens_around_declarator" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\PowerRenameRegExTests.cpp" line="19" col="15" msg="redundant parentheses surrounding declarator" />
+ <error level="warning" id="warn_cxx98_compat_generalized_initializer_lists" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\PowerRenameRegExTests.cpp" line="19" col="28" msg="generalized initializer lists are incompatible with C++98" />
+ <error level="error" id="err_expected_expression" file="D:\New folder (2)\PowerToys-1\src\modules\powerrename\unittests\PowerRenameRegExTests.cpp" line="20" col="9" msg="expected expression" />
+</log>
