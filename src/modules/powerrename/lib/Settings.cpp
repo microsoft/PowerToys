@@ -4,7 +4,6 @@
 #include "settings_helpers.h"
 
 #include <filesystem>
-#include <commctrl.h>
 
 namespace
 {
@@ -113,12 +112,12 @@ private:
     void _FreeMRUList();
 
     long   m_refCount = 0;
-    HKEY   m_hKey = NULL;
+    HKEY   m_hKey = nullptr;
     ULONG  m_maxMRUSize = 0;
     ULONG  m_mruIndex = 0;
     ULONG  m_mruSize = 0;
-    HANDLE m_mruHandle = NULL;
-    HMODULE m_hComctl32Dll = NULL;
+    HANDLE m_mruHandle = nullptr;
+    HMODULE m_hComctl32Dll = nullptr;
     PWSTR  m_regPath = nullptr;
 };
 
@@ -188,7 +187,7 @@ IFACEMETHODIMP CRenameMRU::QueryInterface(_In_ REFIID riid, _Outptr_ void** ppv)
     static const QITAB qit[] = {
         QITABENT(CRenameMRU, IEnumString),
         QITABENT(CRenameMRU, IPowerRenameMRU),
-        { 0 }
+        { nullptr }
     };
     return QISearch(this, qit, riid, ppv);
 }
@@ -217,7 +216,7 @@ HRESULT CRenameMRU::_Initialize(_In_ PCWSTR regPathMRU, __in ULONG maxMRUSize)
             hr = _CreateMRUList(&mi);
             if (SUCCEEDED(hr))
             {
-                m_mruSize = _EnumMRUList(-1, NULL, 0);
+                m_mruSize = _EnumMRUList(-1, nullptr, 0);
             }
             else
             {
@@ -279,12 +278,12 @@ IFACEMETHODIMP CRenameMRU::AddMRUString(_In_ PCWSTR entry)
 
 HRESULT CRenameMRU::_CreateMRUList(_In_ MRUINFO* pmi)
 {
-    if (m_mruHandle != NULL)
+    if (m_mruHandle != nullptr)
     {
         _FreeMRUList();
     }
 
-    if (m_hComctl32Dll == NULL)
+    if (m_hComctl32Dll == nullptr)
     {
         m_hComctl32Dll = LoadLibraryEx(L"comctl32.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
     }
@@ -298,15 +297,15 @@ HRESULT CRenameMRU::_CreateMRUList(_In_ MRUINFO* pmi)
         }
     }
 
-    return (m_mruHandle != NULL) ? S_OK : E_FAIL;
+    return (m_mruHandle != nullptr) ? S_OK : E_FAIL;
 }
 
 int CRenameMRU::_AddMRUString(_In_ PCWSTR data)
 {
     int retVal = -1;
-    if (m_mruHandle != NULL)
+    if (m_mruHandle != nullptr)
     {
-        if (m_hComctl32Dll == NULL)
+        if (m_hComctl32Dll == nullptr)
         {
             m_hComctl32Dll = LoadLibraryEx(L"comctl32.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
         }
@@ -327,9 +326,9 @@ int CRenameMRU::_AddMRUString(_In_ PCWSTR data)
 int CRenameMRU::_EnumMRUList(_In_ int nItem, _Out_ void* lpData, _In_ UINT uLen)
 {
     int retVal = -1;
-    if (m_mruHandle != NULL)
+    if (m_mruHandle != nullptr)
     {
-        if (m_hComctl32Dll == NULL)
+        if (m_hComctl32Dll == nullptr)
         {
             m_hComctl32Dll = LoadLibraryEx(L"comctl32.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
         }
@@ -349,9 +348,9 @@ int CRenameMRU::_EnumMRUList(_In_ int nItem, _Out_ void* lpData, _In_ UINT uLen)
 
 void CRenameMRU::_FreeMRUList()
 {
-    if (m_mruHandle != NULL)
+    if (m_mruHandle != nullptr)
     {
-        if (m_hComctl32Dll == NULL)
+        if (m_hComctl32Dll == nullptr)
         {
             m_hComctl32Dll = LoadLibraryEx(L"comctl32.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
         }
@@ -365,7 +364,7 @@ void CRenameMRU::_FreeMRUList()
             }
             
         }
-        m_mruHandle = NULL;
+        m_mruHandle = nullptr;
     }
 }
 
