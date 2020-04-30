@@ -2,12 +2,12 @@
   
    <Target Name="KillPowerLauncher" BeforeTargets="PreBuildEvent;BeforeClean">
     <Message Text="Killing process 'PowerLauncher.exe'" Importance="normal" ContinueOnError="true" />
-     <Exec Command="tasklist /FI &quot;IMAGENAME eq PowerLauncher.exe&quot; 2&gt;NUL | find /I /N &quot;PowerLauncher.exe&quot;&gt;NUL &amp;&amp;&#xD;&#xA;if &quot;%25ERRORLEVEL%25&quot;==&quot;0&quot; taskkill /f /im PowerLauncher.exe"
+     <Exec Command="tasklist /FI &quot;IMAGENAME eq PowerLauncher.exe&quot; 2&gt;NUL | find /I /N &quot;PowerLauncher.exe&quot;&gt;NUL &#xD;&#xA; if %25ERRORLEVEL%25==0 ( taskkill /f /im PowerLauncher.exe )"
               IgnoreExitCode="true"
               IgnoreStandardErrorWarningFormat="true">
        <Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
      </Exec>
-     <Error Text="Cannot kill PowerLauncher.exe process." Condition="$(ErrorCode) == 1"/>
+     <Message Text="Cannot kill PowerLauncher.exe process." Condition="$(ErrorCode) == 1"/>
      <Message Text="Process PowerLauncher.exe does not exist." Condition="$(ErrorCode) == 128"/>
   </Target>
 
