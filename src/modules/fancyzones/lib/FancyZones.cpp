@@ -604,10 +604,6 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
     if (changeType == DisplayChangeType::VirtualDesktop ||
         changeType == DisplayChangeType::Initialization)
     {
-        // Explorer persists this value to the registry on a per session basis but only after
-        // the first virtual desktop switch happens. If the user hasn't switched virtual desktops in this session
-        // then this value will be empty. This means loading the first virtual desktop's configuration can be
-        // funky the first time we load up at boot since the user will not have switched virtual desktops yet.
         GUID currentVirtualDesktopId{};
         if (VirtualDesktopUtils::GetCurrentVirtualDesktopId(&currentVirtualDesktopId))
         {
