@@ -318,10 +318,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     {
         ShowWindow(_hWndEditKeyboardWindow, SW_SHOW);
         UpdateWindow(_hWndEditKeyboardWindow);
-        SetForegroundWindow(_hWndEditKeyboardWindow);
     }
-
-    SetFocus(hWndXamlIslandEditKeyboardWindow);
 
     // Message loop:
     xamlBridge.MessageLoop();
@@ -347,12 +344,6 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wPar
         GetClientRect(hWnd, &rcClient);
         SetWindowPos(hWndXamlIslandEditKeyboardWindow, 0, rcClient.left, rcClient.top, rcClient.right, rcClient.bottom, SWP_SHOWWINDOW);
         break;
-    case WM_SETFOCUS:
-        if (hWndXamlIslandEditKeyboardWindow != 0)
-        {
-            SetFocus(hWndXamlIslandEditKeyboardWindow);
-        }
-        return DefWindowProc(hWnd, messageCode, wParam, lParam);
     default:
         // If the Xaml Bridge object exists, then use it's message handler to handle keyboard focus operations
         if (xamlBridgePtr != nullptr)
