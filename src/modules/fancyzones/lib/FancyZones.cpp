@@ -45,7 +45,7 @@ namespace std
 
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
 {
-public:
+
     FancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings) noexcept :
         m_hinstance(hinstance),
         m_settings(settings)
@@ -721,10 +721,10 @@ void FancyZones::MoveWindowIntoZoneByIndexSet(HWND window, HMONITOR monitor, con
 
 LRESULT CALLBACK FancyZones::s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
-    auto thisRef = reinterpret_cast<FancyZones*>(GetWindowLongPtr(window, GWLP_USERDATA));
+    auto* thisRef = reinterpret_cast<FancyZones*>(GetWindowLongPtr(window, GWLP_USERDATA));
     if (!thisRef && (message == WM_CREATE))
     {
-        const auto createStruct = reinterpret_cast<LPCREATESTRUCT>(lparam);
+        auto* const createStruct = reinterpret_cast<LPCREATESTRUCT>(lparam);
         thisRef = reinterpret_cast<FancyZones*>(createStruct->lpCreateParams);
         SetWindowLongPtr(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(thisRef));
     }
@@ -760,19 +760,19 @@ bool FancyZones::IsCursorTypeIndicatingSizeEvent()
 
     if (::GetCursorInfo(&cursorInfo))
     {
-        if (::LoadCursor(NULL, IDC_SIZENS) == cursorInfo.hCursor)
+        if (::LoadCursor(nullptr, IDC_SIZENS) == cursorInfo.hCursor)
         {
             return true;
         }
-        if (::LoadCursor(NULL, IDC_SIZEWE) == cursorInfo.hCursor)
+        if (::LoadCursor(nullptr, IDC_SIZEWE) == cursorInfo.hCursor)
         {
             return true;
         }
-        if (::LoadCursor(NULL, IDC_SIZENESW) == cursorInfo.hCursor)
+        if (::LoadCursor(nullptr, IDC_SIZENESW) == cursorInfo.hCursor)
         {
             return true;
         }
-        if (::LoadCursor(NULL, IDC_SIZENWSE) == cursorInfo.hCursor)
+        if (::LoadCursor(nullptr, IDC_SIZENWSE) == cursorInfo.hCursor)
         {
             return true;
         }
@@ -812,7 +812,7 @@ void FancyZones::UpdateZoneWindows() noexcept
                                    L"\\\\?\\DISPLAY#LOCALDISPLAY#";
                 }
 
-                auto strongThis = reinterpret_cast<FancyZones*>(data);
+                auto* strongThis = reinterpret_cast<FancyZones*>(data);
                 strongThis->AddZoneWindow(monitor, deviceId);
             }
         }
@@ -829,7 +829,7 @@ void FancyZones::MoveWindowsOnDisplayChange() noexcept
         if (i != 0)
         {
             // i is off by 1 since 0 is special.
-            auto strongThis = reinterpret_cast<FancyZones*>(data);
+            auto* strongThis = reinterpret_cast<FancyZones*>(data);
             strongThis->MoveWindowIntoZoneByIndex(window, nullptr, i - 1);
         }
         return TRUE;
@@ -885,7 +885,7 @@ void FancyZones::UpdateDragState(HWND window, require_write_lock) noexcept
 
 void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
 {
-    auto window = GetForegroundWindow();
+    auto* window = GetForegroundWindow();
     if (IsInterestingWindow(window))
     {
         const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
@@ -905,7 +905,7 @@ void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
 
 bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
 {
-    auto window = GetForegroundWindow();
+    auto* window = GetForegroundWindow();
     if (IsInterestingWindow(window))
     {
         const HMONITOR current = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
@@ -1016,7 +1016,7 @@ void FancyZones::MoveSizeEndInternal(HWND window, POINT const& ptScreen, require
     {
         ::RemoveProp(window, ZONE_STAMP);
 
-        auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+        auto* monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
         if (monitor)
         {
             auto zoneWindow = m_zoneWindowMap.find(monitor);
@@ -1123,13 +1123,13 @@ void FancyZones::HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) no
         DWORD bufferCapacity;
         const WCHAR* key = L"VirtualDesktopIDs";
         // request regkey binary buffer capacity only
-        if (RegQueryValueExW(m_virtualDesktopsRegKey, key, 0, nullptr, nullptr, &bufferCapacity) != ERROR_SUCCESS)
+        if (RegQueryValueExW(m_virtualDesktopsRegKey, key, nullptr, nullptr, nullptr, &bufferCapacity) != ERROR_SUCCESS)
         {
             return;
         }
         std::unique_ptr<BYTE[]> buffer = std::make_unique<BYTE[]>(bufferCapacity);
         // request regkey binary content
-        if (RegQueryValueExW(m_virtualDesktopsRegKey, key, 0, nullptr, buffer.get(), &bufferCapacity) != ERROR_SUCCESS)
+        if (RegQueryValueExW(m_virtualDesktopsRegKey, key, nullptr, nullptr, buffer.get(), &bufferCapacity) != ERROR_SUCCESS)
         {
             return;
         }
