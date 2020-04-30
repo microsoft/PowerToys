@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Root>
+  <MetricIndex >
+    <Metric Name="# Lines of Code" Unit="LoC" />
+    <Metric Name="# Lines of Code (JustMyCode)" Unit="LoC" />
+    <Metric Name="# Lines of Code (NotMyCode)" Unit="LoC" />
+    <Metric Name="# Source Files" Unit="Source Files" />
+    <Metric Name="# Lines of Comments" Unit="Lines" />
+    <Metric Name="# Projects" Unit="Projects" />
+    <Metric Name="# Namespaces" Unit="Namespaces" />
+    <Metric Name="# Types" Unit="Types" />
+    <Metric Name="# Classes" Unit="Types" />
+    <Metric Name="# Abstract Classes" Unit="Types" />
+    <Metric Name="# Interfaces" Unit="Types" />
+    <Metric Name="# Structures" Unit="Types" />
+    <Metric Name="# Methods" Unit="Methods" />
+    <Metric Name="# Abstract Methods" Unit="Methods" />
+    <Metric Name="# Concrete Methods" Unit="Methods" />
+    <Metric Name="# Fields" Unit="Fields" />
+    <Metric Name="Max # Lines of Code for Methods (JustMyCode)" Unit="LoC" />
+    <Metric Name="Average # Lines of Code for Methods" Unit="LoC" />
+    <Metric Name="Average # Lines of Code for Methods with at least 3 Lines of Code" Unit="LoC" />
+    <Metric Name="Max # Lines of Code for Types (JustMyCode)" Unit="LoC" />
+    <Metric Name="Average # Lines of Code for Types" Unit="LoC" />
+    <Metric Name="Max Cyclomatic Complexity for Methods" Unit="Paths" />
+    <Metric Name="Max Cyclomatic Complexity for Types" Unit="Paths" />
+    <Metric Name="Average Cyclomatic Complexity for Methods" Unit="Paths" />
+    <Metric Name="Average Cyclomatic Complexity for Types" Unit="Paths" />
+    <Metric Name="Max Nesting Depth for Methods" Unit="Scopes" />
+    <Metric Name="Average Nesting Depth for Methods" Unit="Scopes" />
+    <Metric Name="Max # of Methods for Types" Unit="Methods" />
+    <Metric Name="Average # Methods for Types" Unit="Methods" />
+    <Metric Name="Max # of Methods for Interfaces" Unit="Methods" />
+    <Metric Name="# Third-Party Projects Used" Unit="Projects" />
+    <Metric Name="# Third-Party Namespaces Used" Unit="Namespaces" />
+    <Metric Name="# Third-Party Types Used" Unit="Types" />
+    <Metric Name="# Third-Party Methods Used" Unit="Methods" />
+    <Metric Name="# Third-Party Fields Used" Unit="Fields" />
+    <Metric Name="# Rules" Unit="Rules" />
+    <Metric Name="# Rules Violated" Unit="Rules" />
+    <Metric Name="# Rules Violations" Unit="Violations" />
+    <Metric Name="# Critical Rules" Unit="Rules" />
+    <Metric Name="# Critical Rules Violated" Unit="Rules" />
+    <Metric Name="# Critical Rules Violations" Unit="Violations" />
+  </MetricIndex>
+  <M N="0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40" >
+    <R D="4/29/2020 9:46:01 AM" L="v1.0" V="4505|4505|0|199|1173|43|74|226|82|9|0|117|1353|0|1353|1066|145|6|10.29|387|33.87|42|169|2.58|22.9|14|0.88921|54|6.24|0|3|24|189|695|179|270|33|539|3|3|17" />
+  </M>
+</Root>
