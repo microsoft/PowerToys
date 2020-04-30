@@ -1,16 +1,12 @@
 #include "pch.h"
 #include "auto_start_helper.h"
 
-#include "general_settings.h"
-
 #include <Lmcons.h>
 
 #include <comdef.h>
 #include <taskschd.h>
 #pragma comment(lib, "taskschd.lib")
 #pragma comment(lib, "comsupp.lib")
-
-#include <Shlobj.h>
 
 // Helper macros from wix.
 // TODO: use "s" and "..." parameters to report errors from these functions.

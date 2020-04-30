@@ -1,7 +1,5 @@
 #include "pch.h"
 #include "powertoy_module.h"
-#include "lowlevel_keyboard_event.h"
-#include <algorithm>
 
 std::map<std::wstring, PowertoyModule>& modules()
 {
