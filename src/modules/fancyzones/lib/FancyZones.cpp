@@ -284,7 +284,6 @@ FancyZones::Destroy() noexcept
     {
         SetEvent(m_terminateVirtualDesktopTrackerEvent.get());
     }
-    VirtualDesktopUtils::CloseVirtualDesktopsRegKey();
 }
 
 // IFancyZonesCallback
@@ -832,15 +831,16 @@ void FancyZones::HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) no
     {
         if (RegNotifyChangeKeyValue(virtualDesktopsRegKey, TRUE, REG_NOTIFY_CHANGE_LAST_SET, regKeyEvent, TRUE) != ERROR_SUCCESS)
         {
-            return;
+            break;
         }
         if (WaitForMultipleObjects(2, events, FALSE, INFINITE) != (WAIT_OBJECT_0 + 0))
         {
             // if fancyZonesDestroyedEvent is signalized or WaitForMultipleObjects failed, terminate thread execution
-            return;
+            break;
         }
         PostMessage(m_window, WM_PRIV_VDUPDATE, 0, 0);
     }
+    VirtualDesktopUtils::CloseVirtualDesktopsRegKey();
 }
 
 void FancyZones::RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept
