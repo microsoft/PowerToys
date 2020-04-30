@@ -115,8 +115,8 @@ namespace PowerLauncher
             {
                 if (isDPIChanged)
                 {
-                    Activate();
                     isDPIChanged = false;
+                    InitializePosition();
                 }
                 else
                 {
@@ -134,8 +134,18 @@ namespace PowerLauncher
             }
             else
             {
-                Left = WindowLeft();
+                double prevTop = Top;
+                double prevLeft = Left;               
                 Top = WindowTop();
+                Left = WindowLeft();
+                if (prevTop != Top || prevLeft != Left)
+                {
+                    isDPIChanged = true;
+                }
+                else
+                {
+                    isDPIChanged = false;
+                }
             }
         }
 
@@ -148,29 +158,30 @@ namespace PowerLauncher
             }
         }
 
+        /// <summary>
+        /// Calculates X co-ordinate of main window top left corner.
+        /// </summary>
+        /// <returns>X co-ordinate of main window top left corner</returns>
         private double WindowLeft()
         {
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
-            DPIhelper.GetDpi(screen, DpiType.Effective, out uint x, out _);
-            var dpiX = ((double)x) / 96;
-            var dpi1 = screen.WorkingArea.X / dpiX;
-            var dpi2 = screen.WorkingArea.Width / dpiX;
-            var left = (dpi2 - this.Width) / 2 + dpi1;
-            Debug.WriteLine("WorkingAreaX :" + screen.WorkingArea.X + " WorkingAreaWidth :" + screen.WorkingArea.Width + " width :" + Width);
-            Debug.WriteLine("Left :" + left + " DPiX :" + dpiX);
+            var dpi1 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.X, 0);
+            var dpi2 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
+            var left = (dpi2.X - this.Width) / 2 + dpi1.X;
             return left;
         }
 
+        /// <summary>
+        /// Calculates Y co-ordinate of main window top left corner 
+        /// </summary>
+        /// <returns>Y co-ordinate of main window top left corner</returns>
         private double WindowTop()
-        {            
+        {
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
-            DPIhelper.GetDpi(screen, DpiType.Effective, out _, out uint y);
-            var dpiY = ((double)y) / 96;
-            var dpi1 = screen.WorkingArea.Y / dpiY;
-            var dpi2 = screen.WorkingArea.Height / dpiY;
+            var dpi1 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
+            var dpi2 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
             var totalHeight = this.SearchBoxBorder.Margin.Top + this.SearchBoxBorder.Margin.Bottom + this.SearchBox.Height + this.ListBoxBorder.Margin.Top + this.ListBoxBorder.Margin.Bottom + MAX_LIST_HEIGHT;
-            var top = (dpi2 - totalHeight) / 4 + dpi1;
-            Debug.WriteLine("Top :" + top + " DPiY :" + dpiY);
+            var top = (dpi2.Y - totalHeight) / 4 + dpi1.Y;
             return top;
         }
 
@@ -447,11 +458,6 @@ namespace PowerLauncher
             //        //    }
             //        //}
             //    }
-        }
-
-        private void Window_DpiChanged(object sender, DpiChangedEventArgs e)
-        {
-            isDPIChanged = true;
         }
     }
  }
