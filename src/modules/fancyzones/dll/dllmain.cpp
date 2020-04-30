@@ -146,8 +146,7 @@ private:
 
             if (s_llKeyboardHook)
             {
-                bool success = UnhookWindowsHookEx(s_llKeyboardHook);
-                if (success)
+                if (UnhookWindowsHookEx(s_llKeyboardHook))
                 {
                     s_llKeyboardHook = nullptr;
                 }
@@ -155,8 +154,7 @@ private:
 
             if (s_winEventHook)
             {
-                bool success = UnhookWinEvent(s_winEventHook);
-                if (success)
+                if (UnhookWinEvent(s_winEventHook))
                 {
                     s_winEventHook = nullptr;
                 }
