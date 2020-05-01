@@ -5,7 +5,6 @@
 #include "ZoneWindow.h"
 #include "trace.h"
 #include "util.h"
-#include "RegistryHelpers.h"
 
 #include <ShellScalingApi.h>
 #include <mutex>
@@ -164,7 +163,7 @@ namespace ZoneWindowDrawUtils
             isHighlighted[x] = true;
         }
 
-        for (auto iter = zones.begin(); iter != zones.end(); iter++)
+        for (auto iter = zones.begin(); iter != zones.end(); ++iter)
         {
             int zoneId = static_cast<int>(iter - zones.begin());
             winrt::com_ptr<IZone> zone = iter->try_as<IZone>();
@@ -287,7 +286,7 @@ ZoneWindow::ZoneWindow(HINSTANCE hinstance)
     RegisterClassExW(&wcex);
 
     Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-    Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+    Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr);
 }
 
 ZoneWindow::~ZoneWindow()
@@ -386,7 +385,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
         redraw = (highlightZone != m_highlightZone);
         m_highlightZone = std::move(highlightZone);
     }
-    else if (m_highlightZone.size())
+    else if (!m_highlightZone.empty())
     {
         m_highlightZone = {};
         redraw = true;

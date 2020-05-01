@@ -461,12 +461,12 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (CallbackSetConfig)
                 {
                     bool flag = false;
-                    FZCallback callback(&flag);
+                    winrt::com_ptr<FZCallback> callback = winrt::make_self<FZCallback>(&flag);
 
                     json::JsonObject json{};
                     json.SetNamedValue(L"name", json::JsonValue::CreateStringValue(L"name"));
 
-                    m_settings->SetCallback(&callback);
+                    m_settings->SetCallback(callback.get());
                     m_settings->SetConfig(json.Stringify().c_str());
 
                     Assert::IsTrue(flag);
@@ -475,12 +475,12 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (CallbackCallCustomAction)
                 {
                     bool flag = false;
-                    FZCallback callback(&flag);
+                    winrt::com_ptr<FZCallback> callback = winrt::make_self<FZCallback>(&flag);
 
                     json::JsonObject action{};
                     action.SetNamedValue(L"action_name", json::JsonValue::CreateStringValue(L"ToggledFZEditor"));
 
-                    m_settings->SetCallback(&callback);
+                    m_settings->SetCallback(callback.get());
                     m_settings->CallCustomAction(action.Stringify().c_str());
 
                     Assert::IsTrue(flag);
@@ -489,12 +489,12 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (CallbackCallCustomActionNotToggle)
                 {
                     bool flag = false;
-                    FZCallback callback(&flag);
+                    winrt::com_ptr<FZCallback> callback = winrt::make_self<FZCallback>(&flag);
 
                     json::JsonObject action{};
                     action.SetNamedValue(L"action_name", json::JsonValue::CreateStringValue(L"NOT_ToggledFZEditor"));
 
-                    m_settings->SetCallback(&callback);
+                    m_settings->SetCallback(callback.get());
                     m_settings->CallCustomAction(action.Stringify().c_str());
 
                     Assert::IsFalse(flag);
@@ -503,9 +503,9 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (CallbackGetConfig)
                 {
                     bool flag = false;
-                    FZCallback callback(&flag);
+                    winrt::com_ptr<FZCallback> callback = winrt::make_self<FZCallback>(&flag);
 
-                    m_settings->SetCallback(&callback);
+                    m_settings->SetCallback(callback.get());
 
                     int bufSize = 0;
                     m_settings->GetConfig(L"", &bufSize);
@@ -516,9 +516,9 @@ namespace FancyZonesUnitTests
                 TEST_METHOD (CallbackGetSettings)
                 {
                     bool flag = false;
-                    FZCallback callback(&flag);
+                    winrt::com_ptr<FZCallback> callback = winrt::make_self<FZCallback>(&flag);
 
-                    m_settings->SetCallback(&callback);
+                    m_settings->SetCallback(callback.get());
                     m_settings->GetSettings();
 
                     Assert::IsFalse(flag);

@@ -45,8 +45,7 @@ public:
     // nullptr as the last element of the array. Nullptr can also be retured for empty list.
     virtual PCWSTR* get_events() override
     {
-        static PCWSTR events[] = { ll_keyboard, win_hook_event, nullptr };
-        return events;
+        return nullptr;
     }
 
     // Return JSON with the configuration options.
@@ -77,6 +76,19 @@ public:
         {
             Trace::FancyZones::EnableFancyZones(true);
             m_app = MakeFancyZones(reinterpret_cast<HINSTANCE>(&__ImageBase), m_settings);
+
+            s_llKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
+            if (!s_llKeyboardHook)
+            {
+                MessageBoxW(NULL, L"Cannot install keyboard listener.", L"PowerToys - FancyZones", MB_OK | MB_ICONERROR);
+            }
+
+            s_winEventHook = SetWinEventHook(EVENT_MIN, EVENT_MAX, nullptr, WinHookProc, 0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+            if (!s_winEventHook)
+            {
+                MessageBoxW(NULL, L"Cannot install Windows event listener.", L"PowerToys - FancyZones", MB_OK | MB_ICONERROR);
+            }
+
             if (m_app)
             {
                 m_app->Run();
@@ -96,22 +108,9 @@ public:
         return (m_app != nullptr);
     }
 
-    // Handle incoming event, data is event-specific
+    // PowertoyModuleIface method, unused
     virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
     {
-        if (m_app)
-        {
-            if (wcscmp(name, ll_keyboard) == 0)
-            {
-                // Return 1 if the keypress is to be suppressed (not forwarded to Windows), otherwise return 0.
-                return HandleKeyboardHookEvent(reinterpret_cast<LowlevelKeyboardEvent*>(data));
-            }
-            else if (wcscmp(name, win_hook_event) == 0)
-            {
-                // Return value is ignored
-                HandleWinHookEvent(reinterpret_cast<WinHookEvent*>(data));
-            }
-        }
         return 0;
     }
 
@@ -130,6 +129,7 @@ public:
         app_name = GET_RESOURCE_STRING(IDS_FANCYZONES);
         m_settings = MakeFancyZonesSettings(reinterpret_cast<HINSTANCE>(&__ImageBase), FancyZonesModule::get_name());
         JSONHelpers::FancyZonesDataInstance().LoadFancyZonesData();
+        s_instance = this;
     }
 
 private:
@@ -143,6 +143,22 @@ private:
             m_app->Destroy();
             m_app = nullptr;
             m_settings->ResetCallback();
+
+            if (s_llKeyboardHook)
+            {
+                if (UnhookWindowsHookEx(s_llKeyboardHook))
+                {
+                    s_llKeyboardHook = nullptr;
+                }
+            }
+
+            if (s_winEventHook)
+            {
+                if (UnhookWinEvent(s_winEventHook))
+                {
+                    s_winEventHook = nullptr;
+                }
+            }
         }
     }
 
@@ -155,6 +171,35 @@ private:
     winrt::com_ptr<IFancyZones> m_app;
     winrt::com_ptr<IFancyZonesSettings> m_settings;
     std::wstring app_name;
+
+    static inline FancyZonesModule* s_instance;
+    static inline HHOOK s_llKeyboardHook;
+    static inline HWINEVENTHOOK s_winEventHook;
+
+    static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+    {
+        LowlevelKeyboardEvent event;
+        if (nCode == HC_ACTION)
+        {
+            event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
+            event.wParam = wParam;
+            if (s_instance)
+            {
+                return s_instance->HandleKeyboardHookEvent(&event);
+            }
+        }
+        return CallNextHookEx(NULL, nCode, wParam, lParam);
+    }
+
+    static void CALLBACK WinHookProc(HWINEVENTHOOK winEventHook, DWORD event, HWND window, LONG object,
+        LONG child, DWORD eventThread, DWORD eventTime)
+    {
+        WinHookEvent data{ event, window, object, child, eventThread, eventTime };
+        if (s_instance)
+        {
+            s_instance->HandleWinHookEvent(&data);
+        }
+    }
 };
 
 intptr_t FancyZonesModule::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
@@ -245,7 +290,5 @@ void FancyZonesModule::MoveSizeUpdate(POINT const& ptScreen) noexcept
 
 extern "C" __declspec(dllexport) PowertoyModuleIface*  __cdecl powertoy_create()
 {
-  return new FancyZonesModule();
+    return new FancyZonesModule();
 }
-
-
