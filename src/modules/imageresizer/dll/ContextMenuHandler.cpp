@@ -37,7 +37,7 @@ HRESULT CContextMenuHandler::Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _
 {
     Uninitialize();
 
-    if (!CSettings::GetEnabled())
+    if (!CSettingsInstance().GetEnabled())
     {
         return E_FAIL;
     }
@@ -62,7 +62,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     {
         return S_OK;
     }
-    if (!CSettings::GetEnabled())
+    if (!CSettingsInstance().GetEnabled())
     {
         return E_FAIL;
     }
@@ -354,7 +354,7 @@ HRESULT __stdcall CContextMenuHandler::GetCanonicalName(GUID* pguidCommandName)
 
 HRESULT __stdcall CContextMenuHandler::GetState(IShellItemArray* psiItemArray, BOOL fOkToBeSlow, EXPCMDSTATE* pCmdState)
 {
-    if (!CSettings::GetEnabled())
+    if (!CSettingsInstance().GetEnabled())
     {
         *pCmdState = ECS_HIDDEN;
         return S_OK;

@@ -441,7 +441,6 @@ void CSettings::Reload()
     }
 }
 
-
 void CSettings::MigrateFromRegistry()
 {
     settings.enabled                 = GetRegBoolean(c_enabled, true);
