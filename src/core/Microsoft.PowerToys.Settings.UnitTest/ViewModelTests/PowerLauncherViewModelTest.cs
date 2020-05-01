@@ -13,15 +13,6 @@ namespace ViewModelTests
     [TestClass]
     public class PowerLauncher
     {
-        class PowerLauncherSettingsMock : PowerLauncherSettings
-        {
-            public int TimesSaved { get; set; }
-            public override void Save()
-            {
-                TimesSaved++;
-            }
-        }
-
         class SendCallbackMock
         {
             public int TimesSent { get; set; }
@@ -31,14 +22,14 @@ namespace ViewModelTests
             }
         }
         private PowerLauncherViewModel viewModel;
-        private PowerLauncherSettingsMock mockSettings;
+        private PowerLauncherSettings mockSettings;
         private SendCallbackMock sendCallbackMock;
 
 
         [TestInitialize]
         public void Initialize()
         {
-            mockSettings = new PowerLauncherSettingsMock();
+            mockSettings = new PowerLauncherSettings();
             sendCallbackMock = new SendCallbackMock();
 
             viewModel = new PowerLauncherViewModel(
@@ -54,19 +45,17 @@ namespace ViewModelTests
             viewModel.SearchTypePreference = "SearchOptionsAreNotValidated";
 
             Assert.AreEqual(sendCallbackMock.TimesSent, 2);
-            Assert.AreEqual(mockSettings.TimesSaved, 2);
-
             Assert.IsTrue(mockSettings.properties.search_result_preference == "SearchOptionsAreNotValidated");
             Assert.IsTrue(mockSettings.properties.search_type_preference == "SearchOptionsAreNotValidated");
         }
 
         public void AssertHotkeySettings(HotkeySettings setting, bool win, bool ctrl, bool alt, bool shift, int code)
         {
-            Assert.AreEqual(setting.Win, win);
-            Assert.AreEqual(setting.Ctrl, ctrl);
-            Assert.AreEqual(setting.Alt, alt);
-            Assert.AreEqual(setting.Shift, shift);
-            Assert.AreEqual(setting.Code, code);
+            Assert.AreEqual(win, setting.Win);
+            Assert.AreEqual(ctrl, setting.Ctrl);
+            Assert.AreEqual(alt, setting.Alt);
+            Assert.AreEqual(shift, setting.Shift);
+            Assert.AreEqual(code, setting.Code);
         }
 
         [TestMethod]
@@ -94,8 +83,7 @@ namespace ViewModelTests
             viewModel.OpenConsole = openConsole;
             viewModel.CopyPathLocation = copyFileLocation;
 
-            Assert.AreEqual(mockSettings.TimesSaved, 4);
-            Assert.AreEqual(sendCallbackMock.TimesSent, 4);
+            Assert.AreEqual(4, sendCallbackMock.TimesSent);
 
             AssertHotkeySettings(
                 mockSettings.properties.open_powerlauncher,
@@ -138,8 +126,7 @@ namespace ViewModelTests
             viewModel.OverrideWinSKey = false;
 
 
-            Assert.AreEqual(sendCallbackMock.TimesSent, 1);
-            Assert.AreEqual(mockSettings.TimesSaved, 1);
+            Assert.AreEqual(1, sendCallbackMock.TimesSent);
 
             Assert.IsTrue(mockSettings.properties.override_win_r_key);
             Assert.IsFalse(mockSettings.properties.override_win_s_key);

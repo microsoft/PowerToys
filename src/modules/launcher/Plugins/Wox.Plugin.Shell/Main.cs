@@ -293,7 +293,7 @@ namespace Wox.Plugin.Shell
         {
             // not overriding Win+R 
             // crutkas we need to earn the right for Win+R override
-
+            /*
             if (_settings.ReplaceWinR)
             {
                 if (keyevent == (int)KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
@@ -309,6 +309,7 @@ namespace Wox.Plugin.Shell
                     return false;
                 }
             }
+            */
             return true;
         }
 
@@ -357,7 +358,7 @@ namespace Wox.Plugin.Shell
 
         public void UpdateSettings(PowerLauncherSettings settings)
         {
-            _settings.ReplaceWinR = settings.properties.override_win_r_key;
+            //_settings.ReplaceWinR = settings.properties.override_win_r_key;
         }
     }
 }
