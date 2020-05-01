@@ -1,7 +1,6 @@
 #include "pch.h"
 #include <interface/powertoy_module_interface.h>
 #include <common.h>
-#include "trace.h"
 #include "settings.h"
 #include "registry_wrapper.h"
 

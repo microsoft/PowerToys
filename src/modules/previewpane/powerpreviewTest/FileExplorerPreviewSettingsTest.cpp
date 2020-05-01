@@ -3,7 +3,6 @@
 #include <settings_objects.h>
 #include <powerpreview/settings.cpp>
 #include <powerpreview/trace.cpp>
-#include <common.h>
 #include <powerpreview/registry_wrapper.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -19,7 +18,7 @@ namespace PreviewHandlerSettingsTest
     public:
         LONG ReturnValue = ERROR_SUCCESS;
         int NumOfCalls = 0;
-        HKEY Scope = NULL;
+        HKEY Scope = nullptr;
         LPCWSTR SubKey;
         LPCWSTR ValueName;
     };
@@ -31,7 +30,7 @@ namespace PreviewHandlerSettingsTest
         FunctionProperties DeleteRegistryMockProperties;
         FunctionProperties GetRegistryMockProperties;
 
-        LONG SetRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName, DWORD dwType, CONST BYTE* data, DWORD cbData)
+        LONG SetRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName, DWORD dwType, CONST BYTE* data, DWORD cbData) override
         {
             SetRegistryMockProperties.NumOfCalls += 1;
             SetRegistryMockProperties.Scope = keyScope;
@@ -40,7 +39,7 @@ namespace PreviewHandlerSettingsTest
             return SetRegistryMockProperties.ReturnValue;
         }
 
-        LONG DeleteRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName)
+        LONG DeleteRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName) override
         {
             DeleteRegistryMockProperties.NumOfCalls++;
             DeleteRegistryMockProperties.Scope = keyScope;
@@ -49,7 +48,7 @@ namespace PreviewHandlerSettingsTest
             return DeleteRegistryMockProperties.ReturnValue;
         }
 
-        LONG GetRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName, DWORD dwType, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData)
+        LONG GetRegistryValue(HKEY keyScope, LPCWSTR subKey, LPCWSTR valueName, DWORD dwType, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData) override
         {
             GetRegistryMockProperties.NumOfCalls++;
             GetRegistryMockProperties.Scope = keyScope;
@@ -189,7 +188,7 @@ namespace PreviewHandlerSettingsTest
             Assert::AreEqual((ULONG_PTR)(mockRegistryWrapper->DeleteRegistryMockProperties.Scope), (ULONG_PTR)(HKEY_CURRENT_USER));
         }
 
-		FileExplorerPreviewSettings GetSettingsObject(bool defaultState, RegistryWrapperIface* registryMock)
+        static FileExplorerPreviewSettings GetSettingsObject(bool defaultState, RegistryWrapperIface* registryMock)
 		{
             return FileExplorerPreviewSettings(
                 defaultState,
@@ -200,8 +199,8 @@ namespace PreviewHandlerSettingsTest
                 registryMock);
 		}
 
-		std::wstring GetJSONSettings(const std::wstring &_settingsNameId, const std::wstring &_value) const
-		{
+        static std::wstring GetJSONSettings(const std::wstring &_settingsNameId, const std::wstring &_value)
+        {
 			return L"{\"name\":\"Module Name\",\"properties\" : {\"" + _settingsNameId + L"\":{\"value\":" + _value + L"}},\"version\" : \"1.0\" }";
 		}
 	};

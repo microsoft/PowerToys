@@ -58,11 +58,11 @@ private:
     void animate(int vk_code, int offset);
     bool show_thumbnail(const RECT& rect, double alpha);
     void hide_thumbnail();
-    virtual void init() override;
-    virtual void resize() override;
-    virtual void render(ID2D1DeviceContext5* d2d_dc) override;
-    virtual void on_show() override;
-    virtual void on_hide() override;
+    void init() override;
+    void resize() override;
+    void render(ID2D1DeviceContext5* d2d_dc) override;
+    void on_show() override;
+    void on_hide() override;
     float get_overlay_opacity();
 
     bool running = true;

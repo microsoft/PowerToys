@@ -344,7 +344,7 @@ IFACEMETHODIMP CRenameMRU::QueryInterface(_In_ REFIID riid, _Outptr_ void** ppv)
     static const QITAB qit[] = {
         QITABENT(CRenameMRU, IEnumString),
         QITABENT(CRenameMRU, IPowerRenameMRU),
-        { 0 }
+        { nullptr }
     };
     return QISearch(this, qit, riid, ppv);
 }

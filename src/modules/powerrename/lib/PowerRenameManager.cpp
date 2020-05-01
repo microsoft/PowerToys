@@ -2,8 +2,8 @@
 #include "PowerRenameManager.h"
 #include "PowerRenameRegEx.h" // Default RegEx handler
 #include <algorithm>
-#include <shlobj.h>
-#include "helpers.h"
+#include <ShlObj.h>
+#include "Helpers.h"
 #include "window_helpers.h"
 #include <filesystem>
 #include "trace.h"
@@ -12,7 +12,10 @@ namespace fs = std::filesystem;
 
 extern HINSTANCE g_hInst;
 
-// The default FOF flags to use in the rename operations
+
+/**
+ * \brief: The default FOF flags to use in the rename operations
+ */
 #define FOF_DEFAULTFLAGS (FOF_ALLOWUNDO | FOFX_ADDUNDORECORD | FOFX_SHOWELEVATIONPROMPT | FOF_RENAMEONCOLLISION)
 
 IFACEMETHODIMP_(ULONG) CPowerRenameManager::AddRef()
@@ -157,8 +160,7 @@ IFACEMETHODIMP CPowerRenameManager::GetItemById(_In_ int id, _COM_Outptr_ IPower
 
     CSRWSharedAutoLock lock(&m_lockItems);
     HRESULT hr = E_FAIL;
-    std::map<int, IPowerRenameItem*>::iterator it;
-    it = m_renameItems.find(id);
+    std::map<int, IPowerRenameItem*>::iterator it = m_renameItems.find(id);
     if (it !=  m_renameItems.end())
     {
         *ppItem = m_renameItems[id];
@@ -430,7 +432,7 @@ void CPowerRenameManager::_LogOperationTelemetry()
         CComPtr<IPowerRenameItem> spItem;
         if (SUCCEEDED(GetItemByIndex(i, &spItem)))
         {
-            PWSTR originalName;
+            PWSTR originalName = nullptr;
             if (SUCCEEDED(spItem->get_originalName(&originalName)))
             {
                 std::wstring extension = fs::path(originalName).extension().wstring();
@@ -821,7 +823,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 spItem->put_newName(newNameToUse);
 
                                 // Was there a change?
-                                if (lstrcmp(currentNewName, newNameToUse) != 0)
+                                if (lstrcmpW(currentNewName, newNameToUse) != 0)
                                 {
                                     // Send the manager thread the item processed message
                                     PostMessage(pwtd->hwndManager, SRM_REGEX_ITEM_UPDATED, GetCurrentThreadId(), id);

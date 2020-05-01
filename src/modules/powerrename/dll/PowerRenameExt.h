@@ -10,25 +10,25 @@ public:
     CPowerRenameMenu();
 
     // IUnknown
-    IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _COM_Outptr_ void** ppv)
+    IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _COM_Outptr_ void** ppv) override
     {
         static const QITAB qit[] = {
             QITABENT(CPowerRenameMenu, IShellExtInit),
             QITABENT(CPowerRenameMenu, IContextMenu),
             QITABENT(CPowerRenameMenu, IExplorerCommand),
-            { 0, 0 },
+            { nullptr, 0 },
         };
         return QISearch(this, qit, riid, ppv);
     }
 
     IFACEMETHODIMP_(ULONG)
-    AddRef()
+    AddRef() override
     {
         return ++m_refCount;
     }
 
     IFACEMETHODIMP_(ULONG)
-    Release()
+    Release() override
     {
         LONG refCount = --m_refCount;
         if (refCount == 0)
@@ -39,12 +39,12 @@ public:
     }
 
     // IShellExtInit
-    STDMETHODIMP Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _In_ IDataObject* pdto, HKEY hkProgID);
+    STDMETHODIMP Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _In_ IDataObject* pdto, HKEY hkProgID) override;
 
     // IContextMenu
-    STDMETHODIMP QueryContextMenu(HMENU hMenu, UINT index, UINT uIDFirst, UINT uIDLast, UINT uFlags);
-    STDMETHODIMP InvokeCommand(_In_ LPCMINVOKECOMMANDINFO pCMI);
-    STDMETHODIMP GetCommandString(UINT_PTR, UINT, _In_opt_ UINT*, _In_ LPSTR, UINT)
+    STDMETHODIMP QueryContextMenu(HMENU hMenu, UINT index, UINT uIDFirst, UINT uIDLast, UINT uFlags) override;
+    STDMETHODIMP InvokeCommand(_In_ LPCMINVOKECOMMANDINFO pCMI) override;
+    STDMETHODIMP GetCommandString(UINT_PTR, UINT, _In_opt_ UINT*, _In_ LPSTR, UINT) override
     {
         return E_NOTIMPL;
     }

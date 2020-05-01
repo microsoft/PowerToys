@@ -40,7 +40,7 @@ namespace std
 
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
 {
-public:
+
     FancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings) noexcept :
         m_hinstance(hinstance),
         m_settings(settings),
@@ -687,10 +687,10 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
 
 LRESULT CALLBACK FancyZones::s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
-    auto thisRef = reinterpret_cast<FancyZones*>(GetWindowLongPtr(window, GWLP_USERDATA));
+    auto* thisRef = reinterpret_cast<FancyZones*>(GetWindowLongPtr(window, GWLP_USERDATA));
     if (!thisRef && (message == WM_CREATE))
     {
-        const auto createStruct = reinterpret_cast<LPCREATESTRUCT>(lparam);
+        auto* const createStruct = reinterpret_cast<LPCREATESTRUCT>(lparam);
         thisRef = reinterpret_cast<FancyZones*>(createStruct->lpCreateParams);
         SetWindowLongPtr(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(thisRef));
     }
@@ -731,7 +731,7 @@ void FancyZones::UpdateZoneWindows() noexcept
                                    L"\\\\?\\DISPLAY#LOCALDISPLAY#";
                 }
 
-                auto strongThis = reinterpret_cast<FancyZones*>(data);
+                auto* strongThis = reinterpret_cast<FancyZones*>(data);
                 strongThis->AddZoneWindow(monitor, deviceId);
             }
         }
