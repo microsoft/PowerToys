@@ -107,6 +107,7 @@
     </ClCompile>
     <ClCompile Include="ShortcutControl.cpp" />
     <ClCompile Include="SingleKeyRemapControl.cpp" />
+    <ClCompile Include="XamlBridge.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EditKeyboardWindow.h" />
@@ -115,6 +116,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="ShortcutControl.h" />
     <ClInclude Include="SingleKeyRemapControl.h" />
+    <ClInclude Include="XamlBridge.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
