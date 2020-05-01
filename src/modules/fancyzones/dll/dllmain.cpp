@@ -252,7 +252,13 @@ void FancyZonesModule::HandleWinHookEvent(WinHookEvent* data) noexcept
         MoveSizeStart(data->hwnd, ptScreen);
         if (!m_objectLocationWinEventHook)
         {
-            m_objectLocationWinEventHook = SetWinEventHook(EVENT_OBJECT_LOCATIONCHANGE, EVENT_OBJECT_LOCATIONCHANGE, nullptr, WinHookProc, 0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+            m_objectLocationWinEventHook = SetWinEventHook(EVENT_OBJECT_LOCATIONCHANGE,
+                                                           EVENT_OBJECT_LOCATIONCHANGE,
+                                                           nullptr,
+                                                           WinHookProc,
+                                                           0,
+                                                           0,
+                                                           WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
         }
     }
     break;
