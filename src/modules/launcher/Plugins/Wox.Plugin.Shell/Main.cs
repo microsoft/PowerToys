@@ -110,14 +110,14 @@ namespace Wox.Plugin.Shell
                 {
                     if (m.Key == cmd)
                     {
-                        result.SubTitle = string.Format(_context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value);
+                        result.SubTitle = "Shell";
                         return null;
                     }
 
                     var ret = new Result
                     {
                         Title = m.Key,
-                        SubTitle = string.Format(_context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
+                        SubTitle = "Shell",
                         IcoPath = Image,
                         Action = c =>
                         {
@@ -136,7 +136,7 @@ namespace Wox.Plugin.Shell
             {
                 Title = cmd,
                 Score = 5000,
-                SubTitle = _context.API.GetTranslation("wox_plugin_cmd_execute_through_shell"),
+                SubTitle = "Shell",
                 IcoPath = Image,
                 Action = c =>
                 {
@@ -154,7 +154,7 @@ namespace Wox.Plugin.Shell
                 .Select(m => new Result
                 {
                     Title = m.Key,
-                    SubTitle = string.Format(_context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
+                    SubTitle = "Shell",
                     IcoPath = Image,
                     Action = c =>
                     {
