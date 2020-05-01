@@ -4,6 +4,7 @@
         xmlns:vm="clr-namespace:Wox.ViewModel;assembly=Wox"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+        xmlns:local="clr-namespace:PowerLauncher"
         mc:Ignorable="d"
         xmlns:xaml="clr-namespace:Microsoft.Toolkit.Wpf.UI.XamlHost;assembly=Microsoft.Toolkit.Wpf.UI.XamlHost"
         Title="PowerLaunch"
@@ -22,13 +23,13 @@
         Drop="OnDrop"
         LocationChanged="OnLocationChanged"
         Deactivated="OnDeactivated"
-        Background="Transparent"
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         d:DataContext="{d:DesignInstance vm:MainViewModel}">
-    <Grid Width="720">
+    <Grid Width="720" 
+          MouseDown="OnMouseDown">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Border 
             x:Name="SearchBoxBorder" 
@@ -39,9 +40,12 @@
             <Border.Effect>
                 <DropShadowEffect BlurRadius="16" Opacity="0.8" ShadowDepth="0" />
             </Border.Effect>
-            <xaml:WindowsXamlHost 
-                InitialTypeName="PowerLauncher.UI.LauncherControl" 
-                ChildChanged="WindowsXamlHostTextBox_ChildChanged" />
+            <ContentControl>
+                <local:LauncherControl
+                Height="60"
+                x:Name="SearchBox" 
+                Loaded="SearchBox_Loaded" />
+            </ContentControl>
         </Border>
         <Border 
             x:Name="ListBoxBorder"
@@ -53,10 +57,10 @@
             <Border.Effect>
                 <DropShadowEffect BlurRadius="16" Opacity="0.8" ShadowDepth="0" />
             </Border.Effect>
-            <xaml:WindowsXamlHost 
+            <xaml:WindowsXamlHost
+                x:Name="ListBox"
                 InitialTypeName="PowerLauncher.UI.ResultList" 
-                ChildChanged="WindowsXamlHostListView_ChildChanged" 
-                PreviewMouseDown="WindowsXamlHost_PreviewMouseDown" />
+                ChildChanged="WindowsXamlHostListView_ChildChanged"/>
         </Border>
     </Grid> 
     <Window.InputBindings>
