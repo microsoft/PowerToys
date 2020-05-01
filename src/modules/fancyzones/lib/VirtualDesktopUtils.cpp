@@ -9,6 +9,7 @@ namespace VirtualDesktopUtils
 
     const wchar_t RegCurrentVirtualDesktop[] = L"CurrentVirtualDesktop";
     const wchar_t RegVirtualDesktopIds[] = L"VirtualDesktopIDs";
+    const wchar_t RegKeyVirtualDesktops[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops";
 
     IServiceProvider* GetServiceProvider()
     {
@@ -50,7 +51,7 @@ namespace VirtualDesktopUtils
         return SUCCEEDED(CLSIDFromString(virtualDesktopId.c_str(), desktopId));
     }
 
-    bool GetCurrentVirtualDesktopId(GUID* desktopId)
+    bool GetDesktopIdFromCurrentSession(GUID* desktopId)
     {
         DWORD sessionId;
         ProcessIdToSessionId(GetCurrentProcessId(), &sessionId);
@@ -77,8 +78,30 @@ namespace VirtualDesktopUtils
         return false;
     }
 
+    bool GetCurrentVirtualDesktopId(GUID* desktopId)
+    {
+        if (!GetDesktopIdFromCurrentSession(desktopId))
+        {
+            // Explorer persists current virtual desktop identifier to registry on a per session basis,
+            // but only after first virtual desktop switch happens. If the user hasn't switched virtual
+            // desktops (only primary desktop) in this session value in registry will be empty.
+            // If this value is empty take first element from array of virtual desktops (not kept per session).
+            std::vector<GUID> ids{};
+            if (!GetVirtualDekstopIds(ids) || ids.empty())
+            {
+                return false;
+            }
+            *desktopId = ids[0];
+        }
+        return true;
+    }
+
     bool GetVirtualDekstopIds(HKEY hKey, std::vector<GUID>& ids)
     {
+        if (!hKey)
+        {
+            return false;
+        }
         DWORD bufferCapacity;
         // request regkey binary buffer capacity only
         if (RegQueryValueExW(hKey, RegVirtualDesktopIds, 0, nullptr, nullptr, &bufferCapacity) != ERROR_SUCCESS)
@@ -101,5 +124,50 @@ namespace VirtualDesktopUtils
         }
         ids = std::move(temp);
         return true;
+    }
+
+    bool GetVirtualDekstopIds(std::vector<GUID>& ids)
+    {
+        return GetVirtualDekstopIds(GetVirtualDesktopsRegKey(), ids);
+    }
+
+    HKEY OpenVirtualDesktopsRegKey()
+    {
+        HKEY hKey{ nullptr };
+        if (RegOpenKeyEx(HKEY_CURRENT_USER, RegKeyVirtualDesktops, 0, KEY_ALL_ACCESS, &hKey) == ERROR_SUCCESS)
+        {
+            return hKey;
+        }
+        return nullptr;
+    }
+
+    HKEY GetVirtualDesktopsRegKey()
+    {
+        static wil::unique_hkey virtualDesktopsKey{ OpenVirtualDesktopsRegKey() };
+        return virtualDesktopsKey.get();
+    }
+
+    void HandleVirtualDesktopUpdates(HWND window, UINT message, HANDLE terminateEvent)
+    {
+        HKEY virtualDesktopsRegKey = GetVirtualDesktopsRegKey();
+        if (!virtualDesktopsRegKey)
+        {
+            return;
+        }
+        HANDLE regKeyEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+        HANDLE events[2] = { regKeyEvent, terminateEvent };
+        while (1)
+        {
+            if (RegNotifyChangeKeyValue(virtualDesktopsRegKey, TRUE, REG_NOTIFY_CHANGE_LAST_SET, regKeyEvent, TRUE) != ERROR_SUCCESS)
+            {
+                return;
+            }
+            if (WaitForMultipleObjects(2, events, FALSE, INFINITE) != (WAIT_OBJECT_0 + 0))
+            {
+                // if terminateEvent is signalized or WaitForMultipleObjects failed, terminate thread execution
+                return;
+            }
+            PostMessage(window, message, 0, 0);
+        }
     }
 }
