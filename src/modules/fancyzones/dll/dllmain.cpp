@@ -13,21 +13,21 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
     switch (ul_reason_for_call)
     {
-        case DLL_PROCESS_ATTACH:
-            Trace::RegisterProvider();
-            break;
+    case DLL_PROCESS_ATTACH:
+        Trace::RegisterProvider();
+        break;
 
-        case DLL_THREAD_ATTACH:
-        case DLL_THREAD_DETACH:
-            break;
+    case DLL_THREAD_ATTACH:
+    case DLL_THREAD_DETACH:
+        break;
 
-        case DLL_PROCESS_DETACH:
-            Trace::UnregisterProvider();
-            break;
+    case DLL_PROCESS_DETACH:
+        Trace::UnregisterProvider();
+        break;
     }
     return TRUE;
 }
@@ -50,7 +50,7 @@ public:
 
     // Return JSON with the configuration options.
     // These are the settings shown on the settings page along with their current values.
-    virtual bool get_config(_Out_ PWSTR buffer, _Out_ int *buffer_size) override
+    virtual bool get_config(_Out_ PWSTR buffer, _Out_ int* buffer_size) override
     {
         return m_settings->GetConfig(buffer, buffer_size);
     }
@@ -83,10 +83,25 @@ public:
                 MessageBoxW(NULL, L"Cannot install keyboard listener.", L"PowerToys - FancyZones", MB_OK | MB_ICONERROR);
             }
 
-            s_winEventHook = SetWinEventHook(EVENT_MIN, EVENT_MAX, nullptr, WinHookProc, 0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
-            if (!s_winEventHook)
+            std::array<DWORD, 6> events_to_subscribe = {
+                EVENT_SYSTEM_MOVESIZESTART,
+                EVENT_SYSTEM_MOVESIZEEND,
+                EVENT_OBJECT_NAMECHANGE,
+                EVENT_OBJECT_UNCLOAKED,
+                EVENT_OBJECT_SHOW,
+                EVENT_OBJECT_CREATE
+            };
+            for (const auto event : events_to_subscribe)
             {
-                MessageBoxW(NULL, L"Cannot install Windows event listener.", L"PowerToys - FancyZones", MB_OK | MB_ICONERROR);
+                auto hook = SetWinEventHook(event, event, nullptr, WinHookProc, 0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+                if (hook)
+                {
+                    m_staticWinEventHooks.emplace_back(hook);
+                }
+                else
+                {
+                    MessageBoxW(NULL, L"Cannot install Windows event listener.", L"PowerToys - FancyZones", MB_OK | MB_ICONERROR);
+                }
             }
 
             if (m_app)
@@ -114,8 +129,8 @@ public:
         return 0;
     }
 
-    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override { }
-    virtual void signal_system_menu_action(const wchar_t* name) override { }
+    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override {}
+    virtual void signal_system_menu_action(const wchar_t* name) override {}
 
     // Destroy the powertoy and free memory
     virtual void destroy() override
@@ -135,8 +150,9 @@ public:
 private:
     void Disable(bool const traceEvent)
     {
-        if (m_app) {
-            if (traceEvent) 
+        if (m_app)
+        {
+            if (traceEvent)
             {
                 Trace::FancyZones::EnableFancyZones(false);
             }
@@ -152,11 +168,17 @@ private:
                 }
             }
 
-            if (s_winEventHook)
+            m_staticWinEventHooks.erase(std::remove_if(begin(m_staticWinEventHooks),
+                                                       end(m_staticWinEventHooks),
+                                                       [](const HWINEVENTHOOK hook) {
+                                                           return UnhookWinEvent(hook);
+                                                       }),
+                                        end(m_staticWinEventHooks));
+            if (m_objectLocationWinEventHook)
             {
-                if (UnhookWinEvent(s_winEventHook))
+                if (UnhookWinEvent(m_objectLocationWinEventHook))
                 {
-                    s_winEventHook = nullptr;
+                    m_objectLocationWinEventHook = nullptr;
                 }
             }
         }
@@ -174,7 +196,9 @@ private:
 
     static inline FancyZonesModule* s_instance;
     static inline HHOOK s_llKeyboardHook;
-    static inline HWINEVENTHOOK s_winEventHook;
+
+    std::vector<HWINEVENTHOOK> m_staticWinEventHooks;
+    HWINEVENTHOOK m_objectLocationWinEventHook;
 
     static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     {
@@ -191,8 +215,13 @@ private:
         return CallNextHookEx(NULL, nCode, wParam, lParam);
     }
 
-    static void CALLBACK WinHookProc(HWINEVENTHOOK winEventHook, DWORD event, HWND window, LONG object,
-        LONG child, DWORD eventThread, DWORD eventTime)
+    static void CALLBACK WinHookProc(HWINEVENTHOOK winEventHook,
+                                     DWORD event,
+                                     HWND window,
+                                     LONG object,
+                                     LONG child,
+                                     DWORD eventThread,
+                                     DWORD eventTime)
     {
         WinHookEvent data{ event, window, object, child, eventThread, eventTime };
         if (s_instance)
@@ -221,11 +250,19 @@ void FancyZonesModule::HandleWinHookEvent(WinHookEvent* data) noexcept
     case EVENT_SYSTEM_MOVESIZESTART:
     {
         MoveSizeStart(data->hwnd, ptScreen);
+        if (!m_objectLocationWinEventHook)
+        {
+            m_objectLocationWinEventHook = SetWinEventHook(EVENT_OBJECT_LOCATIONCHANGE, EVENT_OBJECT_LOCATIONCHANGE, nullptr, WinHookProc, 0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+        }
     }
     break;
 
     case EVENT_SYSTEM_MOVESIZEEND:
     {
+        if (UnhookWinEvent(m_objectLocationWinEventHook))
+        {
+            m_objectLocationWinEventHook = nullptr;
+        }
         MoveSizeEnd(data->hwnd, ptScreen);
     }
     break;
@@ -288,7 +325,7 @@ void FancyZonesModule::MoveSizeUpdate(POINT const& ptScreen) noexcept
     }
 }
 
-extern "C" __declspec(dllexport) PowertoyModuleIface*  __cdecl powertoy_create()
+extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
     return new FancyZonesModule();
 }
