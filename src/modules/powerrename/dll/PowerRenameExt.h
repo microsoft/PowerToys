@@ -1,5 +1,5 @@
 #pragma once
-#include "stdafx.h"
+#include "pch.h"
 
 class __declspec(uuid("0440049F-D1DC-4E46-B27B-98393D79486B")) CPowerRenameMenu :
     public IShellExtInit,

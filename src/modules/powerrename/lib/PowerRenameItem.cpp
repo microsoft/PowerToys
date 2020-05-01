@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "PowerRenameItem.h"
 #include "icon_helpers.h"
 

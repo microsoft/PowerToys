@@ -1,11 +1,10 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "resource.h"
 #include "PowerRenameUI.h"
 #include "dpi_aware.h"
 #include <commctrl.h>
 #include <Shlobj.h>
 #include <helpers.h>
-#include <settings.h>
 #include <windowsx.h>
 #include <thread>
 #include <trace.h>
@@ -78,6 +77,14 @@ inline int RECT_WIDTH(RECT& r)
 inline int RECT_HEIGHT(RECT& r)
 {
     return r.bottom - r.top;
+}
+
+CPowerRenameUI::CPowerRenameUI() :
+    m_refCount(1)
+{
+    CSettingsInstance().Load();
+    (void)OleInitialize(nullptr);
+    ModuleAddRef();
 }
 
 // IUnknown

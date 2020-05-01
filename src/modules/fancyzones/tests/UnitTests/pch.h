@@ -9,9 +9,10 @@
 
 // add headers that you want to pre-compile here
 #include <Windows.h>
-#include <winrt\base.h>
-
-#include "lib\pch.h"
+#include <winrt/base.h>
+#include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Foundation.Collections.h>
+#include "lib/pch.h"
 #include "CppUnitTest.h"
 
 #endif //PCH_H

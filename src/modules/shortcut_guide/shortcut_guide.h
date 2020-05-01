@@ -22,6 +22,8 @@ public:
     virtual void enable() override;
     virtual void disable() override;
     virtual bool is_enabled() override;
+
+    // PowerToys interface method, not used
     virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override;
 
     virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override {}
@@ -32,6 +34,9 @@ public:
     void quick_hide();
     void was_hidden();
 
+    // Method called from LowLevelKeyboardProc
+    intptr_t signal_event(LowlevelKeyboardEvent* event);
+
     virtual void destroy() override;
 
 private:
@@ -39,6 +44,7 @@ private:
     std::unique_ptr<TargetState> target_state;
     std::unique_ptr<D2DOverlayWindow> winkey_popup;
     bool _enabled = false;
+    HHOOK hook_handle;
 
     void init_settings();
     void disable(bool trace_event);

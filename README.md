@@ -8,12 +8,12 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 [![Build Status](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=master)](https://dev.azure.com/ms/PowerToys/_build?definitionId=219)
 
-## Installing and running Microsoft PowerToys 0.16
+## Installing and running Microsoft PowerToys 0.17
  👉 **Note:** Microsoft PowerToys requires Windows 10 1803 (build 17134) or later.
 
 ### Via Github with MSI [Recommended]
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.16.0-x64.msi` to download the PowerToys installer.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.17.0-x64.msi` to download the PowerToys installer.
 
 This is our preferred method.
 
@@ -90,36 +90,27 @@ Our plan for all the [goals and utilities for v1.0 detailed over here in the wik
 
 ## What's Happening
 
-### March 2020 Update
+### April 2020 Update
 
-Our mantra for the 0.16 was adding in new features along with a continual push for quality and stability.  We are working toward getting a way to auto-update PowerToys and have a good plan for this.  We want to proactively thank the community for quickly identifying a few bugs inside 0.15 and allowing us to quickly release 0.15.1 and 0.15.2.
+Our goals for 0.17 release cycle were updatability and stability.
 
-Below are just a few of the bullet items from this release.
+**Auto-updating:** We just added in the code for doing updating, so the first chance to experience this will be when 0.18 is release. We’re also seeing how aggressive everyone wants with this so right now, you’ll have to click “Install” for it to kick off the installer. This is something we’d love feedback on.
 
-- We shipped [v0.16][github-release-link]!
-- FancyZone improvement: 
-  - Multi-Monitor improvement: Zone flipping switching now works between monitors!
-  - Simplified UX: Removed layout hot-swap and flashing feature due to need to improve multi-monitor support
-- New Utilities!
-  - Markdown Preview pane extension
-  - SVG Preview pane extension
-  - Image Resizer Window Shell extension
-  - Window Walker, an alt-tab alternative
-- Fixed over 100 issues!
-- Testing improvements
-  - 54 UX Functional tests
-  - 161 new Unit tests
+Another thing we did was utilized telemetry from PowerToys to prioritize virtual desktop FancyZone work. We knew there was a subset of bugs caused by an underlying issue and seeing how many users it affected helped us reprioritize to do the work sooner.
 
-For [0.17](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F3), we are proactively working on:
-
+- We shipped [v0.17][github-release-link]!
 - Auto-updating
+- FancyZone improvement: 
+  - Virtual desktop support should be much better!
+  - Better taskbar positioning
+- Fixed non-admin install regression. 
+- Lots of bug fixes!
+
+For [0.18](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F4), we are proactively working on:
 - Win+R replacement (Launcher)
 - Keyboard remapping
 - Performance improvements with FancyZones
 - A testing utility for FancyZones to be sure we can test different window configurations.
-
-Future release work, we are proactively working on:
-
 - Settings v2 / Fix bug #243
 
 ## Developer Guidance

@@ -10,8 +10,10 @@
 
 #include "trace.h"
 
+// TODO: would be nice to get rid of these globals, since they're basically cached json settings
 static std::wstring settings_theme = L"system";
 static bool run_as_elevated = false;
+static bool download_updates_automatically = true;
 
 // TODO: add resource.rc for settings project and localize
 namespace localized_strings
@@ -40,6 +42,7 @@ json::JsonObject GeneralSettings::to_json()
 
     result.SetNamedValue(L"is_elevated", json::value(isElevated));
     result.SetNamedValue(L"run_elevated", json::value(isRunElevated));
+    result.SetNamedValue(L"download_updates_automatically", json::value(downloadUpdatesAutomatically));
     result.SetNamedValue(L"is_admin", json::value(isAdmin));
     result.SetNamedValue(L"theme", json::value(theme));
     result.SetNamedValue(L"system_theme", json::value(systemTheme));
@@ -57,19 +60,23 @@ json::JsonObject load_general_settings()
         settings_theme = L"system";
     }
     run_as_elevated = loaded.GetNamedBoolean(L"run_elevated", false);
+    download_updates_automatically = loaded.GetNamedBoolean(L"download_updates_automatically", true);
+
     return loaded;
 }
 
-GeneralSettings get_settings()
+GeneralSettings get_general_settings()
 {
+    const bool is_user_admin = check_user_is_admin();
     GeneralSettings settings{
         .isPackaged = winstore::running_as_packaged(),
         .isElevated = is_process_elevated(),
         .isRunElevated = run_as_elevated,
-        .isAdmin = check_user_is_admin(),
+        .isAdmin = is_user_admin,
+        .downloadUpdatesAutomatically = download_updates_automatically && is_user_admin,
         .theme = settings_theme,
         .systemTheme = WindowsColors::is_dark_mode() ? L"dark" : L"light",
-        .powerToysVersion = get_product_version(),
+        .powerToysVersion = get_product_version()
     };
 
     if (winstore::running_as_packaged())
@@ -107,15 +114,11 @@ GeneralSettings get_settings()
     return settings;
 }
 
-json::JsonObject get_general_settings()
-{
-    auto settings = get_settings();
-    return settings.to_json();
-}
-
 void apply_general_settings(const json::JsonObject& general_configs)
 {
     run_as_elevated = general_configs.GetNamedBoolean(L"run_elevated", false);
+
+    download_updates_automatically = general_configs.GetNamedBoolean(L"download_updates_automatically", true);
 
     if (json::has(general_configs, L"startup", json::JsonValueType::Boolean))
     {
@@ -192,7 +195,7 @@ void apply_general_settings(const json::JsonObject& general_configs)
         settings_theme = general_configs.GetNamedString(L"theme");
     }
 
-    GeneralSettings save_settings = get_settings();
+    GeneralSettings save_settings = get_general_settings();
     PTSettingsHelper::save_general_settings(save_settings.to_json());
     Trace::SettingsChanged(save_settings);
 }
@@ -217,7 +220,9 @@ void start_initial_powertoys()
             }
         }
     }
-    catch (...) { }
+    catch (...)
+    {
+    }
 
     if (powertoys_to_disable.empty())
     {

@@ -61,8 +61,8 @@ namespace FancyZonesUnitTests
         HINSTANCE m_hInst{};
         HMONITOR m_monitor{};
         MONITORINFO m_monitorInfo{};
-        MockZoneWindowHost m_zoneWindowHost{};
-        IZoneWindowHost* m_hostPtr = m_zoneWindowHost.get_strong().get();
+        winrt::com_ptr<MockZoneWindowHost> m_zoneWindowHost = winrt::make_self<MockZoneWindowHost>();
+        IZoneWindowHost* m_hostPtr = m_zoneWindowHost.get();
 
         winrt::com_ptr<IZoneWindow> m_zoneWindow;
 
@@ -391,7 +391,7 @@ namespace FancyZonesUnitTests
             m_fancyZonesData.SetDeviceInfo(m_parentUniqueId.str(), parentDeviceInfo);
 
             auto parentZoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_parentUniqueId.str(), false, false);
-            m_zoneWindowHost.m_zoneWindow = parentZoneWindow.get();
+            m_zoneWindowHost->m_zoneWindow = parentZoneWindow.get();
 
             // newWorkArea = true - zoneWindow will be cloned from parent
             auto actualZoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, true);
@@ -420,7 +420,7 @@ namespace FancyZonesUnitTests
             m_fancyZonesData.SetDeviceInfo(m_parentUniqueId.str(), parentDeviceInfo);
 
             auto parentZoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_parentUniqueId.str(), false, false);
-            m_zoneWindowHost.m_zoneWindow = parentZoneWindow.get();
+            m_zoneWindowHost->m_zoneWindow = parentZoneWindow.get();
 
             // newWorkArea = false - zoneWindow won't be cloned from parent
             auto actualZoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, false);
@@ -710,6 +710,30 @@ namespace FancyZonesUnitTests
             const auto expected = m_zoneWindow->ActiveZoneSet()->GetZoneIndexFromWindow(window);
             const auto actual = m_fancyZonesData.GetAppZoneHistoryMap().at(processPath).zoneIndex;
             Assert::AreEqual(expected, actual);
+        }
+
+        TEST_METHOD (WhenWindowIsNotResizablePlacingItIntoTheZoneShouldNotResizeIt)
+        {
+            m_zoneWindow = InitZoneWindowWithActiveZoneSet();
+            Assert::IsNotNull(m_zoneWindow->ActiveZoneSet());
+
+            auto window = Mocks::WindowCreate(m_hInst);
+
+            int orginalWidth = 450;
+            int orginalHeight = 550;
+
+            SetWindowPos(window, nullptr, 150, 150, orginalWidth, orginalHeight, SWP_SHOWWINDOW);
+            SetWindowLong(window, GWL_STYLE, GetWindowLong(window, GWL_STYLE) & ~WS_SIZEBOX);
+
+            auto zone = MakeZone(RECT{ 50, 50, 300, 300 });
+            m_zoneWindow->ActiveZoneSet()->AddZone(zone);
+
+            m_zoneWindow->MoveWindowIntoZoneByDirection(window, VK_LEFT, true);
+
+            RECT inZoneRect;
+            GetWindowRect(window, &inZoneRect);
+            Assert::AreEqual(orginalWidth, (int)inZoneRect.right - (int) inZoneRect.left);
+            Assert::AreEqual(orginalHeight, (int)inZoneRect.bottom - (int)inZoneRect.top);
         }
     };
 }

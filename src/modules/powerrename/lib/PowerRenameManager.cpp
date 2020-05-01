@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "PowerRenameManager.h"
 #include "PowerRenameRegEx.h" // Default RegEx handler
 #include <algorithm>

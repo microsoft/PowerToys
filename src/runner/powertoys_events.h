@@ -3,6 +3,7 @@
 #include <interface/powertoy_module_interface.h>
 #include <interface/win_hook_event_data.h>
 #include <string>
+#include <shared_mutex>
 
 class PowertoysEvents
 {

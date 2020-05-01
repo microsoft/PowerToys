@@ -151,7 +151,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "action_runner", "src\action
 		{17DA04DF-E393-4397-9CF0-84DABE11032E} = {17DA04DF-E393-4397-9CF0-84DABE11032E}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "msi_to_msix_upgrade_lib", "src\common\msi_to_msix_upgrade_lib\msi_to_msix_upgrade_lib.vcxproj", "{17DA04DF-E393-4397-9CF0-84DABE11032E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "updating", "src\common\updating\updating.vcxproj", "{17DA04DF-E393-4397-9CF0-84DABE11032E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E775CC2C-24CB-48D6-9C3A-BE4CCE0DB17A}"
 EndProject
