@@ -94,7 +94,7 @@ namespace Wox.Plugin.Folder
             {
                 Title = title,
                 IcoPath = path,
-                SubTitle = "Folder:" + subtitle,
+                SubTitle = "Folder: " + subtitle,
                 QueryTextDisplay = path,
                 TitleHighlightData = StringMatcher.FuzzySearch(query.Search, title).MatchData,
                 ContextData = new SearchResult { Type = ResultType.Folder, FullPath = path },
@@ -228,7 +228,7 @@ namespace Wox.Plugin.Folder
             var result = new Result
             {
                 Title = Path.GetFileName(filePath),
-                SubTitle = "Folder:" + filePath,
+                SubTitle = "Folder: " + filePath,
                 IcoPath = filePath,
                 TitleHighlightData = StringMatcher.FuzzySearch(query.Search, Path.GetFileName(filePath)).MatchData,
                 Action = c =>
