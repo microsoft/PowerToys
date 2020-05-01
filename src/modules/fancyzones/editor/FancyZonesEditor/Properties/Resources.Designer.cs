@@ -88,7 +88,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Choose your layout.
+        ///   Looks up a localized string similar to Choose your layout for this desktop.
         /// </summary>
         public static string Choose_Layout {
             get {
