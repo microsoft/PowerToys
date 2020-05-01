@@ -34,6 +34,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             try
             {
                 GeneralSettingsConfigs = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+
+                if (Helper.CompareVersions(GeneralSettingsConfigs.PowertoysVersion, Helper.GetProductVersion()) < 0)
+                {
+                    // Update settings
+                    GeneralSettingsConfigs.PowertoysVersion = Helper.GetProductVersion();
+                    SettingsUtils.SaveSettings(GeneralSettingsConfigs.ToJsonString(), string.Empty);
+                }
+            }
+            catch (FormatException e)
+            {
+                // If there is an issue with the version number format, don't migrate settings.
+                Debug.WriteLine(e.Message);
             }
             catch
             {
