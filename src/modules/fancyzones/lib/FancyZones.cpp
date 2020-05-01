@@ -381,7 +381,6 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
     //    return false;
     //}
 
-    std::shared_lock readLock(m_lock);
     if (m_windowMoveHandler.IsDragEnabled() && shift)
     {
         return true;
