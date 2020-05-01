@@ -10,6 +10,8 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.Views;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using Windows.Data.Html;
 using Windows.System;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
@@ -213,6 +215,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
                     RaisePropertyChanged();
                 }
+            }
+        }
+
+        public string PowerToysVersion
+        {
+            get
+            {
+                return Helper.GetProductVersion();
             }
         }
 

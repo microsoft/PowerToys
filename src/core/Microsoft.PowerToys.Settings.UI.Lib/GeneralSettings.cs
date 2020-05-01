@@ -59,7 +59,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             this.AutoDownloadUpdates = false;
             this.Theme = "system";
             this.SystemTheme = "light";
-            this.PowertoysVersion = "v0.15.3";
             this.Enabled = new EnabledModules();
             this.CustomActionName = string.Empty;
         }
