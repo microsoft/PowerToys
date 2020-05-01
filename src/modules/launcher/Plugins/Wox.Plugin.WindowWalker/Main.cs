@@ -24,7 +24,7 @@ namespace Wox.Plugin.WindowWalker
             {
                 Title = x.Result.Title,
                 IcoPath = IcoPath,
-                SubTitle = "Running",
+                SubTitle = "Running: " + x.Result.ProcessName,
                 Action = c =>
                 {
                     x.Result.SwitchToWindow();

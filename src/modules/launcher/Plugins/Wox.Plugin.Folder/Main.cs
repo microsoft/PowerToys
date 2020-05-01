@@ -94,7 +94,7 @@ namespace Wox.Plugin.Folder
             {
                 Title = title,
                 IcoPath = path,
-                SubTitle = "Folder",
+                SubTitle = "Folder:" + subtitle,
                 QueryTextDisplay = path,
                 TitleHighlightData = StringMatcher.FuzzySearch(query.Search, title).MatchData,
                 ContextData = new SearchResult { Type = ResultType.Folder, FullPath = path },
@@ -228,7 +228,7 @@ namespace Wox.Plugin.Folder
             var result = new Result
             {
                 Title = Path.GetFileName(filePath),
-                SubTitle = "Folder",
+                SubTitle = "Folder:" + filePath,
                 IcoPath = filePath,
                 TitleHighlightData = StringMatcher.FuzzySearch(query.Search, Path.GetFileName(filePath)).MatchData,
                 Action = c =>
@@ -259,7 +259,7 @@ namespace Wox.Plugin.Folder
             {
                 Title = firstResult,
                 QueryTextDisplay = search,
-                SubTitle = "Folder",
+                SubTitle = $"Folder: Use > to search within the directory. Use * to search for file extensions. Or use both >*.",
                 IcoPath = search,
                 Score = 500,
                 Action = c =>
