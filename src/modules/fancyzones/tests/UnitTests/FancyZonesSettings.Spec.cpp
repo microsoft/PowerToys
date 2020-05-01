@@ -32,6 +32,7 @@ namespace FancyZonesUnitTests
         Assert::AreEqual(expected.zoneSetChange_flashZones, actual.zoneSetChange_flashZones);
         Assert::AreEqual(expected.zoneSetChange_moveWindows, actual.zoneSetChange_moveWindows);
         Assert::AreEqual(expected.overrideSnapHotkeys, actual.overrideSnapHotkeys);
+        Assert::AreEqual(expected.moveWindowAcrossMonitors, actual.moveWindowAcrossMonitors);
         Assert::AreEqual(expected.appLastZone_moveWindows, actual.appLastZone_moveWindows);
         Assert::AreEqual(expected.use_cursorpos_editor_startupscreen, actual.use_cursorpos_editor_startupscreen);
         Assert::AreEqual(expected.showZonesOnAllMonitors, actual.showZonesOnAllMonitors);
@@ -109,6 +110,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
+                    values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
@@ -144,6 +146,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
+                    values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
@@ -173,6 +176,7 @@ namespace FancyZonesUnitTests
                         .zoneSetChange_flashZones = m_defaultSettings.zoneSetChange_flashZones,
                         .zoneSetChange_moveWindows = m_defaultSettings.zoneSetChange_moveWindows,
                         .overrideSnapHotkeys = m_defaultSettings.overrideSnapHotkeys,
+                        .moveWindowAcrossMonitors = m_defaultSettings.moveWindowAcrossMonitors,
                         .appLastZone_moveWindows = m_defaultSettings.appLastZone_moveWindows,
                         .use_cursorpos_editor_startupscreen = m_defaultSettings.use_cursorpos_editor_startupscreen,
                         .showZonesOnAllMonitors = m_defaultSettings.showZonesOnAllMonitors,
@@ -215,6 +219,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
+                    values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
@@ -244,6 +249,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
+                    values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
@@ -274,6 +280,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
+                    values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
@@ -305,6 +312,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
+                    values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
                     values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                     values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
@@ -415,6 +423,7 @@ namespace FancyZonesUnitTests
                     .zoneSetChange_flashZones = true,
                     .zoneSetChange_moveWindows = true,
                     .overrideSnapHotkeys = false,
+                    .moveWindowAcrossMonitors = false,
                     .appLastZone_moveWindows = false,
                     .use_cursorpos_editor_startupscreen = true,
                     .showZonesOnAllMonitors = false,
@@ -435,6 +444,7 @@ namespace FancyZonesUnitTests
                 values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                 values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                 values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
+                values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
                 values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                 values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                 values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
@@ -547,6 +557,7 @@ namespace FancyZonesUnitTests
             ptSettings.add_hotkey(L"fancyzones_editor_hotkey", IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL, settings.editorHotkey);
             ptSettings.add_bool_toogle(L"fancyzones_shiftDrag", IDS_SETTING_DESCRIPTION_SHIFTDRAG, settings.shiftDrag);
             ptSettings.add_bool_toogle(L"fancyzones_overrideSnapHotkeys", IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS, settings.overrideSnapHotkeys);
+            ptSettings.add_bool_toogle(L"fancyzones_moveWindowAcrossMonitors", IDS_SETTING_DESCRIPTION_MOVE_WINDOW_ACROSS_MONITORS, settings.moveWindowAcrossMonitors);
             ptSettings.add_bool_toogle(L"fancyzones_zoneSetChange_flashZones", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES, settings.zoneSetChange_flashZones);
             ptSettings.add_bool_toogle(L"fancyzones_displayChange_moveWindows", IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS, settings.displayChange_moveWindows);
             ptSettings.add_bool_toogle(L"fancyzones_zoneSetChange_moveWindows", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS, settings.zoneSetChange_moveWindows);
@@ -578,6 +589,7 @@ namespace FancyZonesUnitTests
                 //values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                 values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                 values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
+                values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
                 values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                 values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                 values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
@@ -608,6 +620,7 @@ namespace FancyZonesUnitTests
                 m_ptSettings->add_hotkey(L"fancyzones_editor_hotkey", IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL, expected.editorHotkey);
                 m_ptSettings->add_bool_toogle(L"fancyzones_shiftDrag", IDS_SETTING_DESCRIPTION_SHIFTDRAG, expected.shiftDrag);
                 m_ptSettings->add_bool_toogle(L"fancyzones_overrideSnapHotkeys", IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS, expected.overrideSnapHotkeys);
+                m_ptSettings->add_bool_toogle(L"fancyzones_moveWindowAcrossMonitors", IDS_SETTING_DESCRIPTION_MOVE_WINDOW_ACROSS_MONITORS, expected.moveWindowAcrossMonitors);
                 //m_ptSettings->add_bool_toogle(L"fancyzones_zoneSetChange_flashZones", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES, expected.zoneSetChange_flashZones);
                 m_ptSettings->add_bool_toogle(L"fancyzones_displayChange_moveWindows", IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS, expected.displayChange_moveWindows);
                 m_ptSettings->add_bool_toogle(L"fancyzones_zoneSetChange_moveWindows", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS, expected.zoneSetChange_moveWindows);
@@ -680,6 +693,7 @@ namespace FancyZonesUnitTests
                         .zoneSetChange_flashZones = false,
                         .zoneSetChange_moveWindows = true,
                         .overrideSnapHotkeys = false,
+                        .moveWindowAcrossMonitors = false,
                         .appLastZone_moveWindows = true,
                         .use_cursorpos_editor_startupscreen = true,
                         .showZonesOnAllMonitors = false,

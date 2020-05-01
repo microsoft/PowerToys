@@ -771,7 +771,7 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
         if (current)
         {
             std::vector<HMONITOR> monitorInfo = GetMonitorsSorted();
-            if (monitorInfo.size() > 1)
+            if (monitorInfo.size() > 1 && m_settings->GetSettings()->moveWindowAcrossMonitors)
             {
                 // Multi monitor environment.
                 auto currMonitorInfo = std::find(std::begin(monitorInfo), std::end(monitorInfo), current);
