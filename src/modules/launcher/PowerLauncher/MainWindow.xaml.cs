@@ -23,6 +23,9 @@ using Windows.UI.Xaml;
 using Windows.UI.Core;
 using System.Windows.Media;
 using Windows.UI.Xaml.Data;
+using System.Diagnostics;
+using Mages.Core.Runtime.Converters;
+using System.Runtime.InteropServices;
 
 namespace PowerLauncher
 {
@@ -36,6 +39,9 @@ namespace PowerLauncher
         private MainViewModel _viewModel;
         private bool _isTextSetProgramatically;
         const int ROW_HEIGHT = 75;
+        const int MAX_LIST_HEIGHT = 300;
+        bool isDPIChanged = false;
+
         #endregion
 
         public MainWindow(Settings settings, MainViewModel mainVM)
@@ -68,9 +74,9 @@ namespace PowerLauncher
 
         private void InitializePosition()
         {
-            //Top = WindowTop();
+            Top = WindowTop();
             Left = WindowLeft();
-            //_settings.WindowTop = Top;
+            _settings.WindowTop = Top;
             _settings.WindowLeft = Left;
         }
 
@@ -106,8 +112,16 @@ namespace PowerLauncher
         {
             if (_settings.HideWhenDeactive)
             {
-                Hide();
-            }
+                if (isDPIChanged)
+                {
+                    isDPIChanged = false;
+                    InitializePosition();
+                }
+                else
+                {
+                    Hide();
+                }
+            }              
         }
 
         private void UpdatePosition()
@@ -119,8 +133,18 @@ namespace PowerLauncher
             }
             else
             {
+                double prevTop = Top;
+                double prevLeft = Left;               
+                Top = WindowTop();
                 Left = WindowLeft();
-                //Top = WindowTop();
+                if (prevTop != Top || prevLeft != Left)
+                {
+                    isDPIChanged = true;
+                }
+                else
+                {
+                    isDPIChanged = false;
+                }
             }
         }
 
@@ -133,15 +157,32 @@ namespace PowerLauncher
             }
         }
 
+        /// <summary>
+        /// Calculates X co-ordinate of main window top left corner.
+        /// </summary>
+        /// <returns>X co-ordinate of main window top left corner</returns>
         private double WindowLeft()
         {
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
-            var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.X, 0);
-            var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
-            var left = (dip2.X - ActualWidth) / 2 + dip1.X;
+            var dpi1 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.X, 0);
+            var dpi2 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
+            var left = (dpi2.X - this.Width) / 2 + dpi1.X;
             return left;
         }
 
+        /// <summary>
+        /// Calculates Y co-ordinate of main window top left corner 
+        /// </summary>
+        /// <returns>Y co-ordinate of main window top left corner</returns>
+        private double WindowTop()
+        {
+            var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
+            var dpi1 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
+            var dpi2 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
+            var totalHeight = this.SearchBoxBorder.Margin.Top + this.SearchBoxBorder.Margin.Bottom + this.SearchBox.Height + this.ListBoxBorder.Margin.Top + this.ListBoxBorder.Margin.Bottom + MAX_LIST_HEIGHT;
+            var top = (dpi2.Y - totalHeight) / 4 + dpi1.Y;
+            return top;
+        }
 
         private PowerLauncher.UI.LauncherControl _launcher = null;
         private void WindowsXamlHostTextBox_ChildChanged(object sender, EventArgs ev)
@@ -183,8 +224,6 @@ namespace PowerLauncher
                 }
             };           
         }
-
-       
 
         private void UserControl_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {

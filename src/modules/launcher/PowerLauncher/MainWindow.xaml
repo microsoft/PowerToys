@@ -23,9 +23,11 @@
         LocationChanged="OnLocationChanged"
         Deactivated="OnDeactivated"
         Background="Transparent"
+        Width="720"
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         d:DataContext="{d:DesignInstance vm:MainViewModel}">
-    <Grid Width="720">
+    <Grid Width="720" 
+          MouseDown="OnMouseDown">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -39,7 +41,9 @@
             <Border.Effect>
                 <DropShadowEffect BlurRadius="16" Opacity="0.8" ShadowDepth="0" />
             </Border.Effect>
-            <xaml:WindowsXamlHost 
+            <xaml:WindowsXamlHost
+                Height="60"
+                x:Name="SearchBox" 
                 InitialTypeName="PowerLauncher.UI.LauncherControl" 
                 ChildChanged="WindowsXamlHostTextBox_ChildChanged" />
         </Border>
@@ -53,7 +57,8 @@
             <Border.Effect>
                 <DropShadowEffect BlurRadius="16" Opacity="0.8" ShadowDepth="0" />
             </Border.Effect>
-            <xaml:WindowsXamlHost 
+            <xaml:WindowsXamlHost
+                x:Name="ListBox"
                 InitialTypeName="PowerLauncher.UI.ResultList" 
                 ChildChanged="WindowsXamlHostListView_ChildChanged" 
                 PreviewMouseDown="WindowsXamlHost_PreviewMouseDown" />
