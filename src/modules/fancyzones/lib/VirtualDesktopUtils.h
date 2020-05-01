@@ -9,5 +9,5 @@ namespace VirtualDesktopUtils
     bool GetCurrentVirtualDesktopId(GUID* desktopId);
     bool GetVirtualDekstopIds(std::vector<GUID>& ids);
     HKEY GetVirtualDesktopsRegKey();
-    void CloseVirtualDesktopsRegKey();
+    void HandleVirtualDesktopUpdates(HWND window, UINT message, HANDLE terminateEvent);
 }

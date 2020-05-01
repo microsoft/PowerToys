@@ -190,7 +190,6 @@ private:
     void CycleActiveZoneSet(DWORD vkCode) noexcept;
     bool OnSnapHotkey(DWORD vkCode) noexcept;
     
-    void HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) noexcept;
     void RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept;
     void RegisterNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept;
     bool IsNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept;
@@ -216,10 +215,10 @@ private:
     OnThreadExecutor m_dpiUnawareThread;
     OnThreadExecutor m_virtualDesktopTrackerThread;
 
-    static UINT WM_PRIV_VDCHANGED; // Message to get back on to the UI thread when virtual desktop changes
-    static UINT WM_PRIV_VDINIT; // Message to get back to the UI thread when FancyZones are initialized
+    static UINT WM_PRIV_VD_INIT; // Message to get back to the UI thread when FancyZones are initialized
+    static UINT WM_PRIV_VD_SWITCH; // Message to get back on to the UI thread when virtual desktop changes
+    static UINT WM_PRIV_VD_UPDATE; // Message to get back on the UI thread on virtual desktops update
     static UINT WM_PRIV_EDITOR; // Message to get back on to the UI thread when the editor exits
-    static UINT WM_PRIV_VDUPDATE; // Message to get back on the UI thread on virtual desktops update
 
     // Did we terminate the editor or was it closed cleanly?
     enum class EditorExitKind : byte
@@ -229,10 +228,10 @@ private:
     };
 };
 
-UINT FancyZones::WM_PRIV_VDCHANGED = RegisterWindowMessage(L"{128c2cb0-6bdf-493e-abbe-f8705e04aa95}");
-UINT FancyZones::WM_PRIV_VDINIT = RegisterWindowMessage(L"{469818a8-00fa-4069-b867-a1da484fcd9a}");
+UINT FancyZones::WM_PRIV_VD_INIT = RegisterWindowMessage(L"{469818a8-00fa-4069-b867-a1da484fcd9a}");
+UINT FancyZones::WM_PRIV_VD_SWITCH = RegisterWindowMessage(L"{128c2cb0-6bdf-493e-abbe-f8705e04aa95}");
+UINT FancyZones::WM_PRIV_VD_UPDATE = RegisterWindowMessage(L"{b8b72b46-f42f-4c26-9e20-29336cf2f22e}");
 UINT FancyZones::WM_PRIV_EDITOR = RegisterWindowMessage(L"{87543824-7080-4e91-9d9c-0404642fc7b6}");
-UINT FancyZones::WM_PRIV_VDUPDATE = RegisterWindowMessage(L"{b8b72b46-f42f-4c26-9e20-29336cf2f22e}");
 
 // IFancyZones
 IFACEMETHODIMP_(void)
@@ -264,8 +263,8 @@ FancyZones::Run() noexcept
         .wait();
 
     m_terminateVirtualDesktopTrackerEvent.reset(CreateEvent(nullptr, FALSE, FALSE, nullptr));
-    m_virtualDesktopTrackerThread.submit(
-        OnThreadExecutor::task_t{ std::bind(&FancyZones::HandleVirtualDesktopUpdates, this, m_terminateVirtualDesktopTrackerEvent.get()) });
+    m_virtualDesktopTrackerThread.submit(OnThreadExecutor::task_t{ [&] {
+        VirtualDesktopUtils::HandleVirtualDesktopUpdates(m_window, WM_PRIV_VD_UPDATE, m_terminateVirtualDesktopTrackerEvent.get()); } });
 }
 
 // IFancyZones
@@ -293,14 +292,14 @@ FancyZones::VirtualDesktopChanged() noexcept
     // VirtualDesktopChanged is called from another thread but results in new windows being created.
     // Jump over to the UI thread to handle it.
     std::shared_lock readLock(m_lock);
-    PostMessage(m_window, WM_PRIV_VDCHANGED, 0, 0);
+    PostMessage(m_window, WM_PRIV_VD_SWITCH, 0, 0);
 }
 
 // IFancyZonesCallback
 IFACEMETHODIMP_(void)
 FancyZones::VirtualDesktopInitialize() noexcept
 {
-    PostMessage(m_window, WM_PRIV_VDINIT, 0, 0);
+    PostMessage(m_window, WM_PRIV_VD_INIT, 0, 0);
 }
 
 // IFancyZonesCallback
@@ -559,13 +558,21 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
 
     default:
     {
-        if (message == WM_PRIV_VDCHANGED)
+        if (message == WM_PRIV_VD_INIT)
+        {
+            OnDisplayChange(DisplayChangeType::Initialization);
+        }
+        else if (message == WM_PRIV_VD_SWITCH)
         {
             OnDisplayChange(DisplayChangeType::VirtualDesktop);
         }
-        else if (message == WM_PRIV_VDINIT)
+        else if (message == WM_PRIV_VD_UPDATE)
         {
-            OnDisplayChange(DisplayChangeType::Initialization);
+            std::vector<GUID> ids{};
+            if (VirtualDesktopUtils::GetVirtualDekstopIds(ids))
+            {
+                RegisterVirtualDesktopUpdates(ids);
+            }
         }
         else if (message == WM_PRIV_EDITOR)
         {
@@ -579,14 +586,6 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
                 // Clean up the event either way
                 std::unique_lock writeLock(m_lock);
                 m_terminateEditorEvent.release();
-            }
-        }
-        else if (message == WM_PRIV_VDUPDATE)
-        {
-            std::vector<GUID> ids{};
-            if (VirtualDesktopUtils::GetVirtualDekstopIds(ids))
-            {
-                RegisterVirtualDesktopUpdates(ids);
             }
         }
         else
@@ -812,31 +811,6 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
         }
     }
     return false;
-}
-
-void FancyZones::HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) noexcept
-{
-    HKEY virtualDesktopsRegKey = VirtualDesktopUtils::GetVirtualDesktopsRegKey();
-    if (!virtualDesktopsRegKey)
-    {
-        return;
-    }
-    HANDLE regKeyEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-    HANDLE events[2] = { regKeyEvent, fancyZonesDestroyedEvent };
-    while (1)
-    {
-        if (RegNotifyChangeKeyValue(virtualDesktopsRegKey, TRUE, REG_NOTIFY_CHANGE_LAST_SET, regKeyEvent, TRUE) != ERROR_SUCCESS)
-        {
-            break;
-        }
-        if (WaitForMultipleObjects(2, events, FALSE, INFINITE) != (WAIT_OBJECT_0 + 0))
-        {
-            // if fancyZonesDestroyedEvent is signalized or WaitForMultipleObjects failed, terminate thread execution
-            break;
-        }
-        PostMessage(m_window, WM_PRIV_VDUPDATE, 0, 0);
-    }
-    VirtualDesktopUtils::CloseVirtualDesktopsRegKey();
 }
 
 void FancyZones::RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept

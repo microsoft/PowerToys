@@ -143,16 +143,31 @@ namespace VirtualDesktopUtils
 
     HKEY GetVirtualDesktopsRegKey()
     {
-        static HKEY virtualDesktopsKey = OpenVirtualDesktopsRegKey();
-        return virtualDesktopsKey;
+        static wil::unique_hkey virtualDesktopsKey{ OpenVirtualDesktopsRegKey() };
+        return virtualDesktopsKey.get();
     }
 
-    void CloseVirtualDesktopsRegKey()
+    void HandleVirtualDesktopUpdates(HWND window, UINT message, HANDLE terminateEvent)
     {
-        HKEY hKey = GetVirtualDesktopsRegKey();
-        if (hKey)
+        HKEY virtualDesktopsRegKey = GetVirtualDesktopsRegKey();
+        if (!virtualDesktopsRegKey)
         {
-            RegCloseKey(hKey);
+            return;
+        }
+        HANDLE regKeyEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+        HANDLE events[2] = { regKeyEvent, terminateEvent };
+        while (1)
+        {
+            if (RegNotifyChangeKeyValue(virtualDesktopsRegKey, TRUE, REG_NOTIFY_CHANGE_LAST_SET, regKeyEvent, TRUE) != ERROR_SUCCESS)
+            {
+                return;
+            }
+            if (WaitForMultipleObjects(2, events, FALSE, INFINITE) != (WAIT_OBJECT_0 + 0))
+            {
+                // if terminateEvent is signalized or WaitForMultipleObjects failed, terminate thread execution
+                return;
+            }
+            PostMessage(window, message, 0, 0);
         }
     }
 }
