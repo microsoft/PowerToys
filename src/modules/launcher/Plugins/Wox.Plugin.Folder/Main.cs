@@ -1,3 +1,4 @@
+using Microsoft.PowerToys.Settings.UI.Lib;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -282,6 +283,11 @@ namespace Wox.Plugin.Folder
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
             return _contextMenuLoader.LoadContextMenus(selectedResult);
+        }
+
+        public void UpdateSettings(PowerLauncherSettings settings)
+        {
+
         }
     }
 }

@@ -103,6 +103,7 @@
     <ClInclude Include="Settings.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="util.h" />
+    <ClInclude Include="VirtualDesktopUtils.h" />
     <ClInclude Include="Zone.h" />
     <ClInclude Include="ZoneSet.h" />
     <ClInclude Include="ZoneWindow.h" />
@@ -117,6 +118,7 @@
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="util.cpp" />
+    <ClCompile Include="VirtualDesktopUtils.cpp" />
     <ClCompile Include="Zone.cpp" />
     <ClCompile Include="ZoneSet.cpp" />
     <ClCompile Include="ZoneWindow.cpp" />

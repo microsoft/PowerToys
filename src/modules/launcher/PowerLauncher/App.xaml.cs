@@ -30,6 +30,7 @@ namespace PowerLauncher
         private SettingWindowViewModel _settingsVM;
         private readonly Alphabet _alphabet = new Alphabet();
         private StringMatcher _stringMatcher;
+        private SettingsWatcher _settingsWatcher;
 
         [STAThread]
         public static void Main()
@@ -87,11 +88,12 @@ namespace PowerLauncher
 
                 RegisterExitEvents();
 
+                _settingsWatcher = new SettingsWatcher(_settings);
 
                 _mainVM.MainWindowVisibility = Visibility.Visible;
                 Log.Info("|App.OnStartup|End Wox startup ----------------------------------------------------  ");
 
-
+                
 
         //[Conditional("RELEASE")]
                     // check udpate every 5 hours

@@ -3,6 +3,7 @@ trigger:
   branches:
     include:
       - master
+      - dev/build-features
       - dev/PowerLauncher
   paths:
     exclude:
@@ -14,6 +15,7 @@ pr:
   branches:
     include:
       - master
+      - dev/build-features
       - dev/PowerLauncher
 
 #     0.0.yyMM.dd##

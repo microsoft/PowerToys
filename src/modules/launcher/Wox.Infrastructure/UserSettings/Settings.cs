@@ -9,7 +9,30 @@ namespace Wox.Infrastructure.UserSettings
 {
     public class Settings : BaseModel
     {
-        public string Hotkey { get; set; } = "Alt + Space";
+        private string _hotkey = "Alt + Space";
+        private string _previousHotkey = "";
+        public string PreviousHotkey {
+            get
+            {
+                return _previousHotkey;
+            }
+        }
+        public string Hotkey 
+        {
+            get
+            {
+                return _hotkey;
+            }
+            set
+            {
+                if (_hotkey != value)
+                {
+                    _previousHotkey = _hotkey;
+                    _hotkey = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public string Language { get; set; } = "en";
         public string Theme { get; set; } = "Dark";
         public string QueryBoxFont { get; set; } = FontFamily.GenericSansSerif.Name;
@@ -59,7 +82,23 @@ namespace Wox.Infrastructure.UserSettings
 
         public double WindowLeft { get; set; }
         public double WindowTop { get; set; }
-        public int MaxResultsToShow { get; set; } = 6;
+
+        private int _maxResultsToShow = 6;
+        public int MaxResultsToShow 
+        {
+            get
+            {
+                return _maxResultsToShow;
+            }
+            set
+            {
+                if (_maxResultsToShow != value)
+                {
+                    _maxResultsToShow = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public int ActivateTimes { get; set; }
 
         // Order defaults to 0 or -1, so 1 will let this property appear last

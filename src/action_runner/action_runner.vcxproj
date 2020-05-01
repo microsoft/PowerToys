@@ -157,12 +157,12 @@
     <ProjectReference Include="..\common\common.vcxproj">
       <Project>{74485049-c722-400f-abe5-86ac52d929b3}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\common\msi_to_msix_upgrade_lib\msi_to_msix_upgrade_lib.vcxproj">
+    <ProjectReference Include="..\common\updating\updating.vcxproj">
       <Project>{17da04df-e393-4397-9cf0-84dabe11032e}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\runner\msi_to_msix_upgrade.h" />
+    <ClInclude Include="..\runner\updating.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

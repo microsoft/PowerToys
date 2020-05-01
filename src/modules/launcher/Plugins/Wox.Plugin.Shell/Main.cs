@@ -1,3 +1,5 @@
+using Microsoft.PowerToys.Settings.UI.Lib;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -292,21 +294,21 @@ namespace Wox.Plugin.Shell
             // not overriding Win+R 
             // crutkas we need to earn the right for Win+R override
 
-            //if (_settings.ReplaceWinR)
-            //{
-            //    if (keyevent == (int)KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
-            //    {
-            //        _winRStroked = true;
-            //        OnWinRPressed();
-            //        return false;
-            //    }
-            //    if (keyevent == (int)KeyEvent.WM_KEYUP && _winRStroked && vkcode == (int)Keys.LWin)
-            //    {
-            //        _winRStroked = false;
-            //        _keyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.LWIN, VirtualKeyCode.BACK);
-            //        return false;
-            //    }
-            //}
+            if (_settings.ReplaceWinR)
+            {
+                if (keyevent == (int)KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
+                {
+                    _winRStroked = true;
+                    OnWinRPressed();
+                    return false;
+                }
+                if (keyevent == (int)KeyEvent.WM_KEYUP && _winRStroked && vkcode == (int)Keys.LWin)
+                {
+                    _winRStroked = false;
+                    _keyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.LWIN, VirtualKeyCode.BACK);
+                    return false;
+                }
+            }
             return true;
         }
 
@@ -351,6 +353,11 @@ namespace Wox.Plugin.Shell
             };
 
             return resultlist;
+        }
+
+        public void UpdateSettings(PowerLauncherSettings settings)
+        {
+            _settings.ReplaceWinR = settings.properties.override_win_r_key;
         }
     }
 }

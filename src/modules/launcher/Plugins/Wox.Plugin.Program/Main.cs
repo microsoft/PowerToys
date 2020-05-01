@@ -1,3 +1,4 @@
+using Microsoft.PowerToys.Settings.UI.Lib;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -180,6 +181,9 @@ namespace Wox.Plugin.Program
             IndexPrograms();
         }
 
+        public void UpdateSettings(PowerLauncherSettings settings)
+        {
+        }
         void InitializeFileWatchers()
         {
             // Create a new FileSystemWatcher and set its properties.
