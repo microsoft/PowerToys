@@ -4,7 +4,6 @@
 #include <filesystem>
 #include "tray_icon.h"
 #include "powertoy_module.h"
-#include "lowlevel_keyboard_event.h"
 #include "trace.h"
 #include "general_settings.h"
 #include "restart_elevated.h"
