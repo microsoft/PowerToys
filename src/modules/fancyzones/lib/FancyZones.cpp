@@ -215,10 +215,10 @@ private:
     OnThreadExecutor m_dpiUnawareThread;
     OnThreadExecutor m_virtualDesktopTrackerThread;
 
-    static UINT WM_PRIV_VD_INIT; // Message to get back to the UI thread when FancyZones are initialized
-    static UINT WM_PRIV_VD_SWITCH; // Message to get back on to the UI thread when virtual desktop changes
-    static UINT WM_PRIV_VD_UPDATE; // Message to get back on the UI thread on virtual desktops update
-    static UINT WM_PRIV_EDITOR; // Message to get back on to the UI thread when the editor exits
+    static UINT WM_PRIV_VD_INIT; // Message to get back to the UI thread when FancyZones is initialized
+    static UINT WM_PRIV_VD_SWITCH; // Message to get back to the UI thread when virtual desktop switch occurs
+    static UINT WM_PRIV_VD_UPDATE; // Message to get back to the UI thread on virtual desktops update (creation/deletion)
+    static UINT WM_PRIV_EDITOR; // Message to get back to the UI thread when the editor exits
 
     // Did we terminate the editor or was it closed cleanly?
     enum class EditorExitKind : byte
