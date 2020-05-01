@@ -47,8 +47,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
 
         public static FileSystemWatcher GetFileWatcher(string moduleName, string fileName, Action onChangedCallback)
         {
+            var path = Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{moduleName}");
+
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
             var watcher = new FileSystemWatcher();
-            watcher.Path = Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{moduleName}");
+            watcher.Path = path;
             watcher.Filter = fileName;
             watcher.NotifyFilter = NotifyFilters.LastWrite;
             watcher.Changed += (o, e) => onChangedCallback();
