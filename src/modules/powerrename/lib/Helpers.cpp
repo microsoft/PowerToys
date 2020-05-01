@@ -1,8 +1,8 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "Helpers.h"
 #include <ShlGuid.h>
 
-HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* psrm, _In_ int depth = 0)
+HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* psrm, _In_ const int depth = 0)
 {
     HRESULT hr = E_INVALIDARG;
 
@@ -12,16 +12,16 @@ HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* ps
     {
         hr = S_OK;
 
-        ULONG celtFetched;
-        CComPtr<IShellItem> spsi;
-        while ((S_OK == pesi->Next(1, &spsi, &celtFetched)) && (SUCCEEDED(hr)))
+        ULONG celt_fetched = 0;
+        CComPtr<IShellItem> shell_item;
+        while ((S_OK == pesi->Next(1, &shell_item, &celt_fetched)) && (SUCCEEDED(hr)))
         {
             CComPtr<IPowerRenameItemFactory> spsrif;
             hr = psrm->get_renameItemFactory(&spsrif);
             if (SUCCEEDED(hr))
             {
                 CComPtr<IPowerRenameItem> spNewItem;
-                hr = spsrif->Create(spsi, &spNewItem);
+                hr = spsrif->Create(shell_item, &spNewItem);
                 if (SUCCEEDED(hr))
                 {
                     spNewItem->put_depth(depth);
@@ -35,7 +35,7 @@ HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* ps
                     {
                         // Bind to the IShellItem for the IEnumShellItems interface
                         CComPtr<IEnumShellItems> spesiNext;
-                        hr = spsi->BindToHandler(nullptr, BHID_EnumItems, IID_PPV_ARGS(&spesiNext));
+                        hr = shell_item->BindToHandler(nullptr, BHID_EnumItems, IID_PPV_ARGS(&spesiNext));
                         if (SUCCEEDED(hr))
                         {
                             // Parse the folder contents recursively
@@ -45,7 +45,7 @@ HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* ps
                 }
             }
 
-            spsi = nullptr;
+            shell_item = nullptr;
         }
     }
 
@@ -57,7 +57,7 @@ HRESULT EnumerateDataObject(_In_ IUnknown* dataSource, _In_ IPowerRenameManager*
 {
     CComPtr<IShellItemArray> spsia;
     IDataObject* dataObj{};
-    HRESULT hr;
+    HRESULT hr = 0;
     if (SUCCEEDED(dataSource->QueryInterface(IID_IDataObject, reinterpret_cast<void**>(&dataObj))))
     {
         hr = SHCreateShellItemArrayFromDataObject(dataObj, IID_PPV_ARGS(&spsia));

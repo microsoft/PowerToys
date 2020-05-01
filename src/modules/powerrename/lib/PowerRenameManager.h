@@ -6,41 +6,39 @@
 #include <lib/PowerRenameManager.h>
 #include <lib/PowerRenameInterfaces.h>
 
-class CPowerRenameManager :
-    public IPowerRenameManager,
-    public IPowerRenameRegExEvents
+class CPowerRenameManager : public IPowerRenameManager,  public IPowerRenameRegExEvents
 {
 public:
     // IUnknown
-    IFACEMETHODIMP  QueryInterface(_In_ REFIID iid, _Outptr_ void** resultInterface);
-    IFACEMETHODIMP_(ULONG) AddRef();
-    IFACEMETHODIMP_(ULONG) Release();
+    IFACEMETHODIMP  QueryInterface(_In_ REFIID iid, _Outptr_ void** resultInterface) override;
+    IFACEMETHODIMP_(ULONG) AddRef() override;
+    IFACEMETHODIMP_(ULONG) Release() override;
 
     // IPowerRenameManager
-    IFACEMETHODIMP Advise(_In_ IPowerRenameManagerEvents* renameOpEvent, _Out_ DWORD *cookie);
-    IFACEMETHODIMP UnAdvise(_In_ DWORD cookie);
-    IFACEMETHODIMP Start();
-    IFACEMETHODIMP Stop();
-    IFACEMETHODIMP Reset();
-    IFACEMETHODIMP Shutdown();
-    IFACEMETHODIMP Rename(_In_ HWND hwndParent);
-    IFACEMETHODIMP AddItem(_In_ IPowerRenameItem* pItem);
-    IFACEMETHODIMP GetItemByIndex(_In_ UINT index, _COM_Outptr_ IPowerRenameItem** ppItem);
-    IFACEMETHODIMP GetItemById(_In_ int id, _COM_Outptr_ IPowerRenameItem** ppItem);
-    IFACEMETHODIMP GetItemCount(_Out_ UINT* count);
-    IFACEMETHODIMP GetSelectedItemCount(_Out_ UINT* count);
-    IFACEMETHODIMP GetRenameItemCount(_Out_ UINT* count);
-    IFACEMETHODIMP get_flags(_Out_ DWORD* flags);
-    IFACEMETHODIMP put_flags(_In_ DWORD flags);
-    IFACEMETHODIMP get_renameRegEx(_COM_Outptr_ IPowerRenameRegEx** ppRegEx);
-    IFACEMETHODIMP put_renameRegEx(_In_ IPowerRenameRegEx* pRegEx);
-    IFACEMETHODIMP get_renameItemFactory(_COM_Outptr_ IPowerRenameItemFactory** ppItemFactory);
-    IFACEMETHODIMP put_renameItemFactory(_In_ IPowerRenameItemFactory* pItemFactory);
+    IFACEMETHODIMP Advise(_In_ IPowerRenameManagerEvents* renameOpEvent, _Out_ DWORD *cookie) override;
+    IFACEMETHODIMP UnAdvise(_In_ DWORD cookie) override;
+    IFACEMETHODIMP Start() override;
+    IFACEMETHODIMP Stop() override;
+    IFACEMETHODIMP Reset() override;
+    IFACEMETHODIMP Shutdown() override;
+    IFACEMETHODIMP Rename(_In_ HWND hwndParent) override;
+    IFACEMETHODIMP AddItem(_In_ IPowerRenameItem* pItem) override;
+    IFACEMETHODIMP GetItemByIndex(_In_ UINT index, _COM_Outptr_ IPowerRenameItem** ppItem) override;
+    IFACEMETHODIMP GetItemById(_In_ int id, _COM_Outptr_ IPowerRenameItem** ppItem) override;
+    IFACEMETHODIMP GetItemCount(_Out_ UINT* count) override;
+    IFACEMETHODIMP GetSelectedItemCount(_Out_ UINT* count) override;
+    IFACEMETHODIMP GetRenameItemCount(_Out_ UINT* count) override;
+    IFACEMETHODIMP get_flags(_Out_ DWORD* flags) override;
+    IFACEMETHODIMP put_flags(_In_ DWORD flags) override;
+    IFACEMETHODIMP get_renameRegEx(_COM_Outptr_ IPowerRenameRegEx** ppRegEx) override;
+    IFACEMETHODIMP put_renameRegEx(_In_ IPowerRenameRegEx* pRegEx) override;
+    IFACEMETHODIMP get_renameItemFactory(_COM_Outptr_ IPowerRenameItemFactory** ppItemFactory) override;
+    IFACEMETHODIMP put_renameItemFactory(_In_ IPowerRenameItemFactory* pItemFactory) override;
 
     // IPowerRenameRegExEvents
-    IFACEMETHODIMP OnSearchTermChanged(_In_ PCWSTR searchTerm);
-    IFACEMETHODIMP OnReplaceTermChanged(_In_ PCWSTR replaceTerm);
-    IFACEMETHODIMP OnFlagsChanged(_In_ DWORD flags);
+    IFACEMETHODIMP OnSearchTermChanged(_In_ PCWSTR searchTerm) override;
+    IFACEMETHODIMP OnReplaceTermChanged(_In_ PCWSTR replaceTerm) override;
+    IFACEMETHODIMP OnFlagsChanged(_In_ DWORD flags) override;
 
     static HRESULT s_CreateInstance(_Outptr_ IPowerRenameManager** ppsrm);
 

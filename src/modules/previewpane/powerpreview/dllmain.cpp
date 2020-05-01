@@ -9,14 +9,14 @@
 // This is required since MSIX currently not support .Net Assembly for Com Activation for Preview Handlers.
 HRESULT CALLBACK DllGetClassObject(REFCLSID clsid, REFIID riid, void** ppv)
 {
-    *ppv = NULL;
+    *ppv = nullptr;
     HRESULT hr = CLASS_E_CLASSNOTAVAILABLE;
 
     for (auto handler : NativeToManagedClsid)
     {
         if (handler.first == clsid)
         {
-            hr = CoGetClassObject(handler.second, CLSCTX_INPROC_SERVER, NULL, riid, ppv);
+            hr = CoGetClassObject(handler.second, CLSCTX_INPROC_SERVER, nullptr, riid, ppv);
             break;
         }
     }
@@ -25,7 +25,7 @@ HRESULT CALLBACK DllGetClassObject(REFCLSID clsid, REFIID riid, void** ppv)
     if (FAILED(hr))
     {
         hr = CLASS_E_CLASSNOTAVAILABLE;
-        *ppv = NULL;
+        *ppv = nullptr;
     }
 
     return hr;

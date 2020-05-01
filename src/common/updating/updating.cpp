@@ -7,7 +7,6 @@
 #include <msi.h>
 #include <common/common.h>
 #include <common/json.h>
-#include <common/version.h>
 #include <common/settings_helpers.h>
 #include <common/winstore.h>
 #include <common/notifications.h>
@@ -23,11 +22,15 @@
 namespace
 {
     const wchar_t POWER_TOYS_UPGRADE_CODE[] = L"{42B84BF7-5FBF-473B-9C8B-049DC16F7708}";
-    const wchar_t DONT_SHOW_AGAIN_RECORD_REGISTRY_PATH[] = L"delete_previous_powertoys_confirm";
+    const wchar_t DONT_SHOW_AGAIN_RECORD_REG_PATH[] = L"delete_previous_powertoys_confirm";
     const wchar_t USER_AGENT[] = L"Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; WOW64; Trident/6.0)";
     const wchar_t LATEST_RELEASE_ENDPOINT[] = L"https://api.github.com/repos/microsoft/PowerToys/releases/latest";
     const wchar_t MSIX_PACKAGE_NAME[] = L"Microsoft.PowerToys";
     const wchar_t MSIX_PACKAGE_PUBLISHER[] = L"CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US";
+
+    const wchar_t UPDATE_NOTIFY_TOAST_TAG[] = L"PTUpdateNotifyTag";
+    const wchar_t UPDATE_READY_TOAST_TAG[] = L"PTUpdateReadyTag";
+    const size_t MAX_DOWNLOAD_ATTEMPTS = 3;
 }
 
 namespace localized_strings
@@ -37,14 +40,16 @@ namespace localized_strings
     const wchar_t UNINSTALLATION_SUCCESS[] = L"Previous version of PowerToys was uninstalled successfully.";
     const wchar_t UNINSTALLATION_UNKNOWN_ERROR[] = L"Error: please uninstall the previous version of PowerToys manually.";
 
-    const wchar_t GITHUB_NEW_VERSION_READY_TO_INSTALL[] = L"An update to PowerToys is ready to install.";
-    const wchar_t GITHUB_NEW_VERSION_UPDATE_NOW[] = L"Update now";
-    const wchar_t GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART[] = L"At next launch";
+    const wchar_t GITHUB_NEW_VER_READY_TO_INSTALL[] = L"An update to PowerToys is ready to install.\n";
+    const wchar_t GITHUB_NEW_VER_DOWNLOAD_INSTALL_ERR[] = L"Error: couldn't download PowerToys installer. Visit our GitHub page to update.\n";
+    const wchar_t GITHUB_NEW_VER_UPDATE_NOW[] = L"Update now";
+    const wchar_t GITHUB_NEW_VER_UPDATE_AFTER_RESTART[] = L"At next launch";
 
-    const wchar_t GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT[] = L"An update to PowerToys is available. Visit our GitHub page to get ";
-    const wchar_t GITHUB_NEW_VERSION_AGREE[] = L"Visit";
-    const wchar_t GITHUB_NEW_VERSION_UPDATE_SNOOZE_1D[] = L"1 day";
-    const wchar_t GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D[] = L"5 days";
+    const wchar_t GITHUB_NEW_VER_AVAIL_OFFER_VISIT[] = L"An update to PowerToys is available. Visit our GitHub page to update.\n";
+    const wchar_t GITHUB_NEW_VER_AGREE[] = L"Visit";
+    const wchar_t GITHUB_NEW_VER_SNOOZE_TITLE[] = L"Click Snooze to be reminded in:";
+    const wchar_t GITHUB_NEW_VER_UPDATE_SNOOZE_1D[] = L"1 day";
+    const wchar_t GITHUB_NEW_VER_UPDATE_SNOOZE_5D[] = L"5 days";
 }
 namespace updating
 {
@@ -91,7 +96,7 @@ namespace updating
 
     bool offer_msi_uninstallation()
     {
-        const auto selection = SHMessageBoxCheckW(nullptr, localized_strings::OFFER_UNINSTALL_MSI, localized_strings::OFFER_UNINSTALL_MSI_TITLE, MB_ICONQUESTION | MB_YESNO, IDNO, DONT_SHOW_AGAIN_RECORD_REGISTRY_PATH);
+        const auto selection = SHMessageBoxCheckW(nullptr, localized_strings::OFFER_UNINSTALL_MSI, localized_strings::OFFER_UNINSTALL_MSI_TITLE, MB_ICONQUESTION | MB_YESNO, IDNO, DONT_SHOW_AGAIN_RECORD_REG_PATH);
         return selection == IDYES;
     }
 
@@ -164,7 +169,7 @@ namespace updating
         }
     }
 
-    std::future<bool> uninstall_previous_msix_version_async()
+    std::future<bool> uninstall_prev_msix_ver_async()
     {
         winrt::Windows::Management::Deployment::PackageManager package_manager;
 
@@ -204,6 +209,17 @@ namespace updating
         return { std::move(path_str) };
     }
 
+    std::future<void> attempt_to_download_installer(const std::filesystem::path& destination, const winrt::Windows::Foundation::Uri& url)
+    {
+        namespace storage = winrt::Windows::Storage;
+
+        auto client = create_http_client();
+        auto response = co_await client.GetAsync(url);
+        (void)response.EnsureSuccessStatusCode();
+        auto msi_installer_file_stream = co_await storage::Streams::FileRandomAccessStream::OpenAsync(destination.c_str(), storage::FileAccessMode::ReadWrite, storage::StorageOpenOptions::AllowReadersAndWriters, storage::Streams::FileOpenDisposition::CreateAlways);
+        co_await response.Content().WriteToStreamAsync(msi_installer_file_stream);
+    }
+
     std::future<void> try_autoupdate(const bool download_updates_automatically)
     {
         const auto new_version = co_await get_new_github_version_info_async();
@@ -212,33 +228,59 @@ namespace updating
             co_return;
         }
         using namespace localized_strings;
-        namespace storage = winrt::Windows::Storage;
+        auto current_version_to_next_version = VersionHelper{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION }.toWstring();
+        current_version_to_next_version += L" -> ";
+        current_version_to_next_version += new_version->version_string;
 
         if (download_updates_automatically && !could_be_costly_connection())
         {
-            auto client = create_http_client();
-            auto response = co_await client.GetAsync(new_version->msi_download_url);
-            (void)response.EnsureSuccessStatusCode();
-
-            auto download_dst = get_pending_updates_path();
+            auto installer_download_dst = get_pending_updates_path();
             std::error_code _;
-            std::filesystem::create_directories(download_dst, _);
-            download_dst /= new_version->msi_filename;
-            auto msi_installer_file_stream = co_await storage::Streams::FileRandomAccessStream::OpenAsync(download_dst.c_str(), storage::FileAccessMode::ReadWrite, storage::StorageOpenOptions::AllowReadersAndWriters, storage::Streams::FileOpenDisposition::CreateAlways);
-            co_await response.Content().WriteToStreamAsync(msi_installer_file_stream);
-            notifications::toast_params toast_params{ L"PTUpdateReadyTag", false };
-            std::wstring new_version_ready{ GITHUB_NEW_VERSION_READY_TO_INSTALL };
-            new_version_ready += L" ";
-            new_version_ready += new_version->version_string;
-            notifications::show_toast_with_activations(std::move(new_version_ready), {}, { notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_NOW, L"powertoys://update_now/" }, notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART, L"powertoys://schedule_update/" }, notifications::snooze_button{ { { GITHUB_NEW_VERSION_UPDATE_SNOOZE_1D, 24 * 60 }, { GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D, 120 * 60 } } } }, std::move(toast_params));
+            std::filesystem::create_directories(installer_download_dst, _);
+            installer_download_dst /= new_version->msi_filename;
+
+            bool download_success = false;
+            for (size_t i = 0; i < MAX_DOWNLOAD_ATTEMPTS; ++i)
+            {
+                try
+                {
+                    co_await attempt_to_download_installer(installer_download_dst, new_version->msi_download_url);
+                    download_success = true;
+                    break;
+                }
+                catch (...)
+                {
+                    // reattempt to download or do nothing
+                }
+            }
+            if (!download_success)
+            {
+                notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG, false };
+                std::wstring contents = GITHUB_NEW_VER_DOWNLOAD_INSTALL_ERR;
+                contents += current_version_to_next_version;
+
+                notifications::show_toast_with_activations(std::move(contents), {}, { notifications::link_button{ GITHUB_NEW_VER_AGREE, new_version->release_page_uri.ToString().c_str() } }, std::move(toast_params));
+
+                co_return;
+            }
+
+            notifications::toast_params toast_params{ UPDATE_READY_TOAST_TAG, false };
+            std::wstring new_version_ready{ GITHUB_NEW_VER_READY_TO_INSTALL };
+            new_version_ready += current_version_to_next_version;
+
+            notifications::show_toast_with_activations(std::move(new_version_ready),
+                                                       {},
+                                                       { notifications::link_button{ GITHUB_NEW_VER_UPDATE_NOW, L"powertoys://update_now/" },
+                                                         notifications::link_button{ GITHUB_NEW_VER_UPDATE_AFTER_RESTART, L"powertoys://schedule_update/" },
+                                                         notifications::snooze_button{ GITHUB_NEW_VER_SNOOZE_TITLE, { { GITHUB_NEW_VER_UPDATE_SNOOZE_1D, 24 * 60 }, { GITHUB_NEW_VER_UPDATE_SNOOZE_5D, 120 * 60 } } } },
+                                                       std::move(toast_params));
         }
         else
         {
-            notifications::toast_params toast_params{ L"PTUpdateNotifyTag", false };
-            std::wstring contents = GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT;
-            contents += new_version->version_string;
-            contents += L'.';
-            notifications::show_toast_with_activations(std::move(contents), {}, { notifications::link_button{ GITHUB_NEW_VERSION_AGREE, new_version->release_page_uri.ToString().c_str() } }, std::move(toast_params));
+            notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG, false };
+            std::wstring contents = GITHUB_NEW_VER_AVAIL_OFFER_VISIT;
+            contents += current_version_to_next_version;
+            notifications::show_toast_with_activations(std::move(contents), {}, { notifications::link_button{ GITHUB_NEW_VER_AGREE, new_version->release_page_uri.ToString().c_str() } }, std::move(toast_params));
         }
     }
 }

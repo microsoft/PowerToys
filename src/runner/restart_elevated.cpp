@@ -8,21 +8,21 @@ enum State
     RestartAsElevated,
     RestartAsNonElevated
 };
-static State state = None;
+static State s_state = None;
 
 void schedule_restart_as_elevated()
 {
-    state = RestartAsElevated;
+    s_state = RestartAsElevated;
 }
 
 void schedule_restart_as_non_elevated()
 {
-    state = RestartAsNonElevated;
+    s_state = RestartAsNonElevated;
 }
 
 bool is_restart_scheduled()
 {
-    return state != None;
+    return s_state != None;
 }
 
 bool restart_if_scheduled()
@@ -31,7 +31,7 @@ bool restart_if_scheduled()
     constexpr DWORD exe_path_size = 0xFFFF;
     auto exe_path = std::make_unique<wchar_t[]>(exe_path_size);
     GetModuleFileNameW(nullptr, exe_path.get(), exe_path_size);
-    switch (state)
+    switch (s_state)
     {
     case RestartAsElevated:
         return run_elevated(exe_path.get(), {});

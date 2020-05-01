@@ -1,6 +1,6 @@
 // ContextMenuHandler.cpp : Implementation of CContextMenuHandler
 
-#include "stdafx.h"
+#include "pch.h"
 #include "ContextMenuHandler.h"
 #include "HDropIterator.h"
 #include "Settings.h"

@@ -4,7 +4,7 @@
 
 namespace
 {
-    HHOOK hook_handle = nullptr;
+    HHOOK s_hook_handle = nullptr;
     HHOOK hook_handle_copy = nullptr; // make sure we do use nullptr in CallNextHookEx call
     LRESULT CALLBACK hook_proc(int nCode, WPARAM wParam, LPARAM lParam)
     {
@@ -34,11 +34,11 @@ void start_lowlevel_keyboard_hook()
     }
 #endif
 
-    if (!hook_handle)
+    if (!s_hook_handle)
     {
-        hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, hook_proc, GetModuleHandle(NULL), NULL);
-        hook_handle_copy = hook_handle;
-        if (!hook_handle)
+        s_hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, hook_proc, GetModuleHandle(NULL), NULL);
+        hook_handle_copy = s_hook_handle;
+        if (!s_hook_handle)
         {
             throw std::runtime_error("Cannot install keyboard listener");
         }
@@ -47,9 +47,9 @@ void start_lowlevel_keyboard_hook()
 
 void stop_lowlevel_keyboard_hook()
 {
-    if (hook_handle)
+    if (s_hook_handle)
     {
-        UnhookWindowsHookEx(hook_handle);
-        hook_handle = nullptr;
+        UnhookWindowsHookEx(s_hook_handle);
+        s_hook_handle = nullptr;
     }
 }

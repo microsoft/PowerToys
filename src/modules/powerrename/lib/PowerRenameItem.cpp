@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "PowerRenameItem.h"
 #include "icon_helpers.h"
 
@@ -184,16 +184,21 @@ HRESULT CPowerRenameItem::s_CreateInstance(_In_opt_ IShellItem* psi, _In_ REFIID
     return hr;
 }
 
+
 CPowerRenameItem::CPowerRenameItem() :
-    m_refCount(1),
-    m_id(++s_id)
+    m_id(++s_id),
+    m_refCount(1)
 {
 }
 
+/**
+ * \brief: Frees the directory path, the new name and the original name in memory
+ */
 CPowerRenameItem::~CPowerRenameItem()
 {
     CoTaskMemFree(m_path);
     CoTaskMemFree(m_newName);
+    CoTaskMemFree(m_originalName);
     CoTaskMemFree(m_originalName);
 }
 

@@ -22,7 +22,7 @@ public:
     void OnClickList(_In_ IPowerRenameManager* psrm, NM_LISTVIEW* pnmListView);
     void GetDisplayInfo(_In_ IPowerRenameManager* psrm, _Inout_ LV_DISPINFO* plvdi);
     void OnSize();
-    HWND GetHWND() { return m_hwndLV; }
+    HWND GetHWND() const { return m_hwndLV; }
 
 private:
     void _UpdateColumns();
@@ -41,34 +41,34 @@ public:
     CPowerRenameUI();
 
     // IUnknown
-    IFACEMETHODIMP QueryInterface(__in REFIID riid, __deref_out void** ppv);
+    IFACEMETHODIMP QueryInterface(__in REFIID riid, __deref_out void** ppv) override;
     IFACEMETHODIMP_(ULONG)
-    AddRef();
+    AddRef() override;
     IFACEMETHODIMP_(ULONG)
-    Release();
+    Release() override;
 
     // IPowerRenameUI
-    IFACEMETHODIMP Show(_In_opt_ HWND hwndParent);
-    IFACEMETHODIMP Close();
-    IFACEMETHODIMP Update();
+    IFACEMETHODIMP Show(_In_opt_ HWND hwndParent) override;
+    IFACEMETHODIMP Close() override;
+    IFACEMETHODIMP Update() override;
     IFACEMETHODIMP get_hwnd(_Out_ HWND* hwnd);
     IFACEMETHODIMP get_showUI(_Out_ bool* showUI);
 
     // IPowerRenameManagerEvents
-    IFACEMETHODIMP OnItemAdded(_In_ IPowerRenameItem* renameItem);
-    IFACEMETHODIMP OnUpdate(_In_ IPowerRenameItem* renameItem);
-    IFACEMETHODIMP OnError(_In_ IPowerRenameItem* renameItem);
-    IFACEMETHODIMP OnRegExStarted(_In_ DWORD threadId);
-    IFACEMETHODIMP OnRegExCanceled(_In_ DWORD threadId);
-    IFACEMETHODIMP OnRegExCompleted(_In_ DWORD threadId);
-    IFACEMETHODIMP OnRenameStarted();
-    IFACEMETHODIMP OnRenameCompleted();
+    IFACEMETHODIMP OnItemAdded(_In_ IPowerRenameItem* renameItem) override;
+    IFACEMETHODIMP OnUpdate(_In_ IPowerRenameItem* renameItem) override;
+    IFACEMETHODIMP OnError(_In_ IPowerRenameItem* renameItem) override;
+    IFACEMETHODIMP OnRegExStarted(_In_ DWORD threadId) override;
+    IFACEMETHODIMP OnRegExCanceled(_In_ DWORD threadId) override;
+    IFACEMETHODIMP OnRegExCompleted(_In_ DWORD threadId) override;
+    IFACEMETHODIMP OnRenameStarted() override;
+    IFACEMETHODIMP OnRenameCompleted() override;
 
     // IDropTarget
-    IFACEMETHODIMP DragEnter(_In_ IDataObject* pdtobj, DWORD grfKeyState, POINTL pt, _Inout_ DWORD* pdwEffect);
-    IFACEMETHODIMP DragOver(DWORD grfKeyState, POINTL pt, _Inout_ DWORD* pdwEffect);
-    IFACEMETHODIMP DragLeave();
-    IFACEMETHODIMP Drop(_In_ IDataObject* pdtobj, DWORD grfKeyState, POINTL pt, _Inout_ DWORD* pdwEffect);
+    IFACEMETHODIMP DragEnter(_In_ IDataObject* pdtobj, DWORD grfKeyState, POINTL pt, _Inout_ DWORD* pdwEffect) override;
+    IFACEMETHODIMP DragOver(DWORD grfKeyState, POINTL pt, _Inout_ DWORD* pdwEffect) override;
+    IFACEMETHODIMP DragLeave() override;
+    IFACEMETHODIMP Drop(_In_ IDataObject* pdtobj, DWORD grfKeyState, POINTL pt, _Inout_ DWORD* pdwEffect) override;
 
     static HRESULT s_CreateInstance(_In_ IPowerRenameManager* psrm, _In_opt_ IUnknown* dataSource, _In_ bool enableDragDrop, _Outptr_ IPowerRenameUI** ppsrui);
 

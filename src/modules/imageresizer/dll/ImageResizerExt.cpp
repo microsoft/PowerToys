@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "resource.h"
 #include "ImageResizerExt_i.h"
 #include "dllmain.h"

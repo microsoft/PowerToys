@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include <commctrl.h>
 #include "Settings.h"
 

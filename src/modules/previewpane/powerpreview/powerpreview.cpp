@@ -12,9 +12,9 @@
 void PowerPreviewModule::destroy()
 {
     Trace::Destroyed();
-    for (auto previewHandler : this->m_previewHandlers)
+    for (auto* previewHandler : this->m_previewHandlers)
     {
-        if (previewHandler != NULL)
+        if (previewHandler != nullptr)
         {
             // Disable all the active preview handlers.
             if (this->m_enabled && previewHandler->GetToggleSettingState())
@@ -59,7 +59,7 @@ bool PowerPreviewModule::get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_siz
         GET_RESOURCE_STRING(IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_DESC),
         GET_RESOURCE_STRING(IDS_PRVPANE_FILE_PREV_STTNGS_GROUP_TEXT));
 
-    for (auto previewHandler : this->m_previewHandlers)
+    for (auto* previewHandler : this->m_previewHandlers)
     {
         settings.add_bool_toogle(
             previewHandler->GetToggleSettingName(),
@@ -77,7 +77,7 @@ void PowerPreviewModule::set_config(const wchar_t* config)
     {
         PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::from_json_string(config);
 
-        for (auto previewHandler : this->m_previewHandlers)
+        for (auto* previewHandler : this->m_previewHandlers)
         {
             previewHandler->UpdateState(settings, this->m_enabled);
         }
@@ -93,7 +93,7 @@ void PowerPreviewModule::set_config(const wchar_t* config)
 // Enable preview handlers.
 void PowerPreviewModule::enable()
 {
-    for (auto previewHandler : this->m_previewHandlers)
+    for (auto* previewHandler : this->m_previewHandlers)
     {
         if (previewHandler->GetToggleSettingState())
         {
@@ -117,7 +117,7 @@ void PowerPreviewModule::enable()
 // Disable active preview handlers.
 void PowerPreviewModule::disable()
 {
-    for (auto previewHandler : this->m_previewHandlers)
+    for (auto* previewHandler : this->m_previewHandlers)
     {
         previewHandler->DisablePreview();
     }
@@ -152,7 +152,7 @@ void PowerPreviewModule::init_settings()
             PowerToysSettings::PowerToyValues::load_from_settings_file(PowerPreviewModule::get_name());
 
         // Load settings states.
-        for (auto previewHandler : this->m_previewHandlers)
+        for (auto* previewHandler : this->m_previewHandlers)
         {
             previewHandler->LoadState(settings);
         }

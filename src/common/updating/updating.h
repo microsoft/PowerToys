@@ -13,7 +13,7 @@ namespace updating
     bool uninstall_msi_version(const std::wstring& package_path);
     bool offer_msi_uninstallation();
 
-    std::future<bool> uninstall_previous_msix_version_async();
+    std::future<bool> uninstall_prev_msix_ver_async();
 
     struct new_version_download_info
     {
