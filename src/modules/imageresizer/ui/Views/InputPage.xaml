@@ -24,6 +24,7 @@
                         <Setter.Value>
                             <ControlTemplate TargetType="ListBoxItem">
                                 <RadioButton Margin="0,7,0,0"
+                                             VerticalContentAlignment="Center"
                                              Focusable="False"
                                              IsChecked="{Binding IsSelected,RelativeSource={RelativeSource TemplatedParent}}">
                                     <ContentPresenter/>
