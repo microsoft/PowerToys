@@ -1,14 +1,11 @@
-﻿using Microsoft.PowerToys.Settings.UI.Lib;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
-using Microsoft.PowerToys.Settings.UnitTest;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using Windows.ApplicationModel.VoiceCommands;
 
 namespace CommonLibTest
 {
     [TestClass]
-    class HelperTest
+    public class HelperTest
     {
         public static void TestStringIsSmaller(string v1, string v2)
         {
@@ -24,14 +21,25 @@ namespace CommonLibTest
         }
 
         [TestMethod]
+        public void Helper_CompareVersions_Equal()
+        {
+            TestStringsAreEqual("v0.0.0", "v0.0.0");
+            TestStringsAreEqual("v0.1.1", "v0.1.1");
+            TestStringsAreEqual("v1.1.1", "v1.1.1");
+            TestStringsAreEqual("v1.999.99", "v1.999.99");
+        }
+
+        [TestMethod]
         public void Helper_CompareVersions_Smaller()
         {
-            TestStringIsSmaller("v0.0.0", "v0.0.0");
-            TestStringIsSmaller("v0.1.1", "v0.1.1");
-            TestStringIsSmaller("v00.0.0", "v0.00.000");
-            TestStringIsSmaller("v1.09.10", "v01.0.10");
-            TestStringIsSmaller("v1.1.1", "v1.1.1");
-            TestStringIsSmaller("v1.999.99", "1.999.99");
+            TestStringIsSmaller("v0.0.0", "v0.0.1");
+            TestStringIsSmaller("v0.0.0", "v0.1.0");
+            TestStringIsSmaller("v0.0.0", "v1.0.0");
+            TestStringIsSmaller("v1.0.1", "v1.0.2");
+            TestStringIsSmaller("v1.1.1", "v1.1.2");
+            TestStringIsSmaller("v1.1.1", "v1.2.0");
+            TestStringIsSmaller("v1.999.99", "v2.0.0");
+            TestStringIsSmaller("v1.0.99", "v1.2.0");
         }
 
         [TestMethod]

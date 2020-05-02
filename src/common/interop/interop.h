@@ -1,11 +1,11 @@
 #pragma once
 
-#include "..\keyboard_layout.h"
-#include "..\two_way_pipe_message_ipc.h"
 #include <msclr\marshal.h>
 #include <msclr\marshal_cppstd.h>
 #include <functional>
-#include <common\common.h>
+#include "..\keyboard_layout.h"
+#include "..\two_way_pipe_message_ipc.h"
+#include "..\common.h"
 
 using namespace System;
 using namespace System::Runtime::InteropServices;
