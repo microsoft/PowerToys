@@ -21,6 +21,7 @@
         Initialized="OnInitialized"
         Closing="OnClosing"
         Drop="OnDrop"
+        Background="Transparent"
         LocationChanged="OnLocationChanged"
         Deactivated="OnDeactivated"
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
