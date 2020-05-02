@@ -44,14 +44,13 @@ namespace PowerLauncher
 
         #endregion
 
-        public MainWindow(Settings settings, MainViewModel mainVM)
+        public MainWindow(Settings settings, MainViewModel mainVM) : this()
         {
             DataContext = mainVM;
             _viewModel = mainVM;
             _settings = settings;
-            InitializeComponent();
-
         }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -62,44 +61,45 @@ namespace PowerLauncher
             _viewModel.Save();
         }
 
-        private void OnInitialized(object sender, EventArgs e)
-        {
-
-        }
-
         private void OnLoaded(object sender, System.Windows.RoutedEventArgs _)
         {
             InitializePosition();
-            SearchBox.QueryTextBox.Focus();
-            _viewModel.PropertyChanged += (o, e) =>
-            {
-                if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
-                {
-                    if (Visibility == System.Windows.Visibility.Visible)
-                    {
-                        Activate();
-                        SearchBox.QueryTextBox.Focus();
-                        UpdatePosition();
-                        _settings.ActivateTimes++;
-                        if (!_viewModel.LastQuerySelected)
-                        {
-                            _viewModel.LastQuerySelected = true;
-                        }
 
-                        // to select the text so that the user can continue to type
-                        if (!String.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
-                        {
-                            SearchBox.QueryTextBox.SelectAll();
-                        }
+            SearchBox.QueryTextBox.DataContext = _viewModel;
+            SearchBox.QueryTextBox.PreviewKeyDown += _launcher_KeyDown;
+            SearchBox.QueryTextBox.TextChanged += QueryTextBox_TextChanged;
+            SearchBox.QueryTextBox.Focus();
+
+            _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+        }
+
+        private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
+            {
+                if (Visibility == System.Windows.Visibility.Visible)
+                {
+                    Activate();
+                    SearchBox.QueryTextBox.Focus();
+                    UpdatePosition();
+                    _settings.ActivateTimes++;
+                    if (!_viewModel.LastQuerySelected)
+                    {
+                        _viewModel.LastQuerySelected = true;
+                    }
+
+                    // to select the text so that the user can continue to type
+                    if (!String.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
+                    {
+                        SearchBox.QueryTextBox.SelectAll();
                     }
                 }
-                else if (e.PropertyName == nameof(MainViewModel.SystemQueryText))
-                {
-                    this._isTextSetProgramatically = true;
-                    SearchBox.QueryTextBox.Text = _viewModel.SystemQueryText;
-                }
-            };
-            InitializePosition();
+            }
+            else if (e.PropertyName == nameof(MainViewModel.SystemQueryText))
+            {
+                this._isTextSetProgramatically = true;
+                SearchBox.QueryTextBox.Text = _viewModel.SystemQueryText;
+            }
         }
 
         private void InitializePosition()
@@ -108,34 +108,6 @@ namespace PowerLauncher
             Left = WindowLeft();
             _settings.WindowTop = Top;
             _settings.WindowLeft = Left;
-        }
-
-        private void OnMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ChangedButton == MouseButton.Left) DragMove();
-        }
-
-        private void OnDrop(object sender, DragEventArgs e)
-        {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
-                // Note that you can have more than one file.
-                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                if (files[0].ToLower().EndsWith(".wox"))
-                {
-                    PluginManager.InstallPlugin(files[0]);
-                }
-                else
-                {
-                    MessageBox.Show(InternationalizationManager.Instance.GetTranslation("invalidWoxPluginFileFormat"));
-                }
-            }
-            e.Handled = false;
-        }
-
-        private void OnPreviewDragOver(object sender, DragEventArgs e)
-        {
-            e.Handled = true;
         }
 
         private void OnDeactivated(object sender, EventArgs e)
@@ -333,15 +305,6 @@ namespace PowerLauncher
 
             return String.Empty;
         }    
-
-        private void SearchBox_Loaded(object sender, System.Windows.RoutedEventArgs ev)
-        {
-            if (sender == null) return;
-
-            SearchBox.QueryTextBox.DataContext = _viewModel;
-            SearchBox.QueryTextBox.PreviewKeyDown += _launcher_KeyDown;
-            SearchBox.QueryTextBox.TextChanged += QueryTextBox_TextChanged;
-        }
 
         private void QueryTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {

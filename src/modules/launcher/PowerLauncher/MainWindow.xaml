@@ -18,21 +18,19 @@
         Icon="Images/app.png"
         AllowsTransparency="True"
         Loaded="OnLoaded"
-        Initialized="OnInitialized"
         Closing="OnClosing"
-        Drop="OnDrop"
         Background="Transparent"
         LocationChanged="OnLocationChanged"
         Deactivated="OnDeactivated"
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         d:DataContext="{d:DesignInstance vm:MainViewModel}">
-    <Grid Width="720" 
-          MouseDown="OnMouseDown">
+    <Grid Width="720">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Border 
+            Background="Red"
             x:Name="SearchBoxBorder" 
             Grid.Row="0" 
             Margin="24,24,24,8"  
@@ -41,12 +39,7 @@
             <Border.Effect>
                 <DropShadowEffect BlurRadius="16" Opacity="0.8" ShadowDepth="0" />
             </Border.Effect>
-            <ContentControl>
-                <local:LauncherControl
-                Height="60"
-                x:Name="SearchBox" 
-                Loaded="SearchBox_Loaded" />
-            </ContentControl>
+            <local:LauncherControl x:Name="SearchBox" />
         </Border>
         <Border 
             x:Name="ListBoxBorder"
