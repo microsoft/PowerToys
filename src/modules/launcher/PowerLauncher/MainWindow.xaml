@@ -23,18 +23,27 @@
         Deactivated="OnDeactivated"
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         d:DataContext="{d:DesignInstance vm:MainViewModel}">
+    <Window.Resources>
+        <SolidColorBrush x:Key="SystemChromeLow" Color="#FFF2F2F2" />
+        <!--"key": "SystemChromeLowColor",
+      "name": "ChromeLow",
+      "lightHex": "#FFF2F2F2",
+      "darkHex": "#FF171717"-->
+    </Window.Resources>
     <Grid Width="720">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Border 
-            Background="Red"
             x:Name="SearchBoxBorder" 
             Grid.Row="0" 
             Margin="24,24,24,8"  
             BorderThickness="4" 
-            CornerRadius="4">
+            CornerRadius="4"
+            Background="{DynamicResource SystemChromeLow}"
+            BorderBrush="{DynamicResource SystemChromeLow}"
+            >
             <Border.Effect>
                 <DropShadowEffect BlurRadius="16" Opacity="0.8" ShadowDepth="0" />
             </Border.Effect>

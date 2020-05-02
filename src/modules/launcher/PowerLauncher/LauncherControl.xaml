@@ -8,29 +8,40 @@
     mc:Ignorable="d" 
     d:DesignHeight="300"
     d:DesignWidth="720">
-    <!--<UserControl.Resources>
+  <UserControl.Resources>
+        <Color x:Key="SystemBaseMediumLowColor">#66000000</Color>
+        <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#66000000" />
+        <!--
+            https://github.com/MicrosoftDocs/windows-uwp/issues/2072
+            TextControlPlaceholderForeground is based on SystemBaseMediumLowColor	
+            Light=#66000000	
+            Dark=#66FFFFFF
+            Highcontrast 
+                should be based from SystemColors https://docs.microsoft.com/en-us/archive/blogs/wpf/systemcolors-reference        
+        -->
 
         <Style TargetType="TextBox" x:Key="CustomAutoSuggestBoxTextBoxStyle">
-            <Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}" />
+            <!--<Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}" />
             <Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}" />
-            <Setter Property="Foreground" Value="{ThemeResource TextControlForeground}" />
+            <Setter Property="Foreground" Value="{ThemeResource TextControlForeground}" />-->
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderBrush" Value="{ThemeResource TextControlBorderBrush}" />
-            <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextControlSelectionHighlightColor}" />
+            <!--<Setter Property="BorderBrush" Value="{ThemeResource TextControlBorderBrush}" />
+            <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextControlSelectionHighlightColor}" />-->
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+            <!--<Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
             <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
             <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Auto" />
             <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
             <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
             <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
             <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
+            -->
             <Setter Property="Padding" Value="12,0,0,0" />
-            <Setter Property="Template">
+<!--            <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
                         <Grid>
-                            <VisualStateManager.VisualStateGroups>
+                            b<VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates">
                                     <VisualState x:Name="Disabled">
                                         <Storyboard>
@@ -108,7 +119,7 @@
                                 x:Name="PlaceholderTextContentPresenter"
                                 Grid.Row="1" 
                                 Opacity="0.6"
-                                Foreground="{ThemeResource TextControlPlaceholderForeground}"
+                                Foreground="{DynamicResource TextControlPlaceholderForeground}"
                                 Margin="12,0,0,0"
                                 Padding="{TemplateBinding Padding}"
                                 IsTabStop="False"
@@ -119,9 +130,9 @@
                         </Grid>
                     </ControlTemplate>
                 </Setter.Value>
-            </Setter>
+            </Setter>-->
         </Style>
-    </UserControl.Resources>-->
+    </UserControl.Resources>
     <Grid 
         Height="60"
         VerticalAlignment="Top">
@@ -140,9 +151,9 @@
             Margin="24,0,0,0"
             VerticalAlignment="Center"
             FontSize="24"
+            Foreground="{DynamicResource TextControlPlaceholderForeground}"
          />
-        <!--Foreground="{ThemeResource TextControlPlaceholderForeground}"-->
-        
+
         <!--
             for adding on placeholder, look at the style with 90 votes
             https://stackoverflow.com/questions/11873378/adding-placeholder-text-to-textbox
@@ -155,6 +166,7 @@
             Margin="0" 
             VerticalAlignment="Center"
             FontSize="24"
+            Style="{StaticResource CustomAutoSuggestBoxTextBoxStyle}"
             />
 
         <TextBlock
@@ -163,7 +175,7 @@
             FontFamily="Segoe MDL2 Assets"
             FontSize="24" 
             HorizontalAlignment="Center" 
-            VerticalAlignment="Center"/>
-        <!--Foreground="{ThemeResource TextControlPlaceholderForeground}"-->
+            VerticalAlignment="Center"
+            Foreground="{DynamicResource TextControlPlaceholderForeground}" />
     </Grid>
 </UserControl>
