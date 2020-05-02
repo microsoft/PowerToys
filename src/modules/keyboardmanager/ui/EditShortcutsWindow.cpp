@@ -274,7 +274,7 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
         {
             return xamlBridgePtr->MessageHandler(messageCode, wParam, lParam);
         }
-        else if (messageCode == WM_DESTROY)
+        else if (messageCode == WM_NCDESTROY)
         {
             PostQuitMessage(0);
             break;
