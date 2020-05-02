@@ -10,6 +10,7 @@
 #include <fstream>
 #include <regex>
 #include <sstream>
+#include <unordered_set>
 
 namespace
 {
@@ -344,6 +345,25 @@ namespace JSONHelpers
         if (activeDeviceId == DEFAULT_GUID)
         {
             activeDeviceId = replaceDesktopId(activeDeviceId);
+        }
+        SaveFancyZonesData();
+    }
+
+    void FancyZonesData::CleanResourcesFromClosedDesktops(const std::vector<std::wstring>& activeDesktops)
+    {
+        std::unordered_set<std::wstring> active(std::begin(activeDesktops), std::end(activeDesktops));
+        std::scoped_lock lock{ dataLock };
+        for (auto it = std::begin(deviceInfoMap); it != std::end(deviceInfoMap);)
+        {
+            auto foundId = active.find(ExtractVirtualDesktopId(it->first));
+            if (foundId == std::end(active))
+            {
+                it = deviceInfoMap.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
         }
         SaveFancyZonesData();
     }
