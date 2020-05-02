@@ -13,7 +13,7 @@
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"-->
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        <!--<converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed"/>
+        <!--
         <Style x:Key="CommandButtonGridViewItemContainerStyle" TargetType="GridViewItem">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Margin" Value="0,0,0,0"/>
@@ -95,17 +95,15 @@
                             ScrollViewer.VerticalScrollBarVisibility="Disabled"
                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                             ItemsSource="{Binding ContextMenuItems}" 
+                            
                             SelectionMode="Single"
                             SelectedIndex="{Binding ContextMenuSelectedIndex}"
                             Visibility="{Binding AreContextButtonsActive, Converter={StaticResource BooleanToVisibilityConverter}}"
                             >
-                            
-                            <!--CornerRadius="4"-->
                             <!--ItemContainerStyle="{StaticResource CommandButtonGridViewItemContainerStyle}"-->
-                           
-                            <ListView.View>
+                            <!--<ListView.View>
                                 <GridView />
-                            </ListView.View>
+                            </ListView.View>-->
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <Button Command="{Binding Command}" VerticalAlignment="Center" Height="42" Width="42" BorderThickness="1" >

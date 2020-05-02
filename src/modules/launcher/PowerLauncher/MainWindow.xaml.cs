@@ -71,11 +71,10 @@ namespace PowerLauncher
             SearchBox.QueryTextBox.Focus();
 
             ListBox.DataContext = _viewModel;
-            //ListBox.Tapped += SuggestionsList_Tapped;
-            //ListBox.SuggestionsList.Loaded += SuggestionsList_Loaded;
             ListBox.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
-            //ListBox.SuggestionsList.ContainerContentChanging += SuggestionList_UpdateListSize;
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+
+            _viewModel.ColdStartFix();
         }
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -102,7 +101,7 @@ namespace PowerLauncher
             }
             else if (e.PropertyName == nameof(MainViewModel.SystemQueryText))
             {
-                this._isTextSetProgramatically = true;
+                _isTextSetProgramatically = true;
                 SearchBox.QueryTextBox.Text = _viewModel.SystemQueryText;
             }
         }
@@ -116,7 +115,7 @@ namespace PowerLauncher
         }
 
         private void OnDeactivated(object sender, EventArgs e)
-        {
+        { 
             if (_settings.HideWhenDeactive)
             {
                 if (isDPIChanged)
@@ -184,25 +183,6 @@ namespace PowerLauncher
             var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
             var top = (dip2.Y - SearchBox.QueryTextBox.ActualHeight) / 4 + dip1.Y;
             return top;
-        }
-
-        //private UI.ResultList _resultList = null;
-        //private void WindowsXamlHostListView_ChildChanged(object sender, EventArgs ev)
-        //{
-        //    if (sender == null) return; 
-
-        //    var host = (WindowsXamlHost)sender;
-        //    _resultList = (UI.ResultList)host.Child;
-        //    _resultList.DataContext = _viewModel;
-        //    _resultList.Tapped += SuggestionsList_Tapped;
-        //    _resultList.SuggestionsList.Loaded += SuggestionsList_Loaded;
-        //    _resultList.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
-        //    _resultList.SuggestionsList.ContainerContentChanging += SuggestionList_UpdateListSize;
-        //}
-
-        private void SuggestionsList_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
-        {
-            _viewModel.ColdStartFix();
         }
 
         private void _launcher_KeyDown(object sender, KeyEventArgs e)
@@ -313,11 +293,11 @@ namespace PowerLauncher
 
         private void QueryTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
-            if (this._isTextSetProgramatically)
+            if (_isTextSetProgramatically)
             {
                 var textBox = ((System.Windows.Controls.TextBox)sender);
                 textBox.SelectionStart = textBox.Text.Length;
-                this._isTextSetProgramatically = false;
+                _isTextSetProgramatically = false;
             }
             else
             {
