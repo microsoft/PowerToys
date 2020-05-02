@@ -181,19 +181,19 @@ namespace PowerLauncher
             return top;
         }
 
-        private UI.ResultList _resultList = null;
-        private void WindowsXamlHostListView_ChildChanged(object sender, EventArgs ev)
-        {
-            if (sender == null) return; 
+        //private UI.ResultList _resultList = null;
+        //private void WindowsXamlHostListView_ChildChanged(object sender, EventArgs ev)
+        //{
+        //    if (sender == null) return; 
 
-            var host = (WindowsXamlHost)sender;
-            _resultList = (UI.ResultList)host.Child;
-            _resultList.DataContext = _viewModel;
-            _resultList.Tapped += SuggestionsList_Tapped;
-            _resultList.SuggestionsList.Loaded += SuggestionsList_Loaded;
-            _resultList.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
-            _resultList.SuggestionsList.ContainerContentChanging += SuggestionList_UpdateListSize;
-        }
+        //    var host = (WindowsXamlHost)sender;
+        //    _resultList = (UI.ResultList)host.Child;
+        //    _resultList.DataContext = _viewModel;
+        //    _resultList.Tapped += SuggestionsList_Tapped;
+        //    _resultList.SuggestionsList.Loaded += SuggestionsList_Loaded;
+        //    _resultList.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
+        //    _resultList.SuggestionsList.ContainerContentChanging += SuggestionList_UpdateListSize;
+        //}
 
         private void SuggestionsList_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
@@ -271,7 +271,7 @@ namespace PowerLauncher
         {
             int count = _viewModel?.Results?.Results.Count ?? 0;
             int displayCount = Math.Min(count, _settings.MaxResultsToShow);
-            _resultList.Height = displayCount * ROW_HEIGHT;
+            //_resultList.Height = displayCount * ROW_HEIGHT;
         }
 
         private void SuggestionsList_SelectionChanged(object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)

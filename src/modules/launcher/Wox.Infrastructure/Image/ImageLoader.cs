@@ -34,8 +34,8 @@ namespace Wox.Infrastructure.Image
 
             foreach (var icon in new[] { Constant.DefaultIcon, Constant.ErrorIcon })
             {
-                ImageSource img = new BitmapImage(new Uri(icon));
-                ImageCache[icon] = img;
+                //ImageSource img = new BitmapImage(new Uri(icon));
+                //ImageCache[icon] = img;
             }
             Task.Run(() =>
             {

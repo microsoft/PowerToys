@@ -37,13 +37,10 @@ namespace PowerLauncher
         {
             if (SingleInstance<App>.InitializeAsFirstInstance(Unique))
             {
-                using (new UI.App())
+                using (var application = new App())
                 {
-                    using (var application = new App())
-                    {
-                        application.InitializeComponent();
-                        application.Run();
-                    }
+                    application.InitializeComponent();
+                    application.Run();
                 }
             }
         }
