@@ -56,6 +56,7 @@ void CSettings::Save()
     jsonData.SetNamedValue(c_enabled, json::value(settings.enabled));
 
     json::to_file(jsonFilePath, jsonData);
+    GetSystemTimeAsFileTime(&lastLoadedTime);
 }
 
 void CSettings::Load()
@@ -70,7 +71,6 @@ void CSettings::Load()
     {
         ParseJson();
     }
-    GetSystemTimeAsFileTime(&lastLoadedTime);
 }
 
 void CSettings::Reload()
@@ -106,6 +106,7 @@ void CSettings::ParseJson()
         {
         }
     }
+    GetSystemTimeAsFileTime(&lastLoadedTime);
 }
 
 CSettings& CSettingsInstance()
