@@ -50,10 +50,7 @@
             <Border.Effect>
                 <DropShadowEffect BlurRadius="16" Opacity="0.8" ShadowDepth="0" />
             </Border.Effect>
-            <!--<xaml:WindowsXamlHost
-                x:Name="ListBox"
-                InitialTypeName="PowerLauncher.UI.ResultList" 
-                ChildChanged="WindowsXamlHostListView_ChildChanged"/>-->
+            <local:ResultList x:Name="ListBox" />
         </Border>
     </Grid> 
     <Window.InputBindings>

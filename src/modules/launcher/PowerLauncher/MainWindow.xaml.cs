@@ -70,6 +70,11 @@ namespace PowerLauncher
             SearchBox.QueryTextBox.TextChanged += QueryTextBox_TextChanged;
             SearchBox.QueryTextBox.Focus();
 
+            ListBox.DataContext = _viewModel;
+            //ListBox.Tapped += SuggestionsList_Tapped;
+            //ListBox.SuggestionsList.Loaded += SuggestionsList_Loaded;
+            ListBox.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
+            //ListBox.SuggestionsList.ContainerContentChanging += SuggestionList_UpdateListSize;
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
         }
 
@@ -274,9 +279,9 @@ namespace PowerLauncher
             //_resultList.Height = displayCount * ROW_HEIGHT;
         }
 
-        private void SuggestionsList_SelectionChanged(object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)
+        private void SuggestionsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            Windows.UI.Xaml.Controls.ListView listview = (Windows.UI.Xaml.Controls.ListView)sender;
+            System.Windows.Controls.ListView listview = (System.Windows.Controls.ListView)sender;
             _viewModel.Results.SelectedItem = (ResultViewModel) listview.SelectedItem;
             if (e.AddedItems.Count > 0 && e.AddedItems[0] != null)
             {
