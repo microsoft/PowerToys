@@ -103,7 +103,7 @@
                             </ListView.View>
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <Button Command="{Binding Command}" VerticalAlignment="Center"  Height="42" Width="42" BorderThickness="1" >
+                                    <Button Command="{Binding Command}" VerticalAlignment="Center" Height="42" Width="42" BorderThickness="1" >
                                         <!--Style="{ThemeResource IconOnlyButton}"-->
                                         <!--CornerRadius="4"-->
                                         <ToolTipService.ToolTip>

@@ -42,8 +42,7 @@
             BorderThickness="4" 
             CornerRadius="4"
             Background="{DynamicResource SystemChromeLow}"
-            BorderBrush="{DynamicResource SystemChromeLow}"
-            >
+            BorderBrush="{DynamicResource SystemChromeLow}">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="16" Opacity="0.8" ShadowDepth="0" />
             </Border.Effect>
@@ -55,7 +54,9 @@
             Margin="24,8,24,24" 
             BorderThickness="4"
             CornerRadius="4" 
-            Visibility="{Binding Results.Visbility}">
+            Visibility="{Binding Results.Visbility}"
+            Background="{DynamicResource SystemChromeLow}"
+            BorderBrush="{DynamicResource SystemChromeLow}">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="16" Opacity="0.8" ShadowDepth="0" />
             </Border.Effect>
