@@ -78,16 +78,14 @@ namespace PowerLauncher
                 InternationalizationManager.Instance.Settings = _settings;
                 InternationalizationManager.Instance.ChangeLanguage(_settings.Language);
                 // main windows needs initialized before theme change because of blur settigns
-                ThemeManager.Instance.Settings = _settings;
-                ThemeManager.Instance.ChangeTheme(_settings.Theme);
+                //ThemeManager.Instance.Settings = _settings;
+                //ThemeManager.Instance.ChangeTheme(_settings.Theme);
 
                 Http.Proxy = _settings.Proxy;
 
                 RegisterExitEvents();
 
                 _settingsWatcher = new SettingsWatcher(_settings);
-
-                _mainVM.MainWindowVisibility = Visibility.Hidden;
                 Log.Info("|App.OnStartup|End Wox startup ----------------------------------------------------  ");
 
                 

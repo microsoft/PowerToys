@@ -303,7 +303,7 @@ namespace Wox.ViewModel
 
         public Visibility ProgressBarVisibility { get; set; }
 
-        public Visibility MainWindowVisibility { get; set; }
+        public Visibility MainWindowVisibility { get; set; } = Visibility.Hidden;
 
         public ICommand EscCommand { get; set; }
         public ICommand SelectNextItemCommand { get; set; }
