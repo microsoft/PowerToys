@@ -16,9 +16,9 @@ using Wox.Infrastructure;
 using Wox.Plugin.Program.Logger;
 using IStream = AppxPackaing.IStream;
 using Rect = System.Windows.Rect;
-using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml.Media;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace Wox.Plugin.Program.Programs
 {

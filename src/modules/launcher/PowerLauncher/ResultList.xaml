@@ -81,7 +81,7 @@
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <!--<Image x:Name="AppIcon" Height="36" MaxWidth="56" Grid.RowSpan="2" Margin="-8,0,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />-->
+                        <Image x:Name="AppIcon" Height="36" MaxWidth="56" Grid.RowSpan="2" Margin="-8,0,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />
                         <TextBlock x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" Margin="0,0,0,-2" VerticalAlignment="Bottom"/>
                         <TextBlock x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Opacity="0.6" Margin="0,2,0,0" VerticalAlignment="Top"/>
                         <ListView                                  
