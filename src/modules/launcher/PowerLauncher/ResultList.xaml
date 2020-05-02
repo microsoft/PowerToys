@@ -45,17 +45,17 @@
     <Grid 
         x:Name="PowerBar"  
         VerticalAlignment="Top">
-        <!--Background="{ThemeResource BackdropAcrylicBrush}"-->
         <ListView
             x:Name="SuggestionsList"
             x:FieldModifier="public"
+            Background="Transparent"
+            BorderThickness="0"
             MaxHeight="{Binding Results.MaxHeight}"
             MinHeight="{Binding Results.MaxHeight}"          
             Margin="0"
             ItemsSource="{Binding Results.Results, Mode=OneWay}"
             SelectionMode="Single"
-            SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
-            >
+            SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}">
             <!--AllowFocusOnInteraction="False"
             IsItemClickEnabled="True"
             Padding="{ThemeResource AutoSuggestListPadding}"-->
