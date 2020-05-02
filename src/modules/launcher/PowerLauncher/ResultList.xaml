@@ -92,18 +92,23 @@
                             Margin="8,8,0,0"
                             Background="Transparent"
                             BorderThickness="0"
+                            Grid.RowSpan="2" 
+                            Grid.Column="2"
                             ScrollViewer.VerticalScrollBarVisibility="Disabled"
                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                             ItemsSource="{Binding ContextMenuItems}" 
-                            
                             SelectionMode="Single"
                             SelectedIndex="{Binding ContextMenuSelectedIndex}"
                             Visibility="{Binding AreContextButtonsActive, Converter={StaticResource BooleanToVisibilityConverter}}"
                             >
                             <!--ItemContainerStyle="{StaticResource CommandButtonGridViewItemContainerStyle}"-->
-                            <!--<ListView.View>
-                                <GridView />
-                            </ListView.View>-->
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <Button Command="{Binding Command}" VerticalAlignment="Center" Height="42" Width="42" BorderThickness="1" >
