@@ -70,6 +70,36 @@ namespace PowerLauncher
         private void OnLoaded(object sender, System.Windows.RoutedEventArgs _)
         {
             InitializePosition();
+            SearchBox.QueryTextBox.Focus();
+            _viewModel.PropertyChanged += (o, e) =>
+            {
+                if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
+                {
+                    if (Visibility == System.Windows.Visibility.Visible)
+                    {
+                        Activate();
+                        SearchBox.QueryTextBox.Focus();
+                        UpdatePosition();
+                        _settings.ActivateTimes++;
+                        if (!_viewModel.LastQuerySelected)
+                        {
+                            _viewModel.LastQuerySelected = true;
+                        }
+
+                        // to select the text so that the user can continue to type
+                        if (!String.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
+                        {
+                            SearchBox.QueryTextBox.SelectAll();
+                        }
+                    }
+                }
+                else if (e.PropertyName == nameof(MainViewModel.SystemQueryText))
+                {
+                    this._isTextSetProgramatically = true;
+                    SearchBox.QueryTextBox.Text = _viewModel.SystemQueryText;
+                }
+            };
+            InitializePosition();
         }
 
         private void InitializePosition()
@@ -164,86 +194,19 @@ namespace PowerLauncher
         private double WindowLeft()
         {
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
-            var dpi1 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.X, 0);
-            var dpi2 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
-            var left = (dpi2.X - this.Width) / 2 + dpi1.X;
+            var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.X, 0);
+            var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
+            var left = (dip2.X - ActualWidth) / 2 + dip1.X;
             return left;
         }
 
-        /// <summary>
-        /// Calculates Y co-ordinate of main window top left corner 
-        /// </summary>
-        /// <returns>Y co-ordinate of main window top left corner</returns>
         private double WindowTop()
         {
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
-            var dpi1 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
-            var dpi2 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
-            var totalHeight = this.SearchBoxBorder.Margin.Top + this.SearchBoxBorder.Margin.Bottom + this.SearchBox.Height + this.ListBoxBorder.Margin.Top + this.ListBoxBorder.Margin.Bottom + MAX_LIST_HEIGHT;
-            var top = (dpi2.Y - totalHeight) / 4 + dpi1.Y;
+            var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
+            var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
+            var top = (dip2.Y - SearchBox.QueryTextBox.ActualHeight) / 4 + dip1.Y;
             return top;
-        }
-
-        private PowerLauncher.UI.LauncherControl _launcher = null;
-        private void WindowsXamlHostTextBox_ChildChanged(object sender, EventArgs ev)
-        {
-            if (sender == null) return;
-
-            var host = (WindowsXamlHost)sender;
-            _launcher = (PowerLauncher.UI.LauncherControl)host.Child;
-            _launcher.DataContext = _viewModel;
-            _launcher.KeyDown += _launcher_KeyDown;
-            _launcher.QueryTextBox.TextChanging += QueryTextBox_TextChanging;
-            _launcher.QueryTextBox.Loaded += TextBox_Loaded;
-            _launcher.PropertyChanged += UserControl_PropertyChanged;
-            _viewModel.PropertyChanged += (o, e) =>
-            {
-                if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
-                {
-                    if (Visibility == System.Windows.Visibility.Visible)
-                    {
-                        Activate();
-                        UpdatePosition();
-                        _settings.ActivateTimes++;
-                        if (!_viewModel.LastQuerySelected)
-                        {
-                            _viewModel.LastQuerySelected = true;
-                        }          
-                        
-                        // to select the text so that the user can continue to type
-                        if(!String.IsNullOrEmpty(_launcher.QueryTextBox.Text))
-                        {
-                            _launcher.QueryTextBox.SelectAll();
-                        }
-                    }
-                }
-                else if(e.PropertyName == nameof(MainViewModel.SystemQueryText))
-                {
-                    this._isTextSetProgramatically = true;
-                    _launcher.QueryTextBox.Text = _viewModel.SystemQueryText;
-                }
-            };           
-        }
-
-        private void UserControl_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == "SolidBorderBrush")
-            {
-                if (_launcher != null)
-                {
-                    Windows.UI.Xaml.Media.SolidColorBrush uwpBrush = _launcher.SolidBorderBrush as Windows.UI.Xaml.Media.SolidColorBrush;
-                    System.Windows.Media.Color borderColor = System.Windows.Media.Color.FromArgb(uwpBrush.Color.A, uwpBrush.Color.R, uwpBrush.Color.G, uwpBrush.Color.B);
-                    this.SearchBoxBorder.BorderBrush = new SolidColorBrush(borderColor);
-                    this.ListBoxBorder.BorderBrush = new SolidColorBrush(borderColor);
-                }
-            }
-        }
-
-        private void TextBox_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
-        {
-            TextBox tb = (TextBox)sender;
-            tb.Focus(FocusState.Programmatic);
-            _viewModel.MainWindowVisibility = System.Windows.Visibility.Collapsed;
         }
 
         private UI.ResultList _resultList = null;
@@ -265,44 +228,38 @@ namespace PowerLauncher
             _viewModel.ColdStartFix();
         }
 
-        private bool IsKeyDown(VirtualKey key)
+        private void _launcher_KeyDown(object sender, KeyEventArgs e)
         {
-            var keyState = CoreWindow.GetForCurrentThread().GetKeyState(key);
-            return (keyState & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down;
-        }
-
-        private void _launcher_KeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            if (e.Key == VirtualKey.Tab && IsKeyDown(VirtualKey.Shift))
+            if (e.Key == Key.Tab && Keyboard.IsKeyDown(Key.LeftShift))
             {
                 _viewModel.SelectPrevTabItemCommand.Execute(null);
                 UpdateTextBoxToSelectedItem();
                 e.Handled = true;
             }
-            else if (e.Key == VirtualKey.Tab)
+            else if (e.Key == Key.Tab)
             {
                 _viewModel.SelectNextTabItemCommand.Execute(null);
                 UpdateTextBoxToSelectedItem();
                 e.Handled = true;
             }
-            else if (e.Key == VirtualKey.Down)
+            else if (e.Key == Key.Down)
             {
                 _viewModel.SelectNextItemCommand.Execute(null);
                 UpdateTextBoxToSelectedItem();
                 e.Handled = true;
             }
-            else if (e.Key == VirtualKey.Up)
+            else if (e.Key == Key.Up)
             {
                 _viewModel.SelectPrevItemCommand.Execute(null);
                 UpdateTextBoxToSelectedItem();
                 e.Handled = true;
             }
-            else if (e.Key == VirtualKey.PageDown)
+            else if (e.Key == Key.PageDown)
             {
                 _viewModel.SelectNextPageCommand.Execute(null);
                 e.Handled = true;
             }
-            else if (e.Key == VirtualKey.PageUp)
+            else if (e.Key == Key.PageUp)
             {
                 _viewModel.SelectPrevPageCommand.Execute(null);
                 e.Handled = true;
@@ -356,11 +313,8 @@ namespace PowerLauncher
 
             // To populate the AutoCompleteTextBox as soon as the selection is changed or set.
             // Setting it here instead of when the text is changed as there is a delay in executing the query and populating the result
-            _launcher.AutoCompleteTextBlock.Text = ListView_FirstItem(_viewModel.QueryText);
+            SearchBox.AutoCompleteTextBlock.Text = ListView_FirstItem(_viewModel.QueryText);
         }
-
-        private const int millisecondsToWait = 200;
-        private static DateTime s_lastTimeOfTyping;
 
         private string ListView_FirstItem(String input)
         {
@@ -378,85 +332,35 @@ namespace PowerLauncher
             }
 
             return String.Empty;
+        }    
+
+        private void SearchBox_Loaded(object sender, System.Windows.RoutedEventArgs ev)
+        {
+            if (sender == null) return;
+
+            SearchBox.QueryTextBox.DataContext = _viewModel;
+            SearchBox.QueryTextBox.PreviewKeyDown += _launcher_KeyDown;
+            SearchBox.QueryTextBox.TextChanged += QueryTextBox_TextChanged;
         }
 
-        private void QueryTextBox_TextChanging(TextBox sender, TextBoxTextChangingEventArgs args)
+        private void QueryTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
-            ClearAllQueryTextChangedHanlders();
-          
-            if(this._isTextSetProgramatically)
+            if (this._isTextSetProgramatically)
             {
-                this._launcher.QueryTextBox.TextChanged += QueryTextBox_TextChangedProgramatically;
+                var textBox = ((System.Windows.Controls.TextBox)sender);
+                textBox.SelectionStart = textBox.Text.Length;
+                this._isTextSetProgramatically = false;
             }
             else
             {
-                this._launcher.QueryTextBox.TextChanged += QueryTextBox_TextChangedByUserInput;
-            }
-        }
-
-        private void ClearAllQueryTextChangedHanlders()
-        {
-            this._launcher.QueryTextBox.TextChanged -= QueryTextBox_TextChangedProgramatically;
-            this._launcher.QueryTextBox.TextChanged -= QueryTextBox_TextChangedByUserInput;
-        }
-
-        private void QueryTextBox_TextChangedProgramatically(object sender, Windows.UI.Xaml.Controls.TextChangedEventArgs e)
-        {
-            var textBox = ((Windows.UI.Xaml.Controls.TextBox)sender);
-            textBox.SelectionStart = textBox.Text.Length;
-
-            this._isTextSetProgramatically = false;
-        }
-
-
-        private void QueryTextBox_TextChangedByUserInput(object sender, Windows.UI.Xaml.Controls.TextChangedEventArgs e)
-        {
-            var text = ((Windows.UI.Xaml.Controls.TextBox)sender).Text;
-            //To clear the auto-suggest immediately instead of waiting for selection changed
-            if (text == String.Empty)
-            {
-                _launcher.AutoCompleteTextBlock.Text = String.Empty;
-            }
-
-            _viewModel.QueryText = text;
-            var latestTimeOfTyping = DateTime.Now;
-
-            Task.Run(() => DelayedCheck(latestTimeOfTyping, text));
-            s_lastTimeOfTyping = latestTimeOfTyping;
-        }
-
-        private async Task DelayedCheck(DateTime latestTimeOfTyping, string text)
-        {
-            await Task.Delay(millisecondsToWait);
-            if (latestTimeOfTyping.Equals(s_lastTimeOfTyping))
-            {
-                await System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                var text = ((System.Windows.Controls.TextBox)sender).Text;
+                if (text == String.Empty)
                 {
-                    _viewModel.Query();
-                }));
+                    SearchBox.AutoCompleteTextBlock.Text = String.Empty;
+                }
+                _viewModel.QueryText = text;
+                _viewModel.Query();
             }
-        }
-
-        private void WindowsXamlHost_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            //    if (sender != null && e.OriginalSource != null)
-            //    {
-            //        //var r = (ResultListBox)sender;
-            //        //var d = (DependencyObject)e.OriginalSource;
-            //        //var item = ItemsControl.ContainerFromElement(r, d) as ListBoxItem;
-            //        //var result = (ResultViewModel)item?.DataContext;
-            //        //if (result != null)
-            //        //{
-            //        //    if (e.ChangedButton == MouseButton.Left)
-            //        //    {
-            //        //        _viewModel.OpenResultCommand.Execute(null);
-            //        //    }
-            //        //    else if (e.ChangedButton == MouseButton.Right)
-            //        //    {
-            //        //        _viewModel.LoadContextMenuCommand.Execute(null);
-            //        //    }
-            //        //}
-            //    }
         }
     }
  }
