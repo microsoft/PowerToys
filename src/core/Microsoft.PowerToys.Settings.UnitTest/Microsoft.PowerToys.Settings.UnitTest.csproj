@@ -129,7 +129,7 @@
     </Compile>
     <Compile Include="ViewModelTests\PowerPreview.cs" />
     <Compile Include="ViewModelTests\ShortcutGuide.cs" />
-    <Compile Include="ViewModelTests\PowerLauncher.cs" />
+    <Compile Include="ViewModelTests\PowerLauncherViewModelTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="UnitTestApp.xaml">
