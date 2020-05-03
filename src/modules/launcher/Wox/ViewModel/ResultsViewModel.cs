@@ -82,7 +82,10 @@ namespace Wox.ViewModel
 
                     _selectedItem = value;
                     _selectedItem.ActivateContextButtons(ResultViewModel.ActivationType.Selection);
-                    _selectedItem.Result.SelectionAction(new ActionContext());
+                    if (_selectedItem.Result.SelectionAction != null)
+                    {
+                        _selectedItem.Result.SelectionAction(new ActionContext());
+                    }
                 }
                 else
                 {
