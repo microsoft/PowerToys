@@ -3,29 +3,13 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
-using Wox.Core.Plugin;
-using Wox.Core.Resource;
 using Wox.Helper;
 using Wox.Infrastructure.UserSettings;
 using Wox.ViewModel;
 
 using Screen = System.Windows.Forms.Screen;
-using DataFormats = System.Windows.DataFormats;
-using DragEventArgs = System.Windows.DragEventArgs;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
-using MessageBox = System.Windows.MessageBox;
-using Microsoft.Toolkit.Wpf.UI.XamlHost;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Windows.System;
-using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Core;
-using System.Windows.Media;
-using Windows.UI.Xaml.Data;
-using System.Diagnostics;
-using Mages.Core.Runtime.Converters;
-using System.Runtime.InteropServices;
+using System.Windows.Controls;
 
 namespace PowerLauncher
 {
@@ -61,7 +45,7 @@ namespace PowerLauncher
             _viewModel.Save();
         }
 
-        private void OnLoaded(object sender, System.Windows.RoutedEventArgs _)
+        private void OnLoaded(object sender, RoutedEventArgs _)
         {
             InitializePosition();
 
@@ -72,9 +56,26 @@ namespace PowerLauncher
 
             ListBox.DataContext = _viewModel;
             ListBox.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
+            ListBox.SuggestionsList.PreviewMouseLeftButtonUp += SuggestionsList_PreviewMouseLeftButtonUp;
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
             _viewModel.ColdStartFix();
+        }
+
+        private void SuggestionsList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            var result = ((FrameworkElement)e.OriginalSource).DataContext;
+            if (result != null)
+            {
+                var resultVM = result as ResultViewModel;
+
+                //This may be null if the tapped item was one of the context buttons (run as admin etc).
+                if (resultVM != null)
+                {
+                    _viewModel.Results.SelectedItem = resultVM;
+                    _viewModel.OpenResultCommand.Execute(null);
+                }
+            }
         }
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -93,7 +94,7 @@ namespace PowerLauncher
                     }
 
                     // to select the text so that the user can continue to type
-                    if (!String.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
+                    if (!string.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
                     {
                         SearchBox.QueryTextBox.SelectAll();
                     }
@@ -226,42 +227,15 @@ namespace PowerLauncher
         private void UpdateTextBoxToSelectedItem()
         {
             var itemText = _viewModel?.Results?.SelectedItem?.ToString() ?? null;
-            if (!String.IsNullOrEmpty(itemText))
+            if (!string.IsNullOrEmpty(itemText))
             {
                 _viewModel.ChangeQueryText(itemText);
             }
         }
 
-        private void SuggestionsList_Tapped(object sender, TappedRoutedEventArgs e)
+        private void SuggestionsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var result = ((Windows.UI.Xaml.FrameworkElement)e.OriginalSource).DataContext;
-            if (result != null)
-            {
-                var resultVM = result as ResultViewModel;
-
-                //This may be null if the tapped item was one of the context buttons (run as admin etc).
-                if (resultVM != null)
-                {
-                    _viewModel.Results.SelectedItem = resultVM;
-                    _viewModel.OpenResultCommand.Execute(null);
-                }
-            }
-        }
-
-        /* Note: This function has been added because a white-background was observed when the list resized,
-         * when the number of elements were lesser than the maximum capacity of the list (ie. 4).
-         * Binding Height/MaxHeight Properties did not solve this issue.
-         */
-        private void SuggestionList_UpdateListSize(object sender, ContainerContentChangingEventArgs e)
-        {
-            int count = _viewModel?.Results?.Results.Count ?? 0;
-            int displayCount = Math.Min(count, _settings.MaxResultsToShow);
-            //_resultList.Height = displayCount * ROW_HEIGHT;
-        }
-
-        private void SuggestionsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-        {
-            System.Windows.Controls.ListView listview = (System.Windows.Controls.ListView)sender;
+            ListView listview = (ListView)sender;
             _viewModel.Results.SelectedItem = (ResultViewModel) listview.SelectedItem;
             if (e.AddedItems.Count > 0 && e.AddedItems[0] != null)
             {
@@ -273,11 +247,11 @@ namespace PowerLauncher
             SearchBox.AutoCompleteTextBlock.Text = ListView_FirstItem(_viewModel.QueryText);
         }
 
-        private string ListView_FirstItem(String input)
+        private string ListView_FirstItem(string input)
         {
-            if (!String.IsNullOrEmpty(input))
+            if (!string.IsNullOrEmpty(input))
             {
-                String selectedItem = _viewModel.Results?.SelectedItem?.ToString();
+                string selectedItem = _viewModel.Results?.SelectedItem?.ToString();
                 int selectedIndex = _viewModel.Results.SelectedIndex;
                 if (selectedItem != null && selectedIndex == 0)
                 {
@@ -288,23 +262,23 @@ namespace PowerLauncher
                 }
             }
 
-            return String.Empty;
+            return string.Empty;
         }    
 
-        private void QueryTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (_isTextSetProgramatically)
             {
-                var textBox = ((System.Windows.Controls.TextBox)sender);
+                var textBox = ((TextBox)sender);
                 textBox.SelectionStart = textBox.Text.Length;
                 _isTextSetProgramatically = false;
             }
             else
             {
-                var text = ((System.Windows.Controls.TextBox)sender).Text;
-                if (text == String.Empty)
+                var text = ((TextBox)sender).Text;
+                if (text == string.Empty)
                 {
-                    SearchBox.AutoCompleteTextBlock.Text = String.Empty;
+                    SearchBox.AutoCompleteTextBlock.Text = string.Empty;
                 }
                 _viewModel.QueryText = text;
                 _viewModel.Query();
