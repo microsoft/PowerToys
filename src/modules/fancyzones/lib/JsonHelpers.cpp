@@ -349,7 +349,7 @@ namespace JSONHelpers
         SaveFancyZonesData();
     }
 
-    void FancyZonesData::CleanResourcesFromClosedDesktops(const std::vector<std::wstring>& activeDesktops)
+    void FancyZonesData::RemoveDeletedDesktops(const std::vector<std::wstring>& activeDesktops)
     {
         std::unordered_set<std::wstring> active(std::begin(activeDesktops), std::end(activeDesktops));
         std::scoped_lock lock{ dataLock };
