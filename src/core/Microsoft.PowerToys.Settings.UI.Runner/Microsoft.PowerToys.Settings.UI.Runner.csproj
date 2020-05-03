@@ -57,7 +57,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Toolkit.UI.XamlHost" Version="6.0.1" />
-    <PackageReference Include="Microsoft.Toolkit.Uwp.UI" Version="6.0.0" />
     <PackageReference Include="Microsoft.Toolkit.Wpf.UI.Controls" Version="6.0.1" />
     <PackageReference Include="Microsoft.Toolkit.Wpf.UI.XamlHost" Version="6.0.1" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">

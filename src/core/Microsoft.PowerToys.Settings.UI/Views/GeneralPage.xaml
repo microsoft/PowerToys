@@ -52,20 +52,24 @@
 
             <ToggleSwitch x:Uid="GeneralPage_ToggleSwitch_RunAtStartUp"  
                           Margin="{StaticResource SmallTopMargin}" 
-                          IsOn="{Binding Mode=TwoWay, Path=Startup}"/>
+                          IsOn="{Binding Mode=TwoWay, Path=Startup, Source={StaticResource eventViewModel}}"/>
+
+            <ToggleSwitch x:Uid="GeneralPage_ToggleSwitch_AutoDownloadUpdates" 
+                          Margin="{StaticResource SmallTopMargin}" 
+                          IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates, Source={StaticResource eventViewModel}}"/>
 
             <muxc:RadioButtons x:Uid="RadioButtons_Name_Theme" Margin="{StaticResource SmallTopMargin}">
                 <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark"
                              Content="Dark"
-                             IsChecked="{ Binding Mode=TwoWay, Path=IsDarkThemeRadioButtonChecked}"/>
+                             IsChecked="{ Binding Mode=TwoWay, Path=IsDarkThemeRadioButtonChecked, Source={StaticResource eventViewModel}}"/>
 
                 <RadioButton x:Uid="GeneralPage_Radio_Theme_Light" 
                              Content="Light"
-                             IsChecked="{ Binding Mode=TwoWay, Path=IsLightThemeRadioButtonChecked}"/>
+                             IsChecked="{ Binding Mode=TwoWay, Path=IsLightThemeRadioButtonChecked, Source={StaticResource eventViewModel}}"/>
 
                 <RadioButton x:Uid="GeneralPage_Radio_Theme_Default"
                              Content="System default"
-                             IsChecked="{ Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked}"/>
+                             IsChecked="{ Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked, Source={StaticResource eventViewModel}}"/>
             </muxc:RadioButtons>
 
             <Button x:Uid="GeneralPage_RestartAsAdmin_Button"
@@ -73,7 +77,6 @@
                     Style="{StaticResource AccentButtonStyle}"
                     Command = "{Binding RestartElevatedButtonEventHandler, Source={StaticResource eventViewModel}}"
                     />
-
         </StackPanel>
 
         <StackPanel x:Name="SidePanel"
@@ -108,8 +111,10 @@
                              NavigateUri=" http://go.microsoft.com/fwlink/?LinkId=521839" />
 
             <HyperlinkButton x:Uid="OpenSource_Notice"
-                             NavigateUri="https://github.com/microsoft/PowerToys/blob/master/NOTICE.md"
-                />
+                             NavigateUri="https://github.com/microsoft/PowerToys/blob/master/NOTICE.md"/>
+
+            <HyperlinkButton x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link"
+                             NavigateUri="https://github.com/microsoft/PowerToys/blob/master/doc/devdocs/run-as-admin-detection.md"/>
         </StackPanel>
     </Grid>
 </Page>

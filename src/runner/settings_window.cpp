@@ -197,7 +197,7 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
                                           nullptr,
                                           nullptr,
                                           FALSE,
-                                          EXTENDED_STARTUPINFO_PRESENT,
+                                          0,
                                           nullptr,
                                           nullptr,
                                           &siex.StartupInfo,
@@ -262,7 +262,6 @@ void run_settings_window()
     executable_args.append(settings_theme);
 
     BOOL process_created = false;
-
     if (is_process_elevated())
     {
         process_created = run_settings_non_elevated(executable_path.c_str(), executable_args.data(), &process_info);
