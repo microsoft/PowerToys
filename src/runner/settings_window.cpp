@@ -262,7 +262,6 @@ void run_settings_window()
     executable_args.append(settings_theme);
 
     BOOL process_created = false;
-    std::wstring temp = L"Doing the Things";
     if (is_process_elevated())
     {
         process_created = run_settings_non_elevated(executable_path.c_str(), executable_args.data(), &process_info);
