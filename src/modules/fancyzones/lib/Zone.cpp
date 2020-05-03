@@ -1,10 +1,15 @@
 #include "pch.h"
 
+
+#include <Shellscalingapi.h>
+
 #include <common/dpi_aware.h>
 #include <common/monitors.h>
 #include "Zone.h"
 #include "Settings.h"
 #include "util.h"
+
+#include "common/monitors.h"
 
 struct Zone : winrt::implements<Zone, IZone>
 {
@@ -66,6 +71,45 @@ void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
     SizeWindowToRect(window, ComputeActualZoneRect(window, zoneWindow));
 }
 
+static BOOL CALLBACK saveDisplayToVector(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
+{
+    reinterpret_cast<std::vector<HMONITOR>*>(data)->emplace_back(monitor);
+    return true;
+}
+
+bool allMonitorsHaveSameDpiScaling()
+{
+    std::vector<HMONITOR> monitors;
+    EnumDisplayMonitors(NULL, NULL, saveDisplayToVector, reinterpret_cast<LPARAM>(&monitors));
+
+    if (monitors.size() < 2)
+    {
+        return true;
+    }
+
+    UINT firstMonitorDpiX;
+    UINT firstMonitorDpiY;
+
+    if (S_OK != GetDpiForMonitor(monitors[0], MDT_EFFECTIVE_DPI, &firstMonitorDpiX, &firstMonitorDpiY))
+    {
+        return false;
+    }
+
+    for (int i = 1; i < monitors.size(); i++)
+    {
+        UINT iteratedMonitorDpiX;
+        UINT iteratedMonitorDpiY;
+
+        if (S_OK != GetDpiForMonitor(monitors[i], MDT_EFFECTIVE_DPI, &iteratedMonitorDpiX, &iteratedMonitorDpiY) ||
+            iteratedMonitorDpiX != firstMonitorDpiX)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) noexcept
 {
     // Take care of 1px border
@@ -78,14 +122,15 @@ RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) noexcept
 
     const auto level = DPIAware::GetAwarenessLevel(GetWindowDpiAwarenessContext(window));
     const bool accountForUnawareness = level < DPIAware::PER_MONITOR_AWARE;
+
     if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &frameRect, sizeof(frameRect))))
     {
-        const auto left_margin = frameRect.left - windowRect.left;
-        const auto right_margin = frameRect.right - windowRect.right;
-        const auto bottom_margin = frameRect.bottom - windowRect.bottom;
-        newWindowRect.left -= left_margin;
-        newWindowRect.right -= right_margin;
-        newWindowRect.bottom -= bottom_margin;
+        LONG leftMargin = frameRect.left - windowRect.left;
+        LONG rightMargin = frameRect.right - windowRect.right;
+        LONG bottomMargin = frameRect.bottom - windowRect.bottom;
+        newWindowRect.left -= leftMargin;
+        newWindowRect.right -= rightMargin;
+        newWindowRect.bottom -= bottomMargin;
     }
 
     // Map to screen coords
@@ -97,7 +142,8 @@ RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) noexcept
         const auto taskbar_left_size = std::abs(mi.rcMonitor.left - mi.rcWork.left);
         const auto taskbar_top_size = std::abs(mi.rcMonitor.top - mi.rcWork.top);
         OffsetRect(&newWindowRect, -taskbar_left_size, -taskbar_top_size);
-        if (accountForUnawareness)
+
+        if (accountForUnawareness && !allMonitorsHaveSameDpiScaling())
         {
             newWindowRect.left = max(mi.rcMonitor.left, newWindowRect.left);
             newWindowRect.right = min(mi.rcMonitor.right - taskbar_left_size, newWindowRect.right);

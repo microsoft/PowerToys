@@ -11,7 +11,6 @@ using Microsoft.Win32;
 using Shell;
 using Wox.Infrastructure;
 using Wox.Plugin.Program.Logger;
-using Wox.Plugin.SharedCommands;
 
 namespace Wox.Plugin.Program.Programs
 {
@@ -22,6 +21,7 @@ namespace Wox.Plugin.Program.Programs
         public string UniqueIdentifier { get; set; }
         public string IcoPath { get; set; }
         public string FullPath { get; set; }
+        public string LnkResolvedPath { get; set; }
         public string ParentDirectory { get; set; }
         public string ExecutableName { get; set; }
         public string Description { get; set; }
@@ -53,7 +53,7 @@ namespace Wox.Plugin.Program.Programs
 
             var result = new Result
             {
-                SubTitle = FullPath,
+                SubTitle = "Win32 Application",
                 IcoPath = IcoPath,
                 Score = score,
                 ContextData = this,
@@ -78,12 +78,6 @@ namespace Wox.Plugin.Program.Programs
                 result.Title = Description;
                 result.TitleHighlightData = StringMatcher.FuzzySearch(query, Description).MatchData;
             }
-            else if (!string.IsNullOrEmpty(Description))
-            {
-                var title = $"{Name}: {Description}";
-                result.Title = title;
-                result.TitleHighlightData = StringMatcher.FuzzySearch(query, title).MatchData;
-            }
             else
             {
                 result.Title = Name;
@@ -94,31 +88,17 @@ namespace Wox.Plugin.Program.Programs
         }
 
 
-        public List<Result> ContextMenus(IPublicAPI api)
+        public List<ContextMenuResult> ContextMenus(IPublicAPI api)
         {
-            var contextMenus = new List<Result>
+            var contextMenus = new List<ContextMenuResult>
             {
-                new Result
-                {
-                    Title = api.GetTranslation("wox_plugin_program_run_as_different_user"),
-                    Action = _ =>
-                    {
-                        var info = new ProcessStartInfo
-                        {
-                            FileName = FullPath,
-                            WorkingDirectory = ParentDirectory,
-                            UseShellExecute = true
-                        };
-
-                        Task.Run(() => Main.StartProcess(ShellCommand.RunAsDifferentUser, info));
-
-                        return true;
-                    },
-                    IcoPath = "Images/user.png"
-                },
-                new Result
+                new ContextMenuResult
                 {
                     Title = api.GetTranslation("wox_plugin_program_run_as_administrator"),
+                    Glyph = "\xE7EF",
+                    FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = "Enter",
+                    AcceleratorModifiers = "Control,Shift",
                     Action = _ =>
                     {
                         var info = new ProcessStartInfo
@@ -132,12 +112,15 @@ namespace Wox.Plugin.Program.Programs
                         Task.Run(() => Main.StartProcess(Process.Start, info));
 
                         return true;
-                    },
-                    IcoPath = "Images/cmd.png"
+                    }
                 },
-                new Result
+                new ContextMenuResult
                 {
                     Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
+                    Glyph = "\xE838",
+                    FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = "E",
+                    AcceleratorModifiers = "Control,Shift",
                     Action = _ =>
                     {
 
@@ -145,8 +128,7 @@ namespace Wox.Plugin.Program.Programs
                         Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", ParentDirectory));
 
                         return true;
-                    },
-                    IcoPath = "Images/folder.png"
+                    }
                 }
             };
             return contextMenus;
@@ -208,6 +190,9 @@ namespace Wox.Plugin.Program.Programs
                     var extension = Extension(target);
                     if (extension == ExeExtension && File.Exists(target))
                     {
+                        program.LnkResolvedPath = program.FullPath;
+                        program.FullPath = target;
+
                         buffer = new StringBuilder(MAX_PATH);
                         link.GetDescription(buffer, MAX_PATH);
                         var description = buffer.ToString();
@@ -368,8 +353,11 @@ namespace Wox.Plugin.Program.Programs
 
             var programs1 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(LnkProgram);
             var programs2 = paths.AsParallel().Where(p => Extension(p) == ApplicationReferenceExtension).Select(Win32Program);
-            var programs = programs1.Concat(programs2).Where(p => p.Valid);
-            return programs;
+            var allValidPrograms = programs1.Concat(programs2).Where(p => p.Valid);
+            //var programsWithLnk = allValidPrograms.Where(x => !string.IsNullOrEmpty(x.LnkResolvedPath));
+                       
+
+            return allValidPrograms;
         }
 
         private static ParallelQuery<Win32> AppPathsPrograms(string[] suffixes)

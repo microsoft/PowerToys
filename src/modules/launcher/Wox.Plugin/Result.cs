@@ -14,6 +14,10 @@ namespace Wox.Plugin
         public string Title { get; set; }
         public string SubTitle { get; set; }
 
+        public string Glyph { get; set; }
+
+        public string FontFamily { get; set; }
+
         public string IcoPath
         {
             get { return _icoPath; }

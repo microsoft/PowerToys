@@ -4,7 +4,7 @@ namespace Wox.Plugin.Program.Programs
 {
     public interface IProgram
     {
-        List<Result> ContextMenus(IPublicAPI api);
+        List<ContextMenuResult> ContextMenus(IPublicAPI api);
         Result Result(string query, IPublicAPI api);
         string UniqueIdentifier { get; set; }
         string Name { get; }

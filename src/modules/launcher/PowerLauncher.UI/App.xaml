@@ -13,6 +13,7 @@
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
                     <SolidColorBrush x:Key="PrimaryTextColor" Color="Black"/>
+                    <SolidColorBrush x:Key="SystemChromeLow" Color="{ThemeResource SystemChromeLowColor}" />
                     <AcrylicBrush x:Key="BackdropAcrylicBrush" BackgroundSource="Backdrop" TintColor="White" TintOpacity="0.9" FallbackColor="White"/>
                     <AcrylicBrush x:Key="KeyboardShortcutAcrylicBrush" BackgroundSource="Backdrop" TintColor="White" TintOpacity="0.9" FallbackColor="White"/>
                     <SolidColorBrush x:Key="ItemBackgroundColor" Color="#FFFFFFFF"/>
@@ -22,6 +23,7 @@
 
                 <ResourceDictionary x:Key="Default">
                     <SolidColorBrush x:Key="PrimaryTextColor" Color="White"/>
+                    <SolidColorBrush x:Key="SystemChromeLow" Color="{ThemeResource SystemChromeLowColor}" />
                     <AcrylicBrush x:Key="BackdropAcrylicBrush" BackgroundSource="Backdrop" TintColor="#88484848" TintOpacity="0.9" FallbackColor="#FF484848"/>
                     <AcrylicBrush x:Key="KeyboardShortcutAcrylicBrush" BackgroundSource="Backdrop" TintColor="Black" TintOpacity="0.9" FallbackColor="Black"/>
                     <SolidColorBrush x:Key="ItemBackgroundColor" Color="#FFFFFFFF"/>
@@ -29,6 +31,14 @@
                     <Color x:Key="DropShadowColor">#FF979797</Color>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
+
+            <Style x:Key="ListViewNoAnimations" TargetType="ListView">
+                <Setter Property="ItemContainerTransitions">
+                    <Setter.Value>
+                        <TransitionCollection/>
+                    </Setter.Value>
+                </Setter>
+            </Style>
 
             <Style x:Key="IconOnlyButton" TargetType="Button">
                 <Setter Property="Background" Value="{ThemeResource ButtonRevealBackground}" />

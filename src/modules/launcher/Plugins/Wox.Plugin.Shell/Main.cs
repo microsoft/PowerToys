@@ -174,7 +174,7 @@ namespace Wox.Plugin.Shell
             if (_settings.Shell == Shell.Cmd)
             {
                 var arguments = _settings.LeaveShellOpen ? $"/k \"{command}\"" : $"/c \"{command}\" & pause";
-                
+
                 info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, arguments, runAsAdministratorArg);
             }
             else if (_settings.Shell == Shell.Powershell)
@@ -193,23 +193,31 @@ namespace Wox.Plugin.Shell
             }
             else if (_settings.Shell == Shell.RunCommand)
             {
-                var parts = command.Split(new[] { ' ' }, 2);
-                if (parts.Length == 2)
+                //Open explorer if the path is a file or directory
+                if(Directory.Exists(command) || File.Exists(command))
                 {
-                    var filename = parts[0];
-                    if (ExistInPath(filename))
+                    info = ShellCommand.SetProcessStartInfo("explorer.exe", arguments: command, verb: runAsAdministratorArg);
+                }
+                else
+                {
+                    var parts = command.Split(new[] { ' ' }, 2);
+                    if (parts.Length == 2)
                     {
-                        var arguments = parts[1];
-                        info = ShellCommand.SetProcessStartInfo(filename, workingDirectory, arguments, runAsAdministratorArg);
+                        var filename = parts[0];
+                        if (ExistInPath(filename))
+                        {
+                            var arguments = parts[1];
+                            info = ShellCommand.SetProcessStartInfo(filename, workingDirectory, arguments, runAsAdministratorArg);
+                        }
+                        else
+                        {
+                            info = ShellCommand.SetProcessStartInfo(command, verb: runAsAdministratorArg);
+                        }
                     }
                     else
                     {
                         info = ShellCommand.SetProcessStartInfo(command, verb: runAsAdministratorArg);
                     }
-                }
-                else
-                {
-                    info = ShellCommand.SetProcessStartInfo(command, verb: runAsAdministratorArg);
                 }
             }
             else
@@ -292,7 +300,7 @@ namespace Wox.Plugin.Shell
                 if (keyevent == (int)KeyEvent.WM_KEYUP && _winRStroked && vkcode == (int)Keys.LWin)
                 {
                     _winRStroked = false;
-                    _keyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.LWIN, VirtualKeyCode.CONTROL);
+                    _keyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.LWIN, VirtualKeyCode.BACK);
                     return false;
                 }
             }
@@ -320,29 +328,22 @@ namespace Wox.Plugin.Shell
             return _context.API.GetTranslation("wox_plugin_cmd_plugin_description");
         }
 
-        public List<Result> LoadContextMenus(Result selectedResult)
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
-            var resultlist = new List<Result>
+            var resultlist = new List<ContextMenuResult>
             {
-                new Result
-                {
-                    Title = _context.API.GetTranslation("wox_plugin_cmd_run_as_different_user"),
-                    Action = c =>
-                    {
-                        Task.Run(() =>Execute(ShellCommand.RunAsDifferentUser, PrepareProcessStartInfo(selectedResult.Title)));
-                        return true;
-                    },
-                    IcoPath = "Images/user.png"
-                },
-                new Result
+                new ContextMenuResult
                 {
                     Title = _context.API.GetTranslation("wox_plugin_cmd_run_as_administrator"),
+                    Glyph = "\xE7EF",
+                    FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = "Enter",
+                    AcceleratorModifiers = "Control,Shift",
                     Action = c =>
                     {
                         Execute(Process.Start, PrepareProcessStartInfo(selectedResult.Title, true));
                         return true;
-                    },
-                    IcoPath = Image
+                    }
                 }
             };
 

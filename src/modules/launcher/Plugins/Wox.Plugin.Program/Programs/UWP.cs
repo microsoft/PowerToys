@@ -18,6 +18,7 @@ using IStream = AppxPackaing.IStream;
 using Rect = System.Windows.Rect;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Media;
+using System.Windows.Controls;
 
 namespace Wox.Plugin.Program.Programs
 {
@@ -281,7 +282,7 @@ namespace Wox.Plugin.Program.Programs
 
                 var result = new Result
                 {
-                    SubTitle = Package.Location,
+                    SubTitle = "UWP Application",
                     Icon = Logo,
                     Score = score,
                     ContextData = this,
@@ -298,12 +299,6 @@ namespace Wox.Plugin.Program.Programs
                     result.Title = Description;
                     result.TitleHighlightData = StringMatcher.FuzzySearch(query, Description).MatchData;
                 }
-                else if (!string.IsNullOrEmpty(Description))
-                {
-                    var title = $"{DisplayName}: {Description}";
-                    result.Title = title;
-                    result.TitleHighlightData = StringMatcher.FuzzySearch(query, title).MatchData;
-                }
                 else
                 {
                     result.Title = DisplayName;
@@ -312,22 +307,23 @@ namespace Wox.Plugin.Program.Programs
                 return result;
             }
 
-            public List<Result> ContextMenus(IPublicAPI api)
+            public List<ContextMenuResult> ContextMenus(IPublicAPI api)
             {
-                var contextMenus = new List<Result>
+                var contextMenus = new List<ContextMenuResult>
                 {
-                    new Result
+                    new ContextMenuResult
                     {
                         Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
-
+                        Glyph = "\xE838",
+                        FontFamily = "Segoe MDL2 Assets",
+                        AcceleratorKey = "E",
+                        AcceleratorModifiers = "Control,Shift",
                         Action = _ =>
                         {
-                            Main.StartProcess(Process.Start, new ProcessStartInfo(Package.Location));
+                            Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", Package.Location));
 
                             return true;
-                        },
-
-                        IcoPath = "Images/folder.png"
+                        }
                     }
                 };
                 return contextMenus;
