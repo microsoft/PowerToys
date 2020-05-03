@@ -15,6 +15,8 @@ namespace ViewModelTests
     [TestClass]
     public class ShortcutGuide
     {
+        private const string ModuleName = "Shortcut Guide";
+
         [TestInitialize]
         public void Setup()
         {
@@ -32,10 +34,15 @@ namespace ViewModelTests
         public void CleanUp()
         {
             // delete folder created.
-            string file_name = "\\test";
-            if (SettingsUtils.SettingsFolderExists(file_name))
+            string generalSettings_file_name = string.Empty;
+            if (SettingsUtils.SettingsFolderExists(generalSettings_file_name))
             {
-                DeleteFolder(file_name);
+                DeleteFolder(generalSettings_file_name);
+            }
+
+            if (SettingsUtils.SettingsFolderExists(ModuleName))
+            {
+                DeleteFolder(ModuleName);
             }
         }
 

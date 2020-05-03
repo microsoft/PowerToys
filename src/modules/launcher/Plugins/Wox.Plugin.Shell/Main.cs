@@ -110,14 +110,14 @@ namespace Wox.Plugin.Shell
                 {
                     if (m.Key == cmd)
                     {
-                        result.SubTitle = string.Format(_context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value);
+                        result.SubTitle = "Shell: " + string.Format(_context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value);
                         return null;
                     }
 
                     var ret = new Result
                     {
                         Title = m.Key,
-                        SubTitle = string.Format(_context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
+                        SubTitle = "Shell: " + string.Format(_context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
                         IcoPath = Image,
                         Action = c =>
                         {
@@ -136,7 +136,7 @@ namespace Wox.Plugin.Shell
             {
                 Title = cmd,
                 Score = 5000,
-                SubTitle = _context.API.GetTranslation("wox_plugin_cmd_execute_through_shell"),
+                SubTitle = "Shell: " + _context.API.GetTranslation("wox_plugin_cmd_execute_through_shell"),
                 IcoPath = Image,
                 Action = c =>
                 {
@@ -154,7 +154,7 @@ namespace Wox.Plugin.Shell
                 .Select(m => new Result
                 {
                     Title = m.Key,
-                    SubTitle = string.Format(_context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
+                    SubTitle = "Shell: " + string.Format(_context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
                     IcoPath = Image,
                     Action = c =>
                     {
@@ -293,7 +293,7 @@ namespace Wox.Plugin.Shell
         {
             // not overriding Win+R 
             // crutkas we need to earn the right for Win+R override
-
+            /*
             if (_settings.ReplaceWinR)
             {
                 if (keyevent == (int)KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
@@ -309,6 +309,7 @@ namespace Wox.Plugin.Shell
                     return false;
                 }
             }
+            */
             return true;
         }
 
@@ -357,7 +358,7 @@ namespace Wox.Plugin.Shell
 
         public void UpdateSettings(PowerLauncherSettings settings)
         {
-            _settings.ReplaceWinR = settings.properties.override_win_r_key;
+            //_settings.ReplaceWinR = settings.properties.override_win_r_key;
         }
     }
 }

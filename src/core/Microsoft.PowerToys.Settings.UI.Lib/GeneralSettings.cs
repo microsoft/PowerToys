@@ -41,8 +41,14 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("powertoys_version")]
         public string PowertoysVersion { get; set; }
 
+        [JsonPropertyName("action_name")]
+        public string CustomActionName { get; set; }
+
         [JsonPropertyName("enabled")]
         public EnabledModules Enabled { get; set; }
+
+        [JsonPropertyName("download_updates_automatically")]
+        public bool AutoDownloadUpdates { get; set; }
 
         public GeneralSettings()
         {
@@ -50,10 +56,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             this.Startup = false;
             this.IsAdmin = false;
             this.IsElevated = false;
+            this.AutoDownloadUpdates = false;
             this.Theme = "system";
             this.SystemTheme = "light";
             this.PowertoysVersion = "v0.15.3";
             this.Enabled = new EnabledModules();
+            this.CustomActionName = string.Empty;
         }
 
         // converts the current to a json string.

@@ -289,7 +289,7 @@ LRESULT XamlBridge::MessageHandler(UINT const message, WPARAM const wParam, LPAR
 {
     switch (message)
     {
-        HANDLE_MSG(parentWindow, WM_DESTROY, OnDestroy);
+        HANDLE_MSG(parentWindow, WM_NCDESTROY, OnDestroy);
         HANDLE_MSG(parentWindow, WM_ACTIVATE, OnActivate);
         HANDLE_MSG(parentWindow, WM_SETFOCUS, OnSetFocus);
     }

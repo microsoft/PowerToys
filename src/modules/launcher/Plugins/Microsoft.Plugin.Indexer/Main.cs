@@ -63,7 +63,7 @@ namespace Microsoft.Plugin.Indexer
 
                         Result r = new Result();
                         r.Title = searchResult.Title;
-                        r.SubTitle = path;
+                        r.SubTitle = "Search: " + path;
                         r.IcoPath = path;
                         r.Action = c =>
                         {
