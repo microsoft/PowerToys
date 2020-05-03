@@ -4,8 +4,9 @@
 
 1.	You will need to install Git Bash.  ([Git tools download here](https://git-scm.com/download/win))
 2.	Create a repo folder on your system.
-3.	Open GitBash in that repo folder.
+3.	Open GitBash in that repo folder or use Visual Studio Team Explorer
 4.	Clone the repo: ([PowerToys on Github](https://github.com/microsoft/PowerToys))
+![](./PowerToysRepo.png)
 5.	Change to Branch ***interns/dev***
 	1.	git clone https://github.com/microsoft/PowerToys.git
 5.	Open the "docs/interns/MyFirstCommit.md" document
@@ -24,15 +25,18 @@ For our purposes, PowerToys uses **master** as a "dev" branch and uses **stable*
 
 Steps to be followed when adding code to a repository:
 
-1. Create a new branch based on the dev branch.
+1. Create a new branch based on the **interns/dev** branch.
 	1. This branch should always be identified as yours with the naming convention **interns/users/alias/branchname** where:
-		1. **interns/users** is a literal constant
+		1. **interns/users** is a literal constant that will identify the branch ownership
 		2. **alias** is your github alias like "markAtMicrosoft"
 		3. **branchname** should reflect what you are doing.  Should be all lower case.  Should use "-" seperators.
 			1. eg. users/markAtMicrosoft/first-commit
 2. Make sure your IDE (Visual Studio in our case) is using a local version of that branch by doing a checkout of the branch in Git Bash or Visual Studio (VS) Team Explorer.
 3. Make your changes
 4. Commit your changes to the locally checkout branch
+	1. You can create the new file inside or outside Visual Studio, just as long as it's in the repo path on your local system.
+	2. The new file will show up as an addition in git bash or in the Visual Studio Team Explorer.
+	3. git commit
 5. Push the commit(s) to the origin branch in github
 6. Create a pull request (PR) for your branch into the dev branch.
 7. Wait for reviews of your PR (most PRs will require 2 reviews and a successful build
@@ -50,7 +54,7 @@ Steps to be followed when adding code to a repository:
 9. Once all checks have passed, you can Complete the PR and the code is merged into the **dev** branch
 
 ## Your Mission, should you choose to accept it... (you really do want to) ##
-Inside the doc/interns folder in the PowerToys repo, create a new markdown file (*.md) that is named "alias/MyFirstCommit.md" with the *alias* folder being your github user alias.  Inside the file, put your school name.
+Inside the doc/interns folder in the PowerToys repo, create a new markdown file (*.md) that is named "alias/MyFirstCommit.md" with the *alias* folder being your github user alias.  Inside the file, put today's date.
 - commit it
 - push it
 - PR it
