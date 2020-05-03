@@ -11,24 +11,24 @@
 5.	Open the "docs/interns/MyFirstCommit.md" document
 
 ## Branches ##
-In the Garage, we tend to follow a specific branching rules.  We ask that you also follow that same rules.  In a independent project we would have the following branches
+In the Garage, we tend to follow a specific branching rules.  We ask that you also follow the same rules.  In an independent project we would have the following branches:
 
-- master - Production branch that is typically the release version.  It is not updated until a new release is ready.  It is updated from the **staging** branch
-- staging - internal and limited testing branch.  This branch would be used by sponsors (like Clint) and internal testers to try out the application.  This is updated somewhat frequently, might be once per week to daily as a release nears.  It is updated from the **dev** branch
-- dev - your intern team sandbox and will update multiple times per day by all team members.
+- **master** - Production branch that is typically the release version.  It is not updated until a new release is ready.  It is updated from the **staging** branch
+- **staging** - internal and limited testing branch.  This branch would be used by sponsors (like Clint) and internal testers to try out the application.  This is updated somewhat frequently, might be once per week to daily as a release nears.  It is updated from the **dev** branch
+- **dev** - your intern team sandbox and will update multiple times per day by all team members. For this task the **dev** branch will be **interns/dev**
 
 All of these branches should always build and work.  There are times when **dev** may not work perfectly but **dev** should not be pulled into **staging** without adequate testing.
 
 ## Submitting Codes (Commits and Pull Requests)
-For our purposes, PowerToys uses a **master** branch for it's production release and we are not going to touch that during this hackathon.  We have created a branch called **interns/dev** as your **dev** branch equivalent.  Assume wherever we mention **dev** branch below we mean **interns/dev**
+For our purposes, PowerToys uses **master** as a "dev" branch and uses **stable** for it's production release branch but we are not going to touch that during this hackathon.  We have created a branch called **interns/dev** as your **dev** branch equivalent.  Assume wherever we mention **dev** branch below we mean **interns/dev**.  All the work you do over the next two weeks will be based on the i**nterns/dev** branch and should never be on the main root.
 
 Steps to be followed when adding code to a repository:
 
-1. Create a new branch off the dev branch.
-	1. This branch should always be identified as yours with the naming convention **users/*alias*/*branchname*** where:
-		1. users is a literal constant
-		2. alias is your github alias like "markAtMicrosoft"
-		3. branchname should reflect what you are doing.  Should be all lower case.  Should use "-" seperators.
+1. Create a new branch based on the dev branch.
+	1. This branch should always be identified as yours with the naming convention **interns/users/alias/branchname** where:
+		1. **interns/users** is a literal constant
+		2. **alias** is your github alias like "markAtMicrosoft"
+		3. **branchname** should reflect what you are doing.  Should be all lower case.  Should use "-" seperators.
 			1. eg. users/markAtMicrosoft/first-commit
 2. Make sure your IDE (Visual Studio in our case) is using a local version of that branch by doing a checkout of the branch in Git Bash or Visual Studio (VS) Team Explorer.
 3. Make your changes
@@ -50,8 +50,7 @@ Steps to be followed when adding code to a repository:
 9. Once all checks have passed, you can Complete the PR and the code is merged into the **dev** branch
 
 ## Your Mission, should you choose to accept it... (you really do want to) ##
-
-Inside the doc/interns folder in the PowerToys repo, create a new markdown file (*.md) that is named "alias.md" with alias being your github user alias.  Inside the file, put your school name.
+Inside the doc/interns folder in the PowerToys repo, create a new markdown file (*.md) that is named "alias/MyFirstCommit.md" with the *alias* folder being your github user alias.  Inside the file, put your school name.
 - commit it
 - push it
 - PR it
