@@ -65,7 +65,6 @@ namespace Wox.ViewModel
         }
         public void ActivateContextButtons(ActivationType activationType)
         {
-            
             if (ContextMenuItems == null)
             {
                 LoadContextMenu();

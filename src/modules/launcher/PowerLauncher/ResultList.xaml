@@ -4,17 +4,15 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:Behaviors="http://schemas.microsoft.com/xaml/behaviors"
     mc:Ignorable="d"    
     d:DesignHeight="300"
     d:DesignWidth="720">
-    <!--xmlns:ToolkitBehaviors="using:Microsoft.Toolkit.Uwp.UI.Animations.Behaviors"-->
-    <!--xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"-->
-    <!--xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
-    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"-->
+   
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        <!--
-        <Style x:Key="CommandButtonGridViewItemContainerStyle" TargetType="GridViewItem">
+        
+        <!--<Style x:Key="CommandButtonGridViewItemContainerStyle" TargetType="GridViewItem">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Margin" Value="0,0,0,0"/>
             <Setter Property="Template">
@@ -55,25 +53,24 @@
             MinHeight="{Binding Results.MaxHeight}"          
             Margin="0"
             ItemsSource="{Binding Results.Results, Mode=OneWay}"
+            Padding="-1, 0"
             ScrollViewer.HorizontalScrollBarVisibility="Disabled"                       
             SelectionMode="Single"
             SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}">
             <!--AllowFocusOnInteraction="False"
-            IsItemClickEnabled="True"
-            Padding="{ThemeResource AutoSuggestListPadding}"-->
+            IsItemClickEnabled="True"-->
             <!--Style="{StaticResource ListViewNoAnimations}"-->
             <ListView.ItemTemplate>
                 <DataTemplate >
                     <Grid Height="72" Width="642" Background="Transparent" >
-                        <!--RowSpacing="0"-->
-                        <!--<Interactivity:Interaction.Behaviors>
-                            <Core:EventTriggerBehavior EventName="PointerEntered">
-                                <Core:InvokeCommandAction Command="{Binding ActivateContextButtonsHoverCommand}"/>
-                            </Core:EventTriggerBehavior>
-                            <Core:EventTriggerBehavior EventName="PointerExited">
-                                <Core:InvokeCommandAction Command="{Binding DeactivateContextButtonsHoverCommand}"/>
-                            </Core:EventTriggerBehavior>
-                        </Interactivity:Interaction.Behaviors>-->
+                        <Behaviors:Interaction.Triggers>
+                            <Behaviors:EventTrigger EventName="MouseEnter">
+                                <Behaviors:InvokeCommandAction Command="{Binding ActivateContextButtonsHoverCommand}"/>
+                            </Behaviors:EventTrigger>
+                            <Behaviors:EventTrigger EventName="MouseLeave">
+                                <Behaviors:InvokeCommandAction Command="{Binding DeactivateContextButtonsHoverCommand}"/>
+                            </Behaviors:EventTrigger>
+                        </Behaviors:Interaction.Triggers>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="64" />
                             <ColumnDefinition Width="*" />
@@ -120,13 +117,14 @@
                                         <Button.Content>
                                             <TextBlock FontFamily="{Binding FontFamily}" FontSize="16" Text="{Binding Glyph}"/>
                                         </Button.Content>
-                                        <!--<Button.KeyboardAccelerators>
+                                        <!--
+                                        <Button.KeyboardAccelerators>
                                             <KeyboardAccelerator
                                                 Key="{Binding AcceleratorKey}"
                                                 Modifiers="{Binding AcceleratorModifiers}"
                                                 IsEnabled="{Binding IsAcceleratorKeyEnabled}"
-                                            />-->
-                                        <!--</Button.KeyboardAccelerators>-->
+                                            />
+                                        </Button.KeyboardAccelerators>-->
                                     </Button>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
