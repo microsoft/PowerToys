@@ -206,6 +206,37 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
     return process_created;
 }
 
+// This variable is set based on the os version
+bool use_old_settings = true;
+const int RS5_VERSION = 17999;
+
+// This function obtains the os build number from the registry and accordingly sets the settings executable
+void os_detection()
+{
+    HKEY hkey;
+    const wchar_t* osVersionPath = L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion";
+    
+    if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, osVersionPath, 0, KEY_READ, &hkey) == ERROR_SUCCESS)
+    {
+        wchar_t buildNumberString[256];
+        DWORD bufferSize = sizeof(buildNumberString);
+        int buildNum = 0;
+
+        if (RegQueryValueExW(hkey, L"CurrentBuildNumber", 0, NULL, (LPBYTE)buildNumberString, &bufferSize) == ERROR_SUCCESS)
+        {
+            if (wcslen(buildNumberString) > 0)
+            {
+                buildNum = _wtoi(buildNumberString);
+                if (buildNum > RS5_VERSION)
+                {
+                    use_old_settings = false;
+                }
+            }
+        }
+    }
+}
+
+
 DWORD g_settings_process_id = 0;
 
 void run_settings_window()
@@ -219,6 +250,8 @@ void run_settings_window()
     // settings_pipe : Settings pipe server.
     // powertoys_pid : PowerToys process pid.
     // settings_theme: pass "dark" to start the settings window in dark mode
+
+    os_detection();
 
     // Arg 1: executable path.
     std::wstring executable_path = get_module_folderpath();
