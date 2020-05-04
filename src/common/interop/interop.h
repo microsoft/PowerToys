@@ -1,7 +1,7 @@
 #pragma once
 
-#include <common\keyboard_layout.h>
-#include <common\two_way_pipe_message_ipc.h>
+#include "..\keyboard_layout.h"
+#include "..\two_way_pipe_message_ipc.h"
 #include <msclr\marshal.h>
 #include <msclr\marshal_cppstd.h>
 #include <functional>

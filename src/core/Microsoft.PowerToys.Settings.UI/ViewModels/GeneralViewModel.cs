@@ -56,6 +56,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             _startup = GeneralSettingsConfigs.Startup;
+            _autoDownloadUpdates = GeneralSettingsConfigs.AutoDownloadUpdates;
         }
 
         private bool _packaged = false;
@@ -65,6 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isDarkThemeRadioButtonChecked = false;
         private bool _isLightThemeRadioButtonChecked = false;
         private bool _isSystemThemeRadioButtonChecked = false;
+        private bool _autoDownloadUpdates = false;
 
         // Gets or sets a value indicating whether packaged.
         public bool Packaged
@@ -97,6 +99,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_startup != value)
                 {
                     _startup = value;
+                    GeneralSettingsConfigs.Startup = value;
                     RaisePropertyChanged();
                 }
             }
@@ -133,6 +136,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_runElevated != value)
                 {
                     _runElevated = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool AutoDownloadUpdates
+        {
+            get
+            {
+                return _autoDownloadUpdates;
+            }
+
+            set
+            {
+                if (_autoDownloadUpdates != value)
+                {
+                    _autoDownloadUpdates = value;
+                    GeneralSettingsConfigs.AutoDownloadUpdates = value;
                     RaisePropertyChanged();
                 }
             }
@@ -211,15 +232,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             await Launcher.LaunchUriAsync(new Uri("https://github.com/microsoft/PowerToys/releases"));
         }
 
-        private void Restart_Elevated()
+        public void Restart_Elevated()
         {
             GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
-            settings.RunElevated = true;
+            settings.CustomActionName = "restart_elevation";
+
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
+            GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
             if (ShellPage.DefaultSndMSGCallback != null)
             {
-                ShellPage.DefaultSndMSGCallback(outsettings.ToString());
+                ShellPage.DefaultSndMSGCallback(customaction.ToString());
             }
         }
     }

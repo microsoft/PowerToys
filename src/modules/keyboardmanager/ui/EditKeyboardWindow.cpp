@@ -350,7 +350,7 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wPar
         {
             return xamlBridgePtr->MessageHandler(messageCode, wParam, lParam);
         }
-        else if (messageCode == WM_DESTROY)
+        else if (messageCode == WM_NCDESTROY)
         {
             PostQuitMessage(0);
             break;

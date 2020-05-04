@@ -61,7 +61,7 @@ namespace Wox.Plugin.Program.Programs
                 {
                     var info = new ProcessStartInfo
                     {
-                        FileName = FullPath,
+                        FileName = LnkResolvedPath ?? FullPath,
                         WorkingDirectory = ParentDirectory,
                         UseShellExecute = true
                     };
