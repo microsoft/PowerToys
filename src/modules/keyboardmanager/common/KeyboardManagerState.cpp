@@ -20,18 +20,18 @@ KeyboardManagerState::~KeyboardManagerState()
     }
 }
 
-// Function to check the if the UI state matches the argument state. For states with activated windows it also checks if the window is in focus.
+// Function to check the if the UI state matches the argument state. For states with detect windows it also checks if the window is in focus.
 bool KeyboardManagerState::CheckUIState(KeyboardManagerUIState state)
 {
     std::lock_guard<std::mutex> lock(uiState_mutex);
     if (uiState == state)
     {
         std::unique_lock<std::mutex> lock(currentUIWindow_mutex);
-        if (uiState == KeyboardManagerUIState::Deactivated)
+        if (uiState == KeyboardManagerUIState::Deactivated || uiState == KeyboardManagerUIState::EditKeyboardWindowActivated || uiState == KeyboardManagerUIState::EditShortcutsWindowActivated)
         {
             return true;
         }
-        // If the UI state is activated then we also have to ensure that the UI window is in focus.
+        // If the UI state is a detect window then we also have to ensure that the UI window is in focus.
         // GetForegroundWindow can be used here since we only need to check the main parent window and not the sub windows within the content dialog. Using GUIThreadInfo will give more specific sub-windows within the XAML window which is not needed.
         else if (currentUIWindow == GetForegroundWindow())
         {

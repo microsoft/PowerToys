@@ -104,7 +104,7 @@ public:
     // Function to reset the UI state members
     void ResetUIState();
 
-    // Function to check the if the UI state matches the argument state. For states with activated windows it also checks if the window is in focus.
+    // Function to check the if the UI state matches the argument state. For states with detect windows it also checks if the window is in focus.
     bool CheckUIState(KeyboardManagerUIState state);
 
     // Function to set the window handle of the current UI window that is activated
