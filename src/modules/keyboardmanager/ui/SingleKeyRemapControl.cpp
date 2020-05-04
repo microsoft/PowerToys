@@ -154,6 +154,8 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
 
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();
+        // Revert UI state back to Edit Keyboard window
+        keyboardManagerState.SetUIState(KeyboardManagerUIState::EditKeyboardWindowActivated, EditKeyboardWindowHandle);
         unregisterKeys();
         detectRemapKeyBox.Hide();
     };
@@ -199,6 +201,8 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     cancelButton.Click([detectRemapKeyBox, unregisterKeys, &keyboardManagerState](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();
+        // Revert UI state back to Edit Keyboard window
+        keyboardManagerState.SetUIState(KeyboardManagerUIState::EditKeyboardWindowActivated, EditKeyboardWindowHandle);
         unregisterKeys();
         detectRemapKeyBox.Hide();
     });
@@ -214,6 +218,8 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
                 });
 
             keyboardManagerState.ResetUIState();
+            // Revert UI state back to Edit Keyboard window
+            keyboardManagerState.SetUIState(KeyboardManagerUIState::EditKeyboardWindowActivated, EditKeyboardWindowHandle);
             unregisterKeys();
         },
         nullptr);
