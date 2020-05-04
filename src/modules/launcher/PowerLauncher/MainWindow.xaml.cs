@@ -85,8 +85,8 @@ namespace PowerLauncher
                 if (Visibility == System.Windows.Visibility.Visible)
                 {
                     Activate();
-                    SearchBox.QueryTextBox.Focus();
                     UpdatePosition();
+
                     _settings.ActivateTimes++;
                     if (!_viewModel.LastQuerySelected)
                     {
@@ -97,6 +97,10 @@ namespace PowerLauncher
                     if (!string.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
                     {
                         SearchBox.QueryTextBox.SelectAll();
+                    }
+                    else
+                    {
+                        SearchBox.QueryTextBox.Focus();
                     }
                 }
             }
