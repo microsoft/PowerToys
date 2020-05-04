@@ -10,6 +10,7 @@
 #include <lib/trace.h>
 #include <lib/Settings.h>
 #include <lib/FancyZones.h>
+#include <lib/FancyZonesWinHookEventIDs.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -74,6 +75,7 @@ public:
     {
         if (!m_app)
         {
+            initialize_winhook_event_ids();
             Trace::FancyZones::EnableFancyZones(true);
             m_app = MakeFancyZones(reinterpret_cast<HINSTANCE>(&__ImageBase), m_settings);
 
@@ -186,9 +188,6 @@ private:
 
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept;
     void HandleWinHookEvent(WinHookEvent* data) noexcept;
-    void MoveSizeStart(HWND window, POINT const& ptScreen) noexcept;
-    void MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
-    void MoveSizeUpdate(POINT const& ptScreen) noexcept;
 
     winrt::com_ptr<IFancyZones> m_app;
     winrt::com_ptr<IFancyZonesSettings> m_settings;
@@ -242,14 +241,12 @@ intptr_t FancyZonesModule::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) 
 
 void FancyZonesModule::HandleWinHookEvent(WinHookEvent* data) noexcept
 {
-    POINT ptScreen;
-    GetPhysicalCursorPos(&ptScreen);
-
+    auto fzCallback = m_app.as<IFancyZonesCallback>();
     switch (data->event)
     {
     case EVENT_SYSTEM_MOVESIZESTART:
     {
-        MoveSizeStart(data->hwnd, ptScreen);
+        fzCallback->HandleWinHookEvent(data);
         if (!m_objectLocationWinEventHook)
         {
             m_objectLocationWinEventHook = SetWinEventHook(EVENT_OBJECT_LOCATIONCHANGE,
@@ -269,16 +266,13 @@ void FancyZonesModule::HandleWinHookEvent(WinHookEvent* data) noexcept
         {
             m_objectLocationWinEventHook = nullptr;
         }
-        MoveSizeEnd(data->hwnd, ptScreen);
+        fzCallback->HandleWinHookEvent(data);
     }
     break;
 
     case EVENT_OBJECT_LOCATIONCHANGE:
     {
-        if (m_app.as<IFancyZonesCallback>()->InMoveSize())
-        {
-            MoveSizeUpdate(ptScreen);
-        }
+        fzCallback->HandleWinHookEvent(data);
     }
     break;
 
@@ -298,36 +292,12 @@ void FancyZonesModule::HandleWinHookEvent(WinHookEvent* data) noexcept
     case EVENT_OBJECT_SHOW:
     case EVENT_OBJECT_CREATE:
     {
-        if (data->idObject == OBJID_WINDOW)
-        {
-            m_app.as<IFancyZonesCallback>()->WindowCreated(data->hwnd);
-        }
+        fzCallback->HandleWinHookEvent(data);
     }
     break;
 
     default:
         break;
-    }
-}
-
-void FancyZonesModule::MoveSizeStart(HWND window, POINT const& ptScreen) noexcept
-{
-    if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
-    {
-        m_app.as<IFancyZonesCallback>()->MoveSizeStart(window, monitor, ptScreen);
-    }
-}
-
-void FancyZonesModule::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
-{
-    m_app.as<IFancyZonesCallback>()->MoveSizeEnd(window, ptScreen);
-}
-
-void FancyZonesModule::MoveSizeUpdate(POINT const& ptScreen) noexcept
-{
-    if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
-    {
-        m_app.as<IFancyZonesCallback>()->MoveSizeUpdate(monitor, ptScreen);
     }
 }
 

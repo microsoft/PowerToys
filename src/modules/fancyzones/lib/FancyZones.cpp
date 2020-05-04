@@ -1,6 +1,8 @@
 #include "pch.h"
-#include "common/dpi_aware.h"
-#include "common/on_thread_executor.h"
+
+#include <common/dpi_aware.h>
+#include <common/on_thread_executor.h>
+#include <common/window_helpers.h>
 
 #include "FancyZones.h"
 #include "lib/Settings.h"
@@ -8,13 +10,12 @@
 #include "lib/JsonHelpers.h"
 #include "lib/ZoneSet.h"
 #include "lib/WindowMoveHandler.h"
+#include "lib/FancyZonesWinHookEventIDs.h"
+#include "lib/util.h"
 #include "trace.h"
 #include "VirtualDesktopUtils.h"
 
-#include <functional>
-#include <common/window_helpers.h>
-#include <lib/util.h>
-#include <unordered_set>
+#include <interface/win_hook_event_data.h>
 
 enum class DisplayChangeType
 {
@@ -72,14 +73,46 @@ public:
     MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
-        m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_zoneWindowMap);    
+        m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_zoneWindowMap);
     }
     IFACEMETHODIMP_(void)
     MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
-        m_windowMoveHandler.MoveSizeEnd(window, ptScreen, m_zoneWindowMap);    
+        m_windowMoveHandler.MoveSizeEnd(window, ptScreen, m_zoneWindowMap);
     }
+    IFACEMETHODIMP_(void)
+    HandleWinHookEvent(const WinHookEvent* data) noexcept
+    {
+        const auto wparam = reinterpret_cast<WPARAM>(data->hwnd);
+        const LONG lparam = 0;
+        std::shared_lock readLock(m_lock);
+        switch (data->event)
+        {
+        case EVENT_SYSTEM_MOVESIZESTART:
+            PostMessageW(m_window, WM_PRIV_MOVESIZESTART, wparam, lparam);
+            break;
+        case EVENT_SYSTEM_MOVESIZEEND:
+            PostMessageW(m_window, WM_PRIV_MOVESIZEEND, wparam, lparam);
+            break;
+        case EVENT_OBJECT_LOCATIONCHANGE:
+            PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, wparam, lparam);
+            break;
+        case EVENT_OBJECT_NAMECHANGE:
+            PostMessageW(m_window, WM_PRIV_NAMECHANGE, wparam, lparam);
+            break;
+
+        case EVENT_OBJECT_UNCLOAKED:
+        case EVENT_OBJECT_SHOW:
+        case EVENT_OBJECT_CREATE:
+            if (data->idObject == OBJID_WINDOW)
+            {
+                PostMessageW(m_window, WM_PRIV_WINDOWCREATED, wparam, lparam);
+            }
+            break;
+        }
+    }
+
     IFACEMETHODIMP_(void)
     VirtualDesktopChanged() noexcept;
     IFACEMETHODIMP_(void)
@@ -189,7 +222,7 @@ private:
     void MoveWindowsOnDisplayChange() noexcept;
     void CycleActiveZoneSet(DWORD vkCode) noexcept;
     bool OnSnapHotkey(DWORD vkCode) noexcept;
-    
+
     void RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept;
     void RegisterNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept;
     bool IsNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept;
@@ -204,7 +237,7 @@ private:
     mutable std::shared_mutex m_lock;
     HWND m_window{};
     WindowMoveHandler m_windowMoveHandler;
-    
+
     std::map<HMONITOR, winrt::com_ptr<IZoneWindow>> m_zoneWindowMap; // Map of monitor to ZoneWindow (one per monitor)
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
     GUID m_currentVirtualDesktopId{}; // UUID of the current virtual desktop. Is GUID_NULL until first VD switch per session.
@@ -263,8 +296,7 @@ FancyZones::Run() noexcept
         .wait();
 
     m_terminateVirtualDesktopTrackerEvent.reset(CreateEvent(nullptr, FALSE, FALSE, nullptr));
-    m_virtualDesktopTrackerThread.submit(OnThreadExecutor::task_t{ [&] {
-        VirtualDesktopUtils::HandleVirtualDesktopUpdates(m_window, WM_PRIV_VD_UPDATE, m_terminateVirtualDesktopTrackerEvent.get()); } });
+    m_virtualDesktopTrackerThread.submit(OnThreadExecutor::task_t{ [&] { VirtualDesktopUtils::HandleVirtualDesktopUpdates(m_window, WM_PRIV_VD_UPDATE, m_terminateVirtualDesktopTrackerEvent.get()); } });
 }
 
 // IFancyZones
@@ -289,8 +321,8 @@ FancyZones::Destroy() noexcept
 IFACEMETHODIMP_(void)
 FancyZones::VirtualDesktopChanged() noexcept
 {
-    // VirtualDesktopChanged is called from another thread but results in new windows being created.
-    // Jump over to the UI thread to handle it.
+    // VirtualDesktopChanged is called from a reentrant WinHookProc function, therefore we must postpone the actual logic
+    // until we're in FancyZones::WndProc, which is not reentrant.
     std::shared_lock readLock(m_lock);
     PostMessage(m_window, WM_PRIV_VD_SWITCH, 0, 0);
 }
@@ -557,6 +589,9 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
 
     default:
     {
+        POINT ptScreen;
+        GetPhysicalCursorPos(&ptScreen);
+
         if (message == WM_PRIV_VD_INIT)
         {
             OnDisplayChange(DisplayChangeType::Initialization);
@@ -586,6 +621,31 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
                 std::unique_lock writeLock(m_lock);
                 m_terminateEditorEvent.release();
             }
+        }
+        else if (message == WM_PRIV_MOVESIZESTART)
+        {
+            auto hwnd = reinterpret_cast<HWND>(wparam);
+            if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
+            {
+                MoveSizeStart(hwnd, monitor, ptScreen);
+            }
+        }
+        else if (message == WM_PRIV_MOVESIZEEND)
+        {
+            auto hwnd = reinterpret_cast<HWND>(wparam);
+            MoveSizeEnd(hwnd, ptScreen);
+        }
+        else if (message == WM_PRIV_LOCATIONCHANGE && InMoveSize())
+        {
+            if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
+            {
+                MoveSizeUpdate(monitor, ptScreen);
+            }
+        }
+        else if (message == WM_PRIV_WINDOWCREATED)
+        {
+            auto hwnd = reinterpret_cast<HWND>(wparam);
+            WindowCreated(hwnd);
         }
         else
         {
@@ -671,7 +731,6 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
         }
     }
 }
-
 
 LRESULT CALLBACK FancyZones::s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
