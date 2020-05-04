@@ -24,35 +24,6 @@ interface __declspec(uuid("{50D3F0F5-736E-4186-BDF4-3D6BEE150C3A}")) IFancyZones
 interface __declspec(uuid("{2CB37E8F-87E6-4AEC-B4B2-E0FDC873343F}")) IFancyZonesCallback : public IUnknown
 {
     /**
-     * @returns Boolean indicating whether a move/size operation is currently active.
-     */
-    IFACEMETHOD_(bool, InMoveSize)() = 0;
-     /**
-     * A window is being moved or resized. Track down window position and give zone layout
-     * hints if dragging functionality is enabled.
-     *
-     * @param   window   Handle of window being moved or resized.
-     * @param   monitor  Handle of monitor on which windows is moving / resizing.
-     * @param   ptScreen Cursor coordinates.
-     */
-    IFACEMETHOD_(void, MoveSizeStart)(HWND window, HMONITOR monitor, POINT const& ptScreen) = 0;
-     /**
-     * A window has changed location, shape, or size. Track down window position and give zone layout
-     * hints if dragging functionality is enabled.
-     *
-     * @param   monitor  Handle of monitor on which windows is moving / resizing.
-     * @param   ptScreen Cursor coordinates.
-     */
-    IFACEMETHOD_(void, MoveSizeUpdate)(HMONITOR monitor, POINT const& ptScreen) = 0;
-    /**
-     * The movement or resizing of a window has finished. Assign window to the zone if it
-     * is dropped within zone borders.
-     *
-     * @param   window   Handle of window being moved or resized.
-     * @param   ptScreen Cursor coordinates where window is droped.
-     */
-    IFACEMETHOD_(void, MoveSizeEnd)(HWND window, POINT const& ptScreen) = 0;
-    /**
      * Inform FancyZones that user has switched between virtual desktops.
      */
     IFACEMETHOD_(void, VirtualDesktopChanged)() = 0;
@@ -61,15 +32,7 @@ interface __declspec(uuid("{2CB37E8F-87E6-4AEC-B4B2-E0FDC873343F}")) IFancyZones
      *
      * @param   data  Handle of window being moved or resized.
      */
-    IFACEMETHOD_(void, HandleWinHookEvent)(const WinHookEvent* data){};
-    /**
-     * Inform FancyZones that new window is created. FancyZones will try to assign it to the
-     * zone insde active zone layout (if information about last zone, in which window was located
-     * before being closed, is available).
-     *
-     * @param   window Handle of newly created window.
-     */
-    IFACEMETHOD_(void, WindowCreated)(HWND window) = 0;
+    IFACEMETHOD_(void, HandleWinHookEvent)(const WinHookEvent* data) = 0;
     /**
      * Process keyboard event.
      *

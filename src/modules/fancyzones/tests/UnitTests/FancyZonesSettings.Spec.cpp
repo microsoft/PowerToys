@@ -387,6 +387,8 @@ namespace FancyZonesUnitTests
             IFACEMETHODIMP_(void)
             MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept {}
             IFACEMETHODIMP_(void)
+            HandleWinHookEvent(const WinHookEvent * data) noexcept {}
+            IFACEMETHODIMP_(void)
             VirtualDesktopChanged() noexcept {}
             IFACEMETHODIMP_(void)
             VirtualDesktopInitialize() noexcept {}

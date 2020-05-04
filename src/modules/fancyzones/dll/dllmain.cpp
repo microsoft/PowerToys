@@ -75,7 +75,7 @@ public:
     {
         if (!m_app)
         {
-            initialize_winhook_event_ids();
+            InitializeWinhookEventIds();
             Trace::FancyZones::EnableFancyZones(true);
             m_app = MakeFancyZones(reinterpret_cast<HINSTANCE>(&__ImageBase), m_settings);
 
@@ -202,7 +202,7 @@ private:
     static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     {
         LowlevelKeyboardEvent event;
-        if (nCode == HC_ACTION)
+        if (nCode == HC_ACTION && wParam == WM_KEYDOWN)
         {
             event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
             event.wParam = wParam;
@@ -232,11 +232,7 @@ private:
 
 intptr_t FancyZonesModule::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
 {
-    if (data->wParam == WM_KEYDOWN)
-    {
-        return m_app.as<IFancyZonesCallback>()->OnKeyDown(data->lParam) ? 1 : 0;
-    }
-    return 0;
+    return m_app.as<IFancyZonesCallback>()->OnKeyDown(data->lParam);
 }
 
 void FancyZonesModule::HandleWinHookEvent(WinHookEvent* data) noexcept
