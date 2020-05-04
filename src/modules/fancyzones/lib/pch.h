@@ -17,6 +17,8 @@
 #include <winrt/windows.foundation.h>
 #include <psapi.h>
 #include <shared_mutex>
+#include <functional>
+#include <unordered_set>
 
 #pragma comment(lib, "windowsapp")
 
