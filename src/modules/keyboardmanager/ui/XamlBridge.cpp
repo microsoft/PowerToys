@@ -227,6 +227,8 @@ void XamlBridge::OnTakeFocusRequested(winrt::Windows::UI::Xaml::Hosting::Desktop
 HWND XamlBridge::InitDesktopWindowsXamlSource(winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource desktopSource)
 {
     HRESULT hr = S_OK;
+    winrt::init_apartment(apartment_type::single_threaded);
+    winxamlmanager = WindowsXamlManager::InitializeForCurrentThread();
 
     auto interop = desktopSource.as<IDesktopWindowXamlSourceNative>();
     // Parent the DesktopWindowXamlSource object to current window
@@ -258,6 +260,8 @@ void XamlBridge::ClearXamlIslands()
         xamlSource.Close();
     }
     m_xamlSources.clear();
+
+    winxamlmanager.Close();
 }
 
 // Function invoked when the window is destroyed
