@@ -254,14 +254,14 @@ void KeyboardManagerState::ResetDetectedShortcutKey(DWORD key)
 }
 
 // Function which can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.
-bool KeyboardManagerState::DetectSingleRemapKeyUIBackend(LowlevelKeyboardEvent* data)
+KeyboardManagerHelper::KeyboardHookDecision KeyboardManagerState::DetectSingleRemapKeyUIBackend(LowlevelKeyboardEvent* data)
 {
     // Check if the detect key UI window has been activated
     if (CheckUIState(KeyboardManagerUIState::DetectSingleKeyRemapWindowActivated))
     {
         if (HandleKeyDelayEvent(data))
         {
-            return true;
+            return KeyboardManagerHelper::KeyboardHookDecision::Suppress;
         }
         // detect the key if it is pressed down
         if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
@@ -270,21 +270,27 @@ bool KeyboardManagerState::DetectSingleRemapKeyUIBackend(LowlevelKeyboardEvent* 
         }
 
         // Suppress the keyboard event
-        return true;
+        return KeyboardManagerHelper::KeyboardHookDecision::Suppress;
     }
 
-    return false;
+    // If the settings window is up, remappings should not be applied, but we should not suppress events in the hook
+    else if (CheckUIState(KeyboardManagerUIState::EditKeyboardWindowActivated))
+    {
+        return KeyboardManagerHelper::KeyboardHookDecision::SkipHook;
+    }
+
+    return KeyboardManagerHelper::KeyboardHookDecision::ContinueExec;
 }
 
 // Function which can be used in HandleKeyboardHookEvent before the os level shortcut remap event to use the UI and suppress events while the remap window is active.
-bool KeyboardManagerState::DetectShortcutUIBackend(LowlevelKeyboardEvent* data)
+KeyboardManagerHelper::KeyboardHookDecision KeyboardManagerState::DetectShortcutUIBackend(LowlevelKeyboardEvent* data)
 {
     // Check if the detect shortcut UI window has been activated
     if (CheckUIState(KeyboardManagerUIState::DetectShortcutWindowActivated))
     {
         if (HandleKeyDelayEvent(data))
         {
-            return true;
+            return KeyboardManagerHelper::KeyboardHookDecision::Suppress;
         }
 
         // Add the key if it is pressed down
@@ -299,7 +305,7 @@ bool KeyboardManagerState::DetectShortcutUIBackend(LowlevelKeyboardEvent* data)
         }
 
         // Suppress the keyboard event
-        return true;
+        return KeyboardManagerHelper::KeyboardHookDecision::Suppress;
     }
 
     // If the detect shortcut UI window is not activated, then clear the shortcut buffer if it isn't empty
@@ -312,7 +318,13 @@ bool KeyboardManagerState::DetectShortcutUIBackend(LowlevelKeyboardEvent* data)
         }
     }
 
-    return false;
+    // If the settings window is up, shortcut remappings should not be applied, but we should not suppress events in the hook
+    if (CheckUIState(KeyboardManagerUIState::EditShortcutsWindowActivated))
+    {
+        return KeyboardManagerHelper::KeyboardHookDecision::SkipHook;
+    }
+
+    return KeyboardManagerHelper::KeyboardHookDecision::ContinueExec;
 }
 
 void KeyboardManagerState::RegisterKeyDelay(

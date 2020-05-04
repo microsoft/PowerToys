@@ -19,8 +19,12 @@ enum class KeyboardManagerUIState
     Deactivated,
     // If set to this value then the detect key window is currently active and it requires a hook
     DetectSingleKeyRemapWindowActivated,
+    // If set to this value then the edit keyboard window is currently active and remaps should not be applied
+    EditKeyboardWindowActivated,
     // If set to this value then the detect shortcut window is currently active and it requires a hook
-    DetectShortcutWindowActivated
+    DetectShortcutWindowActivated,
+    // If set to this value then the edit shortcuts window is currently active and remaps should not be applied
+    EditShortcutsWindowActivated
 };
 
 // Class to store the shared state of the keyboard manager between the UI and the hook
@@ -140,10 +144,10 @@ public:
     DWORD GetDetectedSingleRemapKey();
 
     // Function which can be used in HandleKeyboardHookEvent before the single key remap event to use the UI and suppress events while the remap window is active.
-    bool DetectSingleRemapKeyUIBackend(LowlevelKeyboardEvent* data);
+    KeyboardManagerHelper::KeyboardHookDecision DetectSingleRemapKeyUIBackend(LowlevelKeyboardEvent* data);
 
     // Function which can be used in HandleKeyboardHookEvent before the os level shortcut remap event to use the UI and suppress events while the remap window is active.
-    bool DetectShortcutUIBackend(LowlevelKeyboardEvent* data);
+    KeyboardManagerHelper::KeyboardHookDecision DetectShortcutUIBackend(LowlevelKeyboardEvent* data);
 
     // Add a KeyDelay object to get delayed key presses events for a given virtual key
     // NOTE: this will throw an exception if a virtual key is registered twice.
