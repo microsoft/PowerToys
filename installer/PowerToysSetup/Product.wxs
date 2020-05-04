@@ -380,13 +380,6 @@
         </RegistryKey>
       </Component>
       
-      <Component Id="Module_WindowWalker" Guid="0F96981C-5D36-4467-9515-71FB0CE72F6F" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\WindowWalker.exe" />
-        <File Source="$(var.BinX64Dir)modules\WindowWalker.dll" />
-        <File Source="$(var.BinX64Dir)modules\MaterialDesignColors.dll" />
-        <File Source="$(var.BinX64Dir)modules\MaterialDesignThemes.Wpf.dll" />
-      </Component>
-      
       <Component Id="Module_Launcher" Guid="9A343236-B49D-451D-A27D-4C336F460A45" Win64="yes">
         <File Source="$(var.BinX64Dir)modules\Microsoft.Launcher.dll" />
       </Component>
@@ -676,7 +669,6 @@
       <ComponentRef Id="Module_ImageResizer_Registry" />
       <ComponentRef Id="Module_PowerPreview" />
       <ComponentRef Id="Module_PowerPreview_PerUserRegistry" />
-      <ComponentRef Id="Module_WindowWalker" />
       <ComponentRef Id="Module_Launcher" />
       <ComponentRef Id="Module_KeyboardManager" />
       <ComponentRef Id="SettingsV2" />
