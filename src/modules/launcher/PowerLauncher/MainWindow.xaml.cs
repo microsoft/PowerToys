@@ -93,14 +93,12 @@ namespace PowerLauncher
                         _viewModel.LastQuerySelected = true;
                     }
 
+                    SearchBox.QueryTextBox.Focus();
+
                     // to select the text so that the user can continue to type
                     if (!string.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
                     {
                         SearchBox.QueryTextBox.SelectAll();
-                    }
-                    else
-                    {
-                        SearchBox.QueryTextBox.Focus();
                     }
                 }
             }
