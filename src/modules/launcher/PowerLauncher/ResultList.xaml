@@ -118,16 +118,14 @@
                                             <TextBlock FontFamily="{Binding FontFamily}" FontSize="16" Text="{Binding Glyph}"/>
                                         </Button.Content>
 
-                                        <Button.InputBindings>
+                                        <!--<Button.InputBindings>
                                             <KeyBinding
                                                 Key="{Binding AcceleratorKey}"
                                                 Modifiers="{Binding AcceleratorModifiers}"
                                                 Command="{Binding Command}"
                                             />
-
-                                            <!--IsEnabled="{Binding IsAcceleratorKeyEnabled}"-->
-
-                                        </Button.InputBindings>
+                                        </Button.InputBindings>-->
+                                        <!--IsEnabled="{Binding IsAcceleratorKeyEnabled}"-->
                                     </Button>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
