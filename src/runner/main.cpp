@@ -130,7 +130,6 @@ int runner(bool isProcessElevated)
             L"Microsoft.Launcher.dll",
             L"ImageResizerExt.dll",
             L"powerpreview.dll",
-            L"WindowWalker.dll",
             L"KeyboardManager.dll"
         };
         for (auto& file : std::filesystem::directory_iterator(L"modules/"))
