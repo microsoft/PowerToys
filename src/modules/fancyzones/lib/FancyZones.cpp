@@ -606,21 +606,14 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
         GUID currentVirtualDesktopId{};
         if (VirtualDesktopUtils::GetCurrentVirtualDesktopId(&currentVirtualDesktopId))
         {
-            std::unique_lock writeLock(m_lock);
             m_currentVirtualDesktopId = currentVirtualDesktopId;
-            wil::unique_cotaskmem_string id;
-            if (changeType == DisplayChangeType::Initialization &&
-                SUCCEEDED(StringFromCLSID(m_currentVirtualDesktopId, &id)))
-            {
-                JSONHelpers::FancyZonesDataInstance().UpdatePrimaryDesktopData(id.get());
-            }
         }
         if (changeType == DisplayChangeType::Initialization)
         {
-            // Get currenty active desktops and clean data from persisted storage for all closed desktops.
             std::vector<std::wstring> ids{};
-            if (VirtualDesktopUtils::GetVirtualDesktopIds(ids))
+            if (VirtualDesktopUtils::GetVirtualDesktopIds(ids) && !ids.empty())
             {
+                JSONHelpers::FancyZonesDataInstance().UpdatePrimaryDesktopData(ids[0]);
                 JSONHelpers::FancyZonesDataInstance().RemoveDeletedDesktops(ids);
             }
         }
