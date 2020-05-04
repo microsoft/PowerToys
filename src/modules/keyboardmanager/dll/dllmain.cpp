@@ -247,20 +247,20 @@ public:
     // Called by the runner to pass the updated settings values as a serialized JSON.
     virtual void set_config(const wchar_t* config) override
     {
-        //try
-        //{
-        //    // Parse the input JSON string.
-        //    PowerToysSettings::PowerToyValues values =
-        //        PowerToysSettings::PowerToyValues::from_json_string(config);
+        try
+        {
+            // Parse the input JSON string.
+            PowerToysSettings::PowerToyValues values =
+                PowerToysSettings::PowerToyValues::from_json_string(config);
 
-        //    // If you don't need to do any custom processing of the settings, proceed
-        //    // to persists the values calling:
-        //    values.save_to_settings_file();
-        //}
-        //catch (std::exception&)
-        //{
-        //    // Improper JSON.
-        //}
+            // If you don't need to do any custom processing of the settings, proceed
+            // to persists the values calling:
+            values.save_to_settings_file();
+        }
+        catch (std::exception&)
+        {
+            // Improper JSON.
+        }
     }
 
     // Enable the powertoy
