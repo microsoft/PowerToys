@@ -21,7 +21,7 @@ namespace CommonLibTest
         }
 
         [TestMethod]
-        public void Helper_CompareVersions_Equal()
+        public void Helper_CompareVersions_ShouldBeEqual_WhenSuccessful()
         {
             TestStringsAreEqual("v0.0.0", "v0.0.0");
             TestStringsAreEqual("v0.1.1", "v0.1.1");
@@ -30,7 +30,7 @@ namespace CommonLibTest
         }
 
         [TestMethod]
-        public void Helper_CompareVersions_Smaller()
+        public void Helper_CompareVersions_ShouldBeSmaller_WhenSuccessful()
         {
             TestStringIsSmaller("v0.0.0", "v0.0.1");
             TestStringIsSmaller("v0.0.0", "v0.1.0");
@@ -44,28 +44,28 @@ namespace CommonLibTest
 
         [TestMethod]
         [ExpectedException(typeof(FormatException))]
-        public void Helper_CompareVersions_BadFormat_NoVersion()
+        public void Helper_CompareVersions_ShouldThrowBadFormat_WhenNoVersionString()
         {
             Helper.CompareVersions("v0.0.1", "");
         }
 
         [TestMethod]
         [ExpectedException(typeof(FormatException))]
-        public void Helper_CompareVersions_BadFormat_ShortVersion()
+        public void Helper_CompareVersions_ShouldThrowBadFormat_WhenShortVersionString()
         {
             Helper.CompareVersions("v0.0.1", "v0.1");
         }
 
         [TestMethod]
         [ExpectedException(typeof(FormatException))]
-        public void Helper_CompareVersions_BadFormat_LongVersion()
+        public void Helper_CompareVersions_ShouldThrowBadFormat_WhenLongVersionString()
         {
             Helper.CompareVersions("v0.0.1", "v0.0.0.1");
         }
 
         [TestMethod]
         [ExpectedException(typeof(FormatException))]
-        public void Helper_CompareVersions_BadFormat_NoVersionString()
+        public void Helper_CompareVersions_ShouldThrowBadFormat_WhenItIsNotAVersionString()
         {
             Helper.CompareVersions("v0.0.1", "HelloWorld");
         }
