@@ -178,6 +178,8 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
 
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();
+        // Revert UI state back to Edit Shortcut window
+        keyboardManagerState.SetUIState(KeyboardManagerUIState::EditShortcutsWindowActivated, EditShortcutsWindowHandle);
         unregisterKeys();
         detectShortcutBox.Hide();
     };
@@ -225,6 +227,8 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
     cancelButton.Click([detectShortcutBox, unregisterKeys, &keyboardManagerState](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();
+        // Revert UI state back to Edit Shortcut window
+        keyboardManagerState.SetUIState(KeyboardManagerUIState::EditShortcutsWindowActivated, EditShortcutsWindowHandle);
         unregisterKeys();
         detectShortcutBox.Hide();
     });
@@ -240,6 +244,8 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
                 });
 
             keyboardManagerState.ResetUIState();
+            // Revert UI state back to Edit Shortcut window
+            keyboardManagerState.SetUIState(KeyboardManagerUIState::EditShortcutsWindowActivated, EditShortcutsWindowHandle);
             unregisterKeys();
         },
         nullptr);

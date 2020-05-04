@@ -147,6 +147,9 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Vector to store dynamically allocated control objects to avoid early destruction
     std::vector<std::vector<std::unique_ptr<ShortcutControl>>> keyboardRemapControlObjects;
 
+    // Set keyboard manager UI state so that shortcut remaps are not applied while on this window
+    keyboardManagerState.SetUIState(KeyboardManagerUIState::EditShortcutsWindowActivated, _hWndEditShortcutsWindow);
+
     // Load existing shortcuts into UI
     std::unique_lock<std::mutex> lock(keyboardManagerState.osLevelShortcutReMap_mutex);
     for (const auto& it : keyboardManagerState.osLevelShortcutReMap)
@@ -261,6 +264,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     hWndXamlIslandEditShortcutsWindow = nullptr;
     hwndLock.lock();
     hwndEditShortcutsNativeWindow = nullptr;
+    keyboardManagerState.ResetUIState();
 
     // Cannot be done in WM_DESTROY because that causes crashes due to fatal app exit
     xamlBridge.ClearXamlIslands();
