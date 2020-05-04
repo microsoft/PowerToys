@@ -63,20 +63,20 @@ public:
         std::shared_lock readLock(m_lock);
         return m_windowMoveHandler.InMoveSize();
     }
-    IFACEMETHODIMP_(void)
-    MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen) noexcept
+
+    void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
         m_windowMoveHandler.MoveSizeStart(window, monitor, ptScreen, m_zoneWindowMap);
     }
-    IFACEMETHODIMP_(void)
-    MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept
+    
+    void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
         m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_zoneWindowMap);
     }
-    IFACEMETHODIMP_(void)
-    MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
+    
+    void MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
         m_windowMoveHandler.MoveSizeEnd(window, ptScreen, m_zoneWindowMap);
@@ -117,14 +117,14 @@ public:
     VirtualDesktopChanged() noexcept;
     IFACEMETHODIMP_(void)
     VirtualDesktopInitialize() noexcept;
-    IFACEMETHODIMP_(void)
-    WindowCreated(HWND window) noexcept;
     IFACEMETHODIMP_(bool)
     OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept;
     IFACEMETHODIMP_(void)
     ToggleEditor() noexcept;
     IFACEMETHODIMP_(void)
     SettingsChanged() noexcept;
+    
+    void WindowCreated(HWND window) noexcept;
 
     // IZoneWindowHost
     IFACEMETHODIMP_(void)
@@ -248,10 +248,12 @@ private:
     OnThreadExecutor m_dpiUnawareThread;
     OnThreadExecutor m_virtualDesktopTrackerThread;
 
-    static UINT WM_PRIV_VD_INIT; // Message to get back to the UI thread when FancyZones is initialized
-    static UINT WM_PRIV_VD_SWITCH; // Message to get back to the UI thread when virtual desktop switch occurs
-    static UINT WM_PRIV_VD_UPDATE; // Message to get back to the UI thread on virtual desktops update (creation/deletion)
-    static UINT WM_PRIV_EDITOR; // Message to get back to the UI thread when the editor exits
+    static UINT WM_PRIV_VD_INIT; // Scheduled when FancyZones is initialized
+    static UINT WM_PRIV_VD_SWITCH; // Scheduled when virtual desktop switch occurs
+    static UINT WM_PRIV_VD_UPDATE; // Scheduled on virtual desktops update (creation/deletion)
+    static UINT WM_PRIV_EDITOR; // Scheduled when the editor exits
+
+    static UINT WM_PRIV_LOWLEVELKB; // Scheduled when we receive a key down press
 
     // Did we terminate the editor or was it closed cleanly?
     enum class EditorExitKind : byte
@@ -265,6 +267,7 @@ UINT FancyZones::WM_PRIV_VD_INIT = RegisterWindowMessage(L"{469818a8-00fa-4069-b
 UINT FancyZones::WM_PRIV_VD_SWITCH = RegisterWindowMessage(L"{128c2cb0-6bdf-493e-abbe-f8705e04aa95}");
 UINT FancyZones::WM_PRIV_VD_UPDATE = RegisterWindowMessage(L"{b8b72b46-f42f-4c26-9e20-29336cf2f22e}");
 UINT FancyZones::WM_PRIV_EDITOR = RegisterWindowMessage(L"{87543824-7080-4e91-9d9c-0404642fc7b6}");
+UINT FancyZones::WM_PRIV_LOWLEVELKB = RegisterWindowMessage(L"{763c03a3-03d9-4cde-8d71-f0358b0b4b52}");
 
 // IFancyZones
 IFACEMETHODIMP_(void)
@@ -398,9 +401,10 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
         {
             if (m_settings->GetSettings()->overrideSnapHotkeys)
             {
-                // Win+Left, Win+Right will cycle through Zones in the active ZoneSet
                 Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
-                return OnSnapHotkey(info->vkCode);
+                // Win+Left, Win+Right will cycle through Zones in the active ZoneSet when WM_PRIV_LOWLEVELKB's handled
+                PostMessageW(m_window, WM_PRIV_LOWLEVELKB, 0, info->vkCode);
+                return true;
             }
         }
     }
@@ -592,7 +596,11 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         POINT ptScreen;
         GetPhysicalCursorPos(&ptScreen);
 
-        if (message == WM_PRIV_VD_INIT)
+        if (message == WM_PRIV_LOWLEVELKB)
+        {
+            OnSnapHotkey(static_cast<DWORD>(lparam));
+        }
+        else if (message == WM_PRIV_VD_INIT)
         {
             OnDisplayChange(DisplayChangeType::Initialization);
         }

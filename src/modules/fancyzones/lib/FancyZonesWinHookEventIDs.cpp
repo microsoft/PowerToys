@@ -12,7 +12,7 @@ UINT WM_PRIV_WINDOWCREATED;
 
 std::once_flag init_flag;
 
-void initialize_winhook_event_ids()
+void InitializeWinhookEventIds()
 {
     std::call_once(init_flag, [&] {
         WM_PRIV_MOVESIZESTART = RegisterWindowMessage(L"{f48def23-df42-4c0f-a13d-3eb4a9e204d4}");
