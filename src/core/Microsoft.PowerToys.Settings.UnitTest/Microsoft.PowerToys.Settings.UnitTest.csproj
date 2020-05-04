@@ -119,6 +119,7 @@
     <SDKReference Include="TestPlatform.Universal, Version=$(UnitTestPlatformVersion)" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ModelsTests\HelperTest.cs" />
     <Compile Include="ViewModelTests\ImageResizer.cs" />
     <Compile Include="ModelsTests\BasePTModuleSettingsTest.cs" />
     <Compile Include="ModelsTests\BasePTSettingsTest.cs" />

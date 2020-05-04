@@ -5,9 +5,11 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.PowerToys.Settings.UI.Lib.CustomAction;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
@@ -77,6 +79,43 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
         public static string GetKeyName(uint key)
         {
             return layoutMap.GetKeyName(key);
+        }
+
+        public static string GetProductVersion()
+        {
+            return interop.CommonManaged.GetProductVersion();
+        }
+
+        public static int CompareVersions(string version1, string version2)
+        {
+            try
+            {
+                // Split up the version strings into int[]
+                // Example: v10.0.2 -> {10, 0, 2};
+                var v1 = version1.Substring(1).Split('.').Select(int.Parse).ToArray();
+                var v2 = version2.Substring(1).Split('.').Select(int.Parse).ToArray();
+
+                if (v1.Count() != 3 || v2.Count() != 3)
+                {
+                    throw new FormatException();
+                }
+
+                if (v1[0] - v2[0] != 0)
+                {
+                    return v1[0] - v2[0];
+                }
+
+                if (v1[1] - v2[1] != 0)
+                {
+                    return v1[1] - v2[1];
+                }
+
+                return v1[2] - v2[2];
+            }
+            catch (Exception)
+            {
+                throw new FormatException("Bad product version format");
+            }
         }
     }
 }
