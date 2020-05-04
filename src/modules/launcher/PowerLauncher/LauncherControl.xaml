@@ -163,7 +163,7 @@
             x:Name="QueryTextBox"
             x:FieldModifier="public"
             Canvas.ZIndex="0"
-            Margin="12, 0, 0, 0"
+            Margin="10, 0, 0, 0"
             VerticalAlignment="Center"
             FontSize="24"
             Style="{StaticResource CustomAutoSuggestBoxTextBoxStyle}"
