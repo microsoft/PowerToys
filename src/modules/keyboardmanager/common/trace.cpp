@@ -50,36 +50,3 @@ void Trace::OSLevelShortcutRemapCount(const DWORD count) noexcept
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingValue(count, "OSLevelShortcutRemapCount"));
 }
-
-// Log if the user has KBM enabled and atleast one key remap
-void Trace::EnableKeyboardManagerAtleastOneKeyRemap(const bool enabled) noexcept
-{
-    TraceLoggingWrite(
-        g_hProvider,
-        "KeyboardManager_EnableKeyboardManagerAtleastOneKeyRemap",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingBoolean(enabled, "EnabledAtleastOneKeyRemap"));
-}
-
-// Log if the user has KBM enabled and atleast one shortcut remap
-void Trace::EnableKeyboardManagerAtleastOneShortcutRemap(const bool enabled) noexcept
-{
-    TraceLoggingWrite(
-        g_hProvider,
-        "KeyboardManager_EnableKeyboardManagerAtleastOneShortcutRemap",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingBoolean(enabled, "EnabledAtleastOneShortcutRemap"));
-}
-
-// Log if the user has KBM enabled and atleast one remap - usable for MAD
-void Trace::EnableKeyboardManagerAtleastOneRemap(const bool enabled) noexcept
-{
-    TraceLoggingWrite(
-        g_hProvider,
-        "KeyboardManager_EnableKeyboardManagerAtleastOneRemap",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingBoolean(enabled, "EnabledAtleastOneRemap"));
-}

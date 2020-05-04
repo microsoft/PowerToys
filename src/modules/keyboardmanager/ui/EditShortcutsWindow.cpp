@@ -208,10 +208,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         {
             isSuccess = KeyboardManagerHelper::ErrorType::SaveFailed;
         }
-        if (successfulRemapCount != 0)
-        {
-            Trace::OSLevelShortcutRemapCount(successfulRemapCount);
-        }
+        Trace::OSLevelShortcutRemapCount(successfulRemapCount);
         settingsMessage.Text(KeyboardManagerHelper::GetErrorMessage(isSuccess));
     });
 

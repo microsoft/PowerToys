@@ -283,10 +283,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         {
             isSuccess = KeyboardManagerHelper::ErrorType::SaveFailed;
         }
-        if (successfulRemapCount != 0)
-        {
-            Trace::KeyRemapCount(successfulRemapCount);
-        }
+        Trace::KeyRemapCount(successfulRemapCount);
         settingsMessage.Text(KeyboardManagerHelper::GetErrorMessage(isSuccess));
     });
 

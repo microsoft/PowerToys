@@ -267,17 +267,8 @@ public:
     virtual void enable()
     {
         m_enabled = true;
-        std::unique_lock<std::mutex> keyRemapLock(keyboardManagerState.singleKeyReMap_mutex);
-        bool atleastOneKeyRemap = (keyboardManagerState.singleKeyReMap.size() > 0);
-        keyRemapLock.unlock();
-        std::unique_lock<std::mutex> shortcutRemapLock(keyboardManagerState.osLevelShortcutReMap_mutex);
-        bool atleastOneShortcutRemap = (keyboardManagerState.osLevelShortcutReMap.size() > 0);
-        shortcutRemapLock.unlock();
         // Log telemetry
         Trace::EnableKeyboardManager(true);
-        Trace::EnableKeyboardManagerAtleastOneKeyRemap(m_enabled && atleastOneKeyRemap);
-        Trace::EnableKeyboardManagerAtleastOneShortcutRemap(m_enabled && atleastOneShortcutRemap);
-        Trace::EnableKeyboardManagerAtleastOneRemap(m_enabled && (atleastOneKeyRemap || atleastOneShortcutRemap));
         // Start keyboard hook
         start_lowlevel_keyboard_hook();
     }
@@ -286,7 +277,9 @@ public:
     virtual void disable()
     {
         m_enabled = false;
+        // Log telemetry
         Trace::EnableKeyboardManager(false);
+        // Stop keyboard hook
         stop_lowlevel_keyboard_hook();
     }
 
