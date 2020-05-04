@@ -4,7 +4,6 @@
 #include <interface/win_hook_event_data.h>
 #include <common/settings_objects.h>
 #include <common/shared_constants.h>
-#include "trace.h"
 #include "resource.h"
 #include <keyboardmanager/ui/EditKeyboardWindow.h>
 #include <keyboardmanager/ui/EditShortcutsWindow.h>
@@ -12,7 +11,8 @@
 #include <keyboardmanager/common/Shortcut.h>
 #include <keyboardmanager/common/RemapShortcut.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
-#include <common\settings_helpers.h>
+#include <common/settings_helpers.h>
+#include <keyboardmanager/common/trace.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -247,26 +247,38 @@ public:
     // Called by the runner to pass the updated settings values as a serialized JSON.
     virtual void set_config(const wchar_t* config) override
     {
-        try
-        {
-            // Parse the input JSON string.
-            PowerToysSettings::PowerToyValues values =
-                PowerToysSettings::PowerToyValues::from_json_string(config);
+        //try
+        //{
+        //    // Parse the input JSON string.
+        //    PowerToysSettings::PowerToyValues values =
+        //        PowerToysSettings::PowerToyValues::from_json_string(config);
 
-            // If you don't need to do any custom processing of the settings, proceed
-            // to persists the values calling:
-            values.save_to_settings_file();
-        }
-        catch (std::exception&)
-        {
-            // Improper JSON.
-        }
+        //    // If you don't need to do any custom processing of the settings, proceed
+        //    // to persists the values calling:
+        //    values.save_to_settings_file();
+        //}
+        //catch (std::exception&)
+        //{
+        //    // Improper JSON.
+        //}
     }
 
     // Enable the powertoy
     virtual void enable()
     {
         m_enabled = true;
+        std::unique_lock<std::mutex> keyRemapLock(keyboardManagerState.singleKeyReMap_mutex);
+        bool atleastOneKeyRemap = (keyboardManagerState.singleKeyReMap.size() > 0);
+        keyRemapLock.unlock();
+        std::unique_lock<std::mutex> shortcutRemapLock(keyboardManagerState.osLevelShortcutReMap_mutex);
+        bool atleastOneShortcutRemap = (keyboardManagerState.osLevelShortcutReMap.size() > 0);
+        shortcutRemapLock.unlock();
+        // Log telemetry
+        Trace::EnableKeyboardManager(true);
+        Trace::EnableKeyboardManagerAtleastOneKeyRemap(m_enabled && atleastOneKeyRemap);
+        Trace::EnableKeyboardManagerAtleastOneShortcutRemap(m_enabled && atleastOneShortcutRemap);
+        Trace::EnableKeyboardManagerAtleastOneRemap(m_enabled && (atleastOneKeyRemap || atleastOneShortcutRemap));
+        // Start keyboard hook
         start_lowlevel_keyboard_hook();
     }
 
@@ -274,6 +286,7 @@ public:
     virtual void disable()
     {
         m_enabled = false;
+        Trace::EnableKeyboardManager(false);
         stop_lowlevel_keyboard_hook();
     }
 

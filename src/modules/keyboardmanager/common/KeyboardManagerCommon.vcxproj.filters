@@ -33,6 +33,9 @@
     <ClCompile Include="KeyDelay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Trace.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="KeyboardManagerState.h">
@@ -54,6 +57,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="KeyboardManagerConstants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Trace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
