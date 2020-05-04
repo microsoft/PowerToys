@@ -12,7 +12,7 @@ namespace
     const wchar_t c_rootRegPath[] = L"Software\\Microsoft\\ImageResizer";
     const wchar_t c_enabled[] = L"Enabled";
 
-    unsigned int GetRegNumber(const std::wstring& valueName, unsigned int defaultValue)
+    unsigned int RegReadInteger(const std::wstring& valueName, unsigned int defaultValue)
     {
         DWORD type = REG_DWORD;
         DWORD data = 0;
@@ -24,9 +24,9 @@ namespace
         return defaultValue;
     }
 
-    bool GetRegBoolean(const std::wstring& valueName, bool defaultValue)
+    bool RegReadBoolean(const std::wstring& valueName, bool defaultValue)
     {
-        DWORD value = GetRegNumber(valueName.c_str(), defaultValue ? 1 : 0);
+        DWORD value = RegReadInteger(valueName.c_str(), defaultValue ? 1 : 0);
         return (value == 0) ? false : true;
     }
 
@@ -86,7 +86,7 @@ void CSettings::Reload()
 
 void CSettings::MigrateFromRegistry()
 {
-    settings.enabled = GetRegBoolean(c_enabled, true);
+    settings.enabled = RegReadBoolean(c_enabled, true);
 }
 
 void CSettings::ParseJson()
