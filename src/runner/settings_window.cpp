@@ -390,3 +390,15 @@ void open_settings_window()
         std::thread(run_settings_window).detach();
     }
 }
+
+void close_settings_window()
+{
+    if (g_settings_process_id != 0)
+    {
+        HANDLE proc = OpenProcess(PROCESS_TERMINATE, false, g_settings_process_id);
+        if (proc != INVALID_HANDLE_VALUE)
+        {
+            TerminateProcess(proc, 0);
+        }
+    }
+}
