@@ -24,14 +24,21 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public static ShellPage ShellHandler { get; set; }
 
         /// <summary>
-        /// Gets or sets iPC callback function for run on start up.
+        /// Gets or sets iPC default callback function.
         /// </summary>
         public static IPCMessageCallback DefaultSndMSGCallback { get; set; }
+
+        /// <summary>
+        /// Gets or sets iPC callback function for restart as admin.
+        /// </summary>
+        public static IPCMessageCallback SndRestartAsAdminMsgCallback { get; set; }
 
         /// <summary>
         /// Gets view model.
         /// </summary>
         public ShellViewModel ViewModel { get; } = new ShellViewModel();
+
+        public static bool IsElevated { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ShellPage"/> class.
@@ -48,12 +55,31 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         }
 
         /// <summary>
-        /// Run on start up callback function elevated initialization.
+        /// Set Default IPC Message callback function.
         /// </summary>
         /// <param name="implmentation">delegate function implementation.</param>
         public void SetDefaultSndMessageCallback(IPCMessageCallback implmentation)
         {
             DefaultSndMSGCallback = implmentation;
+        }
+
+        /// <summary>
+        /// Set restart as admin IPC callback function.
+        /// </summary>
+        /// <param name="implmentation">delegate function implementation.</param>
+        public void SetRestartAdminSndMessageCallback(IPCMessageCallback implmentation)
+        {
+            SndRestartAsAdminMsgCallback = implmentation;
+        }
+
+        public void SetElevationStatus(bool isElevated)
+        {
+            IsElevated = isElevated;
+        }
+
+        public void Refresh()
+        {
+            shellFrame.Navigate(typeof(GeneralPage));
         }
     }
 }

@@ -14,6 +14,7 @@
 #include "restart_elevated.h"
 
 #include <common/json.h>
+#include <common\settings_helpers.cpp>
 
 #define BUFSIZE 1024
 
@@ -250,6 +251,22 @@ void run_settings_window()
         settings_theme = L"dark";
     }
 
+    // Arg 4: settings theme.
+    GeneralSettings save_settings = get_general_settings();
+
+    bool isElevated{ get_general_settings().isElevated };
+    std::wstring settings_elevatedStatus;
+    settings_elevatedStatus = isElevated;
+
+    if (isElevated)
+    {
+        settings_elevatedStatus = L"true";
+    }
+    else
+    {
+        settings_elevatedStatus = L"false";
+    }
+
     std::wstring executable_args = L"\"";
     executable_args.append(executable_path);
     executable_args.append(L"\" ");
@@ -260,6 +277,8 @@ void run_settings_window()
     executable_args.append(std::to_wstring(powertoys_pid));
     executable_args.append(L" ");
     executable_args.append(settings_theme);
+    executable_args.append(L" ");
+    executable_args.append(settings_elevatedStatus);
 
     BOOL process_created = false;
     if (is_process_elevated())
