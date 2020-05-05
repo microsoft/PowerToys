@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Text;
+using Microsoft.PowerToys.Telemetry;
 
 namespace Microsoft.PowerLauncher.Telemetry
 {

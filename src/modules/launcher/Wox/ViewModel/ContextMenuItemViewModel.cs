@@ -1,4 +1,5 @@
 ﻿using Microsoft.PowerLauncher.Telemetry;
+using Microsoft.PowerToys.Telemetry;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Input;
@@ -26,7 +27,7 @@ namespace Wox.ViewModel
                 ActionName = Title
 
             };
-            PowerLauncherTelemetry.Log.WriteEvent(eventData);
+            PowerToysTelemetry.Log.WriteEvent(eventData);
         }
     }
 }

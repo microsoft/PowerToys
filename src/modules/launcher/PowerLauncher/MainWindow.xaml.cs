@@ -28,6 +28,7 @@ using Mages.Core.Runtime.Converters;
 using System.Runtime.InteropServices;
 using Microsoft.PowerLauncher.Telemetry;
 using System.Timers;
+using Microsoft.PowerToys.Telemetry;
 
 namespace PowerLauncher
 {
@@ -66,7 +67,7 @@ namespace PowerLauncher
             _firstDeleteTimer.Stop();
             if (_deletePressed)
             {
-                PowerLauncherTelemetry.Log.WriteEvent(new FirstDeleteEvent());
+                PowerToysTelemetry.Log.WriteEvent(new FirstDeleteEvent());
             }
 
         }
