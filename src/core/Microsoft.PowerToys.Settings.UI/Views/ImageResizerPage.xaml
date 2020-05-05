@@ -61,10 +61,9 @@
             <ListView x:Name="ImagesSizesListView" 
                       ItemsSource="{Binding Sizes, Mode=TwoWay, Source={StaticResource ViewModel}}"
                       Padding="0"
-                   
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"
                       Margin="0"
-                      SelectionMode="None"
-                      >
+                      SelectionMode="None">
 
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
