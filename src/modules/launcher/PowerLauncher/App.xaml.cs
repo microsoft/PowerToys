@@ -1,3 +1,4 @@
+using Microsoft.PowerLauncher.Telemetry;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -50,6 +51,8 @@ namespace PowerLauncher
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
+            var bootTime = new System.Diagnostics.Stopwatch();
+            bootTime.Start();
             Stopwatch.Normal("|App.OnStartup|Startup cost", () =>
             {
                 Log.Info("|App.OnStartup|Begin Wox startup ----------------------------------------------------");
@@ -93,12 +96,14 @@ namespace PowerLauncher
                 _mainVM.MainWindowVisibility = Visibility.Visible;
                 Log.Info("|App.OnStartup|End Wox startup ----------------------------------------------------  ");
 
-                
+                bootTime.Stop();
 
-        //[Conditional("RELEASE")]
-                    // check udpate every 5 hours
+                PowerLauncherTelemetry.Log.WriteEvent(new BootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
 
-                    // check updates on startup
+                //[Conditional("RELEASE")]
+                // check udpate every 5 hours
+
+                // check updates on startup
             });
         }
 
