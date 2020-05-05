@@ -50,12 +50,6 @@
                           IsOn="{Binding Mode=TwoWay, Path=IsEnabled}"                          
                            />
 
-            <ToggleSwitch x:Uid="PowerRename_Toggle_AutoComplete"
-                          Margin="{StaticResource SmallTopMargin}" 
-                          IsOn="{Binding Mode=TwoWay, Path=MRUEnabled}"
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                           />
-
             <TextBlock  x:Uid="PowerRename_ShellIntergration"
                         Style="{StaticResource SettingsGroupTitleStyle}"/>
 
@@ -74,6 +68,13 @@
             <TextBlock x:Uid="Miscellaneous" 
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
+
+            <ToggleSwitch x:Uid="PowerRename_Toggle_AutoComplete"
+                          Margin="{StaticResource SmallTopMargin}" 
+                          IsOn="{Binding Mode=TwoWay, Path=MRUEnabled}"
+                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                           />
+            
             <ToggleSwitch x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch"
                           Margin="{StaticResource SmallTopMargin}" 
                           IsOn="{Binding Mode=TwoWay, Path=RestoreFlagsOnLaunch}"
