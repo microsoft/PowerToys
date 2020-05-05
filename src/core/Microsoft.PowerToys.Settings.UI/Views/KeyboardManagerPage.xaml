@@ -208,7 +208,13 @@
                 Style="{StaticResource SettingsGroupTitleStyle}"
                 Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <HyperlinkButton Content="Module overview"/>
+            <HyperlinkButton>
+                <TextBlock x:Uid="Module_overview" />
+            </HyperlinkButton>
+
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <TextBlock x:Uid="Give_Feedback" />
+            </HyperlinkButton>
         </StackPanel>
     </Grid>
 </Page>

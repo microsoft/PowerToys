@@ -100,11 +100,13 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <HyperlinkButton x:Uid="Module_overview"
-                             NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/powerrename"/>
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/powerrename">
+                <TextBlock x:Uid="Module_overview" />
+            </HyperlinkButton>
 
-            <HyperlinkButton x:Uid="Give_Feedback"
-                             NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <TextBlock x:Uid="Give_Feedback" />
+            </HyperlinkButton>
 
 
             <TextBlock 

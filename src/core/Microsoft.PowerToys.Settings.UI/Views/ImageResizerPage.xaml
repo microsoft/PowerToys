@@ -272,12 +272,13 @@
                 Style="{StaticResource SettingsGroupTitleStyle}"
                 Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <HyperlinkButton 
-                x:Uid="Module_overview"
-                NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/imageresizer/README.md"/>
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/imageresizer/README.md">
+                <TextBlock x:Uid="Module_overview" />
+            </HyperlinkButton>
 
-            <HyperlinkButton x:Uid="Give_Feedback"
-                             NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <TextBlock x:Uid="Give_Feedback" />
+            </HyperlinkButton>
 
             <TextBlock 
                 x:Uid="AttributionTitle"

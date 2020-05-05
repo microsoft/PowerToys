@@ -314,10 +314,10 @@
   <data name="FancyZones_ZoneSetChangeMoveWindows.Content" xml:space="preserve">
     <value>During zone layout changes, windows assigned to a zone will match new size/positions</value>
   </data>
-  <data name="Give_Feedback.Content" xml:space="preserve">
+  <data name="Give_Feedback.Text" xml:space="preserve">
     <value>Give feedback</value>
   </data>
-  <data name="Module_overview.Content" xml:space="preserve">
+  <data name="Module_overview.Text" xml:space="preserve">
     <value>Module overview</value>
   </data>
   <data name="AttributionTitle.Text" xml:space="preserve">
@@ -329,7 +329,7 @@
   <data name="GeneralPage_CheckForUpdates.Content" xml:space="preserve">
     <value>Check for updates</value>
   </data>
-  <data name="GeneralPage_PrivacyStatement_URL.Content" xml:space="preserve">
+  <data name="GeneralPage_PrivacyStatement_URL.Text" xml:space="preserve">
     <value>Privacy statement</value>
   </data>
   <data name="GeneralPage_Radio_Theme_Dark.Content" xml:space="preserve">
@@ -341,10 +341,10 @@
   <data name="GeneralPage_Radio_Theme_Light.Content" xml:space="preserve">
     <value>Light</value>
   </data>
-  <data name="GeneralPage_ReportAbug.Content" xml:space="preserve">
+  <data name="GeneralPage_ReportAbug.Text" xml:space="preserve">
     <value>Report a bug</value>
   </data>
-  <data name="GeneralPage_RequestAFeature_URL.Content" xml:space="preserve">
+  <data name="GeneralPage_RequestAFeature_URL.Text" xml:space="preserve">
     <value>Request a feature</value>
   </data>
   <data name="GeneralPage_RestartAsAdmin_Button.Content" xml:space="preserve">
@@ -392,7 +392,7 @@
   <data name="Miscellaneous.Text" xml:space="preserve">
     <value>Miscellaneous</value>
   </data>
-  <data name="OpenSource_Notice.Content" xml:space="preserve">
+  <data name="OpenSource_Notice.Text" xml:space="preserve">
     <value>Open-source notice</value>
   </data>
   <data name="PowerRename_Toggle_AutoComplete.Header" xml:space="preserve">
@@ -527,7 +527,7 @@
   <data name="GeneralPage_ToggleSwitch_AlwaysRunElevated.Header" xml:space="preserve">
     <value>Always Run as Admin</value>
   </data>
-  <data name="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link.Content" xml:space="preserve">
+  <data name="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link.Text" xml:space="preserve">
     <value>Learn about Admin mode</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_AutoDownloadUpdates.Header" xml:space="preserve">

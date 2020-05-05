@@ -115,21 +115,26 @@
                     Command = "{Binding CheckFoUpdatesEventHandler, Source={StaticResource eventViewModel}}"
                     />
 
-            <HyperlinkButton x:Uid="GeneralPage_ReportAbug"
-                             NavigateUri="https://github.com/microsoft/PowerToys/issues"
-                             Margin="{StaticResource SmallTopMargin}" />
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues"
+                             Margin="{StaticResource SmallTopMargin}">
+                <TextBlock x:Uid="GeneralPage_ReportAbug"/>
+            </HyperlinkButton>
 
-            <HyperlinkButton x:Uid="GeneralPage_RequestAFeature_URL" 
-                             NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <TextBlock x:Uid="GeneralPage_RequestAFeature_URL"/>
+            </HyperlinkButton>
 
-            <HyperlinkButton x:Uid="GeneralPage_PrivacyStatement_URL"
-                             NavigateUri=" http://go.microsoft.com/fwlink/?LinkId=521839" />
+            <HyperlinkButton NavigateUri=" http://go.microsoft.com/fwlink/?LinkId=521839">
+                <TextBlock x:Uid="GeneralPage_PrivacyStatement_URL"/>
+            </HyperlinkButton>
 
-            <HyperlinkButton x:Uid="OpenSource_Notice"
-                             NavigateUri="https://github.com/microsoft/PowerToys/blob/master/NOTICE.md"/>
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/blob/master/NOTICE.md">
+                <TextBlock x:Uid="OpenSource_Notice"/>
+            </HyperlinkButton>
 
-            <HyperlinkButton x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link"
-                             NavigateUri="https://github.com/microsoft/PowerToys/blob/master/doc/devdocs/run-as-admin-detection.md"/>
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/blob/master/doc/devdocs/run-as-admin-detection.md">
+                <TextBlock x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link" />
+            </HyperlinkButton>
         </StackPanel>
     </Grid>
 </Page>
