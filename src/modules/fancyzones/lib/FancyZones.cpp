@@ -22,7 +22,6 @@ enum class DisplayChangeType
     WorkArea,
     DisplayChange,
     VirtualDesktop,
-    Editor,
     Initialization
 };
 
@@ -621,7 +620,14 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
             if (lparam == static_cast<LPARAM>(EditorExitKind::Exit))
             {
                 OnEditorExitEvent();
-                OnDisplayChange(DisplayChangeType::Editor);
+                for (auto& [monitor, zoneWindow] : m_zoneWindowMap)
+                {
+                    zoneWindow->UpdateActiveZoneSet();
+                }
+                if (m_settings->GetSettings()->zoneSetChange_moveWindows)
+                {
+                    MoveWindowsOnDisplayChange();
+                }
             }
 
             {
@@ -699,13 +705,6 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
     else if (changeType == DisplayChangeType::VirtualDesktop)
     {
         if (m_settings->GetSettings()->virtualDesktopChange_moveWindows)
-        {
-            MoveWindowsOnDisplayChange();
-        }
-    }
-    else if (changeType == DisplayChangeType::Editor)
-    {
-        if (m_settings->GetSettings()->zoneSetChange_moveWindows)
         {
             MoveWindowsOnDisplayChange();
         }
