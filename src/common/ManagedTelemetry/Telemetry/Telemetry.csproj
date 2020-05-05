@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\Telemetry.csproj" />
+    <Compile Include="..\..\Telemetry\TelemetryBase.cs" Link="TelemetryBase.cs" />
   </ItemGroup>
 
 </Project>

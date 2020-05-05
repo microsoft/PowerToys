@@ -19,6 +19,7 @@ using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Microsoft.PowerLauncher.Telemetry;
 using Wox.Storage;
+using Microsoft.PowerToys.Telemetry;
 
 namespace Wox.ViewModel
 {
@@ -311,11 +312,11 @@ namespace Wox.ViewModel
                 _visibility = value;
                 if(value == Visibility.Visible)
                 {
-                    PowerLauncherTelemetry.Log.WriteEvent(new ShowEvent());
+                    PowerToysTelemetry.Log.WriteEvent(new ShowEvent());
                 }
                 else
                 {
-                    PowerLauncherTelemetry.Log.WriteEvent(new HideEvent());
+                    PowerToysTelemetry.Log.WriteEvent(new HideEvent());
                 }
             
             }
@@ -461,7 +462,7 @@ namespace Wox.ViewModel
                             NumResults = Results.Results.Count,
                             QueryLength = query.RawQuery.Length
                         };
-                        PowerLauncherTelemetry.Log.WriteEvent(queryEvent);
+                        PowerToysTelemetry.Log.WriteEvent(queryEvent);
 
                     }, currentCancellationToken);
                 }

@@ -1,4 +1,5 @@
 using Microsoft.PowerLauncher.Telemetry;
+using Microsoft.PowerToys.Telemetry;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -98,7 +99,7 @@ namespace PowerLauncher
 
                 bootTime.Stop();
 
-                PowerLauncherTelemetry.Log.WriteEvent(new BootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
+                PowerToysTelemetry.Log.WriteEvent(new BootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
 
                 //[Conditional("RELEASE")]
                 // check udpate every 5 hours

@@ -5,12 +5,12 @@
 using System.Diagnostics.Tracing;
 using PreviewHandlerCommon.Telemetry;
 
-namespace Microsoft.PowerLauncher.Telemetry
+namespace Microsoft.PowerToys.Telemetry
 {
     /// <summary>
-    /// Telemetry helper class for Svg renderer.
+    /// Telemetry helper class for PowerToys.
     /// </summary>
-    public class PowerLauncherTelemetry : TelemetryBase
+    public class PowerToysTelemetry : TelemetryBase
     {
 
         /// <summary>
@@ -19,9 +19,9 @@ namespace Microsoft.PowerLauncher.Telemetry
         private const string EventSourceName = "Microsoft.PowerToys";
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PowerLauncherTelemetry"/> class.
+        /// Initializes a new instance of the <see cref="PowerToysTelemetry"/> class.
         /// </summary>
-        public PowerLauncherTelemetry()
+        public PowerToysTelemetry()
             : base(EventSourceName)
         {
         }
@@ -29,7 +29,7 @@ namespace Microsoft.PowerLauncher.Telemetry
         /// <summary>
         /// Gets an instance of the <see cref="PowerLauncherTelemetry"/> class.
         /// </summary>
-        public static PowerLauncherTelemetry Log = new PowerLauncherTelemetry();
+        public static PowerToysTelemetry Log = new PowerToysTelemetry();
 
         /// <summary>
         /// Publishes ETW event when an action is triggered on 

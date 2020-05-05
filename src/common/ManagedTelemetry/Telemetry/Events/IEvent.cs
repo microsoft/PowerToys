@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.PowerLauncher.Telemetry
+namespace Microsoft.PowerToys.Telemetry
 {
     public interface IEvent
     {
