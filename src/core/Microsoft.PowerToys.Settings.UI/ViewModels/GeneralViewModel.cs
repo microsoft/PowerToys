@@ -10,6 +10,7 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.Views;
+using Windows.ApplicationModel.Resources;
 using Windows.System;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
@@ -23,6 +24,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public ButtonClickCommand CheckFoUpdatesEventHandler { get; set; }
 
         public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
+
+        private ResourceLoader loader = ResourceLoader.GetForCurrentView();
 
         public GeneralViewModel()
         {
@@ -115,11 +118,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (IsElevated)
                 {
-                    return "Always run as administrator";
+                    return loader.GetString("GeneralSettings_AlwaysRunAsAdminText_IsElevated");
                 }
                 else
                 {
-                    return "Always run as administrator (Restart as administrator to change this)";
+                    return loader.GetString("GeneralSettings_AlwaysRunAsAdminText_IsNotElevated");
                 }
             }
 
@@ -154,11 +157,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (!IsElevated)
                 {
-                    return "Running as user.";
+                    return loader.GetString("GeneralSettings_Running as Adminstrator_IsNotElevated");
                 }
                 else
                 {
-                    return "Running as Adminstrator.";
+                    return loader.GetString("GeneralSettings_RunningAsAdminText_IsElevated");
                 }
             }
 

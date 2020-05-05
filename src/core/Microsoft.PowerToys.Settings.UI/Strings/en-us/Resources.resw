@@ -539,4 +539,19 @@
   <data name="GeneralPage_ToggleSwitch_RunElevated.Header" xml:space="preserve">
     <value>Always run as administrator (Restart as administrator to change this)</value>
   </data>
+  <data name="GeneralSettings_AlwaysRunAsAdminText_IsElevated" xml:space="preserve">
+    <value>Always run as administrator</value>
+  </data>
+  <data name="GeneralSettings_AlwaysRunAsAdminText_IsNotElevated" xml:space="preserve">
+    <value>Always run as administrator (Restart as administrator to change this)</value>
+  </data>
+  <data name="GeneralSettings_Running as Adminstrator_IsNotElevated" xml:space="preserve">
+    <value>Running as user</value>
+  </data>
+  <data name="GeneralSettings_RunningAsAdminText_IsElevated" xml:space="preserve">
+    <value>Running as Adminstrator</value>
+  </data>
+  <data name="String1" xml:space="preserve">
+    <value />
+  </data>
 </root>
