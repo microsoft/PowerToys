@@ -8,8 +8,6 @@ namespace Microsoft.PowerToys.Settings.UI
 {
     public sealed partial class App : XamlApplication
     {
-        public bool IsElevated { get; set; }
-
         public App()
         {
             Initialize();
