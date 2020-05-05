@@ -29,7 +29,8 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                 // send IPC Message
                 shellPage.SetDefaultSndMessageCallback(msg =>
                 {
-                    Program.GetTwoWayIPCManager().Send(msg);
+                    //IPC Manager is null when launching runner directly
+                    Program.GetTwoWayIPCManager()?.Send(msg);
                 });
 
                 // send IPC Message
