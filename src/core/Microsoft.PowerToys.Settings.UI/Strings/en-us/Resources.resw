@@ -366,7 +366,7 @@
     <value>Enable PowerRename</value>
   </data>
   <data name="RadioButtons_Name_Theme.Header" xml:space="preserve">
-    <value>Theme</value>
+    <value>Choose Settings color</value>
   </data>
   <data name="PowerRename_Toggle_EnableOnContextMenu.Header" xml:space="preserve">
     <value>Show icon on context menu</value>
@@ -523,5 +523,35 @@
   </data>
   <data name="On.Content" xml:space="preserve">
     <value>On</value>
+  </data>
+  <data name="GeneralPage_ToggleSwitch_AlwaysRunElevated.Header" xml:space="preserve">
+    <value>Always Run as Admin</value>
+  </data>
+  <data name="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link.Content" xml:space="preserve">
+    <value>Learn about Admin mode</value>
+  </data>
+  <data name="GeneralPage_ToggleSwitch_AutoDownloadUpdates.Header" xml:space="preserve">
+    <value>Download updates automatically</value>
+  </data>
+  <data name="GeneralPage_ToggleSwitch_RunningAsAdminNote.Text" xml:space="preserve">
+    <value>Currently running as administrator</value>
+  </data>
+  <data name="GeneralPage_ToggleSwitch_RunElevated.Header" xml:space="preserve">
+    <value>Always run as administrator (Restart as administrator to change this)</value>
+  </data>
+  <data name="GeneralSettings_AlwaysRunAsAdminText_IsElevated" xml:space="preserve">
+    <value>Always run as administrator</value>
+  </data>
+  <data name="GeneralSettings_AlwaysRunAsAdminText_IsNotElevated" xml:space="preserve">
+    <value>Always run as administrator (Restart as administrator to change this)</value>
+  </data>
+  <data name="GeneralSettings_Running as Adminstrator_IsNotElevated" xml:space="preserve">
+    <value>Running as user</value>
+  </data>
+  <data name="GeneralSettings_RunningAsAdminText_IsElevated" xml:space="preserve">
+    <value>Running as Adminstrator</value>
+  </data>
+  <data name="String1" xml:space="preserve">
+    <value />
   </data>
 </root>

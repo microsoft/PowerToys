@@ -119,6 +119,8 @@
     <SDKReference Include="TestPlatform.Universal, Version=$(UnitTestPlatformVersion)" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ViewModelTests\General.cs" />
+    <Compile Include="ModelsTests\HelperTest.cs" />
     <Compile Include="ViewModelTests\ImageResizer.cs" />
     <Compile Include="ModelsTests\BasePTModuleSettingsTest.cs" />
     <Compile Include="ModelsTests\BasePTSettingsTest.cs" />
@@ -128,6 +130,7 @@
       <DependentUpon>UnitTestApp.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModelTests\PowerRename.cs" />
+    <Compile Include="ViewModelTests\PowerPreview.cs" />
     <Compile Include="ViewModelTests\ShortcutGuide.cs" />
     <Compile Include="ViewModelTests\PowerLauncherViewModelTest.cs" />
   </ItemGroup>

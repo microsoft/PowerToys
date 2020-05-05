@@ -5,6 +5,7 @@
 using System;
 using System.Windows;
 using interop;
+using Windows.UI.Popups;
 
 namespace Microsoft.PowerToys.Settings.UI.Runner
 {
@@ -12,6 +13,8 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
     {
         // Create an instance of the  IPC wrapper.
         private static TwoWayPipeMessageIPCManaged ipcmanager;
+
+        public static bool IsElevated { get; set; }
 
         [STAThread]
         public static void Main(string[] args)
@@ -21,8 +24,17 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                 App app = new App();
                 app.InitializeComponent();
 
-                if (args.Length > 1)
+                if (args.Length > 3)
                 {
+                    if (args[4] == "true")
+                    {
+                        IsElevated = true;
+                    }
+                    else
+                    {
+                        IsElevated = false;
+                    }
+
                     ipcmanager = new TwoWayPipeMessageIPCManaged(args[1], args[0], null);
                     ipcmanager.Start();
                     app.Run();

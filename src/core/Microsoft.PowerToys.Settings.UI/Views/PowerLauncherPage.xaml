@@ -54,7 +54,7 @@
             <TextBlock x:Uid="PowerLauncher_SearchResults"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <ComboBox x:Uid="PowerLauncher_SearchResultPreference"
+            <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
                       MinWidth="320"
                       Margin="{StaticResource SmallTopMargin}"
                       ItemsSource="{x:Bind searchResultPreferencesOptions}"
@@ -72,7 +72,7 @@
                       SelectedValuePath="Item2"
                       DisplayMemberPath="Item1"
                       IsEnabled="False"
-                      />
+                      />-->
 
             <muxc:NumberBox x:Uid="PowerLauncher_MaximumNumberOfResults" 
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.MaximumNumberOfResults}"
@@ -95,7 +95,7 @@
                                           HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}"
                                           IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
                                         />
-            <Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenFileLocation"
+            <!--<Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenFileLocation"
                                           Width="320"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
@@ -115,19 +115,19 @@
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{x:Bind Path=ViewModel.OpenConsole, Mode=TwoWay}"
                                           IsEnabled="False"
-                                        />
+                                        />-->
 
-            <CheckBox x:Uid="PowerLauncher_OverrideWinRKey" 
+            <!--<CheckBox x:Uid="PowerLauncher_OverrideWinRKey" 
                       Margin="{StaticResource SmallTopMargin}"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideWinRKey}"
-                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-                      />
+                      IsChecked="False"
+                      IsEnabled="False"
+                      />-->
 
-            <CheckBox x:Uid="PowerLauncher_OverrideWinSKey"
+            <!--<CheckBox x:Uid="PowerLauncher_OverrideWinSKey"
                       Margin="{StaticResource SmallTopMargin}"
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideWinSKey}"
                       IsEnabled="False"
-                      />
+                      />-->
         </StackPanel>
         <StackPanel
             x:Name="SidePanel"

@@ -1,10 +1,11 @@
 #pragma once
 
-#include <common\keyboard_layout.h>
-#include <common\two_way_pipe_message_ipc.h>
 #include <msclr\marshal.h>
 #include <msclr\marshal_cppstd.h>
 #include <functional>
+#include "..\keyboard_layout.h"
+#include "..\two_way_pipe_message_ipc.h"
+#include "..\common.h"
 
 using namespace System;
 using namespace System::Runtime::InteropServices;
@@ -102,5 +103,15 @@ public
         {
             _callback(gcnew String(msg.c_str()));
         }
+    };
+
+    public
+    ref class CommonManaged
+    {
+    public:
+        static String^ GetProductVersion() 
+        {
+            return gcnew String(get_product_version().c_str());
+        } 
     };
 }

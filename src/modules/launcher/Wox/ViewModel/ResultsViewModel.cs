@@ -165,7 +165,8 @@ namespace Wox.ViewModel
 
         public void SelectNextTabItem()
         {
-            if(!SelectedItem.SelectNextContextButton())
+            //Do nothing if there is no selected item or we've selected the next context button
+            if(!SelectedItem?.SelectNextContextButton() ?? true)
             {
                 SelectNextResult();
             }
@@ -173,7 +174,8 @@ namespace Wox.ViewModel
 
         public void SelectPrevTabItem()
         {
-            if (!SelectedItem.SelectPrevContextButton())
+            //Do nothing if there is no selected item or we've selected the previous context button
+            if (!SelectedItem?.SelectPrevContextButton() ?? true)
             {
                 //Tabbing backwards should highlight the last item of the previous row
                 SelectPrevResult();

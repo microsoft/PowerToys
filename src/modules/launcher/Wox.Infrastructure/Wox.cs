@@ -8,6 +8,7 @@ namespace Wox.Infrastructure
     public static class Constant
     {
         public const string ExeFileName = "PowerLauncher";
+        public const string ModuleLocation = "Microsoft\\PowerToys\\Run";
         public const string Plugins = "Plugins";
 
         private static readonly Assembly Assembly = Assembly.GetExecutingAssembly();
@@ -26,7 +27,7 @@ namespace Wox.Infrastructure
             }
             else
             {
-                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ExeFileName);
+                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ModuleLocation);
             }
         }
 
