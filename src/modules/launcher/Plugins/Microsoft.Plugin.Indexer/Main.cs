@@ -12,6 +12,7 @@ using Microsoft.Plugin.Indexer.SearchHelper;
 using Microsoft.Search.Interop;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using System.Windows.Controls;
+using Wox.Infrastructure.Logger;
 
 namespace Microsoft.Plugin.Indexer
 {
@@ -104,12 +105,8 @@ namespace Microsoft.Plugin.Indexer
                     //Not showing this exception to the users
                 }
                 catch (Exception ex)
-                {
-                    results.Add(new Result
-                    {
-                        Title = ex.ToString(),
-                        IcoPath = "Images\\WindowsIndexerImg.bmp"
-                    });
+                {              
+                    Log.Info(ex.ToString());
                 }
             }
 
