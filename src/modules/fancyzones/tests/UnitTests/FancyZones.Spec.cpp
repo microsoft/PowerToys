@@ -107,6 +107,7 @@ namespace FancyZonesUnitTests
                     const auto expected = RGB(171, 175, 238);
                     const Settings settings{
                         .shiftDrag = true,
+                        .mouseSwitch = true,
                         .displayChange_moveWindows = true,
                         .virtualDesktopChange_moveWindows = true,
                         .zoneSetChange_flashZones = false,
@@ -136,6 +137,7 @@ namespace FancyZonesUnitTests
                     const auto expected = RGB(171, 175, 238);
                     const Settings settings{
                         .shiftDrag = true,
+                        .mouseSwitch = true,
                         .displayChange_moveWindows = true,
                         .virtualDesktopChange_moveWindows = true,
                         .zoneSetChange_flashZones = false,
@@ -165,6 +167,7 @@ namespace FancyZonesUnitTests
                     const auto expected = RGB(171, 175, 238);
                     const Settings settings{
                         .shiftDrag = true,
+                        .mouseSwitch = true,
                         .displayChange_moveWindows = true,
                         .virtualDesktopChange_moveWindows = true,
                         .zoneSetChange_flashZones = false,
@@ -196,6 +199,7 @@ namespace FancyZonesUnitTests
                     const auto expected = 88;
                     const Settings settings{
                         .shiftDrag = true,
+                        .mouseSwitch = true,
                         .displayChange_moveWindows = true,
                         .virtualDesktopChange_moveWindows = true,
                         .zoneSetChange_flashZones = false,
@@ -227,6 +231,7 @@ namespace FancyZonesUnitTests
                     const auto expected = true;
                     const Settings settings{
                         .shiftDrag = true,
+                        .mouseSwitch = true,
                         .displayChange_moveWindows = true,
                         .virtualDesktopChange_moveWindows = true,
                         .zoneSetChange_flashZones = false,

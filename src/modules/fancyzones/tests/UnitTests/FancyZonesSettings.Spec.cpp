@@ -428,6 +428,7 @@ namespace FancyZonesUnitTests
                 HINSTANCE hInst = (HINSTANCE)GetModuleHandleW(nullptr);
                 const Settings expected{
                     .shiftDrag = false,
+                    .mouseSwitch = false,
                     .displayChange_moveWindows = true,
                     .virtualDesktopChange_moveWindows = true,
                     .zoneSetChange_flashZones = true,
@@ -702,6 +703,7 @@ namespace FancyZonesUnitTests
 
                     const Settings expected{
                         .shiftDrag = true,
+                        .mouseSwitch = true,
                         .displayChange_moveWindows = true,
                         .virtualDesktopChange_moveWindows = true,
                         .zoneSetChange_flashZones = false,
