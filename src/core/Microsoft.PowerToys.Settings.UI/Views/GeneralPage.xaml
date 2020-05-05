@@ -99,7 +99,7 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <TextBlock Text="Version 0.15.2"
+            <TextBlock Text="{x:Bind ViewModel.PowerToysVersion }"
                        FontWeight="Bold"
                        Margin="{StaticResource SmallTopMargin}" />
 

@@ -17,7 +17,7 @@ public:
 
     // Constructor
     XamlBridge(HWND parent) :
-        parentWindow(parent), lastFocusRequestId(winrt::guid())
+        parentWindow(parent), lastFocusRequestId(winrt::guid()), winxamlmanager(nullptr)
     {
     }
 
@@ -36,6 +36,9 @@ private:
 
     // Stores the handle of the parent native window
     HWND parentWindow = nullptr;
+
+    // Window xaml manager for UI thread.
+    WindowsXamlManager winxamlmanager;
 
     // Stores the GUID of the last focus request
     winrt::guid lastFocusRequestId;
