@@ -312,11 +312,11 @@ namespace Wox.ViewModel
                 _visibility = value;
                 if(value == Visibility.Visible)
                 {
-                    PowerToysTelemetry.Log.WriteEvent(new ShowEvent());
+                    PowerToysTelemetry.Log.WriteEvent(new LauncherShowEvent());
                 }
                 else
                 {
-                    PowerToysTelemetry.Log.WriteEvent(new HideEvent());
+                    PowerToysTelemetry.Log.WriteEvent(new LauncherHideEvent());
                 }
             
             }
@@ -456,7 +456,7 @@ namespace Wox.ViewModel
                         }
 
                         queryTimer.Stop();
-                        var queryEvent = new QueryEvent()
+                        var queryEvent = new LauncherQueryEvent()
                         {
                             QueryTimeMs = queryTimer.ElapsedMilliseconds,
                             NumResults = Results.Results.Count,

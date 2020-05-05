@@ -67,7 +67,7 @@ namespace PowerLauncher
             _firstDeleteTimer.Stop();
             if (_deletePressed)
             {
-                PowerToysTelemetry.Log.WriteEvent(new FirstDeleteEvent());
+                PowerToysTelemetry.Log.WriteEvent(new LauncherFirstDeleteEvent());
             }
 
         }

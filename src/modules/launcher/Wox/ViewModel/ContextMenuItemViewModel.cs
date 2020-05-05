@@ -18,12 +18,12 @@ namespace Wox.ViewModel
         public string AcceleratorModifiers { get; set; }
         public bool IsAcceleratorKeyEnabled { get; set; }
 
-        public void SendTelemetryEvent(ResultActionEvent.TriggerType triggerType)
+        public void SendTelemetryEvent(LauncherResultActionEvent.TriggerType triggerType)
         {
-            var eventData = new ResultActionEvent()
+            var eventData = new LauncherResultActionEvent()
             {
                 PluginName = PluginName,
-                Trigger = triggerType,
+                Trigger = triggerType.ToString(),
                 ActionName = Title
 
             };

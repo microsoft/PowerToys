@@ -1,10 +1,9 @@
 ﻿using System.Diagnostics.Tracing;
-using Microsoft.PowerToys.Telemetry;
 
 namespace Microsoft.PowerToys.Settings.Telemetry
 {
     [EventData]
-    public class EnabledModuleEvent : IEvent
+    public class SettingsEnabledModuleEvent
     {
         public string EventName { get; } = "Settings_EnableModule";
 

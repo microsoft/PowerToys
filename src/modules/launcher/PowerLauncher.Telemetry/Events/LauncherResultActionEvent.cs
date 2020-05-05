@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.Tracing;
-using System.Text;
-using Microsoft.PowerToys.Telemetry;
+﻿using System.Diagnostics.Tracing;
 
 namespace Microsoft.PowerLauncher.Telemetry
 {
@@ -10,9 +6,8 @@ namespace Microsoft.PowerLauncher.Telemetry
     /// ETW event for when a result is actioned.
     /// </summary>
     [EventData]
-    public class ResultActionEvent : IEvent
+    public class LauncherResultActionEvent 
     {
-        public string EventName { get; } = "PowerLauncher_Result_ActionEvent";
 
         public enum TriggerType
         {
@@ -20,7 +15,7 @@ namespace Microsoft.PowerLauncher.Telemetry
             KeyboardShortcut
         }
 
-        public TriggerType Trigger { get; set; }
+        public string Trigger { get; set; }
         public string PluginName { get; set; }
         public string ActionName { get; set; }
     }
