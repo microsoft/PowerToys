@@ -152,13 +152,13 @@
                 Text="Attribution"
                 Style="{StaticResource SettingsGroupTitleStyle}" />
 
-            <HyperlinkButton 
-                Content="Wox" 
-                NavigateUri="https://github.com/Wox-launcher/Wox/" />
+            <HyperlinkButton NavigateUri="https://github.com/Wox-launcher/Wox/">
+                <TextBlock Text="Wox"/>
+            </HyperlinkButton>
 
-            <HyperlinkButton 
-                Content="Beta Tadele's Window Walker" 
-                NavigateUri="https://github.com/betsegaw/windowwalker/" />
+            <HyperlinkButton NavigateUri="https://github.com/betsegaw/windowwalker/">
+                <TextBlock Text="Beta Tadele's Window Walker" />
+            </HyperlinkButton>
         </StackPanel>
     </Grid>
 </Page>

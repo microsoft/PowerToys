@@ -289,9 +289,9 @@
                 Style="{StaticResource SettingsGroupTitleStyle}" />
 
             <HyperlinkButton 
-                Content="Brice Lambson" 
-                NavigateUri="https://github.com/bricelam/ImageResizer/" />
-
+                NavigateUri="https://github.com/bricelam/ImageResizer/">
+                <TextBlock Text="Brice Lambson's SmartRenamer" TextWrapping="Wrap" />
+            </HyperlinkButton>
         </StackPanel>
 
     </Grid>

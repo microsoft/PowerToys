@@ -114,8 +114,9 @@
                 Style="{StaticResource SettingsGroupTitleStyle}" />
 
             <HyperlinkButton 
-                Content="Chris Davis's SmartRenamer" 
-                NavigateUri="https://github.com/chrdavis/SmartRename" />
+                NavigateUri="https://github.com/chrdavis/SmartRename">
+                <TextBlock Text="Chris Davis's SmartRenamer" TextWrapping="Wrap" />
+            </HyperlinkButton>
         </StackPanel>
     </Grid>
 </Page>
