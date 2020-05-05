@@ -31,6 +31,16 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                 {
                     Program.GetTwoWayIPCManager().Send(msg);
                 });
+
+                // send IPC Message
+                shellPage.SetRestartAdminSndMessageCallback(msg =>
+                {
+                    Program.GetTwoWayIPCManager().Send(msg);
+                    System.Windows.Application.Current.Shutdown(); // close application
+                });
+
+                shellPage.SetElevationStatus(Program.IsElevated);
+                shellPage.Refresh();
             }
         }
     }

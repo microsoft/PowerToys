@@ -73,8 +73,13 @@
                     Command = "{Binding RestartElevatedButtonEventHandler, Source={StaticResource eventViewModel}}"
                     IsEnabled="{Binding Mode=TwoWay, Path=IsAdminButtonEnabled, Source={StaticResource eventViewModel}}"
                     />
-            
-            <muxc:RadioButtons x:Uid="RadioButtons_Name_Theme" Margin="{StaticResource MediumTopMargin}">
+
+
+            <TextBlock x:Uid="Appearancce_GroupSettings"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Margin="{StaticResource MediumTopMargin}"/>
+
+            <muxc:RadioButtons x:Uid="RadioButtons_Name_Theme" Margin="{StaticResource SmallTopMargin}">
                 <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark"
                              Content="Dark"
                              IsChecked="{ Binding Mode=TwoWay, Path=IsDarkThemeRadioButtonChecked, Source={StaticResource eventViewModel}}"/>

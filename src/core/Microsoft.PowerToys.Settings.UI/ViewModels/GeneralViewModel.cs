@@ -95,7 +95,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _startup = GeneralSettingsConfigs.Startup;
             _autoDownloadUpdates = GeneralSettingsConfigs.AutoDownloadUpdates;
-            _isElevated = GeneralSettingsConfigs.IsElevated;
+            _isElevated = ShellPage.IsElevated;
             _runElevated = GeneralSettingsConfigs.RunElevated;
         }
 
@@ -362,14 +362,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
             settings.CustomActionName = "restart_elevation";
-            IsElevated = true;
 
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
-            if (ShellPage.DefaultSndMSGCallback != null)
+            if (ShellPage.SndRestartAsAdminMsgCallback != null)
             {
-                ShellPage.DefaultSndMSGCallback(customaction.ToString());
+                ShellPage.SndRestartAsAdminMsgCallback(customaction.ToString());
             }
         }
     }
