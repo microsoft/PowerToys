@@ -5,7 +5,7 @@
 
 STRINGTABLE
 BEGIN
-    IDS_SETTINGS_DESCRIPTION                                     L"Customize your experience by remapping keys or creating new shortcuts!"
+    IDS_SETTINGS_DESCRIPTION                                     L"This feature requires Windows 10, May 2019 Update"
     IDS_KEYBOARDMANAGER                                         L"Keyboard Manager" 
 END
 
