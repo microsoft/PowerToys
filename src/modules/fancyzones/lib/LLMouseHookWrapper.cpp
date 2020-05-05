@@ -50,7 +50,6 @@ std::vector<LLMouseEvent> LLMouseHookWrapper::hookList = {};
 
 LRESULT CALLBACK LLMouseHookWrapper::llMouseHookCallback(int nCode, WPARAM wParam, LPARAM lParam)
 {
-    SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS);
     if (nCode == HC_ACTION)
     {
         for (LLMouseEvent hook : hookList)
@@ -60,7 +59,6 @@ LRESULT CALLBACK LLMouseHookWrapper::llMouseHookCallback(int nCode, WPARAM wPara
                 hook.callback();
             }
         }
-        return true;
     }
     return CallNextHookEx(hookProc, nCode, wParam, lParam);
 }
