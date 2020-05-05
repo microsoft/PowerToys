@@ -350,15 +350,27 @@ LExit:
     g_settings_process_id = 0;
 }
 
+#define MAX_TITLE_LENGTH 100
 void bring_settings_to_front()
 {
     auto callback = [](HWND hwnd, LPARAM data) -> BOOL {
         DWORD processId;
         if (GetWindowThreadProcessId(hwnd, &processId) && processId == g_settings_process_id)
         {
-            ShowWindow(hwnd, SW_NORMAL);
-            SetForegroundWindow(hwnd);
-            return FALSE;
+            std::wstring windowTitle = L"PowerToys Settings";
+
+            WCHAR title[MAX_TITLE_LENGTH];
+            int len = GetWindowTextW(hwnd, title, MAX_TITLE_LENGTH);
+            if (len <= 0)
+            {
+                return TRUE;
+            }
+            if (wcsncmp(title, windowTitle.c_str(), len) == 0)
+            {
+                ShowWindow(hwnd, SW_RESTORE);
+                SetForegroundWindow(hwnd);
+                return FALSE;
+            }
         }
 
         return TRUE;
