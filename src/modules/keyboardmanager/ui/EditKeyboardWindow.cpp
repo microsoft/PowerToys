@@ -3,6 +3,7 @@
 #include "SingleKeyRemapControl.h"
 #include "KeyDropDownControl.h"
 #include "XamlBridge.h"
+#include <keyboardmanager/common/trace.h>
 
 LRESULT CALLBACK EditKeyboardWindowProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -215,7 +216,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
         // Clear existing Key Remaps
         keyboardManagerState.ClearSingleKeyRemaps();
-
+        DWORD successfulRemapCount = 0;
         for (int i = 0; i < SingleKeyRemapControl::singleKeyRemapBuffer.size(); i++)
         {
             DWORD originalKey = SingleKeyRemapControl::singleKeyRemapBuffer[i][0];
@@ -257,6 +258,10 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
                     isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
                     // Tooltip is already shown for this row
                 }
+                else
+                {
+                    successfulRemapCount += 1;
+                }
             }
             else
             {
@@ -278,6 +283,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         {
             isSuccess = KeyboardManagerHelper::ErrorType::SaveFailed;
         }
+        Trace::KeyRemapCount(successfulRemapCount);
         settingsMessage.Text(KeyboardManagerHelper::GetErrorMessage(isSuccess));
     });
 
