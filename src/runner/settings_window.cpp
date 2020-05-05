@@ -197,7 +197,7 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
                                           nullptr,
                                           nullptr,
                                           FALSE,
-                                          EXTENDED_STARTUPINFO_PRESENT,
+                                          0,
                                           nullptr,
                                           nullptr,
                                           &siex.StartupInfo,
@@ -207,16 +207,10 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
 }
 
 DWORD g_settings_process_id = 0;
-PROCESS_INFORMATION process_info = { 0 };
-
-std::wstring executable_args = L"\"";
-std::wstring powertoys_pipe_name(L"\\\\.\\pipe\\powertoys_runner_");
-std::wstring settings_pipe_name(L"\\\\.\\pipe\\powertoys_settings_");
-
-std::wstring executable_path = get_module_folderpath();
 
 void run_settings_window()
 {
+    PROCESS_INFORMATION process_info = { 0 };
     HANDLE hToken = nullptr;
 
     // Arguments for calling the settings executable:
@@ -227,9 +221,12 @@ void run_settings_window()
     // settings_theme: pass "dark" to start the settings window in dark mode
 
     // Arg 1: executable path.
+    std::wstring executable_path = get_module_folderpath();
     executable_path.append(L"\\SettingsUIRunner\\Microsoft.PowerToys.Settings.UI.Runner.exe");
 
     // Arg 2: pipe server. Generate unique names for the pipes, if getting a UUID is possible.
+    std::wstring powertoys_pipe_name(L"\\\\.\\pipe\\powertoys_runner_");
+    std::wstring settings_pipe_name(L"\\\\.\\pipe\\powertoys_settings_");
     UUID temp_uuid;
     UuidCreate(&temp_uuid);
     wchar_t* uuid_chars;
@@ -253,6 +250,7 @@ void run_settings_window()
         settings_theme = L"dark";
     }
 
+    std::wstring executable_args = L"\"";
     executable_args.append(executable_path);
     executable_args.append(L"\" ");
     executable_args.append(powertoys_pipe_name);
@@ -264,7 +262,6 @@ void run_settings_window()
     executable_args.append(settings_theme);
 
     BOOL process_created = false;
-
     if (is_process_elevated())
     {
         process_created = run_settings_non_elevated(executable_path.c_str(), executable_args.data(), &process_info);
@@ -334,15 +331,26 @@ LExit:
     g_settings_process_id = 0;
 }
 
+#define MAX_TITLE_LENGTH 100
 void bring_settings_to_front()
 {
     auto callback = [](HWND hwnd, LPARAM data) -> BOOL {
         DWORD processId;
         if (GetWindowThreadProcessId(hwnd, &processId) && processId == g_settings_process_id)
         {
-            ShowWindow(hwnd, SW_NORMAL);
-            SetForegroundWindow(hwnd);
-            return FALSE;
+            WINDOWPLACEMENT wndPlacement;
+            WCHAR title[MAX_TITLE_LENGTH];
+            int len = GetWindowTextW(hwnd, title, MAX_TITLE_LENGTH);
+            if (len <= 0)
+            {
+                return TRUE;
+            }
+            if (wcsncmp(title, L"PowerToys Settings", len) == 0)
+            {
+                ShowWindow(hwnd, SW_RESTORE);
+                SetForegroundWindow(hwnd);
+                return FALSE;
+            }
         }
 
         return TRUE;
@@ -355,8 +363,7 @@ void open_settings_window()
 {
     if (g_settings_process_id != 0)
     {
-        //bring_settings_to_front();
-        run_settings_non_elevated(executable_path.c_str(), executable_args.data(), &process_info);
+        bring_settings_to_front();
     }
     else
     {
