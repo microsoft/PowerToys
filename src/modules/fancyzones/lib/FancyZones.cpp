@@ -568,7 +568,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         else if (message == WM_PRIV_VD_UPDATE)
         {
             std::vector<GUID> ids{};
-            if (VirtualDesktopUtils::GetVirtualDekstopIds(ids))
+            if (VirtualDesktopUtils::GetVirtualDesktopIds(ids))
             {
                 RegisterVirtualDesktopUpdates(ids);
             }
@@ -597,6 +597,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
     return 0;
 }
 
+
 void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 {
     if (changeType == DisplayChangeType::VirtualDesktop ||
@@ -605,13 +606,15 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
         GUID currentVirtualDesktopId{};
         if (VirtualDesktopUtils::GetCurrentVirtualDesktopId(&currentVirtualDesktopId))
         {
-            std::unique_lock writeLock(m_lock);
             m_currentVirtualDesktopId = currentVirtualDesktopId;
-            wil::unique_cotaskmem_string id;
-            if (changeType == DisplayChangeType::Initialization &&
-                SUCCEEDED_LOG(StringFromCLSID(m_currentVirtualDesktopId, &id)))
+        }
+        if (changeType == DisplayChangeType::Initialization)
+        {
+            std::vector<std::wstring> ids{};
+            if (VirtualDesktopUtils::GetVirtualDesktopIds(ids) && !ids.empty())
             {
-                JSONHelpers::FancyZonesDataInstance().UpdatePrimaryDesktopData(id.get());
+                JSONHelpers::FancyZonesDataInstance().UpdatePrimaryDesktopData(ids[0]);
+                JSONHelpers::FancyZonesDataInstance().RemoveDeletedDesktops(ids);
             }
         }
     }
