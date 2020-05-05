@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using Wox.Infrastructure;
@@ -254,6 +255,7 @@ namespace Wox.Plugin.Folder
             var firstResult = "Open " + search;
 
             var folderName = search.TrimEnd('\\').Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.None).Last();
+            var sanitizedPath = Regex.Replace(search, @"[\/\\]+", "\\");
 
             return new Result
             {
@@ -264,7 +266,7 @@ namespace Wox.Plugin.Folder
                 Score = 500,
                 Action = c =>
                 {
-                    Process.Start(_fileExplorerProgramName, search);
+                    Process.Start(_fileExplorerProgramName, sanitizedPath);
                     return true;
                 }
             };
