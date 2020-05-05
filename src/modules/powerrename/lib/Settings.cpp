@@ -6,10 +6,12 @@
 #include <filesystem>
 #include <commctrl.h>
 #include <algorithm>
+#include <fstream>
 
 namespace
 {
     const wchar_t c_powerRenameDataFilePath[] = L"\\power-rename-settings.json";
+    const wchar_t c_powerRenameUIFlagsFilePath[] = L"\\power-rename-ui-flags";
     const wchar_t c_searchMRUListFilePath[] = L"\\search-mru.json";
     const wchar_t c_replaceMRUListFilePath[] = L"\\replace-mru.json";
 
@@ -395,6 +397,7 @@ CSettings::CSettings()
 {
     std::wstring result = PTSettingsHelper::get_module_save_folder_location(L"PowerRename");
     jsonFilePath = result + std::wstring(c_powerRenameDataFilePath);
+    UIFlagsFilePath = result + std::wstring(c_powerRenameUIFlagsFilePath);
     Load();
 }
 
@@ -408,11 +411,11 @@ void CSettings::Save()
     jsonData.SetNamedValue(c_persistState,            json::value(settings.persistState));
     jsonData.SetNamedValue(c_mruEnabled,              json::value(settings.MRUEnabled));
     jsonData.SetNamedValue(c_maxMRUSize,              json::value(settings.maxMRUSize));
-    jsonData.SetNamedValue(c_flags,                   json::value(settings.flags));
     jsonData.SetNamedValue(c_searchText,              json::value(settings.searchText));
     jsonData.SetNamedValue(c_replaceText,             json::value(settings.replaceText));
 
     json::to_file(jsonFilePath, jsonData);
+    GetSystemTimeAsFileTime(&lastLoadedTime);
 }
 
 void CSettings::Load()
@@ -422,12 +425,13 @@ void CSettings::Load()
         MigrateFromRegistry();
 
         Save();
+        WriteFlags();
     }
     else
     {
         ParseJson();
+        ReadFlags();
     }
-    GetSystemTimeAsFileTime(&lastLoadedTime);
 }
 
 void CSettings::Reload()
@@ -486,10 +490,6 @@ void CSettings::ParseJson()
             {
                 settings.maxMRUSize = (unsigned int)jsonSettings.GetNamedNumber(c_maxMRUSize);
             }
-            if (json::has(jsonSettings, c_flags, json::JsonValueType::Number))
-            {
-                settings.flags = (unsigned int)jsonSettings.GetNamedNumber(c_flags);
-            }
             if (json::has(jsonSettings, c_searchText, json::JsonValueType::String))
             {
                 settings.searchText = jsonSettings.GetNamedString(c_searchText);
@@ -500,6 +500,25 @@ void CSettings::ParseJson()
             }
         }
         catch (const winrt::hresult_error&) { }
+    }
+    GetSystemTimeAsFileTime(&lastLoadedTime);
+}
+
+void CSettings::ReadFlags()
+{
+    std::ifstream file(UIFlagsFilePath, std::ios::binary);
+    if (file.is_open())
+    {
+        file >> settings.flags;
+    }
+}
+
+void CSettings::WriteFlags()
+{
+    std::ofstream file(UIFlagsFilePath, std::ios::binary);
+    if (file.is_open())
+    {
+        file << settings.flags;
     }
 }
 
