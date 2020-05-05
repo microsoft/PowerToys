@@ -97,7 +97,7 @@ namespace Microsoft.Plugin.Indexer
 
         public void LogException(string message, Exception e)
         {
-            Log.Exception($"|Wox.Plugin.Folder.ContextMenu|{message}", e);
+            Log.Exception($"|Microsoft.Plugin.Folder.ContextMenu|{message}", e);
         }
     }
 

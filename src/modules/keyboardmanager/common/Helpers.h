@@ -37,6 +37,14 @@ namespace KeyboardManagerHelper
         ShortcutNotMoreThanOneActionKey
     };
 
+    // Enum type to store possible decision for input in the low level hook
+    enum class KeyboardHookDecision
+    {
+        ContinueExec,
+        Suppress,
+        SkipHook
+    };
+
     // Function to split a wstring based on a delimiter and return a vector of split strings
     std::vector<std::wstring> splitwstring(const std::wstring& input, wchar_t delimiter);
 

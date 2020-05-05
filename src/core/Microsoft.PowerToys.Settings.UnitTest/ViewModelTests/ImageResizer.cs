@@ -38,6 +38,11 @@ namespace ViewModelTests
             {
                 DeleteFolder(generalSettings_file_name);
             }
+
+            if (SettingsUtils.SettingsFolderExists(Module))
+            {
+                DeleteFolder(Module);
+            }
         }
 
         public void DeleteFolder(string powertoy)

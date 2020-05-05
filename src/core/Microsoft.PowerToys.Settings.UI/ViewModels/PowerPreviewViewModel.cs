@@ -27,14 +27,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
             }
 
-            this._svgRenderIsEnabled = Settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.Value;
-            this._mdRenderIsEnabled = Settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.Value;
+            this._svgRenderIsEnabled = Settings.properties.EnableSvg.Value;
+            this._mdRenderIsEnabled = Settings.properties.EnableMd.Value;
         }
 
         private bool _svgRenderIsEnabled = false;
         private bool _mdRenderIsEnabled = false;
 
-        public bool SVGRenderIsEnebled
+        public bool SVGRenderIsEnabled
         {
             get
             {
@@ -46,13 +46,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _svgRenderIsEnabled)
                 {
                     _svgRenderIsEnabled = value;
-                    Settings.properties.IDS_PREVPANE_SVG_BOOL_TOGGLE_CONTROLL.Value = value;
+                    Settings.properties.EnableSvg.Value = value;
                     RaisePropertyChanged();
                 }
             }
         }
 
-        public bool MDRenderIsEnebled
+        public bool MDRenderIsEnabled
         {
             get
             {
@@ -64,7 +64,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _mdRenderIsEnabled)
                 {
                     _mdRenderIsEnabled = value;
-                    Settings.properties.PREVPANE_MD_BOOL_TOGGLE_CONTROLL_ID.Value = value;
+                    Settings.properties.EnableMd.Value = value;
                     RaisePropertyChanged();
                 }
             }
