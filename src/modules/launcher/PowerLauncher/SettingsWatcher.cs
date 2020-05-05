@@ -27,7 +27,7 @@ namespace PowerLauncher
             // Set up watcher
             try
             {
-                _watcher = Helper.GetFileWatcher("Launcher", "settings.json", OverloadSettings);
+                _watcher = Helper.GetFileWatcher(PowerLauncherSettings.POWERTOYNAME, "settings.json", OverloadSettings);
             }
             catch (Exception e)
             {
@@ -47,7 +47,7 @@ namespace PowerLauncher
                 retry = false;
                 try
                 {
-                    var overloadSettings = SettingsUtils.GetSettings<PowerLauncherSettings>("Launcher");
+                    var overloadSettings = SettingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.POWERTOYNAME);
 
                     var openPowerlauncher = ConvertHotkey(overloadSettings.properties.open_powerlauncher);
                     if (_settings.Hotkey != openPowerlauncher)

@@ -14,6 +14,7 @@
 #include "restart_elevated.h"
 
 #include <common/json.h>
+#include <common\settings_helpers.cpp>
 
 #define BUFSIZE 1024
 
@@ -293,6 +294,22 @@ void run_settings_window()
         settings_theme = L"dark";
     }
 
+    // Arg 4: settings theme.
+    GeneralSettings save_settings = get_general_settings();
+
+    bool isElevated{ get_general_settings().isElevated };
+    std::wstring settings_elevatedStatus;
+    settings_elevatedStatus = isElevated;
+
+    if (isElevated)
+    {
+        settings_elevatedStatus = L"true";
+    }
+    else
+    {
+        settings_elevatedStatus = L"false";
+    }
+
     std::wstring executable_args = L"\"";
     executable_args.append(executable_path);
     executable_args.append(L"\" ");
@@ -303,6 +320,8 @@ void run_settings_window()
     executable_args.append(std::to_wstring(powertoys_pid));
     executable_args.append(L" ");
     executable_args.append(settings_theme);
+    executable_args.append(L" ");
+    executable_args.append(settings_elevatedStatus);
 
     BOOL process_created = false;
     if (is_process_elevated())
@@ -374,15 +393,27 @@ LExit:
     g_settings_process_id = 0;
 }
 
+#define MAX_TITLE_LENGTH 100
 void bring_settings_to_front()
 {
     auto callback = [](HWND hwnd, LPARAM data) -> BOOL {
         DWORD processId;
         if (GetWindowThreadProcessId(hwnd, &processId) && processId == g_settings_process_id)
         {
-            ShowWindow(hwnd, SW_NORMAL);
-            SetForegroundWindow(hwnd);
-            return FALSE;
+            std::wstring windowTitle = L"PowerToys Settings";
+
+            WCHAR title[MAX_TITLE_LENGTH];
+            int len = GetWindowTextW(hwnd, title, MAX_TITLE_LENGTH);
+            if (len <= 0)
+            {
+                return TRUE;
+            }
+            if (wcsncmp(title, windowTitle.c_str(), len) == 0)
+            {
+                ShowWindow(hwnd, SW_RESTORE);
+                SetForegroundWindow(hwnd);
+                return FALSE;
+            }
         }
 
         return TRUE;
@@ -400,5 +431,17 @@ void open_settings_window()
     else
     {
         std::thread(run_settings_window).detach();
+    }
+}
+
+void close_settings_window()
+{
+    if (g_settings_process_id != 0)
+    {
+        HANDLE proc = OpenProcess(PROCESS_TERMINATE, false, g_settings_process_id);
+        if (proc != INVALID_HANDLE_VALUE)
+        {
+            TerminateProcess(proc, 0);
+        }
     }
 }

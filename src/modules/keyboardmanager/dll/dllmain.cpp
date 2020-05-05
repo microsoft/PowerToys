@@ -4,7 +4,6 @@
 #include <interface/win_hook_event_data.h>
 #include <common/settings_objects.h>
 #include <common/shared_constants.h>
-#include "trace.h"
 #include "resource.h"
 #include <keyboardmanager/ui/EditKeyboardWindow.h>
 #include <keyboardmanager/ui/EditShortcutsWindow.h>
@@ -12,7 +11,8 @@
 #include <keyboardmanager/common/Shortcut.h>
 #include <keyboardmanager/common/RemapShortcut.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
-#include <common\settings_helpers.h>
+#include <common/settings_helpers.h>
+#include <keyboardmanager/common/trace.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -267,6 +267,9 @@ public:
     virtual void enable()
     {
         m_enabled = true;
+        // Log telemetry
+        Trace::EnableKeyboardManager(true);
+        // Start keyboard hook
         start_lowlevel_keyboard_hook();
     }
 
@@ -274,6 +277,9 @@ public:
     virtual void disable()
     {
         m_enabled = false;
+        // Log telemetry
+        Trace::EnableKeyboardManager(false);
+        // Stop keyboard hook
         stop_lowlevel_keyboard_hook();
     }
 
@@ -345,9 +351,14 @@ public:
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
     {
         // If the Detect Key Window is currently activated, then suppress the keyboard event
-        if (keyboardManagerState.DetectSingleRemapKeyUIBackend(data))
+        KeyboardManagerHelper::KeyboardHookDecision singleKeyRemapUIDetected = keyboardManagerState.DetectSingleRemapKeyUIBackend(data);
+        if (singleKeyRemapUIDetected == KeyboardManagerHelper::KeyboardHookDecision::Suppress)
         {
             return 1;
+        }
+        else if (singleKeyRemapUIDetected == KeyboardManagerHelper::KeyboardHookDecision::SkipHook)
+        {
+            return 0;
         }
 
         // Remap a key
@@ -360,28 +371,33 @@ public:
         }
 
         // If the Detect Shortcut Window is currently activated, then suppress the keyboard event
-        if (keyboardManagerState.DetectShortcutUIBackend(data))
+        KeyboardManagerHelper::KeyboardHookDecision shortcutUIDetected = keyboardManagerState.DetectShortcutUIBackend(data);
+        if (shortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::Suppress)
         {
             return 1;
         }
-
-        // Remap a key to behave like a modifier instead of a toggle
-        intptr_t SingleKeyToggleToModResult = HandleSingleKeyToggleToModEvent(data);
-
-        // Handle an app-specific shortcut remapping
-        intptr_t AppSpecificShortcutRemapResult = HandleAppSpecificShortcutRemapEvent(data);
-
-        // If an app-specific shortcut is remapped then the os-level shortcut remapping should be suppressed.
-        if (AppSpecificShortcutRemapResult == 1)
+        else if (shortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::SkipHook)
         {
-            return 1;
+            return 0;
         }
+
+        //// Remap a key to behave like a modifier instead of a toggle
+        //intptr_t SingleKeyToggleToModResult = HandleSingleKeyToggleToModEvent(data);
+
+        //// Handle an app-specific shortcut remapping
+        //intptr_t AppSpecificShortcutRemapResult = HandleAppSpecificShortcutRemapEvent(data);
+
+        //// If an app-specific shortcut is remapped then the os-level shortcut remapping should be suppressed.
+        //if (AppSpecificShortcutRemapResult == 1)
+        //{
+        //    return 1;
+        //}
 
         // Handle an os-level shortcut remapping
         intptr_t OSLevelShortcutRemapResult = HandleOSLevelShortcutRemapEvent(data);
 
         // If any of the supported types of remappings took place, then suppress the key event
-        if ((SingleKeyRemapResult + SingleKeyToggleToModResult + OSLevelShortcutRemapResult + AppSpecificShortcutRemapResult) > 0)
+        if ((SingleKeyRemapResult + OSLevelShortcutRemapResult) > 0)
         {
             return 1;
         }

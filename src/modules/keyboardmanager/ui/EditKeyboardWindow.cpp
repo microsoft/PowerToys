@@ -3,6 +3,7 @@
 #include "SingleKeyRemapControl.h"
 #include "KeyDropDownControl.h"
 #include "XamlBridge.h"
+#include <keyboardmanager/common/trace.h>
 
 LRESULT CALLBACK EditKeyboardWindowProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -150,6 +151,9 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     // Vector to store dynamically allocated control objects to avoid early destruction
     std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>> keyboardRemapControlObjects;
 
+    // Set keyboard manager UI state so that remaps are not applied while on this window
+    keyboardManagerState.SetUIState(KeyboardManagerUIState::EditKeyboardWindowActivated, _hWndEditKeyboardWindow);
+
     // Load existing remaps into UI
     std::unique_lock<std::mutex> lock(keyboardManagerState.singleKeyReMap_mutex);
     std::unordered_map<DWORD, DWORD> singleKeyRemapCopy = keyboardManagerState.singleKeyReMap;
@@ -212,7 +216,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
         // Clear existing Key Remaps
         keyboardManagerState.ClearSingleKeyRemaps();
-
+        DWORD successfulRemapCount = 0;
         for (int i = 0; i < SingleKeyRemapControl::singleKeyRemapBuffer.size(); i++)
         {
             DWORD originalKey = SingleKeyRemapControl::singleKeyRemapBuffer[i][0];
@@ -254,6 +258,10 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
                     isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
                     // Tooltip is already shown for this row
                 }
+                else
+                {
+                    successfulRemapCount += 1;
+                }
             }
             else
             {
@@ -275,6 +283,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         {
             isSuccess = KeyboardManagerHelper::ErrorType::SaveFailed;
         }
+        Trace::KeyRemapCount(successfulRemapCount);
         settingsMessage.Text(KeyboardManagerHelper::GetErrorMessage(isSuccess));
     });
 
@@ -328,6 +337,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     hWndXamlIslandEditKeyboardWindow = nullptr;
     hwndLock.lock();
     hwndEditKeyboardNativeWindow = nullptr;
+    keyboardManagerState.ResetUIState();
 
     // Cannot be done in WM_DESTROY because that causes crashes due to fatal app exit
     xamlBridge.ClearXamlIslands();

@@ -12,6 +12,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("PowerRename")]
         public PowerRenameSettings PowerRename { get; set; }
 
+        public SndPowerRenameSettings()
+        {
+        }
+
         public SndPowerRenameSettings(PowerRenameSettings settings)
         {
             PowerRename = settings;

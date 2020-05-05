@@ -10,6 +10,9 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.Views;
+using Windows.ApplicationModel.Resources;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using Windows.Data.Html;
 using Windows.System;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
@@ -24,6 +27,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
 
+        private ResourceLoader loader = ResourceLoader.GetForCurrentView();
+
         public GeneralViewModel()
         {
             this.CheckFoUpdatesEventHandler = new ButtonClickCommand(CheckForUpdates_Click);
@@ -32,6 +37,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             try
             {
                 GeneralSettingsConfigs = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+
+                if (Helper.CompareVersions(GeneralSettingsConfigs.PowertoysVersion, Helper.GetProductVersion()) < 0)
+                {
+                    // Update settings
+                    GeneralSettingsConfigs.PowertoysVersion = Helper.GetProductVersion();
+                    SettingsUtils.SaveSettings(GeneralSettingsConfigs.ToJsonString(), string.Empty);
+                }
+            }
+            catch (FormatException e)
+            {
+                // If there is an issue with the version number format, don't migrate settings.
+                Debug.WriteLine(e.Message);
             }
             catch
             {
@@ -43,20 +60,43 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 case "light":
                     _isLightThemeRadioButtonChecked = true;
-                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
+                    try
+                    {
+                        ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
+                    }
+                    catch
+                    {
+                    }
+
                     break;
                 case "dark":
                     _isDarkThemeRadioButtonChecked = true;
-                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
+                    try
+                    {
+                        ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
+                    }
+                    catch
+                    {
+                    }
+
                     break;
                 case "system":
                     _isSystemThemeRadioButtonChecked = true;
-                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
+                    try
+                    {
+                        ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
+                    }
+                    catch
+                    {
+                    }
+
                     break;
             }
 
             _startup = GeneralSettingsConfigs.Startup;
             _autoDownloadUpdates = GeneralSettingsConfigs.AutoDownloadUpdates;
+            _isElevated = ShellPage.IsElevated;
+            _runElevated = GeneralSettingsConfigs.RunElevated;
         }
 
         private bool _packaged = false;
@@ -86,6 +126,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public string AlwaysRunAsAdminText
+        {
+            get
+            {
+                if (IsElevated)
+                {
+                    return loader.GetString("GeneralSettings_AlwaysRunAsAdminText_IsElevated");
+                }
+                else
+                {
+                    return loader.GetString("GeneralSettings_AlwaysRunAsAdminText_IsNotElevated");
+                }
+            }
+
+            set
+            {
+                OnPropertyChanged("AlwaysRunAsAdminText");
+            }
+        }
+
         // Gets or sets a value indicating whether run powertoys on start-up.
         public bool Startup
         {
@@ -105,6 +165,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public string RunningAsAdminText
+        {
+            get
+            {
+                if (!IsElevated)
+                {
+                    return loader.GetString("GeneralSettings_Running as Adminstrator_IsNotElevated");
+                }
+                else
+                {
+                    return loader.GetString("GeneralSettings_RunningAsAdminText_IsElevated");
+                }
+            }
+
+            set
+            {
+                OnPropertyChanged("RunningAsAdminText");
+            }
+        }
+
         // Gets or sets a value indicating whether the powertoy elevated.
         public bool IsElevated
         {
@@ -118,8 +198,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_isElevated != value)
                 {
                     _isElevated = value;
-                    RaisePropertyChanged();
+                    OnPropertyChanged("IsElevated");
+                    OnPropertyChanged("IsAdminButtonEnabled");
+                    OnPropertyChanged("AlwaysRunAsAdminText");
+                    OnPropertyChanged("RunningAsAdminText");
                 }
+            }
+        }
+
+        public bool IsAdminButtonEnabled
+        {
+            get
+            {
+                return !IsElevated;
+            }
+
+            set
+            {
+                OnPropertyChanged("IsAdminButtonEnabled");
             }
         }
 
@@ -136,6 +232,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_runElevated != value)
                 {
                     _runElevated = value;
+                    GeneralSettingsConfigs.RunElevated = value;
                     RaisePropertyChanged();
                 }
             }
@@ -172,7 +269,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     GeneralSettingsConfigs.Theme = "dark";
                     _isDarkThemeRadioButtonChecked = value;
-                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
+                    try
+                    {
+                        ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
+                    }
+                    catch
+                    {
+                    }
+
                     RaisePropertyChanged();
                 }
             }
@@ -191,7 +295,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     GeneralSettingsConfigs.Theme = "light";
                     _isLightThemeRadioButtonChecked = value;
-                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
+                    try
+                    {
+                        ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
+                    }
+                    catch
+                    {
+                    }
+
                     RaisePropertyChanged();
                 }
             }
@@ -210,9 +321,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     GeneralSettingsConfigs.Theme = "system";
                     _isSystemThemeRadioButtonChecked = value;
-                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
+                    try
+                    {
+                        ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
+                    }
+                    catch
+                    {
+                    }
+
                     RaisePropertyChanged();
                 }
+            }
+        }
+
+        public string PowerToysVersion
+        {
+            get
+            {
+                return Helper.GetProductVersion();
             }
         }
 
@@ -240,9 +366,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
-            if (ShellPage.DefaultSndMSGCallback != null)
+            if (ShellPage.SndRestartAsAdminMsgCallback != null)
             {
-                ShellPage.DefaultSndMSGCallback(customaction.ToString());
+                ShellPage.SndRestartAsAdminMsgCallback(customaction.ToString());
             }
         }
     }
