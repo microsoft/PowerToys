@@ -11,7 +11,7 @@ namespace PowerLauncher.UI
 {
     public sealed partial class ResultList : UserControl
     {
-        private ResultActionEvent.TriggerType triggerType = ResultActionEvent.TriggerType.Click;
+        private LauncherResultActionEvent.TriggerType triggerType = LauncherResultActionEvent.TriggerType.Click;
         public ResultList()
         {
             InitializeComponent();
@@ -20,7 +20,7 @@ namespace PowerLauncher.UI
 
         private void ContextButton_OnAcceleratorInvoked(Windows.UI.Xaml.Input.KeyboardAccelerator sender, Windows.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
         {
-            this.triggerType = ResultActionEvent.TriggerType.KeyboardShortcut;
+            this.triggerType = LauncherResultActionEvent.TriggerType.KeyboardShortcut;
         }
 
         private void ContextButton_OnClick(object sender, Windows.UI.Xaml.RoutedEventArgs e)
@@ -39,7 +39,7 @@ namespace PowerLauncher.UI
             }
 
             //Restore the trigger type back to click
-            triggerType = ResultActionEvent.TriggerType.Click;
+            triggerType = LauncherResultActionEvent.TriggerType.Click;
         }
     }
 }

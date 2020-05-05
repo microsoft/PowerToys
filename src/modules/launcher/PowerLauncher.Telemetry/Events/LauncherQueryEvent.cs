@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.Tracing;
-using System.Text;
-using Microsoft.PowerToys.Telemetry;
+﻿using System.Diagnostics.Tracing;
 
 namespace Microsoft.PowerLauncher.Telemetry
 {
@@ -10,9 +6,8 @@ namespace Microsoft.PowerLauncher.Telemetry
     /// ETW Event for when the user initiates a query
     /// </summary>
     [EventData]
-    public class QueryEvent : IEvent
+    public class LauncherQueryEvent
     {
-        public string EventName { get; } = "PowerLauncher_Query_Event";
         public double QueryTimeMs { get; set; }
         public int QueryLength { get; set; }
         public int NumResults { get; set; }

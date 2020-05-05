@@ -35,9 +35,8 @@ namespace Microsoft.PowerToys.Telemetry
         /// Publishes ETW event when an action is triggered on 
         /// </summary>
         public void WriteEvent<T>(T telemetryEvent) 
-            where T : IEvent
         {
-            this.Write<T>(telemetryEvent.EventName, new EventSourceOptions()
+            this.Write<T>(null, new EventSourceOptions()
             {
                 Keywords = ProjectKeywordMeasure,
                 Tags = ProjectTelemetryTagProductAndServicePerformance,

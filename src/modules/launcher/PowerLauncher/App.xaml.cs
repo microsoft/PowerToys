@@ -99,7 +99,7 @@ namespace PowerLauncher
 
                 bootTime.Stop();
 
-                PowerToysTelemetry.Log.WriteEvent(new BootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
+                PowerToysTelemetry.Log.WriteEvent(new LauncherBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
 
                 //[Conditional("RELEASE")]
                 // check udpate every 5 hours
