@@ -17,6 +17,7 @@ using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
+using Microsoft.PowerLauncher.Telemetry;
 using Wox.Storage;
 
 namespace Wox.ViewModel
@@ -303,7 +304,22 @@ namespace Wox.ViewModel
 
         public Visibility ProgressBarVisibility { get; set; }
 
-        public Visibility MainWindowVisibility { get; set; }
+        private Visibility _visibility = Visibility.Collapsed;
+        public Visibility MainWindowVisibility {
+            get { return _visibility; }
+            set {
+                _visibility = value;
+                if(value == Visibility.Visible)
+                {
+                    PowerLauncherTelemetry.Log.WriteEvent(new ShowEvent());
+                }
+                else
+                {
+                    PowerLauncherTelemetry.Log.WriteEvent(new HideEvent());
+                }
+            
+            }
+        }
 
         public ICommand EscCommand { get; set; }
         public ICommand SelectNextItemCommand { get; set; }
@@ -380,6 +396,8 @@ namespace Wox.ViewModel
         {
             if (!string.IsNullOrEmpty(QueryText))
             {
+                var queryTimer = new System.Diagnostics.Stopwatch();
+                queryTimer.Start();
                 _updateSource?.Cancel();
                 var currentUpdateSource = new CancellationTokenSource();
                 _updateSource = currentUpdateSource;
@@ -435,6 +453,16 @@ namespace Wox.ViewModel
                         { // update to hidden if this is still the current query
                             ProgressBarVisibility = Visibility.Hidden;
                         }
+
+                        queryTimer.Stop();
+                        var queryEvent = new QueryEvent()
+                        {
+                            QueryTimeMs = queryTimer.ElapsedMilliseconds,
+                            NumResults = Results.Results.Count,
+                            QueryLength = query.RawQuery.Length
+                        };
+                        PowerLauncherTelemetry.Log.WriteEvent(queryEvent);
+
                     }, currentCancellationToken);
                 }
             }
