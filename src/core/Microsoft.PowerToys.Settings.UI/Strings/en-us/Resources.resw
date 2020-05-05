@@ -431,9 +431,6 @@
   <data name="ImageResizer_Description.Text" xml:space="preserve">
     <value>Lets you resize images by right-clicking.</value>
   </data>
-  <data name="ImageResizer_EnableGroupSettingsHeader.Text" xml:space="preserve">
-    <value>Enable</value>
-  </data>
   <data name="ImageResizer_EnableToggle.Header" xml:space="preserve">
     <value>Enable Image Resizer</value>
   </data>

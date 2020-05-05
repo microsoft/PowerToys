@@ -50,11 +50,7 @@
             <TextBlock x:Uid="ImageResizer_Description"
                        TextWrapping="Wrap"/>
 
-            <TextBlock x:Uid="ImageResizer_EnableGroupSettingsHeader"
-                       Style="{StaticResource SettingsGroupTitleStyle}"/>
-
-            <!--x:Uid="ImageResizer_EnableToggle"-->
-            <ToggleSwitch IsOn="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"
+            <ToggleSwitch x:Uid="ImageResizer_EnableToggle" IsOn="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"
                           Margin="{StaticResource SmallTopMargin}" />
 
             <TextBlock x:Uid="ImageResizer_CustomSizes"
@@ -65,8 +61,7 @@
                       ItemsSource="{Binding Sizes, Mode=TwoWay, Source={StaticResource ViewModel}}"
                       Padding="0"
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"
-                      Margin="0"
-                      >
+                      Margin="0">
 
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
