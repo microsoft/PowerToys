@@ -46,7 +46,7 @@
                        TextWrapping="Wrap"/>
 
             <ToggleSwitch x:Uid="PowerRename_Toggle_Enable"
-                          Margin="{StaticResource SmallTopMargin}" 
+                          Margin="{StaticResource MediumTopMargin}" 
                           IsOn="{Binding Mode=TwoWay, Path=IsEnabled}"                          
                            />
 

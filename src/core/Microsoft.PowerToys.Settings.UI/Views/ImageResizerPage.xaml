@@ -50,7 +50,9 @@
             <TextBlock x:Uid="ImageResizer_Description"
                        TextWrapping="Wrap"/>
 
-            <ToggleSwitch x:Uid="ImageResizer_EnableToggle" IsOn="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"/>
+            <ToggleSwitch x:Uid="ImageResizer_EnableToggle"
+                          Margin="{StaticResource MediumTopMargin}"
+                          IsOn="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"/>
 
             <TextBlock x:Uid="ImageResizer_CustomSizes"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>

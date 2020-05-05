@@ -46,7 +46,7 @@
 
             <ToggleSwitch x:Uid="ShortcutGuide_Enable"
                           IsOn="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                          Margin="{StaticResource SmallTopMargin}"/>
+                          Margin="{StaticResource MediumTopMargin}"/>
 
             <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior" 
                        Style="{StaticResource SettingsGroupTitleStyle}"/>

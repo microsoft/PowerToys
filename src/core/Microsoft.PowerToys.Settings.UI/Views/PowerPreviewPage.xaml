@@ -45,7 +45,7 @@
                        TextWrapping="Wrap"/>
 
             <ToggleSwitch x:Uid="FileEplorerPreview_ToggleSwitch_Preview_SVG"
-                          Margin="{StaticResource SmallTopMargin}"
+                          Margin="{StaticResource MediumTopMargin}"
                           IsOn="{Binding Mode=TwoWay, Path=SVGRenderIsEnabled}" />
 
             <ToggleSwitch x:Uid="FileEplorerPreview_ToggleSwitch_Preview_MD"

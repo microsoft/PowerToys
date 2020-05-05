@@ -44,12 +44,11 @@
 
         <StackPanel Orientation="Vertical">
             <TextBlock x:Uid="PowerLauncher_Description"
-                       Style="{StaticResource BodyTextBlockStyle}"
                        TextWrapping="Wrap"/>
 
             <ToggleSwitch x:Uid="PowerLauncher_EnablePowerLauncher" 
                           IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnablePowerLauncher}"
-                          Margin="{StaticResource SmallTopMargin}"/>
+                          Margin="{StaticResource MediumTopMargin}"/>
 
             <TextBlock x:Uid="PowerLauncher_SearchResults"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>

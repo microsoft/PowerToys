@@ -121,7 +121,7 @@
 
             <ToggleSwitch x:Uid="KeyboardManager_EnableToggle"
                           IsOn="{x:Bind Path=ViewModel.Enabled, Mode=TwoWay}"
-                          Margin="{StaticResource SmallTopMargin}" />
+                          Margin="{StaticResource MediumTopMargin}" />
 
             <!--<TextBlock x:Uid="KeyboardManager_ConfigHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>

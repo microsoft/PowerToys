@@ -53,7 +53,7 @@
 
             <ToggleSwitch x:Uid="FancyZones_EnableToggleControl_HeaderText"
                           IsOn="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                          Margin="{StaticResource SmallTopMargin}" />
+                          Margin="{StaticResource MediumTopMargin}" />
 
             <TextBlock x:Uid="FancyZones_ZoneBehavior_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
