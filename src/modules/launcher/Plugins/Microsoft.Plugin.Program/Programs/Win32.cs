@@ -12,6 +12,7 @@ using Shell;
 using Wox.Infrastructure;
 using Microsoft.Plugin.Program.Logger;
 using Wox.Plugin;
+using System.Reflection;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -95,6 +96,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 new ContextMenuResult
                 {
+                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = api.GetTranslation("wox_plugin_program_run_as_administrator"),
                     Glyph = "\xE7EF",
                     FontFamily = "Segoe MDL2 Assets",
@@ -117,6 +119,7 @@ namespace Microsoft.Plugin.Program.Programs
                 },
                 new ContextMenuResult
                 {
+                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
                     Glyph = "\xE838",
                     FontFamily = "Segoe MDL2 Assets",
