@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("Keyboard Manager")]
         public bool KeyboardManager { get; set; }
 
-        [JsonPropertyName("Launcher")]
+        [JsonPropertyName("Run")]
         public bool PowerLauncher { get; set; }
 
         public string ToJsonString()

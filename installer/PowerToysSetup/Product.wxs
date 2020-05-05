@@ -222,22 +222,22 @@
               </Directory>
               <Directory Id="LauncherpinyindbFolder" Name="pinyindb" />
               <Directory Id="LauncherPluginsFolder" Name="Plugins">
-                <Directory Id="CalculatorPluginFolder" Name="Wox.Plugin.Calculator">
+                <Directory Id="CalculatorPluginFolder" Name="Microsoft.Plugin.Calculator">
                   <Directory Id="CalculatorImagesFolder" Name="Images" />
                   <Directory Id="CalculatorLanguagesFolder" Name="Languages" />
                   <Directory Id="CalculatorpinyindbFolder" Name="pinyindb" />
                 </Directory>
-                <Directory Id="FolderPluginFolder" Name="Wox.Plugin.Folder">
+                <Directory Id="FolderPluginFolder" Name="Microsoft.Plugin.Folder">
                   <Directory Id="FolderPluginImagesFolder" Name="Images" />
                   <Directory Id="FolderPluginLanguagesFolder" Name="Languages" />
                   <Directory Id="FolderPluginpinyindbFolder" Name="pinyindb" />
                 </Directory>
-                <Directory Id="ProgramPluginFolder" Name="Wox.Plugin.Program">
+                <Directory Id="ProgramPluginFolder" Name="Microsoft.Plugin.Program">
                   <Directory Id="ProgramImagesFolder" Name="Images" />
                   <Directory Id="ProgramLanguagesFolder" Name="Languages" />
                   <Directory Id="ProgrampinyindbFolder" Name="pinyindb" />
                 </Directory>
-                <Directory Id="ShellPluginFolder" Name="Wox.Plugin.Shell">
+                <Directory Id="ShellPluginFolder" Name="Microsoft.Plugin.Shell">
                   <Directory Id="ShellImagesFolder" Name="Images" />
                   <Directory Id="ShellLanguagesFolder" Name="Languages" />
                   <Directory Id="ShellpinyindbFolder" Name="pinyindb" />
@@ -247,7 +247,7 @@
                   <Directory Id="IndexerLanguagesFolder" Name="Languages" />
                   <Directory Id="IndexerpinyindbFolder" Name="pinyindb" />
                 </Directory>
-                <Directory Id="WindowWalkerPluginFolder" Name="Wox.Plugin.WindowWalker">
+                <Directory Id="WindowWalkerPluginFolder" Name="Microsoft.Plugin.WindowWalker">
                   <Directory Id="WindowWalkerImagesFolder" Name="Images" />
                   <Directory Id="WindowWalkerLanguagesFolder" Name="Languages" />
                   <Directory Id="WindowWalkerpinyindbFolder" Name="pinyindb" />
@@ -753,12 +753,12 @@
       
       <!-- Calculator Plugin -->
       <Component Id="calculatorComponent" Directory="CalculatorPluginFolder" Guid="19DE1022-583C-4969-9AFC-D43CB944003D">
-        <?foreach File in plugin.json;Wox.Infrastructure.dll;Wox.Plugin.Caculator.deps.json;Wox.Plugin.Caculator.dll;Wox.Plugin.dll?>
-          <File Id="Calculator_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Wox.Plugin.Caculator\$(var.File)" />
+        <?foreach File in plugin.json;Wox.Infrastructure.dll;Microsoft.Plugin.Caculator.deps.json;Microsoft.Plugin.Caculator.dll;Wox.Plugin.dll?>
+          <File Id="Calculator_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Caculator\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="calculatorImagesComponent" Directory="CalculatorImagesFolder" Guid="07EC9232-CF9A-4CDB-8D8E-E79DC75096C0">
-        <File Id="calculatorPluginImg" Source="$(var.BinX64Dir)modules\launcher\Plugins\Wox.Plugin.Caculator\Images\calculator.png" />
+        <File Id="calculatorPluginImg" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Caculator\Images\calculator.png" />
       </Component>
        <Component Id="calculatorLanguagesComponent" Directory="CalculatorLanguagesFolder" Guid="2D8019E7-664F-4529-9FAA-83C8DACF0732">
         <?foreach LanguageFile in de.xaml;en.xaml;pl.xaml;tr.xaml;zh-cn.xaml;zh-tw.xaml?>
@@ -770,25 +770,25 @@
           <?else?>
             <?define IdSafeLanguage = $(var.LanguageFile)?>
           <?endif?>
-          <File Id="File_calc_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Wox.Plugin.Caculator\Languages\$(var.LanguageFile)" />
+          <File Id="File_calc_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Caculator\Languages\$(var.LanguageFile)" />
           <?undef IdSafeLanguage?>
         <?endforeach?>
       </Component>
       <Component Id="calculatorpinyindbComponent" Directory="CalculatorpinyindbFolder" Guid="D5527670-BE9A-4AA9-9D36-1249F2184B5B">
         <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
-          <File Id="CalcPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Wox.Plugin.Caculator\pinyindb\$(var.File)" />
+          <File Id="CalcPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Caculator\pinyindb\$(var.File)" />
         <?endforeach?>
       </Component>
 
       <!-- Folder Plugin -->
       <Component Id="FolderComponent" Directory="FolderPluginFolder" Guid="453D6C29-8F0D-46EC-B210-82E6AF547039">
-        <?foreach File in plugin.json;Wox.Infrastructure.dll;Wox.Plugin.Folder.deps.json;Wox.Plugin.Folder.dll;Wox.Plugin.dll?>
-        <File Id="Folder_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Wox.Plugin.Folder\$(var.File)" />
+        <?foreach File in plugin.json;Wox.Infrastructure.dll;Microsoft.Plugin.Folder.deps.json;Microsoft.Plugin.Folder.dll;Wox.Plugin.dll?>
+        <File Id="Folder_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Folder\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="FolderImagesComponent" Directory="FolderPluginImagesFolder" Guid="6C5226EB-E312-4768-B4D1-B1D3ACFCCBDF">
         <?foreach File in copy.png;deletefilefolder.png;file.png;folder.png;user.png?>
-          <File Id="FolderPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Wox.Plugin.Folder\Images\$(var.File)" />
+          <File Id="FolderPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Folder\Images\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="FolderPluginLanguagesComponent" Directory="FolderPluginLanguagesFolder" Guid="6316D847-5FD2-488B-A60E-5517BF95A25C">
@@ -801,25 +801,25 @@
           <?else?>
             <?define IdSafeLanguage = $(var.LanguageFile)?>
           <?endif?>
-            <File Id="File_Folder_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Wox.Plugin.Folder\Languages\$(var.LanguageFile)" />
+            <File Id="File_Folder_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Folder\Languages\$(var.LanguageFile)" />
           <?undef IdSafeLanguage?>
         <?endforeach?>
       </Component>
       <Component Id="FolderPluginpinyindbComponent" Directory="FolderPluginpinyindbFolder" Guid="233BE087-B9DC-408A-8809-593C42DE8B1B">
         <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
-          <File Id="FolderPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Wox.Plugin.Folder\pinyindb\$(var.File)" />
+          <File Id="FolderPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Folder\pinyindb\$(var.File)" />
         <?endforeach?>
       </Component>
     
       <!-- Program Plugin -->
       <Component Id="ProgramComponent" Directory="ProgramPluginFolder" Guid="3C5CA6E6-3D36-4F4E-B40E-38AA5E5CB799">
-        <?foreach File in AppxPackagingTlb.dll;plugin.json;ShObjIdlTlb.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;Wox.Plugin.Program.deps.json;Wox.Plugin.Program.dll?>
-          <File Id="Program_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Wox.Plugin.Program\$(var.File)" />
+        <?foreach File in AppxPackagingTlb.dll;plugin.json;ShObjIdlTlb.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;Microsoft.Plugin.Program.deps.json;Microsoft.Plugin.Program.dll?>
+          <File Id="Program_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Program\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="ProgramImagesComponent" Directory="ProgramImagesFolder" Guid="30D357F5-406F-47D1-BEFE-6022746469B4">
         <?foreach File in cmd.png;disable.png;folder.png;program.png;user.png?>
-          <File Id="Program_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Wox.Plugin.Program\Images\$(var.File)" />
+          <File Id="Program_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Program\Images\$(var.File)" />
         <?endforeach?>
       </Component>
        <Component Id="ProgramLanguagesComponent" Directory="ProgramLanguagesFolder" Guid="EBFF53B6-3602-4F55-8784-FC7DB29D3D62">
@@ -832,25 +832,25 @@
           <?else?>
             <?define IdSafeLanguage = $(var.LanguageFile)?>
           <?endif?>
-          <File Id="File_Program_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Wox.Plugin.Program\Languages\$(var.LanguageFile)" />
+          <File Id="File_Program_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Program\Languages\$(var.LanguageFile)" />
           <?undef IdSafeLanguage?>
         <?endforeach?>
       </Component>
       <Component Id="ProgrampinyindbComponent" Directory="ProgrampinyindbFolder" Guid="65A488C3-C67D-45F7-9654-6DF529AEEB3F">
         <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
-          <File Id="ProgramPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Wox.Plugin.Program\pinyindb\$(var.File)" />
+          <File Id="ProgramPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Program\pinyindb\$(var.File)" />
         <?endforeach?>
       </Component>
     
       <!-- Shell Plugin -->
       <Component Id="ShellComponent" Directory="ShellPluginFolder" Guid="6D3D7294-1804-47C9-83E5-47A8867F3801">
-        <?foreach File in plugin.json;Wox.Infrastructure.dll;Wox.Plugin.dll;Wox.Plugin.Shell.deps.json;Wox.Plugin.Shell.dll?>
-          <File Id="Shell_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Wox.Plugin.Shell\$(var.File)" />
+        <?foreach File in plugin.json;Wox.Infrastructure.dll;Wox.Plugin.dll;Microsoft.Plugin.Shell.deps.json;Microsoft.Plugin.Shell.dll?>
+          <File Id="Shell_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Shell\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="ShellImagesComponent" Directory="ShellImagesFolder" Guid="15B5DBAE-E7C1-4BF7-A29E-6CE76242F8F4">
-        <File Id="ShellPluginImg" Source="$(var.BinX64Dir)modules\launcher\Plugins\Wox.Plugin.Shell\Images\shell.png" />
-        <File Id="ShellPluginUserImg" Source="$(var.BinX64Dir)modules\launcher\Plugins\Wox.Plugin.Shell\Images\user.png" />
+        <File Id="ShellPluginImg" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Shell\Images\shell.png" />
+        <File Id="ShellPluginUserImg" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Shell\Images\user.png" />
       </Component>
        <Component Id="ShellLanguagesComponent" Directory="ShellLanguagesFolder" Guid="4190F789-8A66-46AA-B920-C76CB29277D7">
         <?foreach LanguageFile in de.xaml;en.xaml;pl.xaml;tr.xaml;zh-cn.xaml;zh-tw.xaml?>
@@ -862,13 +862,13 @@
           <?else?>
             <?define IdSafeLanguage = $(var.LanguageFile)?>
           <?endif?>
-          <File Id="File_Shell_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Wox.Plugin.Shell\Languages\$(var.LanguageFile)" />
+          <File Id="File_Shell_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Shell\Languages\$(var.LanguageFile)" />
           <?undef IdSafeLanguage?>
         <?endforeach?>
       </Component>
       <Component Id="ShellpinyindbComponent" Directory="ShellpinyindbFolder" Guid="A60742F3-2187-47F2-A5B5-300E44837DD7">
         <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
-          <File Id="ShellPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Wox.Plugin.Shell\pinyindb\$(var.File)" />
+          <File Id="ShellPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Shell\pinyindb\$(var.File)" />
         <?endforeach?>
       </Component>
 
@@ -889,19 +889,19 @@
 
       <!-- WindowWalker Plugin -->  
       <Component Id="WindowWalkerComponent" Directory="WindowWalkerPluginFolder" Guid="EB1391C9-B701-421F-80FC-ABB2FEDFAD19">
-        <?foreach File in plugin.json;Wox.Infrastructure.dll;Wox.Plugin.dll;Wox.Plugin.WindowWalker.deps.json;Wox.Plugin.WindowWalker.dll?>
-          <File Id="WindowWalker_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Wox.Plugin.WindowWalker\$(var.File)" />
+        <?foreach File in plugin.json;Wox.Infrastructure.dll;Wox.Plugin.dll;Microsoft.Plugin.WindowWalker.deps.json;Microsoft.Plugin.WindowWalker.dll?>
+          <File Id="WindowWalker_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="WindowWalkerImagesComponent" Directory="WindowWalkerImagesFolder" Guid="3944A7F5-77F4-4979-9911-EDE709B2F509">
-          <File Id="WindowWalkerIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Wox.Plugin.WindowWalker\Images\windowwalker.png" />
+          <File Id="WindowWalkerIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Images\windowwalker.png" />
       </Component>
       <Component Id="WindowWalkerLanguagesComponent" Directory="WindowWalkerLanguagesFolder" Guid="7D9471D9-5C0A-4BD1-9A01-BAB65DD58834">
-        <File Id="WindowWalkerLanguage" Source="$(var.BinX64Dir)modules\launcher\Plugins\Wox.Plugin.WindowWalker\Languages\en.xaml" />
+        <File Id="WindowWalkerLanguage" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Languages\en.xaml" />
       </Component>
       <Component Id="WindowWalkerpinyindbComponent" Directory="WindowWalkerpinyindbFolder" Guid="02C7A758-CDD4-4E27-9EC7-2ED68DC444B0">
         <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
-          <File Id="WindowWalkerPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Wox.Plugin.WindowWalker\pinyindb\$(var.File)" />
+          <File Id="WindowWalkerPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\pinyindb\$(var.File)" />
         <?endforeach?>
       </Component>
     
