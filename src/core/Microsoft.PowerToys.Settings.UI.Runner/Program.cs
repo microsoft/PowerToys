@@ -5,6 +5,7 @@
 using System;
 using System.Windows;
 using interop;
+using Windows.UI.Popups;
 
 namespace Microsoft.PowerToys.Settings.UI.Runner
 {

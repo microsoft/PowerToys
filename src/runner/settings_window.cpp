@@ -14,6 +14,7 @@
 #include "restart_elevated.h"
 
 #include <common/json.h>
+#include <common\settings_helpers.cpp>
 
 #define BUFSIZE 1024
 
@@ -248,6 +249,23 @@ void run_settings_window()
     if (settings_theme_setting == L"dark" || (settings_theme_setting == L"system" && WindowsColors::is_dark_mode()))
     {
         settings_theme = L"dark";
+    }
+
+    // Arg 4: settings theme.
+    GeneralSettings save_settings = get_general_settings();
+
+    bool isElevated{ get_general_settings().isElevated };
+    std::wstring settings_elevatedStatus;
+
+    if (isElevated)
+    {
+        save_settings.isElevated = true;
+        PTSettingsHelper::save_general_settings(save_settings.to_json());
+    }
+    else
+    {
+        save_settings.isElevated = false;
+        PTSettingsHelper::save_general_settings(save_settings.to_json());
     }
 
     std::wstring executable_args = L"\"";

@@ -366,7 +366,7 @@
     <value>Enable PowerRename</value>
   </data>
   <data name="RadioButtons_Name_Theme.Header" xml:space="preserve">
-    <value>Theme</value>
+    <value>Choose Settings color</value>
   </data>
   <data name="PowerRename_Toggle_EnableOnContextMenu.Header" xml:space="preserve">
     <value>Show on default context menu</value>
@@ -535,5 +535,8 @@
   </data>
   <data name="GeneralPage_ToggleSwitch_RunningAsAdminNote.Text" xml:space="preserve">
     <value>Currently running as administrator</value>
+  </data>
+  <data name="GeneralPage_ToggleSwitch_RunElevated.Header" xml:space="preserve">
+    <value>Always run as administrator (Restart as administrator to change this)</value>
   </data>
 </root>

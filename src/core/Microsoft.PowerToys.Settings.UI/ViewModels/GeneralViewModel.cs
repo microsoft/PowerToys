@@ -43,20 +43,43 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 case "light":
                     _isLightThemeRadioButtonChecked = true;
-                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
+                    try
+                    {
+                        ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
+                    }
+                    catch
+                    {
+                    }
+
                     break;
                 case "dark":
                     _isDarkThemeRadioButtonChecked = true;
-                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
+                    try
+                    {
+                        ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
+                    }
+                    catch
+                    {
+                    }
+
                     break;
                 case "system":
                     _isSystemThemeRadioButtonChecked = true;
-                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
+                    try
+                    {
+                        ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
+                    }
+                    catch
+                    {
+                    }
+
                     break;
             }
 
             _startup = GeneralSettingsConfigs.Startup;
             _autoDownloadUpdates = GeneralSettingsConfigs.AutoDownloadUpdates;
+            _isElevated = GeneralSettingsConfigs.IsElevated;
+            _runElevated = GeneralSettingsConfigs.RunElevated;
         }
 
         private bool _packaged = false;
@@ -86,6 +109,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public string AlwaysRunAsAdminText
+        {
+            get
+            {
+                if (IsElevated)
+                {
+                    return "Always run as administrator";
+                }
+                else
+                {
+                    return "Always run as administrator (Restart as administrator to change this)";
+                }
+            }
+
+            set
+            {
+                OnPropertyChanged("AlwaysRunAsAdminText");
+            }
+        }
+
         // Gets or sets a value indicating whether run powertoys on start-up.
         public bool Startup
         {
@@ -105,6 +148,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public string RunningAsAdminText
+        {
+            get
+            {
+                if (!IsElevated)
+                {
+                    return "Running as user.";
+                }
+                else
+                {
+                    return "Running as Adminstrator.";
+                }
+            }
+
+            set
+            {
+                OnPropertyChanged("RunningAsAdminText");
+            }
+        }
+
         // Gets or sets a value indicating whether the powertoy elevated.
         public bool IsElevated
         {
@@ -118,8 +181,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_isElevated != value)
                 {
                     _isElevated = value;
-                    RaisePropertyChanged();
+                    OnPropertyChanged("IsElevated");
+                    OnPropertyChanged("IsAdminButtonEnabled");
+                    OnPropertyChanged("AlwaysRunAsAdminText");
+                    OnPropertyChanged("RunningAsAdminText");
                 }
+            }
+        }
+
+        public bool IsAdminButtonEnabled
+        {
+            get
+            {
+                return !IsElevated;
+            }
+
+            set
+            {
+                OnPropertyChanged("IsAdminButtonEnabled");
             }
         }
 
@@ -136,6 +215,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_runElevated != value)
                 {
                     _runElevated = value;
+                    GeneralSettingsConfigs.RunElevated = value;
                     RaisePropertyChanged();
                 }
             }
@@ -172,7 +252,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     GeneralSettingsConfigs.Theme = "dark";
                     _isDarkThemeRadioButtonChecked = value;
-                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
+                    try
+                    {
+                        ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
+                    }
+                    catch
+                    {
+                    }
+
                     RaisePropertyChanged();
                 }
             }
@@ -191,7 +278,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     GeneralSettingsConfigs.Theme = "light";
                     _isLightThemeRadioButtonChecked = value;
-                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
+                    try
+                    {
+                        ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
+                    }
+                    catch
+                    {
+                    }
+
                     RaisePropertyChanged();
                 }
             }
@@ -210,7 +304,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     GeneralSettingsConfigs.Theme = "system";
                     _isSystemThemeRadioButtonChecked = value;
-                    ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
+                    try
+                    {
+                        ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
+                    }
+                    catch
+                    {
+                    }
+
                     RaisePropertyChanged();
                 }
             }
@@ -236,6 +337,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
             settings.CustomActionName = "restart_elevation";
+            IsElevated = true;
 
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);

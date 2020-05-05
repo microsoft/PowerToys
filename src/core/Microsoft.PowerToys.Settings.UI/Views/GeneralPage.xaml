@@ -58,7 +58,23 @@
                           Margin="{StaticResource SmallTopMargin}" 
                           IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates, Source={StaticResource eventViewModel}}"/>
 
-            <muxc:RadioButtons x:Uid="RadioButtons_Name_Theme" Margin="{StaticResource SmallTopMargin}">
+            <TextBlock Text="{Binding Mode=TwoWay, Path=RunningAsAdminText, Source={StaticResource eventViewModel}}"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Margin="{StaticResource MediumTopMargin}"/>
+            
+            <ToggleSwitch Margin="{StaticResource SmallTopMargin}" 
+                          Header="{Binding Mode=TwoWay, Path=AlwaysRunAsAdminText, Source={StaticResource eventViewModel}}"
+                          IsEnabled="{Binding Mode=TwoWay, Path=IsElevated, Source={StaticResource eventViewModel}}"
+                          IsOn="{Binding Mode=TwoWay, Path=RunElevated, Source={StaticResource eventViewModel}}"/>
+
+            <Button x:Uid="GeneralPage_RestartAsAdmin_Button"
+                    Margin="{StaticResource SmallTopMargin}"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Command = "{Binding RestartElevatedButtonEventHandler, Source={StaticResource eventViewModel}}"
+                    IsEnabled="{Binding Mode=TwoWay, Path=IsAdminButtonEnabled, Source={StaticResource eventViewModel}}"
+                    />
+            
+            <muxc:RadioButtons x:Uid="RadioButtons_Name_Theme" Margin="{StaticResource MediumTopMargin}">
                 <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark"
                              Content="Dark"
                              IsChecked="{ Binding Mode=TwoWay, Path=IsDarkThemeRadioButtonChecked, Source={StaticResource eventViewModel}}"/>
@@ -71,12 +87,6 @@
                              Content="System default"
                              IsChecked="{ Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked, Source={StaticResource eventViewModel}}"/>
             </muxc:RadioButtons>
-
-            <Button x:Uid="GeneralPage_RestartAsAdmin_Button"
-                    Margin="{StaticResource SmallTopMargin}"
-                    Style="{StaticResource AccentButtonStyle}"
-                    Command = "{Binding RestartElevatedButtonEventHandler, Source={StaticResource eventViewModel}}"
-                    />
         </StackPanel>
 
         <StackPanel x:Name="SidePanel"
