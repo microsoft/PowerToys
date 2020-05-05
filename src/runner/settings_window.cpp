@@ -206,34 +206,38 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
     return process_created;
 }
 
-// This variable is set based on the os version
-bool use_old_settings = true;
-const int RS5_VERSION = 17999;
-
-// This function obtains the os build number from the registry and accordingly sets the settings executable
-void os_detection()
+// The following three helper functions determine if the user has a build version higher than or equal to 19h1, as that is a requirement for xaml islands
+// Source : Microsoft-ui-xaml github
+// Link: https://github.com/microsoft/microsoft-ui-xaml/blob/c045cde57c5c754683d674634a0baccda34d58c4/dev/dll/SharedHelpers.cpp
+template<uint16_t APIVersion> bool IsAPIContractVxAvailable()
 {
-    HKEY hkey;
-    const wchar_t* osVersionPath = L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion";
-    
-    if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, osVersionPath, 0, KEY_READ, &hkey) == ERROR_SUCCESS)
+    static bool isAPIContractVxAvailableInitialized = false;
+    static bool isAPIContractVxAvailable = false;
+    if (!isAPIContractVxAvailableInitialized)
     {
-        wchar_t buildNumberString[256];
-        DWORD bufferSize = sizeof(buildNumberString);
-        int buildNum = 0;
-
-        if (RegQueryValueExW(hkey, L"CurrentBuildNumber", 0, NULL, (LPBYTE)buildNumberString, &bufferSize) == ERROR_SUCCESS)
-        {
-            if (wcslen(buildNumberString) > 0)
-            {
-                buildNum = _wtoi(buildNumberString);
-                if (buildNum > RS5_VERSION)
-                {
-                    use_old_settings = false;
-                }
-            }
-        }
+        isAPIContractVxAvailableInitialized = true;
+        isAPIContractVxAvailable = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", APIVersion);
     }
+
+    return isAPIContractVxAvailable;
+}
+
+
+bool IsAPIContractV8Available()
+{
+    return IsAPIContractVxAvailable<8>();
+}
+
+bool Is19H1OrHigher()
+{
+    return IsAPIContractV8Available();
+}
+
+// This function returns true if the build is 19h1 or higher, so that we deploy the new settings.
+// It returns false otherwise.
+bool use_new_settings()
+{
+    return Is19H1OrHigher();
 }
 
 
@@ -251,18 +255,16 @@ void run_settings_window()
     // powertoys_pid : PowerToys process pid.
     // settings_theme: pass "dark" to start the settings window in dark mode
 
-    os_detection();
-
     // Arg 1: executable path.
     std::wstring executable_path = get_module_folderpath();
 
-    if (use_old_settings)
+    if (use_new_settings())
     {
-        executable_path.append(L"\\PowerToysSettings.exe");
+        executable_path.append(L"\\SettingsUIRunner\\Microsoft.PowerToys.Settings.UI.Runner.exe");
     }
     else
     {
-        executable_path.append(L"\\SettingsUIRunner\\Microsoft.PowerToys.Settings.UI.Runner.exe");
+        executable_path.append(L"\\PowerToysSettings.exe");
     }
 
     // Arg 2: pipe server. Generate unique names for the pipes, if getting a UUID is possible.
