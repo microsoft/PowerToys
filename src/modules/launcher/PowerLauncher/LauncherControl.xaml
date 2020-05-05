@@ -11,6 +11,10 @@
   <UserControl.Resources>
         <Color x:Key="SystemBaseMediumLowColor">#66000000</Color>
         <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#66000000" />
+        <SolidColorBrush x:Key="TextBox.Static.Border" Color="Transparent"/>
+        <SolidColorBrush x:Key="TextBox.MouseOver.Border" Color="Transparent"/>
+        <SolidColorBrush x:Key="TextBox.Focus.Border" Color="Transparent"/>
+      
         <!--
             https://github.com/MicrosoftDocs/windows-uwp/issues/2072
             TextControlPlaceholderForeground is based on SystemBaseMediumLowColor	
@@ -20,14 +24,70 @@
                 should be based from SystemColors https://docs.microsoft.com/en-us/archive/blogs/wpf/systemcolors-reference        
         -->
 
+        <Style x:Key="QueryTextBoxStyle" TargetType="{x:Type TextBox}">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+            <Setter Property="KeyboardNavigation.TabNavigation" Value="None"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="AllowDrop" Value="true"/>
+            <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst"/>
+            <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
+            <Setter Property="Padding" Value="12,0,0,0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Grid>
+                            <TextBlock Margin="15, 1, 0, 0" Text="{TemplateBinding Tag}">
+                                <TextBlock.Style>
+                                    <Style TargetType="{x:Type TextBlock}">
+                                        <Setter Property="Foreground" Value="Transparent"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path=Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
+                                                <Setter Property="Foreground" Value="LightGray"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <Border x:Name="border" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" SnapsToDevicePixels="True">
+                                <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Opacity" TargetName="border" Value="0.56"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource TextBox.MouseOver.Border}"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="true">
+                                <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource TextBox.Focus.Border}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsInactiveSelectionHighlightEnabled" Value="true"/>
+                        <Condition Property="IsSelectionActive" Value="false"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="SelectionBrush" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}"/>
+                </MultiTrigger>
+            </Style.Triggers>
+        </Style>
+      
         <Style TargetType="TextBox" x:Key="CustomAutoSuggestBoxTextBoxStyle">
             <!--<Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}" />
             <Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}" />
             <Setter Property="Foreground" Value="{ThemeResource TextControlForeground}" />-->
-            <Setter Property="Background" Value="Transparent" />
+            
             <!--<Setter Property="BorderBrush" Value="{ThemeResource TextControlBorderBrush}" />
             <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextControlSelectionHighlightColor}" />-->
-            <Setter Property="BorderThickness" Value="0" />
+            
             <!--<Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
             <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
             <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Auto" />
@@ -36,8 +96,41 @@
             <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
             <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
             -->
-            <Setter Property="Padding" Value="12,0,0,0" />
-<!--            <Setter Property="Template">
+            
+            <!--<Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Grid>
+                            <TextBox 
+                                Background="{TemplateBinding Background}" 
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Text="{TemplateBinding Tag}" 
+                                Panel.ZIndex="0">
+                                <TextBox.Style>
+                                    <Style TargetType="{x:Type TextBox}">
+                                        <Setter Property="Foreground" Value="Transparent"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path=Text, Source={x:Reference textSource}}" Value="">
+                                                <Setter Property="Foreground" Value="DarkGray"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBox.Style>
+                            </TextBox>
+                            <TextBox 
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Foreground="{TemplateBinding Foreground}"
+                                AcceptsReturn="{TemplateBinding AcceptsReturn}"
+                                AcceptsTab="{TemplateBinding AcceptsTab}"
+                                Text="{Binding Path=Text}"
+                                x:Name="textSource" 
+                                Background="Transparent" 
+                                Panel.ZIndex="2" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>-->
+            <!--            <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
                         <Grid>
@@ -152,6 +245,7 @@
             VerticalAlignment="Center"
             FontSize="24"
             Foreground="{DynamicResource TextControlPlaceholderForeground}"
+
          />
 
         <!--
@@ -166,7 +260,8 @@
             Margin="10, 0, 0, 0"
             VerticalAlignment="Center"
             FontSize="24"
-            Style="{StaticResource CustomAutoSuggestBoxTextBoxStyle}"
+            Style="{StaticResource QueryTextBoxStyle}"
+            Tag="Start typing..."
             />
 
         <TextBlock
