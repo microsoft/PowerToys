@@ -13,6 +13,7 @@
 #include "winrt/Windows.UI.Text.h"
 #include "winrt/Windows.UI.Core.h"
 #include <stdlib.h>
+#include <ProjectTelemetry.h>
 
 using namespace winrt;
 using namespace Windows::UI;

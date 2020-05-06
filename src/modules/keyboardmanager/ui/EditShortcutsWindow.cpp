@@ -3,6 +3,7 @@
 #include "ShortcutControl.h"
 #include "KeyDropDownControl.h"
 #include "XamlBridge.h"
+#include <keyboardmanager/common/trace.h>
 
 LRESULT CALLBACK EditShortcutsWindowProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -167,7 +168,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
         // Clear existing shortcuts
         keyboardManagerState.ClearOSLevelShortcuts();
-
+        DWORD successfulRemapCount = 0;
         // Save the shortcuts that are valid and report if any of them were invalid
         for (int i = 0; i < ShortcutControl::shortcutRemapBuffer.size(); i++)
         {
@@ -181,6 +182,10 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
                 {
                     isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
                     // Tooltip is already shown for this row
+                }
+                else
+                {
+                    successfulRemapCount += 1;
                 }
             }
             else
@@ -203,6 +208,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         {
             isSuccess = KeyboardManagerHelper::ErrorType::SaveFailed;
         }
+        Trace::OSLevelShortcutRemapCount(successfulRemapCount);
         settingsMessage.Text(KeyboardManagerHelper::GetErrorMessage(isSuccess));
     });
 

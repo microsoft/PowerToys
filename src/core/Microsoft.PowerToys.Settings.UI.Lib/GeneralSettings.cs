@@ -59,7 +59,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             this.AutoDownloadUpdates = false;
             this.Theme = "system";
             this.SystemTheme = "light";
-            this.PowertoysVersion = interop.CommonManaged.GetProductVersion();
+            try
+            {
+                this.PowertoysVersion = DefaultPowertoysVersion();
+            }
+            catch
+            {
+                this.PowertoysVersion = "v0.0.0";
+            }
+
             this.Enabled = new EnabledModules();
             this.CustomActionName = string.Empty;
         }
@@ -68,6 +76,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);
+        }
+
+        private string DefaultPowertoysVersion()
+        {
+            return interop.CommonManaged.GetProductVersion();
         }
     }
 }

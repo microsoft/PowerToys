@@ -27,4 +27,5 @@
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Storage.h>
 
+#include <winrt/Windows.Foundation.Metadata.h>
 #include <wil/resource.h>

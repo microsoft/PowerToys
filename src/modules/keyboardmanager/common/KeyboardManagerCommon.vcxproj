@@ -100,6 +100,7 @@
     </ClCompile>
     <ClCompile Include="RemapShortcut.cpp" />
     <ClCompile Include="Shortcut.cpp" />
+    <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Helpers.h" />
@@ -109,6 +110,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="RemapShortcut.h" />
     <ClInclude Include="Shortcut.h" />
+    <ClInclude Include="trace.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\common.vcxproj">

@@ -53,6 +53,12 @@
             <TextBlock  x:Uid="PowerRename_ShellIntergration"
                         Style="{StaticResource SettingsGroupTitleStyle}"/>
 
+            <ToggleSwitch x:Uid="PowerRename_Toggle_AutoComplete"
+                          Margin="{StaticResource SmallTopMargin}" 
+                          IsOn="{Binding Mode=TwoWay, Path=MRUEnabled}"
+                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                           />
+
             <ToggleSwitch x:Uid="PowerRename_Toggle_EnableOnContextMenu"
                           Margin="{StaticResource SmallTopMargin}" 
                           IsOn="{Binding Mode=TwoWay, Path=EnabledOnContextMenu}"

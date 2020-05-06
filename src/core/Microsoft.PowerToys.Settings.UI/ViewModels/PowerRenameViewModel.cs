@@ -75,7 +75,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         ShellPage.DefaultSndMSGCallback(snd.ToString());
 
                         _powerRenameEnabled = value;
-                        RaisePropertyChanged();
+                        OnPropertyChanged("IsEnabled");
                     }
                 }
             }

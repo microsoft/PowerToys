@@ -4,7 +4,6 @@
 #include <interface/win_hook_event_data.h>
 #include <common/settings_objects.h>
 #include <common/shared_constants.h>
-#include "trace.h"
 #include "resource.h"
 #include <keyboardmanager/ui/EditKeyboardWindow.h>
 #include <keyboardmanager/ui/EditShortcutsWindow.h>
@@ -12,7 +11,8 @@
 #include <keyboardmanager/common/Shortcut.h>
 #include <keyboardmanager/common/RemapShortcut.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
-#include <common\settings_helpers.h>
+#include <common/settings_helpers.h>
+#include <keyboardmanager/common/trace.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -267,6 +267,9 @@ public:
     virtual void enable()
     {
         m_enabled = true;
+        // Log telemetry
+        Trace::EnableKeyboardManager(true);
+        // Start keyboard hook
         start_lowlevel_keyboard_hook();
     }
 
@@ -274,6 +277,9 @@ public:
     virtual void disable()
     {
         m_enabled = false;
+        // Log telemetry
+        Trace::EnableKeyboardManager(false);
+        // Stop keyboard hook
         stop_lowlevel_keyboard_hook();
     }
 

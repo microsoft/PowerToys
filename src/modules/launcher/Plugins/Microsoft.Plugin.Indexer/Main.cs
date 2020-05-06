@@ -12,6 +12,8 @@ using Microsoft.Plugin.Indexer.SearchHelper;
 using Microsoft.Search.Interop;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using System.Windows.Controls;
+using Wox.Infrastructure.Logger;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.Plugin.Indexer
 {
@@ -29,6 +31,9 @@ namespace Microsoft.Plugin.Indexer
 
         // To access Windows Search functionalities
         private readonly WindowsSearchAPI _api = new WindowsSearchAPI();
+
+        // Reserved keywords in oleDB
+        private string ReservedStringPattern = @"^[\/\\\$\%]+$";
 
         private IContextMenu _contextMenuLoader;
 
@@ -50,67 +55,68 @@ namespace Microsoft.Plugin.Indexer
                     _settings.MaxSearchCount = 50;
                 }
 
-                try
+                var regexMatch = Regex.Match(searchQuery, ReservedStringPattern);
+
+                if (!regexMatch.Success)
                 {
-                    var searchResultsList = _api.Search(searchQuery, maxCount: _settings.MaxSearchCount).ToList();
-                    foreach (var searchResult in searchResultsList)
+                    try
                     {
-                        var path = searchResult.Path;
-
-                        string workingDir = null;
-                        if (_settings.UseLocationAsWorkingDir)
-                            workingDir = Path.GetDirectoryName(path);
-
-                        Result r = new Result();
-                        r.Title = searchResult.Title;
-                        r.SubTitle = "Search: " + path;
-                        r.IcoPath = path;
-                        r.Action = c =>
+                        var searchResultsList = _api.Search(searchQuery, maxCount: _settings.MaxSearchCount).ToList();
+                        foreach (var searchResult in searchResultsList)
                         {
-                            bool hide;
-                            try
+                            var path = searchResult.Path;
+
+                            string workingDir = null;
+                            if (_settings.UseLocationAsWorkingDir)
+                                workingDir = Path.GetDirectoryName(path);
+
+                            Result r = new Result();
+                            r.Title = searchResult.Title;
+                            r.SubTitle = "Search: " + path;
+                            r.IcoPath = path;
+                            r.Action = c =>
                             {
-                                Process.Start(new ProcessStartInfo
+                                bool hide;
+                                try
                                 {
-                                    FileName = path,
-                                    UseShellExecute = true,
-                                    WorkingDirectory = workingDir
-                                });
-                                hide = true;
-                            }
-                            catch (Win32Exception)
+                                    Process.Start(new ProcessStartInfo
+                                    {
+                                        FileName = path,
+                                        UseShellExecute = true,
+                                        WorkingDirectory = workingDir
+                                    });
+                                    hide = true;
+                                }
+                                catch (Win32Exception)
+                                {
+                                    var name = $"Plugin: {_context.CurrentPluginMetadata.Name}";
+                                    var msg = "Can't Open this file";
+                                    _context.API.ShowMsg(name, msg, string.Empty);
+                                    hide = false;
+                                }
+                                return hide;
+                            };
+                            r.ContextData = searchResult;
+
+                            //If the result is a directory, then it's display should show a directory.
+                            if (Directory.Exists(path))
                             {
-                                var name = $"Plugin: {_context.CurrentPluginMetadata.Name}";
-                                var msg = "Can't Open this file";
-                                _context.API.ShowMsg(name, msg, string.Empty);
-                                hide = false;
+                                r.QueryTextDisplay = path;
                             }
-                            return hide;
-                        };
-                        r.ContextData = searchResult;
 
-                        //If the result is a directory, then it's display should show a directory.
-                        if(Directory.Exists(path))
-                        {
-                            r.QueryTextDisplay = path;
+                            results.Add(r);
                         }
-
-                        results.Add(r);
                     }
-                }
-                catch(InvalidOperationException)
-                {
-                    //The connection has closed, internal error of ExecuteReader()
-                    //Not showing this exception to the users
-                }
-                catch (Exception ex)
-                {
-                    results.Add(new Result
+                    catch (InvalidOperationException)
                     {
-                        Title = ex.ToString(),
-                        IcoPath = "Images\\WindowsIndexerImg.bmp"
-                    });
-                }
+                        //The connection has closed, internal error of ExecuteReader()
+                        //Not showing this exception to the users
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Info(ex.ToString());
+                    }
+                }               
             }
 
             return results;

@@ -15,7 +15,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             MaxMRUSize = new IntProperty();
             ShowIcon = new BoolProperty();
             ExtendedContextMenuOnly = new BoolProperty();
+            Enabled = new BoolProperty();
         }
+
+        public BoolProperty Enabled { get; set; }
 
         [JsonPropertyName("bool_persist_input")]
         public BoolProperty PersistState { get; set; }

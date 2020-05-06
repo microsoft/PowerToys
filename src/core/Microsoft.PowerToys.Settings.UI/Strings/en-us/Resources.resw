@@ -369,16 +369,16 @@
     <value>Choose Settings color</value>
   </data>
   <data name="PowerRename_Toggle_EnableOnContextMenu.Header" xml:space="preserve">
-    <value>Show on default context menu</value>
+    <value>Show icon on context menu</value>
   </data>
   <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Header" xml:space="preserve">
-    <value>Only show on extended context menu (Shift + Right-click)</value>
+    <value>Only show the PowerRename menu item on the extended context menu (Shift + Right-click).</value>
   </data>
   <data name="PowerRename_Toggle_MaxDispListNum.Text" xml:space="preserve">
-    <value>Maximum numbers of items to show in recently used list</value>
+    <value>Maximum numbers of items to show in recently used list for autocomplete dropdown.</value>
   </data>
   <data name="PowerRename_Toggle_RestoreFlagsOnLaunch.Header" xml:space="preserve">
-    <value>Restore search, replace and flags values on launch from previous run</value>
+    <value>Restore search, replace and flags values on launch from previous run.</value>
   </data>
   <data name="FileEplorerPreview_ToggleSwitch_Preview_MD.Header" xml:space="preserve">
     <value>Markdown Preview Handler</value>
@@ -396,7 +396,7 @@
     <value>Open-source notice</value>
   </data>
   <data name="PowerRename_Toggle_AutoComplete.Header" xml:space="preserve">
-    <value>Enable Auto Complete</value>
+    <value>Enable autocomplete and autosuggest of recently used list for autocomplete dropdown.</value>
   </data>
   <data name="FancyZones_BorderColor.Text" xml:space="preserve">
     <value>Zone border color (Default #FFFFFF)</value>
