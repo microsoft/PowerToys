@@ -29,8 +29,8 @@ namespace PowerLauncher.UI
 
             if (button != null)
             {
-                //We currently can't take a reference on the wox project from a UWP project.  The dynamic method invoke should be replace
-                //by an call to the view model once we refactor the project.
+                //We currently can't take a reference on the wox project from a UWP project.  The dynamic method invocation should be replaced
+                //by a call to the view model once we refactor the project.
                 var dataContext = ((dynamic)button.DataContext);
                 if(dataContext?.GetType().GetMethod("SendTelemetryEvent") != null)
                 {
