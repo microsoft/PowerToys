@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 
                 if (args.Length > 3)
                 {
-                    if (args[4] == "true")
+                    if (args[3] == "true")
                     {
                         IsElevated = true;
                     }
