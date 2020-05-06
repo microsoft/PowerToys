@@ -221,10 +221,7 @@ private:
     void CycleActiveZoneSet(DWORD vkCode) noexcept;
     bool OnSnapHotkey(DWORD vkCode) noexcept;
 
-
     void RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept;
-    void HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) noexcept;
-    void RegisterVirtualDesktopUpdates(std::unordered_set<GUID>& currentVirtualDesktopIds) noexcept;
 
     void RegisterNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept;
     bool IsNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept;
