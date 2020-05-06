@@ -6,7 +6,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 First commit:
 User: Sanid Singhal
-Date: May 6, 2020
+Date: May 6, 2020 10:00 AM
 
 ## Build Status
 
