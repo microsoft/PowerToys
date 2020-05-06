@@ -123,6 +123,9 @@ int runner(bool isProcessElevated)
         chdir_current_executable();
         // Load Powertyos DLLS
         // For now only load known DLLs
+        
+        std::wstring baseModuleFolder = L"modules/";
+
         std::unordered_set<std::wstring> known_dlls = {
             L"shortcut_guide.dll",
             L"fancyzones.dll",
@@ -132,19 +135,28 @@ int runner(bool isProcessElevated)
             L"powerpreview.dll",
             L"KeyboardManager.dll"
         };
-        for (auto& file : std::filesystem::directory_iterator(L"modules/"))
+
+        std::unordered_set<std::wstring> module_folders = {
+            L"",
+            L"FileExplorerPreview/",
+        };
+
+        for (std::wstring subfolderName : module_folders)
         {
-            if (file.path().extension() != L".dll")
-                continue;
-            if (known_dlls.find(file.path().filename()) == known_dlls.end())
-                continue;
-            try
+            for (auto& file : std::filesystem::directory_iterator(baseModuleFolder + subfolderName))
             {
-                auto module = load_powertoy(file.path().wstring());
-                modules().emplace(module->get_name(), std::move(module));
-            }
-            catch (...)
-            {
+                if (file.path().extension() != L".dll")
+                    continue;
+                if (known_dlls.find(file.path().filename()) == known_dlls.end())
+                    continue;
+                try
+                {
+                    auto module = load_powertoy(file.path().wstring());
+                    modules().emplace(module->get_name(), std::move(module));
+                }
+                catch (...)
+                {
+                }
             }
         }
         // Start initial powertoys
