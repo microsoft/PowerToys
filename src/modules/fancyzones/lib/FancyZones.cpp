@@ -942,7 +942,7 @@ bool FancyZones::IsSplashScreen(HWND window)
 {
     wchar_t splashString[] = L"MsoSplash";
     wchar_t className[MAX_PATH];
-    if (GetClassName(window, className, wcslen(className)) == 0)
+    if (GetClassName(window, className, MAX_PATH) == 0)
     {
         return false;
     }
