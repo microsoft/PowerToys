@@ -940,14 +940,14 @@ bool FancyZones::IsNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept
 
 bool FancyZones::IsSplashScreen(HWND window)
 {
-    wchar_t splashString[] = L"MsoSplash";
+    wchar_t splashClassName[] = L"MsoSplash"; // shouldn't be localized
     wchar_t className[MAX_PATH];
     if (GetClassName(window, className, MAX_PATH) == 0)
     {
         return false;
     }
 
-    return wcscmp(splashString, className) == 0;
+    return wcscmp(splashClassName, className) == 0;
 }
 
 void FancyZones::OnEditorExitEvent() noexcept

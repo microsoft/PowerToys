@@ -394,11 +394,13 @@ namespace JSONHelpers
                 DWORD processId = 0;
                 GetWindowThreadProcessId(window, &processId);
 
-                if (history->second.processIdToHandleMap.find(processId) == history->second.processIdToHandleMap.end())
+                auto processIdIt = history->second.processIdToHandleMap.find(processId);
+
+                if (processIdIt == history->second.processIdToHandleMap.end())
                 {
                     return false;
                 }
-                else if (history->second.processIdToHandleMap.at(processId) != window && IsWindow(history->second.processIdToHandleMap.at(processId)))
+                else if (processIdIt->second != window && IsWindow(processIdIt->second))
                 {
                     return true;
                 }
