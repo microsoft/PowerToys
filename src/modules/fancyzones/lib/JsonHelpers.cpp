@@ -501,9 +501,25 @@ namespace JSONHelpers
             return false;
         }
 
-        auto windowMap = appZoneHistoryMap[processPath].processIdToHandleMap;
         DWORD processId = 0;
         GetWindowThreadProcessId(window, &processId);
+
+        auto history = appZoneHistoryMap.find(processPath);
+
+        if (history != appZoneHistoryMap.end())
+        {
+            auto& data = history->second;
+
+            for (auto placedWindow : data.processIdToHandleMap)
+            {
+                if (IsWindow(placedWindow.second) && processId != placedWindow.first)
+                {
+                    return false;
+                }
+            }
+        }
+
+        auto windowMap = appZoneHistoryMap[processPath].processIdToHandleMap;
         windowMap[processId] = window;
         appZoneHistoryMap[processPath] = AppZoneHistoryData{ .processIdToHandleMap = windowMap, .zoneSetUuid = zoneSetId, .deviceId = deviceId, .zoneIndexSet = zoneIndexSet };
         SaveFancyZonesData();
