@@ -139,13 +139,13 @@
             <TextBlock x:Uid="KeyboardManager_RemapKeyboardHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <TextBlock Text="Description of the Remap Keyboard (subfeature)"
+            <TextBlock Text="Click below to remap a single key to another key"
                        Margin="{StaticResource SmallTopMargin}"
                        TextWrapping="Wrap"/>
 
             <Button x:Uid="KeyboardManager_RemapKeyboardButton"
                     Margin="{StaticResource SmallTopMargin}"
-                    Style="{StaticResource ButtonRevealStyle}"
+                    Style="{StaticResource AccentButtonStyle}"
                     Command="{Binding Path=RemapKeyboardCommand}"
                     IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>
 
@@ -169,12 +169,12 @@
             <TextBlock x:Uid="KeyboardManager_RemapShortcutsHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <TextBlock Text="Description of the Remap Shortcuts (subfeature)"
+            <TextBlock Text="Click below to map a shortcut (key combination) to another shortcut (key combination)"
                        TextWrapping="Wrap" Margin="{StaticResource SmallTopMargin}"/>
 
             <Button x:Uid="KeyboardManager_RemapShortcutsButton"
                     Margin="{StaticResource SmallTopMargin}"
-                    Style="{StaticResource ButtonRevealStyle}"
+                    Style="{StaticResource AccentButtonStyle}"
                     Command="{Binding Path=EditShortcutCommand}"
                     IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"
                     />
