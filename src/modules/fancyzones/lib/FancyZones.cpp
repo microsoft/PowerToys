@@ -60,13 +60,13 @@ public:
         std::unique_lock writeLock(m_lock);
         m_windowMoveHandler.MoveSizeStart(window, monitor, ptScreen, m_zoneWindowMap);
     }
-    
+
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
         m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_zoneWindowMap);
     }
-    
+
     void MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
@@ -114,7 +114,7 @@ public:
     ToggleEditor() noexcept;
     IFACEMETHODIMP_(void)
     SettingsChanged() noexcept;
-    
+
     void WindowCreated(HWND window) noexcept;
 
     // IZoneWindowHost
@@ -669,7 +669,6 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
     return 0;
 }
 
-
 void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 {
     if (changeType == DisplayChangeType::VirtualDesktop ||
@@ -941,9 +940,12 @@ bool FancyZones::IsNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept
 
 bool FancyZones::IsSplashScreen(HWND window)
 {
-    TCHAR splashString[] = L"MsoSplash";
-    TCHAR className[MAX_PATH];
-    GetClassName(window, className, _countof(className));
+    wchar_t splashString[] = L"MsoSplash";
+    wchar_t className[MAX_PATH];
+    if (GetClassName(window, className, wcslen(className)) == 0)
+    {
+        return false;
+    }
 
     return wcscmp(splashString, className) == 0;
 }
