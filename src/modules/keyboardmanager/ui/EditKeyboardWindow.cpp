@@ -47,8 +47,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
+        800,
+        600,
         NULL,
         NULL,
         hInst,
@@ -104,27 +104,31 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     keyRemapInfoHeader.Text(L"Select the key you want to change (Original Key) and the key you want it to become (New Key).");
     keyRemapInfoHeader.Margin({ 10, 0, 0, 10 });
     keyRemapInfoHeader.FontWeight(Text::FontWeights::SemiBold());
+    keyRemapInfoHeader.TextWrapping(TextWrapping::Wrap);
 
     TextBlock keyRemapInfoExample;
     keyRemapInfoExample.Text(L"For example, if you want to press A and get B, Key A would be your \"Original Key\" and Key B would be your \"New Key\".");
     keyRemapInfoExample.Margin({ 10, 0, 0, 20 });
     keyRemapInfoExample.FontStyle(Text::FontStyle::Italic);
+    keyRemapInfoExample.TextWrapping(TextWrapping::Wrap);
 
     // Table to display the key remaps
     Grid keyRemapTable;
     ColumnDefinition originalColumn;
-    originalColumn.MaxWidth(150);
+    originalColumn.MinWidth(100);
+    originalColumn.MaxWidth(100);
     ColumnDefinition arrowColumn;
-    arrowColumn.MaxWidth(100);
+    arrowColumn.MaxWidth(200);
     ColumnDefinition newColumn;
-    newColumn.MaxWidth(150);
+    newColumn.MinWidth(100);
+    newColumn.MaxWidth(100);
     ColumnDefinition removeColumn;
-    removeColumn.MaxWidth(100);
+    removeColumn.MaxWidth(200);
     ColumnDefinition warnColumn;
-    warnColumn.MaxWidth(100);
+    warnColumn.MaxWidth(200);
     keyRemapTable.Margin({ 10, 10, 10, 20 });
     keyRemapTable.HorizontalAlignment(HorizontalAlignment::Stretch);
-    keyRemapTable.ColumnSpacing(10);
+    //keyRemapTable.ColumnSpacing(10);
     keyRemapTable.ColumnDefinitions().Append(originalColumn);
     keyRemapTable.ColumnDefinitions().Append(arrowColumn);
     keyRemapTable.ColumnDefinitions().Append(newColumn);

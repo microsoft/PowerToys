@@ -25,12 +25,23 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
 
     // Add to grid
     parent.RowDefinitions().Append(RowDefinition());
-    parent.SetColumn(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->getShortcutControl(), 0);
+    parent.SetColumn(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->getShortcutControl(), KeyboardManagerConstants::ShortcutTableOriginalColIndex);
     parent.SetRow(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->getShortcutControl(), parent.RowDefinitions().Size() - 1);
-    parent.SetColumn(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getShortcutControl(), 1);
+    parent.SetColumn(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getShortcutControl(), KeyboardManagerConstants::ShortcutTableNewColIndex);
     parent.SetRow(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getShortcutControl(), parent.RowDefinitions().Size() - 1);
     // ShortcutControl for the original shortcut
     parent.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->getShortcutControl());
+
+    // Arrow icon
+    FontIcon arrowIcon;
+    arrowIcon.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
+    arrowIcon.Glyph(L"\xE72A");
+    arrowIcon.VerticalAlignment(VerticalAlignment::Center);
+    arrowIcon.HorizontalAlignment(HorizontalAlignment::Left);
+    parent.SetColumn(arrowIcon, KeyboardManagerConstants::ShortcutTableArrowColIndex);
+    parent.SetRow(arrowIcon, parent.RowDefinitions().Size() - 1);
+    parent.Children().Append(arrowIcon);
+
     // ShortcutControl for the new shortcut
     parent.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getShortcutControl());
 
@@ -47,20 +58,21 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
         // Get index of delete button
         UIElementCollection children = parent.Children();
         children.IndexOf(currentButton, index);
-        uint32_t lastIndexInRow = index + 1;
+        uint32_t lastIndexInRow = index + ((KeyboardManagerConstants::ShortcutTableColCount - 1) - KeyboardManagerConstants::ShortcutTableRemoveColIndex);
         // Change the row index of elements appearing after the current row, as we will delete the row definition
         for (uint32_t i = lastIndexInRow + 1; i < children.Size(); i++)
         {
             int32_t elementRowIndex = parent.GetRow(children.GetAt(i).as<FrameworkElement>());
             parent.SetRow(children.GetAt(i).as<FrameworkElement>(), elementRowIndex - 1);
         }
-        parent.Children().RemoveAt(lastIndexInRow);
-        parent.Children().RemoveAt(lastIndexInRow - 1);
-        parent.Children().RemoveAt(lastIndexInRow - 2);
-        parent.Children().RemoveAt(lastIndexInRow - 3);
+
+        for (int i = 0; i < KeyboardManagerConstants::ShortcutTableColCount; i++)
+        {
+            parent.Children().RemoveAt(lastIndexInRow - i);
+        }
 
         // Calculate row index in the buffer from the grid child index (first two children are header elements and then three children in each row)
-        int bufferIndex = (lastIndexInRow - 2) / 4;
+        int bufferIndex = (lastIndexInRow - KeyboardManagerConstants::ShortcutTableHeaderCount) / KeyboardManagerConstants::ShortcutTableColCount;
         // Delete the row definition
         parent.RowDefinitions().RemoveAt(bufferIndex + 1);
         // delete the row from the buffer
@@ -68,7 +80,7 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
         // delete the ShortcutControl objects so that they get destructed
         keyboardRemapControlObjects.erase(keyboardRemapControlObjects.begin() + bufferIndex);
     });
-    parent.SetColumn(deleteShortcut, 2);
+    parent.SetColumn(deleteShortcut, KeyboardManagerConstants::ShortcutTableRemoveColIndex);
     parent.SetRow(deleteShortcut, parent.RowDefinitions().Size() - 1);
     parent.Children().Append(deleteShortcut);
 
@@ -76,7 +88,7 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     warningIcon.Glyph(L"\xE783");
     warningIcon.HorizontalAlignment(HorizontalAlignment::Left);
     ToolTipService::SetToolTip(warningIcon, warningMessage);
-    parent.SetColumn(warningIcon, 3);
+    parent.SetColumn(warningIcon, KeyboardManagerConstants::ShortcutTableWarningColIndex);
     parent.SetRow(warningIcon, parent.RowDefinitions().Size() - 1);
     parent.Children().Append(warningIcon);
     parent.UpdateLayout();

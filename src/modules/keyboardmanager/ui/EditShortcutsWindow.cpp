@@ -113,19 +113,24 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
     // Table to display the shortcuts
     Windows::UI::Xaml::Controls::Grid shortcutTable;
-    ColumnDefinition firstColumn;
-    ColumnDefinition secondColumn;
-    ColumnDefinition thirdColumn;
-    thirdColumn.MaxWidth(100);
-    ColumnDefinition fourthColumn;
-    fourthColumn.MaxWidth(100);
+    ColumnDefinition originalColumn;
+    originalColumn.MaxWidth(350);
+    ColumnDefinition arrowColumn;
+    arrowColumn.MaxWidth(100);
+    ColumnDefinition newColumn;
+    newColumn.MaxWidth(350);
+    ColumnDefinition removeColumn;
+    removeColumn.MaxWidth(100);
+    ColumnDefinition warnColumn;
+    warnColumn.MaxWidth(100);
     shortcutTable.Margin({ 10, 10, 10, 20 });
     shortcutTable.HorizontalAlignment(HorizontalAlignment::Stretch);
     shortcutTable.ColumnSpacing(10);
-    shortcutTable.ColumnDefinitions().Append(firstColumn);
-    shortcutTable.ColumnDefinitions().Append(secondColumn);
-    shortcutTable.ColumnDefinitions().Append(thirdColumn);
-    shortcutTable.ColumnDefinitions().Append(fourthColumn);
+    shortcutTable.ColumnDefinitions().Append(originalColumn);
+    shortcutTable.ColumnDefinitions().Append(arrowColumn);
+    shortcutTable.ColumnDefinitions().Append(newColumn);
+    shortcutTable.ColumnDefinitions().Append(removeColumn);
+    shortcutTable.ColumnDefinitions().Append(warnColumn);
     shortcutTable.RowDefinitions().Append(RowDefinition());
 
     // First header textblock in the header row of the shortcut table
@@ -140,9 +145,9 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     newShortcutHeader.FontWeight(Text::FontWeights::Bold());
     newShortcutHeader.Margin({ 0, 0, 0, 10 });
 
-    shortcutTable.SetColumn(originalShortcutHeader, 0);
+    shortcutTable.SetColumn(originalShortcutHeader, KeyboardManagerConstants::ShortcutTableOriginalColIndex);
     shortcutTable.SetRow(originalShortcutHeader, 0);
-    shortcutTable.SetColumn(newShortcutHeader, 1);
+    shortcutTable.SetColumn(newShortcutHeader, KeyboardManagerConstants::ShortcutTableNewColIndex);
     shortcutTable.SetRow(newShortcutHeader, 0);
 
     shortcutTable.Children().Append(originalShortcutHeader);

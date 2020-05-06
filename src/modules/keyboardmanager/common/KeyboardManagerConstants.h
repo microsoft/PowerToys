@@ -39,10 +39,16 @@ namespace KeyboardManagerConstants
     // Initial value for tooltip
     inline const winrt::hstring ToolTipInitialContent = L"Initialised";
 
+    inline const long MinShortcutSize = 2;
+    inline const long MaxShortcutSize = 3;
+
     inline const long ShortcutTableColCount = 5;
     inline const long ShortcutTableHeaderCount = 2;
     inline const long ShortcutTableOriginalColIndex = 0;
+    inline const long ShortcutTableArrowColIndex = 1;
     inline const long ShortcutTableNewColIndex = 2;
+    inline const long ShortcutTableRemoveColIndex = 3;
+    inline const long ShortcutTableWarningColIndex = 4;
     inline const long RemapTableColCount = 5;
     inline const long RemapTableHeaderCount = 2;
     inline const long RemapTableOriginalColIndex = 0;
@@ -50,4 +56,6 @@ namespace KeyboardManagerConstants
     inline const long RemapTableNewColIndex = 2;
     inline const long RemapTableRemoveColIndex = 3;
     inline const long RemapTableWarningColIndex = 4;
+
+    inline const long RemapTableControlWidth = 100;
 }

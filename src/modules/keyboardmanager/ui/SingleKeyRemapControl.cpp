@@ -24,7 +24,6 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
     keyboardRemapControlObjects.push_back(std::move(newrow));
 
     // Add to grid
-    int debug = parent.RowDefinitions().Size();
     parent.RowDefinitions().Append(RowDefinition());
     parent.SetColumn(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->getSingleKeyRemapControl(), KeyboardManagerConstants::RemapTableOriginalColIndex);
     parent.SetRow(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->getSingleKeyRemapControl(), parent.RowDefinitions().Size() - 1);
@@ -38,7 +37,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
     arrowIcon.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
     arrowIcon.Glyph(L"\xE72A");
     arrowIcon.VerticalAlignment(VerticalAlignment::Center);
-    arrowIcon.HorizontalAlignment(HorizontalAlignment::Left);
+    arrowIcon.HorizontalAlignment(HorizontalAlignment::Center);
     parent.SetColumn(arrowIcon, KeyboardManagerConstants::RemapTableArrowColIndex);
     parent.SetRow(arrowIcon, parent.RowDefinitions().Size() - 1);
     parent.Children().Append(arrowIcon);
@@ -75,6 +74,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
     deleteSymbol.Glyph(L"\xE74D");
     deleteRemapKeys.Content(deleteSymbol);
     deleteRemapKeys.Background(Media::SolidColorBrush(Colors::Transparent()));
+    deleteRemapKeys.HorizontalAlignment(HorizontalAlignment::Center);
     deleteRemapKeys.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         Button currentButton = sender.as<Button>();
         uint32_t index;
@@ -109,7 +109,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
 
     warningIcon.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
     warningIcon.Glyph(L"\xE783");
-    warningIcon.HorizontalAlignment(HorizontalAlignment::Left);
+    warningIcon.HorizontalAlignment(HorizontalAlignment::Center);
     ToolTipService::SetToolTip(warningIcon, warningMessage);
     parent.SetColumn(warningIcon, KeyboardManagerConstants::RemapTableWarningColIndex);
     parent.SetRow(warningIcon, parent.RowDefinitions().Size() - 1);
