@@ -44,9 +44,20 @@ Steps to be followed when adding code to a repository:
 			git push
 
 5. Push the commit(s) to the origin branch in github
-6. Create a pull request (PR) for your branch into the dev branch in GitHub branches.
+6. Create a pull request (PR) for your branch into **your team dev** branch (identified below) in GitHub branches.
+			
+			interns/dev-quick-screen
+			interns/dev-oobe
+			interns/dev-find-cursor
+			interns/dev-fancyzone-a
+			interns/dev-fancyzone-1
+			interns/dev-color-picker-a
+			interns/dev-color-picker-1
+			interns/dev-animated-gif
+
 	1. PRs should always describe what they contain... sometimes that only needs one line
 	2. If the thing you've built needs special instructions to test, include that here also
+
 ![](./PR.png)
 7. Wait for reviews of your PR (most PRs will require 2 reviews and a successful build)
 	1. We are not doing a build today.
@@ -66,11 +77,11 @@ Steps to be followed when adding code to a repository:
 
 ## Your Mission, should you choose to accept it... (you really do want to) ##
 Inside the doc/interns folder in the PowerToys repo, create a new markdown file (*.md) that is named "doc/interns/alias/MyFirstCommit.md" with the *alias* folder being your github user alias.  Inside the file, put today's date.
-- create a branch off **interns/dev**
+- create a branch off your team **dev** branch (see above)
 - checkout that branch
 - create the file
 - commit it
-- push it
+- push it (sometimes known as publish)
 - PR it
 - Get 2 reviews
 - Complete it.
