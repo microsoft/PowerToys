@@ -346,6 +346,8 @@ void WindowMoveHandlerPrivate::UpdateDragState(HWND window) noexcept
         mouse |= mouseR;
     }
 
+    mouse &= m_settings->GetSettings()->mouseSwitch;
+
     if (m_settings->GetSettings()->shiftDrag)
     {
         m_dragEnabled = (shift | mouse);
