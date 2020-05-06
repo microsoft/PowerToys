@@ -244,7 +244,7 @@ namespace JSONHelpers
         void UpdatePrimaryDesktopData(const std::wstring& desktopId);
         void RemoveDeletedDesktops(const std::vector<std::wstring>& activeDesktops);
 
-        bool IsAnotherWindowOfApplicationInstancePlaced(HWND window) const;
+        bool IsAnotherWindowOfApplicationInstanceZoned(HWND window) const;
         void UpdateHandle(HWND window);
         std::vector<int> GetAppLastZoneIndexSet(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const;
         bool RemoveAppLastZone(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId);

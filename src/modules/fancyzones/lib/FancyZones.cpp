@@ -369,7 +369,7 @@ FancyZones::WindowCreated(HWND window) noexcept
                     std::vector<int> zoneIndexSet = fancyZonesData.GetAppLastZoneIndexSet(window, zoneWindow->UniqueId(), guidString.get());
                     if (zoneIndexSet.size() &&
                         !IsSplashScreen(window) &&
-                        !fancyZonesData.IsAnotherWindowOfApplicationInstancePlaced(window))
+                        !fancyZonesData.IsAnotherWindowOfApplicationInstanceZoned(window))
                     {
                         m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, monitor, zoneIndexSet, m_zoneWindowMap);
                         fancyZonesData.UpdateHandle(window);

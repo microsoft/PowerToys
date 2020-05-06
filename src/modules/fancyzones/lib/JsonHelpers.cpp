@@ -382,7 +382,7 @@ namespace JSONHelpers
         SaveFancyZonesData();
     }
 
-    bool FancyZonesData::IsAnotherWindowOfApplicationInstancePlaced(HWND window) const
+    bool FancyZonesData::IsAnotherWindowOfApplicationInstanceZoned(HWND window) const
     {
         std::scoped_lock lock{ dataLock };
         auto processPath = get_process_path(window);
@@ -457,7 +457,7 @@ namespace JSONHelpers
                 auto& data = history->second;
                 if (data.zoneSetUuid == zoneSetId && data.deviceId == deviceId)
                 {
-                    if (!IsAnotherWindowOfApplicationInstancePlaced(window))
+                    if (!IsAnotherWindowOfApplicationInstanceZoned(window))
                     {
                         DWORD processId = 0;
                         GetWindowThreadProcessId(window, &processId);
@@ -488,7 +488,7 @@ namespace JSONHelpers
     {
         std::scoped_lock lock{ dataLock };
 
-        if (IsAnotherWindowOfApplicationInstancePlaced(window))
+        if (IsAnotherWindowOfApplicationInstanceZoned(window))
         {
             return false;
         }
