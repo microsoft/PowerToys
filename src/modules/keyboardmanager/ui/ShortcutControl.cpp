@@ -40,7 +40,7 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     deleteSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
     deleteSymbol.Glyph(L"\xE74D");
     deleteShortcut.Content(deleteSymbol);
-    deleteShortcut.Background(Windows::UI::Xaml::Application::Current().Resources().Lookup(box_value(L"SystemControlBackgroundAltHighBrush")).as<Windows::UI::Xaml::Media::SolidColorBrush>());
+    deleteShortcut.Background(Media::SolidColorBrush(Colors::Transparent()));
     deleteShortcut.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         Button currentButton = sender.as<Button>();
         uint32_t index;
