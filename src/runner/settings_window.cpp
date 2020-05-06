@@ -288,7 +288,7 @@ void run_settings_window()
 
     // Arg 4: settings theme.
     const std::wstring settings_theme_setting{ get_general_settings().theme };
-    std::wstring settings_theme = L"system";
+    std::wstring settings_theme;
     if (settings_theme_setting == L"dark" || (settings_theme_setting == L"system" && WindowsColors::is_dark_mode()))
     {
         settings_theme = L"dark";
