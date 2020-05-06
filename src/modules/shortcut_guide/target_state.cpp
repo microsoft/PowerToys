@@ -46,7 +46,7 @@ bool TargetState::signal_event(unsigned vk_code, bool key_down)
         input[1].ki.wVk = 0xCF;
         input[1].ki.dwFlags = KEYEVENTF_KEYUP;
         input[2].type = INPUT_KEYBOARD;
-        input[2].ki.wVk = VK_LWIN;
+        input[2].ki.wVk = vk_code;
         input[2].ki.dwFlags = KEYEVENTF_KEYUP;
         SendInput(3, input, sizeof(INPUT));
     }
