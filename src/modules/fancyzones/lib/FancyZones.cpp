@@ -221,9 +221,15 @@ private:
     void CycleActiveZoneSet(DWORD vkCode) noexcept;
     bool OnSnapHotkey(DWORD vkCode) noexcept;
 
+
     void RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept;
+    void HandleVirtualDesktopUpdates(HANDLE fancyZonesDestroyedEvent) noexcept;
+    void RegisterVirtualDesktopUpdates(std::unordered_set<GUID>& currentVirtualDesktopIds) noexcept;
+
     void RegisterNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept;
     bool IsNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept;
+
+    bool IsSplashScreen(HWND window);
 
     void OnEditorExitEvent() noexcept;
     bool ProcessSnapHotkey() noexcept;
@@ -340,6 +346,7 @@ IFACEMETHODIMP_(void)
 FancyZones::WindowCreated(HWND window) noexcept
 {
     std::shared_lock readLock(m_lock);
+
     if (m_settings->GetSettings()->appLastZone_moveWindows && IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
     {
         for (const auto& [monitor, zoneWindow] : m_zoneWindowMap)
@@ -357,15 +364,18 @@ FancyZones::WindowCreated(HWND window) noexcept
             const auto activeZoneSet = zoneWindow->ActiveZoneSet();
             if (activeZoneSet)
             {
-                const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+                auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
 
                 wil::unique_cotaskmem_string guidString;
                 if (SUCCEEDED(StringFromCLSID(activeZoneSet->Id(), &guidString)))
                 {
                     std::vector<int> zoneIndexSet = fancyZonesData.GetAppLastZoneIndexSet(window, zoneWindow->UniqueId(), guidString.get());
-                    if (zoneIndexSet.size())
+                    if (zoneIndexSet.size() &&
+                        !IsSplashScreen(window) &&
+                        !fancyZonesData.IsAnotherWindowOfApplicationInstancePlaced(window))
                     {
                         m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, monitor, zoneIndexSet, m_zoneWindowMap);
+                        fancyZonesData.UpdateHandle(window);
                         break;
                     }
                 }
@@ -930,6 +940,15 @@ bool FancyZones::IsNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept
         return std::find(it->second.begin(), it->second.end(), monitor) == it->second.end();
     }
     return true;
+}
+
+bool FancyZones::IsSplashScreen(HWND window)
+{
+    TCHAR splashString[] = L"MsoSplash";
+    TCHAR className[MAX_PATH];
+    GetClassName(window, className, _countof(className));
+
+    return wcscmp(splashString, className) == 0;
 }
 
 void FancyZones::OnEditorExitEvent() noexcept
