@@ -2,7 +2,6 @@
 
 #include "util.h"
 #include "lib/ZoneSet.h"
-#include "lib/RegistryHelpers.h"
 
 #include <common/dpi_aware.h>
 

@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "JsonHelpers.h"
-#include "RegistryHelpers.h"
 #include "ZoneSet.h"
 #include "trace.h"
 
@@ -11,22 +10,10 @@
 #include <fstream>
 #include <regex>
 #include <sstream>
+#include <unordered_set>
 
 namespace
 {
-    // Needed for migration of applied zonesets from registry
-    struct ZoneSetPersistedDataOLD
-    {
-        static constexpr inline size_t MAX_ZONES = 40;
-        DWORD Version{ VERSION_PERSISTEDDATA };
-        WORD LayoutId{};
-        DWORD ZoneCount{};
-        JSONHelpers::ZoneSetLayoutType Layout{};
-        DWORD PaddingInner{};
-        DWORD PaddingOuter{};
-        RECT Zones[MAX_ZONES]{};
-    };
-
     // From Settings.cs
     constexpr int c_focusModelId = 0xFFFF;
     constexpr int c_rowsModelId = 0xFFFE;
@@ -37,6 +24,7 @@ namespace
 
     const wchar_t* FANCY_ZONES_DATA_FILE = L"zones-settings.json";
     const wchar_t* DEFAULT_GUID = L"{00000000-0000-0000-0000-000000000000}";
+    const wchar_t* REG_SETTINGS = L"Software\\SuperFancyZones";
 
     std::wstring ExtractVirtualDesktopId(const std::wstring& deviceId)
     {
@@ -319,6 +307,65 @@ namespace JSONHelpers
         {
             destInfo = deviceInfoMap[source];
         }
+    }
+
+    void FancyZonesData::UpdatePrimaryDesktopData(const std::wstring& desktopId)
+    {
+        // Explorer persists current virtual desktop identifier to registry on a per session basis,
+        // but only after first virtual desktop switch happens. If the user hasn't switched virtual
+        // desktops in this session value in registry will be empty and we will use default GUID in
+        // that case (00000000-0000-0000-0000-000000000000).
+        // This method will go through all our persisted data with default GUID and update it with
+        // valid one.
+        auto replaceDesktopId = [&desktopId](const std::wstring& deviceId) {
+            return deviceId.substr(0, deviceId.rfind('_') + 1) + desktopId;
+        };
+        std::scoped_lock lock{ dataLock };
+        for (auto& [path, data] : appZoneHistoryMap)
+        {
+            if (ExtractVirtualDesktopId(data.deviceId) == DEFAULT_GUID)
+            {
+                data.deviceId = replaceDesktopId(data.deviceId);
+            }
+        }
+        std::vector<std::wstring> toReplace{};
+        for (const auto& [id, data] : deviceInfoMap)
+        {
+            if (ExtractVirtualDesktopId(id) == DEFAULT_GUID)
+            {
+                toReplace.push_back(id);
+            }
+        }
+        for (const auto& id : toReplace)
+        {
+            auto mapEntry = deviceInfoMap.extract(id);
+            mapEntry.key() = replaceDesktopId(id);
+            deviceInfoMap.insert(std::move(mapEntry));
+        }
+        if (activeDeviceId == DEFAULT_GUID)
+        {
+            activeDeviceId = replaceDesktopId(activeDeviceId);
+        }
+        SaveFancyZonesData();
+    }
+
+    void FancyZonesData::RemoveDeletedDesktops(const std::vector<std::wstring>& activeDesktops)
+    {
+        std::unordered_set<std::wstring> active(std::begin(activeDesktops), std::end(activeDesktops));
+        std::scoped_lock lock{ dataLock };
+        for (auto it = std::begin(deviceInfoMap); it != std::end(deviceInfoMap);)
+        {
+            auto foundId = active.find(ExtractVirtualDesktopId(it->first));
+            if (foundId == std::end(active))
+            {
+                it = deviceInfoMap.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+        SaveFancyZonesData();
     }
 
     int FancyZonesData::GetAppLastZoneIndex(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const
@@ -640,7 +687,7 @@ namespace JSONHelpers
     {
         std::scoped_lock lock{ dataLock };
         wchar_t key[256];
-        StringCchPrintf(key, ARRAYSIZE(key), L"%s\\%s", RegistryHelpers::REG_SETTINGS, L"Layouts");
+        StringCchPrintf(key, ARRAYSIZE(key), L"%s\\%s", REG_SETTINGS, L"Layouts");
         HKEY hkey;
         if (RegOpenKeyExW(HKEY_CURRENT_USER, key, 0, KEY_ALL_ACCESS, &hkey) == ERROR_SUCCESS)
         {

@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "pch.h"
 #include "HDropIterator.h"
 
 HDropIterator::HDropIterator(IDataObject* pdtobj)

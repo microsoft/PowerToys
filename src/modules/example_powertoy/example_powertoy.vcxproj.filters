@@ -13,4 +13,7 @@
   <ItemGroup>
     <ResourceCompile Include="example_powertoy.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
 </Project>

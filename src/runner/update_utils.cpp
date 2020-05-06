@@ -8,9 +8,6 @@
 #include <common/updating/updating.h>
 #include <runner/general_settings.h>
 
-#include <winrt/Windows.Web.Http.h>
-#include <winrt/Windows.Web.Http.Headers.h>
-
 bool start_msi_uninstallation_sequence()
 {
     const auto package_path = updating::get_msi_package_path();

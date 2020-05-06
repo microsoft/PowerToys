@@ -49,4 +49,7 @@
   <ItemGroup>
     <ResourceCompile Include="shortcut_guide.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
 </Project>
