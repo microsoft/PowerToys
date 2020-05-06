@@ -45,7 +45,7 @@
                        TextWrapping="Wrap"/>
 
             <ToggleSwitch x:Uid="FileEplorerPreview_ToggleSwitch_Preview_SVG"
-                          Margin="{StaticResource SmallTopMargin}"
+                          Margin="{StaticResource MediumTopMargin}"
                           IsOn="{Binding Mode=TwoWay, Path=SVGRenderIsEnabled}" />
 
             <ToggleSwitch x:Uid="FileEplorerPreview_ToggleSwitch_Preview_MD"
@@ -63,11 +63,13 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <HyperlinkButton x:Uid="Module_overview"
-                             NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/previewpane"/>
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/previewpane">
+                <TextBlock x:Uid="Module_overview" />
+            </HyperlinkButton>
 
-            <HyperlinkButton x:Uid="Give_Feedback"
-                             NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <TextBlock x:Uid="Give_Feedback" />
+            </HyperlinkButton>
         </StackPanel>
     </Grid>
 </Page>
