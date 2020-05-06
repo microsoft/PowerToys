@@ -169,7 +169,7 @@
             <TextBlock x:Uid="KeyboardManager_RemapShortcutsHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <TextBlock Text="Click below to map a shortcut (hotkey) to another shortcut"
+            <TextBlock Text="Click below to remap a shortcut (hotkey) to another shortcut"
                        TextWrapping="Wrap" Margin="{StaticResource SmallTopMargin}"/>
 
             <Button x:Uid="KeyboardManager_RemapShortcutsButton"
