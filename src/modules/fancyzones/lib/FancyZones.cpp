@@ -22,7 +22,6 @@ enum class DisplayChangeType
     WorkArea,
     DisplayChange,
     VirtualDesktop,
-    Editor,
     Initialization
 };
 
@@ -219,7 +218,7 @@ private:
     };
 
     void UpdateZoneWindows() noexcept;
-    void MoveWindowsOnDisplayChange() noexcept;
+    void UpdateWindowsPositions() noexcept;
     void CycleActiveZoneSet(DWORD vkCode) noexcept;
     bool OnSnapHotkey(DWORD vkCode) noexcept;
 
@@ -559,7 +558,7 @@ FancyZones::MoveWindowsOnActiveZoneSetChange() noexcept
 {
     if (m_settings->GetSettings()->zoneSetChange_moveWindows)
     {
-        MoveWindowsOnDisplayChange();
+        UpdateWindowsPositions();
     }
 }
 
@@ -621,7 +620,6 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
             if (lparam == static_cast<LPARAM>(EditorExitKind::Exit))
             {
                 OnEditorExitEvent();
-                OnDisplayChange(DisplayChangeType::Editor);
             }
 
             {
@@ -693,21 +691,14 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
     {
         if (m_settings->GetSettings()->displayChange_moveWindows)
         {
-            MoveWindowsOnDisplayChange();
+            UpdateWindowsPositions();
         }
     }
     else if (changeType == DisplayChangeType::VirtualDesktop)
     {
         if (m_settings->GetSettings()->virtualDesktopChange_moveWindows)
         {
-            MoveWindowsOnDisplayChange();
-        }
-    }
-    else if (changeType == DisplayChangeType::Editor)
-    {
-        if (m_settings->GetSettings()->zoneSetChange_moveWindows)
-        {
-            MoveWindowsOnDisplayChange();
+            UpdateWindowsPositions();
         }
     }
 }
@@ -796,7 +787,7 @@ void FancyZones::UpdateZoneWindows() noexcept
     EnumDisplayMonitors(nullptr, nullptr, callback, reinterpret_cast<LPARAM>(this));
 }
 
-void FancyZones::MoveWindowsOnDisplayChange() noexcept
+void FancyZones::UpdateWindowsPositions() noexcept
 {
     auto callback = [](HWND window, LPARAM data) -> BOOL {
         int i = static_cast<int>(reinterpret_cast<UINT_PTR>(::GetProp(window, ZONE_STAMP)));
@@ -947,6 +938,15 @@ void FancyZones::OnEditorExitEvent() noexcept
     JSONHelpers::FancyZonesDataInstance().ParseDeletedCustomZoneSetsFromTmpFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
     JSONHelpers::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(ZoneWindowUtils::GetAppliedZoneSetTmpPath());
     JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
+    // Update zone sets for currently active work areas.
+    for (auto& [monitor, zoneWindow] : m_zoneWindowMap)
+    {
+        zoneWindow->UpdateActiveZoneSet();
+    }
+    if (m_settings->GetSettings()->zoneSetChange_moveWindows)
+    {
+        UpdateWindowsPositions();
+    }
 }
 
 std::vector<HMONITOR> FancyZones::GetMonitorsSorted() noexcept
