@@ -58,6 +58,11 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         MessageBox(NULL, L"Call to CreateWindow failed!", L"Error", NULL);
         return;
     }
+    // Ensures the window is in foreground on first startup. If this is not done, the window appears behind because the thread is not on the foreground.
+    if (_hWndEditKeyboardWindow)
+    {
+        SetForegroundWindow(_hWndEditKeyboardWindow);
+    }
 
     // Store the newly created Edit Keyboard window's handle.
     std::unique_lock<std::mutex> hwndLock(editKeyboardWindowMutex);
@@ -107,19 +112,24 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // Table to display the key remaps
     Grid keyRemapTable;
-    ColumnDefinition firstColumn;
-    ColumnDefinition secondColumn;
-    ColumnDefinition thirdColumn;
-    thirdColumn.MaxWidth(100);
-    ColumnDefinition fourthColumn;
-    fourthColumn.MaxWidth(100);
+    ColumnDefinition originalColumn;
+    originalColumn.MaxWidth(150);
+    ColumnDefinition arrowColumn;
+    arrowColumn.MaxWidth(100);
+    ColumnDefinition newColumn;
+    newColumn.MaxWidth(150);
+    ColumnDefinition removeColumn;
+    removeColumn.MaxWidth(100);
+    ColumnDefinition warnColumn;
+    warnColumn.MaxWidth(100);
     keyRemapTable.Margin({ 10, 10, 10, 20 });
     keyRemapTable.HorizontalAlignment(HorizontalAlignment::Stretch);
     keyRemapTable.ColumnSpacing(10);
-    keyRemapTable.ColumnDefinitions().Append(firstColumn);
-    keyRemapTable.ColumnDefinitions().Append(secondColumn);
-    keyRemapTable.ColumnDefinitions().Append(thirdColumn);
-    keyRemapTable.ColumnDefinitions().Append(fourthColumn);
+    keyRemapTable.ColumnDefinitions().Append(originalColumn);
+    keyRemapTable.ColumnDefinitions().Append(arrowColumn);
+    keyRemapTable.ColumnDefinitions().Append(newColumn);
+    keyRemapTable.ColumnDefinitions().Append(removeColumn);
+    keyRemapTable.ColumnDefinitions().Append(warnColumn);
     keyRemapTable.RowDefinitions().Append(RowDefinition());
 
     // First header textblock in the header row of the keys remap table
@@ -134,9 +144,9 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     newKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
     newKeyRemapHeader.Margin({ 0, 0, 0, 10 });
 
-    keyRemapTable.SetColumn(originalKeyRemapHeader, 0);
+    keyRemapTable.SetColumn(originalKeyRemapHeader, KeyboardManagerConstants::RemapTableOriginalColIndex);
     keyRemapTable.SetRow(originalKeyRemapHeader, 0);
-    keyRemapTable.SetColumn(newKeyRemapHeader, 1);
+    keyRemapTable.SetColumn(newKeyRemapHeader, KeyboardManagerConstants::RemapTableNewColIndex);
     keyRemapTable.SetRow(newKeyRemapHeader, 0);
 
     keyRemapTable.Children().Append(originalKeyRemapHeader);
@@ -274,8 +284,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
                 isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
                 // Show tooltip warning on the problematic row
                 uint32_t warningIndex;
-                // 2 at start, 4 in each row, and last element of each row
-                warningIndex = 1 + (i + 1) * 4;
+                // headers at start, colcount in each row, and last element of each row
+                warningIndex = KeyboardManagerConstants::RemapTableHeaderCount + ((i + 1) * KeyboardManagerConstants::RemapTableColCount) - 1;
                 FontIcon warning = keyRemapTable.Children().GetAt(warningIndex).as<FontIcon>();
                 ToolTip t = ToolTipService::GetToolTip(warning).as<ToolTip>();
                 t.Content(box_value(KeyboardManagerHelper::GetErrorMessage(KeyboardManagerHelper::ErrorType::MissingKey)));

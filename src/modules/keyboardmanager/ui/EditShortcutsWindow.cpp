@@ -59,6 +59,11 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         MessageBox(NULL, L"Call to CreateWindow failed!", L"Error", NULL);
         return;
     }
+    // Ensures the window is in foreground on first startup. If this is not done, the window appears behind because the thread is not on the foreground.
+    if (_hWndEditShortcutsWindow)
+    {
+        SetForegroundWindow(_hWndEditShortcutsWindow);
+    }
 
     // Store the newly created Edit Shortcuts window's handle.
     std::unique_lock<std::mutex> hwndLock(editShortcutsWindowMutex);

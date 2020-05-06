@@ -49,7 +49,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyC
         if (indexFound)
         {
             KeyboardManagerHelper::ErrorType errorType = KeyboardManagerHelper::ErrorType::NoError;
-            int rowIndex = (controlIndex - 2) / 4;
+            int rowIndex = (controlIndex - KeyboardManagerConstants::RemapTableHeaderCount) / KeyboardManagerConstants::RemapTableColCount;
             // Check if the element was not found or the index exceeds the known keys
             if (selectedKeyIndex != -1 && keyCodeList.size() > selectedKeyIndex)
             {
@@ -66,7 +66,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyC
                     {
                         if (i != rowIndex)
                         {
-                            KeyboardManagerHelper::ErrorType result = KeyboardManagerHelper::DoKeysOverlap(singleKeyRemapBuffer[i][0], keyCodeList[selectedKeyIndex]);
+                            KeyboardManagerHelper::ErrorType result = KeyboardManagerHelper::DoKeysOverlap(singleKeyRemapBuffer[i][colIndex], keyCodeList[selectedKeyIndex]);
                             if (result != KeyboardManagerHelper::ErrorType::NoError)
                             {
                                 errorType = result;

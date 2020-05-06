@@ -26,12 +26,23 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
     // Add to grid
     int debug = parent.RowDefinitions().Size();
     parent.RowDefinitions().Append(RowDefinition());
-    parent.SetColumn(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->getSingleKeyRemapControl(), 0);
+    parent.SetColumn(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->getSingleKeyRemapControl(), KeyboardManagerConstants::RemapTableOriginalColIndex);
     parent.SetRow(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->getSingleKeyRemapControl(), parent.RowDefinitions().Size() - 1);
-    parent.SetColumn(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getSingleKeyRemapControl(), 1);
+    parent.SetColumn(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getSingleKeyRemapControl(), KeyboardManagerConstants::RemapTableNewColIndex);
     parent.SetRow(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getSingleKeyRemapControl(), parent.RowDefinitions().Size() - 1);
     // SingleKeyRemapControl for the original key.
     parent.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->getSingleKeyRemapControl());
+
+    // Arrow icon
+    FontIcon arrowIcon;
+    arrowIcon.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
+    arrowIcon.Glyph(L"\xE72A");
+    arrowIcon.VerticalAlignment(VerticalAlignment::Center);
+    arrowIcon.HorizontalAlignment(HorizontalAlignment::Left);
+    parent.SetColumn(arrowIcon, KeyboardManagerConstants::RemapTableArrowColIndex);
+    parent.SetRow(arrowIcon, parent.RowDefinitions().Size() - 1);
+    parent.Children().Append(arrowIcon);
+
     // SingleKeyRemapControl for the new remap key
     parent.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getSingleKeyRemapControl());
 
@@ -70,20 +81,21 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
         // Get index of delete button
         UIElementCollection children = parent.Children();
         children.IndexOf(currentButton, index);
-        uint32_t lastIndexInRow = index + 1;
+        uint32_t lastIndexInRow = index + ((KeyboardManagerConstants::RemapTableColCount - 1) - KeyboardManagerConstants::RemapTableRemoveColIndex);
         // Change the row index of elements appearing after the current row, as we will delete the row definition
         for (uint32_t i = lastIndexInRow + 1; i < children.Size(); i++)
         {
             int32_t elementRowIndex = parent.GetRow(children.GetAt(i).as<FrameworkElement>());
             parent.SetRow(children.GetAt(i).as<FrameworkElement>(), elementRowIndex - 1);
         }
-        parent.Children().RemoveAt(lastIndexInRow);
-        parent.Children().RemoveAt(lastIndexInRow - 1);
-        parent.Children().RemoveAt(lastIndexInRow - 2);
-        parent.Children().RemoveAt(lastIndexInRow - 3);
+
+        for (int i = 0; i < KeyboardManagerConstants::RemapTableColCount; i++)
+        {
+            parent.Children().RemoveAt(lastIndexInRow - i);
+        }
 
         // Calculate row index in the buffer from the grid child index (first two children are header elements and then three children in each row)
-        int bufferIndex = (lastIndexInRow - 2) / 4;
+        int bufferIndex = (lastIndexInRow - KeyboardManagerConstants::RemapTableHeaderCount) / KeyboardManagerConstants::RemapTableColCount;
         // Delete the row definition
         parent.RowDefinitions().RemoveAt(bufferIndex + 1);
         // delete the row from the buffer.
@@ -91,7 +103,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
         // delete the SingleKeyRemapControl objects so that they get destructed
         keyboardRemapControlObjects.erase(keyboardRemapControlObjects.begin() + bufferIndex);
     });
-    parent.SetColumn(deleteRemapKeys, 2);
+    parent.SetColumn(deleteRemapKeys, KeyboardManagerConstants::RemapTableRemoveColIndex);
     parent.SetRow(deleteRemapKeys, parent.RowDefinitions().Size() - 1);
     parent.Children().Append(deleteRemapKeys);
 
@@ -99,7 +111,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
     warningIcon.Glyph(L"\xE783");
     warningIcon.HorizontalAlignment(HorizontalAlignment::Left);
     ToolTipService::SetToolTip(warningIcon, warningMessage);
-    parent.SetColumn(warningIcon, 3);
+    parent.SetColumn(warningIcon, KeyboardManagerConstants::RemapTableWarningColIndex);
     parent.SetRow(warningIcon, parent.RowDefinitions().Size() - 1);
     parent.Children().Append(warningIcon);
     parent.UpdateLayout();
