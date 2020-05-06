@@ -90,3 +90,5 @@ Inside the doc/interns folder in the PowerToys repo, create a new markdown file 
 This note ***will not*** self destruct or in any way disappear after you have read it.
 
 Please help out the other interns by helping to review their PRs.
+
+Hello, World! ~ Dan was here ッ
