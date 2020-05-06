@@ -95,6 +95,17 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
     });
 
+    //  Text block for information about remap key section.
+    TextBlock shortcutRemapInfoHeader;
+    shortcutRemapInfoHeader.Text(L"Select shortcut you want to change (Original Shortcut) and the shortcut (New Shortcut) you want it to invoke.");
+    shortcutRemapInfoHeader.Margin({ 10, 0, 0, 10 });
+    shortcutRemapInfoHeader.FontWeight(Text::FontWeights::SemiBold());
+
+    TextBlock shortcutRemapInfoExample;
+    shortcutRemapInfoExample.Text(L"For example, if you want Ctrl+C to paste, Ctrl+C is the Original Shortcut and Ctrl+V is the New Shortcut.");
+    shortcutRemapInfoExample.Margin({ 10, 0, 0, 20 });
+    shortcutRemapInfoExample.FontStyle(Text::FontStyle::Italic);
+
     // Table to display the shortcuts
     Windows::UI::Xaml::Controls::Grid shortcutTable;
     ColumnDefinition firstColumn;
@@ -228,6 +239,8 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     });
 
     StackPanel mappingsPanel;
+    mappingsPanel.Children().Append(shortcutRemapInfoHeader);
+    mappingsPanel.Children().Append(shortcutRemapInfoExample);
     mappingsPanel.Children().Append(shortcutTable);
     mappingsPanel.Children().Append(addShortcut);
 
