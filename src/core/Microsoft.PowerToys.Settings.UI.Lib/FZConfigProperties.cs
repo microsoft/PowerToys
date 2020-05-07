@@ -10,14 +10,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public FZConfigProperties()
         {
             this.FancyzonesShiftDrag = new BoolProperty();
+            this.FancyzonesMouseSwitch = new BoolProperty();
             this.FancyzonesOverrideSnapHotkeys = new BoolProperty();
-            this.FancyzonesZoneSetChangeFlashZones = new BoolProperty();
+            this.FancyzonesMoveWindowsAcrossMonitors = new BoolProperty();
             this.FancyzonesDisplayChangeMoveWindows = new BoolProperty();
             this.FancyzonesZoneSetChangeMoveWindows = new BoolProperty();
             this.FancyzonesVirtualDesktopChangeMoveWindows = new BoolProperty();
             this.FancyzonesAppLastZoneMoveWindows = new BoolProperty();
             this.UseCursorposEditorStartupscreen = new BoolProperty();
             this.FancyzonesShowOnAllMonitors = new BoolProperty();
+            this.FancyzonesMakeDraggedWindowTransparent = new BoolProperty();
             this.FancyzonesZoneHighlightColor = new StringProperty();
             this.FancyzonesHighlightOpacity = new IntProperty();
             this.FancyzonesEditorHotkey = new KeyBoardKeysProperty();
@@ -29,11 +31,14 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("fancyzones_shiftDrag")]
         public BoolProperty FancyzonesShiftDrag { get; set; }
 
+        [JsonPropertyName("fancyzones_mouseSwitch")]
+        public BoolProperty FancyzonesMouseSwitch { get; set; }
+
         [JsonPropertyName("fancyzones_overrideSnapHotkeys")]
         public BoolProperty FancyzonesOverrideSnapHotkeys { get; set; }
 
-        [JsonPropertyName("fancyzones_zoneSetChange_flashZones")]
-        public BoolProperty FancyzonesZoneSetChangeFlashZones { get; set; }
+        [JsonPropertyName("fancyzones_moveWindowAcrossMonitors")]
+        public BoolProperty FancyzonesMoveWindowsAcrossMonitors { get; set; }
 
         [JsonPropertyName("fancyzones_displayChange_moveWindows")]
         public BoolProperty FancyzonesDisplayChangeMoveWindows { get; set; }
@@ -52,6 +57,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         [JsonPropertyName("fancyzones_show_on_all_monitors")]
         public BoolProperty FancyzonesShowOnAllMonitors { get; set; }
+
+        [JsonPropertyName("fancyzones_makeDraggedWindowTransparent")]
+        public BoolProperty FancyzonesMakeDraggedWindowTransparent { get; set; }
 
         [JsonPropertyName("fancyzones_zoneHighlightColor")]
         public StringProperty FancyzonesZoneHighlightColor { get; set; }

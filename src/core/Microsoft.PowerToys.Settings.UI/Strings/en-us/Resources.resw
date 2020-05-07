@@ -287,6 +287,15 @@
   <data name="FancyZones_LaunchEditorButtonControl_Header.Content" xml:space="preserve">
     <value>Launch Zones Editor</value>
   </data>
+  <data name="FancyZones_MakeDraggedWindowTransparentCheckBoxControl.Content" xml:space="preserve">
+    <value>Make dragged window transparent</value>
+  </data>
+  <data name="FancyZones_MouseDragCheckBoxControl_Header.Content" xml:space="preserve">
+    <value>Hold a non-primary mouse button to activate zones while dragging</value>
+  </data>
+  <data name="FancyZones_MoveVindowsAcrossAllMonitorsCheckBoxControl.Content" xml:space="preserve">
+    <value>Move windows between zones across all monitors when snapping with win+arrow</value>
+  </data>  
   <data name="FancyZones_OverrideSnapHotkeysCheckBoxControl.Content" xml:space="preserve">
     <value>Override Windows Snap hotkeys (Win + arrow) to move windows between zones</value>
   </data>
@@ -294,7 +303,10 @@
     <value>Save Zone Highlight Color Choice</value>
   </data>
   <data name="FancyZones_ShiftDragCheckBoxControl_Header.Content" xml:space="preserve">
-    <value>Hold Shift key or any non-primary mouse button to enable zones while dragging</value>
+    <value>Hold Shift key to activate zones while dragging</value>
+  </data>
+  <data name="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl.Content" xml:space="preserve">
+    <value>Show zones on all monitors while dragging a window</value>
   </data>
   <data name="FancyZones_UseCursorPosEditorStartupScreen.Content" xml:space="preserve">
     <value>Follow mouse cursor instead of focus when launching editor in a multi screen environment</value>
@@ -307,9 +319,6 @@
   </data>
   <data name="FancyZones_ZoneHighlightColor.Text" xml:space="preserve">
     <value>Zone highlight color (default: #0078D7)</value>
-  </data>
-  <data name="FancyZones_ZoneSetChangeFlashZonesCheckBoxControl.Content" xml:space="preserve">
-    <value>Flash zones when the active FancyZones layout changes</value>
   </data>
   <data name="FancyZones_ZoneSetChangeMoveWindows.Content" xml:space="preserve">
     <value>During zone layout changes, windows assigned to a zone will match new size/positions</value>

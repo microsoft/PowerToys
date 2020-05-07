@@ -81,13 +81,19 @@
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
                       />
 
+            <CheckBox x:Uid="FancyZones_MouseDragCheckBoxControl_Header"
+                      IsChecked="{ Binding Mode=TwoWay, Path=MouseSwitch}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                      />
+
             <CheckBox x:Uid="FancyZones_OverrideSnapHotkeysCheckBoxControl"
                       IsChecked="{ Binding Mode=TwoWay, Path=OverrideSnapHotkeys}"
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
-            <CheckBox x:Uid="FancyZones_ZoneSetChangeFlashZonesCheckBoxControl"
-                      IsChecked="{ Binding Mode=TwoWay, Path=ZoneSetChangeFlashZones}"
+            <CheckBox x:Uid="FancyZones_MoveVindowsAcrossAllMonitorsCheckBoxControl"
+                      IsChecked="{ Binding Mode=TwoWay, Path=MoveWindowsAcrossMonitors}"
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
@@ -114,6 +120,16 @@
 
             <CheckBox x:Uid="FancyZones_UseCursorPosEditorStartupScreen"
                       IsChecked="{ Binding Mode=TwoWay, Path=UseCursorPosEditorStartupScreen}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+
+            <CheckBox x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl"
+                      IsChecked="{ Binding Mode=TwoWay, Path=ShowOnAllMonitors}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+
+            <CheckBox x:Uid="FancyZones_MakeDraggedWindowTransparentCheckBoxControl"
+                      IsChecked="{ Binding Mode=TwoWay, Path=MakeDraggedWindowsTransparent}"
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
