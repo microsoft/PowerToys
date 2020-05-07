@@ -212,7 +212,8 @@
             <TextBox x:Uid="FancyZones_ExcludeApps_TextBoxControl"
                      Margin="{StaticResource SmallTopMargin}"
                      Text="{ Binding Mode=TwoWay, Path=ExcludedApps}"
-                     IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                     IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                     AcceptsReturn="True"/>
 
         </StackPanel>
 
