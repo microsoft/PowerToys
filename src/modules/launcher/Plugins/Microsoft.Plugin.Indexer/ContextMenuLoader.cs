@@ -6,6 +6,7 @@ using System.Windows;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 using Microsoft.Plugin.Indexer.SearchHelper;
+using System.Reflection;
 
 namespace Microsoft.Plugin.Indexer
 {
@@ -39,6 +40,7 @@ namespace Microsoft.Plugin.Indexer
                 var fileOrFolder = (type == ResultType.File) ? "file" : "folder";
                 contextMenus.Add(new ContextMenuResult
                 {
+                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = "Copy path",
                     Glyph = "\xE8C8",
                     FontFamily = "Segoe MDL2 Assets",
@@ -71,6 +73,7 @@ namespace Microsoft.Plugin.Indexer
         {
             return new ContextMenuResult
             {
+                PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                 Title = "Open containing folder",
                 Glyph = "\xE838",
                 FontFamily = "Segoe MDL2 Assets",

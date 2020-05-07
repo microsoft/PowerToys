@@ -7,11 +7,13 @@ struct Settings
 {
     // The values specified here are the defaults.
     bool shiftDrag = true;
+    bool mouseSwitch = false;
     bool displayChange_moveWindows = false;
     bool virtualDesktopChange_moveWindows = false;
     bool zoneSetChange_flashZones = false;
     bool zoneSetChange_moveWindows = false;
     bool overrideSnapHotkeys = false;
+    bool moveWindowAcrossMonitors = false;
     bool appLastZone_moveWindows = false;
     bool use_cursorpos_editor_startupscreen = true;
     bool showZonesOnAllMonitors = false;

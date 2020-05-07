@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "PowerRenameExt.h"
 #include <interface/powertoy_module_interface.h>
 #include <settings.h>

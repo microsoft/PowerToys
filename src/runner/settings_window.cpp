@@ -2,7 +2,6 @@
 #include <WinSafer.h>
 #include <Sddl.h>
 #include <sstream>
-#include <accctrl.h>
 #include <aclapi.h>
 
 #include "powertoy_module.h"

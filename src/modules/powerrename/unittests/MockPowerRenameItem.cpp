@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "MockPowerRenameItem.h"
 
 HRESULT CMockPowerRenameItem::CreateInstance(_In_opt_ PCWSTR path, _In_opt_ PCWSTR originalName, _In_ UINT depth, _In_ bool isFolder, _Outptr_ IPowerRenameItem** ppItem)

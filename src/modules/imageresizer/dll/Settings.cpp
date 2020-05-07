@@ -1,66 +1,116 @@
-#include "stdafx.h"
-#include <commctrl.h>
+#include "pch.h"
 #include "Settings.h"
 
-const wchar_t c_rootRegPath[] = L"Software\\Microsoft\\ImageResizer";
-const wchar_t c_enabled[] = L"Enabled";
-const bool c_enabledDefault = true;
+#include <common/json.h>
+#include <common/settings_helpers.h>
+#include <filesystem>
+#include <commctrl.h>
 
-bool CSettings::GetEnabled()
+namespace
 {
-    return GetRegBoolValue(c_enabled, c_enabledDefault);
-}
+    const wchar_t c_imageResizerDataFilePath[] = L"\\image-resizer-settings.json";
+    const wchar_t c_rootRegPath[] = L"Software\\Microsoft\\ImageResizer";
+    const wchar_t c_enabled[] = L"Enabled";
 
-bool CSettings::SetEnabled(_In_ bool enabled)
-{
-    return SetRegBoolValue(c_enabled, enabled);
-}
-
-bool CSettings::SetRegBoolValue(_In_ PCWSTR valueName, _In_ bool value)
-{
-    DWORD dwValue = value ? 1 : 0;
-    return SetRegDWORDValue(valueName, dwValue);
-}
-
-bool CSettings::GetRegBoolValue(_In_ PCWSTR valueName, _In_ bool defaultValue)
-{
-    DWORD value = GetRegDWORDValue(valueName, (defaultValue == 0) ? false : true);
-    return (value == 0) ? false : true;
-}
-
-bool CSettings::SetRegDWORDValue(_In_ PCWSTR valueName, _In_ DWORD value)
-{
-    return (SUCCEEDED(HRESULT_FROM_WIN32(SHSetValue(HKEY_CURRENT_USER, c_rootRegPath, valueName, REG_DWORD, &value, sizeof(value)))));
-}
-
-DWORD CSettings::GetRegDWORDValue(_In_ PCWSTR valueName, _In_ DWORD defaultValue)
-{
-    DWORD retVal = defaultValue;
-    DWORD type = REG_DWORD;
-    DWORD dwEnabled = 0;
-    DWORD cb = sizeof(dwEnabled);
-    if (SHGetValue(HKEY_CURRENT_USER, c_rootRegPath, valueName, &type, &dwEnabled, &cb) == ERROR_SUCCESS)
+    unsigned int RegReadInteger(const std::wstring& valueName, unsigned int defaultValue)
     {
-        retVal = dwEnabled;
+        DWORD type = REG_DWORD;
+        DWORD data = 0;
+        DWORD size = sizeof(DWORD);
+        if (SHGetValue(HKEY_CURRENT_USER, c_rootRegPath, valueName.c_str(), &type, &data, &size) == ERROR_SUCCESS)
+        {
+            return data;
+        }
+        return defaultValue;
     }
 
-    return retVal;
-}
-
-bool CSettings::SetRegStringValue(_In_ PCWSTR valueName, _In_ PCWSTR value)
-{
-    ULONG cb = (DWORD)((wcslen(value) + 1) * sizeof(*value));
-    return (SUCCEEDED(HRESULT_FROM_WIN32(SHSetValue(HKEY_CURRENT_USER, c_rootRegPath, valueName, REG_SZ, (const BYTE*)value, cb))));
-}
-
-bool CSettings::GetRegStringValue(_In_ PCWSTR valueName, __out_ecount(cchBuf) PWSTR value, DWORD cchBuf)
-{
-    if (cchBuf > 0)
+    bool RegReadBoolean(const std::wstring& valueName, bool defaultValue)
     {
-        value[0] = L'\0';
+        DWORD value = RegReadInteger(valueName.c_str(), defaultValue ? 1 : 0);
+        return (value == 0) ? false : true;
     }
 
-    DWORD type = REG_SZ;
-    ULONG cb = cchBuf * sizeof(*value);
-    return (SUCCEEDED(HRESULT_FROM_WIN32(SHGetValue(HKEY_CURRENT_USER, c_rootRegPath, valueName, &type, value, &cb) == ERROR_SUCCESS)));
+    bool LastModifiedTime(const std::wstring& filePath, FILETIME* lpFileTime)
+    {
+        WIN32_FILE_ATTRIBUTE_DATA attr{};
+        if (GetFileAttributesExW(filePath.c_str(), GetFileExInfoStandard, &attr))
+        {
+            *lpFileTime = attr.ftLastWriteTime;
+            return true;
+        }
+        return false;
+    }
+}
+
+CSettings::CSettings()
+{
+    std::wstring result = PTSettingsHelper::get_module_save_folder_location(L"ImageResizer");
+    jsonFilePath = result + std::wstring(c_imageResizerDataFilePath);
+    Load();
+}
+
+void CSettings::Save()
+{
+    json::JsonObject jsonData;
+
+    jsonData.SetNamedValue(c_enabled, json::value(settings.enabled));
+
+    json::to_file(jsonFilePath, jsonData);
+    GetSystemTimeAsFileTime(&lastLoadedTime);
+}
+
+void CSettings::Load()
+{
+    if (!std::filesystem::exists(jsonFilePath))
+    {
+        MigrateFromRegistry();
+
+        Save();
+    }
+    else
+    {
+        ParseJson();
+    }
+}
+
+void CSettings::Reload()
+{
+    // Load json settings from data file if it is modified in the meantime.
+    FILETIME lastModifiedTime{};
+    if (LastModifiedTime(jsonFilePath, &lastModifiedTime) &&
+        CompareFileTime(&lastModifiedTime, &lastLoadedTime) == 1)
+    {
+        Load();
+    }
+}
+
+void CSettings::MigrateFromRegistry()
+{
+    settings.enabled = RegReadBoolean(c_enabled, true);
+}
+
+void CSettings::ParseJson()
+{
+    auto json = json::from_file(jsonFilePath);
+    if (json)
+    {
+        const json::JsonObject& jsonSettings = json.value();
+        try
+        {
+            if (json::has(jsonSettings, c_enabled, json::JsonValueType::Boolean))
+            {
+                settings.enabled = jsonSettings.GetNamedBoolean(c_enabled);
+            }
+        }
+        catch (const winrt::hresult_error&)
+        {
+        }
+    }
+    GetSystemTimeAsFileTime(&lastLoadedTime);
+}
+
+CSettings& CSettingsInstance()
+{
+    static CSettings instance;
+    return instance;
 }

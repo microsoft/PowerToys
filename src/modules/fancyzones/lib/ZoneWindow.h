@@ -103,6 +103,10 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
     IFACEMETHOD_(IZoneSet*, ActiveZoneSet)() = 0;
     IFACEMETHOD_(void, ShowZoneWindow)() = 0;
     IFACEMETHOD_(void, HideZoneWindow)() = 0;
+    /**
+     * Update currently active zone layout for this work area.
+     */
+    IFACEMETHOD_(void, UpdateActiveZoneSet)() = 0;
 };
 
 winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor,

@@ -61,25 +61,25 @@ public:
         settings.MRUEnabled = MRUEnabled;
     }
 
-    inline long GetMaxMRUSize() const
+    inline unsigned int GetMaxMRUSize() const
     {
         return settings.maxMRUSize;
     }
 
-    inline void SetMaxMRUSize(long maxMRUSize)
+    inline void SetMaxMRUSize(unsigned int maxMRUSize)
     {
         settings.maxMRUSize = maxMRUSize;
     }
 
-    inline long GetFlags() const
+    inline unsigned int GetFlags() const
     {
         return settings.flags;
     }
 
-    inline void SetFlags(long flags)
+    inline void SetFlags(unsigned int flags)
     {
         settings.flags = flags;
-        Save();
+        WriteFlags();
     }
 
     inline const std::wstring& GetSearchText() const
@@ -115,8 +115,8 @@ private:
         bool extendedContextMenuOnly{ false }; // Disabled by default.
         bool persistState{ true };
         bool MRUEnabled{ true };
-        long maxMRUSize{ 10 };
-        long flags{ 0 };
+        unsigned int maxMRUSize{ 10 };
+        unsigned int flags{ 0 };
         std::wstring searchText{};
         std::wstring replaceText{};
     };
@@ -125,8 +125,12 @@ private:
     void MigrateFromRegistry();
     void ParseJson();
 
+    void ReadFlags();
+    void WriteFlags();
+
     Settings settings;
     std::wstring jsonFilePath;
+    std::wstring UIFlagsFilePath;
     FILETIME lastLoadedTime;
 };
 
