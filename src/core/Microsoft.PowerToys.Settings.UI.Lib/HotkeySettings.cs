@@ -20,6 +20,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             this.Code = 0;
         }
 
+        public HotkeySettings(bool win, bool ctrl, bool alt, bool shift, string key, int code)
+        {
+            Win = win;
+            Ctrl = ctrl;
+            Alt = alt;
+            Shift = shift;
+            Key = key;
+            Code = code;
+        }
+
         [JsonPropertyName("win")]
         public bool Win { get; set; }
 
