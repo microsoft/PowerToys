@@ -1,5 +1,5 @@
-#include <iostream>
 #include "Utility.h"
+#include <iostream>
 
 namespace Utility
 {
