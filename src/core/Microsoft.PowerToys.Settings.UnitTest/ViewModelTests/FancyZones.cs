@@ -105,7 +105,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void MakeDraggedWindowsTransparent_ShouldSetValue2True_WhenSuccessful()
+        public void ZoneSetChangeFlashZones_ShouldSetValue2False_WhenSuccessful()
         {
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel();
