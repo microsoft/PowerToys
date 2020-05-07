@@ -51,13 +51,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             this._editorHotkey = Settings.Properties.FancyzonesEditorHotkey.Value;
 
             string inactiveColor = Settings.Properties.FancyzonesInActiveColor.Value;
-            this._zoneInActiveColor = inactiveColor != "" ? inactiveColor.ToColor() : "#F5FCFF".ToColor();
+            this._zoneInActiveColor = inactiveColor != string.Empty ? inactiveColor.ToColor() : "#F5FCFF".ToColor();
 
             string borderColor = Settings.Properties.FancyzonesBorderColor.Value;
-            this._zoneBorderColor = borderColor != "" ?  borderColor.ToColor() : "#FFFFFF".ToColor();
+            this._zoneBorderColor = borderColor != string.Empty ?  borderColor.ToColor() : "#FFFFFF".ToColor();
 
-            string highlightColor = Settings.Properties.FancyzonesBorderColor.Value;
-            this._zoneHighlightColor = highlightColor != "" ? highlightColor.ToColor() : "#0078D7".ToColor();
+            string highlightColor = Settings.Properties.FancyzonesZoneHighlightColor.Value;
+            this._zoneHighlightColor = highlightColor != string.Empty ? highlightColor.ToColor() : "#0078D7".ToColor();
 
             GeneralSettings generalSettings;
             try
