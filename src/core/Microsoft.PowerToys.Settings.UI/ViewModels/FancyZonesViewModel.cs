@@ -9,6 +9,7 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.Views;
+using Microsoft.Toolkit.Uwp.Helpers;
 using Windows.UI;
 using Windows.UI.Popups;
 
@@ -19,30 +20,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private const string ModuleName = "FancyZones";
 
         public ButtonClickCommand LaunchEditorEventHandler { get; set; }
-
-        public ICommand SaveZoneHighlightColorEventHandler
-        {
-            get
-            {
-                return new RelayCommand<Color>(SaveZoneHighlightColor);
-            }
-        }
-
-        public ICommand SaveBorderColorEventHandler
-        {
-            get
-            {
-                return new RelayCommand<Color>(SaveZoneBorderColor);
-            }
-        }
-
-        public ICommand SaveInActiveColorEventHandler
-        {
-            get
-            {
-                return new RelayCommand<Color>(SaveZoneInActiveColor);
-            }
-        }
 
         private FancyZonesSettings Settings { get; set; }
 
@@ -69,12 +46,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             this._appLastZoneMoveWindows = Settings.Properties.FancyzonesAppLastZoneMoveWindows.Value;
             this._useCursorPosEditorStartupScreen = Settings.Properties.UseCursorposEditorStartupscreen.Value;
             this._showOnAllMonitors = Settings.Properties.FancyzonesShowOnAllMonitors.Value;
-            this._zoneHighlightColor = Settings.Properties.FancyzonesZoneHighlightColor.Value;
             this._highlightOpacity = Settings.Properties.FancyzonesHighlightOpacity.Value;
             this._excludedApps = Settings.Properties.FancyzonesExcludedApps.Value;
             this._editorHotkey = Settings.Properties.FancyzonesEditorHotkey.Value;
-            this._zoneBorderColor = Settings.Properties.FancyzonesBorderColor.Value;
-            this._zoneInActiveColor = Settings.Properties.FancyzonesInActiveColor.Value;
+            this._zoneInActiveColor = Settings.Properties.FancyzonesInActiveColor.Value.ToColor();
+            this._zoneBorderColor = Settings.Properties.FancyzonesBorderColor.Value.ToColor();
+            this._zoneHighlightColor = Settings.Properties.FancyzonesZoneHighlightColor.Value.ToColor();
 
             GeneralSettings generalSettings;
             try
@@ -100,12 +77,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _appLastZoneMoveWindows;
         private bool _useCursorPosEditorStartupScreen;
         private bool _showOnAllMonitors;
-        private string _zoneHighlightColor;
+        
         private int _highlightOpacity;
         private string _excludedApps;
         private HotkeySettings _editorHotkey;
-        private string _zoneBorderColor;
-        private string _zoneInActiveColor;
+        private Color _zoneInActiveColor;
+        private Color _zoneBorderColor;
+        private Color _zoneHighlightColor;
 
         public bool IsEnabled
         {
@@ -291,7 +269,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public string ZoneHighlightColor
+        public Color ZoneHighlightColor
         {
             get
             {
@@ -303,13 +281,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _zoneHighlightColor)
                 {
                     _zoneHighlightColor = value;
-                    Settings.Properties.FancyzonesZoneHighlightColor.Value = value;
+                    Settings.Properties.FancyzonesZoneHighlightColor.Value = ToRGBHex(value);
                     RaisePropertyChanged();
                 }
             }
         }
 
-        public string ZoneBorderColor
+        public Color ZoneBorderColor
         {
             get
             {
@@ -321,13 +299,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _zoneBorderColor)
                 {
                     _zoneBorderColor = value;
-                    Settings.Properties.FancyzonesBorderColor.Value = value;
+                    Settings.Properties.FancyzonesBorderColor.Value = ToRGBHex(value);
                     RaisePropertyChanged();
                 }
             }
         }
 
-        public string ZoneInActiveColor
+        public Color ZoneInActiveColor
         {
             get
             {
@@ -339,7 +317,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _zoneInActiveColor)
                 {
                     _zoneInActiveColor = value;
-                    Settings.Properties.FancyzonesInActiveColor.Value = value;
+                    Settings.Properties.FancyzonesInActiveColor.Value = ToRGBHex(value);
                     RaisePropertyChanged();
                 }
             }
@@ -425,19 +403,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ShellPage.DefaultSndMSGCallback("{\"action\":{\"FancyZones\":{\"action_name\":\"ToggledFZEditor\", \"value\":\"\"}}}");
         }
 
-        private void SaveZoneHighlightColor(Color color)
+        private String ToRGBHex(Color color)
         {
-            ZoneHighlightColor = color.ToString();
-        }
-
-        private void SaveZoneBorderColor(Color color)
-        {
-            ZoneBorderColor = color.ToString();
-        }
-
-        private void SaveZoneInActiveColor(Color color)
-        {
-            ZoneInActiveColor = color.ToString();
+            return "#" + color.R.ToString("X2") + color.G.ToString("X2") + color.B.ToString("X2");
         }
 
         public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
