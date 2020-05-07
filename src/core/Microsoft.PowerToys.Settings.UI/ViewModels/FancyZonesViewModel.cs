@@ -38,14 +38,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             this.LaunchEditorEventHandler = new ButtonClickCommand(LaunchEditor);
 
             this._shiftDrag = Settings.Properties.FancyzonesShiftDrag.Value;
+            this._mouseSwitch = Settings.Properties.FancyzonesMouseSwitch.Value;
             this._overrideSnapHotkeys = Settings.Properties.FancyzonesOverrideSnapHotkeys.Value;
-            this._flashZones = Settings.Properties.FancyzonesZoneSetChangeFlashZones.Value;
+            this._moveWindowsAcrossMonitors = Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value;
             this._displayChangemoveWindows = Settings.Properties.FancyzonesDisplayChangeMoveWindows.Value;
             this._zoneSetChangeMoveWindows = Settings.Properties.FancyzonesZoneSetChangeMoveWindows.Value;
             this._virtualDesktopChangeMoveWindows = Settings.Properties.FancyzonesVirtualDesktopChangeMoveWindows.Value;
             this._appLastZoneMoveWindows = Settings.Properties.FancyzonesAppLastZoneMoveWindows.Value;
             this._useCursorPosEditorStartupScreen = Settings.Properties.UseCursorposEditorStartupscreen.Value;
             this._showOnAllMonitors = Settings.Properties.FancyzonesShowOnAllMonitors.Value;
+            this._makeDraggedWindowTransparent = Settings.Properties.FancyzonesMakeDraggedWindowTransparent.Value;
             this._highlightOpacity = Settings.Properties.FancyzonesHighlightOpacity.Value;
             this._excludedApps = Settings.Properties.FancyzonesExcludedApps.Value;
             this._editorHotkey = Settings.Properties.FancyzonesEditorHotkey.Value;
@@ -75,14 +77,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private bool _isEnabled;
         private bool _shiftDrag;
+        private bool _mouseSwitch;
         private bool _overrideSnapHotkeys;
-        private bool _flashZones;
+        private bool _moveWindowsAcrossMonitors;
         private bool _displayChangemoveWindows;
         private bool _zoneSetChangeMoveWindows;
         private bool _virtualDesktopChangeMoveWindows;
         private bool _appLastZoneMoveWindows;
         private bool _useCursorPosEditorStartupScreen;
         private bool _showOnAllMonitors;
+        private bool _makeDraggedWindowTransparent;
 
         private int _highlightOpacity;
         private string _excludedApps;
@@ -131,6 +135,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool MouseSwitch
+        {
+            get
+            {
+                return _mouseSwitch;
+            }
+
+            set
+            {
+                if (value != _mouseSwitch)
+                {
+                    _mouseSwitch = value;
+                    Settings.Properties.FancyzonesMouseSwitch.Value = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
         public bool OverrideSnapHotkeys
         {
             get
@@ -149,19 +171,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool ZoneSetChangeFlashZones
+        public bool MoveWindowsAcrossMonitors
         {
             get
             {
-                return _flashZones;
+                return _moveWindowsAcrossMonitors;
             }
 
             set
             {
-                if (value != _flashZones)
+                if (value != _moveWindowsAcrossMonitors)
                 {
-                    _flashZones = value;
-                    Settings.Properties.FancyzonesZoneSetChangeFlashZones.Value = value;
+                    _moveWindowsAcrossMonitors = value;
+                    Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value = value;
                     RaisePropertyChanged();
                 }
             }
@@ -270,6 +292,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _showOnAllMonitors = value;
                     Settings.Properties.FancyzonesShowOnAllMonitors.Value = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool MakeDraggedWindowsTransparent
+        {
+            get
+            {
+                return _makeDraggedWindowTransparent;
+            }
+
+            set
+            {
+                if (value != _makeDraggedWindowTransparent)
+                {
+                    _makeDraggedWindowTransparent = value;
+                    Settings.Properties.FancyzonesMakeDraggedWindowTransparent.Value = value;
                     RaisePropertyChanged();
                 }
             }
