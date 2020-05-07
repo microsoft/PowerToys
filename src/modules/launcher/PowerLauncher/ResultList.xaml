@@ -10,7 +10,84 @@
     d:DesignWidth="720">
    
     <UserControl.Resources>
+        <!-- These colors are based on the UWP XAML resources -->
+
+        <!--<SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#30FFFFFF" /> --><!-- Default --><!--
+        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#33FFFFFF" /> --><!-- High contrast -->
+        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#2E000000" /> <!-- Light -->
+
+        <!--<SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#61FFFFFF" /> --><!-- Default --><!--
+        <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#66FFFFFF" /> --><!-- High contrast -->
+        <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#61000000" /> <!-- Light -->
+
+
+        <!--<SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#30FFFFFF" /> --><!-- Default --><!--
+        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#33FFFFFF" /> --><!-- High contrast -->
+        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#33FFFFFF" /> <!-- Light -->
+
+
+        <!--<SolidColorBrush x:Key="ButtonBorderPressed" Color="Transparent" /> --><!-- Default --><!--
+        <SolidColorBrush x:Key="ButtonBorderPressed" Color="Transparent" /> --><!-- High contrast -->
+        <SolidColorBrush x:Key="ButtonBorderPressed" Color="Transparent" /> <!-- Light -->
+
+
+        <Color x:Key="SystemBaseMediumLowColor">#66FFFFFF</Color>
+
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <Style x:Key="FocusVisual">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Margin="2" StrokeDashArray="1 2" SnapsToDevicePixels="true" StrokeThickness="1" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <SolidColorBrush x:Key="Button.Static.Background" Color="#FFDDDDDD"/>
+        <SolidColorBrush x:Key="Button.Static.Border" Color="#FF707070"/>
+        <SolidColorBrush x:Key="Button.MouseOver.Background" Color="#FFBEE6FD"/>
+        <SolidColorBrush x:Key="Button.MouseOver.Border" Color="#FF3C7FB1"/>
+        <SolidColorBrush x:Key="Button.Pressed.Background" Color="#FFC4E5F6"/>
+        <SolidColorBrush x:Key="Button.Pressed.Border" Color="#FF2C628B"/>
+        <SolidColorBrush x:Key="Button.Disabled.Background" Color="#FFF4F4F4"/>
+        <SolidColorBrush x:Key="Button.Disabled.Border" Color="#FFADB2B5"/>
+        <SolidColorBrush x:Key="Button.Disabled.Foreground" Color="#FF838383"/>
+        <Style x:Key="IconButtonStyle" TargetType="{x:Type Button}">
+            <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="border" CornerRadius="4" Background="Transparent" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="Transparent" SnapsToDevicePixels="true">
+                            <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsDefaulted" Value="true">
+                                <Setter Property="Background" TargetName="border" Value="Transparent"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="Transparent"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Background" TargetName="border" Value="{DynamicResource ButtonBackgroundPointerOver}"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource ButtonBorderPointerOver}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter Property="Background" TargetName="border" Value="{DynamicResource ButtonBackgroundPressed}"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource ButtonBorderPressed}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <!--<Setter Property="Background" TargetName="border" Value="{StaticResource Button.Disabled.Background}"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource Button.Disabled.Border}"/>
+                                <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="{StaticResource Button.Disabled.Foreground}"/>-->
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         
         <!--<Style x:Key="CommandButtonGridViewItemContainerStyle" TargetType="GridViewItem">
             <Setter Property="Background" Value="Transparent"/>
@@ -108,7 +185,7 @@
                             </ItemsControl.ItemsPanel>
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <Button Command="{Binding Command}" VerticalAlignment="Center" Height="42" Width="42" BorderThickness="1" >
+                                    <Button Style="{StaticResource IconButtonStyle}" Command="{Binding Command}" VerticalAlignment="Center" Height="42" Width="42" BorderThickness="1" >
                                         <!--Style="{ThemeResource IconOnlyButton}"-->
                                         <!--CornerRadius="4"-->
                                         <ToolTipService.ToolTip>
