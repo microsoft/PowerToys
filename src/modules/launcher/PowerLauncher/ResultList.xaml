@@ -141,6 +141,7 @@
             ScrollViewer.HorizontalScrollBarVisibility="Disabled"                       
             SelectionMode="Single"
             SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
+            ScrollViewer.VerticalScrollBarVisibility="Disabled"
             ItemContainerStyle="{StaticResource ResultsListViewItemContainerStyle}">
             
             <!--AllowFocusOnInteraction="False"
