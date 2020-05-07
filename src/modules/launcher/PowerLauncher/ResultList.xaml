@@ -26,9 +26,9 @@
         <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#33FFFFFF" /> <!-- Light -->
 
 
-        <!--<SolidColorBrush x:Key="ButtonBorderPressed" Color="Transparent" /> --><!-- Default --><!--
-        <SolidColorBrush x:Key="ButtonBorderPressed" Color="Transparent" /> --><!-- High contrast -->
-        <SolidColorBrush x:Key="ButtonBorderPressed" Color="Transparent" /> <!-- Light -->
+        <!--<SolidColorBrush x:Key="ButtonBorderPressed" Color="#61FFFFFF" /> --><!-- Default --><!--
+        <SolidColorBrush x:Key="ButtonBorderPressed" Color="#66FFFFFF" /> --><!-- High contrast -->
+        <SolidColorBrush x:Key="ButtonBorderPressed" Color="#61000000" /> <!-- Light -->
 
 
         <Color x:Key="SystemBaseMediumLowColor">#66FFFFFF</Color>
@@ -43,15 +43,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <SolidColorBrush x:Key="Button.Static.Background" Color="#FFDDDDDD"/>
-        <SolidColorBrush x:Key="Button.Static.Border" Color="#FF707070"/>
-        <SolidColorBrush x:Key="Button.MouseOver.Background" Color="#FFBEE6FD"/>
-        <SolidColorBrush x:Key="Button.MouseOver.Border" Color="#FF3C7FB1"/>
-        <SolidColorBrush x:Key="Button.Pressed.Background" Color="#FFC4E5F6"/>
-        <SolidColorBrush x:Key="Button.Pressed.Border" Color="#FF2C628B"/>
-        <SolidColorBrush x:Key="Button.Disabled.Background" Color="#FFF4F4F4"/>
-        <SolidColorBrush x:Key="Button.Disabled.Border" Color="#FFADB2B5"/>
-        <SolidColorBrush x:Key="Button.Disabled.Foreground" Color="#FF838383"/>
+       
         <Style x:Key="IconButtonStyle" TargetType="{x:Type Button}">
             <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
             <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
@@ -88,39 +80,29 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        
-        <!--<Style x:Key="CommandButtonGridViewItemContainerStyle" TargetType="GridViewItem">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Margin" Value="0,0,0,0"/>
+
+        <Style x:Key="CommandButtonGridViewItemContainerStyle"  TargetType="ListViewItem">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="0" />
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="GridViewItem">
-                        <ListViewItemPresenter x:Name="Root" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
-                            <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup x:Name="CommonStates">
-                                    <VisualState x:Name="Normal"/>
-                                    <VisualState x:Name="Selected"/>
-                                    <VisualState x:Name="PointerOver"/>
-                                    <VisualState x:Name="PointerOverSelected"/>
-                                    <VisualState x:Name="PointerOverPressed"/>
-                                    <VisualState x:Name="Pressed"/>
-                                    <VisualState x:Name="PressedSelected"/>
-                                </VisualStateGroup>
-                                <VisualStateGroup x:Name="DisabledStates">
-                                    <VisualState x:Name="Enabled"/>
-                                    <VisualState x:Name="Disabled"/>
-                                </VisualStateGroup>
-                            </VisualStateManager.VisualStateGroups>
-                        </ListViewItemPresenter>
+                    <ControlTemplate TargetType="{x:Type ListViewItem}">
+                        <Border x:Name="border" Background="Transparent" BorderBrush="Transparent" SnapsToDevicePixels="true">
+                            <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Background" TargetName="border" Value="Transparent"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="Transparent"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-        </Style>-->
+        </Style>
     </UserControl.Resources>
 
-    <Grid 
-        x:Name="PowerBar"  
-        VerticalAlignment="Top">
+    <Grid VerticalAlignment="Top">
         <ListView
             x:Name="SuggestionsList"
             x:FieldModifier="public"
@@ -160,10 +142,12 @@
                         <Image x:Name="AppIcon" Height="36" MaxWidth="56" Grid.RowSpan="2" Margin="-8,0,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />
                         <TextBlock x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" Margin="0,0,0,-2" VerticalAlignment="Bottom"/>
                         <TextBlock x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Opacity="0.6" Margin="0,2,0,0" VerticalAlignment="Top"/>
+                        
+                    
                         <ListView                                  
                             HorizontalAlignment="Right" 
                             VerticalAlignment="Center"                                  
-                            Margin="8,8,0,0"
+                            Margin="0,0,24,0" 
                             Background="Transparent"
                             BorderThickness="0"
                             Grid.RowSpan="2" 
@@ -174,8 +158,8 @@
                             SelectionMode="Single"
                             SelectedIndex="{Binding ContextMenuSelectedIndex}"
                             Visibility="{Binding AreContextButtonsActive, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            >
-                            <!--ItemContainerStyle="{StaticResource CommandButtonGridViewItemContainerStyle}"-->
+                            ItemContainerStyle="{StaticResource CommandButtonGridViewItemContainerStyle}">
+                            <!-- Right margin is now set to 24 to cater for the scrollbar. If we fix the weird width issue we can put it back to 0 (or 8 if there's no spacing by default) -->
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <StackPanel Orientation="Horizontal"
@@ -186,8 +170,6 @@
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <Button Style="{StaticResource IconButtonStyle}" Command="{Binding Command}" VerticalAlignment="Center" Height="42" Width="42" BorderThickness="1" >
-                                        <!--Style="{ThemeResource IconOnlyButton}"-->
-                                        <!--CornerRadius="4"-->
                                         <ToolTipService.ToolTip>
                                             <TextBlock Text="{Binding Title}"/>
                                         </ToolTipService.ToolTip>
