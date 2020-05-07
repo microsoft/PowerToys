@@ -15,7 +15,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public SndModuleSettings()
         {
-
         }
 
         public SndModuleSettings(T settings)
