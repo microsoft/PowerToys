@@ -10,6 +10,7 @@ using Wox.ViewModel;
 using Screen = System.Windows.Forms.Screen;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using System.Windows.Controls;
+using System.Threading.Tasks;
 
 namespace PowerLauncher
 {
@@ -265,7 +266,10 @@ namespace PowerLauncher
             }
 
             return string.Empty;
-        }    
+        }
+
+        private const int millisecondsToWait = 75;
+        private static DateTime s_lastTimeOfTyping;
 
         private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -283,8 +287,24 @@ namespace PowerLauncher
                     SearchBox.AutoCompleteTextBlock.Text = string.Empty;
                 }
                 _viewModel.QueryText = text;
-                _viewModel.Query();
+                var latestTimeOfTyping = DateTime.Now;
+
+                Task.Run(() => DelayedCheck(latestTimeOfTyping, text));
+                s_lastTimeOfTyping = latestTimeOfTyping;
             }
         }
+
+        private async Task DelayedCheck(DateTime latestTimeOfTyping, string text)
+        {
+            await Task.Delay(millisecondsToWait);
+            if (latestTimeOfTyping.Equals(s_lastTimeOfTyping))
+            {
+                await System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    _viewModel.Query();
+                }));
+            }
+        }
+
     }
- }
+}
