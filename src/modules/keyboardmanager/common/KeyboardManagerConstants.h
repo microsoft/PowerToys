@@ -58,4 +58,6 @@ namespace KeyboardManagerConstants
     inline const long RemapTableWarningColIndex = 4;
 
     inline const long RemapTableControlWidth = 100;
+    inline const long ShortcutTableControlWidth = 100;
+    inline const long TableDropDownHeight = 200;
 }

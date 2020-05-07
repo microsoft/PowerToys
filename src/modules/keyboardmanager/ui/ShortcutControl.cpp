@@ -37,7 +37,7 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     arrowIcon.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
     arrowIcon.Glyph(L"\xE72A");
     arrowIcon.VerticalAlignment(VerticalAlignment::Center);
-    arrowIcon.HorizontalAlignment(HorizontalAlignment::Left);
+    arrowIcon.HorizontalAlignment(HorizontalAlignment::Center);
     parent.SetColumn(arrowIcon, KeyboardManagerConstants::ShortcutTableArrowColIndex);
     parent.SetRow(arrowIcon, parent.RowDefinitions().Size() - 1);
     parent.Children().Append(arrowIcon);
@@ -52,6 +52,7 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     deleteSymbol.Glyph(L"\xE74D");
     deleteShortcut.Content(deleteSymbol);
     deleteShortcut.Background(Media::SolidColorBrush(Colors::Transparent()));
+    deleteShortcut.HorizontalAlignment(HorizontalAlignment::Center);
     deleteShortcut.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         Button currentButton = sender.as<Button>();
         uint32_t index;
@@ -86,7 +87,7 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
 
     warningIcon.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
     warningIcon.Glyph(L"\xE783");
-    warningIcon.HorizontalAlignment(HorizontalAlignment::Left);
+    warningIcon.HorizontalAlignment(HorizontalAlignment::Center);
     ToolTipService::SetToolTip(warningIcon, warningMessage);
     parent.SetColumn(warningIcon, KeyboardManagerConstants::ShortcutTableWarningColIndex);
     parent.SetRow(warningIcon, parent.RowDefinitions().Size() - 1);

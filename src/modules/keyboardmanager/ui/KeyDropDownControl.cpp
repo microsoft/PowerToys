@@ -8,8 +8,15 @@ KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;
 // Function to set properties apart from the SelectionChanged event handler
 void KeyDropDownControl::SetDefaultProperties(bool isShortcut)
 {
-    dropDown.Width(KeyboardManagerConstants::RemapTableControlWidth);
-    dropDown.MaxDropDownHeight(200);
+    if (!isShortcut)
+    {
+        dropDown.Width(KeyboardManagerConstants::RemapTableControlWidth);
+    }
+    else
+    {
+        dropDown.Width(KeyboardManagerConstants::ShortcutTableControlWidth);
+    }
+    dropDown.MaxDropDownHeight(KeyboardManagerConstants::TableDropDownHeight);
     // Initialise layout attribute
     previousLayout = GetKeyboardLayout(0);
     keyCodeList = keyboardManagerState->keyboardMap.GetKeyCodeList(isShortcut);
@@ -240,7 +247,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
                 Shortcut tempShortcut;
                 tempShortcut.SetKeyCodes(GetKeysFromStackPanel(parent));
                 // Check if the value being set is the same as the other column
-                if (shortcutRemapBuffer[rowIndex][std::abs(int(colIndex) - 1)] == tempShortcut)
+                if (shortcutRemapBuffer[rowIndex][std::abs(int(colIndex) - 1)] == tempShortcut && shortcutRemapBuffer[rowIndex][std::abs(int(colIndex) - 1)].IsValidShortcut() && tempShortcut.IsValidShortcut())
                 {
                     errorType = KeyboardManagerHelper::ErrorType::MapToSameShortcut;
                 }
