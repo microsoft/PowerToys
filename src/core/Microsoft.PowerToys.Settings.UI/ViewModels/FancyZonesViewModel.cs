@@ -49,9 +49,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             this._highlightOpacity = Settings.Properties.FancyzonesHighlightOpacity.Value;
             this._excludedApps = Settings.Properties.FancyzonesExcludedApps.Value;
             this._editorHotkey = Settings.Properties.FancyzonesEditorHotkey.Value;
-            this._zoneInActiveColor = Settings.Properties.FancyzonesInActiveColor.Value.ToColor();
-            this._zoneBorderColor = Settings.Properties.FancyzonesBorderColor.Value.ToColor();
-            this._zoneHighlightColor = Settings.Properties.FancyzonesZoneHighlightColor.Value.ToColor();
+
+            string inactiveColor = Settings.Properties.FancyzonesInActiveColor.Value;
+            this._zoneInActiveColor = inactiveColor != "" ? inactiveColor.ToColor() : "#F5FCFF".ToColor();
+
+            string borderColor = Settings.Properties.FancyzonesBorderColor.Value;
+            this._zoneBorderColor = borderColor != "" ?  borderColor.ToColor() : "#FFFFFF".ToColor();
+
+            string highlightColor = Settings.Properties.FancyzonesBorderColor.Value;
+            this._zoneHighlightColor = highlightColor != "" ? highlightColor.ToColor() : "#0078D7".ToColor();
 
             GeneralSettings generalSettings;
             try
@@ -77,7 +83,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _appLastZoneMoveWindows;
         private bool _useCursorPosEditorStartupScreen;
         private bool _showOnAllMonitors;
-        
+
         private int _highlightOpacity;
         private string _excludedApps;
         private HotkeySettings _editorHotkey;
