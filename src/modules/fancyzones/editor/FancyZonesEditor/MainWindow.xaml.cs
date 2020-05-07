@@ -194,5 +194,8 @@ namespace FancyZonesEditor
 
             model.Delete();
         }
+
+        private void TemplateTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {}
     }
 }

@@ -112,6 +112,17 @@ namespace FancyZonesEditor
             UpdateLayoutModels();
         }
 
+        private ObservableCollection<string> _monitorOptions;
+        public ObservableCollection<string> MonitorOptions
+        {
+            get => _monitorOptions;
+            set
+            {
+                _monitorOptions = value;
+                FirePropertyChanged("MonitorOptions");
+            }
+        }
+
         // ZoneCount - number of zones selected in the picker window
         public int ZoneCount
         {
