@@ -53,7 +53,7 @@
 
             <ToggleSwitch x:Uid="FancyZones_EnableToggleControl_HeaderText"
                           IsOn="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                          Margin="{StaticResource SmallTopMargin}" />
+                          Margin="{StaticResource MediumTopMargin}" />
 
             <TextBlock x:Uid="FancyZones_ZoneBehavior_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
@@ -212,7 +212,8 @@
             <TextBox x:Uid="FancyZones_ExcludeApps_TextBoxControl"
                      Margin="{StaticResource SmallTopMargin}"
                      Text="{ Binding Mode=TwoWay, Path=ExcludedApps}"
-                     IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                     IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                     AcceptsReturn="True"/>
 
         </StackPanel>
 
@@ -228,10 +229,13 @@
             
             <Image Source="https://user-images.githubusercontent.com/9866362/77859136-f04ae880-7207-11ea-8a7f-4295342fe319.gif" />
 
-            <HyperlinkButton x:Uid="Module_overview"
-                             NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/fancyzones/README.md"/>
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/fancyzones/README.md">
+                <TextBlock x:Uid="Module_overview" />
+            </HyperlinkButton>
 
-            <HyperlinkButton x:Uid="Give_Feedback" NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <TextBlock x:Uid="Give_Feedback" />
+            </HyperlinkButton>
 
             <!--
             <TextBlock Text="Contributors"

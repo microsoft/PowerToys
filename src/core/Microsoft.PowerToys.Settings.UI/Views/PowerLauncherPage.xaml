@@ -44,12 +44,11 @@
 
         <StackPanel Orientation="Vertical">
             <TextBlock x:Uid="PowerLauncher_Description"
-                       Style="{StaticResource BodyTextBlockStyle}"
                        TextWrapping="Wrap"/>
 
             <ToggleSwitch x:Uid="PowerLauncher_EnablePowerLauncher" 
                           IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnablePowerLauncher}"
-                          Margin="{StaticResource SmallTopMargin}"/>
+                          Margin="{StaticResource MediumTopMargin}"/>
 
             <TextBlock x:Uid="PowerLauncher_SearchResults"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
@@ -141,19 +140,25 @@
                 Style="{StaticResource SettingsGroupTitleStyle}"
                 Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <HyperlinkButton Content="Module overview"/>
+            <HyperlinkButton>
+                <TextBlock x:Uid="Module_overview" />
+            </HyperlinkButton>
+
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <TextBlock x:Uid="Give_Feedback" />
+            </HyperlinkButton>
 
             <TextBlock 
                 Text="Attribution"
                 Style="{StaticResource SettingsGroupTitleStyle}" />
 
-            <HyperlinkButton 
-                Content="Wox" 
-                NavigateUri="https://github.com/Wox-launcher/Wox/" />
+            <HyperlinkButton NavigateUri="https://github.com/Wox-launcher/Wox/">
+                <TextBlock Text="Wox"/>
+            </HyperlinkButton>
 
-            <HyperlinkButton 
-                Content="Beta Tadele's Window Walker" 
-                NavigateUri="https://github.com/betsegaw/windowwalker/" />
+            <HyperlinkButton NavigateUri="https://github.com/betsegaw/windowwalker/">
+                <TextBlock Text="Beta Tadele's Window Walker" />
+            </HyperlinkButton>
         </StackPanel>
     </Grid>
 </Page>

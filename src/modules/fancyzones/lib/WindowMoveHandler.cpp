@@ -8,6 +8,7 @@
 #include "lib/Settings.h"
 #include "lib/ZoneWindow.h"
 #include "lib/util.h"
+#include "VirtualDesktopUtils.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -298,6 +299,15 @@ void WindowMoveHandlerPrivate::MoveWindowIntoZoneByIndexSet(HWND window, HMONITO
             if (zoneWindow != zoneWindowMap.end())
             {
                 const auto& zoneWindowPtr = zoneWindow->second;
+                // Only process windows located on currently active work area.
+                GUID windowDesktopId{};
+                GUID zoneWindowDesktopId{};
+                if (VirtualDesktopUtils::GetWindowDesktopId(window, &windowDesktopId) &&
+                    VirtualDesktopUtils::GetZoneWindowDesktopId(zoneWindowPtr.get(), &zoneWindowDesktopId) &&
+                    (windowDesktopId != zoneWindowDesktopId))
+                {
+                    return;
+                }
                 zoneWindowPtr->MoveWindowIntoZoneByIndexSet(window, indexSet);
             }
         }
@@ -335,6 +345,8 @@ void WindowMoveHandlerPrivate::UpdateDragState(HWND window) noexcept
     {
         mouse |= mouseR;
     }
+
+    mouse &= m_settings->GetSettings()->mouseSwitch;
 
     if (m_settings->GetSettings()->shiftDrag)
     {

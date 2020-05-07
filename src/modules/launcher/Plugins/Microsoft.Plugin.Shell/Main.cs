@@ -18,6 +18,7 @@ using Wox.Plugin;
 using Application = System.Windows.Application;
 using Control = System.Windows.Controls.Control;
 using Keys = System.Windows.Forms.Keys;
+using System.Reflection;
 
 namespace Microsoft.Plugin.Shell
 {
@@ -341,6 +342,7 @@ namespace Microsoft.Plugin.Shell
             {
                 new ContextMenuResult
                 {
+                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = _context.API.GetTranslation("wox_plugin_cmd_run_as_administrator"),
                     Glyph = "\xE7EF",
                     FontFamily = "Segoe MDL2 Assets",
