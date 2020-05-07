@@ -175,8 +175,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "powerpreview", "src\modules
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "powerpreviewTest", "src\modules\previewpane\powerpreviewTest\powerpreviewTest.vcxproj", "{47310AB4-9034-4BD1-8D8B-E88AD21A171B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "colorpicker", "src\modules\colorpicker\colorpicker.vcxproj", "{129B3541-63C1-482A-AB4B-78412C3075C6}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -323,10 +321,6 @@ Global
 		{47310AB4-9034-4BD1-8D8B-E88AD21A171B}.Debug|x64.Build.0 = Debug|x64
 		{47310AB4-9034-4BD1-8D8B-E88AD21A171B}.Release|x64.ActiveCfg = Release|x64
 		{47310AB4-9034-4BD1-8D8B-E88AD21A171B}.Release|x64.Build.0 = Release|x64
-		{129B3541-63C1-482A-AB4B-78412C3075C6}.Debug|x64.ActiveCfg = Debug|x64
-		{129B3541-63C1-482A-AB4B-78412C3075C6}.Debug|x64.Build.0 = Debug|x64
-		{129B3541-63C1-482A-AB4B-78412C3075C6}.Release|x64.ActiveCfg = Release|x64
-		{129B3541-63C1-482A-AB4B-78412C3075C6}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -370,7 +364,6 @@ Global
 		{748417CA-F17E-487F-9411-CAFB6D3F4877} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{217DF501-135C-4E38-BFC8-99D4821032EA} = {2F305555-C296-497E-AC20-5FA1B237996A}
 		{47310AB4-9034-4BD1-8D8B-E88AD21A171B} = {2F305555-C296-497E-AC20-5FA1B237996A}
-		{129B3541-63C1-482A-AB4B-78412C3075C6} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
