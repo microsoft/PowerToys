@@ -142,44 +142,28 @@
                               IsColorSliderVisible="True"
                               IsColorChannelTextInputVisible="True"
                               IsHexInputVisible="True"
-                              IsAlphaEnabled="True"
-                              IsAlphaSliderVisible="True"
-                              IsAlphaTextInputVisible="True"
-                              Color="{Binding Path=ZoneHighlightColor, Mode=TwoWay, Source={StaticResource eventViewModel}}"
-                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                              DataContext="{Binding ZoneHighlightColor, Source={StaticResource eventViewModel}}"/>
+                              IsAlphaEnabled="False"
+                              IsAlphaSliderVisible="False"
+                              IsAlphaTextInputVisible="False"
+                              Color="{Binding Path=ZoneHighlightColor, Mode=TwoWay}"
+                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
-            <Button x:Uid="FancyZones_SaveZoneHighlightColor"
-                    Margin="{StaticResource SmallTopMargin}"
-                    Style="{StaticResource AccentButtonStyle}"
-                    Command = "{Binding SaveZoneHighlightColorEventHandler, Source={StaticResource eventViewModel}}"
-                    CommandParameter="{Binding Color, ElementName=FancyZones_ZoneHighlightColor}"
-                    IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>            
-            
             <TextBlock x:Uid="FancyZones_InActiveColor" 
                        Style="{StaticResource BodyTextBlockStyle}"
                        Margin="{StaticResource SmallTopMargin}" />
-            
-            <muxc:ColorPicker x:Name="FancyZones_InActiveColor"
+
+            <muxc:ColorPicker x:Name="FancyZones_InActiveColorPicker"
                               Margin="0,6,0,0"
                               HorizontalAlignment="Left"
                               IsMoreButtonVisible="True"
                               IsColorSliderVisible="True"
                               IsColorChannelTextInputVisible="True"
                               IsHexInputVisible="True"
-                              IsAlphaEnabled="True"
-                              IsAlphaSliderVisible="True"
-                              IsAlphaTextInputVisible="True"
-                              Color="{Binding Path=ZoneInActiveColor, Mode=TwoWay, Source={StaticResource eventViewModel}}"
-                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" 
-                              DataContext="{Binding ZoneInActiveColor, Source={StaticResource eventViewModel}}"/>
-
-            <Button x:Uid="FancyZones_SaveZoneInActiveColor"
-                    Margin="{StaticResource SmallTopMargin}"
-                    Style="{StaticResource AccentButtonStyle}"
-                    Command = "{Binding SaveInActiveColorEventHandler, Source={StaticResource eventViewModel}}"
-                    CommandParameter="{Binding Color, ElementName=FancyZones_InActiveColor}"
-                    IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                              IsAlphaEnabled="False"
+                              IsAlphaSliderVisible="False"
+                              IsAlphaTextInputVisible="False"
+                              Color="{Binding Path=ZoneInActiveColor, Mode=TwoWay}"
+                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
             <TextBlock x:Uid="FancyZones_BorderColor" 
                        Style="{StaticResource BodyTextBlockStyle}"
@@ -192,19 +176,12 @@
                               IsColorSliderVisible="True"
                               IsColorChannelTextInputVisible="True"
                               IsHexInputVisible="True"
-                              IsAlphaEnabled="True"
-                              IsAlphaSliderVisible="True"
-                              IsAlphaTextInputVisible="True"
-                              Color="{Binding Path=ZoneBorderColor, Mode=TwoWay, Source={StaticResource eventViewModel}}"
-                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                              DataContext="{Binding ZoneBorderColor, Source={StaticResource eventViewModel}}"/>
+                              IsAlphaEnabled="False"
+                              IsAlphaSliderVisible="False"
+                              IsAlphaTextInputVisible="False"
+                              Color="{Binding Path=ZoneBorderColor, Mode=TwoWay}"
+                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
-            <Button x:Uid="FancyZones_SaveBorderColor"
-                    Margin="{StaticResource SmallTopMargin}"
-                    Style="{StaticResource AccentButtonStyle}"
-                    Command = "{Binding SaveBorderColorEventHandler, Source={StaticResource eventViewModel}}"
-                    CommandParameter="{Binding Color, ElementName=FancyZones_BorderColor}"
-                    IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
             
             <TextBlock x:Uid="FancyZones_ExcludeApps"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
