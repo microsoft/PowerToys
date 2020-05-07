@@ -99,7 +99,7 @@
                                    SelectedIndex="{Binding ContextMenuSelectedIndex}">
                             <GridView.ItemTemplate>
                                 <DataTemplate>
-                                    <Button Command="{Binding Command}" VerticalAlignment="Center" CornerRadius="4" Height="42" Width="42" BorderThickness="1" Style="{ThemeResource IconOnlyButton}">
+                                    <Button   Command="{Binding Command}" VerticalAlignment="Center" CornerRadius="4" Height="42" Width="42" BorderThickness="1" Style="{ThemeResource IconOnlyButton}" Click="ContextButton_OnClick">
                                         <ToolTipService.ToolTip>
                                             <TextBlock Text="{Binding Title}"/>
                                         </ToolTipService.ToolTip>
@@ -111,6 +111,7 @@
                                                 Key="{Binding AcceleratorKey}"
                                                 Modifiers="{Binding AcceleratorModifiers}"
                                                 IsEnabled="{Binding IsAcceleratorKeyEnabled}"
+                                                Invoked="ContextButton_OnAcceleratorInvoked"
                                             />
                                         </Button.KeyboardAccelerators>
                                     </Button>

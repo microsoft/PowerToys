@@ -26,6 +26,9 @@ using Windows.UI.Xaml.Data;
 using System.Diagnostics;
 using Mages.Core.Runtime.Converters;
 using System.Runtime.InteropServices;
+using Microsoft.PowerLauncher.Telemetry;
+using System.Timers;
+using Microsoft.PowerToys.Telemetry;
 
 namespace PowerLauncher
 {
@@ -41,6 +44,9 @@ namespace PowerLauncher
         const int ROW_HEIGHT = 75;
         const int MAX_LIST_HEIGHT = 300;
         bool isDPIChanged = false;
+        bool _deletePressed = false;
+        Timer _firstDeleteTimer = new Timer();
+
 
         #endregion
 
@@ -51,7 +57,21 @@ namespace PowerLauncher
             _settings = settings;
             InitializeComponent();
 
+            _firstDeleteTimer.Elapsed += CheckForFirstDelete;
+            _firstDeleteTimer.Interval = 1000;
+
         }
+
+        private void CheckForFirstDelete(object sender, ElapsedEventArgs e)
+        {
+            _firstDeleteTimer.Stop();
+            if (_deletePressed)
+            {
+                PowerToysTelemetry.Log.WriteEvent(new LauncherFirstDeleteEvent());
+            }
+
+        }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -202,6 +222,8 @@ namespace PowerLauncher
                 {
                     if (Visibility == System.Windows.Visibility.Visible)
                     {
+                        _deletePressed = false;
+                        _firstDeleteTimer.Start();
                         Activate();
                         UpdatePosition();
                         _settings.ActivateTimes++;
@@ -215,6 +237,10 @@ namespace PowerLauncher
                         {
                             _launcher.QueryTextBox.SelectAll();
                         }
+                    }
+                    else
+                    {
+                        _firstDeleteTimer.Stop();
                     }
                 }
                 else if(e.PropertyName == nameof(MainViewModel.SystemQueryText))
@@ -306,6 +332,10 @@ namespace PowerLauncher
             {
                 _viewModel.SelectPrevPageCommand.Execute(null);
                 e.Handled = true;
+            }
+            else if( e.Key == VirtualKey.Back)
+            {
+                _deletePressed = true;
             }
         }
 

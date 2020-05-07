@@ -119,6 +119,7 @@ namespace Wox.ViewModel
             {
                 newItems.Add(new ContextMenuItemViewModel
                 {
+                    PluginName = r.PluginName,
                     Title = r.Title,
                     Glyph = r.Glyph,
                     FontFamily = r.FontFamily,
