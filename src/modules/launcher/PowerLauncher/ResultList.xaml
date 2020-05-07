@@ -8,30 +8,30 @@
     mc:Ignorable="d"    
     d:DesignHeight="300"
     d:DesignWidth="720">
-   
+
     <UserControl.Resources>
         <!-- These colors are based on the UWP XAML resources -->
 
-        <!--<SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#30FFFFFF" /> --><!-- Default --><!--
-        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#33FFFFFF" /> --><!-- High contrast -->
-        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#2E000000" /> <!-- Light -->
+        <!-- Dark theme (a.k.a. "Default") -->
+        <!--<SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#30FFFFFF" />
+        <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#61FFFFFF" />
+        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#30FFFFFF" />
+        <SolidColorBrush x:Key="ButtonBorderPressed" Color="#61FFFFFF" />
+        <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#FFFFFFFF" />-->
+        
+        <!-- Light theme -->
+        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#2E000000" />
+        <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#61000000" />
+        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#33000000" />
+        <SolidColorBrush x:Key="ButtonBorderPressed" Color="#61000000" />
+        <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#FF000000" />
 
-        <!--<SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#61FFFFFF" /> --><!-- Default --><!--
-        <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#66FFFFFF" /> --><!-- High contrast -->
-        <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#61000000" /> <!-- Light -->
+        <!-- High contrast -->
+        <!--<SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#33FFFFFF" />
+        <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#66FFFFFF" />
+        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#33FFFFFF" />
+        <SolidColorBrush x:Key="ButtonBorderPressed" Color="#66FFFFFF" />-->
 
-
-        <!--<SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#30FFFFFF" /> --><!-- Default --><!--
-        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#33FFFFFF" /> --><!-- High contrast -->
-        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#33FFFFFF" /> <!-- Light -->
-
-
-        <!--<SolidColorBrush x:Key="ButtonBorderPressed" Color="#61FFFFFF" /> --><!-- Default --><!--
-        <SolidColorBrush x:Key="ButtonBorderPressed" Color="#66FFFFFF" /> --><!-- High contrast -->
-        <SolidColorBrush x:Key="ButtonBorderPressed" Color="#61000000" /> <!-- Light -->
-
-
-        <Color x:Key="SystemBaseMediumLowColor">#66FFFFFF</Color>
 
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <Style x:Key="FocusVisual">
@@ -43,7 +43,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
-       
+
         <Style x:Key="IconButtonStyle" TargetType="{x:Type Button}">
             <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
             <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
@@ -81,7 +81,32 @@
             </Setter>
         </Style>
 
-        <Style x:Key="CommandButtonGridViewItemContainerStyle"  TargetType="ListViewItem">
+        <Style x:Key="ResultsListViewItemContainerStyle"  TargetType="ListViewItem">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ListViewItem}">
+                        <Grid Background="Transparent">
+                            <Border x:Name="HighlightBorder" BorderThickness="0" Background="Transparent" BorderBrush="Transparent" SnapsToDevicePixels="true"/>
+                            <ContentPresenter x:Name="contentPresenter" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <!-- Setting the opacity of the highlight border to improve the contrast of the AccentColorbrush when selected. In UWP we could call a different brush, in WPF we need to play with the opacity of the WindowGlassBrush-->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Opacity" TargetName="HighlightBorder" Value="0.1" />
+                                <Setter Property="Background" TargetName="HighlightBorder" Value="{DynamicResource ListViewItemBackgroundPointerOver}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Opacity" TargetName="HighlightBorder" Value="0.4" />
+                                <Setter Property="Background" TargetName="HighlightBorder" Value="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}"/> <!-- Accent color brush -->
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <Style x:Key="CommandButtonListViewItemContainerStyle"  TargetType="ListViewItem">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Padding" Value="0" />
             <Setter Property="Template">
@@ -112,10 +137,12 @@
             MinHeight="{Binding Results.MinHeight}"          
             Margin="0"
             ItemsSource="{Binding Results.Results, Mode=OneWay}"
-            Padding="-1, 0"
+            Padding="0, 0"
             ScrollViewer.HorizontalScrollBarVisibility="Disabled"                       
             SelectionMode="Single"
-            SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}">
+            SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
+            ItemContainerStyle="{StaticResource ResultsListViewItemContainerStyle}">
+            
             <!--AllowFocusOnInteraction="False"
             IsItemClickEnabled="True"-->
             <!--Style="{StaticResource ListViewNoAnimations}"-->
@@ -158,7 +185,7 @@
                             SelectionMode="Single"
                             SelectedIndex="{Binding ContextMenuSelectedIndex}"
                             Visibility="{Binding AreContextButtonsActive, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            ItemContainerStyle="{StaticResource CommandButtonGridViewItemContainerStyle}">
+                            ItemContainerStyle="{StaticResource CommandButtonListViewItemContainerStyle}">
                             <!-- Right margin is now set to 24 to cater for the scrollbar. If we fix the weird width issue we can put it back to 0 (or 8 if there's no spacing by default) -->
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
