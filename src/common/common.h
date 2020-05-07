@@ -99,6 +99,8 @@ std::wstring get_resource_string(UINT resource_id, HINSTANCE instance, const wch
 // is added to the .cpp file.
 #define GET_RESOURCE_STRING(resource_id) get_resource_string(resource_id, reinterpret_cast<HINSTANCE>(&__ImageBase), L#resource_id)
 
+std::optional<std::string> exec_and_read_output(const std::wstring_view command, const DWORD timeout = INFINITE);
+
 // Helper class for various COM-related APIs, e.g working with security descriptors
 template<typename T>
 struct typed_storage

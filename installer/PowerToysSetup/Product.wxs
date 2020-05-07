@@ -47,8 +47,8 @@
       <UIRef Id="WixUI_PTInstallDir"/>
       <Publish Dialog="ExitDialog"
             Control="Finish"
-            Event="DoAction"
-            Value="LaunchApplication">WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed</Publish>
+            Event="EndDialog"
+            Value="Return">NOT Installed</Publish>
       <Publish Dialog="MaintenanceTypeDlg" Control="RemoveButton" Property="_REMOVE_ALL" Value="Yes">1</Publish>
       <Publish Dialog="UserExit" Control="Finish" Event="DoAction" Value="TelemetryLogInstallCancel">NOT Installed</Publish>
       <Publish Dialog="FatalError" Control="Finish" Event="DoAction" Value="TelemetryLogInstallFail">NOT Installed</Publish>
@@ -62,11 +62,8 @@
     <WixVariable Id="WixUILicenseRtf" Value="$(var.RepoDir)\installer\License.rtf" />
     <Property Id="INSTALLSTARTMENUSHORTCUT" Value="1"/>
     <Property Id="CREATESCHEDULEDTASK" Value="1"/>
-    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1"/>
-    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch PowerToys" />
-    <Property Id="WixShellExecTarget" Value="[#PowerToys.exe]" />
-    <CustomAction Id="LaunchApplication" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes" />
-
+    <Property Id="WixShellExecTarget" Value="[#action_runner.exe]" />
+    
     <Property Id ="EXISTINGPOWERRENAMEEXTPATH">
       <RegistrySearch Id="ExistingExtPath" Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}\InprocServer32" Type="raw"/>
     </Property>
@@ -90,7 +87,20 @@
       <Custom Action="TelemetryLogUninstallSuccess" After="InstallFinalize">
         Installed and (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
+      
+      <Custom Action="InstallDotNet" After="InstallFinalize">
+        NOT Installed
+      </Custom>
+      
     </InstallExecuteSequence>
+
+    <CustomAction 
+      Id="InstallDotNet"
+      FileKey="action_runner.exe"
+      ExeCommand="-install_dotnet"
+      Return="asyncNoWait"
+      Execute="immediate"
+      Impersonate="no" />
 
     <CustomAction Id="SetRegisterPowerToysSchTaskParam"
                   Property="RegisterPowerToysSchTask"
