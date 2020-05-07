@@ -96,8 +96,14 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     //  Text block for information about remap key section.
     TextBlock keyRemapInfoHeader;
-    keyRemapInfoHeader.Text(L"Select the key you want to remap, original key, and it's new output when pressed, the new key");
+    keyRemapInfoHeader.Text(L"Select the key you want to change (Original Key) and the key you want it to become (New Key).");
     keyRemapInfoHeader.Margin({ 10, 0, 0, 10 });
+    keyRemapInfoHeader.FontWeight(Text::FontWeights::SemiBold());
+
+    TextBlock keyRemapInfoExample;
+    keyRemapInfoExample.Text(L"For example, if you want to press A and get B, Key A would be your \"Original Key\" and Key B would be your \"New Key\".");
+    keyRemapInfoExample.Margin({ 10, 0, 0, 20 });
+    keyRemapInfoExample.FontStyle(Text::FontStyle::Italic);
 
     // Table to display the key remaps
     Grid keyRemapTable;
@@ -304,6 +310,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     StackPanel mappingsPanel;
     mappingsPanel.Children().Append(keyRemapInfoHeader);
+    mappingsPanel.Children().Append(keyRemapInfoExample);
     mappingsPanel.Children().Append(keyRemapTable);
     mappingsPanel.Children().Append(addRemapKey);
 
