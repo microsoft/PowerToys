@@ -13,6 +13,7 @@
 #include "restart_elevated.h"
 
 #include <common/json.h>
+#include <common\settings_helpers.cpp>
 
 #define BUFSIZE 1024
 
@@ -196,7 +197,7 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
                                           nullptr,
                                           nullptr,
                                           FALSE,
-                                          EXTENDED_STARTUPINFO_PRESENT,
+                                          0,
                                           nullptr,
                                           nullptr,
                                           &siex.StartupInfo,
@@ -204,6 +205,41 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
 
     return process_created;
 }
+
+// The following three helper functions determine if the user has a build version higher than or equal to 19h1, as that is a requirement for xaml islands
+// Source : Microsoft-ui-xaml github
+// Link: https://github.com/microsoft/microsoft-ui-xaml/blob/c045cde57c5c754683d674634a0baccda34d58c4/dev/dll/SharedHelpers.cpp
+template<uint16_t APIVersion> bool IsAPIContractVxAvailable()
+{
+    static bool isAPIContractVxAvailableInitialized = false;
+    static bool isAPIContractVxAvailable = false;
+    if (!isAPIContractVxAvailableInitialized)
+    {
+        isAPIContractVxAvailableInitialized = true;
+        isAPIContractVxAvailable = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", APIVersion);
+    }
+
+    return isAPIContractVxAvailable;
+}
+
+
+bool IsAPIContractV8Available()
+{
+    return IsAPIContractVxAvailable<8>();
+}
+
+bool Is19H1OrHigher()
+{
+    return IsAPIContractV8Available();
+}
+
+// This function returns true if the build is 19h1 or higher, so that we deploy the new settings.
+// It returns false otherwise.
+bool use_new_settings()
+{
+    return Is19H1OrHigher();
+}
+
 
 DWORD g_settings_process_id = 0;
 
@@ -221,7 +257,15 @@ void run_settings_window()
 
     // Arg 1: executable path.
     std::wstring executable_path = get_module_folderpath();
-    executable_path.append(L"\\PowerToysSettings.exe");
+
+    if (use_new_settings())
+    {
+        executable_path.append(L"\\SettingsUIRunner\\Microsoft.PowerToys.Settings.UI.Runner.exe");
+    }
+    else
+    {
+        executable_path.append(L"\\PowerToysSettings.exe");
+    }
 
     // Arg 2: pipe server. Generate unique names for the pipes, if getting a UUID is possible.
     std::wstring powertoys_pipe_name(L"\\\\.\\pipe\\powertoys_runner_");
@@ -243,10 +287,26 @@ void run_settings_window()
 
     // Arg 4: settings theme.
     const std::wstring settings_theme_setting{ get_general_settings().theme };
-    std::wstring settings_theme;
+    std::wstring settings_theme = L"system";
     if (settings_theme_setting == L"dark" || (settings_theme_setting == L"system" && WindowsColors::is_dark_mode()))
     {
         settings_theme = L"dark";
+    }
+
+    // Arg 4: settings theme.
+    GeneralSettings save_settings = get_general_settings();
+
+    bool isElevated{ get_general_settings().isElevated };
+    std::wstring settings_elevatedStatus;
+    settings_elevatedStatus = isElevated;
+
+    if (isElevated)
+    {
+        settings_elevatedStatus = L"true";
+    }
+    else
+    {
+        settings_elevatedStatus = L"false";
     }
 
     std::wstring executable_args = L"\"";
@@ -259,9 +319,10 @@ void run_settings_window()
     executable_args.append(std::to_wstring(powertoys_pid));
     executable_args.append(L" ");
     executable_args.append(settings_theme);
+    executable_args.append(L" ");
+    executable_args.append(settings_elevatedStatus);
 
     BOOL process_created = false;
-
     if (is_process_elevated())
     {
         process_created = run_settings_non_elevated(executable_path.c_str(), executable_args.data(), &process_info);
@@ -331,15 +392,27 @@ LExit:
     g_settings_process_id = 0;
 }
 
+#define MAX_TITLE_LENGTH 100
 void bring_settings_to_front()
 {
     auto callback = [](HWND hwnd, LPARAM data) -> BOOL {
         DWORD processId;
         if (GetWindowThreadProcessId(hwnd, &processId) && processId == g_settings_process_id)
         {
-            ShowWindow(hwnd, SW_NORMAL);
-            SetForegroundWindow(hwnd);
-            return FALSE;
+            std::wstring windowTitle = L"PowerToys Settings";
+
+            WCHAR title[MAX_TITLE_LENGTH];
+            int len = GetWindowTextW(hwnd, title, MAX_TITLE_LENGTH);
+            if (len <= 0)
+            {
+                return TRUE;
+            }
+            if (wcsncmp(title, windowTitle.c_str(), len) == 0)
+            {
+                ShowWindow(hwnd, SW_RESTORE);
+                SetForegroundWindow(hwnd);
+                return FALSE;
+            }
         }
 
         return TRUE;
@@ -357,5 +430,17 @@ void open_settings_window()
     else
     {
         std::thread(run_settings_window).detach();
+    }
+}
+
+void close_settings_window()
+{
+    if (g_settings_process_id != 0)
+    {
+        HANDLE proc = OpenProcess(PROCESS_TERMINATE, false, g_settings_process_id);
+        if (proc != INVALID_HANDLE_VALUE)
+        {
+            TerminateProcess(proc, 0);
+        }
     }
 }
