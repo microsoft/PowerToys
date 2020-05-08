@@ -8,7 +8,7 @@ namespace ImageResizer.Models
     public class AdvancedSettings
     {
         [DllImport(
-            "OS_Detection.dll",
+            "os-detection.dll",
             EntryPoint = "UseNewSettings",
             ExactSpelling = false)]
         public static extern bool UseNewSettings();
