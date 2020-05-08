@@ -2,53 +2,53 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.PowerToys.Settings.Telemetry;
-using Microsoft.PowerToys.Telemetry;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.PowerToys.Settings.Telemetry;
+using Microsoft.PowerToys.Telemetry;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class PowerPreviewProperties
     {
+        private bool enableSvg = true;
 
         [JsonPropertyName("svg-previewer-toggle-setting")]
-        private BoolProperty EnableSvgInner { get; set; }
-
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool EnableSvg
         {
-            get => this.EnableSvgInner.Value;
+            get => this.enableSvg;
             set
             {
-                if (value != this.EnableSvgInner.Value)
+                if (value != this.enableSvg)
                 {
                     LogTelemetryEvent(value);
-                    this.EnableSvgInner.Value = value;
+                    this.enableSvg = value;
                 }
             }
         }
 
-        [JsonPropertyName("md-previewer-toggle-setting")]
-        private BoolProperty EnableMdInner { get; set; }
+        private bool enableMd = true;
 
+        [JsonPropertyName("md-previewer-toggle-setting")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool EnableMd
         {
-            get => this.EnableMdInner.Value;
+            get => this.enableMd;
             set
             {
-                if (value != this.EnableMdInner.Value)
+                if (value != this.enableMd)
                 {
                     LogTelemetryEvent(value);
-                    this.EnableMdInner.Value = value;
+                    this.enableMd = value;
                 }
             }
         }
 
         public PowerPreviewProperties()
         {
-            EnableSvgInner = new BoolProperty(true);
-            EnableMdInner = new BoolProperty(true);
+
         }
 
         public override string ToString()
