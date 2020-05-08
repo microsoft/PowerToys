@@ -89,6 +89,8 @@ namespace PowerLauncher
 
         private void OnLoaded(object sender, System.Windows.RoutedEventArgs _)
         {
+            WindowsInteropHelper.DisableControlBox(this);
+
             InitializePosition();
         }
 
