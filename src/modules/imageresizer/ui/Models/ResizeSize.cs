@@ -21,7 +21,6 @@ namespace ImageResizer.Models
         private double _height;
         private bool _showHeight = true;
         private ResizeUnit _unit = ResizeUnit.Pixel;
-        private bool _showAdvancedSettings = false;
 
         static ResizeSize()
             => _tokens = new Dictionary<string, string>
@@ -39,8 +38,6 @@ namespace ImageResizer.Models
             Width = width;
             Height = height;
             Unit = unit;
-
-            UpdateShowAdvancedSettings();
         }
 
         public ResizeSize()
@@ -84,9 +81,6 @@ namespace ImageResizer.Models
         public bool ShowHeight
             => _showHeight;
 
-        public bool ShowAdvancedSettings
-            => _showAdvancedSettings;
-
         public bool HasAuto
             => Width == 0 || Height == 0;
 
@@ -125,12 +119,6 @@ namespace ImageResizer.Models
                 nameof(ShowHeight),
                 ref _showHeight,
                 Fit == ResizeFit.Stretch || Unit != ResizeUnit.Percent);
-
-        public void UpdateShowAdvancedSettings()
-            => Set(
-                nameof(ShowAdvancedSettings),
-                ref _showAdvancedSettings,
-                false);
 
         private double ConvertToPixels(double value, ResizeUnit unit, int originalValue, double dpi)
         {
