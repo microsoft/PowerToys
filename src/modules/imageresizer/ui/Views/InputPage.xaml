@@ -131,7 +131,8 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
-                <TextBlock VerticalAlignment="Center">
+                <TextBlock VerticalAlignment="Center"
+                           Visibility="{Binding ShowHeight,Converter={StaticResource BoolValueConverter}}">
                     <Hyperlink Command="{Binding ShowAdvancedCommand}">
                         <Run Text="{x:Static p:Resources.Input_ShowAdvanced}"/>
                     </Hyperlink>

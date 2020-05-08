@@ -30,7 +30,7 @@ bool Is19H1OrHigher()
 
 // This function returns true if the build is 19h1 or higher, so that we deploy the new settings.
 // It returns false otherwise.
-bool use_new_settings()
+bool UseNewSettings()
 {
     return Is19H1OrHigher();
 }

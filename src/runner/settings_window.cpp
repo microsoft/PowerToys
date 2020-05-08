@@ -225,7 +225,7 @@ void run_settings_window()
     // Arg 1: executable path.
     std::wstring executable_path = get_module_folderpath();
 
-    if (use_new_settings())
+    if (UseNewSettings())
     {
         executable_path.append(L"\\SettingsUIRunner\\Microsoft.PowerToys.Settings.UI.Runner.exe");
     }
