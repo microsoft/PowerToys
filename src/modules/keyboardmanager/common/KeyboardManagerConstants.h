@@ -50,23 +50,21 @@ namespace KeyboardManagerConstants
     inline const int DefaultEditShortcutsWindowHeight = 600;
 
     // Key Remap table constants
-    inline const long RemapTableColCount = 5;
+    inline const long RemapTableColCount = 4;
     inline const long RemapTableHeaderCount = 2;
     inline const long RemapTableOriginalColIndex = 0;
     inline const long RemapTableArrowColIndex = 1;
     inline const long RemapTableNewColIndex = 2;
     inline const long RemapTableRemoveColIndex = 3;
-    inline const long RemapTableWarningColIndex = 4;
     inline const long RemapTableDropDownWidth = 110;
 
     // Shortcut table constants
-    inline const long ShortcutTableColCount = 5;
+    inline const long ShortcutTableColCount = 4;
     inline const long ShortcutTableHeaderCount = 2;
     inline const long ShortcutTableOriginalColIndex = 0;
     inline const long ShortcutTableArrowColIndex = 1;
     inline const long ShortcutTableNewColIndex = 2;
     inline const long ShortcutTableRemoveColIndex = 3;
-    inline const long ShortcutTableWarningColIndex = 4;
     inline const long ShortcutTableDropDownWidth = 110;
     inline const long ShortcutTableDropDownSpacing = 10;
 

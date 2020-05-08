@@ -130,15 +130,12 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     newColumn.MaxWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
     ColumnDefinition removeColumn;
     removeColumn.MinWidth(KeyboardManagerConstants::TableRemoveColWidth);
-    ColumnDefinition warnColumn;
-    warnColumn.MinWidth(KeyboardManagerConstants::TableWarningColWidth);
     shortcutTable.Margin({ 10, 10, 10, 20 });
     shortcutTable.HorizontalAlignment(HorizontalAlignment::Stretch);
     shortcutTable.ColumnDefinitions().Append(originalColumn);
     shortcutTable.ColumnDefinitions().Append(arrowColumn);
     shortcutTable.ColumnDefinitions().Append(newColumn);
     shortcutTable.ColumnDefinitions().Append(removeColumn);
-    shortcutTable.ColumnDefinitions().Append(warnColumn);
     shortcutTable.RowDefinitions().Append(RowDefinition());
 
     // First header textblock in the header row of the shortcut table
@@ -220,14 +217,6 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
             else
             {
                 isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
-                // Show tooltip warning on the problematic row
-                uint32_t warningIndex;
-                // 2 at start, 4 in each row, and last element of each row
-                warningIndex = KeyboardManagerConstants::ShortcutTableHeaderCount + ((i + 1) * KeyboardManagerConstants::ShortcutTableColCount) - 1;
-                FontIcon warning = shortcutTable.Children().GetAt(warningIndex).as<FontIcon>();
-                ToolTip t = ToolTipService::GetToolTip(warning).as<ToolTip>();
-                t.Content(box_value(KeyboardManagerHelper::GetErrorMessage(KeyboardManagerHelper::ErrorType::MissingKey)));
-                warning.Visibility(Visibility::Visible);
             }
         }
 

@@ -108,16 +108,6 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyC
             {
                 SetDropDownError(currentDropDown, KeyboardManagerHelper::GetErrorMessage(errorType));
             }
-
-            // If either of the keys are invalid and the tooltip content has been modified after initialization, display the warning
-            if ((singleKeyRemapBuffer[rowIndex][0] == NULL || singleKeyRemapBuffer[rowIndex][1] == NULL) && toolTip.Content().as<winrt::Windows::Foundation::IPropertyValue>().GetString() != KeyboardManagerConstants::ToolTipInitialContent)
-            {
-                warning.Visibility(Visibility::Visible);
-            }
-            else
-            {
-                warning.Visibility(Visibility::Collapsed);
-            }
         }
     };
 
@@ -174,7 +164,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
                         // If not, add a new drop down
                         else
                         {
-                            AddDropDown(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, warning, toolTip, IsTypeShortcutActivated);
+                            AddDropDown(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, IsTypeShortcutActivated);
                         }
                     }
                     // If last drop down and a modifier is selected but there are already 5 drop downs: warn the user
@@ -298,16 +288,6 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
             }
             // Reset the buffer based on the new selected drop down items
             shortcutRemapBuffer[rowIndex][colIndex].SetKeyCodes(GetKeysFromStackPanel(parent));
-
-            // If either of the shortcuts are invalid and the tooltip content has been modified after initialization, display the warning
-            if ((!shortcutRemapBuffer[rowIndex][0].IsValidShortcut() || !shortcutRemapBuffer[rowIndex][1].IsValidShortcut()) && toolTip.Content().as<winrt::Windows::Foundation::IPropertyValue>().GetString() != KeyboardManagerConstants::ToolTipInitialContent)
-            {
-                warning.Visibility(Visibility::Visible);
-            }
-            else
-            {
-                warning.Visibility(Visibility::Collapsed);
-            }
         }
 
         // If the user searches for a key the selection handler gets invoked however if they click away it reverts back to the previous state. This can result in dangling references to added drop downs which were then reset.
@@ -350,9 +330,9 @@ ComboBox KeyDropDownControl::GetComboBox()
 }
 
 // Function to add a drop down to the shortcut stack panel
-void KeyDropDownControl::AddDropDown(Grid table, StackPanel shortcutControl, StackPanel parent, const int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, FontIcon warning, ToolTip toolTip, bool& IsTypeShortcutActivated)
+void KeyDropDownControl::AddDropDown(Grid table, StackPanel shortcutControl, StackPanel parent, const int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, bool& IsTypeShortcutActivated)
 {
-    keyDropDownControlObjects.push_back(std::move(std::unique_ptr<KeyDropDownControl>(new KeyDropDownControl(true, warning, toolTip))));
+    keyDropDownControlObjects.push_back(std::move(std::unique_ptr<KeyDropDownControl>(new KeyDropDownControl(true))));
     parent.Children().Append(keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->GetComboBox());
     keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->SetSelectionHandler(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, IsTypeShortcutActivated);
     parent.UpdateLayout();
@@ -407,7 +387,6 @@ bool KeyDropDownControl::CheckRepeatedModifier(StackPanel parent, uint32_t dropD
 void KeyDropDownControl::SetDropDownError(ComboBox currentDropDown, hstring message)
 {
     currentDropDown.SelectedIndex(-1);
-    toolTip.Content(box_value(message));
     warningMessage.Text(message);
     currentDropDown.ContextFlyout().ShowAttachedFlyout((FrameworkElement)dropDown);
 }

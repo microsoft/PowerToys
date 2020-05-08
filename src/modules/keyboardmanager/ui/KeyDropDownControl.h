@@ -11,11 +11,7 @@ private:
     HKL previousLayout = 0;
     // Stores the key code list
     std::vector<DWORD> keyCodeList;
-    // Stores the warning control
-    FontIcon warning;
-    // Stores the tooltip for the warning control
-    ToolTip toolTip;
-    // Stores the flyout warning message 
+    // Stores the flyout warning message
     TextBlock warningMessage;
     // Stores the flyout attached to the current drop down
     Flyout warningFlyout;
@@ -26,14 +22,12 @@ private:
     // Function to check if the layout has changed and accordingly update the drop down list
     void CheckAndUpdateKeyboardLayout(ComboBox currentDropDown, bool isShortcut);
 
-
 public:
     // Pointer to the keyboard manager state
     static KeyboardManagerState* keyboardManagerState;
 
     // Constructor - the last default parameter should be passed as false only if it originates from Type shortcut or when an old shortcut is reloaded
-    KeyDropDownControl(bool isShortcut, FontIcon warning, ToolTip toolTip) :
-        warning(warning), toolTip(toolTip)
+    KeyDropDownControl(bool isShortcut)
     {
         SetDefaultProperties(isShortcut);
     }
@@ -51,7 +45,7 @@ public:
     ComboBox GetComboBox();
 
     // Function to add a drop down to the shortcut stack panel
-    static void AddDropDown(Grid table, StackPanel shortcutControl, StackPanel parent, const int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, FontIcon warning, ToolTip toolTip, bool& IsTypeShortcutActivated);
+    static void AddDropDown(Grid table, StackPanel shortcutControl, StackPanel parent, const int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, bool& IsTypeShortcutActivated);
 
     // Function to get the list of key codes from the shortcut combo box stack panel
     std::vector<DWORD> GetKeysFromStackPanel(StackPanel parent);
