@@ -14,7 +14,7 @@
 
 #include <common/json.h>
 #include <common\settings_helpers.cpp>
-#include <os-detection/os-detect.h>
+#include <os-detect.h>
 
 #define BUFSIZE 1024
 
