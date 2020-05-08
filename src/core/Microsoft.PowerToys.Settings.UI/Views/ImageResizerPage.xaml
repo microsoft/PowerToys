@@ -290,7 +290,7 @@
 
             <HyperlinkButton 
                 NavigateUri="https://github.com/bricelam/ImageResizer/">
-                <TextBlock Text="Brice Lambson's SmartRenamer" TextWrapping="Wrap" />
+                <TextBlock Text="Brice Lambson's ImageResizer" TextWrapping="Wrap" />
             </HyperlinkButton>
         </StackPanel>
 

@@ -16,6 +16,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             this.Value = new HotkeySettings();
         }
 
+        public KeyBoardKeysProperty(HotkeySettings hkSettings)
+        {
+            this.Value = hkSettings;
+        }
+
         [JsonPropertyName("value")]
         public HotkeySettings Value { get; set; }
     }

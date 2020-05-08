@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
@@ -9,23 +10,32 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     {
         public FZConfigProperties()
         {
-            this.FancyzonesShiftDrag = new BoolProperty();
-            this.FancyzonesMouseSwitch = new BoolProperty();
+            this.FancyzonesShiftDrag = new BoolProperty(true);
             this.FancyzonesOverrideSnapHotkeys = new BoolProperty();
+            this.FancyzonesMouseSwitch = new BoolProperty();
             this.FancyzonesMoveWindowsAcrossMonitors = new BoolProperty();
             this.FancyzonesDisplayChangeMoveWindows = new BoolProperty();
             this.FancyzonesZoneSetChangeMoveWindows = new BoolProperty();
             this.FancyzonesVirtualDesktopChangeMoveWindows = new BoolProperty();
             this.FancyzonesAppLastZoneMoveWindows = new BoolProperty();
-            this.UseCursorposEditorStartupscreen = new BoolProperty();
+            this.UseCursorposEditorStartupscreen = new BoolProperty(true);
             this.FancyzonesShowOnAllMonitors = new BoolProperty();
+            this.FancyzonesZoneHighlightColor = new StringProperty("#F5FCFF");
+            this.FancyzonesHighlightOpacity = new IntProperty(50);
+            this.FancyzonesEditorHotkey = new KeyBoardKeysProperty(
+                new HotkeySettings()
+                {
+                    Win = true,
+                    Ctrl = false,
+                    Alt = false,
+                    Shift = false,
+                    Key = "`",
+                    Code = 192,
+                });
             this.FancyzonesMakeDraggedWindowTransparent = new BoolProperty();
-            this.FancyzonesZoneHighlightColor = new StringProperty();
-            this.FancyzonesHighlightOpacity = new IntProperty();
-            this.FancyzonesEditorHotkey = new KeyBoardKeysProperty();
             this.FancyzonesExcludedApps = new StringProperty();
-            this.FancyzonesInActiveColor = new StringProperty();
-            this.FancyzonesBorderColor = new StringProperty();
+            this.FancyzonesInActiveColor = new StringProperty("#F5FCFF");
+            this.FancyzonesBorderColor = new StringProperty("#F5FCFF");
         }
 
         [JsonPropertyName("fancyzones_shiftDrag")]
@@ -78,5 +88,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         [JsonPropertyName("fancyzones_zoneColor")]
         public StringProperty FancyzonesInActiveColor { get; set; }
+
+        // converts the current to a json string.
+        public string ToJsonString()
+        {
+            return JsonSerializer.Serialize(this);
+        }
     }
 }
