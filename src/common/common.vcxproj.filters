@@ -111,9 +111,6 @@
     <ClInclude Include="two_way_pipe_message_ipc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="OS_Detection.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d2d_svg.cpp">
@@ -181,9 +178,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="two_way_pipe_message_ipc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OS_Detection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
