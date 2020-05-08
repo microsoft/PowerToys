@@ -34,7 +34,11 @@ namespace ImageResizer.ViewModels
             ResizeCommand = new RelayCommand(Resize);
             CancelCommand = new RelayCommand(Cancel);
             ShowAdvancedCommand = new RelayCommand(ShowAdvanced);
+
+            ShowAdvancedSettings = !AdvancedSettings.UseNewSettings();
         }
+
+        public bool ShowAdvancedSettings { get; }
 
         public Settings Settings { get; }
 
