@@ -35,6 +35,7 @@ namespace ImageResizer.ViewModels
             CancelCommand = new RelayCommand(Cancel);
             ShowAdvancedCommand = new RelayCommand(ShowAdvanced);
 
+            AdvancedSettings.SetDllDirectory("../");
             ShowAdvancedSettings = !AdvancedSettings.UseNewSettings();
         }
 
