@@ -54,7 +54,7 @@ IAsyncAction ConfirmationDialog(
     confirmationDialog.Title(box_value(L"The following keys are unassigned and you won't be able to use them:"));
     confirmationDialog.IsPrimaryButtonEnabled(true);
     confirmationDialog.DefaultButton(ContentDialogButton::Primary);
-    confirmationDialog.PrimaryButtonText(winrt::hstring(L"Continue anyway"));
+    confirmationDialog.PrimaryButtonText(winrt::hstring(L"Continue Anyway"));
     confirmationDialog.IsSecondaryButtonEnabled(true);
     confirmationDialog.SecondaryButtonText(winrt::hstring(L"Cancel"));
 
@@ -293,6 +293,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     Button applyButton;
     applyButton.Content(winrt::box_value(L"OK"));
     applyButton.Background(winrt::Windows::UI::Xaml::Media::SolidColorBrush{ WindowsColors::get_accent_color() });
+    applyButton.Foreground(winrt::Windows::UI::Xaml::Media::SolidColorBrush{ winrt::Windows::UI::Colors::White() });
     header.SetAlignRightWithPanel(cancelButton, true);
     header.SetLeftOf(applyButton, cancelButton);
     applyButton.Flyout(applyFlyout);
