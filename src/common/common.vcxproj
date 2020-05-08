@@ -121,6 +121,7 @@
     <ClInclude Include="keyboard_layout.h" />
     <ClInclude Include="keyboard_layout_impl.h" />
     <ClInclude Include="notifications.h" />
+    <ClInclude Include="OS_Detection.h" />
     <ClInclude Include="shared_constants.h" />
     <ClInclude Include="timeutil.h" />
     <ClInclude Include="two_way_pipe_message_ipc.h" />
@@ -154,6 +155,7 @@
     <ClCompile Include="monitors.cpp" />
     <ClCompile Include="notifications.cpp" />
     <ClCompile Include="on_thread_executor.cpp" />
+    <ClCompile Include="OS_Detection.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
