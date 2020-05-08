@@ -261,8 +261,9 @@ namespace Microsoft.Plugin.Program.Programs
             public string EntryPoint { get; set; }
             public string Name => DisplayName;
             public string Location => Package.Location;
-            public string ExecutableName;
+            public string ExecutableName { get; set; }
             public bool Enabled { get; set; }
+            public bool CanRunElevated {get;set;}
 
             public string LogoUri { get; set; }
             public string LogoPath { get; set; }
@@ -315,7 +316,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 var contextMenus = new List<ContextMenuResult>();
 
-                if (EntryPoint == "Windows.FullTrustApplication")
+                if (CanRunElevated)
                 {
                     contextMenus.Add(
                             new ContextMenuResult
@@ -331,8 +332,10 @@ namespace Microsoft.Plugin.Program.Programs
                                     string command = "shell:AppsFolder\\" + UniqueIdentifier;
                                     command.Trim();
                                     command = Environment.ExpandEnvironmentVariables(command);
+
                                     var info = ShellCommand.SetProcessStartInfo(command, verb: "runas");
                                     info.UseShellExecute = true;
+
                                     Process.Start(info);
                                     return true;
                                 }
@@ -391,19 +394,35 @@ namespace Microsoft.Plugin.Program.Programs
                 Package = package;
                 EntryPoint = manifestApp.GetStringValue("EntryPoint");
                 ExecutableName = manifestApp.GetStringValue("Executable");
-                if (EntryPoint == "Windows.FullTrustApplication")
-                {
-                    //string c = EntryPoint = manifestApp.GetStringValue("Executable");
-                }
-
-                Debug.WriteLine("Name: " + DisplayName +  " :" + UserModelId +  " :" + manifestApp.GetStringValue("EntryPoint"));
-
+                               
                 DisplayName = ResourceFromPri(package.FullName, DisplayName);
                 Description = ResourceFromPri(package.FullName, Description);
                 LogoUri = LogoUriFromManifest(manifestApp);
                 LogoPath = LogoPathFromUri(LogoUri);
 
                 Enabled = true;
+                CanRunElevated = IfApplicationcanRunElevated();
+            }
+
+            private bool IfApplicationcanRunElevated()
+            {
+                if (EntryPoint == "Windows.FullTrustApplication")
+                {
+                    return true;
+                }
+                else
+                {
+                    var manifest = Package.Location + "\\AppxManifest.xml";
+                    if (File.Exists(manifest))
+                    {
+                        var file = File.ReadAllText(manifest);
+                        if(file.Contains("TrustLevel=\"mediumIL\"", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
 
             internal string ResourceFromPri(string packageFullName, string resourceReference)
