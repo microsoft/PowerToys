@@ -3,9 +3,9 @@
 namespace Microsoft.PowerToys.Settings.Telemetry
 {
     [EventData]
-    public class SettingsEnabledModuleEvent
+    public class SettingsEnabledEvent
     {
-        public string ModuleName { get; set; }
+        public string Name { get; set; }
 
         public bool Value { get; set; }
     }
