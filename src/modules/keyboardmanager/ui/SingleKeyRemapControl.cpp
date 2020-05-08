@@ -162,8 +162,10 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
             auto it = std::find(keyCodeList.begin(), keyCodeList.end(), detectedKey);
             if (it != keyCodeList.end())
             {
-                isTypeKey = true;
+                // Set the flag to true for this selection change so that selectionchanged event can be triggered
+                IsTypeKeyActivated = true;
                 linkedRemapDropDown.SelectedIndex((int32_t)std::distance(keyCodeList.begin(), it));
+                IsTypeKeyActivated = false;
             }
         }
 

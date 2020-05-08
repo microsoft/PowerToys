@@ -27,6 +27,7 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut)
         CheckAndUpdateKeyboardLayout(currentDropDown, isShortcut);
     });
 
+    // Attach flyout to the drop down
     warningFlyout.Content(warningMessage);
     dropDown.ContextFlyout().SetAttachedFlyout((FrameworkElement)dropDown, warningFlyout);
 }
@@ -47,7 +48,7 @@ void KeyDropDownControl::CheckAndUpdateKeyboardLayout(ComboBox currentDropDown, 
 }
 
 // Function to set selection handler for single key remap drop down. Needs to be called after the constructor since the singleKeyControl StackPanel is null if called in the constructor
-void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyControl, int colIndex, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, bool& isTypeKey)
+void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyControl, int colIndex, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, bool& IsTypeKeyActivated)
 {
     // drop down selection handler
     auto onSelectionChange = [&, table, singleKeyControl, colIndex](winrt::Windows::Foundation::IInspectable const& sender) {
@@ -126,20 +127,18 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyC
     });
 
     // Since using Type Key will not trigger the drop down closed event, we have to use Selection Changed. We check if the selection changed was triggered from Type key using the isTypeKey member variable of SingleKeyRemapControl which is passed by reference
-    dropDown.SelectionChanged([onSelectionChange, &isTypeKey](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args){
-        if (isTypeKey)
+    dropDown.SelectionChanged([onSelectionChange, &IsTypeKeyActivated](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args) {
+        if (IsTypeKeyActivated)
         {
-            isTypeKey = false;
-            onSelectionChange(sender);        
+            onSelectionChange(sender);
         }
-        });
+    });
 }
 
 // Function to set selection handler for shortcut drop down. Needs to be called after the constructor since the shortcutControl StackPanel is null if called in the constructor
-void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutControl, StackPanel parent, int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects)
+void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutControl, StackPanel parent, int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, bool& IsTypeShortcutActivated)
 {
-    // drop down selection handler
-    dropDown.SelectionChanged([&, table, shortcutControl, colIndex, parent](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const&) {
+    auto onSelectionChange = [&, table, shortcutControl, colIndex, parent](winrt::Windows::Foundation::IInspectable const& sender) {
         ComboBox currentDropDown = sender.as<ComboBox>();
         int selectedKeyIndex = currentDropDown.SelectedIndex();
         uint32_t dropDownIndex = -1;
@@ -175,7 +174,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
                         // If not, add a new drop down
                         else
                         {
-                            AddDropDown(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, warning, toolTip);
+                            AddDropDown(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, warning, toolTip, IsTypeShortcutActivated);
                         }
                     }
                     // If last drop down and a modifier is selected but there are already 5 drop downs: warn the user
@@ -322,6 +321,19 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
                 keyDropDownControlObjects.erase(keyDropDownControlObjects.begin() + i);
             }
         }
+    };
+
+    // Rather than on every selection change (which gets triggered on searching as well) we set the handler only when the drop down is closed
+    dropDown.DropDownClosed([onSelectionChange](winrt::Windows::Foundation::IInspectable const& sender, auto const& args) {
+        onSelectionChange(sender);
+    });
+
+    // Drop down closed will not get triggered in case of Type shortcut, and when using AddShortcutToControl (i.e. when each drop down is set for the first time). We check if the drop down was ever set before, since in both cases new drop downs are added
+    dropDown.SelectionChanged([onSelectionChange, &IsTypeShortcutActivated](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args) {
+        if (IsTypeShortcutActivated)
+        {
+            onSelectionChange(sender);
+        }
     });
 }
 
@@ -338,11 +350,11 @@ ComboBox KeyDropDownControl::GetComboBox()
 }
 
 // Function to add a drop down to the shortcut stack panel
-void KeyDropDownControl::AddDropDown(Grid table, StackPanel shortcutControl, StackPanel parent, const int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, FontIcon warning, ToolTip toolTip)
+void KeyDropDownControl::AddDropDown(Grid table, StackPanel shortcutControl, StackPanel parent, const int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, FontIcon warning, ToolTip toolTip, bool& IsTypeShortcutActivated)
 {
     keyDropDownControlObjects.push_back(std::move(std::unique_ptr<KeyDropDownControl>(new KeyDropDownControl(true, warning, toolTip))));
     parent.Children().Append(keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->GetComboBox());
-    keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->SetSelectionHandler(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects);
+    keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->SetSelectionHandler(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, IsTypeShortcutActivated);
     parent.UpdateLayout();
 }
 

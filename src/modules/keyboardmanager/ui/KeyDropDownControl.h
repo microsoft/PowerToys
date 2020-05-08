@@ -26,11 +26,12 @@ private:
     // Function to check if the layout has changed and accordingly update the drop down list
     void CheckAndUpdateKeyboardLayout(ComboBox currentDropDown, bool isShortcut);
 
+
 public:
     // Pointer to the keyboard manager state
     static KeyboardManagerState* keyboardManagerState;
 
-    // Constructor
+    // Constructor - the last default parameter should be passed as false only if it originates from Type shortcut or when an old shortcut is reloaded
     KeyDropDownControl(bool isShortcut, FontIcon warning, ToolTip toolTip) :
         warning(warning), toolTip(toolTip)
     {
@@ -38,10 +39,10 @@ public:
     }
 
     // Function to set selection handler for single key remap drop down. Needs to be called after the constructor since the singleKeyControl StackPanel is null if called in the constructor
-    void SetSelectionHandler(Grid& table, StackPanel& singleKeyControl, int colIndex, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, bool& isTypeKey);
+    void SetSelectionHandler(Grid& table, StackPanel& singleKeyControl, int colIndex, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, bool& IsTypeKeyActivated);
 
     // Function to set selection handler for shortcut drop down. Needs to be called after the constructor since the shortcutControl StackPanel is null if called in the constructor
-    void SetSelectionHandler(Grid& table, StackPanel& shortcutControl, StackPanel parent, int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects);
+    void SetSelectionHandler(Grid& table, StackPanel& shortcutControl, StackPanel parent, int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, bool& IsTypeShortcutActivated);
 
     // Function to set the selected index of the drop down
     void SetSelectedIndex(int32_t index);
@@ -50,7 +51,7 @@ public:
     ComboBox GetComboBox();
 
     // Function to add a drop down to the shortcut stack panel
-    static void AddDropDown(Grid table, StackPanel shortcutControl, StackPanel parent, const int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, FontIcon warning, ToolTip toolTip);
+    static void AddDropDown(Grid table, StackPanel shortcutControl, StackPanel parent, const int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, FontIcon warning, ToolTip toolTip, bool& IsTypeShortcutActivated);
 
     // Function to get the list of key codes from the shortcut combo box stack panel
     std::vector<DWORD> GetKeysFromStackPanel(StackPanel parent);

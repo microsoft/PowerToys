@@ -98,8 +98,16 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     if (originalKeys.IsValidShortcut() && newKeys.IsValidShortcut())
     {
         shortcutRemapBuffer.push_back(std::vector<Shortcut>{ Shortcut(), Shortcut() });
+
+        // Set the flag to true for this selection change so that selectionchanged event can be triggered
+        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->SetIsTypeShortcutActivated(true);
         keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->AddShortcutToControl(originalKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutDropDownStackPanel, *keyboardManagerState, 0, warningIcon, warningMessage);
+        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->SetIsTypeShortcutActivated(false);
+
+        // Set the flag to true for this selection change so that selectionchanged event can be triggered
+        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->SetIsTypeShortcutActivated(true);
         keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->AddShortcutToControl(newKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->shortcutDropDownStackPanel, *keyboardManagerState, 1, warningIcon, warningMessage);
+        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->SetIsTypeShortcutActivated(false);
     }
     else
     {
@@ -120,7 +128,7 @@ void ShortcutControl::AddShortcutToControl(Shortcut& shortcut, Grid table, Stack
     std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyCodeList(true);
     if (shortcutKeyCodes.size() != 0)
     {
-        KeyDropDownControl::AddDropDown(table, shortcutControlLayout, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, warning, toolTip);
+        KeyDropDownControl::AddDropDown(table, shortcutControlLayout, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, warning, toolTip, IsTypeShortcutActivated);
         for (int i = 0; i < shortcutKeyCodes.size(); i++)
         {
             // New drop down gets added automatically when the SelectedIndex is set
@@ -186,8 +194,11 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
 
         if (!detectedShortcutKeys.IsEmpty())
         {
+            // Set the flag to true for this selection change so that selectionchanged event can be triggered
+            IsTypeShortcutActivated = true;
             // The shortcut buffer gets set in this function
             AddShortcutToControl(detectedShortcutKeys, table, linkedShortcutStackPanel, keyboardManagerState, colIndex, warning, toolTip);
+            IsTypeShortcutActivated = false;
         }
 
         // Reset the keyboard manager UI state
@@ -313,4 +324,9 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
 
     // Show the dialog
     detectShortcutBox.ShowAsync();
+}
+
+void ShortcutControl::SetIsTypeShortcutActivated(const bool arg)
+{
+    IsTypeShortcutActivated = arg;
 }
