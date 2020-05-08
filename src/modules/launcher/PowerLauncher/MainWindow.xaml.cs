@@ -48,6 +48,8 @@ namespace PowerLauncher
 
         private void OnLoaded(object sender, RoutedEventArgs _)
         {
+            WindowsInteropHelper.DisableControlBox(this);
+
             InitializePosition();
 
             SearchBox.QueryTextBox.DataContext = _viewModel;
