@@ -7,10 +7,7 @@ namespace ImageResizer.Models
 {
     public class AdvancedSettings
     {
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool SetDllDirectory(string lpPathName);
-
-        [DllImport("os-detection.dll", EntryPoint = "UseNewSettings", ExactSpelling = false)]
+        [DllImport("..\os-detection.dll", EntryPoint = "UseNewSettings", ExactSpelling = false)]
         public static extern bool UseNewSettings();
     }
 }
