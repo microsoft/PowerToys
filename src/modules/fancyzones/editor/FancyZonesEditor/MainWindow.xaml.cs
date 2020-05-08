@@ -7,6 +7,8 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Management;
+using System.Text;
 using FancyZonesEditor.Models;
 using MahApps.Metro.Controls;
 
@@ -145,6 +147,16 @@ namespace FancyZonesEditor
 
         private void Apply_Click(object sender, RoutedEventArgs e)
         {
+            SelectQuery Sq = new SelectQuery("Win32_DesktopMonitor");
+            ManagementObjectSearcher objOSDetails = new ManagementObjectSearcher(Sq);
+            ManagementObjectCollection osDetailsCollection = objOSDetails.Get();
+            StringBuilder sb = new StringBuilder();
+            foreach (ManagementObject monitor in osDetailsCollection)
+            {
+                sb.AppendLine(string.Format("Name : {0}", (string)monitor["Name"]));
+                sb.AppendLine(string.Format("DeviceID : {0}", (string)monitor["DeviceID"]));
+            }
+            MessageBox.Show(sb.ToString());
             EditorOverlay mainEditor = EditorOverlay.Current;
             if (mainEditor.DataContext is LayoutModel model)
             {

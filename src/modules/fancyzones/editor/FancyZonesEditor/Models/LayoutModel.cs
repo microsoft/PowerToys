@@ -331,6 +331,7 @@ namespace FancyZonesEditor.Models
             {
                 string jsonString = JsonSerializer.Serialize(zoneSet, options);
                 File.WriteAllText(Settings.ActiveZoneSetTmpFile, jsonString);
+                MessageBox.Show(Settings.ActiveZoneSetTmpFile);
             }
             catch (Exception ex)
             {
