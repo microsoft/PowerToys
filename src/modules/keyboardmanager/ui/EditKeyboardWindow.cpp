@@ -4,6 +4,8 @@
 #include "KeyDropDownControl.h"
 #include "XamlBridge.h"
 #include <keyboardmanager/common/trace.h>
+#include <set>
+using namespace winrt::Windows::Foundation;
 
 LRESULT CALLBACK EditKeyboardWindowProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -16,6 +18,61 @@ HWND hwndEditKeyboardNativeWindow = nullptr;
 std::mutex editKeyboardWindowMutex;
 // Stores a pointer to the Xaml Bridge object so that it can be accessed from the window procedure
 static XamlBridge* xamlBridgePtr = nullptr;
+
+std::vector<DWORD> GetOrphanedKeys()
+{
+    std::set<DWORD> ogKeys;
+    std::set<DWORD> newKeys;
+
+    for (int i = 0; i < SingleKeyRemapControl::singleKeyRemapBuffer.size(); i++)
+    {
+        ogKeys.insert(SingleKeyRemapControl::singleKeyRemapBuffer[i][0]);
+        newKeys.insert(SingleKeyRemapControl::singleKeyRemapBuffer[i][1]);
+    }
+
+    for (auto& k : newKeys)
+    {
+        ogKeys.erase(k);
+    }
+
+    return std::vector(ogKeys.begin(), ogKeys.end());
+}
+
+IAsyncAction ConfirmationDialog(
+    KeyboardManagerState& state,
+    const std::vector<DWORD>& keys,
+    Button applyButton,
+    Flyout applyFlyout,
+    std::function<void()> ApplyRemappings)
+{
+    bool shouldApplyRemapping = false;
+    applyButton.Flyout(nullptr);
+    ContentDialog confirmationDialog;
+    confirmationDialog.XamlRoot(applyButton.XamlRoot());
+    confirmationDialog.Title(box_value(L"Want to confirm?"));
+    confirmationDialog.IsPrimaryButtonEnabled(true);
+    confirmationDialog.PrimaryButtonText(winrt::hstring(L"OK"));
+    confirmationDialog.IsSecondaryButtonEnabled(true);
+    confirmationDialog.SecondaryButtonText(winrt::hstring(L"Cancel"));
+
+    TextBlock orphanKeysBlock;
+    std::wstring orphanKeyString;
+    for (auto k: keys)
+    {
+        orphanKeyString.append(state.keyboardMap.GetKeyName(k));
+        orphanKeyString.append(L",");
+    }
+    orphanKeyString = orphanKeyString.substr(0, orphanKeyString.length() - 1);
+    orphanKeysBlock.Text(winrt::hstring(orphanKeyString));
+    confirmationDialog.Content(orphanKeysBlock);
+
+    ContentDialogResult res = co_await confirmationDialog.ShowAsync();
+    applyButton.Flyout(applyFlyout);
+    if (res == ContentDialogResult::Primary)
+    {
+        ApplyRemappings();
+    }
+}
 
 // Function to create the Edit Keyboard Window
 void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
@@ -235,7 +292,25 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     header.SetAlignRightWithPanel(applyButton, true);
     header.SetLeftOf(cancelButton, applyButton);
     applyButton.Flyout(applyFlyout);
-    applyButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+
+    auto ApplyRemappings = [&keyboardManagerState, _hWndEditKeyboardWindow, keyRemapTable, settingsMessage, applyButton]() {
+        KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
+        // Save the updated shortcuts remaps to file.
+        bool saveResult = keyboardManagerState.SaveConfigToFile();
+        if (!saveResult)
+        {
+            isSuccess = KeyboardManagerHelper::ErrorType::SaveFailed;
+        }
+        settingsMessage.Text(KeyboardManagerHelper::GetErrorMessage(isSuccess));
+        if (isSuccess == KeyboardManagerHelper::ErrorType::NoError)
+        {
+            PostMessage(_hWndEditKeyboardWindow, WM_CLOSE, 0, 0);
+        }
+    };
+
+
+
+    applyButton.Click([&keyboardManagerState, xamlContainer, keyRemapTable, header, applyFlyout, ApplyRemappings, applyButton, settingsMessage](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
         // Clear existing Key Remaps
         keyboardManagerState.ClearSingleKeyRemaps();
@@ -291,15 +366,23 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
                 isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
             }
         }
-
-        // Save the updated shortcuts remaps to file.
-        bool saveResult = keyboardManagerState.SaveConfigToFile();
-        if (!saveResult)
-        {
-            isSuccess = KeyboardManagerHelper::ErrorType::SaveFailed;
-        }
         Trace::KeyRemapCount(successfulRemapCount);
-        settingsMessage.Text(KeyboardManagerHelper::GetErrorMessage(isSuccess));
+        if (isSuccess != KeyboardManagerHelper::ErrorType::NoError)
+        {
+            settingsMessage.Text(KeyboardManagerHelper::GetErrorMessage(isSuccess));
+            return;
+        }
+        // Check for orphaned keys
+        // Draw content Dialog
+        std::vector<DWORD> orphanedKeys = GetOrphanedKeys();
+        if (orphanedKeys.size() > 0)
+        {
+            ConfirmationDialog(keyboardManagerState, orphanedKeys, applyButton, applyFlyout, ApplyRemappings);
+        }
+        else
+        {
+            ApplyRemappings();
+        }
     });
 
     header.Children().Append(headerText);
