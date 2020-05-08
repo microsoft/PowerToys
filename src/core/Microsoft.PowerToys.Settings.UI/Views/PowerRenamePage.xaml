@@ -53,12 +53,6 @@
             <TextBlock  x:Uid="PowerRename_ShellIntergration"
                         Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <ToggleSwitch x:Uid="PowerRename_Toggle_AutoComplete"
-                          Margin="{StaticResource SmallTopMargin}" 
-                          IsOn="{Binding Mode=TwoWay, Path=MRUEnabled}"
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                           />
-
             <ToggleSwitch x:Uid="PowerRename_Toggle_EnableOnContextMenu"
                           Margin="{StaticResource SmallTopMargin}" 
                           IsOn="{Binding Mode=TwoWay, Path=EnabledOnContextMenu}"
@@ -80,20 +74,23 @@
                           IsOn="{Binding Mode=TwoWay, Path=MRUEnabled}"
                           IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
                            />
-            
+
+            <muxc:NumberBox x:Uid="PowerRename_Toggle_MaxDispListNum"
+                            SpinButtonPlacementMode="Inline"
+                            HorizontalAlignment="Left"
+                            Margin="{StaticResource SmallTopMargin}" 
+                            Value="{Binding Mode=TwoWay, Path=MaxDispListNum}"
+                            Minimum="0"
+                            Maximum="1000"
+                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                            Visibility="{ Binding Mode=TwoWay, Path=MRUEnabled}"
+                            />
+
             <ToggleSwitch x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch"
                           Margin="{StaticResource SmallTopMargin}" 
                           IsOn="{Binding Mode=TwoWay, Path=RestoreFlagsOnLaunch}"
                           IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
                            />
-
-            <muxc:NumberBox x:Name="PowerRename_Toggle_MaxDispListNum"
-                            SpinButtonPlacementMode="Inline"
-                            HorizontalAlignment="Left"
-                            Margin="{StaticResource SmallTopMargin}" 
-                            Value="{Binding Mode=TwoWay, Path=MaxDispListNum}"
-                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                            />
         </StackPanel>
 
 
