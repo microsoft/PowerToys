@@ -257,6 +257,7 @@ namespace Microsoft.Plugin.Program.Programs
             public string UserModelId { get; set; }
             public string BackgroundColor { get; set; }
 
+            public string EntryPoint { get; set; }
             public string Name => DisplayName;
             public string Location => Package.Location;
 
@@ -361,6 +362,9 @@ namespace Microsoft.Plugin.Program.Programs
                 Description = manifestApp.GetStringValue("Description");
                 BackgroundColor = manifestApp.GetStringValue("BackgroundColor");
                 Package = package;
+                EntryPoint = manifestApp.GetStringValue("EntryPoint");
+
+                Debug.WriteLine("Name: " + DisplayName +  " :" + UserModelId +  " :" + manifestApp.GetStringValue("EntryPoint"));
 
                 DisplayName = ResourceFromPri(package.FullName, DisplayName);
                 Description = ResourceFromPri(package.FullName, Description);
