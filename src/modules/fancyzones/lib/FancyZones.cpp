@@ -74,13 +74,13 @@ public:
     MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
-        m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_zoneWindowMap);    
+        m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_zoneWindowMap);
     }
     IFACEMETHODIMP_(void)
     MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
-        m_windowMoveHandler.MoveSizeEnd(window, ptScreen, m_zoneWindowMap);    
+        m_windowMoveHandler.MoveSizeEnd(window, ptScreen, m_zoneWindowMap);
     }
     IFACEMETHODIMP_(void)
     VirtualDesktopChanged() noexcept;
@@ -191,7 +191,7 @@ private:
     void MoveWindowsOnDisplayChange() noexcept;
     void CycleActiveZoneSet(DWORD vkCode) noexcept;
     bool OnSnapHotkey(DWORD vkCode) noexcept;
-    
+
     void RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept;
     void RegisterNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept;
     bool IsNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept;
@@ -206,7 +206,7 @@ private:
     mutable std::shared_mutex m_lock;
     HWND m_window{};
     WindowMoveHandler m_windowMoveHandler;
-    
+
     std::map<HMONITOR, winrt::com_ptr<IZoneWindow>> m_zoneWindowMap; // Map of monitor to ZoneWindow (one per monitor)
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
     GUID m_currentVirtualDesktopId{}; // UUID of the current virtual desktop. Is GUID_NULL until first VD switch per session.
@@ -265,8 +265,7 @@ FancyZones::Run() noexcept
         .wait();
 
     m_terminateVirtualDesktopTrackerEvent.reset(CreateEvent(nullptr, FALSE, FALSE, nullptr));
-    m_virtualDesktopTrackerThread.submit(OnThreadExecutor::task_t{ [&] {
-        VirtualDesktopUtils::HandleVirtualDesktopUpdates(m_window, WM_PRIV_VD_UPDATE, m_terminateVirtualDesktopTrackerEvent.get()); } });
+    m_virtualDesktopTrackerThread.submit(OnThreadExecutor::task_t{ [&] { VirtualDesktopUtils::HandleVirtualDesktopUpdates(m_window, WM_PRIV_VD_UPDATE, m_terminateVirtualDesktopTrackerEvent.get()); } });
 }
 
 // IFancyZones
@@ -432,7 +431,10 @@ void FancyZones::ToggleEditor() noexcept
 
     std::shared_lock readLock(m_lock);
 
-    for (int i = 0;  i < monitors.size(); i++) { 
+    std::wstring params;
+
+    for (int i = 0; i < monitors.size(); i++)
+    {
         auto monitor = monitors[i];
         auto iter = m_zoneWindowMap.find(monitor);
         if (iter == m_zoneWindowMap.end())
@@ -475,45 +477,50 @@ void FancyZones::ToggleEditor() noexcept
         JSONHelpers::DeviceInfoJSON deviceInfoJson{ zoneWindow->UniqueId(), *deviceInfo };
         fancyZonesData.SerializeDeviceInfoToTmpFile(deviceInfoJson, ZoneWindowUtils::GetActiveZoneSetTmpPath());
 
-        std::wstring params =
-            /*1*/ std::to_wstring(reinterpret_cast<UINT_PTR>(monitor)) + L" " +
-            /*2*/ editorLocation + L" " +
-            /*3*/ zoneWindow->WorkAreaKey() + L" " +
-            /*4*/ L"\"" + ZoneWindowUtils::GetActiveZoneSetTmpPath() + L"\" " +
-            /*5*/ L"\"" + ZoneWindowUtils::GetAppliedZoneSetTmpPath() + L"\" " +
-            /*6*/ L"\"" + ZoneWindowUtils::GetCustomZoneSetsTmpPath() + L"\"";
+        params = params +
+                 /*1*/ std::to_wstring(reinterpret_cast<UINT_PTR>(monitor)) + L" " +
+                 /*2*/ editorLocation + L" " +
+                 /*3*/ zoneWindow->WorkAreaKey() + L" " +
+                 /*4*/ L"\"" + ZoneWindowUtils::GetActiveZoneSetTmpPath() + L"\" " +
+                 /*5*/ L"\"" + ZoneWindowUtils::GetAppliedZoneSetTmpPath() + L"\" " +
+                 /*6*/ L"\"" + ZoneWindowUtils::GetCustomZoneSetsTmpPath() + L"\"";
 
-        SHELLEXECUTEINFO sei{ sizeof(sei) };
-        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-        sei.lpFile = L"modules\\FancyZonesEditor.exe";
-        sei.lpParameters = params.c_str();
-        sei.nShow = SW_SHOWNORMAL;
-        ShellExecuteEx(&sei);
-        Trace::FancyZones::EditorLaunched(1);
-        // Launch the editor on a background thread
-        // Wait for the editor's process to exit
-        // Post back to the main thread to update
-        std::thread waitForEditorThread([window = m_window, processHandle = sei.hProcess, terminateEditorEvent = m_terminateEditorEvent.get()]() {
-            HANDLE waitEvents[2] = { processHandle, terminateEditorEvent };
-            auto result = WaitForMultipleObjects(2, waitEvents, false, INFINITE);
-            if (result == WAIT_OBJECT_0 + 0)
-            {
-                // Editor exited
-                // Update any changes it may have made
-                PostMessage(window, WM_PRIV_EDITOR, 0, static_cast<LPARAM>(EditorExitKind::Exit));
-            }
-            else if (result == WAIT_OBJECT_0 + 1)
-            {
-                // User hit Win+~ while editor is already running
-                // Shut it down
-                TerminateProcess(processHandle, 2);
-                PostMessage(window, WM_PRIV_EDITOR, 0, static_cast<LPARAM>(EditorExitKind::Terminate));
-            }
-            CloseHandle(processHandle);
-        });
-
-        waitForEditorThread.detach();
+        if (i != monitors.size() - 1)
+        {
+            params = params + L",";
+        }
     }
+
+    SHELLEXECUTEINFO sei{ sizeof(sei) };
+    sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+    sei.lpFile = L"modules\\FancyZonesEditor.exe";
+    sei.lpParameters = params.c_str();
+    sei.nShow = SW_SHOWNORMAL;
+    ShellExecuteEx(&sei);
+    Trace::FancyZones::EditorLaunched(1);
+    // Launch the editor on a background thread
+    // Wait for the editor's process to exit
+    // Post back to the main thread to update
+    std::thread waitForEditorThread([window = m_window, processHandle = sei.hProcess, terminateEditorEvent = m_terminateEditorEvent.get()]() {
+        HANDLE waitEvents[2] = { processHandle, terminateEditorEvent };
+        auto result = WaitForMultipleObjects(2, waitEvents, false, INFINITE);
+        if (result == WAIT_OBJECT_0 + 0)
+        {
+            // Editor exited
+            // Update any changes it may have made
+            PostMessage(window, WM_PRIV_EDITOR, 0, static_cast<LPARAM>(EditorExitKind::Exit));
+        }
+        else if (result == WAIT_OBJECT_0 + 1)
+        {
+            // User hit Win+~ while editor is already running
+            // Shut it down
+            TerminateProcess(processHandle, 2);
+            PostMessage(window, WM_PRIV_EDITOR, 0, static_cast<LPARAM>(EditorExitKind::Terminate));
+        }
+        CloseHandle(processHandle);
+    });
+
+    waitForEditorThread.detach();
 }
 
 void FancyZones::SettingsChanged() noexcept
@@ -675,7 +682,6 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
         }
     }
 }
-
 
 LRESULT CALLBACK FancyZones::s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
