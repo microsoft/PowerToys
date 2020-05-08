@@ -21,6 +21,7 @@ using Windows.UI.Xaml.Media;
 using System.Windows.Controls;
 using Wox.Plugin;
 using System.Reflection;
+using Wox.Plugin.SharedCommands;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -260,7 +261,7 @@ namespace Microsoft.Plugin.Program.Programs
             public string EntryPoint { get; set; }
             public string Name => DisplayName;
             public string Location => Package.Location;
-
+            public string ExecutableName;
             public bool Enabled { get; set; }
 
             public string LogoUri { get; set; }
@@ -312,24 +313,50 @@ namespace Microsoft.Plugin.Program.Programs
 
             public List<ContextMenuResult> ContextMenus(IPublicAPI api)
             {
-                var contextMenus = new List<ContextMenuResult>
-                {
-                    new ContextMenuResult
-                    {
-                        PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                        Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
-                        Glyph = "\xE838",
-                        FontFamily = "Segoe MDL2 Assets",
-                        AcceleratorKey = "E",
-                        AcceleratorModifiers = "Control,Shift",
-                        Action = _ =>
-                        {
-                            Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", Package.Location));
+                var contextMenus = new List<ContextMenuResult>();
 
-                            return true;
-                        }
-                    }
-                };
+                if (EntryPoint == "Windows.FullTrustApplication")
+                {
+                    contextMenus.Add(
+                            new ContextMenuResult
+                            {
+                                PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                                Title = api.GetTranslation("wox_plugin_program_run_as_administrator"),
+                                Glyph = "\xE7EF",
+                                FontFamily = "Segoe MDL2 Assets",
+                                AcceleratorKey = "Enter",
+                                AcceleratorModifiers = "Control,Shift",
+                                Action = _ =>
+                                {
+                                    string command = "shell:AppsFolder\\" + UniqueIdentifier;
+                                    command.Trim();
+                                    command = Environment.ExpandEnvironmentVariables(command);
+                                    var info = ShellCommand.SetProcessStartInfo(command, verb: "runas");
+                                    info.UseShellExecute = true;
+                                    Process.Start(info);
+                                    return true;
+                                }
+                            }
+                        );
+                }
+               contextMenus.Add(
+                   new ContextMenuResult
+                   {
+                       PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                       Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
+                       Glyph = "\xE838",
+                       FontFamily = "Segoe MDL2 Assets",
+                       AcceleratorKey = "E",
+                       AcceleratorModifiers = "Control,Shift",
+                       Action = _ =>
+                       {
+                           Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", Package.Location));
+
+                           return true;
+                       }
+                   });
+
+                
                 return contextMenus;
             }
 
@@ -363,6 +390,11 @@ namespace Microsoft.Plugin.Program.Programs
                 BackgroundColor = manifestApp.GetStringValue("BackgroundColor");
                 Package = package;
                 EntryPoint = manifestApp.GetStringValue("EntryPoint");
+                ExecutableName = manifestApp.GetStringValue("Executable");
+                if (EntryPoint == "Windows.FullTrustApplication")
+                {
+                    //string c = EntryPoint = manifestApp.GetStringValue("Executable");
+                }
 
                 Debug.WriteLine("Name: " + DisplayName +  " :" + UserModelId +  " :" + manifestApp.GetStringValue("EntryPoint"));
 
