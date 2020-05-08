@@ -41,15 +41,19 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         isEditShortcutsWindowRegistrationCompleted = true;
     }
 
+    // Find center screen coordinates
+    RECT desktopRect;
+    GetClientRect(GetDesktopWindow(), &desktopRect);
+
     // Window Creation
     HWND _hWndEditShortcutsWindow = CreateWindow(
         szWindowClass,
         L"Edit Shortcuts",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
+        (desktopRect.right / 2) - (KeyboardManagerConstants::DefaultEditShortcutsWindowWidth / 2),
+        (desktopRect.bottom / 2) - (KeyboardManagerConstants::DefaultEditShortcutsWindowHeight / 2),
+        KeyboardManagerConstants::DefaultEditShortcutsWindowWidth,
+        KeyboardManagerConstants::DefaultEditShortcutsWindowHeight,
         NULL,
         NULL,
         hInst,
@@ -117,17 +121,17 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     Windows::UI::Xaml::Controls::Grid shortcutTable;
     Grid keyRemapTable;
     ColumnDefinition originalColumn;
-    originalColumn.MinWidth(320);
-    originalColumn.MaxWidth(320);
+    originalColumn.MinWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
+    originalColumn.MaxWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
     ColumnDefinition arrowColumn;
-    arrowColumn.MinWidth(20);
+    arrowColumn.MinWidth(KeyboardManagerConstants::TableArrowColWidth);
     ColumnDefinition newColumn;
-    newColumn.MinWidth(320);
-    newColumn.MaxWidth(320);
+    newColumn.MinWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
+    newColumn.MaxWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
     ColumnDefinition removeColumn;
-    removeColumn.MinWidth(20);
+    removeColumn.MinWidth(KeyboardManagerConstants::TableRemoveColWidth);
     ColumnDefinition warnColumn;
-    warnColumn.MinWidth(20);
+    warnColumn.MinWidth(KeyboardManagerConstants::TableWarningColWidth);
     shortcutTable.Margin({ 10, 10, 10, 20 });
     shortcutTable.HorizontalAlignment(HorizontalAlignment::Stretch);
     shortcutTable.ColumnDefinitions().Append(originalColumn);

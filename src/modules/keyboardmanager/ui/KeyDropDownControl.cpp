@@ -10,11 +10,11 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut)
 {
     if (!isShortcut)
     {
-        dropDown.Width(KeyboardManagerConstants::RemapTableControlWidth);
+        dropDown.Width(KeyboardManagerConstants::RemapTableDropDownWidth);
     }
     else
     {
-        dropDown.Width(KeyboardManagerConstants::ShortcutTableControlWidth);
+        dropDown.Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
     }
     dropDown.MaxDropDownHeight(KeyboardManagerConstants::TableDropDownHeight);
     // Initialise layout attribute

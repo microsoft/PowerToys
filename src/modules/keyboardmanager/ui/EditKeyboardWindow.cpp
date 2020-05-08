@@ -40,15 +40,19 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         isEditKeyboardWindowRegistrationCompleted = true;
     }
 
+    // Find center screen coordinates
+    RECT desktopRect;
+    GetClientRect(GetDesktopWindow(), &desktopRect);
+
     // Window Creation
     HWND _hWndEditKeyboardWindow = CreateWindow(
         szWindowClass,
         L"Remap Keyboard",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        800,
-        600,
+        (desktopRect.right / 2) - (KeyboardManagerConstants::DefaultEditKeyboardWindowWidth / 2),
+        (desktopRect.bottom / 2) - (KeyboardManagerConstants::DefaultEditKeyboardWindowHeight / 2),
+        KeyboardManagerConstants::DefaultEditKeyboardWindowWidth,
+        KeyboardManagerConstants::DefaultEditKeyboardWindowHeight,
         NULL,
         NULL,
         hInst,
@@ -115,17 +119,17 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     // Table to display the key remaps
     Grid keyRemapTable;
     ColumnDefinition originalColumn;
-    originalColumn.MinWidth(100);
-    originalColumn.MaxWidth(100);
+    originalColumn.MinWidth(KeyboardManagerConstants::RemapTableDropDownWidth);
+    originalColumn.MaxWidth(KeyboardManagerConstants::RemapTableDropDownWidth);
     ColumnDefinition arrowColumn;
-    arrowColumn.MinWidth(20);
+    arrowColumn.MinWidth(KeyboardManagerConstants::TableArrowColWidth);
     ColumnDefinition newColumn;
-    newColumn.MinWidth(100);
-    newColumn.MaxWidth(100);
+    newColumn.MinWidth(KeyboardManagerConstants::RemapTableDropDownWidth);
+    newColumn.MaxWidth(KeyboardManagerConstants::RemapTableDropDownWidth);
     ColumnDefinition removeColumn;
-    removeColumn.MinWidth(20);
+    removeColumn.MinWidth(KeyboardManagerConstants::TableRemoveColWidth);
     ColumnDefinition warnColumn;
-    warnColumn.MinWidth(20);
+    warnColumn.MinWidth(KeyboardManagerConstants::TableWarningColWidth);
     keyRemapTable.Margin({ 10, 10, 10, 20 });
     keyRemapTable.HorizontalAlignment(HorizontalAlignment::Stretch);
     keyRemapTable.ColumnDefinitions().Append(originalColumn);
