@@ -16,6 +16,8 @@
 #include <lib/util.h>
 #include <unordered_set>
 
+#include <numeric>
+
 enum class DisplayChangeType
 {
     WorkArea,
@@ -405,108 +407,113 @@ void FancyZones::ToggleEditor() noexcept
         m_terminateEditorEvent.reset(CreateEvent(nullptr, true, false, nullptr));
     }
 
-    HMONITOR monitor{};
+    //HMONITOR monitor{};
     HWND foregroundWindow{};
 
-    const bool use_cursorpos_editor_startupscreen = m_settings->GetSettings()->use_cursorpos_editor_startupscreen;
-    POINT currentCursorPos{};
-    if (use_cursorpos_editor_startupscreen)
-    {
-        GetCursorPos(&currentCursorPos);
-        monitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
-    }
-    else
-    {
-        foregroundWindow = GetForegroundWindow();
-        monitor = MonitorFromWindow(foregroundWindow, MONITOR_DEFAULTTOPRIMARY);
-    }
+    auto monitors = GetMonitorsSorted();
 
-    if (!monitor)
-    {
-        return;
-    }
+    // const bool use_cursorpos_editor_startupscreen = m_settings->GetSettings()->use_cursorpos_editor_startupscreen;
+    // POINT currentCursorPos{};
+    // if (use_cursorpos_editor_startupscreen)
+    // {
+    //     GetCursorPos(&currentCursorPos);
+    //     monitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
+    // }
+    // else
+    // {
+    //     foregroundWindow = GetForegroundWindow();
+    //     monitor = MonitorFromWindow(foregroundWindow, MONITOR_DEFAULTTOPRIMARY);
+    // }
+
+    // if (!monitor)
+    // {
+    //     return;
+    // }
 
     std::shared_lock readLock(m_lock);
-    auto iter = m_zoneWindowMap.find(monitor);
-    if (iter == m_zoneWindowMap.end())
-    {
-        return;
-    }
 
-    MONITORINFOEX mi;
-    mi.cbSize = sizeof(mi);
-
-    m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
-                          GetMonitorInfo(monitor, &mi);
-                      } })
-        .wait();
-
-    auto zoneWindow = iter->second;
-
-    const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
-    fancyZonesData.CustomZoneSetsToJsonFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
-
-    // Do not scale window params by the dpi, that will be done in the editor - see LayoutModel.Apply
-    const auto taskbar_x_offset = mi.rcWork.left - mi.rcMonitor.left;
-    const auto taskbar_y_offset = mi.rcWork.top - mi.rcMonitor.top;
-    const auto x = mi.rcMonitor.left + taskbar_x_offset;
-    const auto y = mi.rcMonitor.top + taskbar_y_offset;
-    const auto width = mi.rcWork.right - mi.rcWork.left;
-    const auto height = mi.rcWork.bottom - mi.rcWork.top;
-    const std::wstring editorLocation =
-        std::to_wstring(x) + L"_" +
-        std::to_wstring(y) + L"_" +
-        std::to_wstring(width) + L"_" +
-        std::to_wstring(height);
-
-    const auto deviceInfo = fancyZonesData.FindDeviceInfo(zoneWindow->UniqueId());
-    if (!deviceInfo.has_value())
-    {
-        return;
-    }
-
-    JSONHelpers::DeviceInfoJSON deviceInfoJson{ zoneWindow->UniqueId(), *deviceInfo };
-    fancyZonesData.SerializeDeviceInfoToTmpFile(deviceInfoJson, ZoneWindowUtils::GetActiveZoneSetTmpPath());
-
-    const std::wstring params =
-        /*1*/ std::to_wstring(reinterpret_cast<UINT_PTR>(monitor)) + L" " +
-        /*2*/ editorLocation + L" " +
-        /*3*/ zoneWindow->WorkAreaKey() + L" " +
-        /*4*/ L"\"" + ZoneWindowUtils::GetActiveZoneSetTmpPath() + L"\" " +
-        /*5*/ L"\"" + ZoneWindowUtils::GetAppliedZoneSetTmpPath() + L"\" " +
-        /*6*/ L"\"" + ZoneWindowUtils::GetCustomZoneSetsTmpPath() + L"\"";
-
-    SHELLEXECUTEINFO sei{ sizeof(sei) };
-    sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-    sei.lpFile = L"modules\\FancyZonesEditor.exe";
-    sei.lpParameters = params.c_str();
-    sei.nShow = SW_SHOWNORMAL;
-    ShellExecuteEx(&sei);
-    Trace::FancyZones::EditorLaunched(1);
-
-    // Launch the editor on a background thread
-    // Wait for the editor's process to exit
-    // Post back to the main thread to update
-    std::thread waitForEditorThread([window = m_window, processHandle = sei.hProcess, terminateEditorEvent = m_terminateEditorEvent.get()]() {
-        HANDLE waitEvents[2] = { processHandle, terminateEditorEvent };
-        auto result = WaitForMultipleObjects(2, waitEvents, false, INFINITE);
-        if (result == WAIT_OBJECT_0 + 0)
+    for (int i = 0;  i < monitors.size(); i++) { 
+        auto monitor = monitors[i];
+        auto iter = m_zoneWindowMap.find(monitor);
+        if (iter == m_zoneWindowMap.end())
         {
-            // Editor exited
-            // Update any changes it may have made
-            PostMessage(window, WM_PRIV_EDITOR, 0, static_cast<LPARAM>(EditorExitKind::Exit));
+            return;
         }
-        else if (result == WAIT_OBJECT_0 + 1)
-        {
-            // User hit Win+~ while editor is already running
-            // Shut it down
-            TerminateProcess(processHandle, 2);
-            PostMessage(window, WM_PRIV_EDITOR, 0, static_cast<LPARAM>(EditorExitKind::Terminate));
-        }
-        CloseHandle(processHandle);
-    });
 
-    waitForEditorThread.detach();
+        MONITORINFOEX mi;
+        mi.cbSize = sizeof(mi);
+
+        m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
+                              GetMonitorInfo(monitor, &mi);
+                          } })
+            .wait();
+
+        auto zoneWindow = iter->second;
+
+        const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+        fancyZonesData.CustomZoneSetsToJsonFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
+
+        // Do not scale window params by the dpi, that will be done in the editor - see LayoutModel.Apply
+        const auto taskbar_x_offset = mi.rcWork.left - mi.rcMonitor.left;
+        const auto taskbar_y_offset = mi.rcWork.top - mi.rcMonitor.top;
+        const auto x = mi.rcMonitor.left + taskbar_x_offset;
+        const auto y = mi.rcMonitor.top + taskbar_y_offset;
+        const auto width = mi.rcWork.right - mi.rcWork.left;
+        const auto height = mi.rcWork.bottom - mi.rcWork.top;
+        const std::wstring editorLocation =
+            std::to_wstring(x) + L"_" +
+            std::to_wstring(y) + L"_" +
+            std::to_wstring(width) + L"_" +
+            std::to_wstring(height);
+
+        const auto deviceInfo = fancyZonesData.FindDeviceInfo(zoneWindow->UniqueId());
+        if (!deviceInfo.has_value())
+        {
+            return;
+        }
+
+        JSONHelpers::DeviceInfoJSON deviceInfoJson{ zoneWindow->UniqueId(), *deviceInfo };
+        fancyZonesData.SerializeDeviceInfoToTmpFile(deviceInfoJson, ZoneWindowUtils::GetActiveZoneSetTmpPath());
+
+        std::wstring params =
+            /*1*/ std::to_wstring(reinterpret_cast<UINT_PTR>(monitor)) + L" " +
+            /*2*/ editorLocation + L" " +
+            /*3*/ zoneWindow->WorkAreaKey() + L" " +
+            /*4*/ L"\"" + ZoneWindowUtils::GetActiveZoneSetTmpPath() + L"\" " +
+            /*5*/ L"\"" + ZoneWindowUtils::GetAppliedZoneSetTmpPath() + L"\" " +
+            /*6*/ L"\"" + ZoneWindowUtils::GetCustomZoneSetsTmpPath() + L"\"";
+
+        SHELLEXECUTEINFO sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+        sei.lpFile = L"modules\\FancyZonesEditor.exe";
+        sei.lpParameters = params.c_str();
+        sei.nShow = SW_SHOWNORMAL;
+        ShellExecuteEx(&sei);
+        Trace::FancyZones::EditorLaunched(1);
+        // Launch the editor on a background thread
+        // Wait for the editor's process to exit
+        // Post back to the main thread to update
+        std::thread waitForEditorThread([window = m_window, processHandle = sei.hProcess, terminateEditorEvent = m_terminateEditorEvent.get()]() {
+            HANDLE waitEvents[2] = { processHandle, terminateEditorEvent };
+            auto result = WaitForMultipleObjects(2, waitEvents, false, INFINITE);
+            if (result == WAIT_OBJECT_0 + 0)
+            {
+                // Editor exited
+                // Update any changes it may have made
+                PostMessage(window, WM_PRIV_EDITOR, 0, static_cast<LPARAM>(EditorExitKind::Exit));
+            }
+            else if (result == WAIT_OBJECT_0 + 1)
+            {
+                // User hit Win+~ while editor is already running
+                // Shut it down
+                TerminateProcess(processHandle, 2);
+                PostMessage(window, WM_PRIV_EDITOR, 0, static_cast<LPARAM>(EditorExitKind::Terminate));
+            }
+            CloseHandle(processHandle);
+        });
+
+        waitForEditorThread.detach();
+    }
 }
 
 void FancyZones::SettingsChanged() noexcept
