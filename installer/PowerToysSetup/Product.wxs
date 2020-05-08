@@ -223,6 +223,7 @@
               <?undef IdSafeLanguage?>
             <?endforeach?>
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
+            <Directory Id="FancyZonesInstallFolder" Name="FancyZones" />
             <Directory Id="LauncherInstallFolder" Name="launcher">
               <Directory Id="AssetsFolder" Name="Assets" />
               <Directory Id="LauncherImagesFolder" Name="Images" />
@@ -356,29 +357,33 @@
         <File Source="$(var.BinX64Dir)svgs\overlay_portrait.svg" />
       </Component>
     </DirectoryRef>
+    <DirectoryRef Id="FancyZonesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
+      <Component Id="Module_FancyZones" Guid="C6B5272E-6ED4-4B80-B0E7-2FF0355D8CF4" Win64="yes">
+        <File Source="$(var.BinX64Dir)modules\fancyzones.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\FancyZonesEditor.exe" >
+          <netfx:NativeImage Id="FancyZonesEditor.exe" Platform="64bit" Priority="0" />
+        </File>
+        <File Source="$(var.BinX64Dir)modules\FancyZones\ControlzEx.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\MahApps.Metro.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\Microsoft.Xaml.Behaviors.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\FancyZonesEditor.exe.config" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\Microsoft.Bcl.AsyncInterfaces.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\System.Buffers.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\System.Memory.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\System.Numerics.Vectors.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\System.Runtime.CompilerServices.Unsafe.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\System.Text.Encodings.Web.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\System.Text.Json.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\System.Threading.Tasks.Extensions.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\System.ValueTuple.dll" />
+      </Component>
+    </DirectoryRef>
+
     <DirectoryRef Id="ModulesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
       <Component Id="Module_ShortcutGuide" Guid="CBD0AC09-91D3-428E-B2B3-05745ADF3473" Win64="yes">
         <File Source="$(var.BinX64Dir)modules\shortcut_guide.dll" KeyPath="yes" />
       </Component>
-      <Component Id="Module_FancyZones" Guid="C6B5272E-6ED4-4B80-B0E7-2FF0355D8CF4" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\fancyzones.dll" KeyPath="yes" />
-        <File Source="$(var.BinX64Dir)modules\FancyZonesEditor.exe" >
-          <netfx:NativeImage Id="FancyZonesEditor.exe" Platform="64bit" Priority="0" />
-        </File>
-        <File Source="$(var.BinX64Dir)modules\ControlzEx.dll" />
-        <File Source="$(var.BinX64Dir)modules\MahApps.Metro.dll" />
-        <File Source="$(var.BinX64Dir)modules\Microsoft.Xaml.Behaviors.dll" />
-        <File Source="$(var.BinX64Dir)modules\FancyZonesEditor.exe.config" />
-        <File Source="$(var.BinX64Dir)modules\Microsoft.Bcl.AsyncInterfaces.dll" />
-        <File Source="$(var.BinX64Dir)modules\System.Buffers.dll" />
-        <File Source="$(var.BinX64Dir)modules\System.Memory.dll" />
-        <File Source="$(var.BinX64Dir)modules\System.Numerics.Vectors.dll" />
-        <File Source="$(var.BinX64Dir)modules\System.Runtime.CompilerServices.Unsafe.dll" />
-        <File Source="$(var.BinX64Dir)modules\System.Text.Encodings.Web.dll" />
-        <File Source="$(var.BinX64Dir)modules\System.Text.Json.dll" />
-        <File Source="$(var.BinX64Dir)modules\System.Threading.Tasks.Extensions.dll" />
-        <File Source="$(var.BinX64Dir)modules\System.ValueTuple.dll" />
-      </Component>
+
       <Component Id="Module_PowerRename" Guid="E4401D08-27FE-4F96-BA17-0C61FD79E684" Win64="yes">
         <File Source="$(var.BinX64Dir)modules\PowerRenameExt.dll" KeyPath="yes" />
         <RegistryKey Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
