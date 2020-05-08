@@ -6,17 +6,18 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class SndFancyZonesSettings
+    public class FancyZonesSettingsIPCMessage
     {
-        public FancyZonesSettings FancyZones { get; set; }
+        [JsonPropertyName("powertoys")]
+        public SndFancyZonesSettings Powertoys { get; set; }
 
-        public SndFancyZonesSettings()
+        public FancyZonesSettingsIPCMessage()
         {
         }
 
-        public SndFancyZonesSettings(FancyZonesSettings settings)
+        public FancyZonesSettingsIPCMessage(SndFancyZonesSettings settings)
         {
-            this.FancyZones = settings;
+            this.Powertoys = settings;
         }
 
         public string ToJsonString()

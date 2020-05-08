@@ -14,9 +14,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     {
         public ShortcutGuideProperties()
         {
-            OverlayOpacity = new IntProperty();
-            PressTime = new IntProperty();
-            Theme = new StringProperty();
+            OverlayOpacity = new IntProperty(90);
+            PressTime = new IntProperty(900);
+            Theme = new StringProperty("light");
         }
 
         [JsonPropertyName("overlay_opacity")]
