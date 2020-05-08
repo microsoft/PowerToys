@@ -683,7 +683,7 @@
       <ComponentRef Id="powertoys_toast_clsid" />
       <ComponentRef Id="License_rtf" />
       <ComponentRef Id="powertoysinterop_dll" />
-      <ComponentRef Id="osDetection_dll"/>
+      <ComponentRef Id="osDetection_dll" />
       <ComponentRef Id="PowerToysSvgs" />
       <ComponentRef Id="Module_ShortcutGuide" />
       <ComponentRef Id="Module_FancyZones" />
