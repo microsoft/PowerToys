@@ -44,16 +44,19 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Find center screen coordinates
     RECT desktopRect;
     GetClientRect(GetDesktopWindow(), &desktopRect);
+    // Calculate resolution dependent window size
+    int windowWidth = KeyboardManagerConstants::DefaultEditShortcutsWindowWidth * desktopRect.right;
+    int windowHeight = KeyboardManagerConstants::DefaultEditShortcutsWindowHeight * desktopRect.bottom;
 
     // Window Creation
     HWND _hWndEditShortcutsWindow = CreateWindow(
         szWindowClass,
         L"Edit Shortcuts",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-        (desktopRect.right / 2) - (KeyboardManagerConstants::DefaultEditShortcutsWindowWidth / 2),
-        (desktopRect.bottom / 2) - (KeyboardManagerConstants::DefaultEditShortcutsWindowHeight / 2),
-        KeyboardManagerConstants::DefaultEditShortcutsWindowWidth,
-        KeyboardManagerConstants::DefaultEditShortcutsWindowHeight,
+        (desktopRect.right / 2) - (windowWidth / 2),
+        (desktopRect.bottom / 2) - (windowHeight / 2),
+        windowWidth,
+        windowHeight,
         NULL,
         NULL,
         hInst,

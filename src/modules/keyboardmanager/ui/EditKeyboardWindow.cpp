@@ -43,16 +43,19 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     // Find center screen coordinates
     RECT desktopRect;
     GetClientRect(GetDesktopWindow(), &desktopRect);
+    // Calculate resolution dependent window size
+    int windowWidth = KeyboardManagerConstants::DefaultEditKeyboardWindowWidth * desktopRect.right;
+    int windowHeight = KeyboardManagerConstants::DefaultEditKeyboardWindowHeight * desktopRect.bottom;
 
     // Window Creation
     HWND _hWndEditKeyboardWindow = CreateWindow(
         szWindowClass,
         L"Remap Keyboard",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-        (desktopRect.right / 2) - (KeyboardManagerConstants::DefaultEditKeyboardWindowWidth / 2),
-        (desktopRect.bottom / 2) - (KeyboardManagerConstants::DefaultEditKeyboardWindowHeight / 2),
-        KeyboardManagerConstants::DefaultEditKeyboardWindowWidth,
-        KeyboardManagerConstants::DefaultEditKeyboardWindowHeight,
+        (desktopRect.right / 2) - (windowWidth / 2),
+        (desktopRect.bottom / 2) - (windowHeight / 2),
+        windowWidth,
+        windowHeight,
         NULL,
         NULL,
         hInst,
