@@ -339,7 +339,7 @@
         <File Id="PowerToysInterop.dll" KeyPath="yes" Checksum="yes" />
       </Component>
       <Component Id="osDetection_dll" Guid="AA370C25-4AC8-447B-A2FF-C99365C6BE67" Win64="yes">
-        <File Id="os-detection.dll" KeyPath="yes" Checksum="yes" />
+        <File Source="$(var.BinX64Dir)os-detection.dll" KeyPath="yes" Checksum="yes" />
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="SvgsInstallFolder" FileSource="$(var.BinX64Dir)svgs\">
