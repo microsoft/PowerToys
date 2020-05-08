@@ -5,6 +5,8 @@
 #include "XamlBridge.h"
 #include <keyboardmanager/common/trace.h>
 #include <set>
+#include <common/windows_colors.h>
+
 using namespace winrt::Windows::Foundation;
 
 LRESULT CALLBACK EditKeyboardWindowProc(HWND, UINT, WPARAM, LPARAM);
@@ -49,9 +51,10 @@ IAsyncAction ConfirmationDialog(
     applyButton.Flyout(nullptr);
     ContentDialog confirmationDialog;
     confirmationDialog.XamlRoot(applyButton.XamlRoot());
-    confirmationDialog.Title(box_value(L"Want to confirm?"));
+    confirmationDialog.Title(box_value(L"The following keys are unassigned and you won't be able to use them:"));
     confirmationDialog.IsPrimaryButtonEnabled(true);
-    confirmationDialog.PrimaryButtonText(winrt::hstring(L"OK"));
+    confirmationDialog.DefaultButton(ContentDialogButton::Primary);
+    confirmationDialog.PrimaryButtonText(winrt::hstring(L"Continue anyway"));
     confirmationDialog.IsSecondaryButtonEnabled(true);
     confirmationDialog.SecondaryButtonText(winrt::hstring(L"Cancel"));
 
@@ -60,9 +63,9 @@ IAsyncAction ConfirmationDialog(
     for (auto k: keys)
     {
         orphanKeyString.append(state.keyboardMap.GetKeyName(k));
-        orphanKeyString.append(L",");
+        orphanKeyString.append(L", ");
     }
-    orphanKeyString = orphanKeyString.substr(0, orphanKeyString.length() - 1);
+    orphanKeyString = orphanKeyString.substr(0, max(0, orphanKeyString.length() - 2));
     orphanKeysBlock.Text(winrt::hstring(orphanKeyString));
     confirmationDialog.Content(orphanKeysBlock);
 
@@ -157,7 +160,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     // Header Cancel button
     Button cancelButton;
     cancelButton.Content(winrt::box_value(L"Cancel"));
-    cancelButton.Margin({ 0, 0, 10, 0 });
+    cancelButton.Margin({ 10, 0, 0, 0 });
     cancelButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         // Close the window since settings do not need to be saved
         PostMessage(_hWndEditKeyboardWindow, WM_CLOSE, 0, 0);
@@ -288,9 +291,10 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // Main Header Apply button
     Button applyButton;
-    applyButton.Content(winrt::box_value(L"Apply"));
-    header.SetAlignRightWithPanel(applyButton, true);
-    header.SetLeftOf(cancelButton, applyButton);
+    applyButton.Content(winrt::box_value(L"OK"));
+    applyButton.Background(winrt::Windows::UI::Xaml::Media::SolidColorBrush{ WindowsColors::get_accent_color() });
+    header.SetAlignRightWithPanel(cancelButton, true);
+    header.SetLeftOf(applyButton, cancelButton);
     applyButton.Flyout(applyFlyout);
 
     auto ApplyRemappings = [&keyboardManagerState, _hWndEditKeyboardWindow, keyRemapTable, settingsMessage, applyButton]() {
@@ -308,9 +312,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         }
     };
 
-
-
-    applyButton.Click([&keyboardManagerState, xamlContainer, keyRemapTable, header, applyFlyout, ApplyRemappings, applyButton, settingsMessage](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    applyButton.Click([&keyboardManagerState, keyRemapTable, header, applyFlyout, ApplyRemappings, applyButton, settingsMessage](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
         // Clear existing Key Remaps
         keyboardManagerState.ClearSingleKeyRemaps();
