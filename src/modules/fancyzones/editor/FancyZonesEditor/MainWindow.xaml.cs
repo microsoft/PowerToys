@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using FancyZonesEditor.Models;
 using MahApps.Metro.Controls;
 
@@ -22,7 +23,7 @@ namespace FancyZonesEditor
         private readonly Settings _settings = ((App)Application.Current).ZoneSettings;
         private static readonly string _defaultNamePrefix = "Custom Layout ";
 
-        public int WrapPanelItemSize { get; set; } = 262;
+        public int WrapPanelItemSize { get; set; } = 150; //TODO: previously 262
 
         public MainWindow()
         {
@@ -34,8 +35,23 @@ namespace FancyZonesEditor
             if (_settings.WorkArea.Height < 900)
             {
                 SizeToContent = SizeToContent.WidthAndHeight;
-                WrapPanelItemSize = 180;
+                WrapPanelItemSize = 150; //TODO: previously 1980
             }
+        }
+        private void SelectScreen1(object sender, RoutedEventArgs e)
+        {
+            this.screen1.Fill = Brushes.DeepSkyBlue;
+            this.screen2.Fill = Brushes.Gray;
+            this.screenName1.Visibility = Visibility.Visible;
+            this.screenName2.Visibility = Visibility.Hidden;
+        }
+
+        public void SelectScreen2(object sender, RoutedEventArgs e)
+        {
+            this.screen2.Fill = Brushes.DeepSkyBlue;
+            this.screen1.Fill = Brushes.Gray;
+            this.screenName1.Visibility = Visibility.Hidden;
+            this.screenName2.Visibility = Visibility.Visible;
         }
 
         private void MainWindow_KeyUp(object sender, KeyEventArgs e)
