@@ -82,8 +82,7 @@
                             Value="{Binding Mode=TwoWay, Path=MaxDispListNum}"
                             Minimum="0"
                             Maximum="1000"
-                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                            Visibility="{ Binding Mode=TwoWay, Path=MRUEnabled}"
+                            IsEnabled="{ Binding Mode=TwoWay, Path=GlobalAndMruEnabled}"
                             />
 
             <ToggleSwitch x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch"
