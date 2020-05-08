@@ -15,7 +15,7 @@
 
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutputPath>..\..\..\..\x64\Debug\modules\launcher\</OutputPath>
+    <OutputPath>..\..\..\..\x64\Debug\modules\launcher\Wox</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
@@ -28,7 +28,7 @@
 
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutputPath>..\..\..\..\x64\Release\modules\launcher\</OutputPath>
+    <OutputPath>..\..\..\..\x64\Release\modules\launcher\Wox</OutputPath>
     <DefineConstants>TRACE;RELEASE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
