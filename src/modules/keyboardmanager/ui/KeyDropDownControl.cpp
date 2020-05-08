@@ -26,6 +26,9 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut)
         ComboBox currentDropDown = sender.as<ComboBox>();
         CheckAndUpdateKeyboardLayout(currentDropDown, isShortcut);
     });
+
+    warningFlyout.Content(warningMessage);
+    dropDown.ContextFlyout().SetAttachedFlyout((FrameworkElement)dropDown, warningFlyout);
 }
 
 // Function to check if the layout has changed and accordingly update the drop down list
@@ -44,12 +47,13 @@ void KeyDropDownControl::CheckAndUpdateKeyboardLayout(ComboBox currentDropDown, 
 }
 
 // Function to set selection handler for single key remap drop down. Needs to be called after the constructor since the singleKeyControl StackPanel is null if called in the constructor
-void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyControl, int colIndex, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer)
+void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyControl, int colIndex, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, bool& isTypeKey)
 {
     // drop down selection handler
-    dropDown.SelectionChanged([&, table, singleKeyControl, colIndex](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args) {
+    auto onSelectionChange = [&, table, singleKeyControl, colIndex](winrt::Windows::Foundation::IInspectable const& sender) {
         ComboBox currentDropDown = sender.as<ComboBox>();
         int selectedKeyIndex = currentDropDown.SelectedIndex();
+        //bool isClosed = currentDropDown.IsDropDownOpen();
         // Get row index of the single key control
         uint32_t controlIndex;
         bool indexFound = table.Children().IndexOf(singleKeyControl, controlIndex);
@@ -114,7 +118,21 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyC
                 warning.Visibility(Visibility::Collapsed);
             }
         }
+    };
+
+    // Rather than on every selection change (which gets triggered on searching as well) we set the handler only when the drop down is closed
+    dropDown.DropDownClosed([onSelectionChange](winrt::Windows::Foundation::IInspectable const& sender, auto const& args) {
+        onSelectionChange(sender);
     });
+
+    // Since using Type Key will not trigger the drop down closed event, we have to use Selection Changed. We check if the selection changed was triggered from Type key using the isTypeKey member variable of SingleKeyRemapControl which is passed by reference
+    dropDown.SelectionChanged([onSelectionChange, &isTypeKey](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args){
+        if (isTypeKey)
+        {
+            isTypeKey = false;
+            onSelectionChange(sender);        
+        }
+        });
 }
 
 // Function to set selection handler for shortcut drop down. Needs to be called after the constructor since the shortcutControl StackPanel is null if called in the constructor
@@ -378,4 +396,6 @@ void KeyDropDownControl::SetDropDownError(ComboBox currentDropDown, hstring mess
 {
     currentDropDown.SelectedIndex(-1);
     toolTip.Content(box_value(message));
+    warningMessage.Text(message);
+    currentDropDown.ContextFlyout().ShowAttachedFlyout((FrameworkElement)dropDown);
 }

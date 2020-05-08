@@ -149,7 +149,8 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
                      detectRemapKeyBox,
                      &keyboardManagerState,
                      &singleKeyRemapBuffer,
-                     unregisterKeys] {
+                     unregisterKeys,
+                     this] {
         // Save the detected key in the linked text block
         DWORD detectedKey = keyboardManagerState.GetDetectedSingleRemapKey();
 
@@ -161,6 +162,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
             auto it = std::find(keyCodeList.begin(), keyCodeList.end(), detectedKey);
             if (it != keyCodeList.end())
             {
+                isTypeKey = true;
                 linkedRemapDropDown.SelectedIndex((int32_t)std::distance(keyCodeList.begin(), it));
             }
         }

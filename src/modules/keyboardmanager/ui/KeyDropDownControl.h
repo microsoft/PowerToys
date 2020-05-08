@@ -15,6 +15,10 @@ private:
     FontIcon warning;
     // Stores the tooltip for the warning control
     ToolTip toolTip;
+    // Stores the flyout warning message 
+    TextBlock warningMessage;
+    // Stores the flyout attached to the current drop down
+    Flyout warningFlyout;
 
     // Function to set properties apart from the SelectionChanged event handler
     void SetDefaultProperties(bool isShortcut);
@@ -34,7 +38,7 @@ public:
     }
 
     // Function to set selection handler for single key remap drop down. Needs to be called after the constructor since the singleKeyControl StackPanel is null if called in the constructor
-    void SetSelectionHandler(Grid& table, StackPanel& singleKeyControl, int colIndex, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer);
+    void SetSelectionHandler(Grid& table, StackPanel& singleKeyControl, int colIndex, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, bool& isTypeKey);
 
     // Function to set selection handler for shortcut drop down. Needs to be called after the constructor since the shortcutControl StackPanel is null if called in the constructor
     void SetSelectionHandler(Grid& table, StackPanel& shortcutControl, StackPanel parent, int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects);
