@@ -779,10 +779,16 @@ KeyboardManagerHelper::ErrorType Shortcut::DoKeysOverlap(const Shortcut& first, 
         else if (first.actionKey == second.actionKey)
         {
             // corresponding modifiers are either both disabled or both not disabled - this ensures that both match in types of modifers i.e. Ctrl(l/r/c) Shift (l/r/c) A matches Ctrl(l/r/c) Shift (l/r/c) A
-            if (((first.winKey != ModifierKey::Disabled && second.winKey != ModifierKey::Disabled) || (first.winKey == ModifierKey::Disabled && second.winKey == ModifierKey::Disabled)) && ((first.ctrlKey != ModifierKey::Disabled && second.ctrlKey != ModifierKey::Disabled) || (first.ctrlKey == ModifierKey::Disabled && second.ctrlKey == ModifierKey::Disabled)) && ((first.altKey != ModifierKey::Disabled && second.altKey != ModifierKey::Disabled) || (first.altKey == ModifierKey::Disabled && second.altKey == ModifierKey::Disabled)) && ((first.shiftKey != ModifierKey::Disabled && second.shiftKey != ModifierKey::Disabled) || (first.shiftKey == ModifierKey::Disabled && second.shiftKey == ModifierKey::Disabled)))
+            if (((first.winKey != ModifierKey::Disabled && second.winKey != ModifierKey::Disabled) || (first.winKey == ModifierKey::Disabled && second.winKey == ModifierKey::Disabled)) && 
+                ((first.ctrlKey != ModifierKey::Disabled && second.ctrlKey != ModifierKey::Disabled) || (first.ctrlKey == ModifierKey::Disabled && second.ctrlKey == ModifierKey::Disabled)) && 
+                ((first.altKey != ModifierKey::Disabled && second.altKey != ModifierKey::Disabled) || (first.altKey == ModifierKey::Disabled && second.altKey == ModifierKey::Disabled)) && 
+                ((first.shiftKey != ModifierKey::Disabled && second.shiftKey != ModifierKey::Disabled) || (first.shiftKey == ModifierKey::Disabled && second.shiftKey == ModifierKey::Disabled)))
             {
                 // If one of the modifier is common
-                if ((first.winKey == ModifierKey::Both || second.winKey == ModifierKey::Both) || (first.ctrlKey == ModifierKey::Both || second.ctrlKey == ModifierKey::Both) || (first.altKey == ModifierKey::Both || second.altKey == ModifierKey::Both) || (first.shiftKey == ModifierKey::Both || second.shiftKey == ModifierKey::Both))
+                if ((first.winKey == ModifierKey::Both || second.winKey == ModifierKey::Both) || 
+                    (first.ctrlKey == ModifierKey::Both || second.ctrlKey == ModifierKey::Both) || 
+                    (first.altKey == ModifierKey::Both || second.altKey == ModifierKey::Both) || 
+                    (first.shiftKey == ModifierKey::Both || second.shiftKey == ModifierKey::Both))
                 {
                     return KeyboardManagerHelper::ErrorType::ConflictingModifierShortcut;
                 }
