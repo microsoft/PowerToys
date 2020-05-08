@@ -14,6 +14,7 @@
 
 #include <common/json.h>
 #include <common\settings_helpers.cpp>
+#include <common/OS_Detection.h>
 
 #define BUFSIZE 1024
 
@@ -204,40 +205,6 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
                                           process_info);
 
     return process_created;
-}
-
-// The following three helper functions determine if the user has a build version higher than or equal to 19h1, as that is a requirement for xaml islands
-// Source : Microsoft-ui-xaml github
-// Link: https://github.com/microsoft/microsoft-ui-xaml/blob/c045cde57c5c754683d674634a0baccda34d58c4/dev/dll/SharedHelpers.cpp
-template<uint16_t APIVersion> bool IsAPIContractVxAvailable()
-{
-    static bool isAPIContractVxAvailableInitialized = false;
-    static bool isAPIContractVxAvailable = false;
-    if (!isAPIContractVxAvailableInitialized)
-    {
-        isAPIContractVxAvailableInitialized = true;
-        isAPIContractVxAvailable = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", APIVersion);
-    }
-
-    return isAPIContractVxAvailable;
-}
-
-
-bool IsAPIContractV8Available()
-{
-    return IsAPIContractVxAvailable<8>();
-}
-
-bool Is19H1OrHigher()
-{
-    return IsAPIContractV8Available();
-}
-
-// This function returns true if the build is 19h1 or higher, so that we deploy the new settings.
-// It returns false otherwise.
-bool use_new_settings()
-{
-    return Is19H1OrHigher();
 }
 
 
