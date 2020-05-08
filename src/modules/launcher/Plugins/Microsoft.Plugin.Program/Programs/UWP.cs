@@ -261,7 +261,6 @@ namespace Microsoft.Plugin.Program.Programs
             public string EntryPoint { get; set; }
             public string Name => DisplayName;
             public string Location => Package.Location;
-            public string ExecutableName { get; set; }
             public bool Enabled { get; set; }
             public bool CanRunElevated {get;set;}
 
@@ -393,7 +392,6 @@ namespace Microsoft.Plugin.Program.Programs
                 BackgroundColor = manifestApp.GetStringValue("BackgroundColor");
                 Package = package;
                 EntryPoint = manifestApp.GetStringValue("EntryPoint");
-                ExecutableName = manifestApp.GetStringValue("Executable");
                                
                 DisplayName = ResourceFromPri(package.FullName, DisplayName);
                 Description = ResourceFromPri(package.FullName, Description);
