@@ -279,7 +279,7 @@
     <value>Zone highlight opacity (%)</value>
   </data>
   <data name="FancyZones_HokeyEditorControl_Header.Header" xml:space="preserve">
-    <value>Edit Hot Key / Shortcut</value>
+    <value>Edit hot key / shortcut</value>
   </data>
   <data name="FancyZones_KeepWindowsPinned.Content" xml:space="preserve">
     <value>Keep windows pinned to multiple desktops in the same zone when the active desktop changes</value>
@@ -357,7 +357,7 @@
     <value>Request a feature</value>
   </data>
   <data name="GeneralPage_RestartAsAdmin_Button.Content" xml:space="preserve">
-    <value>Restart as admin</value>
+    <value>Restart as administrator</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_RunAtStartUp.Header" xml:space="preserve">
     <value>Run at startup</value>
@@ -366,7 +366,7 @@
     <value>Miscellaneous</value>
   </data>
   <data name="PowerRename_Description.Text" xml:space="preserve">
-    <value>A Windows Shell Extension for more advanced bulk renaming using search and replace or regular expressions.</value>
+    <value>A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.</value>
   </data>
   <data name="PowerRename_ShellIntergration.Text" xml:space="preserve">
     <value>Shell integration</value>
@@ -450,13 +450,13 @@
     <value>Save sizes</value>
   </data>
   <data name="ImageResizer_Encoding.Text" xml:space="preserve">
-    <value>JPEG Quality level</value>
+    <value>JPEG quality level</value>
   </data>
   <data name="ImageResizer_PNGInterlacing.Header" xml:space="preserve">
     <value>PNG interlacing</value>
   </data>
   <data name="ImageResizer_TIFFCompression.Header" xml:space="preserve">
-    <value>TIFF Compression</value>
+    <value>TIFF compression</value>
   </data>
   <data name="File.Text" xml:space="preserve">
     <value>File</value>
@@ -486,22 +486,22 @@
     <value>Zip</value>
   </data>
   <data name="ImageResizer_FallbackEncoder_BMP.Content" xml:space="preserve">
-    <value>BMP Encoder</value>
+    <value>BMP wncoder</value>
   </data>
   <data name="ImageResizer_FallbackEncoder_GIF.Content" xml:space="preserve">
-    <value>GIF Encoder</value>
+    <value>GIF encoder</value>
   </data>
   <data name="ImageResizer_FallbackEncoder_JPEG.Content" xml:space="preserve">
-    <value>JPEG Encoder</value>
+    <value>JPEG encoder</value>
   </data>
   <data name="ImageResizer_FallbackEncoder_PNG.Content" xml:space="preserve">
-    <value>PNG Encoder</value>
+    <value>PNG encoder</value>
   </data>
   <data name="ImageResizer_FallbackEncoder_TIFF.Content" xml:space="preserve">
-    <value>TIFF Encoder</value>
+    <value>TIFF encoder</value>
   </data>
   <data name="ImageResizer_FallbackEncoder_WMPhoto.Content" xml:space="preserve">
-    <value>WMPhoto Encoder</value>
+    <value>WMPhoto encoder</value>
   </data>
   <data name="ImageResizer_Sizes_Fit_Fill.Content" xml:space="preserve">
     <value>Fill</value>
@@ -531,22 +531,22 @@
     <value>On</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link.Text" xml:space="preserve">
-    <value>Learn more about Administrator mode</value>
+    <value>Learn more about administrator mode</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_AutoDownloadUpdates.Header" xml:space="preserve">
     <value>Download updates automatically</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_RunningAsAdminNote.Text" xml:space="preserve">
-    <value>Currently running as Administrator</value>
+    <value>Currently running as administrator</value>
   </data>
   <data name="GeneralSettings_AlwaysRunAsAdminText.Header" xml:space="preserve">
-    <value>Always run as Administrator</value>
+    <value>Always run as administrator</value>
   </data>
   <data name="GeneralSettings_Running as Adminstrator_IsNotElevated" xml:space="preserve">
     <value>Running as user</value>
   </data>
   <data name="GeneralSettings_RunningAsAdminText_IsElevated" xml:space="preserve">
-    <value>Running as Adminstrator</value>
+    <value>Running as adminstrator</value>
   </data>
   <data name="About_FancyZones.Text" xml:space="preserve">
     <value>About FancyZones</value>
@@ -582,9 +582,9 @@
     <value>Background theme</value>
   </data>
   <data name="Admin_mode.Text" xml:space="preserve">
-    <value>Admin mode</value>
+    <value>Administrator mode</value>
   </data>
   <data name="General_RunAsAdminRequired.Text" xml:space="preserve">
-    <value>You need to run as Admin to use this setting</value>
+    <value>You need to run as administrator to use this setting</value>
   </data>
 </root>
