@@ -44,16 +44,19 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Find center screen coordinates
     RECT desktopRect;
     GetClientRect(GetDesktopWindow(), &desktopRect);
+    // Calculate resolution dependent window size
+    int windowWidth = KeyboardManagerConstants::DefaultEditShortcutsWindowWidth * desktopRect.right;
+    int windowHeight = KeyboardManagerConstants::DefaultEditShortcutsWindowHeight * desktopRect.bottom;
 
     // Window Creation
     HWND _hWndEditShortcutsWindow = CreateWindow(
         szWindowClass,
-        L"Edit Shortcuts",
+        L"Remap Shortcuts",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-        (desktopRect.right / 2) - (KeyboardManagerConstants::DefaultEditShortcutsWindowWidth / 2),
-        (desktopRect.bottom / 2) - (KeyboardManagerConstants::DefaultEditShortcutsWindowHeight / 2),
-        KeyboardManagerConstants::DefaultEditShortcutsWindowWidth,
-        KeyboardManagerConstants::DefaultEditShortcutsWindowHeight,
+        (desktopRect.right / 2) - (windowWidth / 2),
+        (desktopRect.bottom / 2) - (windowHeight / 2),
+        windowWidth,
+        windowHeight,
         NULL,
         NULL,
         hInst,
@@ -90,7 +93,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
     // Header text
     TextBlock headerText;
-    headerText.Text(L"Edit Shortcuts");
+    headerText.Text(L"Remap Shortcuts");
     headerText.FontSize(30);
     headerText.Margin({ 0, 0, 0, 0 });
     header.SetAlignLeftWithPanel(headerText, true);

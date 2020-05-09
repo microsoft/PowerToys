@@ -44,10 +44,10 @@ namespace KeyboardManagerConstants
     inline const long MaxShortcutSize = 3;
 
     // Default window sizes
-    inline const int DefaultEditKeyboardWindowWidth = 800;
-    inline const int DefaultEditKeyboardWindowHeight = 600;
-    inline const int DefaultEditShortcutsWindowWidth = 1000;
-    inline const int DefaultEditShortcutsWindowHeight = 600;
+    inline const double DefaultEditKeyboardWindowWidth = 0.4;
+    inline const double DefaultEditKeyboardWindowHeight = 0.55;
+    inline const double DefaultEditShortcutsWindowWidth = 0.52;
+    inline const double DefaultEditShortcutsWindowHeight = 0.55;
 
     // Key Remap table constants
     inline const long RemapTableColCount = 4;
