@@ -486,7 +486,7 @@
     <value>Zip</value>
   </data>
   <data name="ImageResizer_FallbackEncoder_BMP.Content" xml:space="preserve">
-    <value>BMP wncoder</value>
+    <value>BMP encoder</value>
   </data>
   <data name="ImageResizer_FallbackEncoder_GIF.Content" xml:space="preserve">
     <value>GIF encoder</value>
