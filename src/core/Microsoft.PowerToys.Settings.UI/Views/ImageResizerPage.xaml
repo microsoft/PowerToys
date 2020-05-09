@@ -162,6 +162,7 @@
             <StackPanel Orientation="Horizontal">
                 <AppBarButton Icon="Add"
                               x:Name="AddSizeButton"
+                              Width="560"
                               Style="{StaticResource AddItemAppBarButtonStyle}"
                               IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}" 
                               Label="Add Size"
