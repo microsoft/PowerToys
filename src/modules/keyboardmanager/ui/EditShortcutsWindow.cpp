@@ -4,6 +4,7 @@
 #include "KeyDropDownControl.h"
 #include "XamlBridge.h"
 #include <keyboardmanager/common/trace.h>
+#include <common/windows_colors.h>
 
 LRESULT CALLBACK EditShortcutsWindowProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -101,9 +102,9 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Cancel button
     Button cancelButton;
     cancelButton.Content(winrt::box_value(L"Cancel"));
-    cancelButton.Margin({ 0, 0, 10, 0 });
+    cancelButton.Margin({ 10, 0, 0, 0 });
     cancelButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
-        // Close the window since settings do not need to be saved
+        // Close the window since settings0 do not need to be saved
         PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
     });
 
@@ -189,9 +190,11 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
     // Apply button
     Button applyButton;
-    applyButton.Content(winrt::box_value(L"Apply"));
-    header.SetAlignRightWithPanel(applyButton, true);
-    header.SetLeftOf(cancelButton, applyButton);
+    applyButton.Content(winrt::box_value(L"OK"));
+    applyButton.Background(winrt::Windows::UI::Xaml::Media::SolidColorBrush{ WindowsColors::get_accent_color() });
+    applyButton.Foreground(winrt::Windows::UI::Xaml::Media::SolidColorBrush{ winrt::Windows::UI::Colors::White() });
+    header.SetAlignRightWithPanel(cancelButton, true);
+    header.SetLeftOf(applyButton, cancelButton);
     applyButton.Flyout(applyFlyout);
     applyButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
@@ -231,6 +234,10 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         }
         Trace::OSLevelShortcutRemapCount(successfulRemapCount);
         settingsMessage.Text(KeyboardManagerHelper::GetErrorMessage(isSuccess));
+        if (isSuccess == KeyboardManagerHelper::ErrorType::NoError)
+        {
+            PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
+        }
     });
 
     header.Children().Append(headerText);
