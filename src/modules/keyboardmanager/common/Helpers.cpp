@@ -158,7 +158,7 @@ namespace KeyboardManagerHelper
         case ErrorType::ShortcutNotMoreThanOneActionKey:
             return L"Shortcut cannot have more than one action key";
         case ErrorType::ShortcutMaxShortcutSizeOneActionKey:
-            return L"Shortcut must contain an action key";
+            return L"Shortcuts can only have upto 2 modifier keys";
         }
     }
 }
