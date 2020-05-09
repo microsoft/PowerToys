@@ -171,7 +171,7 @@ IFACEMETHODIMP ZoneSet::AddZone(winrt::com_ptr<IZone> zone, int id = -1) noexcep
 {
     if (id > m_zones.size())
     {
-		m_zones.emplace_back(zone);
+        m_zones.emplace_back(zone);
     }
     else
     {
@@ -180,7 +180,7 @@ IFACEMETHODIMP ZoneSet::AddZone(winrt::com_ptr<IZone> zone, int id = -1) noexcep
     }
     // Important not to set Id 0 since we store it in the HWND using SetProp.
     // SetProp(0) doesn't really work.
-	zone->SetId(id == -1 ? m_zones.size() : id + 1);
+    zone->SetId(id == -1 ? m_zones.size() : id + 1);
     return S_OK;
 }
 
