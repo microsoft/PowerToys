@@ -375,7 +375,7 @@
     <value>Enable PowerRename</value>
   </data>
   <data name="RadioButtons_Name_Theme.Header" xml:space="preserve">
-    <value>Choose Settings color</value>
+    <value>Settings theme</value>
   </data>
   <data name="PowerRename_Toggle_EnableOnContextMenu.Header" xml:space="preserve">
     <value>Show icon on context menu</value>
@@ -577,5 +577,20 @@
   </data>
   <data name="About_ShortcutGuide.Text" xml:space="preserve">
     <value>About Shortcut Guide</value>
+  </data>
+  <data name="General_Repository.Text" xml:space="preserve">
+    <value>Github repository</value>
+  </data>
+  <data name="General_Updates.Text" xml:space="preserve">
+    <value>Updates</value>
+  </data>
+  <data name="General_Version.Text" xml:space="preserve">
+    <value>Version:</value>
+  </data>
+  <data name="Shortcut_Overlay_Theme.Header" xml:space="preserve">
+    <value>Background theme</value>
+  </data>
+  <data name="Start_Behavior.Text" xml:space="preserve">
+    <value>Start behavior</value>
   </data>
 </root>

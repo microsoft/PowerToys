@@ -70,7 +70,7 @@
                                           x:Uid="FancyZones_HokeyEditorControl_Header"
                                           Width="320"
                                           HorizontalAlignment="Left"
-                                          Margin="{StaticResource SmallTopMargin}"
+                                          Margin="{StaticResource MediumTopMargin}"
                                           HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}"
                                           IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"        
                                         />
