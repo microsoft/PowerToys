@@ -182,7 +182,7 @@
     <comment>Keyboard Manager remap keyboard button content</comment>
   </data>
   <data name="KeyboardManager_RemapKeyboardHeader.Text" xml:space="preserve">
-    <value>Remap Keyboard</value>
+    <value>Remap keyboard</value>
     <comment>Keyboard Manager remap keyboard header</comment>
   </data>
   <data name="KeyboardManager_RemapShortcutsButton.Label" xml:space="preserve">
@@ -190,7 +190,7 @@
     <comment>Keyboard Manager remap shortcuts button</comment>
   </data>
   <data name="KeyboardManager_RemapShortcutsHeader.Text" xml:space="preserve">
-    <value>Remap Shortcuts</value>
+    <value>Remap shortcuts</value>
     <comment>Keyboard Manager remap shortcuts header</comment>
   </data>
   <data name="PowerLauncher_Description.Text" xml:space="preserve">
@@ -279,7 +279,7 @@
     <value>Zone highlight opacity (%)</value>
   </data>
   <data name="FancyZones_HokeyEditorControl_Header.Header" xml:space="preserve">
-    <value>Edit Hot Key/ Shortcut</value>
+    <value>Edit Hot Key / Shortcut</value>
   </data>
   <data name="FancyZones_KeepWindowsPinned.Content" xml:space="preserve">
     <value>Keep windows pinned to multiple desktops in the same zone when the active desktop changes</value>
@@ -315,7 +315,7 @@
     <value>Move newly created windows to their last known zone</value>
   </data>
   <data name="FancyZones_ZoneBehavior_GroupSettings.Text" xml:space="preserve">
-    <value>Zone Behavior</value>
+    <value>Zone behavior</value>
   </data>
   <data name="FancyZones_ZoneHighlightColor.Text" xml:space="preserve">
     <value>Zone highlight color (default: #0078D7)</value>
@@ -426,7 +426,7 @@
     <value>Press duration before showing (ms)</value>
   </data>
   <data name="ShortcutGuide_Appearance_Behavior.Text" xml:space="preserve">
-    <value>Appearance &amp; Behavior</value>
+    <value>Appearance &amp; behavior</value>
   </data>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
     <value>Enable Shortcut Guide</value>
@@ -435,7 +435,7 @@
     <value>Opacity of background (%)</value>
   </data>
   <data name="ImageResizer_CustomSizes.Text" xml:space="preserve">
-    <value>Image Sizes</value>
+    <value>Image sizes</value>
   </data>
   <data name="ImageResizer_Description.Text" xml:space="preserve">
     <value>Lets you resize images by right-clicking.</value>
@@ -444,10 +444,10 @@
     <value>Enable Image Resizer</value>
   </data>
   <data name="ImageResizer_AddSizeButton.Label" xml:space="preserve">
-    <value>Add Size</value>
+    <value>Add size</value>
   </data>
   <data name="ImageResizer_SaveSizeButton.Label" xml:space="preserve">
-    <value>Save Sizes</value>
+    <value>Save sizes</value>
   </data>
   <data name="ImageResizer_Encoding.Text" xml:space="preserve">
     <value>JPEG Quality level</value>
@@ -530,26 +530,17 @@
   <data name="On.Content" xml:space="preserve">
     <value>On</value>
   </data>
-  <data name="GeneralPage_ToggleSwitch_AlwaysRunElevated.Header" xml:space="preserve">
-    <value>Always Run as Admin</value>
-  </data>
   <data name="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link.Text" xml:space="preserve">
-    <value>Learn about Admin mode</value>
+    <value>Learn more about Administrator mode</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_AutoDownloadUpdates.Header" xml:space="preserve">
     <value>Download updates automatically</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_RunningAsAdminNote.Text" xml:space="preserve">
-    <value>Currently running as administrator</value>
+    <value>Currently running as Administrator</value>
   </data>
-  <data name="GeneralPage_ToggleSwitch_RunElevated.Header" xml:space="preserve">
-    <value>Always run as administrator (Restart as administrator to change this)</value>
-  </data>
-  <data name="GeneralSettings_AlwaysRunAsAdminText_IsElevated" xml:space="preserve">
-    <value>Always run as administrator</value>
-  </data>
-  <data name="GeneralSettings_AlwaysRunAsAdminText_IsNotElevated" xml:space="preserve">
-    <value>Always run as administrator (Restart as administrator to change this)</value>
+  <data name="GeneralSettings_AlwaysRunAsAdminText.Header" xml:space="preserve">
+    <value>Always run as Administrator</value>
   </data>
   <data name="GeneralSettings_Running as Adminstrator_IsNotElevated" xml:space="preserve">
     <value>Running as user</value>
@@ -590,7 +581,10 @@
   <data name="Shortcut_Overlay_Theme.Header" xml:space="preserve">
     <value>Background theme</value>
   </data>
-  <data name="Start_Behavior.Text" xml:space="preserve">
-    <value>Start behavior</value>
+  <data name="Admin_mode.Text" xml:space="preserve">
+    <value>Admin mode</value>
+  </data>
+  <data name="General_RunAsAdminRequired.Text" xml:space="preserve">
+    <value>You need to run as Admin to use this setting</value>
   </data>
 </root>

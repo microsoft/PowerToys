@@ -165,7 +165,7 @@
                               Width="560"
                               Style="{StaticResource AddItemAppBarButtonStyle}"
                               IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}" 
-                              Label="Add Size"
+                             x:Uid="ImageResizer_AddSizeButton"
                               Margin="{StaticResource AddItemButtonMargin}"
                               Command = "{Binding AddImageSizeEventHandler, Source={StaticResource ViewModel}}"
                           />
