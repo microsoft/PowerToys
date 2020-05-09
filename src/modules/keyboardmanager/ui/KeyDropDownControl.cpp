@@ -48,7 +48,7 @@ void KeyDropDownControl::CheckAndUpdateKeyboardLayout(ComboBox currentDropDown, 
 }
 
 // Function to set selection handler for single key remap drop down. Needs to be called after the constructor since the singleKeyControl StackPanel is null if called in the constructor
-void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyControl, int colIndex, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer, bool& IsTypeKeyActivated)
+void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyControl, int colIndex, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer)
 {
     // drop down selection handler
     auto onSelectionChange = [&, table, singleKeyControl, colIndex](winrt::Windows::Foundation::IInspectable const& sender) {
@@ -116,9 +116,10 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyC
         onSelectionChange(sender);
     });
 
-    // Since using Type Key will not trigger the drop down closed event, we have to use Selection Changed. We check if the selection changed was triggered from Type key using the isTypeKey member variable of SingleKeyRemapControl which is passed by reference
-    dropDown.SelectionChanged([onSelectionChange, &IsTypeKeyActivated](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args) {
-        if (IsTypeKeyActivated)
+    // We check if the selection changed was triggered while the drop down was closed. This is required to handle Type key, initial loading of remaps and if the user just types in the combo box without opening it
+    dropDown.SelectionChanged([onSelectionChange](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args) {
+        ComboBox currentDropDown = sender.as<ComboBox>();
+        if (!currentDropDown.IsDropDownOpen())
         {
             onSelectionChange(sender);
         }
@@ -126,7 +127,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyC
 }
 
 // Function to set selection handler for shortcut drop down. Needs to be called after the constructor since the shortcutControl StackPanel is null if called in the constructor
-void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutControl, StackPanel parent, int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, bool& IsTypeShortcutActivated)
+void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutControl, StackPanel parent, int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects)
 {
     auto onSelectionChange = [&, table, shortcutControl, colIndex, parent](winrt::Windows::Foundation::IInspectable const& sender) {
         ComboBox currentDropDown = sender.as<ComboBox>();
@@ -165,14 +166,14 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
                         // If not, add a new drop down
                         else
                         {
-                            AddDropDown(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, IsTypeShortcutActivated);
+                            AddDropDown(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects);
                         }
                     }
-                    // If last drop down and a modifier is selected but there are already 5 drop downs: warn the user
+                    // If last drop down and a modifier is selected but there are already max drop downs: warn the user
                     else if (KeyboardManagerHelper::IsModifierKey(keyCodeList[selectedKeyIndex]) && parent.Children().Size() >= KeyboardManagerConstants::MaxShortcutSize)
                     {
                         // warn and reset the drop down
-                        errorType = KeyboardManagerHelper::ErrorType::ShortcutOneActionKey;
+                        errorType = KeyboardManagerHelper::ErrorType::ShortcutMaxShortcutSizeOneActionKey;
                     }
                     // If None is selected but it's the last index: warn
                     else if (keyCodeList[selectedKeyIndex] == 0)
@@ -316,9 +317,10 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
         onSelectionChange(sender);
     });
 
-    // Drop down closed will not get triggered in case of Type shortcut, and when using AddShortcutToControl (i.e. when each drop down is set for the first time). We check if the drop down was ever set before, since in both cases new drop downs are added
-    dropDown.SelectionChanged([onSelectionChange, &IsTypeShortcutActivated](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args) {
-        if (IsTypeShortcutActivated)
+    // We check if the selection changed was triggered while the drop down was closed. This is required to handle Type key, initial loading of remaps and if the user just types in the combo box without opening it
+    dropDown.SelectionChanged([onSelectionChange](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args) {
+        ComboBox currentDropDown = sender.as<ComboBox>();
+        if (!currentDropDown.IsDropDownOpen())
         {
             onSelectionChange(sender);
         }
@@ -338,11 +340,11 @@ ComboBox KeyDropDownControl::GetComboBox()
 }
 
 // Function to add a drop down to the shortcut stack panel
-void KeyDropDownControl::AddDropDown(Grid table, StackPanel shortcutControl, StackPanel parent, const int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, bool& IsTypeShortcutActivated)
+void KeyDropDownControl::AddDropDown(Grid table, StackPanel shortcutControl, StackPanel parent, const int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects)
 {
     keyDropDownControlObjects.push_back(std::move(std::unique_ptr<KeyDropDownControl>(new KeyDropDownControl(true))));
     parent.Children().Append(keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->GetComboBox());
-    keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->SetSelectionHandler(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, IsTypeShortcutActivated);
+    keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->SetSelectionHandler(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects);
     parent.UpdateLayout();
 }
 

@@ -19,9 +19,6 @@ private:
     // StackPanel to parent the above controls
     StackPanel shortcutControlLayout;
 
-    // Stores if the Type Shortcut UI has been used to add a shortcut
-    bool IsTypeShortcutActivated;
-
 public:
     // Handle to the current Edit Shortcuts Window
     static HWND EditShortcutsWindowHandle;
@@ -50,7 +47,7 @@ public:
 
         shortcutControlLayout.Children().Append(typeShortcut);
         shortcutControlLayout.Children().Append(shortcutDropDownStackPanel);
-        KeyDropDownControl::AddDropDown(table, shortcutControlLayout, shortcutDropDownStackPanel, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, IsTypeShortcutActivated);
+        KeyDropDownControl::AddDropDown(table, shortcutControlLayout, shortcutDropDownStackPanel, colIndex, shortcutRemapBuffer, keyDropDownControlObjects);
         shortcutControlLayout.UpdateLayout();
     }
 
@@ -65,7 +62,4 @@ public:
 
     // Function to create the detect shortcut UI window
     void createDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, KeyboardManagerState& keyboardManagerState, const int colIndex, Grid table);
-
-    // Function to set the IsTypeShortcutActivated member
-    void SetIsTypeShortcutActivated(const bool arg);
 };

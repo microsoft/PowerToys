@@ -14,9 +14,6 @@ private:
     // StackPanel to parent the above controls
     StackPanel singleKeyRemapControlLayout;
 
-    // Stores if the Type Key UI has been used to add a key
-    bool IsTypeKeyActivated = false;
-
 public:
     // Handle to the current Edit Keyboard Window
     static HWND EditKeyboardWindowHandle;
@@ -42,7 +39,7 @@ public:
         singleKeyRemapControlLayout.Children().Append(typeKey);
         singleKeyRemapControlLayout.Children().Append(singleKeyRemapDropDown.GetComboBox());
         // Set selection handler for the drop down
-        singleKeyRemapDropDown.SetSelectionHandler(table, singleKeyRemapControlLayout, colIndex, singleKeyRemapBuffer, IsTypeKeyActivated);
+        singleKeyRemapDropDown.SetSelectionHandler(table, singleKeyRemapControlLayout, colIndex, singleKeyRemapBuffer);
         singleKeyRemapControlLayout.UpdateLayout();
     }
 
