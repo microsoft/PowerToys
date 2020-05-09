@@ -137,6 +137,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
         uint32_t controlIndex;
         bool controlIindexFound = table.Children().IndexOf(shortcutControl, controlIndex);
         KeyboardManagerHelper::ErrorType errorType = KeyboardManagerHelper::ErrorType::NoError;
+        bool IsDeleteDropDownRequired = false;
 
         if (controlIindexFound)
         {
@@ -197,11 +198,9 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
                     // If None is selected and there are more than 2 drop downs
                     else if (keyCodeList[selectedKeyIndex] == 0 && parent.Children().Size() > KeyboardManagerConstants::MinShortcutSize)
                     {
-                        // delete drop down
-                        parent.Children().RemoveAt(dropDownIndex);
-                        // delete drop down control object from the vector so that it can be destructed
-                        keyDropDownControlObjects.erase(keyDropDownControlObjects.begin() + dropDownIndex);
-                        parent.UpdateLayout();
+                        // set delete drop down flag
+                        IsDeleteDropDownRequired = true;
+                        // do not delete the drop down now since there may be some other error which would cause the drop down to be invalid after removal
                     }
                     else if (keyCodeList[selectedKeyIndex] == 0 && parent.Children().Size() <= KeyboardManagerConstants::MinShortcutSize)
                     {
@@ -285,6 +284,15 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
             if (errorType != KeyboardManagerHelper::ErrorType::NoError)
             {
                 SetDropDownError(currentDropDown, KeyboardManagerHelper::GetErrorMessage(errorType));
+            }
+
+            // Handle None case if there are no other errors
+            else if (IsDeleteDropDownRequired)
+            {
+                parent.Children().RemoveAt(dropDownIndex);
+                // delete drop down control object from the vector so that it can be destructed
+                keyDropDownControlObjects.erase(keyDropDownControlObjects.begin() + dropDownIndex);
+                parent.UpdateLayout();
             }
             // Reset the buffer based on the new selected drop down items
             shortcutRemapBuffer[rowIndex][colIndex].SetKeyCodes(GetKeysFromStackPanel(parent));
