@@ -40,6 +40,39 @@ std::vector<DWORD> GetOrphanedKeys()
     return std::vector(ogKeys.begin(), ogKeys.end());
 }
 
+KeyboardManagerHelper::ErrorType CheckIfRemappingsAreValid(Grid keyRemapTable)
+{
+    KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
+    std::set<DWORD> ogKeys;
+    for (int i = 0; i < SingleKeyRemapControl::singleKeyRemapBuffer.size(); i++)
+    {
+        DWORD ogKey = SingleKeyRemapControl::singleKeyRemapBuffer[i][0];
+        DWORD newKey = SingleKeyRemapControl::singleKeyRemapBuffer[i][1];
+
+        if (ogKey != 0 && newKey != 0 && ogKeys.find(ogKey) == ogKeys.end())
+        {
+            ogKeys.insert(SingleKeyRemapControl::singleKeyRemapBuffer[i][0]);
+        }
+        else if (ogKey != 0 && newKey != 0 && ogKeys.find(ogKey) != ogKeys.end())
+        {
+            isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
+        }
+        else 
+        {
+            isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
+            // Show tooltip warning on the problematic row
+            uint32_t warningIndex;
+            // 2 at start, 4 in each row, and last element of each row
+            warningIndex = 1 + (i + 1) * 4;
+            FontIcon warning = keyRemapTable.Children().GetAt(warningIndex).as<FontIcon>();
+            ToolTip t = ToolTipService::GetToolTip(warning).as<ToolTip>();
+            t.Content(box_value(KeyboardManagerHelper::GetErrorMessage(KeyboardManagerHelper::ErrorType::MissingKey)));
+            warning.Visibility(Visibility::Visible);
+        }
+    }
+    return isSuccess;
+}
+
 IAsyncAction ConfirmationDialog(
     KeyboardManagerState& state,
     const std::vector<DWORD>& keys,
@@ -300,21 +333,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     auto ApplyRemappings = [&keyboardManagerState, _hWndEditKeyboardWindow, keyRemapTable, settingsMessage, applyButton]() {
         KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
-        // Save the updated shortcuts remaps to file.
-        bool saveResult = keyboardManagerState.SaveConfigToFile();
-        if (!saveResult)
-        {
-            isSuccess = KeyboardManagerHelper::ErrorType::SaveFailed;
-        }
-        settingsMessage.Text(KeyboardManagerHelper::GetErrorMessage(isSuccess));
-        if (isSuccess == KeyboardManagerHelper::ErrorType::NoError)
-        {
-            PostMessage(_hWndEditKeyboardWindow, WM_CLOSE, 0, 0);
-        }
-    };
-
-    applyButton.Click([&keyboardManagerState, keyRemapTable, header, applyFlyout, ApplyRemappings, applyButton, settingsMessage](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
-        KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
         // Clear existing Key Remaps
         keyboardManagerState.ClearSingleKeyRemaps();
         DWORD successfulRemapCount = 0;
@@ -369,7 +387,23 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
                 isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
             }
         }
+
         Trace::KeyRemapCount(successfulRemapCount);
+        // Save the updated shortcuts remaps to file.
+        bool saveResult = keyboardManagerState.SaveConfigToFile();
+        if (!saveResult)
+        {
+            isSuccess = KeyboardManagerHelper::ErrorType::SaveFailed;
+        }
+        settingsMessage.Text(KeyboardManagerHelper::GetErrorMessage(isSuccess));
+        if (isSuccess == KeyboardManagerHelper::ErrorType::NoError)
+        {
+            PostMessage(_hWndEditKeyboardWindow, WM_CLOSE, 0, 0);
+        }
+    };
+
+    applyButton.Click([&keyboardManagerState, keyRemapTable, header, applyFlyout, ApplyRemappings, applyButton, settingsMessage](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+        KeyboardManagerHelper::ErrorType isSuccess = CheckIfRemappingsAreValid(keyRemapTable);
         if (isSuccess != KeyboardManagerHelper::ErrorType::NoError)
         {
             settingsMessage.Text(KeyboardManagerHelper::GetErrorMessage(isSuccess));
