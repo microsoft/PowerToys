@@ -162,9 +162,10 @@
             <StackPanel Orientation="Horizontal">
                 <AppBarButton Icon="Add"
                               x:Name="AddSizeButton"
+                              Style="{StaticResource AddItemAppBarButtonStyle}"
                               IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}" 
                               Label="Add Size"
-                              Margin="{StaticResource SmallTopMargin}"
+                              Margin="{StaticResource AddItemButtonMargin}"
                               Command = "{Binding AddImageSizeEventHandler, Source={StaticResource ViewModel}}"
                           />
             </StackPanel>

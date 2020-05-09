@@ -143,10 +143,12 @@
                        Margin="{StaticResource SmallTopMargin}"
                        TextWrapping="Wrap"/>
 
-            <Button x:Uid="KeyboardManager_RemapKeyboardButton"
-                    Margin="{StaticResource SmallTopMargin}"
-                    Style="{StaticResource AccentButtonStyle}"
+            <AppBarButton x:Uid="KeyboardManager_RemapKeyboardButton"
+                    Icon="Add"
+                    Style="{StaticResource AddItemAppBarButtonStyle}"
                     Command="{Binding Path=RemapKeyboardCommand}"
+                    Margin="{StaticResource AddItemButtonMargin}"
+                    HorizontalAlignment="Left"
                     IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>
 
             <ListView x:Name="RemapKeysList"
@@ -172,11 +174,13 @@
             <TextBlock Text="Click below to remap a shortcut (hotkey) to another shortcut"
                        TextWrapping="Wrap" Margin="{StaticResource SmallTopMargin}"/>
 
-            <Button x:Uid="KeyboardManager_RemapShortcutsButton"
-                    Margin="{StaticResource SmallTopMargin}"
-                    Style="{StaticResource AccentButtonStyle}"
+            <AppBarButton x:Uid="KeyboardManager_RemapShortcutsButton"
+                    Icon="Add"
+                    Style="{StaticResource AddItemAppBarButtonStyle}"
                     Command="{Binding Path=EditShortcutCommand}"
                     IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"
+                    Margin="{StaticResource AddItemButtonMargin}"
+                    HorizontalAlignment="Left"
                     />
 
             <ListView x:Name="RemapShortcutsList"
