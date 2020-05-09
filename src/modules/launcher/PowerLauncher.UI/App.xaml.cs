@@ -1,5 +1,4 @@
 ﻿using System.Runtime.InteropServices;
-using WUC = Windows.UI.Core;
 
 namespace PowerLauncher.UI
 {
@@ -15,7 +14,7 @@ namespace PowerLauncher.UI
 
     internal static class Interop
     {
-        public static ICoreWindowInterop GetInterop(this WUC.CoreWindow @this)
+        public static ICoreWindowInterop GetInterop(this Windows.UI.Core.CoreWindow @this)
         {
             var unkIntPtr = Marshal.GetIUnknownForObject(@this);
             try
@@ -44,7 +43,7 @@ namespace PowerLauncher.UI
             this.Initialize();
 
             // Hide the Xaml Island window
-            var coreWindow = WUC.CoreWindow.GetForCurrentThread();
+            var coreWindow = Windows.UI.Core.CoreWindow.GetForCurrentThread();
             var coreWindowInterop = Interop.GetInterop(coreWindow);
             Interop.ShowWindow(coreWindowInterop.WindowHandle, Interop.SW_HIDE);
         }

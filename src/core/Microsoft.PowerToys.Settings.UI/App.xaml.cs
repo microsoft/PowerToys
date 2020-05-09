@@ -4,7 +4,6 @@
 
 using System.Runtime.InteropServices;
 using Microsoft.Toolkit.Win32.UI.XamlHost;
-using WUC = Windows.UI.Core;
 
 namespace Microsoft.PowerToys.Settings.UI
 {
@@ -20,7 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
     internal static class Interop
     {
-        public static ICoreWindowInterop GetInterop(this WUC.CoreWindow @this)
+        public static ICoreWindowInterop GetInterop(this Windows.UI.Core.CoreWindow @this)
         {
             var unkIntPtr = Marshal.GetIUnknownForObject(@this);
             try
@@ -49,7 +48,7 @@ namespace Microsoft.PowerToys.Settings.UI
             Initialize();
 
             // Hide the Xaml Island window
-            var coreWindow = WUC.CoreWindow.GetForCurrentThread();
+            var coreWindow = Windows.UI.Core.CoreWindow.GetForCurrentThread();
             var coreWindowInterop = Interop.GetInterop(coreWindow);
             Interop.ShowWindow(coreWindowInterop.WindowHandle, Interop.SW_HIDE);
         }
