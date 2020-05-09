@@ -216,7 +216,7 @@
                     Width="{StaticResource SidePanelWidth}"
                     Grid.Column="1">
 
-            <TextBlock x:Uid="About_This_Feature"
+            <TextBlock x:Uid="About_FancyZones"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Margin="{StaticResource XSmallBottomMargin}"/>
             

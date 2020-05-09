@@ -91,7 +91,7 @@
             Grid.Column="1">
 
             <TextBlock 
-                x:Uid="About_This_Feature"
+                x:Uid="About_ShortcutGuide"
                 Style="{StaticResource SettingsGroupTitleStyle}"
                 Margin="{StaticResource XSmallBottomMargin}"/>
 

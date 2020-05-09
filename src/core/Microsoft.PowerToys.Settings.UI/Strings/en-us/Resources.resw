@@ -557,7 +557,25 @@
   <data name="GeneralSettings_RunningAsAdminText_IsElevated" xml:space="preserve">
     <value>Running as Adminstrator</value>
   </data>
-  <data name="String1" xml:space="preserve">
-    <value />
+  <data name="About_FancyZones" xml:space="preserve">
+    <value>About FancyZones</value>
+  </data>
+  <data name="About_FileExplorerPreview" xml:space="preserve">
+    <value>About File Explorer Preview</value>
+  </data>
+  <data name="About_ImageResizer" xml:space="preserve">
+    <value>About Image Resizer</value>
+  </data>
+  <data name="About_KeyboardManager" xml:space="preserve">
+    <value>About Keyboard Manager</value>
+  </data>
+  <data name="About_PowerLauncher" xml:space="preserve">
+    <value>About PowerLauncher</value>
+  </data>
+  <data name="About_PowerRename" xml:space="preserve">
+    <value>About Power Rename</value>
+  </data>
+  <data name="About_ShortcutGuide" xml:space="preserve">
+    <value>About Shortcut Guide</value>
   </data>
 </root>

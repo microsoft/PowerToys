@@ -136,7 +136,7 @@
             Grid.Column="1">
 
             <TextBlock 
-                Text="About this feature"
+                x:Uid="About_PowerLauncher"
                 Style="{StaticResource SettingsGroupTitleStyle}"
                 Margin="{StaticResource XSmallBottomMargin}"/>
 
@@ -149,7 +149,7 @@
             </HyperlinkButton>
 
             <TextBlock 
-                Text="Attribution"
+                x:Uid="AttributionTitle"
                 Style="{StaticResource SettingsGroupTitleStyle}" />
 
             <HyperlinkButton NavigateUri="https://github.com/Wox-launcher/Wox/">

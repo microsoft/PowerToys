@@ -208,7 +208,7 @@
             Grid.Column="1">
 
             <TextBlock
-                Text="About this feature"
+                x:Uid="About_KeyboardManager"
                 Style="{StaticResource SettingsGroupTitleStyle}"
                 Margin="{StaticResource XSmallBottomMargin}"/>
 
