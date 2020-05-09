@@ -41,15 +41,22 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         isEditShortcutsWindowRegistrationCompleted = true;
     }
 
+    // Find center screen coordinates
+    RECT desktopRect;
+    GetClientRect(GetDesktopWindow(), &desktopRect);
+    // Calculate resolution dependent window size
+    int windowWidth = KeyboardManagerConstants::DefaultEditShortcutsWindowWidth * desktopRect.right;
+    int windowHeight = KeyboardManagerConstants::DefaultEditShortcutsWindowHeight * desktopRect.bottom;
+
     // Window Creation
     HWND _hWndEditShortcutsWindow = CreateWindow(
         szWindowClass,
-        L"Edit Shortcuts",
+        L"Remap Shortcuts",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
+        (desktopRect.right / 2) - (windowWidth / 2),
+        (desktopRect.bottom / 2) - (windowHeight / 2),
+        windowWidth,
+        windowHeight,
         NULL,
         NULL,
         hInst,
@@ -58,6 +65,11 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     {
         MessageBox(NULL, L"Call to CreateWindow failed!", L"Error", NULL);
         return;
+    }
+    // Ensures the window is in foreground on first startup. If this is not done, the window appears behind because the thread is not on the foreground.
+    if (_hWndEditShortcutsWindow)
+    {
+        SetForegroundWindow(_hWndEditShortcutsWindow);
     }
 
     // Store the newly created Edit Shortcuts window's handle.
@@ -81,9 +93,9 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
     // Header text
     TextBlock headerText;
-    headerText.Text(L"Edit Shortcuts");
+    headerText.Text(L"Remap Shortcuts");
     headerText.FontSize(30);
-    headerText.Margin({ 0, 0, 100, 0 });
+    headerText.Margin({ 0, 0, 0, 0 });
     header.SetAlignLeftWithPanel(headerText, true);
 
     // Cancel button
@@ -100,27 +112,36 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     shortcutRemapInfoHeader.Text(L"Select shortcut you want to change (Original Shortcut) and the shortcut (New Shortcut) you want it to invoke.");
     shortcutRemapInfoHeader.Margin({ 10, 0, 0, 10 });
     shortcutRemapInfoHeader.FontWeight(Text::FontWeights::SemiBold());
+    shortcutRemapInfoHeader.TextWrapping(TextWrapping::Wrap);
 
     TextBlock shortcutRemapInfoExample;
     shortcutRemapInfoExample.Text(L"For example, if you want Ctrl+C to paste, Ctrl+C is the Original Shortcut and Ctrl+V is the New Shortcut.");
     shortcutRemapInfoExample.Margin({ 10, 0, 0, 20 });
     shortcutRemapInfoExample.FontStyle(Text::FontStyle::Italic);
+    shortcutRemapInfoExample.TextWrapping(TextWrapping::Wrap);
 
     // Table to display the shortcuts
     Windows::UI::Xaml::Controls::Grid shortcutTable;
-    ColumnDefinition firstColumn;
-    ColumnDefinition secondColumn;
-    ColumnDefinition thirdColumn;
-    thirdColumn.MaxWidth(100);
-    ColumnDefinition fourthColumn;
-    fourthColumn.MaxWidth(100);
+    Grid keyRemapTable;
+    ColumnDefinition originalColumn;
+    originalColumn.MinWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
+    originalColumn.MaxWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
+    ColumnDefinition arrowColumn;
+    arrowColumn.MinWidth(KeyboardManagerConstants::TableArrowColWidth);
+    ColumnDefinition newColumn;
+    newColumn.MinWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
+    newColumn.MaxWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
+    ColumnDefinition removeColumn;
+    removeColumn.MinWidth(KeyboardManagerConstants::TableRemoveColWidth);
+    ColumnDefinition warnColumn;
+    warnColumn.MinWidth(KeyboardManagerConstants::TableWarningColWidth);
     shortcutTable.Margin({ 10, 10, 10, 20 });
     shortcutTable.HorizontalAlignment(HorizontalAlignment::Stretch);
-    shortcutTable.ColumnSpacing(10);
-    shortcutTable.ColumnDefinitions().Append(firstColumn);
-    shortcutTable.ColumnDefinitions().Append(secondColumn);
-    shortcutTable.ColumnDefinitions().Append(thirdColumn);
-    shortcutTable.ColumnDefinitions().Append(fourthColumn);
+    shortcutTable.ColumnDefinitions().Append(originalColumn);
+    shortcutTable.ColumnDefinitions().Append(arrowColumn);
+    shortcutTable.ColumnDefinitions().Append(newColumn);
+    shortcutTable.ColumnDefinitions().Append(removeColumn);
+    shortcutTable.ColumnDefinitions().Append(warnColumn);
     shortcutTable.RowDefinitions().Append(RowDefinition());
 
     // First header textblock in the header row of the shortcut table
@@ -135,9 +156,9 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     newShortcutHeader.FontWeight(Text::FontWeights::Bold());
     newShortcutHeader.Margin({ 0, 0, 0, 10 });
 
-    shortcutTable.SetColumn(originalShortcutHeader, 0);
+    shortcutTable.SetColumn(originalShortcutHeader, KeyboardManagerConstants::ShortcutTableOriginalColIndex);
     shortcutTable.SetRow(originalShortcutHeader, 0);
-    shortcutTable.SetColumn(newShortcutHeader, 1);
+    shortcutTable.SetColumn(newShortcutHeader, KeyboardManagerConstants::ShortcutTableNewColIndex);
     shortcutTable.SetRow(newShortcutHeader, 0);
 
     shortcutTable.Children().Append(originalShortcutHeader);
@@ -205,7 +226,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
                 // Show tooltip warning on the problematic row
                 uint32_t warningIndex;
                 // 2 at start, 4 in each row, and last element of each row
-                warningIndex = 1 + (i + 1) * 4;
+                warningIndex = KeyboardManagerConstants::ShortcutTableHeaderCount + ((i + 1) * KeyboardManagerConstants::ShortcutTableColCount) - 1;
                 FontIcon warning = shortcutTable.Children().GetAt(warningIndex).as<FontIcon>();
                 ToolTip t = ToolTipService::GetToolTip(warning).as<ToolTip>();
                 t.Content(box_value(KeyboardManagerHelper::GetErrorMessage(KeyboardManagerHelper::ErrorType::MissingKey)));

@@ -26,6 +26,7 @@ public:
         singleKeyRemapDropDown(false, warning, toolTip)
     {
         typeKey.Content(winrt::box_value(L"Type Key"));
+        typeKey.Width(KeyboardManagerConstants::RemapTableDropDownWidth);
         typeKey.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
             keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectSingleKeyRemapWindowActivated, EditKeyboardWindowHandle);
             // Using the XamlRoot of the typeKey to get the root of the XAML host

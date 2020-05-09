@@ -40,15 +40,22 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         isEditKeyboardWindowRegistrationCompleted = true;
     }
 
+    // Find center screen coordinates
+    RECT desktopRect;
+    GetClientRect(GetDesktopWindow(), &desktopRect);
+    // Calculate resolution dependent window size
+    int windowWidth = KeyboardManagerConstants::DefaultEditKeyboardWindowWidth * desktopRect.right;
+    int windowHeight = KeyboardManagerConstants::DefaultEditKeyboardWindowHeight * desktopRect.bottom;
+
     // Window Creation
     HWND _hWndEditKeyboardWindow = CreateWindow(
         szWindowClass,
         L"Remap Keyboard",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
+        (desktopRect.right / 2) - (windowWidth / 2),
+        (desktopRect.bottom / 2) - (windowHeight / 2),
+        windowWidth,
+        windowHeight,
         NULL,
         NULL,
         hInst,
@@ -57,6 +64,11 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     {
         MessageBox(NULL, L"Call to CreateWindow failed!", L"Error", NULL);
         return;
+    }
+    // Ensures the window is in foreground on first startup. If this is not done, the window appears behind because the thread is not on the foreground.
+    if (_hWndEditKeyboardWindow)
+    {
+        SetForegroundWindow(_hWndEditKeyboardWindow);
     }
 
     // Store the newly created Edit Keyboard window's handle.
@@ -99,27 +111,35 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     keyRemapInfoHeader.Text(L"Select the key you want to change (Original Key) and the key you want it to become (New Key).");
     keyRemapInfoHeader.Margin({ 10, 0, 0, 10 });
     keyRemapInfoHeader.FontWeight(Text::FontWeights::SemiBold());
+    keyRemapInfoHeader.TextWrapping(TextWrapping::Wrap);
 
     TextBlock keyRemapInfoExample;
     keyRemapInfoExample.Text(L"For example, if you want to press A and get B, Key A would be your \"Original Key\" and Key B would be your \"New Key\".");
     keyRemapInfoExample.Margin({ 10, 0, 0, 20 });
     keyRemapInfoExample.FontStyle(Text::FontStyle::Italic);
+    keyRemapInfoExample.TextWrapping(TextWrapping::Wrap);
 
     // Table to display the key remaps
     Grid keyRemapTable;
-    ColumnDefinition firstColumn;
-    ColumnDefinition secondColumn;
-    ColumnDefinition thirdColumn;
-    thirdColumn.MaxWidth(100);
-    ColumnDefinition fourthColumn;
-    fourthColumn.MaxWidth(100);
+    ColumnDefinition originalColumn;
+    originalColumn.MinWidth(KeyboardManagerConstants::RemapTableDropDownWidth);
+    originalColumn.MaxWidth(KeyboardManagerConstants::RemapTableDropDownWidth);
+    ColumnDefinition arrowColumn;
+    arrowColumn.MinWidth(KeyboardManagerConstants::TableArrowColWidth);
+    ColumnDefinition newColumn;
+    newColumn.MinWidth(KeyboardManagerConstants::RemapTableDropDownWidth);
+    newColumn.MaxWidth(KeyboardManagerConstants::RemapTableDropDownWidth);
+    ColumnDefinition removeColumn;
+    removeColumn.MinWidth(KeyboardManagerConstants::TableRemoveColWidth);
+    ColumnDefinition warnColumn;
+    warnColumn.MinWidth(KeyboardManagerConstants::TableWarningColWidth);
     keyRemapTable.Margin({ 10, 10, 10, 20 });
     keyRemapTable.HorizontalAlignment(HorizontalAlignment::Stretch);
-    keyRemapTable.ColumnSpacing(10);
-    keyRemapTable.ColumnDefinitions().Append(firstColumn);
-    keyRemapTable.ColumnDefinitions().Append(secondColumn);
-    keyRemapTable.ColumnDefinitions().Append(thirdColumn);
-    keyRemapTable.ColumnDefinitions().Append(fourthColumn);
+    keyRemapTable.ColumnDefinitions().Append(originalColumn);
+    keyRemapTable.ColumnDefinitions().Append(arrowColumn);
+    keyRemapTable.ColumnDefinitions().Append(newColumn);
+    keyRemapTable.ColumnDefinitions().Append(removeColumn);
+    keyRemapTable.ColumnDefinitions().Append(warnColumn);
     keyRemapTable.RowDefinitions().Append(RowDefinition());
 
     // First header textblock in the header row of the keys remap table
@@ -134,9 +154,9 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     newKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
     newKeyRemapHeader.Margin({ 0, 0, 0, 10 });
 
-    keyRemapTable.SetColumn(originalKeyRemapHeader, 0);
+    keyRemapTable.SetColumn(originalKeyRemapHeader, KeyboardManagerConstants::RemapTableOriginalColIndex);
     keyRemapTable.SetRow(originalKeyRemapHeader, 0);
-    keyRemapTable.SetColumn(newKeyRemapHeader, 1);
+    keyRemapTable.SetColumn(newKeyRemapHeader, KeyboardManagerConstants::RemapTableNewColIndex);
     keyRemapTable.SetRow(newKeyRemapHeader, 0);
 
     keyRemapTable.Children().Append(originalKeyRemapHeader);
@@ -274,8 +294,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
                 isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
                 // Show tooltip warning on the problematic row
                 uint32_t warningIndex;
-                // 2 at start, 4 in each row, and last element of each row
-                warningIndex = 1 + (i + 1) * 4;
+                // headers at start, colcount in each row, and last element of each row
+                warningIndex = KeyboardManagerConstants::RemapTableHeaderCount + ((i + 1) * KeyboardManagerConstants::RemapTableColCount) - 1;
                 FontIcon warning = keyRemapTable.Children().GetAt(warningIndex).as<FontIcon>();
                 ToolTip t = ToolTipService::GetToolTip(warning).as<ToolTip>();
                 t.Content(box_value(KeyboardManagerHelper::GetErrorMessage(KeyboardManagerHelper::ErrorType::MissingKey)));

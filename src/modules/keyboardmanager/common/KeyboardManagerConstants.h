@@ -38,4 +38,41 @@ namespace KeyboardManagerConstants
 
     // Initial value for tooltip
     inline const winrt::hstring ToolTipInitialContent = L"Initialised";
+
+    // Minimum and maximum size of a shortcut
+    inline const long MinShortcutSize = 2;
+    inline const long MaxShortcutSize = 3;
+
+    // Default window sizes
+    inline const double DefaultEditKeyboardWindowWidth = 0.4;
+    inline const double DefaultEditKeyboardWindowHeight = 0.55;
+    inline const double DefaultEditShortcutsWindowWidth = 0.52;
+    inline const double DefaultEditShortcutsWindowHeight = 0.55;
+
+    // Key Remap table constants
+    inline const long RemapTableColCount = 5;
+    inline const long RemapTableHeaderCount = 2;
+    inline const long RemapTableOriginalColIndex = 0;
+    inline const long RemapTableArrowColIndex = 1;
+    inline const long RemapTableNewColIndex = 2;
+    inline const long RemapTableRemoveColIndex = 3;
+    inline const long RemapTableWarningColIndex = 4;
+    inline const long RemapTableDropDownWidth = 110;
+
+    // Shortcut table constants
+    inline const long ShortcutTableColCount = 5;
+    inline const long ShortcutTableHeaderCount = 2;
+    inline const long ShortcutTableOriginalColIndex = 0;
+    inline const long ShortcutTableArrowColIndex = 1;
+    inline const long ShortcutTableNewColIndex = 2;
+    inline const long ShortcutTableRemoveColIndex = 3;
+    inline const long ShortcutTableWarningColIndex = 4;
+    inline const long ShortcutTableDropDownWidth = 110;
+    inline const long ShortcutTableDropDownSpacing = 10;
+
+    // Drop down height used for both Edit Keyboard and Edit Shortcuts
+    inline const long TableDropDownHeight = 200;
+    inline const long TableArrowColWidth = 20;
+    inline const long TableRemoveColWidth = 20;
+    inline const long TableWarningColWidth = 20;
 }

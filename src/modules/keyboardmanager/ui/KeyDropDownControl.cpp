@@ -8,8 +8,15 @@ KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;
 // Function to set properties apart from the SelectionChanged event handler
 void KeyDropDownControl::SetDefaultProperties(bool isShortcut)
 {
-    dropDown.Width(100);
-    dropDown.MaxDropDownHeight(200);
+    if (!isShortcut)
+    {
+        dropDown.Width(KeyboardManagerConstants::RemapTableDropDownWidth);
+    }
+    else
+    {
+        dropDown.Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
+    }
+    dropDown.MaxDropDownHeight(KeyboardManagerConstants::TableDropDownHeight);
     // Initialise layout attribute
     previousLayout = GetKeyboardLayout(0);
     keyCodeList = keyboardManagerState->keyboardMap.GetKeyCodeList(isShortcut);
@@ -49,7 +56,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyC
         if (indexFound)
         {
             KeyboardManagerHelper::ErrorType errorType = KeyboardManagerHelper::ErrorType::NoError;
-            int rowIndex = (controlIndex - 2) / 4;
+            int rowIndex = (controlIndex - KeyboardManagerConstants::RemapTableHeaderCount) / KeyboardManagerConstants::RemapTableColCount;
             // Check if the element was not found or the index exceeds the known keys
             if (selectedKeyIndex != -1 && keyCodeList.size() > selectedKeyIndex)
             {
@@ -66,7 +73,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyC
                     {
                         if (i != rowIndex)
                         {
-                            KeyboardManagerHelper::ErrorType result = KeyboardManagerHelper::DoKeysOverlap(singleKeyRemapBuffer[i][0], keyCodeList[selectedKeyIndex]);
+                            KeyboardManagerHelper::ErrorType result = KeyboardManagerHelper::DoKeysOverlap(singleKeyRemapBuffer[i][colIndex], keyCodeList[selectedKeyIndex]);
                             if (result != KeyboardManagerHelper::ErrorType::NoError)
                             {
                                 errorType = result;
@@ -126,7 +133,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
 
         if (controlIindexFound)
         {
-            int rowIndex = (controlIndex - 2) / 4;
+            int rowIndex = (controlIndex - KeyboardManagerConstants::ShortcutTableHeaderCount) / KeyboardManagerConstants::ShortcutTableColCount;
             if (selectedKeyIndex != -1 && keyCodeList.size() > selectedKeyIndex && dropDownFound)
             {
                 // If only 1 drop down and action key is chosen: Warn that a modifier must be chosen
@@ -139,7 +146,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
                 else if (dropDownIndex == parent.Children().Size() - 1)
                 {
                     // If last drop down and a modifier is selected: add a new drop down (max of 5 drop downs should be enforced)
-                    if (KeyboardManagerHelper::IsModifierKey(keyCodeList[selectedKeyIndex]) && parent.Children().Size() < 3)
+                    if (KeyboardManagerHelper::IsModifierKey(keyCodeList[selectedKeyIndex]) && parent.Children().Size() < KeyboardManagerConstants::MaxShortcutSize)
                     {
                         // If it matched any of the previous modifiers then reset that drop down
                         if (CheckRepeatedModifier(parent, dropDownIndex, selectedKeyIndex, keyCodeList))
@@ -154,7 +161,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
                         }
                     }
                     // If last drop down and a modifier is selected but there are already 5 drop downs: warn the user
-                    else if (KeyboardManagerHelper::IsModifierKey(keyCodeList[selectedKeyIndex]) && parent.Children().Size() >= 3)
+                    else if (KeyboardManagerHelper::IsModifierKey(keyCodeList[selectedKeyIndex]) && parent.Children().Size() >= KeyboardManagerConstants::MaxShortcutSize)
                     {
                         // warn and reset the drop down
                         errorType = KeyboardManagerHelper::ErrorType::ShortcutOneActionKey;
@@ -181,7 +188,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
                         // If not, the modifier key will be set
                     }
                     // If None is selected and there are more than 2 drop downs
-                    else if (keyCodeList[selectedKeyIndex] == 0 && parent.Children().Size() > 2)
+                    else if (keyCodeList[selectedKeyIndex] == 0 && parent.Children().Size() > KeyboardManagerConstants::MinShortcutSize)
                     {
                         // delete drop down
                         parent.Children().RemoveAt(dropDownIndex);
@@ -189,7 +196,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
                         keyDropDownControlObjects.erase(keyDropDownControlObjects.begin() + dropDownIndex);
                         parent.UpdateLayout();
                     }
-                    else if (keyCodeList[selectedKeyIndex] == 0 && parent.Children().Size() <= 2)
+                    else if (keyCodeList[selectedKeyIndex] == 0 && parent.Children().Size() <= KeyboardManagerConstants::MinShortcutSize)
                     {
                         // warn and reset the drop down
                         errorType = KeyboardManagerHelper::ErrorType::ShortcutAtleast2Keys;
@@ -240,7 +247,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
                 Shortcut tempShortcut;
                 tempShortcut.SetKeyCodes(GetKeysFromStackPanel(parent));
                 // Check if the value being set is the same as the other column
-                if (shortcutRemapBuffer[rowIndex][std::abs(int(colIndex) - 1)] == tempShortcut)
+                if (shortcutRemapBuffer[rowIndex][std::abs(int(colIndex) - 1)] == tempShortcut && shortcutRemapBuffer[rowIndex][std::abs(int(colIndex) - 1)].IsValidShortcut() && tempShortcut.IsValidShortcut())
                 {
                     errorType = KeyboardManagerHelper::ErrorType::MapToSameShortcut;
                 }
@@ -252,7 +259,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
                     {
                         if (i != rowIndex)
                         {
-                            KeyboardManagerHelper::ErrorType result = Shortcut::DoKeysOverlap(shortcutRemapBuffer[i][0], tempShortcut);
+                            KeyboardManagerHelper::ErrorType result = Shortcut::DoKeysOverlap(shortcutRemapBuffer[i][colIndex], tempShortcut);
                             if (result != KeyboardManagerHelper::ErrorType::NoError)
                             {
                                 errorType = result;
