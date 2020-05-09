@@ -22,7 +22,7 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      *
      * @param   zone Zone object (defining coordinates of the zone).
      */
-    IFACEMETHOD(AddZone)(winrt::com_ptr<IZone> zone) = 0;
+    IFACEMETHOD(AddZone)(winrt::com_ptr<IZone> zone, int id = -1) = 0;
     /**
      * Get zones from cursor coordinates.
      *

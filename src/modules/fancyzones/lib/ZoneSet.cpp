@@ -42,63 +42,77 @@ namespace
             .columns = 3,
             .rowsPercents = { 10000 },
             .columnsPercents = { 2500, 5000, 2500 },
-            .cellChildMap = { { 0, 1, 2 } } }),
+            .cellChildMap = { { 2, 0, 1 } } }),
         /* 4 */
         JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
             .rows = 2,
             .columns = 3,
             .rowsPercents = { 5000, 5000 },
             .columnsPercents = { 2500, 5000, 2500 },
-            .cellChildMap = { { 0, 1, 2 }, { 0, 1, 3 } } }),
+            .cellChildMap = { { 2, 0, 1 }, 
+                              { 2, 0, 3 } } }),
         /* 5 */
         JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
             .rows = 2,
             .columns = 3,
             .rowsPercents = { 5000, 5000 },
             .columnsPercents = { 2500, 5000, 2500 },
-            .cellChildMap = { { 0, 1, 2 }, { 3, 1, 4 } } }),
+            .cellChildMap = { { 2, 0, 1 }, 
+                              { 4, 0, 3 } } }),
         /* 6 */
         JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 3,
             .rowsPercents = { 3333, 3334, 3333 },
             .columnsPercents = { 2500, 5000, 2500 },
-            .cellChildMap = { { 0, 1, 2 }, { 0, 1, 3 }, { 4, 1, 5 } } }),
+            .cellChildMap = { { 2, 0, 1 }, 
+                              { 2, 0, 3 }, 
+                              { 4, 0, 5 } } }),
         /* 7 */
         JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 3,
             .rowsPercents = { 3333, 3334, 3333 },
             .columnsPercents = { 2500, 5000, 2500 },
-            .cellChildMap = { { 0, 1, 2 }, { 3, 1, 4 }, { 5, 1, 6 } } }),
+            .cellChildMap = { { 2, 0, 1 }, 
+                              { 4, 0, 3 }, 
+                              { 6, 0, 5 } } }),
         /* 8 */
         JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 4,
             .rowsPercents = { 3333, 3334, 3333 },
             .columnsPercents = { 2500, 2500, 2500, 2500 },
-            .cellChildMap = { { 0, 1, 2, 3 }, { 4, 1, 2, 5 }, { 6, 1, 2, 7 } } }),
+            .cellChildMap = { { 2, 0, 7, 1 }, 
+                              { 4, 0, 7, 3 }, 
+                              { 6, 0, 7, 5 } } }),
         /* 9 */
         JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 4,
             .rowsPercents = { 3333, 3334, 3333 },
             .columnsPercents = { 2500, 2500, 2500, 2500 },
-            .cellChildMap = { { 0, 1, 2, 3 }, { 4, 1, 2, 5 }, { 6, 1, 7, 8 } } }),
+            .cellChildMap = { { 2, 0, 7, 1 }, 
+                              { 4, 0, 7, 3 }, 
+                              { 6, 0, 8, 5 } } }),
         /* 10 */
         JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 4,
             .rowsPercents = { 3333, 3334, 3333 },
             .columnsPercents = { 2500, 2500, 2500, 2500 },
-            .cellChildMap = { { 0, 1, 2, 3 }, { 4, 1, 5, 6 }, { 7, 1, 8, 9 } } }),
+            .cellChildMap = { { 2, 0, 7, 1 }, 
+                              { 4, 0, 8, 3 }, 
+                              { 6, 0, 9, 5 } } }),
         /* 11 */
         JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 4,
             .rowsPercents = { 3333, 3334, 3333 },
             .columnsPercents = { 2500, 2500, 2500, 2500 },
-            .cellChildMap = { { 0, 1, 2, 3 }, { 4, 1, 5, 6 }, { 7, 8, 9, 10 } } }),
+            .cellChildMap = { { 2, 0,  7, 1 }, 
+                              { 4, 0,  8, 3 }, 
+                              { 6, 10, 9, 5 } } }),
     };
 }
 
@@ -120,7 +134,7 @@ public:
     Id() noexcept { return m_config.Id; }
     IFACEMETHODIMP_(JSONHelpers::ZoneSetLayoutType)
     LayoutType() noexcept { return m_config.LayoutType; }
-    IFACEMETHODIMP AddZone(winrt::com_ptr<IZone> zone) noexcept;
+    IFACEMETHODIMP AddZone(winrt::com_ptr<IZone> zone, int id) noexcept;
     IFACEMETHODIMP_(std::vector<int>)
     ZonesFromPoint(POINT pt) noexcept;
     IFACEMETHODIMP_(int)
@@ -153,13 +167,20 @@ private:
     ZoneSetConfig m_config;
 };
 
-IFACEMETHODIMP ZoneSet::AddZone(winrt::com_ptr<IZone> zone) noexcept
+IFACEMETHODIMP ZoneSet::AddZone(winrt::com_ptr<IZone> zone, int id = -1) noexcept
 {
-    m_zones.emplace_back(zone);
-
+    if (id > m_zones.size())
+    {
+		m_zones.emplace_back(zone);
+    }
+    else
+    {
+        auto pos = m_zones.begin() + id;
+        m_zones.insert(pos, zone);
+    }
     // Important not to set Id 0 since we store it in the HWND using SetProp.
     // SetProp(0) doesn't really work.
-    zone->SetId(m_zones.size());
+	zone->SetId(id == -1 ? m_zones.size() : id + 1);
     return S_OK;
 }
 
@@ -705,7 +726,7 @@ bool ZoneSet::CalculateGridZones(Rect workArea, JSONHelpers::GridLayoutInfo grid
                     success = false;
                 }
 
-                AddZone(MakeZone(RECT{ left, top, right, bottom }));
+                AddZone(MakeZone(RECT{ left, top, right, bottom }), i);
             }
         }
     }
