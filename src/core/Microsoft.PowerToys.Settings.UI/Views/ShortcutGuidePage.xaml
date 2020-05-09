@@ -53,11 +53,12 @@
 
             <muxc:NumberBox x:Uid="ShortcutGuide_PressTime"
                             Minimum="100"
+                           
                             SpinButtonPlacementMode="Inline"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallTopMargin}"
                             Value="{ Binding Mode=TwoWay, Path=PressTime}"
-                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" SmallChange="50" LargeChange="100"/>
 
             <Slider x:Uid="ShortcutGuide_OverlayOpacity"
                     Minimum="0"
