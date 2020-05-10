@@ -107,11 +107,13 @@
     </ClCompile>
     <ClCompile Include="ShortcutControl.cpp" />
     <ClCompile Include="SingleKeyRemapControl.cpp" />
+    <ClCompile Include="Styles.cpp" />
     <ClCompile Include="XamlBridge.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EditKeyboardWindow.h" />
     <ClInclude Include="EditShortcutsWindow.h" />
+    <ClInclude Include="Styles.h" />
     <ClInclude Include="KeyDropDownControl.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ShortcutControl.h" />

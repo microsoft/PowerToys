@@ -5,6 +5,7 @@
 #include "XamlBridge.h"
 #include <keyboardmanager/common/trace.h>
 #include <common/windows_colors.h>
+#include "Styles.h"
 
 LRESULT CALLBACK EditShortcutsWindowProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -191,8 +192,9 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Apply button
     Button applyButton;
     applyButton.Content(winrt::box_value(L"OK"));
-    applyButton.Background(winrt::Windows::UI::Xaml::Media::SolidColorBrush{ WindowsColors::get_accent_color() });
-    applyButton.Foreground(winrt::Windows::UI::Xaml::Media::SolidColorBrush{ winrt::Windows::UI::Colors::White() });
+    applyButton.Style(AccentButtonStyle());
+    applyButton.MinWidth(HeaderButtonWidth);
+    cancelButton.MinWidth(HeaderButtonWidth);
     header.SetAlignRightWithPanel(cancelButton, true);
     header.SetLeftOf(applyButton, cancelButton);
     applyButton.Flyout(applyFlyout);

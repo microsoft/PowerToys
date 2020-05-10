@@ -8,6 +8,7 @@
     <ClCompile Include="SingleKeyRemapControl.cpp" />
     <ClCompile Include="KeyDropDownControl.cpp" />
     <ClCompile Include="XamlBridge.cpp" />
+    <ClCompile Include="Styles.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EditKeyboardWindow.h" />
@@ -17,6 +18,7 @@
     <ClInclude Include="SingleKeyRemapControl.h" />
     <ClInclude Include="KeyDropDownControl.h" />
     <ClInclude Include="XamlBridge.h" />
+    <ClInclude Include="Styles.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

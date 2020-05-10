@@ -6,6 +6,7 @@
 #include <keyboardmanager/common/trace.h>
 #include <set>
 #include <common/windows_colors.h>
+#include "Styles.h"
 
 using namespace winrt::Windows::Foundation;
 
@@ -325,8 +326,9 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     // Main Header Apply button
     Button applyButton;
     applyButton.Content(winrt::box_value(L"OK"));
-    applyButton.Background(winrt::Windows::UI::Xaml::Media::SolidColorBrush{ WindowsColors::get_accent_color() });
-    applyButton.Foreground(winrt::Windows::UI::Xaml::Media::SolidColorBrush{ winrt::Windows::UI::Colors::White() });
+    applyButton.Style(AccentButtonStyle());
+    applyButton.MinWidth(HeaderButtonWidth);
+    cancelButton.MinWidth(HeaderButtonWidth);
     header.SetAlignRightWithPanel(cancelButton, true);
     header.SetLeftOf(applyButton, cancelButton);
     applyButton.Flyout(applyFlyout);
