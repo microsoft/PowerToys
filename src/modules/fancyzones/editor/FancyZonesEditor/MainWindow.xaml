@@ -186,8 +186,8 @@
                     <Grid Margin="0,80,0,55.5">
                         <Rectangle x:Name="screen1" MouseDown="SelectScreen1" Fill="DeepSkyBlue" HorizontalAlignment="Left" Height="246" Margin="117,25,0,0" Stroke="Black" VerticalAlignment="Top" Width="294" RenderTransformOrigin="0.509,0.517"/>
                         <Rectangle x:Name="screen2" MouseDown="SelectScreen2" Fill="Gray" HorizontalAlignment="Left" Height="158" Margin="441,113,0,0" Stroke="Black" VerticalAlignment="Top" Width="222"/>
-                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Z1" VerticalAlignment="Top" Margin="137,54,0,0" RenderTransformOrigin="0.193,-3.191"/>
-                        <TextBlock HorizontalAlignment="Left" Margin="460,139,0,0" TextWrapping="Wrap" Text="Z2" VerticalAlignment="Top" RenderTransformOrigin="4.808,-0.683"/>
+                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="M1" VerticalAlignment="Top" Margin="137,54,0,0" RenderTransformOrigin="0.193,-3.191"/>
+                        <TextBlock HorizontalAlignment="Left" Margin="460,139,0,0" TextWrapping="Wrap" Text="M2" VerticalAlignment="Top" RenderTransformOrigin="4.808,-0.683"/>
                         <TextBlock HorizontalAlignment="Left" Margin="137,236,0,0" TextWrapping="Wrap" VerticalAlignment="Top"><Run Text="3840 x 2440 px"/></TextBlock>
                         <TextBlock HorizontalAlignment="Left" Margin="460,236,0,0" TextWrapping="Wrap" VerticalAlignment="Top"><Run Text="3000 x 2000 px"/></TextBlock>
                         <TextBlock x:Name="screenName1" FontWeight="Bold" HorizontalAlignment="Left" Margin="277,57,0,0" TextWrapping="Wrap" Text="Selected, Current" VerticalAlignment="Top" Width="120"/>
