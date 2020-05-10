@@ -18,14 +18,14 @@ namespace ZoneWindowUtils
         static std::wstring activeZoneSetTmpFileName;
         static std::once_flag flag;
 
-        std::call_once(flag, []() {
+        //std::call_once(flag, []() {
             wchar_t fileName[L_tmpnam_s];
 
             if (_wtmpnam_s(fileName, L_tmpnam_s) != 0)
                 abort();
 
             activeZoneSetTmpFileName = std::wstring{ fileName };
-        });
+        //});
 
         return activeZoneSetTmpFileName;
     }
@@ -35,14 +35,14 @@ namespace ZoneWindowUtils
         static std::wstring appliedZoneSetTmpFileName;
         static std::once_flag flag;
 
-        std::call_once(flag, []() {
+        //std::call_once(flag, []() {
             wchar_t fileName[L_tmpnam_s];
 
             if (_wtmpnam_s(fileName, L_tmpnam_s) != 0)
                 abort();
 
             appliedZoneSetTmpFileName = std::wstring{ fileName };
-        });
+        //});
 
         return appliedZoneSetTmpFileName;
     }
@@ -52,14 +52,14 @@ namespace ZoneWindowUtils
         static std::wstring customZoneSetsTmpFileName;
         static std::once_flag flag;
 
-        std::call_once(flag, []() {
+        //std::call_once(flag, []() {
             wchar_t fileName[L_tmpnam_s];
 
             if (_wtmpnam_s(fileName, L_tmpnam_s) != 0)
                 abort();
 
             customZoneSetsTmpFileName = std::wstring{ fileName };
-        });
+        //});
 
         return customZoneSetsTmpFileName;
     }

@@ -16,7 +16,7 @@
 #include <lib/util.h>
 #include <unordered_set>
 
-#include <numeric>
+#include "common/monitors.h"
 
 enum class DisplayChangeType
 {
@@ -409,7 +409,7 @@ void FancyZones::ToggleEditor() noexcept
     //HMONITOR monitor{};
     HWND foregroundWindow{};
 
-    auto monitors = GetMonitorsSorted();
+    auto monitors = MonitorInfo::GetMonitors(false);
 
     // const bool use_cursorpos_editor_startupscreen = m_settings->GetSettings()->use_cursorpos_editor_startupscreen;
     // POINT currentCursorPos{};
@@ -435,7 +435,7 @@ void FancyZones::ToggleEditor() noexcept
 
     for (int i = 0; i < monitors.size(); i++)
     {
-        auto monitor = monitors[i];
+        auto monitor = monitors[i].handle;
         auto iter = m_zoneWindowMap.find(monitor);
         if (iter == m_zoneWindowMap.end())
         {
