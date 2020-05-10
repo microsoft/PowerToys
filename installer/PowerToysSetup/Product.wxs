@@ -185,6 +185,14 @@
                   BinaryKey="PTCustomActions"
                   DllEntry="DetectPrevInstallPathCA"
                   />
+    <!-- Redist merge modules -->
+    <DirectoryRef Id="TARGETDIR">
+      <Merge Id="VCRedist" SourceFile="$(var.RepoDir)installer\MergeModules\$(var.Configuration)\Microsoft_VC142_CRT_x64.msm" DiskId="1" Language="0"/>
+    </DirectoryRef>
+    
+    <Feature Id="VCRedist" Title="Visual C++ 14.0 Runtime" AllowAdvertise="no" Display="hidden" Level="1">
+      <MergeRef Id="VCRedist"/>
+    </Feature>
 
     <!-- Close 'PowerToys.exe' before uninstall-->
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="Disable" />
