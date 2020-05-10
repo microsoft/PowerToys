@@ -6,11 +6,13 @@
     xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
+        <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Collapsed" FalseValue="Visible"/>
         <viewModel:GeneralViewModel x:Key="eventViewModel"/>
     </Page.Resources>
 
@@ -62,8 +64,13 @@
                     IsEnabled="{Binding Mode=TwoWay, Path=IsAdminButtonEnabled, Source={StaticResource eventViewModel}}"
                     />
 
-            <TextBlock x:Uid="General_RunAsAdminRequired" Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}" Margin="{StaticResource MediumTopMargin}" />
-            <ToggleSwitch Margin="0,4,0,0" x:Uid="GeneralSettings_AlwaysRunAsAdminText"
+            <TextBlock x:Uid="General_RunAsAdminRequired"
+                       Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                       Visibility="{Binding Mode=TwoWay, Path=IsElevated, Source={StaticResource eventViewModel}, Converter={StaticResource BoolToVisibilityConverter}}"
+                       Margin="0,24,0,-8" />
+
+            <ToggleSwitch Margin="{StaticResource SmallTopMargin}"
+                          x:Uid="GeneralSettings_AlwaysRunAsAdminText"
                           IsEnabled="{Binding Mode=TwoWay, Path=IsElevated, Source={StaticResource eventViewModel}}"
                           IsOn="{Binding Mode=TwoWay, Path=RunElevated, Source={StaticResource eventViewModel}}"/>
             
@@ -111,8 +118,14 @@
                     Command="{Binding CheckFoUpdatesEventHandler, Source={StaticResource eventViewModel}}"
                     />
 
+            <TextBlock x:Uid="General_RunAsAdminRequired"
+                       Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                       Visibility="{Binding Mode=TwoWay, Path=IsElevated, Source={StaticResource eventViewModel}, Converter={StaticResource BoolToVisibilityConverter}}"
+                       Margin="0,24,0,-20" />
+            
             <ToggleSwitch x:Uid="GeneralPage_ToggleSwitch_AutoDownloadUpdates" 
-                          Margin="{StaticResource MediumTopMargin}" 
+                          Margin="{StaticResource MediumTopMargin}"
+                          IsEnabled="{Binding Mode=TwoWay, Path=IsElevated, Source={StaticResource eventViewModel}}"
                           IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates, Source={StaticResource eventViewModel}}"/>
             
         </StackPanel>

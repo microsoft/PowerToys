@@ -180,7 +180,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _isElevated = value;
                     OnPropertyChanged("IsElevated");
                     OnPropertyChanged("IsAdminButtonEnabled");
-                    OnPropertyChanged("AlwaysRunAsAdminText");
+                    //OnPropertyChanged("AlwaysRunAsAdminText");
                     OnPropertyChanged("RunningAsAdminText");
                 }
             }
