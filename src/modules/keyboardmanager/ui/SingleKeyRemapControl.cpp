@@ -11,16 +11,10 @@ std::vector<std::vector<DWORD>> SingleKeyRemapControl::singleKeyRemapBuffer;
 // Function to add a new row to the remap keys table. If the originalKey and newKey args are provided, then the displayed remap keys are set to those values.
 void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>>& keyboardRemapControlObjects, const DWORD originalKey, const DWORD newKey)
 {
-    // Warning icon for the row
-    ToolTip warningMessage;
-    FontIcon warningIcon;
-    warningIcon.Visibility(Visibility::Collapsed);
-    warningMessage.Content(box_value(KeyboardManagerConstants::ToolTipInitialContent));
-
     // Create new SingleKeyRemapControl objects dynamically so that we does not get destructed
     std::vector<std::unique_ptr<SingleKeyRemapControl>> newrow;
-    newrow.push_back(std::move(std::unique_ptr<SingleKeyRemapControl>(new SingleKeyRemapControl(parent, 0, warningIcon, warningMessage))));
-    newrow.push_back(std::move(std::unique_ptr<SingleKeyRemapControl>(new SingleKeyRemapControl(parent, 1, warningIcon, warningMessage))));
+    newrow.push_back(std::move(std::unique_ptr<SingleKeyRemapControl>(new SingleKeyRemapControl(parent, 0))));
+    newrow.push_back(std::move(std::unique_ptr<SingleKeyRemapControl>(new SingleKeyRemapControl(parent, 1))));
     keyboardRemapControlObjects.push_back(std::move(newrow));
 
     // Add to grid
@@ -106,14 +100,6 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
     parent.SetColumn(deleteRemapKeys, KeyboardManagerConstants::RemapTableRemoveColIndex);
     parent.SetRow(deleteRemapKeys, parent.RowDefinitions().Size() - 1);
     parent.Children().Append(deleteRemapKeys);
-
-    warningIcon.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
-    warningIcon.Glyph(L"\xE783");
-    warningIcon.HorizontalAlignment(HorizontalAlignment::Center);
-    ToolTipService::SetToolTip(warningIcon, warningMessage);
-    parent.SetColumn(warningIcon, KeyboardManagerConstants::RemapTableWarningColIndex);
-    parent.SetRow(warningIcon, parent.RowDefinitions().Size() - 1);
-    parent.Children().Append(warningIcon);
     parent.UpdateLayout();
 }
 

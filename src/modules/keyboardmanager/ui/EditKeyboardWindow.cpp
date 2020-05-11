@@ -131,15 +131,12 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     newColumn.MaxWidth(KeyboardManagerConstants::RemapTableDropDownWidth);
     ColumnDefinition removeColumn;
     removeColumn.MinWidth(KeyboardManagerConstants::TableRemoveColWidth);
-    ColumnDefinition warnColumn;
-    warnColumn.MinWidth(KeyboardManagerConstants::TableWarningColWidth);
     keyRemapTable.Margin({ 10, 10, 10, 20 });
     keyRemapTable.HorizontalAlignment(HorizontalAlignment::Stretch);
     keyRemapTable.ColumnDefinitions().Append(originalColumn);
     keyRemapTable.ColumnDefinitions().Append(arrowColumn);
     keyRemapTable.ColumnDefinitions().Append(newColumn);
     keyRemapTable.ColumnDefinitions().Append(removeColumn);
-    keyRemapTable.ColumnDefinitions().Append(warnColumn);
     keyRemapTable.RowDefinitions().Append(RowDefinition());
 
     // First header textblock in the header row of the keys remap table
@@ -292,14 +289,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
             else
             {
                 isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
-                // Show tooltip warning on the problematic row
-                uint32_t warningIndex;
-                // headers at start, colcount in each row, and last element of each row
-                warningIndex = KeyboardManagerConstants::RemapTableHeaderCount + ((i + 1) * KeyboardManagerConstants::RemapTableColCount) - 1;
-                FontIcon warning = keyRemapTable.Children().GetAt(warningIndex).as<FontIcon>();
-                ToolTip t = ToolTipService::GetToolTip(warning).as<ToolTip>();
-                t.Content(box_value(KeyboardManagerHelper::GetErrorMessage(KeyboardManagerHelper::ErrorType::MissingKey)));
-                warning.Visibility(Visibility::Visible);
             }
         }
 
