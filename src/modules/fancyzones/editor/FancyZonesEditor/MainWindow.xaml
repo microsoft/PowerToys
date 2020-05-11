@@ -183,7 +183,10 @@
         <TabControl BorderThickness="0" x:Name="TemplateTab" SelectedIndex="{Binding IsCustomLayoutActive, Mode=OneWay, Converter={StaticResource BooleanToIntConverter}}">
             <TabItem Header="{x:Static props:Resources.Templates}" Template="{StaticResource myTabs}">
                 <StackPanel>
-                    <Grid Margin="0,80,0,55.5">
+                    <TextBlock FontWeight="Bold" Margin="8, 8, 0, 0">Arrangement</TextBlock>
+                    <TextBlock Foreground="Gray" Margin="8, 0, 0, 0">Drag desired settings to the appropriate monitor to set its layout. Alternatively you can</TextBlock>
+                    <TextBlock Foreground="Gray" Margin="8, 0, 0, 0">create new layouts by pressing the "create new layout" button</TextBlock>
+                    <!--<Grid Margin="0,80,0,55.5">
                         <Rectangle x:Name="screen1" MouseDown="SelectScreen1" Fill="DeepSkyBlue" HorizontalAlignment="Left" Height="246" Margin="117,25,0,0" Stroke="Black" VerticalAlignment="Top" Width="294" RenderTransformOrigin="0.509,0.517"/>
                         <Rectangle x:Name="screen2" MouseDown="SelectScreen2" Fill="Gray" HorizontalAlignment="Left" Height="158" Margin="441,113,0,0" Stroke="Black" VerticalAlignment="Top" Width="222"/>
                         <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="M1" VerticalAlignment="Top" Margin="137,54,0,0" RenderTransformOrigin="0.193,-3.191"/>
@@ -192,12 +195,78 @@
                         <TextBlock HorizontalAlignment="Left" Margin="460,236,0,0" TextWrapping="Wrap" VerticalAlignment="Top"><Run Text="3000 x 2000 px"/></TextBlock>
                         <TextBlock x:Name="screenName1" FontWeight="Bold" HorizontalAlignment="Left" Margin="277,57,0,0" TextWrapping="Wrap" Text="Selected, Current" VerticalAlignment="Top" Width="120"/>
                         <TextBlock x:Name="screenName2" Visibility="Hidden" FontWeight="Bold" HorizontalAlignment="Left" Margin="531,139,0,0" TextWrapping="Wrap" Text="Selected, Current" VerticalAlignment="Top" Width="120"/>
+                    </Grid>-->
+                    
+                    <!-- New code -->
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <ScrollViewer ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                      ScrollViewer.CanContentScroll="True"
+                      ScrollViewer.PanningMode="HorizontalOnly">
+                            <ItemsControl ItemsSource="{Binding vm.Monitors}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal" ScrollViewer.HorizontalScrollBarVisibility="Visible" />
+                                        <!--<StackPanel Orientation="Horizontal" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+                                ScrollViewer.PanningMode="HorizontalOnly"/>-->
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Height="{Binding Height}" Width="{Binding Width}" Margin="8">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="*"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Rectangle Stroke="Black" Fill="Red" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                   Grid.RowSpan="3" Grid.ColumnSpan="3"/>
+                                            <TextBlock Text="{Binding Name}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" 
+                                   FontSize="21" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Id}" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   FontSize="20" FontWeight="Bold"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
                     </Grid>
-                    <StackPanel Margin="0,15,0,8" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <!-- End new code-->
+                    <!--<StackPanel Margin="0,15,0,8" Orientation="Horizontal" HorizontalAlignment="Center">
                         <Button x:Name="decrementZones" Width="40" Height="40" Content="-" Style="{StaticResource spinnerButton}" Click="DecrementZones_Click"/>
                         <TextBlock x:Name="zoneCount" Text="{Binding ZoneCount}" Style="{StaticResource zoneCount}"/>
                         <Button x:Name="incrementZones" Width="40" Height="40" Content="+" Style="{StaticResource spinnerButton}" Click="IncrementZones_Click"/>
-                    </StackPanel>
+                    </StackPanel>-->
+                    
+                    <!-- start new code-->
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Margin="0,15,0,8" Orientation="Horizontal" HorizontalAlignment="Left">
+                            <StackPanel>
+                                <TextBlock FontWeight="Bold" Grid.Row="0" Margin="8,0,0,0">Layout</TextBlock>
+                                <TextBlock Margin="8,0,0,0" Grid.Row="1" Foreground="Gray">Use one of the templates below or create your own layout</TextBlock>
+                            </StackPanel>
+                        </StackPanel>
+                        <StackPanel Margin="0,15,50,8" Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button x:Name="decrementZones" Width="40" Height="40" Content="-" Style="{StaticResource spinnerButton}" Click="DecrementZones_Click"/>
+                            <TextBlock x:Name="zoneCount" Text="{Binding ZoneCount}" Style="{StaticResource zoneCount}"/>
+                            <Button x:Name="incrementZones" Width="40" Height="40" Content="+" Style="{StaticResource spinnerButton}" Click="IncrementZones_Click"/>
+                        </StackPanel>
+                    </Grid>
+                    <!-- end new code-->
                     <ItemsControl ItemsSource="{Binding DefaultModels}" Margin="8,0,0,0">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>

@@ -24,11 +24,15 @@ namespace FancyZonesEditor
         private static readonly string _defaultNamePrefix = "Custom Layout ";
 
         public int WrapPanelItemSize { get; set; } = 150; //TODO: previously 262
+        //TODO: initialises monitors
+        MonitorVM vm = new MonitorVM();
 
         public MainWindow()
         {
             InitializeComponent();
+
             DataContext = _settings;
+            //DataContext = vm;
 
             KeyUp += MainWindow_KeyUp;
 
@@ -38,21 +42,22 @@ namespace FancyZonesEditor
                 WrapPanelItemSize = 150; //TODO: previously 1980
             }
         }
-        private void SelectScreen1(object sender, RoutedEventArgs e)
-        {
-            this.screen1.Fill = Brushes.DeepSkyBlue;
-            this.screen2.Fill = Brushes.Gray;
-            this.screenName1.Visibility = Visibility.Visible;
-            this.screenName2.Visibility = Visibility.Hidden;
-        }
+        //TODO: This is the code for the hardcoded monitors
+        //private void SelectScreen1(object sender, RoutedEventArgs e)
+        //{
+        //    this.screen1.Fill = Brushes.DeepSkyBlue;
+        //    this.screen2.Fill = Brushes.Gray;
+        //    this.screenName1.Visibility = Visibility.Visible;
+        //    this.screenName2.Visibility = Visibility.Hidden;
+        //}
 
-        public void SelectScreen2(object sender, RoutedEventArgs e)
-        {
-            this.screen2.Fill = Brushes.DeepSkyBlue;
-            this.screen1.Fill = Brushes.Gray;
-            this.screenName1.Visibility = Visibility.Hidden;
-            this.screenName2.Visibility = Visibility.Visible;
-        }
+        //public void SelectScreen2(object sender, RoutedEventArgs e)
+        //{
+        //    this.screen2.Fill = Brushes.DeepSkyBlue;
+        //    this.screen1.Fill = Brushes.Gray;
+        //    this.screenName1.Visibility = Visibility.Hidden;
+        //    this.screenName2.Visibility = Visibility.Visible;
+        //}
 
         private void MainWindow_KeyUp(object sender, KeyEventArgs e)
         {

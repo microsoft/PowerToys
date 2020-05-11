@@ -83,6 +83,7 @@ namespace FancyZonesEditor
             ParseCommandLineArgs();
 
             // Initialize the five default layout models: Focus, Columns, Rows, Grid, and PriorityGrid
+            MonitorVM vm = new MonitorVM();
             DefaultModels = new List<LayoutModel>(5);
             _focusModel = new CanvasLayoutModel("Focus", LayoutType.Focus, (int)_workArea.Width, (int)_workArea.Height);
             DefaultModels.Add(_focusModel);
