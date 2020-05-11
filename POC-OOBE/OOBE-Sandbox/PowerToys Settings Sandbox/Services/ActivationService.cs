@@ -75,17 +75,10 @@ namespace PowerToys_Settings_Sandbox.Services
                 {
                     new ToastButton("Open PowerToys", new QueryString()
                     {
-                        { "action", "reply" },
-                        { "conversationId", conversationId.ToString() }
-
+                        // Insert query here
                     }.ToString())
                     {
-                        ActivationType = ToastActivationType.Background,
-                        ImageUri = "Assets/Reply.png",
- 
-                        // Reference the text box's ID in order to
-                        // place this button next to the text box
-                        TextBoxId = "tbReply"
+                        // Insert activation type here
                     },
                 }
             };
@@ -99,9 +92,7 @@ namespace PowerToys_Settings_Sandbox.Services
                 // Arguments when the user taps body of toast
                 Launch = new QueryString()
                 {
-                    { "action", "viewConversation" },
-                    { "conversationId", conversationId.ToString() }
-
+                    // Insert query here
                 }.ToString()
              };
 
