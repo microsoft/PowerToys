@@ -7,6 +7,7 @@
 #include <set>
 #include <common/windows_colors.h>
 #include "Styles.h"
+#include "Dialog.h"
 
 using namespace winrt::Windows::Foundation;
 
@@ -22,15 +23,20 @@ std::mutex editKeyboardWindowMutex;
 // Stores a pointer to the Xaml Bridge object so that it can be accessed from the window procedure
 static XamlBridge* xamlBridgePtr = nullptr;
 
-std::vector<DWORD> GetOrphanedKeys()
+static std::vector<DWORD> GetOrphanedKeys()
 {
     std::set<DWORD> ogKeys;
     std::set<DWORD> newKeys;
 
     for (int i = 0; i < SingleKeyRemapControl::singleKeyRemapBuffer.size(); i++)
     {
-        ogKeys.insert(SingleKeyRemapControl::singleKeyRemapBuffer[i][0]);
-        newKeys.insert(SingleKeyRemapControl::singleKeyRemapBuffer[i][1]);
+        DWORD ogKey = SingleKeyRemapControl::singleKeyRemapBuffer[i][0];
+        DWORD newKey = SingleKeyRemapControl::singleKeyRemapBuffer[i][1];
+        if (ogKey != 0 && newKey != 0)
+        {
+            ogKeys.insert(ogKey);
+            newKeys.insert(newKey);
+        }
     }
 
     for (auto& k : newKeys)
@@ -41,51 +47,15 @@ std::vector<DWORD> GetOrphanedKeys()
     return std::vector(ogKeys.begin(), ogKeys.end());
 }
 
-KeyboardManagerHelper::ErrorType CheckIfRemappingsAreValid(Grid keyRemapTable)
-{
-    KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
-    std::set<DWORD> ogKeys;
-    for (int i = 0; i < SingleKeyRemapControl::singleKeyRemapBuffer.size(); i++)
-    {
-        DWORD ogKey = SingleKeyRemapControl::singleKeyRemapBuffer[i][0];
-        DWORD newKey = SingleKeyRemapControl::singleKeyRemapBuffer[i][1];
-
-        if (ogKey != 0 && newKey != 0 && ogKeys.find(ogKey) == ogKeys.end())
-        {
-            ogKeys.insert(SingleKeyRemapControl::singleKeyRemapBuffer[i][0]);
-        }
-        else if (ogKey != 0 && newKey != 0 && ogKeys.find(ogKey) != ogKeys.end())
-        {
-            isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
-        }
-        else 
-        {
-            isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
-            // Show tooltip warning on the problematic row
-            uint32_t warningIndex;
-            // 2 at start, 4 in each row, and last element of each row
-            warningIndex = 1 + (i + 1) * 4;
-            FontIcon warning = keyRemapTable.Children().GetAt(warningIndex).as<FontIcon>();
-            ToolTip t = ToolTipService::GetToolTip(warning).as<ToolTip>();
-            t.Content(box_value(KeyboardManagerHelper::GetErrorMessage(KeyboardManagerHelper::ErrorType::MissingKey)));
-            warning.Visibility(Visibility::Visible);
-        }
-    }
-    return isSuccess;
-}
-
-IAsyncAction ConfirmationDialog(
+static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
     KeyboardManagerState& state,
     const std::vector<DWORD>& keys,
-    Button applyButton,
-    Flyout applyFlyout,
-    std::function<void()> ApplyRemappings)
+    XamlRoot root)
 {
-    bool shouldApplyRemapping = false;
-    applyButton.Flyout(nullptr);
     ContentDialog confirmationDialog;
-    confirmationDialog.XamlRoot(applyButton.XamlRoot());
+    confirmationDialog.XamlRoot(root);
     confirmationDialog.Title(box_value(L"The following keys are unassigned and you won't be able to use them:"));
+    confirmationDialog.Content(nullptr);
     confirmationDialog.IsPrimaryButtonEnabled(true);
     confirmationDialog.DefaultButton(ContentDialogButton::Primary);
     confirmationDialog.PrimaryButtonText(winrt::hstring(L"Continue Anyway"));
@@ -94,7 +64,7 @@ IAsyncAction ConfirmationDialog(
 
     TextBlock orphanKeysBlock;
     std::wstring orphanKeyString;
-    for (auto k: keys)
+    for (auto k : keys)
     {
         orphanKeyString.append(state.keyboardMap.GetKeyName(k));
         orphanKeyString.append(L", ");
@@ -104,13 +74,37 @@ IAsyncAction ConfirmationDialog(
     confirmationDialog.Content(orphanKeysBlock);
 
     ContentDialogResult res = co_await confirmationDialog.ShowAsync();
-    applyButton.Flyout(applyFlyout);
-    if (res == ContentDialogResult::Primary)
-    {
-        ApplyRemappings();
-    }
+
+    co_return res == ContentDialogResult::Primary;
 }
 
+static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, XamlRoot root, std::function<void()> ApplyRemappings, std::function<void(int)> onRemappingError)
+{
+    KeyboardManagerHelper::ErrorType isSuccess = Dialog::CheckIfRemappingsAreValid<DWORD>(
+        SingleKeyRemapControl::singleKeyRemapBuffer,
+        onRemappingError,
+        [](DWORD key) {
+            return key != 0;
+        });
+    if (isSuccess != KeyboardManagerHelper::ErrorType::NoError)
+    {
+        if (!co_await Dialog::PartialRemappingConfirmationDialog(root))
+        {
+            co_return;
+        }
+    }
+    // Check for orphaned keys
+    // Draw content Dialog
+    std::vector<DWORD> orphanedKeys = GetOrphanedKeys();
+    if (orphanedKeys.size() > 0)
+    {
+        if (!co_await OrphanKeysConfirmationDialog(keyboardManagerState, orphanedKeys, root))
+        {
+            co_return;
+        }
+    }
+    ApplyRemappings();
+}
 // Function to create the Edit Keyboard Window
 void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
 {
@@ -253,11 +247,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     keyRemapTable.Children().Append(originalKeyRemapHeader);
     keyRemapTable.Children().Append(newKeyRemapHeader);
 
-    // Message to display success/failure of saving settings.
-    Flyout applyFlyout;
-    TextBlock settingsMessage;
-    applyFlyout.Content(settingsMessage);
-
     // Store handle of edit keyboard window
     SingleKeyRemapControl::EditKeyboardWindowHandle = _hWndEditKeyboardWindow;
     // Store keyboard manager state
@@ -331,9 +320,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     cancelButton.MinWidth(HeaderButtonWidth);
     header.SetAlignRightWithPanel(cancelButton, true);
     header.SetLeftOf(applyButton, cancelButton);
-    applyButton.Flyout(applyFlyout);
 
-    auto ApplyRemappings = [&keyboardManagerState, _hWndEditKeyboardWindow, keyRemapTable, settingsMessage, applyButton]() {
+    auto ApplyRemappings = [&keyboardManagerState, _hWndEditKeyboardWindow]() {
         KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
         // Clear existing Key Remaps
         keyboardManagerState.ClearSingleKeyRemaps();
@@ -397,31 +385,23 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         {
             isSuccess = KeyboardManagerHelper::ErrorType::SaveFailed;
         }
-        settingsMessage.Text(KeyboardManagerHelper::GetErrorMessage(isSuccess));
-        if (isSuccess == KeyboardManagerHelper::ErrorType::NoError)
-        {
-            PostMessage(_hWndEditKeyboardWindow, WM_CLOSE, 0, 0);
-        }
+
+        PostMessage(_hWndEditKeyboardWindow, WM_CLOSE, 0, 0);
     };
 
-    applyButton.Click([&keyboardManagerState, keyRemapTable, header, applyFlyout, ApplyRemappings, applyButton, settingsMessage](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
-        KeyboardManagerHelper::ErrorType isSuccess = CheckIfRemappingsAreValid(keyRemapTable);
-        if (isSuccess != KeyboardManagerHelper::ErrorType::NoError)
-        {
-            settingsMessage.Text(KeyboardManagerHelper::GetErrorMessage(isSuccess));
-            return;
-        }
-        // Check for orphaned keys
-        // Draw content Dialog
-        std::vector<DWORD> orphanedKeys = GetOrphanedKeys();
-        if (orphanedKeys.size() > 0)
-        {
-            ConfirmationDialog(keyboardManagerState, orphanedKeys, applyButton, applyFlyout, ApplyRemappings);
-        }
-        else
-        {
-            ApplyRemappings();
-        }
+    auto ShowWarningFlyout = [keyRemapTable](int index) {
+        // Show tooltip warning on the problematic row
+        uint32_t warningIndex;
+        // headers at start, colcount in each row, and last element of each row
+        warningIndex = KeyboardManagerConstants::RemapTableHeaderCount + ((index + 1) * KeyboardManagerConstants::RemapTableColCount) - 1;
+        FontIcon warning = keyRemapTable.Children().GetAt(warningIndex).as<FontIcon>();
+        ToolTip t = ToolTipService::GetToolTip(warning).as<ToolTip>();
+        t.Content(box_value(KeyboardManagerHelper::GetErrorMessage(KeyboardManagerHelper::ErrorType::MissingKey)));
+        warning.Visibility(Visibility::Visible);
+    };
+
+    applyButton.Click([&keyboardManagerState, ApplyRemappings, applyButton, ShowWarningFlyout](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+        OnClickAccept(keyboardManagerState, applyButton.XamlRoot(), ApplyRemappings, ShowWarningFlyout);
     });
 
     header.Children().Append(headerText);

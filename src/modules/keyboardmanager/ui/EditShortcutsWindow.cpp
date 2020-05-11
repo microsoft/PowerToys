@@ -4,8 +4,12 @@
 #include "KeyDropDownControl.h"
 #include "XamlBridge.h"
 #include <keyboardmanager/common/trace.h>
+#include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <common/windows_colors.h>
 #include "Styles.h"
+#include "Dialog.h"
+
+using namespace winrt::Windows::Foundation;
 
 LRESULT CALLBACK EditShortcutsWindowProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -18,6 +22,28 @@ HWND hwndEditShortcutsNativeWindow = nullptr;
 std::mutex editShortcutsWindowMutex;
 // Stores a pointer to the Xaml Bridge object so that it can be accessed from the window procedure
 static XamlBridge* xamlBridgePtr = nullptr;
+
+static IAsyncAction OnClickAccept(
+    KeyboardManagerState& keyboardManagerState,
+    XamlRoot root,
+    std::function<void()> ApplyRemappings,
+    std::function<void(int)> onRemappingError)
+{
+    KeyboardManagerHelper::ErrorType isSuccess = Dialog::CheckIfRemappingsAreValid<Shortcut>(
+        ShortcutControl::shortcutRemapBuffer,
+        onRemappingError,
+        [](Shortcut shortcut) {
+            return shortcut.IsValidShortcut();
+        });
+    if (isSuccess != KeyboardManagerHelper::ErrorType::NoError)
+    {
+        if (!co_await Dialog::PartialRemappingConfirmationDialog(root))
+        {
+            co_return;
+        }
+    }
+    ApplyRemappings();
+}
 
 // Function to create the Edit Shortcuts Window
 void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
@@ -163,11 +189,6 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     shortcutTable.Children().Append(originalShortcutHeader);
     shortcutTable.Children().Append(newShortcutHeader);
 
-    // Message to display success/failure of saving settings.
-    Flyout applyFlyout;
-    TextBlock settingsMessage;
-    applyFlyout.Content(settingsMessage);
-
     // Store handle of edit shortcuts window
     ShortcutControl::EditShortcutsWindowHandle = _hWndEditShortcutsWindow;
     // Store keyboard manager state
@@ -193,12 +214,12 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     Button applyButton;
     applyButton.Content(winrt::box_value(L"OK"));
     applyButton.Style(AccentButtonStyle());
-    applyButton.MinWidth(HeaderButtonWidth);
-    cancelButton.MinWidth(HeaderButtonWidth);
+    applyButton.MinWidth(KeyboardManagerConstants::HeaderButtonWidth);
+    cancelButton.MinWidth(KeyboardManagerConstants::HeaderButtonWidth);
     header.SetAlignRightWithPanel(cancelButton, true);
     header.SetLeftOf(applyButton, cancelButton);
-    applyButton.Flyout(applyFlyout);
-    applyButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+
+    auto ApplyRemappings = [&keyboardManagerState, _hWndEditShortcutsWindow]() {
         KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
         // Clear existing shortcuts
         keyboardManagerState.ClearOSLevelShortcuts();
@@ -228,18 +249,30 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
             }
         }
 
+        Trace::OSLevelShortcutRemapCount(successfulRemapCount);
         // Save the updated key remaps to file.
         bool saveResult = keyboardManagerState.SaveConfigToFile();
         if (!saveResult)
         {
             isSuccess = KeyboardManagerHelper::ErrorType::SaveFailed;
         }
-        Trace::OSLevelShortcutRemapCount(successfulRemapCount);
-        settingsMessage.Text(KeyboardManagerHelper::GetErrorMessage(isSuccess));
-        if (isSuccess == KeyboardManagerHelper::ErrorType::NoError)
-        {
-            PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
-        }
+
+        PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
+    };
+
+    auto ShowWarningFlyout = [shortcutTable](int index) {
+        // Show tooltip warning on the problematic row
+        uint32_t warningIndex;
+        // 2 at start, 4 in each row, and last element of each row
+        warningIndex = KeyboardManagerConstants::ShortcutTableHeaderCount + ((index + 1) * KeyboardManagerConstants::ShortcutTableColCount) - 1;
+        FontIcon warning = shortcutTable.Children().GetAt(warningIndex).as<FontIcon>();
+        ToolTip t = ToolTipService::GetToolTip(warning).as<ToolTip>();
+        t.Content(box_value(KeyboardManagerHelper::GetErrorMessage(KeyboardManagerHelper::ErrorType::MissingKey)));
+        warning.Visibility(Visibility::Visible);
+    };
+
+    applyButton.Click([&keyboardManagerState, applyButton, ApplyRemappings, ShowWarningFlyout](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+        OnClickAccept(keyboardManagerState, applyButton.XamlRoot(), ApplyRemappings, ShowWarningFlyout);
     });
 
     header.Children().Append(headerText);

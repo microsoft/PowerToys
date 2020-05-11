@@ -98,6 +98,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Dialog.cpp" />
     <ClCompile Include="EditKeyboardWindow.cpp" />
     <ClCompile Include="EditShortcutsWindow.cpp" />
     <ClCompile Include="KeyDropDownControl.cpp" />
@@ -111,6 +112,7 @@
     <ClCompile Include="XamlBridge.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Dialog.h" />
     <ClInclude Include="EditKeyboardWindow.h" />
     <ClInclude Include="EditShortcutsWindow.h" />
     <ClInclude Include="Styles.h" />

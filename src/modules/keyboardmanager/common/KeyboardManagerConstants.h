@@ -73,4 +73,7 @@ namespace KeyboardManagerConstants
     inline const long TableArrowColWidth = 20;
     inline const long TableRemoveColWidth = 20;
     inline const long TableWarningColWidth = 20;
+
+    // Shared style constants for both Remap Table and Shortcut Table
+    inline const double HeaderButtonWidth = 100;
 }
