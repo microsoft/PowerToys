@@ -3,29 +3,23 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ColorPickerAlpha", "ColorPickerAlpha\ColorPickerAlpha.vcxproj", "{6FE29197-26DA-435A-8991-2AED81BAED04}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColorPickerAlpha", "ColorPickerAlpha\ColorPickerAlpha.csproj", "{72B04CB2-0D17-4318-AE4C-DA6E92D1C42B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6FE29197-26DA-435A-8991-2AED81BAED04}.Debug|x64.ActiveCfg = Debug|x64
-		{6FE29197-26DA-435A-8991-2AED81BAED04}.Debug|x64.Build.0 = Debug|x64
-		{6FE29197-26DA-435A-8991-2AED81BAED04}.Debug|x86.ActiveCfg = Debug|Win32
-		{6FE29197-26DA-435A-8991-2AED81BAED04}.Debug|x86.Build.0 = Debug|Win32
-		{6FE29197-26DA-435A-8991-2AED81BAED04}.Release|x64.ActiveCfg = Release|x64
-		{6FE29197-26DA-435A-8991-2AED81BAED04}.Release|x64.Build.0 = Release|x64
-		{6FE29197-26DA-435A-8991-2AED81BAED04}.Release|x86.ActiveCfg = Release|Win32
-		{6FE29197-26DA-435A-8991-2AED81BAED04}.Release|x86.Build.0 = Release|Win32
+		{72B04CB2-0D17-4318-AE4C-DA6E92D1C42B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72B04CB2-0D17-4318-AE4C-DA6E92D1C42B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72B04CB2-0D17-4318-AE4C-DA6E92D1C42B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72B04CB2-0D17-4318-AE4C-DA6E92D1C42B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {9055BBC2-CABA-424C-902A-EF7F2540503C}
+		SolutionGuid = {62246374-2E38-4421-A7F8-80015AB6442E}
 	EndGlobalSection
 EndGlobal
