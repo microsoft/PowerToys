@@ -16,7 +16,6 @@ using System.Text;
 using FancyZonesEditor.Models;
 using MahApps.Metro.Controls;
 
-
 namespace FancyZonesEditor
 {
     /// <summary>
@@ -168,10 +167,11 @@ namespace FancyZonesEditor
             }
         }
 
+        // TODO: Instead of a message box create an overlay on each screen that dissapears after sometime
+        // https://stackoverflow.com/a/14522952
         private void Apply_identify(object sender, RoutedEventArgs e)
         {
             AutoClosingMessageBox.Show("Display 2 - Acer Predator", "", 3000);
-           // MessageBox.Show(w, "Display 2 - Acer Predator", "");
         }
 
         public class AutoClosingMessageBox
@@ -237,8 +237,5 @@ namespace FancyZonesEditor
 
             model.Delete();
         }
-
-        private void TemplateTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {}
     }
 }

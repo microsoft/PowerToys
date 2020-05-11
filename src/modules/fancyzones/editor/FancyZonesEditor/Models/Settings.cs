@@ -145,9 +145,7 @@ namespace FancyZonesEditor
             {
                 if (_selectedMonitorOption != value)
                 {
-                    // Resolve mapping
-                    string deReffrencedName = (value == "Display 1 - Surface Display") ? "LGD0554#4&1aaa636&0&UID265988_3240_2160_{5760E426-600C-40F5-9E89-E90E5F568782}" : "ACR048F#4&1aaa636&0&UID200195_2560_1440_{5760E426-600C-40F5-9E89-E90E5F568782}";
-                    _selectedMonitorOption = deReffrencedName;
+                    _selectedMonitorOption = value;
                     FirePropertyChanged("SelectedMonitorOption");
                 }
             }

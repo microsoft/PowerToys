@@ -226,7 +226,7 @@
             <Button x:Name="IdentifyButton" Padding="8" Content="Identify" Style="{StaticResource identifyButton}" Click="Apply_identify"/>
         </StackPanel>
 
-        <TabControl BorderThickness="0" x:Name="TemplateTab" SelectedIndex="{Binding IsCustomLayoutActive, Mode=OneWay, Converter={StaticResource BooleanToIntConverter}}" SelectionChanged="TemplateTab_SelectionChanged">
+        <TabControl BorderThickness="0" x:Name="TemplateTab" SelectedIndex="{Binding IsCustomLayoutActive, Mode=OneWay, Converter={StaticResource BooleanToIntConverter}}">
             <TabItem Header="{x:Static props:Resources.Templates}" Template="{StaticResource myTabs}">
                 <StackPanel>
                     <StackPanel Margin="0,15,0,8" Orientation="Horizontal" HorizontalAlignment="Center">

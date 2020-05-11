@@ -15,7 +15,6 @@
 #include <common/window_helpers.h>
 #include <lib/util.h>
 #include <unordered_set>
-#include <iostream>
 
 enum class DisplayChangeType
 {
