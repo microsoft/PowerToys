@@ -4,6 +4,12 @@
 #include "KeyDropDownControl.h"
 #include "XamlBridge.h"
 #include <keyboardmanager/common/trace.h>
+#include <keyboardmanager/common/KeyboardManagerConstants.h>
+#include <common/windows_colors.h>
+#include "Styles.h"
+#include "Dialog.h"
+
+using namespace winrt::Windows::Foundation;
 
 LRESULT CALLBACK EditShortcutsWindowProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -16,6 +22,26 @@ HWND hwndEditShortcutsNativeWindow = nullptr;
 std::mutex editShortcutsWindowMutex;
 // Stores a pointer to the Xaml Bridge object so that it can be accessed from the window procedure
 static XamlBridge* xamlBridgePtr = nullptr;
+
+static IAsyncAction OnClickAccept(
+    KeyboardManagerState& keyboardManagerState,
+    XamlRoot root,
+    std::function<void()> ApplyRemappings)
+{
+    KeyboardManagerHelper::ErrorType isSuccess = Dialog::CheckIfRemappingsAreValid<Shortcut>(
+        ShortcutControl::shortcutRemapBuffer,
+        [](Shortcut shortcut) {
+            return shortcut.IsValidShortcut();
+        });
+    if (isSuccess != KeyboardManagerHelper::ErrorType::NoError)
+    {
+        if (!co_await Dialog::PartialRemappingConfirmationDialog(root))
+        {
+            co_return;
+        }
+    }
+    ApplyRemappings();
+}
 
 // Function to create the Edit Shortcuts Window
 void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
@@ -101,7 +127,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Cancel button
     Button cancelButton;
     cancelButton.Content(winrt::box_value(L"Cancel"));
-    cancelButton.Margin({ 0, 0, 10, 0 });
+    cancelButton.Margin({ 10, 0, 0, 0 });
     cancelButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         // Close the window since settings do not need to be saved
         PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
@@ -161,11 +187,6 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     shortcutTable.Children().Append(originalShortcutHeader);
     shortcutTable.Children().Append(newShortcutHeader);
 
-    // Message to display success/failure of saving settings.
-    Flyout applyFlyout;
-    TextBlock settingsMessage;
-    applyFlyout.Content(settingsMessage);
-
     // Store handle of edit shortcuts window
     ShortcutControl::EditShortcutsWindowHandle = _hWndEditShortcutsWindow;
     // Store keyboard manager state
@@ -189,11 +210,14 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
     // Apply button
     Button applyButton;
-    applyButton.Content(winrt::box_value(L"Apply"));
-    header.SetAlignRightWithPanel(applyButton, true);
-    header.SetLeftOf(cancelButton, applyButton);
-    applyButton.Flyout(applyFlyout);
-    applyButton.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+    applyButton.Content(winrt::box_value(L"OK"));
+    applyButton.Style(AccentButtonStyle());
+    applyButton.MinWidth(KeyboardManagerConstants::HeaderButtonWidth);
+    cancelButton.MinWidth(KeyboardManagerConstants::HeaderButtonWidth);
+    header.SetAlignRightWithPanel(cancelButton, true);
+    header.SetLeftOf(applyButton, cancelButton);
+
+    auto ApplyRemappings = [&keyboardManagerState, _hWndEditShortcutsWindow]() {
         KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
         // Clear existing shortcuts
         keyboardManagerState.ClearOSLevelShortcuts();
@@ -223,14 +247,19 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
             }
         }
 
+        Trace::OSLevelShortcutRemapCount(successfulRemapCount);
         // Save the updated key remaps to file.
         bool saveResult = keyboardManagerState.SaveConfigToFile();
         if (!saveResult)
         {
             isSuccess = KeyboardManagerHelper::ErrorType::SaveFailed;
         }
-        Trace::OSLevelShortcutRemapCount(successfulRemapCount);
-        settingsMessage.Text(KeyboardManagerHelper::GetErrorMessage(isSuccess));
+
+        PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
+    };
+
+    applyButton.Click([&keyboardManagerState, applyButton, ApplyRemappings](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+        OnClickAccept(keyboardManagerState, applyButton.XamlRoot(), ApplyRemappings);
     });
 
     header.Children().Append(headerText);
