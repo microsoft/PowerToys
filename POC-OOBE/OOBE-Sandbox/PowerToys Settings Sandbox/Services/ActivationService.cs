@@ -70,7 +70,7 @@ namespace PowerToys_Settings_Sandbox.Services
             // Construct the actions for the toast (inputs and buttons)
             ToastActionsCustom actions = new ToastActionsCustom()
             {
-                Inputs = { }
+                Inputs = { },
                 Buttons =
                 {
                     new ToastButton("Open PowerToys", new QueryString()
@@ -88,51 +88,6 @@ namespace PowerToys_Settings_Sandbox.Services
                         TextBoxId = "tbReply"
                     },
                 }
-
-                /*
-                Inputs =
-                {
-                    new ToastTextBox("tbReply")
-                    {
-                        PlaceholderContent = "Type a response"
-                    }
-                },
-
-                Buttons =
-                {
-                    new ToastButton("Reply", new QueryString()
-                    {
-                        { "action", "reply" },
-                        { "conversationId", conversationId.ToString() }
-
-                    }.ToString())
-                    {
-                        ActivationType = ToastActivationType.Background,
-                        ImageUri = "Assets/Reply.png",
- 
-                        // Reference the text box's ID in order to
-                        // place this button next to the text box
-                        TextBoxId = "tbReply"
-                    },
-
-                    new ToastButton("Like", new QueryString()
-                    {
-                        { "action", "like" },
-                        { "conversationId", conversationId.ToString() }
-
-                    }.ToString())
-                    {
-                        ActivationType = ToastActivationType.Background
-                    },
-
-                    new ToastButton("View", new QueryString()
-                    {
-                        { "action", "viewImage" },
-                        { "imageUrl", image }
-
-                    }.ToString())
-                }
-                */
             };
 
             // Now we can construct the final toast content
