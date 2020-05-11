@@ -76,6 +76,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                         _powerRenameEnabled = value;
                         OnPropertyChanged("IsEnabled");
+                        RaisePropertyChanged("GlobalAndMruEnabled");
                     }
                 }
             }
@@ -95,9 +96,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _autoComplete = value;
                     Settings.properties.MRUEnabled.Value = value;
                     RaisePropertyChanged();
+                    RaisePropertyChanged("GlobalAndMruEnabled");
                 }
             }
         }
+
+        public bool GlobalAndMruEnabled
+        {
+            get
+            {
+                return _autoComplete && _powerRenameEnabled;
+            }
+        }
+
 
         public bool EnabledOnContextMenu
         {
