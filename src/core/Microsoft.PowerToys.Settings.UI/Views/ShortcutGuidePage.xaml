@@ -67,7 +67,12 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource MediumTopMargin}"
                     IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
-            <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark"
+            
+            <muxc:RadioButtons x:Uid="RadioButtons_Name_Theme" 
+                               Margin="{StaticResource SmallTopMargin}"
+                               IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                               SelectedIndex="{ Binding Mode=TwoWay, Path=ThemeIndex}">
+                <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark"
                              IsChecked="{ Binding Mode=TwoWay, Path=IsDarkThemeRadioButtonChecked}"/>
 
                 <RadioButton x:Uid="GeneralPage_Radio_Theme_Light" 
