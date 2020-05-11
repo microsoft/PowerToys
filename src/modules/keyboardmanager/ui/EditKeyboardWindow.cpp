@@ -72,6 +72,7 @@ static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
     }
     orphanKeyString = orphanKeyString.substr(0, max(0, orphanKeyString.length() - 2));
     orphanKeysBlock.Text(winrt::hstring(orphanKeyString));
+    orphanKeysBlock.TextWrapping(TextWrapping::Wrap);
     confirmationDialog.Content(orphanKeysBlock);
 
     ContentDialogResult res = co_await confirmationDialog.ShowAsync();
