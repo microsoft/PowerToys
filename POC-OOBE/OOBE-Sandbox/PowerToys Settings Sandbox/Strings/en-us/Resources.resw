@@ -191,7 +191,7 @@
   </data>
   <data name="MasterDetail.MasterHeader" xml:space="preserve">
     <value>MasterDetail</value>
-    <comment>Title for MasterDetailPage</comment>
+    <comment>Title for FileExplorerPage</comment>
   </data>
   <data name="Shell_MasterDetail.Content" xml:space="preserve">
     <value>MasterDetail</value>
