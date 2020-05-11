@@ -16,23 +16,25 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
-using System;
 
-using PowerToys_Settings_Sandbox.ViewModels;
-
-using Windows.UI.Xaml.Controls;
+// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
 namespace PowerToys_Settings_Sandbox.Views
 {
-    public sealed partial class MainPage : Page
+    /// <summary>
+    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// </summary>
+    public sealed partial class Toast : Page
     {
-        public MainViewModel ViewModel { get; } = new MainViewModel();
-
-        public MainPage()
+        public Toast()
         {
-            InitializeComponent();
-            string title = "powertoys started";
-            string content = "check the new features";
+            this.InitializeComponent();
+        }
+
+        private void notify_click(object sender, RoutedEventArgs e)
+        {
+            string title = " profilr changed";
+            string content = "check the new profile";
             string logo = "Assets/LockScreenLogo.scale-200.png";
             string image = "Assets/LockScreenLogo.scale-200.png";
 
@@ -40,10 +42,11 @@ namespace PowerToys_Settings_Sandbox.Views
             {
                 TitleText = new ToastText() { Text = title },
                 BodyTextLine1 = new ToastText() { Text = content },
-                AppLogoOverride = new ToastAppLogo() { Source = new ToastImageSource(logo) },
+                AppLogoOverride = new ToastAppLogo() { Source = new ToastImageSource(logo)  },
                 InlineImages = { new ToastImage() { Source = new ToastImageSource(image) } }
 
             };
+
             ToastActionsCustom action = new ToastActionsCustom()
             {
                 Inputs = { new ToastTextBox("txt") { PlaceholderContent = "write a comment" } },
@@ -53,7 +56,6 @@ namespace PowerToys_Settings_Sandbox.Views
             ToastContent Content = new ToastContent() { Visual = visual, Actions = action };
             ToastNotification notification = new ToastNotification(Content.GetXml());
             ToastNotificationManager.CreateToastNotifier().Show(notification);
-
         }
     }
 }
