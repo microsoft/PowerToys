@@ -12,6 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using UI;
+using UI.SystemEvents;
 
 namespace ColorPicker
 {
@@ -20,9 +22,11 @@ namespace ColorPicker
     /// </summary>
     public partial class MainWindow : Window
     {
+        private MouseEvent tempToStopMemoryCleanUp;
         public MainWindow()
         {
             InitializeComponent();
+            tempToStopMemoryCleanUp = new MouseEvent(PixelColorFinder.HandleMouseClick);
         }
     }
 }
