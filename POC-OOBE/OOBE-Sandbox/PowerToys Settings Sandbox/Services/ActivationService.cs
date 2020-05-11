@@ -9,6 +9,10 @@ using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
+using Windows.UI.Notifications;
+using Microsoft.Toolkit.Uwp.Notifications; // Notifications library
+using Microsoft.QueryStringDotNET; // QueryString.NET
+
 namespace PowerToys_Settings_Sandbox.Services
 {
     // For more information on understanding and extending activation flow see
@@ -20,6 +24,142 @@ namespace PowerToys_Settings_Sandbox.Services
         private Lazy<UIElement> _shell;
 
         private object _lastActivationArgs;
+
+        private void newNotification()
+        {
+            
+            // In a real app, these would be initialized with actual data
+            string title = "Power Toys";
+            string content = "Power Toys is installed";
+            string image = "../Assets/Logo.png";
+            string logo = "../Assets/MiniLogo.png";
+
+            // Construct the visuals of the toast
+            ToastVisual visual = new ToastVisual()
+            {
+                BindingGeneric = new ToastBindingGeneric()
+                {
+                    Children =
+                    {
+                        new AdaptiveText() {
+                            Text = title
+                        },
+
+                        new AdaptiveText()
+                        {
+                            Text = content
+                        },
+
+                        new AdaptiveImage()
+                        {
+                            Source = image
+                        }
+                    },
+
+                    AppLogoOverride = new ToastGenericAppLogo()
+                    {
+                        Source = logo,
+                        HintCrop = ToastGenericAppLogoCrop.Circle
+                    }
+                }
+            };
+
+            // In a real app, these would be initialized with actual data
+            int conversationId = 384928;
+
+            // Construct the actions for the toast (inputs and buttons)
+            ToastActionsCustom actions = new ToastActionsCustom()
+            {
+                Inputs = { }
+                Buttons =
+                {
+                    new ToastButton("Open PowerToys", new QueryString()
+                    {
+                        { "action", "reply" },
+                        { "conversationId", conversationId.ToString() }
+
+                    }.ToString())
+                    {
+                        ActivationType = ToastActivationType.Background,
+                        ImageUri = "Assets/Reply.png",
+ 
+                        // Reference the text box's ID in order to
+                        // place this button next to the text box
+                        TextBoxId = "tbReply"
+                    },
+                }
+
+                /*
+                Inputs =
+                {
+                    new ToastTextBox("tbReply")
+                    {
+                        PlaceholderContent = "Type a response"
+                    }
+                },
+
+                Buttons =
+                {
+                    new ToastButton("Reply", new QueryString()
+                    {
+                        { "action", "reply" },
+                        { "conversationId", conversationId.ToString() }
+
+                    }.ToString())
+                    {
+                        ActivationType = ToastActivationType.Background,
+                        ImageUri = "Assets/Reply.png",
+ 
+                        // Reference the text box's ID in order to
+                        // place this button next to the text box
+                        TextBoxId = "tbReply"
+                    },
+
+                    new ToastButton("Like", new QueryString()
+                    {
+                        { "action", "like" },
+                        { "conversationId", conversationId.ToString() }
+
+                    }.ToString())
+                    {
+                        ActivationType = ToastActivationType.Background
+                    },
+
+                    new ToastButton("View", new QueryString()
+                    {
+                        { "action", "viewImage" },
+                        { "imageUrl", image }
+
+                    }.ToString())
+                }
+                */
+            };
+
+            // Now we can construct the final toast content
+            ToastContent toastContent = new ToastContent()
+            {
+                Visual = visual,
+                Actions = actions,
+
+                // Arguments when the user taps body of toast
+                Launch = new QueryString()
+                {
+                    { "action", "viewConversation" },
+                    { "conversationId", conversationId.ToString() }
+
+                }.ToString()
+             };
+
+            // And create the toast notification
+            var toast = new ToastNotification(toastContent.GetXml());
+
+            toast.ExpirationTime = DateTime.Now.AddDays(2);
+
+            toast.Tag = "18365";
+            toast.Group = "wallPosts";
+
+            ToastNotificationManager.CreateToastNotifier().Show(toast);
+        }
 
         public ActivationService(App app, Type defaultNavItem, Lazy<UIElement> shell = null)
         {
@@ -58,6 +198,9 @@ namespace PowerToys_Settings_Sandbox.Services
                 // Tasks after activation
                 await StartupAsync();
             }
+
+            newNotification();
+
         }
 
         private async Task InitializeAsync()
