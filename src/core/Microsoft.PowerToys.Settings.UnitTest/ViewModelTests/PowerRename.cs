@@ -81,6 +81,55 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void WhenIsEnabledIsOffAndMRUEnabledIsOffGlobalAndMruShouldBeOff()
+        {
+            PowerRenameViewModel viewModel = new PowerRenameViewModel();
+            ShellPage.DefaultSndMSGCallback = msg => { };
+
+            viewModel.IsEnabled = false;
+            viewModel.MRUEnabled = false;
+
+            Assert.IsFalse(viewModel.GlobalAndMruEnabled);
+        }
+
+        [TestMethod]
+        public void WhenIsEnabledIsOffAndMRUEnabledIsOnGlobalAndMruShouldBeOff()
+        {
+            PowerRenameViewModel viewModel = new PowerRenameViewModel();
+            ShellPage.DefaultSndMSGCallback = msg => { };
+
+            viewModel.IsEnabled = false;
+            viewModel.MRUEnabled = true;
+
+
+            Assert.IsFalse(viewModel.GlobalAndMruEnabled);
+        }
+
+        [TestMethod]
+        public void WhenIsEnabledIsOnAndMRUEnabledIsOffGlobalAndMruShouldBeOff()
+        {
+            PowerRenameViewModel viewModel = new PowerRenameViewModel();
+            ShellPage.DefaultSndMSGCallback = msg => { };
+
+            viewModel.IsEnabled = true;
+            viewModel.MRUEnabled = false;
+
+            Assert.IsFalse(viewModel.GlobalAndMruEnabled);
+        }
+
+        [TestMethod]
+        public void WhenIsEnabledIsOnAndMRUEnabledIsOnGlobalAndMruShouldBeOn()
+        {
+            PowerRenameViewModel viewModel = new PowerRenameViewModel();
+            ShellPage.DefaultSndMSGCallback = msg => { };
+
+            viewModel.IsEnabled = true;
+            viewModel.MRUEnabled = true;
+
+            Assert.IsTrue(viewModel.GlobalAndMruEnabled);
+        }
+
+        [TestMethod]
         public void EnabledOnContextMenu_ShouldSetValue2True_WhenSuccessful()
         {
             // arrange
@@ -141,7 +190,7 @@ namespace ViewModelTests
             ShellPage.DefaultSndMSGCallback = msg =>
             {
                 PowerRenameSettingsIPCMessage snd = JsonSerializer.Deserialize<PowerRenameSettingsIPCMessage>(msg);
-                Assert.AreEqual(20,snd.Powertoys.PowerRename.properties.MaxMRUSize.Value);
+                Assert.AreEqual(20, snd.Powertoys.PowerRename.properties.MaxMRUSize.Value);
             };
 
             // act
