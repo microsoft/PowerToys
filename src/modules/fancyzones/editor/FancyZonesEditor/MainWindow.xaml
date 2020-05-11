@@ -198,6 +198,62 @@
                     </Grid>-->
                     
                     <!-- New code -->
+                    <!--<Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <ScrollViewer ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                      ScrollViewer.CanContentScroll="True"
+                      ScrollViewer.PanningMode="HorizontalOnly">
+                            <ItemsControl ItemsSource="{Binding Source=monitorVM}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal" ScrollViewer.HorizontalScrollBarVisibility="Visible" />
+                                        --><!--<StackPanel Orientation="Horizontal" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+                                ScrollViewer.PanningMode="HorizontalOnly"/>--><!--
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Height="{Binding Height}" Width="{Binding Width}" Margin="8"> 
+                                            <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" BorderBrush="Transparent"
+                                                    Command="{Binding ItemClickCommand}"
+                                                    CommandParameter="{Binding Id}">
+                                                <Button.Content>
+                                                    <DataTemplate>
+                                                        <Grid >
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="*"/>
+                                                                <RowDefinition Height="*"/>
+                                                                <RowDefinition Height="*"/>
+                                                            </Grid.RowDefinitions>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <Rectangle Stroke="Black" Fill="Red" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                   Grid.RowSpan="3" Grid.ColumnSpan="3"/>
+                                                            <TextBlock Text="{Binding Name}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" 
+                                   FontSize="21" HorizontalAlignment="Center"/>
+                                                            <TextBlock Text="{Binding Id}" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   FontSize="20" FontWeight="Bold"/>
+                                                            <Button></Button>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </Button.Content>
+                                            </Button>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>-->
+
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
@@ -209,7 +265,7 @@
                         <ScrollViewer ScrollViewer.HorizontalScrollBarVisibility="Visible"
                       ScrollViewer.CanContentScroll="True"
                       ScrollViewer.PanningMode="HorizontalOnly">
-                            <ItemsControl ItemsSource="{Binding vm.Monitors}">
+                            <ItemsControl ItemsSource="{Binding Monitors}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <WrapPanel Orientation="Horizontal" ScrollViewer.HorizontalScrollBarVisibility="Visible" />
@@ -219,24 +275,31 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid Height="{Binding Height}" Width="{Binding Width}" Margin="8">
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="*"/>
-                                                <RowDefinition Height="*"/>
-                                                <RowDefinition Height="*"/>
-                                            </Grid.RowDefinitions>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Rectangle Stroke="Black" Fill="Red" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+
+                                        <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" BorderBrush="Transparent"
+                                                    Command="{Binding ItemClickCommand}"
+                                                    CommandParameter="{Binding Id}">
+                                            <Button.Content>
+                                                <Grid Height="{Binding Height}" Width="{Binding Width}" Margin="8">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="*"/>
+                                                        <RowDefinition Height="*"/>
+                                                        <RowDefinition Height="*"/>
+                                                    </Grid.RowDefinitions>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Rectangle Stroke="Black" Fill="Red" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                    Grid.RowSpan="3" Grid.ColumnSpan="3"/>
-                                            <TextBlock Text="{Binding Name}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" 
+                                                    <TextBlock Text="{Binding Name}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" 
                                    FontSize="21" HorizontalAlignment="Center"/>
-                                            <TextBlock Text="{Binding Id}" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                    <TextBlock Text="{Binding Id}" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"
                                    FontSize="20" FontWeight="Bold"/>
-                                        </Grid>
+                                                </Grid>
+                                            </Button.Content>
+                                        </Button>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>

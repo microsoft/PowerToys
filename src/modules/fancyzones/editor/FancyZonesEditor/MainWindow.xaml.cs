@@ -24,15 +24,15 @@ namespace FancyZonesEditor
         private static readonly string _defaultNamePrefix = "Custom Layout ";
 
         public int WrapPanelItemSize { get; set; } = 150; //TODO: previously 262
-        //TODO: initialises monitors
-        MonitorVM vm = new MonitorVM();
+
+        // TODO: initialises monitors
+        MonitorVM monitorVM = new MonitorVM();
 
         public MainWindow()
         {
             InitializeComponent();
 
-            DataContext = _settings;
-            //DataContext = vm;
+            DataContext = monitorVM;//_settings;
 
             KeyUp += MainWindow_KeyUp;
 
