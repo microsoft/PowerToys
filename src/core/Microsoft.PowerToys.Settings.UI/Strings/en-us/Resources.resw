@@ -434,6 +434,9 @@
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
     <value>Opacity of background (%)</value>
   </data>
+  <data name="ShortcutGuide_Theme.Header" xml:space="preserve">
+    <value>Choose Shortcut Guide overlay color</value>
+  </data>
   <data name="ImageResizer_CustomSizes.Text" xml:space="preserve">
     <value>Image Sizes</value>
   </data>
