@@ -38,10 +38,10 @@ namespace PowerToys_Settings_Sandbox.Views
         }
         public void  ToastNotify()
         {
-            string title = "powertoys started";
+            string title = "powertoys installed";
             string content = "check the new features";
-            string logo = "Assets/LockScreenLogo.scale-200.png";
-            string image = "Assets/LockScreenLogo.scale-200.png";
+            string logo = "Assets/Logo.png";
+            string image = "Assets/Logo.scale-200.png";
 
             ToastVisual visual = new ToastVisual()
             {
