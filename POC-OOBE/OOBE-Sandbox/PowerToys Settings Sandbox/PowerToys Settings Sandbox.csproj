@@ -156,8 +156,8 @@
     <Compile Include="ViewModels\MasterDetailViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />
     <Compile Include="ViewModels\ShellViewModel.cs" />
-    <Compile Include="Views\ContentGridDetailPage.xaml.cs">
-      <DependentUpon>ContentGridDetailPage.xaml</DependentUpon>
+    <Compile Include="Views\PowerRenamePage.xaml.cs">
+      <DependentUpon>PowerRenamePage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ContentGridPage.xaml.cs">
       <DependentUpon>ContentGridPage.xaml</DependentUpon>
@@ -168,11 +168,11 @@
     <Compile Include="Views\MasterDetailDetailControl.xaml.cs">
       <DependentUpon>MasterDetailDetailControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\MasterDetailPage.xaml.cs">
-      <DependentUpon>MasterDetailPage.xaml</DependentUpon>
+    <Compile Include="Views\FileExplorerPage.xaml.cs">
+      <DependentUpon>FileExplorerPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\PowerToysSettingsTemplate.xaml.cs">
-      <DependentUpon>PowerToysSettingsTemplate.xaml</DependentUpon>
+    <Compile Include="Views\FancyZonesPage.xaml.cs">
+      <DependentUpon>FancyZonesPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SettingsPage.xaml.cs">
       <DependentUpon>SettingsPage.xaml</DependentUpon>
@@ -208,7 +208,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\ContentGridDetailPage.xaml">
+    <Page Include="Views\PowerRenamePage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -224,11 +224,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\MasterDetailPage.xaml">
+    <Page Include="Views\FileExplorerPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\PowerToysSettingsTemplate.xaml">
+    <Page Include="Views\FancyZonesPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

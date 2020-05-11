@@ -1,5 +1,5 @@
 ﻿<Page
-    x:Class="PowerToys_Settings_Sandbox.Views.ContentGridDetailPage"
+    x:Class="PowerToys_Settings_Sandbox.Views.PowerRenamePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:animations="using:Microsoft.Toolkit.Uwp.UI.Animations"

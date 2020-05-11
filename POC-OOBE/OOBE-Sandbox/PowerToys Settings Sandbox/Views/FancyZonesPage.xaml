@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:Custom="using:Microsoft.UI.Xaml.Controls"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    x:Class="PowerToys_Settings_Sandbox.Views.PowerToysSettingsTemplate"
+    x:Class="PowerToys_Settings_Sandbox.Views.FancyZonesPage"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 

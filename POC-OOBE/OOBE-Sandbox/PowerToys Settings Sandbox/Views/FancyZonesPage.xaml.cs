@@ -21,10 +21,10 @@ namespace PowerToys_Settings_Sandbox.Views
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class PowerToysSettingsTemplate : Page
+    public sealed partial class FancyZonesPage : Page
     {
         private bool hideTips = false;
-        public PowerToysSettingsTemplate()
+        public FancyZonesPage()
         {
             this.InitializeComponent();
 

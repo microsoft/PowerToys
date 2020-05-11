@@ -33,9 +33,9 @@
             Edit String/en-US/Resources.resw: Add a menu item title for each page
             -->
             <winui:NavigationViewItem x:Uid="Shell_Main" Icon="Home" helpers:NavHelper.NavigateTo="views:MainPage" Content="General Settings" />
-            <winui:NavigationViewItem x:Uid="Shell_Fancy_Zones" Icon="DockLeft" helpers:NavHelper.NavigateTo="views:PowerToysSettingsTemplate" Content="Fancy Zones"/>
-            <winui:NavigationViewItem x:Uid="Shell_Power_Rename" Icon="Clock" helpers:NavHelper.NavigateTo="views:ContentGridDetailPage" Content="Power Rename"/>
-            <winui:NavigationViewItem x:Uid="Shell_File_Explorer" Icon="Map" helpers:NavHelper.NavigateTo="views:MasterDetailPage" Content="File Explorer"/>
+            <winui:NavigationViewItem x:Uid="Shell_Fancy_Zones" Icon="DockLeft" helpers:NavHelper.NavigateTo="views:FancyZonesPage" Content="Fancy Zones"/>
+            <winui:NavigationViewItem x:Uid="Shell_Power_Rename" Icon="Clock" helpers:NavHelper.NavigateTo="views:PowerRenamePage" Content="Power Rename"/>
+            <winui:NavigationViewItem x:Uid="Shell_File_Explorer" Icon="Map" helpers:NavHelper.NavigateTo="views:FileExplorerPage" Content="File Explorer"/>
         </winui:NavigationView.MenuItems>
         <i:Interaction.Behaviors>
             <behaviors:NavigationViewHeaderBehavior

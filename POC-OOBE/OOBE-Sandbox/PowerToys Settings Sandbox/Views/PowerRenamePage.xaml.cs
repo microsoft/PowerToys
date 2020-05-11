@@ -10,11 +10,11 @@ using Windows.UI.Xaml.Navigation;
 
 namespace PowerToys_Settings_Sandbox.Views
 {
-    public sealed partial class ContentGridDetailPage : Page
+    public sealed partial class PowerRenamePage : Page
     {
         public ContentGridDetailViewModel ViewModel { get; } = new ContentGridDetailViewModel();
 
-        public ContentGridDetailPage()
+        public PowerRenamePage()
         {
             InitializeComponent();
         }

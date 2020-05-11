@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using PowerToys_Settings_Sandbox.ViewModels;
 

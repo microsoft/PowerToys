@@ -42,7 +42,7 @@ namespace PowerToys_Settings_Sandbox.ViewModels
             if (clickedItem != null)
             {
                 NavigationService.Frame.SetListDataItemForNextConnectedAnimation(clickedItem);
-                NavigationService.Navigate<ContentGridDetailPage>(clickedItem.OrderID);
+                NavigationService.Navigate<PowerRenamePage>(clickedItem.OrderID);
             }
         }
     }
