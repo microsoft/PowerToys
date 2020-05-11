@@ -6,6 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
         mc:Ignorable="d"
         xmlns:xaml="clr-namespace:Microsoft.Toolkit.Wpf.UI.XamlHost;assembly=Microsoft.Toolkit.Wpf.UI.XamlHost"
+        xmlns:local="clr-namespace:PowerLauncher"
         Title="PowerLaunch"
         Topmost="True"
         SizeToContent="Height"
@@ -30,7 +31,7 @@
           MouseDown="OnMouseDown">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Border 
             x:Name="SearchBoxBorder" 
@@ -41,11 +42,7 @@
             <Border.Effect>
                 <DropShadowEffect BlurRadius="16" Opacity="0.8" ShadowDepth="0" />
             </Border.Effect>
-            <xaml:WindowsXamlHost
-                Height="60"
-                x:Name="SearchBox" 
-                InitialTypeName="PowerLauncher.UI.LauncherControl" 
-                ChildChanged="WindowsXamlHostTextBox_ChildChanged" />
+            <local:LauncherControl x:Name="SearchBox" />
         </Border>
         <Border 
             x:Name="ListBoxBorder"

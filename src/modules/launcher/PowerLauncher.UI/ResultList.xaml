@@ -9,6 +9,8 @@
     xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    Loaded="UserControl_Loaded"
+    ActualThemeChanged="UserControl_ActualThemeChanged"
     d:DesignHeight="300"
     d:DesignWidth="720">
     <UserControl.Resources>
