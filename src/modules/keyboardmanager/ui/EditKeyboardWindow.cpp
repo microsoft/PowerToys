@@ -107,7 +107,7 @@ static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, Xa
     ApplyRemappings();
 }
 
-// Function to pre process the remap table before loading it into the UI
+// Function to combine remappings if the L and R version of the modifier is mapped to the same key
 void CombineRemappings(std::unordered_map<DWORD, DWORD>& table, DWORD leftKey, DWORD rightKey, DWORD combinedKey)
 {
     if (table.find(leftKey) != table.end() && table.find(rightKey) != table.end())
