@@ -5,8 +5,25 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ColorPickerAlpha"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
+        Title="MainWindow" Height="604.591" Width="800" Background="#FF4472C4">
+    <Grid Margin="0,0,0,382.5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="161*"/>
+            <ColumnDefinition Width="104*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.Background>
+            <ImageBrush/>
+        </Grid.Background>
+        <!-- Buttons arranged vertically inside a StackPanel. -->
+
+        <Button Click="Button_Click" Opacity="1" Height="27" Margin="15,12,423.384,-39">
+            <Button.Background>
+                <ImageBrush ImageSource="Eyedropper-icon.png" Stretch="Uniform"/>
+            </Button.Background>
+        </Button>
+        <TextBlock Text="R" TextWrapping="Wrap" Margin="153,116,315,58.5" RenderTransformOrigin="-17.729,5.701"/>
+        <TextBlock Text="G" TextWrapping="Wrap" Margin="269,116,199,58.5" RenderTransformOrigin="-17.729,5.701"/>
+        <TextBlock Text="B" TextWrapping="Wrap" Margin="380,116,88,58.5" RenderTransformOrigin="-17.729,5.701"/>
+
     </Grid>
 </Window>
