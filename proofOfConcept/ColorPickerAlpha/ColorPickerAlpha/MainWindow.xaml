@@ -6,7 +6,23 @@
         xmlns:local="clr-namespace:ColorPickerAlpha"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+    
+    <StackPanel>
+        <Rectangle x:Name = "mrRec" Fill = "AliceBlue" 
+          MouseDown = "OnMouseDown" Height = "100" Margin = "20">
+        </Rectangle>
+
+        <Rectangle x:Name = "mrsRec" Fill = "AliceBlue" 
+          MouseDown = "OnMouseDown" Height = "100" Margin = "20">
+        </Rectangle>
+
+        <TextBlock x:Name = "txt1" Height = "31" HorizontalAlignment = "Right" 
+         Width = "250" Margin = "0,0,294,0" />
+        <TextBlock x:Name = "txt2" Height = "31" HorizontalAlignment = "Right"  
+         Width = "250" Margin = "0,0,294,0" />
+        <TextBlock x:Name = "txt3" Height = "31" HorizontalAlignment = "Right"  
+         Width = "250" Margin = "0,0,294,0" />
+
+    </StackPanel>
+
 </Window>
