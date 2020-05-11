@@ -81,7 +81,7 @@
                             Margin="{StaticResource SmallTopMargin}" 
                             Value="{Binding Mode=TwoWay, Path=MaxDispListNum}"
                             Minimum="0"
-                            Maximum="1000"
+                            Maximum="20"
                             IsEnabled="{ Binding Mode=TwoWay, Path=GlobalAndMruEnabled}"
                             />
 
