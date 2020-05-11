@@ -52,11 +52,8 @@ namespace ViewModelTests
             
             string runningAsUserText = "Running as user.";
             string runningAsAdminText = "Running as Adminstrator.";
-            string runningAsUser_AlwaysRunAsAdminText = "Always run as administrator";
-            string runningAsAdmin_AlwaysRunAsAdminText = "Always run as administrator (Restart as administrator to change this)";
             
             Assert.AreEqual(runningAsUserText, viewModel.RunningAsAdminText);
-            Assert.AreEqual(runningAsAdmin_AlwaysRunAsAdminText, viewModel.AlwaysRunAsAdminText);
             Assert.IsFalse(viewModel.IsElevated);
             
             // Act
@@ -64,7 +61,6 @@ namespace ViewModelTests
 
             // Assert
             Assert.AreEqual(runningAsAdminText, viewModel.RunningAsAdminText);
-            Assert.AreEqual(runningAsUser_AlwaysRunAsAdminText, viewModel.AlwaysRunAsAdminText);
             Assert.IsTrue(viewModel.IsElevated);
         }
 

@@ -27,8 +27,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
             }
 
-            this._svgRenderIsEnabled = Settings.properties.EnableSvg.Value;
-            this._mdRenderIsEnabled = Settings.properties.EnableMd.Value;
+            this._svgRenderIsEnabled = Settings.properties.EnableSvg;
+            this._mdRenderIsEnabled = Settings.properties.EnableMd;
         }
 
         private bool _svgRenderIsEnabled = false;
@@ -46,7 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _svgRenderIsEnabled)
                 {
                     _svgRenderIsEnabled = value;
-                    Settings.properties.EnableSvg.Value = value;
+                    Settings.properties.EnableSvg = value;
                     RaisePropertyChanged();
                 }
             }
@@ -64,7 +64,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _mdRenderIsEnabled)
                 {
                     _mdRenderIsEnabled = value;
-                    Settings.properties.EnableMd.Value = value;
+                    Settings.properties.EnableMd = value;
                     RaisePropertyChanged();
                 }
             }

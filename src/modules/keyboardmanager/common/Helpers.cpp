@@ -102,7 +102,7 @@ namespace KeyboardManagerHelper
         else if ((GetKeyType(first) == GetKeyType(second)) && GetKeyType(first) != KeyType::Action)
         {
             // If the keys are of the same modifier type and overlapping, i.e. one is L/R and other is common
-            if ((first == VK_LWIN && second == VK_RWIN) || (first == VK_LCONTROL && second == VK_RCONTROL) || (first == VK_LMENU && second == VK_RMENU) || (first == VK_LSHIFT && second == VK_RSHIFT))
+            if (((first == VK_LWIN && second == VK_RWIN) || (first == VK_RWIN && second == VK_LWIN)) || ((first == VK_LCONTROL && second == VK_RCONTROL) || (first == VK_RCONTROL && second == VK_LCONTROL)) || ((first == VK_LMENU && second == VK_RMENU) || (first == VK_RMENU && second == VK_LMENU)) || ((first == VK_LSHIFT && second == VK_RSHIFT) || (first == VK_RSHIFT && second == VK_LSHIFT)))
             {
                 return ErrorType::NoError;
             }
@@ -157,6 +157,8 @@ namespace KeyboardManagerHelper
             return L"Shortcut must contain an action key";
         case ErrorType::ShortcutNotMoreThanOneActionKey:
             return L"Shortcut cannot have more than one action key";
+        case ErrorType::ShortcutMaxShortcutSizeOneActionKey:
+            return L"Shortcuts can only have up to 2 modifier keys";
         }
     }
 }

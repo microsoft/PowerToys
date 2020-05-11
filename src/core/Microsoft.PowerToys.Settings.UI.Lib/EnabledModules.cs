@@ -133,10 +133,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         private void LogTelemetryEvent(bool value, [CallerMemberName] string moduleName = null )
         {
-            var dataEvent = new SettingsEnabledModuleEvent()
+            var dataEvent = new SettingsEnabledEvent()
             {
                 Value = value,
-                ModuleName = moduleName,
+                Name = moduleName,
             };
             PowerToysTelemetry.Log.WriteEvent(dataEvent);
         }

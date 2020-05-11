@@ -34,7 +34,8 @@ namespace KeyboardManagerHelper
         ShortcutCannotHaveRepeatedModifier,
         ShortcutAtleast2Keys,
         ShortcutOneActionKey,
-        ShortcutNotMoreThanOneActionKey
+        ShortcutNotMoreThanOneActionKey,
+        ShortcutMaxShortcutSizeOneActionKey
     };
 
     // Enum type to store possible decision for input in the low level hook

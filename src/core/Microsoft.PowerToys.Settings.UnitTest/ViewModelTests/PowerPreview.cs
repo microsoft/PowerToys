@@ -59,7 +59,7 @@ namespace ViewModelTests
             ShellPage.DefaultSndMSGCallback = msg =>
             {
                 SndModuleSettings<SndPowerPreviewSettings> snd = JsonSerializer.Deserialize<SndModuleSettings<SndPowerPreviewSettings>>(msg);
-                Assert.IsTrue(snd.powertoys.FileExplorerPreviewSettings.properties.EnableSvg.Value);
+                Assert.IsTrue(snd.powertoys.FileExplorerPreviewSettings.properties.EnableSvg);
             };
 
             // act
@@ -76,7 +76,7 @@ namespace ViewModelTests
             ShellPage.DefaultSndMSGCallback = msg =>
             {
                 SndModuleSettings<SndPowerPreviewSettings> snd = JsonSerializer.Deserialize<SndModuleSettings<SndPowerPreviewSettings>>(msg);
-                Assert.IsTrue(snd.powertoys.FileExplorerPreviewSettings.properties.EnableMd.Value);
+                Assert.IsTrue(snd.powertoys.FileExplorerPreviewSettings.properties.EnableMd);
             };
 
             // act

@@ -513,7 +513,7 @@ void FancyZones::ToggleEditor() noexcept
 
     SHELLEXECUTEINFO sei{ sizeof(sei) };
     sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-    sei.lpFile = L"modules\\FancyZonesEditor.exe";
+    sei.lpFile = L"modules\\FancyZones\\FancyZonesEditor.exe";
     sei.lpParameters = params.c_str();
     sei.nShow = SW_SHOWNORMAL;
     ShellExecuteEx(&sei);

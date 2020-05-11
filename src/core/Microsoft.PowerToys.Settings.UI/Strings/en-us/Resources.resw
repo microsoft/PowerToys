@@ -177,21 +177,21 @@
     <value>Select the profile to display the active key remap and shortcuts</value>
     <comment>Keyboard Manager configuration dropdown decription</comment>
   </data>
-  <data name="KeyboardManager_RemapKeyboardButton.Content" xml:space="preserve">
+  <data name="KeyboardManager_RemapKeyboardButton.Label" xml:space="preserve">
     <value>Remap a key</value>
     <comment>Keyboard Manager remap keyboard button content</comment>
   </data>
   <data name="KeyboardManager_RemapKeyboardHeader.Text" xml:space="preserve">
-    <value>Remap Keyboard</value>
+    <value>Remap keyboard</value>
     <comment>Keyboard Manager remap keyboard header</comment>
   </data>
-  <data name="KeyboardManager_RemapShortcutsButton.Content" xml:space="preserve">
-    <value>Redefine a shortcut</value>
-    <comment>Keyboard Manager edit shortcuts button</comment>
+  <data name="KeyboardManager_RemapShortcutsButton.Label" xml:space="preserve">
+    <value>Remap a shortcut</value>
+    <comment>Keyboard Manager remap shortcuts button</comment>
   </data>
   <data name="KeyboardManager_RemapShortcutsHeader.Text" xml:space="preserve">
-    <value>Edit Shortcuts</value>
-    <comment>Keyboard Manager edit shortcuts header</comment>
+    <value>Remap shortcuts</value>
+    <comment>Keyboard Manager remap shortcuts header</comment>
   </data>
   <data name="PowerLauncher_Description.Text" xml:space="preserve">
     <value>A quick launcher that has additional capabilities without sacrificing performance.</value>
@@ -273,13 +273,13 @@
     <value>Excluded apps</value>
   </data>
   <data name="FancyZones_ExcludeApps_TextBoxControl.Header" xml:space="preserve">
-    <value>To exclude an application from snapping to zones add its name here (one per line). Excluded apps will react to the Windows Snap regardless of all other settings.</value>
+    <value>To exclude an application from snapping to zones add its name here (one per line). These apps will react only to Windows Snap.</value>
   </data>
   <data name="FancyZones_HighlightOpacity.Header" xml:space="preserve">
     <value>Zone highlight opacity (%)</value>
   </data>
   <data name="FancyZones_HokeyEditorControl_Header.Header" xml:space="preserve">
-    <value>Edit Hot Key/ Shortcut</value>
+    <value>Edit hot key / shortcut</value>
   </data>
   <data name="FancyZones_KeepWindowsPinned.Content" xml:space="preserve">
     <value>Keep windows pinned to multiple desktops in the same zone when the active desktop changes</value>
@@ -295,7 +295,7 @@
   </data>
   <data name="FancyZones_MoveVindowsAcrossAllMonitorsCheckBoxControl.Content" xml:space="preserve">
     <value>Move windows between zones across all monitors when snapping with win+arrow</value>
-  </data>  
+  </data>
   <data name="FancyZones_OverrideSnapHotkeysCheckBoxControl.Content" xml:space="preserve">
     <value>Override Windows Snap hotkeys (Win + arrow) to move windows between zones</value>
   </data>
@@ -315,7 +315,7 @@
     <value>Move newly created windows to their last known zone</value>
   </data>
   <data name="FancyZones_ZoneBehavior_GroupSettings.Text" xml:space="preserve">
-    <value>Zone Behavior</value>
+    <value>Zone behavior</value>
   </data>
   <data name="FancyZones_ZoneHighlightColor.Text" xml:space="preserve">
     <value>Zone highlight color (default: #0078D7)</value>
@@ -357,7 +357,7 @@
     <value>Request a feature</value>
   </data>
   <data name="GeneralPage_RestartAsAdmin_Button.Content" xml:space="preserve">
-    <value>Restart as admin</value>
+    <value>Restart as administrator</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_RunAtStartUp.Header" xml:space="preserve">
     <value>Run at startup</value>
@@ -366,7 +366,7 @@
     <value>Miscellaneous</value>
   </data>
   <data name="PowerRename_Description.Text" xml:space="preserve">
-    <value>A Windows Shell Extension for more advanced bulk renaming using search and replace or regular expressions.</value>
+    <value>A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.</value>
   </data>
   <data name="PowerRename_ShellIntergration.Text" xml:space="preserve">
     <value>Shell integration</value>
@@ -375,19 +375,19 @@
     <value>Enable PowerRename</value>
   </data>
   <data name="RadioButtons_Name_Theme.Header" xml:space="preserve">
-    <value>Choose Settings color</value>
+    <value>Settings theme</value>
   </data>
   <data name="PowerRename_Toggle_EnableOnContextMenu.Header" xml:space="preserve">
     <value>Show icon on context menu</value>
   </data>
   <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Header" xml:space="preserve">
-    <value>Only show the PowerRename menu item on the extended context menu (Shift + Right-click).</value>
+    <value>Appear only in extended context menu (Shift + Right-click)</value>
   </data>
-  <data name="PowerRename_Toggle_MaxDispListNum.Text" xml:space="preserve">
-    <value>Maximum numbers of items to show in recently used list for autocomplete dropdown.</value>
+  <data name="PowerRename_Toggle_MaxDispListNum.Header" xml:space="preserve">
+    <value>Maximum numbers of items to show in recently used list for autocomplete dropdown</value>
   </data>
   <data name="PowerRename_Toggle_RestoreFlagsOnLaunch.Header" xml:space="preserve">
-    <value>Restore search, replace and flags values on launch from previous run.</value>
+    <value>Show values from last use</value>
   </data>
   <data name="FileEplorerPreview_ToggleSwitch_Preview_MD.Header" xml:space="preserve">
     <value>Markdown Preview Handler</value>
@@ -405,7 +405,7 @@
     <value>Open-source notice</value>
   </data>
   <data name="PowerRename_Toggle_AutoComplete.Header" xml:space="preserve">
-    <value>Enable autocomplete and autosuggest of recently used list for autocomplete dropdown.</value>
+    <value>Enable auto-complete and auto-suggest of recently used list for autocomplete dropdown</value>
   </data>
   <data name="FancyZones_BorderColor.Text" xml:space="preserve">
     <value>Zone border color (Default #FFFFFF)</value>
@@ -423,19 +423,22 @@
     <value>Shows a help overlay with Windows shortcuts when the Windows key is pressed.</value>
   </data>
   <data name="ShortcutGuide_PressTime.Header" xml:space="preserve">
-    <value>How long to press the Windows key before showing the Shortcut Guide</value>
+    <value>Press duration before showing (ms)</value>
   </data>
   <data name="ShortcutGuide_Appearance_Behavior.Text" xml:space="preserve">
-    <value>Appearance &amp; Behavior</value>
+    <value>Appearance &amp; behavior</value>
   </data>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
     <value>Enable Shortcut Guide</value>
   </data>
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
-    <value>Opacity of the Shortcut Guide's overlay background (%)</value>
+    <value>Opacity of background (%)</value>
+  </data>
+  <data name="ShortcutGuide_Theme.Header" xml:space="preserve">
+    <value>Choose Shortcut Guide overlay color</value>
   </data>
   <data name="ImageResizer_CustomSizes.Text" xml:space="preserve">
-    <value>Image Sizes</value>
+    <value>Image sizes</value>
   </data>
   <data name="ImageResizer_Description.Text" xml:space="preserve">
     <value>Lets you resize images by right-clicking.</value>
@@ -444,19 +447,19 @@
     <value>Enable Image Resizer</value>
   </data>
   <data name="ImageResizer_AddSizeButton.Label" xml:space="preserve">
-    <value>Add Size</value>
+    <value>Add size</value>
   </data>
   <data name="ImageResizer_SaveSizeButton.Label" xml:space="preserve">
-    <value>Save Sizes</value>
+    <value>Save sizes</value>
   </data>
   <data name="ImageResizer_Encoding.Text" xml:space="preserve">
-    <value>JPEG Quality level</value>
+    <value>JPEG quality level</value>
   </data>
   <data name="ImageResizer_PNGInterlacing.Header" xml:space="preserve">
     <value>PNG interlacing</value>
   </data>
   <data name="ImageResizer_TIFFCompression.Header" xml:space="preserve">
-    <value>TIFF Compression</value>
+    <value>TIFF compression</value>
   </data>
   <data name="File.Text" xml:space="preserve">
     <value>File</value>
@@ -486,22 +489,22 @@
     <value>Zip</value>
   </data>
   <data name="ImageResizer_FallbackEncoder_BMP.Content" xml:space="preserve">
-    <value>BMP Encoder</value>
+    <value>BMP encoder</value>
   </data>
   <data name="ImageResizer_FallbackEncoder_GIF.Content" xml:space="preserve">
-    <value>GIF Encoder</value>
+    <value>GIF encoder</value>
   </data>
   <data name="ImageResizer_FallbackEncoder_JPEG.Content" xml:space="preserve">
-    <value>JPEG Encoder</value>
+    <value>JPEG encoder</value>
   </data>
   <data name="ImageResizer_FallbackEncoder_PNG.Content" xml:space="preserve">
-    <value>PNG Encoder</value>
+    <value>PNG encoder</value>
   </data>
   <data name="ImageResizer_FallbackEncoder_TIFF.Content" xml:space="preserve">
-    <value>TIFF Encoder</value>
+    <value>TIFF encoder</value>
   </data>
   <data name="ImageResizer_FallbackEncoder_WMPhoto.Content" xml:space="preserve">
-    <value>WMPhoto Encoder</value>
+    <value>WMPhoto encoder</value>
   </data>
   <data name="ImageResizer_Sizes_Fit_Fill.Content" xml:space="preserve">
     <value>Fill</value>
@@ -530,11 +533,8 @@
   <data name="On.Content" xml:space="preserve">
     <value>On</value>
   </data>
-  <data name="GeneralPage_ToggleSwitch_AlwaysRunElevated.Header" xml:space="preserve">
-    <value>Always Run as Admin</value>
-  </data>
   <data name="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link.Text" xml:space="preserve">
-    <value>Learn about Admin mode</value>
+    <value>Learn more about administrator mode</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_AutoDownloadUpdates.Header" xml:space="preserve">
     <value>Download updates automatically</value>
@@ -542,22 +542,52 @@
   <data name="GeneralPage_ToggleSwitch_RunningAsAdminNote.Text" xml:space="preserve">
     <value>Currently running as administrator</value>
   </data>
-  <data name="GeneralPage_ToggleSwitch_RunElevated.Header" xml:space="preserve">
-    <value>Always run as administrator (Restart as administrator to change this)</value>
-  </data>
-  <data name="GeneralSettings_AlwaysRunAsAdminText_IsElevated" xml:space="preserve">
+  <data name="GeneralSettings_AlwaysRunAsAdminText.Header" xml:space="preserve">
     <value>Always run as administrator</value>
-  </data>
-  <data name="GeneralSettings_AlwaysRunAsAdminText_IsNotElevated" xml:space="preserve">
-    <value>Always run as administrator (Restart as administrator to change this)</value>
   </data>
   <data name="GeneralSettings_Running as Adminstrator_IsNotElevated" xml:space="preserve">
     <value>Running as user</value>
   </data>
   <data name="GeneralSettings_RunningAsAdminText_IsElevated" xml:space="preserve">
-    <value>Running as Adminstrator</value>
+    <value>Running as adminstrator</value>
   </data>
-  <data name="String1" xml:space="preserve">
-    <value />
+  <data name="About_FancyZones.Text" xml:space="preserve">
+    <value>About FancyZones</value>
+  </data>
+  <data name="About_FileExplorerPreview.Text" xml:space="preserve">
+    <value>About File Explorer Preview</value>
+  </data>
+  <data name="About_ImageResizer.Text" xml:space="preserve">
+    <value>About Image Resizer</value>
+  </data>
+  <data name="About_KeyboardManager.Text" xml:space="preserve">
+    <value>About Keyboard Manager</value>
+  </data>
+  <data name="About_PowerLauncher.Text" xml:space="preserve">
+    <value>About PowerLauncher</value>
+  </data>
+  <data name="About_PowerRename.Text" xml:space="preserve">
+    <value>About Power Rename</value>
+  </data>
+  <data name="About_ShortcutGuide.Text" xml:space="preserve">
+    <value>About Shortcut Guide</value>
+  </data>
+  <data name="General_Repository.Text" xml:space="preserve">
+    <value>Github repository</value>
+  </data>
+  <data name="General_Updates.Text" xml:space="preserve">
+    <value>Updates</value>
+  </data>
+  <data name="General_Version.Text" xml:space="preserve">
+    <value>Version:</value>
+  </data>
+  <data name="Shortcut_Overlay_Theme.Header" xml:space="preserve">
+    <value>Background theme</value>
+  </data>
+  <data name="Admin_mode.Text" xml:space="preserve">
+    <value>Administrator mode</value>
+  </data>
+  <data name="General_RunAsAdminRequired.Text" xml:space="preserve">
+    <value>You need to run as administrator to use this setting</value>
   </data>
 </root>
