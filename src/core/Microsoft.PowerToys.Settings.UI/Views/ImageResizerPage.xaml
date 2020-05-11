@@ -162,9 +162,11 @@
             <StackPanel Orientation="Horizontal">
                 <AppBarButton Icon="Add"
                               x:Name="AddSizeButton"
+                              Width="560"
+                              Style="{StaticResource AddItemAppBarButtonStyle}"
                               IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}" 
-                              Label="Add Size"
-                              Margin="{StaticResource SmallTopMargin}"
+                             x:Uid="ImageResizer_AddSizeButton"
+                              Margin="{StaticResource AddItemButtonMargin}"
                               Command = "{Binding AddImageSizeEventHandler, Source={StaticResource ViewModel}}"
                           />
             </StackPanel>
@@ -272,7 +274,7 @@
             Grid.Column="1">
 
             <TextBlock 
-                x:Uid="About_This_Feature"
+                x:Uid="About_ImageResizer"
                 Style="{StaticResource SettingsGroupTitleStyle}"
                 Margin="{StaticResource XSmallBottomMargin}"/>
 

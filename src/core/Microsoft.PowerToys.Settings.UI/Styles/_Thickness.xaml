@@ -21,6 +21,8 @@
     <Thickness x:Key="SmallLeftRightBottomMargin">12, 0, 12, 12</Thickness>
     <Thickness x:Key="SmallLeftTopRightBottomMargin">12, 12, 12, 12</Thickness>
 
+    <Thickness x:Key="AddItemButtonMargin">-10, 12, 0, 0</Thickness>
+    
     <!--Extra Small size margins-->
     <Thickness x:Key="XSmallLeftMargin">8, 0, 0, 0</Thickness>
     <Thickness x:Key="XSmallTopMargin">0, 8, 0, 0</Thickness>

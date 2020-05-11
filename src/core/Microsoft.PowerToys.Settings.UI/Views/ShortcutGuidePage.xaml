@@ -53,11 +53,12 @@
 
             <muxc:NumberBox x:Uid="ShortcutGuide_PressTime"
                             Minimum="100"
+                           
                             SpinButtonPlacementMode="Inline"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallTopMargin}"
                             Value="{ Binding Mode=TwoWay, Path=PressTime}"
-                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" SmallChange="50" LargeChange="100"/>
 
             <Slider x:Uid="ShortcutGuide_OverlayOpacity"
                     Minimum="0"
@@ -66,9 +67,8 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource MediumTopMargin}"
                     IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
-
-
-            <muxc:RadioButtons x:Uid="ShortcutGuide_Theme"
+            
+            <muxc:RadioButtons x:Uid="RadioButtons_Name_Theme" 
                                Margin="{StaticResource SmallTopMargin}"
                                IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
                                SelectedIndex="{ Binding Mode=TwoWay, Path=ThemeIndex}">
@@ -91,7 +91,7 @@
             Grid.Column="1">
 
             <TextBlock 
-                x:Uid="About_This_Feature"
+                x:Uid="About_ShortcutGuide"
                 Style="{StaticResource SettingsGroupTitleStyle}"
                 Margin="{StaticResource XSmallBottomMargin}"/>
 

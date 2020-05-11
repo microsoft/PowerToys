@@ -126,26 +126,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public string AlwaysRunAsAdminText
-        {
-            get
-            {
-                if (IsElevated)
-                {
-                    return loader.GetString("GeneralSettings_AlwaysRunAsAdminText_IsElevated");
-                }
-                else
-                {
-                    return loader.GetString("GeneralSettings_AlwaysRunAsAdminText_IsNotElevated");
-                }
-            }
-
-            set
-            {
-                OnPropertyChanged("AlwaysRunAsAdminText");
-            }
-        }
-
         // Gets or sets a value indicating whether run powertoys on start-up.
         public bool Startup
         {
@@ -200,7 +180,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _isElevated = value;
                     OnPropertyChanged("IsElevated");
                     OnPropertyChanged("IsAdminButtonEnabled");
-                    OnPropertyChanged("AlwaysRunAsAdminText");
+                    //OnPropertyChanged("AlwaysRunAsAdminText");
                     OnPropertyChanged("RunningAsAdminText");
                 }
             }
