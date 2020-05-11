@@ -31,6 +31,7 @@ int main()
 
         while(true) {
         
+            // what does 0x8000 mean?
         if (GetKeyState(VK_CONTROL) & 0x8000) {
             
             cursorposition(x_coord, y_coord);
