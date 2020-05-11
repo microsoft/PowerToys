@@ -275,11 +275,27 @@ namespace PowerLauncher
             {
                 if (_resultList != null)
                 {
-                    Windows.UI.Xaml.Media.SolidColorBrush uwpBrush = _resultList.SolidBorderBrush as Windows.UI.Xaml.Media.SolidColorBrush;
-                    Color borderColor = Color.FromArgb(uwpBrush.Color.A, uwpBrush.Color.R, uwpBrush.Color.G, uwpBrush.Color.B);
-                    SolidColorBrush solidColorBrush = new SolidColorBrush(borderColor);
-                    this.SearchBoxBorder.BorderBrush = solidColorBrush;
-                    this.SearchBoxBorder.Background = solidColorBrush;
+                    Windows.UI.Xaml.Media.SolidColorBrush borderBrush = _resultList.SolidBorderBrush as Windows.UI.Xaml.Media.SolidColorBrush;
+                    Color borderColor = Color.FromArgb(borderBrush.Color.A, borderBrush.Color.R, borderBrush.Color.G, borderBrush.Color.B);
+                    SolidColorBrush solidBorderBrush = new SolidColorBrush(borderColor);
+                                      
+                    this.SearchBoxBorder.BorderBrush = solidBorderBrush;
+                    this.SearchBoxBorder.Background = solidBorderBrush;
+                    
+                }
+            }
+            else if(e.PropertyName == "PrimaryTextColor")
+            {
+                if (_resultList != null)
+                {
+                    Windows.UI.Xaml.Media.SolidColorBrush primaryTextBrush = _resultList.PrimaryTextColor as Windows.UI.Xaml.Media.SolidColorBrush;
+                    Color primaryTextColor = Color.FromArgb(primaryTextBrush.Color.A, primaryTextBrush.Color.R, primaryTextBrush.Color.G, primaryTextBrush.Color.B);
+                    SolidColorBrush solidPrimaryTextBrush = new SolidColorBrush(primaryTextColor);
+
+                    this.SearchBox.QueryTextBox.Foreground = solidPrimaryTextBrush;
+                    this.SearchBox.QueryTextBox.CaretBrush = solidPrimaryTextBrush;
+                    this.SearchBox.AutoCompleteTextBlock.Foreground = solidPrimaryTextBrush;
+                    this.SearchBox.SearchLogo.Foreground = solidPrimaryTextBrush;
                 }
             }
         }

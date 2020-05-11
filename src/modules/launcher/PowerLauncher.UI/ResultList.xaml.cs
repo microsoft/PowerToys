@@ -17,6 +17,8 @@ namespace PowerLauncher.UI
     {
         private Brush _borderBrush;
 
+        private Brush _primaryTextColor;
+
         private LauncherResultActionEvent.TriggerType triggerType = LauncherResultActionEvent.TriggerType.Click;
         
         public ResultList()
@@ -55,6 +57,12 @@ namespace PowerLauncher.UI
             set { Set(ref _borderBrush, value); }
         }
 
+        public Brush PrimaryTextColor
+        {
+            get { return _primaryTextColor; }
+            set { Set(ref _primaryTextColor, value); }
+        }
+
         private void Set<T>(ref T storage, T value, [CallerMemberName]string propertyName = null)
         {
             if (Equals(storage, value))
@@ -69,11 +77,13 @@ namespace PowerLauncher.UI
         private void UserControl_ActualThemeChanged(FrameworkElement sender, object args)
         {
             SolidBorderBrush = Application.Current.Resources["SystemChromeLow"] as SolidColorBrush;
+            PrimaryTextColor = Application.Current.Resources["PrimaryTextColor"] as SolidColorBrush;
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             SolidBorderBrush = Application.Current.Resources["SystemChromeLow"] as SolidColorBrush;
+            PrimaryTextColor = Application.Current.Resources["PrimaryTextColor"] as SolidColorBrush;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

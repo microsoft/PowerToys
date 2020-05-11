@@ -241,8 +241,6 @@
             Margin="24, 0, 0, 0"
             VerticalAlignment="Center"
             FontSize="24"
-            Foreground="{DynamicResource TextControlPlaceholderForeground}"
-
          />
 
         <!--
@@ -262,12 +260,14 @@
             />
 
         <TextBlock
+            x:Name="SearchLogo"
+            x:FieldModifier="public"
             Grid.Column="1"
             Text="&#xE721;"
             FontFamily="Segoe MDL2 Assets"
             FontSize="24" 
-            HorizontalAlignment="Center" 
+            HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Foreground="{DynamicResource TextControlPlaceholderForeground}" />
+            />
     </Grid>
 </UserControl>
