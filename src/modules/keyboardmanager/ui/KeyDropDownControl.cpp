@@ -54,7 +54,6 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyC
     auto onSelectionChange = [&, table, singleKeyControl, colIndex](winrt::Windows::Foundation::IInspectable const& sender) {
         ComboBox currentDropDown = sender.as<ComboBox>();
         int selectedKeyIndex = currentDropDown.SelectedIndex();
-        //bool isClosed = currentDropDown.IsDropDownOpen();
         // Get row index of the single key control
         uint32_t controlIndex;
         bool indexFound = table.Children().IndexOf(singleKeyControl, controlIndex);
