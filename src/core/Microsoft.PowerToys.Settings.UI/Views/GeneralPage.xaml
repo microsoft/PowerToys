@@ -106,7 +106,8 @@
                         Style="{StaticResource SettingsGroupTitleStyle}"/>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="Version: " x:Uid="General_Version"  />
-                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" Content="{x:Bind ViewModel.PowerToysVersion }" Margin="4,-6,0,0">
+                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" Margin="4,-6,0,0">
+                    <TextBlock Text="{x:Bind ViewModel.PowerToysVersion }" />
                 </HyperlinkButton>
             </StackPanel>
            

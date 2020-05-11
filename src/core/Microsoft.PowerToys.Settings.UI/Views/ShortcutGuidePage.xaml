@@ -67,10 +67,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource MediumTopMargin}"
                     IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
-                               Margin="{StaticResource SmallTopMargin}"
-                               IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                               SelectedIndex="{ Binding Mode=TwoWay, Path=ThemeIndex}">
-                <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark"
+            <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark"
                              IsChecked="{ Binding Mode=TwoWay, Path=IsDarkThemeRadioButtonChecked}"/>
 
                 <RadioButton x:Uid="GeneralPage_Radio_Theme_Light" 
