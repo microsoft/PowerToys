@@ -177,7 +177,7 @@
     <value>Select the profile to display the active key remap and shortcuts</value>
     <comment>Keyboard Manager configuration dropdown decription</comment>
   </data>
-  <data name="KeyboardManager_RemapKeyboardButton.Label" xml:space="preserve">
+  <data name="KeyboardManager_RemapKeyboardButton.Content" xml:space="preserve">
     <value>Remap a key</value>
     <comment>Keyboard Manager remap keyboard button content</comment>
   </data>
@@ -185,7 +185,7 @@
     <value>Remap keyboard</value>
     <comment>Keyboard Manager remap keyboard header</comment>
   </data>
-  <data name="KeyboardManager_RemapShortcutsButton.Label" xml:space="preserve">
+  <data name="KeyboardManager_RemapShortcutsButton.Content" xml:space="preserve">
     <value>Remap a shortcut</value>
     <comment>Keyboard Manager remap shortcuts button</comment>
   </data>
