@@ -138,6 +138,7 @@ int runner(bool isProcessElevated)
         std::unordered_set<std::wstring> module_folders = {
             L"",
             L"FileExplorerPreview/",
+            L"FancyZones/"
         };
 
         for (std::wstring subfolderName : module_folders)
