@@ -1,0 +1,62 @@
+﻿<Page
+    x:Class="PowerToys_Settings_Sandbox.Views.ShellPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:behaviors="using:PowerToys_Settings_Sandbox.Behaviors"
+    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+    xmlns:helpers="using:PowerToys_Settings_Sandbox.Helpers"
+    xmlns:views="using:PowerToys_Settings_Sandbox.Views"
+    xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
+    mc:Ignorable="d">
+
+    <i:Interaction.Behaviors>
+        <ic:EventTriggerBehavior EventName="Loaded">
+            <ic:InvokeCommandAction Command="{x:Bind ViewModel.LoadedCommand}" />
+        </ic:EventTriggerBehavior>
+    </i:Interaction.Behaviors>
+
+    <winui:NavigationView
+        x:Name="navigationView"
+        IsBackButtonVisible="Visible"
+        IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
+        SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
+        IsSettingsVisible="True"
+        Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
+        <winui:NavigationView.MenuItems>
+            <!--
+            TODO WTS: Change the symbols for each item as appropriate for your app
+            More on Segoe UI Symbol icons: https://docs.microsoft.com/windows/uwp/style/segoe-ui-symbol-font
+            Or to use an IconElement instead of a Symbol see https://github.com/Microsoft/WindowsTemplateStudio/blob/master/docs/projectTypes/navigationpane.md
+            Edit String/en-US/Resources.resw: Add a menu item title for each page
+            -->
+            <winui:NavigationViewItem x:Uid="Shell_Main" Icon="Home" helpers:NavHelper.NavigateTo="views:MainPage" Content="General Settings" />
+            <winui:NavigationViewItem x:Uid="Shell_Fancy_Zones" Icon="DockLeft" helpers:NavHelper.NavigateTo="views:PowerToysSettingsTemplate" Content="Fancy Zones"/>
+            <winui:NavigationViewItem x:Uid="Shell_Power_Rename" Icon="Clock" helpers:NavHelper.NavigateTo="views:ContentGridDetailPage" Content="Power Rename"/>
+            <winui:NavigationViewItem x:Uid="Shell_File_Explorer" Icon="Map" helpers:NavHelper.NavigateTo="views:MasterDetailPage" Content="File Explorer"/>
+        </winui:NavigationView.MenuItems>
+        <i:Interaction.Behaviors>
+            <behaviors:NavigationViewHeaderBehavior
+                DefaultHeader="{x:Bind ViewModel.Selected.Content, Mode=OneWay}">
+                <behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <TextBlock
+                                Text="{Binding}"
+                                Style="{ThemeResource TitleTextBlockStyle}"
+                                Margin="{StaticResource SmallLeftRightMargin}" />
+                        </Grid>
+                    </DataTemplate>
+                </behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
+            </behaviors:NavigationViewHeaderBehavior>
+            <ic:EventTriggerBehavior EventName="ItemInvoked">
+                <ic:InvokeCommandAction Command="{x:Bind ViewModel.ItemInvokedCommand}" />
+            </ic:EventTriggerBehavior>
+        </i:Interaction.Behaviors>
+        <Grid>
+            <Frame x:Name="shellFrame" />
+        </Grid>
+    </winui:NavigationView>
+</Page>

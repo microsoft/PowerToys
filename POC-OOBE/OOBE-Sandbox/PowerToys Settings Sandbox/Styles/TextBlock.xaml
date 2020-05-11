@@ -1,0 +1,52 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--Common texts-->
+    <Style x:Key="PageTitleStyle" TargetType="TextBlock">
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="FontWeight" Value="SemiLight" />
+        <Setter Property="FontSize" Value="{StaticResource LargeFontSize}" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+    </Style>
+
+    <Style x:Key="BodyTextStyle" TargetType="TextBlock">
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="FontSize" Value="{StaticResource MediumFontSize}" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <!--MasterDetail TextBlock Styles-->
+    <Style x:Key="ListTitleStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="MaxLines" Value="1" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+
+    <Style x:Key="ListSubTitleStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="MaxLines" Value="1" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+
+    <Style x:Key="DetailSubTitleStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontWeight" Value="SemiLight" />
+    </Style>
+
+    <Style x:Key="DetailBodyBaseMediumStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+    </Style>
+
+    <Style x:Key="DetailBodyStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="FontSize" Value="15" />
+    </Style>
+
+</ResourceDictionary>

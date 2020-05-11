@@ -1,0 +1,8 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <x:Double x:Key="LargeFontSize">24</x:Double>
+    <x:Double x:Key="MediumFontSize">16</x:Double>
+
+</ResourceDictionary>
