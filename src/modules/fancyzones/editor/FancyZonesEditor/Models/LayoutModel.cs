@@ -251,6 +251,19 @@ namespace FancyZonesEditor.Models
         private static ObservableCollection<LayoutModel> _customModels = null;
         private static List<string> _deletedCustomModels = new List<string>();
 
+        public static ObservableCollection<string> LoadMonitors()
+        {
+            _monitorOptions = new ObservableCollection<string>();
+
+            //TODO grab the device ids dynamically
+            _monitorOptions.Add("Display 1 - Surface Display");
+            _monitorOptions.Add("Display 2 - Acer Predator");
+
+            return _monitorOptions;
+        }
+
+        private static ObservableCollection<string> _monitorOptions = null;
+
         // Callbacks that the base LayoutModel makes to derived types
         protected abstract void PersistData();
 
@@ -312,10 +325,9 @@ namespace FancyZonesEditor.Models
             }
 
             Settings settings = ((App)Application.Current).ZoneSettings;
-
             AppliedZoneSet zoneSet = new AppliedZoneSet
             {
-                DeviceId = Settings.UniqueKey,
+                DeviceId = settings.SelectedMonitorOption,
                 ActiveZoneset = activeZoneSet,
                 EditorShowSpacing = settings.ShowSpacing,
                 EditorSpacing = settings.Spacing,
@@ -331,7 +343,6 @@ namespace FancyZonesEditor.Models
             {
                 string jsonString = JsonSerializer.Serialize(zoneSet, options);
                 File.WriteAllText(Settings.ActiveZoneSetTmpFile, jsonString);
-                MessageBox.Show(Settings.ActiveZoneSetTmpFile);
             }
             catch (Exception ex)
             {

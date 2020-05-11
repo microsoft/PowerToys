@@ -112,16 +112,48 @@ namespace FancyZonesEditor
             UpdateLayoutModels();
         }
 
-        private ObservableCollection<string> _monitorOptions;
-        public ObservableCollection<string> MonitorOptions
+        // MonitorOptions - List of all attached monitors
+        public static ObservableCollection<string> MonitorOptions
         {
-            get => _monitorOptions;
+            get
+            {
+                if (_monitorOptions == null)
+                {
+                    _monitorOptions = LayoutModel.LoadMonitors();
+                }
+
+                return _monitorOptions;
+            }
+
             set
             {
                 _monitorOptions = value;
-                FirePropertyChanged("MonitorOptions");
             }
         }
+
+        private static ObservableCollection<string> _monitorOptions;
+
+        // SelectedMonitorOption - The selected monitor that the user wants to edit from the combobox
+        public string SelectedMonitorOption
+        {
+            get
+            {
+                return _selectedMonitorOption;
+            }
+
+            set
+            {
+                if (_selectedMonitorOption != value)
+                {
+                    // Resolve mapping
+                    string deReffrencedName = (value == "Display 1 - Surface Display") ? "LGD0554#4&1aaa636&0&UID265988_3240_2160_{5760E426-600C-40F5-9E89-E90E5F568782}" : "ACR048F#4&1aaa636&0&UID200195_2560_1440_{5760E426-600C-40F5-9E89-E90E5F568782}";
+                    _selectedMonitorOption = deReffrencedName;
+                    FirePropertyChanged("SelectedMonitorOption");
+                }
+            }
+        }
+
+        private string _selectedMonitorOption;
 
         // ZoneCount - number of zones selected in the picker window
         public int ZoneCount

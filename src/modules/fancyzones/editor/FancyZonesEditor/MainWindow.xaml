@@ -217,21 +217,13 @@
     <StackPanel>
 
         <TextBlock Name="dialog_Title" Text="{x:Static props:Resources.Choose_Layout}" Style="{StaticResource titleText}"  />
-        <ComboBox x:Name="colorComboBox" Width="200"
-              Header="Colors" PlaceholderText="Pick a color"
-              SelectionChanged="ColorComboBox_SelectionChanged">
-            <x:String>Blue</x:String>
-            <x:String>Green</x:String>
-            <x:String>Red</x:String>
-            <x:String>Yellow</x:String>
-        </ComboBox>
 
         <StackPanel Orientation="Horizontal" Margin="0,12,0,16">
             <TextBlock Name="display_Title" Text="Choose Display" Style="{StaticResource displayChoiceText}"  />
             <ComboBox x:Name="MonitorComboBox" Width="200" Style="{StaticResource monitorComboBox}" 
-                      ItemsSource="{Binding MonitorOptions}" SelectedValue="">
+                      ItemsSource="{Binding MonitorOptions}" SelectedValue="{Binding SelectedMonitorOption}">
             </ComboBox>
-            <Button x:Name="IdentifyButton" Padding="8" Content="Identify" Style="{StaticResource identifyButton}"/>
+            <Button x:Name="IdentifyButton" Padding="8" Content="Identify" Style="{StaticResource identifyButton}" Click="Apply_identify"/>
         </StackPanel>
 
         <TabControl BorderThickness="0" x:Name="TemplateTab" SelectedIndex="{Binding IsCustomLayoutActive, Mode=OneWay, Converter={StaticResource BooleanToIntConverter}}" SelectionChanged="TemplateTab_SelectionChanged">
