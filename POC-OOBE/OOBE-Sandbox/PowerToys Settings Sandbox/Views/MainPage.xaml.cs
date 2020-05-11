@@ -31,6 +31,13 @@ namespace PowerToys_Settings_Sandbox.Views
         public MainPage()
         {
             InitializeComponent();
+            ToastNotify();
+
+
+
+        }
+        public void  ToastNotify()
+        {
             string title = "powertoys started";
             string content = "check the new features";
             string logo = "Assets/LockScreenLogo.scale-200.png";
@@ -53,7 +60,6 @@ namespace PowerToys_Settings_Sandbox.Views
             ToastContent Content = new ToastContent() { Visual = visual, Actions = action };
             ToastNotification notification = new ToastNotification(Content.GetXml());
             ToastNotificationManager.CreateToastNotifier().Show(notification);
-
         }
     }
 }
