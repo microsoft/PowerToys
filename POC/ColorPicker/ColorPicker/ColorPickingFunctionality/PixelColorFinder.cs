@@ -1,11 +1,9 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Windows;
-using ColorPicker.ColorPickingLogic;
 
-namespace UI.SystemEvents
+
+namespace ColorPicker.ColorPickingFunctionality
 {
     class PixelColorFinder
     {
@@ -20,7 +18,7 @@ namespace UI.SystemEvents
 
         public static void HandleMouseClick(int x, int y)
         {
-            int colorRef = GetPixel(x, y);
+            int colorRef = GetPixelValue(x, y);
 
             int red = parseRed(colorRef);
             int green = parseGreen(colorRef);
@@ -30,7 +28,7 @@ namespace UI.SystemEvents
             Debug.WriteLine("R: {0} G: {1} B: {2}", red, green, blue);
         }
 
-        private static int GetPixel(int x, int y)
+        private static int GetPixelValue(int x, int y)
         {
             IntPtr hDC = safeGetWindowDC();
             int pixelValue = safeGetPixel(hDC, x, y);

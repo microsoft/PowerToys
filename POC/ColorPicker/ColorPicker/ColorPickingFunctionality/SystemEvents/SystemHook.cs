@@ -3,31 +3,32 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace UI
+namespace ColorPicker.ColorPickingFunctionality.SystemEvents
 {
     abstract class SystemHook
     {
-        public int hookType;
-        public static int eventHookHandle;
-        public delegate int HookProcDelegate(int nCode, int wParam, IntPtr lParam);
-        public HookProcDelegate eventActionDelegate;
+        private int hookType;
+        private int hookHandleID;
+        private HookProcDelegate hookActionDelegate;
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern int SetWindowsHookEx(int idHook, HookProcDelegate lpfn, IntPtr hMod, int dwThreadId);
+        private static extern int SetWindowsHookEx(int idHook, HookProcDelegate lpfn, IntPtr hMod, int dwThreadId);
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern int UnhookWindowsHookEx(int idHook);
+        private static extern int UnhookWindowsHookEx(int idHook);
 
         [DllImport("user32.dll")]
-        public static extern int CallNextHookEx(int idHook, int nCode, int wParam, IntPtr lParam);
+        private static extern int CallNextHookEx(int idHook, int nCode, int wParam, IntPtr lParam);
 
         [DllImport("kernel32.dll")]
-        public static extern IntPtr GetModuleHandle(string name);
+        private static extern IntPtr GetModuleHandle(string name);
+
+        public delegate int HookProcDelegate(int nCode, int wParam, IntPtr lParam);
 
         public SystemHook(int hookType)
         {
+            hookActionDelegate += HookProc;
             this.hookType = hookType;
-            eventActionDelegate += HookProc;
             CaptureGlobalEvent();
         }
 
@@ -38,16 +39,21 @@ namespace UI
 
         public abstract int HookProc(int nCode, int wParam, IntPtr lParam);
 
-        public void CaptureGlobalEvent()
+        public int CallNextHookExWrapper(int nCode, int wParam, IntPtr lParam)
         {
-            if (eventHookHandle == 0)
+            return CallNextHookEx(hookHandleID, nCode, wParam, lParam);
+        }
+
+        private void CaptureGlobalEvent()
+        {
+            if (hookHandleID == 0)
             {
-                eventHookHandle = SetWindowsHookEx(
+                hookHandleID = SetWindowsHookEx(
                     hookType, // event which trigger the hook
-                    eventActionDelegate, // hook procedure called when the event fires
+                    hookActionDelegate, // hook procedure called when the event fires
                     GetModuleHandle(Process.GetCurrentProcess().MainModule.ModuleName), // A handle to the DLL containing the hook procedure pointed to by the lpfn parameter
                     0); // associate hook with all running threads
-                if (eventHookHandle == 0)
+                if (hookHandleID == 0)
                 {
                     throw new Win32Exception(Marshal.GetLastWin32Error());
                 }
@@ -56,9 +62,9 @@ namespace UI
 
         private void ReleaseGlobalEvent()
         {
-            if (eventHookHandle != 0)
+            if (hookHandleID != 0)
             {
-                int result = UnhookWindowsHookEx(eventHookHandle);
+                int result = UnhookWindowsHookEx(hookHandleID);
                 if (result == 0)
                 {
                     throw new Win32Exception(Marshal.GetLastWin32Error());

@@ -12,8 +12,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using UI;
-using UI.SystemEvents;
+
+using ColorPicker.ColorPickingFunctionality;
+using ColorPicker.ColorPickingFunctionality.SystemEvents;
 
 namespace ColorPicker
 {

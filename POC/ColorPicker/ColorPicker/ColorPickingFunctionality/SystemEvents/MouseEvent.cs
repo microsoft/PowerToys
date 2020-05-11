@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace UI
+namespace ColorPicker.ColorPickingFunctionality.SystemEvents
 {
     class MouseEvent : SystemHook
     {
@@ -41,7 +41,7 @@ namespace UI
                 callBack(mouseHookStruct.pt.x, mouseHookStruct.pt.y);
             }
             //propogates the click event through to other listeners
-            return CallNextHookEx(eventHookHandle, nCode, wParam, lParam);
+            return CallNextHookExWrapper(nCode, wParam, lParam);
         }
     }
 }
