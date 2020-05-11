@@ -26,12 +26,10 @@ static XamlBridge* xamlBridgePtr = nullptr;
 static IAsyncAction OnClickAccept(
     KeyboardManagerState& keyboardManagerState,
     XamlRoot root,
-    std::function<void()> ApplyRemappings,
-    std::function<void(int)> onRemappingError)
+    std::function<void()> ApplyRemappings)
 {
     KeyboardManagerHelper::ErrorType isSuccess = Dialog::CheckIfRemappingsAreValid<Shortcut>(
         ShortcutControl::shortcutRemapBuffer,
-        onRemappingError,
         [](Shortcut shortcut) {
             return shortcut.IsValidShortcut();
         });
@@ -260,19 +258,8 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         PostMessage(_hWndEditShortcutsWindow, WM_CLOSE, 0, 0);
     };
 
-    auto ShowWarningFlyout = [shortcutTable](int index) {
-        // Show tooltip warning on the problematic row
-        uint32_t warningIndex;
-        // 2 at start, 4 in each row, and last element of each row
-        warningIndex = KeyboardManagerConstants::ShortcutTableHeaderCount + ((index + 1) * KeyboardManagerConstants::ShortcutTableColCount) - 1;
-        FontIcon warning = shortcutTable.Children().GetAt(warningIndex).as<FontIcon>();
-        ToolTip t = ToolTipService::GetToolTip(warning).as<ToolTip>();
-        t.Content(box_value(KeyboardManagerHelper::GetErrorMessage(KeyboardManagerHelper::ErrorType::MissingKey)));
-        warning.Visibility(Visibility::Visible);
-    };
-
-    applyButton.Click([&keyboardManagerState, applyButton, ApplyRemappings, ShowWarningFlyout](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
-        OnClickAccept(keyboardManagerState, applyButton.XamlRoot(), ApplyRemappings, ShowWarningFlyout);
+    applyButton.Click([&keyboardManagerState, applyButton, ApplyRemappings](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+        OnClickAccept(keyboardManagerState, applyButton.XamlRoot(), ApplyRemappings);
     });
 
     header.Children().Append(headerText);

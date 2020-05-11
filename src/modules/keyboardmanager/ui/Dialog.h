@@ -12,7 +12,6 @@ namespace Dialog
     template<typename T>
     KeyboardManagerHelper::ErrorType CheckIfRemappingsAreValid(
         const std::vector<std::vector<T>>& remappings,
-        std::function<void(int)> onRemappingError,
         std::function<bool(T)> isValid)
     {
         KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
@@ -33,7 +32,6 @@ namespace Dialog
             else
             {
                 isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
-                onRemappingError(i);
             }
         }
         return isSuccess;

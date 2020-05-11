@@ -4,6 +4,7 @@
 #include "KeyDropDownControl.h"
 #include "XamlBridge.h"
 #include <keyboardmanager/common/trace.h>
+#include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <set>
 #include <common/windows_colors.h>
 #include "Styles.h"
@@ -78,11 +79,10 @@ static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
     co_return res == ContentDialogResult::Primary;
 }
 
-static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, XamlRoot root, std::function<void()> ApplyRemappings, std::function<void(int)> onRemappingError)
+static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, XamlRoot root, std::function<void()> ApplyRemappings)
 {
     KeyboardManagerHelper::ErrorType isSuccess = Dialog::CheckIfRemappingsAreValid<DWORD>(
         SingleKeyRemapControl::singleKeyRemapBuffer,
-        onRemappingError,
         [](DWORD key) {
             return key != 0;
         });
@@ -316,8 +316,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     Button applyButton;
     applyButton.Content(winrt::box_value(L"OK"));
     applyButton.Style(AccentButtonStyle());
-    applyButton.MinWidth(HeaderButtonWidth);
-    cancelButton.MinWidth(HeaderButtonWidth);
+    applyButton.MinWidth(KeyboardManagerConstants::HeaderButtonWidth);
+    cancelButton.MinWidth(KeyboardManagerConstants::HeaderButtonWidth);
     header.SetAlignRightWithPanel(cancelButton, true);
     header.SetLeftOf(applyButton, cancelButton);
 
@@ -389,19 +389,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         PostMessage(_hWndEditKeyboardWindow, WM_CLOSE, 0, 0);
     };
 
-    auto ShowWarningFlyout = [keyRemapTable](int index) {
-        // Show tooltip warning on the problematic row
-        uint32_t warningIndex;
-        // headers at start, colcount in each row, and last element of each row
-        warningIndex = KeyboardManagerConstants::RemapTableHeaderCount + ((index + 1) * KeyboardManagerConstants::RemapTableColCount) - 1;
-        FontIcon warning = keyRemapTable.Children().GetAt(warningIndex).as<FontIcon>();
-        ToolTip t = ToolTipService::GetToolTip(warning).as<ToolTip>();
-        t.Content(box_value(KeyboardManagerHelper::GetErrorMessage(KeyboardManagerHelper::ErrorType::MissingKey)));
-        warning.Visibility(Visibility::Visible);
-    };
-
-    applyButton.Click([&keyboardManagerState, ApplyRemappings, applyButton, ShowWarningFlyout](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
-        OnClickAccept(keyboardManagerState, applyButton.XamlRoot(), ApplyRemappings, ShowWarningFlyout);
+    applyButton.Click([&keyboardManagerState, ApplyRemappings, applyButton](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+        OnClickAccept(keyboardManagerState, applyButton.XamlRoot(), ApplyRemappings);
     });
 
     header.Children().Append(headerText);
