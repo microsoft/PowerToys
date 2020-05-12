@@ -19,7 +19,7 @@ namespace FancyZonesEditor
     public partial class MainWindow : MetroWindow
     {
         public const int MaxZones = 40;
-        private readonly Settings _settings = ((App)Application.Current).ZoneSettings;
+        private readonly Settings _settings = ((App)Application.Current).ZoneSettings[0];
         private static readonly string _defaultNamePrefix = "Custom Layout ";
 
         public int WrapPanelItemSize { get; set; } = 150;

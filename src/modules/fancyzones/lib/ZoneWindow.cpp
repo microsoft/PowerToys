@@ -11,14 +11,20 @@
 
 #include <gdiplus.h>
 
+#include "lib/FancyZones.h"
+
+#include <vector>
+
+extern const int num_monitors;
+
 namespace ZoneWindowUtils
 {
-    const std::wstring& GetActiveZoneSetTmpPath()
+    const std::wstring& GetActiveZoneSetTmpPath(int monitor, int num_monitors)
     {
         static std::wstring activeZoneSetTmpFileName;
-        static std::once_flag flag;
+        static std::vector<std::once_flag> flag(num_monitors);
 
-        std::call_once(flag, []() {
+        std::call_once(flag[monitor], []() {
             wchar_t fileName[L_tmpnam_s];
 
             if (_wtmpnam_s(fileName, L_tmpnam_s) != 0)
@@ -26,16 +32,15 @@ namespace ZoneWindowUtils
 
             activeZoneSetTmpFileName = std::wstring{ fileName };
         });
-
         return activeZoneSetTmpFileName;
     }
 
-    const std::wstring& GetAppliedZoneSetTmpPath()
+    const std::wstring& GetAppliedZoneSetTmpPath(int monitor, int num_monitors)
     {
         static std::wstring appliedZoneSetTmpFileName;
-        static std::once_flag flag;
+        static std::vector<std::once_flag> flag(num_monitors);
 
-        std::call_once(flag, []() {
+        std::call_once(flag[monitor], []() {
             wchar_t fileName[L_tmpnam_s];
 
             if (_wtmpnam_s(fileName, L_tmpnam_s) != 0)
@@ -47,12 +52,12 @@ namespace ZoneWindowUtils
         return appliedZoneSetTmpFileName;
     }
 
-    const std::wstring& GetCustomZoneSetsTmpPath()
+    const std::wstring& GetCustomZoneSetsTmpPath(int monitor, int num_monitors)
     {
         static std::wstring customZoneSetsTmpFileName;
-        static std::once_flag flag;
+        static std::vector<std::once_flag> flag(num_monitors);
 
-        std::call_once(flag, []() {
+        std::call_once(flag[monitor], []() {
             wchar_t fileName[L_tmpnam_s];
 
             if (_wtmpnam_s(fileName, L_tmpnam_s) != 0)
