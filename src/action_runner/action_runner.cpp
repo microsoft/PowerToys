@@ -14,6 +14,10 @@
 #include "../runner/tray_icon.h"
 #include "../runner/action_runner_utils.h"
 
+#include "resource.h"
+
+extern "C" IMAGE_DOS_HEADER __ImageBase;
+
 int uninstall_msi_action()
 {
     const auto package_path = updating::get_msi_package_path();
@@ -122,6 +126,56 @@ bool install_new_version_stage_2(std::wstring_view installer_path, std::wstring_
     return true;
 }
 
+bool dotnet_is_installed()
+{
+    auto runtimes = exec_and_read_output(LR"(dotnet --list-runtimes)");
+    if (!runtimes)
+    {
+        return false;
+    }
+    const char DESKTOP_DOTNET_RUNTIME_STRING[] = "Microsoft.WindowsDesktop.App 3.1.";
+    return runtimes->find(DESKTOP_DOTNET_RUNTIME_STRING) != std::string::npos;
+}
+
+bool install_dotnet()
+{
+    const wchar_t DOTNET_DESKTOP_DOWNLOAD_LINK[] = L"https://download.visualstudio.microsoft.com/download/pr/a1510e74-b31a-4434-b8a0-8074ff31fb3f/b7de8ecba4a14d8312551cfdc745dea1/windowsdesktop-runtime-3.1.0-win-x64.exe";
+    const wchar_t DOTNET_DESKTOP_FILENAME[] = L"windowsdesktop-runtime-3.1.0-win-x64.exe";
+
+    auto dotnet_download_path = fs::temp_directory_path() / DOTNET_DESKTOP_FILENAME;
+    winrt::Windows::Foundation::Uri download_link{ DOTNET_DESKTOP_DOWNLOAD_LINK };
+
+    const size_t max_attempts = 3;
+    bool download_success = false;
+    for (size_t i = 0; i < max_attempts; ++i)
+    {
+        try
+        {
+            updating::try_download_file(dotnet_download_path, download_link).wait();
+            download_success = true;
+            break;
+        }
+        catch (...)
+        {
+            // couldn't download
+        }
+    }
+    if (!download_success)
+    {
+        MessageBoxW(nullptr,
+                    GET_RESOURCE_STRING(IDS_DOTNET_CORE_DOWNLOAD_FAILURE).c_str(),
+                    GET_RESOURCE_STRING(IDS_DOTNET_CORE_DOWNLOAD_FAILURE_TITLE).c_str(),
+                    MB_OK | MB_ICONERROR);
+        return false;
+    }
+    SHELLEXECUTEINFOW sei{ sizeof(sei) };
+    sei.fMask = { SEE_MASK_NOASYNC };
+    sei.lpFile = dotnet_download_path.c_str();
+    sei.nShow = SW_SHOWNORMAL;
+    sei.lpParameters = L"/install /passive";
+    return ShellExecuteExW(&sei) == TRUE;
+}
+
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
     int nArgs = 0;
@@ -132,7 +186,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
     std::wstring_view action{ args[1] };
 
-    if (action == L"-uninstall_msi")
+    if (action == L"-install_dotnet")
+    {
+        if (dotnet_is_installed())
+        {
+            return 0;
+        }
+        return !install_dotnet();
+    }
+    else if (action == L"-uninstall_msi")
     {
         return uninstall_msi_action();
     }

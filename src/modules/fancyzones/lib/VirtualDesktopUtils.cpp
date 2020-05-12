@@ -87,7 +87,7 @@ namespace VirtualDesktopUtils
             // desktops (only primary desktop) in this session value in registry will be empty.
             // If this value is empty take first element from array of virtual desktops (not kept per session).
             std::vector<GUID> ids{};
-            if (!GetVirtualDekstopIds(ids) || ids.empty())
+            if (!GetVirtualDesktopIds(ids) || ids.empty())
             {
                 return false;
             }
@@ -96,7 +96,7 @@ namespace VirtualDesktopUtils
         return true;
     }
 
-    bool GetVirtualDekstopIds(HKEY hKey, std::vector<GUID>& ids)
+    bool GetVirtualDesktopIds(HKEY hKey, std::vector<GUID>& ids)
     {
         if (!hKey)
         {
@@ -126,9 +126,27 @@ namespace VirtualDesktopUtils
         return true;
     }
 
-    bool GetVirtualDekstopIds(std::vector<GUID>& ids)
+    bool GetVirtualDesktopIds(std::vector<GUID>& ids)
     {
-        return GetVirtualDekstopIds(GetVirtualDesktopsRegKey(), ids);
+        return GetVirtualDesktopIds(GetVirtualDesktopsRegKey(), ids);
+    }
+
+    bool GetVirtualDesktopIds(std::vector<std::wstring>& ids)
+    {
+        std::vector<GUID> guids{};
+        if (GetVirtualDesktopIds(guids))
+        {
+            for (auto& guid : guids)
+            {
+                wil::unique_cotaskmem_string guidString;
+                if (SUCCEEDED(StringFromCLSID(guid, &guidString)))
+                {
+                    ids.push_back(guidString.get());
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     HKEY OpenVirtualDesktopsRegKey()

@@ -337,3 +337,7 @@ src/settings/settings-html/404.html
 
 # Temp telemetry files.
 src/common/Telemetry/*.etl
+
+# Don't ignore MergeModules
+!**/MergeModules/Release/
+!**/MergeModules/Debug/

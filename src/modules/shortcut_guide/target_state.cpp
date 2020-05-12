@@ -2,6 +2,7 @@
 #include "target_state.h"
 #include "common/start_visible.h"
 #include "keyboard_state.h"
+#include "common/shared_constants.h"
 
 TargetState::TargetState(int ms_delay) :
     delay(std::chrono::milliseconds(ms_delay)), thread(&TargetState::thread_proc, this)
@@ -42,12 +43,15 @@ bool TargetState::signal_event(unsigned vk_code, bool key_down)
         INPUT input[3] = { {}, {}, {} };
         input[0].type = INPUT_KEYBOARD;
         input[0].ki.wVk = 0xCF;
+        input[0].ki.dwExtraInfo = CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG;
         input[1].type = INPUT_KEYBOARD;
         input[1].ki.wVk = 0xCF;
         input[1].ki.dwFlags = KEYEVENTF_KEYUP;
+        input[1].ki.dwExtraInfo = CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG;
         input[2].type = INPUT_KEYBOARD;
-        input[2].ki.wVk = VK_LWIN;
+        input[2].ki.wVk = vk_code;
         input[2].ki.dwFlags = KEYEVENTF_KEYUP;
+        input[2].ki.dwExtraInfo = CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG;
         SendInput(3, input, sizeof(INPUT));
     }
     return supress;
