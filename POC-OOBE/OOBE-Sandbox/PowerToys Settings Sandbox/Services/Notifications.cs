@@ -11,22 +11,21 @@ using Microsoft.QueryStringDotNET; // QueryString.NET
 namespace PowerToys_Settings_Sandbox.Services
 {
     internal class Notifications {
-        public static void Toast() {
+        public static void AppInstalledToast() {
 
-            // In a real app, these would be initialized with actual data
             string title = "Power Toys";
             string content = "Power Toys is installed";
             string image = "../Assets/Logo.png";
             string logo = "../Assets/MiniLogo.png";
 
-            // Construct the visuals of the toast
             ToastVisual visual = new ToastVisual()
             {
                 BindingGeneric = new ToastBindingGeneric()
                 {
                     Children =
                     {
-                        new AdaptiveText() {
+                        new AdaptiveText()
+                        {
                             Text = title
                         },
 
@@ -44,12 +43,11 @@ namespace PowerToys_Settings_Sandbox.Services
                     AppLogoOverride = new ToastGenericAppLogo()
                     {
                         Source = logo,
-                        HintCrop = ToastGenericAppLogoCrop.Circle
+                        HintCrop = ToastGenericAppLogoCrop.Default
                     }
                 }
             };
 
-            // Construct the actions for the toast (inputs and buttons)
             ToastActionsCustom actions = new ToastActionsCustom()
             {
                 Inputs = { },
@@ -57,7 +55,7 @@ namespace PowerToys_Settings_Sandbox.Services
                 {
                     new ToastButton("Open PowerToys", new QueryString()
                     {
-                        // Insert query here
+                        // Query for button
                     }.ToString())
                     {
                         // Insert activation type here
@@ -65,21 +63,18 @@ namespace PowerToys_Settings_Sandbox.Services
                 }
             };
 
-            // Now we can construct the final toast content
             ToastContent toastContent = new ToastContent()
             {
                 Visual = visual,
                 Actions = actions,
 
-                // Arguments when the user taps body of toast
                 Launch = new QueryString()
                 {
-                    // Insert query here
+                    // Query for arguments when the user taps body of toast
                 }.ToString()
             };
 
-            // And create the toast notification
-            var toast = new ToastNotification(toastContent.GetXml());
+            ToastNotification toast = new ToastNotification(toastContent.GetXml());
 
             toast.ExpirationTime = DateTime.Now.AddDays(2); // May need to add Tag and group
 
