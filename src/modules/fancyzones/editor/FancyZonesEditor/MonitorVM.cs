@@ -9,8 +9,8 @@ using System.Windows.Input;
 
 namespace FancyZonesEditor
 {
-	public class MonitorVM : INotifyPropertyChanged
-	{
+    public class MonitorVM : INotifyPropertyChanged
+    {
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		public MonitorVM()
@@ -19,9 +19,9 @@ namespace FancyZonesEditor
 			DeleteCommand = new RelayCommand(DeleteCommandExecute, DeleteCommandCanExecute);
 
 			Monitors = new ObservableCollection<MonitorInfo>();
-			Monitors.Add(new MonitorInfo(0, "Monitor 1", 100, 100));
-			Monitors.Add(new MonitorInfo(1, "Monitor 2", 100, 200));
-			Monitors.Add(new MonitorInfo(2, "Monitor 3", 100, 300));
+			Monitors.Add(new MonitorInfo(0, "Monitor 1", 100, 150));
+			Monitors.Add(new MonitorInfo(1, "Monitor 2", 100, 150));
+			Monitors.Add(new MonitorInfo(2, "Monitor 3", 100, 150));
 		}
 
 		#region Properties
@@ -57,6 +57,8 @@ namespace FancyZonesEditor
 				PropertyChanged(this, new PropertyChangedEventArgs("Width"));
 			}
 		}
+
+        
 
 
 		#endregion Properties
@@ -108,12 +110,13 @@ namespace FancyZonesEditor
 
 	public class MonitorInfo
 	{
-		public MonitorInfo(int id, string name, int height, int width)
+		public MonitorInfo(int id, string name, int height, int width, string fill = "Gray")
 		{
 			Id = id;
 			Name = name;
 			Height = height;
 			Width = width;
+			Fill = fill;
 		}
 
 		private int id;
@@ -146,6 +149,13 @@ namespace FancyZonesEditor
 		{
 			get { return width; }
 			set { width = value; }
+		}
+
+		private string fill;
+		public string Fill
+		{
+			get { return fill; }
+			set { fill = value; }
 		}
 
 	}
