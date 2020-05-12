@@ -6,3 +6,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
 // Function to check if there is already a window active if yes bring to foreground
 bool CheckEditKeyboardWindowActive();
+
+// Function to close any active Edit Keyboard window
+void CloseActiveEditKeyboardWindow();
