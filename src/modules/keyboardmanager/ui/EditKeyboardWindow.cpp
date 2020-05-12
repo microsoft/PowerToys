@@ -147,12 +147,12 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         windowClass.hInstance = hInst;
         windowClass.lpszClassName = szWindowClass;
         windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW);
-        windowClass.hIcon = (HICON) LoadImageW(
-            windowClass.hInstance, 
-            MAKEINTRESOURCE(IDS_KEYBOARDMANAGER_ICON), 
-            IMAGE_ICON, 
-            48, 
-            48, 
+        windowClass.hIcon = (HICON)LoadImageW(
+            windowClass.hInstance,
+            MAKEINTRESOURCE(IDS_KEYBOARDMANAGER_ICON),
+            IMAGE_ICON,
+            48,
+            48,
             LR_DEFAULTCOLOR);
         if (RegisterClassEx(&windowClass) == NULL)
         {
@@ -175,7 +175,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     HWND _hWndEditKeyboardWindow = CreateWindow(
         szWindowClass,
         L"Remap Keyboard",
-        WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+        WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX,
         (desktopRect.right / 2) - (windowWidth / 2),
         (desktopRect.bottom / 2) - (windowHeight / 2),
         windowWidth,
@@ -492,4 +492,14 @@ bool CheckEditKeyboardWindowActive()
     }
 
     return result;
+}
+
+// Function to close any active Edit Keyboard window
+void CloseActiveEditKeyboardWindow()
+{
+    std::unique_lock<std::mutex> hwndLock(editKeyboardWindowMutex);
+    if (hwndEditKeyboardNativeWindow != nullptr)
+    {
+        PostMessage(hwndEditKeyboardNativeWindow, WM_CLOSE, 0, 0);
+    }
 }
