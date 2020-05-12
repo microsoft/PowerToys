@@ -2,13 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.Tracing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Telemetry.Events;
+using Microsoft.PowerToys.Telemetry;
+using Microsoft.PowerToys.Telemetry.Events;
 
 namespace SvgPreviewHandler.Telemetry.Events
 {

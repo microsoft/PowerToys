@@ -1,5 +1,6 @@
-﻿using System.Diagnostics.Tracing;
-using Telemetry.Events;
+﻿using Microsoft.PowerToys.Telemetry;
+using Microsoft.PowerToys.Telemetry.Events;
+using System.Diagnostics.Tracing;
 
 namespace Microsoft.PowerToys.Settings.Telemetry
 {

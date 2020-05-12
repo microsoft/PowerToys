@@ -3,7 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.Tracing;
-using Telemetry.Events;
+using Microsoft.PowerToys.Telemetry;
+using Microsoft.PowerToys.Telemetry.Events;
 
 namespace MarkdownPreviewHandler.Telemetry.Events
 {

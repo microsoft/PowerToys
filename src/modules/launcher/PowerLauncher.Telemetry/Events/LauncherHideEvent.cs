@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.Tracing;
-using Telemetry.Events;
+using Microsoft.PowerToys.Telemetry;
+using Microsoft.PowerToys.Telemetry.Events;
 
 namespace Microsoft.PowerLauncher.Telemetry
 {
@@ -7,5 +8,7 @@ namespace Microsoft.PowerLauncher.Telemetry
     public class LauncherHideEvent : IEvent
     {
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
+
+        PartA_PrivTags IEvent.PartA_PrivTags => throw new System.NotImplementedException();
     }
 }
