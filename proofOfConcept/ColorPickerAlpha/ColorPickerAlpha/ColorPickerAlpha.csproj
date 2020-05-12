@@ -95,15 +95,13 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Eyedropper-icon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="img_261889.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="swap_icon.png" />
-    <Resource Include="copy_icon..png" />
-    <Content Include="copy_icon.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="copy_icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Eyedropper-icon.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

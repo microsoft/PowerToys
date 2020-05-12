@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ColorPickerAlpha"
         mc:Ignorable="d"
-        Title="MainWindow" Height="77.985" Width="598.229" Background="#FF4472C4">
+        Title="MainWindow" Height="78" Width="599" Background="#FF4472C4">
 
     <Grid x:Name = "FormLayoutGrid" Margin="0,0,0,1.5">
         <Grid.ColumnDefinitions>
@@ -57,7 +57,7 @@
 
         <Button Grid.Row = "0" Grid.Column = "9"  Click="Button_Click" Opacity="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="26" Width="32" BorderBrush="{x:Null}" Margin="17,10,17,13" >
             <Button.Background>
-                <ImageBrush ImageSource="copy_icon..png" Stretch="Uniform"/>
+                <ImageBrush ImageSource="copy_icon.png" Stretch="Uniform"/>
             </Button.Background>
         </Button>
 
