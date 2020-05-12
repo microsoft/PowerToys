@@ -117,5 +117,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.Utilities
                 throw new FormatException("Bad product version format");
             }
         }
+
+        public const uint VirtualKeyWindows = interop.Constants.VK_WIN_BOTH;
     }
 }

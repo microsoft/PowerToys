@@ -6,6 +6,7 @@
 #include "..\keyboard_layout.h"
 #include "..\two_way_pipe_message_ipc.h"
 #include "..\common.h"
+#include "..\shared_constants.h"
 
 using namespace System;
 using namespace System::Runtime::InteropServices;
@@ -113,5 +114,12 @@ public
         {
             return gcnew String(get_product_version().c_str());
         } 
+    };
+
+    public
+    ref class Constants
+    {
+    public:
+        literal int VK_WIN_BOTH = CommonSharedConstants::VK_WIN_BOTH;
     };
 }
