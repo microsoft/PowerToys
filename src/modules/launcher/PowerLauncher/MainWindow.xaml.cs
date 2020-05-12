@@ -284,6 +284,7 @@ namespace PowerLauncher
                     this.SearchBoxBorder.Background = solidBorderBrush;
                     this.ListBoxBorder.BorderBrush = solidBorderBrush;
                     this.ListBoxBorder.Background = solidBorderBrush; 
+
                 }
             }
             else if(e.PropertyName == "PrimaryTextColor")
