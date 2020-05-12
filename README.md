@@ -14,12 +14,16 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 <br>
 <br>
 
-## Current PowerToy Utilities
+## Current PowerToy utilities
 
 ### FancyZones
 
-[FancyZones](/src/modules/fancyzones/) - FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.
-
+<img align="left" src="./doc/images/Overview ReadMe/FancyZones_small.png" /> 
+[FancyZones](/src/modules/fancyzones/) is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.
+<br>
+<br>
+<br>
+<br>
 ### Shortcut Guide
 
 [Windows key shortcut guide](/src/modules/shortcut_guide) - The shortcut guide appears when a user holds the Windows key down for more than one second and shows the available shortcuts for the current state of the desktop.
