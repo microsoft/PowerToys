@@ -5,25 +5,91 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ColorPickerAlpha"
         mc:Ignorable="d"
-        Title="MainWindow" Height="604.591" Width="800" Background="#FF4472C4">
-    <Grid Margin="0,0,0,382.5">
+        Title="MainWindow" Height="77.985" Width="598.229" Background="#FF4472C4">
+    <!--
+    <Grid Margin="0,80,-0.5,288.5">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="161*"/>
-            <ColumnDefinition Width="104*"/>
+            <ColumnDefinition Width = "Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height = "50" />
+        </Grid.RowDefinitions>
+
+
         <Grid.Background>
             <ImageBrush/>
         </Grid.Background>
-        <!-- Buttons arranged vertically inside a StackPanel. -->
+         Buttons arranged vertically inside a StackPanel. 
 
-        <Button Click="Button_Click" Opacity="1" Height="27" Margin="15,12,423.384,-39">
+        <Button Grid.Row = "0" Grid.Column = "0"  Click="Button_Click" Opacity="1" Height="27" VerticalAlignment="Top" HorizontalAlignment="Center" >
             <Button.Background>
                 <ImageBrush ImageSource="Eyedropper-icon.png" Stretch="Uniform"/>
             </Button.Background>
         </Button>
-        <TextBlock Text="R" TextWrapping="Wrap" Margin="153,116,315,58.5" RenderTransformOrigin="-17.729,5.701"/>
-        <TextBlock Text="G" TextWrapping="Wrap" Margin="269,116,199,58.5" RenderTransformOrigin="-17.729,5.701"/>
-        <TextBlock Text="B" TextWrapping="Wrap" Margin="380,116,88,58.5" RenderTransformOrigin="-17.729,5.701"/>
+        <TextBlock Grid.Row = "0" Grid.Column = "1"  Text="R" TextWrapping="Wrap" Margin="128,-76,216.5,-25" RenderTransformOrigin="-17.729,5.701"/>
+
+        <TextBlock Grid.Row = "0" Grid.Column = "2"  Text="G" TextWrapping="Wrap" Margin="261,-76,83.5,-24" RenderTransformOrigin="-17.729,5.701"/>
+        <TextBlock Grid.Row = "0" Grid.Column = "3"  Text="B" TextWrapping="Wrap" Margin="9.5,-75,207.5,-25" RenderTransformOrigin="-17.729,5.701"/>
+        Buttons arranged vertically inside a StackPanel. 
 
     </Grid>
+    -->
+
+    <Grid x:Name = "FormLayoutGrid" Margin="0,0,0,1.5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+            <ColumnDefinition />
+            <ColumnDefinition />
+            <ColumnDefinition />
+            <ColumnDefinition />
+            <ColumnDefinition />
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height = "*" />
+
+        </Grid.RowDefinitions>
+
+        <Button Grid.Row = "0" Grid.Column = "0"  Click="Button_Click" Opacity="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="40" Width="46"  Margin="10,4,10,5" >
+            <Button.Background>
+                <ImageBrush ImageSource="Eyedropper-icon.png" Stretch="Uniform"/>
+            </Button.Background>
+        </Button>
+
+        <TextBlock Grid.Row = "0" Grid.Column = "1" Text = "R" 
+         Margin = "10" HorizontalAlignment = "Right" VerticalAlignment = "Center" 
+         Width = "30"  TextAlignment="Right" FontSize="20"/>
+        <TextBox Grid.Row = "0" Grid.Column = "2" Margin = "10"/>
+
+        <TextBlock Grid.Row = "0" Grid.Column = "3" Text = "G" Margin = "10" 
+         HorizontalAlignment = "Right" VerticalAlignment = "Center" Width = "30" TextAlignment="Right"
+                   FontSize="20"/>
+        
+        <TextBox Grid.Row = "0" Grid.Column = "4" Margin = "10"/>
+
+        <TextBlock Grid.Row = "2" Grid.Column = "5" Text = "B" Margin = "10" 
+         HorizontalAlignment = "Right" VerticalAlignment = "Center" Width = "30" TextAlignment="Right" FontSize="20"/>
+        <TextBox Grid.Row = "0" Grid.Column = "6" Margin = "10"/>
+
+        <Button Grid.Row = "0" Grid.Column = "7"  Click="Button_Click" Opacity="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="24" Width="46" BorderBrush="{x:Null}" Margin="10,12,10,13" RenderTransformOrigin="1.305,0.521" >
+            <Button.Background>
+                <ImageBrush ImageSource="swap_icon.png" Stretch="Uniform"/>
+            </Button.Background>
+        </Button>
+
+        <Button Grid.Row = "0" Grid.Column = "8"  Click="Button_Click" Opacity="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="26" Width="32" BorderBrush="{x:Null}" Margin="17,10,17,13" >
+            <Button.Background>
+                <ImageBrush ImageSource="copy_icon..png" Stretch="Uniform"/>
+            </Button.Background>
+        </Button>
+
+    </Grid>
+
 </Window>
