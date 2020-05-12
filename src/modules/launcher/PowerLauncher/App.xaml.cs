@@ -94,7 +94,7 @@ namespace PowerLauncher
 
                 _settingsWatcher = new SettingsWatcher(_settings);
 
-                _mainVM.MainWindowVisibility = Visibility.Hidden;
+                _mainVM.MainWindowVisibility = Visibility.Visible;
                 Log.Info("|App.OnStartup|End Wox startup ----------------------------------------------------  ");
 
                 bootTime.Stop();
