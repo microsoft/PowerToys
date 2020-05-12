@@ -20,3 +20,4 @@
 #include <strsafe.h>
 #include <Shlwapi.h>
 #include <ProjectTelemetry.h>
+#include <thread>
