@@ -7,6 +7,8 @@ namespace ColorPicker.ColorPickingFunctionality.SystemEvents
 {
     abstract class SystemHook
     {
+        public delegate int HookProcDelegate(int nCode, int wParam, IntPtr lParam);
+
         private int hookType;
         private int hookHandleID;
         private HookProcDelegate hookActionDelegate;
@@ -48,8 +50,6 @@ namespace ColorPicker.ColorPickingFunctionality.SystemEvents
         /// <returns> A handle to specified file, or NULL on failure. </returns>
         [DllImport("kernel32.dll")]
         private static extern IntPtr GetModuleHandle(string moduleName);
-
-        public delegate int HookProcDelegate(int nCode, int wParam, IntPtr lParam);
 
         public SystemHook(int hookType)
         {
