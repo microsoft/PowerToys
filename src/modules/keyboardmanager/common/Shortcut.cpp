@@ -99,7 +99,7 @@ DWORD Shortcut::GetWinKey(const ModifierKey& input) const
             //return VK_LWIN by default
             return VK_LWIN;
         }
-        else if (input == ModifierKey::Both)
+        else
         {
             return CommonSharedConstants::VK_WIN_BOTH;
         }
