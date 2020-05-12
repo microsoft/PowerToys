@@ -53,7 +53,7 @@ namespace ColorPickerAlpha
             }
             else
             {
-                return Color.White;
+                throw new System.InvalidOperationException("Set process dpi aware failed");
             }
             
             
