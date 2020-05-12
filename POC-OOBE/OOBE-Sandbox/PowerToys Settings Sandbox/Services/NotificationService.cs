@@ -10,8 +10,10 @@ using Microsoft.QueryStringDotNET; // QueryString.NET
 
 namespace PowerToys_Settings_Sandbox.Services
 {
-    internal class NotificationService {
-        public static void AppInstalledToast() {
+    internal class NotificationService
+    {
+        public static void AppInstalledToast()
+        {
 
             string title = "Power Toys";
             string content = "Power Toys is installed";
