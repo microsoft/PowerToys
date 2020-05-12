@@ -571,7 +571,6 @@ namespace Wox.ViewModel
                 SetHotkey(hotkey.Hotkey, (s, e) =>
                 {
                     if (ShouldIgnoreHotkeys()) return;
-                    MainWindowVisibility = Visibility.Visible;
                     ChangeQueryText(hotkey.ActionKeyword);
                 });
             }
@@ -671,7 +670,6 @@ namespace Wox.ViewModel
             list.Add(r);
             Results.AddResults(list, "0");
             Results.Clear();
-            MainWindowVisibility = System.Windows.Visibility.Collapsed;
 
             // Fix Cold start for plugins
             string s = "m";
