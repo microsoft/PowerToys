@@ -14,7 +14,7 @@ namespace ColorPicker.ColorPickingFunctionality
         /// <param name="xCoord">The x-coordinate, in logical units, of the pixel to be examined.</param>
         /// <param name="yCoord">The y-coordinate, in logical units, of the pixel to be examined.</param>
         /// <returns>
-        /// A COLORREF int. The first byte is red, second is green and thrid is blue. On error it returns 0xFFFFFFFF.
+        /// A COLORREF int. The first byte is red, second is green and third is blue. On error it returns 0xFFFFFFFF.
         /// </returns>
         [DllImport("gdi32.dll")]
         private static extern int GetPixel(IntPtr hDC, int xCoord, int yCoord);
@@ -91,4 +91,3 @@ namespace ColorPicker.ColorPickingFunctionality
         private static int ParseBlue(int colorRef) => (colorRef & 0x00FF0000) >> 16;
     }
 }
-
