@@ -65,7 +65,6 @@ namespace ColorPicker.ColorPickingFunctionality.SystemEvents
 
         public abstract int HookProc(int nCode, int wParam, IntPtr lParam);
 
-
         public int CallNextHookExWrapper(int nCode, int wParam, IntPtr lParam)
         {
             return CallNextHookEx(hookHandleID, nCode, wParam, lParam);
