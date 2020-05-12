@@ -7,7 +7,10 @@ namespace ColorPicker.ColorPickingFunctionality.SystemEvents
     {
         public delegate void EventCallBack(int x, int y);
 
+        // low level mouse movement hook type
         private const int WH_MOUSE_LL = 14;
+
+        // event code for mouse down
         private const int WM_LBUTTONDOWN = 0x0201;
 
         [StructLayout(LayoutKind.Sequential)]
