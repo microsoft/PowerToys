@@ -311,7 +311,7 @@ namespace FancyZonesEditor.Models
                     break;
             }
 
-            Settings settings = ((App)Application.Current).ZoneSettings;
+            Settings settings = ((App)Application.Current).ZoneSettings[0];
 
             AppliedZoneSet zoneSet = new AppliedZoneSet
             {

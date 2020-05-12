@@ -64,14 +64,14 @@ namespace FancyZonesEditor
             };
             Body.Children.Add(_splitter);
 
-            ((App)Application.Current).ZoneSettings.PropertyChanged += ZoneSettings_PropertyChanged;
+            ((App)Application.Current).ZoneSettings[0].PropertyChanged += ZoneSettings_PropertyChanged;
         }
 
         private void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "IsShiftKeyPressed")
             {
-                _switchOrientation = ((App)Application.Current).ZoneSettings.IsShiftKeyPressed;
+                _switchOrientation = ((App)Application.Current).ZoneSettings[0].IsShiftKeyPressed;
                 if (_lastPos.X != -1)
                 {
                     UpdateSplitter();
@@ -103,7 +103,7 @@ namespace FancyZonesEditor
         {
             get
             {
-                Settings settings = ((App)Application.Current).ZoneSettings;
+                Settings settings = ((App)Application.Current).ZoneSettings[0];
                 if (!settings.ShowSpacing)
                 {
                     return 1;
@@ -278,7 +278,7 @@ namespace FancyZonesEditor
         private void DoSplit(Orientation orientation, double offset)
         {
             int spacing = 0;
-            Settings settings = ((App)Application.Current).ZoneSettings;
+            Settings settings = ((App)Application.Current).ZoneSettings[0];
             if (settings.ShowSpacing)
             {
                 spacing = settings.Spacing;

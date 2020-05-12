@@ -26,7 +26,7 @@ namespace FancyZonesEditor
         {
             InitializeComponent();
             Loaded += GridEditor_Loaded;
-            ((App)Application.Current).ZoneSettings.PropertyChanged += ZoneSettings_PropertyChanged;
+            ((App)Application.Current).ZoneSettings[0].PropertyChanged += ZoneSettings_PropertyChanged;
             gridEditorUniqueId = ++gridEditorUniqueIdCounter;
         }
 
@@ -544,7 +544,7 @@ namespace FancyZonesEditor
                 return;
             }
 
-            Settings settings = ((App)Application.Current).ZoneSettings;
+            Settings settings = ((App)Application.Current).ZoneSettings[0];
 
             int spacing = settings.ShowSpacing ? settings.Spacing : 0;
 

@@ -16,6 +16,8 @@
 #include <lib/util.h>
 #include <unordered_set>
 
+#include "common/monitors.h"
+
 enum class DisplayChangeType
 {
     WorkArea,
@@ -72,13 +74,13 @@ public:
     MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
-        m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_zoneWindowMap);    
+        m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_zoneWindowMap);
     }
     IFACEMETHODIMP_(void)
     MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
-        m_windowMoveHandler.MoveSizeEnd(window, ptScreen, m_zoneWindowMap);    
+        m_windowMoveHandler.MoveSizeEnd(window, ptScreen, m_zoneWindowMap);
     }
     IFACEMETHODIMP_(void)
     VirtualDesktopChanged() noexcept;
@@ -189,7 +191,7 @@ private:
     void MoveWindowsOnDisplayChange() noexcept;
     void CycleActiveZoneSet(DWORD vkCode) noexcept;
     bool OnSnapHotkey(DWORD vkCode) noexcept;
-    
+
     void RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept;
     void RegisterNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept;
     bool IsNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept;
@@ -204,7 +206,7 @@ private:
     mutable std::shared_mutex m_lock;
     HWND m_window{};
     WindowMoveHandler m_windowMoveHandler;
-    
+
     std::map<HMONITOR, winrt::com_ptr<IZoneWindow>> m_zoneWindowMap; // Map of monitor to ZoneWindow (one per monitor)
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
     GUID m_currentVirtualDesktopId{}; // UUID of the current virtual desktop. Is GUID_NULL until first VD switch per session.
@@ -263,8 +265,7 @@ FancyZones::Run() noexcept
         .wait();
 
     m_terminateVirtualDesktopTrackerEvent.reset(CreateEvent(nullptr, FALSE, FALSE, nullptr));
-    m_virtualDesktopTrackerThread.submit(OnThreadExecutor::task_t{ [&] {
-        VirtualDesktopUtils::HandleVirtualDesktopUpdates(m_window, WM_PRIV_VD_UPDATE, m_terminateVirtualDesktopTrackerEvent.get()); } });
+    m_virtualDesktopTrackerThread.submit(OnThreadExecutor::task_t{ [&] { VirtualDesktopUtils::HandleVirtualDesktopUpdates(m_window, WM_PRIV_VD_UPDATE, m_terminateVirtualDesktopTrackerEvent.get()); } });
 }
 
 // IFancyZones
@@ -388,6 +389,8 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
     return false;
 }
 
+int num_monitors;
+
 // IFancyZonesCallback
 void FancyZones::ToggleEditor() noexcept
 {
@@ -405,76 +408,67 @@ void FancyZones::ToggleEditor() noexcept
         m_terminateEditorEvent.reset(CreateEvent(nullptr, true, false, nullptr));
     }
 
-    HMONITOR monitor{};
     HWND foregroundWindow{};
 
-    const bool use_cursorpos_editor_startupscreen = m_settings->GetSettings()->use_cursorpos_editor_startupscreen;
-    POINT currentCursorPos{};
-    if (use_cursorpos_editor_startupscreen)
-    {
-        GetCursorPos(&currentCursorPos);
-        monitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
-    }
-    else
-    {
-        foregroundWindow = GetForegroundWindow();
-        monitor = MonitorFromWindow(foregroundWindow, MONITOR_DEFAULTTOPRIMARY);
-    }
-
-    if (!monitor)
-    {
-        return;
-    }
+    auto monitors = MonitorInfo::GetMonitors(false);
 
     std::shared_lock readLock(m_lock);
-    auto iter = m_zoneWindowMap.find(monitor);
-    if (iter == m_zoneWindowMap.end())
+
+    std::wstring params;
+
+    num_monitors = monitors.size();
+
+    for (int i = 0; i < num_monitors; i++)
     {
-        return;
+        auto monitor = monitors[i].handle;
+        auto iter = m_zoneWindowMap.find(monitor);
+        if (iter == m_zoneWindowMap.end())
+        {
+            return;
+        }
+
+        MONITORINFOEX mi;
+        mi.cbSize = sizeof(mi);
+
+        m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
+                              GetMonitorInfo(monitor, &mi);
+                          } })
+            .wait();
+
+        auto zoneWindow = iter->second;
+
+        const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+        fancyZonesData.CustomZoneSetsToJsonFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath(i, num_monitors));
+        // Do not scale window params by the dpi, that will be done in the editor - see LayoutModel.Apply
+        const auto taskbar_x_offset = mi.rcWork.left - mi.rcMonitor.left;
+        const auto taskbar_y_offset = mi.rcWork.top - mi.rcMonitor.top;
+        const auto x = mi.rcMonitor.left + taskbar_x_offset;
+        const auto y = mi.rcMonitor.top + taskbar_y_offset;
+        const auto width = mi.rcWork.right - mi.rcWork.left;
+        const auto height = mi.rcWork.bottom - mi.rcWork.top;
+        const std::wstring editorLocation =
+            std::to_wstring(x) + L"_" +
+            std::to_wstring(y) + L"_" +
+            std::to_wstring(width) + L"_" +
+            std::to_wstring(height);
+
+        const auto deviceInfo = fancyZonesData.FindDeviceInfo(zoneWindow->UniqueId());
+        if (!deviceInfo.has_value())
+        {
+            return;
+        }
+
+        JSONHelpers::DeviceInfoJSON deviceInfoJson{ zoneWindow->UniqueId(), *deviceInfo };
+        fancyZonesData.SerializeDeviceInfoToTmpFile(deviceInfoJson, ZoneWindowUtils::GetActiveZoneSetTmpPath(i, num_monitors));
+
+        params = params +
+                 /*1*/ std::to_wstring(reinterpret_cast<UINT_PTR>(monitor)) + L" " +
+                 /*2*/ editorLocation + L" " +
+                 /*3*/ zoneWindow->WorkAreaKey() + L" " +
+                 /*4*/ L"\"" + ZoneWindowUtils::GetActiveZoneSetTmpPath(i, num_monitors) + L"\" " +
+                 /*5*/ L"\"" + ZoneWindowUtils::GetAppliedZoneSetTmpPath(i, num_monitors) + L"\" " +
+                 /*6*/ L"\"" + ZoneWindowUtils::GetCustomZoneSetsTmpPath(i, num_monitors) + L"\" ";
     }
-
-    MONITORINFOEX mi;
-    mi.cbSize = sizeof(mi);
-
-    m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
-                          GetMonitorInfo(monitor, &mi);
-                      } })
-        .wait();
-
-    auto zoneWindow = iter->second;
-
-    const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
-    fancyZonesData.CustomZoneSetsToJsonFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
-
-    // Do not scale window params by the dpi, that will be done in the editor - see LayoutModel.Apply
-    const auto taskbar_x_offset = mi.rcWork.left - mi.rcMonitor.left;
-    const auto taskbar_y_offset = mi.rcWork.top - mi.rcMonitor.top;
-    const auto x = mi.rcMonitor.left + taskbar_x_offset;
-    const auto y = mi.rcMonitor.top + taskbar_y_offset;
-    const auto width = mi.rcWork.right - mi.rcWork.left;
-    const auto height = mi.rcWork.bottom - mi.rcWork.top;
-    const std::wstring editorLocation =
-        std::to_wstring(x) + L"_" +
-        std::to_wstring(y) + L"_" +
-        std::to_wstring(width) + L"_" +
-        std::to_wstring(height);
-
-    const auto deviceInfo = fancyZonesData.FindDeviceInfo(zoneWindow->UniqueId());
-    if (!deviceInfo.has_value())
-    {
-        return;
-    }
-
-    JSONHelpers::DeviceInfoJSON deviceInfoJson{ zoneWindow->UniqueId(), *deviceInfo };
-    fancyZonesData.SerializeDeviceInfoToTmpFile(deviceInfoJson, ZoneWindowUtils::GetActiveZoneSetTmpPath());
-
-    const std::wstring params =
-        /*1*/ std::to_wstring(reinterpret_cast<UINT_PTR>(monitor)) + L" " +
-        /*2*/ editorLocation + L" " +
-        /*3*/ zoneWindow->WorkAreaKey() + L" " +
-        /*4*/ L"\"" + ZoneWindowUtils::GetActiveZoneSetTmpPath() + L"\" " +
-        /*5*/ L"\"" + ZoneWindowUtils::GetAppliedZoneSetTmpPath() + L"\" " +
-        /*6*/ L"\"" + ZoneWindowUtils::GetCustomZoneSetsTmpPath() + L"\"";
 
     SHELLEXECUTEINFO sei{ sizeof(sei) };
     sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
@@ -483,7 +477,6 @@ void FancyZones::ToggleEditor() noexcept
     sei.nShow = SW_SHOWNORMAL;
     ShellExecuteEx(&sei);
     Trace::FancyZones::EditorLaunched(1);
-
     // Launch the editor on a background thread
     // Wait for the editor's process to exit
     // Post back to the main thread to update
@@ -668,7 +661,6 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
         }
     }
 }
-
 
 LRESULT CALLBACK FancyZones::s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
 {
@@ -872,11 +864,14 @@ bool FancyZones::IsNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept
 
 void FancyZones::OnEditorExitEvent() noexcept
 {
-    // Colect information about changes in zone layout after editor exited.
-    JSONHelpers::FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(ZoneWindowUtils::GetActiveZoneSetTmpPath());
-    JSONHelpers::FancyZonesDataInstance().ParseDeletedCustomZoneSetsFromTmpFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
-    JSONHelpers::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(ZoneWindowUtils::GetAppliedZoneSetTmpPath());
-    JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
+    for (int i = 0; i < num_monitors; i++)
+    {
+        // Colect information about changes in zone layout after editor exited.
+        JSONHelpers::FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(ZoneWindowUtils::GetActiveZoneSetTmpPath(i, num_monitors));
+        JSONHelpers::FancyZonesDataInstance().ParseDeletedCustomZoneSetsFromTmpFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath(i, num_monitors));
+        JSONHelpers::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(ZoneWindowUtils::GetAppliedZoneSetTmpPath(i, num_monitors));
+        JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
+    }
 }
 
 std::vector<HMONITOR> FancyZones::GetMonitorsSorted() noexcept
