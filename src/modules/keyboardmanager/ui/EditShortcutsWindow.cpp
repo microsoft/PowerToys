@@ -6,6 +6,7 @@
 #include <keyboardmanager/common/trace.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <common/windows_colors.h>
+#include <common/dpi_aware.h>
 #include "Styles.h"
 #include "Dialog.h"
 
@@ -73,6 +74,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Calculate resolution dependent window size
     int windowWidth = KeyboardManagerConstants::DefaultEditShortcutsWindowWidth * desktopRect.right;
     int windowHeight = KeyboardManagerConstants::DefaultEditShortcutsWindowHeight * desktopRect.bottom;
+    DPIAware::Convert(nullptr, windowWidth, windowHeight);
 
     // Window Creation
     HWND _hWndEditShortcutsWindow = CreateWindow(

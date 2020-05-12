@@ -7,6 +7,7 @@
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <set>
 #include <common/windows_colors.h>
+#include <common/dpi_aware.h>
 #include "Styles.h"
 #include "Dialog.h"
 
@@ -135,6 +136,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     // Calculate resolution dependent window size
     int windowWidth = KeyboardManagerConstants::DefaultEditKeyboardWindowWidth * desktopRect.right;
     int windowHeight = KeyboardManagerConstants::DefaultEditKeyboardWindowHeight * desktopRect.bottom;
+    DPIAware::Convert(nullptr, windowWidth, windowHeight);
 
     // Window Creation
     HWND _hWndEditKeyboardWindow = CreateWindow(
