@@ -19,6 +19,7 @@ namespace FancyZonesEditor
 
         public App()
         {
+            MonitorVM.CurrentMonitor = 1;
             NumMonitors = Environment.GetCommandLineArgs().Length / 6;
             ZoneSettings = new Settings[NumMonitors];
             for (int monitor_shift = 0; monitor_shift < NumMonitors; monitor_shift++)

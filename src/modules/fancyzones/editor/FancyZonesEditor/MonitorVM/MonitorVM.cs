@@ -19,6 +19,16 @@ namespace FancyZonesEditor
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
+        private static int _currentMonitor;
+
+        public static int CurrentMonitor
+        {
+            get { return _currentMonitor; }
+            set { _currentMonitor = value; }
+        }
+
+
+
         public MonitorVM()
         {
             AddCommand = new RelayCommand(AddCommandExecute, AddCommandCanExecute);
@@ -29,6 +39,12 @@ namespace FancyZonesEditor
             Monitors.Add(new MonitorInfo(1, "Monitor 2", 100, 150));
             Monitors.Add(new MonitorInfo(2, "Monitor 3", 100, 150));
         }
+
+        public void SwitchMonitor()
+        {
+            _currentMonitor = 1;
+        }
+
 
         #region Properties
 
