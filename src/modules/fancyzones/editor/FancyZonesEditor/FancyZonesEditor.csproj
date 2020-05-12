@@ -105,11 +105,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Command.cs" />
+    <Compile Include="MonitorVM\Command.cs" />
     <Compile Include="DashCaseNamingPolicy.cs" />
-    <Compile Include="EventArgs.cs" />
-    <Compile Include="EventRaiser.cs" />
-    <Compile Include="MonitorVM.cs" />
+    <Compile Include="MonitorVM\EventArgs.cs" />
+    <Compile Include="MonitorVM\EventRaiser.cs" />
+    <Compile Include="MonitorVM\MonitorInfo.cs" />
+    <Compile Include="MonitorVM\MonitorVM.cs" />
     <Compile Include="StringUtils.cs" />
     <Compile Include="Converters\BooleanToBrushConverter.xaml.cs" />
     <Compile Include="Converters\BooleanToIntConverter.xaml.cs" />

@@ -18,43 +18,26 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class MainWindow : MetroWindow
     {
-        // TODO: share the constants b/w C# Editor and FancyZoneLib
         public const int MaxZones = 40;
         private readonly Settings _settings = ((App)Application.Current).ZoneSettings;
         private static readonly string _defaultNamePrefix = "Custom Layout ";
 
-        public int WrapPanelItemSize { get; set; } = 150; //TODO: previously 262
+        public int WrapPanelItemSize { get; set; } = 150;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            DataContext = _settings;//new MulticlassDataContext();   // monitorVM;//_settings;
+            DataContext = _settings;
 
             KeyUp += MainWindow_KeyUp;
 
             if (_settings.WorkArea.Height < 900)
             {
                 SizeToContent = SizeToContent.WidthAndHeight;
-                WrapPanelItemSize = 150; //TODO: previously 1980
+                WrapPanelItemSize = 150;
             }
         }
-        //TODO: This is the code for the hardcoded monitors
-        //private void SelectScreen1(object sender, RoutedEventArgs e)
-        //{
-        //    this.screen1.Fill = Brushes.DeepSkyBlue;
-        //    this.screen2.Fill = Brushes.Gray;
-        //    this.screenName1.Visibility = Visibility.Visible;
-        //    this.screenName2.Visibility = Visibility.Hidden;
-        //}
-
-        //public void SelectScreen2(object sender, RoutedEventArgs e)
-        //{
-        //    this.screen2.Fill = Brushes.DeepSkyBlue;
-        //    this.screen1.Fill = Brushes.Gray;
-        //    this.screenName1.Visibility = Visibility.Hidden;
-        //    this.screenName2.Visibility = Visibility.Visible;
-        //}
 
         private void MainWindow_KeyUp(object sender, KeyEventArgs e)
         {

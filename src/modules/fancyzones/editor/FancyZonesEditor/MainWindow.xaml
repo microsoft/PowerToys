@@ -177,19 +177,13 @@
     </Window.Resources>
 
     <StackPanel>
-
         <TextBlock Name="dialog_Title" Text="{x:Static props:Resources.Choose_Layout}" Style="{StaticResource titleText}"  />
-
         <TabControl BorderThickness="0" x:Name="TemplateTab" SelectedIndex="{Binding IsCustomLayoutActive, Mode=OneWay, Converter={StaticResource BooleanToIntConverter}}">
             <TabItem Header="{x:Static props:Resources.Templates}" Template="{StaticResource myTabs}">
                 <StackPanel>
-                    <TextBlock DataContext="{Binding MonitorVM}" Text="{Binding hello}"></TextBlock>
                     <TextBlock FontWeight="Bold" Margin="8, 8, 0, 0">Arrangement</TextBlock>
                     <TextBlock Foreground="Gray" Margin="8, 0, 0, 0">Drag desired settings to the appropriate monitor to set its layout. Alternatively you can</TextBlock>
                     <TextBlock Foreground="Gray" Margin="8, 0, 0, 0">create new layouts by pressing the "create new layout" button</TextBlock>
-
-
-                    <!-- New code -->
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
@@ -199,8 +193,8 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <ScrollViewer ScrollViewer.HorizontalScrollBarVisibility="Visible"
-                      ScrollViewer.CanContentScroll="True"
-                      ScrollViewer.PanningMode="HorizontalOnly">
+                                      ScrollViewer.CanContentScroll="True"
+                                      ScrollViewer.PanningMode="HorizontalOnly">
                             <ScrollViewer.DataContext>
                                 <local:MonitorVM></local:MonitorVM>
                             </ScrollViewer.DataContext>
@@ -208,13 +202,10 @@
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <WrapPanel Background="LightGray" Orientation="Horizontal" ScrollViewer.HorizontalScrollBarVisibility="Visible" />
-                                        <!--<StackPanel Orientation="Horizontal" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
-                                ScrollViewer.PanningMode="HorizontalOnly"/>-->
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-
                                         <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" BorderBrush="Transparent"
                                                     Command="{Binding ItemClickCommand}"
                                                     CommandParameter="{Binding Id}">
@@ -231,11 +222,11 @@
                                                         <ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
                                                     <Rectangle Stroke="Black" Fill="{Binding Fill}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                   Grid.RowSpan="3" Grid.ColumnSpan="3"/>
+                                                               Grid.RowSpan="3" Grid.ColumnSpan="3"/>
                                                     <TextBlock Text="{Binding Name}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" 
-                                   FontSize="21" HorizontalAlignment="Center"/>
+                                                               FontSize="21" HorizontalAlignment="Center"/>
                                                     <TextBlock Text="{Binding Id}" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                   FontSize="20" FontWeight="Bold"/>
+                                                               FontSize="20" FontWeight="Bold"/>
                                                 </Grid>
                                             </Button.Content>
                                         </Button>
@@ -244,14 +235,6 @@
                             </ItemsControl>
                         </ScrollViewer>
                     </Grid>
-                    <!-- End new code-->
-                    <!--<StackPanel Margin="0,15,0,8" Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Button x:Name="decrementZones" Width="40" Height="40" Content="-" Style="{StaticResource spinnerButton}" Click="DecrementZones_Click"/>
-                        <TextBlock x:Name="zoneCount" Text="{Binding ZoneCount}" Style="{StaticResource zoneCount}"/>
-                        <Button x:Name="incrementZones" Width="40" Height="40" Content="+" Style="{StaticResource spinnerButton}" Click="IncrementZones_Click"/>
-                    </StackPanel>-->
-
-                    <!-- start new code-->
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -268,7 +251,6 @@
                             <Button x:Name="incrementZones" Width="40" Height="40" Content="+" Style="{StaticResource spinnerButton}" Click="IncrementZones_Click"/>
                         </StackPanel>
                     </Grid>
-                    <!-- end new code-->
                     <ItemsControl ItemsSource="{Binding DefaultModels}" Margin="8,0,0,0">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -300,13 +282,8 @@
                     <StackPanel Orientation="Vertical" Margin="10,4,0,8">
                         <TextBlock FontWeight="Bold">Advanced Settings</TextBlock>
                         <TextBlock Foreground="Gray">Show spaces around zones</TextBlock>
-                        <!-- This is where the button goes-->
                         <CheckBox x:Name="spaceAroundSetting"  Style="{StaticResource settingCheckBoxText}" IsChecked="{Binding ShowSpacing}"/>
-
-                        <!-- <Content="Show space around zones" ( inside the checkbox )-->
                         <TextBlock Foreground="Gray">Space around zones</TextBlock>
-                        <!--<TextBlock Text="Space around zones" Style="{StaticResource settingText}"/> -->
-
                         <TextBox Margin="0" HorizontalAlignment="Left" MaxWidth="25" x:Name="paddingValue" Text="{Binding Path=Spacing,Mode=TwoWay}" Style="{StaticResource textBox}"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,12,0,16">
@@ -315,7 +292,6 @@
                     </StackPanel>
                 </StackPanel>
             </TabItem>
-
 
             <TabItem Header="{x:Static props:Resources.Custom}" Template="{StaticResource myTabs}">
                 <StackPanel>
@@ -350,7 +326,6 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-
                     <StackPanel Orientation="Horizontal" Margin="0,10,0,16">
                         <Button x:Name="EditCustomButton" Content="{x:Static props:Resources.Edit_Selected_Layout}" Padding="8" Style="{StaticResource secondaryButton}" Click="EditLayout_Click"/>
                         <Button x:Name="ApplyCustomButton" Content="{x:Static props:Resources.Apply}" Padding="8" Style="{StaticResource primaryButton}" Click="Apply_Click"/>
@@ -358,8 +333,5 @@
                 </StackPanel>
             </TabItem>
         </TabControl>
-
-
-
     </StackPanel>
 </Controls:MetroWindow>
