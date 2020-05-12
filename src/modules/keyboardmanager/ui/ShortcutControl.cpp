@@ -157,14 +157,14 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
         keyboardManagerState.ResetDetectedShortcutKey(key);
     };
 
-    auto onAccept = [this,
-                     linkedShortcutStackPanel,
-                     detectShortcutBox,
-                     &keyboardManagerState,
-                     &shortcutRemapBuffer,
-                     unregisterKeys,
-                     colIndex,
-                     table] {
+    auto onPressEnter = [this,
+                         linkedShortcutStackPanel,
+                         detectShortcutBox,
+                         &keyboardManagerState,
+                         &shortcutRemapBuffer,
+                         unregisterKeys,
+                         colIndex,
+                         table] {
         // Save the detected shortcut in the linked text block
         Shortcut detectedShortcutKeys = keyboardManagerState.GetDetectedShortcut();
 
@@ -173,13 +173,23 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
             // The shortcut buffer gets set in this function
             AddShortcutToControl(detectedShortcutKeys, table, linkedShortcutStackPanel, keyboardManagerState, colIndex);
         }
+        // Hide the type shortcut UI
+        detectShortcutBox.Hide();
+    };
 
+    auto onReleaseEnter = [&keyboardManagerState,
+                           unregisterKeys] {
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();
         // Revert UI state back to Edit Shortcut window
         keyboardManagerState.SetUIState(KeyboardManagerUIState::EditShortcutsWindowActivated, EditShortcutsWindowHandle);
         unregisterKeys();
-        detectShortcutBox.Hide();
+    };
+
+    auto onAccept = [onPressEnter,
+                     onReleaseEnter] {
+        onPressEnter();
+        onReleaseEnter();
     };
 
     TextBlock primaryButtonText;
@@ -198,20 +208,17 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
     keyboardManagerState.RegisterKeyDelay(
         VK_RETURN,
         selectDetectedShortcutAndResetKeys,
-        [primaryButton, detectShortcutBox](DWORD) {
+        [primaryButton, onPressEnter, detectShortcutBox](DWORD) {
             detectShortcutBox.Dispatcher().RunAsync(
                 Windows::UI::Core::CoreDispatcherPriority::Normal,
-                [primaryButton] {
+                [primaryButton, onPressEnter] {
                     // Use the base medium low brush to be consistent with the theme
                     primaryButton.Background(Windows::UI::Xaml::Application::Current().Resources().Lookup(box_value(L"SystemControlBackgroundBaseMediumLowBrush")).as<Windows::UI::Xaml::Media::SolidColorBrush>());
+                    onPressEnter();
                 });
         },
-        [onAccept, detectShortcutBox](DWORD) {
-            detectShortcutBox.Dispatcher().RunAsync(
-                Windows::UI::Core::CoreDispatcherPriority::Normal,
-                [onAccept] {
-                    onAccept();
-                });
+        [onReleaseEnter](DWORD) {
+            onReleaseEnter();
         });
 
     TextBlock cancelButtonText;
