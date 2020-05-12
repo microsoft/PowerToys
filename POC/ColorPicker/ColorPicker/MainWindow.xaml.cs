@@ -27,7 +27,7 @@ namespace ColorPicker
         public MainWindow()
         {
             InitializeComponent();
-            mouseEvent = new RegisterdMouseEventHook(PixelColorFinder.HandleMouseClick);
+            mouseEvent = new RegisteredMouseEventHook(PixelColorFinder.HandleMouseClick);
         }
     }
 }
