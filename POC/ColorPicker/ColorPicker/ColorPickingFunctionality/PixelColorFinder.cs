@@ -84,20 +84,11 @@ namespace ColorPicker.ColorPickingFunctionality
             }
         }
 
-        private static int ParseRed(int colorRef)
-        {
-            return colorRef & 0x000000FF;
-        }
+        private static int ParseRed(int colorRef) => colorRef & 0x000000FF;
 
-        private static int ParseGreen(int colorRef)
-        {
-            return (colorRef & 0x0000FF00) >> 8;
-        }
+        private static int ParseGreen(int colorRef) => (colorRef & 0x0000FF00) >> 8;
 
-        private static int ParseBlue(int colorRef)
-        {
-            return (colorRef & 0x00FF0000) >> 16;
-        }
+        private static int ParseBlue(int colorRef) => (colorRef & 0x00FF0000) >> 16;
     }
 }
 

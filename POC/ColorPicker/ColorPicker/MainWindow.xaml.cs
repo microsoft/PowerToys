@@ -23,11 +23,11 @@ namespace ColorPicker
     /// </summary>
     public partial class MainWindow : Window
     {
-        private MouseEvent tempToStopMemoryCleanUp;
+        private RegisterdMouseEventHook mouseEvent;
         public MainWindow()
         {
             InitializeComponent();
-            tempToStopMemoryCleanUp = new MouseEvent(PixelColorFinder.HandleMouseClick);
+            mouseEvent = new RegisterdMouseEventHook(PixelColorFinder.HandleMouseClick);
         }
     }
 }
