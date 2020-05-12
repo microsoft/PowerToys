@@ -173,21 +173,16 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     keyboardManagerState.RegisterKeyDelay(
         VK_RETURN,
         std::bind(&KeyboardManagerState::SelectDetectedRemapKey, &keyboardManagerState, std::placeholders::_1),
-        [primaryButton, detectRemapKeyBox](DWORD) {
+        [primaryButton, onAccept, detectRemapKeyBox](DWORD) {
             detectRemapKeyBox.Dispatcher().RunAsync(
                 Windows::UI::Core::CoreDispatcherPriority::Normal,
-                [primaryButton] {
+                [primaryButton, onAccept] {
                     // Use the base medium low brush to be consistent with the theme
                     primaryButton.Background(Windows::UI::Xaml::Application::Current().Resources().Lookup(box_value(L"SystemControlBackgroundBaseMediumLowBrush")).as<Windows::UI::Xaml::Media::SolidColorBrush>());
-                });
-        },
-        [onAccept, detectRemapKeyBox](DWORD) {
-            detectRemapKeyBox.Dispatcher().RunAsync(
-                Windows::UI::Core::CoreDispatcherPriority::Normal,
-                [onAccept] {
                     onAccept();
                 });
-        });
+        },
+        nullptr);
 
     TextBlock cancelButtonText;
     cancelButtonText.Text(L"Cancel");
