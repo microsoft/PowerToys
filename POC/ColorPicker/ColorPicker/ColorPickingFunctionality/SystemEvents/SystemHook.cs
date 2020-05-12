@@ -72,17 +72,14 @@ namespace ColorPicker.ColorPickingFunctionality.SystemEvents
 
         private void CaptureGlobalEvent()
         {
+            hookHandleID = SetWindowsHookEx(
+                hookType,
+                hookActionDelegate,
+                SafeGetModuleHandle(Process.GetCurrentProcess().MainModule.ModuleName),
+                0);
             if (hookHandleID == 0)
             {
-                hookHandleID = SetWindowsHookEx(
-                    hookType,
-                    hookActionDelegate,
-                    SafeGetModuleHandle(Process.GetCurrentProcess().MainModule.ModuleName),
-                    0);
-                if (hookHandleID == 0)
-                {
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
-                }
+                throw new Win32Exception(Marshal.GetLastWin32Error());
             }
         }
 
@@ -98,13 +95,10 @@ namespace ColorPicker.ColorPickingFunctionality.SystemEvents
 
         private void ReleaseGlobalEvent()
         {
-            if (hookHandleID != 0)
+            int result = UnhookWindowsHookEx(hookHandleID);
+            if (result == 0)
             {
-                int result = UnhookWindowsHookEx(hookHandleID);
-                if (result == 0)
-                {
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
-                }
+                throw new Win32Exception(Marshal.GetLastWin32Error());
             }
         }
     }
