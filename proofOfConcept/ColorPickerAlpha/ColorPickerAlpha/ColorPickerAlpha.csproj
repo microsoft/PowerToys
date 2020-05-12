@@ -101,6 +101,7 @@
     <Resource Include="img_261889.png" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="swap_icon.png" />
     <Resource Include="copy_icon..png" />
     <Content Include="copy_icon.svg" />
   </ItemGroup>
