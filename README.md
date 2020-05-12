@@ -51,8 +51,6 @@ PowerToys will now enable two types of files to be previewed:
 - Markdown files (.md)
 - SVG (.svg)
 <br>
-<br>
-<br>
 
 ### Image Resizer
 
@@ -63,7 +61,7 @@ This code is based on [Brice Lambson's Image Resizer](https://github.com/bricela
 <br>
 <br>
 <br>
-<br>
+
 ### Keyboard Manager
 
 <img align="left" src="./doc/images/Overview ReadMe/KBM_small.png" /> [Keyboard Manager](src/modules/keyboardmanager/) allows you to customize the keyboard to be more productive by remapping keys and creating your own keyboard shortcuts.
@@ -75,6 +73,8 @@ This code is based on [Brice Lambson's Image Resizer](https://github.com/bricela
 ### PowerToys Run
 
 <img align="left" src="./doc/images/Overview ReadMe/PowerLauncher_small.png" /> [PowerToys Run](src/modules/launcher/) is a new toy in PowerToys that can help you search and launch your app instantly! It is open source and modular for additional plugins.
+<br>
+<br>
 <br>
 <br>
 <br>
