@@ -6,38 +6,6 @@
         xmlns:local="clr-namespace:ColorPickerAlpha"
         mc:Ignorable="d"
         Title="MainWindow" Height="77.985" Width="598.229" Background="#FF4472C4">
-    <!--
-    <Grid Margin="0,80,-0.5,288.5">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width = "Auto" />
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
-
-        <Grid.RowDefinitions>
-            <RowDefinition Height = "50" />
-        </Grid.RowDefinitions>
-
-
-        <Grid.Background>
-            <ImageBrush/>
-        </Grid.Background>
-         Buttons arranged vertically inside a StackPanel. 
-
-        <Button Grid.Row = "0" Grid.Column = "0"  Click="Button_Click" Opacity="1" Height="27" VerticalAlignment="Top" HorizontalAlignment="Center" >
-            <Button.Background>
-                <ImageBrush ImageSource="Eyedropper-icon.png" Stretch="Uniform"/>
-            </Button.Background>
-        </Button>
-        <TextBlock Grid.Row = "0" Grid.Column = "1"  Text="R" TextWrapping="Wrap" Margin="128,-76,216.5,-25" RenderTransformOrigin="-17.729,5.701"/>
-
-        <TextBlock Grid.Row = "0" Grid.Column = "2"  Text="G" TextWrapping="Wrap" Margin="261,-76,83.5,-24" RenderTransformOrigin="-17.729,5.701"/>
-        <TextBlock Grid.Row = "0" Grid.Column = "3"  Text="B" TextWrapping="Wrap" Margin="9.5,-75,207.5,-25" RenderTransformOrigin="-17.729,5.701"/>
-        Buttons arranged vertically inside a StackPanel. 
-
-    </Grid>
-    -->
 
     <Grid x:Name = "FormLayoutGrid" Margin="0,0,0,1.5">
         <Grid.ColumnDefinitions>
