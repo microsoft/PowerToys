@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Drawing;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -9,25 +12,32 @@ namespace ColorPickerAlpha
 {
     public partial class MainWindow : Window
     {
+        System.Windows.Media.Color curColor;
+
         public MainWindow()
         {
             InitializeComponent();
-        }
 
-        private void OnMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            Point pnt = e.GetPosition(null);
-            (int x, int y) = ColorPicker.GetPhysicalCursorCoords();
-            System.Drawing.Color newCol = ColorPicker.GetPixelColor(x, y);
-
-            txt2.Text = "Mouse Click: " + pnt.ToString();
-            txt3.Text = "RGB: " + newCol.R + "," + newCol.B + "," + newCol.G;
-
-            //Test with rectangle windows of different colors
-            if (e.Source is Rectangle source)
+            new Thread(() =>
             {
-                source.Fill = source.Name.Equals("mrRec") ? Brushes.Aqua : Brushes.Red;
-            }
+                while (true)
+                {
+                    (int x, int y) = ColorPicker.GetPhysicalCursorCoords();
+                    Debug.WriteLine(x);
+
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        System.Drawing.Color color = ColorPicker.GetPixelColor(x, y); //GetPixel(new System.Drawing.Point(x, y));
+                        Debug.WriteLine(color);
+                        //txt2.Text = color.R + ",";
+                        curColor = System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B);
+                        mrRec.Fill = new SolidColorBrush(curColor);
+                    }));
+
+                    Thread.Sleep(100);
+                }
+            }).Start();
+
         }
     }
 }

@@ -17,15 +17,9 @@ namespace ColorPickerAlpha
         static extern uint GetPixel(IntPtr hdc, int nXPos, int nYPos);
 
         [DllImport("user32.dll")]
-        internal static extern bool GetPhysicalCursorPos(ref CursorPoint lpPoint);
+        internal static extern bool GetPhysicalCursorPos(ref Point lpPoint);
         [DllImport("user32.dll")]
-        internal static extern bool SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT value); //TODO: set correctly
-
-        public struct CursorPoint
-        {
-            public int X;
-            public int Y;
-        }
+        internal static extern bool SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT value); 
 
         public enum DPI_AWARENESS_CONTEXT
         {
@@ -36,7 +30,7 @@ namespace ColorPickerAlpha
             DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED   
         }
 
-    static public Color GetPixelColor(int x, int y)
+        static public Color GetPixelColor(int x, int y)
         {
             DPI_AWARENESS_CONTEXT dpitype = DPI_AWARENESS_CONTEXT.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE;
             if (SetProcessDpiAwarenessContext(dpitype))
@@ -48,23 +42,22 @@ namespace ColorPickerAlpha
                     (int)(pixel & 0x000000FF),
                     (int)(pixel & 0x0000FF00) >> 8,
                     (int)(pixel & 0x00FF0000) >> 16);
-                return color;
 
+                return color;
             }
             else
             {
                 throw new System.InvalidOperationException("Set process dpi aware failed");
             }
-            
-            
         }
 
         static public (int x, int y) GetPhysicalCursorCoords()
         {
-            CursorPoint cursorPos = new CursorPoint();
-            GetPhysicalCursorPos(ref cursorPos);
+            Point cursorPnt = new Point();
+            GetPhysicalCursorPos(ref cursorPnt);
 
-            return (cursorPos.X, cursorPos.Y);
+            return (cursorPnt.X, cursorPnt.Y);
         }
+
     }
 }
