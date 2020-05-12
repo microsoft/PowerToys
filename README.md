@@ -41,9 +41,6 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 This code is based on [Chris Davis's SmartRename](https://github.com/chrdavis/SmartRename).
 <br>
 <br>
-<br>
-<br>
-<br>
 
 ### File Explorer (Preview Panes)
 
@@ -80,6 +77,9 @@ This code is based on [Brice Lambson's Image Resizer](https://github.com/bricela
 ### PowerToys Run
 
 <img align="left" src="./doc/images/Overview ReadMe/PowerLauncher_small.png" /> [PowerToys Run](src/modules/launcher/) is a new toy in PowerToys that can help you search and launch your app instantly! It is open source and modular for additional plugins.
+<br>
+<br>
+<br>
 <br>
 <br>
 <br>
@@ -157,13 +157,13 @@ For [0.18](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+
 - A testing utility for FancyZones to be sure we can test different window configurations.
 - Settings v2 / Fix bug #243
 <br>
-<br>
 
 ## Developer Guidance
 
 Please read the [developer docs](/doc/devdocs) for a detailed breakdown.
 <br>
 <br>
+
 ## Contributing
 
 This project welcomes contributions of all times. Help spec'ing, design, documentation, finding bugs are ways everyone can help on top of coding features / bug fixes. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
@@ -179,11 +179,13 @@ PowerToys is still a very fluidic project and the team is actively working out o
  Most contributions require you to agree to a [Contributor License Agreement (CLA)][oss-CLA] declaring that you have the right to, and actually do, grant us the rights to use your contribution.
 <br>
 <br>
+
 ## Code of Conduct
 
 This project has adopted the [Microsoft Open Source Code of Conduct][oss-conduct-code]. 
 <br>
 <br>
+
 ## Privacy Statement
 
 The application logs basic telemetry. Our Telemetry Data page (Coming Soon) has the trends from the telemetry. Please read the [Microsoft privacy statement][privacyLink] for more information.
