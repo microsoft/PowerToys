@@ -19,7 +19,7 @@ namespace ColorPickerAlpha
         [DllImport("user32.dll")]
         internal static extern bool GetPhysicalCursorPos(ref CursorPoint lpPoint);
         [DllImport("user32.dll")]
-        internal static extern bool SetProcessDPIAware(); //TODO: set correctly
+        internal static extern bool SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT value); //TODO: set correctly
 
         public struct CursorPoint
         {
@@ -27,16 +27,36 @@ namespace ColorPickerAlpha
             public int Y;
         }
 
-        static public Color GetPixelColor(int x, int y)
+        public enum DPI_AWARENESS_CONTEXT
         {
-            IntPtr hdc = GetDC(IntPtr.Zero);
-            uint pixel = GetPixel(hdc, x, y);
-            ReleaseDC(IntPtr.Zero, hdc);
-            Color color = Color.FromArgb(
-                (int)(pixel & 0x000000FF),
-                (int)(pixel & 0x0000FF00) >> 8,
-                (int)(pixel & 0x00FF0000) >> 16);
-            return color;
+            DPI_AWARENESS_CONTEXT_UNAWARE,             
+            DPI_AWARENESS_CONTEXT_SYSTEM_AWARE,         
+            DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE,    
+            DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2, 
+            DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED   
+        }
+
+    static public Color GetPixelColor(int x, int y)
+        {
+            DPI_AWARENESS_CONTEXT dpitype = DPI_AWARENESS_CONTEXT.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE;
+            if (SetProcessDpiAwarenessContext(dpitype))
+            {
+                IntPtr hdc = GetDC(IntPtr.Zero);
+                uint pixel = GetPixel(hdc, x, y);
+                ReleaseDC(IntPtr.Zero, hdc);
+                Color color = Color.FromArgb(
+                    (int)(pixel & 0x000000FF),
+                    (int)(pixel & 0x0000FF00) >> 8,
+                    (int)(pixel & 0x00FF0000) >> 16);
+                return color;
+
+            }
+            else
+            {
+                throw new System.InvalidOperationException("Set process dpi aware failed");
+            }
+            
+            
         }
 
         static public (int x, int y) GetPhysicalCursorCoords()
