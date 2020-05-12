@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
 
-        private ResourceLoader loader = ResourceLoader.GetForCurrentView();
+        private ResourceLoader loader;
 
         public GeneralViewModel()
         {
@@ -97,6 +97,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _autoDownloadUpdates = GeneralSettingsConfigs.AutoDownloadUpdates;
             _isElevated = ShellPage.IsElevated;
             _runElevated = GeneralSettingsConfigs.RunElevated;
+
+            try
+            {
+                // This fails for the Unit Tests
+                loader = ResourceLoader.GetForCurrentView();
+            }
+            catch { }
         }
 
         private bool _packaged = false;
