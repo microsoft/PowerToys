@@ -77,7 +77,7 @@ namespace ColorPicker.ColorPickingFunctionality.SystemEvents
             {
                 hookHandleID = SetWindowsHookEx(
                     hookType,
-                    hookActionDelegate, 
+                    hookActionDelegate,
                     SafeGetModuleHandle(Process.GetCurrentProcess().MainModule.ModuleName),
                     0);
                 if (hookHandleID == 0)
@@ -89,8 +89,8 @@ namespace ColorPicker.ColorPickingFunctionality.SystemEvents
 
         private IntPtr SafeGetModuleHandle(string moduleName)
         {
-            IntPtr handle = GetModuleHandle(Process.GetCurrentProcess().MainModule.ModuleName);
-            if(handle == IntPtr.Zero)
+            IntPtr handle = GetModuleHandle(moduleName);
+            if (handle == IntPtr.Zero)
             {
                 throw new InternalSystemCallException("Failed to get module handle");
             }

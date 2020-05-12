@@ -20,15 +20,15 @@ namespace ColorPicker.ColorPickingFunctionality
         private static extern int GetPixel(IntPtr hDC, int xCoord, int yCoord);
 
         /// <summary>
-        /// Get a handle to the current device context
+        /// Get a handle to the current device context.
         /// </summary>
         /// <param name="hWnd"> A handle to the window whose DC is to be retrieved. If this value is NULL, GetDC retrieves the DC for the entire screen.</param>
-        /// <returns>returns the handle if succesful, or NULL for failure.</returns>
+        /// <returns>The handle if succesful, or NULL for failure.</returns>
         [DllImport("user32.dll")]
         private static extern IntPtr GetDC(IntPtr hWnd);
 
         /// <summary>
-        /// Release the current display context
+        /// Release the current display context.
         /// </summary>
         /// <param name="hWnd">A handle to the window whose DC is to be released.</param>
         /// <param name="hDC">A handle to the DC to be released.</param>
@@ -40,9 +40,9 @@ namespace ColorPicker.ColorPickingFunctionality
         {
             int colorRef = GetPixelValue(x, y);
 
-            int red = parseRed(colorRef);
-            int green = parseGreen(colorRef);
-            int blue = parseBlue(colorRef);
+            int red = ParseRed(colorRef);
+            int green = ParseGreen(colorRef);
+            int blue = ParseBlue(colorRef);
 
             // Below is temporary - need to integrate this with UI at a later date
             Debug.WriteLine("R: {0} G: {1} B: {2}", red, green, blue);
@@ -50,13 +50,13 @@ namespace ColorPicker.ColorPickingFunctionality
 
         private static int GetPixelValue(int xCoord, int yCoord)
         {
-            IntPtr hDC = safeGetWindowDC();
-            int pixelValue = safeGetPixel(hDC, xCoord, yCoord);
-            safeReleaseWindowDC(hDC);
+            IntPtr hDC = SafeGetWindowDC();
+            int pixelValue = SafeGetPixel(hDC, xCoord, yCoord);
+            SafeReleaseWindowDC(hDC);
             return pixelValue;
         }
 
-        private static IntPtr safeGetWindowDC()
+        private static IntPtr SafeGetWindowDC()
         {
             IntPtr hDC = GetDC(IntPtr.Zero);
             if (hDC == null)
@@ -66,17 +66,17 @@ namespace ColorPicker.ColorPickingFunctionality
             return hDC;
         }
 
-        private static int safeGetPixel(IntPtr hDC, int x, int y)
+        private static int SafeGetPixel(IntPtr hDC, int x, int y)
         {
             int pixelValue = GetPixel(hDC, x, y);
-            if((uint)pixelValue == 0xFFFFFFFF)
+            if ((uint)pixelValue == 0xFFFFFFFF)
             {
                 throw new InternalSystemCallException("Failed to get pixel");
             }
             return pixelValue;
         }
 
-        private static void safeReleaseWindowDC(IntPtr hDC)
+        private static void SafeReleaseWindowDC(IntPtr hDC)
         {
             if (ReleaseDC(IntPtr.Zero, hDC) == 0)
             {
@@ -84,17 +84,17 @@ namespace ColorPicker.ColorPickingFunctionality
             }
         }
 
-        private static int parseRed(int colorRef)
+        private static int ParseRed(int colorRef)
         {
             return colorRef & 0x000000FF;
         }
 
-        private static int parseGreen(int colorRef)
+        private static int ParseGreen(int colorRef)
         {
             return (colorRef & 0x0000FF00) >> 8;
         }
 
-        private static int parseBlue(int colorRef)
+        private static int ParseBlue(int colorRef)
         {
             return (colorRef & 0x00FF0000) >> 16;
         }
