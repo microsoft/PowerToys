@@ -33,7 +33,7 @@
         </Button>
 
         <Rectangle Grid.Row = "0" Grid.Column = "1" Width="40" Height="40" Fill="White" Stroke="Black" />
-        
+
         <TextBlock Grid.Row = "0" Grid.Column = "2" Text = "R" 
          Margin = "10" HorizontalAlignment = "Right" VerticalAlignment = "Center" 
          Width = "30"  TextAlignment="Right" FontSize="20"/>
@@ -42,7 +42,7 @@
         <TextBlock Grid.Row = "0" Grid.Column = "4" Text = "G" Margin = "10" 
          HorizontalAlignment = "Right" VerticalAlignment = "Center" Width = "30" TextAlignment="Right"
                    FontSize="20"/>
-        
+
         <TextBox Grid.Row = "0" Grid.Column = "5" Margin = "10"/>
 
         <TextBlock Grid.Row = "2" Grid.Column = "6" Text = "B" Margin = "10" 
