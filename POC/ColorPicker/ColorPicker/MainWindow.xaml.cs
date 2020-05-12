@@ -26,7 +26,6 @@ namespace ColorPicker
         public MainWindow()
         {
             InitializeComponent();
-            this.DataContext = this;
         }
         
         // This function is only for testing and this event handling will be removed
