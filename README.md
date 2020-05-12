@@ -4,7 +4,9 @@
 
 Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. Inspired by the [Windows 95 era PowerToys project](https://en.wikipedia.org/wiki/Microsoft_PowerToys), this reboot provides power users with ways to squeeze more efficiency out of the Windows 10 shell and customize it for individual workflows.  A great overview of the Windows 95 PowerToys can be found [here](https://socket3.wordpress.com/2016/10/22/using-windows-95-powertoys/).
 <br>
-// LINK // LINK // LINK
+<br>
+[Download][github-release-link]   |   [Release notes][github-release-link]   |   [Microsoft privacy statement][privacyLink]
+<br>
 <br>
 ## Build status
 
@@ -122,6 +124,7 @@ For [0.18](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+
 - Settings v2 / Fix bug #243
 <br>
 <br>
+
 ## Developer Guidance
 
 Please read the [developer docs](/doc/devdocs) for a detailed breakdown.
