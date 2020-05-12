@@ -63,7 +63,7 @@ namespace PowerToys_Settings_Sandbox.Services
                 await StartupAsync();
             }
 
-            Notifications.AppInstalledToast();
+            NotificationService.AppInstalledToast();
 
         }
 
