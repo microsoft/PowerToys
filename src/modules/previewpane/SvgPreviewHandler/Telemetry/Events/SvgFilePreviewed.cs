@@ -8,9 +8,13 @@ using Microsoft.PowerToys.Telemetry.Events;
 
 namespace SvgPreviewHandler.Telemetry.Events
 {
+    /// <summary>
+    /// A telemetry event to be raised when a svg file has been viewed in the preview pane.
+    /// </summary>
     [EventData]
     public class SvgFilePreviewed : IEvent
     {
+        /// <inheritdoc/>
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
     }
 }
