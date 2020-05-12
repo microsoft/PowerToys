@@ -408,28 +408,9 @@ void FancyZones::ToggleEditor() noexcept
         m_terminateEditorEvent.reset(CreateEvent(nullptr, true, false, nullptr));
     }
 
-    //HMONITOR monitor{};
     HWND foregroundWindow{};
 
     auto monitors = MonitorInfo::GetMonitors(false);
-
-    // const bool use_cursorpos_editor_startupscreen = m_settings->GetSettings()->use_cursorpos_editor_startupscreen;
-    // POINT currentCursorPos{};
-    // if (use_cursorpos_editor_startupscreen)
-    // {
-    //     GetCursorPos(&currentCursorPos);
-    //     monitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
-    // }
-    // else
-    // {
-    //     foregroundWindow = GetForegroundWindow();
-    //     monitor = MonitorFromWindow(foregroundWindow, MONITOR_DEFAULTTOPRIMARY);
-    // }
-
-    // if (!monitor)
-    // {
-    //     return;
-    // }
 
     std::shared_lock readLock(m_lock);
 

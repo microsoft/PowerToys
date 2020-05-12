@@ -29,41 +29,44 @@ namespace FancyZonesEditor
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            LayoutModel foundModel = null;
+            LayoutModel[] foundModel = new LayoutModel[NumMonitors];
 
-            foreach (LayoutModel model in ZoneSettings[0].DefaultModels)
+            for (int setting = 0; setting < NumMonitors; setting++)
             {
-                if (model.Type == Settings.ActiveZoneSetLayoutType)
+                foreach (LayoutModel model in ZoneSettings[setting].DefaultModels)
                 {
-                    // found match
-                    foundModel = model;
-                    break;
-                }
-            }
-
-            if (foundModel == null)
-            {
-                foreach (LayoutModel model in Settings.CustomModels)
-                {
-                    if ("{" + model.Guid.ToString().ToUpper() + "}" == Settings.ActiveZoneSetUUid.ToUpper())
+                    if (model.Type == Settings.ActiveZoneSetLayoutType)
                     {
                         // found match
-                        foundModel = model;
+                        foundModel[setting] = model;
                         break;
                     }
                 }
-            }
 
-            if (foundModel == null)
-            {
-                foundModel = ZoneSettings[0].DefaultModels[0];
-            }
+                if (foundModel == null)
+                {
+                    foreach (LayoutModel model in Settings.CustomModels)
+                    {
+                        if ("{" + model.Guid.ToString().ToUpper() + "}" == Settings.ActiveZoneSetUUid.ToUpper())
+                        {
+                            // found match
+                            foundModel[setting] = model;
+                            break;
+                        }
+                    }
+                }
 
-            foundModel.IsSelected = true;
+                if (foundModel == null)
+                {
+                    foundModel[setting] = ZoneSettings[setting].DefaultModels[0];
+                }
+
+                foundModel[setting].IsSelected = true;
+            }
 
             EditorOverlay overlay = new EditorOverlay();
             overlay.Show();
-            overlay.DataContext = foundModel;
+            overlay.DataContext = foundModel[0];
         }
     }
 }
