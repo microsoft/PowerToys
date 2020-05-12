@@ -143,7 +143,11 @@
                        Margin="{StaticResource SmallTopMargin}"
                        TextWrapping="Wrap"/>
 
-
+            <Button x:Uid="KeyboardManager_RemapKeyboardButton"
+                    Margin="{StaticResource SmallTopMargin}"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Command="{Binding Path=RemapKeyboardCommand}"
+                    IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>
 
             <ListView x:Name="RemapKeysList"
                       extensions:ListViewExtensions.AlternateColor="{ThemeResource SystemControlBackgroundListLowBrush}"
@@ -160,15 +164,15 @@
                       IsSwipeEnabled="False"
                       Visibility="{x:Bind Path=ViewModel.RemapKeys, Mode=OneWay, Converter={StaticResource visibleIfNotEmptyConverter}}"
                       />
-            
-            <AppBarButton x:Uid="KeyboardManager_RemapKeyboardButton"
+
+            <!--<AppBarButton x:Uid="KeyboardManager_RemapKeyboardButton"
                     Icon="Add"
                     Width="370"
                     Style="{StaticResource AddItemAppBarButtonStyle}"
                     Command="{Binding Path=RemapKeyboardCommand}"
                     Margin="{StaticResource AddItemButtonMargin}"
                     HorizontalAlignment="Left"
-                    IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>
+                    IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>-->
 
             <TextBlock x:Uid="KeyboardManager_RemapShortcutsHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
@@ -176,7 +180,12 @@
             <TextBlock Text="Click below to remap a shortcut (hotkey) to another shortcut"
                        TextWrapping="Wrap" Margin="{StaticResource SmallTopMargin}"/>
 
-
+            <Button x:Uid="KeyboardManager_RemapShortcutsButton"
+                    Margin="{StaticResource SmallTopMargin}"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Command="{Binding Path=EditShortcutCommand}"
+                    IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"
+                    />
 
             <ListView x:Name="RemapShortcutsList"
                       extensions:ListViewExtensions.AlternateColor="{ThemeResource SystemControlBackgroundListLowBrush}"
@@ -194,7 +203,7 @@
                       Visibility="{x:Bind Path=ViewModel.RemapShortcuts, Mode=OneWay, Converter={StaticResource visibleIfNotEmptyConverter}}"
                       />
 
-            <AppBarButton x:Uid="KeyboardManager_RemapShortcutsButton"
+            <!--<AppBarButton x:Uid="KeyboardManager_RemapShortcutsButton"
                     Icon="Add"
                     Width="370"
                     Style="{StaticResource AddItemAppBarButtonStyle}"
@@ -202,7 +211,7 @@
                     IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"
                     Margin="{StaticResource AddItemButtonMargin}"
                     HorizontalAlignment="Left"
-                    />
+                    />-->
         </StackPanel>
 
         <StackPanel 
