@@ -141,6 +141,7 @@ namespace PowerLauncher
                     _firstDeleteTimer.Start();
                     Activate();
                     UpdatePosition();
+                    SearchBox.QueryTextBox.Focus();
                     _settings.ActivateTimes++;
                     if (!_viewModel.LastQuerySelected)
                     {
