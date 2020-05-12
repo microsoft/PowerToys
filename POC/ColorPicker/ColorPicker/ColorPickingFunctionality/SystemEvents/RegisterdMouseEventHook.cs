@@ -29,7 +29,7 @@ namespace ColorPicker.ColorPickingFunctionality.SystemEvents
 
         private EventCallBack callback;
 
-        public RegisterdMouseEventHook(EventCallBack callback) : base(WH_MOUSE_LL)
+        public RegisteredMouseEventHook(EventCallBack callback) : base(WH_MOUSE_LL)
         {
             this.callback = callback;
         }
