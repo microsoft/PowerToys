@@ -10,6 +10,8 @@ using System.Windows.Forms;
 using Common;
 using Markdig;
 using MarkdownPreviewHandler.Properties;
+using MarkdownPreviewHandler.Telemetry.Events;
+using Microsoft.PowerToys.Telemetry;
 using PreviewHandlerCommon;
 
 namespace MarkdownPreviewHandler
@@ -112,11 +114,11 @@ namespace MarkdownPreviewHandler
                     }
                 });
 
-                MarkdownTelemetry.Log.MarkdownFilePreviewed();
+                PowerToysTelemetry.Log.WriteEvent(new MarkdownFilePreviewed());
             }
             catch (Exception e)
             {
-                MarkdownTelemetry.Log.MarkdownFilePreviewError(e.Message);
+                PowerToysTelemetry.Log.WriteEvent(new MarkdownFilePreviewError { Message = e.Message });
 
                 this.InvokeOnControlThread(() =>
                 {

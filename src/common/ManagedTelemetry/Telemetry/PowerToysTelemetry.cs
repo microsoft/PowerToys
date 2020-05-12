@@ -4,6 +4,7 @@
 
 using System.Diagnostics.Tracing;
 using PreviewHandlerCommon.Telemetry;
+using Telemetry.Events;
 
 namespace Microsoft.PowerToys.Telemetry
 {
@@ -34,7 +35,8 @@ namespace Microsoft.PowerToys.Telemetry
         /// <summary>
         /// Publishes ETW event when an action is triggered on 
         /// </summary>
-        public void WriteEvent<T>(T telemetryEvent) 
+        public void WriteEvent<T>(T telemetryEvent)
+            where T : IEvent
         {
             this.Write<T>(null, new EventSourceOptions()
             {

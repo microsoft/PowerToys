@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.Tracing;
+using Telemetry.Events;
 
 namespace Microsoft.PowerLauncher.Telemetry
 {
@@ -6,7 +7,7 @@ namespace Microsoft.PowerLauncher.Telemetry
     /// ETW event for when a result is actioned.
     /// </summary>
     [EventData]
-    public class LauncherResultActionEvent 
+    public class LauncherResultActionEvent : IEvent
     {
 
         public enum TriggerType
@@ -18,5 +19,7 @@ namespace Microsoft.PowerLauncher.Telemetry
         public string Trigger { get; set; }
         public string PluginName { get; set; }
         public string ActionName { get; set; }
+
+        public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
     }
 }
