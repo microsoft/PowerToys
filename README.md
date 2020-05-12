@@ -60,7 +60,6 @@ This code is based on [Brice Lambson's Image Resizer](https://github.com/bricela
 <br>
 <br>
 <br>
-<br>
 
 ### Keyboard Manager
 
