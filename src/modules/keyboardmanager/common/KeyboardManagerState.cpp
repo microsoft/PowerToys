@@ -187,10 +187,21 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
         std::vector<hstring> shortcut = detectedShortcutCopy.GetKeyVector(keyboardMap);
         currentShortcutUI1.Children().Clear();
         currentShortcutUI2.Children().Clear();
+
+        // The second row should be hidden if there are 3 keys or lesser to avoid an extra margin
+        if (shortcut.size() > 3)
+        {
+            currentShortcutUI2.Visibility(Visibility::Visible);
+        }
+        else
+        {
+            currentShortcutUI2.Visibility(Visibility::Collapsed);
+        }
+
         int i = 0;
         for (auto& key : shortcut)
         {
-            if (i<3)
+            if (i < 3)
             {
                 AddKeyToLayout(currentShortcutUI1, key);
             }
@@ -393,7 +404,7 @@ bool KeyboardManagerState::SaveConfigToFile()
     json::JsonArray inProcessRemapKeysArray;
     json::JsonArray globalRemapShortcutsArray;
     std::unique_lock<std::mutex> lockSingleKeyReMap(singleKeyReMap_mutex);
-    for (const auto &it : singleKeyReMap)
+    for (const auto& it : singleKeyReMap)
     {
         json::JsonObject keys;
         keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(winrt::to_hstring((unsigned int)it.first)));
@@ -404,7 +415,7 @@ bool KeyboardManagerState::SaveConfigToFile()
     lockSingleKeyReMap.unlock();
 
     std::unique_lock<std::mutex> lockOsLevelShortcutReMap(osLevelShortcutReMap_mutex);
-    for (const auto &it : osLevelShortcutReMap)
+    for (const auto& it : osLevelShortcutReMap)
     {
         json::JsonObject keys;
         keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(it.first.ToHstringVK()));

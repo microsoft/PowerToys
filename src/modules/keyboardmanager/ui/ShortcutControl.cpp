@@ -267,6 +267,7 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
     Windows::UI::Xaml::Controls::StackPanel keyStackPanel2;
     keyStackPanel2.Orientation(Orientation::Horizontal);
     keyStackPanel2.Margin({ 0, 20, 0, 0 });
+    keyStackPanel2.Visibility(Visibility::Collapsed);
     stackPanel.Children().Append(keyStackPanel2);
 
     TextBlock holdEscInfo;
