@@ -14,7 +14,6 @@ namespace PowerToys_Settings_Sandbox.Services
     {
         public static void AppInstalledToast()
         {
-
             string title = "Power Toys";
             string content = "Power Toys is installed";
             string image = "../Assets/Logo.png";
