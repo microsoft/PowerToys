@@ -18,42 +18,72 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 ### FancyZones
 
-<img align="left" src="./doc/images/Overview ReadMe/FancyZones_small.png" /> 
-[FancyZones](/src/modules/fancyzones/) is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.
+<img align="left" src="./doc/images/Overview ReadMe/FancyZones_small.png" />[FancyZones](/src/modules/fancyzones/) is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.
 <br>
 <br>
 <br>
 <br>
+<br>
+
 ### Shortcut Guide
 
-[Windows key shortcut guide](/src/modules/shortcut_guide) - The shortcut guide appears when a user holds the Windows key down for more than one second and shows the available shortcuts for the current state of the desktop.
+<img align="left" src="./doc/images/Overview ReadMe/Shortcut guide_small.png" />[Windows key shortcut guide](/src/modules/shortcut_guide)  appears when a user holds the Windows key down for more than one second and shows the available shortcuts for the current state of the desktop.
+<br>
+<br>
+<br>
+<br>
+<br>
 
 ### PowerRename
 
-[PowerRename](/src/modules/powerrename) - PowerRename is a Windows Shell Extension for advanced bulk renaming using search and replace or regular expressions. PowerRename allows simple search and replace or more advanced regular expression matching. While you type in the search and replace input fields, the preview area will show what the items will be renamed to. PowerRename then calls into the Windows Explorer file operations engine to perform the rename. This has the benefit of allowing the rename operation to be undone after PowerRename exits.
+<img align="left" src="./doc/images/Overview ReadMe/PowerRename_small.PNG" />[PowerRename](/src/modules/powerrename) is a Windows Shell Extension for advanced bulk renaming using search and replace or regular expressions. PowerRename allows simple search and replace or more advanced regular expression matching. While you type in the search and replace input fields, the preview area will show what the items will be renamed to. PowerRename then calls into the Windows Explorer file operations engine to perform the rename. This has the benefit of allowing the rename operation to be undone after PowerRename exits.
 
 This code is based on [Chris Davis's SmartRename](https://github.com/chrdavis/SmartRename).
+<br>
+<br>
+<br>
+<br>
+<br>
 
 ### File Explorer (Preview Panes)
 
-[File Explorer](/src/modules/previewpane) add-ons right now are just limited to Preview Pane additions for File Explorer. Preview Pane is an existing feature in the File Explorer.  To enable it, you just click the View tab in the ribbon and then click "Preview Pane".
+<img align="left" src="./doc/images/Overview ReadMe/PowerPreview_small.PNG" />[File Explorer](/src/modules/previewpane) add-ons right now are just limited to Preview Pane additions for File Explorer. Preview Pane is an existing feature in the File Explorer.  To enable it, you just click the View tab in the ribbon and then click "Preview Pane".
 
 PowerToys will now enable two types of files to be previewed:
 
 - Markdown files (.md)
 - SVG (.svg)
+<br>
+<br>
+<br>
+<br>
+<br>
 
 ### Image Resizer
 
-[Image Resizer](/src/modules/imageresizer) is a Windows Shell Extension for quickly resizing images.  With a simple right click from File Explorer, resize one or many images instantly. 
+<img align="left" src="./doc/images/Overview ReadMe/ImageResizer_small.png" /> [Image Resizer](/src/modules/imageresizer) is a Windows Shell Extension for quickly resizing images.  With a simple right click from File Explorer, resize one or many images instantly. 
 
 This code is based on [Brice Lambson's Image Resizer](https://github.com/bricelam/ImageResizer).
+<br>
+<br>
+<br>
+<br>
+<br>
+### Keyboard Manager
 
-### Window Walker (Text based alt-tab alternative)
+<img align="left" src="./doc/images/Overview ReadMe/KBM_small.png" /> [Keyboard Manager](src/modules/keyboardmanager/) allows you to customize the keyboard to be more productive by remapping keys and creating your own keyboard shortcuts.
+<br>
+<br>
+<br>
+<br>
+<br>
+### PowerToys Run
 
-[Window Walker](src/modules/windowwalker/) is an app that lets you search and switch between windows that you have open, all from the comfort of your keyboard. As you are searching for an app, you can use the keyboard up and down arrows to see an Alt-Tab style preview of the windows.  In the future, this will be merged into the Launcher project.  
-
-This code is based on [Beta Tadele's Window Walker](https://github.com/betsegaw/windowwalker).
+<img align="left" src="./doc/images/Overview ReadMe/PowerLauncher_small.png" /> [PowerToys Run](src/modules/launcher/) is a new toy in PowerToys that can help you search and launch your app instantly! It is open source and modular for additional plugins.
+<br>
+<br>
+<br>
+<br>
 
 ### Version 1.0 plan
 
