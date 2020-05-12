@@ -389,8 +389,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     });
 
     header.Children().Append(headerText);
-    header.Children().Append(cancelButton);
     header.Children().Append(applyButton);
+    header.Children().Append(cancelButton);
 
     // Add remap key button
     Windows::UI::Xaml::Controls::Button addRemapKey;
