@@ -23,7 +23,7 @@ namespace ColorPicker
     /// </summary>
     public partial class MainWindow : Window
     {
-        private RegisterdMouseEventHook mouseEvent;
+        private RegisteredMouseEventHook mouseEvent;
         public MainWindow()
         {
             InitializeComponent();
