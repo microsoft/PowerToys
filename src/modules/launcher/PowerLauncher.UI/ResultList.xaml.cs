@@ -1,17 +1,26 @@
 ﻿using Microsoft.PowerLauncher.Telemetry;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 
 namespace PowerLauncher.UI
 {
     public sealed partial class ResultList : UserControl
     {
+        private Brush _borderBrush;
+
+        private Brush _primaryTextColor;
+
         private LauncherResultActionEvent.TriggerType triggerType = LauncherResultActionEvent.TriggerType.Click;
+        
         public ResultList()
         {
             InitializeComponent();
@@ -41,5 +50,44 @@ namespace PowerLauncher.UI
             //Restore the trigger type back to click
             triggerType = LauncherResultActionEvent.TriggerType.Click;
         }
+
+        public Brush SolidBorderBrush
+        {
+            get { return _borderBrush; }
+            set { Set(ref _borderBrush, value); }
+        }
+
+        public Brush PrimaryTextColor
+        {
+            get { return _primaryTextColor; }
+            set { Set(ref _primaryTextColor, value); }
+        }
+
+        private void Set<T>(ref T storage, T value, [CallerMemberName]string propertyName = null)
+        {
+            if (Equals(storage, value))
+            {
+                return;
+            }
+
+            storage = value;
+            OnPropertyChanged(propertyName);
+        }
+
+        private void UserControl_ActualThemeChanged(FrameworkElement sender, object args)
+        {
+            SolidBorderBrush = Application.Current.Resources["SystemChromeLow"] as SolidColorBrush;
+            PrimaryTextColor = Application.Current.Resources["PrimaryTextColor"] as SolidColorBrush;
+        }
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            SolidBorderBrush = Application.Current.Resources["SystemChromeLow"] as SolidColorBrush;
+            PrimaryTextColor = Application.Current.Resources["PrimaryTextColor"] as SolidColorBrush;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

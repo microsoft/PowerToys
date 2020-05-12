@@ -279,6 +279,9 @@ public:
         m_enabled = false;
         // Log telemetry
         Trace::EnableKeyboardManager(false);
+        // Close active windows
+        CloseActiveEditKeyboardWindow();
+        CloseActiveEditShortcutsWindow();
         // Stop keyboard hook
         stop_lowlevel_keyboard_hook();
     }
