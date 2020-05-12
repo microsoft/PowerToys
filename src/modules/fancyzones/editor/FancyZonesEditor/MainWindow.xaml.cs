@@ -25,14 +25,11 @@ namespace FancyZonesEditor
 
         public int WrapPanelItemSize { get; set; } = 150; //TODO: previously 262
 
-        // TODO: initialises monitors
-        MonitorVM monitorVM = new MonitorVM();
-
         public MainWindow()
         {
             InitializeComponent();
 
-            DataContext = monitorVM;//_settings;
+            DataContext = _settings;//new MulticlassDataContext();   // monitorVM;//_settings;
 
             KeyUp += MainWindow_KeyUp;
 

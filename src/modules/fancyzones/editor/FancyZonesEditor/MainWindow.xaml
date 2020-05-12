@@ -183,6 +183,7 @@
         <TabControl BorderThickness="0" x:Name="TemplateTab" SelectedIndex="{Binding IsCustomLayoutActive, Mode=OneWay, Converter={StaticResource BooleanToIntConverter}}">
             <TabItem Header="{x:Static props:Resources.Templates}" Template="{StaticResource myTabs}">
                 <StackPanel>
+                    <TextBlock DataContext="{Binding MonitorVM}" Text="{Binding hello}"></TextBlock>
                     <TextBlock FontWeight="Bold" Margin="8, 8, 0, 0">Arrangement</TextBlock>
                     <TextBlock Foreground="Gray" Margin="8, 0, 0, 0">Drag desired settings to the appropriate monitor to set its layout. Alternatively you can</TextBlock>
                     <TextBlock Foreground="Gray" Margin="8, 0, 0, 0">create new layouts by pressing the "create new layout" button</TextBlock>
@@ -265,6 +266,9 @@
                         <ScrollViewer ScrollViewer.HorizontalScrollBarVisibility="Visible"
                       ScrollViewer.CanContentScroll="True"
                       ScrollViewer.PanningMode="HorizontalOnly">
+                            <ScrollViewer.DataContext>
+                                <local:MonitorVM></local:MonitorVM>
+                            </ScrollViewer.DataContext>
                             <ItemsControl ItemsSource="{Binding Monitors}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>

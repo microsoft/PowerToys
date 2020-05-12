@@ -110,6 +110,7 @@
     <Compile Include="EventArgs.cs" />
     <Compile Include="EventRaiser.cs" />
     <Compile Include="MonitorVM.cs" />
+    <Compile Include="MulticlassDataContext.cs" />
     <Compile Include="StringUtils.cs" />
     <Compile Include="Converters\BooleanToBrushConverter.xaml.cs" />
     <Compile Include="Converters\BooleanToIntConverter.xaml.cs" />
