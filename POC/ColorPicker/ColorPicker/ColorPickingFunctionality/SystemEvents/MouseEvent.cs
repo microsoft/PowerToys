@@ -40,7 +40,6 @@ namespace ColorPicker.ColorPickingFunctionality.SystemEvents
                 MSLLHOOKSTRUCT mouseHookStruct = (MSLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
                 callBack(mouseHookStruct.pt.x, mouseHookStruct.pt.y);
             }
-            //propogates the click event through to other listeners
             return CallNextHookExWrapper(nCode, wParam, lParam);
         }
     }

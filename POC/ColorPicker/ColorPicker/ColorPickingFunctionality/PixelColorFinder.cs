@@ -7,12 +7,32 @@ namespace ColorPicker.ColorPickingFunctionality
 {
     class PixelColorFinder
     {
+        /// <summary>
+        /// Get the RGB value of a pixel.
+        /// </summary>
+        /// <param name="hDC">A handle to the device context.</param>
+        /// <param name="xCoord">The x-coordinate, in logical units, of the pixel to be examined.</param>
+        /// <param name="yCoord">The y-coordinate, in logical units, of the pixel to be examined.</param>
+        /// <returns>
+        /// A COLORREF int. The first byte is red, second is green and thrid is blue. On error it returns 0xFFFFFFFF.
+        /// </returns>
         [DllImport("gdi32.dll")]
-        private static extern int GetPixel(IntPtr hDC, int x, int y);
+        private static extern int GetPixel(IntPtr hDC, int xCoord, int yCoord);
 
+        /// <summary>
+        /// Get a handle to the current device context
+        /// </summary>
+        /// <param name="hWnd"> A handle to the window whose DC is to be retrieved. If this value is NULL, GetDC retrieves the DC for the entire screen.</param>
+        /// <returns>returns the handle if succesful, or NULL for failure.</returns>
         [DllImport("user32.dll")]
         private static extern IntPtr GetDC(IntPtr hWnd);
 
+        /// <summary>
+        /// Release the current display context
+        /// </summary>
+        /// <param name="hWnd">A handle to the window whose DC is to be released.</param>
+        /// <param name="hDC">A handle to the DC to be released.</param>
+        /// <returns>1 for successful release, 0 otherwise.</returns>
         [DllImport("user32.dll")]
         private static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
 
@@ -28,10 +48,10 @@ namespace ColorPicker.ColorPickingFunctionality
             Debug.WriteLine("R: {0} G: {1} B: {2}", red, green, blue);
         }
 
-        private static int GetPixelValue(int x, int y)
+        private static int GetPixelValue(int xCoord, int yCoord)
         {
             IntPtr hDC = safeGetWindowDC();
-            int pixelValue = safeGetPixel(hDC, x, y);
+            int pixelValue = safeGetPixel(hDC, xCoord, yCoord);
             safeReleaseWindowDC(hDC);
             return pixelValue;
         }
