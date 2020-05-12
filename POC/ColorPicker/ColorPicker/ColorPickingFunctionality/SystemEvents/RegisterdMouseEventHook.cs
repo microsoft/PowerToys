@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace ColorPicker.ColorPickingFunctionality.SystemEvents
 {
-    class RegisterdMouseEventHook : SystemHook
+    class RegisteredMouseEventHook : SystemHook
     {
         public delegate void EventCallBack(int x, int y);
 
@@ -45,4 +45,3 @@ namespace ColorPicker.ColorPickingFunctionality.SystemEvents
         }
     }
 }
-
