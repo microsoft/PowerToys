@@ -94,5 +94,14 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="swap_icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="copy_icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Eyedropper-icon.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
