@@ -4,9 +4,9 @@
 
 namespace ZoneWindowUtils
 {
-    const std::wstring& GetActiveZoneSetTmpPath();
-    const std::wstring& GetAppliedZoneSetTmpPath();
-    const std::wstring& GetCustomZoneSetsTmpPath();
+    const std::wstring& GetActiveZoneSetTmpPath(int, int);
+    const std::wstring& GetAppliedZoneSetTmpPath(int, int);
+    const std::wstring& GetCustomZoneSetsTmpPath(int, int);
 
     std::wstring GenerateUniqueId(HMONITOR monitor, PCWSTR deviceId, PCWSTR virtualDesktopId);
 }

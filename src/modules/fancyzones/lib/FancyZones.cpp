@@ -389,6 +389,8 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
     return false;
 }
 
+int num_monitors;
+
 // IFancyZonesCallback
 void FancyZones::ToggleEditor() noexcept
 {
@@ -433,7 +435,9 @@ void FancyZones::ToggleEditor() noexcept
 
     std::wstring params;
 
-    for (int i = 0; i < monitors.size(); i++)
+    num_monitors = monitors.size();
+
+    for (int i = 0; i < num_monitors; i++)
     {
         auto monitor = monitors[i].handle;
         auto iter = m_zoneWindowMap.find(monitor);
@@ -453,8 +457,7 @@ void FancyZones::ToggleEditor() noexcept
         auto zoneWindow = iter->second;
 
         const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
-        fancyZonesData.CustomZoneSetsToJsonFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
-
+        fancyZonesData.CustomZoneSetsToJsonFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath(i, num_monitors));
         // Do not scale window params by the dpi, that will be done in the editor - see LayoutModel.Apply
         const auto taskbar_x_offset = mi.rcWork.left - mi.rcMonitor.left;
         const auto taskbar_y_offset = mi.rcWork.top - mi.rcMonitor.top;
@@ -475,20 +478,15 @@ void FancyZones::ToggleEditor() noexcept
         }
 
         JSONHelpers::DeviceInfoJSON deviceInfoJson{ zoneWindow->UniqueId(), *deviceInfo };
-        fancyZonesData.SerializeDeviceInfoToTmpFile(deviceInfoJson, ZoneWindowUtils::GetActiveZoneSetTmpPath());
+        fancyZonesData.SerializeDeviceInfoToTmpFile(deviceInfoJson, ZoneWindowUtils::GetActiveZoneSetTmpPath(i, num_monitors));
 
         params = params +
                  /*1*/ std::to_wstring(reinterpret_cast<UINT_PTR>(monitor)) + L" " +
                  /*2*/ editorLocation + L" " +
                  /*3*/ zoneWindow->WorkAreaKey() + L" " +
-                 /*4*/ L"\"" + ZoneWindowUtils::GetActiveZoneSetTmpPath() + L"\" " +
-                 /*5*/ L"\"" + ZoneWindowUtils::GetAppliedZoneSetTmpPath() + L"\" " +
-                 /*6*/ L"\"" + ZoneWindowUtils::GetCustomZoneSetsTmpPath() + L"\"";
-
-        if (i != monitors.size() - 1)
-        {
-            params = params + L",";
-        }
+                 /*4*/ L"\"" + ZoneWindowUtils::GetActiveZoneSetTmpPath(i, num_monitors) + L"\" " +
+                 /*5*/ L"\"" + ZoneWindowUtils::GetAppliedZoneSetTmpPath(i, num_monitors) + L"\" " +
+                 /*6*/ L"\"" + ZoneWindowUtils::GetCustomZoneSetsTmpPath(i, num_monitors) + L"\" ";
     }
 
     SHELLEXECUTEINFO sei{ sizeof(sei) };
@@ -885,11 +883,14 @@ bool FancyZones::IsNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept
 
 void FancyZones::OnEditorExitEvent() noexcept
 {
-    // Colect information about changes in zone layout after editor exited.
-    JSONHelpers::FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(ZoneWindowUtils::GetActiveZoneSetTmpPath());
-    JSONHelpers::FancyZonesDataInstance().ParseDeletedCustomZoneSetsFromTmpFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
-    JSONHelpers::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(ZoneWindowUtils::GetAppliedZoneSetTmpPath());
-    JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
+    for (int i = 0; i < num_monitors; i++)
+    {
+        // Colect information about changes in zone layout after editor exited.
+        JSONHelpers::FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(ZoneWindowUtils::GetActiveZoneSetTmpPath(i, num_monitors));
+        JSONHelpers::FancyZonesDataInstance().ParseDeletedCustomZoneSetsFromTmpFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath(i, num_monitors));
+        JSONHelpers::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(ZoneWindowUtils::GetAppliedZoneSetTmpPath(i, num_monitors));
+        JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
+    }
 }
 
 std::vector<HMONITOR> FancyZones::GetMonitorsSorted() noexcept

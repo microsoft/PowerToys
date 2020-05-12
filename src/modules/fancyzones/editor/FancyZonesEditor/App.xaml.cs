@@ -13,18 +13,25 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class App : Application
     {
-        public Settings ZoneSettings { get; }
+        public Settings[] ZoneSettings { get; }
+
+        public static int NumMonitors { get; private set; }
 
         public App()
         {
-            ZoneSettings = new Settings();
+            NumMonitors = Environment.GetCommandLineArgs().Length / 6;
+            ZoneSettings = new Settings[NumMonitors];
+            for (int monitor_shift = 0; monitor_shift < NumMonitors; monitor_shift++)
+            {
+                ZoneSettings[monitor_shift] = new Settings(monitor_shift);
+            }
         }
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
             LayoutModel foundModel = null;
 
-            foreach (LayoutModel model in ZoneSettings.DefaultModels)
+            foreach (LayoutModel model in ZoneSettings[0].DefaultModels)
             {
                 if (model.Type == Settings.ActiveZoneSetLayoutType)
                 {
@@ -49,7 +56,7 @@ namespace FancyZonesEditor
 
             if (foundModel == null)
             {
-                foundModel = ZoneSettings.DefaultModels[0];
+                foundModel = ZoneSettings[0].DefaultModels[0];
             }
 
             foundModel.IsSelected = true;
