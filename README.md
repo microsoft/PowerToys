@@ -53,8 +53,6 @@ PowerToys will now enable two types of files to be previewed:
 <br>
 <br>
 <br>
-<br>
-<br>
 
 ### Image Resizer
 
@@ -77,9 +75,6 @@ This code is based on [Brice Lambson's Image Resizer](https://github.com/bricela
 ### PowerToys Run
 
 <img align="left" src="./doc/images/Overview ReadMe/PowerLauncher_small.png" /> [PowerToys Run](src/modules/launcher/) is a new toy in PowerToys that can help you search and launch your app instantly! It is open source and modular for additional plugins.
-<br>
-<br>
-<br>
 <br>
 <br>
 <br>
