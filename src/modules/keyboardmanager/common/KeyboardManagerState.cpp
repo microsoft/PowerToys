@@ -3,7 +3,7 @@
 
 // Constructor
 KeyboardManagerState::KeyboardManagerState() :
-    uiState(KeyboardManagerUIState::Deactivated), currentUIWindow(nullptr), currentShortcutUI(nullptr), currentSingleKeyUI(nullptr), detectedRemapKey(NULL)
+    uiState(KeyboardManagerUIState::Deactivated), currentUIWindow(nullptr), currentShortcutUI1(nullptr), currentShortcutUI2(nullptr), currentSingleKeyUI(nullptr), detectedRemapKey(NULL)
 {
     configFile_mutex = CreateMutex(
         NULL, // default security descriptor
@@ -64,7 +64,8 @@ void KeyboardManagerState::ResetUIState()
 
     // Reset the shortcut UI stored variables
     std::unique_lock<std::mutex> currentShortcutUI_lock(currentShortcutUI_mutex);
-    currentShortcutUI = nullptr;
+    currentShortcutUI1 = nullptr;
+    currentShortcutUI2 = nullptr;
     currentShortcutUI_lock.unlock();
 
     std::unique_lock<std::mutex> detectedShortcut_lock(detectedShortcut_mutex);
@@ -132,10 +133,11 @@ bool KeyboardManagerState::AddSingleKeyRemap(const DWORD& originalKey, const DWO
 }
 
 // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
-void KeyboardManagerState::ConfigureDetectShortcutUI(const StackPanel& textBlock)
+void KeyboardManagerState::ConfigureDetectShortcutUI(const StackPanel& textBlock1, const StackPanel& textBlock2)
 {
     std::lock_guard<std::mutex> lock(currentShortcutUI_mutex);
-    currentShortcutUI = textBlock;
+    currentShortcutUI1 = textBlock1;
+    currentShortcutUI2 = textBlock2;
 }
 
 // Function to set the textblock of the detect remap key UI so that it can be accessed by the hook
@@ -167,7 +169,7 @@ void KeyboardManagerState::AddKeyToLayout(const StackPanel& panel, const hstring
 void KeyboardManagerState::UpdateDetectShortcutUI()
 {
     std::lock_guard<std::mutex> currentShortcutUI_lock(currentShortcutUI_mutex);
-    if (currentShortcutUI == nullptr)
+    if (currentShortcutUI1 == nullptr)
     {
         return;
     }
@@ -181,14 +183,24 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
     detectedShortcut_lock.unlock();
 
     // Since this function is invoked from the back-end thread, in order to update the UI the dispatcher must be used.
-    currentShortcutUI.Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [this, detectedShortcutCopy]() {
+    currentShortcutUI1.Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [this, detectedShortcutCopy]() {
         std::vector<hstring> shortcut = detectedShortcutCopy.GetKeyVector(keyboardMap);
-        currentShortcutUI.Children().Clear();
+        currentShortcutUI1.Children().Clear();
+        currentShortcutUI2.Children().Clear();
+        int i = 0;
         for (auto& key : shortcut)
         {
-            AddKeyToLayout(currentShortcutUI, key);
+            if (i<3)
+            {
+                AddKeyToLayout(currentShortcutUI1, key);
+            }
+            else
+            {
+                AddKeyToLayout(currentShortcutUI2, key);
+            }
+            i++;
         }
-        currentShortcutUI.UpdateLayout();
+        currentShortcutUI1.UpdateLayout();
     });
 }
 
