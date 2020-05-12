@@ -187,74 +187,9 @@
                     <TextBlock FontWeight="Bold" Margin="8, 8, 0, 0">Arrangement</TextBlock>
                     <TextBlock Foreground="Gray" Margin="8, 0, 0, 0">Drag desired settings to the appropriate monitor to set its layout. Alternatively you can</TextBlock>
                     <TextBlock Foreground="Gray" Margin="8, 0, 0, 0">create new layouts by pressing the "create new layout" button</TextBlock>
-                    <!--<Grid Margin="0,80,0,55.5">
-                        <Rectangle x:Name="screen1" MouseDown="SelectScreen1" Fill="DeepSkyBlue" HorizontalAlignment="Left" Height="246" Margin="117,25,0,0" Stroke="Black" VerticalAlignment="Top" Width="294" RenderTransformOrigin="0.509,0.517"/>
-                        <Rectangle x:Name="screen2" MouseDown="SelectScreen2" Fill="Gray" HorizontalAlignment="Left" Height="158" Margin="441,113,0,0" Stroke="Black" VerticalAlignment="Top" Width="222"/>
-                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="M1" VerticalAlignment="Top" Margin="137,54,0,0" RenderTransformOrigin="0.193,-3.191"/>
-                        <TextBlock HorizontalAlignment="Left" Margin="460,139,0,0" TextWrapping="Wrap" Text="M2" VerticalAlignment="Top" RenderTransformOrigin="4.808,-0.683"/>
-                        <TextBlock HorizontalAlignment="Left" Margin="137,236,0,0" TextWrapping="Wrap" VerticalAlignment="Top"><Run Text="3840 x 2440 px"/></TextBlock>
-                        <TextBlock HorizontalAlignment="Left" Margin="460,236,0,0" TextWrapping="Wrap" VerticalAlignment="Top"><Run Text="3000 x 2000 px"/></TextBlock>
-                        <TextBlock x:Name="screenName1" FontWeight="Bold" HorizontalAlignment="Left" Margin="277,57,0,0" TextWrapping="Wrap" Text="Selected, Current" VerticalAlignment="Top" Width="120"/>
-                        <TextBlock x:Name="screenName2" Visibility="Hidden" FontWeight="Bold" HorizontalAlignment="Left" Margin="531,139,0,0" TextWrapping="Wrap" Text="Selected, Current" VerticalAlignment="Top" Width="120"/>
-                    </Grid>-->
+
                     
                     <!-- New code -->
-                    <!--<Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <ScrollViewer ScrollViewer.HorizontalScrollBarVisibility="Visible"
-                      ScrollViewer.CanContentScroll="True"
-                      ScrollViewer.PanningMode="HorizontalOnly">
-                            <ItemsControl ItemsSource="{Binding Source=monitorVM}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <WrapPanel Orientation="Horizontal" ScrollViewer.HorizontalScrollBarVisibility="Visible" />
-                                        --><!--<StackPanel Orientation="Horizontal" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
-                                ScrollViewer.PanningMode="HorizontalOnly"/>--><!--
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid Height="{Binding Height}" Width="{Binding Width}" Margin="8"> 
-                                            <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" BorderBrush="Transparent"
-                                                    Command="{Binding ItemClickCommand}"
-                                                    CommandParameter="{Binding Id}">
-                                                <Button.Content>
-                                                    <DataTemplate>
-                                                        <Grid >
-                                                            <Grid.RowDefinitions>
-                                                                <RowDefinition Height="*"/>
-                                                                <RowDefinition Height="*"/>
-                                                                <RowDefinition Height="*"/>
-                                                            </Grid.RowDefinitions>
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="*"/>
-                                                                <ColumnDefinition Width="*"/>
-                                                                <ColumnDefinition Width="*"/>
-                                                            </Grid.ColumnDefinitions>
-                                                            <Rectangle Stroke="Black" Fill="Red" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                   Grid.RowSpan="3" Grid.ColumnSpan="3"/>
-                                                            <TextBlock Text="{Binding Name}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" 
-                                   FontSize="21" HorizontalAlignment="Center"/>
-                                                            <TextBlock Text="{Binding Id}" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                   FontSize="20" FontWeight="Bold"/>
-                                                            <Button></Button>
-                                                        </Grid>
-                                                    </DataTemplate>
-                                                </Button.Content>
-                                            </Button>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
-                    </Grid>-->
-
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
@@ -272,7 +207,7 @@
                             <ItemsControl ItemsSource="{Binding Monitors}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <WrapPanel Orientation="Horizontal" ScrollViewer.HorizontalScrollBarVisibility="Visible" />
+                                        <WrapPanel Background="LightGray" Orientation="Horizontal" ScrollViewer.HorizontalScrollBarVisibility="Visible" />
                                         <!--<StackPanel Orientation="Horizontal" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
                                 ScrollViewer.PanningMode="HorizontalOnly"/>-->
                                     </ItemsPanelTemplate>
@@ -337,7 +272,7 @@
                     <ItemsControl ItemsSource="{Binding DefaultModels}" Margin="8,0,0,0">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <WrapPanel Background="LightGray" Orientation="Horizontal" ItemWidth="{Binding ElementName=MainWindow1, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Path=WrapPanelItemSize}" ItemHeight="{Binding ElementName=WrapPanel1, Path=ItemWidth}" x:Name="WrapPanel1" />
+                                <WrapPanel Orientation="Horizontal" ItemWidth="{Binding ElementName=MainWindow1, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Path=WrapPanelItemSize}" ItemHeight="{Binding ElementName=WrapPanel1, Path=ItemWidth}" x:Name="WrapPanel1" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>

@@ -19,7 +19,7 @@ namespace FancyZonesEditor
 			DeleteCommand = new RelayCommand(DeleteCommandExecute, DeleteCommandCanExecute);
 
 			Monitors = new ObservableCollection<MonitorInfo>();
-			Monitors.Add(new MonitorInfo(0, "Monitor 1", 100, 150));
+			Monitors.Add(new MonitorInfo(0, "Monitor 1", 100, 150, "DeepSkyBlue"));
 			Monitors.Add(new MonitorInfo(1, "Monitor 2", 100, 150));
 			Monitors.Add(new MonitorInfo(2, "Monitor 3", 100, 150));
 		}
