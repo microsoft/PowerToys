@@ -347,6 +347,9 @@
       <Component Id="powertoysinterop_dll" Guid="B7DD2DF4-C8F2-46FA-9571-D6EF1588ADF3" Win64="yes">
         <File Id="PowerToysInterop.dll" KeyPath="yes" Checksum="yes" />
       </Component>
+      <Component Id="osDetection_dll" Guid="AA370C25-4AC8-447B-A2FF-C99365C6BE67" Win64="yes">
+        <File Source="$(var.BinX64Dir)os-detection.dll" KeyPath="yes" Checksum="yes" />
+      </Component>
     </DirectoryRef>
     <DirectoryRef Id="SvgsInstallFolder" FileSource="$(var.BinX64Dir)svgs\">
       <Component Id="PowerToysSvgs" Guid="7C4D4EED-9338-423D-992C-DCE02F3E2D35" Win64="yes">
@@ -693,6 +696,7 @@
       <ComponentRef Id="powertoys_toast_clsid" />
       <ComponentRef Id="License_rtf" />
       <ComponentRef Id="powertoysinterop_dll" />
+      <ComponentRef Id="osDetection_dll" />
       <ComponentRef Id="PowerToysSvgs" />
       <ComponentRef Id="Module_ShortcutGuide" />
       <ComponentRef Id="Module_FancyZones" />
