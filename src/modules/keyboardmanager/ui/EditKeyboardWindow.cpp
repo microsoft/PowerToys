@@ -9,6 +9,7 @@
 #include <common/windows_colors.h>
 #include "Styles.h"
 #include "Dialog.h"
+#include <keyboardmanager/dll/resource.h>
 
 using namespace winrt::Windows::Foundation;
 
@@ -106,6 +107,32 @@ static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, Xa
     }
     ApplyRemappings();
 }
+
+// Function to combine remappings if the L and R version of the modifier is mapped to the same key
+void CombineRemappings(std::unordered_map<DWORD, DWORD>& table, DWORD leftKey, DWORD rightKey, DWORD combinedKey)
+{
+    if (table.find(leftKey) != table.end() && table.find(rightKey) != table.end())
+    {
+        // If they are mapped to the same key, delete those entries and set the common version
+        if (table[leftKey] == table[rightKey])
+        {
+            table[combinedKey] = table[leftKey];
+            table.erase(leftKey);
+            table.erase(rightKey);
+        }
+    }
+}
+
+// Function to pre process the remap table before loading it into the UI
+void PreProcessRemapTable(std::unordered_map<DWORD, DWORD>& table)
+{
+    // Pre process the table to combine L and R versions of Ctrl/Alt/Shift/Win that are mapped to the same key
+    CombineRemappings(table, VK_LCONTROL, VK_RCONTROL, VK_CONTROL);
+    CombineRemappings(table, VK_LMENU, VK_RMENU, VK_MENU);
+    CombineRemappings(table, VK_LSHIFT, VK_RSHIFT, VK_SHIFT);
+    CombineRemappings(table, VK_LWIN, VK_RWIN, CommonSharedConstants::VK_WIN_BOTH);
+}
+
 // Function to create the Edit Keyboard Window
 void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState)
 {
@@ -119,7 +146,13 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         windowClass.hInstance = hInst;
         windowClass.lpszClassName = szWindowClass;
         windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW);
-        windowClass.hIconSm = LoadIcon(windowClass.hInstance, IDI_APPLICATION);
+        windowClass.hIcon = (HICON) LoadImageW(
+            windowClass.hInstance, 
+            MAKEINTRESOURCE(IDS_KEYBOARDMANAGER_ICON), 
+            IMAGE_ICON, 
+            48, 
+            48, 
+            LR_DEFAULTCOLOR);
         if (RegisterClassEx(&windowClass) == NULL)
         {
             MessageBox(NULL, L"Windows registration failed!", L"Error", NULL);
@@ -265,48 +298,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     std::unique_lock<std::mutex> lock(keyboardManagerState.singleKeyReMap_mutex);
     std::unordered_map<DWORD, DWORD> singleKeyRemapCopy = keyboardManagerState.singleKeyReMap;
     lock.unlock();
-
-    // Pre process the table to combine L and R versions of Ctrl/Alt/Shift/Win that are mapped to the same key
-    if (singleKeyRemapCopy.find(VK_LCONTROL) != singleKeyRemapCopy.end() && singleKeyRemapCopy.find(VK_RCONTROL) != singleKeyRemapCopy.end())
-    {
-        // If they are mapped to the same key, delete those entries and set the common version
-        if (singleKeyRemapCopy[VK_LCONTROL] == singleKeyRemapCopy[VK_RCONTROL])
-        {
-            singleKeyRemapCopy[VK_CONTROL] = singleKeyRemapCopy[VK_LCONTROL];
-            singleKeyRemapCopy.erase(VK_LCONTROL);
-            singleKeyRemapCopy.erase(VK_RCONTROL);
-        }
-    }
-    if (singleKeyRemapCopy.find(VK_LMENU) != singleKeyRemapCopy.end() && singleKeyRemapCopy.find(VK_RMENU) != singleKeyRemapCopy.end())
-    {
-        // If they are mapped to the same key, delete those entries and set the common version
-        if (singleKeyRemapCopy[VK_LMENU] == singleKeyRemapCopy[VK_RMENU])
-        {
-            singleKeyRemapCopy[VK_MENU] = singleKeyRemapCopy[VK_LMENU];
-            singleKeyRemapCopy.erase(VK_LMENU);
-            singleKeyRemapCopy.erase(VK_RMENU);
-        }
-    }
-    if (singleKeyRemapCopy.find(VK_LSHIFT) != singleKeyRemapCopy.end() && singleKeyRemapCopy.find(VK_RSHIFT) != singleKeyRemapCopy.end())
-    {
-        // If they are mapped to the same key, delete those entries and set the common version
-        if (singleKeyRemapCopy[VK_LSHIFT] == singleKeyRemapCopy[VK_RSHIFT])
-        {
-            singleKeyRemapCopy[VK_SHIFT] = singleKeyRemapCopy[VK_LSHIFT];
-            singleKeyRemapCopy.erase(VK_LSHIFT);
-            singleKeyRemapCopy.erase(VK_RSHIFT);
-        }
-    }
-    if (singleKeyRemapCopy.find(VK_LWIN) != singleKeyRemapCopy.end() && singleKeyRemapCopy.find(VK_RWIN) != singleKeyRemapCopy.end())
-    {
-        // If they are mapped to the same key, delete those entries and set the common version
-        if (singleKeyRemapCopy[VK_LWIN] == singleKeyRemapCopy[VK_RWIN])
-        {
-            singleKeyRemapCopy[CommonSharedConstants::VK_WIN_BOTH] = singleKeyRemapCopy[VK_LWIN];
-            singleKeyRemapCopy.erase(VK_LWIN);
-            singleKeyRemapCopy.erase(VK_RWIN);
-        }
-    }
+    PreProcessRemapTable(singleKeyRemapCopy);
 
     for (const auto& it : singleKeyRemapCopy)
     {
