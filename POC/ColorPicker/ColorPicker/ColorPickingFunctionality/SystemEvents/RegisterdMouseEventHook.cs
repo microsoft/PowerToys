@@ -5,6 +5,8 @@ namespace ColorPicker.ColorPickingFunctionality.SystemEvents
 {
     class RegisterdMouseEventHook : SystemHook
     {
+        public delegate void EventCallBack(int x, int y);
+
         private const int WH_MOUSE_LL = 14;
         private const int WM_LBUTTONDOWN = 0x0201;
 
@@ -25,12 +27,11 @@ namespace ColorPicker.ColorPickingFunctionality.SystemEvents
             public IntPtr dwExtraInfo;
         }
 
-        public delegate void EventCallBack(int x, int y);
         private EventCallBack callback;
 
-        public RegisterdMouseEventHook(EventCallBack callBack) : base(WH_MOUSE_LL)
+        public RegisterdMouseEventHook(EventCallBack callback) : base(WH_MOUSE_LL)
         {
-            this.callback = callBack;
+            this.callback = callback;
         }
 
         public override int HookProc(int nCode, int wParam, IntPtr lParam)

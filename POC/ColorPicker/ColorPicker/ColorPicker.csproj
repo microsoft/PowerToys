@@ -57,7 +57,7 @@
     </ApplicationDefinition>
     <Compile Include="ColorPickingFunctionality\InternalSystemCallException.cs" />
     <Compile Include="ColorPickingFunctionality\PixelColorFinder.cs" />
-    <Compile Include="ColorPickingFunctionality\SystemEvents\MouseEvent.cs" />
+    <Compile Include="ColorPickingFunctionality\SystemEvents\RegisterdMouseEventHook.cs" />
     <Compile Include="ColorPickingFunctionality\SystemEvents\SystemHook.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
