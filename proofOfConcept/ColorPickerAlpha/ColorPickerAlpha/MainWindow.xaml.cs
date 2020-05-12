@@ -27,16 +27,21 @@ namespace ColorPickerAlpha
 
                     Dispatcher.BeginInvoke(new Action(() =>
                     {
-                        System.Drawing.Color color = ColorPicker.GetPixelColor(x, y); //GetPixel(new System.Drawing.Point(x, y));
+                        System.Drawing.Color color = ColorPicker.GetPixelColor(x, y);
                         Debug.WriteLine(color);
-                        //txt2.Text = color.R + ",";
+                        
                         curColor = System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B);
-                        mrRec.Fill = new SolidColorBrush(curColor);
+                        //mrRec.Fill = new SolidColorBrush(curColor);
                     }));
 
                     Thread.Sleep(100);
                 }
             }).Start();
+
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
 
         }
     }
