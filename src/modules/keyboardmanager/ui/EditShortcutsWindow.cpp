@@ -275,6 +275,8 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     header.Children().Append(applyButton);
     header.Children().Append(cancelButton);
 
+    ScrollViewer scrollViewer;
+
     // Add shortcut button
     Windows::UI::Xaml::Controls::Button addShortcut;
     FontIcon plusSymbol;
@@ -284,6 +286,8 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     addShortcut.Margin({ 10, 0, 0, 25 });
     addShortcut.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects);
+        // Whenever a remap is added move to the bottom of the screen
+        scrollViewer.ChangeView(nullptr, scrollViewer.ScrollableHeight(), nullptr);
     });
 
     StackPanel mappingsPanel;
@@ -292,7 +296,6 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     mappingsPanel.Children().Append(shortcutTable);
     mappingsPanel.Children().Append(addShortcut);
 
-    ScrollViewer scrollViewer;
     scrollViewer.Content(mappingsPanel);
 
     RelativePanel xamlContainer;
