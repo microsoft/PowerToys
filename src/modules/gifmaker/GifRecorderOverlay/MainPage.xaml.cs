@@ -26,6 +26,18 @@ namespace GifRecorderOverlay
         {
             this.InitializeComponent();
         }
+
+        private void CaptureButton_Click(object sender, RoutedEventArgs e)
+        {
+            RecordPauseButton.IsEnabled = true;
+            StopButton.IsEnabled = false;
+            if ((string)RecordPauseButton.Tag == "pause")
+            {
+                RecordPauseButton.Icon = new SymbolIcon(Symbol.Target);
+                RecordPauseButton.Label = "Record";
+                RecordPauseButton.Tag = "record";
+            }
+        }
         private void RecordPauseButton_Click(object sender, RoutedEventArgs e)
         {
             if ((string)RecordPauseButton.Tag == "record")
@@ -45,6 +57,7 @@ namespace GifRecorderOverlay
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
+            RecordPauseButton.IsEnabled = false;
             StopButton.IsEnabled = false;
             if ((string)RecordPauseButton.Tag == "pause")
             {

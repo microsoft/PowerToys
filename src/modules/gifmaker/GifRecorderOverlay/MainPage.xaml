@@ -10,13 +10,13 @@
 
     <Grid>
         <CommandBar DefaultLabelPosition="Right" IsSticky="True" IsDynamicOverflowEnabled="False" OverflowButtonVisibility="Collapsed">
-            <AppBarButton Label="Capture">
+            <AppBarButton Label="Capture" Click="CaptureButton_Click">
                 <AppBarButton.Icon>
                     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xF4A9;"/>
                 </AppBarButton.Icon>
             </AppBarButton>
             <AppBarSeparator/>
-            <AppBarButton x:Name="RecordPauseButton" Tag="record" Icon="Target" Label="Record" Click="RecordPauseButton_Click"/>
+            <AppBarButton x:Name="RecordPauseButton" Icon="Target" Label="Record" IsEnabled="False" Tag="record" Click="RecordPauseButton_Click"/>
             <AppBarButton x:Name="StopButton" Icon="Stop" Label="Stop" IsEnabled="False" Click="StopButton_Click"/>
         </CommandBar>
 
