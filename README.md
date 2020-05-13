@@ -48,9 +48,7 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 
 ### Image Resizer
 
-<img align="left" src="./doc/images/overview/ImageResizer_small.png" />[Image Resizer](/src/modules/imageresizer) is a Windows Shell Extension for quickly resizing images.  With a simple right click from File Explorer, resize one or many images instantly. 
-
-This code is based on [Brice Lambson's Image Resizer](https://github.com/bricelam/ImageResizer).
+<img align="left" src="./doc/images/overview/ImageResizer_small.png" />[Image Resizer](/src/modules/imageresizer) is a Windows Shell Extension for quickly resizing images.  With a simple right click from File Explorer, resize one or many images instantly. This code is based on [Brice Lambson's Image Resizer](https://github.com/bricelam/ImageResizer).
 <br>
 <br>
 <br>
