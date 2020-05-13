@@ -43,6 +43,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 PowerToys will now enable two types of files to be previewed: Markdown (.md) & SVG (.svg)
 <br>
 <br>
+<br>
 
 ### Image Resizer
 
