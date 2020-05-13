@@ -10,6 +10,7 @@ using System.Windows.Interop;
 namespace ColorPicker
 {
     // Source: https://stackoverflow.com/questions/2341230/removing-icon-from-a-wpf-window
+    // and https://www.wpftutorial.net/RemoveIcon.html
     public class IconHelper
     {
         [DllImport("user32.dll")]
