@@ -121,7 +121,7 @@ namespace PowerToys_Settings_Sandbox.Views
 
             if(selection == ContentDialogResult.Primary)
             {
-                OpenFinalGeneralSettingsTip();
+                OpenFirstGeneralSettingsTip();
             }
             else
             {
