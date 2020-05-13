@@ -25,6 +25,7 @@ namespace PowerToys_Settings_Sandbox.Services
                     new ToastButton("Get Started", new QueryString()
                     {
                         {"action", "openApp"},
+                        {"status", "openFirst"},
                     }.ToString()),
                 }
             };
@@ -55,7 +56,8 @@ namespace PowerToys_Settings_Sandbox.Services
                     new ToastButtonDismiss(),
                     new ToastButton("See Updates", new QueryString()
                     {
-                        // Query for button
+                        {"action", "openApp"},
+                        {"status", "openUpdate"},
                     }.ToString())
                 }
             };
