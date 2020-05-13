@@ -28,13 +28,13 @@ namespace GifRecorderOverlay
         }
         private void play_Click(object sender, RoutedEventArgs e)
         {
-            if (PlayPause.Symbol.Equals(Symbol.Play))
+            if (RecordPause.Symbol.Equals(Symbol.Target))
             {
-                PlayPause.Symbol = Symbol.Pause;
+                RecordPause.Symbol = Symbol.Pause;
             }
-            else if (PlayPause.Symbol.Equals(Symbol.Pause))
+            else if (RecordPause.Symbol.Equals(Symbol.Pause))
             {
-                PlayPause.Symbol = Symbol.Play;
+                RecordPause.Symbol = Symbol.Target;
             }
         }
     }

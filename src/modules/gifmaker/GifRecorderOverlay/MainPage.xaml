@@ -16,8 +16,8 @@
                 </AppBarButton.Icon>
             </AppBarButton>
             <AppBarSeparator/>
-            <AppBarButton Label="Play" Click="play_Click">
-                <SymbolIcon x:Name="PlayPause" Symbol="Play"/>
+            <AppBarButton Label="Record" Click="play_Click">
+                <SymbolIcon x:Name="RecordPause" Symbol="Target"/>
             </AppBarButton>
             <AppBarButton Icon="Stop" Label="Stop"/>
         </CommandBar>
