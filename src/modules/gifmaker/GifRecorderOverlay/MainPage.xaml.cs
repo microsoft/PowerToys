@@ -26,15 +26,31 @@ namespace GifRecorderOverlay
         {
             this.InitializeComponent();
         }
-        private void play_Click(object sender, RoutedEventArgs e)
+        private void RecordPauseButton_Click(object sender, RoutedEventArgs e)
         {
-            if (RecordPause.Symbol.Equals(Symbol.Target))
+            if ((string)RecordPauseButton.Tag == "record")
             {
-                RecordPause.Symbol = Symbol.Pause;
+                RecordPauseButton.Icon = new SymbolIcon(Symbol.Pause);
+                RecordPauseButton.Label = "Pause";
+                RecordPauseButton.Tag = "pause";
+                StopButton.IsEnabled = true;
             }
-            else if (RecordPause.Symbol.Equals(Symbol.Pause))
+            else
             {
-                RecordPause.Symbol = Symbol.Target;
+                RecordPauseButton.Icon = new SymbolIcon(Symbol.Target);
+                RecordPauseButton.Label = "Record";
+                RecordPauseButton.Tag = "record";
+            }
+        }
+
+        private void StopButton_Click(object sender, RoutedEventArgs e)
+        {
+            StopButton.IsEnabled = false;
+            if ((string)RecordPauseButton.Tag == "pause")
+            {
+                RecordPauseButton.Icon = new SymbolIcon(Symbol.Target);
+                RecordPauseButton.Label = "Record";
+                RecordPauseButton.Tag = "record";
             }
         }
     }

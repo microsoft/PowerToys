@@ -9,17 +9,15 @@
     Background="{ThemeResource SystemControlAcrylicElementBrush}">
 
     <Grid>
-        <CommandBar x:Name="toolbar" IsSticky="True" IsDynamicOverflowEnabled="False" OverflowButtonVisibility="Collapsed">
-            <AppBarButton Label="Select">
+        <CommandBar DefaultLabelPosition="Right" IsSticky="True" IsDynamicOverflowEnabled="False" OverflowButtonVisibility="Collapsed">
+            <AppBarButton Label="Capture">
                 <AppBarButton.Icon>
                     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xF4A9;"/>
                 </AppBarButton.Icon>
             </AppBarButton>
             <AppBarSeparator/>
-            <AppBarButton Label="Record" Click="play_Click">
-                <SymbolIcon x:Name="RecordPause" Symbol="Target"/>
-            </AppBarButton>
-            <AppBarButton Icon="Stop" Label="Stop"/>
+            <AppBarButton x:Name="RecordPauseButton" Tag="record" Icon="Target" Label="Record" Click="RecordPauseButton_Click"/>
+            <AppBarButton x:Name="StopButton" Icon="Stop" Label="Stop" IsEnabled="False" Click="StopButton_Click"/>
         </CommandBar>
 
     </Grid>
