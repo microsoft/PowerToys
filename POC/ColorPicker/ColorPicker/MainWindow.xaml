@@ -9,8 +9,8 @@
         KeyDown="OnKeyDownHandler">
     <Grid Margin="6">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
 
@@ -28,7 +28,7 @@
 
         <Grid Grid.Column="2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="4*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
