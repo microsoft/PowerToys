@@ -3,8 +3,13 @@
 <img src="./doc/images/overview/PT hero image.png" />
 
 Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. Inspired by the [Windows 95 era PowerToys project](https://en.wikipedia.org/wiki/Microsoft_PowerToys), this reboot provides power users with ways to squeeze more efficiency out of the Windows 10 shell and customize it for individual workflows.  A great overview of the Windows 95 PowerToys can be found [here](https://socket3.wordpress.com/2016/10/22/using-windows-95-powertoys/).
-  
-    
+
+
+
+
+
+
+
 [Download][github-release-link]   |   [Release notes][github-release-link]   |   [Microsoft privacy statement][privacyLink]
   
     
@@ -28,12 +33,10 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 ### Shortcut Guide
 
 <img align="left" src="./doc/images/overview/Shortcut guide_small.png" />[Windows key shortcut guide](/src/modules/shortcut_guide) appears when a user holds the Windows key down for more than one second and shows the available shortcuts for the current state of the desktop.
-  
-  
-    
-      
-        
-          
+<br>
+<br>
+<br>
+<br>
           
 ### PowerRename
 
