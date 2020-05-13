@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ColorPicker"
         mc:Ignorable="d"
         Title="One-Click Color" Height="100" Width="400"
-        KeyDown="OnKeyDown">
+        KeyDown="OnKeyDown" ResizeMode="CanMinimize">
     <Grid Margin="6">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>

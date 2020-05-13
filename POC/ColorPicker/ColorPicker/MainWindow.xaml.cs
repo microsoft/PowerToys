@@ -35,6 +35,11 @@ namespace ColorPicker
             _updateTimer.Start();
         }
 
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            IconHelper.RemoveIcon(this);
+        }
+
         private void UpdateCurrentColor(object sender, EventArgs e)
         {
             if (_isColorSelectionEnabled)

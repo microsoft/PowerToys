@@ -55,6 +55,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="IconHelper.cs" />
     <Compile Include="InternalSystemCallException.cs" />
     <Compile Include="PixelColorFinder.cs" />
     <Compile Include="SystemEvents\RegisteredMouseEventHook.cs" />
