@@ -262,7 +262,7 @@ namespace Microsoft.Plugin.Program.Programs
             var files = new List<string>();
             var folderQueue = new Queue<string>();
             folderQueue.Enqueue(directory);
-
+            
             do
             {
                 var currentDirectory = folderQueue.Dequeue();
