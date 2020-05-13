@@ -41,7 +41,8 @@ namespace FancyZonesEditor
 
         public void SelectCommand(object sender, RoutedEventArgs e)
         {
-            System.Diagnostics.Debugger.Launch();
+            MonitorInfo mi = (MonitorInfo)(sender as Button).DataContext;
+            MessageBox.Show(mi.Id + "");
         }
 
         private void MainWindow_KeyUp(object sender, KeyEventArgs e)
