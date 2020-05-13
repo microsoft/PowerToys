@@ -19,5 +19,12 @@
             <AppBarButton x:Name="RecordPauseButton" Icon="Target" Label="Record" IsEnabled="False" Tag="record" Click="RecordPauseButton_Click"/>
             <AppBarButton x:Name="StopButton" Icon="Stop" Label="Stop" IsEnabled="False" Click="StopButton_Click"/>
         </CommandBar>
+        <Canvas x:Name="mainCanvas"
+                Background="Black"
+                Opacity="0.5"
+                Visibility="Collapsed"
+                PointerPressed="mainCanvas_PointerPressed"
+                PointerMoved="mainCanvas_PointerMoved"
+                PointerReleased="mainCanvas_PointerReleased"/>
     </Grid>
 </Page>

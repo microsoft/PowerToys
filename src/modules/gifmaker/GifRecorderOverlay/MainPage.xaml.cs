@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GifRecorderOverlay.Controls;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,6 +23,7 @@ namespace GifRecorderOverlay
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        private ResizableRectangle rect;
         public MainPage()
         {
             this.InitializeComponent();
@@ -38,6 +40,7 @@ namespace GifRecorderOverlay
                 RecordPauseButton.Label = "Record";
                 RecordPauseButton.Tag = "record";
             }
+            mainCanvas.Visibility = 0;
         }
         private void RecordPauseButton_Click(object sender, RoutedEventArgs e)
         {
@@ -66,6 +69,61 @@ namespace GifRecorderOverlay
                 RecordPauseButton.Icon = new SymbolIcon(Symbol.Target);
                 RecordPauseButton.Label = "Record";
                 RecordPauseButton.Tag = "record";
+            }
+        }
+
+        private void mainCanvas_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            try
+            {
+                mainCanvas.CapturePointer(e.Pointer);
+                var ptrPoint = e.GetCurrentPoint(mainCanvas);
+                var point1 = ptrPoint.Position;
+                if (rect != null)
+                {
+                    mainCanvas.Children.Remove(rect);
+                }
+                rect = new ResizableRectangle(mainCanvas, point1);
+                mainCanvas.Children.Add(rect);
+                e.Handled = true;
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        private void mainCanvas_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            try
+            {
+                var ptrPoint = e.GetCurrentPoint(mainCanvas);
+                if (ptrPoint.Properties.IsLeftButtonPressed)
+                {
+                    if (rect != null)
+                    {
+                        var point2 = ptrPoint.Position;
+                        rect.SetCoordinates(point2);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        private void mainCanvas_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            try
+            {
+                if (rect.IsZeroSize())
+                {
+                    mainCanvas.Children.Remove(rect);
+                    rect = null;
+                }
+                e.Handled = true;
+            }
+            catch (Exception)
+            {
             }
         }
     }
