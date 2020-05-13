@@ -1,22 +1,34 @@
 #pragma once
-
-#include "Monitor.h"
+#include <vector>
+#include <windows.h>
+#include <winuser.h>
 
 struct Resolution
 {
     int width;
     int height;
-    int frequency;
 
-    Resolution(int _width, int _height, int _frequency)
+    Resolution() {}
+
+    Resolution(int _width, int _height)
     {
         width = _width;
         height = _height;
-        frequency = _frequency;
     }
 };
 
-std::vector<Resolution> getAllPossibleMonitorResolutions(Monitor* monitor);
-Resolution getCurrentMonitorResolution(Monitor* monitor);
-bool setMonitorResolution(Monitor* monitor, Resolution resolution);
+struct MonitorDisplayDevice {
+    WCHAR* displayAdapterName;
+    WCHAR* monitorName;
+    Resolution* possibleResolutions;
+    Resolution currentResolution;
 
+    MonitorDisplayDevice(WCHAR* _displayAdapterName, WCHAR* _monitorName) {
+        displayAdapterName = _displayAdapterName;
+        monitorName = _monitorName;
+    }
+};
+
+
+std::vector<MonitorDisplayDevice> getAllMonitorDisplayDevices();
+std::vector<Resolution> getAllPossibleDeviceResolutions(MonitorDisplayDevice* monitorDisplayDevice);
