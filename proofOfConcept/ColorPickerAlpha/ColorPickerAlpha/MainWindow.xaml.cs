@@ -20,6 +20,8 @@ namespace ColorPickerAlpha
     /// </summary>
     public partial class MainWindow : Window
     {
+        Boolean rgbState = false;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -27,7 +29,30 @@ namespace ColorPickerAlpha
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-
+            rgbState = !rgbState;
+            if (rgbState)
+            {
+                Rvalue.Visibility = Visibility.Visible;
+                RLabel.Visibility = Visibility.Visible;
+                Gvalue.Visibility = Visibility.Visible;
+                GLabel.Visibility = Visibility.Visible;
+                Bvalue.Visibility = Visibility.Visible;
+                BLabel.Visibility = Visibility.Visible;
+                HEXValue.Visibility = Visibility.Hidden;
+                HEXLabel.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                Rvalue.Visibility = Visibility.Hidden;
+                RLabel.Visibility = Visibility.Hidden;
+                Gvalue.Visibility = Visibility.Hidden;
+                GLabel.Visibility = Visibility.Hidden;
+                Bvalue.Visibility = Visibility.Hidden;
+                BLabel.Visibility = Visibility.Hidden;
+                HEXValue.Visibility = Visibility.Visible;
+                HEXLabel.Visibility = Visibility.Visible;
+            }
+            
         }
     }
 }

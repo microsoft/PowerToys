@@ -33,21 +33,27 @@
         </Button>
 
         <Rectangle Grid.Row = "0" Grid.Column = "1" Width="40" Height="40" Fill="White" Stroke="Black" />
-        
-        <TextBlock Grid.Row = "0" Grid.Column = "2" Text = "R" 
+
+        <TextBlock x:Name="HEXLabel" Grid.Row = "0" Grid.Column = "2" Text = "HEX" 
+         Margin = "0,9,10,9" HorizontalAlignment = "Right" VerticalAlignment = "Center" 
+         Width = "49"  TextAlignment="Right" FontSize="20" Visibility="Visible"/>
+        <TextBox x:Name="HEXValue" Grid.Row = "0" Grid.Column = "3" Margin = "10" Visibility="Visible" Grid.ColumnSpan="5"/>
+
+
+        <TextBlock x:Name="RLabel" Grid.Row = "0" Grid.Column = "2" Text = "R" 
          Margin = "10" HorizontalAlignment = "Right" VerticalAlignment = "Center" 
-         Width = "30"  TextAlignment="Right" FontSize="20"/>
-        <TextBox Grid.Row = "0" Grid.Column = "3" Margin = "10"/>
+         Width = "30"  TextAlignment="Right" FontSize="20" Visibility="Hidden"/>
+        <TextBox x:Name="Rvalue" Grid.Row = "0" Grid.Column = "3" Margin = "10" Visibility="Hidden"/>
 
-        <TextBlock Grid.Row = "0" Grid.Column = "4" Text = "G" Margin = "10" 
-         HorizontalAlignment = "Right" VerticalAlignment = "Center" Width = "30" TextAlignment="Right"
-                   FontSize="20"/>
-        
-        <TextBox Grid.Row = "0" Grid.Column = "5" Margin = "10"/>
+        <TextBlock x:Name="GLabel" Grid.Row = "0" Grid.Column = "4" Text = "G"
+        Margin = "10" HorizontalAlignment = "Right" VerticalAlignment = "Center" 
+        Width = "30" TextAlignment="Right" FontSize="20" Visibility="Hidden"/>
+        <TextBox x:Name="Gvalue" Grid.Row = "0" Grid.Column = "5" Margin = "10" Visibility="Hidden"/>
 
-        <TextBlock Grid.Row = "2" Grid.Column = "6" Text = "B" Margin = "10" 
-         HorizontalAlignment = "Right" VerticalAlignment = "Center" Width = "30" TextAlignment="Right" FontSize="20"/>
-        <TextBox Grid.Row = "0" Grid.Column = "7" Margin = "10"/>
+        <TextBlock x:Name="BLabel" Grid.Row = "2" Grid.Column = "6" Text = "B" 
+        Margin = "10" HorizontalAlignment = "Right" VerticalAlignment = "Center" 
+        Width = "30" TextAlignment="Right" FontSize="20" Visibility="Hidden"/>
+        <TextBox x:Name="Bvalue" Grid.Row = "0" Grid.Column = "7" Margin = "10" Visibility="Hidden"/>
 
         <Button Grid.Row = "0" Grid.Column = "8"  Click="Button_Click" Opacity="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="24" Width="46" BorderBrush="{x:Null}" Margin="10,12,10,13" RenderTransformOrigin="1.305,0.521" >
             <Button.Background>
