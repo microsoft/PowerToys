@@ -131,11 +131,11 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
         t2.detach();
     };
 
-    auto onAccept = [linkedRemapDropDown,
-                     detectRemapKeyBox,
-                     &keyboardManagerState,
-                     &singleKeyRemapBuffer,
-                     unregisterKeys] {
+    auto onPressEnter = [linkedRemapDropDown,
+                         detectRemapKeyBox,
+                         &keyboardManagerState,
+                         &singleKeyRemapBuffer,
+                         unregisterKeys] {
         // Save the detected key in the linked text block
         DWORD detectedKey = keyboardManagerState.GetDetectedSingleRemapKey();
 
@@ -150,13 +150,23 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
                 linkedRemapDropDown.SelectedIndex((int32_t)std::distance(keyCodeList.begin(), it));
             }
         }
+        // Hide the type key UI
+        detectRemapKeyBox.Hide();
+    };
 
+    auto onReleaseEnter = [&keyboardManagerState,
+                           unregisterKeys] {
         // Reset the keyboard manager UI state
         keyboardManagerState.ResetUIState();
         // Revert UI state back to Edit Keyboard window
         keyboardManagerState.SetUIState(KeyboardManagerUIState::EditKeyboardWindowActivated, EditKeyboardWindowHandle);
         unregisterKeys();
-        detectRemapKeyBox.Hide();
+    };
+
+    auto onAccept = [onPressEnter,
+                     onReleaseEnter] {
+        onPressEnter();
+        onReleaseEnter();
     };
 
     TextBlock primaryButtonText;
@@ -173,20 +183,17 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     keyboardManagerState.RegisterKeyDelay(
         VK_RETURN,
         std::bind(&KeyboardManagerState::SelectDetectedRemapKey, &keyboardManagerState, std::placeholders::_1),
-        [primaryButton, detectRemapKeyBox](DWORD) {
+        [primaryButton, onPressEnter, detectRemapKeyBox](DWORD) {
             detectRemapKeyBox.Dispatcher().RunAsync(
                 Windows::UI::Core::CoreDispatcherPriority::Normal,
-                [primaryButton] {
+                [primaryButton, onPressEnter] {
                     // Use the base medium low brush to be consistent with the theme
                     primaryButton.Background(Windows::UI::Xaml::Application::Current().Resources().Lookup(box_value(L"SystemControlBackgroundBaseMediumLowBrush")).as<Windows::UI::Xaml::Media::SolidColorBrush>());
+                    onPressEnter();
                 });
         },
-        [onAccept, detectRemapKeyBox](DWORD) {
-            detectRemapKeyBox.Dispatcher().RunAsync(
-                Windows::UI::Core::CoreDispatcherPriority::Normal,
-                [onAccept] {
-                    onAccept();
-                });
+        [onReleaseEnter](DWORD) {
+            onReleaseEnter();
         });
 
     TextBlock cancelButtonText;
@@ -245,7 +252,7 @@ void SingleKeyRemapControl::createDetectKeyWindow(winrt::Windows::Foundation::II
     stackPanel.Children().Append(holdEscInfo);
 
     TextBlock holdEnterInfo;
-    holdEnterInfo.Text(L"Hold Enter to apply");
+    holdEnterInfo.Text(L"Hold Enter to continue");
     holdEnterInfo.FontSize(12);
     holdEnterInfo.Margin({ 0, 0, 0, 0 });
     stackPanel.Children().Append(holdEnterInfo);
