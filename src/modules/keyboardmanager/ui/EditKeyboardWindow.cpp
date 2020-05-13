@@ -7,8 +7,10 @@
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <set>
 #include <common/windows_colors.h>
+#include <common/dpi_aware.h>
 #include "Styles.h"
 #include "Dialog.h"
+#include <keyboardmanager/dll/resource.h>
 
 using namespace winrt::Windows::Foundation;
 
@@ -145,7 +147,13 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         windowClass.hInstance = hInst;
         windowClass.lpszClassName = szWindowClass;
         windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW);
-        windowClass.hIconSm = LoadIcon(windowClass.hInstance, IDI_APPLICATION);
+        windowClass.hIcon = (HICON)LoadImageW(
+            windowClass.hInstance,
+            MAKEINTRESOURCE(IDS_KEYBOARDMANAGER_ICON),
+            IMAGE_ICON,
+            48,
+            48,
+            LR_DEFAULTCOLOR);
         if (RegisterClassEx(&windowClass) == NULL)
         {
             MessageBox(NULL, L"Windows registration failed!", L"Error", NULL);
@@ -158,15 +166,16 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     // Find center screen coordinates
     RECT desktopRect;
     GetClientRect(GetDesktopWindow(), &desktopRect);
-    // Calculate resolution dependent window size
-    int windowWidth = KeyboardManagerConstants::DefaultEditKeyboardWindowWidth * desktopRect.right;
-    int windowHeight = KeyboardManagerConstants::DefaultEditKeyboardWindowHeight * desktopRect.bottom;
+    // Calculate DPI dependent window size
+    int windowWidth = KeyboardManagerConstants::DefaultEditKeyboardWindowWidth;
+    int windowHeight = KeyboardManagerConstants::DefaultEditKeyboardWindowHeight;
+    DPIAware::Convert(nullptr, windowWidth, windowHeight);
 
     // Window Creation
     HWND _hWndEditKeyboardWindow = CreateWindow(
         szWindowClass,
         L"Remap Keyboard",
-        WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+        WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX,
         (desktopRect.right / 2) - (windowWidth / 2),
         (desktopRect.bottom / 2) - (windowHeight / 2),
         windowWidth,
@@ -483,4 +492,14 @@ bool CheckEditKeyboardWindowActive()
     }
 
     return result;
+}
+
+// Function to close any active Edit Keyboard window
+void CloseActiveEditKeyboardWindow()
+{
+    std::unique_lock<std::mutex> hwndLock(editKeyboardWindowMutex);
+    if (hwndEditKeyboardNativeWindow != nullptr)
+    {
+        PostMessage(hwndEditKeyboardNativeWindow, WM_CLOSE, 0, 0);
+    }
 }

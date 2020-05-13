@@ -44,10 +44,10 @@ namespace KeyboardManagerConstants
     inline const long MaxShortcutSize = 3;
 
     // Default window sizes
-    inline const double DefaultEditKeyboardWindowWidth = 0.4;
-    inline const double DefaultEditKeyboardWindowHeight = 0.55;
-    inline const double DefaultEditShortcutsWindowWidth = 0.52;
-    inline const double DefaultEditShortcutsWindowHeight = 0.55;
+    inline const int DefaultEditKeyboardWindowWidth = 800;
+    inline const int DefaultEditKeyboardWindowHeight = 600;
+    inline const int DefaultEditShortcutsWindowWidth = 1000;
+    inline const int DefaultEditShortcutsWindowHeight = 600;
 
     // Key Remap table constants
     inline const long RemapTableColCount = 4;
@@ -56,7 +56,7 @@ namespace KeyboardManagerConstants
     inline const long RemapTableArrowColIndex = 1;
     inline const long RemapTableNewColIndex = 2;
     inline const long RemapTableRemoveColIndex = 3;
-    inline const long RemapTableDropDownWidth = 110;
+    inline const DWORD RemapTableDropDownWidth = 110;
 
     // Shortcut table constants
     inline const long ShortcutTableColCount = 4;
@@ -65,14 +65,14 @@ namespace KeyboardManagerConstants
     inline const long ShortcutTableArrowColIndex = 1;
     inline const long ShortcutTableNewColIndex = 2;
     inline const long ShortcutTableRemoveColIndex = 3;
-    inline const long ShortcutTableDropDownWidth = 110;
-    inline const long ShortcutTableDropDownSpacing = 10;
+    inline const DWORD ShortcutTableDropDownWidth = 110;
+    inline const DWORD ShortcutTableDropDownSpacing = 10;
 
     // Drop down height used for both Edit Keyboard and Edit Shortcuts
-    inline const long TableDropDownHeight = 200;
-    inline const long TableArrowColWidth = 20;
-    inline const long TableRemoveColWidth = 20;
-    inline const long TableWarningColWidth = 20;
+    inline const DWORD TableDropDownHeight = 200;
+    inline const DWORD TableArrowColWidth = 20;
+    inline const DWORD TableRemoveColWidth = 20;
+    inline const DWORD TableWarningColWidth = 20;
 
     // Shared style constants for both Remap Table and Shortcut Table
     inline const double HeaderButtonWidth = 100;

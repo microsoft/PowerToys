@@ -6,8 +6,10 @@
 #include <keyboardmanager/common/trace.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <common/windows_colors.h>
+#include <common/dpi_aware.h>
 #include "Styles.h"
 #include "Dialog.h"
+#include <keyboardmanager/dll/resource.h>
 
 using namespace winrt::Windows::Foundation;
 
@@ -57,7 +59,13 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         windowClass.hInstance = hInst;
         windowClass.lpszClassName = szWindowClass;
         windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW);
-        windowClass.hIconSm = LoadIcon(windowClass.hInstance, IDI_APPLICATION);
+        windowClass.hIcon = (HICON)LoadImageW(
+            windowClass.hInstance,
+            MAKEINTRESOURCE(IDS_KEYBOARDMANAGER_ICON),
+            IMAGE_ICON,
+            48,
+            48,
+            LR_DEFAULTCOLOR);
         if (RegisterClassEx(&windowClass) == NULL)
         {
             MessageBox(NULL, L"Windows registration failed!", L"Error", NULL);
@@ -70,15 +78,16 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Find center screen coordinates
     RECT desktopRect;
     GetClientRect(GetDesktopWindow(), &desktopRect);
-    // Calculate resolution dependent window size
-    int windowWidth = KeyboardManagerConstants::DefaultEditShortcutsWindowWidth * desktopRect.right;
-    int windowHeight = KeyboardManagerConstants::DefaultEditShortcutsWindowHeight * desktopRect.bottom;
+    // Calculate DPI dependent window size
+    int windowWidth = KeyboardManagerConstants::DefaultEditShortcutsWindowWidth;
+    int windowHeight = KeyboardManagerConstants::DefaultEditShortcutsWindowHeight;
+    DPIAware::Convert(nullptr, windowWidth, windowHeight);
 
     // Window Creation
     HWND _hWndEditShortcutsWindow = CreateWindow(
         szWindowClass,
         L"Remap Shortcuts",
-        WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+        WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX,
         (desktopRect.right / 2) - (windowWidth / 2),
         (desktopRect.bottom / 2) - (windowHeight / 2),
         windowWidth,
@@ -367,4 +376,14 @@ bool CheckEditShortcutsWindowActive()
     }
 
     return result;
+}
+
+// Function to close any active Edit Shortcuts window
+void CloseActiveEditShortcutsWindow()
+{
+    std::unique_lock<std::mutex> hwndLock(editShortcutsWindowMutex);
+    if (hwndEditShortcutsNativeWindow != nullptr)
+    {
+        PostMessage(hwndEditShortcutsNativeWindow, WM_CLOSE, 0, 0);
+    }
 }
