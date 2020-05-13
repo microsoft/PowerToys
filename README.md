@@ -1,14 +1,91 @@
 # Overview
 
-<img align="right" width="200" src="./doc/images/Logo.jpg" />
+<img src="./doc/images/overview/PT hero image.png" />
 
 Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. Inspired by the [Windows 95 era PowerToys project](https://en.wikipedia.org/wiki/Microsoft_PowerToys), this reboot provides power users with ways to squeeze more efficiency out of the Windows 10 shell and customize it for individual workflows.  A great overview of the Windows 95 PowerToys can be found [here](https://socket3.wordpress.com/2016/10/22/using-windows-95-powertoys/).
-
-## Build Status
+<br>
+<br>
+[Download][github-release-link]   |   [Release notes][github-release-link]   |   [Microsoft privacy statement][privacyLink]
+<br>
+<br>
+## Build status
 
 [![Build Status](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=master)](https://dev.azure.com/ms/PowerToys/_build?definitionId=219)
 
-## Installing and running Microsoft PowerToys 0.17
+
+
+## Current PowerToy Utilities
+
+### FancyZones
+
+<img align="left" src="./doc/images/overview/FancyZones_small.png" />[FancyZones](/src/modules/fancyzones/) is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.
+<br>
+<br>
+<br>
+<br>
+<br>
+
+### Shortcut Guide
+
+<img align="left" src="./doc/images/overview/Shortcut guide_small.png" />[Windows key shortcut guide](/src/modules/shortcut_guide) appears when a user holds the Windows key down for more than one second and shows the available shortcuts for the current state of the desktop.
+<br>
+<br>
+<br>
+<br>
+<br>
+
+### PowerRename
+
+<img align="left" src="./doc/images/overview/PowerRename_small.PNG" />[PowerRename](/src/modules/powerrename) is a Windows Shell Extension for advanced bulk renaming using search and replace or regular expressions. PowerRename allows simple search and replace or more advanced regular expression matching. While you type in the search and replace input fields, the preview area will show what the items will be renamed to. PowerRename then calls into the Windows Explorer file operations engine to perform the rename. This has the benefit of allowing the rename operation to be undone after PowerRename exits.
+
+This code is based on [Chris Davis's SmartRename](https://github.com/chrdavis/SmartRename).
+<br>
+<br>
+
+### File Explorer (Preview Panes)
+
+<img align="left" src="./doc/images/overview/PowerPreview_small.PNG" />[File Explorer](/src/modules/previewpane) add-ons right now are just limited to Preview Pane additions for File Explorer. Preview Pane is an existing feature in the File Explorer.  To enable it, you just click the View tab in the ribbon and then click "Preview Pane".
+
+PowerToys will now enable two types of files to be previewed:
+
+- Markdown files (.md)
+- SVG (.svg)
+<br>
+
+### Image Resizer
+
+<img align="left" src="./doc/images/overview/ImageResizer_small.png" />[Image Resizer](/src/modules/imageresizer) is a Windows Shell Extension for quickly resizing images.  With a simple right click from File Explorer, resize one or many images instantly. 
+
+This code is based on [Brice Lambson's Image Resizer](https://github.com/bricelam/ImageResizer).
+<br>
+<br>
+<br>
+
+### Keyboard Manager
+
+<img align="left" src="./doc/images/overview/KBM_small.png" /> [Keyboard Manager](src/modules/keyboardmanager/) allows you to customize the keyboard to be more productive by remapping keys and creating your own keyboard shortcuts.
+<br>
+<br>
+<br>
+<br>
+<br>
+
+### PowerToys Run
+
+<img align="left" src="./doc/images/overview/PowerLauncher_small.png" /> [PowerToys Run](src/modules/launcher/) is a new toy in PowerToys that can help you search and launch your app instantly! It is open source and modular for additional plugins.
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+### Version 1.0 plan
+
+Our plan for all the [goals and utilities for v1.0 detailed over here in the wiki][v1].
+
+
+## Installing and running Microsoft PowerToys
  👉 **Note:** Microsoft PowerToys requires Windows 10 1803 (build 17134) or later.
 
 ### Via Github with MSI [Recommended]
@@ -47,46 +124,8 @@ We currently support the matrix below.
 |:---:|:---:|:---:|
 | [Supported][github-release-link] | [Issue #602](https://github.com/microsoft/PowerToys/issues/602) | [Issue #490](https://github.com/microsoft/PowerToys/issues/490) |
 
-## Current PowerToy Utilities
 
-### FancyZones
 
-[FancyZones](/src/modules/fancyzones/) - FancyZones is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.
-
-### Shortcut Guide
-
-[Windows key shortcut guide](/src/modules/shortcut_guide) - The shortcut guide appears when a user holds the Windows key down for more than one second and shows the available shortcuts for the current state of the desktop.
-
-### PowerRename
-
-[PowerRename](/src/modules/powerrename) - PowerRename is a Windows Shell Extension for advanced bulk renaming using search and replace or regular expressions. PowerRename allows simple search and replace or more advanced regular expression matching. While you type in the search and replace input fields, the preview area will show what the items will be renamed to. PowerRename then calls into the Windows Explorer file operations engine to perform the rename. This has the benefit of allowing the rename operation to be undone after PowerRename exits.
-
-This code is based on [Chris Davis's SmartRename](https://github.com/chrdavis/SmartRename).
-
-### File Explorer (Preview Panes)
-
-[File Explorer](/src/modules/previewpane) add-ons right now are just limited to Preview Pane additions for File Explorer. Preview Pane is an existing feature in the File Explorer.  To enable it, you just click the View tab in the ribbon and then click "Preview Pane".
-
-PowerToys will now enable two types of files to be previewed:
-
-- Markdown files (.md)
-- SVG (.svg)
-
-### Image Resizer
-
-[Image Resizer](/src/modules/imageresizer) is a Windows Shell Extension for quickly resizing images.  With a simple right click from File Explorer, resize one or many images instantly. 
-
-This code is based on [Brice Lambson's Image Resizer](https://github.com/bricelam/ImageResizer).
-
-### Window Walker (Text based alt-tab alternative)
-
-[Window Walker](src/modules/windowwalker/) is an app that lets you search and switch between windows that you have open, all from the comfort of your keyboard. As you are searching for an app, you can use the keyboard up and down arrows to see an Alt-Tab style preview of the windows.  In the future, this will be merged into the Launcher project.  
-
-This code is based on [Beta Tadele's Window Walker](https://github.com/betsegaw/windowwalker).
-
-### Version 1.0 plan
-
-Our plan for all the [goals and utilities for v1.0 detailed over here in the wiki][v1].
 
 ## What's Happening
 
