@@ -1,19 +1,15 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.Text;
 using System.Threading;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Shapes;
 
 namespace ColorPickerAlpha
 {
     public partial class MainWindow : Window
     {
-        System.Windows.Media.Color curColor;
+        Color curColor;
 
         public MainWindow()
         {
@@ -24,7 +20,6 @@ namespace ColorPickerAlpha
                 while (true)
                 {
                     (int x, int y) = ColorPicker.GetPhysicalCursorCoords();
-
 
                     Dispatcher.BeginInvoke(new Action(() =>
                     {
@@ -42,12 +37,6 @@ namespace ColorPickerAlpha
                     Thread.Sleep(100);
                 }
             }).Start();
-
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-
         }
 
         private void Copy_Clip(object sender, RoutedEventArgs e)

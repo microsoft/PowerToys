@@ -6,7 +6,6 @@ namespace ColorPickerAlpha
 {
     public class ColorPicker
     {
-        //Interops with C++
         [DllImport("user32.dll")]
         static extern IntPtr GetDC(IntPtr hwnd);
 
