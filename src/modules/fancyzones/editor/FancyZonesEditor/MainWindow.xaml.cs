@@ -19,7 +19,7 @@ namespace FancyZonesEditor
     public partial class MainWindow : MetroWindow
     {
         public const int MaxZones = 40;
-        private readonly Settings _settings = ((App)Application.Current).ZoneSettings[MonitorVM.CurrentMonitor];
+        private readonly Settings _settings = App.ZoneSettings[MonitorVM.CurrentMonitor];
         private static readonly string _defaultNamePrefix = "Custom Layout ";
 
         public int WrapPanelItemSize { get; set; } = 150;
@@ -38,11 +38,14 @@ namespace FancyZonesEditor
                 WrapPanelItemSize = 150;
             }
         }
-
+        
         public void SelectCommand(object sender, RoutedEventArgs e)
         {
+            //System.Diagnostics.Debugger.Launch();
             MonitorInfo mi = (MonitorInfo)(sender as Button).DataContext;
-            MessageBox.Show(mi.Id + "");
+            MonitorVM.CurrentMonitor = mi.Id;
+            EditorOverlay.Current.Close();
+            App.LoadMonitor();
         }
 
         private void MainWindow_KeyUp(object sender, KeyEventArgs e)

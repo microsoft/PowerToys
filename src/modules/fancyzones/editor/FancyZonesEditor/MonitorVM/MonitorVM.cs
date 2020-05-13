@@ -40,13 +40,6 @@ namespace FancyZonesEditor
             Monitors.Add(new MonitorInfo(2, "Monitor 3", 100, 150));
         }
 
-        public void SwitchMonitor()
-        {
-            MessageBox.Show("hello this is reached");
-            //_currentMonitor = (int)currentIndex;
-        }
-
-
         #region Properties
 
         private ObservableCollection<MonitorInfo> monitors;
