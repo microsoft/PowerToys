@@ -1,10 +1,12 @@
-﻿using System;
+﻿using MahApps.Metro.Controls;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Navigation;
 
@@ -27,13 +29,11 @@ namespace FancyZonesEditor
             set { _currentMonitor = value; }
         }
 
-
-
         public MonitorVM()
         {
             AddCommand = new RelayCommand(AddCommandExecute, AddCommandCanExecute);
             DeleteCommand = new RelayCommand(DeleteCommandExecute, DeleteCommandCanExecute);
-
+            SelectCommand = new RelayCommand(SelectCommandExecute, SelectCommandCanExecute);
             Monitors = new ObservableCollection<MonitorInfo>();
             Monitors.Add(new MonitorInfo(0, "Monitor 1", 100, 150, "DeepSkyBlue"));
             Monitors.Add(new MonitorInfo(1, "Monitor 2", 100, 150));
@@ -42,7 +42,8 @@ namespace FancyZonesEditor
 
         public void SwitchMonitor()
         {
-            _currentMonitor = 1;
+            MessageBox.Show("hello this is reached");
+            //_currentMonitor = (int)currentIndex;
         }
 
 
@@ -116,7 +117,6 @@ namespace FancyZonesEditor
         {
             get => deleteCommand;
             set => deleteCommand = value;
-
         }
 
         private bool DeleteCommandCanExecute(object var)
@@ -127,6 +127,24 @@ namespace FancyZonesEditor
         private void DeleteCommandExecute(object var)
         {
             Monitors.Remove(Monitors.Last<MonitorInfo>());
+        }
+
+        private ICommand selectCommand;
+
+        public ICommand SelectCommand
+        {
+            get => selectCommand;
+            set => selectCommand = value;
+        }
+
+        private bool SelectCommandCanExecute(object var)
+        {
+            return true;
+        }
+
+        private void SelectCommandExecute(object var)
+        {
+            MessageBox.Show("My life is sad");
         }
 
         #endregion Commands

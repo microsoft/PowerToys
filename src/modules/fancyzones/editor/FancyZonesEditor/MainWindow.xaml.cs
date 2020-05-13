@@ -39,6 +39,11 @@ namespace FancyZonesEditor
             }
         }
 
+        public void SelectCommand(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debugger.Launch();
+        }
+
         private void MainWindow_KeyUp(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)

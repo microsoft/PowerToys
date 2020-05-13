@@ -206,9 +206,9 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" BorderBrush="Transparent"
-                                                    Command="{Binding ItemClickCommand}"
-                                                    CommandParameter="{Binding Id}">
+                                        <Button Name="{Binding Name}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" BorderBrush="Transparent" Click="SelectCommand">
+                                            <!--Command="{Binding SelectCommand, Mode=TwoWay}">-->
+                                            <!--CommandParameter="{Binding}">-->
                                             <Button.Content>
                                                 <Grid Height="{Binding Height}" Width="{Binding Width}" Margin="8">
                                                     <Grid.RowDefinitions>

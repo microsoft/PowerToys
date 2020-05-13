@@ -12,7 +12,7 @@ namespace FancyZonesEditor
     /// Interaction logic for App.xaml
     /// </summary>
     public partial class App : Application
-    {
+    { 
         public Settings[] ZoneSettings { get; }
 
         public static int NumMonitors { get; private set; }
