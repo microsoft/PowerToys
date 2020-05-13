@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -23,11 +26,22 @@ namespace ColorPicker
     /// </summary>
     public partial class MainWindow : Window
     {
-        private RegisterdMouseEventHook mouseEvent;
+        private RegisterdMouseEventHook mouseEvent = new RegisterdMouseEventHook(PixelColorFinder.HandleMouseClick);
+        private TransparentWindowController transparentWindow = new TransparentWindowController();
+
         public MainWindow()
         {
             InitializeComponent();
-            mouseEvent = new RegisterdMouseEventHook(PixelColorFinder.HandleMouseClick);
+            TransparentWindow w = new TransparentWindow();
+            w.Show();
+            //cursor.SetCursorToCrossOutsideCurrentWindow();
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            Debug.WriteLine("running");
+            transparentWindow.Close();
+            base.OnClosing(e);
         }
     }
 }

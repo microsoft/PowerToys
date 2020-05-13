@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{D60FBFE6-6739-4ADB-9AAB-5943FFA91F7D}</ProjectGuid>
+    <ProjectGuid>{D3BFECC3-8896-46F3-9DB7-5A45B22990D3}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>ColorPicker</RootNamespace>
-    <AssemblyName>ColorPicker</AssemblyName>
+    <RootNamespace>TransparentBackground</RootNamespace>
+    <AssemblyName>TransparentBackground</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -55,18 +55,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ColorPickingFunctionality\InternalSystemCallException.cs" />
-    <Compile Include="TransparentWindow.xaml.cs">
-      <DependentUpon>TransparentWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ColorPickingFunctionality\PixelColorFinder.cs" />
-    <Compile Include="ColorPickingFunctionality\TransparentWindowController.cs" />
-    <Compile Include="ColorPickingFunctionality\SystemEvents\RegisterdMouseEventHook.cs" />
-    <Compile Include="ColorPickingFunctionality\SystemEvents\SystemHook.cs" />
-    <Page Include="TransparentWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
