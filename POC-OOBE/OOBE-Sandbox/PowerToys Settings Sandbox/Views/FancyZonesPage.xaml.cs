@@ -28,6 +28,7 @@ namespace PowerToys_Settings_Sandbox.Views
             this.InitializeComponent();
         }
 
+        // This method toggles the image preview of the Module Overview link of the "About Feature" section
         private void ToggleModuleOverviewTip(object sender, PointerRoutedEventArgs e)
         {
             if (!ModuleOverviewTip.IsOpen)
