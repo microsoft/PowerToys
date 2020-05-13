@@ -14,6 +14,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using ColorPicker.ColorPickingFunctionality;
+using ColorPicker.ColorPickingFunctionality.SystemEvents;
+
 namespace ColorPicker
 {
     /// <summary>
@@ -21,21 +24,11 @@ namespace ColorPicker
     /// </summary>
     public partial class MainWindow : Window
     {
-        private Random _random = new Random(); // For testing only
-
+        private RegisteredMouseEventHook mouseEvent;
         public MainWindow()
         {
             InitializeComponent();
-        }
-        
-        // This function is only for testing and this event handling will be removed
-        private void OnKeyDownHandler(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.H)
-            {
-                Color randomColor = Color.FromRgb((byte)_random.Next(256), (byte)_random.Next(256), (byte)_random.Next(256));
-                SetColor(randomColor);
-            }
+            mouseEvent = new RegisteredMouseEventHook(PixelColorFinder.HandleMouseClick);
         }
 
         private void SetColor(Color color)
