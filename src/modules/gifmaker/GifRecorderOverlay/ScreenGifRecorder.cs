@@ -5,11 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GifRecorderOverlay.Util
+namespace GifRecorderOverlay
 {
-    class ScreenCapture
+    /// <summary>
+    /// Records a region of your screen and exports it as a GIF
+    /// </summary>
+    public class ScreenGifRecorder
     {
-        ScreenCapture(
+        ScreenGifRecorder(
             uint x,
             uint y,
             uint width,
@@ -19,22 +22,22 @@ namespace GifRecorderOverlay.Util
 
         }
 
-        void Start()
+        public void Start()
         {
 
         }
 
-        void Pause()
+        public void Pause()
         {
 
         }
 
-        void Stop()
+        public void Stop()
         {
 
         }
 
-        void Save(string filepath)
+        public void Save(string filepath)
         {
 
         }
