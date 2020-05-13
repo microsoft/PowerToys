@@ -149,6 +149,7 @@ namespace PowerToys_Settings_Sandbox.Views
             };
 
             await updateDialog.ShowAsync();
+
         }
 
         // This method opens the first teaching tip on the General Settings page
