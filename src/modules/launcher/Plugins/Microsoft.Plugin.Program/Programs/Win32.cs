@@ -467,7 +467,7 @@ namespace Microsoft.Plugin.Program.Programs
                 var programsWithoutLnk = programs.Where(x => string.IsNullOrEmpty(x.LnkResolvedPath));
                 var programsAsList = programs.ToList();
 
-                foreach (var app in programsWithoutLnk)
+                foreach(var app in programsWithoutLnk)
                 {
                     programsAsList.RemoveAll(x => (x.FullPath == app.FullPath) && string.IsNullOrEmpty(x.LnkResolvedPath));
                 }
