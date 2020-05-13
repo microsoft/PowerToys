@@ -134,8 +134,8 @@
     <comment>Navigation view item name for General</comment>
   </data>
   <data name="Shell_PowerLauncher.Content" xml:space="preserve">
-    <value>PowerLauncher</value>
-    <comment>Navigation view item name for PowerLauncher</comment>
+    <value>Run</value>
+    <comment>Navigation view item name for Run</comment>
   </data>
   <data name="Shell_PowerRename.Content" xml:space="preserve">
     <value>PowerRename</value>
@@ -197,7 +197,7 @@
     <value>A quick launcher that has additional capabilities without sacrificing performance.</value>
   </data>
   <data name="PowerLauncher_EnablePowerLauncher.Header" xml:space="preserve">
-    <value>Enable PowerLauncher</value>
+    <value>Enable Run</value>
   </data>
   <data name="PowerLauncher_SearchResults.Text" xml:space="preserve">
     <value>Search &amp; results</value>
@@ -233,7 +233,7 @@
     <value>Shortcuts</value>
   </data>
   <data name="PowerLauncher_OpenPowerLauncher.Header" xml:space="preserve">
-    <value>Open PowerLauncher</value>
+    <value>Open Run</value>
   </data>
   <data name="PowerLauncher_OpenFileLocation.Header" xml:space="preserve">
     <value>Open file location</value>
@@ -564,7 +564,7 @@
     <value>About Keyboard Manager</value>
   </data>
   <data name="About_PowerLauncher.Text" xml:space="preserve">
-    <value>About PowerLauncher</value>
+    <value>About Run</value>
   </data>
   <data name="About_PowerRename.Text" xml:space="preserve">
     <value>About Power Rename</value>
