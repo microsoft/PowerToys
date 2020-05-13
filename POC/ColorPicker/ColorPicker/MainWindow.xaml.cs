@@ -1,24 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using ColorPicker.ColorPickingFunctionality;
-using ColorPicker.ColorPickingFunctionality.SystemEvents;
 
 namespace ColorPicker
 {
@@ -27,25 +12,27 @@ namespace ColorPicker
     /// </summary>
     public partial class MainWindow : Window
     {
-        private TransparentWindow transparentWindow = new TransparentWindow();
+        private TransparentWindow _transparentWindow = new TransparentWindow();
         private bool _isColorSelectionEnabled = true;
         private DispatcherTimer _updateTimer = new DispatcherTimer();
 
         public MainWindow()
         {
             InitializeComponent();
-            transparentWindow.AddActionCallBack(ActionBroker.ActionTypes.Click, TransparentWindowClick);
-            transparentWindow.Show();
-            _updateTimer.Tick += UpdateCurrentColor;
-            _updateTimer.Interval = new TimeSpan(1000);
-            _updateTimer.Start();
+            ConfigureTransparentWindow();
+            ConfigureUpdateTimer();
+            ActivateColorSelectionMode(null, null); //TODO: not make function require params
         }
 
-        protected override void OnClosing(CancelEventArgs e)
+        private void ConfigureTransparentWindow()
         {
-            transparentWindow.Close();
-            base.OnClosing(e);
+            _transparentWindow.AddActionCallBack(ActionBroker.ActionTypes.Click, ColorSelectionMade);
+        }
 
+        private void ConfigureUpdateTimer()
+        {
+            _updateTimer.Tick += UpdateCurrentColor;
+            _updateTimer.Interval = new TimeSpan(1000);
         }
 
         private void UpdateCurrentColor(object sender, EventArgs e)
@@ -63,29 +50,26 @@ namespace ColorPicker
             HexTextBox.Text = "#" + color.R.ToString("X2") + color.G.ToString("X2") + color.B.ToString("X2");
         }
 
-        private void ToggleColorSelectionMode()
+        private void ActivateColorSelectionMode(object sender, EventArgs e)
         {
-            _isColorSelectionEnabled = !_isColorSelectionEnabled;
-            if (_isColorSelectionEnabled)
-            {
-                transparentWindow.Show();
-                _updateTimer.Start();
-            }
-            else
-            {
-                transparentWindow.Hide();
-                _updateTimer.Stop();
-            }
+            _isColorSelectionEnabled = true;
+            _transparentWindow.Show();
+            _updateTimer.Start();
         }
 
-        private void TransparentWindowClick(object sender, EventArgs e)
+        private void ColorSelectionMade(object sender, EventArgs e)
         {
-            ToggleColorSelectionMode();
+            _isColorSelectionEnabled = false;
+            SetColor(PixelColorFinder.GetColorUnderCursor());
+            _transparentWindow.Hide();
+            _updateTimer.Stop();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        protected override void OnClosing(CancelEventArgs e)
         {
-            ToggleColorSelectionMode();
+            _transparentWindow.Close();
+            base.OnClosing(e);
+
         }
     }
 }

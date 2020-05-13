@@ -9,14 +9,16 @@ namespace ColorPicker
 {
     public partial class TransparentWindow : Window
     {
-
-        private ActionBroker broker = new ActionBroker();
+        private ActionBroker _broker = new ActionBroker();
         public TransparentWindow()
         {
             InitializeComponent();
             this.Cursor = System.Windows.Input.Cursors.Cross;
+            SetWindowSizeToCoverAllScreens();
+        }
 
-
+        private void SetWindowSizeToCoverAllScreens()
+        {
             int minX = 0;
             int maxX = 0;
             int minY = 0;
@@ -38,12 +40,12 @@ namespace ColorPicker
 
         public void HandleMouseDown(object sender, EventArgs e)
         {
-            broker.ActionTriggered(ActionBroker.ActionTypes.Click, sender, e);
+            _broker.ActionTriggered(ActionBroker.ActionTypes.Click, sender, e);
         }
 
         internal void AddActionCallBack(ActionBroker.ActionTypes action, ActionBroker.Callback callback)
         {
-            broker.AddCallBack(action, callback);
+            _broker.AddCallBack(action, callback);
         }
     }
 }
