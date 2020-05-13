@@ -16,6 +16,8 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 
         public static bool IsElevated { get; set; }
 
+        public static bool IsUserAnAdmin { get; set; }
+
         [STAThread]
         public static void Main(string[] args)
         {
@@ -24,7 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                 App app = new App();
                 app.InitializeComponent();
 
-                if (args.Length > 3)
+                if (args.Length > 4)
                 {
                     if (args[4] == "true")
                     {
@@ -33,6 +35,15 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                     else
                     {
                         IsElevated = false;
+                    }
+
+                    if (args[5] == "true")
+                    {
+                        IsUserAnAdmin = true;
+                    }
+                    else
+                    {
+                        IsUserAnAdmin = false;
                     }
 
                     ipcmanager = new TwoWayPipeMessageIPCManaged(args[1], args[0], null);

@@ -8,10 +8,10 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Windows.ApplicationModel.Resources;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Windows.Data.Html;
 using Windows.System;
 using Windows.UI.Popups;
@@ -97,12 +97,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _autoDownloadUpdates = GeneralSettingsConfigs.AutoDownloadUpdates;
             _isElevated = ShellPage.IsElevated;
             _runElevated = GeneralSettingsConfigs.RunElevated;
+            _isAdmin = ShellPage.IsUserAnAdmin;
         }
 
         private bool _packaged = false;
         private bool _startup = false;
         private bool _isElevated = false;
         private bool _runElevated = false;
+        private bool _isAdmin = false;
         private bool _isDarkThemeRadioButtonChecked = false;
         private bool _isLightThemeRadioButtonChecked = false;
         private bool _isSystemThemeRadioButtonChecked = false;
@@ -215,6 +217,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     GeneralSettingsConfigs.RunElevated = value;
                     RaisePropertyChanged();
                 }
+            }
+        }
+
+        // Gets a value indicating whether the user is part of administrators group.
+        public bool IsAdmin
+        {
+            get
+            {
+                return _isAdmin;
             }
         }
 
