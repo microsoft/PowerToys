@@ -60,7 +60,7 @@ json::JsonObject load_general_settings()
         settings_theme = L"system";
     }
     run_as_elevated = loaded.GetNamedBoolean(L"run_elevated", false);
-    download_updates_automatically = loaded.GetNamedBoolean(L"download_updates_automatically", true);
+    download_updates_automatically = loaded.GetNamedBoolean(L"download_updates_automatically", true) && check_user_is_admin();
 
     return loaded;
 }

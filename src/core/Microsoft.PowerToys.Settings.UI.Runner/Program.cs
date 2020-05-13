@@ -11,6 +11,9 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 {
     public class Program
     {
+        // Quantity of arguments
+        private const int ArgumentsQty = 5;
+
         // Create an instance of the  IPC wrapper.
         private static TwoWayPipeMessageIPCManaged ipcmanager;
 
@@ -26,7 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                 App app = new App();
                 app.InitializeComponent();
 
-                if (args.Length > 4)
+                if (args.Length >= ArgumentsQty)
                 {
                     if (args[4] == "true")
                     {
