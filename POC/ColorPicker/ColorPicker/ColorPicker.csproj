@@ -34,9 +34,14 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -55,12 +60,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ActionBroker.cs" />
     <Compile Include="ColorPickingFunctionality\InternalSystemCallException.cs" />
+    <Compile Include="ColorPickingFunctionality\ScreenSize.cs" />
     <Compile Include="TransparentWindow.xaml.cs">
       <DependentUpon>TransparentWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="ColorPickingFunctionality\PixelColorFinder.cs" />
-    <Compile Include="ColorPickingFunctionality\TransparentWindowController.cs" />
     <Compile Include="ColorPickingFunctionality\SystemEvents\RegisterdMouseEventHook.cs" />
     <Compile Include="ColorPickingFunctionality\SystemEvents\SystemHook.cs" />
     <Page Include="TransparentWindow.xaml">
@@ -98,6 +104,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

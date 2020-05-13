@@ -26,20 +26,34 @@ namespace ColorPicker
     /// </summary>
     public partial class MainWindow : Window
     {
-        private RegisterdMouseEventHook mouseEvent = new RegisterdMouseEventHook(PixelColorFinder.HandleMouseClick);
-        private TransparentWindowController transparentWindow = new TransparentWindowController();
+        private RegisterdMouseEventHook mouseEventHook = new RegisterdMouseEventHook(PixelColorFinder.HandleMouseClick);
+        private TransparentWindow transparentWindow = new TransparentWindow();
+        private bool isColorSelectMode = false;
 
         public MainWindow()
         {
             InitializeComponent();
-            TransparentWindow w = new TransparentWindow();
-            w.Show();
-            //cursor.SetCursorToCrossOutsideCurrentWindow();
+            mouseEventHook.DeactivateHook();
+            transparentWindow.AddActionCallBack(ActionBroker.ActionTypes.Click, ToggleColorSelectMode);
+        }
+
+        public void ToggleColorSelectMode(object sender, EventArgs e)
+        {
+            if (isColorSelectMode)
+            {
+                transparentWindow.Hide();
+                mouseEventHook.DeactivateHook();
+            }
+            else
+            {
+                transparentWindow.Show();
+                mouseEventHook.ActivateHook();
+            }
+            isColorSelectMode = !isColorSelectMode;
         }
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            Debug.WriteLine("running");
             transparentWindow.Close();
             base.OnClosing(e);
         }

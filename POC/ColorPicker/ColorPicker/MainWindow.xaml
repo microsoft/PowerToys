@@ -7,5 +7,6 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
+        <Button Click="ToggleColorSelectMode" Margin="309,187,278,152">Click me for color mode!</Button>
     </Grid>
 </Window>
