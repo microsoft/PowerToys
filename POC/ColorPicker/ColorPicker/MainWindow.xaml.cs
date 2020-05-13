@@ -13,6 +13,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using ColorPicker.ColorPickingFunctionality;
+using ColorPicker.ColorPickingFunctionality.SystemEvents;
+
 namespace ColorPicker
 {
     /// <summary>
@@ -20,9 +23,11 @@ namespace ColorPicker
     /// </summary>
     public partial class MainWindow : Window
     {
+        private RegisteredMouseEventHook mouseEvent;
         public MainWindow()
         {
             InitializeComponent();
+            mouseEvent = new RegisteredMouseEventHook(PixelColorFinder.HandleMouseClick);
         }
     }
 }

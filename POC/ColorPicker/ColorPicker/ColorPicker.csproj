@@ -55,6 +55,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ColorPickingFunctionality\InternalSystemCallException.cs" />
+    <Compile Include="ColorPickingFunctionality\PixelColorFinder.cs" />
+    <Compile Include="ColorPickingFunctionality\SystemEvents\RegisteredMouseEventHook.cs" />
+    <Compile Include="ColorPickingFunctionality\SystemEvents\SystemHook.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
