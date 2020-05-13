@@ -19,6 +19,5 @@
             <AppBarButton x:Name="RecordPauseButton" Icon="Target" Label="Record" IsEnabled="False" Tag="record" Click="RecordPauseButton_Click"/>
             <AppBarButton x:Name="StopButton" Icon="Stop" Label="Stop" IsEnabled="False" Click="StopButton_Click"/>
         </CommandBar>
-
     </Grid>
 </Page>

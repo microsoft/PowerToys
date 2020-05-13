@@ -29,6 +29,7 @@ namespace GifRecorderOverlay
 
         private void CaptureButton_Click(object sender, RoutedEventArgs e)
         {
+            Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Cross, 1); 
             RecordPauseButton.IsEnabled = true;
             StopButton.IsEnabled = false;
             if ((string)RecordPauseButton.Tag == "pause")
@@ -40,6 +41,7 @@ namespace GifRecorderOverlay
         }
         private void RecordPauseButton_Click(object sender, RoutedEventArgs e)
         {
+            Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1); 
             if ((string)RecordPauseButton.Tag == "record")
             {
                 RecordPauseButton.Icon = new SymbolIcon(Symbol.Pause);
