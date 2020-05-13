@@ -4,27 +4,86 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:Custom="using:Microsoft.UI.Xaml.Controls"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     x:Class="PowerToys_Settings_Sandbox.Views.MainPage"
     Style="{StaticResource PageStyle}"
+    xmlns:behaviors="using:PowerToys_Settings_Sandbox.Behaviors"
+    behaviors:NavigationViewHeaderBehavior.HeaderMode="Never"
     mc:Ignorable="d">
     <Grid x:Name="ContentArea" Margin="{StaticResource MediumLeftRightMargin}">
-        <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2*"/>
                 <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
 
             <StackPanel Margin="0,24,0,0" VerticalAlignment="Top">
-                <ToggleSwitch Header="Run at startup" VerticalAlignment="Top"/>
+                
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="GeneralSettingsTitle" HorizontalAlignment="Left" Margin="0,0,0,24" Text="General" TextWrapping="Wrap" VerticalAlignment="Top" Style="{StaticResource TitleTextBlockStyle}"/>
+                    <FontIcon x:Name="GeneralSettingsTitleIcon" FontFamily="Segoe MDL2 Assets" Glyph="&#xE946;" Margin="12,8,0,0" VerticalAlignment="Top" Foreground="Blue" PointerPressed="{x:Bind OpenFirstGeneralSettingsTip}"/>
+                </StackPanel>
+                
+                <muxc:TeachingTip x:Name="GeneralSettingsTip"
+                                Target="{x:Bind GeneralSettingsTitleIcon}"
+                                Background="Blue"
+                                Foreground="White"
+                                Title="General Settings"
+                                PreferredPlacement="Right"
+                                Subtitle="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Facere, nulla, ipsum? Molestiae quis aliquam magni harum non?"
+                                ShouldConstrainToRootBounds="False"
+                                PlacementMargin="48,0,0,0"
+                                >
+                    <StackPanel Orientation="Horizontal" Margin="0,12,0,0" HorizontalAlignment="Right">
+                        <TextBlock Grid.Column="0" Text="1 of 3"  Margin="0,0,134,0" VerticalAlignment="Center"></TextBlock>
+                        <Button  Grid.Column="1" Background="Blue" Foreground="White" Margin="0,0,12,0" BorderBrush="White" Content="Dismiss" Click="{x:Bind CloseTeachingTips}"></Button>
+                        <Button  Grid.Column="1" Background="White" Foreground="Blue" Content="Next" Click="{x:Bind OpenRunAsUserTip}"></Button>
+                    </StackPanel>
+                </muxc:TeachingTip>
+                
+                <muxc:TeachingTip x:Name="FinalGeneralSettingsTip"
+                                    Target="{x:Bind GeneralSettingsTitleIcon}"
+                                    Background="Blue"
+                                    Foreground="White"
+                                    Title="If you ever need help, click here."
+                                    PreferredPlacement="Right"
+                                    >
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,0" HorizontalAlignment="Right">
+                        <TextBlock Text="3 of 3"  Margin="0,0,190,0" VerticalAlignment="Center"></TextBlock>
+                        <Button Background="White" Foreground="Blue" Content="Got it" Click="{x:Bind CloseTeachingTips}"></Button>
+                    </StackPanel>
+                </muxc:TeachingTip>
+                
+                <ToggleSwitch x:Name="RunStartupSwitch" Header="Run at startup" VerticalAlignment="Top"></ToggleSwitch>
                 <ToggleSwitch Header="Download updates automatically" VerticalAlignment="Top"/>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="RunAsUserTitle" HorizontalAlignment="Left" Margin="0,24,0,12" Text="Running as user" TextWrapping="Wrap" VerticalAlignment="Top" Style="{StaticResource TitleTextBlockStyle}"/>
+                    <FontIcon x:Name="RunAsUserTitleIcon"  FontFamily="Segoe MDL2 Assets" Glyph="&#xE946;" Margin="12,8,0,0" VerticalAlignment="Center" Foreground="Blue" PointerPressed="{x:Bind OpenRunAsUserTip}"/>
+                </StackPanel>
+                <muxc:TeachingTip x:Name="RunAsUserTip"
+                                    Target="{x:Bind RunAsUserTitleIcon}"
+                                    Background="Blue"
+                                    Foreground="White"
+                                    Title="Running as user"
+                                    PreferredPlacement="Right"
+                                    Subtitle="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Facere, nulla, ipsum? Molestiae quis aliquam magni harum non?"
+                                    >
+                    <StackPanel Orientation="Horizontal" Margin="0,12,0,0" HorizontalAlignment="Right">
+                        <TextBlock Text="2 of 3"  Margin="0,0,134,0" VerticalAlignment="Center"></TextBlock>
+                        <Button Background="Blue" Foreground="White" Margin="0,0,12,0" BorderBrush="White" Content="Dismiss" Click="{x:Bind CloseTeachingTips}"></Button>
+                        <Button Background="White" Foreground="Blue" Content="Next" Click="{x:Bind OpenFinalGeneralSettingsTip}"></Button>
+                    </StackPanel>
+                </muxc:TeachingTip>
+                <ToggleSwitch Header="Always run as administrator (Recommended)" VerticalAlignment="Top"/>
             </StackPanel>
 
             <StackPanel Margin="0,24,0,0" Grid.Column="1" VerticalAlignment="Top">
-                <TextBlock x:Name="AboutPowerToysBlock" Text="About Power Toys" TextWrapping="Wrap" Style="{StaticResource TitleTextBlockStyle}"/>
+                <TextBlock x:Name="AboutPowerToysText" Margin="0,48,0,0" Text="About Power Toys" TextWrapping="Wrap" Style="{StaticResource TitleTextBlockStyle}"/>
+                <TextBlock x:Name="VersionText" Margin="0,48,0,0" Text="v0.17.1" TextWrapping="Wrap" />
+                <Button Background="Blue" Foreground="White"  Content="Check for updates" Margin="0, 12,0,0"></Button>
+                <HyperlinkButton Margin="0, 24, 0,0" Content="Report a bug" />
+                <HyperlinkButton Margin="0,0, 0,0" Content="Request a feature" />
             </StackPanel>
             
-
         </Grid>
-        
-    </Grid>
 </Page>
