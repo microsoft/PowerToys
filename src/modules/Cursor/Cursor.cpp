@@ -29,7 +29,7 @@ void cursorposition(int &x_coord, int &y_coord)
     } 
 }
 
-float scalefac(int x, int y)
+void scalefac(int x, int y, float &scale)
 {
     POINT pt;
     pt.x = x;
@@ -37,44 +37,60 @@ float scalefac(int x, int y)
     HMONITOR monitor = MonitorFromPoint( pt, MONITOR_DEFAULTTONEAREST);
     DEVICE_SCALE_FACTOR pScale;
     GetScaleFactorForMonitor( monitor, &pScale);
-    float scale;
+    
     switch(pScale) 
         {
     SCALE_100_PERCENT:
         scale = 1.0;
+        break;
     SCALE_120_PERCENT:
         scale = 1.20;
+        break;
     SCALE_125_PERCENT:
         scale = 1.25;
+        break;
     SCALE_140_PERCENT:
         scale = 1.40;
+        break;
     SCALE_150_PERCENT:
         scale = 1.50;
+        break;
     SCALE_160_PERCENT:
         scale = 1.60;
+        break;
     SCALE_175_PERCENT:
         scale = 1.75;
+        break;
     SCALE_180_PERCENT:
         scale = 1.80;
+        break;
     SCALE_200_PERCENT:
         scale= 2.0;
+        break;
     SCALE_225_PERCENT:
         scale = 2.25;
+        break;
     SCALE_250_PERCENT:
         scale = 2.50;
+        break;
     SCALE_300_PERCENT:
         scale = 3.0;
+        break;
     SCALE_350_PERCENT:
         scale = 3.50;
+        break;
     SCALE_400_PERCENT:
         scale = 4.0;
+        break;
     SCALE_450_PERCENT:
         scale = 4.50;
+        break;
     SCALE_500_PERCENT:
         scale = 5.0;
+        break;
     }
 
-    return scale;
+   
 }
 
 
@@ -232,8 +248,9 @@ void locate(int x_coord, int y_coord, int r, int g, int b)
 int main()
 
 {
-        int x_coord, y_coord, r, g, b;
+    int x_coord, y_coord, r, g, b;
     int horizontalscreen, verticalscreen;
+    float scale;
         
 
         while(true) {
@@ -248,7 +265,7 @@ int main()
             {
             
             cursorposition(x_coord, y_coord);
-            float scale = scalefac(x_coord, y_coord);
+            scalefac(x_coord, y_coord, scale);
             x_coord = x_coord * scale;
             y_coord = y_coord * scale;
 
