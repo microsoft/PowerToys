@@ -19,7 +19,7 @@ namespace ColorPicker.ColorPickingFunctionality.SystemEvents
         /// <param name="hookID"> The type of hook procedure to be installed. </param>
         /// <param name="lpfn"> a delegate which will be called when the hook is triggered. </param>
         /// <param name="hMod"> A handle to the DLL containing the hook procedure pointed to by the lpfn parameter. </param>
-        /// <param name="dwThreadID"> ID of thread which even occurs on, set to 0 for all threads. </param>
+        /// <param name="dwThreadID"> ID of thread which event occurs on, set to 0 for all threads. </param>
         /// <returns> The ID of the hook handle, or 0 on error. </returns>
         [DllImport("user32.dll", SetLastError = true)]
         private static extern int SetWindowsHookEx(int idHook, HookProcDelegate lpfn, IntPtr hMod, int dwThreadId);
