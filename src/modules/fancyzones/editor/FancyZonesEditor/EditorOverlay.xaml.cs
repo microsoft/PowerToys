@@ -21,7 +21,7 @@ namespace FancyZonesEditor
         
         private UserControl _editor;
 
-        private static MainWindow _mainWindow = new MainWindow();
+        public static MainWindow MainWindow = new MainWindow();
 
         public Int32Rect[] GetZoneRects()
         {
@@ -91,14 +91,14 @@ namespace FancyZonesEditor
 
             Content = _layoutPreview;
 
-            _mainWindow.Owner = this;
-            _mainWindow.ShowActivated = true;
-            _mainWindow.Topmost = true;
-            _mainWindow.Show();
+            MainWindow.Owner = null;
+            MainWindow.ShowActivated = true;
+            MainWindow.Topmost = true;
+            MainWindow.Show();
 
             // window is set to topmost to make sure it shows on top of PowerToys settings page
             // we can reset topmost flag now
-            _mainWindow.Topmost = false;
+            MainWindow.Topmost = false;
         }
 
         // These event handlers are used to track the current state of the Shift and Ctrl keys on the keyboard

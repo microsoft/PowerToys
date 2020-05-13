@@ -44,8 +44,11 @@ namespace FancyZonesEditor
             //System.Diagnostics.Debugger.Launch();
             MonitorInfo mi = (MonitorInfo)(sender as Button).DataContext;
             MonitorVM.CurrentMonitor = mi.Id;
+            LayoutModel.SerializeDeletedCustomZoneSets();
             EditorOverlay.Current.Close();
-            App.LoadMonitor();
+            EditorOverlay neo = new EditorOverlay();
+            neo.Show();
+            neo.DataContext = App.FoundModel[MonitorVM.CurrentMonitor];
         }
 
         private void MainWindow_KeyUp(object sender, KeyEventArgs e)

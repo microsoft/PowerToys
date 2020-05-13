@@ -34,11 +34,6 @@ namespace FancyZonesEditor
 
         public void OnStartup(object sender, StartupEventArgs e)
         {
-            LoadMonitor();
-        }
-
-        public static void LoadMonitor()
-        {
             FoundModel = new LayoutModel[NumMonitors];
 
             for (int setting = 0; setting < NumMonitors; setting++)
@@ -73,7 +68,6 @@ namespace FancyZonesEditor
 
                 FoundModel[setting].IsSelected = true;
             }
-
             Overlay = new EditorOverlay();
             Overlay.Show();
             Overlay.DataContext = FoundModel[MonitorVM.CurrentMonitor];

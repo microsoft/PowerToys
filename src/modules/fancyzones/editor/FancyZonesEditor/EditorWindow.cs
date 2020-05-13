@@ -22,7 +22,7 @@ namespace FancyZonesEditor
             LayoutModel.SerializeDeletedCustomZoneSets();
 
             _backToLayoutPicker = false;
-            Close();
+            //Close();
             EditorOverlay.Current.Close();
         }
 
@@ -37,7 +37,7 @@ namespace FancyZonesEditor
         protected void OnCancel(object sender, RoutedEventArgs e)
         {
             _backToLayoutPicker = true;
-            Close();
+            //Close();
         }
 
         private bool _backToLayoutPicker = true;
