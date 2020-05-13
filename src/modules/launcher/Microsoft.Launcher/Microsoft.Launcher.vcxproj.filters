@@ -13,4 +13,7 @@
   <ItemGroup>
     <ResourceCompile Include="Microsoft.Launcher.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
 </Project>
