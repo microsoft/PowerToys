@@ -44,12 +44,15 @@ namespace PowerToys_Settings_Sandbox.Views
             Image logo = new Image();
             BitmapImage bitmapImage = new BitmapImage();
             img.Width = bitmapImage.DecodePixelWidth = 70;
-            bitmapImage.UriSource = new Uri("ms-appx:///Assets/resizeSettings.gif");
+            img.Height = bitmapImage.DecodePixelHeight = 80;
+            bitmapImage.UriSource = new Uri("ms-appx:///Assets/demo.gif");
             img.Source = bitmapImage;
 
             sec.Width = bitmapImage.DecodePixelWidth = 70;
-            sec.Source = new BitmapImage(new Uri("ms-appx:///Assets/resizeSettings.gif"));
+            sec.Height = bitmapImage.DecodePixelHeight = 80;
+            sec.Source = new BitmapImage(new Uri("ms-appx:///Assets/FZTutorial.jpg"));
             se.Width = bitmapImage.DecodePixelWidth = 70;
+            im.Height = bitmapImage.DecodePixelHeight = 80;
             se.Source = new BitmapImage(new Uri("ms-appx:///Assets/resizeSettings.gif"));
             im.Width = bitmapImage.DecodePixelWidth = 70;
             im.Source = new BitmapImage(new Uri("ms-appx:///Assets/resizeSettings.gif"));
@@ -104,7 +107,7 @@ namespace PowerToys_Settings_Sandbox.Views
             masterPanel.Children.Add(titlePanel);
             masterPanel.Children.Add(mainPanel);
 
-            ContentDialog noWifiDialog = new ContentDialog()
+            ContentDialog onLaunchDialog = new ContentDialog()
             {
 
                 Title = "Welcome to PowerToys",
@@ -114,16 +117,42 @@ namespace PowerToys_Settings_Sandbox.Views
                 DefaultButton = ContentDialogButton.Primary
 
             };
-            await noWifiDialog.ShowAsync();
+
+            ContentDialogResult selection = await onLaunchDialog.ShowAsync();
+
+            if(selection == ContentDialogResult.Primary)
+            {
+                //start tour
+            }
+            else
+            {
+                //create a toast for later
+            }
+
+
         }
 
         private async void powerUpdateDialog()
         {
+            Image img = new Image();
+            BitmapImage bitmapImage = new BitmapImage();
+            img.Width = bitmapImage.DecodePixelWidth = 140;
+            img.Height = bitmapImage.DecodePixelHeight = 110;
+            bitmapImage.UriSource = new Uri("ms-appx:///Assets/resizeSettings.gif");
+            img.Source = bitmapImage;
+            StackPanel contentPanel = new StackPanel();
+            contentPanel.Children.Add(img);
+            ContentDialog updateDialog = new ContentDialog()
+            {
+                Title = "what's new in PowerToys",
+                Content = contentPanel,
+                PrimaryButtonText = "Got it",
+                DefaultButton = ContentDialogButton.Primary
+
+            };
+
+            await updateDialog.ShowAsync();
 
         }
-
-
-
-
     }
 }
