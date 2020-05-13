@@ -9,10 +9,6 @@ using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-using Windows.UI.Notifications;
-using Microsoft.Toolkit.Uwp.Notifications; // Notifications library
-using Microsoft.QueryStringDotNET; // QueryString.NET
-
 namespace PowerToys_Settings_Sandbox.Services
 {
     // For more information on understanding and extending activation flow see
