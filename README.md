@@ -46,10 +46,8 @@ This code is based on [Chris Davis's SmartRename](https://github.com/chrdavis/Sm
 
 <img align="left" src="./doc/images/overview/PowerPreview_small.PNG" />[File Explorer](/src/modules/previewpane) add-ons right now are just limited to Preview Pane additions for File Explorer. Preview Pane is an existing feature in the File Explorer.  To enable it, you just click the View tab in the ribbon and then click "Preview Pane".
 
-PowerToys will now enable two types of files to be previewed:
-
-- Markdown files (.md)
-- SVG (.svg)
+PowerToys will now enable two types of files to be previewed: Markdown (.md) & SVG (.svg)
+<br>
 <br>
 
 ### Image Resizer
@@ -61,6 +59,7 @@ This code is based on [Brice Lambson's Image Resizer](https://github.com/bricela
 <br>
 <br>
 
+<!---
 ### Keyboard Manager
 
 <img align="left" src="./doc/images/overview/KBM_small.png" /> [Keyboard Manager](src/modules/keyboardmanager/) allows you to customize the keyboard to be more productive by remapping keys and creating your own keyboard shortcuts.
@@ -69,7 +68,9 @@ This code is based on [Brice Lambson's Image Resizer](https://github.com/bricela
 <br>
 <br>
 <br>
+-->
 
+<!---
 ### PowerToys Run
 
 <img align="left" src="./doc/images/overview/PowerLauncher_small.png" /> [PowerToys Run](src/modules/launcher/) is a new toy in PowerToys that can help you search and launch your app instantly! It is open source and modular for additional plugins.
@@ -79,6 +80,7 @@ This code is based on [Brice Lambson's Image Resizer](https://github.com/bricela
 <br>
 <br>
 <br>
+-->
 
 ### Version 1.0 plan
 
