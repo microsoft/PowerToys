@@ -1,12 +1,18 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Drawing;
 
 
 namespace ColorPicker.ColorPickingFunctionality
 {
     class PixelColorFinder
     {
+        private const uint CLR_INVALID = 0xFFFFFFFF;
+        private const uint FIRST_BYTE_SET = 0x000000FF;
+        private const uint SECOND_BYTE_SET = 0x0000FF00;
+        private const uint THIRD_BYTE_SET = 0x00FF0000;
+
         /// <summary>
         /// Get the RGB value of a pixel.
         /// </summary>
@@ -17,7 +23,7 @@ namespace ColorPicker.ColorPickingFunctionality
         /// A COLORREF int. The first byte is red, second is green and third is blue. On error it returns 0xFFFFFFFF.
         /// </returns>
         [DllImport("gdi32.dll")]
-        private static extern int GetPixel(IntPtr hDC, int xCoord, int yCoord);
+        private static extern uint GetPixel(IntPtr hDC, int xCoord, int yCoord);
 
         /// <summary>
         /// Get a handle to the current device context.
@@ -38,20 +44,20 @@ namespace ColorPicker.ColorPickingFunctionality
 
         public static void HandleMouseClick(int x, int y)
         {
-            int colorRef = GetPixelValue(x, y);
+            uint colorRef = GetPixelValue(x, y);
 
             int red = ParseRed(colorRef);
             int green = ParseGreen(colorRef);
             int blue = ParseBlue(colorRef);
 
-            // Below is temporary - need to integrate this with UI at a later date
+            // TODO: integrate this with UI at a later date
             Debug.WriteLine("R: {0} G: {1} B: {2}", red, green, blue);
         }
 
-        private static int GetPixelValue(int xCoord, int yCoord)
+        private static uint GetPixelValue(int xCoord, int yCoord)
         {
             IntPtr hDC = SafeGetWindowDC();
-            int pixelValue = SafeGetPixel(hDC, xCoord, yCoord);
+            uint pixelValue = SafeGetPixel(hDC, xCoord, yCoord);
             SafeReleaseWindowDC(hDC);
             return pixelValue;
         }
@@ -66,10 +72,10 @@ namespace ColorPicker.ColorPickingFunctionality
             return hDC;
         }
 
-        private static int SafeGetPixel(IntPtr hDC, int x, int y)
+        private static uint SafeGetPixel(IntPtr hDC, int x, int y)
         {
-            int pixelValue = GetPixel(hDC, x, y);
-            if ((uint)pixelValue == 0xFFFFFFFF)
+            uint pixelValue = GetPixel(hDC, x, y);
+            if (pixelValue == CLR_INVALID)
             {
                 throw new InternalSystemCallException("Failed to get pixel");
             }
@@ -84,10 +90,10 @@ namespace ColorPicker.ColorPickingFunctionality
             }
         }
 
-        private static int ParseRed(int colorRef) => colorRef & 0x000000FF;
+        private static int ParseRed(uint colorRef) => (int)(colorRef & FIRST_BYTE_SET);
 
-        private static int ParseGreen(int colorRef) => (colorRef & 0x0000FF00) >> 8;
+        private static int ParseGreen(uint colorRef) => (int)(colorRef & SECOND_BYTE_SET) >> 8;
 
-        private static int ParseBlue(int colorRef) => (colorRef & 0x00FF0000) >> 16;
+        private static int ParseBlue(uint colorRef) => (int)(colorRef & THIRD_BYTE_SET) >> 16;
     }
 }

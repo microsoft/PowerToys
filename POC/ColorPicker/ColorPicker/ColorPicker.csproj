@@ -37,6 +37,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -57,7 +58,7 @@
     </ApplicationDefinition>
     <Compile Include="ColorPickingFunctionality\InternalSystemCallException.cs" />
     <Compile Include="ColorPickingFunctionality\PixelColorFinder.cs" />
-    <Compile Include="ColorPickingFunctionality\SystemEvents\RegisterdMouseEventHook.cs" />
+    <Compile Include="ColorPickingFunctionality\SystemEvents\RegisteredMouseEventHook.cs" />
     <Compile Include="ColorPickingFunctionality\SystemEvents\SystemHook.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
