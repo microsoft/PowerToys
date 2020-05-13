@@ -56,11 +56,15 @@ namespace PowerToys_Settings_Sandbox
 
                         rootFrame.Navigate(typeof(Views.ShellPage));
                         NavigationService.Navigate(typeof(Views.MainPage));
-                        break;                        
+                        Window.Current.Activate();
+                        break;
+
+                    default:
+                        break;
                 }
             }
 
-            Window.Current.Activate();
+
         }
 
 
