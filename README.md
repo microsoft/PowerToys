@@ -3,11 +3,11 @@
 <img src="./doc/images/overview/PT hero image.png" />
 
 Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. Inspired by the [Windows 95 era PowerToys project](https://en.wikipedia.org/wiki/Microsoft_PowerToys), this reboot provides power users with ways to squeeze more efficiency out of the Windows 10 shell and customize it for individual workflows.  A great overview of the Windows 95 PowerToys can be found [here](https://socket3.wordpress.com/2016/10/22/using-windows-95-powertoys/).
-<br>
-<br>
+  
+    
 [Download][github-release-link]   |   [Release notes][github-release-link]   |   [Microsoft privacy statement][privacyLink]
-<br>
-<br>
+  
+    
 ## Build status
 
 [![Build Status](https://dev.azure.com/ms/PowerToys/_apis/build/status/microsoft.PowerToys?branchName=master)](https://dev.azure.com/ms/PowerToys/_build?definitionId=219)
@@ -19,11 +19,11 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 ### FancyZones
 
 <img align="left" src="./doc/images/overview/FancyZones_small.png" />[FancyZones](/src/modules/fancyzones/) is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.
-<br>
-<br>
-<br>
-<br>
-<br>
+  
+  
+  
+  
+  
 
 ### Shortcut Guide
 
@@ -125,9 +125,6 @@ We currently support the matrix below.
 | x64 | x86 | ARM |
 |:---:|:---:|:---:|
 | [Supported][github-release-link] | [Issue #602](https://github.com/microsoft/PowerToys/issues/602) | [Issue #490](https://github.com/microsoft/PowerToys/issues/490) |
-
-
-
 
 ## What's Happening
 
