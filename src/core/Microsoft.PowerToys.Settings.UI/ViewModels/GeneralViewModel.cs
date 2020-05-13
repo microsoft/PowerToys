@@ -8,10 +8,10 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Windows.ApplicationModel.Resources;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Windows.Data.Html;
 using Windows.System;
 using Windows.UI.Popups;
@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
 
-        private ResourceLoader loader = ResourceLoader.GetForCurrentView();
+        private ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
 
         public GeneralViewModel()
         {
