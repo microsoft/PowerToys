@@ -16,26 +16,25 @@ namespace PowerToys_Settings_Sandbox.Services
 
             ToastVisual visual = createToastVisual(title, content, logo);
 
-            ToastActionsCustom actions = new ToastActionsCustom()
-            {
-                Inputs = { },
-                Buttons =
+            string onActionClick = new QueryString()
                 {
-                    new ToastButtonDismiss("Not now"),
-                    new ToastButton("Get Started", new QueryString()
-                    {
-                        {"action", "openApp"},
-                        {"status", "openFirst"},
-                    }.ToString()),
-                }
-            };
+                    { "action", "openApp"},
+                    { "status", "openFirst"},
+                }.ToString();
 
-            ToastContent toastContent = createToastContent(visual, actions);
+            ToastActionsCustom actions = createToastAction("Get Started", onActionClick);
+
+            string onLaunch = new QueryString()
+                {
+                    {"action", "openApp"},
+                }.ToString();
+
+            ToastContent toastContent = createToastContent(visual, actions, onLaunch);
 
             ToastNotification toast = new ToastNotification(toastContent.GetXml());
 
             toast.ExpirationTime = DateTime.Now.AddDays(2);
-            toast.Group = "install";
+            toast.Group = "onInstall";
 
             ToastNotificationManager.CreateToastNotifier().Show(toast);
         }
@@ -48,21 +47,20 @@ namespace PowerToys_Settings_Sandbox.Services
 
             ToastVisual visual = createToastVisual(title, content, logo);
 
-            ToastActionsCustom actions = new ToastActionsCustom()
-            {
-                Inputs = { },
-                Buttons =
+            string onActionClick = new QueryString()
                 {
-                    new ToastButtonDismiss(),
-                    new ToastButton("See Updates", new QueryString()
-                    {
-                        {"action", "openApp"},
-                        {"status", "openUpdate"},
-                    }.ToString())
-                }
-            };
+                    { "action", "openApp"},
+                    { "status", "openUpdate"},
+                }.ToString();
 
-            ToastContent toastContent = createToastContent(visual, actions);
+            ToastActionsCustom actions = createToastAction("See Updates", onActionClick);
+
+            string onLaunch = new QueryString()
+                {
+                    {"action", "openApp"},
+                }.ToString();
+
+            ToastContent toastContent = createToastContent(visual, actions, onLaunch);
 
             ToastNotification toast = new ToastNotification(toastContent.GetXml());
 
@@ -80,20 +78,19 @@ namespace PowerToys_Settings_Sandbox.Services
 
             ToastVisual visual = createToastVisual(title, content, logo);
 
-            ToastActionsCustom actions = new ToastActionsCustom()
-            {
-                Inputs = { },
-                Buttons =
+            string onActionClick = new QueryString()
                 {
-                    new ToastButtonDismiss(),
-                    new ToastButton("Update", new QueryString()
-                    {
-                        // Query for button
-                    }.ToString())
-                }
-            };
+                    // Action for updating app
+                }.ToString();
 
-            ToastContent toastContent = createToastContent(visual, actions);
+            ToastActionsCustom actions = createToastAction("Update", onActionClick);
+
+            string onLaunch = new QueryString()
+                {
+                    {"action", "openApp"},
+                }.ToString();
+
+            ToastContent toastContent = createToastContent(visual, actions, onLaunch);
 
             ToastNotification toast = new ToastNotification(toastContent.GetXml());
 
@@ -137,17 +134,30 @@ namespace PowerToys_Settings_Sandbox.Services
             return visual;
         }
 
-        private static ToastContent createToastContent(ToastVisual visual, ToastActionsCustom actions)
+        private static ToastActionsCustom createToastAction(string title, string query)
+        {
+            ToastActionsCustom actions = new ToastActionsCustom()
+            {
+                Buttons =
+                    {
+                        new ToastButtonDismiss("Not now"),
+                        new ToastButton("Get Started", new QueryString()
+                        {
+                            {"action", "openApp"},
+                            {"status", "openFirst"},
+                        }.ToString()),
+                    }
+            };
+            return actions;
+        }
+
+        private static ToastContent createToastContent(ToastVisual visual, ToastActionsCustom actions, String launch)
         {
             ToastContent toastContent = new ToastContent
             {
                 Visual = visual,
                 Actions = actions,
-
-                Launch = new QueryString()
-                {
-                    // Query for arguments when the user taps body of toast
-                }.ToString()
+                Launch = launch,
             };
             return toastContent;
         }
