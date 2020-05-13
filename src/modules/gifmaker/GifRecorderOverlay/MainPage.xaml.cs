@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
+// ResizableRectangle Credit to: https://github.com/kareemsulthan07/ResizableRectangleSample
 
 namespace GifRecorderOverlay
 {

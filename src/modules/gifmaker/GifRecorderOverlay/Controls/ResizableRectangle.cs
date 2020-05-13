@@ -11,6 +11,9 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 
+// ResizableRectangle Credit to: https://github.com/kareemsulthan07/ResizableRectangleSample
+// YouTube video series: https://www.youtube.com/watch?v=a8IsZFUIzQo
+
 namespace GifRecorderOverlay.Controls
 {
     class ResizableRectangle : Canvas
