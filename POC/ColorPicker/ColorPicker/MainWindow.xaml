@@ -5,8 +5,43 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ColorPicker"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        <Button Click="ToggleColorSelectMode" Margin="309,187,278,152">Click me for color mode!</Button>
+        Title="One-Click Color" Height="100" Width="400"
+        KeyDown="OnKeyDown">
+    <Grid Margin="6">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+
+        <Button Grid.Column="0">
+            <Viewbox>
+                <Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="appbar_dropper" Width="76" Height="76" Clip="F1 M 0,0L 76,0L 76,76L 0,76L 0,0">
+                    <Path Width="16.8171" Height="16.8171" Canvas.Left="40.1829" Canvas.Top="19" Stretch="Fill" Fill="#FF000000" Data="F1 M 43.2933,23.75L 46.441,26.8977C 46.1046,26.1827 45.9167,25.3841 45.9167,24.5417C 45.9167,21.4811 48.3978,19 51.4583,19C 54.5189,19 57,21.4811 57,24.5417C 57,27.6022 54.5189,30.0833 51.4583,30.0833C 50.6159,30.0833 49.8173,29.8954 49.1023,29.559L 52.25,32.7067C 52.8683,33.325 52.8683,34.3275 52.25,34.9459L 51.8425,35.3533C 51.2242,35.9717 50.2217,35.9717 49.6034,35.3533L 40.6467,26.3967C 40.0283,25.7783 40.0283,24.7758 40.6467,24.1575L 41.0541,23.75C 41.6725,23.1317 42.675,23.1317 43.2933,23.75 Z "/>
+                    <Path Width="28.607" Height="28.632" Canvas.Left="19.5546" Canvas.Top="27.8442" Stretch="Fill" Fill="#FF000000" Data="F1 M 40.9067,27.8442L 48.1616,35.3476C 48.1616,35.3476 34.8333,49.0833 27.0147,51.9261C 25.2404,53.5024 22.9778,55.4035 21.2586,56.4761L 19.5546,54.7721C 20.6116,53.0706 22.4763,50.8309 24.056,49.0382C 26.9167,41.1667 40.9067,27.8442 40.9067,27.8442 Z "/>
+                </Canvas>
+            </Viewbox>
+        </Button>
+
+        <Rectangle Name="ColorPreviewRectangle" Grid.Column="1"
+                   MaxWidth="{Binding ActualHeight, RelativeSource={RelativeSource Self}}"/>
+
+        <Grid Grid.Column="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="4*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <Label Grid.Column="0" Grid.Row="0" Content="RGB" HorizontalAlignment="Right"/>
+            <Label Grid.Column="0" Grid.Row="1" Content="HEX" HorizontalAlignment="Right"/>
+            <TextBox Name="RgbTextBox" Grid.Column="1" Grid.Row="0" IsReadOnly="True" IsReadOnlyCaretVisible="True"
+                     HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="8, 0"/>
+            <TextBox Name="HexTextBox" Grid.Column="1" Grid.Row="1" IsReadOnly="True" IsReadOnlyCaretVisible="True"
+                     HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="8, 0"/>
+        </Grid>
     </Grid>
 </Window>

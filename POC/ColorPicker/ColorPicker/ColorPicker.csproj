@@ -61,17 +61,17 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ActionBroker.cs" />
-    <Compile Include="ColorPickingFunctionality\InternalSystemCallException.cs" />
     <Compile Include="TransparentWindow.xaml.cs">
       <DependentUpon>TransparentWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ColorPickingFunctionality\PixelColorFinder.cs" />
-    <Compile Include="ColorPickingFunctionality\SystemEvents\RegisterdMouseEventHook.cs" />
-    <Compile Include="ColorPickingFunctionality\SystemEvents\SystemHook.cs" />
     <Page Include="TransparentWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Compile Include="InternalSystemCallException.cs" />
+    <Compile Include="PixelColorFinder.cs" />
+    <Compile Include="SystemEvents\RegisteredMouseEventHook.cs" />
+    <Compile Include="SystemEvents\SystemHook.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
