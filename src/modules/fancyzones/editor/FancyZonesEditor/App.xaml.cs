@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading;
 using System.Windows;
 using FancyZonesEditor.Models;
 
@@ -67,7 +68,7 @@ namespace FancyZonesEditor
 
             EditorOverlay overlay = new EditorOverlay();
             overlay.Show();
-            overlay.DataContext = foundModel[0];
+            overlay.DataContext = foundModel[MonitorVM.CurrentMonitor];
         }
     }
 }

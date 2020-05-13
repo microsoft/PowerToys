@@ -18,7 +18,7 @@ namespace FancyZonesEditor
 
         private readonly Settings _settings = ((App)Application.Current).ZoneSettings[MonitorVM.CurrentMonitor];
         private LayoutPreview _layoutPreview;
-
+        
         private UserControl _editor;
 
         private static MainWindow _mainWindow = new MainWindow();
