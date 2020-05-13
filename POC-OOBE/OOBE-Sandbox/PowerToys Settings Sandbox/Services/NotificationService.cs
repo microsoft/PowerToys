@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Windows.UI.Notifications;
-using Microsoft.Toolkit.Uwp.Notifications; // Notifications library
-using Microsoft.QueryStringDotNET; // QueryString.NET
+using Microsoft.Toolkit.Uwp.Notifications;
+using Microsoft.QueryStringDotNET;
 
 namespace PowerToys_Settings_Sandbox.Services
 {
