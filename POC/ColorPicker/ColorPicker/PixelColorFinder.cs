@@ -7,7 +7,7 @@ using System.Windows.Input;
 
 namespace ColorPicker.ColorPickingFunctionality
 {
-    class PixelColorFinder
+    static class PixelColorFinder
     {
         [StructLayout(LayoutKind.Sequential)]
         private struct POINT
