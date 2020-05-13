@@ -130,7 +130,7 @@
     <comment>Help Guide</comment>
   </data>
   <data name="Shell_Main.Content" xml:space="preserve">
-    <value>General</value>
+    <value>Main</value>
     <comment>Navigation view item name for Main</comment>
   </data>
   <data name="ExceptionSettingsStorageExtensionsFileNameIsNullOrEmpty" xml:space="preserve">
