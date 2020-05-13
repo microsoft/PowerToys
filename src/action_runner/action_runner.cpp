@@ -133,14 +133,17 @@ bool dotnet_is_installed()
     {
         return false;
     }
-    const char DESKTOP_DOTNET_RUNTIME_STRING[] = "Microsoft.WindowsDesktop.App 3.0.";
+    const char DESKTOP_DOTNET_RUNTIME_STRING[] = "Microsoft.WindowsDesktop.App 3.1.";
     return runtimes->find(DESKTOP_DOTNET_RUNTIME_STRING) != std::string::npos;
 }
 
-bool install_dotnet(std::wstring_view installer_download_link, std::wstring_view installer_filename)
+bool install_dotnet()
 {
-    auto dotnet_download_path = fs::temp_directory_path() / installer_filename;
-    winrt::Windows::Foundation::Uri download_link{ installer_download_link };
+    const wchar_t DOTNET_DESKTOP_DOWNLOAD_LINK[] = L"https://download.visualstudio.microsoft.com/download/pr/a1510e74-b31a-4434-b8a0-8074ff31fb3f/b7de8ecba4a14d8312551cfdc745dea1/windowsdesktop-runtime-3.1.0-win-x64.exe";
+    const wchar_t DOTNET_DESKTOP_FILENAME[] = L"windowsdesktop-runtime-3.1.0-win-x64.exe";
+
+    auto dotnet_download_path = fs::temp_directory_path() / DOTNET_DESKTOP_FILENAME;
+    winrt::Windows::Foundation::Uri download_link{ DOTNET_DESKTOP_DOWNLOAD_LINK };
 
     const size_t max_attempts = 3;
     bool download_success = false;
@@ -166,17 +169,11 @@ bool install_dotnet(std::wstring_view installer_download_link, std::wstring_view
         return false;
     }
     SHELLEXECUTEINFOW sei{ sizeof(sei) };
-    sei.fMask = { SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS };
+    sei.fMask = { SEE_MASK_NOASYNC };
     sei.lpFile = dotnet_download_path.c_str();
     sei.nShow = SW_SHOWNORMAL;
     sei.lpParameters = L"/install /passive";
-    if (ShellExecuteExW(&sei) != TRUE)
-    {
-        return false;
-    }
-    WaitForSingleObject(sei.hProcess, INFINITE);
-    CloseHandle(sei.hProcess);
-    return true;
+    return ShellExecuteExW(&sei) == TRUE;
 }
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
@@ -195,30 +192,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         {
             return 0;
         }
-
-        using installer_link_and_filename_t = std::pair<std::wstring_view, std::wstring_view>;
-
-        const wchar_t DOTNET_CORE_DOWNLOAD_LINK[] = L"https://download.visualstudio.microsoft.com/download/pr/fa69f1ae-255d-453c-b4ff-28d832525037/51694be04e411600c2e3361f6c81400d/dotnet-runtime-3.0.3-win-x64.exe";
-        const wchar_t DOTNET_CORE_INSTALLER_NAME[] = L"dotnet-runtime-3.0.3-win-x64.exe";
-
-        const wchar_t DOTNET_DESKTOP_DOWNLOAD_LINK[] = L"https://download.visualstudio.microsoft.com/download/pr/c525a2bb-6e98-4e6e-849e-45241d0db71c/d21612f02b9cae52fa50eb54de905986/windowsdesktop-runtime-3.0.3-win-x64.exe";
-        const wchar_t DOTNET_DESKTOP_INSTALLER_NAME[] = L"windowsdesktop-runtime-3.0.3-win-x64.exe";
-
-        const std::array<installer_link_and_filename_t, 2> dotnet_installers = {
-            installer_link_and_filename_t{ DOTNET_CORE_DOWNLOAD_LINK,
-                                           DOTNET_CORE_INSTALLER_NAME },
-            installer_link_and_filename_t{ DOTNET_DESKTOP_DOWNLOAD_LINK,
-                                           DOTNET_DESKTOP_INSTALLER_NAME }
-        };
-
-        for (const auto [installer_link, installer_filename] : dotnet_installers)
-        {
-            if (!install_dotnet(installer_link, installer_filename))
-            {
-                return 1;
-            }
-        }
-        return 0;
+        return !install_dotnet();
     }
     else if (action == L"-uninstall_msi")
     {
