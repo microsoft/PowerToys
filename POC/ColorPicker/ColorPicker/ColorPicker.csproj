@@ -62,7 +62,6 @@
     </ApplicationDefinition>
     <Compile Include="ActionBroker.cs" />
     <Compile Include="ColorPickingFunctionality\InternalSystemCallException.cs" />
-    <Compile Include="ColorPickingFunctionality\ScreenSize.cs" />
     <Compile Include="TransparentWindow.xaml.cs">
       <DependentUpon>TransparentWindow.xaml</DependentUpon>
     </Compile>
