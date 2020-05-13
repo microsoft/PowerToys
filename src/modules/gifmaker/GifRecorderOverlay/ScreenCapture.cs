@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace GifRecorderOverlay.Util
 {
-    class CaptureUtil
+    class ScreenCapture
     {
-        CaptureUtil(
+        ScreenCapture(
             uint x,
             uint y,
             uint width,
@@ -19,7 +19,7 @@ namespace GifRecorderOverlay.Util
 
         }
 
-        void Capture()
+        void Start()
         {
 
         }
