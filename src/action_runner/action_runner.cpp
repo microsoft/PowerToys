@@ -197,10 +197,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         }
 
         using installer_link_and_filename_t = std::pair<std::wstring_view, std::wstring_view>;
+
         const wchar_t DOTNET_CORE_DOWNLOAD_LINK[] = L"https://download.visualstudio.microsoft.com/download/pr/fa69f1ae-255d-453c-b4ff-28d832525037/51694be04e411600c2e3361f6c81400d/dotnet-runtime-3.0.3-win-x64.exe";
         const wchar_t DOTNET_CORE_INSTALLER_NAME[] = L"dotnet-runtime-3.0.3-win-x64.exe";
+
         const wchar_t DOTNET_DESKTOP_DOWNLOAD_LINK[] = L"https://download.visualstudio.microsoft.com/download/pr/c525a2bb-6e98-4e6e-849e-45241d0db71c/d21612f02b9cae52fa50eb54de905986/windowsdesktop-runtime-3.0.3-win-x64.exe";
         const wchar_t DOTNET_DESKTOP_INSTALLER_NAME[] = L"windowsdesktop-runtime-3.0.3-win-x64.exe";
+
         const std::array<installer_link_and_filename_t, 2> dotnet_installers = {
             installer_link_and_filename_t{ DOTNET_CORE_DOWNLOAD_LINK,
                                            DOTNET_CORE_INSTALLER_NAME },
