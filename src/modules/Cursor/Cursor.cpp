@@ -8,11 +8,14 @@
 #include <stdio.h>
 #include <csignal>
 #include<math.h>
+#include <ShellScalingApi.h>
 
 
 
 
 using namespace std;
+
+
 
 
 
@@ -25,6 +28,55 @@ void cursorposition(int &x_coord, int &y_coord)
         y_coord = cursor.y;
     } 
 }
+
+float scalefac(int x, int y)
+{
+    POINT pt;
+    pt.x = x;
+    pt.y = y;
+    HMONITOR monitor = MonitorFromPoint( pt, MONITOR_DEFAULTTONEAREST);
+    DEVICE_SCALE_FACTOR pScale;
+    GetScaleFactorForMonitor( monitor, &pScale);
+    float scale;
+    switch(pScale) 
+        {
+    SCALE_100_PERCENT:
+        scale = 1.0;
+    SCALE_120_PERCENT:
+        scale = 1.20;
+    SCALE_125_PERCENT:
+        scale = 1.25;
+    SCALE_140_PERCENT:
+        scale = 1.40;
+    SCALE_150_PERCENT:
+        scale = 1.50;
+    SCALE_160_PERCENT:
+        scale = 1.60;
+    SCALE_175_PERCENT:
+        scale = 1.75;
+    SCALE_180_PERCENT:
+        scale = 1.80;
+    SCALE_200_PERCENT:
+        scale= 2.0;
+    SCALE_225_PERCENT:
+        scale = 2.25;
+    SCALE_250_PERCENT:
+        scale = 2.50;
+    SCALE_300_PERCENT:
+        scale = 3.0;
+    SCALE_350_PERCENT:
+        scale = 3.50;
+    SCALE_400_PERCENT:
+        scale = 4.0;
+    SCALE_450_PERCENT:
+        scale = 4.50;
+    SCALE_500_PERCENT:
+        scale = 5.0;
+    }
+
+    return scale;
+}
+
 
 void getcolour(int x_coord, int y_coord, int &r, int&g, int&b)
 {
@@ -182,6 +234,7 @@ int main()
 {
         int x_coord, y_coord, r, g, b;
     int horizontalscreen, verticalscreen;
+        
 
         while(true) {
 
@@ -195,6 +248,10 @@ int main()
             {
             
             cursorposition(x_coord, y_coord);
+            float scale = scalefac(x_coord, y_coord);
+            x_coord = x_coord * scale;
+            y_coord = y_coord * scale;
+
             getcolour(x_coord, y_coord, r, g, b);
             locate(x_coord, y_coord, r, g, b);
             //erase 
