@@ -127,7 +127,7 @@ export class GeneralSettings extends React.Component <any, any> {
 
         {this.state.settings.general.is_admin &&
         (<Stack>
-          <Label>Download updates automatically</Label>
+          <Label>Download updates automatically (Except on metered connections, where charges may apply)</Label>
           <BoolToggleSettingsControl
             setting={{value: this.state.settings.general.download_updates_automatically}}
             disabled={!this.state.settings.general.is_admin}
