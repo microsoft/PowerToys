@@ -114,15 +114,36 @@ void locate(int x_coord, int y_coord, int r, int g, int b)
     RedrawWindow(screen, &rect, NULL, RDW_ERASE);
 }
 
+void GetDesktopResolution(int& horizontal, int& vertical)
+{
+    RECT desktop;
+    // Get a handle to the desktop window
+    const HWND hDesktop = GetDesktopWindow();
+    // Get the size of screen to the variable desktop
+    GetWindowRect(hDesktop, &desktop);
+    // The top left corner will have coordinates (0,0)
+    // and the bottom right corner will have coordinates
+    // (horizontal, vertical)
+    horizontal = desktop.right;
+    vertical = desktop.bottom;
+}
+
 int main()
 
 {
         int x_coord, y_coord, r, g, b;
+    int horizontalscreen, verticalscreen;
 
         while(true) {
-        
-           
-        if (GetKeyState(VK_CONTROL) & 0x8000) {
+
+         if ((GetKeyState(VK_CONTROL) &(GetKeyState(VK_LWIN)&0x8000)))
+        {
+             GetDesktopResolution(horizontalscreen, verticalscreen);
+            SetCursorPos(horizontalscreen / 2, verticalscreen / 2);
+        }
+         
+   else if (GetKeyState(VK_CONTROL) & 0x8000)
+            {
             
             cursorposition(x_coord, y_coord);
             getcolour(x_coord, y_coord, r, g, b);
@@ -135,6 +156,7 @@ int main()
             cout << "R:" << r << " G:" << g << " B:" << b << "\n \n";
               
         }
+       
         else
             continue;
     }
