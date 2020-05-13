@@ -163,6 +163,9 @@
     <Compile Include="ViewModels\MasterDetailViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />
     <Compile Include="ViewModels\ShellViewModel.cs" />
+    <Compile Include="Views\onLaunchContentDialog.xaml.cs">
+      <DependentUpon>onLaunchContentDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\PowerRenamePage.xaml.cs">
       <DependentUpon>PowerRenamePage.xaml</DependentUpon>
     </Compile>
@@ -212,6 +215,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Styles\TextBlock.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\onLaunchContentDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
