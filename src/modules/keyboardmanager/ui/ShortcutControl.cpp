@@ -277,7 +277,7 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
     stackPanel.Children().Append(holdEscInfo);
 
     TextBlock holdEnterInfo;
-    holdEnterInfo.Text(L"Hold Enter to apply");
+    holdEnterInfo.Text(L"Hold Enter to continue");
     holdEnterInfo.FontSize(12);
     holdEnterInfo.Margin({ 0, 0, 0, 0 });
     stackPanel.Children().Append(holdEnterInfo);
