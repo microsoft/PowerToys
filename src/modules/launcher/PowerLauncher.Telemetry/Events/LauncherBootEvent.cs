@@ -5,7 +5,7 @@ using System.Diagnostics.Tracing;
 namespace Microsoft.PowerLauncher.Telemetry
 {
     [EventData]
-    public class LauncherBootEvent : IEvent
+    public class LauncherBootEvent : EventBase, IEvent
     {
         public double BootTimeMs { get; set; }
 

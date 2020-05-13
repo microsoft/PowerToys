@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.Telemetry
         /// Publishes ETW event when an action is triggered on 
         /// </summary>
         public void WriteEvent<T>(T telemetryEvent)
-            where T : IEvent
+            where T : EventBase, IEvent
         {
             this.Write<T>(null, new EventSourceOptions()
             {

@@ -10,7 +10,7 @@ namespace MarkdownPreviewHandler.Telemetry.Events
     /// <summary>
     /// A telemetry event that is triggered when an error occurs while attempting to view a markdown file in the preview pane.
     /// </summary>
-    public class MarkdownFilePreviewError : IEvent
+    public class MarkdownFilePreviewError : EventBase, IEvent
     {
         /// <summary>
         /// Gets or sets the error message.

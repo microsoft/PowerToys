@@ -1,11 +1,11 @@
-﻿using Microsoft.PowerToys.Telemetry;
+﻿using System.Diagnostics.Tracing;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.PowerToys.Telemetry.Events;
-using System.Diagnostics.Tracing;
 
 namespace Microsoft.PowerToys.Settings.Telemetry
 {
     [EventData]
-    public class SettingsEnabledEvent : IEvent
+    public class SettingsEnabledEvent : EventBase, IEvent
     {
         public string Name { get; set; }
 

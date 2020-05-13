@@ -12,7 +12,7 @@ namespace Microsoft.PowerLauncher.Telemetry
     /// ETW event for when a result is actioned.
     /// </summary>
     [EventData]
-    public class LauncherResultActionEvent : IEvent
+    public class LauncherResultActionEvent : EventBase, IEvent
     {
 
         public enum TriggerType

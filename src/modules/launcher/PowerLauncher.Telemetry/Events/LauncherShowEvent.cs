@@ -9,7 +9,7 @@ using System.Diagnostics.Tracing;
 namespace Microsoft.PowerLauncher.Telemetry
 {
     [EventData]
-    public class LauncherShowEvent : IEvent
+    public class LauncherShowEvent : EventBase, IEvent
     {
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
     }

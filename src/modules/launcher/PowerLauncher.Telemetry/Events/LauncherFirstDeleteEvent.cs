@@ -9,7 +9,7 @@ using System.Diagnostics.Tracing;
 namespace Microsoft.PowerLauncher.Telemetry
 {
     [EventData]
-    public class LauncherFirstDeleteEvent : IEvent
+    public class LauncherFirstDeleteEvent : EventBase, IEvent
     {
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
     }

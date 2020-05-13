@@ -12,7 +12,7 @@ namespace MarkdownPreviewHandler.Telemetry.Events
     /// A telemetry event that is triggered when a markdown file is viewed in the preview pane.
     /// </summary>
     [EventData]
-    public class MarkdownFilePreviewed : IEvent
+    public class MarkdownFilePreviewed : EventBase, IEvent
     {
         /// <inheritdoc/>
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;

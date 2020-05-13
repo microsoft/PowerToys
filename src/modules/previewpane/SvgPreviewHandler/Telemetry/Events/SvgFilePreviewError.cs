@@ -12,7 +12,7 @@ namespace SvgPreviewHandler.Telemetry.Events
     /// A telemetry event to be raised when an error has occured in the preview pane.
     /// </summary>
     [EventData]
-    public class SvgFilePreviewError : IEvent
+    public class SvgFilePreviewError : EventBase, IEvent
     {
         /// <summary>
         /// Gets or sets the error messsage to log as part of the telemetry event.

@@ -12,7 +12,7 @@ namespace Microsoft.PowerLauncher.Telemetry
     /// ETW Event for when the user initiates a query
     /// </summary>
     [EventData]
-    public class LauncherQueryEvent : IEvent
+    public class LauncherQueryEvent : EventBase, IEvent
     {
         public double QueryTimeMs { get; set; }
         public int QueryLength { get; set; }
