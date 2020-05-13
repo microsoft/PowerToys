@@ -5,12 +5,12 @@ namespace ColorPicker.ColorPickingFunctionality.SystemEvents
 {
     class RegisteredMouseEventHook : SystemHook
     {
-        public delegate void EventCallBack(int x, int y);
+        public delegate void EventCallback(int x, int y);
 
-        // low level mouse movement hook type
+        // Low-level mouse movement hook type
         private const int WH_MOUSE_LL = 14;
 
-        // event code for mouse down
+        // Event code for mouse down
         private const int WM_LBUTTONDOWN = 0x0201;
 
         [StructLayout(LayoutKind.Sequential)]
@@ -30,9 +30,10 @@ namespace ColorPicker.ColorPickingFunctionality.SystemEvents
             public IntPtr dwExtraInfo;
         }
 
-        private EventCallBack callback;
+        private EventCallback callback;
 
-        public RegisteredMouseEventHook(EventCallBack callback) : base(WH_MOUSE_LL)
+        public RegisteredMouseEventHook(EventCallback callback)
+            : base(WH_MOUSE_LL)
         {
             this.callback = callback;
         }

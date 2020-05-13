@@ -2,16 +2,32 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Drawing;
-
+using System.Windows.Media;
+using System.Windows.Input;
 
 namespace ColorPicker.ColorPickingFunctionality
 {
-    class PixelColorFinder
+    static class PixelColorFinder
     {
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT
+        {
+            public int x;
+            public int y;
+        }
+
         private const uint CLR_INVALID = 0xFFFFFFFF;
         private const uint FIRST_BYTE_SET = 0x000000FF;
         private const uint SECOND_BYTE_SET = 0x0000FF00;
         private const uint THIRD_BYTE_SET = 0x00FF0000;
+
+        /// <summary>
+        /// Retrieves the cursor's position, in screen coordinates.
+        /// </summary>
+        /// <param name="lpPoint">A pointer to a POINT structure that receives the screen coordinates of the cursor.</param>
+        /// <returns>Returns nonzero if successful or zero otherwise. To get extended error information, call GetLastError.</returns>
+        [DllImport("user32.dll")]
+        private static extern bool GetCursorPos(out POINT lpPoint);
 
         /// <summary>
         /// Get the RGB value of a pixel.
@@ -19,9 +35,7 @@ namespace ColorPicker.ColorPickingFunctionality
         /// <param name="hDC">A handle to the device context.</param>
         /// <param name="xCoord">The x-coordinate, in logical units, of the pixel to be examined.</param>
         /// <param name="yCoord">The y-coordinate, in logical units, of the pixel to be examined.</param>
-        /// <returns>
-        /// A COLORREF int. The first byte is red, second is green and third is blue. On error it returns 0xFFFFFFFF.
-        /// </returns>
+        /// <returns>A COLORREF int. The first byte is red, second is green and third is blue. On error it returns 0xFFFFFFFF</returns>
         [DllImport("gdi32.dll")]
         private static extern uint GetPixel(IntPtr hDC, int xCoord, int yCoord);
 
@@ -42,34 +56,30 @@ namespace ColorPicker.ColorPickingFunctionality
         [DllImport("user32.dll")]
         private static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
 
-        public static void HandleMouseClick(int x, int y)
+        public static Color GetColorUnderCursor()
         {
-            uint colorRef = GetPixelValue(x, y);
+            IntPtr hDC = SafeGetWindowDC(IntPtr.Zero);
 
-            int red = ParseRed(colorRef);
-            int green = ParseGreen(colorRef);
-            int blue = ParseBlue(colorRef);
+            POINT cursorPosition;
+            SafeGetCursorPos(out cursorPosition);
 
-            // TODO: integrate this with UI at a later date
-            Debug.WriteLine("R: {0} G: {1} B: {2}", red, green, blue);
-        }
+            uint colorRef = SafeGetPixel(hDC, cursorPosition.x, cursorPosition.y);
 
-        private static uint GetPixelValue(int xCoord, int yCoord)
-        {
-            IntPtr hDC = SafeGetWindowDC();
-            uint pixelValue = SafeGetPixel(hDC, xCoord, yCoord);
             SafeReleaseWindowDC(hDC);
-            return pixelValue;
+
+            byte red = ParseRed(colorRef);
+            byte green = ParseGreen(colorRef);
+            byte blue = ParseBlue(colorRef);
+
+            return Color.FromRgb(red, green, blue);
         }
 
-        private static IntPtr SafeGetWindowDC()
+        private static void SafeGetCursorPos(out POINT lpPoint)
         {
-            IntPtr hDC = GetDC(IntPtr.Zero);
-            if (hDC == null)
+            if (!GetCursorPos(out lpPoint))
             {
-                throw new InternalSystemCallException("Failed to get hDC");
+                throw new InternalSystemCallException("Failed to get cursor position");
             }
-            return hDC;
         }
 
         private static uint SafeGetPixel(IntPtr hDC, int x, int y)
@@ -82,6 +92,16 @@ namespace ColorPicker.ColorPickingFunctionality
             return pixelValue;
         }
 
+        private static IntPtr SafeGetWindowDC(IntPtr hWnd)
+        {
+            IntPtr hDC = GetDC(hWnd);
+            if (hDC == null)
+            {
+                throw new InternalSystemCallException("Failed to get hDC");
+            }
+            return hDC;
+        }
+
         private static void SafeReleaseWindowDC(IntPtr hDC)
         {
             if (ReleaseDC(IntPtr.Zero, hDC) == 0)
@@ -90,10 +110,10 @@ namespace ColorPicker.ColorPickingFunctionality
             }
         }
 
-        private static int ParseRed(uint colorRef) => (int)(colorRef & FIRST_BYTE_SET);
+        private static byte ParseRed(uint colorRef) => (byte)(colorRef & FIRST_BYTE_SET);
 
-        private static int ParseGreen(uint colorRef) => (int)(colorRef & SECOND_BYTE_SET) >> 8;
+        private static byte ParseGreen(uint colorRef) => (byte)((colorRef & SECOND_BYTE_SET) >> 8);
 
-        private static int ParseBlue(uint colorRef) => (int)(colorRef & THIRD_BYTE_SET) >> 16;
+        private static byte ParseBlue(uint colorRef) => (byte)((colorRef & THIRD_BYTE_SET) >> 16);
     }
 }
