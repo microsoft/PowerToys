@@ -7,57 +7,175 @@
     xmlns:Custom="using:Microsoft.UI.Xaml.Controls"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     x:Class="PowerToys_Settings_Sandbox.Views.FancyZonesPage"
+    xmlns:behaviors="using:PowerToys_Settings_Sandbox.Behaviors"
+    behaviors:NavigationViewHeaderBehavior.HeaderMode="Never"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
-    <Grid>
+     
+    <Grid ColumnSpacing="24" RowSpacing="24">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LayoutVisualStates">
+                <VisualState x:Name="WideLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="1100" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="1" />
+                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                        <Setter Target="FZSettingsTitle.(Grid.Row)" Value="0" />
+                        <Setter Target="FZSettingsView.(Grid.Row)" Value="1" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="SmallLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="480" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
+                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                        <Setter Target="SidePanel.(Orientation)" Value="Horizontal" />
+                        <Setter Target="FZSettingsView.(Grid.Row)" Value="2" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-        <StackPanel Margin="24,0,0,0" VerticalAlignment="Top">
-            <TextBlock x:Name="DescriptionTextBlock" Text="Create window layouts to help make multi-tasking easy." TextWrapping="Wrap" Margin="0,0,0,24" Style="{StaticResource SubtitleTextBlockStyle}"/>
-            <ToggleSwitch x:Name="ToggleSwitch" Header="Enable FancyZones" Margin="0,0,0,0" VerticalAlignment="Top">
-                <ToggleSwitch.Resources>
-                    <muxc:TeachingTip x:Name="EnableFeatureTip"
-                                Target="{x:Bind ToggleSwitch}"
-                                Title="Enable your tool here"
-                                PreferredPlacement="Right"
-                                Subtitle=""
-                                >
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <HyperlinkButton Click="{x:Bind SkipTeachingTips}" Margin="0, 0, 24,0">Skip</HyperlinkButton>
-                                        <Button Background="Blue" Foreground="White" Click="{x:Bind ShowAboutFeatureTip}" Content="Okay"></Button>
-                                    </StackPanel>
+        <StackPanel Margin="24,0,0,0" VerticalAlignment="Top" Orientation="Vertical" x:Name="FZSettingsTitle">
+            <TextBlock x:Name="FancyZonesTitle" HorizontalAlignment="Left" Margin="0,0,0,12" Text="FancyZones" TextWrapping="Wrap" VerticalAlignment="Top" Style="{StaticResource TitleTextBlockStyle}"/>
+            <TextBlock x:Name="DescriptionTextBlock" Text="Create window layouts to help make multi-tasking easy." TextWrapping="Wrap" Style="{StaticResource SubtitleTextBlockStyle}"/>
+         </StackPanel>
+
+        <StackPanel x:Name="SidePanel"
+                    Grid.Column="1"
+                    Orientation="Vertical"
+                    HorizontalAlignment="Left">
+            <Image x:Name="TutorialImage" VerticalAlignment="Top" Margin="24,0,24,24" Width="300" Source="https://user-images.githubusercontent.com/9866362/77859136-f04ae880-7207-11ea-8a7f-4295342fe319.gif"></Image>
+            <StackPanel x:Name="SidePanelText"
+                    Grid.Column="1"
+                    Orientation="Vertical"
+                    HorizontalAlignment="Left">
+                <TextBlock x:Name="AboutTextBlock" Text="About this feature" TextWrapping="Wrap" Margin="24,0,0,12" Style="{StaticResource SubtitleTextBlockStyle}"/>
+            <HyperlinkButton x:Name="ModuleOverviewLink" Content="Module overview" Margin="24,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" PointerEntered="ToggleModuleOverviewTip" PointerExited="ToggleModuleOverviewTip">
+                <HyperlinkButton.Resources>
+                    <muxc:TeachingTip x:Name="ModuleOverviewTip"
+                                Target="{x:Bind ModuleOverviewLink}"
+                                Background="LightGray"
+                                Foreground="Blue"
+                                TailVisibility="Collapsed"
+                                HeroContentPlacement="Bottom"
+                               
+                        >
+                        <StackPanel Orientation="Horizontal"  VerticalAlignment="Top">
+                            <TextBlock x:Name="ModuleOverviewText" HorizontalAlignment="Left"  Text="Visit module overview on GitHub" TextWrapping="Wrap" VerticalAlignment="Center" />
+                            <FontIcon x:Name="ModuleOverviewTextIcon" FontFamily="Segoe MDL2 Assets" Glyph="&#xF3E2;" Margin="60,0,0,0" VerticalAlignment="Top"/>
+                        </StackPanel>
+                        <muxc:TeachingTip.HeroContent>
+                            <Image Source="../Assets/StoreLogo.png" />
+                        </muxc:TeachingTip.HeroContent>
                     </muxc:TeachingTip>
-                </ToggleSwitch.Resources>
-            </ToggleSwitch>
-
+                </HyperlinkButton.Resources>
+            </HyperlinkButton>
+            <HyperlinkButton Content="Give feedback" Margin="24,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            </StackPanel>
         </StackPanel>
 
-        <StackPanel Grid.Column="1">
-            <TextBlock x:Name="AboutTextBlock" Text="About this feature" TextWrapping="Wrap" Margin="24,0,0,24" Style="{StaticResource SubheaderTextBlockStyle}"/>
-            <Image x:Name="TutorialImage" HorizontalAlignment="Center" Margin="24,0,0,24" Width="300" Source="../Assets/StoreLogo.png">
-                <Image.Resources>
-                    <muxc:TeachingTip x:Name="AboutFeatureTip"
-                                Target="{x:Bind TutorialImage}"
-                                Title="See how your tool works"
-                                PreferredPlacement="LeftBottom"
-                                Subtitle=""
-                                >
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <HyperlinkButton Click="{x:Bind SkipTeachingTips}" Margin="0, 0, 24,0">Skip</HyperlinkButton>
-                                        <Button Background="Blue" Foreground="White" Click="{x:Bind ShowHelpGuideTip}" Content="Okay"></Button>
-                                    </StackPanel>
-                    </muxc:TeachingTip>
-                </Image.Resources>
-            </Image>
-            <HyperlinkButton Content="Module overview" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-            <HyperlinkButton Content="Give feedback" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+
+        <StackPanel Margin="24,0,0,0" VerticalAlignment="Top" Orientation="Vertical" x:Name="FZSettingsView">
+            <ToggleSwitch x:Name="ToggleSwitch" Header="Enable FancyZones" VerticalAlignment="Top"></ToggleSwitch>
+
+            <TextBlock x:Name="ZoneBehaviorText" Text="Zone Behavior" TextWrapping="Wrap" Margin="0,24,0,12" Style="{StaticResource SubtitleTextBlockStyle}"/>
+            <Button x:Name="LaunchZonesEditorButton" Background="Blue" Foreground="White"  Content="Launch Zones Editor" Margin="0, 0,0,12"></Button>
+            <TextBox PlaceholderText="Undefined" Header="Edit Hot Key/Shortcut" HorizontalAlignment="Left" Width="350"></TextBox>
+
+            <CheckBox x:Name="ActivateZonesDragCheckBox" 
+                      Content="Hold Shift key to activate zones while dragging"
+                      Margin="0,12,0,0"/>
+
+            <CheckBox Content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Facere, nulla, ipsum?"
+                      Margin="0,12,0,0"/>
+
+            <CheckBox Content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Facere, nulla, ipsum?"
+                      Margin="0,12,0,0"/>
+
+            <CheckBox Content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Facere, nulla, ipsum?"
+                      Margin="0,12,0,0"/>
+
+
+            <CheckBox Content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Facere, nulla, ipsum?"
+                      Margin="0,12,0,0"/>
+
+            <CheckBox Content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Facere, nulla, ipsum?"
+                      Margin="0,12,0,0"/>
+
+            <CheckBox Content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Facere, nulla, ipsum?"
+                      Margin="0,12,0,0"/>
+
+            <CheckBox Content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Facere, nulla, ipsum?"
+                      Margin="0,12,0,0"/>
+
+
+            <TextBlock x:Name="FancyZones_ZoneHighlightColorText" 
+                       Text="Zone Highlight Color"
+                       Margin="0,12, 0,0"/>
+
+            <muxc:ColorPicker x:Name="FancyZones_ZoneHighlightColor"
+                              Margin="0,6,0,0"
+                              HorizontalAlignment="Left"
+                              IsMoreButtonVisible="True"
+                              IsColorSliderVisible="True"
+                              IsColorChannelTextInputVisible="True"
+                              IsHexInputVisible="True"
+                              IsAlphaEnabled="False"
+                              IsAlphaSliderVisible="False"
+                              IsAlphaTextInputVisible="False"
+                              Color="{Binding Path=ZoneHighlightColor, Mode=TwoWay}"
+                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+
+            <TextBlock x:Name="FancyZones_InActiveColorPickerText" 
+                       Text="Zone Inactive Color"
+                       Margin="0,12, 0,0"/>
+
+            <muxc:ColorPicker x:Name="FancyZones_InActiveColorPicker"
+                              Margin="0,6,0,0"
+                              HorizontalAlignment="Left"
+                              IsMoreButtonVisible="True"
+                              IsColorSliderVisible="True"
+                              IsColorChannelTextInputVisible="True"
+                              IsHexInputVisible="True"
+                              IsAlphaEnabled="False"
+                              IsAlphaSliderVisible="False"
+                              IsAlphaTextInputVisible="False"
+                              Color="{Binding Path=ZoneInActiveColor, Mode=TwoWay}"
+                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+
+
+            <TextBlock x:Name="FancyZones_BorderColorText" 
+                       Text="Zone Border Color"
+                       />
+
+            <muxc:ColorPicker x:Name="FancyZones_BorderColor"
+                              Margin="0,6,0,0"
+                              HorizontalAlignment="Left"
+                              IsMoreButtonVisible="True"
+                              IsColorSliderVisible="True"
+                              IsColorChannelTextInputVisible="True"
+                              IsHexInputVisible="True"
+                              IsAlphaEnabled="False"
+                              IsAlphaSliderVisible="False"
+                              IsAlphaTextInputVisible="False"
+                              Color="{Binding Path=ZoneBorderColor, Mode=TwoWay}"
+                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+
         </StackPanel>
-        
-
-
     </Grid>
+       
 </Page>
