@@ -10,24 +10,22 @@ namespace PowerToys_Settings_Sandbox.Services
     {
         public static void AppInstalledToast()
         {
-            string title = "Power Toys";
-            string content = "Power Toys is installed";
-            string image = "../Assets/Logo.png";
+            string title = "Get Started with PowerToys";
+            string content = "";
             string logo = "../Assets/MiniLogo.png";
 
-            ToastVisual visual = createToastVisual(title, content, logo, image);
+            ToastVisual visual = createToastVisual(title, content, logo);
 
             ToastActionsCustom actions = new ToastActionsCustom()
             {
                 Inputs = { },
                 Buttons =
                 {
-                    new ToastButton("Open PowerToys", new QueryString()
+                    new ToastButtonDismiss("Not now"),
+                    new ToastButton("Get Started", new QueryString()
                     {
                         {"action", "openApp"},
-                        {"imageUrl", "../Assets/Logo.png"}
                     }.ToString()),
-                    new ToastButtonDismiss(),
                 }
             };
 
@@ -35,7 +33,7 @@ namespace PowerToys_Settings_Sandbox.Services
 
             ToastNotification toast = new ToastNotification(toastContent.GetXml());
 
-            toast.ExpirationTime = DateTime.Now.AddDays(2); // May need to add Tag and group
+            toast.ExpirationTime = DateTime.Now.AddDays(2);
             toast.Group = "install";
 
             ToastNotificationManager.CreateToastNotifier().Show(toast);
@@ -43,8 +41,8 @@ namespace PowerToys_Settings_Sandbox.Services
 
         public static void AppUpdatedToast()
         {
-            string title = "Power Toys";
-            string content = "Power Toys has been updated";
+            string title = "Power Toys Updated";
+            string content = "";
             string logo = "../Assets/MiniLogo.png";
 
             ToastVisual visual = createToastVisual(title, content, logo);
@@ -54,15 +52,11 @@ namespace PowerToys_Settings_Sandbox.Services
                 Inputs = { },
                 Buttons =
                 {
-
-                    new ToastButton("Open PowerToys", new QueryString()
+                    new ToastButtonDismiss(),
+                    new ToastButton("See Updates", new QueryString()
                     {
                         // Query for button
                     }.ToString())
-                    {
-                        // Insert activation type here
-                    },
-                    new ToastButtonDismiss(),
                 }
             };
 
@@ -70,7 +64,7 @@ namespace PowerToys_Settings_Sandbox.Services
 
             ToastNotification toast = new ToastNotification(toastContent.GetXml());
 
-            toast.ExpirationTime = DateTime.Now.AddDays(2); // May need to add Tag and group
+            toast.ExpirationTime = DateTime.Now.AddDays(2);
             toast.Group = "update";
 
             ToastNotificationManager.CreateToastNotifier().Show(toast);
@@ -78,8 +72,8 @@ namespace PowerToys_Settings_Sandbox.Services
 
         public static void AppNeedsUpdateToast()
         {
-            string title = "Power Toys";
-            string content = "Power Toys has a new update available";
+            string title = "PowerToys Update Available";
+            string content = "";
             string logo = "../Assets/MiniLogo.png";
 
             ToastVisual visual = createToastVisual(title, content, logo);
@@ -89,15 +83,11 @@ namespace PowerToys_Settings_Sandbox.Services
                 Inputs = { },
                 Buttons =
                 {
-
-                    new ToastButton("Update Now", new QueryString()
+                    new ToastButtonDismiss(),
+                    new ToastButton("Update", new QueryString()
                     {
                         // Query for button
                     }.ToString())
-                    {
-                        // Insert activation type here
-                    },
-                    new ToastButtonSnooze(),
                 }
             };
 
@@ -105,7 +95,7 @@ namespace PowerToys_Settings_Sandbox.Services
 
             ToastNotification toast = new ToastNotification(toastContent.GetXml());
 
-            toast.ExpirationTime = DateTime.Now.AddDays(2); // May need to add Tag and group
+            toast.ExpirationTime = DateTime.Now.AddDays(2);
             toast.Group = "updateAvailable";
 
             ToastNotificationManager.CreateToastNotifier().Show(toast);
