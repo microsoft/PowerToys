@@ -27,41 +27,25 @@ namespace ColorPicker
     /// </summary>
     public partial class MainWindow : Window
     {
-        private RegisterdMouseEventHook mouseEventHook = new RegisterdMouseEventHook(PixelColorFinder.HandleMouseClick);
         private TransparentWindow transparentWindow = new TransparentWindow();
-        private bool isColorSelectMode = false;
         private bool _isColorSelectionEnabled = true;
         private DispatcherTimer _updateTimer = new DispatcherTimer();
 
         public MainWindow()
         {
             InitializeComponent();
-            mouseEventHook.DeactivateHook();
-            transparentWindow.AddActionCallBack(ActionBroker.ActionTypes.Click, ToggleColorSelectMode);
-        }
-
-        public void ToggleColorSelectMode(object sender, EventArgs e)
-        {
-            if (isColorSelectMode)
-            {
-                transparentWindow.Hide();
-                mouseEventHook.DeactivateHook();
-            }
-            else
-            {
-                transparentWindow.Show();
-                mouseEventHook.ActivateHook();
-            }
-            isColorSelectMode = !isColorSelectMode;
+            transparentWindow.AddActionCallBack(ActionBroker.ActionTypes.Click, TransparentWindowClick);
+            transparentWindow.Show();
+            _updateTimer.Tick += UpdateCurrentColor;
+            _updateTimer.Interval = new TimeSpan(1000);
+            _updateTimer.Start();
         }
 
         protected override void OnClosing(CancelEventArgs e)
         {
             transparentWindow.Close();
             base.OnClosing(e);
-            _updateTimer.Tick += UpdateCurrentColor;
-            _updateTimer.Interval = new TimeSpan(1000);
-            _updateTimer.Start();
+
         }
 
         private void UpdateCurrentColor(object sender, EventArgs e)
@@ -69,15 +53,6 @@ namespace ColorPicker
             if (_isColorSelectionEnabled)
             {
                 SetColor(PixelColorFinder.GetColorUnderCursor());
-            }
-        }
-
-        // TODO: Replace this with mouse down (needs transparent overlay window)
-        private void OnKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Space)
-            {
-                ToggleColorSelectionMode();
             }
         }
 
@@ -93,12 +68,24 @@ namespace ColorPicker
             _isColorSelectionEnabled = !_isColorSelectionEnabled;
             if (_isColorSelectionEnabled)
             {
+                transparentWindow.Show();
                 _updateTimer.Start();
             }
             else
             {
+                transparentWindow.Hide();
                 _updateTimer.Stop();
             }
+        }
+
+        private void TransparentWindowClick(object sender, EventArgs e)
+        {
+            ToggleColorSelectionMode();
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            ToggleColorSelectionMode();
         }
     }
 }
