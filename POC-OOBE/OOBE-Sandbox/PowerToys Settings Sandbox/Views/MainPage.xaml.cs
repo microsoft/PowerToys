@@ -36,6 +36,12 @@ namespace PowerToys_Settings_Sandbox.Views
         }
         // This method opens the first teaching tip on the General Settings page
         // Should open automatically only on initial install after user starts tutorial
+
+        public void BeginSettingsTips()
+        {
+            OpenFirstGeneralSettingsTip();
+        }
+
         private void OpenFirstGeneralSettingsTip()
         {
             GeneralSettingsTip.IsOpen = true;
