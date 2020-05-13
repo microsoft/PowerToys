@@ -18,12 +18,9 @@ using Windows.UI.Xaml.Navigation;
 
 namespace GifRecorderOverlay
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class MainPage : Page
     {
-        private ResizableRectangle rect;
+        private ResizableRectangle Rect;
         public MainPage()
         {
             this.InitializeComponent();
@@ -40,7 +37,6 @@ namespace GifRecorderOverlay
                 RecordPauseButton.Label = "Record";
                 RecordPauseButton.Tag = "record";
             }
-            mainCanvas.Visibility = 0;
         }
         private void RecordPauseButton_Click(object sender, RoutedEventArgs e)
         {
@@ -51,6 +47,7 @@ namespace GifRecorderOverlay
                 RecordPauseButton.Label = "Pause";
                 RecordPauseButton.Tag = "pause";
                 StopButton.IsEnabled = true;
+                Rect.IsSelected = false;
             }
             else
             {
@@ -64,6 +61,8 @@ namespace GifRecorderOverlay
         {
             RecordPauseButton.IsEnabled = false;
             StopButton.IsEnabled = false;
+            MainCanvas.Children.Remove(Rect);
+            Rect = null;
             if ((string)RecordPauseButton.Tag == "pause")
             {
                 RecordPauseButton.Icon = new SymbolIcon(Symbol.Target);
@@ -72,19 +71,19 @@ namespace GifRecorderOverlay
             }
         }
 
-        private void mainCanvas_PointerPressed(object sender, PointerRoutedEventArgs e)
+        private void MainCanvas_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             try
             {
-                mainCanvas.CapturePointer(e.Pointer);
-                var ptrPoint = e.GetCurrentPoint(mainCanvas);
+                MainCanvas.CapturePointer(e.Pointer);
+                var ptrPoint = e.GetCurrentPoint(MainCanvas);
                 var point1 = ptrPoint.Position;
-                if (rect != null)
+                if (Rect != null)
                 {
-                    mainCanvas.Children.Remove(rect);
+                    MainCanvas.Children.Remove(Rect);
                 }
-                rect = new ResizableRectangle(mainCanvas, point1);
-                mainCanvas.Children.Add(rect);
+                Rect = new ResizableRectangle(MainCanvas, point1);
+                MainCanvas.Children.Add(Rect);
                 e.Handled = true;
             }
             catch (Exception)
@@ -92,17 +91,17 @@ namespace GifRecorderOverlay
             }
         }
 
-        private void mainCanvas_PointerMoved(object sender, PointerRoutedEventArgs e)
+        private void MainCanvas_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             try
             {
-                var ptrPoint = e.GetCurrentPoint(mainCanvas);
+                var ptrPoint = e.GetCurrentPoint(MainCanvas);
                 if (ptrPoint.Properties.IsLeftButtonPressed)
                 {
-                    if (rect != null)
+                    if (Rect != null)
                     {
                         var point2 = ptrPoint.Position;
-                        rect.SetCoordinates(point2);
+                        Rect.SetCoordinates(point2);
                     }
                 }
             }
@@ -111,14 +110,14 @@ namespace GifRecorderOverlay
             }
         }
 
-        private void mainCanvas_PointerReleased(object sender, PointerRoutedEventArgs e)
+        private void MainCanvas_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             try
             {
-                if (rect.IsZeroSize())
+                if (Rect.IsZeroSize())
                 {
-                    mainCanvas.Children.Remove(rect);
-                    rect = null;
+                    MainCanvas.Children.Remove(Rect);
+                    Rect = null;
                 }
                 e.Handled = true;
             }

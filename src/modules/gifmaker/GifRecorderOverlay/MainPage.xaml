@@ -9,7 +9,7 @@
     Background="{ThemeResource SystemControlAcrylicElementBrush}">
 
     <Grid>
-        <CommandBar DefaultLabelPosition="Right" IsSticky="True" IsDynamicOverflowEnabled="False" OverflowButtonVisibility="Collapsed">
+        <CommandBar DefaultLabelPosition="Right" IsSticky="True" IsDynamicOverflowEnabled="False" OverflowButtonVisibility="Collapsed" Canvas.ZIndex="2">
             <AppBarButton Label="Capture" Click="CaptureButton_Click">
                 <AppBarButton.Icon>
                     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xF4A9;"/>
@@ -19,12 +19,11 @@
             <AppBarButton x:Name="RecordPauseButton" Icon="Target" Label="Record" IsEnabled="False" Tag="record" Click="RecordPauseButton_Click"/>
             <AppBarButton x:Name="StopButton" Icon="Stop" Label="Stop" IsEnabled="False" Click="StopButton_Click"/>
         </CommandBar>
-        <Canvas x:Name="mainCanvas"
+        <Canvas x:Name="MainCanvas"
                 Background="Black"
                 Opacity="0.5"
-                Visibility="Collapsed"
-                PointerPressed="mainCanvas_PointerPressed"
-                PointerMoved="mainCanvas_PointerMoved"
-                PointerReleased="mainCanvas_PointerReleased"/>
+                PointerPressed="MainCanvas_PointerPressed"
+                PointerMoved="MainCanvas_PointerMoved"
+                PointerReleased="MainCanvas_PointerReleased"/>
     </Grid>
 </Page>

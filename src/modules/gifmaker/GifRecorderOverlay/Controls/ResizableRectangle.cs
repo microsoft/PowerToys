@@ -57,10 +57,9 @@ namespace GifRecorderOverlay.Controls
             this.parentCanvas = parentCanvas;
             this.point1 = pointA = point2 = pointB = point1;
             lineStrokeBrush = new SolidColorBrush(Colors.Black);
-            rectFillBrush = new SolidColorBrush(Colors.White);
+            rectFillBrush = new SolidColorBrush(Colors.Transparent);
             rectStrokeBrush = new SolidColorBrush(Colors.Blue);
             adjustment = lineThickness / 2;
-
 
             lineStyle = new Style(typeof(Line));
             lineStyle.Setters.Add(new Setter(Line.StrokeProperty, lineStrokeBrush));
