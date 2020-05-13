@@ -21,12 +21,12 @@ namespace ColorPicker
             InitializeComponent();
             ConfigureTransparentWindow();
             ConfigureUpdateTimer();
-            ActivateColorSelectionMode(null, null); //TODO: not make function require params
+            ActivateColorSelectionMode();
         }
 
         private void ConfigureTransparentWindow()
         {
-            _transparentWindow.AddActionCallBack(ActionBroker.ActionTypes.Click, ColorSelectionMade);
+            _transparentWindow.AddActionCallBack(ActionBroker.ActionTypes.Click, HandleTransparentScreenClick);
         }
 
         private void ConfigureUpdateTimer()
@@ -50,14 +50,24 @@ namespace ColorPicker
             HexTextBox.Text = "#" + color.R.ToString("X2") + color.G.ToString("X2") + color.B.ToString("X2");
         }
 
-        private void ActivateColorSelectionMode(object sender, EventArgs e)
+        private void ActivateColorSelectionMode()
         {
             _isColorSelectionEnabled = true;
             _transparentWindow.Show();
             _updateTimer.Start();
         }
 
-        private void ColorSelectionMade(object sender, EventArgs e)
+        private void HandleColorButtonClick(object sender, EventArgs e)
+        {
+            ActivateColorSelectionMode();
+        }
+
+        private void HandleTransparentScreenClick(object sender, EventArgs e)
+        {
+            ColorSelectionMade();
+        }
+
+        private void ColorSelectionMade()
         {
             _isColorSelectionEnabled = false;
             SetColor(PixelColorFinder.GetColorUnderCursor());
@@ -69,7 +79,6 @@ namespace ColorPicker
         {
             _transparentWindow.Close();
             base.OnClosing(e);
-
         }
     }
 }
