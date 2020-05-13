@@ -52,18 +52,13 @@ namespace ColorPickerAlpha
 
         private void Copy_Clip(object sender, RoutedEventArgs e)
         {
+            // RGB and ARGB formats
             StringBuilder rgb_hex = new StringBuilder();
-            string rgba_hex = curColor.ToString();
-            for (int index = 0; index < rgba_hex.Length; index++)
-            {
-                // Remove the initial 2 alpha digits in the #ARGB
-                if (index == 1 || index == 2)
-                {
-                    continue;
-                }
+            string argb_hex = curColor.ToString();
 
-                rgb_hex.Append(rgba_hex[index]);
-            }
+            // Append the # sign in hex and remove the Alpha values from the ARGB format i.e) #AARRGGBB.
+            rgb_hex.Append(argb_hex[0]);
+            rgb_hex.Append(argb_hex.Substring(3));
 
             Clipboard.SetText(rgb_hex.ToString());
         }
