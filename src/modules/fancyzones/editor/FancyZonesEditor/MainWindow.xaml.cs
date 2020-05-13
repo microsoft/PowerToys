@@ -38,18 +38,6 @@ namespace FancyZonesEditor
                 WrapPanelItemSize = 150;
             }
         }
-        
-        public void SelectCommand(object sender, RoutedEventArgs e)
-        {
-            //System.Diagnostics.Debugger.Launch();
-            MonitorInfo mi = (MonitorInfo)(sender as Button).DataContext;
-            MonitorVM.CurrentMonitor = mi.Id;
-            LayoutModel.SerializeDeletedCustomZoneSets();
-            EditorOverlay.Current.Close();
-            EditorOverlay neo = new EditorOverlay();
-            neo.Show();
-            neo.DataContext = App.FoundModel[MonitorVM.CurrentMonitor];
-        }
 
         private void MainWindow_KeyUp(object sender, KeyEventArgs e)
         {

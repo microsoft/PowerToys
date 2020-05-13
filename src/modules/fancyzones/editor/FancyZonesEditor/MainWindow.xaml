@@ -198,7 +198,7 @@
                             <ScrollViewer.DataContext>
                                 <local:MonitorVM></local:MonitorVM>
                             </ScrollViewer.DataContext>
-                            <ItemsControl ItemsSource="{Binding Monitors}">
+                            <ItemsControl x:Name="MainWindowItemControl" ItemsSource="{Binding Monitors}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <WrapPanel Background="LightGray" Orientation="Horizontal" ScrollViewer.HorizontalScrollBarVisibility="Visible" />
@@ -206,9 +206,8 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" BorderBrush="Transparent" Click="SelectCommand">
-                                            <!--Command="{Binding SelectCommand, Mode=TwoWay}">-->
-                                            <!--CommandParameter="{Binding}">-->
+                                        <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" BorderBrush="Transparent"
+                                                Command="{Binding DataContext.SelectCommand, ElementName= MainWindowItemControl}" CommandParameter="{Binding}">
                                             <Button.Content>
                                                 <Grid Height="{Binding Height}" Width="{Binding Width}" Margin="8">
                                                     <Grid.RowDefinitions>

@@ -33,7 +33,7 @@ namespace FancyZonesEditor
         {
             AddCommand = new RelayCommand(AddCommandExecute, AddCommandCanExecute);
             DeleteCommand = new RelayCommand(DeleteCommandExecute, DeleteCommandCanExecute);
-            SelectCommand = new RelayCommand(SelectCommandExecute, SelectCommandCanExecute);
+            SelectCommand = new RelayCommand<MonitorInfo>(SelectCommandExecute, SelectCommandCanExecute);
             Monitors = new ObservableCollection<MonitorInfo>();
             Monitors.Add(new MonitorInfo(0, "Monitor 1", 100, 150, "DeepSkyBlue"));
             Monitors.Add(new MonitorInfo(1, "Monitor 2", 100, 150));
@@ -122,22 +122,27 @@ namespace FancyZonesEditor
             Monitors.Remove(Monitors.Last<MonitorInfo>());
         }
 
-        private ICommand selectCommand;
+        private RelayCommand<MonitorInfo> selectCommand;
 
-        public ICommand SelectCommand
+        public RelayCommand<MonitorInfo> SelectCommand
         {
             get => selectCommand;
             set => selectCommand = value;
         }
 
-        private bool SelectCommandCanExecute(object var)
+        private bool SelectCommandCanExecute(MonitorInfo monitorInfo)
         {
             return true;
         }
 
-        private void SelectCommandExecute(object var)
+        private void SelectCommandExecute(MonitorInfo monitorInfo)
         {
-            MessageBox.Show("My life is sad");
+            MonitorVM.CurrentMonitor = monitorInfo.Id;
+            Models.LayoutModel.SerializeDeletedCustomZoneSets();
+            EditorOverlay.Current.Close();
+            EditorOverlay newEditorOverlay = new EditorOverlay();
+            newEditorOverlay.Show();
+            newEditorOverlay.DataContext = App.FoundModel[MonitorVM.CurrentMonitor];
         }
 
         #endregion Commands
