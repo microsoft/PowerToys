@@ -283,7 +283,7 @@
                         <TextBlock Foreground="Gray">Show spaces around zones</TextBlock>
                         <CheckBox x:Name="spaceAroundSetting"  Style="{StaticResource settingCheckBoxText}" IsChecked="{Binding ShowSpacing}"/>
                         <TextBlock Foreground="Gray">Space around zones</TextBlock>
-                        <TextBox Margin="0" HorizontalAlignment="Left" MaxWidth="25" x:Name="paddingValue" Text="{Binding Path=Spacing,Mode=TwoWay}" Style="{StaticResource textBox}"/>
+                        <TextBox Margin="0" HorizontalAlignment="Left" Width="30" x:Name="paddingValue" Text="{Binding Path=Spacing,Mode=TwoWay}" Style="{StaticResource textBox}"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,12,0,16">
                         <Button x:Name="EditTemplateButton" Padding="8" Content="Edit selected layout" Style="{StaticResource secondaryButton}" Click="EditLayout_Click"/>

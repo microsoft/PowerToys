@@ -35,9 +35,10 @@ namespace FancyZonesEditor
             DeleteCommand = new RelayCommand(DeleteCommandExecute, DeleteCommandCanExecute);
             SelectCommand = new RelayCommand<MonitorInfo>(SelectCommandExecute, SelectCommandCanExecute);
             Monitors = new ObservableCollection<MonitorInfo>();
-            Monitors.Add(new MonitorInfo(0, "Monitor 1", 100, 150, "DeepSkyBlue"));
-            Monitors.Add(new MonitorInfo(1, "Monitor 2", 100, 150));
-            Monitors.Add(new MonitorInfo(2, "Monitor 3", 100, 150));
+            for (int i = 0; i < App.NumMonitors; ++i)
+            {
+                Monitors.Add(new MonitorInfo(i, "Monitor " + i, 100, 150, MonitorVM.CurrentMonitor == i));
+            }
         }
 
         #region Properties
@@ -143,6 +144,17 @@ namespace FancyZonesEditor
             EditorOverlay newEditorOverlay = new EditorOverlay();
             newEditorOverlay.Show();
             newEditorOverlay.DataContext = App.FoundModel[MonitorVM.CurrentMonitor];
+
+            for (int i = 0; i < Monitors.Count; ++i)
+            {
+                if (Monitors[i].Selected)
+                {
+                    Monitors[i] = new MonitorInfo(Monitors[i].Id, Monitors[i].Name, Monitors[i].Height, Monitors[i].Width, false);
+                    break;
+                }
+            }
+
+            Monitors[monitorInfo.Id] = new MonitorInfo(monitorInfo.Id, monitorInfo.Name, monitorInfo.Height, monitorInfo.Width, true);
         }
 
         #endregion Commands
