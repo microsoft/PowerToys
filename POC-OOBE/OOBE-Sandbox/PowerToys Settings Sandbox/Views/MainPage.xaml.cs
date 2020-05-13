@@ -83,7 +83,6 @@ namespace PowerToys_Settings_Sandbox.Views
             previewText.Text = "preview";
             previewText.FontSize = 10;
             previewPanel.Children.Add(previewText);
-            // panel.HorizontalAlignment = HorizontalAlignment.Stretch;
             fzPanel.Children.Add(sec);
             fzText.Text = "Fancy Zones";
             fzText.FontSize = 10;
@@ -122,14 +121,12 @@ namespace PowerToys_Settings_Sandbox.Views
 
             if(selection == ContentDialogResult.Primary)
             {
-                //start tour
+                OpenFinalGeneralSettingsTip();
             }
             else
             {
                 //create a toast for later
             }
-
-
         }
 
         private async void powerUpdateDialog()
