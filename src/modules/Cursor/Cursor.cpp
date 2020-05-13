@@ -9,6 +9,7 @@
 #include <csignal>
 #include<math.h>
 #include <ShellScalingApi.h>
+#include <winuser.h>
 
 
 
@@ -28,7 +29,7 @@ void cursorposition(int &x_coord, int &y_coord)
         y_coord = cursor.y;
     } 
 }
-
+/*
 void scalefac(int x, int y, float &scale)
 {
     POINT pt;
@@ -92,6 +93,7 @@ void scalefac(int x, int y, float &scale)
 
    
 }
+*/
 
 
 void getcolour(int x_coord, int y_coord, int &r, int&g, int&b)
@@ -185,6 +187,7 @@ void erase(int x_coord, int y_coord, int r, int g, int b)
 
     for (int radius = size / 20; radius >= 5; radius = radius - 5)
 
+
     {
         draw_circle(x_coord, y_coord, radius, color, oppositecolor, hDC);
     }
@@ -222,9 +225,12 @@ void locate(int x_coord, int y_coord, int r, int g, int b)
     oppositecolor = RGB(255 - r, 255 - g, 255 - b);
     color = RGB(255 - r, 255 - g, 255 - b);
 
-    for (int radius = 10; radius <= size/20; radius += 5)
+    for (int radius = 10; radius <= size/20; radius += 10)
     {
-        draw_circle(x_coord, y_coord, radius, color, oppositecolor, hDC);
+        for (int r = radius; r < radius + 3; r += 1)
+        {
+            draw_circle(x_coord, y_coord, r, color, oppositecolor, hDC);
+        }
     }
 
     ReleaseDC(GetDesktopWindow(), hDC);
@@ -251,6 +257,9 @@ int main()
     int x_coord, y_coord, r, g, b;
     int horizontalscreen, verticalscreen;
     float scale;
+    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
+
         
 
         while(true) {
@@ -265,9 +274,9 @@ int main()
             {
             
             cursorposition(x_coord, y_coord);
-            scalefac(x_coord, y_coord, scale);
-            x_coord = x_coord * scale;
-            y_coord = y_coord * scale;
+         // scalefac(x_coord, y_coord, scale);
+         // x_coord = x_coord * scale;
+         // y_coord = y_coord * scale;
 
             getcolour(x_coord, y_coord, r, g, b);
             locate(x_coord, y_coord, r, g, b);
