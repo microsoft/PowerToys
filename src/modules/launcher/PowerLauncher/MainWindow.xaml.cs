@@ -10,11 +10,15 @@ using Wox.ViewModel;
 using Screen = System.Windows.Forms.Screen;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Timers;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
+using System.Windows.Controls;
+using Microsoft.Win32;
+using Windows.UI.ViewManagement;
 
 namespace PowerLauncher
 {
@@ -120,6 +124,8 @@ namespace PowerLauncher
                     {
                         SearchBox.QueryTextBox.SelectAll();
                     }
+
+                    setBorderColor();
                 }
                 else
                 {
@@ -130,6 +136,34 @@ namespace PowerLauncher
             {
                 this._isTextSetProgramatically = true;
                 SearchBox.QueryTextBox.Text = _viewModel.SystemQueryText;
+            }
+        }
+
+        /// <summary>
+        /// Changes the color of the SearchBox border in accordance with user preferences
+        /// </summary>
+        private void setBorderColor()
+        {
+            try
+            {
+
+                using (var key = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\DWM"))
+                {
+                    var registryValueObject = key?.GetValue("ColorPrevalence");
+
+                    if (registryValueObject == null)
+                    {
+                        var solidBorderBrush = new SolidColorBrush(Color.FromArgb(150, 255, 0, 0));
+                        this.SearchBoxBorder.BorderBrush = solidBorderBrush;
+                    }
+                    var borderColor = (registryValueObject.ToString().Equals("0")) ? Color.FromArgb(150, 0, 0, 0) : GetSystemAccentColor();
+                    var accentBorderBrush = new SolidColorBrush(borderColor);
+                    this.SearchBoxBorder.BorderBrush = accentBorderBrush;
+                }
+            }
+            catch (Exception)
+            {
+                //TODO: Implement error reporting
             }
         }
 
@@ -198,6 +232,13 @@ namespace PowerLauncher
             var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
             var top = (dip2.Y - this.SearchBox.ActualHeight) / 4 + dip1.Y;
             return top;
+        }
+
+        private Color GetSystemAccentColor()
+        {
+            var settings = new UISettings();
+            var color = settings.GetColorValue(UIColorType.Accent);
+            return Color.FromArgb(color.A, color.R, color.G, color.B);
         }
 
         private void _launcher_KeyDown(object sender, KeyEventArgs e)
