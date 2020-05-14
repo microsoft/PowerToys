@@ -27,32 +27,36 @@ namespace ColorPickerAlpha
             InitializeComponent();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void toggle_rgb(object sender, RoutedEventArgs e)
         {
             rgbState = !rgbState;
             if (rgbState)
             {
-                Rvalue.Visibility = Visibility.Visible;
+                R_val.Visibility = Visibility.Visible;
                 RLabel.Visibility = Visibility.Visible;
-                Gvalue.Visibility = Visibility.Visible;
+                G_val.Visibility = Visibility.Visible;
                 GLabel.Visibility = Visibility.Visible;
-                Bvalue.Visibility = Visibility.Visible;
+                B_val.Visibility = Visibility.Visible;
                 BLabel.Visibility = Visibility.Visible;
                 HEXValue.Visibility = Visibility.Hidden;
                 HEXLabel.Visibility = Visibility.Hidden;
             }
             else
             {
-                Rvalue.Visibility = Visibility.Hidden;
+                R_val.Visibility = Visibility.Hidden;
                 RLabel.Visibility = Visibility.Hidden;
-                Gvalue.Visibility = Visibility.Hidden;
+                G_val.Visibility = Visibility.Hidden;
                 GLabel.Visibility = Visibility.Hidden;
-                Bvalue.Visibility = Visibility.Hidden;
+                B_val.Visibility = Visibility.Hidden;
                 BLabel.Visibility = Visibility.Hidden;
                 HEXValue.Visibility = Visibility.Visible;
                 HEXLabel.Visibility = Visibility.Visible;
             }
-            
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
