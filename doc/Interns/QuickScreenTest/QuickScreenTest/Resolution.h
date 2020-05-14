@@ -20,7 +20,7 @@ struct Resolution
 struct MonitorDisplayDevice {
     WCHAR* displayAdapterName;
     WCHAR* monitorName;
-    Resolution* possibleResolutions;
+    std::vector<Resolution> possibleResolutions;
     Resolution currentResolution;
 
     MonitorDisplayDevice(WCHAR* _displayAdapterName, WCHAR* _monitorName) {
