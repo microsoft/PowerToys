@@ -2,12 +2,12 @@
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Forms;
-using System;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using ColorPicker.ColorPickingFunctionality;
 using System.Windows.Media;
 using System.Windows.Interop;
+using System.Windows.Input;
 
 namespace ColorPicker
 {
@@ -54,7 +54,7 @@ namespace ColorPicker
             RefreshMagnifyBox(null, null);
             MouseFollower.Visibility = Visibility.Visible;
         }
-        
+
         public void AddActionCallback(ActionBroker.ActionTypes action, ActionBroker.Callback callback)
         {
             _broker.AddCallback(action, callback);

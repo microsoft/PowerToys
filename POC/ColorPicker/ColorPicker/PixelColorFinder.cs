@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Media;
 using System.Windows.Input;
+using System.Drawing;
 
 namespace ColorPicker.ColorPickingFunctionality
 {
@@ -55,7 +56,7 @@ namespace ColorPicker.ColorPickingFunctionality
         [DllImport("user32.dll")]
         private static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
 
-        public static Color GetColorUnderCursor()
+        public static System.Windows.Media.Color GetColorUnderCursor()
         {
             IntPtr hDC = SafeGetWindowDC(IntPtr.Zero);
 
@@ -70,7 +71,7 @@ namespace ColorPicker.ColorPickingFunctionality
             byte green = ParseGreen(colorRef);
             byte blue = ParseBlue(colorRef);
 
-            return Color.FromRgb(red, green, blue);
+            return System.Windows.Media.Color.FromRgb(red, green, blue);
         }
 
         public static Point SafeGetCursorPos()
