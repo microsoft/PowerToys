@@ -3,6 +3,7 @@ using System;
 using Windows.UI.Xaml.Controls;
 using PowerToys_Settings_Sandbox.ViewModels;
 using Windows.UI.Xaml.Navigation;
+using Microsoft.Toolkit.Uwp.Helpers;
 
 namespace PowerToys_Settings_Sandbox.Views
 {

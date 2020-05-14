@@ -5,6 +5,7 @@ using PowerToys_Settings_Sandbox.Views;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Microsoft.Toolkit.Uwp.Helpers;
 
 namespace PowerToys_Settings_Sandbox
 {
@@ -29,10 +30,12 @@ namespace PowerToys_Settings_Sandbox
         {
             if (!args.PrelaunchActivated)
             {
-                await ActivationService.ActivateAsync(args);
-                NotificationService.AppInstalledToast();
-                NotificationService.AppUpdatedToast();
+                await ActivationService.ActivateAsync(args); 
             }
+
+            NotificationService.AppInstalledToast();
+            NotificationService.AppUpdatedToast();
+
         }
 
         protected override async void OnActivated(IActivatedEventArgs e)
@@ -56,17 +59,14 @@ namespace PowerToys_Settings_Sandbox
 
                         rootFrame.Navigate(typeof(ShellPage));
                         NavigationService.Navigate(typeof(MainPage), args["status"]);
-                        break;                        
-                    
+                        Window.Current.Activate();
+                        break;
+
                     default:
                         break;
                 }
             }
-
-
         }
-
-
 
         private ActivationService CreateActivationService()
         {
