@@ -26,7 +26,7 @@ namespace ColorPicker
 
         private void ConfigureTransparentWindow()
         {
-            _transparentWindow.AddActionCallBack(ActionBroker.ActionTypes.Click, HandleTransparentScreenClick);
+            _transparentWindow.AddActionCallback(ActionBroker.ActionTypes.Click, HandleTransparentScreenClick);
         }
 
         private void HandleTransparentScreenClick(object sender, EventArgs e)

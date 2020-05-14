@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ColorPicker
 {
-    class ActionBroker
+    public class ActionBroker
     {
         public enum ActionTypes
         {
