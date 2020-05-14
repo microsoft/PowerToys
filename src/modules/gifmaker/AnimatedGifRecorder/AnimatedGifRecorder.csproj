@@ -57,7 +57,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Controls\ResizableRectangle.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="Views\SampleToolbar.xaml.cs">
       <DependentUpon>SampleToolbar.xaml</DependentUpon>
@@ -137,6 +136,8 @@
     <Resource Include="Resources\media-stop.png" />
     <Content Include="Resources\media-stop.svg" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Controls\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
