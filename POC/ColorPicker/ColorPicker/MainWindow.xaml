@@ -8,7 +8,6 @@
         Title="One-Click Color" Height="108" Width="470"
         ResizeMode="CanMinimize" FontSize="14"
         SizeToContent="WidthAndHeight"
-        KeyDown="OnKeyDown">
     <Grid Margin="11,8,11,16">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="132"/>
@@ -21,7 +20,8 @@
             <RowDefinition Height="32"/>
         </Grid.RowDefinitions>
 
-        <ToggleButton Grid.Column="0" Grid.Row="1" Margin="0,0,11,0" VerticalContentAlignment="Center" Background="#FF0078D7" BorderBrush="#FF666666">
+        <ToggleButton Grid.Column="0" Grid.Row="1" Margin="0,0,11,0" VerticalContentAlignment="Center"
+                      Background="#FF0078D7" BorderBrush="#FF666666" Click="OnColorButtonClick">
             <ToggleButton.Resources>
                 <Style TargetType="{x:Type Border}">
                     <Setter Property="CornerRadius" Value="2"/>
