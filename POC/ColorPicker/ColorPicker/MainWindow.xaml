@@ -9,6 +9,15 @@
         ResizeMode="CanMinimize" FontSize="14"
         SizeToContent="WidthAndHeight"
         KeyDown="OnKeyDown">
+    <Window.Resources>
+        <SolidColorBrush x:Key="NewColorUncheckedBackgroundColor" Color="#FF0078D7"/>
+        <SolidColorBrush x:Key="NewColorCheckedBackgroundColor" Color="#FF005A9E"/>
+        <SolidColorBrush x:Key="NewColorHoveredBackgroundColor" Color="#FF429CE3"/>
+        <SolidColorBrush x:Key="NewColorTextColor" Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="DefaultPreviewColor" Color="#FFA70087"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#FF666666"/>
+        <SolidColorBrush x:Key="TextboxTextColor" Color="#FF666666"/>
+    </Window.Resources>
     <Grid Margin="11,8,11,16">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="132"/>
@@ -36,13 +45,13 @@
                     </Setter>
                     <Style.Triggers>
                         <Trigger Property="IsChecked" Value="False">
-                            <Setter Property="Background" Value="#FF0078D7"/>
+                            <Setter Property="Background" Value="{StaticResource NewColorUncheckedBackgroundColor}"/>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter Property="Background" Value="#FF005A9E"/>
+                            <Setter Property="Background" Value="{StaticResource NewColorCheckedBackgroundColor}"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#FF429CE3"/>
+                            <Setter Property="Background" Value="{StaticResource NewColorHoveredBackgroundColor}"/>
                         </Trigger>
                     </Style.Triggers>
                 </Style>
@@ -50,18 +59,20 @@
             <StackPanel Orientation="Horizontal">
                 <Viewbox Width="17" Height="17" Margin="0,0,7,0">
                     <Canvas Width="49" Height="48">
-                        <Path Fill="#FFF3F2F1" Data="M41.7031 0C42.6406 0 43.5234 0.179688 44.3516 0.539062C45.1797 0.898438 45.8984 1.38281 46.5078 1.99219C47.1172 2.60156 47.6016 3.32031 47.9609 4.14844C48.3203 4.97656 48.5 5.85938 48.5 6.79688C48.5 7.70312 48.3281 8.57812 47.9844 9.42188C47.6406 10.25 47.1484 10.9844 46.5078 11.625L40.8828 17.25C41.3984 17.75 41.7969 18.3203 42.0781 18.9609C42.3594 19.5859 42.5 20.2656 42.5 21C42.5 21.7188 42.3594 22.3906 42.0781 23.0156C41.8125 23.6406 41.4297 24.2031 40.9297 24.7031L37.25 28.3828L33.5 24.6094L14.6328 43.4766L14.0234 43.5C13.2266 43.5312 12.5391 43.6641 11.9609 43.8984C11.3984 44.1328 10.8984 44.4219 10.4609 44.7656C10.0391 45.0938 9.64844 45.4453 9.28906 45.8203C8.94531 46.1953 8.57812 46.5469 8.1875 46.875C7.79688 47.2031 7.36719 47.4766 6.89844 47.6953C6.42969 47.8984 5.85938 48 5.1875 48C4.54688 48 3.9375 47.875 3.35938 47.625C2.79688 47.375 2.30469 47.0391 1.88281 46.6172C1.46094 46.1953 1.125 45.7031 0.875 45.1406C0.625 44.5625 0.5 43.9531 0.5 43.3125C0.5 42.6406 0.601562 42.0703 0.804688 41.6016C1.02344 41.1172 1.29688 40.6875 1.625 40.3125C1.95312 39.9219 2.30469 39.5547 2.67969 39.2109C3.05469 38.8516 3.40625 38.4609 3.73438 38.0391C4.07812 37.6016 4.36719 37.1016 4.60156 36.5391C4.83594 35.9766 4.96875 35.2891 5 34.4766L5.02344 33.8672L23.8906 15L20.1172 11.25L23.7969 7.57031C24.2969 7.07031 24.8594 6.6875 25.4844 6.42188C26.1094 6.14062 26.7812 6 27.5 6C28.2344 6 28.9141 6.14062 29.5391 6.42188C30.1797 6.70312 30.75 7.10156 31.25 7.61719L36.875 1.99219C37.5156 1.35156 38.25 0.859375 39.0781 0.515625C39.9219 0.171875 40.7969 0 41.7031 0ZM31.3672 22.5L26 17.1328L7.97656 35.1562C7.89844 35.9531 7.75 36.6641 7.53125 37.2891C7.3125 37.9141 7.03125 38.5 6.6875 39.0469C6.34375 39.5781 5.9375 40.0938 5.46875 40.5938C5.01562 41.0781 4.52344 41.5938 3.99219 42.1406C3.66406 42.4688 3.5 42.8672 3.5 43.3359C3.5 43.7891 3.66406 44.1797 3.99219 44.5078C4.32031 44.8359 4.71094 45 5.16406 45C5.63281 45 6.03125 44.8359 6.35938 44.5078C6.90625 43.9766 7.42969 43.4844 7.92969 43.0312C8.42969 42.5625 8.94531 42.1562 9.47656 41.8125C10.0078 41.4688 10.5859 41.1875 11.2109 40.9688C11.8359 40.75 12.5469 40.6016 13.3438 40.5234L31.3672 22.5ZM44.375 9.49219C45.125 8.74219 45.5 7.85156 45.5 6.82031C45.5 6.30469 45.3984 5.8125 45.1953 5.34375C44.9922 4.875 44.7188 4.46875 44.375 4.125C44.0312 3.78125 43.625 3.50781 43.1562 3.30469C42.6875 3.10156 42.1953 3 41.6797 3C40.6484 3 39.7578 3.375 39.0078 4.125L31.25 11.8594L29.0469 9.65625C28.6094 9.21875 28.0938 9 27.5 9C27.1719 9 26.8594 9.07812 26.5625 9.23438C26.2812 9.39062 26.0078 9.58594 25.7422 9.82031C25.4922 10.0547 25.25 10.3047 25.0156 10.5703C24.7812 10.8203 24.5625 11.0469 24.3594 11.25L37.25 24.1406L38.8438 22.5469C39.2812 22.1094 39.5 21.5938 39.5 21C39.5 20.6875 39.4375 20.4062 39.3125 20.1562C39.2031 19.8906 39.0391 19.6484 38.8203 19.4297L36.6406 17.25L44.375 9.49219Z"/>
+                        <Path Fill="{StaticResource NewColorTextColor}" Data="M41.7031 0C42.6406 0 43.5234 0.179688 44.3516 0.539062C45.1797 0.898438 45.8984 1.38281 46.5078 1.99219C47.1172 2.60156 47.6016 3.32031 47.9609 4.14844C48.3203 4.97656 48.5 5.85938 48.5 6.79688C48.5 7.70312 48.3281 8.57812 47.9844 9.42188C47.6406 10.25 47.1484 10.9844 46.5078 11.625L40.8828 17.25C41.3984 17.75 41.7969 18.3203 42.0781 18.9609C42.3594 19.5859 42.5 20.2656 42.5 21C42.5 21.7188 42.3594 22.3906 42.0781 23.0156C41.8125 23.6406 41.4297 24.2031 40.9297 24.7031L37.25 28.3828L33.5 24.6094L14.6328 43.4766L14.0234 43.5C13.2266 43.5312 12.5391 43.6641 11.9609 43.8984C11.3984 44.1328 10.8984 44.4219 10.4609 44.7656C10.0391 45.0938 9.64844 45.4453 9.28906 45.8203C8.94531 46.1953 8.57812 46.5469 8.1875 46.875C7.79688 47.2031 7.36719 47.4766 6.89844 47.6953C6.42969 47.8984 5.85938 48 5.1875 48C4.54688 48 3.9375 47.875 3.35938 47.625C2.79688 47.375 2.30469 47.0391 1.88281 46.6172C1.46094 46.1953 1.125 45.7031 0.875 45.1406C0.625 44.5625 0.5 43.9531 0.5 43.3125C0.5 42.6406 0.601562 42.0703 0.804688 41.6016C1.02344 41.1172 1.29688 40.6875 1.625 40.3125C1.95312 39.9219 2.30469 39.5547 2.67969 39.2109C3.05469 38.8516 3.40625 38.4609 3.73438 38.0391C4.07812 37.6016 4.36719 37.1016 4.60156 36.5391C4.83594 35.9766 4.96875 35.2891 5 34.4766L5.02344 33.8672L23.8906 15L20.1172 11.25L23.7969 7.57031C24.2969 7.07031 24.8594 6.6875 25.4844 6.42188C26.1094 6.14062 26.7812 6 27.5 6C28.2344 6 28.9141 6.14062 29.5391 6.42188C30.1797 6.70312 30.75 7.10156 31.25 7.61719L36.875 1.99219C37.5156 1.35156 38.25 0.859375 39.0781 0.515625C39.9219 0.171875 40.7969 0 41.7031 0ZM31.3672 22.5L26 17.1328L7.97656 35.1562C7.89844 35.9531 7.75 36.6641 7.53125 37.2891C7.3125 37.9141 7.03125 38.5 6.6875 39.0469C6.34375 39.5781 5.9375 40.0938 5.46875 40.5938C5.01562 41.0781 4.52344 41.5938 3.99219 42.1406C3.66406 42.4688 3.5 42.8672 3.5 43.3359C3.5 43.7891 3.66406 44.1797 3.99219 44.5078C4.32031 44.8359 4.71094 45 5.16406 45C5.63281 45 6.03125 44.8359 6.35938 44.5078C6.90625 43.9766 7.42969 43.4844 7.92969 43.0312C8.42969 42.5625 8.94531 42.1562 9.47656 41.8125C10.0078 41.4688 10.5859 41.1875 11.2109 40.9688C11.8359 40.75 12.5469 40.6016 13.3438 40.5234L31.3672 22.5ZM44.375 9.49219C45.125 8.74219 45.5 7.85156 45.5 6.82031C45.5 6.30469 45.3984 5.8125 45.1953 5.34375C44.9922 4.875 44.7188 4.46875 44.375 4.125C44.0312 3.78125 43.625 3.50781 43.1562 3.30469C42.6875 3.10156 42.1953 3 41.6797 3C40.6484 3 39.7578 3.375 39.0078 4.125L31.25 11.8594L29.0469 9.65625C28.6094 9.21875 28.0938 9 27.5 9C27.1719 9 26.8594 9.07812 26.5625 9.23438C26.2812 9.39062 26.0078 9.58594 25.7422 9.82031C25.4922 10.0547 25.25 10.3047 25.0156 10.5703C24.7812 10.8203 24.5625 11.0469 24.3594 11.25L37.25 24.1406L38.8438 22.5469C39.2812 22.1094 39.5 21.5938 39.5 21C39.5 20.6875 39.4375 20.4062 39.3125 20.1562C39.2031 19.8906 39.0391 19.6484 38.8203 19.4297L36.6406 17.25L44.375 9.49219Z"/>
                     </Canvas>
                 </Viewbox>
-                <TextBlock Foreground="White">New Color</TextBlock>
+                <TextBlock Foreground="{StaticResource NewColorTextColor}">New Color</TextBlock>
             </StackPanel>
         </ToggleButton>
 
-        <Rectangle Name="ColorPreviewRectangle" Grid.Column="1" Grid.Row="1" Fill="#FFA70087" Margin="0,0,11,0" RadiusX="2" RadiusY="2" Stroke="#FF666666" StrokeThickness="1"/>
+        <Rectangle Name="ColorPreviewRectangle" Grid.Column="1" Grid.Row="1" Margin="0,0,11,0"
+                   RadiusX="2" RadiusY="2" Fill="{StaticResource DefaultPreviewColor}" Stroke="{StaticResource BorderColor}" StrokeThickness="1"/>
 
         <Label Grid.Column="2" Grid.Row="0" Content="RGB" Margin="0,0,11,5" Padding="0" />
         <TextBox Name="RgbTextBox" Grid.Column="2" Grid.Row="1" IsReadOnly="True"
-                 HorizontalAlignment="Stretch" VerticalContentAlignment="Center" Margin="0,0,11,0" Text="255, 255, 255" Padding="10,5" BorderBrush="#FF666666" Foreground="#FF666666">
+                 HorizontalAlignment="Stretch" VerticalContentAlignment="Center" Margin="0,0,11,0" Text="255, 255, 255" Padding="10,5"
+                 BorderBrush="{StaticResource BorderColor}" Foreground="{StaticResource TextboxTextColor}">
             <TextBox.Resources>
                 <Style TargetType="{x:Type Border}">
                     <Setter Property="CornerRadius" Value="2"/>
@@ -71,7 +82,8 @@
 
         <Label Grid.Column="3" Grid.Row="0" Content="HEX" Margin="0,0,11,6" Padding="0"/>
         <TextBox Name="HexTextBox" Grid.Column="3" Grid.Row="1" IsReadOnly="True"
-                 HorizontalAlignment="Stretch" VerticalContentAlignment="Center" Text="#FFFFFF" Padding="10,5" BorderBrush="#FF666666" Foreground="#FF666666">
+                 HorizontalAlignment="Stretch" VerticalContentAlignment="Center" Text="#FFFFFF" Padding="10,5"
+                 BorderBrush="{StaticResource BorderColor}" Foreground="{StaticResource TextboxTextColor}">
             <TextBox.Resources>
                 <Style TargetType="{x:Type Border}">
                     <Setter Property="CornerRadius" Value="2"/>
