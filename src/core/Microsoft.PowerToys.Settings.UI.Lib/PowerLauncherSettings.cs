@@ -8,7 +8,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class PowerLauncherSettings : BasePTModuleSettings
     {
-        public const string POWERTOYNAME = "Run";
+        public const string POWERTOYNAME = "PowerToys Run";
 
         public PowerLauncherProperties properties { get; set; }
 
