@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows;
 using Mages.Core;
 using Wox.Plugin;
@@ -56,16 +57,23 @@ namespace Microsoft.Plugin.Caculator
                             SubTitle = Context.API.GetTranslation("wox_plugin_calculator_copy_number_to_clipboard"),
                             Action = c =>
                             {
-                                try
+                                var ret = false;
+                                var thread = new Thread(() =>
                                 {
-                                    Clipboard.SetText(result.ToString());
-                                    return true;
-                                }
-                                catch (ExternalException)
-                                {
-                                    MessageBox.Show("Copy failed, please try later");
-                                    return false;
-                                }
+                                    try
+                                    {
+                                        Clipboard.SetText(result.ToString());
+                                        ret = true;
+                                    }
+                                    catch (ExternalException)
+                                    {
+                                        MessageBox.Show("Copy failed, please try later");
+                                    }
+                                });
+                                thread.SetApartmentState(ApartmentState.STA);
+                                thread.Start();
+                                thread.Join();
+                                return ret;
                             }
                         } 
                     };

@@ -61,6 +61,7 @@ export class GeneralSettings extends React.Component <any, any> {
         { Object.keys(power_toys_enabled).map(
           (key) => {
             let enabled_value=power_toys_enabled[key];
+            let is_active=this.state.settings.powertoys[key].description.substr(0, 21) !== 'This feature requires';
             return <Stack key={key}>
               <Stack horizontal tokens={{childrenGap:5}}>
                 <Label>{key}</Label>
@@ -115,7 +116,9 @@ export class GeneralSettings extends React.Component <any, any> {
                 null
               }
               <BoolToggleSettingsControl
-                setting={{value: enabled_value}}
+
+                setting={{value: enabled_value && is_active}}
+                disabled={!is_active}
                 on_change={this.parent_on_change}
                 ref={(input) => {this.references[key]=input;}}
               />
@@ -127,7 +130,7 @@ export class GeneralSettings extends React.Component <any, any> {
 
         {this.state.settings.general.is_admin &&
         (<Stack>
-          <Label>Download updates automatically</Label>
+          <Label>Download updates automatically (Except on metered connections)</Label>
           <BoolToggleSettingsControl
             setting={{value: this.state.settings.general.download_updates_automatically}}
             disabled={!this.state.settings.general.is_admin}

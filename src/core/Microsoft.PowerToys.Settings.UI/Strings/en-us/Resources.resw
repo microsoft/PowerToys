@@ -134,8 +134,8 @@
     <comment>Navigation view item name for General</comment>
   </data>
   <data name="Shell_PowerLauncher.Content" xml:space="preserve">
-    <value>PowerLauncher</value>
-    <comment>Navigation view item name for PowerLauncher</comment>
+    <value>PowerToys Run</value>
+    <comment>Navigation view item name for PowerToys Run</comment>
   </data>
   <data name="Shell_PowerRename.Content" xml:space="preserve">
     <value>PowerRename</value>
@@ -197,7 +197,7 @@
     <value>A quick launcher that has additional capabilities without sacrificing performance.</value>
   </data>
   <data name="PowerLauncher_EnablePowerLauncher.Header" xml:space="preserve">
-    <value>Enable PowerLauncher</value>
+    <value>Enable PowerToys Run</value>
   </data>
   <data name="PowerLauncher_SearchResults.Text" xml:space="preserve">
     <value>Search &amp; results</value>
@@ -233,7 +233,7 @@
     <value>Shortcuts</value>
   </data>
   <data name="PowerLauncher_OpenPowerLauncher.Header" xml:space="preserve">
-    <value>Open PowerLauncher</value>
+    <value>Open PowerToys Run</value>
   </data>
   <data name="PowerLauncher_OpenFileLocation.Header" xml:space="preserve">
     <value>Open file location</value>
@@ -537,7 +537,7 @@
     <value>Learn more about administrator mode</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_AutoDownloadUpdates.Header" xml:space="preserve">
-    <value>Download updates automatically</value>
+    <value>Download updates automatically (Except on metered connections)</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_RunningAsAdminNote.Text" xml:space="preserve">
     <value>Currently running as administrator</value>
@@ -564,7 +564,7 @@
     <value>About Keyboard Manager</value>
   </data>
   <data name="About_PowerLauncher.Text" xml:space="preserve">
-    <value>About PowerLauncher</value>
+    <value>About PowerToys Run</value>
   </data>
   <data name="About_PowerRename.Text" xml:space="preserve">
     <value>About Power Rename</value>

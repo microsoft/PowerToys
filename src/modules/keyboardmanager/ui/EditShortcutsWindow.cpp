@@ -272,8 +272,8 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     });
 
     header.Children().Append(headerText);
-    header.Children().Append(cancelButton);
     header.Children().Append(applyButton);
+    header.Children().Append(cancelButton);
 
     // Add shortcut button
     Windows::UI::Xaml::Controls::Button addShortcut;

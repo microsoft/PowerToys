@@ -40,6 +40,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public static bool IsElevated { get; set; }
 
+        public static bool IsUserAnAdmin { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ShellPage"/> class.
         /// Shell page constructor.
@@ -75,6 +77,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void SetElevationStatus(bool isElevated)
         {
             IsElevated = isElevated;
+        }
+
+        public void SetIsUserAnAdmin(bool isAdmin)
+        {
+            IsUserAnAdmin = isAdmin;
         }
 
         public void Refresh()
