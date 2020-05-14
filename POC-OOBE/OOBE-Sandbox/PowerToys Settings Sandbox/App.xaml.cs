@@ -5,7 +5,7 @@ using PowerToys_Settings_Sandbox.Views;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Microsoft.Toolkit.Uwp.Helpers;
+using Windows.Storage;
 
 namespace PowerToys_Settings_Sandbox
 {
@@ -28,17 +28,48 @@ namespace PowerToys_Settings_Sandbox
 
         protected override async void OnLaunched(LaunchActivatedEventArgs args)
         {
+            /// <summary>
+            /// Sandbox settings is a way to emulate background notifications on install and update
+            /// Not to be inclued when added to final product
+            /// </summary>
+            SandboxNotifications();
+            
             if (!args.PrelaunchActivated)
             {
                 await ActivationService.ActivateAsync(args); 
             }
-
-            NotificationService.AppInstalledToast();
-            NotificationService.AppUpdatedToast();
-
+           
         }
 
-        protected override async void OnActivated(IActivatedEventArgs e)
+        /// <summary>
+        /// These notifications should be activated in conjunction with new app installs or updates
+        /// </summary>
+        private void SandboxNotifications()
+        {
+            var lSettings = ApplicationData.Current.LocalSettings;
+            lSettings.Values["IsFirstRun"] = true;
+            lSettings.Values["NewVersion"] = "1.0.0.1"; // Reference to the newest version just installed
+            Object firstRun = lSettings.Values["IsFirstRun"];
+            Object currentVersion = lSettings.Values["currentVersion"];
+            Object newVersion = lSettings.Values["NewVersion"];
+
+            /// <summary>
+            /// Paste code wherever first run would occur
+            /// </summary>
+            if (!(firstRun is null) && (bool)firstRun == true)
+            {
+                NotificationService.AppInstalledToast();
+            }
+            /// <summary>
+            /// Paste code wherever updated app would occur
+            /// </summary>
+            if (!(currentVersion is null) && (string)currentVersion != (string)newVersion)
+            {
+                NotificationService.AppUpdatedToast();
+            }
+        }
+
+protected override async void OnActivated(IActivatedEventArgs e)
         {
             Frame rootFrame = Window.Current.Content as Frame;           
 
