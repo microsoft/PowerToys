@@ -45,7 +45,6 @@ namespace PowerToys_Settings_Sandbox.Views
                 /// Check for current status of app (new update or new install) on launch
                 /// Comment out this section if using sandbox notifications in App.xaml.cs
                 /// </summary>
-                /*
                 else
                 {
                     if (!(firstRun is null) && (bool)firstRun == true)
@@ -59,7 +58,6 @@ namespace PowerToys_Settings_Sandbox.Views
                         lSettings.Values["currentVersion"] = newVersion;
                     }
                 }
-                */
             }
         }
 
