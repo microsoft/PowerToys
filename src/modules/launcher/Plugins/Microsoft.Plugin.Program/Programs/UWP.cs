@@ -72,6 +72,7 @@ namespace Microsoft.Plugin.Program.Programs
                 foreach(var _app in _apps)
                 {
                     var app = new Application(_app, this);
+                    apps.Add(app);
                 }
                 
                 Apps = apps.Where(a => a.AppListEntry != "none").ToArray();
