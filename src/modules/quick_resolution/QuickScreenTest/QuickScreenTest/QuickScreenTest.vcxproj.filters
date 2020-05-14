@@ -21,21 +21,18 @@
     <ClCompile Include="Resolution.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Brightness.cpp">
+    <ClCompile Include="SettingsFacade.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Monitor.cpp">
+    <ClCompile Include="Brightness.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Monitor.h">
+    <ClInclude Include="Resolution.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Brightness.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Resolution.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

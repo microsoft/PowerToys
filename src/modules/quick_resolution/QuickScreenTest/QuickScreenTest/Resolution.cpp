@@ -3,7 +3,7 @@
 
 // TODO add error handling
 // TODO break up large method
-std::vector<MonitorResolutionSettings> getAllResolutionSettings() {   
+MonitorResolutionSettings* getAllResolutionSettings() {   
     std::vector<MonitorResolutionSettings> monitorDisplayDevices;
     int adapterCount = 0, devicesCount = 0, graphicsMode = 0;
 
@@ -51,7 +51,8 @@ std::vector<MonitorResolutionSettings> getAllResolutionSettings() {
                     ++graphicsMode;
                 }
             }
-            monitorDisplayDevices.at(devicesCount).possibleResolutions = resolutionOptions;
+            Resolution* ro = &resolutionOptions[0];
+            monitorDisplayDevices.at(devicesCount).possibleResolutions = ro;
             ++devicesCount;
             display = { 0 };
             display.cb = sizeof(DISPLAY_DEVICE);
@@ -61,7 +62,8 @@ std::vector<MonitorResolutionSettings> getAllResolutionSettings() {
         displayAdapter.cb = sizeof(DISPLAY_DEVICE);
 
     }
-    return monitorDisplayDevices;
+    MonitorResolutionSettings* mrs = &monitorDisplayDevices[0];
+    return mrs;
 }
 
 

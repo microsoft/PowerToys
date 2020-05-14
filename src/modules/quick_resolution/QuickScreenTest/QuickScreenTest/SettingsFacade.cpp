@@ -1,4 +1,5 @@
 #include "Resolution.h"
+#include <iostream>
 
 // TODO return this struct from getAllDisplaySettings once brightness setting is ready
 //struct DisplaySettings {
@@ -8,9 +9,19 @@
 //	// RECT displayCoordinates; TODO find this struct
 //};
 
-std::vector<MonitorResolutionSettings>* getAllDisplaySettings() {
-	std::vector<MonitorResolutionSettings> resolutionSettings = getAllResolutionSettings();
-	return &resolutionSettings;
+extern "C" __declspec(dllexport) bool SetResolution(WCHAR * displayName, int pixelWidth, int pixelHeight);
+
+
+extern "C" __declspec(dllexport) void hello();
+
+
+void hello() {
+	std::cout << "hello";
+}
+
+MonitorResolutionSettings* getAllDisplaySettings() {
+	MonitorResolutionSettings* resolutionSettings = getAllResolutionSettings();
+	return resolutionSettings;
 }
 
 bool SetResolution(WCHAR* displayName, int pixelWidth, int pixelHeight) {

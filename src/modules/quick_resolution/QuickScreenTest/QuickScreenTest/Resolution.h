@@ -9,7 +9,6 @@ struct Resolution
     int height;
 
     Resolution() {}
-
     Resolution(int _width, int _height)
     {
         width = _width;
@@ -20,7 +19,7 @@ struct Resolution
 struct MonitorResolutionSettings {
     WCHAR* displayAdapterName; 
     WCHAR* monitorName;
-    std::vector<Resolution> possibleResolutions;
+    Resolution* possibleResolutions;
     Resolution currentResolution;
 
     MonitorResolutionSettings(WCHAR* _displayAdapterName, WCHAR* _monitorName) {
@@ -29,6 +28,5 @@ struct MonitorResolutionSettings {
     }
 };
 
-
-std::vector<MonitorResolutionSettings> getAllResolutionSettings();
+MonitorResolutionSettings* getAllResolutionSettings();
 bool setDisplayResolution(WCHAR* displayDeviceName, Resolution resolution);
