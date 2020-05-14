@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Drawing;
 using System.Windows.Media;
 using System.Windows.Input;
 
