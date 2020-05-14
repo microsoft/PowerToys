@@ -49,18 +49,15 @@ namespace ViewModelTests
         {
             // Arrange
             GeneralViewModel viewModel = new GeneralViewModel();
-            
-            string runningAsUserText = "Running as user";
-            string runningAsAdminText = "Running as adminstrator";
-            
-            Assert.AreEqual(runningAsUserText, viewModel.RunningAsAdminText);
+                        
+            Assert.AreEqual(viewModel.RunningAsUserDefaultText, viewModel.RunningAsAdminText);
             Assert.IsFalse(viewModel.IsElevated);
             
             // Act
             viewModel.IsElevated = true;
 
             // Assert
-            Assert.AreEqual(runningAsAdminText, viewModel.RunningAsAdminText);
+            Assert.AreEqual(viewModel.RunningAsAdminDefaultText, viewModel.RunningAsAdminText);
             Assert.IsTrue(viewModel.IsElevated);
         }
 
