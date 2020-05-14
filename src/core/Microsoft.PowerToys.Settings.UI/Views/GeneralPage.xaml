@@ -53,8 +53,8 @@
                     x:Name="GeneralSettingsView">
             <TextBlock x:Uid="Admin_Mode"
                        Style="{StaticResource SubtitleTextBlockStyle}"/>
-            
-            <TextBlock Text="{Binding Mode=TwoWay, Path=RunningAsAdminText, Source={StaticResource eventViewModel}}"
+
+            <TextBlock Text="{Binding Mode=TwoWay, Path=RunningAsText, Source={StaticResource eventViewModel}}"
                        Margin="{StaticResource SmallTopMargin}"/>
 
             <Button x:Uid="GeneralPage_RestartAsAdmin_Button"

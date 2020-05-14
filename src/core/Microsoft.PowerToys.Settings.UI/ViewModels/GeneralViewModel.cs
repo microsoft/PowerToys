@@ -151,7 +151,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public string RunningAsAdminText
+        public string RunningAsText
         {
             get
             {
@@ -186,7 +186,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _isElevated = value;
                     OnPropertyChanged("IsElevated");
                     OnPropertyChanged("IsAdminButtonEnabled");
-                    //OnPropertyChanged("AlwaysRunAsAdminText");
                     OnPropertyChanged("RunningAsAdminText");
                 }
             }
