@@ -8,7 +8,7 @@ modular for additional plugins. Press Alt+Space and start typing!
 # 1\. Get Started 
 ## 1\.1 Features
 Search for applications, folders, or files
-![](/src/modules/launcher/images/Features\ 1.gif)
+![](/src/modules/launcher/images/Features.gif)
 
 Search for running processes (previously
 [WindowWalker](https://github.com/betsegaw/windowwalker/))
