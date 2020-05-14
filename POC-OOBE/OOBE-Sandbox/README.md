@@ -1,15 +1,36 @@
 # PowerToys Out Of Box Experience Proposal and Code
 
+### Developers: [Furaha Damién](https://github.com/furahadamien), [Letitia Kwan](https://github.com/letitiakwan), [Jessica Lim](https://github.com/JessicaLim8)
+### Program Manager : [Eunice Choi](https://github.com/eunicechoi98)
+### Designer : Rafael Flora
+
 ## Overview
 A team of Microsoft Garage interns have created a proposal for the out-of-box experience after the first time install of the PowerToys app, and a proposal for the UI experience of updates.
 
 ## 1. Welcome Screen
 
 #### Rationale:
+PowerToys v17 has a silent launch after first time installation and update. As eidenced in issue #1285, users are left wondering if anything happened at all. The aim of this new feature is to allow users a chance to appreate the installing/update of PowerToys while at the same time giving them a chance to explore what PowerToys has to offer if they so wish to. 
 
 #### Design:
+<img align="left" src="./images/welcomeWindow.png" /> Welcome window
+
 
 #### Code:
+
+```
+ private async void powerOnLaunchDialog()
+        {
+            onLaunchContentDialog dialog = new onLaunchContentDialog();
+            dialog.PrimaryButtonClick += Dialog_PrimaryButtonClick;
+            await dialog.ShowAsync();
+        }
+
+        private void Dialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            OpenFirstGeneralSettingsTip();
+        }
+```
 
 #### Considerations:
 
