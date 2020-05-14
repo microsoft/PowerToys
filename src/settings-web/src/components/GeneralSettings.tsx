@@ -61,6 +61,7 @@ export class GeneralSettings extends React.Component <any, any> {
         { Object.keys(power_toys_enabled).map(
           (key) => {
             let enabled_value=power_toys_enabled[key];
+            let is_active=this.state.settings.powertoys[key].description !== 'This feature requires Windows 10, May 2019 Update';
             return <Stack key={key}>
               <Stack horizontal tokens={{childrenGap:5}}>
                 <Label>{key}</Label>
@@ -115,7 +116,9 @@ export class GeneralSettings extends React.Component <any, any> {
                 null
               }
               <BoolToggleSettingsControl
-                setting={{value: enabled_value}}
+
+                setting={{value: enabled_value && is_active}}
+                disabled={!is_active}
                 on_change={this.parent_on_change}
                 ref={(input) => {this.references[key]=input;}}
               />
