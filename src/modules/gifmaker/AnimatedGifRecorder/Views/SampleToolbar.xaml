@@ -8,11 +8,12 @@
              d:DesignHeight="20" d:DesignWidth="800">
     <Grid>
         <StackPanel Orientation="Horizontal">
-            <Button Content="Capture"/>
-            <Button Name="RecordPauseButton" Tag="Record">
-                <Image Source="/AnimatedGifRecorder;component/Resources/media-record-8x.png"/>
+            <Button Name="CaptureButton" Content="Capture" Click="CaptureButton_Click"/>
+            <Separator/>
+            <Button Name="RecordPauseButton" Tag="Record" Click="RecordPauseButton_Click">
+                <Image Name="RecordPauseImage" Source="/AnimatedGifRecorder;component/Resources/media-record-8x.png"/>
             </Button>
-            <Button>
+            <Button Name="StopButton" Tag="Stop" Click="StopButton_Click">
                 <Image Source="/AnimatedGifRecorder;component/Resources/media-stop-8x.png"/>
             </Button>
         </StackPanel>

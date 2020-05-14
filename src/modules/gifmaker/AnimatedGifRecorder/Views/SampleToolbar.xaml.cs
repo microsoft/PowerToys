@@ -24,5 +24,43 @@ namespace AnimatedGifRecorder.Views
         {
             InitializeComponent();
         }
+
+        private void CaptureButton_Click(object sender, RoutedEventArgs e)
+        {
+            Cursor = Cursors.Cross;
+            RecordPauseButton.IsEnabled = true;
+            StopButton.IsEnabled = false;
+            if ((string)RecordPauseButton.Tag == "Pause")
+            {
+                // RecordPauseButton.Template.FindName("RecordPauseImage", RecordPauseButton).SetValue(Image.SourceProperty, new BitmapImage(new Uri(@"media-record-8x.png", UriKind.Relative)));
+                RecordPauseButton.Tag = "Record";
+            }
+        }
+
+        private void RecordPauseButton_Click(object sender, RoutedEventArgs e)
+        {
+            if ((string)RecordPauseButton.Tag == "Record")
+            {
+                // RecordPauseButton.Icon = new SymbolIcon(Symbol.Pause);
+                RecordPauseButton.Tag = "Pause";
+                StopButton.IsEnabled = true;
+            }
+            else
+            {
+                // RecordPauseButton.Icon = new SymbolIcon(Symbol.Target);
+                RecordPauseButton.Tag = "Record";
+            }
+        }
+
+        private void StopButton_Click(object sender, RoutedEventArgs e)
+        {
+            RecordPauseButton.IsEnabled = false;
+            StopButton.IsEnabled = false;
+            if ((string)RecordPauseButton.Tag == "pause")
+            {
+                // RecordPauseButton.Icon = new SymbolIcon(Symbol.Target);
+                RecordPauseButton.Tag = "record";
+            }
+        }
     }
 }
