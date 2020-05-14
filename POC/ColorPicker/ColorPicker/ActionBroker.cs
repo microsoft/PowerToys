@@ -7,11 +7,12 @@ using System.Threading.Tasks;
 
 namespace ColorPicker
 {
-    class ActionBroker
+    public class ActionBroker
     {
         public enum ActionTypes
         {
             Click,
+            Escape,
         }
 
         public delegate void Callback(object sender, EventArgs e);

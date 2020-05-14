@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Forms;
 using System;
@@ -53,10 +54,23 @@ namespace ColorPicker
             RefreshMagnifyBox(null, null);
             MouseFollower.Visibility = Visibility.Visible;
         }
-
-        internal void AddActionCallBack(ActionBroker.ActionTypes action, ActionBroker.Callback callback)
+        
+        public void AddActionCallback(ActionBroker.ActionTypes action, ActionBroker.Callback callback)
         {
             _broker.AddCallback(action, callback);
+        }
+
+        private void OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            _broker.ActionTriggered(ActionBroker.ActionTypes.Click, sender, e);
+        }
+
+        private void OnKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                _broker.ActionTriggered(ActionBroker.ActionTypes.Escape, sender, e);
+            }
         }
 
         private void OnMouseMove(object sender, System.Windows.Input.MouseEventArgs e)

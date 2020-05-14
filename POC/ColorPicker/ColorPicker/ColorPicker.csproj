@@ -60,6 +60,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="IconHelper.cs" />
     <Compile Include="ActionBroker.cs" />
     <Compile Include="ScreenMagnification.cs" />
     <Compile Include="TransparentWindow.xaml.cs">
@@ -111,6 +112,5 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

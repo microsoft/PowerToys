@@ -8,10 +8,11 @@
         AllowsTransparency="True"
         WindowStyle="None"
         ShowInTaskbar="False"
-        MouseDown="HandleMouseDown"
         Background="#01000000"
         MouseMove="OnMouseMove"
-        Loaded="OnLoad">
+        Loaded="OnLoad"
+        KeyDown="OnKeyDown"
+        MouseDown="OnMouseDown">
     <Canvas>
         <Border BorderBrush="Gray" BorderThickness="2" x:Name="MouseFollower" Visibility="Hidden">
             <Grid Height="100" Width="100">
