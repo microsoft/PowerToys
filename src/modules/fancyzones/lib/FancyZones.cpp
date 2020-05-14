@@ -582,15 +582,12 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         }
         if (wparam == 2)
         {
-            // MessageBox(NULL, L"Zone Warning", L"Zone warning", MB_SETFOREGROUND); 
-            // notifications::show_toast(L"This won't work how you expect!!", {});
-            // notifications::show_toast(L"An older MSIX version of PowerToys was uninstalled.");
             std::vector<notifications::action_t> actions = {
                 notifications::link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_LEARN_MORE), L"https://aka.ms/powertoysDetectedElevatedHelp" },
                 notifications::link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN), L"powertoys://cant_drag_elevated_disable/" }
             };
-            notifications::show_toast_with_activations(GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED), {}, std::move(actions));
-           /** auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+            notifications::show_toast_with_activations(L"WARNING: the fancy zone you have chosen may not be applied as you intended. Resolutions do not match!", {}, std::move(actions));
+            auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
             JSONHelpers::ZoneSetData dataa{ L"{E2E051C1-E9A4-466E-861C-E76DE510F00E}", JSONHelpers::ZoneSetLayoutType::Focus };
             auto deviceInfo = fancyZonesData.FindDeviceInfo(L"LGD0554#4&1aaa636&0&UID265988_3240_2160_{5760E426-600C-40F5-9E89-E90E5F568782}");
             deviceInfo->activeZoneSet = dataa;
@@ -599,7 +596,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
             fancyZonesData.SetActiveZoneSet(L"LGD0554#4&1aaa636&0&UID265988_3240_2160_{5760E426-600C-40F5-9E89-E90E5F568782}", dataa);
             fancyZonesData.SaveFancyZonesData();
             OnEditorExitEvent();
-            **/
+          
         }
     }
     break;
