@@ -13,10 +13,10 @@ A team of Microsoft Garage interns have created a proposal for the out-of-box ex
 
 #### Considerations:
 
-## 2. FancyZones Adaptive Sizing Layout Change
+## 2. Adaptive Sizing Layout Change
 
 #### Rationale: 
-The Settings update in v18 will introduce the "About Feature" side tab. When minimized, the "About Feature" section goes to the bottom of Settings - harder to find when there are lots of settings. We propose moving the "About Feature" section to the top of the Settings when minimized.
+When the General Settings window is minimized, the "About Feature" section goes to the bottom of Settings - harder to find when there are lots of settings. We propose moving the "About Feature" section to the top of the Settings when minimized.
 
 #### Design:
 
@@ -25,8 +25,63 @@ The Settings update in v18 will introduce the "About Feature" side tab. When min
 
 #### Code:
 
-```
-test
-```
+The following Grid would exist as each tool's Grid element on their repective settings page. Add styling as necessary. Check out '/PowerToys Settings Sanbox/Views/FancyZonesPage.xaml' to see it in action:
 
-#### Considerations:
+```
+    <Grid>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LayoutVisualStates">
+                <VisualState x:Name="WideLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{INSERT WIDE LAYOUT WINDOW WIDTH HERE}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="1" />
+                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                        <Setter Target="ToolSettingsTitle.(Grid.Row)" Value="0" />
+                        <Setter Target="ToolSettingsView.(Grid.Row)" Value="1" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="SmallLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{INSERT MIN LAYOUT WINDOW WIDTH HERE}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
+                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                        <Setter Target="SidePanel.(Orientation)" Value="Horizontal" />
+                        <Setter Target="ToolSettingsView.(Grid.Row)" Value="2" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+
+        <StackPanel x:Name="ToolSettingsTitle" Orientation="Vertical" >
+                { INSERT TITLE AND DESCRIPTION HERE }
+        </StackPanel>
+
+        <StackPanel x:Name="SidePanel" Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Left">
+            <Image Source="{INSERT GIF OR IMAGE OF TOOL HERE}">
+            <StackPanel x:Name="SidePanelText" Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Left">
+                { INSERT SIDE PANEL TEXT HERE }
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel  x:Name="ToolSettingsView" Orientation="Vertical">
+            { INSERT TOOL SETTINGS HERE }
+        </StackPanel>
+    </Grid>
+```
