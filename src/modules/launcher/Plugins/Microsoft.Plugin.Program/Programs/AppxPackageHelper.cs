@@ -9,6 +9,28 @@ namespace Microsoft.Plugin.Program.Programs
 {
     public class AppxPackageHelper
     {
+        // This function returns a list of attributes of applications
+        public List<IAppxManifestApplication> getAppsFromManifest(IStream stream)
+        {
+            List<IAppxManifestApplication> apps = new List<IAppxManifestApplication>();
+            var appxFactory = new AppxFactory();
+            var reader = ((IAppxFactory)appxFactory).CreateManifestReader(stream);
+            var manifestApps = reader.GetApplications();
+            while (manifestApps.GetHasCurrent())
+            {
+                string appListEntry;
+                var manifestApp = manifestApps.GetCurrent();
+                manifestApp.GetStringValue("AppListEntry", out appListEntry);
+                if (appListEntry != "none")
+                {
+                    apps.Add(manifestApp);
+                }
+                manifestApps.MoveNext();
+            }
+            return apps;
+        }
+
+        // Reference : https://stackoverflow.com/questions/32122679/getting-icon-of-modern-windows-app-from-a-desktop-application
         [Guid("5842a140-ff9f-4166-8f5c-62f5b7b0c781"), ComImport]
         public class AppxFactory
         {
@@ -55,27 +77,6 @@ namespace Microsoft.Plugin.Program.Programs
             int GetBoolValue([MarshalAs(UnmanagedType.LPWStr)]string name, out bool value);
             [PreserveSig]
             int GetStringValue([MarshalAs(UnmanagedType.LPWStr)] string name, [MarshalAs(UnmanagedType.LPWStr)] out string value);
-        }
-
-        // This function returns a list of attributes of applications
-        public List<IAppxManifestApplication> getAppsFromManifest(IStream stream)
-        {
-            List<IAppxManifestApplication> apps = new List<IAppxManifestApplication>();
-            var appxFactory = new AppxFactory();
-            var reader = ((IAppxFactory)appxFactory).CreateManifestReader(stream);
-            var manifestApps = reader.GetApplications();
-            while (manifestApps.GetHasCurrent())
-            {
-                string appListEntry;
-                var manifestApp = manifestApps.GetCurrent();
-                manifestApp.GetStringValue("AppListEntry", out appListEntry);
-                if(appListEntry != "none")
-                {
-                    apps.Add(manifestApp);
-                }
-                manifestApps.MoveNext();
-            }
-            return apps;
         }
     }
 }
