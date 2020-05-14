@@ -33,6 +33,7 @@ namespace AnimatedGifRecorder.Views
             if ((string)RecordPauseButton.Tag == "Pause")
             {
                 // RecordPauseButton.Template.FindName("RecordPauseImage", RecordPauseButton).SetValue(Image.SourceProperty, new BitmapImage(new Uri(@"media-record-8x.png", UriKind.Relative)));
+                // RecordPauseButton.DataContext.RecordPauseIconPath = "/AnimatedGifRecorder;component/Resources/media-record-8x.png";
                 RecordPauseButton.Tag = "Record";
             }
         }

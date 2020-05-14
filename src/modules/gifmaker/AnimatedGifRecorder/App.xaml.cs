@@ -20,7 +20,8 @@ namespace AnimatedGifRecorder
             base.OnStartup(e);
             var _mainWindow = new MainWindow();
             var _mainViewModel= new MainViewModel();
-            _mainWindow.DataContext = _mainViewModel;  
+            _mainWindow.DataContext = _mainViewModel;
+            _mainWindow.Show();
         }
 
         /// <summary>
