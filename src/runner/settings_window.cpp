@@ -276,6 +276,18 @@ void run_settings_window()
         settings_elevatedStatus = L"false";
     }
 
+    bool isAdmin{ get_general_settings().isAdmin };
+    std::wstring settings_isUserAnAdmin;
+
+    if (isAdmin)
+    {
+        settings_isUserAnAdmin = L"true";
+    }
+    else
+    {
+        settings_isUserAnAdmin = L"false";
+    }
+
     std::wstring executable_args = L"\"";
     executable_args.append(executable_path);
     executable_args.append(L"\" ");
@@ -288,6 +300,8 @@ void run_settings_window()
     executable_args.append(settings_theme);
     executable_args.append(L" ");
     executable_args.append(settings_elevatedStatus);
+    executable_args.append(L" ");
+    executable_args.append(settings_isUserAnAdmin);
 
     BOOL process_created = false;
     if (is_process_elevated())
