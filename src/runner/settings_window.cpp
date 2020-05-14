@@ -16,11 +16,10 @@
 #include <common\settings_helpers.cpp>
 #include <os-detect.h>
 
-
 #define BUFSIZE 1024
 
 TwoWayPipeMessageIPC* current_settings_ipc = NULL;
-bool g_isLaunchInProgress = false;
+std::atomic_bool g_isLaunchInProgress = false;
 
 json::JsonObject get_power_toys_settings()
 {
@@ -211,7 +210,6 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
 
 
 DWORD g_settings_process_id = 0;
-
 
 void run_settings_window()
 {
