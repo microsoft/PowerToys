@@ -7,6 +7,7 @@
         mc:Ignorable="d"
         Title="OverlayWindow" Height="450" Width="800"
         WindowStyle="None"
+        WindowStartupLocation="Manual" Top="0" Left="0"
         >
     
     

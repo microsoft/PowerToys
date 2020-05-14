@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:ColorPickerAlpha"
         mc:Ignorable="d"
         Title="MainWindow" Height="80" Width="680" Background="{StaticResource backgroundBrush}"
+        WindowStartupLocation="Manual" Top="0" Left="0"
         >
 
     <Grid x:Name = "FormLayoutGrid">
