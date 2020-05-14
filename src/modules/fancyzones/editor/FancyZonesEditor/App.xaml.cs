@@ -5,6 +5,7 @@
 using System;
 using System.Threading;
 using System.Windows;
+using ControlzEx.Standard;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
@@ -14,12 +15,14 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class App : Application
     { 
-        public Settings[] ZoneSettings { get; set; }
+        public static Settings[] ZoneSettings { get; set; }
 
-        public EditorOverlay Overlay { get; set; }
+        public static EditorOverlay[] Overlay { get; set; }
 
-        public LayoutModel[] FoundModel { get; set; }
+        public static LayoutModel[] FoundModel { get; set; }
 
+        public static bool[] ActiveMonitors { get; set; }
+        
         public static int NumMonitors { get; private set; }
 
         public App()
@@ -69,9 +72,16 @@ namespace FancyZonesEditor
 
                 FoundModel[setting].IsSelected = true;
             }
-            Overlay = new EditorOverlay();
-            Overlay.Show();
-            Overlay.DataContext = FoundModel[MonitorVM.CurrentMonitor];
+            Overlay = new EditorOverlay[NumMonitors];
+            ActiveMonitors = new bool[NumMonitors];            
+            LoadSetup();
+        }
+        public static void LoadSetup()
+        {
+            Overlay[MonitorVM.CurrentMonitor] = new EditorOverlay();
+            ActiveMonitors[MonitorVM.CurrentMonitor] = true;
+            Overlay[MonitorVM.CurrentMonitor].Show();
+            Overlay[MonitorVM.CurrentMonitor].DataContext = FoundModel[MonitorVM.CurrentMonitor];
         }
     }
 }

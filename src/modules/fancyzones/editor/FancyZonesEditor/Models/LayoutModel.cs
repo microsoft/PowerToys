@@ -311,7 +311,7 @@ namespace FancyZonesEditor.Models
                     break;
             }
 
-            Settings settings = ((App)Application.Current).ZoneSettings[MonitorVM.CurrentMonitor];
+            Settings settings = App.ZoneSettings[MonitorVM.CurrentMonitor];
             AppliedZoneSet zoneSet = new AppliedZoneSet
             {
                 DeviceId = settings.UniqueKey,

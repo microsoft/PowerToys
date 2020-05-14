@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using System.Security.RightsManagement;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -19,7 +20,7 @@ namespace FancyZonesEditor
     public partial class MainWindow : MetroWindow
     {
         public const int MaxZones = 40;
-        private readonly Settings _settings = ((App)Application.Current).ZoneSettings[MonitorVM.CurrentMonitor];
+        public Settings Settings = App.ZoneSettings[MonitorVM.CurrentMonitor];
         private static readonly string _defaultNamePrefix = "Custom Layout ";
 
         public int WrapPanelItemSize { get; set; } = 150;
@@ -28,11 +29,11 @@ namespace FancyZonesEditor
         {
             InitializeComponent();
 
-            DataContext = _settings;
+            DataContext = Settings;
 
             KeyUp += MainWindow_KeyUp;
 
-            if (_settings.WorkArea.Height < 900)
+            if (Settings.WorkArea.Height < 900)
             {
                 SizeToContent = SizeToContent.WidthAndHeight;
                 WrapPanelItemSize = 150;
@@ -49,17 +50,17 @@ namespace FancyZonesEditor
 
         private void DecrementZones_Click(object sender, RoutedEventArgs e)
         {
-            if (_settings.ZoneCount > 1)
+            if (Settings.ZoneCount > 1)
             {
-                _settings.ZoneCount--;
+                Settings.ZoneCount--;
             }
         }
 
         private void IncrementZones_Click(object sender, RoutedEventArgs e)
         {
-            if (_settings.ZoneCount < MaxZones)
+            if (Settings.ZoneCount < MaxZones)
             {
-                _settings.ZoneCount++;
+                Settings.ZoneCount++;
             }
         }
 
@@ -77,18 +78,18 @@ namespace FancyZonesEditor
 
         private void Select(LayoutModel newSelection)
         {
-            if (EditorOverlay.Current.DataContext is LayoutModel currentSelection)
+            if (App.Overlay[MonitorVM.CurrentMonitor].DataContext is LayoutModel currentSelection)
             {
                 currentSelection.IsSelected = false;
             }
 
             newSelection.IsSelected = true;
-            EditorOverlay.Current.DataContext = newSelection;
+            App.Overlay[MonitorVM.CurrentMonitor].DataContext = newSelection;
         }
 
         private void EditLayout_Click(object sender, RoutedEventArgs e)
         {
-            EditorOverlay mainEditor = EditorOverlay.Current;
+            EditorOverlay mainEditor = App.Overlay[MonitorVM.CurrentMonitor];
             if (!(mainEditor.DataContext is LayoutModel model))
             {
                 return;
@@ -139,14 +140,14 @@ namespace FancyZonesEditor
                 window = new CanvasEditorWindow();
             }
 
-            window.Owner = EditorOverlay.Current;
+            window.Owner = App.Overlay[MonitorVM.CurrentMonitor];
             window.DataContext = model;
             window.Show();
         }
 
-        private void Apply_Click(object sender, RoutedEventArgs e)
+        public void Apply_Click(object sender, RoutedEventArgs e)
         {
-            EditorOverlay mainEditor = EditorOverlay.Current;
+            EditorOverlay mainEditor = App.Overlay[MonitorVM.CurrentMonitor];
             if (mainEditor.DataContext is LayoutModel model)
             {
                 if (model is GridLayoutModel)
@@ -165,7 +166,15 @@ namespace FancyZonesEditor
         private void OnClosing(object sender, EventArgs e)
         {
             LayoutModel.SerializeDeletedCustomZoneSets();
-            EditorOverlay.Current.Close();
+            App.Overlay[MonitorVM.CurrentMonitor].Close();
+            App.ActiveMonitors[MonitorVM.CurrentMonitor] = false;
+            for (int i = MonitorVM.CurrentMonitor - 1; i >= 0; i--)
+            {
+                if (App.ActiveMonitors[i])
+                {
+                    MonitorVM.CurrentMonitor = i;
+                }
+            }
         }
 
         private void OnInitialized(object sender, EventArgs e)

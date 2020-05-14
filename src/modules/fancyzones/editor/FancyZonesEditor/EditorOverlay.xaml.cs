@@ -14,9 +14,8 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class EditorOverlay : Window
     {
-        public static EditorOverlay Current { get; set; }
 
-        private readonly Settings _settings = ((App)Application.Current).ZoneSettings[MonitorVM.CurrentMonitor];
+        public Settings Settings = App.ZoneSettings[MonitorVM.CurrentMonitor];
         private LayoutPreview _layoutPreview;
         
         private UserControl _editor;
@@ -67,12 +66,11 @@ namespace FancyZonesEditor
         public EditorOverlay()
         {
             InitializeComponent();
-            Current = this;
 
-            Left = _settings.WorkArea.Left;
-            Top = _settings.WorkArea.Top;
-            Width = _settings.WorkArea.Width;
-            Height = _settings.WorkArea.Height;
+            Left = Settings.WorkArea.Left;
+            Top = Settings.WorkArea.Top;
+            Width = Settings.WorkArea.Width;
+            Height = Settings.WorkArea.Height;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -105,15 +103,15 @@ namespace FancyZonesEditor
         // They reflect that current state into properties on the Settings object, which the Zone view will listen to in editing mode
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
-            _settings.IsShiftKeyPressed = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
-            _settings.IsCtrlKeyPressed = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
+            Settings.IsShiftKeyPressed = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+            Settings.IsCtrlKeyPressed = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
             base.OnPreviewKeyDown(e);
         }
 
         protected override void OnPreviewKeyUp(KeyEventArgs e)
         {
-            _settings.IsShiftKeyPressed = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
-            _settings.IsCtrlKeyPressed = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
+            Settings.IsShiftKeyPressed = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+            Settings.IsCtrlKeyPressed = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
             base.OnPreviewKeyUp(e);
         }
 

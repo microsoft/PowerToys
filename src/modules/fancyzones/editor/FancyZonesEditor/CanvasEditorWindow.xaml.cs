@@ -15,7 +15,7 @@ namespace FancyZonesEditor
         public CanvasEditorWindow()
         {
             InitializeComponent();
-            _model = EditorOverlay.Current.DataContext as CanvasLayoutModel;
+            _model =  App.Overlay[MonitorVM.CurrentMonitor].MainWindow.DataContext as CanvasLayoutModel;
             _stashedModel = (CanvasLayoutModel)_model.Clone();
         }
 

@@ -13,7 +13,7 @@ namespace FancyZonesEditor
     {
         protected void OnSaveApplyTemplate(object sender, RoutedEventArgs e)
         {
-            EditorOverlay mainEditor = EditorOverlay.Current;
+            EditorOverlay mainEditor =  App.Overlay[MonitorVM.CurrentMonitor];
             if (mainEditor.DataContext is LayoutModel model)
             {
                 model.Persist();
@@ -22,22 +22,22 @@ namespace FancyZonesEditor
             LayoutModel.SerializeDeletedCustomZoneSets();
 
             _backToLayoutPicker = false;
-            //Close();
-            EditorOverlay.Current.Close();
+            Close();
+             App.Overlay[MonitorVM.CurrentMonitor].MainWindow.Close();
         }
 
         protected void OnClosed(object sender, EventArgs e)
         {
             if (_backToLayoutPicker)
             {
-                EditorOverlay.Current.ShowLayoutPicker();
+                 App.Overlay[MonitorVM.CurrentMonitor].ShowLayoutPicker();
             }
         }
 
         protected void OnCancel(object sender, RoutedEventArgs e)
         {
             _backToLayoutPicker = true;
-            //Close();
+            Close();
         }
 
         private bool _backToLayoutPicker = true;
