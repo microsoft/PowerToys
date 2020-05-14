@@ -61,6 +61,7 @@ namespace FancyZonesUnitTests
 
             ptSettings.add_hotkey(L"fancyzones_editor_hotkey", IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL, settings.editorHotkey);
             ptSettings.add_bool_toogle(L"fancyzones_shiftDrag", IDS_SETTING_DESCRIPTION_SHIFTDRAG, settings.shiftDrag);
+            ptSettings.add_bool_toogle(L"fancyzones_mouseSwitch", IDS_SETTING_DESCRIPTION_MOUSESWITCH, settings.mouseSwitch);
             ptSettings.add_bool_toogle(L"fancyzones_overrideSnapHotkeys", IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS, settings.overrideSnapHotkeys);
             ptSettings.add_bool_toogle(L"fancyzones_moveWindowAcrossMonitors", IDS_SETTING_DESCRIPTION_MOVE_WINDOW_ACROSS_MONITORS, settings.moveWindowAcrossMonitors);
             ptSettings.add_bool_toogle(L"fancyzones_zoneSetChange_flashZones", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES, settings.zoneSetChange_flashZones);
@@ -106,6 +107,7 @@ namespace FancyZonesUnitTests
                     const auto expected = RGB(171, 175, 238);
                     const Settings settings{
                         .shiftDrag = true,
+                        .mouseSwitch = true,
                         .displayChange_moveWindows = true,
                         .virtualDesktopChange_moveWindows = true,
                         .zoneSetChange_flashZones = false,
@@ -135,6 +137,7 @@ namespace FancyZonesUnitTests
                     const auto expected = RGB(171, 175, 238);
                     const Settings settings{
                         .shiftDrag = true,
+                        .mouseSwitch = true,
                         .displayChange_moveWindows = true,
                         .virtualDesktopChange_moveWindows = true,
                         .zoneSetChange_flashZones = false,
@@ -164,6 +167,7 @@ namespace FancyZonesUnitTests
                     const auto expected = RGB(171, 175, 238);
                     const Settings settings{
                         .shiftDrag = true,
+                        .mouseSwitch = true,
                         .displayChange_moveWindows = true,
                         .virtualDesktopChange_moveWindows = true,
                         .zoneSetChange_flashZones = false,
@@ -195,6 +199,7 @@ namespace FancyZonesUnitTests
                     const auto expected = 88;
                     const Settings settings{
                         .shiftDrag = true,
+                        .mouseSwitch = true,
                         .displayChange_moveWindows = true,
                         .virtualDesktopChange_moveWindows = true,
                         .zoneSetChange_flashZones = false,
@@ -226,6 +231,7 @@ namespace FancyZonesUnitTests
                     const auto expected = true;
                     const Settings settings{
                         .shiftDrag = true,
+                        .mouseSwitch = true,
                         .displayChange_moveWindows = true,
                         .virtualDesktopChange_moveWindows = true,
                         .zoneSetChange_flashZones = false,
@@ -279,6 +285,7 @@ namespace FancyZonesUnitTests
 
             ptSettings.add_hotkey(L"fancyzones_editor_hotkey", IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL, settings.editorHotkey);
             ptSettings.add_bool_toogle(L"fancyzones_shiftDrag", IDS_SETTING_DESCRIPTION_SHIFTDRAG, settings.shiftDrag);
+            ptSettings.add_bool_toogle(L"fancyzones_mouseSwitch", IDS_SETTING_DESCRIPTION_MOUSESWITCH, settings.mouseSwitch);
             ptSettings.add_bool_toogle(L"fancyzones_overrideSnapHotkeys", IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS, settings.overrideSnapHotkeys);
             ptSettings.add_bool_toogle(L"fancyzones_moveWindowAcrossMonitors", IDS_SETTING_DESCRIPTION_MOVE_WINDOW_ACROSS_MONITORS, settings.moveWindowAcrossMonitors);
             ptSettings.add_bool_toogle(L"fancyzones_zoneSetChange_flashZones", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES, settings.zoneSetChange_flashZones);

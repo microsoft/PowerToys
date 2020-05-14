@@ -24,6 +24,7 @@
                         <Setter.Value>
                             <ControlTemplate TargetType="ListBoxItem">
                                 <RadioButton Margin="0,7,0,0"
+                                             VerticalContentAlignment="Center"
                                              Focusable="False"
                                              IsChecked="{Binding IsSelected,RelativeSource={RelativeSource TemplatedParent}}">
                                     <ContentPresenter/>
@@ -129,11 +130,14 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock VerticalAlignment="Center">
+                
+                <TextBlock VerticalAlignment="Center"
+                           Visibility="{Binding ShowAdvancedSettings, Converter={StaticResource BoolValueConverter}}">
                     <Hyperlink Command="{Binding ShowAdvancedCommand}">
                         <Run Text="{x:Static p:Resources.Input_ShowAdvanced}"/>
                     </Hyperlink>
                 </TextBlock>
+                
                 <Button Grid.Column="1"
                         Height="23"
                         MinWidth="75"

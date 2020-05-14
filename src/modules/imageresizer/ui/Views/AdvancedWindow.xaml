@@ -113,7 +113,7 @@
                                             </DataTemplate>
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
-                                    <TextBlock Grid.Column="6" Margin="5,0,0,0">
+                                    <TextBlock Grid.Column="6" Margin="5,0,0,0" VerticalAlignment="Center">
                                         <Hyperlink Command="{Binding DataContext.RemoveSizeCommand,ElementName=_this}" CommandParameter="{Binding}">
                                             <Run Text="{x:Static p:Resources.Advanced_DeleteSize}"/>
                                         </Hyperlink>

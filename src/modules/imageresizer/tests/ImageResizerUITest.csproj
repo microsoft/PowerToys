@@ -52,6 +52,9 @@
     <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json">
       <Link>StyleCop.json</Link>
     </AdditionalFiles>
+    <None Include="..\..\..\..\.editorconfig">
+      <Link>.editorconfig</Link>
+    </None>
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>

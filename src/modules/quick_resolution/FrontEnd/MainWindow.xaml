@@ -1,0 +1,66 @@
+﻿<Window x:Class="MenusWPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MenusWPF"
+        xmlns:localVMs="clr-namespace:MenusWPF.ViewModels"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Window.DataContext>
+        <localVMs:MainWindowVM/>
+    </Window.DataContext>
+    
+    <Grid x:Uid="MainWindowGrid" x:Name="MainWindowGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Button Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center" Content="PowerToys Icon" FontSize="24" Padding="12"
+               x:Name="PowerToysIcon">
+            <Button.ContextMenu>
+                <ContextMenu ItemsSource="{Binding MenuItems, Mode=TwoWay}" Placement="Top">
+                    <ContextMenu.ItemContainerStyle>
+                        <Style TargetType="MenuItem">
+                            <Setter Property="Command" Value="{Binding Command, Mode=TwoWay}"/>
+                            <Setter Property="CommandParameter" Value="{Binding}"/>
+                            <Setter Property="IsCheckable" Value="False"/>
+                            <Setter Property="ItemsSource" Value="{Binding SubMenuItems}"/>
+                        </Style>
+                    </ContextMenu.ItemContainerStyle>
+                    <ContextMenu.ItemTemplate>
+                        
+                        <DataTemplate x:Name="StandardDataTemplate">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Text="{Binding Name}" HorizontalAlignment="Stretch" FontSize="18"/>
+                                <Slider x:Name="Brightness" Background="GhostWhite" Minimum="0" Maximum="100" Value="{Binding SliderValue}">
+                                    <Slider.Style>
+                                        <Style TargetType="{x:Type Slider}">
+                                            <Setter Property="Visibility" Value="{Binding SliderVisible}"/>
+                                        </Style>
+                                    </Slider.Style>
+                                </Slider>
+
+                            </Grid>
+                        </DataTemplate>
+                 
+                    </ContextMenu.ItemTemplate>
+                </ContextMenu>
+                </Button.ContextMenu>
+            
+        </Button>
+     
+        <TextBlock Grid.Row="2" Text="{Binding MenuSelected.Name}" HorizontalAlignment="Stretch"
+                   FontSize="40" Margin="8"/>
+        <TextBlock Grid.Row="3" Text="{Binding MenuSelected.SliderValue}" HorizontalAlignment="Stretch" FontSize="40" Margin="8"/>
+    </Grid>
+</Window>

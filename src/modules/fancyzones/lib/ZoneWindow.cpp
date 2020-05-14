@@ -233,6 +233,8 @@ public:
     ShowZoneWindow() noexcept;
     IFACEMETHODIMP_(void)
     HideZoneWindow() noexcept;
+    IFACEMETHODIMP_(void)
+    UpdateActiveZoneSet() noexcept;
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
@@ -534,6 +536,12 @@ ZoneWindow::HideZoneWindow() noexcept
         m_drawHints = false;
         m_highlightZone = {};
     }
+}
+
+IFACEMETHODIMP_(void)
+ZoneWindow::UpdateActiveZoneSet() noexcept
+{
+    CalculateZoneSet();
 }
 
 #pragma region private
