@@ -28,7 +28,7 @@ namespace ColorPickerAlpha
             this.mainWnd = mainWnd;
             AllowsTransparency = true;
             WindowStyle = WindowStyle.None;
-            Background = (Brush) new BrushConverter().ConvertFrom("#01000000"); //"#01000000"
+            Background = (Brush) new BrushConverter().ConvertFrom("#F10F0000"); 
             SetSize();
 
             Loaded += delegate
@@ -41,13 +41,11 @@ namespace ColorPickerAlpha
 
         private void Mouse_Click(object sender, RoutedEventArgs e)
         {
-            if (!mainWnd.isClicked || mainWnd.isInWindow)
+            if (!mainWnd.pickerActive || mainWnd.isInWindow)
                 return;
 
             mainWnd.CopyToClipboard();
-            mainWnd.isClicked = false;
-
-            //Visibility = Visibility.Hidden;
+            mainWnd.pickerActive = false;
         }
 
         private void SetSize()

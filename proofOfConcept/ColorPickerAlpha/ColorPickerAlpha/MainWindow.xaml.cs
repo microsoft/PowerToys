@@ -12,7 +12,17 @@ namespace ColorPickerAlpha
     {
         Boolean rgbState = false;
         Color curColor;
-        public bool isClicked = true; //automatically start looking for colors
+        OverlayWindow overlayWnd;
+        private bool _pickerActive = true;
+        public bool pickerActive
+        {
+            get { return _pickerActive; }
+            set 
+            {
+                _pickerActive = value;
+                overlayWnd.Visibility = value ? Visibility.Visible : Visibility.Hidden;
+            }
+        }
         public bool isInWindow = false;
 
         public MainWindow()
@@ -26,15 +36,15 @@ namespace ColorPickerAlpha
                 Activated += delegate { Topmost = true; };
                 Deactivated += delegate { Topmost = true; };
 
-                var hiddenMouseWindow = new OverlayWindow(this);
-                hiddenMouseWindow.Show();
+                overlayWnd = new OverlayWindow(this);
+                overlayWnd.Show();
             };
 
             new Thread(() =>
             {
                 while (true)
                 {
-                    if (!isClicked || isInWindow)
+                    if (!pickerActive || isInWindow)
                         continue;
 
                     (int x, int y) = ColorPicker.GetPhysicalCursorCoords();
@@ -109,7 +119,7 @@ namespace ColorPickerAlpha
 
         private void Eyedropper_Click(object sender, RoutedEventArgs e)
         {
-            isClicked = !isClicked;
+            pickerActive = !pickerActive;
         }
     }
 }
