@@ -268,6 +268,7 @@ namespace JSONHelpers
 
         std::wstring activeDeviceId;
         std::wstring jsonFilePath;
+        std::wstring appZoneHistoryFilePath;
     };
 
     FancyZonesData& FancyZonesDataInstance();

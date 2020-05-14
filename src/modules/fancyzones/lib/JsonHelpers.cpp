@@ -23,6 +23,7 @@ namespace
     constexpr int c_blankCustomModelId = 0xFFFA;
 
     const wchar_t* FANCY_ZONES_DATA_FILE = L"zones-settings.json";
+    const wchar_t* FANCY_ZONES_APP_ZONE_HISTORY_FILE = L"app-zone-history.json";
     const wchar_t* DEFAULT_GUID = L"{00000000-0000-0000-0000-000000000000}";
     const wchar_t* REG_SETTINGS = L"Software\\SuperFancyZones";
 
@@ -221,6 +222,7 @@ namespace JSONHelpers
     {
         std::wstring result = PTSettingsHelper::get_module_save_folder_location(L"FancyZones");
         jsonFilePath = result + L"\\" + std::wstring(FANCY_ZONES_DATA_FILE);
+        appZoneHistoryFilePath = result + L"\\" + std::wstring(FANCY_ZONES_APP_ZONE_HISTORY_FILE);
     }
 
     json::JsonObject FancyZonesData::GetPersistFancyZonesJSON()
@@ -232,6 +234,18 @@ namespace JSONHelpers
         auto result = json::from_file(save_file_path);
         if (result)
         {
+            if (!result->HasKey(L"app-zone-history"))
+            {
+                auto appZoneHistory = json::from_file(appZoneHistoryFilePath);
+                if (appZoneHistory)
+                {
+                    result->SetNamedValue(L"app-zone-history", *appZoneHistory);
+                }
+                else
+                {
+                    result->SetNamedValue(L"app-zone-history", json::JsonObject());
+                }
+            }
             return *result;
         }
         else
@@ -669,8 +683,9 @@ namespace JSONHelpers
     {
         std::scoped_lock lock{ dataLock };
         json::JsonObject root{};
+        json::JsonObject appZoneHistoryRoot{};
 
-        root.SetNamedValue(L"app-zone-history", SerializeAppZoneHistory());
+        appZoneHistoryRoot.SetNamedValue(L"app-zone-history", SerializeAppZoneHistory());
         root.SetNamedValue(L"devices", SerializeDeviceInfos());
         root.SetNamedValue(L"custom-zone-sets", SerializeCustomZoneSets());
 
@@ -681,6 +696,7 @@ namespace JSONHelpers
         }
 
         json::to_file(jsonFilePath, root);
+        json::to_file(appZoneHistoryFilePath, appZoneHistoryRoot);
     }
 
     void FancyZonesData::MigrateCustomZoneSetsFromRegistry()
