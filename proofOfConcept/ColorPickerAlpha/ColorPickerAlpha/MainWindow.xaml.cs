@@ -67,7 +67,6 @@ namespace ColorPickerAlpha
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
         private void Copy_Clip(object sender, RoutedEventArgs e)
         {
             // RGB and ARGB formats
