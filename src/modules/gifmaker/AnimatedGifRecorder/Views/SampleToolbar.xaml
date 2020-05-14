@@ -19,7 +19,7 @@
             </Button>
             <Button Name="StopButton" Tag="Stop" Click="StopButton_Click">
                 <StackPanel Orientation="Horizontal">
-                    <Image Name="StopImage" Source="/AnimatedGifRecorder;component/Resources/media-stop.png" Stretch="None"/>
+                    <Image Name="StopImage" Source="pack://application:,,,/Resources/media-stop.png" Stretch="None"/>
                     <TextBlock Name="StopText" Text="Stop" />
                 </StackPanel>
             </Button>
