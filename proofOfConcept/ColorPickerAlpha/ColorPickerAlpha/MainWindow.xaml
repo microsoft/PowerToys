@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ColorPickerAlpha"
         mc:Ignorable="d"
-        Title="MainWindow" Height="90" Width="600" Background="#FF4472C4" Opacity="1">
+        Title="MainWindow" Height="60" Width="600" Background="{StaticResource backgroundBrush}"
+        WindowStyle="None"
+        >
 
     <Grid x:Name = "FormLayoutGrid" Margin="0,0,0,0">
         <Grid.ColumnDefinitions>
