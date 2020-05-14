@@ -78,7 +78,7 @@
         <StackPanel Margin="0,24,0,0" Grid.Column="1" VerticalAlignment="Top">
             <TextBlock x:Name="AboutPowerToysText" Margin="0,48,0,0" Text="About Power Toys" TextWrapping="Wrap" Style="{StaticResource TitleTextBlockStyle}"/>
             <TextBlock x:Name="VersionText" Margin="0,48,0,0" Text="v0.17.1" TextWrapping="Wrap" />
-            <Button Background="Blue" Foreground="White"  Content="Check for updates" Margin="0, 12,0,0"></Button>
+            <Button Background="Blue" Foreground="White" Content="Check for updates" Margin="0, 12,0,0" Click="{x:Bind DisplayUpdateDialog}"></Button>
             <HyperlinkButton Margin="0, 24, 0,0" Content="Report a bug" />
             <HyperlinkButton Margin="0,0, 0,0" Content="Request a feature" />
         </StackPanel>

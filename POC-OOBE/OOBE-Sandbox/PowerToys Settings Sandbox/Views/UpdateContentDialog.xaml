@@ -1,0 +1,34 @@
+﻿<ContentDialog
+    x:Class="PowerToys_Settings_Sandbox.Views.UpdateContentDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:PowerToys_Settings_Sandbox.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="What's New in PowerToys"
+    PrimaryButtonText="Got it"
+    Height="600"
+    >
+
+    <ScrollViewer>
+        <Grid>
+        <StackPanel>
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+            <StackPanel Margin="0,12,0,0">
+                    <TextBlock>May 8, 2020</TextBlock>
+                    <Image Source="ms-appx:///Assets/FZTutorial.jpg"/>
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Feature Title</TextBlock>
+                    <TextBlock Style="{StaticResource CaptionTextBlockStyle}">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Facere, nulla, ipsum? Molestiae quis aliquam magni harum non?</TextBlock>
+                 </StackPanel>
+                <StackPanel Margin="0,12,0,0">
+                    <TextBlock>May 10, 2020</TextBlock>
+                    <Image Source="ms-appx:///Assets/resizeSettings.gif"/>
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">Feature Title</TextBlock>
+                    <TextBlock Style="{StaticResource CaptionTextBlockStyle}">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Facere, nulla, ipsum? Molestiae quis aliquam magni harum non?</TextBlock>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+    </ScrollViewer>
+</ContentDialog>

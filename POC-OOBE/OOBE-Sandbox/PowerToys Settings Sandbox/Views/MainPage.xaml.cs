@@ -20,8 +20,16 @@ namespace PowerToys_Settings_Sandbox.Views
             onLaunchContentDialog dialog = new onLaunchContentDialog();
             dialog.PrimaryButtonClick += Dialog_PrimaryButtonClick;
             await dialog.ShowAsync();
-
         }
+
+        private async void DisplayUpdateDialog()
+        {
+           
+            ContentDialog updateDialog = new UpdateContentDialog();
+
+            await updateDialog.ShowAsync();
+        }
+        
 
         private void Dialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
