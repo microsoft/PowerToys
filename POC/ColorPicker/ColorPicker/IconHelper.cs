@@ -23,10 +23,6 @@ namespace ColorPicker
         static extern bool SetWindowPos(IntPtr hwnd, IntPtr hwndInsertAfter,
             int x, int y, int width, int height, uint flags);
 
-        [DllImport("user32.dll")]
-        static extern IntPtr SendMessage(IntPtr hwnd, uint msg,
-            IntPtr wParam, IntPtr lParam);
-
         const int GWL_EXSTYLE = -20;
         const int WS_EX_DLGMODALFRAME = 0x0001;
         const int SWP_NOSIZE = 0x0001;
