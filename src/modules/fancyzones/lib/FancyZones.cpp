@@ -288,6 +288,7 @@ FancyZones::Run() noexcept
         return;
 
     RegisterHotKey(m_window, 1, m_settings->GetSettings()->editorHotkey.get_modifiers(), m_settings->GetSettings()->editorHotkey.get_code());
+    RegisterHotKey(m_window, 2, MOD_ALT | MOD_NOREPEAT, 0x42);
 
     VirtualDesktopInitialize();
 
@@ -571,6 +572,18 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         if (wparam == 1)
         {
             ToggleEditor();
+        }
+        if (wparam == 2)
+        {
+            auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+            JSONHelpers::ZoneSetData dataa{ L"{E2E051C1-E9A4-466E-861C-E76DE510F00E}", JSONHelpers::ZoneSetLayoutType::Focus };
+            auto deviceInfo = fancyZonesData.FindDeviceInfo(L"LGD0554#4&1aaa636&0&UID265988_3240_2160_{5760E426-600C-40F5-9E89-E90E5F568782}");
+            deviceInfo->activeZoneSet = dataa;
+            JSONHelpers::DeviceInfoJSON deviceInfoJson{ L"LGD0554#4&1aaa636&0&UID265988_3240_2160_{5760E426-600C-40F5-9E89-E90E5F568782}", *deviceInfo };
+            fancyZonesData.SerializeDeviceInfoToTmpFile(deviceInfoJson, ZoneWindowUtils::GetActiveZoneSetTmpPath());
+            fancyZonesData.SetActiveZoneSet(L"LGD0554#4&1aaa636&0&UID265988_3240_2160_{5760E426-600C-40F5-9E89-E90E5F568782}", dataa);
+            fancyZonesData.SaveFancyZonesData();
+            OnEditorExitEvent();
         }
     }
     break;
