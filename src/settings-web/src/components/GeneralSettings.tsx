@@ -61,7 +61,7 @@ export class GeneralSettings extends React.Component <any, any> {
         { Object.keys(power_toys_enabled).map(
           (key) => {
             let enabled_value=power_toys_enabled[key];
-            let is_active=this.state.settings.powertoys[key].description !== 'This feature requires Windows 10, May 2019 Update';
+            let is_active=this.state.settings.powertoys[key].description.substr(0, 21) !== 'This feature requires';
             return <Stack key={key}>
               <Stack horizontal tokens={{childrenGap:5}}>
                 <Label>{key}</Label>
