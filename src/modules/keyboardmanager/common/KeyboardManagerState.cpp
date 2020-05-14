@@ -199,19 +199,20 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
         }
 
         int i = 0;
-        for (auto& key : shortcut)
+        for (int i = 0; i < shortcut.size(); i++)
         {
             if (i < 3)
             {
-                AddKeyToLayout(currentShortcutUI1, key);
+                AddKeyToLayout(currentShortcutUI1, shortcut[i]);
             }
             else
             {
-                AddKeyToLayout(currentShortcutUI2, key);
+                AddKeyToLayout(currentShortcutUI2, shortcut[i]);
             }
             i++;
         }
         currentShortcutUI1.UpdateLayout();
+        currentShortcutUI2.UpdateLayout();
     });
 }
 
