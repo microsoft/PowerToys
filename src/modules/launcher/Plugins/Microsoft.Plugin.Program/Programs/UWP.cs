@@ -507,8 +507,9 @@ namespace Microsoft.Plugin.Program.Programs
                 };
                 if (logoKeyFromVersion.ContainsKey(Package.Version))
                 {
+                    string logoUri;
                     var key = logoKeyFromVersion[Package.Version];
-                    var logoUri = app.GetStringValue(key);
+                    app.GetStringValue(key, out logoUri);
                     return logoUri;
                 }
                 else
