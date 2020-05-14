@@ -19,6 +19,7 @@
 #define BUFSIZE 1024
 
 TwoWayPipeMessageIPC* current_settings_ipc = NULL;
+std::atomic_bool g_isLaunchInProgress = false;
 
 json::JsonObject get_power_toys_settings()
 {
@@ -203,7 +204,7 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
                                           nullptr,
                                           &siex.StartupInfo,
                                           process_info);
-
+    g_isLaunchInProgress = false;
     return process_created;
 }
 
@@ -212,6 +213,8 @@ DWORD g_settings_process_id = 0;
 
 void run_settings_window()
 {
+    g_isLaunchInProgress = true;
+
     PROCESS_INFORMATION process_info = { 0 };
     HANDLE hToken = nullptr;
 
@@ -329,6 +332,10 @@ void run_settings_window()
         {
             goto LExit;
         }
+        else
+        {
+            g_isLaunchInProgress = false;
+        }
     }
 
     if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
@@ -410,7 +417,10 @@ void open_settings_window()
     }
     else
     {
-        std::thread(run_settings_window).detach();
+        if (!g_isLaunchInProgress)
+        {
+            std::thread(run_settings_window).detach();
+        }
     }
 }
 
