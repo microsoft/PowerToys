@@ -828,12 +828,18 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 }
                                 else if (newNameToUse != nullptr && (flags & Capitalized))
                                 {
-                                    for (int i = 0; i < wcslen(newNameToUse); i++)
+                                    int newNameToUseLenght = wcslen(newNameToUse);
+                                    for (int i = 0; i < newNameToUseLenght; i++)
                                     {
                                         if (!i || iswspace(newNameToUse[i - 1]))
                                         {
                                             newNameToUse[i] = towupper(newNameToUse[i]);
                                         }
+                                        else
+                                        {
+                                            newNameToUse[i] = towlower(newNameToUse[i]);
+                                        }
+
                                     }
                                 }
 
