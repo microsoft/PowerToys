@@ -839,9 +839,9 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                         {
                                             newNameToUse[i] = towlower(newNameToUse[i]);
                                         }
-
                                     }
                                 }
+
 
                                 spItem->put_newName(newNameToUse);
 
