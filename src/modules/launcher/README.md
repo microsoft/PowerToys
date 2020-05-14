@@ -55,6 +55,8 @@ Do a simple calculation using calculator
 
 -   [There is a misalignment in the shadow text](https://github.com/microsoft/PowerToys/issues/2494)
 
+- [Reducing number of shown results doesn't resize search result properly](https://github.com/microsoft/PowerToys/issues/2456)
+
 -   [Context menu buttons sometimes are not showing when hovered with mouse](https://github.com/microsoft/PowerToys/issues/2420)
 
 - [Scroll on the first result, not the whole search result box](https://github.com/microsoft/PowerToys/issues/2306)
