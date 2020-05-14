@@ -227,7 +227,7 @@ void locate(int x_coord, int y_coord, int r, int g, int b)
 
     for (int radius = 10; radius <= size/20; radius += 10)
     {
-        for (int r = radius; r < radius + 3; r += 1)
+        for (int r = radius; r < radius + 2; r += 1)
         {
             draw_circle(x_coord, y_coord, r, color, oppositecolor, hDC);
         }
