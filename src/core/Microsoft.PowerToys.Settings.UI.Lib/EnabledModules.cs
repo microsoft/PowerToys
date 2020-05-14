@@ -112,7 +112,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         private bool powerLauncher = true;
 
-     	[JsonPropertyName("Run")]
+     	[JsonPropertyName("PowerToys Run")]
         public bool PowerLauncher
         {
             get => this.powerLauncher;
