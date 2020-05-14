@@ -4,7 +4,7 @@
 // TODO move this out, it's common to every graphics setting
 // TODO fix memory management -- the display devices aren't being kept. use pointer to a pointer?
 std::vector<MonitorDisplayDevice> getAllMonitorDisplayDevices() {   
-    std::vector<MonitorDisplayDevice> monitorDisplayDevice;
+    std::vector<MonitorDisplayDevice> monitorDisplayDevices;
     int adapterCount = 0, devicesCount = 0, graphicsMode = 0;
 
     DISPLAY_DEVICE display = { 0 };
@@ -31,21 +31,28 @@ std::vector<MonitorDisplayDevice> getAllMonitorDisplayDevices() {
                 wcscpy_s(DeviceNameBuff, displayAdapter.DeviceName);
                 wcscpy_s(DeviceStringBuff, display.DeviceString);
 
-                monitorDisplayDevice.push_back(MonitorDisplayDevice(DeviceNameBuff, DeviceStringBuff));
+                monitorDisplayDevices.push_back(MonitorDisplayDevice(DeviceNameBuff, DeviceStringBuff));
 
-                // read the display settings
+                // read the current resolution settings
+                EnumDisplaySettingsExW(displayAdapter.DeviceName, ENUM_CURRENT_SETTINGS, &mode, 0);
+                monitorDisplayDevices.at(devicesCount).currentResolution = Resolution(mode.dmPelsWidth, mode.dmPelsHeight);
+                int currentDisplayFrequency = mode.dmDisplayFrequency;
+                mode = { 0 };
+                mode.dmSize = sizeof(DEVMODE);
+
+                // read the resolution options
                 graphicsMode = 0;
-                while (EnumDisplaySettingsEx(displayAdapter.DeviceName, graphicsMode, &mode, 0))
+                while (EnumDisplaySettingsExW(displayAdapter.DeviceName, graphicsMode, &mode, 0))
                 {
-                    //TODO only add the resolution setting if it's compatible with the current refresh rate. 
-                    resolutionOptions.push_back(Resolution(mode.dmPelsWidth, mode.dmPelsHeight)); // remove duplicates. maybe use a set
+                    if(mode.dmDisplayFrequency == currentDisplayFrequency)
+                        resolutionOptions.push_back(Resolution(mode.dmPelsWidth, mode.dmPelsHeight)); // remove duplicates. maybe use a set
 
                     mode = { 0 };
                     mode.dmSize = sizeof(DEVMODE);
                     ++graphicsMode;
                 }
             }
-            monitorDisplayDevice.at(devicesCount).possibleResolutions = resolutionOptions;
+            monitorDisplayDevices.at(devicesCount).possibleResolutions = resolutionOptions;
             ++devicesCount;
             display = { 0 };
             display.cb = sizeof(DISPLAY_DEVICE);
@@ -55,5 +62,5 @@ std::vector<MonitorDisplayDevice> getAllMonitorDisplayDevices() {
         displayAdapter.cb = sizeof(DISPLAY_DEVICE);
 
     }
-    return monitorDisplayDevice;
+    return monitorDisplayDevices;
 }
