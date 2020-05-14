@@ -842,6 +842,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                     }
                                 }
 
+
                                 spItem->put_newName(newNameToUse);
 
                                 // Was there a change?
