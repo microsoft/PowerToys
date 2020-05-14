@@ -49,6 +49,7 @@ namespace PowerToys_Settings_Sandbox
             var lSettings = ApplicationData.Current.LocalSettings;
             lSettings.Values["IsFirstRun"] = true;
             lSettings.Values["NewVersion"] = "1.0.0.1"; // Reference to the newest version just installed
+            lSettings.Values["currentVersion"] = "1.0.0.0"; // Reference to the previous installed version
             Object firstRun = lSettings.Values["IsFirstRun"];
             Object currentVersion = lSettings.Values["currentVersion"];
             Object newVersion = lSettings.Values["NewVersion"];
