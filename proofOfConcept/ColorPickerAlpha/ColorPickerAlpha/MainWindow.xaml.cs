@@ -11,6 +11,8 @@ namespace ColorPickerAlpha
     {
         Boolean rgbState = false;
         Color curColor;
+        //automatically start looking for colors
+        bool isClicked = true;
 
         public MainWindow()
         {
@@ -20,6 +22,9 @@ namespace ColorPickerAlpha
             {
                 while (true)
                 {
+                    if (!isClicked)
+                        continue;
+
                     (int x, int y) = ColorPicker.GetPhysicalCursorCoords();
 
                     Dispatcher.BeginInvoke(new Action(() =>
@@ -87,6 +92,11 @@ namespace ColorPickerAlpha
             hex.Append(argb.Substring(3));
 
             return hex.ToString();
+        }
+
+        private void Eyedropper_Click(object sender, RoutedEventArgs e)
+        {
+            isClicked = !isClicked;
         }
     }
 }
