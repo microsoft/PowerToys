@@ -89,8 +89,8 @@ void OrderMonitors(std::vector<std::pair<HMONITOR, RECT>>& monitorInfo)
             size_t current = candidates[j];
 
             // Compare (top, left) lexicographically
-            if (std::tie(monitorInfo[current].second.top, monitorInfo[current].second.left)
-                < std::tie(monitorInfo[smallest].second.top, monitorInfo[smallest].second.left))
+            if (std::tie(monitorInfo[current].second.top, monitorInfo[current].second.left) <
+                std::tie(monitorInfo[smallest].second.top, monitorInfo[smallest].second.left))
             {
                 smallest = current;
             }
@@ -115,7 +115,7 @@ void SizeWindowToRect(HWND window, RECT rect) noexcept
     WINDOWPLACEMENT placement{};
     ::GetWindowPlacement(window, &placement);
 
-    //wait if SW_SHOWMINIMIZED would be removed from window (Issue #1685)    
+    //wait if SW_SHOWMINIMIZED would be removed from window (Issue #1685)
     for (int i = 0; i < 5 && (placement.showCmd & SW_SHOWMINIMIZED) != 0; i++)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -147,6 +147,10 @@ bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& excludedA
     // Filter out user specified apps
     CharUpperBuffW(filtered.process_path.data(), (DWORD)filtered.process_path.length());
     if (find_app_name_in_path(filtered.process_path, excludedApps))
+    {
+        return false;
+    }
+    if (find_app_name_in_path(filtered.process_path, { L"POWERLAUNCHER.EXE" }))
     {
         return false;
     }

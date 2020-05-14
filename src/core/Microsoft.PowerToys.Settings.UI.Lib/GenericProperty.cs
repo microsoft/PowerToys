@@ -1,0 +1,27 @@
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace Microsoft.PowerToys.Settings.UI.Lib
+{
+#pragma warning disable SA1649 // File name should match first type name
+
+    public class GenericProperty<T>
+    {
+        [JsonPropertyName("value")]
+        public T Value { get; set; }
+
+        public GenericProperty(T value)
+        {
+            Value = value;
+        }
+
+        // Added a parameterless constructor because of an exception during deserialization. More details here: https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-how-to#deserialization-behavior
+        public GenericProperty()
+        {
+        }
+    }
+}

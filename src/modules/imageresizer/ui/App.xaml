@@ -27,6 +27,9 @@
             <Setter Property="FontSize" Value="12pt"/>
             <Setter Property="Foreground" Value="#039"/>
         </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
     </Application.Resources>
 
 </Application>

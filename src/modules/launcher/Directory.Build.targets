@@ -1,0 +1,13 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+   <Target Name="KillPowerLauncher" BeforeTargets="PreBuildEvent;BeforeClean">
+    <Message Text="Killing process 'PowerLauncher.exe'" Importance="normal" ContinueOnError="false" />
+     <Exec Command="tasklist /FI &quot;IMAGENAME eq PowerLauncher.exe&quot; 2&gt;NUL | find /I /N &quot;PowerLauncher.exe&quot;&gt;NUL &#xD;&#xA; if %25ERRORLEVEL%25==0 ( taskkill /f /im PowerLauncher.exe )"
+              IgnoreExitCode="true">
+       <Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
+     </Exec>
+  </Target>
+
+  <Target Name="IncrementalClean" />
+
+</Project>

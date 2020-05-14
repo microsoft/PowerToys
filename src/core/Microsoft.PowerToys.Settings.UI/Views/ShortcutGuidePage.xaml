@@ -1,0 +1,109 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.ShortcutGuidePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LayoutVisualStates">
+                <VisualState x:Name="WideLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="1" />
+                        <Setter Target="SidePanel.(Grid.Row)" Value="0" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="SmallLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
+                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Vertical" x:Name="ShortCutGuideView">
+            <TextBlock x:Uid="ShortcutGuide_Description"
+                       TextWrapping="Wrap"/>
+
+            <ToggleSwitch x:Uid="ShortcutGuide_Enable"
+                          IsOn="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                          Margin="{StaticResource MediumTopMargin}"/>
+
+            <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior" 
+                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+
+            <muxc:NumberBox x:Uid="ShortcutGuide_PressTime"
+                            Minimum="100"
+                           
+                            SpinButtonPlacementMode="Inline"
+                            HorizontalAlignment="Left"
+                            Margin="{StaticResource SmallTopMargin}"
+                            Value="{ Binding Mode=TwoWay, Path=PressTime}"
+                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" SmallChange="50" LargeChange="100"/>
+
+            <Slider x:Uid="ShortcutGuide_OverlayOpacity"
+                    Minimum="0"
+                    Maximum="100"
+                    Value="{ Binding Mode=TwoWay, Path=OverlayOpacity}"
+                    HorizontalAlignment="Left"
+                    Margin="{StaticResource MediumTopMargin}"
+                    IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+            
+            <muxc:RadioButtons x:Uid="RadioButtons_Name_Theme" 
+                               Margin="{StaticResource SmallTopMargin}"
+                               IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                               SelectedIndex="{ Binding Mode=TwoWay, Path=ThemeIndex}">
+                <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark"
+                             IsChecked="{ Binding Mode=TwoWay, Path=IsDarkThemeRadioButtonChecked}"/>
+
+                <RadioButton x:Uid="GeneralPage_Radio_Theme_Light" 
+                             IsChecked="{ Binding Mode=TwoWay, Path=IsLightThemeRadioButtonChecked}"/>
+
+                <RadioButton x:Uid="GeneralPage_Radio_Theme_Default"
+                             IsChecked="{ Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked}"/>
+            </muxc:RadioButtons>
+        </StackPanel>
+
+        <StackPanel 
+            x:Name="SidePanel"
+            Orientation="Vertical"
+            HorizontalAlignment="Left"
+            Width="{StaticResource SidePanelWidth}"
+            Grid.Column="1">
+
+            <TextBlock 
+                x:Uid="About_ShortcutGuide"
+                Style="{StaticResource SettingsGroupTitleStyle}"
+                Margin="{StaticResource XSmallBottomMargin}"/>
+
+            <Image Source="https://raw.githubusercontent.com/microsoft/PowerToys/dev/build-features/doc/images/shortcut_guide/usage.png" />
+
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/shortcut_guide/README.md">
+                <TextBlock x:Uid="Module_overview"/>
+            </HyperlinkButton>
+
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <TextBlock x:Uid="Give_Feedback" />
+            </HyperlinkButton>
+        </StackPanel>
+    </Grid>
+</Page>
