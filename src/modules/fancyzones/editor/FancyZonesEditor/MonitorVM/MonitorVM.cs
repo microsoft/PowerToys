@@ -30,6 +30,14 @@ namespace FancyZonesEditor
             set { _currentMonitor = value; }
         }
 
+        private static int _lastMonitor;
+
+        public static int LastMonitor
+        {
+            get { return _lastMonitor; }
+            set { _lastMonitor = value; }
+        }
+
         public MonitorVM()
         {
             AddCommand = new RelayCommand(AddCommandExecute, AddCommandCanExecute);

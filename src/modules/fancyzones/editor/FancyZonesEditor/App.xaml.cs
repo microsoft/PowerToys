@@ -14,7 +14,7 @@ namespace FancyZonesEditor
     /// Interaction logic for App.xaml
     /// </summary>
     public partial class App : Application
-    { 
+    {
         public static Settings[] ZoneSettings { get; set; }
 
         public static EditorOverlay[] Overlay { get; set; }
@@ -22,7 +22,7 @@ namespace FancyZonesEditor
         public static LayoutModel[] FoundModel { get; set; }
 
         public static bool[] ActiveMonitors { get; set; }
-        
+
         public static int NumMonitors { get; private set; }
 
         public App()
@@ -73,7 +73,7 @@ namespace FancyZonesEditor
                 FoundModel[setting].IsSelected = true;
             }
             Overlay = new EditorOverlay[NumMonitors];
-            ActiveMonitors = new bool[NumMonitors];            
+            ActiveMonitors = new bool[NumMonitors];
             LoadSetup();
         }
         public static void LoadSetup()

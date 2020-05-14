@@ -17,7 +17,7 @@ namespace FancyZonesEditor
 
         public Settings Settings = App.ZoneSettings[MonitorVM.CurrentMonitor];
         private LayoutPreview _layoutPreview;
-        
+
         private UserControl _editor;
 
         public MainWindow MainWindow = new MainWindow();

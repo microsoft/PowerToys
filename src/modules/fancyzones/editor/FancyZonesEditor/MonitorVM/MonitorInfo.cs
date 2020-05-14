@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FancyZonesEditor.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,7 +17,11 @@ namespace FancyZonesEditor
             Width = width;
             Selected = selected;
             Fill = Selected ? "DeepSkyBlue" : "Gray";
+            //Layout = App.ZoneSettings[MonitorVM.CurrentMonitor].DefaultModels;
+            //LayoutModel ll = Layout[0];
         }
+
+        //public IList<LayoutModel> Layout;
 
         private int id;
 
