@@ -10,14 +10,14 @@
     <Grid>
         <StackPanel Orientation="Horizontal">
             <Button Name="CaptureButton" Content="Capture" Click="CaptureButton_Click"/>
-            <GridSplitter ResizeDirection="Columns" Grid.Column="2" Height="Auto" Width="5"/>
-            <Button Name="RecordPauseButton" Tag="Record" Click="RecordPauseButton_Click">
+            <GridSplitter ResizeDirection="Columns" Grid.Column="2" Height="Auto" Width="8"/>
+            <Button Name="RecordPauseButton" IsEnabled="False" Click="RecordPauseButton_Click">
                 <StackPanel Orientation="Horizontal">
                     <Image Name="RecordPauseImage" Source="{Binding ImageUri}" Stretch="None"/>
                     <TextBlock Name="RecordPauseText" Text="Record"/>
                 </StackPanel>
             </Button>
-            <Button Name="StopButton" Tag="Stop" Click="StopButton_Click">
+            <Button Name="StopButton" IsEnabled="False" Click="StopButton_Click">
                 <StackPanel Orientation="Horizontal">
                     <Image Name="StopImage" Source="pack://application:,,,/Resources/media-stop.png" Stretch="None"/>
                     <TextBlock Name="StopText" Text="Stop" />
