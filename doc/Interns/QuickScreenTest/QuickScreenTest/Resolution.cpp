@@ -1,8 +1,8 @@
 #include "Resolution.h"
 
 
-// TODO move this out, it's common to every graphics setting
-// TODO fix memory management -- the display devices aren't being kept. use pointer to a pointer?
+// TODO add error handling
+// TODO break up large method
 std::vector<MonitorDisplayDevice> getAllMonitorDisplayDevices() {   
     std::vector<MonitorDisplayDevice> monitorDisplayDevices;
     int adapterCount = 0, devicesCount = 0, graphicsMode = 0;
@@ -30,7 +30,6 @@ std::vector<MonitorDisplayDevice> getAllMonitorDisplayDevices() {
                 WCHAR DeviceStringBuff[40];
                 wcscpy_s(DeviceNameBuff, displayAdapter.DeviceName);
                 wcscpy_s(DeviceStringBuff, display.DeviceString);
-
                 monitorDisplayDevices.push_back(MonitorDisplayDevice(DeviceNameBuff, DeviceStringBuff));
 
                 // read the current resolution settings
@@ -63,4 +62,24 @@ std::vector<MonitorDisplayDevice> getAllMonitorDisplayDevices() {
 
     }
     return monitorDisplayDevices;
+}
+
+
+bool setDisplayResolution(WCHAR* displayDeviceName, Resolution resolution) {
+    DEVMODE desiredMode = { 0 };
+    desiredMode.dmSize = sizeof(DEVMODE);
+    desiredMode.dmPelsWidth = 1920;
+    desiredMode.dmPelsHeight = 1080;
+    desiredMode.dmFields = DM_PELSHEIGHT | DM_PELSWIDTH;
+
+    LONG res = ChangeDisplaySettings(&desiredMode, CDS_UPDATEREGISTRY | CDS_GLOBAL | CDS_RESET);
+
+    if (res == DISP_CHANGE_BADPARAM || res == DISP_CHANGE_BADFLAGS) {
+        return FALSE;
+    }
+    else if (res) {
+        return TRUE;
+    }
+
+    return FALSE;
 }

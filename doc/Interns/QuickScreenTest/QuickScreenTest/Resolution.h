@@ -31,4 +31,4 @@ struct MonitorDisplayDevice {
 
 
 std::vector<MonitorDisplayDevice> getAllMonitorDisplayDevices();
-std::vector<Resolution> getAllPossibleDeviceResolutions(MonitorDisplayDevice* monitorDisplayDevice);
+bool setDisplayResolution(WCHAR* displayDeviceName, Resolution resolution);
