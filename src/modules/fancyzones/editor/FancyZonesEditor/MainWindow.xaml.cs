@@ -4,9 +4,11 @@
 
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using FancyZonesEditor.Models;
 using MahApps.Metro.Controls;
 
@@ -17,16 +19,17 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class MainWindow : MetroWindow
     {
-        // TODO: share the constants b/w C# Editor and FancyZoneLib
         public const int MaxZones = 40;
+        private const int PanelItemSize = 150;
         private readonly Settings _settings = ((App)Application.Current).ZoneSettings[0];
         private static readonly string _defaultNamePrefix = "Custom Layout ";
 
-        public int WrapPanelItemSize { get; set; } = 262;
+        public int WrapPanelItemSize { get; set; } = PanelItemSize;
 
         public MainWindow()
         {
             InitializeComponent();
+
             DataContext = _settings;
 
             KeyUp += MainWindow_KeyUp;
@@ -34,7 +37,7 @@ namespace FancyZonesEditor
             if (_settings.WorkArea.Height < 900)
             {
                 SizeToContent = SizeToContent.WidthAndHeight;
-                WrapPanelItemSize = 180;
+                WrapPanelItemSize = PanelItemSize;
             }
         }
 
