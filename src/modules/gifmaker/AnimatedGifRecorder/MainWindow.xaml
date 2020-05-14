@@ -9,6 +9,7 @@
         WindowState="Maximized"
         WindowStyle="None">
     <Grid>
-        <views:SampleToolbar/>
+        <views:SampleToolbar HorizontalAlignment="Center"
+                             VerticalAlignment="Top"/>
     </Grid>
 </Window>

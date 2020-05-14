@@ -23,7 +23,12 @@ namespace AnimatedGifRecorder
         public MainWindow()
         {
             InitializeComponent();
-            PreviewKeyDown += (s, e) => { if (e.Key == Key.Escape) Close(); };
+            KeyDown += CloseOnEsc;
+        }
+
+        private void CloseOnEsc(object sender, KeyEventArgs e)
+        {
+            Close();
         }
     }
 }
