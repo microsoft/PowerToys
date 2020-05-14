@@ -9,7 +9,7 @@
     <Grid>
         <StackPanel Orientation="Horizontal">
             <Button Content="Capture"/>
-            <Button Name="RecordPauseButton" Tag="Record" Click="RecordPauseButton_Click">
+            <Button Name="RecordPauseButton" Tag="Record">
                 <Image Source="/AnimatedGifRecorder;component/Resources/media-record-8x.png"/>
             </Button>
             <Button>
