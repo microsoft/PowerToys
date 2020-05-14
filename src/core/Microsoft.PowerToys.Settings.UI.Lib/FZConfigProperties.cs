@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             this.FancyzonesAppLastZoneMoveWindows = new BoolProperty();
             this.UseCursorposEditorStartupscreen = new BoolProperty(true);
             this.FancyzonesShowOnAllMonitors = new BoolProperty();
-            this.FancyzonesZoneHighlightColor = new StringProperty("#F5FCFF");
+            this.FancyzonesZoneHighlightColor = new StringProperty("#0078D7");
             this.FancyzonesHighlightOpacity = new IntProperty(50);
             this.FancyzonesEditorHotkey = new KeyBoardKeysProperty(
                 new HotkeySettings()
@@ -35,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             this.FancyzonesMakeDraggedWindowTransparent = new BoolProperty();
             this.FancyzonesExcludedApps = new StringProperty();
             this.FancyzonesInActiveColor = new StringProperty("#F5FCFF");
-            this.FancyzonesBorderColor = new StringProperty("#F5FCFF");
+            this.FancyzonesBorderColor = new StringProperty("#FFFFFF");
         }
 
         [JsonPropertyName("fancyzones_shiftDrag")]
