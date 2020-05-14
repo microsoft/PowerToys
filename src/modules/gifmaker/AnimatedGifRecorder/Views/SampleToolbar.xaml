@@ -8,8 +8,9 @@
              d:DesignHeight="20" d:DesignWidth="800">
     <Grid>
         <StackPanel Orientation="Horizontal">
-            <Button Content="Hello"/>
-            <Button Content="World"/>
+            <Button Content="Capture"/>
+            <Button Content="Record"/>
+            <Button Content="Stop"/>
         </StackPanel>
     </Grid>
 </UserControl>
