@@ -13,7 +13,6 @@ namespace ColorPicker
     public partial class MainWindow : Window
     {
         private TransparentWindow _transparentWindow = new TransparentWindow();
-        private bool _isColorSelectionEnabled = true;
         private DispatcherTimer _updateTimer = new DispatcherTimer();
 
         public MainWindow()
@@ -54,19 +53,19 @@ namespace ColorPicker
 
         private void OnNewColorButtonClick(object sender, EventArgs e)
         {
-            if (_isColorSelectionEnabled)
+            if (NewColorButton.IsChecked ?? false)
             {
-                DeactivateColorSelectionMode();
+                ActivateColorSelectionMode();
             }
             else
             {
-                ActivateColorSelectionMode();
+                DeactivateColorSelectionMode();
             }
         }
 
         private void UpdateCurrentColor(object sender, EventArgs e)
         {
-            if (_isColorSelectionEnabled)
+            if (NewColorButton.IsChecked ?? false)
             {
                 SetColor(PixelColorFinder.GetColorUnderCursor());
             }
@@ -81,7 +80,6 @@ namespace ColorPicker
 
         private void ActivateColorSelectionMode()
         {
-            _isColorSelectionEnabled = true;
             NewColorButton.IsChecked = true;
             _transparentWindow.Show();
             _updateTimer.Start();
@@ -89,7 +87,6 @@ namespace ColorPicker
 
         private void DeactivateColorSelectionMode()
         {
-            _isColorSelectionEnabled = false;
             NewColorButton.IsChecked = false;
             _transparentWindow.Hide();
             _updateTimer.Stop();
