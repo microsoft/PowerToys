@@ -5,8 +5,7 @@ Find Cursor is intended to be a utility within Microsoft PowerToys to enhance th
 ![Cursor](./doc/images/cursor.png)
 
 <br />
-<br />
-<br />
+
 
 ## Functionality 
 
@@ -20,8 +19,6 @@ Unlike the default plain cursor locator, the powertoys find cursor utility provi
 
 ![Contrast](./doc/images/contrast.png)
 
-<br />
-<br />
 <br />
 
 Colour adaptation of animation can be seen above. 
@@ -39,9 +36,8 @@ Colour adaptation of animation can be seen above.
 
 #### Version 1.0
 
-** Limitations and Bugs: **
+**Limitations and Bugs:**
 
-- 
-- 
-- 
-- 
+- Animation is triggered when CTRL is pressed, even for other shortcuts 
+- Animation is not refreshed in background window 
+- Color inverse is based on pixel underneath cursor, not each individual pixel 
