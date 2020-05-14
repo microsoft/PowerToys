@@ -103,12 +103,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             RunningAsUserDefaultText = loader.GetString("GeneralSettings_RunningAsUserText");
             RunningAsAdminDefaultText = loader.GetString("GeneralSettings_RunningAsAdminText");
+
+            _isAdmin = ShellPage.IsUserAnAdmin;
         }
 
         private bool _packaged = false;
         private bool _startup = false;
         private bool _isElevated = false;
         private bool _runElevated = false;
+        private bool _isAdmin = false;
         private bool _isDarkThemeRadioButtonChecked = false;
         private bool _isLightThemeRadioButtonChecked = false;
         private bool _isSystemThemeRadioButtonChecked = false;
@@ -220,6 +223,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     GeneralSettingsConfigs.RunElevated = value;
                     RaisePropertyChanged();
                 }
+            }
+        }
+
+        // Gets a value indicating whether the user is part of administrators group.
+        public bool IsAdmin
+        {
+            get
+            {
+                return _isAdmin;
             }
         }
 

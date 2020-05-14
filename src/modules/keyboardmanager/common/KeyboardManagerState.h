@@ -55,8 +55,9 @@ private:
     StackPanel currentSingleKeyUI;
     std::mutex currentSingleKeyUI_mutex;
 
-    // Stores the UI element which is to be updated based on the shortcut entered
-    StackPanel currentShortcutUI;
+    // Stores the UI element which is to be updated based on the shortcut entered (each stackpanel represents a row of keys)
+    StackPanel currentShortcutUI1;
+    StackPanel currentShortcutUI2;
     std::mutex currentShortcutUI_mutex;
     
     // Stores the current configuration name.
@@ -126,7 +127,7 @@ public:
     bool AddOSLevelShortcut(const Shortcut& originalSC, const Shortcut& newSC);
 
     // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
-    void ConfigureDetectShortcutUI(const StackPanel& textBlock);
+    void ConfigureDetectShortcutUI(const StackPanel& textBlock1, const StackPanel& textBlock2);
 
     // Function to set the textblock of the detect remap key UI so that it can be accessed by the hook
     void ConfigureDetectSingleKeyRemapUI(const StackPanel& textBlock);

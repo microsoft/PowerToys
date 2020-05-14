@@ -392,6 +392,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     header.Children().Append(applyButton);
     header.Children().Append(cancelButton);
 
+    ScrollViewer scrollViewer;
+
     // Add remap key button
     Windows::UI::Xaml::Controls::Button addRemapKey;
     FontIcon plusSymbol;
@@ -401,6 +403,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     addRemapKey.Margin({ 10, 0, 0, 25 });
     addRemapKey.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects);
+        // Whenever a remap is added move to the bottom of the screen
+        scrollViewer.ChangeView(nullptr, scrollViewer.ScrollableHeight(), nullptr);
     });
 
     StackPanel mappingsPanel;
@@ -409,7 +413,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     mappingsPanel.Children().Append(keyRemapTable);
     mappingsPanel.Children().Append(addRemapKey);
 
-    ScrollViewer scrollViewer;
     scrollViewer.Content(mappingsPanel);
 
     // Creating the Xaml content. xamlContainer is the parent UI element
