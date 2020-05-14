@@ -1,0 +1,12 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:String x:Key="wox_plugin_cmd_relace_winr">替换 Win+R</system:String>
+    <system:String x:Key="wox_plugin_cmd_leave_cmd_open">执行后不关闭命令窗口</system:String>
+    <system:String x:Key="wox_plugin_cmd_plugin_name">命令行</system:String>
+    <system:String x:Key="wox_plugin_cmd_plugin_description">提供从Wox中执行命令行的能力，命令应该以>开头</system:String>
+    <system:String x:Key="wox_plugin_cmd_cmd_has_been_executed_times">此命令已经被执行了 {0} 次</system:String>
+    <system:String x:Key="wox_plugin_cmd_execute_through_shell">执行此命令</system:String>
+    <system:String x:Key="wox_plugin_cmd_run_as_administrator">以管理员身份运行</system:String>
+</ResourceDictionary>

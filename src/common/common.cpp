@@ -6,6 +6,8 @@
 #include <sddl.h>
 #include "version.h"
 
+#include <wil/resource.h>
+
 #pragma comment(lib, "advapi32.lib")
 #pragma comment(lib, "shlwapi.lib")
 
@@ -734,4 +736,65 @@ bool find_app_name_in_path(const std::wstring& where, const std::vector<std::wst
         }
     }
     return false;
+}
+
+std::optional<std::string> exec_and_read_output(const std::wstring_view command, const DWORD timeout)
+{
+    SECURITY_ATTRIBUTES saAttr{ sizeof(saAttr) };
+    saAttr.bInheritHandle = true;
+
+    wil::unique_handle childStdoutRead;
+    wil::unique_handle childStdoutWrite;
+    if (!CreatePipe(&childStdoutRead, &childStdoutWrite, &saAttr, 0))
+    {
+        return std::nullopt;
+    }
+
+    if (!SetHandleInformation(childStdoutRead.get(), HANDLE_FLAG_INHERIT, 0))
+    {
+        return std::nullopt;
+    }
+
+    PROCESS_INFORMATION piProcInfo{};
+    STARTUPINFOW siStartInfo{ sizeof(siStartInfo) };
+
+    siStartInfo.hStdError = childStdoutWrite.get();
+    siStartInfo.hStdOutput = childStdoutWrite.get();
+    siStartInfo.dwFlags |= STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+    siStartInfo.wShowWindow = SW_HIDE;
+
+    std::wstring cmdLine{ command };
+    if (!CreateProcessW(nullptr,
+                        cmdLine.data(),
+                        nullptr,
+                        nullptr,
+                        true,
+                        NORMAL_PRIORITY_CLASS | CREATE_NEW_CONSOLE,
+                        nullptr,
+                        nullptr,
+                        &siStartInfo,
+                        &piProcInfo))
+    {
+        return std::nullopt;
+    }
+
+    WaitForSingleObject(piProcInfo.hProcess, timeout);
+
+    childStdoutWrite.reset();
+    CloseHandle(piProcInfo.hThread);
+
+    std::string childOutput;
+    for (;;)
+    {
+        char buffer[4096];
+        DWORD gotBytes = 0;
+        if (!ReadFile(childStdoutRead.get(), buffer, sizeof(buffer), &gotBytes, nullptr) || !gotBytes)
+        {
+            break;
+        }
+        childOutput += std::string_view{ buffer, gotBytes };
+    }
+
+    CloseHandle(piProcInfo.hProcess);
+    return childOutput;
 }

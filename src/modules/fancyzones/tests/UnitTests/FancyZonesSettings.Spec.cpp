@@ -27,6 +27,7 @@ namespace FancyZonesUnitTests
     void compareSettings(const Settings& expected, const Settings& actual)
     {
         Assert::AreEqual(expected.shiftDrag, actual.shiftDrag);
+        Assert::AreEqual(expected.mouseSwitch, actual.mouseSwitch);
         Assert::AreEqual(expected.displayChange_moveWindows, actual.displayChange_moveWindows);
         Assert::AreEqual(expected.virtualDesktopChange_moveWindows, actual.virtualDesktopChange_moveWindows);
         Assert::AreEqual(expected.zoneSetChange_flashZones, actual.zoneSetChange_flashZones);
@@ -105,6 +106,7 @@ namespace FancyZonesUnitTests
 
                     PowerToysSettings::PowerToyValues values(m_moduleName);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
+                    values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
                     values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
@@ -141,6 +143,7 @@ namespace FancyZonesUnitTests
 
                     PowerToysSettings::PowerToyValues values(m_moduleName);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
+                    values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
                     values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
@@ -171,6 +174,7 @@ namespace FancyZonesUnitTests
                 {
                     const Settings expected{
                         .shiftDrag = m_defaultSettings.shiftDrag,
+                        .mouseSwitch = m_defaultSettings.mouseSwitch,
                         .displayChange_moveWindows = m_defaultSettings.displayChange_moveWindows,
                         .virtualDesktopChange_moveWindows = m_defaultSettings.virtualDesktopChange_moveWindows,
                         .zoneSetChange_flashZones = m_defaultSettings.zoneSetChange_flashZones,
@@ -214,6 +218,7 @@ namespace FancyZonesUnitTests
 
                     PowerToysSettings::PowerToyValues values(m_moduleName);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
+                    values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
                     values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
@@ -244,6 +249,7 @@ namespace FancyZonesUnitTests
 
                     PowerToysSettings::PowerToyValues values(m_moduleName);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
+                    values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
                     values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
@@ -275,6 +281,7 @@ namespace FancyZonesUnitTests
 
                     PowerToysSettings::PowerToyValues values(m_moduleName);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
+                    values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
                     values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
@@ -307,6 +314,7 @@ namespace FancyZonesUnitTests
 
                     PowerToysSettings::PowerToyValues values(m_moduleName);
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
+                    values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
                     values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
@@ -387,6 +395,8 @@ namespace FancyZonesUnitTests
             IFACEMETHODIMP_(void)
             MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept {}
             IFACEMETHODIMP_(void)
+            HandleWinHookEvent(const WinHookEvent * data) noexcept {}
+            IFACEMETHODIMP_(void)
             VirtualDesktopChanged() noexcept {}
             IFACEMETHODIMP_(void)
             VirtualDesktopInitialize() noexcept {}
@@ -418,6 +428,7 @@ namespace FancyZonesUnitTests
                 HINSTANCE hInst = (HINSTANCE)GetModuleHandleW(nullptr);
                 const Settings expected{
                     .shiftDrag = false,
+                    .mouseSwitch = false,
                     .displayChange_moveWindows = true,
                     .virtualDesktopChange_moveWindows = true,
                     .zoneSetChange_flashZones = true,
@@ -439,6 +450,7 @@ namespace FancyZonesUnitTests
 
                 PowerToysSettings::PowerToyValues values(m_moduleName);
                 values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
+                values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                 values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
                 values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                 values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
@@ -556,6 +568,7 @@ namespace FancyZonesUnitTests
                 IDS_SETTING_LAUNCH_EDITOR_DESCRIPTION);
             ptSettings.add_hotkey(L"fancyzones_editor_hotkey", IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL, settings.editorHotkey);
             ptSettings.add_bool_toogle(L"fancyzones_shiftDrag", IDS_SETTING_DESCRIPTION_SHIFTDRAG, settings.shiftDrag);
+            ptSettings.add_bool_toogle(L"fancyzones_mouseSwitch", IDS_SETTING_DESCRIPTION_MOUSESWITCH, settings.mouseSwitch);
             ptSettings.add_bool_toogle(L"fancyzones_overrideSnapHotkeys", IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS, settings.overrideSnapHotkeys);
             ptSettings.add_bool_toogle(L"fancyzones_moveWindowAcrossMonitors", IDS_SETTING_DESCRIPTION_MOVE_WINDOW_ACROSS_MONITORS, settings.moveWindowAcrossMonitors);
             ptSettings.add_bool_toogle(L"fancyzones_zoneSetChange_flashZones", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES, settings.zoneSetChange_flashZones);
@@ -584,6 +597,7 @@ namespace FancyZonesUnitTests
 
                 PowerToysSettings::PowerToyValues values(m_moduleName);
                 values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
+                values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                 values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
                 values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                 //values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
@@ -619,6 +633,7 @@ namespace FancyZonesUnitTests
                     IDS_SETTING_LAUNCH_EDITOR_DESCRIPTION);
                 m_ptSettings->add_hotkey(L"fancyzones_editor_hotkey", IDS_SETTING_LAUNCH_EDITOR_HOTKEY_LABEL, expected.editorHotkey);
                 m_ptSettings->add_bool_toogle(L"fancyzones_shiftDrag", IDS_SETTING_DESCRIPTION_SHIFTDRAG, expected.shiftDrag);
+                m_ptSettings->add_bool_toogle(L"fancyzones_mouseSwitch", IDS_SETTING_DESCRIPTION_MOUSESWITCH, expected.mouseSwitch);
                 m_ptSettings->add_bool_toogle(L"fancyzones_overrideSnapHotkeys", IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS, expected.overrideSnapHotkeys);
                 m_ptSettings->add_bool_toogle(L"fancyzones_moveWindowAcrossMonitors", IDS_SETTING_DESCRIPTION_MOVE_WINDOW_ACROSS_MONITORS, expected.moveWindowAcrossMonitors);
                 //m_ptSettings->add_bool_toogle(L"fancyzones_zoneSetChange_flashZones", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES, expected.zoneSetChange_flashZones);
@@ -688,6 +703,7 @@ namespace FancyZonesUnitTests
 
                     const Settings expected{
                         .shiftDrag = true,
+                        .mouseSwitch = true,
                         .displayChange_moveWindows = true,
                         .virtualDesktopChange_moveWindows = true,
                         .zoneSetChange_flashZones = false,

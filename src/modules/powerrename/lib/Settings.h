@@ -79,7 +79,7 @@ public:
     inline void SetFlags(unsigned int flags)
     {
         settings.flags = flags;
-        Save();
+        WriteFlags();
     }
 
     inline const std::wstring& GetSearchText() const
@@ -125,8 +125,12 @@ private:
     void MigrateFromRegistry();
     void ParseJson();
 
+    void ReadFlags();
+    void WriteFlags();
+
     Settings settings;
     std::wstring jsonFilePath;
+    std::wstring UIFlagsFilePath;
     FILETIME lastLoadedTime;
 };
 
