@@ -3,29 +3,61 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace ColorPickerAlpha
 {
     public partial class MainWindow : Window
     {
-        Boolean rgbState = false;
+        bool rgbState = true;
         Color curColor;
+        OverlayWindow overlayWnd;
+        private bool _pickerActive = true;
+        public bool pickerActive
+        {
+            get { return _pickerActive; }
+            set 
+            {
+                _pickerActive = value;
+                overlayWnd.Visibility = value ? Visibility.Visible : Visibility.Hidden;
+                Topmost = false;
+                Topmost = true;
+            }
+        }
+        public bool isInWindow = false;
 
         public MainWindow()
         {
             InitializeComponent();
 
+            Loaded += delegate
+            {
+                MouseLeave += delegate { isInWindow = false; };
+                MouseEnter += delegate { isInWindow = true; };
+                Activated += delegate { Topmost = true; };
+                Deactivated += delegate { Topmost = true; };
+
+                overlayWnd = new OverlayWindow(this);
+                //both windows should be topmost, but the MainWindow above the overlay
+                //=> both receive mouse input when needed. Owners are below children
+                overlayWnd.Activated += delegate { Owner = overlayWnd; };
+                overlayWnd.Show();
+            };
+
             new Thread(() =>
             {
                 while (true)
                 {
+                    if (!pickerActive || isInWindow)
+                        continue;
+
                     (int x, int y) = ColorPicker.GetPhysicalCursorCoords();
 
                     Dispatcher.BeginInvoke(new Action(() =>
                     {
                         System.Drawing.Color color = ColorPicker.GetPixelColor(x, y);
-                        
+
                         curColor = System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B);
                         Color_Box.Fill = new SolidColorBrush(curColor);
 
@@ -42,12 +74,12 @@ namespace ColorPickerAlpha
             }).Start();
         }
 
-        private void toggle_rgb(object sender, RoutedEventArgs e)
+        private void Toggle_RGB(object sender, RoutedEventArgs e)
         {
             rgbState = !rgbState;
 
             var rgbVisibility = rgbState ? Visibility.Visible : Visibility.Hidden;
-            var hexVisibility = !rgbState? Visibility.Visible: Visibility.Hidden;
+            var hexVisibility = !rgbState ? Visibility.Visible : Visibility.Hidden;
 
             R_val.Visibility = rgbVisibility;
             G_val.Visibility = rgbVisibility;
@@ -59,12 +91,13 @@ namespace ColorPickerAlpha
 
             HEXValue.Visibility = hexVisibility;
             HEXLabel.Visibility = hexVisibility;
-            
+
         }
 
-        private void Copy_Clip(object sender, RoutedEventArgs e)
+        private void Copy_Clip(object sender, RoutedEventArgs e) => CopyToClipboard(); 
+
+        public void CopyToClipboard()
         {
-            
             string argb = curColor.ToString();
 
             if (rgbState)
@@ -87,6 +120,11 @@ namespace ColorPickerAlpha
             hex.Append(argb.Substring(3));
 
             return hex.ToString();
+        }
+
+        private void Eyedropper_Click(object sender, RoutedEventArgs e)
+        {
+            pickerActive = !pickerActive;
         }
     }
 }

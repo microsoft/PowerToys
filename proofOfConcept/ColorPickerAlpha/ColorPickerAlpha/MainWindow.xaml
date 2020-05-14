@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ColorPickerAlpha"
         mc:Ignorable="d"
         Title="MainWindow" Height="80" Width="680" Background="{StaticResource backgroundBrush}"
-        WindowStyle="None"
+        WindowStartupLocation="Manual" Top="0" Left="0"
         >
 
     <Grid x:Name = "FormLayoutGrid">
@@ -28,7 +28,7 @@
 
         </Grid.RowDefinitions>
 
-        <Button Grid.Row = "0" Grid.Column = "0" VerticalAlignment="Center" HorizontalAlignment="Center" Height="50" Width="50" >
+        <Button Grid.Row = "0" Grid.Column = "0" Click="Eyedropper_Click" VerticalAlignment="Center" HorizontalAlignment="Center" Height="50" Width="50" BorderBrush="{x:Null}">
             <Button.Background>
                 <ImageBrush ImageSource="Eyedropper-icon.png" Stretch="Uniform"/>
             </Button.Background>
@@ -56,7 +56,7 @@
         Width = "59" TextAlignment="Center" FontSize="20" Visibility="Visible" Height="33" Margin="0,16,0,10"/>
         <TextBox x:Name="B_val" Grid.Row = "0" Grid.Column = "7" Margin = "10" FontSize="20" TextAlignment="Center" VerticalContentAlignment = "Center" Visibility="Visible"/>
 
-        <Button Grid.Row = "0" Grid.Column = "8"  Click="toggle_rgb" Opacity="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="30" Width="30" BorderBrush="{x:Null}" Margin="10,12,10,13" RenderTransformOrigin="1.305,0.521" >
+        <Button Grid.Row = "0" Grid.Column = "8"  Click="Toggle_RGB" Opacity="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="30" Width="30" BorderBrush="{x:Null}" Margin="10,12,10,13" RenderTransformOrigin="1.305,0.521" >
             <Button.Background>
                 <ImageBrush ImageSource="swap_icon.png" Stretch="Uniform"/>
             </Button.Background>
