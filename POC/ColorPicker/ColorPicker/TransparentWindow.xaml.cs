@@ -22,9 +22,17 @@ namespace ColorPicker
             _broker.AddCallback(action, callback);
         }
 
-        private void OnMouseDown(object sender, EventArgs e)
+        private void OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             _broker.ActionTriggered(ActionBroker.ActionTypes.Click, sender, e);
+        }
+
+        private void OnKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                _broker.ActionTriggered(ActionBroker.ActionTypes.Escape, sender, e);
+            }
         }
 
         private void SetWindowSizeToCoverAllScreens()

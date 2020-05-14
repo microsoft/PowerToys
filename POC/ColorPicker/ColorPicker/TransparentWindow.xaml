@@ -8,6 +8,7 @@
         AllowsTransparency="True"
         WindowStyle="None"
         ShowInTaskbar="False"
+        Background="#01000000"
         MouseDown="OnMouseDown"
-        Background="#01000000">
+        KeyDown="OnKeyDown">
 </Window>
