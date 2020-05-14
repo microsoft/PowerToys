@@ -107,6 +107,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="SvgPreviewHandler.cs" />
+    <Compile Include="Telemetry\Events\SvgFileHandlerLoaded.cs" />
     <Compile Include="Telemetry\Events\SvgFilePreviewed.cs" />
     <Compile Include="Telemetry\Events\SvgFilePreviewError.cs" />
     <Compile Include="Utilities\SvgPreviewHandlerHelper.cs" />

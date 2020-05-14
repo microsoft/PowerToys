@@ -111,6 +111,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="Telemetry\Events\MarkdownFileHandlerLoaded.cs" />
     <Compile Include="Telemetry\Events\MarkdownFilePreviewed.cs" />
     <Compile Include="Telemetry\Events\MarkdownFilePreviewError.cs" />
   </ItemGroup>
