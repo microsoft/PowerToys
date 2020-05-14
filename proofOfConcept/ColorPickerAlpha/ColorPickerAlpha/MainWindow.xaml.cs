@@ -33,6 +33,8 @@ namespace ColorPickerAlpha
                         G_val.Text = curColor.G.ToString();
                         B_val.Text = curColor.B.ToString();
 
+                        HEXValue.Text = rgbToHEX(curColor.ToString());
+
                     }));
 
                     Thread.Sleep(100);
@@ -69,15 +71,29 @@ namespace ColorPickerAlpha
 
         private void Copy_Clip(object sender, RoutedEventArgs e)
         {
-            // RGB and ARGB formats
-            StringBuilder rgb_hex = new StringBuilder();
+            
             string argb_hex = curColor.ToString();
 
-            // Append the # sign in hex and remove the Alpha values from the ARGB format i.e) #AARRGGBB.
-            rgb_hex.Append(argb_hex[0]);
-            rgb_hex.Append(argb_hex.Substring(3));
+            if (rgbState)
+            {
+                string rgbText = "(" + R_val.Text + ", " + G_val.Text + ", " + B_val.Text + " )";
+                Clipboard.SetText(rgbText);
+            }
+            else
+            {
+                Clipboard.SetText(rgbToHEX(argb_hex));
+            }
+        }
 
-            Clipboard.SetText(rgb_hex.ToString());
+        private string rgbToHEX(string rgb)
+        {
+            // RGB and ARGB formats
+            StringBuilder rgb_hex = new StringBuilder();
+            // Append the # sign in hex and remove the Alpha values from the ARGB format i.e) #AARRGGBB.
+            rgb_hex.Append(rgb[0]);
+            rgb_hex.Append(rgb.Substring(3));
+
+            return rgb_hex.ToString();
         }
     }
 }
