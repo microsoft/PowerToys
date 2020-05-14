@@ -69,6 +69,7 @@ namespace FancyZonesEditor
 
                 FoundModel[setting].IsSelected = true;
             }
+
             Overlay = new EditorOverlay();
             Overlay.Show();
             Overlay.DataContext = FoundModel[MonitorVM.CurrentMonitor];

@@ -77,12 +77,19 @@ namespace FancyZonesEditor
 
         private void Select(LayoutModel newSelection)
         {
+            //System.Diagnostics.Debugger.Launch();
+            if (EditorOverlay.Previous.DataContext is LayoutModel previousSelection)
+            {
+                previousSelection.IsSelected = false;
+            }
+
             if (EditorOverlay.Current.DataContext is LayoutModel currentSelection)
             {
                 currentSelection.IsSelected = false;
             }
 
             newSelection.IsSelected = true;
+            EditorOverlay.Previous.DataContext = EditorOverlay.Current.DataContext;
             EditorOverlay.Current.DataContext = newSelection;
         }
 

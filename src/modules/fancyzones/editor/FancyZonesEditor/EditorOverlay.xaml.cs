@@ -16,9 +16,10 @@ namespace FancyZonesEditor
     {
         public static EditorOverlay Current { get; set; }
 
+        public static EditorOverlay Previous { get; set; }
+
         private readonly Settings _settings = ((App)Application.Current).ZoneSettings[MonitorVM.CurrentMonitor];
         private LayoutPreview _layoutPreview;
-        
         private UserControl _editor;
 
         public static MainWindow MainWindow = new MainWindow();
@@ -67,6 +68,7 @@ namespace FancyZonesEditor
         public EditorOverlay()
         {
             InitializeComponent();
+            Previous = Current == null ? this : Current;
             Current = this;
 
             Left = _settings.WorkArea.Left;
