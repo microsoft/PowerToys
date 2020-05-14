@@ -253,7 +253,7 @@ namespace ViewModelTests
         {
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel();
-            Assert.AreEqual("#0078D7", ToRGBHex(viewModel.ZoneHighlightColor)); 
+            Assert.AreEqual(ConfigDefaults.DefaultFancyZonesZoneHighlightColor, ToRGBHex(viewModel.ZoneHighlightColor)); 
 
             // Assert
             ShellPage.DefaultSndMSGCallback = msg =>
@@ -271,7 +271,7 @@ namespace ViewModelTests
         {
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel();
-            Assert.AreEqual("#FFFFFF", ToRGBHex(viewModel.ZoneBorderColor)); 
+            Assert.AreEqual(ConfigDefaults.DefaultFancyzonesBorderColor, ToRGBHex(viewModel.ZoneBorderColor)); 
 
             // Assert
             ShellPage.DefaultSndMSGCallback = msg =>
@@ -289,7 +289,7 @@ namespace ViewModelTests
         {
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel();
-            Assert.AreEqual("#F5FCFF", ToRGBHex(viewModel.ZoneInActiveColor)); 
+            Assert.AreEqual(ConfigDefaults.DefaultFancyZonesInActiveColor, ToRGBHex(viewModel.ZoneInActiveColor)); 
 
             // Assert
             ShellPage.DefaultSndMSGCallback = msg =>
