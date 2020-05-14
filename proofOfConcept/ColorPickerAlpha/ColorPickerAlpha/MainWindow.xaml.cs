@@ -1,33 +1,55 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace ColorPickerAlpha
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
+        Color curColor;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            new Thread(() =>
+            {
+                while (true)
+                {
+                    (int x, int y) = ColorPicker.GetPhysicalCursorCoords();
+
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        System.Drawing.Color color = ColorPicker.GetPixelColor(x, y);
+                        
+                        curColor = System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B);
+                        Color_Box.Fill = new SolidColorBrush(curColor);
+
+                        R_val.Text = curColor.R.ToString();
+                        G_val.Text = curColor.G.ToString();
+                        B_val.Text = curColor.B.ToString();
+
+                    }));
+
+                    Thread.Sleep(100);
+                }
+            }).Start();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void Copy_Clip(object sender, RoutedEventArgs e)
         {
+            // RGB and ARGB formats
+            StringBuilder rgb_hex = new StringBuilder();
+            string argb_hex = curColor.ToString();
 
+            // Append the # sign in hex and remove the Alpha values from the ARGB format i.e) #AARRGGBB.
+            rgb_hex.Append(argb_hex[0]);
+            rgb_hex.Append(argb_hex.Substring(3));
+
+            Clipboard.SetText(rgb_hex.ToString());
         }
     }
 }
