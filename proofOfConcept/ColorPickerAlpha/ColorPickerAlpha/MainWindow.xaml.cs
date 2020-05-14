@@ -10,7 +10,7 @@ namespace ColorPickerAlpha
 {
     public partial class MainWindow : Window
     {
-        Boolean rgbState = false;
+        bool rgbState = true;
         Color curColor;
         OverlayWindow overlayWnd;
         private bool _pickerActive = true;
