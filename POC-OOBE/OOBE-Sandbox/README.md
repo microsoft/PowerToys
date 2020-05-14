@@ -17,6 +17,7 @@ PowerToys v17 has a silent launch after first time installation and update. As e
 
 
 #### Code:
+The frontend and the backend for this window are in [onLaunchContentDialog.xaml](https://github.com/microsoft/PowerToys/blob/interns/users/t-fudami/documentation/POC-OOBE/OOBE-Sandbox/PowerToys%20Settings%20Sandbox/Views/onLaunchContentDialog.xaml) and [onLaunchContentDialog.xaml.cs](https://github.com/microsoft/PowerToys/blob/interns/users/t-fudami/documentation/POC-OOBE/OOBE-Sandbox/PowerToys%20Settings%20Sandbox/Views/onLaunchContentDialog.xaml.cs) respectively. It is later called in the MainPage as below:
 
 ```
  private async void powerOnLaunchDialog()
@@ -33,7 +34,7 @@ PowerToys v17 has a silent launch after first time installation and update. As e
 ```
 
 #### Considerations: 
-The aim of the feature is to intruce PowerToys to the user while at the same time not getting in their way. To achieve this we decide to use a [contentDialog](https://docs.microsoft.com/en-us/uwp/api/Windows.UI.Xaml.Controls.ContentDialog?view=winrt-19041). This allows the user to either explore PowerToys features as soon as they install/update the application or do the exploration at a later time. For users who chose the later, The window privides animated gifs that give a glimpse of what PowerToys has to offer. Using a contentDialog also allows us to fire a toast notifcation at a kater time.
+The aim of the feature is to intruce PowerToys to the user while at the same time not getting in their way. To achieve this we decide to use a [contentDialog](https://docs.microsoft.com/en-us/uwp/api/Windows.UI.Xaml.Controls.ContentDialog?view=winrt-19041). This allows the user to either explore PowerToys features as soon as they install/update the application or do the exploration at a later time. For users who chose the later, The window privides animated gifs that give a glimpse of what PowerToys has to offer. Using a contentDialog also allows us to fire a toast notifcation at a later time.
 
 
 ## 2. FancyZones Adaptive Sizing Layout Change
