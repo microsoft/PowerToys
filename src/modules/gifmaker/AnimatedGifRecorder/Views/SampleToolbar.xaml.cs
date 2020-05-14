@@ -24,7 +24,7 @@ namespace AnimatedGifRecorder.Views
         {
             InitializeComponent();
             DataContext = this;
-            ImageUri = "/AnimatedGifRecorder;component/Resources/media-record.png"; // imageRecord
+            ImageUri = imageRecord;
         }
 
         private string imageRecord = "pack://application:,,,/Resources/media-record.png";
