@@ -12,6 +12,7 @@
     >
 
     <ScrollViewer>
+        <!--TODO: Replace placeholder items with dynamic items using GridView, etc.-->
         <Grid>
         <StackPanel>
             <StackPanel Orientation="Vertical" HorizontalAlignment="Center">

@@ -22,10 +22,7 @@ namespace PowerToys_Settings_Sandbox.Views
             await dialog.ShowAsync();
         }
 
-        /// <summary>
-        ///     This is currently called when the "Check for Updates" button is clicked (as a placeholder trigger for now)
-        ///     For the future: customize to calling only once after update is installed, etc.
-        /// </summary>
+        //TODO: Customize to be called only once after update is installed
         private async void DisplayUpdateDialog()
         {
             ContentDialog updateDialog = new UpdateContentDialog();
@@ -33,7 +30,6 @@ namespace PowerToys_Settings_Sandbox.Views
             await updateDialog.ShowAsync();
         }
         
-
         private void Dialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             OpenFirstGeneralSettingsTip();
