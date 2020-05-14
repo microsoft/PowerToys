@@ -41,7 +41,7 @@ namespace Microsoft.Plugin.Program.Programs
             Name = package.Id.Name;
             FullName = package.Id.FullName;
             FamilyName = package.Id.FamilyName;
-            InitializeAppInfo();
+            InitializeAppInfo(this);
             Apps = Apps.Where(a =>
             {
                 var valid =
@@ -51,14 +51,14 @@ namespace Microsoft.Plugin.Program.Programs
             }).ToArray();
         }
 
-        private void InitializeAppInfo()
+        private void InitializeAppInfo(UWP uwp)
         {
+            AppxPackageHelper _helper = new AppxPackageHelper();
             var path = Path.Combine(Location, "AppxManifest.xml");
 
             var namespaces = XmlNamespaces(path);
             InitPackageVersion(namespaces);
 
-            var appxFactory = new AppxPackageHelper.AppxFactory();
             IStream stream;
             const uint noAttribute = 0x80;
             const Stgm exclusiveRead = Stgm.Read | Stgm.ShareExclusive;
@@ -66,20 +66,14 @@ namespace Microsoft.Plugin.Program.Programs
 
             if (hResult == Hresult.Ok)
             {
-                var reader = appxFactory.CreateManifestReader(stream);
-                var manifestApps = reader.GetApplications();
                 var apps = new List<Application>();
-                while (manifestApps.GetHasCurrent() != 0)
+             
+                List<AppxPackageHelper.IAppxManifestApplication> _apps = _helper.getAppsFromManifest(stream);
+                foreach(var _app in _apps)
                 {
-                    var manifestApp = manifestApps.GetCurrent();
-                    var appListEntry = manifestApp.GetStringValue("AppListEntry");
-                    if (appListEntry != "none")
-                    {
-                        var app = new Application(manifestApp, this);
-                        apps.Add(app);
-                    }
-                    manifestApps.MoveNext();
+                    var app = new Application(_app, this);
                 }
+                
                 Apps = apps.Where(a => a.AppListEntry != "none").ToArray();
             }
             else

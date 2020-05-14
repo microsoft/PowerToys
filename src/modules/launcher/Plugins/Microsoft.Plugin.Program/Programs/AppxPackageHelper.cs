@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using Windows.Storage;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -14,7 +15,7 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         [Guid("BEB94909-E451-438B-B5A7-D79E767B75D8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-        public interface Mani
+        public interface IAppxFactory
         {
             void _VtblGap0_2(); // skip 2 methods
             IAppxManifestReader CreateManifestReader(IStream inputStream);
@@ -54,6 +55,27 @@ namespace Microsoft.Plugin.Program.Programs
             int GetBoolValue([MarshalAs(UnmanagedType.LPWStr)]string name, out bool value);
             [PreserveSig]
             int GetStringValue([MarshalAs(UnmanagedType.LPWStr)] string name, [MarshalAs(UnmanagedType.LPWStr)] out string value);
+        }
+
+        // This function returns a list of attributes of applications
+        public List<IAppxManifestApplication> getAppsFromManifest(IStream stream)
+        {
+            List<IAppxManifestApplication> apps = new List<IAppxManifestApplication>();
+            var appxFactory = new AppxFactory();
+            var reader = ((IAppxFactory)appxFactory).CreateManifestReader(stream);
+            var manifestApps = reader.GetApplications();
+            while (manifestApps.GetHasCurrent())
+            {
+                string appListEntry;
+                var manifestApp = manifestApps.GetCurrent();
+                manifestApp.GetStringValue("AppListEntry", out appListEntry);
+                if(appListEntry != "none")
+                {
+                    apps.Add(manifestApp);
+                }
+                manifestApps.MoveNext();
+            }
+            return apps;
         }
     }
 }
