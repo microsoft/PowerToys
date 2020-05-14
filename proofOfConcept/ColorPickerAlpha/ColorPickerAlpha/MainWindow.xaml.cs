@@ -9,6 +9,7 @@ namespace ColorPickerAlpha
 {
     public partial class MainWindow : Window
     {
+        Boolean rgbState = false;
         Color curColor;
 
         public MainWindow()
@@ -32,6 +33,8 @@ namespace ColorPickerAlpha
                         G_val.Text = curColor.G.ToString();
                         B_val.Text = curColor.B.ToString();
 
+                        HEXValue.Text = argbToHEX(curColor.ToString());
+
                     }));
 
                     Thread.Sleep(100);
@@ -39,17 +42,51 @@ namespace ColorPickerAlpha
             }).Start();
         }
 
+        private void toggle_rgb(object sender, RoutedEventArgs e)
+        {
+            rgbState = !rgbState;
+
+            var rgbVisibility = rgbState ? Visibility.Visible : Visibility.Hidden;
+            var hexVisibility = !rgbState? Visibility.Visible: Visibility.Hidden;
+
+            R_val.Visibility = rgbVisibility;
+            G_val.Visibility = rgbVisibility;
+            B_val.Visibility = rgbVisibility;
+
+            RLabel.Visibility = rgbVisibility;
+            GLabel.Visibility = rgbVisibility;
+            BLabel.Visibility = rgbVisibility;
+
+            HEXValue.Visibility = hexVisibility;
+            HEXLabel.Visibility = hexVisibility;
+            
+        }
+
         private void Copy_Clip(object sender, RoutedEventArgs e)
         {
+            
+            string argb = curColor.ToString();
+
+            if (rgbState)
+            {
+                string rgbText = "(" + R_val.Text + ", " + G_val.Text + ", " + B_val.Text + ")";
+                Clipboard.SetText(rgbText);
+            }
+            else
+            {
+                Clipboard.SetText(argbToHEX(argb));
+            }
+        }
+
+        private string argbToHEX(string argb)
+        {
             // RGB and ARGB formats
-            StringBuilder rgb_hex = new StringBuilder();
-            string argb_hex = curColor.ToString();
-
+            StringBuilder hex = new StringBuilder();
             // Append the # sign in hex and remove the Alpha values from the ARGB format i.e) #AARRGGBB.
-            rgb_hex.Append(argb_hex[0]);
-            rgb_hex.Append(argb_hex.Substring(3));
+            hex.Append(argb[0]);
+            hex.Append(argb.Substring(3));
 
-            Clipboard.SetText(rgb_hex.ToString());
+            return hex.ToString();
         }
     }
 }

@@ -5,11 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ColorPickerAlpha"
         mc:Ignorable="d"
-        Title="MainWindow" Height="60" Width="600" Background="{StaticResource backgroundBrush}"
+        Title="MainWindow" Height="80" Width="680" Background="{StaticResource backgroundBrush}"
         WindowStyle="None"
         >
 
-    <Grid x:Name = "FormLayoutGrid" Margin="0,0,0,1.5">
+    <Grid x:Name = "FormLayoutGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
             <ColumnDefinition />
@@ -28,36 +28,41 @@
 
         </Grid.RowDefinitions>
 
-        <Button Grid.Row = "0" Grid.Column = "0" Opacity="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="40" Width="46"  Margin="10,4,10,5" >
+        <Button Grid.Row = "0" Grid.Column = "0" VerticalAlignment="Center" HorizontalAlignment="Center" Height="50" Width="50" >
             <Button.Background>
                 <ImageBrush ImageSource="Eyedropper-icon.png" Stretch="Uniform"/>
             </Button.Background>
         </Button>
 
-        <Rectangle x:Name="Color_Box" Grid.Row = "0" Grid.Column = "1" Width="40" Height="40" Fill="{StaticResource backgroundBrush}" Stroke="Black"/>
+        <Rectangle x:Name="Color_Box" Grid.Row = "0" Grid.Column = "1" Margin="2" Fill="{StaticResource backgroundBrush}" RenderTransformOrigin="0.475,0.538" />
 
-        <TextBlock Grid.Row = "0" Grid.Column = "2" Text = "R" 
-         Margin = "10" HorizontalAlignment = "Right" VerticalAlignment = "Center" 
-         Width = "30"  TextAlignment="Right" FontSize="20"/>
-        <TextBox x:Name="R_val" Grid.Row = "0" Grid.Column = "3" Margin = "10"/>
+        <TextBlock x:Name="HEXLabel" Grid.Row = "0" Grid.Column = "2" Text = "HEX" 
+         Margin = "10,12,5,15" HorizontalAlignment = "Center" VerticalAlignment = "Center" 
+         Width = "44"  TextAlignment="Right" FontSize="20" Visibility="Hidden"/>
+        <TextBox x:Name="HEXValue" Grid.Row = "0" Grid.Column = "3" Margin = "10,10" Grid.ColumnSpan="5" 
+        FontSize="20" TextAlignment="Center" VerticalContentAlignment = "Center" Visibility="Hidden" />
 
-        <TextBlock Grid.Row = "0" Grid.Column = "4" Text = "G" Margin = "10" 
-         HorizontalAlignment = "Right" VerticalAlignment = "Center" Width = "30" TextAlignment="Right"
-                   FontSize="20"/>
 
-        <TextBox x:Name="G_val" Grid.Row = "0" Grid.Column = "5" Margin = "10"/>
+        <TextBlock x:Name="RLabel" Grid.Row = "0" Grid.Column = "2" Text = "R" HorizontalAlignment = "Center" VerticalAlignment = "Center" 
+        Width = "59" TextAlignment="Center" FontSize="20" Visibility="Visible" Height="33" Margin="0,16,0,10"/>
+        <TextBox x:Name="R_val" Grid.Row = "0" Grid.Column = "3" Margin = "10" FontSize="20" TextAlignment="Center" VerticalContentAlignment = "Center" Visibility="Visible"/>
 
-        <TextBlock Grid.Row = "2" Grid.Column = "6" Text = "B" Margin = "10" 
-         HorizontalAlignment = "Right" VerticalAlignment = "Center" Width = "30" TextAlignment="Right" FontSize="20"/>
-        <TextBox x:Name="B_val" Grid.Row = "0" Grid.Column = "7" Margin = "10"/>
+        <TextBlock x:Name="GLabel" Grid.Row = "0" Grid.Column = "4" Text = "G" HorizontalAlignment = "Center" VerticalAlignment = "Center" 
+        Width = "59" TextAlignment="Center" FontSize="20" Visibility="Visible" Height="33" Margin="0,16,0,10"/>
+        <TextBox x:Name="G_val" Grid.Row = "0" Grid.Column = "5" Margin = "10" FontSize="20" TextAlignment="Center" VerticalContentAlignment = "Center" Visibility="Visible"/>
 
-        <Button Grid.Row = "0" Grid.Column = "8"  Opacity="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="24" Width="46" BorderBrush="{x:Null}" Margin="10,12,10,13" RenderTransformOrigin="1.305,0.521" >
+        <TextBlock x:Name="BLabel" Grid.Column = "6" Text = "B" 
+        HorizontalAlignment = "Center" VerticalAlignment = "Center" 
+        Width = "59" TextAlignment="Center" FontSize="20" Visibility="Visible" Height="33" Margin="0,16,0,10"/>
+        <TextBox x:Name="B_val" Grid.Row = "0" Grid.Column = "7" Margin = "10" FontSize="20" TextAlignment="Center" VerticalContentAlignment = "Center" Visibility="Visible"/>
+
+        <Button Grid.Row = "0" Grid.Column = "8"  Click="toggle_rgb" Opacity="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="30" Width="30" BorderBrush="{x:Null}" Margin="10,12,10,13" RenderTransformOrigin="1.305,0.521" >
             <Button.Background>
                 <ImageBrush ImageSource="swap_icon.png" Stretch="Uniform"/>
             </Button.Background>
         </Button>
 
-        <Button Grid.Row = "0" Grid.Column = "9"  Click="Copy_Clip" Opacity="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="26" Width="32" BorderBrush="{x:Null}" Margin="17,10,17,13" >
+        <Button Grid.Row = "0" Grid.Column = "9" Opacity="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="30" Width="30" BorderBrush="{x:Null}" Margin="17,10,17,13" Click="Copy_Clip" >
             <Button.Background>
                 <ImageBrush ImageSource="copy_icon.png" Stretch="Uniform"/>
             </Button.Background>
