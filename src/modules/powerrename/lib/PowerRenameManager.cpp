@@ -818,6 +818,31 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                     itemEnumIndex++;
                                 }
 
+                                if (newNameToUse != nullptr && (flags & Uppercase)) 
+                                {
+                                    for (int i = 0; i < MAX_PATH; i++)
+                                    {
+                                        newNameToUse[i] = toupper(newNameToUse[i]);
+                                    }
+                                }
+                                else if (newNameToUse != nullptr && (flags & Lowercase))
+                                {
+                                    for (int i = 0; i < MAX_PATH; i++)
+                                    {
+                                        newNameToUse[i] = tolower(newNameToUse[i]);
+                                    }
+                                }
+                                else if (newNameToUse != nullptr && (flags & Capitalized))
+                                {
+                                    for (int i = 0; i < MAX_PATH; i++)
+                                    {
+                                        if (!i || isspace(newNameToUse[i - 1]))
+                                        {
+                                            newNameToUse[i] = toupper(newNameToUse[i]);
+                                        }
+                                    }
+                                }
+
                                 spItem->put_newName(newNameToUse);
 
                                 // Was there a change?

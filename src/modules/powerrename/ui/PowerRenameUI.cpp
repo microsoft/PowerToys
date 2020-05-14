@@ -39,7 +39,10 @@ FlagCheckboxMap g_flagCheckboxMap[] = {
     { MatchAllOccurences, IDC_CHECK_MATCHALLOCCURENCES },
     { ExcludeFolders, IDC_CHECK_EXCLUDEFOLDERS },
     { NameOnly, IDC_CHECK_NAMEONLY },
-    { ExtensionOnly, IDC_CHECK_EXTENSIONONLY }
+    { ExtensionOnly, IDC_CHECK_EXTENSIONONLY },
+    { Uppercase, IDC_TRANSFORM_UPPERCASE },
+    { Lowercase, IDC_TRANSFORM_LOWERCASE },
+    { Capitalized, IDC_TRANSFORM_CAPITALIZED }
 };
 
 struct RepositionMap
@@ -683,6 +686,9 @@ void CPowerRenameUI::_OnCommand(_In_ WPARAM wParam, _In_ LPARAM lParam)
     case IDC_CHECK_USEREGEX:
     case IDC_CHECK_EXTENSIONONLY:
     case IDC_CHECK_NAMEONLY:
+    case IDC_TRANSFORM_UPPERCASE:
+    case IDC_TRANSFORM_LOWERCASE:
+    case IDC_TRANSFORM_CAPITALIZED:
         if (BN_CLICKED == HIWORD(wParam))
         {
             _ValidateFlagCheckbox(LOWORD(wParam));
@@ -891,6 +897,30 @@ void CPowerRenameUI::_SetCheckboxesFromFlags(_In_ DWORD flags)
 
 void CPowerRenameUI::_ValidateFlagCheckbox(_In_ DWORD checkBoxId)
 {
+    if (checkBoxId == IDC_TRANSFORM_UPPERCASE )
+    {
+        if (Button_GetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_UPPERCASE)) == BST_CHECKED)
+        {
+            Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_LOWERCASE), FALSE);
+            Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_CAPITALIZED), FALSE);
+        }
+    }
+    if (checkBoxId == IDC_TRANSFORM_LOWERCASE)
+    {
+        if (Button_GetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_LOWERCASE)) == BST_CHECKED)
+        {
+            Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_UPPERCASE), FALSE);
+            Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_CAPITALIZED), FALSE);
+        }
+    }
+    if (checkBoxId == IDC_TRANSFORM_CAPITALIZED)
+    {
+        if (Button_GetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_CAPITALIZED)) == BST_CHECKED)
+        {
+            Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_UPPERCASE), FALSE);
+            Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_LOWERCASE), FALSE);
+        }
+    }
     if (checkBoxId == IDC_CHECK_NAMEONLY)
     {
         if (Button_GetCheck(GetDlgItem(m_hwnd, IDC_CHECK_NAMEONLY)) == BST_CHECKED)
