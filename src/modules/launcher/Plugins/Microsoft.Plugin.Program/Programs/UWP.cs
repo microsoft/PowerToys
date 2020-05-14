@@ -41,7 +41,7 @@ namespace Microsoft.Plugin.Program.Programs
             Name = package.Id.Name;
             FullName = package.Id.FullName;
             FamilyName = package.Id.FamilyName;
-            InitializeAppInfo(this);
+            InitializeAppInfo();
             Apps = Apps.Where(a =>
             {
                 var valid =
@@ -51,7 +51,7 @@ namespace Microsoft.Plugin.Program.Programs
             }).ToArray();
         }
 
-        private void InitializeAppInfo(UWP uwp)
+        private void InitializeAppInfo()
         {
             AppxPackageHelper _helper = new AppxPackageHelper();
             var path = Path.Combine(Location, "AppxManifest.xml");
