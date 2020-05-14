@@ -10,10 +10,8 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Windows.ApplicationModel;
 using Windows.Management.Deployment;
-using AppxPackaing;
 using Wox.Infrastructure;
 using Microsoft.Plugin.Program.Logger;
-using IStream = AppxPackaing.IStream;
 using Rect = System.Windows.Rect;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Media;
@@ -21,6 +19,7 @@ using System.Windows.Controls;
 using Wox.Plugin;
 using System.Reflection;
 using Wox.Plugin.SharedCommands;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -59,7 +58,7 @@ namespace Microsoft.Plugin.Program.Programs
             var namespaces = XmlNamespaces(path);
             InitPackageVersion(namespaces);
 
-            var appxFactory = new AppxFactory();
+            var appxFactory = new AppxPackageHelper.AppxFactory();
             IStream stream;
             const uint noAttribute = 0x80;
             const Stgm exclusiveRead = Stgm.Read | Stgm.ShareExclusive;
@@ -382,16 +381,32 @@ namespace Microsoft.Plugin.Program.Programs
                 });
             }
 
-            public Application(IAppxManifestApplication manifestApp, UWP package)
+            public Application(AppxPackageHelper.IAppxManifestApplication manifestApp, UWP package)
             {
-                UserModelId = manifestApp.GetAppUserModelId();
-                UniqueIdentifier = manifestApp.GetAppUserModelId();
-                DisplayName = manifestApp.GetStringValue("DisplayName");
-                Description = manifestApp.GetStringValue("Description");
-                BackgroundColor = manifestApp.GetStringValue("BackgroundColor");
+                // This is done because we cannot use the keyword 'out' along with a property
+                string tmpUserModelId;
+                string tmpUniqueIdentifier;
+                string tmpDisplayName;
+                string tmpDescription;
+                string tmpBackgroundColor;
+                string tmpEntryPoint;
+
+                manifestApp.GetAppUserModelId(out tmpUserModelId);
+                manifestApp.GetAppUserModelId(out tmpUniqueIdentifier);
+                manifestApp.GetStringValue("DisplayName", out tmpDisplayName);
+                manifestApp.GetStringValue("Description", out tmpDescription);
+                manifestApp.GetStringValue("BackgroundColor", out tmpBackgroundColor);
+                manifestApp.GetStringValue("EntryPoint", out tmpEntryPoint);
+
+                UserModelId = tmpUserModelId;
+                UniqueIdentifier = tmpUniqueIdentifier;
+                DisplayName = tmpDisplayName;
+                Description = tmpDescription;
+                BackgroundColor = tmpBackgroundColor;
+                EntryPoint = tmpEntryPoint;
+
                 Package = package;
-                EntryPoint = manifestApp.GetStringValue("EntryPoint");
-                               
+
                 DisplayName = ResourceFromPri(package.FullName, DisplayName);
                 Description = ResourceFromPri(package.FullName, Description);
                 LogoUri = LogoUriFromManifest(manifestApp);
@@ -482,7 +497,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
 
 
-            internal string LogoUriFromManifest(IAppxManifestApplication app)
+            internal string LogoUriFromManifest(AppxPackageHelper.IAppxManifestApplication app)
             {
                 var logoKeyFromVersion = new Dictionary<PackageVersion, string>
                 {
