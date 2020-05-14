@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="One-Click Color" Height="108" Width="470"
         ResizeMode="CanMinimize" FontSize="14"
-        SizeToContent="WidthAndHeight"
+        SizeToContent="WidthAndHeight">
     <Grid Margin="11,8,11,16">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="132"/>
