@@ -62,7 +62,7 @@ namespace ColorPicker
 
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Escape)
+            if (e.Key == Key.Escape && _transparentWindow.Visibility == Visibility.Visible)
             {
                 OnTransparentScreenEscape(sender, e);
             }
