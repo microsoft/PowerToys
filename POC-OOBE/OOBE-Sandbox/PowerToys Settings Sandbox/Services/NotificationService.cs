@@ -11,10 +11,9 @@ namespace PowerToys_Settings_Sandbox.Services
         public static void AppInstalledToast()
         {
             string title = "Get Started with PowerToys";
-            string content = "";
             string logo = "../Assets/MiniLogo.png";
 
-            ToastVisual visual = createToastVisual(title, content, logo);
+            ToastVisual visual = createToastVisual(title, logo);
 
             string onActionClick = new QueryString()
                 {
@@ -42,10 +41,9 @@ namespace PowerToys_Settings_Sandbox.Services
         public static void AppUpdatedToast()
         {
             string title = "Power Toys Updated";
-            string content = "";
             string logo = "../Assets/MiniLogo.png";
 
-            ToastVisual visual = createToastVisual(title, content, logo);
+            ToastVisual visual = createToastVisual(title, logo);
 
             string onActionClick = new QueryString()
                 {
@@ -73,10 +71,9 @@ namespace PowerToys_Settings_Sandbox.Services
         public static void AppNeedsUpdateToast()
         {
             string title = "PowerToys Update Available";
-            string content = "";
             string logo = "../Assets/MiniLogo.png";
 
-            ToastVisual visual = createToastVisual(title, content, logo);
+            ToastVisual visual = createToastVisual(title, logo);
 
             string onActionClick = new QueryString()
                 {
@@ -100,7 +97,7 @@ namespace PowerToys_Settings_Sandbox.Services
             ToastNotificationManager.CreateToastNotifier().Show(toast);
         }
 
-        private static ToastVisual createToastVisual(string title, string content, string logo, string image = "")
+        private static ToastVisual createToastVisual(string title, string logo)
         {
             ToastVisual visual = new ToastVisual()
             {
@@ -112,16 +109,6 @@ namespace PowerToys_Settings_Sandbox.Services
                         {
                             Text = title
                         },
-
-                        new AdaptiveText()
-                        {
-                            Text = content
-                        },
-
-                        new AdaptiveImage()
-                        {
-                            Source = image
-                        }
                     },
 
                     AppLogoOverride = new ToastGenericAppLogo()
