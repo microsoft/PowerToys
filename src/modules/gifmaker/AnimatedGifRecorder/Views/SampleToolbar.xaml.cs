@@ -23,6 +23,19 @@ namespace AnimatedGifRecorder.Views
         public SampleToolbar()
         {
             InitializeComponent();
+            DataContext = this;
+            ImageUri = "/AnimatedGifRecorder;component/Resources/media-record.png"; // imageRecord
+        }
+
+        private string imageRecord = "pack://application:,,,/Resources/media-record.png";
+        private string imagePause = "pack://application:,,,/Resources/media-pause.png";
+
+        public static readonly DependencyProperty ImageUriProperty = DependencyProperty.Register("ImageUri", typeof(string), typeof(SampleToolbar));
+
+        public string ImageUri
+        {
+            get { return (string)GetValue(ImageUriProperty); }
+            set { SetValue(ImageUriProperty, value); }
         }
 
         private void CaptureButton_Click(object sender, RoutedEventArgs e)
@@ -30,27 +43,26 @@ namespace AnimatedGifRecorder.Views
             Cursor = Cursors.Cross;
             RecordPauseButton.IsEnabled = true;
             StopButton.IsEnabled = false;
-            if ((string)RecordPauseButton.Tag == "Pause")
+            if (RecordPauseText.Text == "Pause")
             {
-                // RecordPauseButton.Template.FindName("RecordPauseImage", RecordPauseButton).SetValue(Image.SourceProperty, new BitmapImage(new Uri(@"media-record-8x.png", UriKind.Relative)));
-                // RecordPauseButton.DataContext.RecordPauseIconPath = "/AnimatedGifRecorder;component/Resources/media-record-8x.png";
-                RecordPauseButton.Tag = "Record";
+                ImageUri = imageRecord;
+                RecordPauseText.Text = "Record";
             }
         }
 
         private void RecordPauseButton_Click(object sender, RoutedEventArgs e)
         {
-            if ((string)RecordPauseButton.Tag == "Record")
+            if (RecordPauseText.Text == "Record")
             {
-                // RecordPauseButton.Icon = new SymbolIcon(Symbol.Pause);
                 Cursor = Cursors.Arrow;
-                RecordPauseButton.Tag = "Pause";
+                ImageUri = imagePause;
+                RecordPauseText.Text = "Pause";
                 StopButton.IsEnabled = true;
             }
             else
             {
-                // RecordPauseButton.Icon = new SymbolIcon(Symbol.Target);
-                RecordPauseButton.Tag = "Record";
+                ImageUri = imageRecord;
+                RecordPauseText.Text = "Record";
             }
         }
 
@@ -58,10 +70,10 @@ namespace AnimatedGifRecorder.Views
         {
             RecordPauseButton.IsEnabled = false;
             StopButton.IsEnabled = false;
-            if ((string)RecordPauseButton.Tag == "pause")
+            if (RecordPauseText.Text == "Pause")
             {
-                // RecordPauseButton.Icon = new SymbolIcon(Symbol.Target);
-                RecordPauseButton.Tag = "record";
+                ImageUri = imageRecord;
+                RecordPauseText.Text = "Record";
             }
         }
     }
