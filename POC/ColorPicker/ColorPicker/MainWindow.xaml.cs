@@ -29,6 +29,17 @@ namespace ColorPicker
             _transparentWindow.AddActionCallBack(ActionBroker.ActionTypes.Click, HandleTransparentScreenClick);
         }
 
+        private void HandleTransparentScreenClick(object sender, EventArgs e)
+        {
+            ColorSelectionMade();
+        }
+
+        private void ColorSelectionMade()
+        {
+            SetColor(PixelColorFinder.GetColorUnderCursor());
+            DeactivateColorSelectionMode();
+        }
+
         private void ConfigureUpdateTimer()
         {
             _updateTimer.Tick += UpdateCurrentColor;
@@ -59,18 +70,20 @@ namespace ColorPicker
 
         private void HandleColorButtonClick(object sender, EventArgs e)
         {
-            ActivateColorSelectionMode();
+            if (_isColorSelectionEnabled)
+            {
+                DeactivateColorSelectionMode();
+            }
+            else
+            {
+                ActivateColorSelectionMode();
+            }
+
         }
 
-        private void HandleTransparentScreenClick(object sender, EventArgs e)
-        {
-            ColorSelectionMade();
-        }
-
-        private void ColorSelectionMade()
+        private void DeactivateColorSelectionMode()
         {
             _isColorSelectionEnabled = false;
-            SetColor(PixelColorFinder.GetColorUnderCursor());
             _transparentWindow.Hide();
             _updateTimer.Stop();
         }

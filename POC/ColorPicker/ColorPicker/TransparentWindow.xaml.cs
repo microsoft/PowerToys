@@ -19,23 +19,39 @@ namespace ColorPicker
 
         private void SetWindowSizeToCoverAllScreens()
         {
-            int minX = 0;
-            int maxX = 0;
+
+            DetermineAndSetWindowHeight();
+            DetermineAndSetWindowWidth();
+        }
+
+        private void DetermineAndSetWindowHeight()
+        {
             int minY = 0;
             int maxY = 0;
 
             foreach (Screen s in Screen.AllScreens)
             {
-                minX = Math.Min(minX, s.Bounds.X);
-                maxX = Math.Max(maxX, s.Bounds.X + s.Bounds.Width);
                 minY = Math.Min(minY, s.Bounds.Y);
                 maxY = Math.Max(maxY, s.Bounds.Y + s.Bounds.Height);
             }
 
-            Width = maxX - minX;
-            Left = minX;
             Height = maxY - minY;
             Top = minY;
+        }
+
+        private void DetermineAndSetWindowWidth()
+        {
+            int minX = 0;
+            int maxX = 0;
+
+            foreach (Screen s in Screen.AllScreens)
+            {
+                minX = Math.Min(minX, s.Bounds.X);
+                maxX = Math.Max(maxX, s.Bounds.X + s.Bounds.Width);
+            }
+
+            Width = maxX - minX;
+            Left = minX;
         }
 
         public void HandleMouseDown(object sender, EventArgs e)
