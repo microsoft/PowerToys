@@ -24,26 +24,39 @@ namespace ColorPicker
             ActivateColorSelectionMode();
         }
 
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            _transparentWindow.Close();
+            base.OnClosing(e);
+        }
+
         private void ConfigureTransparentWindow()
         {
-            _transparentWindow.AddActionCallback(ActionBroker.ActionTypes.Click, HandleTransparentScreenClick);
-        }
-
-        private void HandleTransparentScreenClick(object sender, EventArgs e)
-        {
-            OnColorSelection();
-        }
-
-        private void OnColorSelection()
-        {
-            SetColor(PixelColorFinder.GetColorUnderCursor());
-            DeactivateColorSelectionMode();
+            _transparentWindow.AddActionCallback(ActionBroker.ActionTypes.Click, OnTransparentScreenClick);
         }
 
         private void ConfigureUpdateTimer()
         {
             _updateTimer.Tick += UpdateCurrentColor;
             _updateTimer.Interval = new TimeSpan(1000);
+        }
+
+        private void OnTransparentScreenClick(object sender, EventArgs e)
+        {
+            SetColor(PixelColorFinder.GetColorUnderCursor());
+            DeactivateColorSelectionMode();
+        }
+
+        private void OnColorButtonClick(object sender, EventArgs e)
+        {
+            if (_isColorSelectionEnabled)
+            {
+                DeactivateColorSelectionMode();
+            }
+            else
+            {
+                ActivateColorSelectionMode();
+            }
         }
 
         private void UpdateCurrentColor(object sender, EventArgs e)
@@ -61,18 +74,6 @@ namespace ColorPicker
             HexTextBox.Text = "#" + color.R.ToString("X2") + color.G.ToString("X2") + color.B.ToString("X2");
         }
 
-        private void HandleColorButtonClick(object sender, EventArgs e)
-        {
-            if (_isColorSelectionEnabled)
-            {
-                DeactivateColorSelectionMode();
-            }
-            else
-            {
-                ActivateColorSelectionMode();
-            }
-        }
-
         private void ActivateColorSelectionMode()
         {
             _isColorSelectionEnabled = true;
@@ -85,12 +86,6 @@ namespace ColorPicker
             _isColorSelectionEnabled = false;
             _transparentWindow.Hide();
             _updateTimer.Stop();
-        }
-
-        protected override void OnClosing(CancelEventArgs e)
-        {
-            _transparentWindow.Close();
-            base.OnClosing(e);
         }
     }
 }

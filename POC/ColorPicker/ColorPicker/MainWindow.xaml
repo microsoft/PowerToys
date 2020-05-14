@@ -13,7 +13,7 @@
             <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
 
-        <Button Grid.Column="0" Click="HandleColorButtonClick">
+        <Button Grid.Column="0" Click="OnColorButtonClick">
             <Viewbox>
                 <Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="appbar_dropper" Width="76" Height="76" Clip="F1 M 0,0L 76,0L 76,76L 0,76L 0,0">
                     <Path Width="16.8171" Height="16.8171" Canvas.Left="40.1829" Canvas.Top="19" Stretch="Fill" Fill="#FF000000" Data="F1 M 43.2933,23.75L 46.441,26.8977C 46.1046,26.1827 45.9167,25.3841 45.9167,24.5417C 45.9167,21.4811 48.3978,19 51.4583,19C 54.5189,19 57,21.4811 57,24.5417C 57,27.6022 54.5189,30.0833 51.4583,30.0833C 50.6159,30.0833 49.8173,29.8954 49.1023,29.559L 52.25,32.7067C 52.8683,33.325 52.8683,34.3275 52.25,34.9459L 51.8425,35.3533C 51.2242,35.9717 50.2217,35.9717 49.6034,35.3533L 40.6467,26.3967C 40.0283,25.7783 40.0283,24.7758 40.6467,24.1575L 41.0541,23.75C 41.6725,23.1317 42.675,23.1317 43.2933,23.75 Z "/>
