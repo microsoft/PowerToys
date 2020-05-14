@@ -35,22 +35,3 @@ The frontend and the backend for this window are in [onLaunchContentDialog.xaml]
 
 #### Considerations: 
 The aim of the feature is to intruce PowerToys to the user while at the same time not getting in their way. To achieve this we decide to use a [contentDialog](https://docs.microsoft.com/en-us/uwp/api/Windows.UI.Xaml.Controls.ContentDialog?view=winrt-19041). This allows the user to either explore PowerToys features as soon as they install/update the application or do the exploration at a later time. For users who chose the later, The window privides animated gifs that give a glimpse of what PowerToys has to offer. Using a contentDialog also allows us to fire a toast notifcation at a later time.
-
-
-## 2. FancyZones Adaptive Sizing Layout Change
-
-#### Rationale: 
-The Settings update in v18 will introduce the "About Feature" side tab. When minimized, the "About Feature" section goes to the bottom of Settings - harder to find when there are lots of settings. We propose moving the "About Feature" section to the top of the Settings when minimized.
-
-#### Design:
-
-<img align="left" src="./images/FancyZones_extended_window_new.png" /> Extended window UI
-<img align="left" src="./images/FancyZones_smaller_window_new.png" /> Smaller window UI 
-
-#### Code:
-
-```
-test
-```
-
-#### Considerations:
