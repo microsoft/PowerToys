@@ -9,10 +9,6 @@ using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-using Windows.UI.Notifications;
-using Microsoft.Toolkit.Uwp.Notifications; // Notifications library
-using Microsoft.QueryStringDotNET; // QueryString.NET
-
 namespace PowerToys_Settings_Sandbox.Services
 {
     // For more information on understanding and extending activation flow see
@@ -36,35 +32,23 @@ namespace PowerToys_Settings_Sandbox.Services
         {
             if (IsInteractive(activationArgs))
             {
-                // Initialize services that you need before app activation
-                // take into account that the splash screen is shown while this code runs.
                 await InitializeAsync();
 
-                // Do not repeat app initialization when the Window already has content,
-                // just ensure that the window is active
                 if (Window.Current.Content == null)
                 {
-                    // Create a Shell or Frame to act as the navigation context
                     Window.Current.Content = _shell?.Value ?? new Frame();
                 }
             }
 
-            // Depending on activationArgs one of ActivationHandlers or DefaultActivationHandler
-            // will navigate to the first page
             await HandleActivationAsync(activationArgs);
             _lastActivationArgs = activationArgs;
 
             if (IsInteractive(activationArgs))
             {
-                // Ensure the current window is active
                 Window.Current.Activate();
 
-                // Tasks after activation
                 await StartupAsync();
             }
-
-            NotificationService.AppInstalledToast();
-
         }
 
         private async Task InitializeAsync()

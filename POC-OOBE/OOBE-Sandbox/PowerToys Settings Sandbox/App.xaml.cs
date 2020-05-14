@@ -1,9 +1,10 @@
 ﻿using System;
-
+using Microsoft.QueryStringDotNET;
 using PowerToys_Settings_Sandbox.Services;
 
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 
 namespace PowerToys_Settings_Sandbox
 {
@@ -29,13 +30,44 @@ namespace PowerToys_Settings_Sandbox
             if (!args.PrelaunchActivated)
             {
                 await ActivationService.ActivateAsync(args);
+                NotificationService.AppInstalledToast();
+                NotificationService.AppUpdatedToast();
             }
         }
 
-        protected override async void OnActivated(IActivatedEventArgs args)
+        protected override async void OnActivated(IActivatedEventArgs e)
         {
-            await ActivationService.ActivateAsync(args);
+            Frame rootFrame = Window.Current.Content as Frame;           
+
+            if (e is ToastNotificationActivatedEventArgs)
+            {
+                ToastNotificationActivatedEventArgs toastActivationArgs = e as ToastNotificationActivatedEventArgs;
+
+                QueryString args = QueryString.Parse(toastActivationArgs.Argument);
+
+                switch (args["action"])
+                {
+                    case "openApp":
+                        if (rootFrame == null)
+                        {
+                            rootFrame = new Frame();
+                            Window.Current.Content = rootFrame;
+                        }
+
+                        rootFrame.Navigate(typeof(Views.ShellPage));
+                        NavigationService.Navigate(typeof(Views.MainPage));
+                        Window.Current.Activate();
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+
+
         }
+
+
 
         private ActivationService CreateActivationService()
         {
