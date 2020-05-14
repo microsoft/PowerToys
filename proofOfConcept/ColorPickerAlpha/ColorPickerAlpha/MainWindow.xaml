@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ColorPickerAlpha"
         mc:Ignorable="d"
-        Title="MainWindow" Height="60" Width="600" Background="#FF4472C4"
+        Title="MainWindow" Height="60" Width="600" Background="{StaticResource backgroundBrush}"
         WindowStyle="None"
         >
 
@@ -34,7 +34,7 @@
             </Button.Background>
         </Button>
 
-        <Rectangle x:Name="Color_Box" Grid.Row = "0" Grid.Column = "1" Width="40" Height="40" Fill="White" Stroke="Black"/>
+        <Rectangle x:Name="Color_Box" Grid.Row = "0" Grid.Column = "1" Width="40" Height="40" Fill="{StaticResource backgroundBrush}" Stroke="Black"/>
 
         <TextBlock Grid.Row = "0" Grid.Column = "2" Text = "R" 
          Margin = "10" HorizontalAlignment = "Right" VerticalAlignment = "Center" 
