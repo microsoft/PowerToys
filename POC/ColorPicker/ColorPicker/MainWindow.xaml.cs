@@ -21,12 +21,12 @@ namespace ColorPicker
             InitializeComponent();
             ConfigureTransparentWindow();
             ConfigureUpdateTimer();
-            ActivateColorSelectionMode();
         }
 
         protected override void OnSourceInitialized(EventArgs e)
         {
             IconHelper.RemoveIcon(this);
+            ActivateColorSelectionMode();
         }
 
         protected override void OnClosing(CancelEventArgs e)
@@ -52,7 +52,7 @@ namespace ColorPicker
             DeactivateColorSelectionMode();
         }
 
-        private void OnColorButtonClick(object sender, EventArgs e)
+        private void OnNewColorButtonClick(object sender, EventArgs e)
         {
             if (_isColorSelectionEnabled)
             {
@@ -82,6 +82,7 @@ namespace ColorPicker
         private void ActivateColorSelectionMode()
         {
             _isColorSelectionEnabled = true;
+            NewColorButton.IsChecked = true;
             _transparentWindow.Show();
             _updateTimer.Start();
         }
@@ -89,6 +90,7 @@ namespace ColorPicker
         private void DeactivateColorSelectionMode()
         {
             _isColorSelectionEnabled = false;
+            NewColorButton.IsChecked = false;
             _transparentWindow.Hide();
             _updateTimer.Stop();
         }

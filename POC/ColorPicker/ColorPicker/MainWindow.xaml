@@ -20,21 +20,32 @@
             <RowDefinition Height="32"/>
         </Grid.RowDefinitions>
 
-        <ToggleButton Grid.Column="0" Grid.Row="1" Margin="0,0,11,0" VerticalContentAlignment="Center"
-                      Background="#FF0078D7" BorderBrush="#FF666666" Click="OnColorButtonClick">
-            <ToggleButton.Resources>
-                <Style TargetType="{x:Type Border}">
-                    <Setter Property="CornerRadius" Value="2"/>
-                </Style>
+        <ToggleButton Name="NewColorButton" Grid.Column="0" Grid.Row="1"
+                      Margin="0,0,11,0" BorderThickness="0" IsChecked="True" Click="OnNewColorButtonClick">
+            <ToggleButton.Style>
                 <Style TargetType="{x:Type ToggleButton}">
-
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ToggleButton">
+                                <Border Background="{TemplateBinding Background}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
                     <Style.Triggers>
+                        <Trigger Property="IsChecked" Value="False">
+                            <Setter Property="Background" Value="#FF0078D7"/>
+                        </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter Property="Background" Value="Red" />
+                            <Setter Property="Background" Value="#FF005A9E"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#FF429CE3"/>
                         </Trigger>
                     </Style.Triggers>
                 </Style>
-            </ToggleButton.Resources>
+            </ToggleButton.Style>
             <StackPanel Orientation="Horizontal">
                 <Viewbox Width="17" Height="17" Margin="0,0,7,0">
                     <Canvas Width="49" Height="48">
@@ -45,7 +56,7 @@
             </StackPanel>
         </ToggleButton>
 
-        <Rectangle Name="ColorPreviewRectangle" Grid.Column="1" Grid.Row="1" Fill="#FF9B1B8F" Margin="0,0,11,0" RadiusX="2" RadiusY="2" Stroke="#FF666666" StrokeThickness="1"/>
+        <Rectangle Name="ColorPreviewRectangle" Grid.Column="1" Grid.Row="1" Fill="#FFA70087" Margin="0,0,11,0" RadiusX="2" RadiusY="2" Stroke="#FF666666" StrokeThickness="1"/>
 
         <Label Grid.Column="2" Grid.Row="0" Content="RGB" Margin="0,0,11,5" Padding="0" />
         <TextBox Name="RgbTextBox" Grid.Column="2" Grid.Row="1" IsReadOnly="True"
