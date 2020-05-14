@@ -5,8 +5,8 @@
 
 STRINGTABLE
 BEGIN
-    IDS_SETTINGS_DESCRIPTION                                     L"This feature requires Windows 10, May 2019 Update"
-    IDS_KEYBOARDMANAGER                                         L"Keyboard Manager" 
+    IDS_SETTINGS_DESCRIPTION   L"This feature requires Windows 10 version 1903 or higher"
+    IDS_KEYBOARDMANAGER        L"Keyboard Manager" 
 END
 
 IDS_KEYBOARDMANAGER_ICON    ICON    L"Keyboard.ico"
