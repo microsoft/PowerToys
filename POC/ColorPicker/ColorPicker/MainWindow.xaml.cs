@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -68,7 +69,7 @@ namespace ColorPicker
             }
         }
 
-        private void OnNewColorButtonClick(object sender, EventArgs e)
+        private void OnNewColorButtonClick(object sender, RoutedEventArgs e)
         {
             if (NewColorButton.IsChecked ?? false)
             {
@@ -77,6 +78,30 @@ namespace ColorPicker
             else
             {
                 DeactivateColorSelectionMode();
+            }
+        }
+
+        private void OnTextBoxPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // Source: https://www.intertech.com/Blog/how-to-select-all-text-in-a-wpf-textbox-on-focus/
+            // and https://stackoverflow.com/questions/660554/how-to-automatically-select-all-text-on-focus-in-wpf-textbox
+            TextBox textBox = sender as TextBox;
+            if (textBox != null && !textBox.IsKeyboardFocusWithin)
+            {
+                if (e.OriginalSource.GetType().Name == "TextBoxView")
+                {
+                    e.Handled = true;
+                    textBox.Focus();
+                }
+            }
+        }
+
+        private void OnTextBoxFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox textBox = e.OriginalSource as TextBox;
+            if (textBox != null)
+            {
+                textBox.SelectAll();
             }
         }
 

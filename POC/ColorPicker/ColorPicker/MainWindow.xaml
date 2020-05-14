@@ -72,7 +72,8 @@
         <Label Grid.Column="2" Grid.Row="0" Content="RGB" Margin="0,0,11,5" Padding="0" />
         <TextBox Name="RgbTextBox" Grid.Column="2" Grid.Row="1" IsReadOnly="True"
                  HorizontalAlignment="Stretch" VerticalContentAlignment="Center" Margin="0,0,11,0" Text="255, 255, 255" Padding="10,5"
-                 BorderBrush="{StaticResource BorderColor}" Foreground="{StaticResource TextboxTextColor}">
+                 BorderBrush="{StaticResource BorderColor}" Foreground="{StaticResource TextboxTextColor}"
+                 PreviewMouseLeftButtonDown="OnTextBoxPreviewMouseLeftButtonDown" GotFocus="OnTextBoxFocus">
             <TextBox.Resources>
                 <Style TargetType="{x:Type Border}">
                     <Setter Property="CornerRadius" Value="2"/>
@@ -83,7 +84,8 @@
         <Label Grid.Column="3" Grid.Row="0" Content="HEX" Margin="0,0,11,6" Padding="0"/>
         <TextBox Name="HexTextBox" Grid.Column="3" Grid.Row="1" IsReadOnly="True"
                  HorizontalAlignment="Stretch" VerticalContentAlignment="Center" Text="#FFFFFF" Padding="10,5"
-                 BorderBrush="{StaticResource BorderColor}" Foreground="{StaticResource TextboxTextColor}">
+                 BorderBrush="{StaticResource BorderColor}" Foreground="{StaticResource TextboxTextColor}"
+                 PreviewMouseLeftButtonDown="OnTextBoxPreviewMouseLeftButtonDown" GotFocus="OnTextBoxFocus">
             <TextBox.Resources>
                 <Style TargetType="{x:Type Border}">
                     <Setter Property="CornerRadius" Value="2"/>
