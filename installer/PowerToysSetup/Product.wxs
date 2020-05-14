@@ -344,6 +344,9 @@
       <Component Id="License_rtf" Guid="3E5AE43B-CFB4-449B-A346-94CAAFF3312E" Win64="yes">
         <File Source="$(var.RepoDir)\installer\License.rtf" Id="License.rtf" KeyPath="yes" />
       </Component>
+      <Component Id="Notice_md" Guid="E2FE99F5-5DF7-44EA-8B1C-2BDF8CEC5E6D" Win64="yes">
+        <File Source="$(var.RepoDir)\Notice.md" Id="Notice.md" KeyPath="yes" />
+      </Component>
       <Component Id="powertoysinterop_dll" Guid="B7DD2DF4-C8F2-46FA-9571-D6EF1588ADF3" Win64="yes">
         <File Id="PowerToysInterop.dll" KeyPath="yes" Checksum="yes" />
       </Component>
@@ -695,6 +698,7 @@
       <ComponentRef Id="action_runner_exe" />
       <ComponentRef Id="powertoys_toast_clsid" />
       <ComponentRef Id="License_rtf" />
+      <ComponentRef Id="Notice_md" />
       <ComponentRef Id="powertoysinterop_dll" />
       <ComponentRef Id="osDetection_dll" />
       <ComponentRef Id="PowerToysSvgs" />
