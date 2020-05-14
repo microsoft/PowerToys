@@ -12,8 +12,8 @@ namespace ColorPickerAlpha
     {
         Boolean rgbState = false;
         Color curColor;
-        bool isClicked = true; //automatically start looking for colors
-        bool isInWindow = false;
+        public bool isClicked = true; //automatically start looking for colors
+        public bool isInWindow = false;
 
         public MainWindow()
         {
@@ -23,13 +23,18 @@ namespace ColorPickerAlpha
             {
                 MouseLeave += delegate { isInWindow = false; };
                 MouseEnter += delegate { isInWindow = true; };
+                Activated += delegate { Topmost = true; };
+                Deactivated += delegate { Topmost = true; };
+
+                var hiddenMouseWindow = new OverlayWindow(this);
+                hiddenMouseWindow.Show();
             };
 
             new Thread(() =>
             {
                 while (true)
                 {
-                    if (!isClicked || isInWindow) 
+                    if (!isClicked || isInWindow)
                         continue;
 
                     (int x, int y) = ColorPicker.GetPhysicalCursorCoords();
@@ -37,7 +42,7 @@ namespace ColorPickerAlpha
                     Dispatcher.BeginInvoke(new Action(() =>
                     {
                         System.Drawing.Color color = ColorPicker.GetPixelColor(x, y);
-                        
+
                         curColor = System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B);
                         Color_Box.Fill = new SolidColorBrush(curColor);
 
@@ -54,12 +59,12 @@ namespace ColorPickerAlpha
             }).Start();
         }
 
-        private void toggle_rgb(object sender, RoutedEventArgs e)
+        private void Toggle_RGB(object sender, RoutedEventArgs e)
         {
             rgbState = !rgbState;
 
             var rgbVisibility = rgbState ? Visibility.Visible : Visibility.Hidden;
-            var hexVisibility = !rgbState? Visibility.Visible: Visibility.Hidden;
+            var hexVisibility = !rgbState ? Visibility.Visible : Visibility.Hidden;
 
             R_val.Visibility = rgbVisibility;
             G_val.Visibility = rgbVisibility;
@@ -71,12 +76,13 @@ namespace ColorPickerAlpha
 
             HEXValue.Visibility = hexVisibility;
             HEXLabel.Visibility = hexVisibility;
-            
+
         }
 
-        private void Copy_Clip(object sender, RoutedEventArgs e)
+        private void Copy_Clip(object sender, RoutedEventArgs e) => CopyToClipboard(); 
+
+        public void CopyToClipboard()
         {
-            
             string argb = curColor.ToString();
 
             if (rgbState)
