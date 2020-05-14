@@ -38,8 +38,6 @@ void getcolour(int x_coord, int y_coord, int &r, int&g, int&b)
     hDC = GetDC(NULL);
     if (hDC == NULL)
         return;
-
-    // Get the current cursor position
     
 
     // Retrieve the color at that position
@@ -53,6 +51,30 @@ void getcolour(int x_coord, int y_coord, int &r, int&g, int&b)
     r = GetRValue(color);
     g = GetGValue(color); 
     b = GetBValue(color);
+}
+
+COLORREF opposite_color(int r, int g, int b)
+{
+    
+    int Light = 150;
+    int Dark = 100;
+    int Middle = 127;
+    // Detect Grey -> If RGB are similar in a range,
+    if (Dark <= r && r <= Middle && Dark <= g && g <= Middle && Dark <= b && b <= Middle)
+    {
+        //cout << "Dark Grey" << endl;
+        return RGB(255, 255, 255);
+    }
+    else if (Middle < r && r <= Light && Middle < g && g <= Light && Middle < b && b <= Light)
+    {
+        //cout << "Light Grey" << endl;
+        return RGB(0, 0, 0);
+    }
+    else
+    {
+        return RGB(255 - r, 255 - g, 255 - b);
+    }
+
 }
 
 void draw_circle(int centre_x, int centre_y, int radius, COLORREF color, COLORREF oppositecolor, HDC hdc)
@@ -117,8 +139,6 @@ void erase(int x_coord, int y_coord, int r, int g, int b)
     color = RGB(255 - r, 255 - g, 255 - b);
 
     for (int radius = size / 20; radius >= 5; radius = radius - 5)
-
-
     {
         draw_circle(x_coord, y_coord, radius, color, oppositecolor, hDC);
     }
@@ -154,7 +174,8 @@ void locate(int x_coord, int y_coord, int r, int g, int b)
     int size = pow((pow(horizontal, 2) + pow(vertical, 2)), 0.5);
 
     oppositecolor = RGB(255 - r, 255 - g, 255 - b);
-    color = RGB(255 - r, 255 - g, 255 - b);
+    color = opposite_color( r,  g,  b);
+    //RGB(255 - r, 255 - g, 255 - b);
 
     for (int radius = 10; radius <= size/20; radius += 10)
     {
@@ -178,8 +199,6 @@ void locate(int x_coord, int y_coord, int r, int g, int b)
     RedrawWindow(desktopscreen, &rect, NULL, RDW_ERASE);
     
 }
-
-
 
 
 int main()
