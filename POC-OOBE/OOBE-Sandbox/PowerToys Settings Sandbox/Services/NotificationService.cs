@@ -35,7 +35,7 @@ namespace PowerToys_Settings_Sandbox.Services
 
         public static void AppUpdatedToast()
         {
-            string title = "Power Toys Updated";
+            string title = "New PowerToys Update";
             string logo = "../Assets/MiniLogo.png";
 
             ToastVisual visual = createToastVisual(title, logo);
@@ -70,7 +70,7 @@ namespace PowerToys_Settings_Sandbox.Services
                     // Action for updating app
                 }.ToString();
 
-            ToastActionsCustom actions = createToastAction("Update", onActionClick);
+            ToastActionsCustom actions = createToastAction("Update Now", onActionClick);
 
             string onLaunch = new QueryString()
                 {
