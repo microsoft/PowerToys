@@ -18,7 +18,7 @@ namespace ColorPicker
 
         private Dictionary<ActionTypes, Callback> _callbacks = new Dictionary<ActionTypes, Callback>();
 
-        public void AddCallBack(ActionTypes action, Callback callback)
+        public void AddCallback(ActionTypes action, Callback callback)
         {
             Callback current;
             if (_callbacks.TryGetValue(action, out current))

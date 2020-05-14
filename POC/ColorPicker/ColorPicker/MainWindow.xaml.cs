@@ -31,10 +31,10 @@ namespace ColorPicker
 
         private void HandleTransparentScreenClick(object sender, EventArgs e)
         {
-            ColorSelectionMade();
+            OnColorSelection();
         }
 
-        private void ColorSelectionMade()
+        private void OnColorSelection()
         {
             SetColor(PixelColorFinder.GetColorUnderCursor());
             DeactivateColorSelectionMode();
@@ -61,13 +61,6 @@ namespace ColorPicker
             HexTextBox.Text = "#" + color.R.ToString("X2") + color.G.ToString("X2") + color.B.ToString("X2");
         }
 
-        private void ActivateColorSelectionMode()
-        {
-            _isColorSelectionEnabled = true;
-            _transparentWindow.Show();
-            _updateTimer.Start();
-        }
-
         private void HandleColorButtonClick(object sender, EventArgs e)
         {
             if (_isColorSelectionEnabled)
@@ -78,7 +71,13 @@ namespace ColorPicker
             {
                 ActivateColorSelectionMode();
             }
+        }
 
+        private void ActivateColorSelectionMode()
+        {
+            _isColorSelectionEnabled = true;
+            _transparentWindow.Show();
+            _updateTimer.Start();
         }
 
         private void DeactivateColorSelectionMode()

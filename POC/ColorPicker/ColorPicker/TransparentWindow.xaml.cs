@@ -61,7 +61,7 @@ namespace ColorPicker
 
         internal void AddActionCallBack(ActionBroker.ActionTypes action, ActionBroker.Callback callback)
         {
-            _broker.AddCallBack(action, callback);
+            _broker.AddCallback(action, callback);
         }
     }
 }
