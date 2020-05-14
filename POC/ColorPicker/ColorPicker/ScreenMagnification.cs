@@ -14,19 +14,19 @@ namespace ColorPicker
 {
     static class ScreenMagnification
     {
-        public static BitmapImage GetMagnificationImage(int x, int y, int width, int height)
+        public static BitmapImage GetMagnificationImage(Point topLeft, int width, int height)
         {
-            Bitmap screenSection = CaptureScreenShot(x, y, width, height);
+            Bitmap screenSection = CaptureScreenShot(topLeft, width, height);
             return BitmapToImageSource(screenSection);
         }
 
-        private static Bitmap CaptureScreenShot(int x, int y, int width, int height)
+        private static Bitmap CaptureScreenShot(Point topLeft, int width, int height)
         {
             Bitmap bitmap = new Bitmap(width, height);
 
             using (Graphics gr = Graphics.FromImage(bitmap))
             {
-                gr.CopyFromScreen(new Point(x, y), Point.Empty, new Size(width, height));
+                gr.CopyFromScreen(topLeft, Point.Empty, new Size(width, height));
             }
 
             return bitmap;

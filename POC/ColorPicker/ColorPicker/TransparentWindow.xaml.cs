@@ -65,15 +65,12 @@ namespace ColorPicker
                 minX = Math.Min(minX, s.Bounds.X);
                 maxX = Math.Max(maxX, s.Bounds.X + s.Bounds.Width);
             }
-            Debug.WriteLine(maxX - minX);
             MinWidth = maxX - minX;
             Left = minX;
-            Debug.WriteLine(Width);
         }
 
         public void HandleMouseDown(object sender, EventArgs e)
         {
-            Debug.WriteLine(Width);
             _broker.ActionTriggered(ActionBroker.ActionTypes.Click, sender, e);
         }
 
@@ -119,10 +116,15 @@ namespace ColorPicker
         {
             System.Drawing.Point cursorPosition = PixelColorFinder.SafeGetCursorPos();
 
-            int logicalCoordForMagnificationLeft = cursorPosition.X - MAGNIFICATION_WIDTH / 2;
-            int logicalCoordForMagnificationTop = cursorPosition.Y - MAGNIFICATION_HEIGHT / 2;
+            System.Drawing.Point logicalCaptureCoordsTopLeft = new System.Drawing.Point();
+            logicalCaptureCoordsTopLeft.X = cursorPosition.X - MAGNIFICATION_WIDTH / 2;
+            logicalCaptureCoordsTopLeft.Y = cursorPosition.Y - MAGNIFICATION_HEIGHT / 2;
 
-            MagnifyImage.Source = ScreenMagnification.GetMagnificationImage(logicalCoordForMagnificationLeft, logicalCoordForMagnificationTop, MAGNIFICATION_WIDTH, MAGNIFICATION_HEIGHT);
+            MagnifyImage.Source = ScreenMagnification.GetMagnificationImage(
+                logicalCaptureCoordsTopLeft,
+                MAGNIFICATION_WIDTH,
+                MAGNIFICATION_HEIGHT
+            );
         }
 
         private void ConfigureUpdateTimer()
