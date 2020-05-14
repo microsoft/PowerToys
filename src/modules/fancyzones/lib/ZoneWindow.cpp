@@ -21,18 +21,18 @@ namespace ZoneWindowUtils
 {
     const std::wstring& GetActiveZoneSetTmpPath(int monitor, int num_monitors)
     {
-        static std::wstring activeZoneSetTmpFileName;
+        static std::vector<std::wstring> activeZoneSetTmpFileName(num_monitors);
         static std::vector<std::once_flag> flag(num_monitors);
 
-        std::call_once(flag[monitor], []() {
+        std::call_once(flag[monitor], [monitor]() {
             wchar_t fileName[L_tmpnam_s];
 
             if (_wtmpnam_s(fileName, L_tmpnam_s) != 0)
                 abort();
 
-            activeZoneSetTmpFileName = std::wstring{ fileName };
+            activeZoneSetTmpFileName[monitor] = std::wstring{ fileName };
         });
-        return activeZoneSetTmpFileName;
+        return activeZoneSetTmpFileName[monitor];
     }
 
     const std::wstring& GetAppliedZoneSetTmpPath(int monitor, int num_monitors)

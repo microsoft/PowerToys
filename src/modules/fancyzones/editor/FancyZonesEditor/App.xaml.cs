@@ -14,16 +14,17 @@ namespace FancyZonesEditor
     /// </summary>
     public partial class App : Application
     { 
-        public static Settings[] ZoneSettings { get; set; }
+        public Settings[] ZoneSettings { get; set; }
 
-        public static EditorOverlay Overlay { get; set; }
+        public EditorOverlay Overlay { get; set; }
 
-        public static LayoutModel[] FoundModel { get; set; }
+        public LayoutModel[] FoundModel { get; set; }
 
         public static int NumMonitors { get; private set; }
 
         public App()
         {
+            MonitorVM.CurrentMonitor = 0;
             NumMonitors = Environment.GetCommandLineArgs().Length / 6;
             ZoneSettings = new Settings[NumMonitors];
             for (int monitor_shift = 0; monitor_shift < NumMonitors; monitor_shift++)

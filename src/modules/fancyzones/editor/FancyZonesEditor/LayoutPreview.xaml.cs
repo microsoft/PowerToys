@@ -26,7 +26,7 @@ namespace FancyZonesEditor
         {
             InitializeComponent();
             DataContextChanged += LayoutPreview_DataContextChanged;
-            App.ZoneSettings[MonitorVM.CurrentMonitor].PropertyChanged += ZoneSettings_PropertyChanged;
+            ((App)Application.Current).ZoneSettings[MonitorVM.CurrentMonitor].PropertyChanged += ZoneSettings_PropertyChanged;
         }
 
         private void LayoutPreview_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -102,7 +102,7 @@ namespace FancyZonesEditor
             RowColInfo[] colInfo = (from percent in grid.ColumnPercents
                                     select new RowColInfo(percent)).ToArray();
 
-            Settings settings = App.ZoneSettings[MonitorVM.CurrentMonitor];
+            Settings settings = ((App)Application.Current).ZoneSettings[MonitorVM.CurrentMonitor];
 
             int spacing = settings.ShowSpacing ? settings.Spacing : 0;
 
@@ -198,7 +198,7 @@ namespace FancyZonesEditor
                 Body.ColumnDefinitions.Add(def);
             }
 
-            Settings settings = App.ZoneSettings[MonitorVM.CurrentMonitor];
+            Settings settings = ((App)Application.Current).ZoneSettings[MonitorVM.CurrentMonitor];
             Thickness margin = new Thickness(settings.ShowSpacing ? settings.Spacing / 20 : 0);
 
             List<int> visited = new List<int>();

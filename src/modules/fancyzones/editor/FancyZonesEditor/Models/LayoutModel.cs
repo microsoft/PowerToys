@@ -311,11 +311,10 @@ namespace FancyZonesEditor.Models
                     break;
             }
 
-            Settings settings = App.ZoneSettings[MonitorVM.CurrentMonitor];
-
+            Settings settings = ((App)Application.Current).ZoneSettings[MonitorVM.CurrentMonitor];
             AppliedZoneSet zoneSet = new AppliedZoneSet
             {
-                DeviceId = Settings.UniqueKey,
+                DeviceId = settings.UniqueKey,
                 ActiveZoneset = activeZoneSet,
                 EditorShowSpacing = settings.ShowSpacing,
                 EditorSpacing = settings.Spacing,
@@ -329,8 +328,9 @@ namespace FancyZonesEditor.Models
 
             try
             {
+
                 string jsonString = JsonSerializer.Serialize(zoneSet, options);
-                File.WriteAllText(Settings.ActiveZoneSetTmpFile, jsonString);
+                File.WriteAllText(settings.ActiveZoneSetTmpFile, jsonString);
             }
             catch (Exception ex)
             {

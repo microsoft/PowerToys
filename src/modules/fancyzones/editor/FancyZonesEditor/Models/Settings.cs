@@ -225,18 +225,18 @@ namespace FancyZonesEditor
 
         public static uint Monitor { get; private set; }
 
-        public static string UniqueKey { get; private set; }
+        public string UniqueKey { get; private set; }
 
         public static string ActiveZoneSetUUid { get; private set; }
 
         public static LayoutType ActiveZoneSetLayoutType { get; private set; }
 
-        public static string ActiveZoneSetTmpFile
+        public string ActiveZoneSetTmpFile
         {
             get { return _activeZoneSetTmpFile; }
         }
 
-        private static string _activeZoneSetTmpFile;
+        private string _activeZoneSetTmpFile;
 
         public static string AppliedZoneSetTmpFile
         {
@@ -365,8 +365,7 @@ namespace FancyZonesEditor
         {
             try
             {
-
-                FileStream inputStream = File.Open(Settings.ActiveZoneSetTmpFile, FileMode.Open);
+                FileStream inputStream = File.Open(this.ActiveZoneSetTmpFile, FileMode.Open);
                 var jsonObject = JsonDocument.Parse(inputStream, options: default).RootElement;
 
                 UniqueKey = jsonObject.GetProperty("device-id").GetString();

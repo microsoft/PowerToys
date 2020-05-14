@@ -143,7 +143,7 @@ namespace FancyZonesEditor
             EditorOverlay.Current.Close();
             EditorOverlay newEditorOverlay = new EditorOverlay();
             newEditorOverlay.Show();
-            newEditorOverlay.DataContext = App.FoundModel[MonitorVM.CurrentMonitor];
+            newEditorOverlay.DataContext = ((App)Application.Current).FoundModel[MonitorVM.CurrentMonitor];
 
             for (int i = 0; i < Monitors.Count; ++i)
             {
