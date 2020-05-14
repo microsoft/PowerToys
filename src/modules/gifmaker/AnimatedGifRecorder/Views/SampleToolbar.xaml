@@ -5,11 +5,24 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:AnimatedGifRecorder.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="20" d:DesignWidth="800">
+             d:DesignHeight="20" d:DesignWidth="800"
+             Height="50">
     <Grid>
         <StackPanel Orientation="Horizontal">
-            <Button Content="Hello"/>
-            <Button Content="World"/>
+            <Button Name="CaptureButton" Content="Capture" Click="CaptureButton_Click"/>
+            <GridSplitter ResizeDirection="Columns" Grid.Column="2" Height="Auto" Width="8"/>
+            <Button Name="RecordPauseButton" IsEnabled="False" Click="RecordPauseButton_Click">
+                <StackPanel Orientation="Horizontal">
+                    <Image Name="RecordPauseImage" Source="{Binding ImageUri}" Stretch="None"/>
+                    <TextBlock Name="RecordPauseText" Text="Record"/>
+                </StackPanel>
+            </Button>
+            <Button Name="StopButton" IsEnabled="False" Click="StopButton_Click">
+                <StackPanel Orientation="Horizontal">
+                    <Image Name="StopImage" Source="pack://application:,,,/Resources/media-stop.png" Stretch="None"/>
+                    <TextBlock Name="StopText" Text="Stop" />
+                </StackPanel>
+            </Button>
         </StackPanel>
     </Grid>
 </UserControl>

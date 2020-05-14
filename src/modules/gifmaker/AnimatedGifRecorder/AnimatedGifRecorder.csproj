@@ -37,6 +37,8 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -59,6 +61,9 @@
     <Compile Include="Views\SampleToolbar.xaml.cs">
       <DependentUpon>SampleToolbar.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\RecordArea.xaml.cs">
+      <DependentUpon>RecordArea.xaml</DependentUpon>
+    </Compile>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -74,6 +79,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Views\SampleToolbar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\RecordArea.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -103,6 +112,32 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\media-pause-2x.png" />
+    <Resource Include="Resources\media-pause-3x.png" />
+    <Resource Include="Resources\media-pause-4x.png" />
+    <Resource Include="Resources\media-pause-6x.png" />
+    <Resource Include="Resources\media-pause-8x.png" />
+    <Resource Include="Resources\media-pause.png" />
+    <Content Include="Resources\media-pause.svg" />
+    <Resource Include="Resources\media-record-2x.png" />
+    <Resource Include="Resources\media-record-3x.png" />
+    <Resource Include="Resources\media-record-4x.png" />
+    <Resource Include="Resources\media-record-6x.png" />
+    <Resource Include="Resources\media-record-8x.png" />
+    <Resource Include="Resources\media-record.png" />
+    <Content Include="Resources\media-record.svg" />
+    <Resource Include="Resources\media-stop-2x.png" />
+    <Resource Include="Resources\media-stop-3x.png" />
+    <Resource Include="Resources\media-stop-4x.png" />
+    <Resource Include="Resources\media-stop-6x.png" />
+    <Resource Include="Resources\media-stop-8x.png" />
+    <Resource Include="Resources\media-stop.png" />
+    <Content Include="Resources\media-stop.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Controls\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

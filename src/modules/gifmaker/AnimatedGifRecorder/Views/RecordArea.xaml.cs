@@ -13,23 +13,31 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace AnimatedGifRecorder
+namespace AnimatedGifRecorder.Views
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for UserControl1.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class RecordArea : UserControl
     {
-        public MainWindow()
+        public RecordArea()
         {
             InitializeComponent();
-            KeyDown += CloseOnEsc;
         }
 
-        private void CloseOnEsc(object sender, KeyEventArgs e)
+        private void MainCanvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.Key == Key.Escape)
-                Close();
+
+        }
+
+        private void MainCanvas_MouseMove(object sender, MouseEventArgs e)
+        {
+
+        }
+
+        private void MainCanvas_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+
         }
     }
 }
