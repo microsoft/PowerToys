@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -19,10 +20,11 @@ namespace FancyZonesEditor
     public partial class MainWindow : MetroWindow
     {
         public const int MaxZones = 40;
+        private const int PanelItemSize = 150;
         private readonly Settings _settings = ((App)Application.Current).ZoneSettings;
         private static readonly string _defaultNamePrefix = "Custom Layout ";
 
-        public int WrapPanelItemSize { get; set; } = 150;
+        public int WrapPanelItemSize { get; set; } = PanelItemSize;
 
         public MainWindow()
         {
@@ -35,7 +37,7 @@ namespace FancyZonesEditor
             if (_settings.WorkArea.Height < 900)
             {
                 SizeToContent = SizeToContent.WidthAndHeight;
-                WrapPanelItemSize = 150;
+                WrapPanelItemSize = PanelItemSize;
             }
         }
 
