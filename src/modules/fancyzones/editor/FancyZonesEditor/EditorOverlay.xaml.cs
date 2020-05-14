@@ -16,7 +16,7 @@ namespace FancyZonesEditor
     {
         public static EditorOverlay Current { get; set; }
 
-        private readonly Settings _settings = ((App)Application.Current).ZoneSettings;
+        private readonly Settings _settings = ((App)Application.Current).ZoneSettings[0];
         private LayoutPreview _layoutPreview;
 
         private UserControl _editor;

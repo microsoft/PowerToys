@@ -21,7 +21,7 @@ namespace FancyZonesEditor
     {
         public const int MaxZones = 40;
         private const int PanelItemSize = 150;
-        private readonly Settings _settings = ((App)Application.Current).ZoneSettings;
+        private readonly Settings _settings = ((App)Application.Current).ZoneSettings[0];
         private static readonly string _defaultNamePrefix = "Custom Layout ";
 
         public int WrapPanelItemSize { get; set; } = PanelItemSize;

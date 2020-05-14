@@ -12,6 +12,8 @@ using System.Text.Json;
 using System.Windows;
 using FancyZonesEditor.Models;
 
+using System.Diagnostics;
+
 namespace FancyZonesEditor
 {
     // Settings
@@ -78,9 +80,10 @@ namespace FancyZonesEditor
             }
         }
 
-        public Settings()
+        public Settings(int monitor_shift)
         {
-            ParseCommandLineArgs();
+            //Debugger.Launch();
+            ParseCommandLineArgs(monitor_shift);
 
             // Initialize the five default layout models: Focus, Columns, Rows, Grid, and PriorityGrid
             DefaultModels = new List<LayoutModel>(5);
@@ -362,6 +365,7 @@ namespace FancyZonesEditor
         {
             try
             {
+
                 FileStream inputStream = File.Open(Settings.ActiveZoneSetTmpFile, FileMode.Open);
                 var jsonObject = JsonDocument.Parse(inputStream, options: default).RootElement;
 
@@ -414,35 +418,32 @@ namespace FancyZonesEditor
             }
         }
 
-        private void ParseCommandLineArgs()
+        private void ParseCommandLineArgs(int monitor_shift)
         {
             _workArea = SystemParameters.WorkArea;
             Monitor = 0;
 
             string[] args = Environment.GetCommandLineArgs();
-            if (args.Length == 7)
+            if (uint.TryParse(args[(int)CmdArgs.MonitorHandle + (monitor_shift * 6)], out uint monitor))
             {
-                if (uint.TryParse(args[(int)CmdArgs.MonitorHandle], out uint monitor))
-                {
-                    Monitor = monitor;
-                }
-
-                var parsedLocation = args[(int)CmdArgs.X_Y_Width_Height].Split('_');
-                var x = int.Parse(parsedLocation[0]);
-                var y = int.Parse(parsedLocation[1]);
-                var width = int.Parse(parsedLocation[2]);
-                var height = int.Parse(parsedLocation[3]);
-
-                _workArea = new Rect(x, y, width, height);
-
-                WorkAreaKey = args[(int)CmdArgs.ResolutionKey];
-
-                _activeZoneSetTmpFile = args[(int)CmdArgs.ActiveZoneSetTmpFile];
-                _appliedZoneSetTmpFile = args[(int)CmdArgs.AppliedZoneSetTmpFile];
-                _customZoneSetsTmpFile = args[(int)CmdArgs.CustomZoneSetsTmpFile];
-
-                ParseDeviceInfoData();
+                Monitor = monitor;
             }
+
+            var parsedLocation = args[(int)CmdArgs.X_Y_Width_Height + (monitor_shift * 6)].Split('_');
+            var x = int.Parse(parsedLocation[0]);
+            var y = int.Parse(parsedLocation[1]);
+            var width = int.Parse(parsedLocation[2]);
+            var height = int.Parse(parsedLocation[3]);
+
+            _workArea = new Rect(x, y, width, height);
+
+            WorkAreaKey = args[(int)CmdArgs.ResolutionKey];
+
+            _activeZoneSetTmpFile = args[(int)CmdArgs.ActiveZoneSetTmpFile + (monitor_shift * 6)];
+            _appliedZoneSetTmpFile = args[(int)CmdArgs.AppliedZoneSetTmpFile + (monitor_shift * 6)];
+            _customZoneSetsTmpFile = args[(int)CmdArgs.CustomZoneSetsTmpFile + (monitor_shift * 6)];
+
+            ParseDeviceInfoData();
         }
 
         public IList<LayoutModel> DefaultModels { get; }
