@@ -630,6 +630,84 @@ UINT __stdcall DetectPrevInstallPathCA(MSIHANDLE hInstall)
     return WcaFinalize(er);
 }
 
+
+UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    hr = WcaInitialize(hInstall, "TerminateProcessesCA");
+
+    std::vector<DWORD> processes;
+    const size_t maxProcesses = 4096;
+    DWORD bytes = maxProcesses * sizeof(processes[0]);
+    processes.resize(maxProcesses);
+
+    if (!EnumProcesses(processes.data(), bytes, &bytes))
+    {
+        return 1;
+    }
+    processes.resize(bytes / sizeof(processes[0]));
+
+    std::array<std::wstring_view, 4> processesToTerminate = {
+        L"PowerLauncher.exe",
+        L"Microsoft.PowerToys.Settings.UI.Runner.exe",
+        L"Microsoft.PowerToys.Settings.UI.exe",
+        L"PowerToys.exe"
+    };
+
+    for (const auto procID : processes)
+    {
+        if (!procID)
+        {
+            continue;
+        }
+        wchar_t processName[MAX_PATH] = L"<unknown>";
+
+        HANDLE hProcess{OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | PROCESS_TERMINATE, FALSE, procID)};
+        if (!hProcess)
+        {
+            continue;
+        }
+        HMODULE hMod;
+        DWORD cbNeeded;
+
+        if (!EnumProcessModules(hProcess, &hMod, sizeof(hMod), &cbNeeded))
+        {
+            CloseHandle(hProcess);
+            continue;
+        }
+        GetModuleBaseNameW(hProcess, hMod, processName, sizeof(processName) / sizeof(wchar_t));
+
+        for (const auto processToTerminate : processesToTerminate)
+        {
+            if (processName == processToTerminate)
+            {
+                const DWORD timeout = 500;
+                auto windowEnumerator = [](HWND hwnd, LPARAM procIDPtr) -> BOOL {
+                    auto targetProcID = *reinterpret_cast<const DWORD*>(procIDPtr);
+                    DWORD windowProcID = 0;
+                    GetWindowThreadProcessId(hwnd, &windowProcID);
+                    if (windowProcID == targetProcID)
+                    {
+                        DWORD_PTR _ {};
+                        SendMessageTimeoutA(hwnd, WM_CLOSE, 0, 0, SMTO_BLOCK, timeout, &_);
+                    }
+                    return TRUE;
+                };
+                EnumWindows(windowEnumerator, reinterpret_cast<LPARAM>(&procID));
+                Sleep(timeout);
+                TerminateProcess(hProcess, 0);
+                break;
+            }
+        }
+        CloseHandle(hProcess);
+    }
+
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+
 // DllMain - Initialize and cleanup WiX custom action utils.
 extern "C" BOOL WINAPI DllMain(__in HINSTANCE hInst, __in ULONG ulReason, __in LPVOID)
 {

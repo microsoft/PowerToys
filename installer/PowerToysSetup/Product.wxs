@@ -91,8 +91,18 @@
       <Custom Action="InstallDotNet" After="InstallFinalize">
         NOT Installed
       </Custom>
+
+      <Custom Action="TerminateProcesses" Before="InstallValidate" />
       
     </InstallExecuteSequence>
+
+    <CustomAction
+      Id="TerminateProcesses"
+      Return="ignore"
+      Impersonate="no"
+      Execute="immediate"
+      BinaryKey="PTCustomActions"
+      DllEntry="TerminateProcessesCA" />
 
     <CustomAction 
       Id="InstallDotNet"
