@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.QueryStringDotNET;
 using PowerToys_Settings_Sandbox.Services;
-
+using PowerToys_Settings_Sandbox.Views;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -47,18 +47,17 @@ namespace PowerToys_Settings_Sandbox
 
                 switch (args["action"])
                 {
-                    case "openApp":
+                    case "OpenApp":
                         if (rootFrame == null)
                         {
                             rootFrame = new Frame();
                             Window.Current.Content = rootFrame;
                         }
 
-                        rootFrame.Navigate(typeof(Views.ShellPage));
-                        NavigationService.Navigate(typeof(Views.MainPage));
-                        Window.Current.Activate();
-                        break;
-
+                        rootFrame.Navigate(typeof(ShellPage));
+                        NavigationService.Navigate(typeof(MainPage), args["status"]);
+                        break;                        
+                    
                     default:
                         break;
                 }
@@ -71,12 +70,12 @@ namespace PowerToys_Settings_Sandbox
 
         private ActivationService CreateActivationService()
         {
-            return new ActivationService(this, typeof(Views.MainPage), new Lazy<UIElement>(CreateShell));
+            return new ActivationService(this, typeof(MainPage), new Lazy<UIElement>(CreateShell));
         }
 
         private UIElement CreateShell()
         {
-            return new Views.ShellPage();
+            return new ShellPage();
         }
     }
 }
