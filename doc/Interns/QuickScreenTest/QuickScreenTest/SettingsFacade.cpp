@@ -1,5 +1,6 @@
 #include "Resolution.h"
 
+// TODO return this struct from getAllDisplaySettings once brightness setting is ready
 //struct DisplaySettings {
 //	char* displayName;
 //	ResolutionSetting* possibleResolutions;
