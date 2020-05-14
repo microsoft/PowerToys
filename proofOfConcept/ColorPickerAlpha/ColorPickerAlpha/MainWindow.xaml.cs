@@ -21,6 +21,8 @@ namespace ColorPickerAlpha
             {
                 _pickerActive = value;
                 overlayWnd.Visibility = value ? Visibility.Visible : Visibility.Hidden;
+                Topmost = false;
+                Topmost = true;
             }
         }
         public bool isInWindow = false;
@@ -37,6 +39,9 @@ namespace ColorPickerAlpha
                 Deactivated += delegate { Topmost = true; };
 
                 overlayWnd = new OverlayWindow(this);
+                //both windows should be topmost, but the MainWindow above the overlay
+                //=> both receive mouse input when needed. Owners are below children
+                overlayWnd.Activated += delegate { Owner = overlayWnd; };
                 overlayWnd.Show();
             };
 

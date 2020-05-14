@@ -28,7 +28,7 @@ namespace ColorPickerAlpha
             this.mainWnd = mainWnd;
             AllowsTransparency = true;
             WindowStyle = WindowStyle.None;
-            Background = (Brush) new BrushConverter().ConvertFrom("#F10F0000"); 
+            Background = (Brush) new BrushConverter().ConvertFrom("#01000000"); 
             SetSize();
 
             Loaded += delegate
