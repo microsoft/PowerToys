@@ -11,7 +11,6 @@ using System.Xml.Linq;
 using Windows.ApplicationModel;
 using Windows.Management.Deployment;
 using AppxPackaing;
-using Shell;
 using Wox.Infrastructure;
 using Microsoft.Plugin.Program.Logger;
 using IStream = AppxPackaing.IStream;
@@ -364,10 +363,10 @@ namespace Microsoft.Plugin.Program.Programs
 
             private async void Launch(IPublicAPI api)
             {
-                var appManager = new ApplicationActivationManager();
+                var appManager = new ApplicationActivationHelper.ApplicationActivationManager();
                 uint unusedPid;
                 const string noArgs = "";
-                const ACTIVATEOPTIONS noFlags = ACTIVATEOPTIONS.AO_NONE;
+                const ApplicationActivationHelper.ActivateOptions noFlags = ApplicationActivationHelper.ActivateOptions.None;
                 await Task.Run(() =>
                 {
                     try
