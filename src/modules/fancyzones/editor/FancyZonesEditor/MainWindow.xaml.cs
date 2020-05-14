@@ -3,10 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
+using System.Text.Json;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Management;
+using System.Text;
 using FancyZonesEditor.Models;
 using MahApps.Metro.Controls;
 
@@ -159,6 +165,12 @@ namespace FancyZonesEditor
 
                 Close();
             }
+        }
+
+        // TODO: Instead of a message box create an overlay on each screen that dissapears after sometime
+        private void Apply_identify(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Replace me with an overlay");
         }
 
         private void OnClosing(object sender, EventArgs e)
