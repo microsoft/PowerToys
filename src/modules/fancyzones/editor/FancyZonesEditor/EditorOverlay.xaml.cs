@@ -21,7 +21,7 @@ namespace FancyZonesEditor
         
         private UserControl _editor;
 
-        public static MainWindow MainWindow = new MainWindow();
+        public MainWindow MainWindow = new MainWindow();
 
         public Int32Rect[] GetZoneRects()
         {

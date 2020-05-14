@@ -139,22 +139,22 @@ namespace FancyZonesEditor
         private void SelectCommandExecute(MonitorInfo monitorInfo)
         {
             MonitorVM.CurrentMonitor = monitorInfo.Id;
-            Models.LayoutModel.SerializeDeletedCustomZoneSets();
             EditorOverlay.Current.Close();
             EditorOverlay newEditorOverlay = new EditorOverlay();
             newEditorOverlay.Show();
+            newEditorOverlay.MainWindow.Show();
             newEditorOverlay.DataContext = ((App)Application.Current).FoundModel[MonitorVM.CurrentMonitor];
 
-            for (int i = 0; i < Monitors.Count; ++i)
-            {
-                if (Monitors[i].Selected)
-                {
-                    Monitors[i] = new MonitorInfo(Monitors[i].Id, Monitors[i].Name, Monitors[i].Height, Monitors[i].Width, false);
-                    break;
-                }
-            }
+            //for (int i = 0; i < Monitors.Count; ++i)
+            //{
+            //    if (Monitors[i].Selected)
+            //    {
+            //        Monitors[i] = new MonitorInfo(Monitors[i].Id, Monitors[i].Name, Monitors[i].Height, Monitors[i].Width, false);
+            //        break;
+            //    }
+            //}
 
-            Monitors[monitorInfo.Id] = new MonitorInfo(monitorInfo.Id, monitorInfo.Name, monitorInfo.Height, monitorInfo.Width, true);
+            //Monitors[monitorInfo.Id] = new MonitorInfo(monitorInfo.Id, monitorInfo.Name, monitorInfo.Height, monitorInfo.Width, true);
         }
 
         #endregion Commands

@@ -41,7 +41,7 @@ namespace FancyZonesEditor
             {
                 foreach (LayoutModel model in ZoneSettings[setting].DefaultModels)
                 {
-                    if (model.Type == Settings.ActiveZoneSetLayoutType)
+                    if (model.Type == ZoneSettings[setting].ActiveZoneSetLayoutType)
                     {
                         // found match
                         FoundModel[setting] = model;
