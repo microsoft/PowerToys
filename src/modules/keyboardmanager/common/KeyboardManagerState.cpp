@@ -198,7 +198,6 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
             currentShortcutUI2.Visibility(Visibility::Collapsed);
         }
 
-        int i = 0;
         for (int i = 0; i < shortcut.size(); i++)
         {
             if (i < 3)
@@ -209,7 +208,6 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
             {
                 AddKeyToLayout(currentShortcutUI2, shortcut[i]);
             }
-            i++;
         }
         currentShortcutUI1.UpdateLayout();
         currentShortcutUI2.UpdateLayout();
