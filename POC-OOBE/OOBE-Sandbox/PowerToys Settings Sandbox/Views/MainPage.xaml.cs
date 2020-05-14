@@ -5,6 +5,7 @@ using PowerToys_Settings_Sandbox.ViewModels;
 using Windows.UI.Xaml.Navigation;
 using Microsoft.Toolkit.Uwp.Helpers;
 using Windows.UI.Notifications;
+using Windows.Storage;
 
 namespace PowerToys_Settings_Sandbox.Views
 {
@@ -17,20 +18,48 @@ namespace PowerToys_Settings_Sandbox.Views
             InitializeComponent();
         }
 
+
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             if (e.Parameter is string x)
             {
+                var lSettings = ApplicationData.Current.LocalSettings;
+                Object firstRun = lSettings.Values["IsFirstRun"];
+                Object currentVersion = lSettings.Values["currentVersion"];
+                Object newVersion = lSettings.Values["newVersion"];
+
+                /// <summary>
+                /// Will run appropriate startups when toast is clicked
+                /// </summary>
                 if (x == "FirstOpen")
                 {
                     PowerOnLaunchDialog();
-                    ToastNotificationManager.History.Clear();
+                    lSettings.Values["IsFirstRun"] = false;
                 }
                 else if (x == "NewUpdateOpen")
                 {
                     DisplayUpdateDialog();
-                    ToastNotificationManager.History.Clear();
+                    lSettings.Values["currentVersion"] = newVersion;
                 }
+                /// <summary>
+                /// Check for current status of app (new update or new install) on launch
+                /// Comment out this section if using sandbox notifications in App.xaml.cs
+                /// </summary>
+                /*
+                else
+                {
+                    if (!(firstRun is null) && (bool)firstRun == true)
+                    {
+                        PowerOnLaunchDialog();
+                        lSettings.Values["IsFirstRun"] = false;
+                    }
+                    else if (!(currentVersion is null) && (string)currentVersion != (string)newVersion)
+                    {
+                        DisplayUpdateDialog();
+                        lSettings.Values["currentVersion"] = newVersion;
+                    }
+                }
+                */
             }
         }
 
@@ -41,7 +70,6 @@ namespace PowerToys_Settings_Sandbox.Views
             await dialog.ShowAsync();
         }
 
-        //TODO: Customize to be called only once after update is installed
         private async void DisplayUpdateDialog()
         {
             ContentDialog updateDialog = new UpdateContentDialog();
