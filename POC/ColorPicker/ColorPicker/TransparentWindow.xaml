@@ -11,13 +11,12 @@
         MouseDown="HandleMouseDown"
         Background="#01000000"
         MouseMove="OnMouseMove"
-        Loaded="OnLoad"
-        >
+        Loaded="OnLoad">
     <Canvas>
         <Border BorderBrush="Gray" BorderThickness="2" x:Name="MouseFollower" Visibility="Hidden">
             <Grid Height="100" Width="100">
-                <Image x:Name="MagnifyImage" Width="100" Height="100"/>
-                <Ellipse Width="5" Height="5" Fill="Red"/>
+                <Image x:Name="MagnifyImage"/>
+                <Rectangle Width="10" Height="10" Stroke="Red"/>
             </Grid>
         </Border>
     </Canvas>

@@ -1,18 +1,12 @@
 ﻿using System.Diagnostics;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Forms;
-
 using System;
 using System.Windows.Controls;
-using System.Drawing;
-using System.Runtime.InteropServices;
-using System.Drawing.Imaging;
-using System.Windows.Media.Imaging;
-using System.IO;
 using System.Windows.Threading;
-using System.Threading.Tasks;
 using ColorPicker.ColorPickingFunctionality;
+using System.Windows.Media;
+using System.Windows.Interop;
 
 namespace ColorPicker
 {
@@ -28,45 +22,13 @@ namespace ColorPicker
         {
             InitializeComponent();
             this.Cursor = System.Windows.Input.Cursors.Cross;
-            SetWindowSizeToCoverAllScreens();
+
             ConfigureUpdateTimer();
-        }
 
-        private void SetWindowSizeToCoverAllScreens()
-        {
-
-            DetermineAndSetWindowHeight();
-            DetermineAndSetWindowWidth();
-        }
-
-        private void DetermineAndSetWindowHeight()
-        {
-            int minY = 0;
-            int maxY = 0;
-
-            foreach (Screen s in Screen.AllScreens)
-            {
-                minY = Math.Min(minY, s.Bounds.Y);
-                maxY = Math.Max(maxY, s.Bounds.Y + s.Bounds.Height);
-            }
-
-            MinHeight = maxY - minY;
-            Top = minY;
-        }
-
-        private void DetermineAndSetWindowWidth()
-        {
-            int minX = 0;
-            int maxX = 0;
-
-            foreach (Screen s in Screen.AllScreens)
-            {
-                Debug.WriteLine(s.Bounds);
-                minX = Math.Min(minX, s.Bounds.X);
-                maxX = Math.Max(maxX, s.Bounds.X + s.Bounds.Width);
-            }
-            MinWidth = maxX - minX;
-            Left = minX;
+            Width = SystemParameters.VirtualScreenWidth;
+            Left = SystemParameters.VirtualScreenLeft;
+            Height = SystemParameters.VirtualScreenHeight;
+            Top = SystemParameters.VirtualScreenTop;
         }
 
         public void HandleMouseDown(object sender, EventArgs e)
