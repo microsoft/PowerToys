@@ -4,6 +4,7 @@ using Windows.UI.Xaml.Controls;
 using PowerToys_Settings_Sandbox.ViewModels;
 using Windows.UI.Xaml.Navigation;
 using Microsoft.Toolkit.Uwp.Helpers;
+using Windows.UI.Notifications;
 
 namespace PowerToys_Settings_Sandbox.Views
 {
@@ -23,10 +24,12 @@ namespace PowerToys_Settings_Sandbox.Views
                 if (x == "FirstOpen")
                 {
                     PowerOnLaunchDialog();
+                    ToastNotificationManager.History.Clear();
                 }
                 else if (x == "NewUpdateOpen")
                 {
                     DisplayUpdateDialog();
+                    ToastNotificationManager.History.Clear();
                 }
             }
         }
