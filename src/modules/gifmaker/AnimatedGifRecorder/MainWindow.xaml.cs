@@ -28,7 +28,8 @@ namespace AnimatedGifRecorder
 
         private void CloseOnEsc(object sender, KeyEventArgs e)
         {
-            Close();
+            if (e.Key == Key.Escape)
+                Close();
         }
     }
 }
