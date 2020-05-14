@@ -257,20 +257,20 @@ namespace FancyZonesEditor.Models
             try
             {
                 string persistentFancyZoneSettings = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\FancyZones\\zones-settings.json");
-                FileStream inputStream = File.Open(persistentFancyZoneSettings, FileMode.Open);
-                JsonDocument jsonObject = JsonDocument.Parse(inputStream, options: default);
-                JsonElement.ArrayEnumerator settingsEnumerator = jsonObject.RootElement.GetProperty("devices").EnumerateArray();
-                int monitorIndex = 1;
-
-                while (settingsEnumerator.MoveNext())
+                using (FileStream inputStream = File.Open(persistentFancyZoneSettings, FileMode.Open))
                 {
-                    var current = settingsEnumerator.Current;
-                    string device = current.GetProperty("device-id").GetString();
-                    _monitorMapping.Add("Display " + monitorIndex, device); // Ideally this should be done from cpp side (Phase 3)
-                    monitorIndex++;
-                }
+                    JsonDocument jsonObject = JsonDocument.Parse(inputStream, options: default);
+                    JsonElement.ArrayEnumerator settingsEnumerator = jsonObject.RootElement.GetProperty("devices").EnumerateArray();
+                    int monitorIndex = 1;
 
-                inputStream.Close();
+                    while (settingsEnumerator.MoveNext())
+                    {
+                        var current = settingsEnumerator.Current;
+                        string device = current.GetProperty("device-id").GetString();
+                        _monitorMapping.Add("Display " + monitorIndex, device); // Ideally this should be done from cpp side (Phase 3)
+                        monitorIndex++;
+                    }
+                }
             }
             catch (Exception ex)
             {
