@@ -1,8 +1,8 @@
 # PowerToys Out Of Box Experience Proposal and Code
 
-### Developers: [Furaha Damién](https://github.com/furahadamien), [Letitia Kwan](https://github.com/letitiakwan), [Jessica Lim](https://github.com/JessicaLim8)
-### Program Manager : [Eunice Choi](https://github.com/eunicechoi98)
-### Designer : Rafael Flora
+##### Developers: [Furaha Damién](https://github.com/furahadamien), [Letitia Kwan](https://github.com/letitiakwan), [Jessica Lim](https://github.com/JessicaLim8)
+##### Program Manager : [Eunice Choi](https://github.com/eunicechoi98)
+##### Designer : Rafael Flora
 
 ## Overview
 A team of Microsoft Garage interns have created a proposal for the out-of-box experience after the first time install of the PowerToys app, and a proposal for the UI experience of updates.
@@ -32,7 +32,7 @@ PowerToys v17 has a silent launch after first time installation and update. As e
         }
 ```
 
-#### Considerations:
+#### Considerations: 
 
 ## 2. FancyZones Adaptive Sizing Layout Change
 
