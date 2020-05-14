@@ -229,7 +229,7 @@ namespace FancyZonesEditor
 
         public static string ActiveZoneSetUUid { get; private set; }
 
-        public static LayoutType ActiveZoneSetLayoutType { get; private set; }
+        public LayoutType ActiveZoneSetLayoutType { get; private set; }
 
         public string ActiveZoneSetTmpFile
         {
