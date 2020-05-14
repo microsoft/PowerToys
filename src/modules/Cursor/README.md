@@ -4,7 +4,9 @@ Find Cursor is intended to be a utility within Microsoft PowerToys to enhance th
 
 <img align="left" width="800" height="400" src="./doc/images/cursor.png" />
 
-<br>
+<br />
+<br />
+<br />
 
 ## Functionality 
 
@@ -18,7 +20,9 @@ Unlike the default plain cursor locator, the powertoys find cursor utility provi
 
 <img align="left" width="800" height="400" src="./doc/images/contrast.png" />
 
-<br>
+<br />
+<br />
+<br />
 
 Colour adaptation of animation can be seen above. 
 
