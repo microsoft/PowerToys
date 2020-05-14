@@ -3,29 +3,29 @@ PowerToys Run is a quick launcher for power users that has additional
 capabilities without sacrificing performance. It is open source and
 modular for additional plugins. Press Alt+Space and start typing!
 
-![](/src/modules/launcher/images/QuickStart.gif)
+![](../../../doc/images/Launcher/QuickStart.gif)
 
 # 1\. Get Started 
 ## 1\.1 Features
 Search for applications, folders, or files
-![](/src/modules/launcher/images/Features.gif)
+![](../../../doc/images/Launcher/Features.gif)
 
 Search for running processes (previously
 [WindowWalker](https://github.com/betsegaw/windowwalker/))
 
-![](/src/modules/launcher/images/FeaturesWindowWalker.gif)
+![](../../../doc/images/Launcher/FeaturesWindowWalker.gif)
 
 Clickable buttons with keyboard shortcuts
 
-![](/src/modules/launcher/images/FeaturesButtons.gif)
+![](../../../doc/images/Launcher/FeaturesButtons.gif)
 
 Invoke Shell Plugin using "\> "
 
-![](/src/modules/launcher/images/FeaturesShell.gif)
+![](../../../doc/images/Launcher/FeaturesShell.gif)
 
 Do a simple calculation using calculator
 
-![](/src/modules/launcher/images/FeaturesCalculator.gif)
+![](../../../doc/images/Launcher/FeaturesCalculator.gif)
 
 ## 1\.2 Settings 
   | **Settings**   |               **Action** |
