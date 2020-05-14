@@ -43,6 +43,7 @@ namespace AnimatedGifRecorder.Views
             if ((string)RecordPauseButton.Tag == "Record")
             {
                 // RecordPauseButton.Icon = new SymbolIcon(Symbol.Pause);
+                Cursor = Cursors.Arrow;
                 RecordPauseButton.Tag = "Pause";
                 StopButton.IsEnabled = true;
             }
