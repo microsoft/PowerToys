@@ -3,8 +3,8 @@
 
 // TODO add error handling
 // TODO break up large method
-std::vector<MonitorDisplayDevice> getAllMonitorDisplayDevices() {   
-    std::vector<MonitorDisplayDevice> monitorDisplayDevices;
+std::vector<MonitorResolutionSettings> getAllResolutionSettings() {   
+    std::vector<MonitorResolutionSettings> monitorDisplayDevices;
     int adapterCount = 0, devicesCount = 0, graphicsMode = 0;
 
     DISPLAY_DEVICE display = { 0 };
@@ -30,7 +30,7 @@ std::vector<MonitorDisplayDevice> getAllMonitorDisplayDevices() {
                 WCHAR DeviceStringBuff[40];
                 wcscpy_s(DeviceNameBuff, displayAdapter.DeviceName);
                 wcscpy_s(DeviceStringBuff, display.DeviceString);
-                monitorDisplayDevices.push_back(MonitorDisplayDevice(DeviceNameBuff, DeviceStringBuff));
+                monitorDisplayDevices.push_back(MonitorResolutionSettings(DeviceNameBuff, DeviceStringBuff));
 
                 // read the current resolution settings
                 EnumDisplaySettingsExW(displayAdapter.DeviceName, ENUM_CURRENT_SETTINGS, &mode, 0);

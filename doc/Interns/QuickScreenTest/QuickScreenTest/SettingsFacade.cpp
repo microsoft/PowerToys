@@ -1,33 +1,24 @@
 #include "Resolution.h"
 
-struct BrightnessSetting {
-	int maxBrightness;
-	int currentBrightness;
-};
+//struct DisplaySettings {
+//	char* displayName;
+//	ResolutionSetting* possibleResolutions;
+//	BrightnessSetting brightness;
+//	// RECT displayCoordinates; TODO find this struct
+//};
 
-struct ResolutionSetting {
-	Resolution* possibleResolutions;
-	Resolution currentResolution;
-};
+std::vector<MonitorResolutionSettings>* getAllDisplaySettings() {
+	std::vector<MonitorResolutionSettings> resolutionSettings = getAllResolutionSettings();
+	return &resolutionSettings;
+}
 
-
-struct DisplaySettings {
-	char* displayName;
-	ResolutionSetting* possibleResolutions;
-	BrightnessSetting brightness;
-	// RECT displayCoordinates; TODO find this struct
-};
-
-
-bool SetResolution(char* displayName, int pixelWidth, int pixelHeight) {
+bool SetResolution(WCHAR* displayName, int pixelWidth, int pixelHeight) {
+	 if (setDisplayResolution(displayName, Resolution(pixelWidth, pixelHeight)))
+		 return true;
 	return false;
 }
 
 
 bool SetBrightness(char* displayName, int brightness) {
 	return false;
-}
-
-DisplaySettings* getAllDisplaySettings() {
-	return 0;
 }

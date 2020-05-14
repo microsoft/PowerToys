@@ -17,18 +17,18 @@ struct Resolution
     }
 };
 
-struct MonitorDisplayDevice {
-    WCHAR* displayAdapterName;
+struct MonitorResolutionSettings {
+    WCHAR* displayAdapterName; 
     WCHAR* monitorName;
     std::vector<Resolution> possibleResolutions;
     Resolution currentResolution;
 
-    MonitorDisplayDevice(WCHAR* _displayAdapterName, WCHAR* _monitorName) {
+    MonitorResolutionSettings(WCHAR* _displayAdapterName, WCHAR* _monitorName) {
         displayAdapterName = _displayAdapterName;
         monitorName = _monitorName;
     }
 };
 
 
-std::vector<MonitorDisplayDevice> getAllMonitorDisplayDevices();
+std::vector<MonitorResolutionSettings> getAllResolutionSettings();
 bool setDisplayResolution(WCHAR* displayDeviceName, Resolution resolution);
