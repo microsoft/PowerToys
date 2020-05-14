@@ -33,7 +33,7 @@ namespace ColorPickerAlpha
                         G_val.Text = curColor.G.ToString();
                         B_val.Text = curColor.B.ToString();
 
-                        HEXValue.Text = rgbToHEX(curColor.ToString());
+                        HEXValue.Text = argbToHEX(curColor.ToString());
 
                     }));
 
@@ -45,55 +45,48 @@ namespace ColorPickerAlpha
         private void toggle_rgb(object sender, RoutedEventArgs e)
         {
             rgbState = !rgbState;
-            if (rgbState)
-            {
-                R_val.Visibility = Visibility.Visible;
-                RLabel.Visibility = Visibility.Visible;
-                G_val.Visibility = Visibility.Visible;
-                GLabel.Visibility = Visibility.Visible;
-                B_val.Visibility = Visibility.Visible;
-                BLabel.Visibility = Visibility.Visible;
-                HEXValue.Visibility = Visibility.Hidden;
-                HEXLabel.Visibility = Visibility.Hidden;
-            }
-            else
-            {
-                R_val.Visibility = Visibility.Hidden;
-                RLabel.Visibility = Visibility.Hidden;
-                G_val.Visibility = Visibility.Hidden;
-                GLabel.Visibility = Visibility.Hidden;
-                B_val.Visibility = Visibility.Hidden;
-                BLabel.Visibility = Visibility.Hidden;
-                HEXValue.Visibility = Visibility.Visible;
-                HEXLabel.Visibility = Visibility.Visible;
-            }
+
+            var rgbVisibility = rgbState ? Visibility.Visible : Visibility.Hidden;
+            var hexVisibility = !rgbState? Visibility.Visible: Visibility.Hidden;
+
+            R_val.Visibility = rgbVisibility;
+            G_val.Visibility = rgbVisibility;
+            B_val.Visibility = rgbVisibility;
+
+            RLabel.Visibility = rgbVisibility;
+            GLabel.Visibility = rgbVisibility;
+            BLabel.Visibility = rgbVisibility;
+
+            HEXValue.Visibility = hexVisibility;
+            HEXLabel.Visibility = hexVisibility;
+            
         }
 
         private void Copy_Clip(object sender, RoutedEventArgs e)
         {
             
-            string argb_hex = curColor.ToString();
+            string argb = curColor.ToString();
 
             if (rgbState)
             {
-                string rgbText = "(" + R_val.Text + ", " + G_val.Text + ", " + B_val.Text + " )";
+                string rgbText = "(" + R_val.Text + ", " + G_val.Text + ", " + B_val.Text + ")";
                 Clipboard.SetText(rgbText);
             }
             else
             {
-                Clipboard.SetText(rgbToHEX(argb_hex));
+                Clipboard.SetText(argbToHEX(argb));
             }
         }
 
-        private string rgbToHEX(string rgb)
+        private string argbToHEX(string argb)
         {
             // RGB and ARGB formats
-            StringBuilder rgb_hex = new StringBuilder();
+            StringBuilder hex = new StringBuilder();
             // Append the # sign in hex and remove the Alpha values from the ARGB format i.e) #AARRGGBB.
-            rgb_hex.Append(rgb[0]);
-            rgb_hex.Append(rgb.Substring(3));
+            hex.Append(argb[0]);
+            hex.Append(argb.Substring(3));
 
-            return rgb_hex.ToString();
+            return hex.ToString();
         }
     }
 }

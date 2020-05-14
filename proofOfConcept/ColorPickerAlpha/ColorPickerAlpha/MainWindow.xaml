@@ -34,7 +34,7 @@
             </Button.Background>
         </Button>
 
-        <Rectangle x:Name="Color_Box" Grid.Row = "0" Grid.Column = "1" Margin="2" Fill="White" RenderTransformOrigin="0.475,0.538" />
+        <Rectangle x:Name="Color_Box" Grid.Row = "0" Grid.Column = "1" Margin="2" Fill="{StaticResource backgroundBrush}" RenderTransformOrigin="0.475,0.538" />
 
         <TextBlock x:Name="HEXLabel" Grid.Row = "0" Grid.Column = "2" Text = "HEX" 
          Margin = "10,12,5,15" HorizontalAlignment = "Center" VerticalAlignment = "Center" 
