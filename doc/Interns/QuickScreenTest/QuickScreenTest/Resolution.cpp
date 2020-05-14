@@ -65,14 +65,15 @@ std::vector<MonitorDisplayDevice> getAllMonitorDisplayDevices() {
 }
 
 
+// TODO add error handling
 bool setDisplayResolution(WCHAR* displayDeviceName, Resolution resolution) {
     DEVMODE desiredMode = { 0 };
     desiredMode.dmSize = sizeof(DEVMODE);
-    desiredMode.dmPelsWidth = 1920;
-    desiredMode.dmPelsHeight = 1080;
+    desiredMode.dmPelsWidth = resolution.width;
+    desiredMode.dmPelsHeight = resolution.height;
     desiredMode.dmFields = DM_PELSHEIGHT | DM_PELSWIDTH;
 
-    LONG res = ChangeDisplaySettings(&desiredMode, CDS_UPDATEREGISTRY | CDS_GLOBAL | CDS_RESET);
+    LONG res = ChangeDisplaySettingsExW(displayDeviceName, &desiredMode, NULL, CDS_UPDATEREGISTRY | CDS_GLOBAL | CDS_RESET, NULL);
 
     if (res == DISP_CHANGE_BADPARAM || res == DISP_CHANGE_BADFLAGS) {
         return FALSE;
@@ -80,6 +81,7 @@ bool setDisplayResolution(WCHAR* displayDeviceName, Resolution resolution) {
     else if (res) {
         return TRUE;
     }
-
     return FALSE;
 }
+
+
