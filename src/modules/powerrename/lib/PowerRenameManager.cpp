@@ -820,25 +820,19 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
 
                                 if (newNameToUse != nullptr && (flags & Uppercase)) 
                                 {
-                                    for (int i = 0; i < MAX_PATH; i++)
-                                    {
-                                        newNameToUse[i] = toupper(newNameToUse[i]);
-                                    }
+                                    std::transform(newNameToUse, newNameToUse + wcslen(newNameToUse), newNameToUse, ::towupper);
                                 }
                                 else if (newNameToUse != nullptr && (flags & Lowercase))
                                 {
-                                    for (int i = 0; i < MAX_PATH; i++)
-                                    {
-                                        newNameToUse[i] = tolower(newNameToUse[i]);
-                                    }
+                                    std::transform(newNameToUse, newNameToUse + wcslen(newNameToUse), newNameToUse, ::towlower);
                                 }
                                 else if (newNameToUse != nullptr && (flags & Capitalized))
                                 {
-                                    for (int i = 0; i < MAX_PATH; i++)
+                                    for (int i = 0; i < wcslen(newNameToUse); i++)
                                     {
-                                        if (!i || isspace(newNameToUse[i - 1]))
+                                        if (!i || iswspace(newNameToUse[i - 1]))
                                         {
-                                            newNameToUse[i] = toupper(newNameToUse[i]);
+                                            newNameToUse[i] = towupper(newNameToUse[i]);
                                         }
                                     }
                                 }
