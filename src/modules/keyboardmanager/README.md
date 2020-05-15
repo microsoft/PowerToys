@@ -11,10 +11,7 @@ To create mappings with Keyboard Manager, you have the option of launching eithe
 
 
 ## Remap Keys
-To remap a key to another key, click the <kbd>Remap a Key</kbd> button to
-launch the Remap Keyboard UI. When first launched, you are met
-with no predefined mappings and must click the <kbd>+</kbd> button to add
-a new remap. From there, select the key whose output they want to ***change*** as the “Original Key” and then keys new output as the “New Key”. For example, if you want to press <kbd>A</kbd> and have <kbd>B</kbd>  appear, Key <kbd>A</kbd> would be your “Original Key” and Key <kbd>B</kbd> would be your “New Key”. If you want to swap keys, add another remapping with Key <kbd>B</kbd> as your Original and Key <kbd>A</kbd> as your New.
+To remap a key to another key, click the <kbd>Remap a Key</kbd> button to launch the Remap Keyboard UI. When first launched, you are met with no predefined mappings and must click the <kbd>+</kbd> button to add a new remap. From there, select the key whose output you want to ***change*** as the “Original Key” and then keys new output as the “New Key”. For example, if you want to press <kbd>A</kbd> and have <kbd>B</kbd>  appear, Key <kbd>A</kbd> would be your “Original Key” and Key <kbd>B</kbd> would be your “New Key”. If you want to swap keys, add another remapping with Key <kbd>B</kbd> as your Original and Key <kbd>A</kbd> as your New.
 
 ![alt text][remapkey]
 
@@ -22,12 +19,8 @@ a new remap. From there, select the key whose output they want to ***change*** a
 Currently you are only able to remap global level shortcuts (they apply to your whole OS), but **app-specific shortcuts are coming soon!**
 
 To change how you invoke a particular shortcut, click the <kbd>Remap a shortcut</kbd> button to
-launch the Remap Shortcuts UI. When first launched, you are met
-with no predefined mappings and must click the \<+\> button to add
-a new remap. The Original shortcut is the shortcut you want to
-change and the New Shortcut is the shortcut you want to change it
-to. Ex. If you want <kbd>Ctrl</kbd>+<kbd>C</kbd> to paste, <kbd>Ctrl</kbd>+<kbd>C</kbd> is the Original
-Shortcut and <kbd>Ctrl</kbd>+<kbd>V</kbd> is the New Shortcut. Here are a few rules to shortcuts as you get started:
+launch the Remap Shortcuts UI. When first launched, you are met with no predefined mappings and must click the <kbd>+</kbd> button to add a new remap. The Original shortcut is the shortcut you want to change and the New Shortcut is the shortcut you want to change it
+to. Ex. If you want <kbd>Ctrl</kbd>+<kbd>C</kbd> to paste, <kbd>Ctrl</kbd>+<kbd>C</kbd> is the Original Shortcut and <kbd>Ctrl</kbd>+<kbd>V</kbd> is the New Shortcut. Here are a few rules to shortcuts as you get started:
    
 - Shortcuts must begin with a modifier key (<kbd>Ctrl</kbd>, <kbd>Shift</kbd>, <kbd>Alt</kbd>, <kbd>![alt text][winlogo]</kbd>)
 - Shortcuts must end with an action key (all non-modifier keys) 
@@ -73,7 +66,7 @@ Orphaning a key means that you mapped it to another key and no longer have anyth
   - This is the beta release; we will have these features in our V1
 
 - **Question**: *Will this work on video games?*
-  - It depends on how the game accesses your keys. Many games use low-level* keyboard hooks and as a result any remappings would not work.
+  - It depends on how the game accesses your keys. Certain keyboard APIs do not work with Keyboard Manager.
 
 - **Question**: *Does  this work if I change my input language? How?*
   - Yes it will. Right now if you remap <kbd>A</kbd> to <kbd>B</kbd> on English (US) keyboard and then the switch language to French, then typing <kbd>A</kbd> on the French keyboard (i.e. <kbd>Q</kbd> on the English US physical keyboard) would result in <kbd>B</kbd>, this is consistent with how Windows handles multilingual input. 
