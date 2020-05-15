@@ -206,6 +206,7 @@
                      Margin="{StaticResource SmallTopMargin}"
                      Text="{ Binding Mode=TwoWay, Path=ExcludedApps}"
                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                     TextWrapping="Wrap"
                      AcceptsReturn="True"/>
 
         </StackPanel>
