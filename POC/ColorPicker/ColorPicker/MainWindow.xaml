@@ -17,6 +17,8 @@
         <SolidColorBrush x:Key="DefaultPreviewColor" Color="#FFA70087"/>
         <SolidColorBrush x:Key="BorderColor" Color="#FF666666"/>
         <SolidColorBrush x:Key="TextboxTextColor" Color="#FF666666"/>
+        <SolidColorBrush x:Key="PopupBackgroundColor" Color="#FFF2F2F2"/>
+        <SolidColorBrush x:Key="PopupBorderColor" Color="#FFD0D0D0"/>
     </Window.Resources>
     <Grid Margin="11,8,11,16">
         <Grid.ColumnDefinitions>
@@ -72,23 +74,37 @@
         <Label Grid.Column="2" Grid.Row="0" Content="RGB" Margin="0,0,11,5" Padding="0" />
         <TextBox Name="RgbTextBox" Grid.Column="2" Grid.Row="1" IsReadOnly="True"
                  HorizontalAlignment="Stretch" VerticalContentAlignment="Center" Margin="0,0,11,0" Text="255, 255, 255" Padding="10,5"
-                 BorderBrush="{StaticResource BorderColor}" Foreground="{StaticResource TextboxTextColor}">
+                 BorderBrush="{StaticResource BorderColor}" Foreground="{StaticResource TextboxTextColor}"
+                 PreviewMouseLeftButtonDown="OnTextBoxPreviewMouseLeftButtonDown" GotFocus="OnTextBoxFocus">
             <TextBox.Resources>
                 <Style TargetType="{x:Type Border}">
                     <Setter Property="CornerRadius" Value="2"/>
                 </Style>
             </TextBox.Resources>
         </TextBox>
+        <Popup Name="RgbCopiedPopup" PlacementTarget="{Binding ElementName=RgbTextBox}" Placement="Bottom" VerticalOffset="4"
+               HorizontalOffset="7" Width="125" Height="28" Margin="0,10,0,0" AllowsTransparency="True" PopupAnimation="Fade">
+            <Border Background="{StaticResource PopupBackgroundColor}" BorderThickness="1" BorderBrush="{StaticResource PopupBorderColor}" CornerRadius="3">
+                <TextBlock TextAlignment="Center" FontSize="12" Padding="7,5,7,4">Copied to Clipboard</TextBlock>
+            </Border>
+        </Popup>
 
         <Label Grid.Column="3" Grid.Row="0" Content="HEX" Margin="0,0,11,6" Padding="0"/>
         <TextBox Name="HexTextBox" Grid.Column="3" Grid.Row="1" IsReadOnly="True"
                  HorizontalAlignment="Stretch" VerticalContentAlignment="Center" Text="#FFFFFF" Padding="10,5"
-                 BorderBrush="{StaticResource BorderColor}" Foreground="{StaticResource TextboxTextColor}">
+                 BorderBrush="{StaticResource BorderColor}" Foreground="{StaticResource TextboxTextColor}"
+                 PreviewMouseLeftButtonDown="OnTextBoxPreviewMouseLeftButtonDown" GotFocus="OnTextBoxFocus">
             <TextBox.Resources>
                 <Style TargetType="{x:Type Border}">
                     <Setter Property="CornerRadius" Value="2"/>
                 </Style>
             </TextBox.Resources>
         </TextBox>
+        <Popup Name="HexCopiedPopup" PlacementTarget="{Binding ElementName=HexTextBox}" Placement="Bottom" VerticalOffset="4"
+               HorizontalOffset="7" Width="125" Height="28" Margin="0,10,0,0" AllowsTransparency="True" PopupAnimation="Fade">
+            <Border Background="{StaticResource PopupBackgroundColor}" BorderThickness="1" BorderBrush="{StaticResource PopupBorderColor}" CornerRadius="3">
+                <TextBlock TextAlignment="Center" FontSize="12" Padding="7,5,7,4">Copied to Clipboard</TextBlock>
+            </Border>
+        </Popup>
     </Grid>
 </Window>
