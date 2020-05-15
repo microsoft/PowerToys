@@ -68,21 +68,6 @@ PowerToys v17 has a silent launch after first time installation and update. As e
 
 
 #### Code:
-
-#### Considerations:
-
-## 3. Adaptive Sizing Layout Change
-
-#### Rationale: 
-When the General Settings window is minimized, the "About Feature" section goes to the bottom of Settings - harder to find when there are lots of settings. We propose moving the "About Feature" section to the top of the Settings when minimized.
-
-#### Design:
-
-<img align="left" src="./images/FancyZones_extended_window_new.png" /> Extended window UI
-<img align="left" src="./images/FancyZones_smaller_window_new.png" /> Smaller window UI 
-
-
-#### Code:
 The frontend and the backend for this window are in [onLaunchContentDialog.xaml](https://github.com/microsoft/PowerToys/blob/interns/dev-oobe/POC-OOBE/OOBE-Sandbox/PowerToys%20Settings%20Sandbox/Views/onLaunchContentDialog.xaml) and [onLaunchContentDialog.xaml.cs](https://github.com/microsoft/PowerToys/blob/interns/dev-oobe/POC-OOBE/OOBE-Sandbox/PowerToys%20Settings%20Sandbox/Views/onLaunchContentDialog.xaml.cs) respectively. It is later called in the [MainPage.xaml.cs](https://github.com/microsoft/PowerToys/blob/interns/dev-oobe/POC-OOBE/OOBE-Sandbox/PowerToys%20Settings%20Sandbox/Views/MainPage.xaml.cs) as below:
 
 The following Grid would exist as each tool's Grid element on their repective settings page. Add styling as necessary. Check out '/PowerToys Settings Sanbox/Views/FancyZonesPage.xaml' to see it in action:
@@ -104,6 +89,18 @@ The following Grid would exist as each tool's Grid element on their repective se
 #### Considerations:
 The aim of the feature is to introduce PowerToys to the user while at the same time not getting in their way. To achieve this we decided to use a [contentDialog](https://docs.microsoft.com/en-us/uwp/api/Windows.UI.Xaml.Controls.ContentDialog?view=winrt-19041). This allows the user to either explore PowerToys features as soon as they install/update the application or do the exploration at a later time. For users who chose the latter, The window privides animated gifs that give a glimpse of what PowerToys has to offer. Using a contentDialog also allows us to fire a toast notifcation at a later time.
 
+## 3. Adaptive Sizing Layout Change
+
+#### Rationale: 
+When the General Settings window is minimized, the "About Feature" section goes to the bottom of Settings - harder to find when there are lots of settings. We propose moving the "About Feature" section to the top of the Settings when minimized.
+
+#### Design:
+
+<img align="left" src="./images/FancyZones_extended_window_new.png" /> Extended window UI
+<img align="left" src="./images/FancyZones_smaller_window_new.png" /> Smaller window UI 
+
+
+```
     <Grid>
 
         <VisualStateManager.VisualStateGroups>
