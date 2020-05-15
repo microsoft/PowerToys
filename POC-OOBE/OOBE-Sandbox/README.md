@@ -16,7 +16,7 @@ PowerToys v17 has a silent launch after first time installation and update. As e
 ![](./images/welcomeWindow.png)
 *Welcome window*
 
-=======
+
 #### Code:
 
 #### Considerations:
@@ -53,7 +53,7 @@ The following Grid would exist as each tool's Grid element on their repective se
 
 #### Considerations:
 The aim of the feature is to introduce PowerToys to the user while at the same time not getting in their way. To achieve this we decided to use a [contentDialog](https://docs.microsoft.com/en-us/uwp/api/Windows.UI.Xaml.Controls.ContentDialog?view=winrt-19041). This allows the user to either explore PowerToys features as soon as they install/update the application or do the exploration at a later time. For users who chose the latter, The window privides animated gifs that give a glimpse of what PowerToys has to offer. Using a contentDialog also allows us to fire a toast notifcation at a later time.
-=======
+
     <Grid>
 
         <VisualStateManager.VisualStateGroups>
