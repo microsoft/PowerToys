@@ -13,13 +13,7 @@ A team of Microsoft Garage interns have created a proposal for the out-of-box ex
 Notify users when they installed **PowerToys** or if a new update has been applied to **PowerToys**. Clicking on the notifications will trigger the appropriate OOBE experience - either a *First Install* popup & walkthrough or a *New Update* popup.
 
 ### Design:
-#### Images
-![Toast Notification for first install](./images/FirstInstallToast.png)
-![Toast notification for New Update Installed](./images/UpdateToast.png)
-![Toast notification for New Update Available](./images/NeedsUpdateToast.png)
-<img align="left" src="./images/FirstInstallToast.png" /> Toast notification for First Install
-<img align="left" src="./images/UpdateToast.png" /> Toast notification for New Update Installed
-<img align="left" src="./images/NeedsUpdateToast.png" /> Toast notification for New Update Available
+![Overall App](./images/ToastOverview.png)
 
 #### Overall Structural design
 Toasts are a notification service located in [Services/NotificationServices.cs](//https://github.com/microsoft/PowerToys/blob/interns/dev-oobe/POC-OOBE/OOBE-Sandbox/PowerToys%20Settings%20Sandbox/Services/NotificationService.cs)
@@ -31,9 +25,12 @@ SandBox notifications function was included in [App.xaml.css](//https://github.c
 The toasts are all designed to notify the users about **PowerToys** when they do not have the app open. Three seperate toasts were designed using the same base structure. Every toast includes a message, a button to launch the app, and a button to dismiss the notification
 1. Geting Started with Powertoys: displayed on install
 - Redirects to the New Install popup (see section 2)
+![Toast Notification for first install](./images/FirstInstallToast.png)
 2. New PowerToys Update: displayed on new update
 - Redirects to the New update popup (see section 6)
+![Toast notification for New Update Installed](./images/UpdateToast.png)
 3. New PowerToys Update Available: displayed to users who do not have autoupdate on (toast was created but does not direct anywhere)
+![Toast notification for New Update Available](./images/NeedsUpdateToast.png)
 
 ### How to implement:
 ####Implement toast notifications
