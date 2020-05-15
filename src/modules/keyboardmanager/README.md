@@ -2,57 +2,62 @@
 
 The Keyboard Manager (KBM) is a keyboard remapper that allows a user to
 redefine keys on their keyboard (ex. swapping the letter A and D) as
-well as shortcuts (Ctrl+C to Ctrl+A). Users can use these remappings as
-long as KBM is enabled and PowerToys is running in the background.
+well as shortcuts (<kbd>Ctrl</kbd>+<kbd>C</kbd> to <kbd>Win</kbd>+<kbd>C</kbd>. You can use these remappings as long as KBM is enabled and PowerToys is running in the background.
 
 ![alt text][example]
 
 # 1\. Get Started  
 
 ## General Settings
-To create mappings with Keyboard Manager, you have the option of launching either the Remap Keyboard UI by clicking the \<Remap a Key\> button or Remap Shortcuts UI by clicking the \<Redefine a shortcut\> button.
+To create mappings with Keyboard Manager, you have the option of launching either the Remap Keyboard UI by clicking the <kbd>Remap a Key</kbd> button or Remap Shortcuts UI by clicking the <kbd>Remap a shortcut</kbd> button.
 
 
-## Remap Key to Key
-To remap a key to another key, click the \<Remap a Key\> button to
+## Remap Keys
+To remap a key to another key, click the <kbd>Remap a Key</kbd> button to
 launch the Remap Keyboard UI. When first launched, you are met
-with no predefined mappings and must click the \<+\> button to add
-a new remap. From there, the user selects the key whose output
-they want to ***change*** as the “Original Key” and then keys new
-output as the “New Key”. For example, if you want to press A and
-get B, Key A would be your “Original Key” and Key B would be your
-“New Key”. If you want to swap keys, add another remapping with
-B as your Original and Key A as your New.
+with no predefined mappings and must click the <kbd>+</kbd> button to add
+a new remap. From there, select the key whose output they want to ***change*** as the “Original Key” and then keys new output as the “New Key”. For example, if you want to press <kbd>A</kbd> and have <kbd>B</kbd>  appear, Key <kbd>A</kbd> would be your “Original Key” and Key <kbd>B</kbd> would be your “New Key”. If you want to swap keys, add another remapping with Key <kbd>B</kbd> as your Original and Key <kbd>A</kbd> as your New.
 
 ![alt text][remapkey]
 
-## Remap Shortcuts (OS-only)
-Currently you are only able to remap OS-level shortcuts,
-app-specific shortcuts are coming soon\! To change how you invoke
-a particular shortcut, click the \<Remap Shortcut\> button to
-launch the Edit Shortcuts UI. When first launched, you are met
+## Remap Shortcuts (Global-only)
+Currently you are only able to remap global level shortcuts (they apply to your whole OS), but **app-specific shortcuts are coming soon!**
+
+To change how you invoke a particular shortcut, click the <kbd>Remap a shortcut</kbd> button to
+launch the Remap Shortcuts UI. When first launched, you are met
 with no predefined mappings and must click the \<+\> button to add
 a new remap. The Original shortcut is the shortcut you want to
 change and the New Shortcut is the shortcut you want to change it
-to. Ex. If you want Ctrl+C to paste, Ctrl+C is the Original
-Shortcut and Ctrl+V is the New Shortcut. There are a few rules to shortcuts:
+to. Ex. If you want <kbd>Ctrl</kbd>+<kbd>C</kbd> to paste, <kbd>Ctrl</kbd>+<kbd>C</kbd> is the Original
+Shortcut and <kbd>Ctrl</kbd>+<kbd>V</kbd> is the New Shortcut. Here are a few rules to shortcuts as you get started:
    
-- Shortcuts must begin with a modifier key (Ctrl, Shift, Alt, and Winkey)
-- Shortcuts must end with an action key (all non-modifier keys and non Fn keys)\* 
+- Shortcuts must begin with a modifier key (<kbd>Ctrl</kbd>, <kbd>Shift</kbd>, <kbd>Alt</kbd>, <kbd>Win</kbd>)
+- Shortcuts must end with an action key (all non-modifier keys) 
 - Shortcuts cannot be longer than 3 keys  
 
 ![alt text][remapshort]
 
-### System Reserved shortcuts 
-- Winkey + L (Locking your computer) and Ctrl + Alt + Del cannot be remapped (as Original Shortcut) as they are reserved by the Windows OS.
+### Keys that cannot be remapped:
 
-## Selecting the keys: Drop down + Type Key feature  
-To select a key in the remap or shortcut UI, you can use either the
-\<Type Key\> button or the drop downs. For the drop downs you select a key from the list and other drop downs will appear o Once you click the \<type key\> button a dialogue will pop up. From here, type the key/shortcut using your keyboard. Once you’re satisfied with the output, hold enter to continue. If you’d like to leave the dialogue, hold the ESC button.
+
+- <kbd>Winkey</kbd>+<kbd>L</kbd> (Locking your computer) and <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+ <kbd>Del</kbd> cannot be remapped as they are reserved by the Windows OS.
+- The <kbd>Fn</kbd> key itself cannot be remapped (in most cases) but the F1-
+
+
+## Selecting the keys: Drop down + Type Key / Type Shortcut feature  
+To select a key in the remap or shortcut UI, you can use either the <kbd>Type Key</kbd> button or the drop downs. Once you click the <kbd>Type Key / Shortcut</kbd> button a dialogue will pop up. From here, type the key/shortcut using your keyboard. Once you’re satisfied with the output, hold <kbd>Enter</kbd> to continue. If you’d like to leave the dialogue, hold the <kbd>Esc</kbd> button. For the drop downs, you can search with the key name and additional drop downs will appear as you progress. However, you can not use the type-key feature while on the drop down.
 
 ![alt text][dropdowntypekey]
 
+## Orphaning Keys
+Orphaning a key means that you mapped it to another key and no longer have anything mapped to it. (Ex. If I map A -> B, I no longer have a key on my keyboard that results in A) To fix this, create another remap with that key as the New Key. We have created a warning to ensure you don't do this by accident.
+
+![alt text][orphaned]
+
 ## Frequently Asked Questions
+
+- **Question**: *I remapped the wrong keys, and I want to stop it quickly. How can I do that?*
+  - You can simply disable KBM from the settings or you can close PowerToys. For the remappings to work PowerToys must be running in the background and KBM must be enabled.
 
 - **Question**: *Can I use Keyboard Manager at my log-in screen?*
   - No, Keyboard Manager is only available when PowerToys is running and doesn’t work on any password screen, including Run As Admin.
@@ -63,34 +68,34 @@ To select a key in the remap or shortcut UI, you can use either the
 - **Question**: *Can I remap a shortcut to a single key?*
   - No, we hope to support this soon.
 
-- **Question**: Why can’t I remap the Fn key?
-  - Fn keys are often hardware-based and are not available to the OS, meaning we aren’t able to intercept and remap the key
-
-- **Question**: *Where is the Mac/Linux profiles?*
-  - This is the beta release; we will have these features in our P1
+- **Question**: *Where are the Mac/Linux profiles?*
+  - This is the beta release; we will have these features in our V1
 
 - **Question**: *Why can’t I remap a shortcut for a specific app?*
-  - This is the beta release; we will have these features in our P1
+  - This is the beta release; we will have these features in our V1
 
 - **Question**: *Will this work on video games?*
   - It depends on how the game accesses your keys. Many games use low-level* keyboard hooks and as a result any remappings would not work.
 
-## Trouble shooting common problems:
+- **Question**: *Does  this work if I change my input language? How?*
+  - Yes it will. Right now if you remap <kbd>A</kbd> to <kbd>B</kbd> on English (US) keyboard and then the switche language to French, then typing <kbd>A</kbd> on the French keyboard (i.e. <kbd>Q</kbd> on the English US physical keyboard) would result in <kbd>B</kbd>, this is consistent with how Windows handles multilingual input. 
 
-  - *My remapping’s are not working on a specific app / window*
-    
-      - *Could be one of two issues:*
-        
-          - Remappings will not work on an app / window if that window
-            is running as an admin (elevated) and PowerToys itself is
-            not running as admin. Try running PowerToys as an
-            administrator.
-        
-          - KBR intercepts keyboard hooks to remap your keys. Some apps
-            that also do this can interfere with Keyboard Remapper, to
-            fix this go to the Settings
+## Trouble shooting if remappings are not working:
 
-[example]: ../../../doc/images/keyboardmanager/example-cp.gif "Feature"
-[remapkey]: ../../../doc/images/keyboardmanager/remapkeyboard_both.gif "Feature"
-[remapshort]: .../../../doc/images/keyboardmanager/remapshort_both.gif "Feature"
-[dropdowntypekey]: ../../../doc/images/keyboardmanager/dropdowntypekey.gif "Feature"
+   - *Could be one of the following issues:*
+     
+     - **Run As Admin:** Remappings will not work on an app / window if that window is running as an admin (elevated) and PowerToys itself is not running as admin. Try running PowerToys as an administrator.
+     - **Not Intercepting Keys:** KBM intercepts keyboard hooks to remap your keys. Some apps that also do this can interfere with Keyboard Manager, to fix this go to the Settings and Disable then Re-Enable Keyboard manager.
+
+## Known Issues
+- [Caps light indicator not toggling correctly](https://github.com/microsoft/PowerToys/issues/1692)
+- [Remaps not working for FancyZones and Shortcut Guide](https://github.com/microsoft/PowerToys/issues/3079)
+
+For a list of all known issues/suggestions, check it out
+[here](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+label%3A%22Product-Keyboard+Shortcut+Manager%22).
+
+[example]: ../../../doc/images/keyboardmanager/example.gif "Example"
+[remapkey]: ../../../doc/images/keyboardmanager/remapkeyboard_both.gif "Remap a Key"
+[remapshort]: .../../../doc/images/keyboardmanager/remapshort_both.gif "Remap a Shortcut"
+[dropdowntypekey]: ../../../doc/images/keyboardmanager/dropdownstypekey.gif "Drop-downs and Type Features"
+[orphaned]: ../../../doc/images/keyboardmanager/orphanedkey.gif "Orphaned key warning"
