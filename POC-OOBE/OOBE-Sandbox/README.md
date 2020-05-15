@@ -24,12 +24,12 @@ Notify users when they installed **PowerToys** or if a new update has been appli
 #### Toast Design
 The toasts are all designed to notify the users about **PowerToys** when they do not have the app open. Three seperate toasts were designed using the same base structure. Every toast includes a message, a button to launch the app, and a button to dismiss the notification
 1. Geting Started with Powertoys: displayed on install
-  - Redirects to the New Install popup (see section 2)
+   - Redirects to the New Install popup (see section 2)
 
 ![Toast Notification for first install](./images/FirstInstallToast.png)
 
 2. New PowerToys Update: displayed on new update
-  - Redirects to the New update popup (see section 6)
+   - Redirects to the New update popup (see section 6)
 
 ![Toast notification for New Update Installed](./images/UpdateToast.png)
 
