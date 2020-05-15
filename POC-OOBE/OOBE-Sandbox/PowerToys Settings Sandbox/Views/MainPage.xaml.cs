@@ -23,39 +23,31 @@ namespace PowerToys_Settings_Sandbox.Views
         {
             if (e.Parameter is string x)
             {
-                var lSettings = ApplicationData.Current.LocalSettings;
-                Object firstRun = lSettings.Values["IsFirstRun"];
-                Object currentVersion = lSettings.Values["currentVersion"];
-                Object newVersion = lSettings.Values["newVersion"];
-
                 /// <summary>
                 /// Will run appropriate startups when toast is clicked
                 /// </summary>
                 if (x == "FirstOpen")
                 {
                     PowerOnLaunchDialog();
-                    lSettings.Values["IsFirstRun"] = false;
                 }
                 else if (x == "NewUpdateOpen")
                 {
                     DisplayUpdateDialog();
-                    lSettings.Values["currentVersion"] = newVersion;
                 }
                 /// <summary>
                 /// Check for current status of app (new update or new install) on launch
                 /// Comment out this section if using sandbox notifications in App.xaml.cs
+                /// Replace the SystemInformation with flags present in current powertoys app if required
                 /// </summary>
                 else
                 {
-                    if (!(firstRun is null) && (bool)firstRun == true)
+                    if (SystemInformation.IsFirstRun)
                     {
                         PowerOnLaunchDialog();
-                        lSettings.Values["IsFirstRun"] = false;
                     }
-                    else if (!(currentVersion is null) && (string)currentVersion != (string)newVersion)
+                    else if (SystemInformation.IsAppUpdated)
                     {
                         DisplayUpdateDialog();
-                        lSettings.Values["currentVersion"] = newVersion;
                     }
                 }
             }

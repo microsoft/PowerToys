@@ -46,28 +46,15 @@ namespace PowerToys_Settings_Sandbox
         /// </summary>
         private void SandboxNotifications()
         {
-            var lSettings = ApplicationData.Current.LocalSettings;
-            lSettings.Values["IsFirstRun"] = true;
-            lSettings.Values["NewVersion"] = "1.0.0.1"; // Reference to the newest version just installed
-            lSettings.Values["currentVersion"] = "1.0.0.0"; // Reference to the previous installed version
-            Object firstRun = lSettings.Values["IsFirstRun"];
-            Object currentVersion = lSettings.Values["currentVersion"];
-            Object newVersion = lSettings.Values["NewVersion"];
+            /// <summary>
+            /// Paste code wherever background activity may detect app installation
+            /// </summary>
+            NotificationService.AppInstalledToast();
 
             /// <summary>
-            /// Paste code wherever first run would occur
+            /// Paste code wherever background activity would update an app
             /// </summary>
-            if (!(firstRun is null) && (bool)firstRun == true)
-            {
-                NotificationService.AppInstalledToast();
-            }
-            /// <summary>
-            /// Paste code wherever updated app would occur
-            /// </summary>
-            if (!(currentVersion is null) && (string)currentVersion != (string)newVersion)
-            {
-                NotificationService.AppUpdatedToast();
-            }
+            NotificationService.AppUpdatedToast();
         }
 
 protected override async void OnActivated(IActivatedEventArgs e)
