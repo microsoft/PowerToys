@@ -195,14 +195,6 @@
                   BinaryKey="PTCustomActions"
                   DllEntry="DetectPrevInstallPathCA"
                   />
-    <!-- Redist merge modules -->
-    <DirectoryRef Id="TARGETDIR">
-      <Merge Id="VCRedist" SourceFile="$(var.RepoDir)installer\MergeModules\$(var.Configuration)\Microsoft_VC142_CRT_x64.msm" DiskId="1" Language="0"/>
-    </DirectoryRef>
-    
-    <Feature Id="VCRedist" Title="Visual C++ 14.0 Runtime" AllowAdvertise="no" Display="hidden" Level="1">
-      <MergeRef Id="VCRedist"/>
-    </Feature>
 
     <!-- Close 'PowerToys.exe' before uninstall-->
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="Disable" />
@@ -339,7 +331,7 @@
           </RegistryKey>
         </RegistryKey>
 
-        
+
       </Component>
 
       <Component Id="settings_exe" Guid="A5A461A9-7097-4CBA-9D39-3DBBB6B7B80C" Win64="yes">
@@ -362,6 +354,12 @@
       </Component>
       <Component Id="osDetection_dll" Guid="AA370C25-4AC8-447B-A2FF-C99365C6BE67" Win64="yes">
         <File Source="$(var.BinX64Dir)os-detection.dll" KeyPath="yes" Checksum="yes" />
+      </Component>
+      <Component Id="vcredist_dlls" Guid="CBE26CB0-3AD0-4336-A7D6-503046BADEBC" Win64="yes">
+        <!-- VCRuntime -->
+        <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
+          <File Id="$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
+        <?endforeach?>
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="SvgsInstallFolder" FileSource="$(var.BinX64Dir)svgs\">
@@ -617,6 +615,10 @@
         <!-- xml -->
         <File Id="SettingsV2_Microsoft.PowerToys.Settings.UI.xr.xml" Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.xr.xml"/>
         <File Id="SettingsV2_Microsoft.Toolkit.Win32.UI.XamlHost.xml" Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.Toolkit.Win32.UI.XamlHost.xml"/>
+        <!-- VCRuntime -->
+        <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
+          <File Id="SettingsV2_$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
+        <?endforeach?>
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2AssetsInstallFolder" FileSource="$(var.BinX64Dir)SettingsUIRunner\Assets">
@@ -711,6 +713,7 @@
       <ComponentRef Id="Notice_md" />
       <ComponentRef Id="powertoysinterop_dll" />
       <ComponentRef Id="osDetection_dll" />
+      <ComponentRef Id="vcredist_dlls" />
       <ComponentRef Id="PowerToysSvgs" />
       <ComponentRef Id="Module_ShortcutGuide" />
       <ComponentRef Id="Module_FancyZones" />
@@ -765,6 +768,10 @@
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.Lib.dll" />
+        <!-- VCRuntime -->
+        <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
+          <File Id="File_$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
+        <?endforeach?>
       </Component>  
       <Component Id="launcherAssetsComponent" Directory="AssetsFolder" Guid="6A86A414-D68B-49F0-A7AD-A342528D7ACD">
         <?foreach File in LockScreenLogo.scale-200.png;SplashScreen.scale-200.png;Square150x150Logo.scale-200.png;Square44x44Logo.scale-200.png;Square44x44Logo.targetsize-24_altform-unplated.png;StoreLogo.png;Wide310x150Logo.scale-200.png?>
