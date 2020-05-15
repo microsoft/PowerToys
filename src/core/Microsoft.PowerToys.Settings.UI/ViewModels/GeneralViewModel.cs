@@ -27,7 +27,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
 
-        private ResourceLoader loader = ResourceLoader.GetForCurrentView();
+        private ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
+
+        public readonly string RunningAsUserDefaultText;
+        public readonly string RunningAsAdminDefaultText;
 
         public GeneralViewModel()
         {
@@ -97,6 +100,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _autoDownloadUpdates = GeneralSettingsConfigs.AutoDownloadUpdates;
             _isElevated = ShellPage.IsElevated;
             _runElevated = GeneralSettingsConfigs.RunElevated;
+
+            RunningAsUserDefaultText = loader.GetString("GeneralSettings_RunningAsUserText");
+            RunningAsAdminDefaultText = loader.GetString("GeneralSettings_RunningAsAdminText");
+
             _isAdmin = ShellPage.IsUserAnAdmin;
         }
 
@@ -147,17 +154,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public string RunningAsAdminText
+        public string RunningAsText
         {
             get
             {
                 if (!IsElevated)
                 {
-                    return loader.GetString("GeneralSettings_Running as Adminstrator_IsNotElevated");
+                    return RunningAsUserDefaultText;
                 }
                 else
                 {
-                    return loader.GetString("GeneralSettings_RunningAsAdminText_IsElevated");
+                    return RunningAsAdminDefaultText;
                 }
             }
 
@@ -182,7 +189,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _isElevated = value;
                     OnPropertyChanged("IsElevated");
                     OnPropertyChanged("IsAdminButtonEnabled");
-                    //OnPropertyChanged("AlwaysRunAsAdminText");
                     OnPropertyChanged("RunningAsAdminText");
                 }
             }

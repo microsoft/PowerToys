@@ -545,10 +545,10 @@
   <data name="GeneralSettings_AlwaysRunAsAdminText.Header" xml:space="preserve">
     <value>Always run as administrator</value>
   </data>
-  <data name="GeneralSettings_Running as Adminstrator_IsNotElevated" xml:space="preserve">
+  <data name="GeneralSettings_RunningAsUserText" xml:space="preserve">
     <value>Running as user</value>
   </data>
-  <data name="GeneralSettings_RunningAsAdminText_IsElevated" xml:space="preserve">
+  <data name="GeneralSettings_RunningAsAdminText" xml:space="preserve">
     <value>Running as adminstrator</value>
   </data>
   <data name="About_FancyZones.Text" xml:space="preserve">
