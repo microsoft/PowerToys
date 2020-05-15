@@ -37,8 +37,16 @@ namespace ColorPickerAlpha
             {
                 MouseLeave += delegate { isInWindow = false; };
                 MouseEnter += delegate { isInWindow = true; };
-                Activated += delegate { Topmost = true; };
-                Deactivated += delegate { Topmost = true; };
+                Activated += delegate 
+                { 
+                    Topmost = true;
+                    Mouse.OverrideCursor = null;
+                };
+                Deactivated += delegate 
+                { 
+                    Topmost = true;
+                    Mouse.OverrideCursor = Cursors.Cross;
+                };
 
                 overlayWnd = new OverlayWindow(this);
                 //both windows should be topmost, but the MainWindow above the overlay
@@ -47,12 +55,12 @@ namespace ColorPickerAlpha
                 overlayWnd.Show();
             };
 
-            Closed += delegate {
+            Closed += delegate 
+            {
                 Mouse.OverrideCursor = null;
                 isClosing = true;
             };
 
-            Mouse.OverrideCursor = Cursors.Cross;
             new Thread(() =>
             {
                 while (!isClosing)

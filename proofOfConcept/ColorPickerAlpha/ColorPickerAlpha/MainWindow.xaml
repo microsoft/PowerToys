@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ColorPickerAlpha"
         mc:Ignorable="d"
-        Title="MainWindow" Height="80" Width="680" Background="{StaticResource backgroundBrush}"
+        Title="MainWindow"  Background="{StaticResource backgroundBrush}"
+        SizeToContent="WidthAndHeight"
         WindowStartupLocation="Manual" Top="0" Left="0"
         >
     
