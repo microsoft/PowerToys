@@ -21,16 +21,16 @@ namespace PowerToys_Settings_Sandbox.Views
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (e.Parameter is string x)
+            if (e.Parameter is string status)
             {
                 /// <summary>
                 /// Will run appropriate startups when toast is clicked
                 /// </summary>
-                if (x == "FirstOpen")
+                if (status == "FirstOpen")
                 {
                     PowerOnLaunchDialog();
                 }
-                else if (x == "NewUpdateOpen")
+                else if (status == "NewUpdateOpen")
                 {
                     DisplayUpdateDialog();
                 }
@@ -73,10 +73,6 @@ namespace PowerToys_Settings_Sandbox.Views
 
         // This method opens the first teaching tip on the General Settings page
         // Should open automatically only on initial install after user starts tutorial
-        public void BeginSettingsTips()
-        {
-            OpenFirstGeneralSettingsTip();
-        }
 
         private void OpenFirstGeneralSettingsTip()
         {
