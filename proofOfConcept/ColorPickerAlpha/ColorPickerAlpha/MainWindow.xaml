@@ -6,8 +6,9 @@
         xmlns:local="clr-namespace:ColorPickerAlpha"
         mc:Ignorable="d"
         Title="MainWindow"  Background="{StaticResource backgroundBrush}"
-        SizeToContent="WidthAndHeight"
+
         WindowStartupLocation="Manual" Top="0" Left="0"
+        Height="150" Width="680"
         >
     
     <Window.CommandBindings>
@@ -17,65 +18,95 @@
         <KeyBinding Command="Close" Key="Esc" />
     </Window.InputBindings>
     
-    <Grid x:Name = "FormLayoutGrid">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition />
-            <ColumnDefinition />
-            <ColumnDefinition />
-            <ColumnDefinition />
-            <ColumnDefinition />
-            <ColumnDefinition />
-            <ColumnDefinition />
-            <ColumnDefinition />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
+  
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height = "*" />
+    <StackPanel Margin="0,0,0,-65.5">
+        <Grid x:Name = "FormLayoutGrid" Background="{StaticResource backgroundBrush}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
 
-        </Grid.RowDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height = "50" />
+            </Grid.RowDefinitions>
 
-        <Button Grid.Row = "0" Grid.Column = "0" Click="Eyedropper_Click" VerticalAlignment="Center" HorizontalAlignment="Center" Height="50" Width="50" BorderBrush="{x:Null}">
-            <Button.Background>
-                <ImageBrush ImageSource="Eyedropper-icon.png" Stretch="Uniform"/>
-            </Button.Background>
-        </Button>
 
-        <Rectangle x:Name="Color_Box" Grid.Row = "0" Grid.Column = "1" Margin="2" Fill="{StaticResource backgroundBrush}" RenderTransformOrigin="0.475,0.538" />
+            <Button Grid.Row = "0" Grid.Column = "0" Click="Eyedropper_Click" VerticalAlignment="Center" HorizontalAlignment="Center" Height="50" Width="50" BorderBrush="{x:Null}">
+                <Button.Background>
+                    <ImageBrush ImageSource="Eyedropper-icon.png" Stretch="Uniform"/>
+                </Button.Background>
+            </Button>
 
-        <TextBlock x:Name="HEXLabel" Grid.Row = "0" Grid.Column = "2" Text = "HEX" 
-         Margin = "10,12,5,15" HorizontalAlignment = "Center" VerticalAlignment = "Center" 
+            <Rectangle x:Name="Color_Box" Grid.Row = "0" Grid.Column = "1" Margin="2" Fill="{StaticResource backgroundBrush}" RenderTransformOrigin="0.475,0.538" />
+
+            <TextBlock x:Name="HEXLabel" Grid.Row = "0" Grid.Column = "2" Text = "HEX"
+         Margin = "10,12,5,15" HorizontalAlignment = "Center" VerticalAlignment = "Center"
          Width = "44"  TextAlignment="Right" FontSize="20" Visibility="Hidden"/>
-        <TextBox x:Name="HEXValue" Grid.Row = "0" Grid.Column = "3" Margin = "10,10" Grid.ColumnSpan="5" 
+            <TextBox x:Name="HEXValue" Grid.Row = "0" Grid.Column = "3" Margin = "10,10" Grid.ColumnSpan="5"
         FontSize="20" TextAlignment="Center" VerticalContentAlignment = "Center" Visibility="Hidden" />
 
 
-        <TextBlock x:Name="RLabel" Grid.Row = "0" Grid.Column = "2" Text = "R" HorizontalAlignment = "Center" VerticalAlignment = "Center" 
+            <TextBlock x:Name="RLabel" Grid.Row = "0" Grid.Column = "2" Text = "R" HorizontalAlignment = "Center" VerticalAlignment = "Center"
         Width = "59" TextAlignment="Center" FontSize="20" Visibility="Visible" Height="33" Margin="0,16,0,10"/>
-        <TextBox x:Name="R_val" Grid.Row = "0" Grid.Column = "3" Margin = "10" FontSize="20" TextAlignment="Center" VerticalContentAlignment = "Center" Visibility="Visible"/>
+            <TextBox x:Name="R_val" Grid.Row = "0" Grid.Column = "3" Margin = "10" FontSize="20" TextAlignment="Center" VerticalContentAlignment = "Center" Visibility="Visible"/>
 
-        <TextBlock x:Name="GLabel" Grid.Row = "0" Grid.Column = "4" Text = "G" HorizontalAlignment = "Center" VerticalAlignment = "Center" 
+            <TextBlock x:Name="GLabel" Grid.Row = "0" Grid.Column = "4" Text = "G" HorizontalAlignment = "Center" VerticalAlignment = "Center"
         Width = "59" TextAlignment="Center" FontSize="20" Visibility="Visible" Height="33" Margin="0,16,0,10"/>
-        <TextBox x:Name="G_val" Grid.Row = "0" Grid.Column = "5" Margin = "10" FontSize="20" TextAlignment="Center" VerticalContentAlignment = "Center" Visibility="Visible"/>
+            <TextBox x:Name="G_val" Grid.Row = "0" Grid.Column = "5" Margin = "10" FontSize="20" TextAlignment="Center" VerticalContentAlignment = "Center" Visibility="Visible"/>
 
-        <TextBlock x:Name="BLabel" Grid.Column = "6" Text = "B" 
-        HorizontalAlignment = "Center" VerticalAlignment = "Center" 
+            <TextBlock x:Name="BLabel" Grid.Column = "6" Text = "B"
+        HorizontalAlignment = "Center" VerticalAlignment = "Center"
         Width = "59" TextAlignment="Center" FontSize="20" Visibility="Visible" Height="33" Margin="0,16,0,10"/>
-        <TextBox x:Name="B_val" Grid.Row = "0" Grid.Column = "7" Margin = "10" FontSize="20" TextAlignment="Center" VerticalContentAlignment = "Center" Visibility="Visible"/>
+            <TextBox x:Name="B_val" Grid.Row = "0" Grid.Column = "7" Margin = "10" FontSize="20" TextAlignment="Center" VerticalContentAlignment = "Center" Visibility="Visible"/>
 
-        <Button Grid.Row = "0" Grid.Column = "8"  Click="Toggle_RGB" Opacity="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="30" Width="30" BorderBrush="{x:Null}" Margin="10,12,10,13" RenderTransformOrigin="1.305,0.521" >
-            <Button.Background>
-                <ImageBrush ImageSource="swap_icon.png" Stretch="Uniform"/>
-            </Button.Background>
-        </Button>
+            <Button Grid.Row = "0" Grid.Column = "8"  Click="Toggle_RGB" Opacity="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="30" Width="30" BorderBrush="{x:Null}" Margin="10,12,10,13" RenderTransformOrigin="1.305,0.521" >
+                <Button.Background>
+                    <ImageBrush ImageSource="swap_icon.png" Stretch="Uniform"/>
+                </Button.Background>
+            </Button>
 
-        <Button Grid.Row = "0" Grid.Column = "9" Opacity="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="30" Width="30" BorderBrush="{x:Null}" Margin="17,10,17,13" Click="Copy_Clip" >
-            <Button.Background>
-                <ImageBrush ImageSource="copy_icon.png" Stretch="Uniform"/>
-            </Button.Background>
-        </Button>
+            <Button Grid.Row = "0" Grid.Column = "9" Opacity="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="30" Width="30" BorderBrush="{x:Null}" Margin="17,10,17,13" Click="Copy_Clip" >
+                <Button.Background>
+                    <ImageBrush ImageSource="copy_icon.png" Stretch="Uniform"/>
+                </Button.Background>
+            </Button>
 
-    </Grid>
+            <Button Grid.Row = "0" Grid.Column = "10" Opacity="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="30" Width="30" BorderBrush="{x:Null}" Margin="17,10,17,13" Click="Save_To_Palette" >
+                <Button.Background>
+                    <ImageBrush ImageSource="save-icon.png" Stretch="Uniform"/>
+                </Button.Background>
+            </Button>
+        </Grid>
+        <Grid x:Name = "PaletteGrid" Button.Click="Palette_Button_Click" Background="{StaticResource backgroundBrush}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
 
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height = "50" />
+            </Grid.RowDefinitions>
+
+        </Grid>
+    </StackPanel>
 </Window>

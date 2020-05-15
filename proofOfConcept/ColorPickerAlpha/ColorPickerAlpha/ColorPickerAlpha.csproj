@@ -116,5 +116,8 @@
   <ItemGroup>
     <Resource Include="Eyedropper-icon.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="save-icon.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
