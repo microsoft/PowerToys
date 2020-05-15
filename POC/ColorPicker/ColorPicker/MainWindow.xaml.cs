@@ -148,7 +148,7 @@ namespace ColorPicker
             _updateTimer.Stop();
         }
 
-        private void CopyToClipboard(TextBox textBox)
+        private void CopyToClipboardAndOpenPopup(TextBox textBox)
         {
             textBox.Copy();
 
