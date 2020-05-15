@@ -6,8 +6,9 @@
         xmlns:local="clr-namespace:ColorPickerAlpha"
         mc:Ignorable="d"
         Title="MainWindow"  Background="{StaticResource backgroundBrush}"
-        SizeToContent="WidthAndHeight"
-        WindowStartupLocation="Manual" Top="0" Left="0"  Background="#54636363" 
+
+        WindowStartupLocation="Manual" Top="0" Left="0"
+        Height="150" Width="680"
         >
     
     <Window.CommandBindings>
@@ -97,8 +98,6 @@
 
                 <ColumnDefinition />
                 <ColumnDefinition />
-                <ColumnDefinition />
-
                 <ColumnDefinition />
                 <ColumnDefinition />
                 <ColumnDefinition />

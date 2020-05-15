@@ -159,8 +159,10 @@ namespace ColorPickerAlpha
             pickerActive = !pickerActive;
         }
 
+
         private void OnCloseExecuted(object sender, ExecutedRoutedEventArgs e) => Close();
         
+
         // Generate the color palette buttons
         public void GeneratePaletteHistory(int columns)
         {
@@ -168,9 +170,8 @@ namespace ColorPickerAlpha
             {
                 Button prevColorButton = new Button();
                 prevColorButton.Background = new SolidColorBrush(Colors.Gray);
-                prevColorButton.Margin = new Thickness(0, 15, 0, 0);
-                prevColorButton.Width = 30;
-                prevColorButton.Height = 30;
+                prevColorButton.Margin = new Thickness(0, 0, 0, 0);
+
 
                 PaletteGrid.Children.Add(prevColorButton);
                 Grid.SetRow(prevColorButton, 1);
@@ -196,9 +197,6 @@ namespace ColorPickerAlpha
 
         private void Save_To_Palette(object sender, RoutedEventArgs e)
         {
-
-            //UIElement[] buttonArray = new UIElement[numPalette];
-            //PaletteGrid.Children.CopyTo(buttonArray, 0);
 
             var curButton = buttonArray[paletteIndex] as Button;
             if (curButton != null)
