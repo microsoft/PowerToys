@@ -1,25 +1,58 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Forms;
+using System.Windows.Controls;
+using System.Windows.Threading;
+using ColorPicker.ColorPickingFunctionality;
+using System.Windows.Media;
+using System.Windows.Interop;
+using System.Windows.Input;
 
 namespace ColorPicker
 {
     public partial class TransparentWindow : Window
     {
+        private const int MAGNIFICATION_WIDTH = 9;
+        private const int MAGNIFICATION_HEIGHT = 9;
+
         private ActionBroker _broker = new ActionBroker();
+        private DispatcherTimer _updateTimer = new DispatcherTimer();
 
         public TransparentWindow()
         {
             InitializeComponent();
             this.Cursor = System.Windows.Input.Cursors.Cross;
-            SetWindowSizeToCoverAllScreens();
+
+            ConfigureUpdateTimer();
+
+            Width = SystemParameters.VirtualScreenWidth;
+            Left = SystemParameters.VirtualScreenLeft;
+            Height = SystemParameters.VirtualScreenHeight;
+            Top = SystemParameters.VirtualScreenTop;
+        }
+
+        public new void Show()
+        {
+            _updateTimer.Start();
+            base.Show();
+        }
+
+        public new void Hide()
+        {
+            _updateTimer.Stop();
+            base.Hide();
         }
 
         public void AddActionCallback(ActionBroker.ActionTypes action, ActionBroker.Callback callback)
         {
             _broker.AddCallback(action, callback);
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            RefreshMagnificationBox(null, null);
+            MouseFollower.Visibility = Visibility.Visible;
         }
 
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
@@ -35,28 +68,36 @@ namespace ColorPicker
             }
         }
 
-        private void SetWindowSizeToCoverAllScreens()
+        private void OnMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            int minX = 0;
-            int maxX = 0;
+            RealignMagnificationBox(e);
+        }
 
-            int minY = 0;
-            int maxY = 0;
+        private void ConfigureUpdateTimer()
+        {
+            _updateTimer.Tick += RefreshMagnificationBox;
+            _updateTimer.Interval = TimeSpan.FromMilliseconds(100);
+        }
 
-            foreach (Screen s in Screen.AllScreens)
-            {
-                minX = Math.Min(minX, s.Bounds.X);
-                maxX = Math.Max(maxX, s.Bounds.X + s.Bounds.Width);
+        private void RefreshMagnificationBox(object sender, EventArgs e)
+        {
+            System.Drawing.Point cursorPosition = PixelColorFinder.SafeGetCursorPos();
 
-                minY = Math.Min(minY, s.Bounds.Y);
-                maxY = Math.Max(maxY, s.Bounds.Y + s.Bounds.Height);
-            }
+            System.Drawing.Point captureCoordsTopLeft = new System.Drawing.Point(cursorPosition.X - MAGNIFICATION_WIDTH / 2,
+                                                                                 cursorPosition.Y - MAGNIFICATION_HEIGHT / 2);
 
-            Width = maxX - minX;
-            Left = minX;
+            MagnifiedImage.Source = ScreenMagnification.GetMagnificationImage(captureCoordsTopLeft,
+                                                                              MAGNIFICATION_WIDTH,
+                                                                              MAGNIFICATION_HEIGHT);
+        }
 
-            Height = maxY - minY;
-            Top = minY;
+        private void RealignMagnificationBox(System.Windows.Input.MouseEventArgs e)
+        {
+            System.Windows.Point position = e.GetPosition(this);
+
+            const int LAG_OFFSET = 10;
+            Canvas.SetLeft(MouseFollower, position.X + MAGNIFICATION_WIDTH / 2 + LAG_OFFSET);
+            Canvas.SetTop(MouseFollower, position.Y + MAGNIFICATION_HEIGHT / 2 + LAG_OFFSET);
         }
     }
 }

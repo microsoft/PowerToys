@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Media;
 using System.Windows.Input;
+using System.Drawing;
 
 namespace ColorPicker.ColorPickingFunctionality
 {
@@ -55,14 +56,14 @@ namespace ColorPicker.ColorPickingFunctionality
         [DllImport("user32.dll")]
         private static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
 
-        public static Color GetColorUnderCursor()
+        public static System.Windows.Media.Color GetColorUnderCursor()
         {
             IntPtr hDC = SafeGetWindowDC(IntPtr.Zero);
 
-            POINT cursorPosition;
-            SafeGetCursorPos(out cursorPosition);
 
-            uint colorRef = SafeGetPixel(hDC, cursorPosition.x, cursorPosition.y);
+            Point cursorPosition = SafeGetCursorPos();
+
+            uint colorRef = SafeGetPixel(hDC, cursorPosition.X, cursorPosition.Y);
 
             SafeReleaseWindowDC(hDC);
 
@@ -70,15 +71,17 @@ namespace ColorPicker.ColorPickingFunctionality
             byte green = ParseGreen(colorRef);
             byte blue = ParseBlue(colorRef);
 
-            return Color.FromRgb(red, green, blue);
+            return System.Windows.Media.Color.FromRgb(red, green, blue);
         }
 
-        private static void SafeGetCursorPos(out POINT lpPoint)
+        public static Point SafeGetCursorPos()
         {
+            POINT lpPoint;
             if (!GetCursorPos(out lpPoint))
             {
                 throw new InternalSystemCallException("Failed to get cursor position");
             }
+            return new Point(lpPoint.x, lpPoint.y);
         }
 
         private static uint SafeGetPixel(IntPtr hDC, int x, int y)
