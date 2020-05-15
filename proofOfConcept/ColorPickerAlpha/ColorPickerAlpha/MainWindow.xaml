@@ -8,7 +8,14 @@
         Title="MainWindow" Height="80" Width="680" Background="{StaticResource backgroundBrush}"
         WindowStartupLocation="Manual" Top="0" Left="0"
         >
-
+    
+    <Window.CommandBindings>
+        <CommandBinding Command="Close" Executed="OnCloseExecuted" />
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Command="Close" Key="Esc" />
+    </Window.InputBindings>
+    
     <Grid x:Name = "FormLayoutGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition />

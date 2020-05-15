@@ -10,10 +10,12 @@ namespace ColorPickerAlpha
 {
     public partial class MainWindow : Window
     {
+        private bool isClosing = false;
         bool rgbState = true;
         Color curColor;
         OverlayWindow overlayWnd;
         private bool _pickerActive = true;
+         
         public bool pickerActive
         {
             get { return _pickerActive; }
@@ -45,9 +47,15 @@ namespace ColorPickerAlpha
                 overlayWnd.Show();
             };
 
+            Closed += delegate {
+                Mouse.OverrideCursor = null;
+                isClosing = true;
+            };
+
+            Mouse.OverrideCursor = Cursors.Cross;
             new Thread(() =>
             {
-                while (true)
+                while (!isClosing)
                 {
                     if (!pickerActive || isInWindow)
                         continue;
@@ -126,5 +134,7 @@ namespace ColorPickerAlpha
         {
             pickerActive = !pickerActive;
         }
+
+        private void OnCloseExecuted(object sender, ExecutedRoutedEventArgs e) => Close();
     }
 }
