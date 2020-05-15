@@ -77,7 +77,6 @@ Orphaning a key means that you mapped it to another key and no longer have anyth
 - **Question**: *Will this work on video games?*
   - It depends on how the game accesses your keys. Many games use low-level* keyboard hooks and as a result any remappings would not work.
 
-<<<<<<< HEAD
 - **Question**: *Does  this work if I change my input language? How?*
   - Yes it will. Right now if you remap <kbd>A</kbd> to <kbd>B</kbd> on English (US) keyboard and then the switche language to French, then typing <kbd>A</kbd> on the French keyboard (i.e. <kbd>Q</kbd> on the English US physical keyboard) would result in <kbd>B</kbd>, this is consistent with how Windows handles multilingual input. 
 
@@ -100,24 +99,3 @@ For a list of all known issues/suggestions, check it out
 [remapshort]: .../../../doc/images/keyboardmanager/remapshort_both.gif "Remap a Shortcut"
 [dropdowntypekey]: ../../../doc/images/keyboardmanager/dropdownstypekey.gif "Drop-downs and Type Features"
 [orphaned]: ../../../doc/images/keyboardmanager/orphanedkey.gif "Orphaned key warning"
-=======
-## Trouble shooting common problems:
-
-  - *My remapping’s are not working on a specific app / window*
-    
-      - *Could be one of two issues:*
-        
-          - Remappings will not work on an app / window if that window
-            is running as an admin (elevated) and PowerToys itself is
-            not running as admin. Try running PowerToys as an
-            administrator.
-        
-          - KBR intercepts keyboard hooks to remap your keys. Some apps
-            that also do this can interfere with Keyboard Remapper, to
-            fix this go to the Settings
-
-[example]: ../../../doc/images/keyboardmanager/example-cp.gif "Feature"
-[remapkey]: ../../../doc/images/keyboardmanager/remapkeyboard_both.gif "Feature"
-[remapshort]: ../../../doc/images/keyboardmanager/remapshort_both.gif "Feature"
-[dropdowntypekey]: ../../../doc/images/keyboardmanager/dropdowntypekey.gif "Feature"
->>>>>>> ec699ff8be447e327578398a9d06e7f92ebc5658
