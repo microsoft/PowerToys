@@ -208,7 +208,10 @@ private:
             event.wParam = wParam;
             if (s_instance)
             {
-                return s_instance->HandleKeyboardHookEvent(&event);
+                if (s_instance->HandleKeyboardHookEvent(&event) == 1)
+                {
+                    return 1;
+                }
             }
         }
         return CallNextHookEx(NULL, nCode, wParam, lParam);
