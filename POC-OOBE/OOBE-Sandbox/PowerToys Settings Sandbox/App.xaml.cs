@@ -6,6 +6,7 @@ using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.Storage;
+using Windows.UI.Notifications;
 
 namespace PowerToys_Settings_Sandbox
 {
@@ -28,9 +29,10 @@ namespace PowerToys_Settings_Sandbox
 
         protected override async void OnLaunched(LaunchActivatedEventArgs args)
         {
-            /// <summary>
+            ToastNotificationManager.History.Clear();
+            /// <summary> 
             /// Sandbox settings is a way to emulate background notifications on install and update
-            /// Not to be inclued when added to final product
+            /// Not to be included when added to final product
             /// </summary>
             SandboxNotifications();
             
@@ -57,7 +59,7 @@ namespace PowerToys_Settings_Sandbox
             NotificationService.AppUpdatedToast();
         }
 
-protected override async void OnActivated(IActivatedEventArgs e)
+        protected override async void OnActivated(IActivatedEventArgs e)
         {
             Frame rootFrame = Window.Current.Content as Frame;           
 
