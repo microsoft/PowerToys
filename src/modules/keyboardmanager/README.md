@@ -2,7 +2,7 @@
 
 The Keyboard Manager (KBM) is a keyboard remapper that allows a user to
 redefine keys on their keyboard (ex. swapping the letter A and D) as
-well as shortcuts (<kbd>Ctrl</kbd>+<kbd>C</kbd> to <kbd>Win</kbd>+<kbd>C</kbd>. You can use these remappings as long as KBM is enabled and PowerToys is running in the background.
+well as shortcuts (<kbd>Ctrl</kbd>+<kbd>C</kbd> to <kbd>Win</kbd>+<kbd>C</kbd>. You can use these remappings as long as KBM is enabled and PowerToys is running in the background. Below is an example of using keys and shortcuts that were remapped:
 
 ![alt text][example]
 
