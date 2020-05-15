@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -31,6 +32,15 @@ namespace ColorPicker
             ActivateColorSelectionMode();
         }
 
+        protected override void OnLocationChanged(EventArgs e)
+        {
+            RgbCopiedPopup.HorizontalOffset += 1;
+            RgbCopiedPopup.HorizontalOffset -= 1;
+            HexCopiedPopup.HorizontalOffset += 1;
+            HexCopiedPopup.HorizontalOffset -= 1;
+            base.OnLocationChanged(e);
+        }
+
         protected override void OnClosing(CancelEventArgs e)
         {
             _transparentWindow.Close();
@@ -46,7 +56,7 @@ namespace ColorPicker
         private void ConfigureUpdateTimer()
         {
             _updateTimer.Tick += UpdateCurrentColor;
-            _updateTimer.Interval = new TimeSpan(1000);
+            _updateTimer.Interval = TimeSpan.FromMilliseconds(100);
         }
 
         private void OnTransparentScreenClick(object sender, EventArgs e)
@@ -102,6 +112,7 @@ namespace ColorPicker
             if (textBox != null)
             {
                 textBox.SelectAll();
+                CopyToClipboard(textBox);
             }
         }
 
@@ -133,6 +144,23 @@ namespace ColorPicker
             NewColorButton.IsChecked = false;
             _transparentWindow.Hide();
             _updateTimer.Stop();
+        }
+
+        private void CopyToClipboard(TextBox textBox)
+        {
+            textBox.Copy();
+
+            Popup popup = textBox == RgbTextBox ? RgbCopiedPopup : HexCopiedPopup;
+            popup.IsOpen = true;
+
+            DispatcherTimer popupTimer = new DispatcherTimer();
+            popupTimer.Interval = TimeSpan.FromSeconds(3);
+            popupTimer.Tick += (object sender, EventArgs e) =>
+            {
+                popup.IsOpen = false;
+                popupTimer.Stop();
+            };
+            popupTimer.Start();
         }
     }
 }
