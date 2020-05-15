@@ -8,12 +8,12 @@ using System.Windows.Input;
 
 namespace MenusWPF.Models
 {
-    public class MenuItem
+
+	public class MenuItem
     {
-		public MenuItem(Guid id, string title, string name, bool isChecked, ICommand command, String sliderVisible)
+		public MenuItem(Guid id, string name, bool isChecked, ICommand command, String sliderVisible)
 		{
 			Id = id;
-			Title = title;
 			Name = name;
 			IsChecked = isChecked;
 			Command = command;
@@ -24,7 +24,6 @@ namespace MenusWPF.Models
 		public MenuItem(Guid id, string title, string name, bool isChecked, ICommand command, int sliderValue)
 		{
 			Id = id;
-			Title = title;
 			Name = name;
 			IsChecked = isChecked;
 			Command = command;
@@ -40,14 +39,6 @@ namespace MenusWPF.Models
 		{
 			get { return guid; }
 			set { guid = value; }
-		}
-
-		private string title;
-
-		public string Title
-		{
-			get { return title; }
-			set { title = value; }
 		}
 
 		private string  name;

@@ -58,6 +58,8 @@
     <Compile Include="Helpers\EventArgs.cs" />
     <Compile Include="Helpers\EventRaiser.cs" />
     <Compile Include="Helpers\RelayCommand.cs" />
+    <Compile Include="Models\MonitorResolutionSettingscs.cs" />
+    <Compile Include="Models\Resolution.cs" />
     <Compile Include="Models\MenuItem.cs" />
     <Compile Include="ViewModels\MainWindowVM.cs" />
     <Page Include="MainWindow.xaml">
