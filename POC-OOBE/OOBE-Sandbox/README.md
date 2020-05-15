@@ -30,7 +30,7 @@ When the General Settings window is minimized, the "About Feature" section goes 
 
 <img align="left" src="./images/FancyZones_extended_window_new.png" /> Extended window UI
 <img align="left" src="./images/FancyZones_smaller_window_new.png" /> Smaller window UI 
->>>>>>> 44e3cb838e914bb1c99762e3aaa0dd01101128bb
+
 
 #### Code:
 The frontend and the backend for this window are in [onLaunchContentDialog.xaml](https://github.com/microsoft/PowerToys/blob/interns/dev-oobe/POC-OOBE/OOBE-Sandbox/PowerToys%20Settings%20Sandbox/Views/onLaunchContentDialog.xaml) and [onLaunchContentDialog.xaml.cs](https://github.com/microsoft/PowerToys/blob/interns/dev-oobe/POC-OOBE/OOBE-Sandbox/PowerToys%20Settings%20Sandbox/Views/onLaunchContentDialog.xaml.cs) respectively. It is later called in the [MainPage.xaml.cs](https://github.com/microsoft/PowerToys/blob/interns/dev-oobe/POC-OOBE/OOBE-Sandbox/PowerToys%20Settings%20Sandbox/Views/MainPage.xaml.cs) as below:
