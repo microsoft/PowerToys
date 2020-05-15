@@ -34,6 +34,8 @@ namespace ColorPicker
 
         protected override void OnLocationChanged(EventArgs e)
         {
+            // Fix to let the pop-ups follow the window if it is dragged around
+            // Source: https://stackoverflow.com/questions/5736359/popup-control-moves-with-parent
             RgbCopiedPopup.HorizontalOffset += 1;
             RgbCopiedPopup.HorizontalOffset -= 1;
             HexCopiedPopup.HorizontalOffset += 1;
@@ -108,7 +110,7 @@ namespace ColorPicker
 
         private void OnTextBoxFocus(object sender, RoutedEventArgs e)
         {
-            if (var textBox = e.OriginalSource as TextBox)
+            if (textBox = e.OriginalSource as TextBox)
             {
                 textBox.SelectAll();
                 CopyToClipboard(textBox);
