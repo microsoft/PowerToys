@@ -83,7 +83,7 @@ namespace Wox.Infrastructure.UserSettings
         public double WindowLeft { get; set; }
         public double WindowTop { get; set; }
 
-        private int _maxResultsToShow = 6;
+        private int _maxResultsToShow = 4;
         public int MaxResultsToShow 
         {
             get
