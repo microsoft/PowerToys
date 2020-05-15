@@ -2,7 +2,9 @@
 using System;
 using Windows.UI.Xaml.Controls;
 using PowerToys_Settings_Sandbox.ViewModels;
-
+using Windows.UI.Xaml.Navigation;
+using Microsoft.Toolkit.Uwp.Helpers;
+using Windows.UI.Notifications;
 
 namespace PowerToys_Settings_Sandbox.Views
 {
@@ -13,9 +15,26 @@ namespace PowerToys_Settings_Sandbox.Views
         public MainPage()
         {
             InitializeComponent();
-            powerOnLaunchDialog();
         }
-        private async void powerOnLaunchDialog()
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            if (e.Parameter is string x)
+            {
+                if (x == "FirstOpen")
+                {
+                    PowerOnLaunchDialog();
+                    ToastNotificationManager.History.Clear();
+                }
+                else if (x == "NewUpdateOpen")
+                {
+                    DisplayUpdateDialog();
+                    ToastNotificationManager.History.Clear();
+                }
+            }
+        }
+
+        public async void PowerOnLaunchDialog()
         {
             onLaunchContentDialog dialog = new onLaunchContentDialog();
             dialog.PrimaryButtonClick += Dialog_PrimaryButtonClick;
@@ -26,7 +45,6 @@ namespace PowerToys_Settings_Sandbox.Views
         private async void DisplayUpdateDialog()
         {
             ContentDialog updateDialog = new UpdateContentDialog();
-
             await updateDialog.ShowAsync();
         }
         
@@ -34,8 +52,14 @@ namespace PowerToys_Settings_Sandbox.Views
         {
             OpenFirstGeneralSettingsTip();
         }
+
         // This method opens the first teaching tip on the General Settings page
         // Should open automatically only on initial install after user starts tutorial
+        public void BeginSettingsTips()
+        {
+            OpenFirstGeneralSettingsTip();
+        }
+
         private void OpenFirstGeneralSettingsTip()
         {
             GeneralSettingsTip.IsOpen = true;
