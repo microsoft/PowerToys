@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -15,7 +16,9 @@ namespace ColorPickerAlpha
         Color curColor;
         OverlayWindow overlayWnd;
         private bool _pickerActive = true;
-         
+
+        private int paletteIndex = 0;
+
         public bool pickerActive
         {
             get { return _pickerActive; }
@@ -53,6 +56,9 @@ namespace ColorPickerAlpha
                 //=> both receive mouse input when needed. Owners are below children
                 overlayWnd.Activated += delegate { Owner = overlayWnd; };
                 overlayWnd.Show();
+
+                int numColumns = FormLayoutGrid.Children.Count;
+                generatePaletteHistory(numColumns);
             };
 
             Closed += delegate 
@@ -76,12 +82,7 @@ namespace ColorPickerAlpha
 
                         curColor = System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B);
                         Color_Box.Fill = new SolidColorBrush(curColor);
-
-                        R_val.Text = curColor.R.ToString();
-                        G_val.Text = curColor.G.ToString();
-                        B_val.Text = curColor.B.ToString();
-
-                        HEXValue.Text = argbToHEX(curColor.ToString());
+                        ChangeColorText();
 
                     }));
 
@@ -89,6 +90,16 @@ namespace ColorPickerAlpha
                 }
             }).Start();
         }
+
+        private void ChangeColorText()  
+        {
+            R_val.Text = curColor.R.ToString();
+            G_val.Text = curColor.G.ToString();
+            B_val.Text = curColor.B.ToString();
+
+            HEXValue.Text = argbToHEX(curColor.ToString());
+        }
+
 
         private void Toggle_RGB(object sender, RoutedEventArgs e)
         {
@@ -144,5 +155,54 @@ namespace ColorPickerAlpha
         }
 
         private void OnCloseExecuted(object sender, ExecutedRoutedEventArgs e) => Close();
+        
+        public void generatePaletteHistory(int columns)
+        {
+            for(int col = 0; col < columns; col++)
+            {
+                Button prevColorButton = new Button();
+                prevColorButton.Background = new SolidColorBrush(Colors.Gray);
+                prevColorButton.Margin = new Thickness(0, 15, 0, 0);
+                prevColorButton.Width = 30;
+                prevColorButton.Height = 30;
+
+                PaletteGrid.Children.Add(prevColorButton);
+                Grid.SetRow(prevColorButton, 1);
+                Grid.SetColumn(prevColorButton, col);
+            }
+        }
+
+        private void Palette_Button_Click(object sender, RoutedEventArgs e)
+        {
+            var source = e.OriginalSource as Button;
+
+            if (source == null || !(source.Background is SolidColorBrush))
+                return;
+
+            var brush = (SolidColorBrush)source.Background;
+
+            //update the main color box and copy value
+            curColor = brush.Color;
+            Color_Box.Fill = new SolidColorBrush(curColor);
+            ChangeColorText();
+            CopyToClipboard();
+        }
+
+        private void Save_To_Palette(object sender, RoutedEventArgs e)
+        {
+            var buttons = PaletteGrid.Children;
+            var buttonCount = buttons.Count;
+            UIElement[] buttonArray = new UIElement[buttonCount];
+            PaletteGrid.Children.CopyTo(buttonArray, 0);
+
+            var curButton = buttonArray[paletteIndex] as Button;
+            if (curButton != null)
+            {
+                curButton.Background = new SolidColorBrush(curColor);
+            }
+
+            paletteIndex++;
+            paletteIndex %= buttonCount;
+        }
     }
 }
