@@ -19,9 +19,9 @@
     </Window.Resources>
     <Canvas>
         <Border Name="MouseFollower" BorderBrush="{StaticResource MagnifiedImageBorderColor}" BorderThickness="2" CornerRadius="2" Visibility="Hidden">
-            <Grid Height="100" Width="100">
-                <Image Name="MagnifiedImage"/>
-                <Rectangle Width="10" Height="10" Stroke="{StaticResource MagnifiedImagePixelBorderColor}"/>
+            <Grid Height="99" Width="99">
+                <Image Name="MagnifiedImage" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                <Rectangle Width="11" Height="11" Stroke="{StaticResource MagnifiedImagePixelBorderColor}" StrokeThickness="1.5"/>
             </Grid>
         </Border>
     </Canvas>

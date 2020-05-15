@@ -13,8 +13,8 @@ namespace ColorPicker
 {
     public partial class TransparentWindow : Window
     {
-        private const int MAGNIFICATION_WIDTH = 10;
-        private const int MAGNIFICATION_HEIGHT = 10;
+        private const int MAGNIFICATION_WIDTH = 9;
+        private const int MAGNIFICATION_HEIGHT = 9;
 
         private ActionBroker _broker = new ActionBroker();
         private DispatcherTimer _updateTimer = new DispatcherTimer();
