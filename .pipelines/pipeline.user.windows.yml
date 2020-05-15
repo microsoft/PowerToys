@@ -99,7 +99,6 @@ build:
             - 'modules\launcher\Telemetry.dll'
             - 'modules\launcher\Wox.Core.dll'
             - 'modules\launcher\Wox.dll'
-            - 'modules\launcher\Wox.exe'
             - 'modules\launcher\Wox.Infrastructure.dll'
             - 'modules\launcher\Wox.Plugin.dll'
             - 'modules\Microsoft.Launcher.dll'
