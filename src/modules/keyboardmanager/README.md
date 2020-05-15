@@ -92,5 +92,5 @@ To select a key in the remap or shortcut UI, you can use either the
 
 [example]: ../../../doc/images/keyboardmanager/example-cp.gif "Feature"
 [remapkey]: ../../../doc/images/keyboardmanager/remapkeyboard_both.gif "Feature"
-[remapshort]: .../../../doc/images/keyboardmanager/remapshort_both.gif "Feature"
+[remapshort]: ../../../doc/images/keyboardmanager/remapshort_both.gif "Feature"
 [dropdowntypekey]: ../../../doc/images/keyboardmanager/dropdowntypekey.gif "Feature"
