@@ -16,63 +16,39 @@
                 <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Margin="0,24,0,0" VerticalAlignment="Top">
-                <StackPanel.Resources>
-                    <Style TargetType="Button" x:Key="FirstGeneralSettingsButtonStyle">
-                        <Setter Property="Foreground" Value="White"/>
-                        <Setter Property="Background" Value="Blue"/>
-                        <Setter Property="HorizontalAlignment" Value="Left"/>
-                    </Style>
-                </StackPanel.Resources>
+        <StackPanel Margin="0,24,0,0" VerticalAlignment="Top">
 
-            <StackPanel Orientation="Horizontal">
-                    <TextBlock x:Name="GeneralSettingsTitle" HorizontalAlignment="Left" Margin="0,0,0,24" Text="General" TextWrapping="Wrap" VerticalAlignment="Top" Style="{StaticResource TitleTextBlockStyle}"/>
-                    <FontIcon x:Name="GeneralSettingsTitleIcon" FontFamily="Segoe MDL2 Assets" Glyph="&#xE946;" Margin="12,8,0,0" VerticalAlignment="Top" Foreground="Blue" PointerPressed="{x:Bind OpenFirstGeneralSettingsTip}"/>
-                </StackPanel>
+            <TextBlock x:Name="GeneralSettingsTitle" HorizontalAlignment="Left" Margin="0,0,0,24" Text="General" TextWrapping="Wrap" VerticalAlignment="Top" Style="{StaticResource TitleTextBlockStyle}"/>
 
-
-            <muxc:TeachingTip x:Name="GeneralSettingsTip"
-                                Target="{x:Bind GeneralSettingsTitleIcon}"
-                                Foreground="Black"
-                                Title="General Settings"
-                                PreferredPlacement="Bottom"
-                                Subtitle="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Facere, nulla, ipsum? Molestiae quis aliquam magni harum non?"
-                                ShouldConstrainToRootBounds="False"
-                                PlacementMargin="48,0,0,0"
-                                ActionButtonContent="Got it"
-                                ActionButtonClick="{x:Bind OpenRunAsUserTip}"
-                                ActionButtonStyle="{StaticResource FirstGeneralSettingsButtonStyle}"
-                                >
-            </muxc:TeachingTip>
-
-            <muxc:TeachingTip x:Name="FinalGeneralSettingsTip"
+                <muxc:TeachingTip x:Name="FinalGeneralSettingsTip"
                                     Foreground="Black"
                                     Title="If you ever need help with anything you can click the 'i' to find out more about a certion section."
                                     IsLightDismissEnabled="True"
                                     PreferredPlacement="BottomRight"
                                     >
-                <muxc:TeachingTip.IconSource>
-                    <muxc:SymbolIconSource Symbol="Help" />
-                </muxc:TeachingTip.IconSource>
-            </muxc:TeachingTip>
+                    <muxc:TeachingTip.IconSource>
+                        <muxc:SymbolIconSource Symbol="Help" />
+                    </muxc:TeachingTip.IconSource>
+                </muxc:TeachingTip>
 
-            <ToggleSwitch x:Name="RunStartupSwitch" Header="Run at startup" VerticalAlignment="Top"></ToggleSwitch>
+                <ToggleSwitch x:Name="RunStartupSwitch" Header="Run at startup" VerticalAlignment="Top"></ToggleSwitch>
                 <ToggleSwitch Header="Download updates automatically" VerticalAlignment="Top"/>
 
                 <StackPanel Orientation="Horizontal">
                     <TextBlock x:Name="RunAsUserTitle" HorizontalAlignment="Left" Margin="0,24,0,12" Text="Running as user" TextWrapping="Wrap" VerticalAlignment="Top" Style="{StaticResource TitleTextBlockStyle}"/>
-                    <FontIcon x:Name="RunAsUserTitleIcon"  FontFamily="Segoe MDL2 Assets" Glyph="&#xE946;" Margin="12,8,0,0" VerticalAlignment="Center" Foreground="Blue" PointerPressed="{x:Bind OpenRunAsUserTip}"/>
-                </StackPanel>
-                <muxc:TeachingTip x:Name="RunAsUserTip"
-                                        Target="{x:Bind RunAsUserTitleIcon}"
-                                        Foreground="Black"
-                                        Title="Running as user"
-                                        PreferredPlacement="Top"
-                                        Subtitle="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Facere, nulla, ipsum? Molestiae quis aliquam magni harum non?"
-                                        CloseButtonClick="{x:Bind OpenFinalGeneralSettingsTip}"
-                                        >
+                    <FontIcon x:Name="RunAsUserTitleIcon"  FontFamily="Segoe MDL2 Assets" Glyph="&#xE946;" Margin="8,18,0,0" VerticalAlignment="Center" Foreground="Blue" PointerPressed="{x:Bind OpenRunAsUserTip}"/>
+                    <muxc:TeachingTip x:Name="RunAsUserTip"
+                                                Target="{x:Bind RunAsUserTitleIcon}"
+                                                Foreground="Black"
+                                                Title="Run as user"
+                                                PreferredPlacement="Top"
+                                                CloseButtonClick="{x:Bind OpenFinalGeneralSettingsTip}"
+                                                >
+                    <TextBlock Margin="0,-12,0,0" TextWrapping="Wrap">Certain commands in PowerToys require switching to administrator mode. For more information, <Hyperlink NavigateUri="https://github.com/microsoft/PowerToys/blob/master/doc/devdocs/run-as-admin-detection.md">click here</Hyperlink>.</TextBlock>
                 </muxc:TeachingTip>
-            <ToggleSwitch Header="Always run as administrator (Recommended)" VerticalAlignment="Top"/>
+                </StackPanel>
+                
+                <ToggleSwitch Header="Always run as administrator (Recommended)" VerticalAlignment="Top"/>
             </StackPanel>
 
         <StackPanel Margin="0,24,0,0" Grid.Column="1" VerticalAlignment="Top">

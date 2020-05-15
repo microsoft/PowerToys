@@ -50,25 +50,12 @@ namespace PowerToys_Settings_Sandbox.Views
         
         private void Dialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
-            OpenFirstGeneralSettingsTip();
-        }
-
-        // This method opens the first teaching tip on the General Settings page
-        // Should open automatically only on initial install after user starts tutorial
-        public void BeginSettingsTips()
-        {
-            OpenFirstGeneralSettingsTip();
-        }
-
-        private void OpenFirstGeneralSettingsTip()
-        {
-            GeneralSettingsTip.IsOpen = true;
+            OpenRunAsUserTip();
         }
 
         // This method opens the second teaching tip
         private void OpenRunAsUserTip()
         {
-            GeneralSettingsTip.IsOpen = false;
             RunAsUserTip.IsOpen = true;
         }
 
@@ -82,7 +69,6 @@ namespace PowerToys_Settings_Sandbox.Views
         // This method closes all teaching tips
         private void CloseTeachingTips()
         {
-            GeneralSettingsTip.IsOpen = false;
             RunAsUserTip.IsOpen = false;
             FinalGeneralSettingsTip.IsOpen = false;
         }
