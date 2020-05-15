@@ -1,8 +1,6 @@
 # Keyboard Manager 
 
-The Keyboard Manager (KBM) is a keyboard remapper that allows a user to
-redefine keys on their keyboard (ex. swapping the letter A and D) as
-well as shortcuts (<kbd>Ctrl</kbd>+<kbd>C</kbd> to <kbd>Win</kbd>+<kbd>C</kbd>. You can use these remappings as long as KBM is enabled and PowerToys is running in the background. Below is an example of using keys and shortcuts that were remapped:
+The Keyboard Manager (KBM) is a keyboard remapper that allows a user to redefine keys on their keyboard (ex. swapping the letter <kbd>A</kbd> and <kbd>D</kbd>) as well as shortcuts (<kbd>Ctrl</kbd>+<kbd>C</kbd> to <kbd>![alt text][winlogo]</kbd>+<kbd>C</kbd>). You can use these remappings as long as KBM is enabled and PowerToys is running in the background. Below is an example of using keys and shortcuts that were remapped:
 
 ![alt text][example]
 
@@ -31,7 +29,7 @@ change and the New Shortcut is the shortcut you want to change it
 to. Ex. If you want <kbd>Ctrl</kbd>+<kbd>C</kbd> to paste, <kbd>Ctrl</kbd>+<kbd>C</kbd> is the Original
 Shortcut and <kbd>Ctrl</kbd>+<kbd>V</kbd> is the New Shortcut. Here are a few rules to shortcuts as you get started:
    
-- Shortcuts must begin with a modifier key (<kbd>Ctrl</kbd>, <kbd>Shift</kbd>, <kbd>Alt</kbd>, <kbd>Win</kbd>)
+- Shortcuts must begin with a modifier key (<kbd>Ctrl</kbd>, <kbd>Shift</kbd>, <kbd>Alt</kbd>, <kbd>![alt text][winlogo]</kbd>)
 - Shortcuts must end with an action key (all non-modifier keys) 
 - Shortcuts cannot be longer than 3 keys  
 
@@ -40,12 +38,12 @@ Shortcut and <kbd>Ctrl</kbd>+<kbd>V</kbd> is the New Shortcut. Here are a few ru
 ### Keys that cannot be remapped:
 
 
-- <kbd>Winkey</kbd>+<kbd>L</kbd> (Locking your computer) and <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+ <kbd>Del</kbd> cannot be remapped as they are reserved by the Windows OS.
-- The <kbd>Fn</kbd> key itself cannot be remapped (in most cases) but the F1-
+- <kbd>![alt text][winlogo]</kbd>+<kbd>L</kbd> (Locking your computer) and <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+ <kbd>Del</kbd> cannot be remapped as they are reserved by the Windows OS.
+- The <kbd>Fn</kbd> key itself cannot be remapped (in most cases) but the F1-24 can be mapped.
 
 
 ## Selecting the keys: Drop down + Type Key / Type Shortcut feature  
-To select a key in the remap or shortcut UI, you can use either the <kbd>Type Key</kbd> button or the drop downs. Once you click the <kbd>Type Key / Shortcut</kbd> button a dialogue will pop up. From here, type the key/shortcut using your keyboard. Once you’re satisfied with the output, hold <kbd>Enter</kbd> to continue. If you’d like to leave the dialogue, hold the <kbd>Esc</kbd> button. For the drop downs, you can search with the key name and additional drop downs will appear as you progress. However, you can not use the type-key feature while on the drop down.
+To select a key in the remap or shortcut UI, you can use either the <kbd>Type Key</kbd> button or the drop downs. Once you click the <kbd>Type Key / Shortcut</kbd> button a dialogue will pop up. From here, type the key/shortcut using your keyboard. Once you’re satisfied with the output, hold <kbd>Enter</kbd> to continue. If you’d like to leave the dialogue, hold the <kbd>Esc</kbd> button. For the drop downs, you can search with the key name and additional drop downs will appear as you progress. However, you can not use the type-key feature while on the drop down. 
 
 ![alt text][dropdowntypekey]
 
@@ -78,7 +76,7 @@ Orphaning a key means that you mapped it to another key and no longer have anyth
   - It depends on how the game accesses your keys. Many games use low-level* keyboard hooks and as a result any remappings would not work.
 
 - **Question**: *Does  this work if I change my input language? How?*
-  - Yes it will. Right now if you remap <kbd>A</kbd> to <kbd>B</kbd> on English (US) keyboard and then the switche language to French, then typing <kbd>A</kbd> on the French keyboard (i.e. <kbd>Q</kbd> on the English US physical keyboard) would result in <kbd>B</kbd>, this is consistent with how Windows handles multilingual input. 
+  - Yes it will. Right now if you remap <kbd>A</kbd> to <kbd>B</kbd> on English (US) keyboard and then the switch language to French, then typing <kbd>A</kbd> on the French keyboard (i.e. <kbd>Q</kbd> on the English US physical keyboard) would result in <kbd>B</kbd>, this is consistent with how Windows handles multilingual input. 
 
 ## Trouble shooting if remappings are not working:
 
@@ -96,6 +94,7 @@ For a list of all known issues/suggestions, check it out
 
 [example]: ../../../doc/images/keyboardmanager/example.gif "Example"
 [remapkey]: ../../../doc/images/keyboardmanager/remapkeyboard_both.gif "Remap a Key"
-[remapshort]: .../../../doc/images/keyboardmanager/remapshort_both.gif "Remap a Shortcut"
+[remapshort]: ../../../doc/images/keyboardmanager/remapshort_both.gif "Remap a Shortcut"
 [dropdowntypekey]: ../../../doc/images/keyboardmanager/dropdownstypekey.gif "Drop-downs and Type Features"
 [orphaned]: ../../../doc/images/keyboardmanager/orphanedkey.gif "Orphaned key warning"
+[winlogo]: ../../../doc/images/keyboardmanager/winkey.png 
