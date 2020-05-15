@@ -32,11 +32,6 @@ namespace ColorPicker
             Top = SystemParameters.VirtualScreenTop;
         }
 
-        public void HandleMouseDown(object sender, EventArgs e)
-        {
-            _broker.ActionTriggered(ActionBroker.ActionTypes.Click, sender, e);
-        }
-
         public new void Show()
         {
             _updateTimer.Start();
