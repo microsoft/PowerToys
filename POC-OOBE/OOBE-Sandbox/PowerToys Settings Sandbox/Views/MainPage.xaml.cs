@@ -5,6 +5,7 @@ using PowerToys_Settings_Sandbox.ViewModels;
 using Windows.UI.Xaml.Navigation;
 using Microsoft.Toolkit.Uwp.Helpers;
 using Windows.UI.Notifications;
+using Windows.Storage;
 
 namespace PowerToys_Settings_Sandbox.Views
 {
@@ -17,19 +18,37 @@ namespace PowerToys_Settings_Sandbox.Views
             InitializeComponent();
         }
 
+
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (e.Parameter is string x)
+            if (e.Parameter is string status)
             {
-                if (x == "FirstOpen")
+                /// <summary>
+                /// Will run appropriate startups when toast is clicked
+                /// </summary>
+                if (status == "FirstOpen")
                 {
                     PowerOnLaunchDialog();
-                    ToastNotificationManager.History.Clear();
                 }
-                else if (x == "NewUpdateOpen")
+                else if (status == "NewUpdateOpen")
                 {
                     DisplayUpdateDialog();
-                    ToastNotificationManager.History.Clear();
+                }
+                /// <summary>
+                /// Check for current status of app (new update or new install) on launch
+                /// Comment out this section if using sandbox notifications in App.xaml.cs
+                /// Replace the SystemInformation with flags present in current powertoys app if required
+                /// </summary>
+                else
+                {
+                    if (SystemInformation.IsFirstRun)
+                    {
+                        PowerOnLaunchDialog();
+                    }
+                    else if (SystemInformation.IsAppUpdated)
+                    {
+                        DisplayUpdateDialog();
+                    }
                 }
             }
         }
@@ -41,7 +60,6 @@ namespace PowerToys_Settings_Sandbox.Views
             await dialog.ShowAsync();
         }
 
-        //TODO: Customize to be called only once after update is installed
         private async void DisplayUpdateDialog()
         {
             ContentDialog updateDialog = new UpdateContentDialog();
@@ -55,10 +73,6 @@ namespace PowerToys_Settings_Sandbox.Views
 
         // This method opens the first teaching tip on the General Settings page
         // Should open automatically only on initial install after user starts tutorial
-        public void BeginSettingsTips()
-        {
-            OpenFirstGeneralSettingsTip();
-        }
 
         private void OpenFirstGeneralSettingsTip()
         {
