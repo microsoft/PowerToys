@@ -62,6 +62,7 @@
     </ApplicationDefinition>
     <Compile Include="IconHelper.cs" />
     <Compile Include="ActionBroker.cs" />
+    <Compile Include="ScreenMagnification.cs" />
     <Compile Include="TransparentWindow.xaml.cs">
       <DependentUpon>TransparentWindow.xaml</DependentUpon>
     </Compile>

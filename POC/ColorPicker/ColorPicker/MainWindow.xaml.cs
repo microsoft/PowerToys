@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -30,6 +32,17 @@ namespace ColorPicker
             ActivateColorSelectionMode();
         }
 
+        protected override void OnLocationChanged(EventArgs e)
+        {
+            // Fix to let the pop-ups follow the window if it is dragged around
+            // Source: https://stackoverflow.com/questions/5736359/popup-control-moves-with-parent
+            RgbCopiedPopup.HorizontalOffset += 1;
+            RgbCopiedPopup.HorizontalOffset -= 1;
+            HexCopiedPopup.HorizontalOffset += 1;
+            HexCopiedPopup.HorizontalOffset -= 1;
+            base.OnLocationChanged(e);
+        }
+
         protected override void OnClosing(CancelEventArgs e)
         {
             _transparentWindow.Close();
@@ -45,7 +58,7 @@ namespace ColorPicker
         private void ConfigureUpdateTimer()
         {
             _updateTimer.Tick += UpdateCurrentColor;
-            _updateTimer.Interval = new TimeSpan(1000);
+            _updateTimer.Interval = TimeSpan.FromMilliseconds(100);
         }
 
         private void OnTransparentScreenClick(object sender, EventArgs e)
@@ -68,7 +81,7 @@ namespace ColorPicker
             }
         }
 
-        private void OnNewColorButtonClick(object sender, EventArgs e)
+        private void OnNewColorButtonClick(object sender, RoutedEventArgs e)
         {
             if (NewColorButton.IsChecked ?? false)
             {
@@ -77,6 +90,30 @@ namespace ColorPicker
             else
             {
                 DeactivateColorSelectionMode();
+            }
+        }
+
+        private void OnTextBoxPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // Source: https://www.intertech.com/Blog/how-to-select-all-text-in-a-wpf-textbox-on-focus/
+            // and https://stackoverflow.com/questions/660554/how-to-automatically-select-all-text-on-focus-in-wpf-textbox
+            TextBox textBox = sender as TextBox;
+            if (textBox != null && !textBox.IsKeyboardFocusWithin)
+            {
+                if (e.OriginalSource.GetType().Name == "TextBoxView")
+                {
+                    e.Handled = true;
+                    textBox.Focus();
+                }
+            }
+        }
+
+        private void OnTextBoxFocus(object sender, RoutedEventArgs e)
+        {
+            if (e.OriginalSource is TextBox textBox)
+            {
+                textBox.SelectAll();
+                CopyToClipboardAndOpenPopup(textBox);
             }
         }
 
@@ -108,6 +145,23 @@ namespace ColorPicker
             NewColorButton.IsChecked = false;
             _transparentWindow.Hide();
             _updateTimer.Stop();
+        }
+
+        private void CopyToClipboardAndOpenPopup(TextBox textBox)
+        {
+            textBox.Copy();
+
+            Popup popup = textBox == RgbTextBox ? RgbCopiedPopup : HexCopiedPopup;
+            popup.IsOpen = true;
+
+            DispatcherTimer popupTimer = new DispatcherTimer();
+            popupTimer.Interval = TimeSpan.FromSeconds(3);
+            popupTimer.Tick += (object sender, EventArgs e) =>
+            {
+                popup.IsOpen = false;
+                popupTimer.Stop();
+            };
+            popupTimer.Start();
         }
     }
 }
