@@ -254,8 +254,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void AddRow()
         {
             ObservableCollection<ImageSize> imageSizes = Sizes;
-            ImageSize maxSize = imageSizes.OrderBy(x => x.Id).Last();
-            ImageSize newSize = new ImageSize(maxSize.Id + 1);
+            int maxId = imageSizes.Count > 0 ? imageSizes.OrderBy(x => x.Id).Last().Id : -1;
+            ImageSize newSize = new ImageSize(maxId + 1);
             newSize.PropertyChanged += Size_PropertyChanged;
             imageSizes.Add(newSize);
             Sizes = imageSizes;
