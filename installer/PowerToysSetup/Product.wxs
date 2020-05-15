@@ -854,7 +854,7 @@
     
       <!-- Program Plugin -->
       <Component Id="ProgramComponent" Directory="ProgramPluginFolder" Guid="3C5CA6E6-3D36-4F4E-B40E-38AA5E5CB799">
-        <?foreach File in AppxPackagingTlb.dll;plugin.json;Wox.Infrastructure.dll;Wox.Plugin.dll;Microsoft.Plugin.Program.deps.json;Microsoft.Plugin.Program.dll?>
+        <?foreach File in plugin.json;Wox.Infrastructure.dll;Wox.Plugin.dll;Microsoft.Plugin.Program.deps.json;Microsoft.Plugin.Program.dll?>
           <File Id="Program_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Program\$(var.File)" />
         <?endforeach?>
       </Component>
