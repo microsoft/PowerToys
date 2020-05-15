@@ -4,12 +4,13 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Input;
+using System.Runtime.InteropServices;
 
 namespace MenusWPF.ViewModels
 {
     public class MainWindowVM : INotifyPropertyChanged
     {
-
+        
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void RaisePropertyChanged(string name)
@@ -104,6 +105,7 @@ namespace MenusWPF.ViewModels
 
         }
 
+
         private bool AddCommandCanExecute(MenuItem menuItem)
         {
             if (menuItem != null )
@@ -113,13 +115,18 @@ namespace MenusWPF.ViewModels
             return false;
         }
 
+        [DllImport("SettingsLibrary.dll")]
+        public static extern bool setResolution(String displayName, int pixelWidth, int pixelHeight);
+
         private void AddCommandExecute(MenuItem menuItem)
         {
+            bool success = setResolution("\\\\.\\DISPLAY1", 1920, 1080);
             MenuSelected = menuItem;
         }
 
         private bool ChangeResolutionCommandCanExecute(MenuItem menuItem)
         {
+            
             if (menuItem != null)
             {
                 return true;
