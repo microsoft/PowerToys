@@ -439,6 +439,11 @@
         </File>
         <File Source="$(var.BinX64Dir)modules\Newtonsoft.Json.dll" />
         <File Source="$(var.BinX64Dir)modules\ImageResizerExt.dll" KeyPath="yes" />
+
+        <!-- VCRuntime -->
+        <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
+          <File Id="ImageResizer_$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
+        <?endforeach?>
       </Component>
       <Component Id="Module_ImageResizer_Registry" Guid="8B593E2C-2D9B-4EBC-93F7-A2B69707DAC9" Win64="yes">
         <RegistryKey Root="HKCR" Key="CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32">
