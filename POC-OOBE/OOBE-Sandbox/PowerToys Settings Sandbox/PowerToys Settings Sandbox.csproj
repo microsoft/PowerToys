@@ -272,14 +272,13 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\demo.gif" />
+    <Content Include="Assets\Features.gif" />
     <Content Include="Assets\FZTutorial.jpg" />
     <Content Include="Assets\Logo.png" />
     <Content Include="Assets\MiniLogo.png" />
+    <Content Include="Assets\PowerRenameDemo.gif" />
     <Content Include="Assets\PowerToys.ico" />
     <Content Include="Assets\PowerToysAppList.targetsize-20.png" />
-    <Content Include="Assets\resizeDragAndDrop.gif" />
-    <Content Include="Assets\resizeNormal.gif" />
-    <Content Include="Assets\resizeSettings.gif" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />

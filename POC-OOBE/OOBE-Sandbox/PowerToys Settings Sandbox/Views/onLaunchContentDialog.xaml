@@ -13,29 +13,30 @@
     SecondaryButtonClick="ContentDialog_SecondaryButtonClick"
     DefaultButton="Primary">
 
-
     <Grid>
         <StackPanel>
             <StackPanel>
                 <Image Source="ms-appx:///Assets/PowerToysAppList.targetsize-20.png" Width="70"/>
                 <TextBlock HorizontalAlignment="Center">Do more with PowerToys</TextBlock>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <StackPanel>
-                    <Image Source="ms-appx:///Assets/demo.gif" Width="70"/>
-                    <TextBlock HorizontalAlignment="Center">preview</TextBlock>
-                </StackPanel>
-                <StackPanel>
-                    <Image Source="ms-appx:///Assets/FZTutorial.jpg" Width="70"/>
-                    <TextBlock HorizontalAlignment="Center">Fancy Zones</TextBlock>
-                </StackPanel>
-                <StackPanel>
-                    <Image Source="ms-appx:///Assets/resizeSettings.gif" Width="70"/>
-                    <TextBlock HorizontalAlignment="Center">Image resizer</TextBlock>
-                </StackPanel>
-                <StackPanel>
-                    <Image Source="ms-appx:///Assets/resizeSettings.gif" Width="70"/>
-                    <TextBlock HorizontalAlignment="Center">Power Launcher</TextBlock>
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <StackPanel>
+                        <Image Source="ms-appx:///Assets/demo.gif" Width="70" Height="70"/>
+                        <TextBlock HorizontalAlignment="Center">Preview</TextBlock>
+                    </StackPanel>
+                    <StackPanel>
+                        <Image Source="ms-appx:///Assets/FZTutorial.jpg" Width="70" Height="70"/>
+                        <TextBlock HorizontalAlignment="Center"> Fancy Zones</TextBlock>
+                    </StackPanel>
+                    <StackPanel>
+                        <Image Source="ms-appx:///Assets/Features.gif" Width="90" Height="70"/>
+                        <TextBlock HorizontalAlignment="Center">Launcher</TextBlock>
+                    </StackPanel>
+                    <StackPanel>
+                        <Image Source="ms-appx:///Assets/PowerRenameDemo.gif" Width="70" Height="70"/>
+                        <TextBlock HorizontalAlignment="Center">Power Launcher</TextBlock>
+                    </StackPanel>
                 </StackPanel>
 
             </StackPanel>
