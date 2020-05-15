@@ -44,15 +44,15 @@ namespace ColorPicker
             base.Hide();
         }
 
-        public void OnLoad(object sender, RoutedEventArgs e)
-        {
-            RefreshMagnifyBox(null, null);
-            MouseFollower.Visibility = Visibility.Visible;
-        }
-
         public void AddActionCallback(ActionBroker.ActionTypes action, ActionBroker.Callback callback)
         {
             _broker.AddCallback(action, callback);
+        }
+
+        private void OnLoad(object sender, RoutedEventArgs e)
+        {
+            RefreshMagnificationBox(null, null);
+            MouseFollower.Visibility = Visibility.Visible;
         }
 
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
@@ -70,38 +70,33 @@ namespace ColorPicker
 
         private void OnMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            RealignMagnifyBox(e);
-        }
-
-        private void RealignMagnifyBox(System.Windows.Input.MouseEventArgs e)
-        {
-            System.Windows.Point position = e.GetPosition(this);
-            int pX = (int)position.X;
-            int pY = (int)position.Y;
-
-            Canvas.SetLeft(MouseFollower, pX + MAGNIFICATION_WIDTH / 2 + 10);
-            Canvas.SetTop(MouseFollower, pY + MAGNIFICATION_HEIGHT / 2 + 10);
-        }
-
-        private void RefreshMagnifyBox(object sender, EventArgs e)
-        {
-            System.Drawing.Point cursorPosition = PixelColorFinder.SafeGetCursorPos();
-
-            System.Drawing.Point logicalCaptureCoordsTopLeft = new System.Drawing.Point();
-            logicalCaptureCoordsTopLeft.X = cursorPosition.X - MAGNIFICATION_WIDTH / 2;
-            logicalCaptureCoordsTopLeft.Y = cursorPosition.Y - MAGNIFICATION_HEIGHT / 2;
-
-            MagnifyImage.Source = ScreenMagnification.GetMagnificationImage(
-                logicalCaptureCoordsTopLeft,
-                MAGNIFICATION_WIDTH,
-                MAGNIFICATION_HEIGHT
-            );
+            RealignMagnificationBox(e);
         }
 
         private void ConfigureUpdateTimer()
         {
-            _updateTimer.Tick += RefreshMagnifyBox;
+            _updateTimer.Tick += RefreshMagnificationBox;
             _updateTimer.Interval = new TimeSpan(1000);
+        }
+
+        private void RefreshMagnificationBox(object sender, EventArgs e)
+        {
+            System.Drawing.Point cursorPosition = PixelColorFinder.SafeGetCursorPos();
+
+            System.Drawing.Point captureCoordsTopLeft = new System.Drawing.Point(cursorPosition.X - MAGNIFICATION_WIDTH / 2,
+                                                                                 cursorPosition.Y - MAGNIFICATION_HEIGHT / 2);
+
+            MagnifiedImage.Source = ScreenMagnification.GetMagnificationImage(captureCoordsTopLeft,
+                                                                              MAGNIFICATION_WIDTH,
+                                                                              MAGNIFICATION_HEIGHT);
+        }
+
+        private void RealignMagnificationBox(System.Windows.Input.MouseEventArgs e)
+        {
+            System.Windows.Point position = e.GetPosition(this);
+
+            Canvas.SetLeft(MouseFollower, position.X + MAGNIFICATION_WIDTH / 2 + 10);
+            Canvas.SetTop(MouseFollower, position.Y + MAGNIFICATION_HEIGHT / 2 + 10);
         }
     }
 }
