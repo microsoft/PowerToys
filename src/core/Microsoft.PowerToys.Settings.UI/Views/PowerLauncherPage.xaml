@@ -140,7 +140,7 @@
                 Style="{StaticResource SettingsGroupTitleStyle}"
                 Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <HyperlinkButton>
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/launcher">
                 <TextBlock x:Uid="Module_overview" />
             </HyperlinkButton>
 

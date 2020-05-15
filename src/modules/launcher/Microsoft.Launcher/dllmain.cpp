@@ -91,6 +91,8 @@ public:
     // Create a Settings object.
     PowerToysSettings::Settings settings(hinstance, get_name());
     settings.set_description(GET_RESOURCE_STRING(IDS_LAUNCHER_SETTINGS_DESC));
+    settings.set_overview_link(L"https://github.com/microsoft/PowerToys/blob/master/src/modules/launcher/README.md");
+
     return settings.serialize_to_buffer(buffer, buffer_size);
   }
 
