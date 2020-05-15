@@ -52,7 +52,6 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 <br>
 <br>
 
-<!---
 ### Keyboard Manager
 
 <img align="left" src="./doc/images/overview/KBM_small.png" /> [Keyboard Manager](src/modules/keyboardmanager/) allows you to customize the keyboard to be more productive by remapping keys and creating your own keyboard shortcuts.
@@ -61,9 +60,7 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 <br>
 <br>
 <br>
--->
 
-<!---
 ### PowerToys Run
 
 <img align="left" src="./doc/images/overview/PowerLauncher_small.png" /> [PowerToys Run](src/modules/launcher/) is a new toy in PowerToys that can help you search and launch your app instantly! It is open source and modular for additional plugins.  Window Walker is now inside!
@@ -73,11 +70,6 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 <br>
 <br>
 <br>
--->
-
-### Version 1.0 plan
-
-Our plan for all the [goals and utilities for v1.0 detailed over here in the wiki][v1].
 
 ## Installing and running Microsoft PowerToys
 
@@ -117,29 +109,29 @@ We currently support the matrix below.
 
 ## What's Happening
 
-### April 2020 Update
+### May 2020 Update
 
-Our goals for 0.17 release cycle were updatability and stability.
+Our goals for 0.18 release cycle was three big items, PowerToys Run, Keyboard manager, and migrating to the new settings system.  This is also the first time we'll test out the auto-updating system.
 
-**Auto-updating:** We just added in the code for doing updating, so the first chance to experience this will be when 0.18 is released. We’re also seeing how aggressive everyone wants with this so right now, you’ll have to click “Install” for it to kick off the installer. This is something we’d love feedback on.
+Feedback is critical. We know there are areas for improvement on PT Run. We would love feedback so we can improve. We also would love to know if you want us to be more agressive on auto-upgrading.
 
-Another thing we did was utilized telemetry from PowerToys to prioritize virtual desktop FancyZone work. We knew there was a subset of bugs caused by an underlying issue and seeing how many users it affected helped us reprioritize to do the work sooner.
-
-- We shipped [v0.17][github-release-link]!
-- Auto-updating
-- FancyZone improvement:
-  - Virtual desktop support should be much better!
-  - Better taskbar positioning
-- Fixed non-admin install regression.
+- We shipped [v0.18][github-release-link]!
+- New Utilities
+   - PowerToys Run
+   - Keyboard manager
+- Fixed #243's setting issue
 - Lots of bug fixes!
 
-For [0.18](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F4), we are proactively working on:
+For [0.19](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F4), we are proactively working on:
 
-- Win+R replacement (Launcher)
-- Keyboard remapping
+- Enable PT Run to be mapped to Win-Keys
+- Stability / tech debt
 - Performance improvements with FancyZones
 - A testing utility for FancyZones to be sure we can test different window configurations.
-- Settings v2 / Fix bug #243
+
+### Version 1.0 plan
+
+Our plan for all the [goals and utilities for v1.0 detailed over here in the wiki][v1].
 
 ## Developer Guidance
 
