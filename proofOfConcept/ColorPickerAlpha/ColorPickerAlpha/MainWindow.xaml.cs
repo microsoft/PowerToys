@@ -18,6 +18,8 @@ namespace ColorPickerAlpha
         private bool _pickerActive = true;
 
         private int paletteIndex = 0;
+        private int numPalette;
+        private UIElement[] buttonArray;
 
         public bool pickerActive
         {
@@ -57,8 +59,11 @@ namespace ColorPickerAlpha
                 overlayWnd.Activated += delegate { Owner = overlayWnd; };
                 overlayWnd.Show();
 
-                int numColumns = FormLayoutGrid.Children.Count;
-                generatePaletteHistory(numColumns);
+                numPalette = PaletteGrid.ColumnDefinitions.Count;
+                GeneratePaletteHistory(numPalette);
+
+                buttonArray = new UIElement[numPalette];
+                PaletteGrid.Children.CopyTo(buttonArray, 0);
             };
 
             Closed += delegate 
@@ -156,7 +161,8 @@ namespace ColorPickerAlpha
 
         private void OnCloseExecuted(object sender, ExecutedRoutedEventArgs e) => Close();
         
-        public void generatePaletteHistory(int columns)
+        // Generate the color palette buttons
+        public void GeneratePaletteHistory(int columns)
         {
             for(int col = 0; col < columns; col++)
             {
@@ -190,10 +196,9 @@ namespace ColorPickerAlpha
 
         private void Save_To_Palette(object sender, RoutedEventArgs e)
         {
-            var buttons = PaletteGrid.Children;
-            var buttonCount = buttons.Count;
-            UIElement[] buttonArray = new UIElement[buttonCount];
-            PaletteGrid.Children.CopyTo(buttonArray, 0);
+
+            //UIElement[] buttonArray = new UIElement[numPalette];
+            //PaletteGrid.Children.CopyTo(buttonArray, 0);
 
             var curButton = buttonArray[paletteIndex] as Button;
             if (curButton != null)
@@ -202,7 +207,7 @@ namespace ColorPickerAlpha
             }
 
             paletteIndex++;
-            paletteIndex %= buttonCount;
+            paletteIndex %= numPalette;
         }
     }
 }

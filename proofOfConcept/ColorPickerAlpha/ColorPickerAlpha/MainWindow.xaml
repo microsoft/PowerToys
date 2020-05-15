@@ -86,7 +86,7 @@
                 </Button.Background>
             </Button>
         </Grid>
-        <Grid x:Name = "PaletteGrid" Button.Click="Palette_Button_Click"  Margin="430,0,0,0" Background="{StaticResource backgroundBrush}">
+        <Grid x:Name = "PaletteGrid" Button.Click="Palette_Button_Click" Background="{StaticResource backgroundBrush}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />
@@ -94,6 +94,15 @@
                 <ColumnDefinition />
                 <ColumnDefinition />
                 <ColumnDefinition />
+
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height = "50" />
