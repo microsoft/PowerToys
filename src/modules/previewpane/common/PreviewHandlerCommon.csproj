@@ -93,9 +93,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\..\common\Telemetry\TelemetryBase.cs">
-      <Link>Telemetry\TelemetryBase.cs</Link>
-    </Compile>
     <Compile Include="cominterop\IInitializeWithFile.cs" />
     <Compile Include="cominterop\COLORREF.cs" />
     <Compile Include="cominterop\IInitializeWithStream.cs" />

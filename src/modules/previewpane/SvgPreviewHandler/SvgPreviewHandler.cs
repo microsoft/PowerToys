@@ -5,6 +5,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Common;
+using Microsoft.PowerToys.Telemetry;
 
 namespace SvgPreviewHandler
 {
@@ -27,6 +28,7 @@ namespace SvgPreviewHandler
         /// <inheritdoc/>
         protected override IPreviewHandlerControl CreatePreviewHandlerControl()
         {
+            PowerToysTelemetry.Log.WriteEvent(new Telemetry.Events.SvgFileHandlerLoaded());
             this.svgPreviewControl = new SvgPreviewControl();
             return this.svgPreviewControl;
         }

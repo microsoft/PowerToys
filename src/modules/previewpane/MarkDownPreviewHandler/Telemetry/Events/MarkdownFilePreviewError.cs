@@ -4,21 +4,20 @@
 
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.PowerToys.Telemetry.Events;
-using System.Diagnostics.Tracing;
 
-namespace Microsoft.PowerLauncher.Telemetry
+namespace MarkdownPreviewHandler.Telemetry.Events
 {
     /// <summary>
-    /// ETW Event for when the user initiates a query
+    /// A telemetry event that is triggered when an error occurs while attempting to view a markdown file in the preview pane.
     /// </summary>
-    [EventData]
-    public class LauncherQueryEvent : EventBase, IEvent
+    public class MarkdownFilePreviewError : EventBase, IEvent
     {
-        public double QueryTimeMs { get; set; }
-        public int QueryLength { get; set; }
-        public int NumResults { get; set; }
+        /// <summary>
+        /// Gets or sets the error message.
+        /// </summary>
+        public string Message { get; set; }
 
+        /// <inheritdoc/>
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServicePerformance;
     }
-
 }

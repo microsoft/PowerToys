@@ -14,7 +14,9 @@ using System.Xml;
 using System.Xml.Linq;
 using Common;
 using Common.Utilities;
+using Microsoft.PowerToys.Telemetry;
 using PreviewHandlerCommon;
+using SvgPreviewHandler.Telemetry.Events;
 using SvgPreviewHandler.Utilities;
 
 namespace SvgPreviewHandler
@@ -69,11 +71,11 @@ namespace SvgPreviewHandler
                     this.AddBrowserControl(svgData);
                     this.Resize += this.FormResized;
                     base.DoPreview(dataSource);
-                    SvgTelemetry.Log.SvgFilePreviewed();
+                    PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewed());
                 }
                 catch (Exception ex)
                 {
-                    SvgTelemetry.Log.SvgFilePreviewError(ex.Message);
+                    PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = ex.Message });
                     this.Controls.Clear();
                     this.infoBarAdded = true;
                     this.AddTextBoxControl(Resource.SvgNotPreviewedError);

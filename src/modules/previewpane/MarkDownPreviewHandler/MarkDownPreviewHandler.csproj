@@ -101,7 +101,6 @@
     <Compile Include="Generated Files\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MarkdownTelemetry.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -112,6 +111,9 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="Telemetry\Events\MarkdownFileHandlerLoaded.cs" />
+    <Compile Include="Telemetry\Events\MarkdownFilePreviewed.cs" />
+    <Compile Include="Telemetry\Events\MarkdownFilePreviewError.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack">
@@ -132,6 +134,10 @@
     </AdditionalFiles>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\Telemetry.csproj">
+      <Project>{5D00D290-4016-4CFE-9E41-1E7C724509BA}</Project>
+      <Name>Telemetry</Name>
+    </ProjectReference>
     <ProjectReference Include="..\common\PreviewHandlerCommon.csproj">
       <Project>{af2349b8-e5b6-4004-9502-687c1c7730b1}</Project>
       <Name>PreviewHandlerCommon</Name>
