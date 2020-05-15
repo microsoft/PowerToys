@@ -1,6 +1,6 @@
 # PowerToys Out Of Box Experience Proposal and Code
 
-##### Developers: [Furaha Damién](https://github.com/furahadamien), [Letitia Kwan](https://github.com/letitiakwan), [Jessica Lim](https://github.com/JessicaLim8)
+##### Developers: [Furaha DamiÃ©n](https://github.com/furahadamien), [Letitia Kwan](https://github.com/letitiakwan), [Jessica Lim](https://github.com/JessicaLim8)
 ##### Program Manager : [Eunice Choi](https://github.com/eunicechoi98)
 ##### Designer : Rafael Flora
 
@@ -89,19 +89,98 @@ The following Grid would exist as each tool's Grid element on their repective se
 #### Considerations:
 The aim of the feature is to introduce PowerToys to the user while at the same time not getting in their way. To achieve this we decided to use a [contentDialog](https://docs.microsoft.com/en-us/uwp/api/Windows.UI.Xaml.Controls.ContentDialog?view=winrt-19041). This allows the user to either explore PowerToys features as soon as they install/update the application or do the exploration at a later time. For users who chose the latter, The window privides animated gifs that give a glimpse of what PowerToys has to offer. Using a contentDialog also allows us to fire a toast notifcation at a later time.
 
-## 3. Adaptive Sizing Layout Change
+## 3. Teaching Tips
+
+#### Rationale:
+For medium to low confidence PowerToys users, some terminology such as "Run as user" may be unclear as to what benefit it would pose. We propose putting an "i" icons next to settings that may need explanation. 
+
+#### Design:
+![](./images/Run_As_User_Teaching_Tip.png)
+*Run as user teaching tip - the first tip that pops up if user clicks "Get Started" from the Welcome Screen, or when user clicks on the 'i' icon*
+
+
+![](./images/Last_Teaching_Tip.png)
+*Last teaching tip*
+
+#### Code:
+
+We used the [Teaching Tip](https://docs.microsoft.com/en-us/windows/uwp/design/controls-and-patterns/dialogs-and-flyouts/teaching-tip) component from the Windows UI Library. The frontend and the backend for the teaching tips are in [MainPage.xaml](https://github.com/microsoft/PowerToys/blob/interns/dev-oobe/POC-OOBE/OOBE-Sandbox/PowerToys%20Settings%20Sandbox/Views/MainPage.xaml) and [MainPage.xaml.cs](https://github.com/microsoft/PowerToys/blob/interns/dev-oobe/POC-OOBE/OOBE-Sandbox/PowerToys%20Settings%20Sandbox/Views/MainPage.xaml.cs) respectively. Add styling as necessary in the following code segments:
+
+*"Run as User" tip:*
+
+MainPage.xaml:
+```
+<StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="RunAsUserTitle"/>
+                    <FontIcon x:Name="RunAsUserTitleIcon" FontFamily="Segoe MDL2 Assets" Glyph="&#xE946;" PointerPressed="{x:Bind OpenRunAsUserTip}"/>
+                    <muxc:TeachingTip x:Name="RunAsUserTip"
+                                      Target="{x:Bind RunAsUserTitleIcon"
+                                      Title="Run as user"
+                                      PreferredPlacement="Top"
+                                      CloseButtonClick="{x:Bind OpenFinalGeneralSettingsTip}">
+                        <TextBlock TextWrapping="Wrap">Certain commands in PowerToys require switching to administrator mode. For more information, <Hyperlink NavigateUri="https://github.com/microsoft/PowerToys/blob/master/doc/devdocs/run-as-admin-detection.md">click here</Hyperlink>.</TextBlock>
+                </muxc:TeachingTip>
+</StackPanel>
+```
+
+MainPage.xaml.cs:
+```
+private void OpenRunAsUserTip()
+{
+    RunAsUserTip.IsOpen = true;
+}
+```
+```
+private void OpenFinalGeneralSettingsTip()
+{
+    RunAsUserTip.IsOpen = false;
+    FinalGeneralSettingsTip.IsOpen = true;
+}
+```
+
+
+*Final teaching tip*
+
+Very similar to the "Run as User" tip. Enable light dismiss mode. 
+
+```
+<muxc:TeachingTip x:Name="FinalGeneralSettingsTip"
+    Title="If you ever need help with anything you can click the 'i' to find out more about a certion section."
+    IsLightDismissEnabled="True"
+    PreferredPlacement="BottomRight">
+
+    <muxc:TeachingTip.IconSource>
+        <muxc:SymbolIconSource Symbol="Help" />
+    </muxc:TeachingTip.IconSource>
+</muxc:TeachingTip>
+```
+
+#### Considerations:
+- Edit teaching tip content as necessary
+
+
+## 4. Adaptive Sizing Layout Change
 
 #### Rationale: 
 When the General Settings window is minimized, the "About Feature" section goes to the bottom of Settings - harder to find when there are lots of settings. We propose moving the "About Feature" section to the top of the Settings when minimized.
 
 #### Design:
 
-<img align="left" src="./images/FancyZones_extended_window_new.png" /> Extended window UI
-<img align="left" src="./images/FancyZones_smaller_window_new.png" /> Smaller window UI 
+Extended window UI:
+![](./images/FancyZones_extended_window_new.png)
 
+Smaller window UI:
+![](./images/FancyZones_smaller_window_new.png)
+
+
+#### Code:
+
+The following Grid would exist as each tool's Grid element on their repective settings page. Add styling as necessary:
+
+[FancyZonesPage.xaml](https://github.com/microsoft/PowerToys/blob/interns/dev-oobe/POC-OOBE/OOBE-Sandbox/PowerToys%20Settings%20Sandbox/Views/FancyZonesPage.xaml)
 
 ```
-    <Grid>
+   <Grid>
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
@@ -159,3 +238,103 @@ When the General Settings window is minimized, the "About Feature" section goes 
     </Grid>
 ```
 
+[FancyZonesPage.xaml.cs](https://github.com/microsoft/PowerToys/blob/interns/dev-oobe/POC-OOBE/OOBE-Sandbox/PowerToys%20Settings%20Sandbox/Views/FancyZonesPage.xaml.cs)
+
+```
+ private async void powerOnLaunchDialog()
+        {
+            onLaunchContentDialog dialog = new onLaunchContentDialog();
+            dialog.PrimaryButtonClick += Dialog_PrimaryButtonClick;
+            await dialog.ShowAsync();
+        }
+
+        private void Dialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            OpenFirstGeneralSettingsTip();
+        }
+```
+
+## 5. Hover
+
+On hover of the module overview link of each tool's setting page, a preview of its GitHub documentation will appear.
+
+#### Rationale:
+Highlighting information on "About Tool" page to give further transparency to outbound links. A preview of the tools' easy-to-follow documentation with visual images on Github can engourage users to explore the tool further. 
+
+#### Design:
+
+Proposed design:
+![](./images/Proposed_Module_Overview_Hover.png)
+
+
+Implemented design:
+![](./images/Implemented_Module_Overview_Hover.png)
+
+#### Code:
+We used the [Image](https://docs.microsoft.com/en-us/uwp/api/Windows.UI.Xaml.Controls.Image?view=winrt-19041) component from the XAML Controls Gallery. We hooked up the Image to show based on the onPointerEntered and onPointeredExited of the Module Overview Link.
+
+The Image component and the corresponding event handling are in [FancyZonesPage.xaml](https://github.com/microsoft/PowerToys/blob/interns/dev-oobe/POC-OOBE/OOBE-Sandbox/PowerToys%20Settings%20Sandbox/Views/FancyZonesPage.xaml) and [FancyZonesPage.xaml.cs](https://github.com/microsoft/PowerToys/blob/interns/dev-oobe/POC-OOBE/OOBE-Sandbox/PowerToys%20Settings%20Sandbox/Views/FancyZonesPage.xaml.cs) respectively. Add styling as necessary in the following code segments:
+
+
+FancyZonesPage.xaml
+```
+    <Image x:Name="ModuleOverViewImage" 
+           Width="275" 
+           Margin="18,0,0,0" 
+           Visibility="Collapsed" 
+           Source="/Assets/GitHub_Documentation_Preview.png"/>
+```
+
+FancyZonesPage.xaml.cs
+```
+private void ToggleModuleOverviewTip(object sender, PointerRoutedEventArgs e)
+{
+    if (ModuleOverViewImage.Visibility.Equals((Visibility) 1))
+        {
+            ModuleOverViewImage.Visibility = 0;
+        }
+        else
+        {
+            ModuleOverViewImage.Visibility = (Visibility) 1;
+        }
+}
+```
+
+#### Considerations:
+- This feature needs more refactoring to look like the design. Current implementation with Image Visibility can be refined.
+- First exploration with TeachingTip was unsuccesful - cannot remove close button. Light dismiss mode that removes the teaching tip close button did not work with the onPointerEntered and onPointerExited hyperlink events.
+- Exploration with the Flyout component was not the best, however more time could make a Flyout on hover work better.
+
+## 6. Update Content Dialog
+
+#### Rationale: 
+Make it clearer to users what features were updated so they are more inclined to explore and be aware of new features.
+
+#### Design:
+Proposed design:
+![](./images/Update_Dialog.png)
+
+#### Code:
+We used the [ContentDialog](https://docs.microsoft.com/en-us/uwp/api/Windows.UI.Xaml.Controls.ContentDialog?view=winrt-19041) component from the Windows UI Library.
+
+The Update dialog component code is in [UpdateContentDialog.xaml](https://github.com/microsoft/PowerToys/blob/interns/dev-oobe/POC-OOBE/OOBE-Sandbox/PowerToys%20Settings%20Sandbox/Views/UpdateContentDialog.xaml). Add styling as necessary in the following code segments:
+
+UpdateContentDialog.xaml
+```
+<ContentDialog
+    x:Class="PowerToys_Settings_Sandbox.Views.UpdateContentDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:PowerToys_Settings_Sandbox.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="What's New in PowerToys"
+    PrimaryButtonText="Got it"
+    Height="600"
+    >
+    <ScrollViewer>
+         {INSERT GRIDVIEW OR OTHER COMPONENT HERE}
+    </ScrollViewer>
+</ContentDialog>
+```
