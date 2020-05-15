@@ -9,7 +9,7 @@
         WindowStyle="None"
         ShowInTaskbar="False"
         Background="#01000000"
-        Loaded="OnLoad"
+        Loaded="OnLoaded"
         MouseDown="OnMouseDown"
         KeyDown="OnKeyDown"
         MouseMove="OnMouseMove">
@@ -18,7 +18,8 @@
         <SolidColorBrush x:Key="MagnifiedImagePixelBorderColor" Color="#FFFF0000"/>
     </Window.Resources>
     <Canvas>
-        <Border Name="MouseFollower" BorderBrush="{StaticResource MagnifiedImageBorderColor}" BorderThickness="2" CornerRadius="2" Visibility="Hidden">
+        <Border Name="MouseFollower" BorderBrush="{StaticResource MagnifiedImageBorderColor}"
+                BorderThickness="2" CornerRadius="2" Visibility="Hidden">
             <Grid Height="99" Width="99">
                 <Image Name="MagnifiedImage" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
                 <Rectangle Width="11" Height="11" Stroke="{StaticResource MagnifiedImagePixelBorderColor}" StrokeThickness="1.5"/>

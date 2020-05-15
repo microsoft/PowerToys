@@ -49,7 +49,7 @@ namespace ColorPicker
             _broker.AddCallback(action, callback);
         }
 
-        private void OnLoad(object sender, RoutedEventArgs e)
+        private void OnLoaded(object sender, RoutedEventArgs e)
         {
             RefreshMagnificationBox(null, null);
             MouseFollower.Visibility = Visibility.Visible;
@@ -76,7 +76,7 @@ namespace ColorPicker
         private void ConfigureUpdateTimer()
         {
             _updateTimer.Tick += RefreshMagnificationBox;
-            _updateTimer.Interval = new TimeSpan(1000);
+            _updateTimer.Interval = TimeSpan.FromMilliseconds(100);
         }
 
         private void RefreshMagnificationBox(object sender, EventArgs e)
@@ -95,8 +95,9 @@ namespace ColorPicker
         {
             System.Windows.Point position = e.GetPosition(this);
 
-            Canvas.SetLeft(MouseFollower, position.X + MAGNIFICATION_WIDTH / 2 + 10);
-            Canvas.SetTop(MouseFollower, position.Y + MAGNIFICATION_HEIGHT / 2 + 10);
+            const int LAG_OFFSET = 10;
+            Canvas.SetLeft(MouseFollower, position.X + MAGNIFICATION_WIDTH / 2 + LAG_OFFSET);
+            Canvas.SetTop(MouseFollower, position.Y + MAGNIFICATION_HEIGHT / 2 + LAG_OFFSET);
         }
     }
 }
