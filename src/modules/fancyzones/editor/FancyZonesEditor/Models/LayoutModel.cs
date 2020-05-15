@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Windows;
 
@@ -302,6 +303,37 @@ namespace FancyZonesEditor.Models
         private static ObservableCollection<LayoutModel> _customModels = null;
         private static List<string> _deletedCustomModels = new List<string>();
 
+        public static ObservableCollection<string> LoadMonitors()
+        {
+            try
+            {
+                string persistentFancyZoneSettings = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\FancyZones\\zones-settings.json");
+                using (FileStream inputStream = File.Open(persistentFancyZoneSettings, FileMode.Open))
+                {
+                    JsonDocument jsonObject = JsonDocument.Parse(inputStream, options: default);
+                    JsonElement.ArrayEnumerator settingsEnumerator = jsonObject.RootElement.GetProperty("devices").EnumerateArray();
+                    int monitorIndex = 1;
+
+                    while (settingsEnumerator.MoveNext())
+                    {
+                        var current = settingsEnumerator.Current;
+                        string device = current.GetProperty("device-id").GetString();
+                        _monitorMapping.Add("Display " + monitorIndex, device); // Ideally this should be done from cpp side (Phase 3)
+                        monitorIndex++;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowExceptionMessageBox("Error loading connected monitors", ex);
+                return new ObservableCollection<string>();
+            }
+
+            return new ObservableCollection<string>(_monitorMapping.Keys.ToList());
+        }
+
+        private static Dictionary<string, string> _monitorMapping = new Dictionary<string, string>();
+
         // Callbacks that the base LayoutModel makes to derived types
         protected abstract void PersistData();
 
@@ -363,10 +395,9 @@ namespace FancyZonesEditor.Models
             }
 
             Settings settings = ((App)Application.Current).ZoneSettings;
-
             AppliedZoneSet zoneSet = new AppliedZoneSet
             {
-                DeviceId = Settings.UniqueKey,
+                DeviceId = _monitorMapping[settings.SelectedMonitorOption],
                 ActiveZoneset = activeZoneSet,
                 EditorShowSpacing = settings.ShowSpacing,
                 EditorSpacing = settings.Spacing,

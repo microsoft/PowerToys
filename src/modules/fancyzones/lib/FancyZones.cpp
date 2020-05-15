@@ -6,6 +6,7 @@
 
 #include <common/notifications.h>
 #include <common/notifications/fancyzones_notifications.h>
+#include <common/window_helpers.h>
 
 #include "FancyZones.h"
 #include "lib/Settings.h"
@@ -129,6 +130,8 @@ public:
     ToggleEditor() noexcept;
     IFACEMETHODIMP_(void)
     SettingsChanged() noexcept;
+    IFACEMETHODIMP_(void)
+    UpdateHotKeys() noexcept;
     
     void WindowCreated(HWND window) noexcept;
 
@@ -297,6 +300,11 @@ FancyZones::Run() noexcept
     RegisterHotKey(m_window, 1, m_settings->GetSettings()->editorHotkey.get_modifiers(), m_settings->GetSettings()->editorHotkey.get_code());
     RegisterHotKey(m_window, 2, MOD_ALT | MOD_NOREPEAT, 0x42);
 
+    for (int i = 3; i <= 7; i++)
+    {
+        RegisterHotKey(m_window, i, MOD_ALT | MOD_NOREPEAT, 72 + (i-3));
+    }
+
     VirtualDesktopInitialize();
 
     m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [] {
@@ -431,7 +439,26 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
     return false;
 }
 
-// IFancyZonesCallback
+void FancyZones::UpdateHotKeys() noexcept
+{
+    // Grab the list of customZones
+    auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+    auto fancyZoneDataJson = fancyZonesData.GetPersistFancyZonesJSON();
+    json::JsonArray customZonesJson = fancyZoneDataJson.GetNamedArray(L"custom-zone-sets");
+
+    uint32_t size = customZonesJson.Size();
+    for (uint32_t i = 0; i < size; ++i)
+    {
+        json::JsonObject customZoneJson = customZonesJson.GetObjectAt(i);
+        const int hotkey_eventID = static_cast<int>(customZoneJson.GetNamedNumber(L"hotkey_eventID"));
+        const int hotkey_letterID = static_cast<int>(customZoneJson.GetNamedNumber(L"hotkey_letterID"));
+        // Unregister hotkey
+        UnregisterHotKey(m_window, hotkey_eventID);
+        RegisterHotKey(m_window, hotkey_eventID, MOD_ALT | MOD_NOREPEAT, hotkey_letterID);
+    }
+
+}
+    // IFancyZonesCallback
 void FancyZones::ToggleEditor() noexcept
 {
     {
@@ -582,23 +609,84 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         }
         if (wparam == 2)
         {
-            std::vector<notifications::action_t> actions = {
-                notifications::link_button{ L"Learn more", L"https://aka.ms/powertoysDetectedElevatedHelp" },
-                notifications::link_button{ L"Don't Show Again", L"powertoys://cant_drag_elevated_disable/" }
-            };
-            notifications::show_toast_with_activations(L"WARNING: the fancy zone you have chosen may not be applied as you intended. Resolutions do not match!", {}, std::move(actions));
-            /*
-            auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
-            JSONHelpers::ZoneSetData dataa{ L"{E2E051C1-E9A4-466E-861C-E76DE510F00E}", JSONHelpers::ZoneSetLayoutType::Focus };
-            auto deviceInfo = fancyZonesData.FindDeviceInfo(L"LGD0554#4&1aaa636&0&UID265988_3240_2160_{5760E426-600C-40F5-9E89-E90E5F568782}");
-            deviceInfo->activeZoneSet = dataa;
-            JSONHelpers::DeviceInfoJSON deviceInfoJson{ L"LGD0554#4&1aaa636&0&UID265988_3240_2160_{5760E426-600C-40F5-9E89-E90E5F568782}", *deviceInfo };
-            fancyZonesData.SerializeDeviceInfoToTmpFile(deviceInfoJson, ZoneWindowUtils::GetActiveZoneSetTmpPath());
-            fancyZonesData.SetActiveZoneSet(L"LGD0554#4&1aaa636&0&UID265988_3240_2160_{5760E426-600C-40F5-9E89-E90E5F568782}", dataa);
-            fancyZonesData.SaveFancyZonesData();
-            OnEditorExitEvent();
-            */
-          
+
+                std::vector<notifications::action_t> actions = {
+                    notifications::link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_LEARN_MORE), L"https://aka.ms/powertoysDetectedElevatedHelp" },
+                    notifications::link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN), L"powertoys://cant_drag_elevated_disable/" }
+                };
+                notifications::show_toast_with_activations(L"WARNING: the fancy zone you have chosen may not be applied as you intended. Resolutions do not match!", {}, std::move(actions));
+
+                auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+                JSONHelpers::ZoneSetData dataa{ L"{E2E051C1-E9A4-466E-861C-E76DE510F00E}", JSONHelpers::ZoneSetLayoutType::Focus };
+                auto deviceInfo = fancyZonesData.FindDeviceInfo(L"ACR048F#4&1aaa636&0&UID200195_2560_1440_{5760E426-600C-40F5-9E89-E90E5F568782}");
+                deviceInfo->activeZoneSet = dataa;
+                JSONHelpers::DeviceInfoJSON deviceInfoJson{ L"ACR048F#4&1aaa636&0&UID200195_2560_1440_{5760E426-600C-40F5-9E89-E90E5F568782}", *deviceInfo };
+                fancyZonesData.SerializeDeviceInfoToTmpFile(deviceInfoJson, ZoneWindowUtils::GetActiveZoneSetTmpPath());
+                fancyZonesData.SetActiveZoneSet(L"ACR048F#4&1aaa636&0&UID200195_2560_1440_{5760E426-600C-40F5-9E89-E90E5F568782}", dataa);
+                fancyZonesData.SaveFancyZonesData();
+                OnEditorExitEvent();
+        }
+        for (int i = 3; i <= 7 ; i++)
+        {
+            if (wparam == i) {
+                auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+                auto fancyZoneDataJson = fancyZonesData.GetPersistFancyZonesJSON();
+                json::JsonArray customZonesJson = fancyZoneDataJson.GetNamedArray(L"custom-zone-sets");
+
+                uint32_t size = customZonesJson.Size();
+                if (i-3 < size)
+                {
+                    json::JsonObject customZoneJson = customZonesJson.GetObjectAt(i-3);
+                    const std::wstring newLayout = static_cast<std::wstring>(customZoneJson.GetNamedString(L"uuid"));
+
+                    const int refWidth = static_cast<int>(customZoneJson.GetNamedObject(L"info").GetNamedNumber(L"ref-width"));
+                    const int refHeight = static_cast<int>(customZoneJson.GetNamedObject(L"info").GetNamedNumber(L"ref-height"));
+
+
+                    // Grab the monitor
+                    POINT currentCursorPos{};
+                    HMONITOR monitor{};
+                    GetCursorPos(&currentCursorPos);
+                    monitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
+
+                    // Grab actual monitor height/width
+                    MONITORINFOEX mi;
+                    mi.cbSize = sizeof(mi);
+
+                    m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
+                                          GetMonitorInfo(monitor, &mi);
+                                      } })
+                        .wait();
+                    
+                    const auto actualWidth = mi.rcWork.right - mi.rcWork.left;
+                    const auto actualHeight = mi.rcWork.bottom - mi.rcWork.top;
+
+                    // Send notification if monitor is diffrent
+                    if (actualHeight != refHeight || actualWidth != refWidth)
+                    {
+                        std::vector<notifications::action_t> actions = {
+                            notifications::link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_LEARN_MORE), L"https://aka.ms/powertoysDetectedElevatedHelp" },
+                            notifications::link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN), L"powertoys://cant_drag_elevated_disable/" }
+                        };
+                        notifications::show_toast_with_activations(L"WARNING: the fancy zone you have chosen may not be applied as you intended. Resolutions do not match!", {}, std::move(actions));
+                    }
+
+                    // Apply the desired layout
+                    auto iter = m_zoneWindowMap.find(monitor);
+                    auto zoneWindow = iter->second;
+                    auto deviceInfo = fancyZonesData.FindDeviceInfo(zoneWindow->UniqueId());
+                   
+                    JSONHelpers::ZoneSetData newZoneData{ newLayout, JSONHelpers::ZoneSetLayoutType::Custom };
+
+                    deviceInfo->activeZoneSet = newZoneData;
+
+                    JSONHelpers::DeviceInfoJSON deviceInfoJson{ zoneWindow->UniqueId(), *deviceInfo };
+                    fancyZonesData.SerializeDeviceInfoToTmpFile(deviceInfoJson, ZoneWindowUtils::GetActiveZoneSetTmpPath());
+                    fancyZonesData.SetActiveZoneSet(zoneWindow->UniqueId(), newZoneData);
+                    fancyZonesData.SaveFancyZonesData();
+                    OnEditorExitEvent();   
+                }
+            }
         }
     }
     break;
@@ -648,6 +736,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
             if (lparam == static_cast<LPARAM>(EditorExitKind::Exit))
             {
                 OnEditorExitEvent();
+                //UpdateHotKeys();
             }
 
             {
@@ -690,7 +779,6 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
     }
     return 0;
 }
-
 
 void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 {
