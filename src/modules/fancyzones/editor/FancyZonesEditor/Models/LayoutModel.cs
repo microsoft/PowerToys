@@ -55,6 +55,16 @@ namespace FancyZonesEditor.Models
             Type = type;
         }
 
+        protected LayoutModel(string uuid, int hotkey_keyid, int hotkey_eventid, string name, LayoutType type)
+            : this()
+        {
+            _guid = Guid.Parse(uuid);
+            Eventid = hotkey_eventid;
+            Keyid = hotkey_keyid;
+            Name = name;
+            Type = type;
+        }
+
         protected LayoutModel(string name, LayoutType type)
             : this(name)
         {
@@ -81,6 +91,43 @@ namespace FancyZonesEditor.Models
         }
 
         private string _name;
+
+        public int Eventid
+        {
+            get
+            {
+                return _hotkey_eventID;
+            }
+
+            set
+            {
+                if (_hotkey_eventID != value)
+                {
+                    _hotkey_eventID = value;
+                }
+            }
+        }
+
+        private int _hotkey_eventID;
+
+        public int Keyid
+        {
+            get
+            {
+                return _hotkey_keyID;
+            }
+
+            set
+            {
+                if (_hotkey_keyID != (int)value)
+                {
+                    _hotkey_keyID = (int)value;
+                    FirePropertyChanged("Keyid");
+                }
+            }
+        }
+
+        private int _hotkey_keyID;
 
         public LayoutType Type { get; set; }
 
@@ -180,6 +227,10 @@ namespace FancyZonesEditor.Models
                     string name = current.GetProperty("name").GetString();
                     string type = current.GetProperty("type").GetString();
                     string uuid = current.GetProperty("uuid").GetString();
+
+                    int hotkey_eventID = current.GetProperty("eventid").GetInt32();
+                    int hotkey_keyID = current.GetProperty("keyid").GetInt32();
+
                     var info = current.GetProperty("info");
                     if (type.Equals("grid"))
                     {
@@ -216,7 +267,7 @@ namespace FancyZonesEditor.Models
                             i++;
                         }
 
-                        _customModels.Add(new GridLayoutModel(uuid, name, LayoutType.Custom, rows, columns, rowsPercentage, columnsPercentage, cellChildMap));
+                        _customModels.Add(new GridLayoutModel(uuid, hotkey_keyID, hotkey_eventID, name, LayoutType.Custom, rows, columns, rowsPercentage, columnsPercentage, cellChildMap));
                     }
                     else if (type.Equals("canvas"))
                     {
@@ -233,7 +284,7 @@ namespace FancyZonesEditor.Models
                             zones.Add(new Int32Rect(x, y, width, height));
                         }
 
-                        _customModels.Add(new CanvasLayoutModel(uuid, name, LayoutType.Custom, referenceWidth, referenceHeight, zones));
+                        _customModels.Add(new CanvasLayoutModel(uuid, hotkey_keyID, hotkey_eventID, name, LayoutType.Custom, referenceWidth, referenceHeight, zones));
                     }
                 }
 

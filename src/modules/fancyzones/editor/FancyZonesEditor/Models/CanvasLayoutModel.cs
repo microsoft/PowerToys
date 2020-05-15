@@ -22,6 +22,14 @@ namespace FancyZonesEditor.Models
             Zones = zones;
         }
 
+        public CanvasLayoutModel(string uuid, int hotkey_keyid, int hotkey_eventid, string name, LayoutType type, int referenceWidth, int referenceHeight, IList<Int32Rect> zones)
+            : base(uuid, hotkey_keyid, hotkey_eventid, name, type)
+        {
+            _referenceWidth = referenceWidth;
+            _referenceHeight = referenceHeight;
+            Zones = zones;
+        }
+
         public CanvasLayoutModel(string name, LayoutType type, int referenceWidth, int referenceHeight)
         : base(name, type)
         {
@@ -146,12 +154,18 @@ namespace FancyZonesEditor.Models
         {
             public string Uuid { get; set; }
 
+            public int Eventid { get; set; }
+
+            public int Keyid { get; set; }
+
             public string Name { get; set; }
 
             public string Type { get; set; }
 
             public CanvasLayoutInfo Info { get; set; }
         }
+
+        private readonly Random rnd = new Random();
 
         // PersistData
         // Implements the LayoutModel.PersistData abstract method
@@ -179,6 +193,8 @@ namespace FancyZonesEditor.Models
             CanvasLayoutJson jsonObj = new CanvasLayoutJson
             {
                 Uuid = "{" + Guid.ToString().ToUpper() + "}",
+                Eventid = rnd.Next(),
+                Keyid = Keyid,
                 Name = Name,
                 Type = "canvas",
                 Info = layoutInfo,
@@ -193,6 +209,7 @@ namespace FancyZonesEditor.Models
             {
                 string jsonString = JsonSerializer.Serialize(jsonObj, options);
                 File.WriteAllText(Settings.AppliedZoneSetTmpFile, jsonString);
+                MessageBox.Show(Settings.AppliedZoneSetTmpFile);
             }
             catch (Exception ex)
             {

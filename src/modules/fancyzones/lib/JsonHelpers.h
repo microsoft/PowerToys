@@ -108,6 +108,8 @@ namespace JSONHelpers
     {
         std::wstring name;
         CustomLayoutType type;
+        int eventid;
+        int keyid;
         std::variant<CanvasLayoutInfo, GridLayoutInfo> info;
     };
 
@@ -125,6 +127,8 @@ namespace JSONHelpers
     {
         std::wstring uuid;
         ZoneSetLayoutType type;
+        int eventid;
+        int keyid;
 
         static json::JsonObject ToJson(const ZoneSetData& zoneSet);
         static std::optional<ZoneSetData> FromJson(const json::JsonObject& zoneSet);

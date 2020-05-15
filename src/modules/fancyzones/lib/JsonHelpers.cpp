@@ -701,6 +701,8 @@ namespace JSONHelpers
                 CustomZoneSetData zoneSetData;
                 zoneSetData.name = std::wstring{ value };
                 zoneSetData.type = static_cast<CustomLayoutType>(data[2]);
+                zoneSetData.eventid = 1;
+                zoneSetData.keyid = 2;
                 // int version =  data[0] * 256 + data[1]; - Not used anymore
 
                 GUID guid;
@@ -787,6 +789,8 @@ namespace JSONHelpers
 
         result.SetNamedValue(L"uuid", json::value(zoneSet.uuid));
         result.SetNamedValue(L"type", json::value(TypeToString(zoneSet.type)));
+        // result.SetNamedValue(L"eventid", json::value(zoneSet.eventid));
+        // result.SetNamedValue(L"keyid", json::value(zoneSet.keyid));
 
         return result;
     }
@@ -798,6 +802,8 @@ namespace JSONHelpers
             ZoneSetData zoneSetData;
             zoneSetData.uuid = zoneSet.GetNamedString(L"uuid");
             zoneSetData.type = TypeFromString(std::wstring{ zoneSet.GetNamedString(L"type") });
+            // zoneSetData.eventid = zoneSet.GetNamedNumber(L"eventid");
+            // zoneSetData.keyid = zoneSet.GetNamedNumber(L"keyid");
 
             if (!isValidGuid(zoneSetData.uuid))
             {
@@ -1034,6 +1040,8 @@ namespace JSONHelpers
 
         result.SetNamedValue(L"uuid", json::value(customZoneSet.uuid));
         result.SetNamedValue(L"name", json::value(customZoneSet.data.name));
+        result.SetNamedValue(L"eventid", json::value(customZoneSet.data.eventid));
+        result.SetNamedValue(L"keyid", json::value(customZoneSet.data.keyid));
         switch (customZoneSet.data.type)
         {
         case CustomLayoutType::Canvas: {
@@ -1070,6 +1078,8 @@ namespace JSONHelpers
             }
             
             result.data.name = customZoneSet.GetNamedString(L"name");
+            result.data.eventid = customZoneSet.GetNamedNumber(L"eventid");
+            result.data.keyid = customZoneSet.GetNamedNumber(L"keyid");
 
             json::JsonObject infoJson = customZoneSet.GetNamedObject(L"info");
             std::wstring zoneSetType = std::wstring{ customZoneSet.GetNamedString(L"type") };

@@ -152,6 +152,12 @@
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Margin" Value="16,12,0,0"/>
         </Style>
+        <Style x:Key="hotkeyLabel" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="SegoeUI"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Margin" Value="16,12,0,0"/>
+        </Style>
         <Style x:Key="textBox" TargetType="TextBox">
             <Setter Property="BorderBrush" Value="#cccccc"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -174,6 +180,11 @@
         </Button>
         <TextBlock Text="{x:Static props:Resources.Name}" Style="{StaticResource textLabel}" />
         <TextBox Text="{Binding Name}" Width="496" Style="{StaticResource textBox}" />
+        <TextBlock Text="Hotkey" Style="{StaticResource textLabel}" />
+        <StackPanel Orientation="Horizontal" Margin="0,8,0,0" HorizontalAlignment="Left">
+        <TextBlock Text="Win + ` + " Style="{StaticResource hotkeyLabel}" />
+        <TextBox Text="{Binding Keyid}" Width="60" Style="{StaticResource textBox}"/>
+        </StackPanel>
         <!--
         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
             <CheckBox x:Name="showGridSetting" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="True" Margin="16,4,0,0"/>
