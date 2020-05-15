@@ -108,8 +108,7 @@ namespace ColorPicker
 
         private void OnTextBoxFocus(object sender, RoutedEventArgs e)
         {
-            TextBox textBox = e.OriginalSource as TextBox;
-            if (textBox != null)
+            if (var textBox = e.OriginalSource as TextBox)
             {
                 textBox.SelectAll();
                 CopyToClipboard(textBox);
