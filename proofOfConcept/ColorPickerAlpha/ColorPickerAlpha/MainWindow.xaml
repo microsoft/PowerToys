@@ -5,10 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ColorPickerAlpha"
         mc:Ignorable="d"
-        Title="MainWindow" Height="80" Width="680" Background="{StaticResource backgroundBrush}"
+        Title="MainWindow"  Background="{StaticResource backgroundBrush}"
+        SizeToContent="WidthAndHeight"
         WindowStartupLocation="Manual" Top="0" Left="0"
         >
-
+    
+    <Window.CommandBindings>
+        <CommandBinding Command="Close" Executed="OnCloseExecuted" />
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Command="Close" Key="Esc" />
+    </Window.InputBindings>
+    
     <Grid x:Name = "FormLayoutGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition />

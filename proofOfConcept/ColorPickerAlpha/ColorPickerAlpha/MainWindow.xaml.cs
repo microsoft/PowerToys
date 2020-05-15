@@ -10,10 +10,12 @@ namespace ColorPickerAlpha
 {
     public partial class MainWindow : Window
     {
+        private bool isClosing = false;
         bool rgbState = true;
         Color curColor;
         OverlayWindow overlayWnd;
         private bool _pickerActive = true;
+         
         public bool pickerActive
         {
             get { return _pickerActive; }
@@ -35,8 +37,16 @@ namespace ColorPickerAlpha
             {
                 MouseLeave += delegate { isInWindow = false; };
                 MouseEnter += delegate { isInWindow = true; };
-                Activated += delegate { Topmost = true; };
-                Deactivated += delegate { Topmost = true; };
+                Activated += delegate 
+                { 
+                    Topmost = true;
+                    Mouse.OverrideCursor = null;
+                };
+                Deactivated += delegate 
+                { 
+                    Topmost = true;
+                    Mouse.OverrideCursor = Cursors.Cross;
+                };
 
                 overlayWnd = new OverlayWindow(this);
                 //both windows should be topmost, but the MainWindow above the overlay
@@ -45,9 +55,15 @@ namespace ColorPickerAlpha
                 overlayWnd.Show();
             };
 
+            Closed += delegate 
+            {
+                Mouse.OverrideCursor = null;
+                isClosing = true;
+            };
+
             new Thread(() =>
             {
-                while (true)
+                while (!isClosing)
                 {
                     if (!pickerActive || isInWindow)
                         continue;
@@ -126,5 +142,7 @@ namespace ColorPickerAlpha
         {
             pickerActive = !pickerActive;
         }
+
+        private void OnCloseExecuted(object sender, ExecutedRoutedEventArgs e) => Close();
     }
 }
