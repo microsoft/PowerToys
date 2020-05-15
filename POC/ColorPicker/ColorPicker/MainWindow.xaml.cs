@@ -114,7 +114,7 @@ namespace ColorPicker
             if (textBox != null)
             {
                 textBox.SelectAll();
-                CopyToClipboard(textBox);
+                CopyToClipboardAndOpenPopup(textBox);
             }
         }
 
