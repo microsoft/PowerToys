@@ -11,7 +11,7 @@
     behaviors:NavigationViewHeaderBehavior.HeaderMode="Never"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-     
+
     <Grid ColumnSpacing="24" RowSpacing="24">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
@@ -52,7 +52,7 @@
         <StackPanel Margin="24,0,0,0" VerticalAlignment="Top" Orientation="Vertical" x:Name="FZSettingsTitle">
             <TextBlock x:Name="FancyZonesTitle" HorizontalAlignment="Left" Margin="0,0,0,12" Text="FancyZones" TextWrapping="Wrap" VerticalAlignment="Top" Style="{StaticResource TitleTextBlockStyle}"/>
             <TextBlock x:Name="DescriptionTextBlock" Text="Create window layouts to help make multi-tasking easy." TextWrapping="Wrap" Style="{StaticResource SubtitleTextBlockStyle}"/>
-         </StackPanel>
+        </StackPanel>
 
         <StackPanel x:Name="SidePanel"
                     Grid.Column="1"
@@ -64,27 +64,9 @@
                     Orientation="Vertical"
                     HorizontalAlignment="Left">
                 <TextBlock x:Name="AboutTextBlock" Text="About this feature" TextWrapping="Wrap" Margin="24,0,0,12" Style="{StaticResource SubtitleTextBlockStyle}"/>
-            <HyperlinkButton x:Name="ModuleOverviewLink" Content="Module overview" Margin="24,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" PointerEntered="ToggleModuleOverviewTip" PointerExited="ToggleModuleOverviewTip">
-                <HyperlinkButton.Resources>
-                    <muxc:TeachingTip x:Name="ModuleOverviewTip"
-                                Target="{x:Bind ModuleOverviewLink}"
-                                Background="LightGray"
-                                Foreground="Blue"
-                                TailVisibility="Collapsed"
-                                HeroContentPlacement="Bottom"
-                               
-                        >
-                        <StackPanel Orientation="Horizontal"  VerticalAlignment="Top">
-                            <TextBlock x:Name="ModuleOverviewText" HorizontalAlignment="Left"  Text="Visit module overview on GitHub" TextWrapping="Wrap" VerticalAlignment="Center" />
-                            <FontIcon x:Name="ModuleOverviewTextIcon" FontFamily="Segoe MDL2 Assets" Glyph="&#xF3E2;" Margin="60,0,0,0" VerticalAlignment="Top"/>
-                        </StackPanel>
-                        <muxc:TeachingTip.HeroContent>
-                            <Image Source="../Assets/StoreLogo.png" />
-                        </muxc:TeachingTip.HeroContent>
-                    </muxc:TeachingTip>
-                </HyperlinkButton.Resources>
-            </HyperlinkButton>
-            <HyperlinkButton Content="Give feedback" Margin="24,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                <HyperlinkButton x:Name="ModuleOverviewLink" Content="Module overview" Margin="24,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" PointerEntered="ToggleModuleOverviewTip" PointerExited="ToggleModuleOverviewTip"/>
+                <Image x:Name="ModuleOverViewImage" Width="275" Margin="18,0,0,0" Visibility="Collapsed" Source="/Assets/GitHub_Documentation_Preview.png"/>
+                <HyperlinkButton Content="Give feedback" Margin="24,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
             </StackPanel>
         </StackPanel>
 
@@ -108,7 +90,6 @@
 
             <CheckBox Content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Facere, nulla, ipsum?"
                       Margin="0,12,0,0"/>
-
 
             <CheckBox Content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Facere, nulla, ipsum?"
                       Margin="0,12,0,0"/>
@@ -174,8 +155,6 @@
                               IsAlphaTextInputVisible="False"
                               Color="{Binding Path=ZoneBorderColor, Mode=TwoWay}"
                               IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
-
         </StackPanel>
     </Grid>
-       
 </Page>

@@ -273,6 +273,7 @@
   <ItemGroup>
     <Content Include="Assets\demo.gif" />
     <Content Include="Assets\FZTutorial.jpg" />
+    <Content Include="Assets\GitHub_Documentation_Preview.png" />
     <Content Include="Assets\Logo.png" />
     <Content Include="Assets\MiniLogo.png" />
     <Content Include="Assets\PowerToys.ico" />

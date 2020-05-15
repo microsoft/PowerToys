@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -28,16 +29,16 @@ namespace PowerToys_Settings_Sandbox.Views
             this.InitializeComponent();
         }
 
-        // This method toggles the image preview of the Module Overview link of the "About Feature" section
+        //This method toggles the image preview of the Module Overview link of the "About Feature" section
         private void ToggleModuleOverviewTip(object sender, PointerRoutedEventArgs e)
         {
-            if (!ModuleOverviewTip.IsOpen)
+            if (ModuleOverViewImage.Visibility.Equals((Visibility)1))
             {
-                ModuleOverviewTip.IsOpen = true;
+                ModuleOverViewImage.Visibility = 0;
             }
             else
             {
-                ModuleOverviewTip.IsOpen = false;
+                ModuleOverViewImage.Visibility = (Visibility)1;
             }
         }
     }
