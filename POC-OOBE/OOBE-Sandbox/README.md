@@ -1,6 +1,6 @@
 # PowerToys Out Of Box Experience Proposal and Code
 
-##### Developers: [Furaha Dami�n](https://github.com/furahadamien), [Letitia Kwan](https://github.com/letitiakwan), [Jessica Lim](https://github.com/JessicaLim8)
+##### Developers: [Furaha Damién](https://github.com/furahadamien), [Letitia Kwan](https://github.com/letitiakwan), [Jessica Lim](https://github.com/JessicaLim8)
 ##### Program Manager : [Eunice Choi](https://github.com/eunicechoi98)
 ##### Designer : Rafael Flora
 
