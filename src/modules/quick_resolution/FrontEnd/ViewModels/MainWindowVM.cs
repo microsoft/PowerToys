@@ -39,7 +39,6 @@ namespace MenusWPF.ViewModels
             //menuItems.Add(resetMenuItem);
 
 
-            //change to use the finding possible resolutions function
             MonitorResolutionSettings resolutionSettings = new MonitorResolutionSettings();
             getAllDisplaySettings(out resolutionSettings);
 

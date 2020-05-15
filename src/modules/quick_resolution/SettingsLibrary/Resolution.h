@@ -21,6 +21,7 @@ struct MonitorResolutionSettings
     LPWSTR displayAdapterName;
     LPWSTR monitorName;
     Resolution currentResolution;
+    Resolution* resolutionOptions;
     Resolution res1; // TODO this should be an array, but it requires more complex marshalling. 
     Resolution res2;
     Resolution res3;
