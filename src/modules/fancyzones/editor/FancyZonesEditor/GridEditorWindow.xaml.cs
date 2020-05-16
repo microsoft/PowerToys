@@ -15,13 +15,13 @@ namespace FancyZonesEditor
         public GridEditorWindow()
         {
             InitializeComponent();
-            _stashedModel = (GridLayoutModel)(App.Overlay[MonitorVM.CurrentMonitor].MainWindow.DataContext as GridLayoutModel).Clone();
+            _stashedModel = (GridLayoutModel)(App.Overlay.MainWindow.DataContext as GridLayoutModel).Clone();
         }
 
         protected new void OnCancel(object sender, RoutedEventArgs e)
         {
             base.OnCancel(sender, e);
-            GridLayoutModel model = App.Overlay[MonitorVM.CurrentMonitor].MainWindow.DataContext as GridLayoutModel;
+            GridLayoutModel model = App.Overlay.MainWindow.DataContext as GridLayoutModel;
             _stashedModel.RestoreTo(model);
         }
 

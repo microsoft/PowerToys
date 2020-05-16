@@ -82,7 +82,6 @@ namespace FancyZonesEditor
 
         public Settings(int monitor_shift)
         {
-            //Debugger.Launch();
             ParseCommandLineArgs(monitor_shift);
 
             // Initialize the five default layout models: Focus, Columns, Rows, Grid, and PriorityGrid
@@ -223,13 +222,13 @@ namespace FancyZonesEditor
 
         private Rect _workArea;
 
-        public static uint Monitor { get; private set; }
+        public static uint Monitor { get; set; }
 
-        public string UniqueKey { get; private set; }
+        public string UniqueKey { get; set; }
 
-        public static string ActiveZoneSetUUid { get; private set; }
+        public static string ActiveZoneSetUUid { get; set; }
 
-        public LayoutType ActiveZoneSetLayoutType { get; private set; }
+        public LayoutType ActiveZoneSetLayoutType { get; set; }
 
         public string ActiveZoneSetTmpFile
         {

@@ -20,8 +20,9 @@ namespace FancyZonesEditor
     public partial class MainWindow : MetroWindow
     {
         public const int MaxZones = 40;
-        public Settings Settings = App.ZoneSettings[MonitorVM.CurrentMonitor];
         private static readonly string _defaultNamePrefix = "Custom Layout ";
+        private static Settings _settings = App.ZoneSettings[MonitorVM.CurrentMonitor];
+
 
         public int WrapPanelItemSize { get; set; } = 150;
 
@@ -29,11 +30,11 @@ namespace FancyZonesEditor
         {
             InitializeComponent();
 
-            DataContext = Settings;
+            DataContext = _settings;
 
             KeyUp += MainWindow_KeyUp;
 
-            if (Settings.WorkArea.Height < 900)
+            if (_settings.WorkArea.Height < 900)
             {
                 SizeToContent = SizeToContent.WidthAndHeight;
                 WrapPanelItemSize = 150;
@@ -50,17 +51,17 @@ namespace FancyZonesEditor
 
         private void DecrementZones_Click(object sender, RoutedEventArgs e)
         {
-            if (Settings.ZoneCount > 1)
+            if (_settings.ZoneCount > 1)
             {
-                Settings.ZoneCount--;
+                _settings.ZoneCount--;
             }
         }
 
         private void IncrementZones_Click(object sender, RoutedEventArgs e)
         {
-            if (Settings.ZoneCount < MaxZones)
+            if (_settings.ZoneCount < MaxZones)
             {
-                Settings.ZoneCount++;
+                _settings.ZoneCount++;
             }
         }
 
@@ -78,18 +79,18 @@ namespace FancyZonesEditor
 
         private void Select(LayoutModel newSelection)
         {
-            if (App.Overlay[MonitorVM.CurrentMonitor].DataContext is LayoutModel currentSelection)
+            if (App.Overlay.DataContext is LayoutModel currentSelection)
             {
                 currentSelection.IsSelected = false;
             }
 
             newSelection.IsSelected = true;
-            App.Overlay[MonitorVM.CurrentMonitor].DataContext = newSelection;
+            App.Overlay.DataContext = newSelection;
         }
 
         private void EditLayout_Click(object sender, RoutedEventArgs e)
         {
-            EditorOverlay mainEditor = App.Overlay[MonitorVM.CurrentMonitor];
+            EditorOverlay mainEditor = App.Overlay;
             if (!(mainEditor.DataContext is LayoutModel model))
             {
                 return;
@@ -140,14 +141,14 @@ namespace FancyZonesEditor
                 window = new CanvasEditorWindow();
             }
 
-            window.Owner = App.Overlay[MonitorVM.CurrentMonitor];
+            window.Owner = App.Overlay;
             window.DataContext = model;
             window.Show();
         }
 
         public void Apply_Click(object sender, RoutedEventArgs e)
         {
-            EditorOverlay mainEditor = App.Overlay[MonitorVM.CurrentMonitor];
+            EditorOverlay mainEditor = App.Overlay;
             if (mainEditor.DataContext is LayoutModel model)
             {
                 if (model is GridLayoutModel)
@@ -159,22 +160,13 @@ namespace FancyZonesEditor
                     model.Apply();
                 }
 
-                Close();
             }
         }
 
         private void OnClosing(object sender, EventArgs e)
         {
             LayoutModel.SerializeDeletedCustomZoneSets();
-            App.Overlay[MonitorVM.CurrentMonitor].Close();
-            App.ActiveMonitors[MonitorVM.CurrentMonitor] = false;
-            for (int i = MonitorVM.CurrentMonitor - 1; i >= 0; i--)
-            {
-                if (App.ActiveMonitors[i])
-                {
-                    MonitorVM.CurrentMonitor = i;
-                }
-            }
+            App.Overlay.Close();
         }
 
         private void OnInitialized(object sender, EventArgs e)
@@ -203,6 +195,13 @@ namespace FancyZonesEditor
             }
 
             model.Delete();
+        }
+
+        public void Update()
+        {
+            _settings = App.ZoneSettings[MonitorVM.CurrentMonitor];
+            DataContext = _settings;
+            SetSelectedItem();
         }
     }
 }

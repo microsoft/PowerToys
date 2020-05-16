@@ -17,11 +17,9 @@ namespace FancyZonesEditor
     {
         public static Settings[] ZoneSettings { get; set; }
 
-        public static EditorOverlay[] Overlay { get; set; }
+        public static EditorOverlay Overlay { get; set; }
 
         public static LayoutModel[] FoundModel { get; set; }
-
-        public static bool[] ActiveMonitors { get; set; }
 
         public static int NumMonitors { get; private set; }
 
@@ -36,7 +34,7 @@ namespace FancyZonesEditor
             }
         }
 
-        public void OnStartup(object sender, StartupEventArgs e)
+        private void OnStartup(object sender, StartupEventArgs e)
         {
             FoundModel = new LayoutModel[NumMonitors];
 
@@ -52,7 +50,7 @@ namespace FancyZonesEditor
                     }
                 }
 
-                if (FoundModel == null)
+                if (FoundModel[setting] == null)
                 {
                     foreach (LayoutModel model in Settings.CustomModels)
                     {
@@ -65,23 +63,26 @@ namespace FancyZonesEditor
                     }
                 }
 
-                if (FoundModel == null)
+                if (FoundModel[setting] == null)
                 {
                     FoundModel[setting] = ZoneSettings[setting].DefaultModels[0];
                 }
 
                 FoundModel[setting].IsSelected = true;
             }
-            Overlay = new EditorOverlay[NumMonitors];
-            ActiveMonitors = new bool[NumMonitors];
-            LoadSetup();
+            LoadCurrentMonitorSetup();
         }
-        public static void LoadSetup()
+        public static void LoadCurrentMonitorSetup()
         {
-            Overlay[MonitorVM.CurrentMonitor] = new EditorOverlay();
-            ActiveMonitors[MonitorVM.CurrentMonitor] = true;
-            Overlay[MonitorVM.CurrentMonitor].Show();
-            Overlay[MonitorVM.CurrentMonitor].DataContext = FoundModel[MonitorVM.CurrentMonitor];
+            Overlay = new EditorOverlay();
+            Overlay.Show();
+            Overlay.DataContext = FoundModel[MonitorVM.CurrentMonitor];
+        }
+
+        public static void Update()
+        {
+            Overlay.DataContext = FoundModel[MonitorVM.CurrentMonitor];
+            Overlay.MainWindow.Update();
         }
     }
 }

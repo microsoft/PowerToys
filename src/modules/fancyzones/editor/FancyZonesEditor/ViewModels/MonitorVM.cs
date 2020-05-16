@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Data;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -13,6 +15,17 @@ using System.Windows.Navigation;
 
 namespace FancyZonesEditor
 {
+
+    public class MonitorChangedEventArgs : EventArgs
+    {
+        public readonly int LastMonitor;
+
+        public MonitorChangedEventArgs(int lastMonitor)
+        {
+            LastMonitor = lastMonitor;
+        }
+    }
+
     public class MonitorVM : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
@@ -27,8 +40,16 @@ namespace FancyZonesEditor
         public static int CurrentMonitor
         {
             get { return _currentMonitor; }
-            set { _currentMonitor = value; }
+            set 
+            {
+                int _lastMonitor = _currentMonitor;
+                _currentMonitor = value;
+                CurrentMonitorChanged?.Invoke(new MonitorChangedEventArgs(_lastMonitor));
+            }
         }
+
+        public delegate void MonitorChangedEventHandler(MonitorChangedEventArgs args);
+        public static event MonitorChangedEventHandler CurrentMonitorChanged;
 
         private static int _lastMonitor;
 
@@ -147,15 +168,18 @@ namespace FancyZonesEditor
 
         private void SelectCommandExecute(MonitorInfo monitorInfo)
         {
-            if (!App.ActiveMonitors[monitorInfo.Id])
+            MonitorVM.CurrentMonitor = monitorInfo.Id;
+            App.Update();
+            for (int i = 0; i < Monitors.Count; ++i)
             {
-                MonitorVM.CurrentMonitor = monitorInfo.Id;
-                App.LoadSetup();
+                if (Monitors[i].Selected)
+                {
+                    Monitors[i] = new MonitorInfo(Monitors[i].Id, Monitors[i].Name, Monitors[i].Height, Monitors[i].Width, false);
+                    break;
+                }
             }
-            else
-            {
-                MessageBox.Show("Finish Editing Monitor " + MonitorVM.CurrentMonitor + " first!");
-            }
+
+            Monitors[monitorInfo.Id] = new MonitorInfo(monitorInfo.Id, monitorInfo.Name, monitorInfo.Height, monitorInfo.Width, true);
         }
 
         #endregion Commands

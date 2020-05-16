@@ -27,6 +27,13 @@ namespace FancyZonesEditor
             InitializeComponent();
             DataContextChanged += LayoutPreview_DataContextChanged;
             App.ZoneSettings[MonitorVM.CurrentMonitor].PropertyChanged += ZoneSettings_PropertyChanged;
+            MonitorVM.CurrentMonitorChanged += MonitorVM_CurrentMonitorChanged;
+        }
+
+        private void MonitorVM_CurrentMonitorChanged(MonitorChangedEventArgs e)
+        {
+            App.ZoneSettings[e.LastMonitor].PropertyChanged -= ZoneSettings_PropertyChanged;
+            App.ZoneSettings[MonitorVM.CurrentMonitor].PropertyChanged += ZoneSettings_PropertyChanged;
         }
 
         private void LayoutPreview_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -41,7 +48,7 @@ namespace FancyZonesEditor
             set { SetValue(IsActualSizeProperty, value); }
         }
 
-        private void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        public void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "ZoneCount")
             {
