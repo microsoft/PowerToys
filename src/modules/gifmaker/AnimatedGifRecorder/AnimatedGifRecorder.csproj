@@ -68,7 +68,7 @@
     </ApplicationDefinition>
     <Compile Include="FrameInfo.cs" />
     <Compile Include="Recorder.cs" />
-    <Compile Include="RecorderConf.cs" />
+    <Compile Include="RecorderConfiguration.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="Views\SampleToolbar.xaml.cs">
       <DependentUpon>SampleToolbar.xaml</DependentUpon>

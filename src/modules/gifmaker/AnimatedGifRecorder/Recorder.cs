@@ -15,14 +15,21 @@ namespace AnimatedGifRecorder
         /// <summary>
         /// Collection of frame metadata in the current session
         /// </summary>
-        public List<FrameInfo> Frames { get; private set; } = new List<FrameInfo>();
+        public List<FrameInfo> Frames
+        {
+            get
+            {
+                if (frames == null) frames = new List<FrameInfo>();
+                return frames;
+            }
+        }
 
         /// <summary>
         /// Get current recording session
         /// </summary>
         /// <param name="conf"></param>
         /// <returns></returns>
-        public static Recorder GetInstance(RecorderConf conf)
+        public static Recorder GetInstance(RecorderConfiguration conf)
         {
             if (recorder == null) recorder = new Recorder(conf);
             return recorder;
@@ -32,7 +39,7 @@ namespace AnimatedGifRecorder
         /// Initializes the recording session internally
         /// </summary>
         /// <param name="conf"></param>
-        private Recorder(RecorderConf conf)
+        private Recorder(RecorderConfiguration conf)
         {
             throw new NotImplementedException();
         }
@@ -41,7 +48,7 @@ namespace AnimatedGifRecorder
         /// To update configurations in the future
         /// </summary>
         /// <param name="conf"></param>
-        public void Configure(RecorderConf conf)
+        public void Configure(RecorderConfiguration conf)
         {
             throw new NotImplementedException();
         }
@@ -93,5 +100,7 @@ namespace AnimatedGifRecorder
         /// Singleton instance of recorder
         /// </summary>
         private static Recorder recorder;
+
+        private List<FrameInfo> frames;
     }
 }

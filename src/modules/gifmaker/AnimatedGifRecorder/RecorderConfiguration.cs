@@ -3,7 +3,7 @@
     /// <summary>
     /// Summarizes capture session configurations in a single object
     /// </summary>
-    public class RecorderConf
+    public class RecorderConfiguration
     {
         /// <summary>
         /// Width of recording
