@@ -226,7 +226,7 @@
                 Style="{StaticResource SettingsGroupTitleStyle}"
                 Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <HyperlinkButton>
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/keyboardmanager">
                 <TextBlock x:Uid="Module_overview" />
             </HyperlinkButton>
 
