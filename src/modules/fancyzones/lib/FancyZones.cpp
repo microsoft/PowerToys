@@ -696,10 +696,7 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
     }
     else if (changeType == DisplayChangeType::VirtualDesktop)
     {
-        if (m_settings->GetSettings()->virtualDesktopChange_moveWindows)
-        {
-            UpdateWindowsPositions();
-        }
+        UpdateWindowsPositions();
     }
 }
 
