@@ -315,6 +315,18 @@ namespace PowerLauncher
             _resultList.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
             _resultList.SuggestionsList.ContainerContentChanging += SuggestionList_UpdateListSize;
             _resultList.PropertyChanged += UserControl_PropertyChanged;
+
+            // Trigger window resizing when MaxResultsToShow changes.            
+            _settings.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(_settings.MaxResultsToShow))
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        UpdateListSize();
+                    });
+                }
+            };
         }
 
         private void SuggestionsList_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
@@ -389,15 +401,19 @@ namespace PowerLauncher
             }
         }
 
+        private void UpdateListSize()
+        {
+            int count = _viewModel?.Results?.Results.Count ?? 0;
+            int displayCount = Math.Min(count, _settings.MaxResultsToShow);
+            _resultList.Height = displayCount * ROW_HEIGHT;
+        }
         /* Note: This function has been added because a white-background was observed when the list resized,
          * when the number of elements were lesser than the maximum capacity of the list (ie. 4).
          * Binding Height/MaxHeight Properties did not solve this issue.
          */
         private void SuggestionList_UpdateListSize(object sender, Windows.UI.Xaml.Controls.ContainerContentChangingEventArgs e)
         {
-            int count = _viewModel?.Results?.Results.Count ?? 0;
-            int displayCount = Math.Min(count, _settings.MaxResultsToShow);
-            _resultList.Height = displayCount * ROW_HEIGHT;
+            UpdateListSize();
         }
 
         private void SuggestionsList_SelectionChanged(object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)
