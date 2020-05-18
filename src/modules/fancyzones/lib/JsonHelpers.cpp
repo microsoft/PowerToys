@@ -239,7 +239,7 @@ namespace JSONHelpers
                 auto appZoneHistory = json::from_file(appZoneHistoryFilePath);
                 if (appZoneHistory)
                 {
-                    result->SetNamedValue(L"app-zone-history", appZoneHistory->GetNamedObject(L"app-zone-history"));
+                    result->SetNamedValue(L"app-zone-history", appZoneHistory->GetNamedArray(L"app-zone-history"));
                 }
                 else
                 {
