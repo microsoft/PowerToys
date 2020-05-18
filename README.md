@@ -77,7 +77,9 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 
 ### Via Github with MSI [Recommended]
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.17.0-x64.msi` to download the PowerToys installer.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.18.0-x64.msi` to download the PowerToys installer.
+
+**Note:** After installing, you will have to start PowerToys for the first time.  We will improve install experience this moving forward but due to a possible install dependency, we can't start after install currently.
 
 This is our preferred method.
 
@@ -113,19 +115,20 @@ We currently support the matrix below.
 
 Our goals for 0.18 release cycle was three big items, PowerToys Run, Keyboard manager, and migrating to the new settings system.  This is also the first time we'll test out the auto-updating system.
 
-Feedback is critical. We know there are areas for improvement on PT Run. We would love feedback so we can improve. We also would love to know if you want us to be more agressive on auto-upgrading.
+Feedback is critical. We know there are areas for improvement on PT Run. We would love feedback so we can improve. We also would love to know if you want us to be more aggressive on auto-upgrading.
 
 - We shipped [v0.18][github-release-link]!
 - New Utilities
-   - PowerToys Run
-   - Keyboard manager
-- Fixed #243's setting issue
+   - PowerToys Run, our new application launcher (use alt-space to activate)
+   - Keyboard manager, a quick easy way to remap your keyboard
+- Fixed [#243](https://github.com/microsoft/PowerToys/issues/243)'s setting issue
+- Improved performance on FancyZones [#1264](https://github.com/microsoft/PowerToys/issues/1264)
 - Lots of bug fixes!
 
 For [0.19](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F4), we are proactively working on:
 
 - Enable PT Run to be mapped to Win-Keys
-- Stability / tech debt
+- Stability / tech debt fixes
 - Performance improvements with FancyZones
 - A testing utility for FancyZones to be sure we can test different window configurations.
 
