@@ -58,3 +58,19 @@ namespace Helpers
     std::wstring GuidToString(const GUID& guid);
     std::wstring CreateGuidString();
 }
+
+template<>
+std::wstring Microsoft::VisualStudio::CppUnitTestFramework::ToString(const std::vector<int>& vec)
+{
+    std::wstring str = L"{";
+    for (size_t i = 0; i < vec.size(); i++)
+    {
+        str += std::to_wstring(vec[i]);
+        if (i != vec.size() - 1)
+        {
+            str += L",";
+        }
+    }
+    str += L"}";
+    return str;
+}
