@@ -122,22 +122,9 @@ namespace Wox.Test
             }
         }
 
-        [Test]
-        public void WhenMultipleResults_ExactMatchingResult_ShouldHaveGreatestScore()
+        [TestCase("vim", "Vim", "ignoreDescription", "ignore.exe", "Vim Diff", "ignoreDescription", "ignore.exe")]
+        public void WhenMultipleResults_ExactMatchingResult_ShouldHaveGreatestScore(string queryString, string firstName, string firstDescription, string firstExecutableName, string secondName, string secondDescription, string secondExecutableName)
         {
-            // Arrange
-            string queryString = "vim";
-
-            // Vim
-            string firstName = "Vim";
-            string firstDescription = "Vi Improved - A Text Editor";
-            string firstExecutableName = "vim.exe";
-
-            // Vim Diff
-            string secondName = "Vim Diff";
-            string secondDescription = "Vi Improved - A Text Editor";
-            string secondExecutableName = "vim.exe";
-
             // Act
             var matcher = new StringMatcher();
             var firstNameMatch = matcher.FuzzyMatch(queryString, firstName).RawScore;
