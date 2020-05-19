@@ -28,7 +28,6 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 <br>
 <br>
 <br>
-<br>
 
 ### PowerRename
 
@@ -43,11 +42,11 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 PowerToys will now enable two types of files to be previewed: Markdown (.md) & SVG (.svg)
 <br>
 <br>
-<br>
 
 ### Image Resizer
 
 [<img align="left" src="./doc/images/overview/ImageResizer_small.png" />](/src/modules/imageresizer) [Image Resizer](/src/modules/imageresizer) is a Windows Shell Extension for quickly resizing images.  With a simple right click from File Explorer, resize one or many images instantly. This code is based on [Brice Lambson's Image Resizer](https://github.com/bricelam/ImageResizer).
+<br>
 <br>
 <br>
 <br>
@@ -64,7 +63,6 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 ### PowerToys Run
 
 [<img align="left" src="./doc/images/overview/PowerLauncher_small.png" />](src/modules/launcher/) [PowerToys Run](src/modules/launcher/) is a new toy in PowerToys that can help you search and launch your app instantly! It is open source and modular for additional plugins.  Window Walker is now inside!
-<br>
 <br>
 <br>
 <br>
