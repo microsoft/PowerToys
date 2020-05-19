@@ -63,7 +63,7 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 
 ### PowerToys Run
 
-<img align="left" src="./doc/images/overview/PowerLauncher_small.png" /> [PowerToys Run](src/modules/launcher/) is a new toy in PowerToys that can help you search and launch your app instantly! It is open source and modular for additional plugins.  Window Walker is now inside!
+[<img align="left" src="./doc/images/overview/PowerLauncher_small.png" />](src/modules/launcher/) [PowerToys Run](src/modules/launcher/) is a new toy in PowerToys that can help you search and launch your app instantly! It is open source and modular for additional plugins.  Window Walker is now inside!
 <br>
 <br>
 <br>
