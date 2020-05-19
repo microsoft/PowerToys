@@ -68,4 +68,4 @@ For a list of all known issues/suggestions, check it out
 
 [Wox](https://github.com/Wox-launcher/Wox/)
 
-[Beta Tadele's Window Walker](https://github.com/Wox-launcher/Wox/)
+[Beta Tadele's Window Walker](https://github.com/betsegaw/windowwalker)
