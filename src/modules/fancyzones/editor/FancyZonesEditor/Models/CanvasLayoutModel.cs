@@ -193,7 +193,7 @@ namespace FancyZonesEditor.Models
             CanvasLayoutJson jsonObj = new CanvasLayoutJson
             {
                 Uuid = "{" + Guid.ToString().ToUpper() + "}",
-                Eventid = rnd.Next(),
+                Eventid = rnd.Next(), // TODO: Give Eventid a unique int
                 Keyid = Keyid,
                 Name = Name,
                 Type = "canvas",
@@ -209,7 +209,6 @@ namespace FancyZonesEditor.Models
             {
                 string jsonString = JsonSerializer.Serialize(jsonObj, options);
                 File.WriteAllText(Settings.AppliedZoneSetTmpFile, jsonString);
-                MessageBox.Show(Settings.AppliedZoneSetTmpFile);
             }
             catch (Exception ex)
             {

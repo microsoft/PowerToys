@@ -789,8 +789,6 @@ namespace JSONHelpers
 
         result.SetNamedValue(L"uuid", json::value(zoneSet.uuid));
         result.SetNamedValue(L"type", json::value(TypeToString(zoneSet.type)));
-        // result.SetNamedValue(L"eventid", json::value(zoneSet.eventid));
-        // result.SetNamedValue(L"keyid", json::value(zoneSet.keyid));
 
         return result;
     }
@@ -802,8 +800,6 @@ namespace JSONHelpers
             ZoneSetData zoneSetData;
             zoneSetData.uuid = zoneSet.GetNamedString(L"uuid");
             zoneSetData.type = TypeFromString(std::wstring{ zoneSet.GetNamedString(L"type") });
-            // zoneSetData.eventid = zoneSet.GetNamedNumber(L"eventid");
-            // zoneSetData.keyid = zoneSet.GetNamedNumber(L"keyid");
 
             if (!isValidGuid(zoneSetData.uuid))
             {

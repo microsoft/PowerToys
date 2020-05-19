@@ -228,10 +228,8 @@ namespace FancyZonesEditor.Models
                     string name = current.GetProperty("name").GetString();
                     string type = current.GetProperty("type").GetString();
                     string uuid = current.GetProperty("uuid").GetString();
-
                     int hotkey_eventID = current.GetProperty("eventid").GetInt32();
                     int hotkey_keyID = current.GetProperty("keyid").GetInt32();
-
                     var info = current.GetProperty("info");
                     if (type.Equals("grid"))
                     {

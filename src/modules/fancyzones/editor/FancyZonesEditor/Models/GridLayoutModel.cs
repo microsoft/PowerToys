@@ -235,10 +235,7 @@ namespace FancyZonesEditor.Models
             GridLayoutJson jsonObj = new GridLayoutJson
             {
                 Uuid = "{" + Guid.ToString().ToUpper() + "}",
-
-                // This is not ideal, only temporary fix
-
-                Eventid = rnd.Next(),
+                Eventid = rnd.Next(), // TODO: Give Eventid a unique int
                 Keyid = Keyid,
                 Name = Name,
                 Type = "grid",
@@ -253,7 +250,6 @@ namespace FancyZonesEditor.Models
             {
                 string jsonString = JsonSerializer.Serialize(jsonObj, options);
                 File.WriteAllText(Settings.AppliedZoneSetTmpFile, jsonString);
-                MessageBox.Show(Settings.AppliedZoneSetTmpFile);
             }
             catch (Exception ex)
             {
