@@ -175,7 +175,7 @@
         <TextBlock Text="{x:Static props:Resources.Name}" Style="{StaticResource textLabel}" />
         <TextBox Text="{Binding Name}" Style="{StaticResource textBox}" />
         <StackPanel Orientation="Horizontal" Margin="0,8,0,0" HorizontalAlignment="Left">
-            <TextBlock Text="Win + ` + " Style="{StaticResource hotkeyLabel}" />
+            <TextBlock Text="Alt + " Style="{StaticResource hotkeyLabel}" />
             <TextBox Text="{Binding Keyid}" Width="60" Style="{StaticResource textBox}"/>
         </StackPanel>
         <!--        
