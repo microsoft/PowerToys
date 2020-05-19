@@ -2,11 +2,7 @@
 <p>by Samantha Difeo, Tyrone Wong and Mathuran Sadagopan
 </p>
 
-
-
-
-
-<img src="Resources/images/ColorPickerAlpha.png" />
+<img src="./Resources/images/colorPickerAlpha.png" />
 
 <h2>Overview</h2> 
 
