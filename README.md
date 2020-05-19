@@ -92,7 +92,7 @@ WinGet install powertoys
 
 ### Other install methods
 
-#### Via Chocolatey - ⚠ Unofficial ⚠
+#### Via Chocolatey (Unofficial)
 
 Download and upgrade PowerToys from [Chocolatey](https://chocolatey.org). If you have any issues when installing/upgrading the package please go to the [package page](https://chocolatey.org/packages/powertoys) and follow the [Chocolatey triage process](https://chocolatey.org/docs/package-triage-process)
 
