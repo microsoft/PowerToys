@@ -182,7 +182,7 @@
         <TextBox Text="{Binding Name}" Width="496" Style="{StaticResource textBox}" />
         <TextBlock Text="Hotkey" Style="{StaticResource textLabel}" />
         <StackPanel Orientation="Horizontal" Margin="0,8,0,0" HorizontalAlignment="Left">
-        <TextBlock Text="Win + ` + " Style="{StaticResource hotkeyLabel}" />
+        <TextBlock Text="Alt + " Style="{StaticResource hotkeyLabel}" />
         <TextBox Text="{Binding Keyid}" Width="60" Style="{StaticResource textBox}"/>
         </StackPanel>
         <!--
