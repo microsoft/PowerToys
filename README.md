@@ -83,6 +83,13 @@ Install from the [Microsoft PowerToys GitHub releases page][github-release-link]
 
 This is our preferred method.
 
+### Via WinGet (Preview)
+Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli/releases). To install PowerToys, run the following command from the command line / PowerShell:
+
+```powershell
+WinGet install powertoys
+```
+
 ### Other install methods
 
 #### Via Chocolatey - ⚠ Unofficial ⚠
