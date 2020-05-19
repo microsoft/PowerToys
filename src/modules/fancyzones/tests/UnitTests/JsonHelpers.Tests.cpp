@@ -1152,7 +1152,7 @@ namespace FancyZonesUnitTests
                 const auto actualAppZoneHistory = actualProcessHistory->second;
                 Assert::AreEqual(expectedZoneSetId.c_str(), actualAppZoneHistory.zoneSetUuid.c_str());
                 Assert::AreEqual(expectedDeviceId.c_str(), actualAppZoneHistory.deviceId.c_str());
-                Assert::AreEqual(actualAppZoneHistory.zoneIndexSet, { expectedIndex });
+                Assert::AreEqual({ expectedIndex }, actualAppZoneHistory.zoneIndexSet);
             }
 
             TEST_METHOD (AppZoneHistoryParseManyApps)

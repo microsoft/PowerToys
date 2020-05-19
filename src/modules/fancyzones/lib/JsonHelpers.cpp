@@ -243,7 +243,7 @@ namespace JSONHelpers
                 }
                 else
                 {
-                    result->SetNamedValue(L"app-zone-history", json::JsonObject());
+                    result->SetNamedValue(L"app-zone-history", json::JsonArray());
                 }
             }
             return *result;
@@ -424,7 +424,7 @@ namespace JSONHelpers
         return false;
     }
 
-    bool FancyZonesData::SetAppLastZones(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, const std::vector<int> zoneIndexSet)
+    bool FancyZonesData::SetAppLastZones(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, const std::vector<int>& zoneIndexSet)
     {
         std::scoped_lock lock{ dataLock };
         auto processPath = get_process_path(window);

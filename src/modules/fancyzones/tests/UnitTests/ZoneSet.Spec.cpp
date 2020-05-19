@@ -573,7 +573,7 @@ namespace FancyZonesUnitTests
         TEST_METHOD (MoveWindowIntoZoneByDirectionRight)
         {
             HWND window = Mocks::Window();
-            m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0, false);
+            m_set->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0, false /* stampZone */);
             m_set->MoveWindowIntoZoneByDirection(window, Mocks::Window(), VK_RIGHT, true);
             Assert::AreEqual({ 1 }, m_set->GetZoneIndexSetFromWindow(window));
 
@@ -758,7 +758,7 @@ namespace FancyZonesUnitTests
                     auto zones = set->GetZones();
                     Assert::AreEqual(expectedCount, zones.size());
 
-                    size_t zoneId = 0;
+                    int zoneId = 0;
                     for (const auto& zone : zones)
                     {
                         Assert::IsTrue(set->IsZoneEmpty(zoneId));
