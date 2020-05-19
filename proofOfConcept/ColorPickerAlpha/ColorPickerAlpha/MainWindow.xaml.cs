@@ -70,6 +70,7 @@ namespace ColorPickerAlpha
             {
                 Mouse.OverrideCursor = null;
                 isClosing = true;
+                overlayWnd.Close();
             };
 
             new Thread(() =>

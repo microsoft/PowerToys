@@ -21,7 +21,6 @@ Have you ever struggled to sample the color of a picture or app on Windows? Then
 
 <h2>Current Issues / Future Goals</h2>
 
-* app continues to run in background after closing 
 * polishing UI
 * adding hot keys for improved accessibility and speed
 * adding magnification and a color picker wheel
