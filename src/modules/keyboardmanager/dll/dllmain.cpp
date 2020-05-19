@@ -138,30 +138,6 @@ public:
     // This function is used to add the hardcoded mappings
     void init_map()
     {
-        //// If mapped to 0x0 then key is disabled.
-        //keyboardManagerState.singleKeyReMap[0x41] = 0x42;
-        //keyboardManagerState.singleKeyReMap[0x42] = 0x43;
-        //keyboardManagerState.singleKeyReMap[0x43] = 0x41;
-        //keyboardManagerState.singleKeyReMap[VK_LWIN] = VK_LCONTROL;
-        //keyboardManagerState.singleKeyReMap[VK_LCONTROL] = VK_RWIN;
-        //keyboardManagerState.singleKeyReMap[VK_CAPITAL] = 0x0;
-        //keyboardManagerState.singleKeyReMap[VK_LSHIFT] = VK_CAPITAL;
-        //keyboardManagerState.singleKeyToggleToMod[VK_CAPITAL] = false;
-
-        //// OS-level shortcut remappings
-        //Shortcut newShortcut = Shortcut::CreateShortcut(winrt::to_hstring(L"Win 65"));
-        //Shortcut originalShortcut = Shortcut::CreateShortcut(winrt::to_hstring(L"Shift 65"));
-        //keyboardManagerState.AddOSLevelShortcut(originalShortcut, newShortcut);
-        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false);
-        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LMENU, 0x45 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
-        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x53 }), false);
-        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x41 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
-        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x41 }), false);
-
-        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LWIN, 0x41 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x58 }), false);
-        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LMENU, 0x44 }), false);
-        //keyboardManagerState.osLevelShortcutReMap[std::vector<DWORD>({ VK_LCONTROL, 0x56 })] = std::make_pair(std::vector<WORD>({ VK_LWIN, 0x41 }), false);
-
         ////App-specific shortcut remappings
         //keyboardManagerState.appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x43 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+C to Ctrl+V
         //keyboardManagerState.appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x46 }), false); // Alt+D to Ctrl+F
@@ -380,10 +356,10 @@ public:
         }
 
         //// Remap a key to behave like a modifier instead of a toggle
-        //intptr_t SingleKeyToggleToModResult = KeyboardEventHandlers::HandleSingleKeyToggleToModEvent(data);
+        //intptr_t SingleKeyToggleToModResult = KeyboardEventHandlers::HandleSingleKeyToggleToModEvent(data, keyboardManagerState);
 
         //// Handle an app-specific shortcut remapping
-        //intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(data);
+        //intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(data, keyboardManagerState);
 
         //// If an app-specific shortcut is remapped then the os-level shortcut remapping should be suppressed.
         //if (AppSpecificShortcutRemapResult == 1)
@@ -392,7 +368,7 @@ public:
         //}
 
         // Handle an os-level shortcut remapping
-        intptr_t OSLevelShortcutRemapResult = KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(data);
+        intptr_t OSLevelShortcutRemapResult = KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(data, keyboardManagerState);
 
         // If any of the supported types of remappings took place, then suppress the key event
         if ((SingleKeyRemapResult + OSLevelShortcutRemapResult) > 0)
