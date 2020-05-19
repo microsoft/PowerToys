@@ -701,8 +701,6 @@ namespace JSONHelpers
                 CustomZoneSetData zoneSetData;
                 zoneSetData.name = std::wstring{ value };
                 zoneSetData.type = static_cast<CustomLayoutType>(data[2]);
-                zoneSetData.eventid = 1;
-                zoneSetData.keyid = 2;
                 // int version =  data[0] * 256 + data[1]; - Not used anymore
 
                 GUID guid;
