@@ -6,13 +6,20 @@
 
 <h2>Overview</h2> 
 
-Have you ever struggled to sample the color of a picture or app on windows? Then project Color Picker Alpha is the solution for you! This app allows you to pick the color anywhere on your screen. By clicking anywhere on the screen, the color at that point is immediately copied to clipboard. When in RGB mode, the color is displayed and copied to clip board in RGB. By selecting the toggle button, the view and clipboard switches to HEX. Our team has also added the abiltiy to create a color history pallete by simply saving the colors you have selected. Then by selecting the color on the pallete your color is immediately copied back onto your clipboard.
+Have you ever struggled to sample the color of a picture or app on Windows? Then project Color Picker Alpha is the solution for you! This app allows you to extract the color on any monitor. Click once on the screen to have the color selected and automatically copied to your clipboard. When in RGB mode, the color is displayed and copied to clipboard in RGB. By selecting the toggle button, the view switches to HEX. Create a color history palette by simply saving the colors you have selected. Afterwards, selecting the color on the palette brings the color back into focus and immediately copied back to your clipboard.
 
 
 <h2>Developer Guide</h2>
-This project was developed as a WPF. To run the project simply download the repo and run the executable found in PowerToys\proofOfConcept\ColorPickerAlpha\ColorPickerAlpha\bin\Debug
+<p>This project was developed as a WPF application. </p>
 
-<h2>Current Issues/Future Goals</h2>
+<p> To run the project perform the following steps</p>
+
+1. Download the repo.
+2. Open the solutions file for ColorPickerAlpha found in the directory [PowerToys\proofOfConcept\ColorPickerAlpha] in Visual Studio.
+3. Build the project.
+4. Run the executable in [PowerToys\proofOfConcept\ColorPickerAlpha\ColorPickerAlpha\bin\Debug].
+
+<h2>Current Issues / Future Goals</h2>
 
 * app continues to run in background after closing 
 * polishing UI
