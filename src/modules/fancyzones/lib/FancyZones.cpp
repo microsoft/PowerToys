@@ -325,7 +325,6 @@ FancyZones::VirtualDesktopChanged() noexcept
 {
     // VirtualDesktopChanged is called from a reentrant WinHookProc function, therefore we must postpone the actual logic
     // until we're in FancyZones::WndProc, which is not reentrant.
-    std::shared_lock readLock(m_lock);
     PostMessage(m_window, WM_PRIV_VD_SWITCH, 0, 0);
 }
 
@@ -693,10 +692,6 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
         {
             UpdateWindowsPositions();
         }
-    }
-    else if (changeType == DisplayChangeType::VirtualDesktop)
-    {
-        UpdateWindowsPositions();
     }
 }
 
