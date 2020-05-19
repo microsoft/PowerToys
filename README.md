@@ -54,7 +54,7 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 
 ### Keyboard Manager
 
-[<img align="left" src="./doc/images/overview/KBM_small.png" />]](src/modules/keyboardmanager/ [Keyboard Manager](src/modules/keyboardmanager/) allows you to customize the keyboard to be more productive by remapping keys and creating your own keyboard shortcuts.
+[<img align="left" src="./doc/images/overview/KBM_small.png" />](src/modules/keyboardmanager/ [Keyboard Manager](src/modules/keyboardmanager/) allows you to customize the keyboard to be more productive by remapping keys and creating your own keyboard shortcuts.
 <br>
 <br>
 <br>
