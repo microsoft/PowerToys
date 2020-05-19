@@ -52,7 +52,6 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 <br>
 <br>
 
-<!---
 ### Keyboard Manager
 
 <img align="left" src="./doc/images/overview/KBM_small.png" /> [Keyboard Manager](src/modules/keyboardmanager/) allows you to customize the keyboard to be more productive by remapping keys and creating your own keyboard shortcuts.
@@ -61,9 +60,7 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 <br>
 <br>
 <br>
--->
 
-<!---
 ### PowerToys Run
 
 <img align="left" src="./doc/images/overview/PowerLauncher_small.png" /> [PowerToys Run](src/modules/launcher/) is a new toy in PowerToys that can help you search and launch your app instantly! It is open source and modular for additional plugins.  Window Walker is now inside!
@@ -73,11 +70,6 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 <br>
 <br>
 <br>
--->
-
-### Version 1.0 plan
-
-Our plan for all the [goals and utilities for v1.0 detailed over here in the wiki][v1].
 
 ## Installing and running Microsoft PowerToys
 
@@ -85,13 +77,22 @@ Our plan for all the [goals and utilities for v1.0 detailed over here in the wik
 
 ### Via Github with MSI [Recommended]
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.17.0-x64.msi` to download the PowerToys installer.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.18.0-x64.msi` to download the PowerToys installer.
+
+**Note:** After installing, you will have to start PowerToys for the first time.  We will improve install experience this moving forward but due to a possible install dependency, we can't start after install currently.
 
 This is our preferred method.
 
+### Via WinGet (Preview)
+Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli/releases). To install PowerToys, run the following command from the command line / PowerShell:
+
+```powershell
+WinGet install powertoys
+```
+
 ### Other install methods
 
-#### Via Chocolatey - ⚠ Unofficial ⚠
+#### Via Chocolatey (Unofficial)
 
 Download and upgrade PowerToys from [Chocolatey](https://chocolatey.org). If you have any issues when installing/upgrading the package please go to the [package page](https://chocolatey.org/packages/powertoys) and follow the [Chocolatey triage process](https://chocolatey.org/docs/package-triage-process)
 
@@ -117,29 +118,30 @@ We currently support the matrix below.
 
 ## What's Happening
 
-### April 2020 Update
+### May 2020 Update
 
-Our goals for 0.17 release cycle were updatability and stability.
+Our goals for 0.18 release cycle was three big items, PowerToys Run, Keyboard manager, and migrating to the new settings system.  This is also the first time we'll test out the auto-updating system.
 
-**Auto-updating:** We just added in the code for doing updating, so the first chance to experience this will be when 0.18 is released. We’re also seeing how aggressive everyone wants with this so right now, you’ll have to click “Install” for it to kick off the installer. This is something we’d love feedback on.
+Feedback is critical. We know there are areas for improvement on PT Run. We would love feedback so we can improve. We also would love to know if you want us to be more aggressive on auto-upgrading.
 
-Another thing we did was utilized telemetry from PowerToys to prioritize virtual desktop FancyZone work. We knew there was a subset of bugs caused by an underlying issue and seeing how many users it affected helped us reprioritize to do the work sooner.
-
-- We shipped [v0.17][github-release-link]!
-- Auto-updating
-- FancyZone improvement:
-  - Virtual desktop support should be much better!
-  - Better taskbar positioning
-- Fixed non-admin install regression.
+- We shipped [v0.18][github-release-link]!
+- New Utilities
+   - PowerToys Run, our new application launcher (use alt-space to activate)
+   - Keyboard manager, a quick easy way to remap your keyboard
+- Fixed [#243](https://github.com/microsoft/PowerToys/issues/243)'s setting issue
+- Improved performance on FancyZones [#1264](https://github.com/microsoft/PowerToys/issues/1264)
 - Lots of bug fixes!
 
-For [0.18](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F4), we are proactively working on:
+For [0.19](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F4), we are proactively working on:
 
-- Win+R replacement (Launcher)
-- Keyboard remapping
+- Enable PT Run to be mapped to Win-Keys
+- Stability / tech debt fixes
 - Performance improvements with FancyZones
 - A testing utility for FancyZones to be sure we can test different window configurations.
-- Settings v2 / Fix bug #243
+
+### Version 1.0 plan
+
+Our plan for all the [goals and utilities for v1.0 detailed over here in the wiki][v1].
 
 ## Developer Guidance
 
