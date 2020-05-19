@@ -31,7 +31,7 @@
     return 0;
   }
 
-  Taking to long to process the events has negative impact on the whole system
+  Taking too long to process the events has negative impact on the whole system
   performance. To address this, the events are signaled from a different
   thread, not from the event hook callback itself.
 */
