@@ -41,6 +41,12 @@ namespace Microsoft.Plugin.Program.Programs
             var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
             var executableNameMatch = StringMatcher.FuzzySearch(query, ExecutableName);
             var score = new[] { nameMatch.Score, descriptionMatch.Score, executableNameMatch.Score }.Max();
+
+            // To increase the score of an exact match
+            if(String.Equals(query, Name, StringComparison.CurrentCultureIgnoreCase))
+            {
+                score += 10;
+            }
             return score;
         }
 
