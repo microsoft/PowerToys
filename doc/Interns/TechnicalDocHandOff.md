@@ -16,17 +16,18 @@ More details https://github.com/microsoft/PowerToys/pull/2921
 
 # Hotkey feature
 ## How to use
-- Create a new custom layout
+- Create a new custom layout (canvas or editing existing grid layout)
 - Input 0-9 in respective hotkey textbox
 - Press apply
-- Press on Alt + 0-9 to apply layout
+- Press on Alt + 0-9 to apply layout on monitor in focus
 ## Design
-- We store the hotkey id + event id in zone-settings.json. This allows the user to dynamically set hotkeys on desired layouts and persist it upon restart
+- We store the hotkey id + event id in zone-settings.json. This allows the user to dynamically set hotkeys on desired layouts and persist it upon restart. (We attempted using existing HotKeyObject but ran into serious issues persisting data)
 ## Things left to do before merging to production
-- Allow users to specify the hotkey combination (right now it is mapped to alt + 0-9
+- Allow users to specify entire hotkey not just digit appending to "Alt" (right now it is mapped to alt + 0-9)
 - Update hotkey configuration registration on proper update event (right now the mapping is updated when the editor is toggled event)
 - Update notification messages for mismatch of screen resolution
 - Generate unique event ids for hotkey events (right now we have it on random int)
+- Checking custom hotkey selection for overwriting existing hotkeys
 - Defensive measures against bad user input
 - Unit tests
 
