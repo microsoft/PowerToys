@@ -226,7 +226,8 @@ namespace Wox.Infrastructure
             // To increase the score of an exact match
             if (String.Equals(query, stringToCompare, StringComparison.CurrentCultureIgnoreCase))
             {
-                score += 10;
+                var bonusForExactMatch = 10;
+                score += bonusForExactMatch;
             }
 
             return score;
