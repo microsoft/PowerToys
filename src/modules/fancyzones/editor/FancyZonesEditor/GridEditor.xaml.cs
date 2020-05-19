@@ -35,30 +35,10 @@ namespace FancyZonesEditor
             GridLayoutModel model = (GridLayoutModel)DataContext;
             if (model != null)
             {
-                int rows = model.Rows;
-                int cols = model.Columns;
-                _rowInfo = new RowColInfo[rows];
-                for (int row = 0; row < rows; row++)
-                {
-                    _rowInfo[row] = new RowColInfo(model.RowPercents[row]);
-                }
+                _data = new GridData(model);
 
-                _colInfo = new RowColInfo[cols];
-                for (int col = 0; col < cols; col++)
-                {
-                    _colInfo[col] = new RowColInfo(model.ColumnPercents[col]);
-                }
-
-                int maxIndex = 0;
-                for (int row = 0; row < rows; row++)
-                {
-                    for (int col = 0; col < cols; col++)
-                    {
-                        maxIndex = Math.Max(maxIndex, model.CellChildMap[row, col]);
-                    }
-                }
-
-                for (int i = 0; i <= maxIndex; i++)
+                int zoneCount = _data.ZoneCount;
+                for (int i = 0; i <= zoneCount; i++)
                 {
                     AddZone();
                 }
@@ -198,26 +178,10 @@ namespace FancyZonesEditor
 
             int rows = model.Rows;
             int cols = model.Columns;
-            int foundRow = -1;
-            int foundCol = -1;
 
-            for (int row = 0; row < rows; row++)
-            {
-                for (int col = 0; col < cols; col++)
-                {
-                    if (model.CellChildMap[row, col] == spliteeIndex)
-                    {
-                        foundRow = row;
-                        foundCol = col;
-                        break;
-                    }
-                }
-
-                if (foundRow != -1)
-                {
-                    break;
-                }
-            }
+            Tuple<int, int> rowCol = _data.RowColByIndex(spliteeIndex);
+            int foundRow = rowCol.Item1;
+            int foundCol = rowCol.Item2;
 
             int newChildIndex = AddZone();
 
@@ -237,13 +201,13 @@ namespace FancyZonesEditor
                         if (foundExistingSplit)
                         {
                             int walkRow = foundRow;
-                            while ((walkRow < rows) && (model.CellChildMap[walkRow, foundCol + i] == spliteeIndex))
+                            while ((walkRow < rows) && (_data.GetIndex(walkRow, foundCol + i) == spliteeIndex))
                             {
-                                model.CellChildMap[walkRow++, foundCol + i] = newChildIndex;
+                                _data.SetIndex(walkRow++, foundCol + i, newChildIndex);
                             }
                         }
 
-                        if (_colInfo[foundCol + i].End == offset)
+                        if (_data.ColumnBottom(foundCol + i) == offset)
                         {
                             foundExistingSplit = true;
 
@@ -257,72 +221,16 @@ namespace FancyZonesEditor
                         return;
                     }
 
-                    while (_colInfo[foundCol].End < offset)
+                    while (_data.ColumnBottom(foundCol) < offset)
                     {
                         foundCol++;
                     }
 
-                    offset -= _colInfo[foundCol].Start;
+                    offset -= _data.ColumnTop(foundCol);
                 }
 
-                AddDragHandle(Orientation.Vertical, cols - 1);
-                cols++;
-                int[,] newCellChildMap = new int[rows, cols];
-                int[] newColPercents = new int[cols];
-                RowColInfo[] newColInfo = new RowColInfo[cols];
-
-                int sourceCol = 0;
-                for (int col = 0; col < cols; col++)
-                {
-                    for (int row = 0; row < rows; row++)
-                    {
-                        if ((col > foundCol) && (model.CellChildMap[row, sourceCol] == spliteeIndex))
-                        {
-                            newCellChildMap[row, col] = newChildIndex;
-                        }
-                        else
-                        {
-                            newCellChildMap[row, col] = model.CellChildMap[row, sourceCol];
-                        }
-                    }
-
-                    if (col != foundCol)
-                    {
-                        sourceCol++;
-                    }
-                }
-
-                model.CellChildMap = newCellChildMap;
-
-                sourceCol = 0;
-                double newTotalExtent = ActualWidth - (space * (cols + 1));
-                for (int col = 0; col < cols; col++)
-                {
-                    if (col == foundCol)
-                    {
-                        RowColInfo[] split = _colInfo[col].Split(offset, space);
-                        newColInfo[col] = split[0];
-                        newColPercents[col] = split[0].Percent;
-                        col++;
-
-                        newColInfo[col] = split[1];
-                        newColPercents[col] = split[1].Percent;
-                    }
-                    else
-                    {
-                        newColInfo[col] = _colInfo[sourceCol];
-                        newColInfo[col].RecalculatePercent(newTotalExtent);
-
-                        newColPercents[col] = model.ColumnPercents[sourceCol];
-                    }
-
-                    sourceCol++;
-                }
-
-                _colInfo = newColInfo;
-                model.ColumnPercents = newColPercents;
-
-                model.Columns++;
+                AddDragHandle(Orientation.Vertical, foundRow, cols - 1);
+                _data.SplitColumn(foundCol, spliteeIndex, newChildIndex, space, offset, ActualWidth);
             }
             else
             {
@@ -338,13 +246,13 @@ namespace FancyZonesEditor
                         if (foundExistingSplit)
                         {
                             int walkCol = foundCol;
-                            while ((walkCol < cols) && (model.CellChildMap[foundRow + i, walkCol] == spliteeIndex))
+                            while ((walkCol < cols) && (_data.GetIndex(foundRow + i, walkCol) == spliteeIndex))
                             {
-                                model.CellChildMap[foundRow + i, walkCol] = newChildIndex;
+                                _data.SetIndex(foundRow + i, walkCol++, newChildIndex);
                             }
                         }
 
-                        if (_rowInfo[foundRow + i].End == offset)
+                        if (_data.RowEnd(foundRow + i) == offset)
                         {
                             foundExistingSplit = true;
 
@@ -358,72 +266,16 @@ namespace FancyZonesEditor
                         return;
                     }
 
-                    while (_rowInfo[foundRow].End < offset)
+                    while (_data.RowEnd(foundRow) < offset)
                     {
                         foundRow++;
                     }
 
-                    offset -= _rowInfo[foundRow].Start;
+                    offset -= _data.RowStart(foundRow);
                 }
 
-                AddDragHandle(Orientation.Horizontal, rows - 1);
-                rows++;
-                int[,] newCellChildMap = new int[rows, cols];
-                int[] newRowPercents = new int[rows];
-                RowColInfo[] newRowInfo = new RowColInfo[rows];
-
-                int sourceRow = 0;
-                for (int row = 0; row < rows; row++)
-                {
-                    for (int col = 0; col < cols; col++)
-                    {
-                        if ((row > foundRow) && (model.CellChildMap[sourceRow, col] == spliteeIndex))
-                        {
-                            newCellChildMap[row, col] = newChildIndex;
-                        }
-                        else
-                        {
-                            newCellChildMap[row, col] = model.CellChildMap[sourceRow, col];
-                        }
-                    }
-
-                    if (row != foundRow)
-                    {
-                        sourceRow++;
-                    }
-                }
-
-                model.CellChildMap = newCellChildMap;
-
-                sourceRow = 0;
-                double newTotalExtent = ActualHeight - (space * (rows + 1));
-                for (int row = 0; row < rows; row++)
-                {
-                    if (row == foundRow)
-                    {
-                        RowColInfo[] split = _rowInfo[row].Split(offset, space);
-                        newRowInfo[row] = split[0];
-                        newRowPercents[row] = split[0].Percent;
-                        row++;
-
-                        newRowInfo[row] = split[1];
-                        newRowPercents[row] = split[1].Percent;
-                    }
-                    else
-                    {
-                        newRowInfo[row] = _rowInfo[sourceRow];
-                        newRowInfo[row].RecalculatePercent(newTotalExtent);
-
-                        newRowPercents[row] = model.RowPercents[sourceRow];
-                    }
-
-                    sourceRow++;
-                }
-
-                _rowInfo = newRowInfo;
-                model.RowPercents = newRowPercents;
-
-                model.Rows++;
+                AddDragHandle(Orientation.Horizontal, rows - 1, foundCol);
+                _data.SplitRow(foundRow, spliteeIndex, newChildIndex, space, offset, ActualHeight);
             }
         }
 
@@ -436,34 +288,59 @@ namespace FancyZonesEditor
         {
             if (AdornerLayer.Children.Count == 0)
             {
-                int interiorRows = Model.Rows - 1;
-                int interiorCols = Model.Columns - 1;
+                GridLayoutModel model = Model;
 
-                for (int row = 0; row < interiorRows; row++)
+                int interiorRows = model.Rows - 1;
+                int interiorCols = model.Columns - 1;
+                int[,] indices = model.CellChildMap;
+
+                for (int col = 0; col < model.Columns; col++)
                 {
-                    AddDragHandle(Orientation.Horizontal, row);
+                    for (int row = 0; row < interiorRows; row++)
+                    {
+                        if (indices[row, col] != indices[row + 1, col]
+                           /* && (col == model.Columns - 1 || (col + 1 < model.Columns && _cellInfo[row, col].RowInfo != _cellInfo[row, col + 1].RowInfo))*/)
+                        {
+                            AddDragHandle(Orientation.Horizontal, row, col);
+                        }
+                    }
                 }
 
-                for (int col = 0; col < interiorCols; col++)
+                for (int row = 0; row < Model.Rows; row++)
                 {
-                    AddDragHandle(Orientation.Vertical, col);
+                    for (int col = 0; col < interiorCols; col++)
+                    {
+                        if (indices[row, col] != indices[row, col + 1]
+                            /*&& (row == model.Rows - 1 || (row + 1 < model.Rows && _cellInfo[row, col].ColInfo != _cellInfo[row + 1, col].ColInfo))*/)
+                        {
+                            AddDragHandle(Orientation.Vertical, row, col);
+                        }
+                    }
                 }
             }
         }
 
-        private void AddDragHandle(Orientation orientation, int index)
+        private void AddDragHandle(Orientation orientation, int rowIndex, int colIndex)
         {
             GridResizer resizer = new GridResizer
             {
                 Orientation = orientation,
-                Index = index,
+                RowIndex = rowIndex,
+                ColIndex = colIndex,
                 Model = Model,
             };
             resizer.DragDelta += Resizer_DragDelta;
+            resizer.DragCompleted += Resizer_DragCompleted;
 
+            int index = rowIndex;
             if (orientation == Orientation.Vertical)
             {
-                index += Model.Rows - 1;
+                index = colIndex + Model.Rows - 1;
+            }
+
+            if (index > AdornerLayer.Children.Count)
+            {
+                index = AdornerLayer.Children.Count;
             }
 
             AdornerLayer.Children.Insert(index, resizer);
@@ -548,179 +425,38 @@ namespace FancyZonesEditor
 
             int spacing = settings.ShowSpacing ? settings.Spacing : 0;
 
-            int cols = model.Columns;
-            int rows = model.Rows;
-
-            double totalWidth = arrangeSize.Width - (spacing * (cols + 1));
-            double totalHeight = arrangeSize.Height - (spacing * (rows + 1));
-
-            double top = spacing;
-            for (int row = 0; row < rows; row++)
-            {
-                double cellHeight = _rowInfo[row].Recalculate(top, totalHeight);
-                top += cellHeight + spacing;
-            }
-
-            double left = spacing;
-            for (int col = 0; col < cols; col++)
-            {
-                double cellWidth = _colInfo[col].Recalculate(left, totalWidth);
-                left += cellWidth + spacing;
-            }
-
-            int zoneNumber = 1;
-            for (int row = 0; row < rows; row++)
-            {
-                for (int col = 0; col < cols; col++)
-                {
-                    int i = model.CellChildMap[row, col];
-                    if (((row == 0) || (model.CellChildMap[row - 1, col] != i)) &&
-                        ((col == 0) || (model.CellChildMap[row, col - 1] != i)))
-                    {
-                        // this is not a continuation of a span
-                        GridZone zone = (GridZone)Preview.Children[i];
-                        left = _colInfo[col].Start;
-                        top = _rowInfo[row].Start;
-                        Canvas.SetLeft(zone, left);
-                        Canvas.SetTop(zone, top);
-                        zone.LabelID.Content = zoneNumber++;
-
-                        int maxRow = row;
-                        while (((maxRow + 1) < rows) && (model.CellChildMap[maxRow + 1, col] == i))
-                        {
-                            maxRow++;
-                        }
-
-                        zone.HorizontalSnapPoints = null;
-                        if (maxRow > row)
-                        {
-                            zone.HorizontalSnapPoints = new double[maxRow - row];
-                            int pointsIndex = 0;
-                            for (int walk = row; walk < maxRow; walk++)
-                            {
-                                zone.HorizontalSnapPoints[pointsIndex++] = _rowInfo[walk].End + (spacing / 2) - top;
-                            }
-                        }
-
-                        int maxCol = col;
-                        while (((maxCol + 1) < cols) && (model.CellChildMap[row, maxCol + 1] == i))
-                        {
-                            maxCol++;
-                        }
-
-                        zone.VerticalSnapPoints = null;
-                        if (maxCol > col)
-                        {
-                            zone.VerticalSnapPoints = new double[maxCol - col];
-                            int pointsIndex = 0;
-                            for (int walk = col; walk < maxCol; walk++)
-                            {
-                                zone.VerticalSnapPoints[pointsIndex++] = _colInfo[walk].End + (spacing / 2) - left;
-                            }
-                        }
-
-                        zone.MinWidth = _colInfo[maxCol].End - left;
-                        zone.MinHeight = _rowInfo[maxRow].End - top;
-                    }
-                }
-            }
-
+            _data.RecalculateZones(spacing, arrangeSize);
+            _data.ManageZones(Preview.Children, spacing);
             AddDragHandles();
-            int childIndex = 0;
-            UIElementCollection adornerChildren = AdornerLayer.Children;
-            for (int row = 0; row < rows - 1; row++)
-            {
-                GridResizer resizer = (GridResizer)adornerChildren[childIndex++];
-                int startCol = -1;
-                int endCol = cols - 1;
-                for (int col = 0; col < cols; col++)
-                {
-                    if ((startCol == -1) && (model.CellChildMap[row, col] != model.CellChildMap[row + 1, col]))
-                    {
-                        startCol = col;
-                    }
-                    else if ((startCol != -1) && (model.CellChildMap[row, col] == model.CellChildMap[row + 1, col]))
-                    {
-                        endCol = col - 1;
-                        break;
-                    }
-                }
-
-                if (startCol != -1)
-                {
-                    // hard coding this as (resizer.ActualHeight / 2) will still evaluate to 0 here ... a layout hasn't yet happened
-                    Canvas.SetTop(resizer, _rowInfo[row].End + (spacing / 2) - 24);
-                    Canvas.SetLeft(resizer, (_colInfo[endCol].End + _colInfo[startCol].Start) / 2);
-                }
-                else
-                {
-                    resizer.Visibility = Visibility.Collapsed;
-                }
-            }
-
-            for (int col = 0; col < cols - 1; col++)
-            {
-                GridResizer resizer = (GridResizer)adornerChildren[childIndex++];
-                int startRow = -1;
-                int endRow = rows - 1;
-                for (int row = 0; row < rows; row++)
-                {
-                    if ((startRow == -1) && (model.CellChildMap[row, col] != model.CellChildMap[row, col + 1]))
-                    {
-                        startRow = row;
-                    }
-                    else if ((startRow != -1) && (model.CellChildMap[row, col] == model.CellChildMap[row, col + 1]))
-                    {
-                        endRow = row - 1;
-                        break;
-                    }
-                }
-
-                if (startRow != -1)
-                {
-                    Canvas.SetLeft(resizer, _colInfo[col].End + (spacing / 2) - 24); // hard coding this as (resizer.ActualWidth / 2) will still evaluate to 0 here ... a layout hasn't yet happened
-                    Canvas.SetTop(resizer, (_rowInfo[endRow].End + _rowInfo[startRow].Start) / 2);
-                    resizer.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    resizer.Visibility = Visibility.Collapsed;
-                }
-            }
+            _data.ManageResizers(AdornerLayer.Children, spacing);
         }
 
         private void Resizer_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
         {
             GridResizer resizer = (GridResizer)sender;
-            int[] percents;
-            RowColInfo[] info;
-            int index = resizer.Index;
-            double delta;
+            double delta = (resizer.Orientation == Orientation.Vertical) ? e.HorizontalChange : e.VerticalChange;
 
-            if (resizer.Orientation == Orientation.Vertical)
+            if (_data.DragResizer(resizer, delta))
             {
-                percents = Model.ColumnPercents;
-                info = _colInfo;
-                delta = e.HorizontalChange;
+                Size actualSize = new Size(ActualWidth, ActualHeight);
+                ArrangeGridRects(actualSize);
             }
-            else
+        }
+
+        private void Resizer_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        {
+            GridResizer resizer = (GridResizer)sender;
+            int index = _data.SwappedIndexAfterResize(resizer);
+            if (index != -1)
             {
-                percents = Model.RowPercents;
-                info = _rowInfo;
-                delta = e.VerticalChange;
-            }
-
-            double currentExtent = info[index].Extent;
-            double newExtent = currentExtent + delta;
-            int currentPercent = info[index].Percent;
-            int totalPercent = currentPercent + info[index + 1].Percent;
-
-            int newPercent = (int)(currentPercent * newExtent / currentExtent);
-
-            if ((newPercent > 0) && (newPercent < totalPercent))
-            {
-                percents[index] = info[index].Percent = newPercent;
-                percents[index + 1] = info[index + 1].Percent = totalPercent - newPercent;
+                if (resizer.Orientation == Orientation.Horizontal)
+                {
+                    
+                }
+                else
+                {
+                    
+                }
 
                 Size actualSize = new Size(ActualWidth, ActualHeight);
                 ArrangeGridRects(actualSize);
@@ -804,12 +540,12 @@ namespace FancyZonesEditor
                 {
                     if (_startRow == -1)
                     {
-                        if (_rowInfo[row].End > minY)
+                        if (_data.RowEnd(row) > minY)
                         {
                             _startRow = row;
                         }
                     }
-                    else if (_rowInfo[row].Start > maxY)
+                    else if (_data.RowStart(row) > maxY)
                     {
                         _endRow = row - 1;
                         break;
@@ -825,12 +561,12 @@ namespace FancyZonesEditor
                 {
                     if (_startCol == -1)
                     {
-                        if (_colInfo[col].End > minX)
+                        if (_data.ColumnBottom(col) > minX)
                         {
                             _startCol = col;
                         }
                     }
-                    else if (_colInfo[col].Start > maxX)
+                    else if (_data.ColumnTop(col)  > maxX)
                     {
                         _endCol = col - 1;
                         break;
@@ -909,8 +645,7 @@ namespace FancyZonesEditor
             return returnSize;
         }
 
-        private RowColInfo[] _rowInfo;
-        private RowColInfo[] _colInfo;
+        private GridData _data;
 
         private int _startRow = -1;
         private int _endRow = -1;

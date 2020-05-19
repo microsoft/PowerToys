@@ -110,6 +110,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DashCaseNamingPolicy.cs" />
+    <Compile Include="GridData.cs" />
     <Compile Include="StringUtils.cs" />
     <Compile Include="Converters\BooleanToBrushConverter.xaml.cs" />
     <Compile Include="Converters\BooleanToIntConverter.xaml.cs" />

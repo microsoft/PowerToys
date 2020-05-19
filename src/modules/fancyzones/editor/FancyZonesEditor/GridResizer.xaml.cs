@@ -17,7 +17,9 @@ namespace FancyZonesEditor
     {
         private static readonly RotateTransform _rotateTransform = new RotateTransform(90, 24, 24);
 
-        public int Index { get; set; }
+        public int RowIndex { get; set; }
+
+        public int ColIndex { get; set; }
 
         public LayoutModel Model { get; set; }
 
