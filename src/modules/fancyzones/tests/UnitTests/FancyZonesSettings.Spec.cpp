@@ -29,6 +29,7 @@ namespace FancyZonesUnitTests
         Assert::AreEqual(expected.shiftDrag, actual.shiftDrag);
         Assert::AreEqual(expected.mouseSwitch, actual.mouseSwitch);
         Assert::AreEqual(expected.displayChange_moveWindows, actual.displayChange_moveWindows);
+        Assert::AreEqual(expected.virtualDesktopChange_moveWindows, actual.virtualDesktopChange_moveWindows);
         Assert::AreEqual(expected.zoneSetChange_flashZones, actual.zoneSetChange_flashZones);
         Assert::AreEqual(expected.zoneSetChange_moveWindows, actual.zoneSetChange_moveWindows);
         Assert::AreEqual(expected.overrideSnapHotkeys, actual.overrideSnapHotkeys);
@@ -107,6 +108,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
                     values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
+                    values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
@@ -143,6 +145,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
                     values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
+                    values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
@@ -173,6 +176,7 @@ namespace FancyZonesUnitTests
                         .shiftDrag = m_defaultSettings.shiftDrag,
                         .mouseSwitch = m_defaultSettings.mouseSwitch,
                         .displayChange_moveWindows = m_defaultSettings.displayChange_moveWindows,
+                        .virtualDesktopChange_moveWindows = m_defaultSettings.virtualDesktopChange_moveWindows,
                         .zoneSetChange_flashZones = m_defaultSettings.zoneSetChange_flashZones,
                         .zoneSetChange_moveWindows = m_defaultSettings.zoneSetChange_moveWindows,
                         .overrideSnapHotkeys = m_defaultSettings.overrideSnapHotkeys,
@@ -216,6 +220,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
                     values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
+                    values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
@@ -246,6 +251,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
                     values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
+                    values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
@@ -277,6 +283,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
                     values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
+                    values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
@@ -309,6 +316,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
                     values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                     values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
+                    values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                     values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                     values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                     values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
@@ -422,6 +430,7 @@ namespace FancyZonesUnitTests
                     .shiftDrag = false,
                     .mouseSwitch = false,
                     .displayChange_moveWindows = true,
+                    .virtualDesktopChange_moveWindows = true,
                     .zoneSetChange_flashZones = true,
                     .zoneSetChange_moveWindows = true,
                     .overrideSnapHotkeys = false,
@@ -443,6 +452,7 @@ namespace FancyZonesUnitTests
                 values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
                 values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                 values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
+                values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                 values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                 values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                 values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
@@ -564,6 +574,7 @@ namespace FancyZonesUnitTests
             ptSettings.add_bool_toogle(L"fancyzones_zoneSetChange_flashZones", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES, settings.zoneSetChange_flashZones);
             ptSettings.add_bool_toogle(L"fancyzones_displayChange_moveWindows", IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS, settings.displayChange_moveWindows);
             ptSettings.add_bool_toogle(L"fancyzones_zoneSetChange_moveWindows", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS, settings.zoneSetChange_moveWindows);
+            ptSettings.add_bool_toogle(L"fancyzones_virtualDesktopChange_moveWindows", IDS_SETTING_DESCRIPTION_VIRTUALDESKTOPCHANGE_MOVEWINDOWS, settings.virtualDesktopChange_moveWindows);
             ptSettings.add_bool_toogle(L"fancyzones_appLastZone_moveWindows", IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS, settings.appLastZone_moveWindows);
             ptSettings.add_bool_toogle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, settings.use_cursorpos_editor_startupscreen);
             ptSettings.add_bool_toogle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, settings.showZonesOnAllMonitors);
@@ -588,6 +599,7 @@ namespace FancyZonesUnitTests
                 values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
                 values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
                 values.add_property(L"fancyzones_displayChange_moveWindows", expected.displayChange_moveWindows);
+                values.add_property(L"fancyzones_virtualDesktopChange_moveWindows", expected.virtualDesktopChange_moveWindows);
                 //values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
                 values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
                 values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
@@ -627,6 +639,7 @@ namespace FancyZonesUnitTests
                 //m_ptSettings->add_bool_toogle(L"fancyzones_zoneSetChange_flashZones", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES, expected.zoneSetChange_flashZones);
                 m_ptSettings->add_bool_toogle(L"fancyzones_displayChange_moveWindows", IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS, expected.displayChange_moveWindows);
                 m_ptSettings->add_bool_toogle(L"fancyzones_zoneSetChange_moveWindows", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS, expected.zoneSetChange_moveWindows);
+                m_ptSettings->add_bool_toogle(L"fancyzones_virtualDesktopChange_moveWindows", IDS_SETTING_DESCRIPTION_VIRTUALDESKTOPCHANGE_MOVEWINDOWS, expected.virtualDesktopChange_moveWindows);
                 m_ptSettings->add_bool_toogle(L"fancyzones_appLastZone_moveWindows", IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS, expected.appLastZone_moveWindows);
                 m_ptSettings->add_bool_toogle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, expected.use_cursorpos_editor_startupscreen);
                 m_ptSettings->add_bool_toogle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, expected.showZonesOnAllMonitors);
@@ -692,6 +705,7 @@ namespace FancyZonesUnitTests
                         .shiftDrag = true,
                         .mouseSwitch = true,
                         .displayChange_moveWindows = true,
+                        .virtualDesktopChange_moveWindows = true,
                         .zoneSetChange_flashZones = false,
                         .zoneSetChange_moveWindows = true,
                         .overrideSnapHotkeys = false,
