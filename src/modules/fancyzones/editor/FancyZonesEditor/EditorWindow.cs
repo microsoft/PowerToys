@@ -16,11 +16,6 @@ namespace FancyZonesEditor
             EditorOverlay mainEditor = EditorOverlay.Current;
             if (mainEditor.DataContext is LayoutModel model)
             {
-                if (model.Type == LayoutType.Blank)
-                {
-                    model.Type = LayoutType.Custom;
-                }
-
                 model.Persist();
             }
 

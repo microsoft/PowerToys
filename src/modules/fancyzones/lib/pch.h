@@ -10,7 +10,6 @@
 #include <dwmapi.h>
 #include <ProjectTelemetry.h>
 #include <shellapi.h>
-#include <ShellScalingApi.h>
 #include <strsafe.h>
 #include <TraceLoggingActivity.h>
 #include <wil\resource.h>

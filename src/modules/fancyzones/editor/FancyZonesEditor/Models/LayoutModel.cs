@@ -43,6 +43,7 @@ namespace FancyZonesEditor.Models
         protected LayoutModel(string name)
             : this()
         {
+            _guid = Guid.NewGuid();
             Name = name;
         }
 
@@ -219,10 +220,8 @@ namespace FancyZonesEditor.Models
                     }
                     else if (type.Equals("canvas"))
                     {
-                        int lastWorkAreaWidth = info.GetProperty("last-workarea-width").GetInt32();
-                        int lastWorkAreaHeight = info.GetProperty("last-workarea-height").GetInt32();
-                        //int lastWorkAreaDPI = info.GetProperty("last-workarea-dpi").GetInt32();
-
+                        int referenceWidth = info.GetProperty("ref-width").GetInt32();
+                        int referenceHeight = info.GetProperty("ref-height").GetInt32();
                         JsonElement.ArrayEnumerator zonesEnumerator = info.GetProperty("zones").EnumerateArray();
                         IList<Int32Rect> zones = new List<Int32Rect>();
                         while (zonesEnumerator.MoveNext())
@@ -234,7 +233,7 @@ namespace FancyZonesEditor.Models
                             zones.Add(new Int32Rect(x, y, width, height));
                         }
 
-                        _customModels.Add(new CanvasLayoutModel(uuid, name, LayoutType.Custom, zones, lastWorkAreaWidth, lastWorkAreaHeight/*, lastWorkAreaDPI*/));
+                        _customModels.Add(new CanvasLayoutModel(uuid, name, LayoutType.Custom, referenceWidth, referenceHeight, zones));
                     }
                 }
 

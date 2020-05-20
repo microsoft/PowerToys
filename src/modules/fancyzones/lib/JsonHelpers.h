@@ -45,9 +45,8 @@ namespace JSONHelpers
 
     struct CanvasLayoutInfo
     {
-        int lastWorkAreaWidth;
-        int lastWorkAreaHeight;
-        //int lastWorkAreaDPI;
+        int referenceWidth;
+        int referenceHeight;
         struct Rect
         {
             int x;

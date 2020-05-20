@@ -31,7 +31,7 @@ namespace FancyZonesEditor
 
             KeyUp += MainWindow_KeyUp;
 
-            if (Settings.WorkArea.Height < 900)
+            if (_settings.WorkArea.Height < 900)
             {
                 SizeToContent = SizeToContent.WidthAndHeight;
                 WrapPanelItemSize = 180;
