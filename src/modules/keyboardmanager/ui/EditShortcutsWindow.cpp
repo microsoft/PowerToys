@@ -144,7 +144,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
     //  Text block for information about remap key section.
     TextBlock shortcutRemapInfoHeader;
-    shortcutRemapInfoHeader.Text(L"Select shortcut you want to change (Shortcut) and the shortcut (Mapped To) you want it to invoke.");
+    shortcutRemapInfoHeader.Text(L"Select shortcut you want to change (Shortcut) and the shortcut you want it to invoke (Mapped To).");
     shortcutRemapInfoHeader.Margin({ 10, 0, 0, 10 });
     shortcutRemapInfoHeader.FontWeight(Text::FontWeights::SemiBold());
     shortcutRemapInfoHeader.TextWrapping(TextWrapping::Wrap);
