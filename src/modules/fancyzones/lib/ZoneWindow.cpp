@@ -240,7 +240,6 @@ protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
 
 private:
-    void LoadSettings() noexcept;
     void InitializeZoneSets(const std::wstring& parentUniqueId) noexcept;
     void CalculateZoneSet() noexcept;
     void UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept;
@@ -314,7 +313,6 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
     StringCchPrintf(m_workArea, ARRAYSIZE(m_workArea), L"%d_%d", monitorRect.width(), monitorRect.height());
 
     m_uniqueId = uniqueId;
-    LoadSettings();
     InitializeZoneSets(parentUniqueId);
 
     m_window = wil::unique_hwnd{
@@ -546,13 +544,10 @@ ZoneWindow::UpdateActiveZoneSet() noexcept
 
 #pragma region private
 
-void ZoneWindow::LoadSettings() noexcept
-{
-    JSONHelpers::FancyZonesDataInstance().AddDevice(m_uniqueId);
-}
-
 void ZoneWindow::InitializeZoneSets(const std::wstring& parentUniqueId) noexcept
 {
+    // If there is not defined zone layout for this work area, created default entry.
+    JSONHelpers::FancyZonesDataInstance().AddDevice(m_uniqueId);
     if (!parentUniqueId.empty())
     {
         JSONHelpers::FancyZonesDataInstance().CloneDeviceInfo(parentUniqueId, m_uniqueId);
