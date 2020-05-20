@@ -71,7 +71,9 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 
 ## Installing and running Microsoft PowerToys
 
- 👉 **Note:** Microsoft PowerToys requires Windows 10 1803 (build 17134) or later.
+ **Requirements:** 
+ - Microsoft PowerToys requires Windows 10 1803 (build 17134) or later.
+ - Have [.NET Core 3.1 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.4-windows-x64-installer)
 
 ### Via Github with MSI [Recommended]
 
