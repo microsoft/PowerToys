@@ -597,7 +597,7 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
     wil::unique_cotaskmem_string guuidStr;
     if (SUCCEEDED_LOG(StringFromCLSID(m_config.Id, &guuidStr)))
     {
-        const std::wstring guuid = guuidStr.get();
+        const std::wstring guuid = guuidStr.get(); 
 
         const auto zoneSetSearchResult = JSONHelpers::FancyZonesDataInstance().FindCustomZoneSet(guuid);
 

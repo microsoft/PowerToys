@@ -14,69 +14,30 @@ namespace FancyZonesEditor.Models
     //  Free form Layout Model, which specifies independent zone rects
     public class CanvasLayoutModel : LayoutModel
     {
-        public CanvasLayoutModel(string uuid, string name, LayoutType type, int referenceWidth, int referenceHeight, IList<Int32Rect> zones)
+        public CanvasLayoutModel(string uuid, string name, LayoutType type, IList<Int32Rect> zones, int workAreaWidth, int workAreaHeight/*, int workAreaDPI*/)
             : base(uuid, name, type)
         {
-            _referenceWidth = referenceWidth;
-            _referenceHeight = referenceHeight;
-            Zones = zones;
+            lastWorkAreaWidth = workAreaWidth;
+            lastWorkAreaHeight = workAreaHeight;
+            //lastWorkAreaDPI = workAreaDPI;
+
+            ScaleLayout(zones);
+            //Zones = zones;
         }
 
-        public CanvasLayoutModel(string name, LayoutType type, int referenceWidth, int referenceHeight)
+        public CanvasLayoutModel(string name, LayoutType type)
         : base(name, type)
         {
-            // Initialize Reference Size
-            _referenceWidth = referenceWidth;
-            _referenceHeight = referenceHeight;
         }
-
-        public CanvasLayoutModel(string name)
-            : base(name)
-        {
-        }
-
-        // ReferenceWidth - the reference width for the layout rect that all Zones are relative to
-        public int ReferenceWidth
-        {
-            get
-            {
-                return _referenceWidth;
-            }
-
-            set
-            {
-                if (_referenceWidth != value)
-                {
-                    _referenceWidth = value;
-                    FirePropertyChanged("ReferenceWidth");
-                }
-            }
-        }
-
-        private int _referenceWidth;
-
-        // ReferenceHeight - the reference height for the layout rect that all Zones are relative to
-        public int ReferenceHeight
-        {
-            get
-            {
-                return _referenceHeight;
-            }
-
-            set
-            {
-                if (_referenceHeight != value)
-                {
-                    _referenceHeight = value;
-                    FirePropertyChanged("ReferenceHeight");
-                }
-            }
-        }
-
-        private int _referenceHeight;
 
         // Zones - the list of all zones in this layout, described as independent rectangles
-        public IList<Int32Rect> Zones { get; } = new List<Int32Rect>();
+        public IList<Int32Rect> Zones { get; private set; } = new List<Int32Rect>();
+
+        private int lastWorkAreaWidth = (int)Settings.WorkArea.Width;
+
+        private int lastWorkAreaHeight = (int)Settings.WorkArea.Height;
+
+        //private int lastWorkAreaDPI = (int)Settings.WorkAreaDPI;
 
         // RemoveZoneAt
         //  Removes the specified index from the Zones list, and fires a property changed notification for the Zones property
@@ -99,11 +60,7 @@ namespace FancyZonesEditor.Models
         //  Clones the data from this CanvasLayoutModel to a new CanvasLayoutModel
         public override LayoutModel Clone()
         {
-            CanvasLayoutModel layout = new CanvasLayoutModel(Name)
-            {
-                ReferenceHeight = ReferenceHeight,
-                ReferenceWidth = ReferenceWidth,
-            };
+            CanvasLayoutModel layout = new CanvasLayoutModel(Name, Type);
 
             foreach (Int32Rect zone in Zones)
             {
@@ -119,6 +76,32 @@ namespace FancyZonesEditor.Models
             foreach (Int32Rect zone in Zones)
             {
                 other.Zones.Add(zone);
+            }
+        }
+
+        private void ScaleLayout(IList<Int32Rect> zones)
+        {
+            if (lastWorkAreaWidth != -1 || /*lastWorkAreaDPI != Settings.WorkAreaDPI ||*/ lastWorkAreaHeight != Settings.WorkArea.Height || lastWorkAreaWidth != Settings.WorkArea.Width)
+            {
+                foreach (Int32Rect zone in zones)
+                {
+                    double widthFactor = (double)Settings.WorkArea.Width / lastWorkAreaWidth;
+                    double heightFactor = (double)Settings.WorkArea.Height / lastWorkAreaHeight;
+                    int scaledX = (int)(zone.X * widthFactor);
+                    int scaledY = (int)(zone.Y * heightFactor);
+                    int scaledWidth = (int)(zone.Width * widthFactor);
+                    int scaledHeight = (int)(zone.Height * heightFactor);
+                    Zones.Add(new Int32Rect(scaledX, scaledY, scaledWidth, scaledHeight));
+                }
+
+                //lastWorkAreaDPI = Settings.WorkAreaDPI;
+                lastWorkAreaHeight = (int)Settings.WorkArea.Height;
+                lastWorkAreaWidth = (int)Settings.WorkArea.Width;
+            }
+            else
+            {
+                // no scaling needed
+                Zones = zones;
             }
         }
 
@@ -159,8 +142,9 @@ namespace FancyZonesEditor.Models
         {
             CanvasLayoutInfo layoutInfo = new CanvasLayoutInfo
             {
-                RefWidth = _referenceWidth,
-                RefHeight = _referenceHeight,
+                RefWidth = lastWorkAreaWidth,
+                RefHeight = lastWorkAreaHeight,
+                //LastWorkAreaDpi = lastWorkAreaDPI,
                 Zones = new Zone[Zones.Count],
             };
             for (int i = 0; i < Zones.Count; ++i)
