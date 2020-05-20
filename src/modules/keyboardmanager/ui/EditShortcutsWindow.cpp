@@ -144,13 +144,13 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
     //  Text block for information about remap key section.
     TextBlock shortcutRemapInfoHeader;
-    shortcutRemapInfoHeader.Text(L"Select shortcut you want to change (Original Shortcut) and the shortcut (New Shortcut) you want it to invoke.");
+    shortcutRemapInfoHeader.Text(L"Select shortcut you want to change (Shortcut) and the shortcut (Mapped To) you want it to invoke.");
     shortcutRemapInfoHeader.Margin({ 10, 0, 0, 10 });
     shortcutRemapInfoHeader.FontWeight(Text::FontWeights::SemiBold());
     shortcutRemapInfoHeader.TextWrapping(TextWrapping::Wrap);
 
     TextBlock shortcutRemapInfoExample;
-    shortcutRemapInfoExample.Text(L"For example, if you want Ctrl+C to paste, Ctrl+C is the Original Shortcut and Ctrl+V is the New Shortcut.");
+    shortcutRemapInfoExample.Text(L"For example, if you want Ctrl+C to paste, Ctrl+C is the Shortcut and Ctrl+V is the Mapped To shortcut.");
     shortcutRemapInfoExample.Margin({ 10, 0, 0, 20 });
     shortcutRemapInfoExample.FontStyle(Text::FontStyle::Italic);
     shortcutRemapInfoExample.TextWrapping(TextWrapping::Wrap);
@@ -178,13 +178,13 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
     // First header textblock in the header row of the shortcut table
     TextBlock originalShortcutHeader;
-    originalShortcutHeader.Text(L"Original Shortcut:");
+    originalShortcutHeader.Text(L"Shortcut:");
     originalShortcutHeader.FontWeight(Text::FontWeights::Bold());
     originalShortcutHeader.Margin({ 0, 0, 0, 10 });
 
     // Second header textblock in the header row of the shortcut table
     TextBlock newShortcutHeader;
-    newShortcutHeader.Text(L"New Shortcut:");
+    newShortcutHeader.Text(L"Mapped To:");
     newShortcutHeader.FontWeight(Text::FontWeights::Bold());
     newShortcutHeader.Margin({ 0, 0, 0, 10 });
 
