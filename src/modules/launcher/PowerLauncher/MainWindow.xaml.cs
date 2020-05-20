@@ -208,6 +208,10 @@ namespace PowerLauncher
                 _viewModel.SelectPrevPageCommand.Execute(null);
                 e.Handled = true;
             }
+            else
+            {
+                _viewModel.HandleContextMenu(e.Key, Keyboard.Modifiers);
+            }
         }
 
         private void UpdateTextBoxToSelectedItem()
@@ -288,6 +292,5 @@ namespace PowerLauncher
                 }));
             }
         }
-
     }
 }

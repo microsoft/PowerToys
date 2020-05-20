@@ -20,6 +20,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Wox.Plugin;
+using System.Windows.Input;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -317,8 +318,8 @@ namespace Microsoft.Plugin.Program.Programs
                         Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
                         Glyph = "\xE838",
                         FontFamily = "Segoe MDL2 Assets",
-                        AcceleratorKey = "E",
-                        AcceleratorModifiers = "Control,Shift",
+                        AcceleratorKey = Key.E,
+                        AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
                         Action = _ =>
                         {
                             Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", Package.Location));

@@ -656,6 +656,22 @@ namespace Wox.ViewModel
             };
         }
 
+        public void HandleContextMenu(Key AcceleratorKey, ModifierKeys AcceleratorModifiers)
+        {
+            var results = SelectedResults;
+            if (results.SelectedItem != null)
+            {
+                foreach (ContextMenuItemViewModel contextMenuItems in results.SelectedItem.ContextMenuItems)
+                {
+                    if (contextMenuItems.AcceleratorKey == AcceleratorKey && contextMenuItems.AcceleratorModifiers == AcceleratorModifiers)
+                    {
+                        MainWindowVisibility = Visibility.Collapsed;
+                        contextMenuItems.Command.Execute(null);
+                    }
+                }
+            }
+        }
+
         #endregion
     }
 }
