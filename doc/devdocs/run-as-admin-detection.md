@@ -4,6 +4,10 @@
 
 If you're running any application as an administrator (aka elevated) and PowerToys is not, a few things may not work correctly when the elevated applications are in focus or trying to interact with a PowerToys feature like FancyZones.
 
+## Security Considerations
+
+The use of some PowerToys while running elevated may cause security concerns. Particularly, any program started from PowerToys Run will also be started "elevated".
+
 ## Having PowerToys keep functioning properly
 
 We understand users will run applications elevated. We do as well.  We have two options for you when this scenario happens:
@@ -45,6 +49,8 @@ These are the two scenarios we will not work in:
    - key to key remapping
    - Global level shortcuts remapping
    - App-targeted shortcuts remapping
+4. Run
+   - All programs started from Run will run as Administrator
 
 [uac]: ../images/runAsAdmin/uac.png "User access control (UAC)"
 [elevatedWindow]: ../images/runAsAdmin/elevatedWindows.png "Run as admin"
