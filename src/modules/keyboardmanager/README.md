@@ -11,7 +11,7 @@ To create mappings with Keyboard Manager, you have the option of launching eithe
 
 
 ## 1.2 Remap Keys
-To remap a key to another key, click the <kbd>Remap a Key</kbd> button to launch the Remap Keyboard UI. When first launched, you are met with no predefined mappings and must click the <kbd>+</kbd> button to add a new remap. From there, select the key whose output you want to ***change*** as the “Original Key” and then keys new output as the “New Key”. For example, if you want to press <kbd>A</kbd> and have <kbd>B</kbd>  appear, Key <kbd>A</kbd> would be your “Original Key” and Key <kbd>B</kbd> would be your “New Key”. If you want to swap keys, add another remapping with Key <kbd>B</kbd> as your Original and Key <kbd>A</kbd> as your New.
+To remap a key to another key, click the <kbd>Remap a Key</kbd> button to launch the Remap Keyboard UI. When first launched, you are met with no predefined mappings and must click the <kbd>+</kbd> button to add a new remap. From there, select the key whose output you want to ***change*** as the “Key” and then keys new output as the “Mapped To”. For example, if you want to press <kbd>A</kbd> and have <kbd>B</kbd>  appear, Key <kbd>A</kbd> would be your “Key” and Key <kbd>B</kbd> would be your “Mapped To" key. If you want to swap keys, add another remapping with Key <kbd>B</kbd> as your "Key" and Key <kbd>A</kbd> as your "Mapped To".
 
 ![alt text][remapkey]
 
@@ -19,8 +19,8 @@ To remap a key to another key, click the <kbd>Remap a Key</kbd> button to launch
 Currently you are only able to remap global level shortcuts (they apply to your whole OS), but **app-specific shortcuts are coming soon!**
 
 To change how you invoke a particular shortcut, click the <kbd>Remap a shortcut</kbd> button to
-launch the Remap Shortcuts UI. When first launched, you are met with no predefined mappings and must click the <kbd>+</kbd> button to add a new remap. The Original shortcut is the shortcut you want to change and the New Shortcut is the shortcut you want to change it
-to. Ex. If you want <kbd>Ctrl</kbd>+<kbd>C</kbd> to paste, <kbd>Ctrl</kbd>+<kbd>C</kbd> is the Original Shortcut and <kbd>Ctrl</kbd>+<kbd>V</kbd> is the New Shortcut. Here are a few rules to shortcuts as you get started:
+launch the Remap Shortcuts UI. When first launched, you are met with no predefined mappings and must click the <kbd>+</kbd> button to add a new remap. The "Shortcut" is the shortcut you want to change and the "Mapped To" is the shortcut you want to change it
+to. Ex. If you want <kbd>Ctrl</kbd>+<kbd>C</kbd> to paste, <kbd>Ctrl</kbd>+<kbd>C</kbd> is the "Shortcut" and <kbd>Ctrl</kbd>+<kbd>V</kbd> is the "Mapped To". Here are a few rules to shortcuts as you get started:
    
 - Shortcuts must begin with a modifier key (<kbd>Ctrl</kbd>, <kbd>Shift</kbd>, <kbd>Alt</kbd>, <kbd>![alt text][winlogo]</kbd>)
 - Shortcuts must end with an action key (all non-modifier keys) 
