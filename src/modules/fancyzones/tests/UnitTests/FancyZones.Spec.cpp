@@ -256,18 +256,6 @@ namespace FancyZonesUnitTests
 
                     Assert::AreEqual(expected, m_zoneWindowHost->isMakeDraggedWindowTransparentActive());
                 }
-
-                TEST_METHOD (GetCurrentMonitorZoneSetEmpty)
-                {
-                    const auto* actual = m_zoneWindowHost->GetParentZoneWindow(Mocks::Monitor());
-                    Assert::IsNull(actual);
-                }
-
-                TEST_METHOD (GetCurrentMonitorZoneSetNullMonitor)
-                {
-                    const auto* actual = m_zoneWindowHost->GetParentZoneWindow(nullptr);
-                    Assert::IsNull(actual);
-                }
     };
 
     TEST_CLASS (FancyZonesIFancyZonesCallbackUnitTests)
