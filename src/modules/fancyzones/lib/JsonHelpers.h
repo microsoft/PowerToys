@@ -47,7 +47,7 @@ namespace JSONHelpers
     {
         int lastWorkAreaWidth;
         int lastWorkAreaHeight;
-        //int lastWorkAreaDPI;
+
         struct Rect
         {
             int x;

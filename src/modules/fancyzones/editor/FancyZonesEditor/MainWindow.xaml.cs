@@ -146,6 +146,7 @@ namespace FancyZonesEditor
         private void Apply_Click(object sender, RoutedEventArgs e)
         {
             EditorOverlay mainEditor = EditorOverlay.Current;
+
             if (mainEditor.DataContext is LayoutModel model)
             {
                 if (model is GridLayoutModel)
@@ -154,9 +155,8 @@ namespace FancyZonesEditor
                 }
                 else
                 {
-                    model.Apply();
+                    model.Persist();
                 }
-
                 Close();
             }
         }

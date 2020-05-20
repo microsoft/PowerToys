@@ -217,8 +217,6 @@ namespace FancyZonesEditor
 
         public static Rect WorkArea { get; private set; }
 
-        //public static int WorkAreaDPI { get; private set; }
-
         public static uint Monitor { get; private set; }
 
         public static string UniqueKey { get; private set; }
@@ -416,7 +414,6 @@ namespace FancyZonesEditor
         private void ParseCommandLineArgs()
         {
             WorkArea = SystemParameters.WorkArea;
-            //WorkAreaDPI = _defaultDPI;
             Monitor = 0;
 
             string[] args = Environment.GetCommandLineArgs();
@@ -432,7 +429,6 @@ namespace FancyZonesEditor
                 var y = int.Parse(parsedLocation[1]);
                 var width = int.Parse(parsedLocation[2]);
                 var height = int.Parse(parsedLocation[3]);
-                //WorkAreaDPI = int.Parse(parsedLocation[4]);
 
                 WorkArea = new Rect(x, y, width, height);
 

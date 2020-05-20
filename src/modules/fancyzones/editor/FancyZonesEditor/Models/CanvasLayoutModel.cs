@@ -14,15 +14,13 @@ namespace FancyZonesEditor.Models
     //  Free form Layout Model, which specifies independent zone rects
     public class CanvasLayoutModel : LayoutModel
     {
-        public CanvasLayoutModel(string uuid, string name, LayoutType type, IList<Int32Rect> zones, int workAreaWidth, int workAreaHeight/*, int workAreaDPI*/)
+        public CanvasLayoutModel(string uuid, string name, LayoutType type, IList<Int32Rect> zones, int workAreaWidth, int workAreaHeight)
             : base(uuid, name, type)
         {
             lastWorkAreaWidth = workAreaWidth;
             lastWorkAreaHeight = workAreaHeight;
-            //lastWorkAreaDPI = workAreaDPI;
 
             ScaleLayout(zones);
-            //Zones = zones;
         }
 
         public CanvasLayoutModel(string name, LayoutType type)
@@ -36,8 +34,6 @@ namespace FancyZonesEditor.Models
         private int lastWorkAreaWidth = (int)Settings.WorkArea.Width;
 
         private int lastWorkAreaHeight = (int)Settings.WorkArea.Height;
-
-        //private int lastWorkAreaDPI = (int)Settings.WorkAreaDPI;
 
         // RemoveZoneAt
         //  Removes the specified index from the Zones list, and fires a property changed notification for the Zones property
@@ -81,7 +77,8 @@ namespace FancyZonesEditor.Models
 
         private void ScaleLayout(IList<Int32Rect> zones)
         {
-            if (lastWorkAreaWidth != -1 || /*lastWorkAreaDPI != Settings.WorkAreaDPI ||*/ lastWorkAreaHeight != Settings.WorkArea.Height || lastWorkAreaWidth != Settings.WorkArea.Width)
+            //TODO: stefan Do we want to scale to different display orientation?
+            if (lastWorkAreaWidth != -1 || lastWorkAreaHeight != Settings.WorkArea.Height || lastWorkAreaWidth != Settings.WorkArea.Width)
             {
                 foreach (Int32Rect zone in zones)
                 {
@@ -94,7 +91,6 @@ namespace FancyZonesEditor.Models
                     Zones.Add(new Int32Rect(scaledX, scaledY, scaledWidth, scaledHeight));
                 }
 
-                //lastWorkAreaDPI = Settings.WorkAreaDPI;
                 lastWorkAreaHeight = (int)Settings.WorkArea.Height;
                 lastWorkAreaWidth = (int)Settings.WorkArea.Width;
             }
@@ -144,7 +140,7 @@ namespace FancyZonesEditor.Models
             {
                 RefWidth = lastWorkAreaWidth,
                 RefHeight = lastWorkAreaHeight,
-                //LastWorkAreaDpi = lastWorkAreaDPI,
+
                 Zones = new Zone[Zones.Count],
             };
             for (int i = 0; i < Zones.Count; ++i)

@@ -745,7 +745,6 @@ namespace JSONHelpers
                 }
                 case CustomLayoutType::Canvas: {
                     CanvasLayoutInfo info;
-                    //info.lastWorkAreaWidth = info.lastWorkAreaHeight = /*info.lastWorkAreaDPI =*/ -1;
 
                     int j = 5;
                     info.lastWorkAreaWidth = data[j] * 256 + data[j + 1];

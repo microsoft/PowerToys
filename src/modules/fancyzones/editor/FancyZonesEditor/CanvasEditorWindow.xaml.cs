@@ -21,9 +21,6 @@ namespace FancyZonesEditor
 
         private void OnAddZone(object sender, RoutedEventArgs e)
         {
-            /*            string message = "Simple MessageBox width: " + _model.ReferenceWidth + " height" + _model.ReferenceHeight;
-                        MessageBox.Show(message);
-            */
             _model.AddZone(new Int32Rect(_offset, _offset, (int)(Settings.WorkArea.Width * 0.6), (int)(Settings.WorkArea.Height * 0.6)));
             _offset += 100;
         }
