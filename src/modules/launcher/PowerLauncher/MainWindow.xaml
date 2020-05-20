@@ -60,7 +60,8 @@
             <Border.Effect>
                 <DropShadowEffect BlurRadius="16" Opacity="0.8" ShadowDepth="0" />
             </Border.Effect>
-            <local:ResultList x:Name="ListBox" />
+            <local:ResultList x:Name="ListBox" 
+                              PreviewMouseDown="ListBox_PreviewMouseDown"/>
         </Border>
     </Grid> 
     <Window.InputBindings>
