@@ -38,6 +38,16 @@ bool KeyboardManagerState::CheckUIState(KeyboardManagerUIState state)
             return true;
         }
     }
+    // If we are checking for EditKeyboardWindowActivated then it's possible the state could be DetectSingleKeyRemapWindowActivated but not in focus
+    else if (state == KeyboardManagerUIState::EditKeyboardWindowActivated && uiState == KeyboardManagerUIState::DetectSingleKeyRemapWindowActivated)
+    {
+        return true;
+    }
+    // If we are checking for EditShortcutsWindowActivated then it's possible the state could be DetectShortcutWindowActivated but not in focus
+    else if (state == KeyboardManagerUIState::EditShortcutsWindowActivated && uiState == KeyboardManagerUIState::DetectShortcutWindowActivated)
+    {
+        return true;
+    }
 
     return false;
 }
