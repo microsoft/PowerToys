@@ -53,8 +53,7 @@
 
             <muxc:NumberBox x:Uid="ShortcutGuide_PressTime"
                             Minimum="100"
-                           
-                            SpinButtonPlacementMode="Inline"
+                            SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallTopMargin}"
                             Value="{ Binding Mode=TwoWay, Path=PressTime}"
