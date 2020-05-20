@@ -25,7 +25,6 @@ namespace PowerLauncher
         private bool _isTextSetProgramatically;
         const int ROW_HEIGHT = 75;
         const int MAX_LIST_HEIGHT = 300;
-        bool isDPIChanged = false;
 
         #endregion
 
@@ -124,15 +123,7 @@ namespace PowerLauncher
         { 
             if (_settings.HideWhenDeactive)
             {
-                if (isDPIChanged)
-                {
-                    isDPIChanged = false;
-                    InitializePosition();
-                }
-                else
-                {
-                    Hide();
-                }
+                Hide();
             }              
         }
 
@@ -144,19 +135,9 @@ namespace PowerLauncher
                 Top = _settings.WindowTop;
             }
             else
-            {
-                double prevTop = Top;
-                double prevLeft = Left;               
+            {              
                 Top = WindowTop();
                 Left = WindowLeft();
-                if (prevTop != Top || prevLeft != Left)
-                {
-                    isDPIChanged = true;
-                }
-                else
-                {
-                    isDPIChanged = false;
-                }
             }
         }
 
