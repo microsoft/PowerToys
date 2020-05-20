@@ -54,7 +54,7 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 
 ### Keyboard Manager
 
-[<img align="left" src="./doc/images/overview/KBM_small.png" />](src/modules/keyboardmanager/) [Keyboard Manager](src/modules/keyboardmanager/) allows you to customize the keyboard to be more productive by remapping keys and creating your own keyboard shortcuts.
+[<img align="left" src="./doc/images/overview/KBM_small.png" />](src/modules/keyboardmanager/) [Keyboard Manager](src/modules/keyboardmanager/) allows you to customize the keyboard to be more productive by remapping keys and creating your own keyboard shortcuts. This PowerToy requires Windows 10 1903 (build 18362) or later.
 <br>
 <br>
 <br>
@@ -63,7 +63,7 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 
 ### PowerToys Run
 
-[<img align="left" src="./doc/images/overview/PowerLauncher_small.png" />](src/modules/launcher/) [PowerToys Run](src/modules/launcher/) is a new toy in PowerToys that can help you search and launch your app instantly with a simple alt-space and start typing! It is open source and modular for additional plugins.  Window Walker is now inside!
+[<img align="left" src="./doc/images/overview/PowerLauncher_small.png" />](src/modules/launcher/) [PowerToys Run](src/modules/launcher/) is a new toy in PowerToys that can help you search and launch your app instantly with a simple alt-space and start typing! It is open source and modular for additional plugins.  Window Walker is now inside too! This PowerToy requires Windows 10 1903 (build 18362) or later.
 <br>
 <br>
 <br>
