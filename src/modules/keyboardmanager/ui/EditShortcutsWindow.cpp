@@ -150,7 +150,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     shortcutRemapInfoHeader.TextWrapping(TextWrapping::Wrap);
 
     TextBlock shortcutRemapInfoExample;
-    shortcutRemapInfoExample.Text(L"For example, if you want Ctrl+C to paste, Ctrl+C is the Shortcut and Ctrl+V is the Mapped To shortcut.");
+    shortcutRemapInfoExample.Text(L"For example, if you want Ctrl+C to paste, Ctrl+C is the "Shortcut" and Ctrl+V would be your "Mapped To".");
     shortcutRemapInfoExample.Margin({ 10, 0, 0, 20 });
     shortcutRemapInfoExample.FontStyle(Text::FontStyle::Italic);
     shortcutRemapInfoExample.TextWrapping(TextWrapping::Wrap);
