@@ -676,7 +676,6 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
         if (SUCCEEDED(StringFromCLSID(m_currentDesktopId, &virtualDesktopId)))
         {
             std::wstring uniqueId = ZoneWindowUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId.get());
-            JSONHelpers::FancyZonesDataInstance().SetActiveDeviceId(uniqueId);
 
             // "Turning FLASHING_ZONE option off"
             //const bool flash = m_settings->GetSettings()->zoneSetChange_flashZones;

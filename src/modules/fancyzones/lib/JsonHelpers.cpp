@@ -342,10 +342,6 @@ namespace JSONHelpers
             mapEntry.key() = replaceDesktopId(id);
             deviceInfoMap.insert(std::move(mapEntry));
         }
-        if (activeDeviceId == DEFAULT_GUID)
-        {
-            activeDeviceId = replaceDesktopId(activeDeviceId);
-        }
         SaveFancyZonesData();
     }
 
@@ -450,15 +446,10 @@ namespace JSONHelpers
             {
                 if (auto deviceInfo = DeviceInfoJSON::FromJson(zoneSetJson.value()); deviceInfo.has_value())
                 {
-                    activeDeviceId = deviceInfo->deviceId;
-                    deviceInfoMap[activeDeviceId] = std::move(deviceInfo->data);
+                    deviceInfoMap[deviceInfo->deviceId] = std::move(deviceInfo->data);
                     DeleteTmpFile(tmpFilePath);
                 }
             }
-        }
-        else
-        {
-            activeDeviceId.clear();
         }
     }
 
