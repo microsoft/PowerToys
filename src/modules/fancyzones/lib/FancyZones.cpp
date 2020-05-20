@@ -317,7 +317,7 @@ FancyZones::WindowCreated(HWND window) noexcept
     std::shared_lock readLock(m_lock);
     if (m_settings->GetSettings()->appLastZone_moveWindows && IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
     {
-        auto zoneWindow = m_workAreaHandler.GetWorkAreaForWindow(window);
+        auto zoneWindow = m_workAreaHandler.GetWorkArea(window);
         if (zoneWindow)
         {
             const auto activeZoneSet = zoneWindow->ActiveZoneSet();
@@ -762,7 +762,7 @@ void FancyZones::UpdateWindowsPositions() noexcept
             // i is off by 1 since 0 is special.
             auto strongThis = reinterpret_cast<FancyZones*>(data);
             std::unique_lock writeLock(strongThis->m_lock);
-            auto zoneWindow = strongThis->m_workAreaHandler.GetWorkAreaForWindow(window);
+            auto zoneWindow = strongThis->m_workAreaHandler.GetWorkArea(window);
             if (zoneWindow)
             {
                 strongThis->m_windowMoveHandler.MoveWindowIntoZoneByIndex(window, i - 1, zoneWindow);
@@ -872,17 +872,9 @@ void FancyZones::OnEditorExitEvent() noexcept
     JSONHelpers::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(ZoneWindowUtils::GetAppliedZoneSetTmpPath());
     JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
 
-    std::vector<GUID> ids{};
-    if (VirtualDesktopUtils::GetVirtualDesktopIds(ids))
+    for (auto workArea : m_workAreaHandler.GetAllWorkAreas())
     {
-        for (const auto& id : ids)
-        {
-            const auto& workAreaMap = m_workAreaHandler.GetWorkAreasByDesktopId(id);
-            for (auto& [monitor, workArea] : workAreaMap)
-            {
-                workArea->UpdateActiveZoneSet();
-            }
-        }
+        workArea->UpdateActiveZoneSet();
     }
     if (m_settings->GetSettings()->zoneSetChange_moveWindows)
     {

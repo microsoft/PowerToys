@@ -21,58 +21,63 @@ public:
     /**
      * Get work area based on virtual desktop id and monitor handle.
      *
-     * @param[in]   desktopId Virtual desktop identifier.
-     * @param[in]   monitor   Monitor handle.
+     * @param[in]  desktopId Virtual desktop identifier.
+     * @param[in]  monitor   Monitor handle.
      *
-     * @returns Object representing single work area, interface to all actions available on work area
-     *          (e.g. moving windows through zone layout specified for that work area).
+     * @returns    Object representing single work area, interface to all actions available on work area
+     *             (e.g. moving windows through zone layout specified for that work area).
      */
     IZoneWindow* GetWorkArea(const GUID& desktopId, HMONITOR monitor);
 
     /**
      * Get work area on which specified window is located.
      *
-     * @param[in]   window Window handle.
+     * @param[in]  window Window handle.
      *
-     * @returns Object representing single work area, interface to all actions available on work area
-     *          (e.g. moving windows through zone layout specified for that work area).
+     * @returns    Object representing single work area, interface to all actions available on work area
+     *             (e.g. moving windows through zone layout specified for that work area).
      */
-    IZoneWindow* GetWorkAreaForWindow(HWND window);
+    IZoneWindow* GetWorkArea(HWND window);
 
     /**
      * Get map of all work areas on single virtual desktop. Key in the map is monitor handle, while value
      * represents single work area.
      *
-     * @param[in]   desktopId Virtual desktop identifier.
+     * @param[in]  desktopId Virtual desktop identifier.
      *
-     * @returns Map containing pairs of monitor and work area for that monitor (within same virtual desktop).
+     * @returns    Map containing pairs of monitor and work area for that monitor (within same virtual desktop).
      */
     std::unordered_map<HMONITOR, IZoneWindow*> GetWorkAreasByDesktopId(const GUID& desktopId);
 
     /**
+     * @returns    All registered work areas.
+     */
+    std::vector<IZoneWindow*> GetAllWorkAreas();
+
+    /**
      * Register new work area.
      *
-     * @param[in]   desktopId Virtual desktop identifier.
-     * @param[in]   monitor   Monitor handle.
-     * @param[in]   workAra   Object representing single work area.
+     * @param[in]  desktopId Virtual desktop identifier.
+     * @param[in]  monitor   Monitor handle.
+     * @param[in]  workAra   Object representing single work area.
      */
     void AddWorkArea(const GUID& desktopId, HMONITOR monitor, winrt::com_ptr<IZoneWindow>& workArea);
 
     /**
      * Check if work area is already registered.
      *
-     * @param[in]   desktopId Virtual desktop identifier.
-     * @param[in]   monitor   Monitor handle.
+     * @param[in]  desktopId Virtual desktop identifier.
+     * @param[in]  monitor   Monitor handle.
      *
-     * @returns Boolean indicating whether work area defined by virtual desktop id and monitor is already registered.
+     * @returns    Boolean indicating whether work area defined by virtual desktop id and monitor is already registered.
      */
     bool IsNewWorkArea(const GUID& desktopId, HMONITOR monitor);
 
     /**
      * Register changes in current virtual desktop layout.
      *
-     * @param[in]   active  Array of currently active virtual desktop identifiers.
-     * @param[out]  deleted Array of virtual desktop identifiers belonging to previously registered but now deleted
+     * @param[in]  active  Array of currently active virtual desktop identifiers.
+     * @param[out] deleted Array of virtual desktop identifiers belonging to previously registered but now deleted
      *                      work areas.
      */
     void RegisterUpdates(const std::vector<GUID>& active, std::vector<GUID>& deleted);

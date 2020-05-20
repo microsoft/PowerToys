@@ -17,7 +17,7 @@ IZoneWindow* MonitorWorkAreaHandler::GetWorkArea(const GUID& desktopId, HMONITOR
     return nullptr;
 }
 
-IZoneWindow* MonitorWorkAreaHandler::GetWorkAreaForWindow(HWND window)
+IZoneWindow* MonitorWorkAreaHandler::GetWorkArea(HWND window)
 {
     HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
     GUID desktopId{};
@@ -38,6 +38,19 @@ std::unordered_map<HMONITOR, IZoneWindow*> MonitorWorkAreaHandler::GetWorkAreasB
                        std::end(perDesktopData),
                        std::inserter(workAreas, std::end(workAreas)),
                        [](const auto& item) { return std::make_pair(item.first, item.second.get()); });
+    }
+    return workAreas;
+}
+
+std::vector<IZoneWindow*> MonitorWorkAreaHandler::GetAllWorkAreas()
+{
+    std::vector<IZoneWindow*> workAreas{};
+    for (const auto& [desktopId, perDesktopData] : workAreaMap)
+    {
+        std::transform(std::begin(perDesktopData),
+                       std::end(perDesktopData),
+                       std::back_inserter(workAreas),
+                       [](const auto& item) { return item.second.get(); });
     }
     return workAreas;
 }
