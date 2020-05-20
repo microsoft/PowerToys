@@ -21,8 +21,8 @@ public:
     /**
      * Get work area based on virtual desktop id and monitor handle.
      *
-     * @param   desktopId Virtual desktop identifier.
-     * @param   monitor   Monitor handle.
+     * @param[in]   desktopId Virtual desktop identifier.
+     * @param[in]   monitor   Monitor handle.
      *
      * @returns Object representing single work area, interface to all actions available on work area
      *          (e.g. moving windows through zone layout specified for that work area).
@@ -32,7 +32,7 @@ public:
     /**
      * Get work area on which specified window is located.
      *
-     * @param   window Window handle.
+     * @param[in]   window Window handle.
      *
      * @returns Object representing single work area, interface to all actions available on work area
      *          (e.g. moving windows through zone layout specified for that work area).
@@ -43,7 +43,7 @@ public:
      * Get map of all work areas on single virtual desktop. Key in the map is monitor handle, while value
      * represents single work area.
      *
-     * @param   desktopId Virtual desktop identifier.
+     * @param[in]   desktopId Virtual desktop identifier.
      *
      * @returns Map containing pairs of monitor and work area for that monitor (within same virtual desktop).
      */
@@ -52,17 +52,17 @@ public:
     /**
      * Register new work area.
      *
-     * @param   desktopId Virtual desktop identifier.
-     * @param   monitor   Monitor handle.
-     * @param   workAra   Object representing single work area.
+     * @param[in]   desktopId Virtual desktop identifier.
+     * @param[in]   monitor   Monitor handle.
+     * @param[in]   workAra   Object representing single work area.
      */
     void AddWorkArea(const GUID& desktopId, HMONITOR monitor, winrt::com_ptr<IZoneWindow>& workArea);
 
     /**
      * Check if work area is already registered.
      *
-     * @param   desktopId Virtual desktop identifier.
-     * @param   monitor   Monitor handle.
+     * @param[in]   desktopId Virtual desktop identifier.
+     * @param[in]   monitor   Monitor handle.
      *
      * @returns Boolean indicating whether work area defined by virtual desktop id and monitor is already registered.
      */

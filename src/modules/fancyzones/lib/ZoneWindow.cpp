@@ -564,12 +564,6 @@ void ZoneWindow::CalculateZoneSet() noexcept
 {
     const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
     const auto deviceInfoData = fancyZonesData.FindDeviceInfo(m_uniqueId);
-    const auto& activeDeviceId = fancyZonesData.GetActiveDeviceId();
-
-    if (!activeDeviceId.empty() && activeDeviceId != m_uniqueId)
-    {
-        return;
-    }
 
     if (!deviceInfoData.has_value())
     {

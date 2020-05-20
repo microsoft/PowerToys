@@ -34,7 +34,10 @@ std::unordered_map<HMONITOR, IZoneWindow*> MonitorWorkAreaHandler::GetWorkAreasB
     if (workAreaMap.contains(desktopId))
     {
         const auto& perDesktopData = workAreaMap[desktopId];
-        std::transform(std::begin(perDesktopData), std::end(perDesktopData), std::inserter(workAreas, std::end(workAreas)), [](const auto& item) { return std::make_pair(item.first, item.second.get()); });
+        std::transform(std::begin(perDesktopData),
+                       std::end(perDesktopData),
+                       std::inserter(workAreas, std::end(workAreas)),
+                       [](const auto& item) { return std::make_pair(item.first, item.second.get()); });
     }
     return workAreas;
 }
