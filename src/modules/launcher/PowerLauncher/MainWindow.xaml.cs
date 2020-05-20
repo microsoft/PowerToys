@@ -11,6 +11,7 @@ using Screen = System.Windows.Forms.Screen;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using System.Windows.Controls;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace PowerLauncher
 {
@@ -290,6 +291,14 @@ namespace PowerLauncher
                 {
                     _viewModel.Query();
                 }));
+            }
+        }
+        
+        private void ListBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Right)
+            {
+                e.Handled = true;
             }
         }
     }
