@@ -6,6 +6,7 @@ using System.Windows;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 using Microsoft.Plugin.Indexer.SearchHelper;
+using System.Windows.Input;
 
 namespace Microsoft.Plugin.Indexer
 {
@@ -43,8 +44,7 @@ namespace Microsoft.Plugin.Indexer
                     Glyph = "\xE8C8",
                     FontFamily = "Segoe MDL2 Assets",
                     SubTitle = $"Copy the current {fileOrFolder} path to clipboard",
-                    AcceleratorKey = "C", 
-                    AcceleratorModifiers = "Control",
+                    AcceleratorModifiers = ModifierKeys.Control,
 
                     Action = (context) =>
                     {
@@ -74,8 +74,8 @@ namespace Microsoft.Plugin.Indexer
                 Title = "Open containing folder",
                 Glyph = "\xE838",
                 FontFamily = "Segoe MDL2 Assets",
-                AcceleratorKey = "E",
-                AcceleratorModifiers = "Control,Shift",
+                AcceleratorKey = Key.E,
+                AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
                 Action = _ =>
                 {
                     try
