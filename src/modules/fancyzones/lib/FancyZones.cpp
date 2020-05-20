@@ -481,7 +481,13 @@ void FancyZones::ToggleEditor() noexcept
     const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
     fancyZonesData.CustomZoneSetsToJsonFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
 
-    // Do not scale window params by the dpi, that will be done in the editor - see LayoutModel.Apply
+    //TODO: stefan
+    //UINT dpi_x = 0, dpi_y = 0;
+    //if (GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &dpi_x, &dpi_y) != S_OK)
+    //{
+    //    return;
+    //}
+
     const auto taskbar_x_offset = mi.rcWork.left - mi.rcMonitor.left;
     const auto taskbar_y_offset = mi.rcWork.top - mi.rcMonitor.top;
     const auto x = mi.rcMonitor.left + taskbar_x_offset;
@@ -493,6 +499,10 @@ void FancyZones::ToggleEditor() noexcept
         std::to_wstring(y) + L"_" +
         std::to_wstring(width) + L"_" +
         std::to_wstring(height);
+
+        // TODO: stefan
+        /*+L"_" +
+        std::to_wstring(dpi_x);*/
 
     const auto deviceInfo = fancyZonesData.FindDeviceInfo(zoneWindow->UniqueId());
     if (!deviceInfo.has_value())
