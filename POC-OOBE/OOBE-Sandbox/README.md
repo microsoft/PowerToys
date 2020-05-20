@@ -2,7 +2,7 @@
 
 ##### Developers: [Furaha Damién](https://github.com/furahadamien), [Letitia Kwan](https://github.com/letitiakwan), [Jessica Lim](https://github.com/JessicaLim8)
 ##### Program Manager : [Eunice Choi](https://github.com/eunicechoi98)
-##### Designer : Rafael Flora
+##### Designer : [Rafael Flora](https://github.com/rahfyehl)
 
 ## Overview
 A team of Microsoft Garage interns have created a proposal for the out-of-box experience after the first time install of the PowerToys app, and a proposal for the UI experience of updates.
