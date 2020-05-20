@@ -44,6 +44,7 @@ namespace Microsoft.Plugin.Indexer
                     Glyph = "\xE8C8",
                     FontFamily = "Segoe MDL2 Assets",
                     SubTitle = $"Copy the current {fileOrFolder} path to clipboard",
+                    AcceleratorKey = Key.C, 
                     AcceleratorModifiers = ModifierKeys.Control,
 
                     Action = (context) =>
