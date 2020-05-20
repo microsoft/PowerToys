@@ -175,7 +175,6 @@ void Trace::SettingsChanged(const Settings& settings) noexcept
         TraceLoggingBoolean(settings.shiftDrag, "ShiftDrag"),
         TraceLoggingBoolean(settings.mouseSwitch, "MouseSwitch"),
         TraceLoggingBoolean(settings.displayChange_moveWindows, "MoveWindowsOnDisplayChange"),
-        TraceLoggingBoolean(settings.virtualDesktopChange_moveWindows, "MoveWindowsOnVirtualDesktopChange"),
         TraceLoggingBoolean(settings.zoneSetChange_flashZones, "FlashZonesOnZoneSetChange"),
         TraceLoggingBoolean(settings.zoneSetChange_moveWindows, "MoveWindowsOnZoneSetChange"),
         TraceLoggingBoolean(settings.overrideSnapHotkeys, "OverrideSnapHotKeys"),

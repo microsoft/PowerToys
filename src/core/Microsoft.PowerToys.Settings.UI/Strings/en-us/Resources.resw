@@ -281,9 +281,6 @@
   <data name="FancyZones_HokeyEditorControl_Header.Header" xml:space="preserve">
     <value>Edit hot key / shortcut</value>
   </data>
-  <data name="FancyZones_KeepWindowsPinned.Content" xml:space="preserve">
-    <value>Keep windows pinned to multiple desktops in the same zone when the active desktop changes</value>
-  </data>
   <data name="FancyZones_LaunchEditorButtonControl_Header.Content" xml:space="preserve">
     <value>Launch Zones Editor</value>
   </data>
@@ -310,9 +307,6 @@
   </data>
   <data name="FancyZones_UseCursorPosEditorStartupScreen.Content" xml:space="preserve">
     <value>Follow mouse cursor instead of focus when launching editor in a multi screen environment</value>
-  </data>
-  <data name="FancyZones_VirtualDesktopChangeMoveWindows.Content" xml:space="preserve">
-    <value>Move newly created windows to their last known zone</value>
   </data>
   <data name="FancyZones_ZoneBehavior_GroupSettings.Text" xml:space="preserve">
     <value>Zone behavior</value>

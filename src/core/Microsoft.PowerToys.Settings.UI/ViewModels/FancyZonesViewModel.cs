@@ -43,7 +43,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             this._moveWindowsAcrossMonitors = Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value;
             this._displayChangemoveWindows = Settings.Properties.FancyzonesDisplayChangeMoveWindows.Value;
             this._zoneSetChangeMoveWindows = Settings.Properties.FancyzonesZoneSetChangeMoveWindows.Value;
-            this._virtualDesktopChangeMoveWindows = Settings.Properties.FancyzonesVirtualDesktopChangeMoveWindows.Value;
             this._appLastZoneMoveWindows = Settings.Properties.FancyzonesAppLastZoneMoveWindows.Value;
             this._useCursorPosEditorStartupScreen = Settings.Properties.UseCursorposEditorStartupscreen.Value;
             this._showOnAllMonitors = Settings.Properties.FancyzonesShowOnAllMonitors.Value;
@@ -82,7 +81,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _moveWindowsAcrossMonitors;
         private bool _displayChangemoveWindows;
         private bool _zoneSetChangeMoveWindows;
-        private bool _virtualDesktopChangeMoveWindows;
         private bool _appLastZoneMoveWindows;
         private bool _useCursorPosEditorStartupScreen;
         private bool _showOnAllMonitors;
@@ -220,24 +218,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _zoneSetChangeMoveWindows = value;
                     Settings.Properties.FancyzonesZoneSetChangeMoveWindows.Value = value;
-                    RaisePropertyChanged();
-                }
-            }
-        }
-
-        public bool VirtualDesktopChangeMoveWindows
-        {
-            get
-            {
-                return _virtualDesktopChangeMoveWindows;
-            }
-
-            set
-            {
-                if (value != _virtualDesktopChangeMoveWindows)
-                {
-                    _virtualDesktopChangeMoveWindows = value;
-                    Settings.Properties.FancyzonesVirtualDesktopChangeMoveWindows.Value = value;
                     RaisePropertyChanged();
                 }
             }
