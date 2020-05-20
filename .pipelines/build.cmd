@@ -4,3 +4,5 @@ call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\Too
 call msbuild ../PowerToys.sln /p:Configuration=Release /p:Platform=x64 || exit /b 1
 call msbuild ../src/common/notifications/notifications_dll.vcxproj /p:Configuration=Release /p:Platform=x64 || exit /b 1
 call msbuild ../src/common/notifications_winrt/notifications.vcxproj /p:Configuration=Release /p:Platform=x64 || exit /b 1
+SET PTRoot=..
+call "..\installer\PowerToysSetup\publish.cmd"
