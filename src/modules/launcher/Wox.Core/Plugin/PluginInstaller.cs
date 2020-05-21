@@ -86,7 +86,7 @@ namespace Wox.Core.Plugin
                                         "Restart Wox to take effect?",
                                         "Install plugin", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                     {
-                        PluginManager.API.RestarApp();
+                        PluginManager.API.RestartApp();
                     }
                 }
             }
