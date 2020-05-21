@@ -74,7 +74,7 @@ namespace FancyZonesUnitTests
             ptSettings.add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, settings.zoneHighlightOpacity, 0, 100, 1);
             ptSettings.add_color_picker(L"fancyzones_zoneColor", IDS_SETTING_DESCRIPTION_ZONECOLOR, settings.zoneColor);
             ptSettings.add_color_picker(L"fancyzones_zoneBorderColor", IDS_SETTING_DESCRIPTION_ZONE_BORDER_COLOR, settings.zoneBorderColor);
-            ptSettings.add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, settings.zoneHightlightColor);
+            ptSettings.add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, settings.zoneHighlightColor);
             ptSettings.add_multiline_string(L"fancyzones_excluded_apps", IDS_SETTING_EXCLUDED_APPS_DESCRIPTION, settings.excludedApps);
 
             return ptSettings.serialize();
@@ -116,7 +116,7 @@ namespace FancyZonesUnitTests
                         .use_cursorpos_editor_startupscreen = true,
                         .zoneColor = L"#abafee",
                         .zoneBorderColor = L"FAFAFA",
-                        .zoneHightlightColor = L"#FAFAFA",
+                        .zoneHighlightColor = L"#FAFAFA",
                         .zoneHighlightOpacity = 45,
                         .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
                         .excludedApps = L"app\r\napp2",
@@ -145,7 +145,7 @@ namespace FancyZonesUnitTests
                         .use_cursorpos_editor_startupscreen = true,
                         .zoneColor = L"#FAFAFA",
                         .zoneBorderColor = L"#abafee",
-                        .zoneHightlightColor = L"#FAFAFA",
+                        .zoneHighlightColor = L"#FAFAFA",
                         .zoneHighlightOpacity = 45,
                         .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
                         .excludedApps = L"app\r\napp2",
@@ -176,7 +176,7 @@ namespace FancyZonesUnitTests
                         .makeDraggedWindowTransparent = true,
                         .zoneColor = L"#FAFAFA",
                         .zoneBorderColor = L"FAFAFA",
-                        .zoneHightlightColor = L"#abafee",
+                        .zoneHighlightColor = L"#abafee",
                         .zoneHighlightOpacity = 45,
                         .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
                         .excludedApps = L"app\r\napp2",
@@ -207,7 +207,7 @@ namespace FancyZonesUnitTests
                         .makeDraggedWindowTransparent = true,
                         .zoneColor = L"#FAFAFA",
                         .zoneBorderColor = L"FAFAFA",
-                        .zoneHightlightColor = L"#abafee",
+                        .zoneHighlightColor = L"#abafee",
                         .zoneHighlightOpacity = expected,
                         .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
                         .excludedApps = L"app\r\napp2",
@@ -238,7 +238,7 @@ namespace FancyZonesUnitTests
                         .makeDraggedWindowTransparent = true,
                         .zoneColor = L"#FAFAFA",
                         .zoneBorderColor = L"FAFAFA",
-                        .zoneHightlightColor = L"#abafee",
+                        .zoneHighlightColor = L"#abafee",
                         .zoneHighlightOpacity = expected,
                         .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
                         .excludedApps = L"app\r\napp2",
@@ -292,7 +292,7 @@ namespace FancyZonesUnitTests
             ptSettings.add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, settings.zoneHighlightOpacity, 0, 100, 1);
             ptSettings.add_color_picker(L"fancyzones_zoneColor", IDS_SETTING_DESCRIPTION_ZONECOLOR, settings.zoneColor);
             ptSettings.add_color_picker(L"fancyzones_zoneBorderColor", IDS_SETTING_DESCRIPTION_ZONE_BORDER_COLOR, settings.zoneBorderColor);
-            ptSettings.add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, settings.zoneHightlightColor);
+            ptSettings.add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, settings.zoneHighlightColor);
             ptSettings.add_multiline_string(L"fancyzones_excluded_apps", IDS_SETTING_EXCLUDED_APPS_DESCRIPTION, settings.excludedApps);
 
             return ptSettings.serialize();
