@@ -864,13 +864,13 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
     }
     auto text_color = D2D1::ColorF(light_mode ? 0x222222 : 0xDDDDDD, active_window_snappable && (minature_shown || window_state == MINIMIZED) ? 1.0f : 0.3f);
     use_overlay->find_element(L"KeyUpGroup")->SetAttributeValue(L"fill-opacity", up_disabled ? 0.3f : 1.0f);
-    text.set_aligment_center().write(d2d_dc, text_color, use_overlay->get_maximize_label(), up);
+    text.set_alignment_center().write(d2d_dc, text_color, use_overlay->get_maximize_label(), up);
     use_overlay->find_element(L"KeyDownGroup")->SetAttributeValue(L"fill-opacity", down_disabled ? 0.3f : 1.0f);
     text.write(d2d_dc, text_color, use_overlay->get_minimize_label(), down);
     use_overlay->find_element(L"KeyLeftGroup")->SetAttributeValue(L"fill-opacity", left_disabled ? 0.3f : 1.0f);
-    text.set_aligment_right().write(d2d_dc, text_color, use_overlay->get_snap_left(), left);
+    text.set_alignment_right().write(d2d_dc, text_color, use_overlay->get_snap_left(), left);
     use_overlay->find_element(L"KeyRightGroup")->SetAttributeValue(L"fill-opacity", right_disabled ? 0.3f : 1.0f);
-    text.set_aligment_left().write(d2d_dc, text_color, use_overlay->get_snap_right(), right);
+    text.set_alignment_left().write(d2d_dc, text_color, use_overlay->get_snap_right(), right);
     // ... and the arrows with numbers
     for (auto&& button : tasklist_buttons)
     {
