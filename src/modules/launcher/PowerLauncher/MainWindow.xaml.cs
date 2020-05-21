@@ -37,7 +37,7 @@ namespace PowerLauncher
         private readonly Storyboard _progressBarStoryboard = new Storyboard();
         private Settings _settings;
         private MainViewModel _viewModel;
-        private bool _isTextSetProgramatically;
+        private bool _isTextSetProgrammatically;
         const int ROW_HEIGHT = 75;
         const int MAX_LIST_HEIGHT = 300;
         bool isDPIChanged = false;
@@ -100,12 +100,12 @@ namespace PowerLauncher
 
         private void QueryTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
-            if (this._isTextSetProgramatically)
+            if (this._isTextSetProgrammatically)
             {
                 var textBox = ((TextBox)sender);
                 textBox.SelectionStart = textBox.Text.Length;
 
-                this._isTextSetProgramatically = false;
+                this._isTextSetProgrammatically = false;
             }
             else
             {
@@ -161,7 +161,7 @@ namespace PowerLauncher
             }
             else if (e.PropertyName == nameof(MainViewModel.SystemQueryText))
             {
-                this._isTextSetProgramatically = true;
+                this._isTextSetProgrammatically = true;
                 SearchBox.QueryTextBox.Text = _viewModel.SystemQueryText;
             }
         }
@@ -435,7 +435,7 @@ namespace PowerLauncher
             return String.Empty;
         }
 
-        private void QueryTextBox_TextChangedProgramatically(object sender, Windows.UI.Xaml.Controls.TextChangedEventArgs e)
+        private void QueryTextBox_TextChangedProgrammatically(object sender, Windows.UI.Xaml.Controls.TextChangedEventArgs e)
         {
             
         }
