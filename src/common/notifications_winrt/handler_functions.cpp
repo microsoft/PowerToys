@@ -11,7 +11,7 @@ namespace
     const std::unordered_map<std::wstring_view, handler_function_t> handlers_map;
 }
 
-void dispatch_to_backround_handler(std::wstring_view argument)
+void dispatch_to_background_handler(std::wstring_view argument)
 {
     winrt::Windows::Foundation::WwwFormUrlDecoder decoder{ argument };
 
