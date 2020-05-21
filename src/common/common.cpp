@@ -171,17 +171,17 @@ ShortcutGuideFilter get_shortcutguide_filtered_window()
     {
         return result;
     }
-    static HWND cortanda_hwnd = nullptr;
-    if (cortanda_hwnd == nullptr)
+    static HWND cortana_hwnd = nullptr;
+    if (cortana_hwnd == nullptr)
     {
         if (strcmp(class_name.data(), "Windows.UI.Core.CoreWindow") == 0 &&
             get_process_path(active_window).ends_with(L"SearchUI.exe"))
         {
-            cortanda_hwnd = active_window;
+            cortana_hwnd = active_window;
             return result;
         }
     }
-    else if (cortanda_hwnd == active_window)
+    else if (cortana_hwnd == active_window)
     {
         return result;
     }
