@@ -114,14 +114,14 @@ namespace ViewModelTests
         {
             // arrange
             ImageResizerViewModel viewModel = new ImageResizerViewModel();
-            string exptectedValue = "%1 (%3)";
+            string expectedValue = "%1 (%3)";
 
             // act
-            viewModel.FileName = exptectedValue;
+            viewModel.FileName = expectedValue;
 
             // Assert
             viewModel = new ImageResizerViewModel();
-            Assert.AreEqual(exptectedValue, viewModel.FileName);
+            Assert.AreEqual(expectedValue, viewModel.FileName);
         }
 
         [TestMethod]
