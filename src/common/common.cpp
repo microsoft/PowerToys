@@ -7,6 +7,7 @@
 #include "version.h"
 
 #include <wil/resource.h>
+#include <winrt/Windows.Foundation.Metadata.h>
 
 #pragma comment(lib, "advapi32.lib")
 #pragma comment(lib, "shlwapi.lib")
@@ -803,4 +804,23 @@ std::optional<std::string> exec_and_read_output(const std::wstring_view command,
 
     CloseHandle(piProcInfo.hProcess);
     return childOutput;
+}
+
+bool IsAPIContractVxAvailable(uint16_t APIVersion)
+{
+    static bool isAPIContractVxAvailableInitialized = false;
+    static bool isAPIContractVxAvailable = false;
+
+    if (!isAPIContractVxAvailableInitialized)
+    {
+        isAPIContractVxAvailableInitialized = true;
+        isAPIContractVxAvailable = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", APIVersion);
+    }
+
+    return isAPIContractVxAvailable;
+}
+
+bool Is19H1OrHigher()
+{
+    return IsAPIContractVxAvailable(8);
 }

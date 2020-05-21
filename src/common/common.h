@@ -138,3 +138,5 @@ template<class... Ts>
 overloaded(Ts...)->overloaded<Ts...>;
 
 #define POWER_LAUNCHER_PID_SHARED_FILE L"Global\\3cbfbad4-199b-4e2c-9825-942d5d3d3c74"
+
+bool Is19H1OrHigher();

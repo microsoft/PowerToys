@@ -132,6 +132,11 @@ public:
    // Enable the powertoy
   virtual void enable()
   {
+      if (Is19H1OrHigher() == false)
+      {
+          return;
+      }
+
       if (is_process_elevated(false) == false)
       {
           SHELLEXECUTEINFOW sei{ sizeof(sei) };

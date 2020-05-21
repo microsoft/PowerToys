@@ -14,7 +14,6 @@
 
 #include <common/json.h>
 #include <common\settings_helpers.cpp>
-#include <os-detect.h>
 
 #define BUFSIZE 1024
 
@@ -228,7 +227,7 @@ void run_settings_window()
     // Arg 1: executable path.
     std::wstring executable_path = get_module_folderpath();
 
-    if (UseNewSettings())
+    if (Is19H1OrHigher())
     {
         executable_path.append(L"\\SettingsUIRunner\\Microsoft.PowerToys.Settings.UI.Runner.exe");
     }
