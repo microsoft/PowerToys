@@ -694,7 +694,7 @@
         <Condition>INSTALLDESKTOPSHORTCUT</Condition>
         <RegistryValue Root="HKCU"
                         Key="Software\[Manufacturer]\[ProductName]"
-                        Name="desktopshorcutinstalled"
+                        Name="desktopshortcutinstalled"
                         Type="integer"
                         Value="1"
                         KeyPath="yes"/>
