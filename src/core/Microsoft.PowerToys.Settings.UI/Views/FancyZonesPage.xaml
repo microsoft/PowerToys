@@ -131,7 +131,7 @@
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
 
-            <TextBlock x:Uid="Appearancce_GroupSettings"
+            <TextBlock x:Uid="Appearance_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <!-- TO DO: Do we still need this numberbox? The colorpicker has an Alpha/Opacity option as well so we could use that -->
