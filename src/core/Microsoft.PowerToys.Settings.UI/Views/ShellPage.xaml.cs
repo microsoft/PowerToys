@@ -59,19 +59,19 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <summary>
         /// Set Default IPC Message callback function.
         /// </summary>
-        /// <param name="implmentation">delegate function implementation.</param>
-        public void SetDefaultSndMessageCallback(IPCMessageCallback implmentation)
+        /// <param name="implementation">delegate function implementation.</param>
+        public void SetDefaultSndMessageCallback(IPCMessageCallback implementation)
         {
-            DefaultSndMSGCallback = implmentation;
+            DefaultSndMSGCallback = implementation;
         }
 
         /// <summary>
         /// Set restart as admin IPC callback function.
         /// </summary>
-        /// <param name="implmentation">delegate function implementation.</param>
-        public void SetRestartAdminSndMessageCallback(IPCMessageCallback implmentation)
+        /// <param name="implementation">delegate function implementation.</param>
+        public void SetRestartAdminSndMessageCallback(IPCMessageCallback implementation)
         {
-            SndRestartAsAdminMsgCallback = implmentation;
+            SndRestartAsAdminMsgCallback = implementation;
         }
 
         public void SetElevationStatus(bool isElevated)
