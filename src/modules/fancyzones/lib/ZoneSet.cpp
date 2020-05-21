@@ -575,12 +575,12 @@ bool ZoneSet::CalculateUniquePriorityGridLayout(Rect workArea, int zoneCount, in
 
 bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
 {
-    wil::unique_cotaskmem_string guuidStr;
-    if (SUCCEEDED_LOG(StringFromCLSID(m_config.Id, &guuidStr)))
+    wil::unique_cotaskmem_string guidStr;
+    if (SUCCEEDED_LOG(StringFromCLSID(m_config.Id, &guidStr)))
     {
-        const std::wstring guuid = guuidStr.get();
+        const std::wstring guid = guidStr.get();
 
-        const auto zoneSetSearchResult = JSONHelpers::FancyZonesDataInstance().FindCustomZoneSet(guuid);
+        const auto zoneSetSearchResult = JSONHelpers::FancyZonesDataInstance().FindCustomZoneSet(guid);
 
         if (!zoneSetSearchResult.has_value())
         {
