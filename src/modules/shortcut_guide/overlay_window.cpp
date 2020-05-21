@@ -755,8 +755,8 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
     }
 
     // Set the animation - move the draw window according to animation step
-    auto popin = D2D1::Matrix3x2F::Translation((float)x_offset, (float)y_offset);
-    d2d_dc->SetTransform(popin);
+    auto popIn = D2D1::Matrix3x2F::Translation((float)x_offset, (float)y_offset);
+    d2d_dc->SetTransform(popIn);
 
     // Animate keys
     for (unsigned id = 0; id < key_animations.size();)
