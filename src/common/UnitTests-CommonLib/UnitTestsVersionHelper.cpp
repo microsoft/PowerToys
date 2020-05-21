@@ -13,7 +13,7 @@ namespace UnitTestsVersionHelper
     TEST_CLASS (UnitTestsVersionHelper)
     {
     public:
-        TEST_METHOD (integerConstructorShouldProprelyInitializateVersionNumbers)
+        TEST_METHOD (integerConstructorShouldProprelyInitializationVersionNumbers)
         {
             VersionHelper sut(MAJOR_VERSION_0, MINOR_VERSION_12, REVISION_VERSION_0);
 
@@ -21,7 +21,7 @@ namespace UnitTestsVersionHelper
             Assert::AreEqual(MINOR_VERSION_12, sut.minor);
             Assert::AreEqual(REVISION_VERSION_0, sut.revision);
         }
-        TEST_METHOD (integerConstructorShouldProprelyInitializateWithDifferentVersionNumbers)
+        TEST_METHOD (integerConstructorShouldProprelyInitializationWithDifferentVersionNumbers)
         {
             const int testcaseMajor = 2;
             const int testcaseMinor = 25;
@@ -32,7 +32,7 @@ namespace UnitTestsVersionHelper
             Assert::AreEqual(testcaseMinor, sut.minor);
             Assert::AreEqual(testcaseRevision, sut.revision);
         }
-        TEST_METHOD (stringConstructorShouldProprelyInitializateVersionNumbers)
+        TEST_METHOD (stringConstructorShouldProprelyInitializationVersionNumbers)
         {
             VersionHelper sut("v0.12.3");
 
@@ -40,7 +40,7 @@ namespace UnitTestsVersionHelper
             Assert::AreEqual(12, sut.minor);
             Assert::AreEqual(3, sut.revision);
         }
-        TEST_METHOD (stringConstructorShouldProprelyInitializateWithDifferentVersionNumbers)
+        TEST_METHOD (stringConstructorShouldProprelyInitializationWithDifferentVersionNumbers)
         {
             VersionHelper sut("v2.25.1");
 
