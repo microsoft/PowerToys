@@ -18,7 +18,7 @@
 - When the PR is approved, let the owner of the PR merge it. For community contributions the reviewer that approved the PR can also merge it.
 - Use the `Squash and merge` option to merge a PR, if you don't want to squash it because there are logically different commits, use `Rebase and merge`.
 - We don't close issues automatically when referenced in a PR, so after the PR is merged:
-  - mark the issue(s), that the PR solved, with the `Resolution-Fix-Commited` label, remove the `In progress` label and if the issue is assigned to a project, move the item to the `Done` status.
+  - mark the issue(s), that the PR solved, with the `Resolution-Fix-Committed` label, remove the `In progress` label and if the issue is assigned to a project, move the item to the `Done` status.
   - don't close the issue if it's a bug in the current released version since users tend to not search for closed issues, we will close the resolved issues when a new version is released.
   - if it's not a code fix that effects the end user, the issue can be closed (for example a fix in the build or a code refactoring and so on).
 
