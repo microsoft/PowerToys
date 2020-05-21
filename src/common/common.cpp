@@ -461,7 +461,7 @@ bool run_elevated(const std::wstring& file, const std::wstring& params)
     }
 }
 
-bool run_non_elevated(const std::wstring& file, const std::wstring& params)
+bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid)
 {
     auto executable_args = L"\"" + file + L"\"";
     if (!params.empty())
@@ -521,8 +521,14 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params)
                                     nullptr,
                                     &siex.StartupInfo,
                                     &process_info);
+
     if (process_info.hProcess)
     {
+        if (returnPid)
+        {
+            *returnPid = GetProcessId(process_info.hProcess);
+        }
+
         CloseHandle(process_info.hProcess);
     }
     if (process_info.hThread)

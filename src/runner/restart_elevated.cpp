@@ -36,7 +36,7 @@ bool restart_if_scheduled()
     case RestartAsElevated:
         return run_elevated(exe_path.get(), {});
     case RestartAsNonElevated:
-        return run_non_elevated(exe_path.get(), L"--dont-elevate");
+        return run_non_elevated(exe_path.get(), L"--dont-elevate", NULL);
     default:
         return false;
     }

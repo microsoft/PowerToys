@@ -151,9 +151,27 @@ public:
           sei.lpFile = action_runner_path.c_str();
           sei.nShow = SW_SHOWNORMAL;
           sei.lpParameters = L"-start_PowerLauncher";
+ 
+          // Set up the shared file from which to retrieve the PID of PowerLauncher
+          HANDLE hMapFile = CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(DWORD), POWER_LAUNCHER_PID_SHARED_FILE);
+          PDWORD pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
+          *pidBuffer = 0;
+          m_hProcess = NULL;
           ShellExecuteExW(&sei);
+          
+          const int maxRetries = 20;
+          for (int retry = 0; retry < maxRetries; ++retry)
+          {
+              Sleep(50);
+              DWORD pid = *pidBuffer;
+              if (pid)
+              {
+                  m_hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+                  break;
+              }
+          }
 
-          // TODO: retrieve the hProcess of PowerLauncher
+          CloseHandle(hMapFile);
       }
 
       m_enabled = true;
