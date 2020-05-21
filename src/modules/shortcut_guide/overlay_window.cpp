@@ -315,7 +315,7 @@ void D2DOverlayWindow::animate(int vk_code, int offset)
     AnimateKeys animation;
     std::wstring id;
     animation.vk_code = vk_code;
-    winrt::com_ptr<ID2D1SvgElement> button_letter, parrent;
+    winrt::com_ptr<ID2D1SvgElement> button_letter, parent;
     if (vk_code >= 0x41 && vk_code <= 0x5A)
     {
         id.push_back('A' + (vk_code - 0x41));
@@ -373,16 +373,16 @@ void D2DOverlayWindow::animate(int vk_code, int offset)
     {
         return;
     }
-    button_letter->GetParent(parrent.put());
-    if (!parrent)
+    button_letter->GetParent(parent.put());
+    if (!parent)
     {
         return;
     }
-    parrent->GetPreviousChild(button_letter.get(), animation.button.put());
+    parent->GetPreviousChild(button_letter.get(), animation.button.put());
     if (!animation.button || !animation.button->IsAttributeSpecified(L"fill"))
     {
         animation.button = nullptr;
-        parrent->GetNextChild(button_letter.get(), animation.button.put());
+        parent->GetNextChild(button_letter.get(), animation.button.put());
     }
     if (!animation.button || !animation.button->IsAttributeSpecified(L"fill"))
     {
