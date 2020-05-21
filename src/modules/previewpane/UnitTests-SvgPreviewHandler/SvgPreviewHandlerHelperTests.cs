@@ -12,7 +12,7 @@ namespace UnitTests_SvgPreviewHandler
     public class SvgPreviewHandlerHelperTests
     {
         [TestMethod]
-        public void CheckBlockedElements_ShoudReturnTrue_IfABlockedElementIsPresent()
+        public void CheckBlockedElements_ShouldReturnTrue_IfABlockedElementIsPresent()
         {
             // Arrange
             var svgBuilder = new StringBuilder();
@@ -29,7 +29,7 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void CheckBlockedElements_ShoudReturnTrue_IfBlockedElementsIsPresentInNestedLevel()
+        public void CheckBlockedElements_ShouldReturnTrue_IfBlockedElementsIsPresentInNestedLevel()
         {
             // Arrange
             var svgBuilder = new StringBuilder();
@@ -48,7 +48,7 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void CheckBlockedElements_ShoudReturnTrue_IfMultipleBlockedElementsArePresent()
+        public void CheckBlockedElements_ShouldReturnTrue_IfMultipleBlockedElementsArePresent()
         {
             // Arrange
             var svgBuilder = new StringBuilder();
@@ -66,7 +66,7 @@ namespace UnitTests_SvgPreviewHandler
         }
 
         [TestMethod]
-        public void CheckBlockedElements_ShoudReturnFalse_IfNoBlockedElementsArePresent()
+        public void CheckBlockedElements_ShouldReturnFalse_IfNoBlockedElementsArePresent()
         {
             // Arrange
             var svgBuilder = new StringBuilder();
@@ -87,7 +87,7 @@ namespace UnitTests_SvgPreviewHandler
         [DataRow("")]
         [DataRow("  ")]
         [DataRow(null)]
-        public void CheckBlockedElements_ShoudReturnFalse_IfSvgDataIsNullOrWhiteSpaces(string svgData)
+        public void CheckBlockedElements_ShouldReturnFalse_IfSvgDataIsNullOrWhiteSpaces(string svgData)
         {
             // Arrange
             bool foundFilteredElement;
