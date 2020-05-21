@@ -3,6 +3,7 @@
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <interface/win_hook_event_data.h>
 #include <common/settings_objects.h>
+#include <common/common.h>
 #include "trace.h"
 #include "resource.h"
 
@@ -131,13 +132,29 @@ public:
    // Enable the powertoy
   virtual void enable()
   {
-      SHELLEXECUTEINFO sei{ sizeof(sei) };
-      sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-      sei.lpFile = L"modules\\launcher\\PowerLauncher.exe";
-      sei.nShow = SW_SHOWNORMAL;
-      ShellExecuteEx(&sei);
+      if (is_process_elevated(false) == false)
+      {
+          SHELLEXECUTEINFOW sei{ sizeof(sei) };
+          sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+          sei.lpFile = L"modules\\launcher\\PowerLauncher.exe";
+          sei.nShow = SW_SHOWNORMAL;
+          ShellExecuteExW(&sei);
 
-      m_hProcess = sei.hProcess;
+          m_hProcess = sei.hProcess;
+      }
+      else
+      {
+          std::wstring action_runner_path = get_module_folderpath();
+          action_runner_path += L"\\action_runner.exe";
+          SHELLEXECUTEINFOW sei{ sizeof(sei) };
+          sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC };
+          sei.lpFile = action_runner_path.c_str();
+          sei.nShow = SW_SHOWNORMAL;
+          sei.lpParameters = L"-start_PowerLauncher";
+          ShellExecuteExW(&sei);
+
+          // TODO: retrieve the hProcess of PowerLauncher
+      }
 
       m_enabled = true;
   }

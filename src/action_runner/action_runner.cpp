@@ -186,7 +186,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
     std::wstring_view action{ args[1] };
 
-    if (action == L"-install_dotnet")
+
+    if (action == L"-start_PowerLauncher")
+    {
+        if (is_process_elevated(false) == true)
+        {
+            drop_elevated_privileges();
+        }
+
+        run_non_elevated(L"modules\\launcher\\PowerLauncher.exe", L"");
+    }
+    else if (action == L"-install_dotnet")
     {
         if (dotnet_is_installed())
         {
