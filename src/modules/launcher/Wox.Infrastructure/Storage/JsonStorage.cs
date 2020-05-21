@@ -35,10 +35,10 @@ namespace Wox.Infrastructure.Storage
         {
             if (File.Exists(FilePath))
             {
-                var searlized = File.ReadAllText(FilePath);
-                if (!string.IsNullOrWhiteSpace(searlized))
+                var serialized = File.ReadAllText(FilePath);
+                if (!string.IsNullOrWhiteSpace(serialized))
                 {
-                    Deserialize(searlized);
+                    Deserialize(serialized);
                 }
                 else
                 {
@@ -52,11 +52,11 @@ namespace Wox.Infrastructure.Storage
             return _data.NonNull();
         }
 
-        private void Deserialize(string searlized)
+        private void Deserialize(string serialized)
         {
             try
             {
-                _data = JsonConvert.DeserializeObject<T>(searlized, _serializerSettings);
+                _data = JsonConvert.DeserializeObject<T>(serialized, _serializerSettings);
             }
             catch (JsonException e)
             {
