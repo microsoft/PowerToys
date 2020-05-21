@@ -362,7 +362,7 @@
   <data name="PowerRename_Description.Text" xml:space="preserve">
     <value>A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.</value>
   </data>
-  <data name="PowerRename_ShellIntergration.Text" xml:space="preserve">
+  <data name="PowerRename_ShellIntegration.Text" xml:space="preserve">
     <value>Shell integration</value>
   </data>
   <data name="PowerRename_Toggle_Enable.Header" xml:space="preserve">
