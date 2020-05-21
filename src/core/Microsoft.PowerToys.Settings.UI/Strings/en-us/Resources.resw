@@ -543,7 +543,7 @@
     <value>Running as user</value>
   </data>
   <data name="GeneralSettings_RunningAsAdminText" xml:space="preserve">
-    <value>Running as adminstrator</value>
+    <value>Running as administrator</value>
   </data>
   <data name="About_FancyZones.Text" xml:space="preserve">
     <value>About FancyZones</value>
