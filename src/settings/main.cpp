@@ -511,7 +511,7 @@ bool initialize_com_security_policy_for_webview()
         return false;
     }
 
-    on_scope_exit free_realtive_sd([&] {
+    on_scope_exit free_relative_sd([&] {
         LocalFree(self_relative_sd);
     });
 
