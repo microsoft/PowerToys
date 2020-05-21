@@ -146,17 +146,17 @@ namespace Wox.Core.Plugin
         /// <summary>
         /// unzip 
         /// </summary>
-        /// <param name="zipedFile">The ziped file.</param>
+        /// <param name="zippedFile">The zipped file.</param>
         /// <param name="strDirectory">The STR directory.</param>
         /// <param name="overWrite">overwrite</param>
-        private static void UnZip(string zipedFile, string strDirectory, bool overWrite)
+        private static void UnZip(string zippedFile, string strDirectory, bool overWrite)
         {
             if (strDirectory == "")
                 strDirectory = Directory.GetCurrentDirectory();
             if (!strDirectory.EndsWith("\\"))
                 strDirectory = strDirectory + "\\";
 
-            using (ZipInputStream s = new ZipInputStream(File.OpenRead(zipedFile)))
+            using (ZipInputStream s = new ZipInputStream(File.OpenRead(zippedFile)))
             {
                 ZipEntry theEntry;
 
