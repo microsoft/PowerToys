@@ -321,7 +321,7 @@ WindowState get_window_state(HWND hwnd)
 
     if (GetWindowPlacement(hwnd, &placement) == 0)
     {
-        return UNKNONW;
+        return UNKNOWN;
     }
 
     if (placement.showCmd == SW_MINIMIZE || placement.showCmd == SW_SHOWMINIMIZED || IsIconic(hwnd))
@@ -337,7 +337,7 @@ WindowState get_window_state(HWND hwnd)
     auto rectp = get_window_pos(hwnd);
     if (!rectp)
     {
-        return UNKNONW;
+        return UNKNOWN;
     }
 
     auto rect = *rectp;

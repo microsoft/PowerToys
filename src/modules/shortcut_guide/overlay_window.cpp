@@ -751,7 +751,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
     if (!minature_shown && window_state != MINIMIZED)
     {
         no_active.render(d2d_dc);
-        window_state = UNKNONW;
+        window_state = UNKNOWN;
     }
 
     // Set the animation - move the draw window according to animation step
