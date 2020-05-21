@@ -9,7 +9,7 @@ namespace Wox.Infrastructure.Storage
     /// <summary>
     /// Serialize object using json format.
     /// </summary>
-    public class JsonStrorage<T>
+    public class JsonStorage<T>
     {
         private readonly JsonSerializerSettings _serializerSettings;
         private T _data;
@@ -20,7 +20,7 @@ namespace Wox.Infrastructure.Storage
         public string DirectoryPath { get; set; }
 
 
-        internal JsonStrorage()
+        internal JsonStorage()
         {
             // use property initialization instead of DefaultValueAttribute
             // easier and flexible for default value of object
@@ -61,7 +61,7 @@ namespace Wox.Infrastructure.Storage
             catch (JsonException e)
             {
                 LoadDefault();
-                Log.Exception($"|JsonStrorage.Deserialize|Deserialize error for json <{FilePath}>", e);
+                Log.Exception($"|JsonStorage.Deserialize|Deserialize error for json <{FilePath}>", e);
             }
 
             if (_data == null)
