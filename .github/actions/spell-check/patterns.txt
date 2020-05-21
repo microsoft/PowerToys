@@ -1,0 +1,29 @@
+https?://(?:(?:www\.|)youtube\.com|youtu.be)/[-a-zA-Z0-9?&=]*
+://github\.(?:com|blog)/[^\w")]+
+://githubusercontent\.com/[^\w")]+
+data:[a-zA-Z=;,/0-9+-]+
+0x[0-9a-fA-F](?:\.[0-9a-fA-F]*|)[pP]
+(?:0[Xx]|U\+|#)[a-f0-9A-FGgRr]{2,}[Uu]?[Ll]{0,2}\b
+[{"][0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}"]
+\b([A-Za-z])\1{3,}\b
+(?:L"[abAB]+", ){3}L"[abAB]+"
+"Lorem[^"]+?\."
+TestCase\("[^"]+"
+
+# Windows paths
+\\native
+\\notifications
+\\recyclebin
+\\reinstall
+\\Resize
+\\resource
+\\Resources
+\\restart
+\\restore
+\\result
+\\runner
+\\Telemetry
+\\telemetry
+\\testapp
+\\tests
+\\tools
