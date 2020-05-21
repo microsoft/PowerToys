@@ -422,7 +422,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::handle_pipe_connection(HAND
 
     HeapFree(hHeap, 0, pchRequest);
 
-    printf("InstanceThread exitting.\n");
+    printf("InstanceThread exiting.\n");
 }
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HANDLE token)
