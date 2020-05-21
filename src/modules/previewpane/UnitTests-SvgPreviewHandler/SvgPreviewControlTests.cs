@@ -158,15 +158,15 @@ namespace UnitTests_SvgPreviewHandler
                 svgPreviewControl.DoPreview(mockStream.Object);
                 var textBox = svgPreviewControl.Controls[0] as RichTextBox;
                 var incrementParentControlWidth = 5;
-                var intialParentWidth = svgPreviewControl.Width;
-                var intitialTextBoxWidth = textBox.Width;
-                var finalParentWidth = intialParentWidth + incrementParentControlWidth;
+                var initialParentWidth = svgPreviewControl.Width;
+                var initialTextBoxWidth = textBox.Width;
+                var finalParentWidth = initialParentWidth + incrementParentControlWidth;
 
                 // Act
                 svgPreviewControl.Width += incrementParentControlWidth;
 
                 // Assert
-                Assert.AreEqual(intialParentWidth, intitialTextBoxWidth);
+                Assert.AreEqual(initialParentWidth, initialTextBoxWidth);
                 Assert.AreEqual(finalParentWidth, textBox.Width);
             }
         }
@@ -226,15 +226,15 @@ namespace UnitTests_SvgPreviewHandler
                 svgPreviewControl.DoPreview(GetMockStream(svgBuilder.ToString()));
                 var textBox = svgPreviewControl.Controls[0] as RichTextBox;
                 var incrementParentControlWidth = 5;
-                var intialParentWidth = svgPreviewControl.Width;
-                var intitialTextBoxWidth = textBox.Width;
-                var finalParentWidth = intialParentWidth + incrementParentControlWidth;
+                var initialParentWidth = svgPreviewControl.Width;
+                var initialTextBoxWidth = textBox.Width;
+                var finalParentWidth = initialParentWidth + incrementParentControlWidth;
 
                 // Act
                 svgPreviewControl.Width += incrementParentControlWidth;
 
                 // Assert
-                Assert.AreEqual(intialParentWidth, intitialTextBoxWidth);
+                Assert.AreEqual(initialParentWidth, initialTextBoxWidth);
                 Assert.AreEqual(finalParentWidth, textBox.Width);
             }
         }
