@@ -383,10 +383,10 @@
   <data name="PowerRename_Toggle_RestoreFlagsOnLaunch.Header" xml:space="preserve">
     <value>Show values from last use</value>
   </data>
-  <data name="FileEplorerPreview_ToggleSwitch_Preview_MD.Header" xml:space="preserve">
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_MD.Header" xml:space="preserve">
     <value>Enable Markdown (.md) preview</value>
   </data>
-  <data name="FileEplorerPreview_ToggleSwitch_Preview_SVG.Header" xml:space="preserve">
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Header" xml:space="preserve">
     <value>Enable SVG (.svg) preview</value>
   </data>
   <data name="FileExplorerPreview_Description.Text" xml:space="preserve">
