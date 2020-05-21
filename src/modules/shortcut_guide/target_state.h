@@ -29,7 +29,7 @@ private:
     void thread_proc();
     std::mutex mutex;
     std::condition_variable cv;
-    std::chrono::system_clock::time_point winkey_timestamp, singnal_timestamp;
+    std::chrono::system_clock::time_point winkey_timestamp, signal_timestamp;
     std::chrono::milliseconds delay;
     std::deque<KeyEvent> events;
     enum
