@@ -166,7 +166,7 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
     }
     else if (m_zoneWindowMoveSize)
     {
-        m_zoneWindowMoveSize->RestoreOrginalTransparency();
+        m_zoneWindowMoveSize->RestoreOriginalTransparency();
         m_zoneWindowMoveSize = nullptr;
         for (auto [keyMonitor, zoneWindow] : zoneWindowMap)
         {
@@ -200,7 +200,7 @@ void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptS
             {
                 if (zoneWindow)
                 {
-                    zoneWindow->RestoreOrginalTransparency();
+                    zoneWindow->RestoreOriginalTransparency();
                     zoneWindow->HideZoneWindow();
                 }
             }
@@ -213,7 +213,7 @@ void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptS
                 if (iter->second != m_zoneWindowMoveSize)
                 {
                     // The drag has moved to a different monitor.
-                    m_zoneWindowMoveSize->RestoreOrginalTransparency();
+                    m_zoneWindowMoveSize->RestoreOriginalTransparency();
 
                     if (!m_settings->GetSettings()->showZonesOnAllMonitors)
                     {
