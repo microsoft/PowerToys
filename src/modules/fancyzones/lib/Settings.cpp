@@ -81,7 +81,7 @@ IFACEMETHODIMP_(bool) FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ in
 
     for (auto const& setting : m_configBools)
     {
-        settings.add_bool_toogle(setting.name, setting.resourceId, *setting.value);
+        settings.add_bool_toggle(setting.name, setting.resourceId, *setting.value);
     }
 
     settings.add_color_picker(m_zoneHiglightName, IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, m_settings.zoneHightlightColor);

@@ -22,8 +22,8 @@ namespace PowerToysSettings
         void set_video_link(std::wstring_view video_link);
 
         // Add properties to the PowerToy settings.
-        void add_bool_toogle(std::wstring_view name, UINT description_resource_id, bool value);
-        void add_bool_toogle(std::wstring_view name, std::wstring_view description, bool value);
+        void add_bool_toggle(std::wstring_view name, UINT description_resource_id, bool value);
+        void add_bool_toggle(std::wstring_view name, std::wstring_view description, bool value);
 
         void add_int_spinner(std::wstring_view name, UINT description_resource_id, int value, int min, int max, int step);
         void add_int_spinner(std::wstring_view name, std::wstring_view description, int value, int min, int max, int step);

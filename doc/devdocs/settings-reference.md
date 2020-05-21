@@ -204,7 +204,7 @@ declared in [`settings_helpers.h`](/src/common/settings_helpers.h).
 
 ### Bool toggle
 ```c++
-add_bool_toogle(name, description, value) 
+add_bool_toggle(name, description, value) 
 ```
 A simple on-off toggle. Parameters:
   * `name` - Key for the element in the JSON.
@@ -213,7 +213,7 @@ A simple on-off toggle. Parameters:
 
 This C++:
 ```c++
-settings.add_bool_toogle(L"bool_name", L"description", true);
+settings.add_bool_toggle(L"bool_name", L"description", true);
 ```
 produces this settings element:
 
