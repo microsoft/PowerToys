@@ -15,7 +15,7 @@ namespace
     }
 }
 
-SystemMenuHelper& SystemMenuHelperInstace()
+SystemMenuHelper& SystemMenuHelperInstance()
 {
     static SystemMenuHelper instance;
     return instance;
