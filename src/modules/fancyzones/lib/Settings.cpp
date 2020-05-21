@@ -90,7 +90,7 @@ IFACEMETHODIMP_(bool) FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ in
     
     settings.add_int_spinner(m_zoneHighlightOpacity, IDS_SETTINGS_HIGHLIGHT_OPACITY, m_settings.zoneHighlightOpacity, 0, 100, 1);
     
-    settings.add_multiline_string(m_excludedAppsName, IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION, m_settings.excludedApps);
+    settings.add_multiline_string(m_excludedAppsName, IDS_SETTING_EXCLUDED_APPS_DESCRIPTION, m_settings.excludedApps);
 
     return settings.serialize_to_buffer(buffer, buffer_size);
 }
