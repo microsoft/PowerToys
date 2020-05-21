@@ -108,7 +108,7 @@ namespace Microsoft.Plugin.Program.Programs
             else
             {
                 ProgramLogger.LogException($"|UWP|XmlNamespaces|{path}" +
-                                                $"|Error occured while trying to get the XML from {path}", new ArgumentNullException());
+                                                $"|Error occurred while trying to get the XML from {path}", new ArgumentNullException());
 
                 return new string[] { };
             }
@@ -155,7 +155,7 @@ namespace Microsoft.Plugin.Program.Programs
 #if !DEBUG
                     catch (Exception e)
                     {
-                        ProgramLogger.LogException($"|UWP|All|{p.InstalledLocation}|An unexpected error occured and "
+                        ProgramLogger.LogException($"|UWP|All|{p.InstalledLocation}|An unexpected error occurred and "
                                                         + $"unable to convert Package to UWP for {p.Id.FullName}", e);
                         return new Application[] { };
                     }
@@ -203,7 +203,7 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                     catch (Exception e)
                     {
-                        ProgramLogger.LogException("UWP" ,"CurrentUserPackages", $"id","An unexpected error occured and "
+                        ProgramLogger.LogException("UWP" ,"CurrentUserPackages", $"id","An unexpected error occurred and "
                                                    + $"unable to verify if package is valid", e);
                         return false;
                     }
