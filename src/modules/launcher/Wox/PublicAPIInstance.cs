@@ -52,7 +52,7 @@ namespace Wox
             Application.Current.MainWindow.Close();
         }
 
-        public void RestarApp()
+        public void RestartApp()
         {
             _mainVM.MainWindowVisibility = Visibility.Hidden;
 
