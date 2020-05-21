@@ -29,7 +29,7 @@ namespace Wox.Core.Resource
         {
             _themeDirectories.Add(DirectoryPath);
             _themeDirectories.Add(UserDirectoryPath);
-            MakesureThemeDirectoriesExist();
+            MakeSureThemeDirectoriesExist();
 
             var dicts = Application.Current.Resources.MergedDictionaries;
             _oldResource = dicts.First(d =>
@@ -45,7 +45,7 @@ namespace Wox.Core.Resource
             _oldTheme = Path.GetFileNameWithoutExtension(_oldResource.Source.AbsolutePath);
         }
 
-        private void MakesureThemeDirectoriesExist()
+        private void MakeSureThemeDirectoriesExist()
         {
             foreach (string dir in _themeDirectories)
             {
@@ -57,7 +57,7 @@ namespace Wox.Core.Resource
                     }
                     catch (Exception e)
                     {
-                        Log.Exception($"|Theme.MakesureThemeDirectoriesExist|Exception when create directory <{dir}>", e);
+                        Log.Exception($"|Theme.MakeSureThemeDirectoriesExist|Exception when create directory <{dir}>", e);
                     }
                 }
             }
