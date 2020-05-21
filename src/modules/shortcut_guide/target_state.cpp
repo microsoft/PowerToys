@@ -57,7 +57,7 @@ bool TargetState::signal_event(unsigned vk_code, bool key_down)
     return supress;
 }
 
-void TargetState::was_hiden()
+void TargetState::was_hidden()
 {
     std::unique_lock<std::mutex> lock(mutex);
     state = Hidden;

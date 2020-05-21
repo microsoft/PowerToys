@@ -17,7 +17,7 @@ class TargetState
 public:
     TargetState(int ms_delay);
     bool signal_event(unsigned vk_code, bool key_down);
-    void was_hiden();
+    void was_hidden();
     void exit();
     void set_delay(int ms_delay);
 
