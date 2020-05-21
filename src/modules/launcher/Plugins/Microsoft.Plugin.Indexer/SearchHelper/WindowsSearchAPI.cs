@@ -36,11 +36,12 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                         {
                             while (WDSResults.Read())
                             {
-                                if(WDSResults.GetValue(0) != DBNull.Value && WDSResults.GetValue(1) != DBNull.Value)
+                                if (WDSResults.GetValue(0) != DBNull.Value && WDSResults.GetValue(1) != DBNull.Value)
                                 {
+                                    var uri_path = new Uri(WDSResults.GetString(0));
                                     var result = new SearchResult
                                     {
-                                        Path = WDSResults.GetString(0),
+                                        Path = uri_path.LocalPath,
                                         Title = WDSResults.GetString(1)
                                     };
                                     _Result.Add(result);
@@ -90,7 +91,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             queryHelper.QueryMaxResults = maxCount;
 
             // Set list of columns we want to display, getting the path presently
-            queryHelper.QuerySelectColumns = "System.ItemPathDisplay, System.FileName";
+            queryHelper.QuerySelectColumns = "System.ItemUrl, System.FileName";
 
             // Set additional query restriction
             queryHelper.QueryWhereRestrictions = "AND scope='file:'";
