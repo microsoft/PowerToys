@@ -83,7 +83,7 @@ interface __declspec(uuid("{5C8D99D6-34B2-4F4A-A8E5-7483F6869775}")) IZoneWindow
     /**
      * @returns Boolean indicating if dragged window should be transparrent.
      */
-    IFACEMETHOD_(bool, IsMakeDraggedWindowTransparentActive) () = 0;
+    IFACEMETHOD_(bool, isMakeDraggedWindowTransparentActive) () = 0;
     /**
      * @returns Boolean indicating if move/size operation is currently active.
      */
