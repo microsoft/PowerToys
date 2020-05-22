@@ -170,7 +170,7 @@
     <comment>Keyboard Manager page description</comment>
   </data>
   <data name="KeyboardManager_EnableToggle.Header" xml:space="preserve">
-    <value>Tastatur-Manager aktivieren</value>
+    <value>Keyboard Manager aktivieren</value>
     <comment>Keyboard Manager enable toggle header</comment>
   </data>
   <data name="KeyboardManager_ProfileDescription.Text" xml:space="preserve">
@@ -182,15 +182,15 @@
     <comment>Keyboard Manager remap keyboard button content</comment>
   </data>
   <data name="KeyboardManager_RemapKeyboardHeader.Text" xml:space="preserve">
-    <value>Tastatur neu zuordnen</value>
+    <value>Taste neu zuordnen</value>
     <comment>Keyboard Manager remap keyboard header</comment>
   </data>
   <data name="KeyboardManager_RemapShortcutsButton.Content" xml:space="preserve">
-    <value>Eine Verknüpfung neu zuordnen</value>
+    <value>Eine Tastenkombination neu zuordnen</value>
     <comment>Keyboard Manager remap shortcuts button</comment>
   </data>
   <data name="KeyboardManager_RemapShortcutsHeader.Text" xml:space="preserve">
-    <value>Verknüpfungen neu zuordnen</value>
+    <value>Tastenkombinationen neu zuordnen</value>
     <comment>Keyboard Manager remap shortcuts header</comment>
   </data>
   <data name="PowerLauncher_Description.Text" xml:space="preserve">
