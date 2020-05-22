@@ -4,7 +4,7 @@
 
 Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. Inspired by the [Windows 95 era PowerToys project](https://en.wikipedia.org/wiki/Microsoft_PowerToys), this reboot provides power users with ways to squeeze more efficiency out of the Windows 10 shell and customize it for individual workflows.  A great overview of the Windows 95 PowerToys can be found [here](https://socket3.wordpress.com/2016/10/22/using-windows-95-powertoys/).
 
-[What's Happening](#whats-happening)   |   [Downloading & Release notes][github-release-link]   |   [Contributing to PowerToys](#contributing)
+[What's Happening](#whats-happening)   |   [Downloading & Release notes][github-release-link]   |   [Contributing to PowerToys](#contributing) | [⚠ Uninstalling hint](#uninstalling)
 
 ## Build status
 
@@ -115,6 +115,11 @@ We currently support the matrix below.
 | x64 | x86 | ARM |
 |:---:|:---:|:---:|
 | [Supported][github-release-link] | [Issue #602](https://github.com/microsoft/PowerToys/issues/602) | [Issue #490](https://github.com/microsoft/PowerToys/issues/490) |
+
+## Uninstalling
+⚠ Because of issue #2012 you can not uninstall PowerToys under the old control pannel. (We hope to fix this in the release 0.19.0 of PowerToys.)
+
+👉 Please use instaed `Windows 10 Settings -> Apps -> Apps & features` to uninstall PowerToys.
 
 ## What's Happening
 
