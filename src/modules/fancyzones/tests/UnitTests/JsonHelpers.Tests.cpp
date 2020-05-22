@@ -907,6 +907,11 @@ namespace FancyZonesUnitTests
                 m_fzData.clear_data();
             }
 
+        TEST_METHOD_CLEANUP(CleanUp)
+        {    
+            std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_moduleName));
+        }
+
         public:
             TEST_METHOD (FancyZonesDataPath)
             {

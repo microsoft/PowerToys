@@ -66,7 +66,7 @@ namespace FancyZonesUnitTests
 
         winrt::com_ptr<IZoneWindow> m_zoneWindow;
 
-        JSONHelpers::FancyZonesData& m_fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+        JSONHelpers::FancyZonesData m_fancyZonesData = JSONHelpers::FancyZonesData(L"FancyZonesUnitTests");
 
         TEST_METHOD_INITIALIZE(Init)
         {
