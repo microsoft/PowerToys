@@ -1,0 +1,593 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AppDisplayName" xml:space="preserve">
+    <value>Microsoft.PowerToys.Settings.UI</value>
+    <comment>Application display name</comment>
+  </data>
+  <data name="AppDescription" xml:space="preserve">
+    <value>Microsoft.PowerToys.Settings.UI</value>
+    <comment>Application description</comment>
+  </data>
+  <data name="Shell_Main.Content" xml:space="preserve">
+    <value>Hauptseite</value>
+    <comment>Navigation view item name for Main</comment>
+  </data>
+  <data name="Shell_General.Content" xml:space="preserve">
+    <value>Allgemein</value>
+    <comment>Navigation view item name for General</comment>
+  </data>
+  <data name="Shell_PowerLauncher.Content" xml:space="preserve">
+    <value>PowerToys Run</value>
+    <comment>Navigation view item name for PowerToys Run</comment>
+  </data>
+  <data name="Shell_PowerRename.Content" xml:space="preserve">
+    <value>PowerRename</value>
+    <comment>Navigation view item name for PowerRename</comment>
+  </data>
+  <data name="Shell_ShortcutGuide.Content" xml:space="preserve">
+    <value>Shortcut Guide</value>
+    <comment>Navigation view item name for Shortcut Guide</comment>
+  </data>
+  <data name="Shell_PowerPreview.Content" xml:space="preserve">
+    <value>File Explorer Preview</value>
+    <comment>Navigation view item name for File Explorer Preview</comment>
+  </data>
+  <data name="Shell_FancyZones.Content" xml:space="preserve">
+    <value>FancyZones</value>
+    <comment>Navigation view item name for FancyZones</comment>
+  </data>
+  <data name="Shell_ImageResizer.Content" xml:space="preserve">
+    <value>Image Resizer</value>
+    <comment>Navigation view item name for Image Resizer</comment>
+  </data>
+  <data name="Shell_KeyboardManager.Content" xml:space="preserve">
+    <value>Keyboard Manager</value>
+    <comment>Navigation view item name for Keyboard Manager</comment>
+  </data>
+  <data name="KeyboardManager_ConfigHeader.Text" xml:space="preserve">
+    <value>Aktuelle Konfiguration</value>
+    <comment>Keyboard Manager current configuration header</comment>
+  </data>
+  <data name="KeyboardManager_Description.Text" xml:space="preserve">
+    <value>Rekonfigurieren Sie Ihre Tastatur durch Neuzuordnung von Tasten und Tastenkombinationen</value>
+    <comment>Keyboard Manager page description</comment>
+  </data>
+  <data name="KeyboardManager_EnableToggle.Header" xml:space="preserve">
+    <value>Tastatur-Manager aktivieren</value>
+    <comment>Keyboard Manager enable toggle header</comment>
+  </data>
+  <data name="KeyboardManager_ProfileDescription.Text" xml:space="preserve">
+    <value>Wählen Sie das Profil aus, um die aktive Tastenzuordnung und Tastenkürzel anzuzeigen</value>
+    <comment>Keyboard Manager configuration dropdown decription</comment>
+  </data>
+  <data name="KeyboardManager_RemapKeyboardButton.Content" xml:space="preserve">
+    <value>Eine Taste neu zuordnen</value>
+    <comment>Keyboard Manager remap keyboard button content</comment>
+  </data>
+  <data name="KeyboardManager_RemapKeyboardHeader.Text" xml:space="preserve">
+    <value>Tastatur neu zuordnen</value>
+    <comment>Keyboard Manager remap keyboard header</comment>
+  </data>
+  <data name="KeyboardManager_RemapShortcutsButton.Content" xml:space="preserve">
+    <value>Eine Verknüpfung neu zuordnen</value>
+    <comment>Keyboard Manager remap shortcuts button</comment>
+  </data>
+  <data name="KeyboardManager_RemapShortcutsHeader.Text" xml:space="preserve">
+    <value>Verknüpfungen neu zuordnen</value>
+    <comment>Keyboard Manager remap shortcuts header</comment>
+  </data>
+  <data name="PowerLauncher_Description.Text" xml:space="preserve">
+    <value>Ein Schnellstarter, der über zusätzliche Fähigkeiten verfügt, ohne dass die Leistung darunter leidet.</value>
+  </data>
+  <data name="PowerLauncher_EnablePowerLauncher.Header" xml:space="preserve">
+    <value>PowerToys Run aktivieren</value>
+  </data>
+  <data name="PowerLauncher_SearchResults.Text" xml:space="preserve">
+    <value>Suche &amp; Ergebnisse</value>
+  </data>
+  <data name="PowerLauncher_SearchResultPreference.Header" xml:space="preserve">
+    <value>Suchergebnis-Präferenz</value>
+  </data>
+  <data name="PowerLauncher_SearchResultPreference_MostRecentlyUsed" xml:space="preserve">
+    <value>Zuletzt verwendet</value>
+  </data>
+  <data name="PowerLauncher_SearchResultPreference_AlphabeticalOrder" xml:space="preserve">
+    <value>Alphabetisch</value>
+  </data>
+  <data name="PowerLauncher_SearchResultPreference_RunningProcessesOpenApplications" xml:space="preserve">
+    <value>Laufende Prozesse/offene Anwendungen</value>
+  </data>
+  <data name="PowerLauncher_SearchTypePreference.Header" xml:space="preserve">
+    <value>Suchtyp-Präferenz</value>
+  </data>
+  <data name="PowerLauncher_SearchTypePreference_ApplicationName" xml:space="preserve">
+    <value>Name der Anwendung</value>
+  </data>
+  <data name="PowerLauncher_SearchTypePreference_StringInApplication" xml:space="preserve">
+    <value>Eine Zeichenfolge, die in der Anwendung enthalten ist</value>
+  </data>
+  <data name="PowerLauncher_SearchTypePreference_ExecutableName" xml:space="preserve">
+    <value>Name der ausführbaren Datei</value>
+  </data>
+  <data name="PowerLauncher_MaximumNumberOfResults.Header" xml:space="preserve">
+    <value>Maximale Anzahl an Ergebnissen</value>
+  </data>
+  <data name="PowerLauncher_Shortcuts.Text" xml:space="preserve">
+    <value>Verknüpfungen</value>
+  </data>
+  <data name="PowerLauncher_OpenPowerLauncher.Header" xml:space="preserve">
+    <value>PowerToys Run öffnen</value>
+  </data>
+  <data name="PowerLauncher_OpenFileLocation.Header" xml:space="preserve">
+    <value>Dateispeicherort öffnen</value>
+  </data>
+  <data name="PowerLauncher_CopyPathLocation.Header" xml:space="preserve">
+    <value>Pfad-Speicherort kopieren</value>
+  </data>
+  <data name="PowerLauncher_OpenConsole.Header" xml:space="preserve">
+    <value>Konsole öffnen</value>
+  </data>
+  <data name="PowerLauncher_OverrideWinRKey.Content" xml:space="preserve">
+    <value>Win+R-Taste überschreiben</value>
+  </data>
+  <data name="PowerLauncher_OverrideWinSKey.Content" xml:space="preserve">
+    <value>Win+S-Taste überschreiben</value>
+  </data>
+  <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
+    <value>Zu:</value>
+    <comment>Keyboard Manager mapping keys view right header</comment>
+  </data>
+  <data name="About_This_Feature.Text" xml:space="preserve">
+    <value>Über diese Funktion</value>
+  </data>
+  <data name="Appearancce_GroupSettings.Text" xml:space="preserve">
+    <value>Erscheinungsbild</value>
+  </data>
+  <data name="FancyZones_Description.Text" xml:space="preserve">
+    <value>Erstellen Sie Fensterlayouts, um Multi-Tasking zu erleichtern.</value>
+  </data>
+  <data name="FancyZones_DisplayChangeMoveWindowsCheckBoxControl.Content" xml:space="preserve">
+    <value>Fenster in ihren Zonen belassen, wenn sich die Bildschirmauflösung ändert</value>
+  </data>
+  <data name="FancyZones_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>FancyZones aktivieren</value>
+  </data>
+  <data name="FancyZones_ExcludeApps.Text" xml:space="preserve">
+    <value>Ausgeschlossene Apps</value>
+  </data>
+  <data name="FancyZones_ExcludeApps_TextBoxControl.Header" xml:space="preserve">
+    <value>Um eine Anwendung vom Einrasten in Zonen auszuschließen, fügen Sie hier ihren Namen ein (einen pro Zeile). Diese Anwendungen reagieren nur auf Windows Snap.</value>
+  </data>
+  <data name="FancyZones_HighlightOpacity.Header" xml:space="preserve">
+    <value>Deckkraft der Zonenhervorhebung (%)</value>
+  </data>
+  <data name="FancyZones_HokeyEditorControl_Header.Header" xml:space="preserve">
+    <value>Tastaturkürzel/Verknüpfung bearbeiten</value>
+  </data>
+  <data name="FancyZones_KeepWindowsPinned.Content" xml:space="preserve">
+    <value>Fenster an mehrere Desktops in der gleichen Zone angeheftet lassen, wenn sich der aktive Desktop ändert</value>
+  </data>
+  <data name="FancyZones_LaunchEditorButtonControl_Header.Content" xml:space="preserve">
+    <value>Startzonen-Editor</value>
+  </data>
+  <data name="FancyZones_MakeDraggedWindowTransparentCheckBoxControl.Content" xml:space="preserve">
+    <value>Verschobenes Fenster transparent machen</value>
+  </data>
+  <data name="FancyZones_MouseDragCheckBoxControl_Header.Content" xml:space="preserve">
+    <value>Halten Sie eine nicht-primäre Maustaste gedrückt, um während dem Verschieben Zonen zu aktivieren</value>
+  </data>
+  <data name="FancyZones_MoveVindowsAcrossAllMonitorsCheckBoxControl.Content" xml:space="preserve">
+    <value>Verschieben von Fenstern zwischen Zonen über alle Monitore hinweg beim Einrasten mit Win+Pfeil</value>
+  </data>
+  <data name="FancyZones_OverrideSnapHotkeysCheckBoxControl.Content" xml:space="preserve">
+    <value>Windows-Snap-Hotkeys außer Kraft setzen (Win + Pfeil), um Fenster zwischen Zonen zu verschieben</value>
+  </data>
+  <data name="FancyZones_SaveZoneHighlightColor.Content" xml:space="preserve">
+    <value>Speichern der Farbauswahl für die Zonenhervorhebung</value>
+  </data>
+  <data name="FancyZones_ShiftDragCheckBoxControl_Header.Content" xml:space="preserve">
+    <value>Halten Sie die Umschalttaste gedrückt, um Zonen während des Verschiebens zu aktivieren</value>
+  </data>
+  <data name="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl.Content" xml:space="preserve">
+    <value>Beim Verschieben eines Fensters Zonen auf allen Monitoren anzeigen</value>
+  </data>
+  <data name="FancyZones_UseCursorPosEditorStartupScreen.Content" xml:space="preserve">
+    <value>Folge dem Mauszeiger statt dem Fokus, wenn Sie den Editor in einer Mehrbildschirmumgebung starten</value>
+  </data>
+  <data name="FancyZones_VirtualDesktopChangeMoveWindows.Content" xml:space="preserve">
+    <value>Neu erstellte Fenster in ihre letzte bekannte Zone verschieben</value>
+  </data>
+  <data name="FancyZones_ZoneBehavior_GroupSettings.Text" xml:space="preserve">
+    <value>Verhalten der Zone</value>
+  </data>
+  <data name="FancyZones_ZoneHighlightColor.Text" xml:space="preserve">
+    <value>Zonenhervorhebungs-Farbe (default: #0078D7)</value>
+  </data>
+  <data name="FancyZones_ZoneSetChangeMoveWindows.Content" xml:space="preserve">
+    <value>Bei Änderungen des Zonenlayouts werden die einer Zone zugewiesenen Fenster der neuen Größe/Position angepasst</value>
+  </data>
+  <data name="Give_Feedback.Text" xml:space="preserve">
+    <value>Feedback geben</value>
+  </data>
+  <data name="Module_overview.Text" xml:space="preserve">
+    <value>Modul-Übersicht</value>
+  </data>
+  <data name="AttributionTitle.Text" xml:space="preserve">
+    <value>Zuschreibung</value>
+  </data>
+  <data name="GeneralPage_AboutPowerToysHeader.Text" xml:space="preserve">
+    <value>Über PowerToys</value>
+  </data>
+  <data name="GeneralPage_CheckForUpdates.Content" xml:space="preserve">
+    <value>Nach Updates suchen</value>
+  </data>
+  <data name="GeneralPage_PrivacyStatement_URL.Text" xml:space="preserve">
+    <value>Erklärung zum Datenschutz</value>
+  </data>
+  <data name="GeneralPage_Radio_Theme_Dark.Content" xml:space="preserve">
+    <value>Dunkel</value>
+  </data>
+  <data name="GeneralPage_Radio_Theme_Default.Content" xml:space="preserve">
+    <value>System-Standard</value>
+  </data>
+  <data name="GeneralPage_Radio_Theme_Light.Content" xml:space="preserve">
+    <value>Hell</value>
+  </data>
+  <data name="GeneralPage_ReportAbug.Text" xml:space="preserve">
+    <value>Einen Fehler melden</value>
+  </data>
+  <data name="GeneralPage_RequestAFeature_URL.Text" xml:space="preserve">
+    <value>Eine Funktion anfragen</value>
+  </data>
+  <data name="GeneralPage_RestartAsAdmin_Button.Content" xml:space="preserve">
+    <value>Neustart als Administrator</value>
+  </data>
+  <data name="GeneralPage_ToggleSwitch_RunAtStartUp.Header" xml:space="preserve">
+    <value>Beim Start ausführen</value>
+  </data>
+  <data name="MiscellaneousTextBlockTitle.Text" xml:space="preserve">
+    <value>Verschiedenes</value>
+  </data>
+  <data name="PowerRename_Description.Text" xml:space="preserve">
+    <value>Eine Windows Shell-Erweiterung für erweiterte Massenumbenennungen unter Verwendung von Suchen und Ersetzen oder regulären Ausdrücken.</value>
+  </data>
+  <data name="PowerRename_ShellIntergration.Text" xml:space="preserve">
+    <value>Shell-Integration</value>
+  </data>
+  <data name="PowerRename_Toggle_Enable.Header" xml:space="preserve">
+    <value>PowerRename aktivieren</value>
+  </data>
+  <data name="RadioButtons_Name_Theme.Header" xml:space="preserve">
+    <value>Einstellungs-Erscheinungsbild</value>
+  </data>
+  <data name="PowerRename_Toggle_EnableOnContextMenu.Header" xml:space="preserve">
+    <value>Symbol im Kontextmenü anzeigen</value>
+  </data>
+  <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Header" xml:space="preserve">
+    <value>Erscheint nur im erweiterten Kontextmenü (Umschalt + Rechtsklick)</value>
+  </data>
+  <data name="PowerRename_Toggle_MaxDispListNum.Header" xml:space="preserve">
+    <value>Maximale Anzahl an Elementen, die in der Liste "zuletzt verwendet" für die automatische Vervollständigung angezeigt werden</value>
+  </data>
+  <data name="PowerRename_Toggle_RestoreFlagsOnLaunch.Header" xml:space="preserve">
+    <value>Werte der letzten Verwendung anzeigen</value>
+  </data>
+  <data name="FileEplorerPreview_ToggleSwitch_Preview_MD.Header" xml:space="preserve">
+    <value>Markdown-Vorschau-Handler</value>
+  </data>
+  <data name="FileEplorerPreview_ToggleSwitch_Preview_SVG.Header" xml:space="preserve">
+    <value>Svg-Vorschau-Handler</value>
+  </data>
+  <data name="FileExplorerPreview_Description.Text" xml:space="preserve">
+    <value>Diese Einstellungen ermöglichen es Ihnen, Ihre benutzerdefinierten Vorschau-Handler für den Windows-Datei-Explorer zu verwalten.</value>
+  </data>
+  <data name="Miscellaneous.Text" xml:space="preserve">
+    <value>Verschiedenes</value>
+  </data>
+  <data name="OpenSource_Notice.Text" xml:space="preserve">
+    <value>Open-Source-Hinweis</value>
+  </data>
+  <data name="PowerRename_Toggle_AutoComplete.Header" xml:space="preserve">
+    <value>Aktivieren Sie die Autovervollständigung und das automatische Vorschlagen der zuletzt verwendeten Liste für die Autovervollständigung in der Dropdown-Liste</value>
+  </data>
+  <data name="FancyZones_BorderColor.Text" xml:space="preserve">
+    <value>Farbe der Zonenränder (Default #FFFFFF)</value>
+  </data>
+  <data name="FancyZones_InActiveColor.Text" xml:space="preserve">
+    <value>Farbe der inaktiven Zonen (Default #F5FCFF)</value>
+  </data>
+  <data name="FancyZones_SaveBorderColor.Content" xml:space="preserve">
+    <value>Farbauswahl für Zonengrenzen speichern</value>
+  </data>
+  <data name="FancyZones_SaveZoneInActiveColor.Content" xml:space="preserve">
+    <value>Farbauswahl für inaktive Zonen speichern</value>
+  </data>
+  <data name="ShortcutGuide_Description.Text" xml:space="preserve">
+    <value>Zeigt ein Hilfe-Overlay mit Windows-Verknüpfungen an, wenn die Windows-Taste gedrückt wird.</value>
+  </data>
+  <data name="ShortcutGuide_PressTime.Header" xml:space="preserve">
+    <value>Drückdauer zum Anzeigen (ms)</value>
+  </data>
+  <data name="ShortcutGuide_Appearance_Behavior.Text" xml:space="preserve">
+    <value>Erscheinungsbild &amp; Verhalten</value>
+  </data>
+  <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
+    <value>Shortcut Guide aktivieren</value>
+  </data>
+  <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
+    <value>Deckkraft des Hintergrunds (%)</value>
+  </data>
+  <data name="ShortcutGuide_Theme.Header" xml:space="preserve">
+    <value>Wählen Sie die Overlay-Farbe für den Shortcut Guide</value>
+  </data>
+  <data name="ImageResizer_CustomSizes.Text" xml:space="preserve">
+    <value>Bildgrößen</value>
+  </data>
+  <data name="ImageResizer_Description.Text" xml:space="preserve">
+    <value>Ermöglicht die Größenänderung von Bildern durch Klicken mit der rechten Maustaste.</value>
+  </data>
+  <data name="ImageResizer_EnableToggle.Header" xml:space="preserve">
+    <value>Image Resizer aktivieren</value>
+  </data>
+  <data name="ImageResizer_AddSizeButton.Label" xml:space="preserve">
+    <value>Größe hinzufügen</value>
+  </data>
+  <data name="ImageResizer_SaveSizeButton.Label" xml:space="preserve">
+    <value>Größen speichern</value>
+  </data>
+  <data name="ImageResizer_Encoding.Text" xml:space="preserve">
+    <value>JPEG-Qualitätsstufe</value>
+  </data>
+  <data name="ImageResizer_PNGInterlacing.Header" xml:space="preserve">
+    <value>PNG-Interlacing</value>
+  </data>
+  <data name="ImageResizer_TIFFCompression.Header" xml:space="preserve">
+    <value>TIFF-Kompression</value>
+  </data>
+  <data name="File.Text" xml:space="preserve">
+    <value>Datei</value>
+  </data>
+  <data name="Default.Content" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="ImageResizer_ENCODER_TIFF_CCITT3.Content" xml:space="preserve">
+    <value>CCITT3</value>
+  </data>
+  <data name="ImageResizer_ENCODER_TIFF_CCITT4.Content" xml:space="preserve">
+    <value>CCITT4</value>
+  </data>
+  <data name="ImageResizer_ENCODER_TIFF_Default.Content" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="ImageResizer_ENCODER_TIFF_LZW.Content" xml:space="preserve">
+    <value>LZW</value>
+  </data>
+  <data name="ImageResizer_ENCODER_TIFF_None.Content" xml:space="preserve">
+    <value>Kein</value>
+  </data>
+  <data name="ImageResizer_ENCODER_TIFF_RLE.Content" xml:space="preserve">
+    <value>RLE</value>
+  </data>
+  <data name="ImageResizer_ENCODER_TIFF_Zip.Content" xml:space="preserve">
+    <value>Zip</value>
+  </data>
+  <data name="ImageResizer_FallbackEncoder_BMP.Content" xml:space="preserve">
+    <value>BMP-Kodierung</value>
+  </data>
+  <data name="ImageResizer_FallbackEncoder_GIF.Content" xml:space="preserve">
+    <value>GIF-Kodierung</value>
+  </data>
+  <data name="ImageResizer_FallbackEncoder_JPEG.Content" xml:space="preserve">
+    <value>JPEG-Kodierung</value>
+  </data>
+  <data name="ImageResizer_FallbackEncoder_PNG.Content" xml:space="preserve">
+    <value>PNG-Kodierung</value>
+  </data>
+  <data name="ImageResizer_FallbackEncoder_TIFF.Content" xml:space="preserve">
+    <value>TIFF-Kodierung</value>
+  </data>
+  <data name="ImageResizer_FallbackEncoder_WMPhoto.Content" xml:space="preserve">
+    <value>WMPhoto-Kodierung</value>
+  </data>
+  <data name="ImageResizer_Sizes_Fit_Fill.Content" xml:space="preserve">
+    <value>Füllen</value>
+  </data>
+  <data name="ImageResizer_Sizes_Fit_Fit.Content" xml:space="preserve">
+    <value>Passend</value>
+  </data>
+  <data name="ImageResizer_Sizes_Fit_Stretch.Content" xml:space="preserve">
+    <value>Gedehnt</value>
+  </data>
+  <data name="ImageResizer_Sizes_Units_CM.Content" xml:space="preserve">
+    <value>Zentimeter</value>
+  </data>
+  <data name="ImageResizer_Sizes_Units_Inches.Content" xml:space="preserve">
+    <value>Zoll</value>
+  </data>
+  <data name="ImageResizer_Sizes_Units_Percent.Content" xml:space="preserve">
+    <value>Prozent</value>
+  </data>
+  <data name="ImageResizer_Sizes_Units_Pixels.Content" xml:space="preserve">
+    <value>Pixel</value>
+  </data>
+  <data name="Off.Content" xml:space="preserve">
+    <value>Aus</value>
+  </data>
+  <data name="On.Content" xml:space="preserve">
+    <value>An</value>
+  </data>
+  <data name="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link.Text" xml:space="preserve">
+    <value>Mehr über den Administratormodus erfahren</value>
+  </data>
+  <data name="GeneralPage_ToggleSwitch_AutoDownloadUpdates.Header" xml:space="preserve">
+    <value>Updates automatisch herunterladen (außer bei getakteten Verbindungen)</value>
+  </data>
+  <data name="GeneralPage_ToggleSwitch_RunningAsAdminNote.Text" xml:space="preserve">
+    <value>Derzeit als Administrator ausgeführt</value>
+  </data>
+  <data name="GeneralSettings_AlwaysRunAsAdminText.Header" xml:space="preserve">
+    <value>Immer als Administrator ausführen</value>
+  </data>
+  <data name="GeneralSettings_RunningAsUserText" xml:space="preserve">
+    <value>Als Nutzer ausgeführt</value>
+  </data>
+  <data name="GeneralSettings_RunningAsAdminText" xml:space="preserve">
+    <value>Als Administrator ausgeführt</value>
+  </data>
+  <data name="About_FancyZones.Text" xml:space="preserve">
+    <value>Über FancyZones</value>
+  </data>
+  <data name="About_FileExplorerPreview.Text" xml:space="preserve">
+    <value>Über File Explorer Preview</value>
+  </data>
+  <data name="About_ImageResizer.Text" xml:space="preserve">
+    <value>Über Image Resizer</value>
+  </data>
+  <data name="About_KeyboardManager.Text" xml:space="preserve">
+    <value>Über Keyboard Manager</value>
+  </data>
+  <data name="About_PowerLauncher.Text" xml:space="preserve">
+    <value>Über PowerToys Run</value>
+  </data>
+  <data name="About_PowerRename.Text" xml:space="preserve">
+    <value>Über Power Rename</value>
+  </data>
+  <data name="About_ShortcutGuide.Text" xml:space="preserve">
+    <value>Über Shortcut Guide</value>
+  </data>
+  <data name="General_Repository.Text" xml:space="preserve">
+    <value>GitHub-Repository</value>
+  </data>
+  <data name="General_Updates.Text" xml:space="preserve">
+    <value>Updates</value>
+  </data>
+  <data name="General_Version.Text" xml:space="preserve">
+    <value>Version:</value>
+  </data>
+  <data name="Shortcut_Overlay_Theme.Header" xml:space="preserve">
+    <value>Hintergrund-Erscheinungsbild</value>
+  </data>
+  <data name="Admin_mode.Text" xml:space="preserve">
+    <value>Administratormodus</value>
+  </data>
+  <data name="General_RunAsAdminRequired.Text" xml:space="preserve">
+    <value>Um diese Einstellung verwenden zu können, müssen Sie die Anwendung als Administrator ausführen</value>
+  </data>
+</root>
