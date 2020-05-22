@@ -47,6 +47,11 @@ namespace FancyZonesUnitTests
         {
             return true;
         }
+        IFACEMETHODIMP_(bool)
+        InMoveSize() noexcept
+        {
+            return true;
+        }
 
         IZoneWindow* m_zoneWindow;
     };
