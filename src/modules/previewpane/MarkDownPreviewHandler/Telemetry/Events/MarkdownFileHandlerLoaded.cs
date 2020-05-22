@@ -17,7 +17,7 @@ namespace MarkdownPreviewHandler.Telemetry.Events
         /// <summary>
         /// Gets The version string. TODO: This should be replaced by a P/Invoke call to get_product_version.
         /// </summary>
-        public string Version => "v0.18.1";
+        public string Version => "v0.18.2";
 
         /// <inheritdoc/>
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
