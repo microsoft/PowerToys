@@ -3,6 +3,7 @@ parameters:
 
 steps:
 - checkout: self
+  fetchDepth: 1
   submodules: true
   clean: true
 

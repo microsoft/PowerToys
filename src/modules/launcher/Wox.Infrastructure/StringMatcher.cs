@@ -223,6 +223,12 @@ namespace Wox.Infrastructure
                 }
             }
 
+            if (String.Equals(query, stringToCompare, StringComparison.CurrentCultureIgnoreCase))
+            {
+                var bonusForExactMatch = 10;
+                score += bonusForExactMatch;
+            }
+
             return score;
         }
 

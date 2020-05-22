@@ -232,13 +232,13 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     //  Text block for information about remap key section.
     TextBlock keyRemapInfoHeader;
-    keyRemapInfoHeader.Text(L"Select the key you want to change (Original Key) and the key you want it to become (New Key).");
+    keyRemapInfoHeader.Text(L"Select the key you want to change (Key) and the key you want it to become (Mapped To).");
     keyRemapInfoHeader.Margin({ 10, 0, 0, 10 });
     keyRemapInfoHeader.FontWeight(Text::FontWeights::SemiBold());
     keyRemapInfoHeader.TextWrapping(TextWrapping::Wrap);
 
     TextBlock keyRemapInfoExample;
-    keyRemapInfoExample.Text(L"For example, if you want to press A and get B, Key A would be your \"Original Key\" and Key B would be your \"New Key\".");
+    keyRemapInfoExample.Text(L"For example, if you want to press A and get B, Key A would be your \"Key\" and Key B would be your \"Mapped To\".");
     keyRemapInfoExample.Margin({ 10, 0, 0, 20 });
     keyRemapInfoExample.FontStyle(Text::FontStyle::Italic);
     keyRemapInfoExample.TextWrapping(TextWrapping::Wrap);
@@ -265,13 +265,13 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // First header textblock in the header row of the keys remap table
     TextBlock originalKeyRemapHeader;
-    originalKeyRemapHeader.Text(L"Original Key:");
+    originalKeyRemapHeader.Text(L"Key:");
     originalKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
     originalKeyRemapHeader.Margin({ 0, 0, 0, 10 });
 
     // Second header textblock in the header row of the keys remap table
     TextBlock newKeyRemapHeader;
-    newKeyRemapHeader.Text(L"New Key:");
+    newKeyRemapHeader.Text(L"Mapped To:");
     newKeyRemapHeader.FontWeight(Text::FontWeights::Bold());
     newKeyRemapHeader.Margin({ 0, 0, 0, 10 });
 
@@ -392,6 +392,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     header.Children().Append(applyButton);
     header.Children().Append(cancelButton);
 
+    ScrollViewer scrollViewer;
+
     // Add remap key button
     Windows::UI::Xaml::Controls::Button addRemapKey;
     FontIcon plusSymbol;
@@ -401,6 +403,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     addRemapKey.Margin({ 10, 0, 0, 25 });
     addRemapKey.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects);
+        // Whenever a remap is added move to the bottom of the screen
+        scrollViewer.ChangeView(nullptr, scrollViewer.ScrollableHeight(), nullptr);
     });
 
     StackPanel mappingsPanel;
@@ -409,7 +413,6 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     mappingsPanel.Children().Append(keyRemapTable);
     mappingsPanel.Children().Append(addRemapKey);
 
-    ScrollViewer scrollViewer;
     scrollViewer.Content(mappingsPanel);
 
     // Creating the Xaml content. xamlContainer is the parent UI element

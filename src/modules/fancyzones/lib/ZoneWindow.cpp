@@ -522,6 +522,10 @@ ZoneWindow::ShowZoneWindow() noexcept
     std::thread{ [=]() {
         AnimateWindow(window, m_showAnimationDuration, AW_BLEND);
         InvalidateRect(window, nullptr, true);
+        if (m_windowMoveSize == nullptr)
+        {
+            HideZoneWindow();
+        }
     } }.detach();
 }
 

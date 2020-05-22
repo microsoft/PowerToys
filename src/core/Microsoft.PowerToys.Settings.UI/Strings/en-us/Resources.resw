@@ -537,7 +537,7 @@
     <value>Learn more about administrator mode</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_AutoDownloadUpdates.Header" xml:space="preserve">
-    <value>Download updates automatically</value>
+    <value>Download updates automatically (Except on metered connections)</value>
   </data>
   <data name="GeneralPage_ToggleSwitch_RunningAsAdminNote.Text" xml:space="preserve">
     <value>Currently running as administrator</value>
@@ -545,10 +545,10 @@
   <data name="GeneralSettings_AlwaysRunAsAdminText.Header" xml:space="preserve">
     <value>Always run as administrator</value>
   </data>
-  <data name="GeneralSettings_Running as Adminstrator_IsNotElevated" xml:space="preserve">
+  <data name="GeneralSettings_RunningAsUserText" xml:space="preserve">
     <value>Running as user</value>
   </data>
-  <data name="GeneralSettings_RunningAsAdminText_IsElevated" xml:space="preserve">
+  <data name="GeneralSettings_RunningAsAdminText" xml:space="preserve">
     <value>Running as adminstrator</value>
   </data>
   <data name="About_FancyZones.Text" xml:space="preserve">
@@ -573,7 +573,7 @@
     <value>About Shortcut Guide</value>
   </data>
   <data name="General_Repository.Text" xml:space="preserve">
-    <value>Github repository</value>
+    <value>GitHub repository</value>
   </data>
   <data name="General_Updates.Text" xml:space="preserve">
     <value>Updates</value>

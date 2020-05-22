@@ -4,8 +4,24 @@
 
 using System.Diagnostics.Tracing;
 
-namespace PreviewHandlerCommon.Telemetry
+namespace Microsoft.PowerToys.Telemetry
 {
+    /// <summary>
+    /// Privacy Tag values
+    /// </summary>
+    public enum PartA_PrivTags
+           : ulong
+    {
+        /// <nodoc/>
+        None = 0,
+
+        /// <nodoc/>
+        ProductAndServicePerformance = 0x0u,
+
+        /// <nodoc/>
+        ProductAndServiceUsage = 0x0u,
+    }
+
     /// <summary>
     /// Base class for telemetry events.
     /// </summary>

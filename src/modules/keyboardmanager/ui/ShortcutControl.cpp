@@ -265,10 +265,17 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
     text.Margin({ 0, 0, 0, 10 });
     stackPanel.Children().Append(text);
 
-    // Target StackPanel to place the selected key
-    Windows::UI::Xaml::Controls::StackPanel keyStackPanel;
-    keyStackPanel.Orientation(Orientation::Horizontal);
-    stackPanel.Children().Append(keyStackPanel);
+    // Target StackPanel to place the selected key - first row (for 1-3 keys)
+    Windows::UI::Xaml::Controls::StackPanel keyStackPanel1;
+    keyStackPanel1.Orientation(Orientation::Horizontal);
+    stackPanel.Children().Append(keyStackPanel1);
+
+    // Target StackPanel to place the selected key - second row (for 4-5 keys)
+    Windows::UI::Xaml::Controls::StackPanel keyStackPanel2;
+    keyStackPanel2.Orientation(Orientation::Horizontal);
+    keyStackPanel2.Margin({ 0, 20, 0, 0 });
+    keyStackPanel2.Visibility(Visibility::Collapsed);
+    stackPanel.Children().Append(keyStackPanel2);
 
     TextBlock holdEscInfo;
     holdEscInfo.Text(L"Hold Esc to discard");
@@ -300,7 +307,7 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
     stackPanel.UpdateLayout();
 
     // Configure the keyboardManagerState to store the UI information.
-    keyboardManagerState.ConfigureDetectShortcutUI(keyStackPanel);
+    keyboardManagerState.ConfigureDetectShortcutUI(keyStackPanel1, keyStackPanel2);
 
     // Show the dialog
     detectShortcutBox.ShowAsync();

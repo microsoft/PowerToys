@@ -42,7 +42,9 @@
             <Border.Effect>
                 <DropShadowEffect BlurRadius="16" Opacity="0.8" ShadowDepth="0" />
             </Border.Effect>
-            <local:LauncherControl x:Name="SearchBox" />
+            <local:LauncherControl
+                x:Name="SearchBox" 
+                Height="60"/>
         </Border>
         <Border 
             x:Name="ListBoxBorder"

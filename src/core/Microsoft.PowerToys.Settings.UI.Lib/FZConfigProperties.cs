@@ -10,7 +10,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     {
         public FZConfigProperties()
         {
-            this.FancyzonesShiftDrag = new BoolProperty(true);
+            this.FancyzonesShiftDrag = new BoolProperty(ConfigDefaults.DefaultFancyzonesShiftDrag);
             this.FancyzonesOverrideSnapHotkeys = new BoolProperty();
             this.FancyzonesMouseSwitch = new BoolProperty();
             this.FancyzonesMoveWindowsAcrossMonitors = new BoolProperty();
@@ -18,9 +18,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             this.FancyzonesZoneSetChangeMoveWindows = new BoolProperty();
             this.FancyzonesVirtualDesktopChangeMoveWindows = new BoolProperty();
             this.FancyzonesAppLastZoneMoveWindows = new BoolProperty();
-            this.UseCursorposEditorStartupscreen = new BoolProperty(true);
+            this.UseCursorposEditorStartupscreen = new BoolProperty(ConfigDefaults.DefaultUseCursorposEditorStartupscreen);
             this.FancyzonesShowOnAllMonitors = new BoolProperty();
-            this.FancyzonesZoneHighlightColor = new StringProperty("#F5FCFF");
+            this.FancyzonesZoneHighlightColor = new StringProperty(ConfigDefaults.DefaultFancyZonesZoneHighlightColor);
             this.FancyzonesHighlightOpacity = new IntProperty(50);
             this.FancyzonesEditorHotkey = new KeyBoardKeysProperty(
                 new HotkeySettings()
@@ -34,8 +34,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 });
             this.FancyzonesMakeDraggedWindowTransparent = new BoolProperty();
             this.FancyzonesExcludedApps = new StringProperty();
-            this.FancyzonesInActiveColor = new StringProperty("#F5FCFF");
-            this.FancyzonesBorderColor = new StringProperty("#F5FCFF");
+            this.FancyzonesInActiveColor = new StringProperty(ConfigDefaults.DefaultFancyZonesInActiveColor);
+            this.FancyzonesBorderColor = new StringProperty(ConfigDefaults.DefaultFancyzonesBorderColor);
         }
 
         [JsonPropertyName("fancyzones_shiftDrag")]

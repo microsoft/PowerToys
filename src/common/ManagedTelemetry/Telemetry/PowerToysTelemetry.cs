@@ -2,8 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.PowerToys.Telemetry.Events;
 using System.Diagnostics.Tracing;
-using PreviewHandlerCommon.Telemetry;
+
 
 namespace Microsoft.PowerToys.Telemetry
 {
@@ -12,7 +13,7 @@ namespace Microsoft.PowerToys.Telemetry
     /// </summary>
     public class PowerToysTelemetry : TelemetryBase
     {
-
+       
         /// <summary>
         /// Name for ETW event.
         /// </summary>
@@ -34,7 +35,8 @@ namespace Microsoft.PowerToys.Telemetry
         /// <summary>
         /// Publishes ETW event when an action is triggered on 
         /// </summary>
-        public void WriteEvent<T>(T telemetryEvent) 
+        public void WriteEvent<T>(T telemetryEvent)
+            where T : EventBase, IEvent
         {
             this.Write<T>(null, new EventSourceOptions()
             {
