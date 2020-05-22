@@ -9,7 +9,7 @@
   <Identity
     Name="f4f787a5-f0ae-47a9-be89-5408b1dd2b47"
     Publisher="CN=lamotile"
-    Version="0.15.2.0" />
+    Version="0.18.2.0" />
 
   <mp:PhoneIdentity PhoneProductId="f4f787a5-f0ae-47a9-be89-5408b1dd2b47" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
