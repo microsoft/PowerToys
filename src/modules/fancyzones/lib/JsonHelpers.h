@@ -168,7 +168,7 @@ namespace JSONHelpers
         mutable std::recursive_mutex dataLock;
 
     public:
-        FancyZonesData();
+        FancyZonesData(std::wstring_view moduleName = L"FancyZones");
 
         inline const std::wstring& GetPersistFancyZonesJSONPath() const
         {

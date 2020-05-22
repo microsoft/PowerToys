@@ -217,9 +217,9 @@ namespace JSONHelpers
         return instance;
     }
 
-    FancyZonesData::FancyZonesData()
+    FancyZonesData::FancyZonesData(std::wstring_view moduleName)
     {
-        std::wstring result = PTSettingsHelper::get_module_save_folder_location(L"FancyZones");
+        std::wstring result = PTSettingsHelper::get_module_save_folder_location(moduleName);
         jsonFilePath = result + L"\\" + std::wstring(FANCY_ZONES_DATA_FILE);
     }
 
