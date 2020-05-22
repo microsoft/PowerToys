@@ -55,14 +55,6 @@ public:
     IFACEMETHODIMP_(void)
     Destroy() noexcept;
 
-    // IFancyZonesCallback
-    IFACEMETHODIMP_(bool)
-    InMoveSize() noexcept
-    {
-        std::shared_lock readLock(m_lock);
-        return m_windowMoveHandler.InMoveSize();
-    }
-
     void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
@@ -180,9 +172,16 @@ public:
     }
 
     IFACEMETHODIMP_(bool)
-    isMakeDraggedWindowTransparentActive() noexcept
+    IsMakeDraggedWindowTransparentActive() noexcept
     {
         return m_settings->GetSettings()->makeDraggedWindowTransparent;
+    }
+
+    IFACEMETHODIMP_(bool)
+    InMoveSize() noexcept
+    {
+        std::shared_lock readLock(m_lock);
+        return m_windowMoveHandler.InMoveSize();
     }
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;

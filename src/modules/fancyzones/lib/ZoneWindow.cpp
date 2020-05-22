@@ -351,7 +351,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnter(HWND window, bool dragEnabled) noexcept
         return E_INVALIDARG;
     }
 
-    if (m_host->isMakeDraggedWindowTransparentActive())
+    if (m_host->IsMakeDraggedWindowTransparentActive())
     {
         draggedWindowExstyle = GetWindowLong(window, GWL_EXSTYLE);
 
@@ -427,7 +427,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnd(HWND window, POINT const& ptScreen) noexc
 IFACEMETHODIMP_(void)
 ZoneWindow::RestoreOrginalTransparency() noexcept
 {
-    if (m_host->isMakeDraggedWindowTransparentActive() && draggedWindow != nullptr)
+    if (m_host->IsMakeDraggedWindowTransparentActive() && draggedWindow != nullptr)
     {
         SetLayeredWindowAttributes(draggedWindow, draggedWindowCrKey, draggedWindowInitialAlpha, draggedWindowDwFlags);
         SetWindowLong(draggedWindow, GWL_EXSTYLE, draggedWindowExstyle);
@@ -522,7 +522,7 @@ ZoneWindow::ShowZoneWindow() noexcept
     std::thread{ [=]() {
         AnimateWindow(window, m_showAnimationDuration, AW_BLEND);
         InvalidateRect(window, nullptr, true);
-        if (m_windowMoveSize == nullptr)
+        if (!m_host->InMoveSize())
         {
             HideZoneWindow();
         }

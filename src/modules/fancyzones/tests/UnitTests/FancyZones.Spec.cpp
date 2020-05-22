@@ -254,7 +254,7 @@ namespace FancyZonesUnitTests
                     auto config = serializedPowerToySettings(settings);
                     m_settings->SetConfig(config.c_str());
 
-                    Assert::AreEqual(expected, m_zoneWindowHost->isMakeDraggedWindowTransparentActive());
+                    Assert::AreEqual(expected, m_zoneWindowHost->IsMakeDraggedWindowTransparentActive());
                 }
 
                 TEST_METHOD (GetCurrentMonitorZoneSetEmpty)
