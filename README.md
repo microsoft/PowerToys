@@ -117,7 +117,7 @@ We currently support the matrix below.
 | [Supported][github-release-link] | [Issue #602](https://github.com/microsoft/PowerToys/issues/602) | [Issue #490](https://github.com/microsoft/PowerToys/issues/490) |
 
 ## Uninstalling
-⚠ Because of issue #2012 you can not uninstall PowerToys under the old control pannel. (We hope to fix this in the release 0.19.0 of PowerToys.)
+⚠ Because of issue [#2012](https://github.com/microsoft/PowerToys/issues/2012) you can not uninstall PowerToys under the old control pannel. (We hope to fix this in the release 0.19.0 of PowerToys.)
 
 👉 Please use instaed `Windows 10 Settings -> Apps -> Apps & features` to uninstall PowerToys.
 
