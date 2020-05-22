@@ -1,4 +1,4 @@
-﻿using Microsoft.Plugin.VSCodeWorkspaces.VSCodeHelper;
+using Microsoft.Plugin.VSCodeWorkspaces.VSCodeHelper;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
