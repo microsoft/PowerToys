@@ -1,0 +1,12 @@
+{
+  "ID": "CEA0FDFC6D3B4085823D60DC76F28100",
+  "ActionKeyword": "*",
+  "Name": "VSCode Workspaces",
+  "Description": "Opened VSCode Workspaces",
+  "Author": "ricardosantos9521",
+  "Version": "1.0.0",
+  "Language": "csharp",
+  "Website": "",
+  "ExecuteFileName": "Microsoft.Plugin.VSCodeWorkspaces.dll",
+  "IcoPath": "Images\\code.png"
+}
