@@ -14,7 +14,7 @@ namespace Microsoft.PowerLauncher.Telemetry
         /// <summary>
         /// Gets The version string. TODO: This should be replaced by a P/Invoke call to get_product_version
         /// </summary>
-        public string Version => "v0.18.1";
+        public string Version => "v0.18.2";
 
         public double BootTimeMs { get; set; }
 
