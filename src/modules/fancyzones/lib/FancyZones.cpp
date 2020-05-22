@@ -172,7 +172,7 @@ public:
     }
 
     IFACEMETHODIMP_(bool)
-    IsMakeDraggedWindowTransparentActive() noexcept
+    isMakeDraggedWindowTransparentActive() noexcept
     {
         return m_settings->GetSettings()->makeDraggedWindowTransparent;
     }

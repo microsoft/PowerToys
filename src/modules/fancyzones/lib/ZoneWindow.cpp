@@ -351,7 +351,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnter(HWND window, bool dragEnabled) noexcept
         return E_INVALIDARG;
     }
 
-    if (m_host->IsMakeDraggedWindowTransparentActive())
+    if (m_host->isMakeDraggedWindowTransparentActive())
     {
         draggedWindowExstyle = GetWindowLong(window, GWL_EXSTYLE);
 
@@ -427,7 +427,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnd(HWND window, POINT const& ptScreen) noexc
 IFACEMETHODIMP_(void)
 ZoneWindow::RestoreOrginalTransparency() noexcept
 {
-    if (m_host->IsMakeDraggedWindowTransparentActive() && draggedWindow != nullptr)
+    if (m_host->isMakeDraggedWindowTransparentActive() && draggedWindow != nullptr)
     {
         SetLayeredWindowAttributes(draggedWindow, draggedWindowCrKey, draggedWindowInitialAlpha, draggedWindowDwFlags);
         SetWindowLong(draggedWindow, GWL_EXSTYLE, draggedWindowExstyle);
