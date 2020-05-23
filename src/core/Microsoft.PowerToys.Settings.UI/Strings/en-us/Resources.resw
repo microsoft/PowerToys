@@ -250,6 +250,9 @@
   <data name="PowerLauncher_OverrideWinSKey.Content" xml:space="preserve">
     <value>Override Win+S key</value>
   </data>
+  <data name="PowerLauncher_IgnoreHotkeysInFullScreen.Content" xml:space="preserve">
+    <value>Ignore hotkeys in fullscreen mode</value>
+  </data>
   <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
     <value>To:</value>
     <comment>Keyboard Manager mapping keys view right header</comment>

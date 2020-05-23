@@ -235,5 +235,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
         }
+
+        public bool IgnoreHotkeysInFullScreen
+        {
+            get
+            {
+                return settings.properties.ignore_hotkeys_in_fullscreen;
+            }
+
+            set
+            {
+                if (settings.properties.ignore_hotkeys_in_fullscreen != value)
+                {
+                    settings.properties.ignore_hotkeys_in_fullscreen = value;
+                    UpdateSettings();
+                }
+            }
+        }
     }
 }
