@@ -20,7 +20,14 @@ namespace FancyZonesEditor.Models
             lastWorkAreaWidth = workAreaWidth;
             lastWorkAreaHeight = workAreaHeight;
 
-            ScaleLayout(zones);
+            if (ShouldScaleLayout())
+            {
+                ScaleLayout(zones);
+            }
+            else
+            {
+                Zones = zones;
+            }
         }
 
         public CanvasLayoutModel(string name, LayoutType type)
@@ -75,30 +82,31 @@ namespace FancyZonesEditor.Models
             }
         }
 
+        private bool ShouldScaleLayout()
+        {
+            // Scale if:
+            // - at least one dimension changed
+            // - orientation remained the same
+            return (lastWorkAreaHeight != Settings.WorkArea.Height || lastWorkAreaWidth != Settings.WorkArea.Width) &&
+                ((lastWorkAreaHeight > lastWorkAreaWidth && Settings.WorkArea.Height > Settings.WorkArea.Width) ||
+                  (lastWorkAreaWidth > lastWorkAreaHeight && Settings.WorkArea.Width > Settings.WorkArea.Height));
+        }
+
         private void ScaleLayout(IList<Int32Rect> zones)
         {
-            //TODO: stefan Do we want to scale to different display orientation?
-            if (lastWorkAreaWidth != -1 || lastWorkAreaHeight != Settings.WorkArea.Height || lastWorkAreaWidth != Settings.WorkArea.Width)
+            foreach (Int32Rect zone in zones)
             {
-                foreach (Int32Rect zone in zones)
-                {
-                    double widthFactor = (double)Settings.WorkArea.Width / lastWorkAreaWidth;
-                    double heightFactor = (double)Settings.WorkArea.Height / lastWorkAreaHeight;
-                    int scaledX = (int)(zone.X * widthFactor);
-                    int scaledY = (int)(zone.Y * heightFactor);
-                    int scaledWidth = (int)(zone.Width * widthFactor);
-                    int scaledHeight = (int)(zone.Height * heightFactor);
-                    Zones.Add(new Int32Rect(scaledX, scaledY, scaledWidth, scaledHeight));
-                }
+                double widthFactor = (double)Settings.WorkArea.Width / lastWorkAreaWidth;
+                double heightFactor = (double)Settings.WorkArea.Height / lastWorkAreaHeight;
+                int scaledX = (int)(zone.X * widthFactor);
+                int scaledY = (int)(zone.Y * heightFactor);
+                int scaledWidth = (int)(zone.Width * widthFactor);
+                int scaledHeight = (int)(zone.Height * heightFactor);
+                Zones.Add(new Int32Rect(scaledX, scaledY, scaledWidth, scaledHeight));
+            }
 
-                lastWorkAreaHeight = (int)Settings.WorkArea.Height;
-                lastWorkAreaWidth = (int)Settings.WorkArea.Width;
-            }
-            else
-            {
-                // no scaling needed
-                Zones = zones;
-            }
+            lastWorkAreaHeight = (int)Settings.WorkArea.Height;
+            lastWorkAreaWidth = (int)Settings.WorkArea.Width;
         }
 
         private struct Zone
