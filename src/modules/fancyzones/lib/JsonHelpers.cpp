@@ -771,7 +771,7 @@ namespace JSONHelpers
                     break;
                 }
                 default:
-                    abort(); // TODO(stefan): Exception safety
+                    continue;
                 }
                 customZoneSetsMap[uuid] = zoneSetData;
 
