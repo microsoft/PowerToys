@@ -285,7 +285,7 @@
     <value>Keep windows pinned to multiple desktops in the same zone when the active desktop changes</value>
   </data>
   <data name="FancyZones_LaunchEditorButtonControl.Text" xml:space="preserve">
-    <value>Launch Zones editor</value>
+    <value>Launch zones editor</value>
   </data>
   <data name="FancyZones_MakeDraggedWindowTransparentCheckBoxControl.Content" xml:space="preserve">
     <value>Make dragged window transparent</value>
