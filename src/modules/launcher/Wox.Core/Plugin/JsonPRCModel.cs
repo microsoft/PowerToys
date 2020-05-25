@@ -1,6 +1,6 @@
 ﻿
 /* We basically follow the Json-RPC 2.0 spec (http://www.jsonrpc.org/specification) to invoke methods between Wox and other plugins, 
- * like python or other self-execute program. But, we added addtional infos (proxy and so on) into rpc request. Also, we didn't use the
+ * like python or other self-execute program. But, we added additional infos (proxy and so on) into rpc request. Also, we didn't use the
  * "id" and "jsonrpc" in the request, since it's not so useful in our request model.
  * 
  * When execute a query:

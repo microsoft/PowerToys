@@ -85,7 +85,7 @@
                                         Margin="{TemplateBinding Padding}"
                                         Grid.Row="0" />
 
-            <!--Scrollbar in thr rigth of ScrollViewer-->
+            <!--Scrollbar in the right of ScrollViewer-->
             <ScrollBar x:Name="PART_VerticalScrollBar"
                            AutomationProperties.AutomationId="VerticalScrollBar"
                            Cursor="Arrow"

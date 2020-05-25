@@ -7,7 +7,7 @@ using System;
 namespace Microsoft.Plugin.WindowWalker.Components
 {
     /// <summary>
-    /// Class containg methods to control the live preview
+    /// Class containing methods to control the live preview
     /// </summary>
     internal class LivePreview
     {

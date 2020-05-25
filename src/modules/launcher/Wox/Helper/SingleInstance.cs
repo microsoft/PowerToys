@@ -14,7 +14,7 @@ using System.Windows;
 using System.Windows.Threading;
 
 // http://blogs.microsoft.co.il/arik/2010/05/28/wpf-single-instance-application/
-// modified to allow single instace restart
+// modified to allow single instance restart
 namespace Wox.Helper 
 {
     internal enum WM
@@ -284,7 +284,7 @@ namespace Wox.Helper
             {
               
                 // The application was clickonce deployed
-                // Clickonce deployed apps cannot recieve traditional commandline arguments
+                // Clickonce deployed apps cannot receive traditional commandline arguments
                 // As a workaround commandline arguments can be written to a shared location before 
                 // the app is launched and the app can obtain its commandline arguments from the 
                 // shared location               
@@ -335,7 +335,7 @@ namespace Wox.Helper
                         // Do an asynchronous call to ActivateFirstInstance function
                         Application.Current.Dispatcher.Invoke(ActivateFirstInstance);
                     }
-                    // Disconect client
+                    // Disconnect client
                     pipeServer.Disconnect();
                 }
             }

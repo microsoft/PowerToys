@@ -304,13 +304,13 @@ namespace Wox.Infrastructure
     public class MatchOption
     {
         /// <summary>
-        /// prefix of match char, use for hightlight
+        /// prefix of match char, use for highlight
         /// </summary>
         [Obsolete("this is never used")]
         public string Prefix { get; set; } = "";
 
         /// <summary>
-        /// suffix of match char, use for hightlight
+        /// suffix of match char, use for highlight
         /// </summary>
         [Obsolete("this is never used")]
         public string Suffix { get; set; } = "";
