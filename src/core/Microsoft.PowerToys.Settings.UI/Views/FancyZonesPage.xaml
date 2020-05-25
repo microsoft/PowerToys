@@ -25,6 +25,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="1" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="0" />
+                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
@@ -34,6 +35,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="0" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                        <Setter Target="SidePanel.Width" Value="Auto" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -260,8 +262,8 @@
             <TextBlock x:Uid="About_FancyZones"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Margin="{StaticResource XSmallBottomMargin}"/>
-            
-            <Image Source="https://user-images.githubusercontent.com/9866362/77859136-f04ae880-7207-11ea-8a7f-4295342fe319.gif" />
+
+            <Image MaxWidth="240" Source="https://user-images.githubusercontent.com/9866362/77859136-f04ae880-7207-11ea-8a7f-4295342fe319.gif" />
 
             <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/fancyzones/README.md">
                 <TextBlock x:Uid="Module_overview" />
