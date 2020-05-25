@@ -60,12 +60,12 @@ public:
         return m_inMoveSize;
     }
 
-    void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR,IZoneWindow*>& zoneWindowMap) noexcept;
-    void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, IZoneWindow*>& zoneWindowMap) noexcept;
-    void MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, IZoneWindow*>& zoneWindowMap) noexcept;
+    void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR,winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
+    void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
+    void MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
 
-    void MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& indexSet, IZoneWindow* zoneWindow) noexcept;
-    bool MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle, IZoneWindow* zoneWindow);
+    void MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& indexSet, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept;
+    bool MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow);
 
 private:
     void UpdateDragState(HWND window) noexcept;
@@ -75,7 +75,7 @@ private:
 
     HWND m_windowMoveSize{}; // The window that is being moved/sized
     bool m_inMoveSize{}; // Whether or not a move/size operation is currently active
-    IZoneWindow* m_zoneWindowMoveSize{ nullptr }; // "Active" ZoneWindow, where the move/size is happening. Will update as drag moves between monitors.
+    winrt::com_ptr<IZoneWindow> m_zoneWindowMoveSize; // "Active" ZoneWindow, where the move/size is happening. Will update as drag moves between monitors.
     bool m_dragEnabled{}; // True if we should be showing zone hints while dragging
 };
 
@@ -101,32 +101,32 @@ bool WindowMoveHandler::IsDragEnabled() const noexcept
     return pimpl->IsDragEnabled();
 }
 
-void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, IZoneWindow*>& zoneWindowMap) noexcept
+void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
 {
     pimpl->MoveSizeStart(window, monitor, ptScreen, zoneWindowMap);
 }
 
-void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, IZoneWindow*>& zoneWindowMap) noexcept
+void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
 {
     pimpl->MoveSizeUpdate(monitor, ptScreen, zoneWindowMap);
 }
 
-void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, IZoneWindow*>& zoneWindowMap) noexcept
+void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
 {
     pimpl->MoveSizeEnd(window, ptScreen, zoneWindowMap);
 }
 
-void WindowMoveHandler::MoveWindowIntoZoneByIndex(HWND window, int index, IZoneWindow* zoneWindow) noexcept
+void WindowMoveHandler::MoveWindowIntoZoneByIndex(HWND window, int index, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
 {
     pimpl->MoveWindowIntoZoneByIndexSet(window, { index }, zoneWindow);
 }
 
-bool WindowMoveHandler::MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle, IZoneWindow* zoneWindow)
+bool WindowMoveHandler::MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow)
 {
     return pimpl->MoveWindowIntoZoneByDirection(window, vkCode, cycle, zoneWindow);
 }
 
-void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, IZoneWindow*>& zoneWindowMap) noexcept
+void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
 {
     if (!IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray) || WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
     {
@@ -178,7 +178,7 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
     }
 }
 
-void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, IZoneWindow*>& zoneWindowMap) noexcept
+void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
 {
     if (!m_inMoveSize)
     {
@@ -239,7 +239,7 @@ void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptS
     }
 }
 
-void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, IZoneWindow*>& zoneWindowMap) noexcept
+void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
 {
     if (window != m_windowMoveSize && !IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
     {
@@ -288,7 +288,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
     }
 }
 
-void WindowMoveHandlerPrivate::MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& indexSet, IZoneWindow* zoneWindow) noexcept
+void WindowMoveHandlerPrivate::MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& indexSet, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
 {
     if (window != m_windowMoveSize)
     {
@@ -296,7 +296,7 @@ void WindowMoveHandlerPrivate::MoveWindowIntoZoneByIndexSet(HWND window, const s
     }
 }
 
-bool WindowMoveHandlerPrivate::MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle, IZoneWindow* zoneWindow)
+bool WindowMoveHandlerPrivate::MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow)
 {
     return zoneWindow && zoneWindow->MoveWindowIntoZoneByDirection(window, vkCode, cycle);
 }

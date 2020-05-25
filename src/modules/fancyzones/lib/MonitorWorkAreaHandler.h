@@ -27,7 +27,7 @@ public:
      * @returns    Object representing single work area, interface to all actions available on work area
      *             (e.g. moving windows through zone layout specified for that work area).
      */
-    IZoneWindow* GetWorkArea(const GUID& desktopId, HMONITOR monitor);
+    winrt::com_ptr<IZoneWindow> GetWorkArea(const GUID& desktopId, HMONITOR monitor);
 
     /**
      * Get work area on which specified window is located.
@@ -37,7 +37,7 @@ public:
      * @returns    Object representing single work area, interface to all actions available on work area
      *             (e.g. moving windows through zone layout specified for that work area).
      */
-    IZoneWindow* GetWorkArea(HWND window);
+    winrt::com_ptr<IZoneWindow> GetWorkArea(HWND window);
 
     /**
      * Get map of all work areas on single virtual desktop. Key in the map is monitor handle, while value
@@ -47,12 +47,12 @@ public:
      *
      * @returns    Map containing pairs of monitor and work area for that monitor (within same virtual desktop).
      */
-    std::unordered_map<HMONITOR, IZoneWindow*> GetWorkAreasByDesktopId(const GUID& desktopId);
+    const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& GetWorkAreasByDesktopId(const GUID& desktopId);
 
     /**
      * @returns    All registered work areas.
      */
-    std::vector<IZoneWindow*> GetAllWorkAreas();
+    std::vector<winrt::com_ptr<IZoneWindow>> GetAllWorkAreas();
 
     /**
      * Register new work area.

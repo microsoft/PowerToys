@@ -2,22 +2,22 @@
 #include "MonitorWorkAreaHandler.h"
 #include "VirtualDesktopUtils.h"
 
-IZoneWindow* MonitorWorkAreaHandler::GetWorkArea(const GUID& desktopId, HMONITOR monitor)
+winrt::com_ptr<IZoneWindow> MonitorWorkAreaHandler::GetWorkArea(const GUID& desktopId, HMONITOR monitor)
 {
     auto desktopIt = workAreaMap.find(desktopId);
     if (desktopIt != std::end(workAreaMap))
     {
-        auto perDesktopData = desktopIt->second;
+        auto& perDesktopData = desktopIt->second;
         auto monitorIt = perDesktopData.find(monitor);
         if (monitorIt != std::end(perDesktopData))
         {
-            return monitorIt->second.get();
+            return monitorIt->second;
         }
     }
     return nullptr;
 }
 
-IZoneWindow* MonitorWorkAreaHandler::GetWorkArea(HWND window)
+winrt::com_ptr<IZoneWindow> MonitorWorkAreaHandler::GetWorkArea(HWND window)
 {
     HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
     GUID desktopId{};
@@ -28,29 +28,24 @@ IZoneWindow* MonitorWorkAreaHandler::GetWorkArea(HWND window)
     return nullptr;
 }
 
-std::unordered_map<HMONITOR, IZoneWindow*> MonitorWorkAreaHandler::GetWorkAreasByDesktopId(const GUID& desktopId)
+const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& MonitorWorkAreaHandler::GetWorkAreasByDesktopId(const GUID& desktopId)
 {
-    std::unordered_map<HMONITOR, IZoneWindow*> workAreas{};
     if (workAreaMap.contains(desktopId))
     {
-        const auto& perDesktopData = workAreaMap[desktopId];
-        std::transform(std::begin(perDesktopData),
-                       std::end(perDesktopData),
-                       std::inserter(workAreas, std::end(workAreas)),
-                       [](const auto& item) { return std::make_pair(item.first, item.second.get()); });
+        return workAreaMap[desktopId];
     }
-    return workAreas;
+    return {};
 }
 
-std::vector<IZoneWindow*> MonitorWorkAreaHandler::GetAllWorkAreas()
+std::vector<winrt::com_ptr<IZoneWindow>> MonitorWorkAreaHandler::GetAllWorkAreas()
 {
-    std::vector<IZoneWindow*> workAreas{};
+    std::vector<winrt::com_ptr<IZoneWindow>> workAreas{};
     for (const auto& [desktopId, perDesktopData] : workAreaMap)
     {
         std::transform(std::begin(perDesktopData),
                        std::end(perDesktopData),
                        std::back_inserter(workAreas),
-                       [](const auto& item) { return item.second.get(); });
+                       [](const auto& item) { return item.second; });
     }
     return workAreas;
 }
