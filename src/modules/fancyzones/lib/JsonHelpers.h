@@ -168,7 +168,7 @@ namespace JSONHelpers
         mutable std::recursive_mutex dataLock;
 
     public:
-        FancyZonesData(std::wstring_view moduleName = L"FancyZones");
+        FancyZonesData();
 
         inline const std::wstring& GetPersistFancyZonesJSONPath() const
         {
@@ -216,6 +216,12 @@ namespace JSONHelpers
         inline void SetDeviceInfo(const std::wstring& deviceId, DeviceInfoData data)
         {
             deviceInfoMap[deviceId] = data;
+        }
+
+        inline void SetSettingsModulePath(std::wstring_view moduleName)
+        {
+            std::wstring result = PTSettingsHelper::get_module_save_folder_location(moduleName);
+            jsonFilePath = result + L"\\" + std::wstring(L"zones-settings.json");
         }
 #endif
 

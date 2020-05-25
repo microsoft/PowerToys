@@ -66,7 +66,7 @@ namespace FancyZonesUnitTests
 
         winrt::com_ptr<IZoneWindow> m_zoneWindow;
 
-        JSONHelpers::FancyZonesData m_fancyZonesData = JSONHelpers::FancyZonesData(L"FancyZonesUnitTests");
+        JSONHelpers::FancyZonesData& m_fancyZonesData = JSONHelpers::FancyZonesDataInstance();
 
         TEST_METHOD_INITIALIZE(Init)
         {
@@ -87,6 +87,7 @@ namespace FancyZonesUnitTests
             Assert::IsFalse(std::filesystem::exists(ZoneWindowUtils::GetAppliedZoneSetTmpPath()));
             Assert::IsFalse(std::filesystem::exists(ZoneWindowUtils::GetCustomZoneSetsTmpPath()));
 
+            m_fancyZonesData.SetSettingsModulePath(L"FancyZonesUnitTests");
             m_fancyZonesData.clear_data();
         }
 
