@@ -436,8 +436,100 @@ namespace FancyZonesEditor
             GridResizer resizer = (GridResizer)sender;
             double delta = (resizer.Orientation == Orientation.Vertical) ? e.HorizontalChange : e.VerticalChange;
 
-            if (_data.DragResizer(resizer, delta))
+            GridData.ResizeInfo resizeInfo = _data.CalculateResizeInfo(resizer, delta);
+            if (resizeInfo.IsResizeAllowed)
             {
+                _data.DragResizer(resizer, resizeInfo);
+                if (_data.SwapNegativePercents(resizer.Orientation, resizer.RowIndex, resizer.ColIndex))
+                {
+                    if (resizer.Orientation == Orientation.Vertical)
+                    {
+                        if (delta < 0)
+                        {
+                            resizer.ColIndex--;
+
+                            UIElementCollection resizers = AdornerLayer.Children;
+                            int ind = resizers.IndexOf(resizer);
+
+                            for (int i = 0; i < resizers.Count; i++)
+                            {
+                                GridResizer r = (GridResizer)resizers[i];
+                                if (r.Orientation == resizer.Orientation && resizer.RowIndex != r.RowIndex && resizer.ColIndex == r.ColIndex)
+                                {
+                                    r.ColIndex++;
+
+                                    resizers.RemoveAt(ind);
+                                    resizers.Insert(i, resizer);
+                                    break;
+                                }
+                            }
+                        }
+                        else if (delta > 0)
+                        {
+                            resizer.ColIndex++;
+
+                            UIElementCollection resizers = AdornerLayer.Children;
+                            int ind = resizers.IndexOf(resizer);
+
+                            for (int i = 0; i < resizers.Count; i++)
+                            {
+                                GridResizer r = (GridResizer)resizers[i];
+                                if (r.Orientation == resizer.Orientation && resizer.RowIndex != r.RowIndex && resizer.ColIndex == r.ColIndex)
+                                {
+                                    r.ColIndex--;
+
+                                    resizers.RemoveAt(i);
+                                    resizers.Insert(ind, resizer);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (delta < 0)
+                        {
+                            resizer.RowIndex--;
+
+                            UIElementCollection resizers = AdornerLayer.Children;
+                            int ind = resizers.IndexOf(resizer);
+
+                            for (int i = 0; i < resizers.Count; i++)
+                            {
+                                GridResizer r = (GridResizer)resizers[i];
+                                if (r.Orientation == resizer.Orientation && resizer.RowIndex == r.RowIndex && resizer.ColIndex != r.ColIndex)
+                                {
+                                    r.RowIndex++;
+
+                                    resizers.RemoveAt(ind);
+                                    resizers.Insert(i, resizer);
+                                    break;
+                                }
+                            }
+                        }
+                        else if (delta > 0)
+                        {
+                            resizer.RowIndex++;
+
+                            UIElementCollection resizers = AdornerLayer.Children;
+                            int ind = resizers.IndexOf(resizer);
+
+                            for (int i = 0; i < resizers.Count; i++)
+                            {
+                                GridResizer r = (GridResizer)resizers[i];
+                                if (r.Orientation == resizer.Orientation && resizer.RowIndex == r.RowIndex && resizer.ColIndex != r.ColIndex)
+                                {
+                                    r.RowIndex--;
+
+                                    resizers.RemoveAt(i);
+                                    resizers.Insert(ind, r);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
                 Size actualSize = new Size(ActualWidth, ActualHeight);
                 ArrangeGridRects(actualSize);
             }
@@ -449,15 +541,6 @@ namespace FancyZonesEditor
             int index = _data.SwappedIndexAfterResize(resizer);
             if (index != -1)
             {
-                if (resizer.Orientation == Orientation.Horizontal)
-                {
-                    
-                }
-                else
-                {
-                    
-                }
-
                 Size actualSize = new Size(ActualWidth, ActualHeight);
                 ArrangeGridRects(actualSize);
             }
