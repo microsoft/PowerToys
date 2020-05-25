@@ -226,6 +226,7 @@ private:
     bool IsNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept;
 
     void OnEditorExitEvent() noexcept;
+    bool ProcessSnapHotkey() noexcept;
 
     std::vector<std::pair<HMONITOR, RECT>> GetRawMonitorData() noexcept;
     std::vector<HMONITOR> GetMonitorsSorted() noexcept;
@@ -397,7 +398,7 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
         }
         else if ((info->vkCode == VK_RIGHT) || (info->vkCode == VK_LEFT))
         {
-            if (m_settings->GetSettings()->overrideSnapHotkeys)
+            if (ProcessSnapHotkey())
             {
                 Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
                 // Win+Left, Win+Right will cycle through Zones in the active ZoneSet when WM_PRIV_LOWLEVELKB's handled
@@ -946,6 +947,24 @@ void FancyZones::OnEditorExitEvent() noexcept
     {
         UpdateWindowsPositions();
     }
+}
+
+bool FancyZones::ProcessSnapHotkey() noexcept
+{
+    if (m_settings->GetSettings()->overrideSnapHotkeys)
+    {
+        const HMONITOR monitor = MonitorFromWindow(GetForegroundWindow(), MONITOR_DEFAULTTONULL);
+        if (monitor)
+        {
+            auto zoneWindow = m_zoneWindowMap.find(monitor);
+            if (zoneWindow != m_zoneWindowMap.end() &&
+                zoneWindow->second->ActiveZoneSet())
+            {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 std::vector<HMONITOR> FancyZones::GetMonitorsSorted() noexcept
