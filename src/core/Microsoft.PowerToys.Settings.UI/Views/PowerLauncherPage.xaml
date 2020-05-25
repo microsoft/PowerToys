@@ -76,7 +76,7 @@
             <muxc:NumberBox x:Uid="PowerLauncher_MaximumNumberOfResults" 
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.MaximumNumberOfResults}"
                             Width="320"
-                            SpinButtonPlacementMode="Inline"
+                            SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallTopMargin}"
                             Minimum="1"

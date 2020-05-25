@@ -76,7 +76,7 @@
                            />
 
             <muxc:NumberBox x:Uid="PowerRename_Toggle_MaxDispListNum"
-                            SpinButtonPlacementMode="Inline"
+                            SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallTopMargin}" 
                             Value="{Binding Mode=TwoWay, Path=MaxDispListNum}"
