@@ -107,7 +107,7 @@ public:
         //settings.set_video_link(L"https://");
 
         // A bool property with a toggle editor.
-        //settings.add_bool_toogle(
+        //settings.add_bool_toggle(
         //  L"bool_toggle_1", // property name.
         //  L"This is what a BoolToggle property looks like", // description or resource id of the localized string.
         //  g_settings.bool_prop // property value.

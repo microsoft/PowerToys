@@ -86,7 +86,7 @@ For a detailed reference of how the settings are implemented in the runner and i
 </td></tr></table>
 
 ```c++
-settings.add_bool_toogle(name, description, value) 
+settings.add_bool_toggle(name, description, value) 
 ```
 A simple on-off toggle. Parameters:
   * `name` - Key for the element in the JSON.
