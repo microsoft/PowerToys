@@ -1,5 +1,6 @@
 #pragma once
 // Do not define WIN32_LEAN_AND_MEAN as WinUI doesn't work when it is defined
+#include <unknwn.h>
 #include <windows.h>
 #include <stdlib.h>
 #include <string.h>
