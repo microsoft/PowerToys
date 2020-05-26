@@ -330,8 +330,7 @@ FancyZones::WindowCreated(HWND window) noexcept
                     std::vector<int> zoneIndexSet = fancyZonesData.GetAppLastZoneIndexSet(window, zoneWindow->UniqueId(), guidString.get());
                     if (zoneIndexSet.size())
                     {
-                        m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, monitor, zoneIndexSet, m_zoneWindowMap);
-                        break;
+                        m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, zoneWindow);
                     }
                 }
             }
@@ -764,7 +763,11 @@ void FancyZones::UpdateWindowsPositions() noexcept
 
             auto strongThis = reinterpret_cast<FancyZones*>(data);
             std::unique_lock writeLock(strongThis->m_lock);
-            strongThis->m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, nullptr, indexSet, strongThis->m_zoneWindowMap);
+            auto zoneWindow = strongThis->m_workAreaHandler.GetWorkArea(window);
+            if (zoneWindow)
+            {
+                strongThis->m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, indexSet, zoneWindow);
+            }
         }
         return TRUE;
     };
@@ -887,9 +890,8 @@ bool FancyZones::ProcessSnapHotkey() noexcept
         const HMONITOR monitor = MonitorFromWindow(GetForegroundWindow(), MONITOR_DEFAULTTONULL);
         if (monitor)
         {
-            auto zoneWindow = m_zoneWindowMap.find(monitor);
-            if (zoneWindow != m_zoneWindowMap.end() &&
-                zoneWindow->second->ActiveZoneSet())
+            auto zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
+            if (zoneWindow->ActiveZoneSet() != nullptr)
             {
                 return true;
             }
