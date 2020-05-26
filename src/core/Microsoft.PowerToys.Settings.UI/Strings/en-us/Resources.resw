@@ -175,7 +175,7 @@
   </data>
   <data name="KeyboardManager_ProfileDescription.Text" xml:space="preserve">
     <value>Select the profile to display the active key remap and shortcuts</value>
-    <comment>Keyboard Manager configuration dropdown decription</comment>
+    <comment>Keyboard Manager configuration dropdown description</comment>
   </data>
   <data name="KeyboardManager_RemapKeyboardButton.Content" xml:space="preserve">
     <value>Remap a key</value>

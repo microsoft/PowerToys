@@ -6,12 +6,12 @@
 #include <memory>
 #include <vector>
 
-// Returns RECT with positions of the minmize/maximize buttons of the given window.
+// Returns RECT with positions of the minimize/maximize buttons of the given window.
 // Does not always work, since some apps draw custom toolbars.
 std::optional<RECT> get_button_pos(HWND hwnd);
 // Gets position of given window.
 std::optional<RECT> get_window_pos(HWND hwnd);
-// Gets mouse postion.
+// Gets mouse position.
 std::optional<POINT> get_mouse_pos();
 
 // Test if window can be zoned by FancyZones
@@ -63,7 +63,7 @@ WindowState get_window_state(HWND hwnd);
 // Returns true if the current process is running with elevated privileges
 bool is_process_elevated(const bool use_cached_value = true);
 
-// Drops the elevated privilages if present
+// Drops the elevated privileges if present
 bool drop_elevated_privileges();
 
 // Run command as elevated user, returns true if succeeded
@@ -72,7 +72,7 @@ bool run_elevated(const std::wstring& file, const std::wstring& params);
 // Run command as non-elevated user, returns true if succeeded, puts the process id into returnPid if returnPid != NULL
 bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid);
 
-// Run command with the same elevation, returns true if succedded
+// Run command with the same elevation, returns true if succeeded
 bool run_same_elevation(const std::wstring& file, const std::wstring& params);
 
 // Returns true if the current process is running from administrator account

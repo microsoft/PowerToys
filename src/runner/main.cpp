@@ -120,7 +120,7 @@ int runner(bool isProcessElevated)
         notifications::register_background_toast_handler();
 
         chdir_current_executable();
-        // Load Powertyos DLLS
+        // Load Powertoys DLLS
         // For now only load known DLLs
         
         std::wstring baseModuleFolder = L"modules/";

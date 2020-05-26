@@ -80,7 +80,7 @@ Example module JSON (taken from Shortcut Guide):
 ```
 produces this settings screen:
 
-![Shortcut Guide settings](../images/settings/shorcut_guide_settings.png)
+![Shortcut Guide settings](../images/settings/shortcut_guide_settings.png)
 
 ### Helper methods
 
@@ -191,7 +191,7 @@ settings.set_icon_key(L"pt-example");
 settings.add_string(L"string_val", L"Example string label", L"example value");
 settings.add_int_spinner(L"int_val", L"Example int label", 0, 0, 100, 10);
 ``` 
-You can then use `std::wstring serialize()` or `bool serialize_to_buffer(wchar_t* buffer, int* uffer_size)` methods to generate output JSON string.
+You can then use `std::wstring serialize()` or `bool serialize_to_buffer(wchar_t* buffer, int* buffer_size)` methods to generate output JSON string.
 
 ### Saving settings
 Use 
