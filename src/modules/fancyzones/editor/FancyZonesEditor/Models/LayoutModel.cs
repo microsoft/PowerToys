@@ -115,7 +115,7 @@ namespace FancyZonesEditor.Models
 
         private bool _isSelected;
 
-        // implementation of INotifyProeprtyChanged
+        // implementation of INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
 
         // FirePropertyChanged -- wrapper that calls INPC.PropertyChanged
@@ -163,7 +163,7 @@ namespace FancyZonesEditor.Models
             }
         }
 
-        // Loads all the custom Layouts from tmp file passed by FancuZonesLib
+        // Loads all the custom Layouts from tmp file passed by FancyZonesLib
         public static ObservableCollection<LayoutModel> LoadCustomModels()
         {
             _customModels = new ObservableCollection<LayoutModel>();

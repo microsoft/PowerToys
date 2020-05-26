@@ -22,7 +22,7 @@ public:
     PowerPreviewModule() :
         m_moduleName(GET_RESOURCE_STRING(IDS_MODULE_NAME)),
         m_previewHandlers(
-            { // SVG Preview Hanlder settings object.
+            { // SVG Preview Handler settings object.
               new FileExplorerPreviewSettings(
                   true,
                   L"svg-previewer-toggle-setting",
