@@ -30,7 +30,7 @@ std::wstring get_process_path(HWND window) noexcept
   if (name.length() >= app_frame_host.length() &&
     name.compare(name.length() - app_frame_host.length(), app_frame_host.length(), app_frame_host) == 0)
   {
-    // It is a UWP app. We will enumarate the windows and look for one created
+    // It is a UWP app. We will enumerate the windows and look for one created
     // by something with a different PID
     DWORD new_pid = pid;
     EnumChildWindows(window, [](HWND hwnd, LPARAM param) -> BOOL {

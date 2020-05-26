@@ -12,7 +12,7 @@ namespace CommonLibTest
     {
         // Work around for System.JSON required properties:
         // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-migrate-from-newtonsoft-how-to.
-        // Test also failes when the attributes are not initiliazed i.e they have null values.
+        // Test also fails when the attributes are not initialized i.e they have null values.
         [TestMethod]
         [Obsolete]
         public void ToJsonString_ShouldReturnValidJSONOfModel_WhenSuccessful()
