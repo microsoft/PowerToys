@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     public sealed partial class ShellPage : UserControl
     {
         /// <summary>
-        /// Delcaration for the ipc callback function.
+        /// Declaration for the ipc callback function.
         /// </summary>
         /// <param name="msg">message.</param>
         public delegate void IPCMessageCallback(string msg);

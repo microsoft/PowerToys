@@ -177,24 +177,6 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void VirtualDesktopChangeMoveWindows_ShouldSetValue2True_WhenSuccessful()
-        {
-            // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel();
-            Assert.IsFalse(viewModel.VirtualDesktopChangeMoveWindows); // check if value was initialized to false.
-
-            // Assert
-            ShellPage.DefaultSndMSGCallback = msg =>
-            {
-                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
-                Assert.IsTrue(snd.Powertoys.FancyZones.Properties.FancyzonesVirtualDesktopChangeMoveWindows.Value);
-            };
-
-            // act
-            viewModel.VirtualDesktopChangeMoveWindows = true;
-        }
-
-        [TestMethod]
         public void AppLastZoneMoveWindows_ShouldSetValue2True_WhenSuccessful()
         {
             // arrange

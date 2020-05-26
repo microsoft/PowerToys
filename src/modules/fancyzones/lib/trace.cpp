@@ -24,10 +24,14 @@ ZoneSetInfo GetZoneSetInfo(_In_opt_ winrt::com_ptr<IZoneSet> set) noexcept
     {
         auto zones = set->GetZones();
         info.NumberOfZones = zones.size();
-        info.NumberOfWindows = std::count_if(zones.cbegin(), zones.cend(), [&](winrt::com_ptr<IZone> zone)
+        info.NumberOfWindows = 0;
+        for (int i = 0; i < static_cast<int>(zones.size()); i++)
         {
-            return !zone->IsEmpty();
-        });
+            if (!set->IsZoneEmpty(i))
+            {
+                info.NumberOfWindows++;
+            }
+        }
     }
     return info;
 }
@@ -175,7 +179,6 @@ void Trace::SettingsChanged(const Settings& settings) noexcept
         TraceLoggingBoolean(settings.shiftDrag, "ShiftDrag"),
         TraceLoggingBoolean(settings.mouseSwitch, "MouseSwitch"),
         TraceLoggingBoolean(settings.displayChange_moveWindows, "MoveWindowsOnDisplayChange"),
-        TraceLoggingBoolean(settings.virtualDesktopChange_moveWindows, "MoveWindowsOnVirtualDesktopChange"),
         TraceLoggingBoolean(settings.zoneSetChange_flashZones, "FlashZonesOnZoneSetChange"),
         TraceLoggingBoolean(settings.zoneSetChange_moveWindows, "MoveWindowsOnZoneSetChange"),
         TraceLoggingBoolean(settings.overrideSnapHotkeys, "OverrideSnapHotKeys"),

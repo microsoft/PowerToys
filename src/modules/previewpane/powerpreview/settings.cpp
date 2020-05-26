@@ -14,7 +14,7 @@ namespace PowerPreviewSettings
     // Relative(HKLM/HKCU) sub key path of Preview Handlers list in registry.
     static LPCWSTR preview_handlers_subkey = L"Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers";
 
-    // Base Settinngs Class Implementation
+    // Base Settings Class Implementation
     FileExplorerPreviewSettings::FileExplorerPreviewSettings(bool toggleSettingEnabled, const std::wstring& toggleSettingName, const std::wstring& toggleSettingDescription, LPCWSTR clsid, const std::wstring& registryValueData, RegistryWrapperIface* registryWrapper) :
         m_toggleSettingEnabled(toggleSettingEnabled),
         m_toggleSettingName(toggleSettingName),
@@ -63,13 +63,13 @@ namespace PowerPreviewSettings
         return this->m_registryValueData;
     }
 
-    // Load intital state of the Preview Handler. If no inital state present initialize setting with default value.
+    // Load initial state of the Preview Handler. If no inital state present initialize setting with default value.
     void FileExplorerPreviewSettings::LoadState(PowerToysSettings::PowerToyValues& settings)
     {
         auto toggle = settings.get_bool_value(this->GetToggleSettingName());
         if (toggle)
         {
-            // If no exisiting setting found leave the default intitialization value.
+            // If no existing setting found leave the default initialization value.
             this->UpdateToggleSettingState(*toggle);
         }
     }

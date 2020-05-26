@@ -85,7 +85,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <param name="hwnd">The handle to the current window being enumerated</param>
         /// <param name="lParam">Value being passed from the caller (we don't use this but might come in handy
         /// in the future</param>
-        /// <returns>true to make sure to contiue enumeration</returns>
+        /// <returns>true to make sure to continue enumeration</returns>
         public bool WindowEnumerationCallBack(IntPtr hwnd, IntPtr lParam)
         {
             Window newWindow = new Window(hwnd);

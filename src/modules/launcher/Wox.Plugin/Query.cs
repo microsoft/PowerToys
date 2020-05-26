@@ -43,7 +43,7 @@ namespace Wox.Plugin
         /// </summary>
         public const string TermSeperater = " ";
         /// <summary>
-        /// User can set multiple action keywords seperated by ';'
+        /// User can set multiple action keywords separated by ';'
         /// </summary>
         public const string ActionKeywordSeperater = ";";
 

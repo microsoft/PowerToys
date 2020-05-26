@@ -414,7 +414,7 @@ void D2DOverlayWindow::on_hide()
         DwmUnregisterThumbnail(thumbnail);
     }
     std::chrono::steady_clock::time_point shown_end_time = std::chrono::steady_clock::now();
-    // Trace the event only if the overaly window was visible.
+    // Trace the event only if the overlay window was visible.
     if (shown_start_time.time_since_epoch().count() > 0)
     {
         Trace::HideGuide(std::chrono::duration_cast<std::chrono::milliseconds>(shown_end_time - shown_start_time).count(), key_pressed);
@@ -512,7 +512,7 @@ void D2DOverlayWindow::resize()
     window_rect = *get_window_pos(hwnd);
     float no_active_scale, font;
     if (window_width >= window_height)
-    { // portriat is broke right now
+    { // portrait is broke right now
         use_overlay = &landscape;
         no_active_scale = 0.3f;
         font = 15.0f;
@@ -692,7 +692,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
         total_monitor_with_screen.rect.right = max(total_monitor_with_screen.rect.right, thumb_window->right + monitor_dx);
         total_monitor_with_screen.rect.bottom = max(total_monitor_with_screen.rect.bottom, thumb_window->bottom + monitor_dy);
     }
-    // Only allow the new rect beeing slight bigger.
+    // Only allow the new rect being slight bigger.
     if (total_monitor_with_screen.width() - total_screen.width() > (thumb_window->right - thumb_window->left) / 2 ||
         total_monitor_with_screen.height() - total_screen.height() > (thumb_window->bottom - thumb_window->top) / 2)
     {

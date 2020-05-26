@@ -67,7 +67,6 @@ namespace FancyZonesUnitTests
             ptSettings.add_bool_toogle(L"fancyzones_zoneSetChange_flashZones", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES, settings.zoneSetChange_flashZones);
             ptSettings.add_bool_toogle(L"fancyzones_displayChange_moveWindows", IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS, settings.displayChange_moveWindows);
             ptSettings.add_bool_toogle(L"fancyzones_zoneSetChange_moveWindows", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS, settings.zoneSetChange_moveWindows);
-            ptSettings.add_bool_toogle(L"fancyzones_virtualDesktopChange_moveWindows", IDS_SETTING_DESCRIPTION_VIRTUALDESKTOPCHANGE_MOVEWINDOWS, settings.virtualDesktopChange_moveWindows);
             ptSettings.add_bool_toogle(L"fancyzones_appLastZone_moveWindows", IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS, settings.appLastZone_moveWindows);
             ptSettings.add_bool_toogle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, settings.use_cursorpos_editor_startupscreen);
             ptSettings.add_bool_toogle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, settings.showZonesOnAllMonitors);
@@ -109,7 +108,6 @@ namespace FancyZonesUnitTests
                         .shiftDrag = true,
                         .mouseSwitch = true,
                         .displayChange_moveWindows = true,
-                        .virtualDesktopChange_moveWindows = true,
                         .zoneSetChange_flashZones = false,
                         .zoneSetChange_moveWindows = true,
                         .overrideSnapHotkeys = false,
@@ -139,7 +137,6 @@ namespace FancyZonesUnitTests
                         .shiftDrag = true,
                         .mouseSwitch = true,
                         .displayChange_moveWindows = true,
-                        .virtualDesktopChange_moveWindows = true,
                         .zoneSetChange_flashZones = false,
                         .zoneSetChange_moveWindows = true,
                         .overrideSnapHotkeys = false,
@@ -169,7 +166,6 @@ namespace FancyZonesUnitTests
                         .shiftDrag = true,
                         .mouseSwitch = true,
                         .displayChange_moveWindows = true,
-                        .virtualDesktopChange_moveWindows = true,
                         .zoneSetChange_flashZones = false,
                         .zoneSetChange_moveWindows = true,
                         .overrideSnapHotkeys = false,
@@ -201,7 +197,6 @@ namespace FancyZonesUnitTests
                         .shiftDrag = true,
                         .mouseSwitch = true,
                         .displayChange_moveWindows = true,
-                        .virtualDesktopChange_moveWindows = true,
                         .zoneSetChange_flashZones = false,
                         .zoneSetChange_moveWindows = true,
                         .overrideSnapHotkeys = false,
@@ -233,7 +228,6 @@ namespace FancyZonesUnitTests
                         .shiftDrag = true,
                         .mouseSwitch = true,
                         .displayChange_moveWindows = true,
-                        .virtualDesktopChange_moveWindows = true,
                         .zoneSetChange_flashZones = false,
                         .zoneSetChange_moveWindows = true,
                         .overrideSnapHotkeys = false,
@@ -279,7 +273,6 @@ namespace FancyZonesUnitTests
             ptSettings.add_bool_toogle(L"fancyzones_zoneSetChange_flashZones", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES, settings.zoneSetChange_flashZones);
             ptSettings.add_bool_toogle(L"fancyzones_displayChange_moveWindows", IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS, settings.displayChange_moveWindows);
             ptSettings.add_bool_toogle(L"fancyzones_zoneSetChange_moveWindows", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS, settings.zoneSetChange_moveWindows);
-            ptSettings.add_bool_toogle(L"fancyzones_virtualDesktopChange_moveWindows", IDS_SETTING_DESCRIPTION_VIRTUALDESKTOPCHANGE_MOVEWINDOWS, settings.virtualDesktopChange_moveWindows);
             ptSettings.add_bool_toogle(L"fancyzones_appLastZone_moveWindows", IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS, settings.appLastZone_moveWindows);
             ptSettings.add_bool_toogle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, settings.use_cursorpos_editor_startupscreen);
             ptSettings.add_bool_toogle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, settings.showZonesOnAllMonitors);

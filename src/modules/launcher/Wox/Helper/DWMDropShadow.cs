@@ -18,7 +18,7 @@ namespace Wox.Helper
         /// <summary>
         /// Drops a standard shadow to a WPF Window, even if the window isborderless. Only works with DWM (Vista and Seven).
         /// This method is much more efficient than setting AllowsTransparency to true and using the DropShadow effect,
-        /// as AllowsTransparency involves a huge permormance issue (hardware acceleration is turned off for all the window).
+        /// as AllowsTransparency involves a huge performance issue (hardware acceleration is turned off for all the window).
         /// </summary>
         /// <param name="window">Window to which the shadow will be applied</param>
         public static void DropShadowToWindow(Window window)

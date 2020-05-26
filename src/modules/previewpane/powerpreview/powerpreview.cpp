@@ -97,7 +97,7 @@ void PowerPreviewModule::enable()
     {
         if (previewHandler->GetToggleSettingState())
         {
-            // Enable all the previews with intial state set as true.
+            // Enable all the previews with initial state set as true.
             previewHandler->EnablePreview();
         }
         else

@@ -191,7 +191,7 @@ ShortcutGuideFilter get_shortcutguide_filtered_window()
     // WinKey + Up just won't maximize the window. Similary, without
     // WS_MINIMIZEBOX the window will not get minimized. A "Save As..." dialog
     // is a example of such window - it can be snapped to both sides and to
-    // all screen conrers, but will not get maximized nor minimized.
+    // all screen corners, but will not get maximized nor minimized.
     // For now, since ShortcutGuide can only disable entire "Windows Controls"
     // group, we require that the window supports all the options.
     result.snappable = ((style & WS_MAXIMIZEBOX) == WS_MAXIMIZEBOX) &&
@@ -461,7 +461,7 @@ bool run_elevated(const std::wstring& file, const std::wstring& params)
     }
 }
 
-bool run_non_elevated(const std::wstring& file, const std::wstring& params)
+bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid)
 {
     auto executable_args = L"\"" + file + L"\"";
     if (!params.empty())
@@ -521,8 +521,14 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params)
                                     nullptr,
                                     &siex.StartupInfo,
                                     &process_info);
+
     if (process_info.hProcess)
     {
+        if (returnPid)
+        {
+            *returnPid = GetProcessId(process_info.hProcess);
+        }
+
         CloseHandle(process_info.hProcess);
     }
     if (process_info.hThread)
@@ -571,7 +577,7 @@ std::wstring get_process_path(HWND window) noexcept
     if (name.length() >= app_frame_host.length() &&
         name.compare(name.length() - app_frame_host.length(), app_frame_host.length(), app_frame_host) == 0)
     {
-        // It is a UWP app. We will enumarate the windows and look for one created
+        // It is a UWP app. We will enumerate the windows and look for one created
         // by something with a different PID
         DWORD new_pid = pid;
         EnumChildWindows(

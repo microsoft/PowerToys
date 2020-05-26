@@ -134,7 +134,7 @@ namespace JSONHelpers
     {
         std::wstring zoneSetUuid;
         std::wstring deviceId;
-        int zoneIndex;
+        std::vector<int> zoneIndexSet;
     };
 
     struct AppZoneHistoryJSON
@@ -174,6 +174,12 @@ namespace JSONHelpers
         {
             return jsonFilePath;
         }
+
+        inline const std::wstring& GetPersistAppZoneHistoryFilePath() const
+        {
+            return appZoneHistoryFilePath;
+        }
+
         json::JsonObject GetPersistFancyZonesJSON();
 
         std::optional<DeviceInfoData> FindDeviceInfo(const std::wstring& zoneWindowId) const;
@@ -223,9 +229,9 @@ namespace JSONHelpers
         void UpdatePrimaryDesktopData(const std::wstring& desktopId);
         void RemoveDeletedDesktops(const std::vector<std::wstring>& activeDesktops);
 
-        int GetAppLastZoneIndex(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const;
+        std::vector<int> GetAppLastZoneIndexSet(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const;
         bool RemoveAppLastZone(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId);
-        bool SetAppLastZone(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, int zoneIndex);
+        bool SetAppLastZones(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, const std::vector<int>& zoneIndexSet);
 
         void SetActiveZoneSet(const std::wstring& deviceId, const ZoneSetData& zoneSet);
 
@@ -254,6 +260,7 @@ namespace JSONHelpers
         std::unordered_map<std::wstring, CustomZoneSetData> customZoneSetsMap{};
 
         std::wstring jsonFilePath;
+        std::wstring appZoneHistoryFilePath;
     };
 
     FancyZonesData& FancyZonesDataInstance();

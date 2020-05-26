@@ -20,56 +20,15 @@ public:
     }
 
     IFACEMETHODIMP_(RECT) GetZoneRect() noexcept { return m_zoneRect; }
-    IFACEMETHODIMP_(bool) IsEmpty() noexcept { return m_windows.empty(); };
-    IFACEMETHODIMP_(bool) ContainsWindow(HWND window) noexcept;
-    IFACEMETHODIMP_(void) AddWindowToZone(HWND window, HWND zoneWindow, bool stampZone) noexcept;
-    IFACEMETHODIMP_(void) RemoveWindowFromZone(HWND window, bool restoreSize) noexcept;
     IFACEMETHODIMP_(void) SetId(size_t id) noexcept { m_id = id; }
     IFACEMETHODIMP_(size_t) Id() noexcept { return m_id; }
     IFACEMETHODIMP_(RECT) ComputeActualZoneRect(HWND window, HWND zoneWindow) noexcept;
 
 private:
-    void SizeWindowToZone(HWND window, HWND zoneWindow) noexcept;
-    void StampZone(HWND window, bool stamp) noexcept;
-
     RECT m_zoneRect{};
     size_t m_id{};
     std::map<HWND, RECT> m_windows{};
 };
-
-IFACEMETHODIMP_(bool) Zone::ContainsWindow(HWND window) noexcept
-{
-    return (m_windows.find(window) != m_windows.end());
-}
-
-IFACEMETHODIMP_(void) Zone::AddWindowToZone(HWND window, HWND zoneWindow, bool stampZone) noexcept
-{
-    WINDOWPLACEMENT placement;
-    ::GetWindowPlacement(window, &placement);
-    ::GetWindowRect(window, &placement.rcNormalPosition);
-    m_windows.emplace(std::pair<HWND, RECT>(window, placement.rcNormalPosition));
-
-    SizeWindowToZone(window, zoneWindow);
-    if (stampZone)
-    {
-        StampZone(window, true);
-    }
-}
-
-IFACEMETHODIMP_(void) Zone::RemoveWindowFromZone(HWND window, bool restoreSize) noexcept
-{
-    auto iter = m_windows.find(window);
-    if (iter != m_windows.end())
-    {
-        m_windows.erase(iter);
-        StampZone(window, false);
-    }
-}
-
-void Zone::SizeWindowToZone(HWND window, HWND zoneWindow) noexcept
-{
-    SizeWindowToRect(window, ComputeActualZoneRect(window, zoneWindow));
-}
 
 static BOOL CALLBACK saveDisplayToVector(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data)
 {
@@ -159,18 +118,6 @@ RECT Zone::ComputeActualZoneRect(HWND window, HWND zoneWindow) noexcept
     }
 
     return newWindowRect;
-}
-
-void Zone::StampZone(HWND window, bool stamp) noexcept
-{
-    if (stamp)
-    {
-        SetProp(window, ZONE_STAMP, reinterpret_cast<HANDLE>(m_id));
-    }
-    else
-    {
-        RemoveProp(window, ZONE_STAMP);
-    }
 }
 
 winrt::com_ptr<IZone> MakeZone(const RECT& zoneRect) noexcept

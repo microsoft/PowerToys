@@ -116,9 +116,9 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
     pimpl->MoveSizeEnd(window, ptScreen, zoneWindowMap);
 }
 
-void WindowMoveHandler::MoveWindowIntoZoneByIndex(HWND window, int index, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
+void WindowMoveHandler::MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& indexSet, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
 {
-    pimpl->MoveWindowIntoZoneByIndexSet(window, { index }, zoneWindow);
+    pimpl->MoveWindowIntoZoneByIndexSet(window, indexSet, zoneWindow);
 }
 
 bool WindowMoveHandler::MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow)
@@ -256,7 +256,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
     }
     else
     {
-        ::RemoveProp(window, ZONE_STAMP);
+        ::RemoveProp(window, MULTI_ZONE_STAMP);
 
         auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
         if (monitor)

@@ -14,7 +14,7 @@
     <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
     <RepositoryType>Github</RepositoryType>
     <PackageTags>PowerToys</PackageTags>
-    <Version>0.15.2.0</Version>
+    <Version>0.18.2.0</Version>
     <Platforms>x64</Platforms>
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <Win32Resource />

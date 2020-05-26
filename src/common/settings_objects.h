@@ -159,7 +159,7 @@ namespace PowerToysSettings
         {
             auto layout = GetKeyboardLayout(0);
             auto scan_code = MapVirtualKeyExW(key_code, MAPVK_VK_TO_VSC_EX, layout);
-            // Determinate if vk is an extended key. Unfortunatly MAPVK_VK_TO_VSC_EX
+            // Determinate if vk is an extended key. Unfortunately MAPVK_VK_TO_VSC_EX
             // does not return correct values.
             static std::vector<UINT> extended_keys = {
                 VK_APPS,

@@ -29,7 +29,7 @@ public:
     {
     }
 
-    // Constructor to intialize Shortcut from it's virtual key code string representation.
+    // Constructor to initialize Shortcut from it's virtual key code string representation.
     Shortcut(const std::wstring& shortcutVK) :
         winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
     {

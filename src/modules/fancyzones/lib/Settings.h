@@ -1,6 +1,6 @@
 #pragma once
 
-#define ZONE_STAMP L"FancyZones_zone"
+#define MULTI_ZONE_STAMP L"FancyZones_zones"
 #include <common/settings_objects.h>
 
 struct Settings
@@ -9,7 +9,6 @@ struct Settings
     bool shiftDrag = true;
     bool mouseSwitch = false;
     bool displayChange_moveWindows = false;
-    bool virtualDesktopChange_moveWindows = false;
     bool zoneSetChange_flashZones = false;
     bool zoneSetChange_moveWindows = false;
     bool overrideSnapHotkeys = false;

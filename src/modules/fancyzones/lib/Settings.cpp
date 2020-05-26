@@ -36,7 +36,7 @@ private:
         PCWSTR name;
         bool* value;
         int resourceId;
-    } m_configBools[11 /* 12 */] = { // "Turning FLASHING_ZONE option off"
+    } m_configBools[10 /* 11 */] = { // "Turning FLASHING_ZONE option off"
         { L"fancyzones_shiftDrag", &m_settings.shiftDrag, IDS_SETTING_DESCRIPTION_SHIFTDRAG },
         { L"fancyzones_mouseSwitch", &m_settings.mouseSwitch, IDS_SETTING_DESCRIPTION_MOUSESWITCH },
         { L"fancyzones_overrideSnapHotkeys", &m_settings.overrideSnapHotkeys, IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS },
@@ -45,7 +45,6 @@ private:
         //{ L"fancyzones_zoneSetChange_flashZones", &m_settings.zoneSetChange_flashZones, IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES },
         { L"fancyzones_displayChange_moveWindows", &m_settings.displayChange_moveWindows, IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS },
         { L"fancyzones_zoneSetChange_moveWindows", &m_settings.zoneSetChange_moveWindows, IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS },
-        { L"fancyzones_virtualDesktopChange_moveWindows", &m_settings.virtualDesktopChange_moveWindows, IDS_SETTING_DESCRIPTION_VIRTUALDESKTOPCHANGE_MOVEWINDOWS },
         { L"fancyzones_appLastZone_moveWindows", &m_settings.appLastZone_moveWindows, IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS },
         { L"use_cursorpos_editor_startupscreen", &m_settings.use_cursorpos_editor_startupscreen, IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN },
         { L"fancyzones_show_on_all_monitors", &m_settings.showZonesOnAllMonitors, IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS},
@@ -71,7 +70,7 @@ IFACEMETHODIMP_(bool) FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ in
     settings.set_video_link(L"https://youtu.be/rTtGzZYAXgY");
 
     // Add a custom action property. When using this settings type, the "PowertoyModuleIface::call_custom_action()"
-    // method should be overriden as well.
+    // method should be overridden as well.
     settings.add_custom_action(
         L"ToggledFZEditor", // action name.
         IDS_SETTING_LAUNCH_EDITOR_LABEL,

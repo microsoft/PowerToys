@@ -6,7 +6,7 @@ namespace Wox.Infrastructure.Storage
     {
         public PluginJsonStorage()
         {
-            // C# releated, add python releated below
+            // C# related, add python related below
             var dataType = typeof(T);
             var assemblyName = typeof(T).Assembly.GetName().Name;
             DirectoryPath = Path.Combine(Constant.DataDirectory, DirectoryName, Constant.Plugins, assemblyName);

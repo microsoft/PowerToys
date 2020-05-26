@@ -75,7 +75,7 @@ public:
     }
 
     // Return array of the names of all events that this powertoy listens for, with
-    // nullptr as the last element of the array. Nullptr can also be retured for empty
+    // nullptr as the last element of the array. Nullptr can also be returned for empty
     // list.
     virtual const wchar_t** get_events() override
     {
@@ -138,7 +138,7 @@ public:
         //);
 
         // A custom action property. When using this settings type, the "PowertoyModuleIface::call_custom_action()"
-        // method should be overriden as well.
+        // method should be overridden as well.
         //settings.add_custom_action(
         //  L"custom_action_id", // action name.
         //  L"This is what a CustomAction property looks like", // label above the field.

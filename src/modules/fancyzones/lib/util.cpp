@@ -128,6 +128,13 @@ void SizeWindowToRect(HWND window, RECT rect) noexcept
         placement.showCmd = SW_RESTORE | SW_SHOWNA;
     }
 
+    // Remove maximized show command to make sure window is moved to the correct zone.
+    if (placement.showCmd & SW_SHOWMAXIMIZED)
+    {
+        placement.showCmd = SW_RESTORE;
+        placement.flags &= ~WPF_RESTORETOMAXIMIZED;
+    }
+
     placement.rcNormalPosition = rect;
     placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
 
