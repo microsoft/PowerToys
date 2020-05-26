@@ -73,7 +73,7 @@ interface __declspec(uuid("{5C8D99D6-34B2-4F4A-A8E5-7483F6869775}")) IZoneWindow
      */
     IFACEMETHOD_(COLORREF, GetZoneHighlightColor)() = 0;
     /**
-     * @returns Integer in range [0, 100] indicating opacity of highlited zone (while giving zone layout hints).
+     * @returns Integer in range [0, 100] indicating opacity of highlighted zone (while giving zone layout hints).
      */
     IFACEMETHOD_(int, GetZoneHighlightOpacity)() = 0;
     /**
