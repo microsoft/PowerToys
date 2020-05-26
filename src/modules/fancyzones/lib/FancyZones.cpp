@@ -363,10 +363,10 @@ FancyZones::WindowCreated(HWND window) noexcept
                 wil::unique_cotaskmem_string guidString;
                 if (SUCCEEDED(StringFromCLSID(activeZoneSet->Id(), &guidString)))
                 {
-                    int zoneIndex = fancyZonesData.GetAppLastZoneIndex(window, zoneWindow->UniqueId(), guidString.get());
-                    if (zoneIndex != -1)
+                    std::vector<int> zoneIndexSet = fancyZonesData.GetAppLastZoneIndexSet(window, zoneWindow->UniqueId(), guidString.get());
+                    if (zoneIndexSet.size())
                     {
-                        m_windowMoveHandler.MoveWindowIntoZoneByIndex(window, monitor, zoneIndex, m_zoneWindowMap);
+                        m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, monitor, zoneIndexSet, m_zoneWindowMap);
                         break;
                     }
                 }
@@ -790,13 +790,22 @@ void FancyZones::UpdateZoneWindows() noexcept
 void FancyZones::UpdateWindowsPositions() noexcept
 {
     auto callback = [](HWND window, LPARAM data) -> BOOL {
-        int i = static_cast<int>(reinterpret_cast<UINT_PTR>(::GetProp(window, ZONE_STAMP)));
-        if (i != 0)
+        size_t bitmask = reinterpret_cast<size_t>(::GetProp(window, MULTI_ZONE_STAMP));
+
+        if (bitmask != 0)
         {
-            // i is off by 1 since 0 is special.
+            std::vector<int> indexSet;
+            for (int i = 0; i < std::numeric_limits<size_t>::digits; i++)
+            {
+                if ((1ull << i) & bitmask)
+                {
+                    indexSet.push_back(i);
+                }
+            }
+
             auto strongThis = reinterpret_cast<FancyZones*>(data);
             std::unique_lock writeLock(strongThis->m_lock);
-            strongThis->m_windowMoveHandler.MoveWindowIntoZoneByIndex(window, nullptr, i - 1, strongThis->m_zoneWindowMap);
+            strongThis->m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, nullptr, indexSet, strongThis->m_zoneWindowMap);
         }
         return TRUE;
     };

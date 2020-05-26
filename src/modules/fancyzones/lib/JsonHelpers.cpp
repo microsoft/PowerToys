@@ -23,6 +23,7 @@ namespace
     constexpr int c_blankCustomModelId = 0xFFFA;
 
     const wchar_t* FANCY_ZONES_DATA_FILE = L"zones-settings.json";
+    const wchar_t* FANCY_ZONES_APP_ZONE_HISTORY_FILE = L"app-zone-history.json";
     const wchar_t* DEFAULT_GUID = L"{00000000-0000-0000-0000-000000000000}";
     const wchar_t* REG_SETTINGS = L"Software\\SuperFancyZones";
 
@@ -221,6 +222,7 @@ namespace JSONHelpers
     {
         std::wstring result = PTSettingsHelper::get_module_save_folder_location(L"FancyZones");
         jsonFilePath = result + L"\\" + std::wstring(FANCY_ZONES_DATA_FILE);
+        appZoneHistoryFilePath = result + L"\\" + std::wstring(FANCY_ZONES_APP_ZONE_HISTORY_FILE);
     }
 
     json::JsonObject FancyZonesData::GetPersistFancyZonesJSON()
@@ -232,6 +234,18 @@ namespace JSONHelpers
         auto result = json::from_file(save_file_path);
         if (result)
         {
+            if (!result->HasKey(L"app-zone-history"))
+            {
+                auto appZoneHistory = json::from_file(appZoneHistoryFilePath);
+                if (appZoneHistory)
+                {
+                    result->SetNamedValue(L"app-zone-history", appZoneHistory->GetNamedArray(L"app-zone-history"));
+                }
+                else
+                {
+                    result->SetNamedValue(L"app-zone-history", json::JsonArray());
+                }
+            }
             return *result;
         }
         else
@@ -368,7 +382,7 @@ namespace JSONHelpers
         SaveFancyZonesData();
     }
 
-    int FancyZonesData::GetAppLastZoneIndex(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const
+    std::vector<int> FancyZonesData::GetAppLastZoneIndexSet(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const
     {
         std::scoped_lock lock{ dataLock };
         auto processPath = get_process_path(window);
@@ -380,12 +394,12 @@ namespace JSONHelpers
                 const auto& data = history->second;
                 if (data.zoneSetUuid == zoneSetId && data.deviceId == deviceId)
                 {
-                    return history->second.zoneIndex;
+                    return history->second.zoneIndexSet;
                 }
             }
         }
 
-        return -1;
+        return {};
     }
 
     bool FancyZonesData::RemoveAppLastZone(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId)
@@ -410,7 +424,7 @@ namespace JSONHelpers
         return false;
     }
 
-    bool FancyZonesData::SetAppLastZone(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, int zoneIndex)
+    bool FancyZonesData::SetAppLastZones(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, const std::vector<int>& zoneIndexSet)
     {
         std::scoped_lock lock{ dataLock };
         auto processPath = get_process_path(window);
@@ -419,7 +433,7 @@ namespace JSONHelpers
             return false;
         }
 
-        appZoneHistoryMap[processPath] = AppZoneHistoryData{ .zoneSetUuid = zoneSetId, .deviceId = deviceId, .zoneIndex = zoneIndex };
+        appZoneHistoryMap[processPath] = AppZoneHistoryData{ .zoneSetUuid = zoneSetId, .deviceId = deviceId, .zoneIndexSet = zoneIndexSet };
         SaveFancyZonesData();
         return true;
     }
@@ -669,8 +683,9 @@ namespace JSONHelpers
     {
         std::scoped_lock lock{ dataLock };
         json::JsonObject root{};
+        json::JsonObject appZoneHistoryRoot{};
 
-        root.SetNamedValue(L"app-zone-history", SerializeAppZoneHistory());
+        appZoneHistoryRoot.SetNamedValue(L"app-zone-history", SerializeAppZoneHistory());
         root.SetNamedValue(L"devices", SerializeDeviceInfos());
         root.SetNamedValue(L"custom-zone-sets", SerializeCustomZoneSets());
 
@@ -681,6 +696,7 @@ namespace JSONHelpers
         }
 
         json::to_file(jsonFilePath, root);
+        json::to_file(appZoneHistoryFilePath, appZoneHistoryRoot);
     }
 
     void FancyZonesData::MigrateCustomZoneSetsFromRegistry()
@@ -817,7 +833,14 @@ namespace JSONHelpers
         json::JsonObject result{};
 
         result.SetNamedValue(L"app-path", json::value(appZoneHistory.appPath));
-        result.SetNamedValue(L"zone-index", json::value(appZoneHistory.data.zoneIndex));
+
+        json::JsonArray jsonIndexSet;
+        for (int index : appZoneHistory.data.zoneIndexSet)
+        {
+            jsonIndexSet.Append(json::value(index));
+        }
+
+        result.SetNamedValue(L"zone-index-set", jsonIndexSet);
         result.SetNamedValue(L"device-id", json::value(appZoneHistory.data.deviceId));
         result.SetNamedValue(L"zoneset-uuid", json::value(appZoneHistory.data.zoneSetUuid));
 
@@ -831,7 +854,19 @@ namespace JSONHelpers
             AppZoneHistoryJSON result;
 
             result.appPath = zoneSet.GetNamedString(L"app-path");
-            result.data.zoneIndex = static_cast<int>(zoneSet.GetNamedNumber(L"zone-index"));
+            if (zoneSet.HasKey(L"zone-index-set"))
+            {
+                result.data.zoneIndexSet = {};
+                for (auto& value : zoneSet.GetNamedArray(L"zone-index-set"))
+                {
+                    result.data.zoneIndexSet.push_back(static_cast<int>(value.GetNumber()));
+                }
+            }
+            else if (zoneSet.HasKey(L"zone-index"))
+            {
+                result.data.zoneIndexSet = { static_cast<int>(zoneSet.GetNamedNumber(L"zone-index")) };
+            }
+
             result.data.deviceId = zoneSet.GetNamedString(L"device-id");
             result.data.zoneSetUuid = zoneSet.GetNamedString(L"zoneset-uuid");
 

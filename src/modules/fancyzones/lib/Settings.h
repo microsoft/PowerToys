@@ -1,6 +1,6 @@
 #pragma once
 
-#define ZONE_STAMP L"FancyZones_zone"
+#define MULTI_ZONE_STAMP L"FancyZones_zones"
 #include <common/settings_objects.h>
 
 struct Settings
