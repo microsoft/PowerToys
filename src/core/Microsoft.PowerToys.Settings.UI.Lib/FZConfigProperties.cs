@@ -16,7 +16,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             this.FancyzonesMoveWindowsAcrossMonitors = new BoolProperty();
             this.FancyzonesDisplayChangeMoveWindows = new BoolProperty();
             this.FancyzonesZoneSetChangeMoveWindows = new BoolProperty();
-            this.FancyzonesVirtualDesktopChangeMoveWindows = new BoolProperty();
             this.FancyzonesAppLastZoneMoveWindows = new BoolProperty();
             this.UseCursorposEditorStartupscreen = new BoolProperty(ConfigDefaults.DefaultUseCursorposEditorStartupscreen);
             this.FancyzonesShowOnAllMonitors = new BoolProperty();
@@ -55,9 +54,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         [JsonPropertyName("fancyzones_zoneSetChange_moveWindows")]
         public BoolProperty FancyzonesZoneSetChangeMoveWindows { get; set; }
-
-        [JsonPropertyName("fancyzones_virtualDesktopChange_moveWindows")]
-        public BoolProperty FancyzonesVirtualDesktopChangeMoveWindows { get; set; }
 
         [JsonPropertyName("fancyzones_appLastZone_moveWindows")]
         public BoolProperty FancyzonesAppLastZoneMoveWindows { get; set; }
