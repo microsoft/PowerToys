@@ -16,14 +16,17 @@ public
     delegate void KeyboardEventCallback(KeyboardEvent ^ ev);
 public
     delegate bool IsActiveCallback();
+public
+    delegate bool FilterKeyboardEvent(KeyboardEvent ^ ev);
 
 public
     ref class KeyboardHook
     {
     public:
         KeyboardHook(
-            KeyboardEventCallback ^ callback, 
-            IsActiveCallback ^ isActiveCallback);
+            KeyboardEventCallback ^ keyboardEventCallback,
+            IsActiveCallback ^ isActiveCallback,
+            FilterKeyboardEvent ^ filterKeyboardEvent);
         ~KeyboardHook();
 
         void Start();
@@ -32,10 +35,12 @@ public
         delegate LRESULT HookProcDelegate(int nCode, WPARAM wParam, LPARAM lParam);
         Thread ^ kbEventDispatch;
         Queue<KeyboardEvent ^> ^ queue;
-        KeyboardEventCallback ^ callback;
-        IsActiveCallback ^ isActive;
+        KeyboardEventCallback ^ keyboardEventCallback;
+        IsActiveCallback ^ isActiveCallback;
+        FilterKeyboardEvent ^ filterKeyboardEvent;
         bool quit;
         HHOOK hookHandle;
+        HookProcDelegate ^ hookProc;
 
         void DispatchProc();
         LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);

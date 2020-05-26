@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             this.keyDown = keyDown;
             this.keyUp = keyUp;
             this.isActive = isActive;
-            hook = new KeyboardHook(HotkeySettingsHookCallback, IsActive);
+            hook = new KeyboardHook(HotkeySettingsHookCallback, IsActive, null);
             hook.Start();
         }
 

@@ -1,18 +1,24 @@
 #include "pch.h"
 #include "KeyboardHook.h"
 #include <exception>
+#include <msclr\marshal.h>
+#include <msclr\marshal_cppstd.h>
 
 using namespace interop;
 using namespace System::Runtime::InteropServices;
+using namespace System;
+using namespace System::Diagnostics;
 
 KeyboardHook::KeyboardHook(
-    KeyboardEventCallback ^ cb,
-    IsActiveCallback ^ activeCb)
+    KeyboardEventCallback ^ keyboardEventCallback,
+    IsActiveCallback ^ isActiveCallback,
+    FilterKeyboardEvent ^ filterKeyboardEvent)
 {
     kbEventDispatch = gcnew Thread(gcnew ThreadStart(this, &KeyboardHook::DispatchProc));
     queue = gcnew Queue<KeyboardEvent ^>();
-    callback = cb;
-    isActive = activeCb;
+    this->keyboardEventCallback = keyboardEventCallback;
+    this->isActiveCallback = isActiveCallback;
+    this->filterKeyboardEvent = filterKeyboardEvent;
 }
 
 KeyboardHook::~KeyboardHook()
@@ -40,7 +46,7 @@ void KeyboardHook::DispatchProc()
         // Release lock while callback is being invoked
         Monitor::Exit(queue);
         
-        callback->Invoke(nextEv);
+        keyboardEventCallback->Invoke(nextEv);
         
         // Re-aquire lock
         Monitor::Enter(queue);
@@ -51,9 +57,15 @@ void KeyboardHook::DispatchProc()
 
 void KeyboardHook::Start()
 {
-    auto del = gcnew HookProcDelegate(this, &KeyboardHook::HookProc);
+    hookProc = gcnew HookProcDelegate(this, &KeyboardHook::HookProc);
+    Process ^ curProcess = Process::GetCurrentProcess();
+    ProcessModule ^ curModule = curProcess->MainModule;
     // register low level hook procedure
-    hookHandle = SetWindowsHookEx(WH_KEYBOARD_LL, (HOOKPROC) (void*) Marshal::GetFunctionPointerForDelegate(del), 0, 0);
+    hookHandle = SetWindowsHookEx(
+        WH_KEYBOARD_LL, 
+        (HOOKPROC)(void*)Marshal::GetFunctionPointerForDelegate(hookProc), 
+        GetModuleHandle(msclr::interop::marshal_as<std::wstring>(curModule->ModuleName).c_str()),
+        0);
     if (hookHandle == nullptr)
     {
         throw std::exception("SetWindowsHookEx failed.");
@@ -64,11 +76,15 @@ void KeyboardHook::Start()
 
 LRESULT CALLBACK KeyboardHook::HookProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
-    if (nCode == HC_ACTION && isActive->Invoke())
+    if (nCode == HC_ACTION && isActiveCallback->Invoke())
     {
         KeyboardEvent ^ ev = gcnew KeyboardEvent();
         ev->message = wParam;
         ev->key = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam)->vkCode;
+        if (filterKeyboardEvent != nullptr && !filterKeyboardEvent->Invoke(ev))
+        {
+            return CallNextHookEx(hookHandle, nCode, wParam, lParam);
+        }
 
         Monitor::Enter(queue);
         queue->Enqueue(ev);
