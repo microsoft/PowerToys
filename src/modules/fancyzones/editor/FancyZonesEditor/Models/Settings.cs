@@ -471,7 +471,7 @@ namespace FancyZonesEditor
             return model.Type != LayoutType.Custom;
         }
 
-        // implementation of INotifyProeprtyChanged
+        // implementation of INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
 
         // FirePropertyChanged -- wrapper that calls INPC.PropertyChanged

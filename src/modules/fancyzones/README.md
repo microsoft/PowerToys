@@ -35,7 +35,7 @@ If two zones are adjacent, a window can be snapped to the sum of their area (rou
 | Shortcut      | Action |
 | ----------- | ----------- |
 | Win + `      | Launches editor (this shortcut is editable in the settings dialog)       |
-| Win+Left/Right Arrow | Move focused window between zones (only if `Override Windows Snap hotkeys` setting is turned on, in that case only the `Win+Left Arrow` and `Win+Right Arrow` are overriden, while the `Win+Up Arrow` and `Win+Down Arrow` keep working as usual)  |
+| Win+Left/Right Arrow | Move focused window between zones (only if `Override Windows Snap hotkeys` setting is turned on, in that case only the `Win+Left Arrow` and `Win+Right Arrow` are overridden, while the `Win+Up Arrow` and `Win+Down Arrow` keep working as usual)  |
 
 FancyZones doesn't override the Windows 10 `Win+Shift+Arrow` to quickly move a window to an adjacent monitor.
 
@@ -56,7 +56,7 @@ FancyZones doesn't override the Windows 10 `Win+Shift+Arrow` to quickly move a w
 | Zone Inactive color (Default #F5FCFF) | The color that zones become when they are not an active drop during a window drag |
 | Zone border color (Default #FFFFFF) | The color of the border of active and inactive zones |
 | Zone opacity (%) (Default 50%) | The percentage of opacity of active and inactive zones |
-| Exclude applications from snapping to zones | Add the applications name, or part of the name, one per line (e.g., adding `Notepa` will match both `Notepad.exe` and `Notepad++.exe`, to match only `Notepad.exe` add the `.exe` extension) | 
+| Exclude applications from snapping to zones | Add the applications name, or part of the name, one per line (e.g., adding `Notepad` will match both `Notepad.exe` and `Notepad++.exe`, to match only `Notepad.exe` add the `.exe` extension) | 
 
 ![FancyZones Settings UI](FancyZonesSettings1.png)
 

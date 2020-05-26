@@ -71,7 +71,7 @@ IFACEMETHODIMP_(bool) FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ in
     settings.set_video_link(L"https://youtu.be/rTtGzZYAXgY");
 
     // Add a custom action property. When using this settings type, the "PowertoyModuleIface::call_custom_action()"
-    // method should be overriden as well.
+    // method should be overridden as well.
     settings.add_custom_action(
         L"ToggledFZEditor", // action name.
         IDS_SETTING_LAUNCH_EDITOR_LABEL,
