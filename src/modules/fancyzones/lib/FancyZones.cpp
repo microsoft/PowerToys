@@ -791,17 +791,18 @@ void FancyZones::UpdateWindowsPositions() noexcept
 {
     auto callback = [](HWND window, LPARAM data) -> BOOL {
         size_t bitmask = reinterpret_cast<size_t>(::GetProp(window, MULTI_ZONE_STAMP));
-        std::vector<int> indexSet;
-        for (int i = 0; i < std::numeric_limits<size_t>::digits; i++)
-        {
-            if ((1ull << i) & bitmask) 
-            {
-                indexSet.push_back(i);
-            }
-        }
 
         if (bitmask != 0)
         {
+            std::vector<int> indexSet;
+            for (int i = 0; i < std::numeric_limits<size_t>::digits; i++)
+            {
+                if ((1ull << i) & bitmask)
+                {
+                    indexSet.push_back(i);
+                }
+            }
+
             auto strongThis = reinterpret_cast<FancyZones*>(data);
             std::unique_lock writeLock(strongThis->m_lock);
             strongThis->m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, nullptr, indexSet, strongThis->m_zoneWindowMap);
