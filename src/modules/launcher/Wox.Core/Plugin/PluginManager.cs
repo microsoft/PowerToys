@@ -29,7 +29,7 @@ namespace Wox.Core.Plugin
 
         public static IPublicAPI API { private set; get; }
 
-        // todo happlebao, this should not be public, the indicator function should be embeded 
+        // todo happlebao, this should not be public, the indicator function should be embedded 
         public static PluginsSettings Settings;
         private static List<PluginMetadata> _metadatas;
         private static readonly string[] Directories = { Constant.PreinstalledDirectory, Constant.PluginsDirectory };

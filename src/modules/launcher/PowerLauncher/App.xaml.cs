@@ -84,7 +84,7 @@ namespace PowerLauncher
                 // load plugin before change language, because plugin language also needs be changed
                 InternationalizationManager.Instance.Settings = _settings;
                 InternationalizationManager.Instance.ChangeLanguage(_settings.Language);
-                // main windows needs initialized before theme change because of blur settigns
+                // main windows needs initialized before theme change because of blur settings
                 ThemeManager.Instance.Settings = _settings;
                 ThemeManager.Instance.ChangeTheme(_settings.Theme);
 
@@ -102,7 +102,7 @@ namespace PowerLauncher
                 PowerToysTelemetry.Log.WriteEvent(new LauncherBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
 
                 //[Conditional("RELEASE")]
-                // check udpate every 5 hours
+                // check update every 5 hours
 
                 // check updates on startup
             });

@@ -70,7 +70,7 @@ public:
   }
 
   // Return array of the names of all events that this powertoy listens for, with
-  // nullptr as the last element of the array. Nullptr can also be retured for empty
+  // nullptr as the last element of the array. Nullptr can also be returned for empty
   // list.
   virtual const wchar_t** get_events() override {
     static const wchar_t* events[] = { nullptr };
