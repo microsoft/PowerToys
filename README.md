@@ -4,7 +4,7 @@
 
 Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. Inspired by the [Windows 95 era PowerToys project](https://en.wikipedia.org/wiki/Microsoft_PowerToys), this reboot provides power users with ways to squeeze more efficiency out of the Windows 10 shell and customize it for individual workflows.  A great overview of the Windows 95 PowerToys can be found [here](https://socket3.wordpress.com/2016/10/22/using-windows-95-powertoys/).
 
-[What's Happening](#whats-happening)   |   [Downloading & Release notes][github-release-link]   |   [Contributing to PowerToys](#contributing) | [Uninstalling hint](#uninstalling)
+[What's Happening](#whats-happening)   |   [Downloading & Release notes][github-release-link]   |   [Contributing to PowerToys](#contributing) | [Known issues](#known-issues)
 
 ## Build status
 
@@ -71,7 +71,7 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 
 ## Installing and running Microsoft PowerToys
 
- **Requirements:** 
+### Requirements
  - Microsoft PowerToys requires Windows 10 1803 (build 17134) or later.
  - Have [.NET Core 3.1 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.4-windows-x64-installer). The installer will prompt this but we want to directly make people aware.
 
@@ -108,6 +108,10 @@ To upgrade PowerToys, run the following command from the command line / PowerShe
 choco upgrade powertoys
 ```
 
+### Known issues
+
+- [#2012 - Uninstalling with old control panel](https://github.com/microsoft/PowerToys/issues/2012) you can not uninstall PowerToys under the old control panel. Please use instead `Windows 10 Settings -> Apps -> Apps & features` to uninstall PowerToys.
+
 ### Processor support
 
 We currently support the matrix below.
@@ -115,11 +119,6 @@ We currently support the matrix below.
 | x64 | x86 | ARM |
 |:---:|:---:|:---:|
 | [Supported][github-release-link] | [Issue #602](https://github.com/microsoft/PowerToys/issues/602) | [Issue #490](https://github.com/microsoft/PowerToys/issues/490) |
-
-## Uninstalling
-⚠ Because of issue [#2012](https://github.com/microsoft/PowerToys/issues/2012) you can not uninstall PowerToys under the old control panel.
-
-Please use instead `Windows 10 Settings -> Apps -> Apps & features` to uninstall PowerToys.
 
 ## What's Happening
 
