@@ -225,6 +225,12 @@ namespace JSONHelpers
         {
             deviceInfoMap[deviceId] = data;
         }
+
+        inline void SetSettingsModulePath(std::wstring_view moduleName)
+        {
+            std::wstring result = PTSettingsHelper::get_module_save_folder_location(moduleName);
+            jsonFilePath = result + L"\\" + std::wstring(L"zones-settings.json");
+        }
 #endif
 
         inline void SetActiveDeviceId(const std::wstring& deviceId)

@@ -54,7 +54,7 @@ namespace FancyZonesUnitTests
     TEST_CLASS (FancyZonesSettingsCreationUnitTest)
     {
         HINSTANCE m_hInst;
-        PCWSTR m_moduleName = L"FancyZonesTest";
+        PCWSTR m_moduleName = L"FancyZonesUnitTests";
         std::wstring m_tmpName;
 
         const PowerToysSettings::HotkeyObject m_defaultHotkeyObject = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, VK_OEM_3);
@@ -67,8 +67,7 @@ namespace FancyZonesUnitTests
             }
             TEST_METHOD_CLEANUP(Cleanup)
                 {
-                    std::filesystem::remove(m_tmpName);
-                    std::filesystem::remove(PTSettingsHelper::get_module_save_folder_location(m_moduleName));
+                    std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_moduleName));
                 }
 
                 TEST_METHOD (CreateWithHinstanceDefault)
@@ -367,7 +366,7 @@ namespace FancyZonesUnitTests
     TEST_CLASS (FancyZonesSettingsCallbackUnitTests)
     {
         winrt::com_ptr<IFancyZonesSettings> m_settings = nullptr;
-        PCWSTR m_moduleName = L"FancyZonesTest";
+        PCWSTR m_moduleName = L"FancyZonesUnitTests";
 
         struct FZCallback : public winrt::implements<FZCallback, IFancyZonesCallback>
         {
@@ -466,8 +465,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD_CLEANUP(Cleanup)
                 {
-                    const auto settingsFile = PTSettingsHelper::get_module_save_folder_location(m_moduleName) + L"\\settings.json";
-                    std::filesystem::remove(settingsFile);
+                    std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_moduleName));
                 }
 
                 TEST_METHOD (CallbackSetConfig)
@@ -541,7 +539,7 @@ namespace FancyZonesUnitTests
     {
         winrt::com_ptr<IFancyZonesSettings> m_settings = nullptr;
         PowerToysSettings::Settings* m_ptSettings = nullptr;
-        PCWSTR m_moduleName = L"FancyZonesTest";
+        PCWSTR m_moduleName = L"FancyZonesUnitTests";
 
         std::wstring serializedPowerToySettings(const Settings& settings)
         {
@@ -640,8 +638,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD_CLEANUP(Cleanup)
                 {
-                    const auto settingsFile = PTSettingsHelper::get_module_save_folder_location(m_moduleName) + L"\\settings.json";
-                    std::filesystem::remove(settingsFile);
+                    std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_moduleName));
                 }
 
                 TEST_METHOD (GetConfig)

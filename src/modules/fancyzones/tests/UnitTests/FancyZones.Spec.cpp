@@ -16,13 +16,19 @@ namespace FancyZonesUnitTests
     {
         HINSTANCE m_hInst;
         winrt::com_ptr<IFancyZonesSettings> m_settings;
+        const std::wstring_view m_moduleName = L"FancyZonesUnitTests";
 
         TEST_METHOD_INITIALIZE(Init)
             {
                 m_hInst = (HINSTANCE)GetModuleHandleW(nullptr);
-                m_settings = MakeFancyZonesSettings(m_hInst, L"FancyZonesUnitTests");
+                m_settings = MakeFancyZonesSettings(m_hInst, m_moduleName.data());
                 Assert::IsTrue(m_settings != nullptr);
             }
+
+        TEST_METHOD_CLEANUP(CleanUp)
+        {
+            std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_moduleName));
+        }
 
             TEST_METHOD (Create)
             {
