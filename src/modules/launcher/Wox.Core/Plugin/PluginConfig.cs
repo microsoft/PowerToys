@@ -90,7 +90,7 @@ namespace Wox.Core.Plugin
 
             if (!File.Exists(metadata.ExecuteFilePath))
             {
-                Log.Error($"|PluginConfig.GetPluginMetadata|execute file path didn't exist <{metadata.ExecuteFilePath}> for conifg <{configPath}");
+                Log.Error($"|PluginConfig.GetPluginMetadata|execute file path didn't exist <{metadata.ExecuteFilePath}> for config <{configPath}");
                 return null;
             }
 

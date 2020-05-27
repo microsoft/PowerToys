@@ -20,11 +20,11 @@ namespace Wox.Plugin.SharedCommands
             var browser = string.IsNullOrEmpty(browserExecutableName) ? "chrome" : browserPath;
 
             // Internet Explorer will open url in new browser window, and does not take the --new-window parameter
-            var browserArguements = browserExecutableName == "iexplore.exe" ? url : "--new-window " + url;
+            var browserArguments = browserExecutableName == "iexplore.exe" ? url : "--new-window " + url;
 
             try
             {
-                Process.Start(browser, browserArguements);
+                Process.Start(browser, browserArguments);
             }
             catch (System.ComponentModel.Win32Exception)
             {
