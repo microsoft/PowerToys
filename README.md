@@ -110,7 +110,7 @@ choco upgrade powertoys
 
 ### Known issues
 
-- [#2012 - Uninstalling with old control panel](https://github.com/microsoft/PowerToys/issues/2012) you can not uninstall PowerToys under the old control panel. Please use instead `Windows 10 Settings -> Apps -> Apps & features` to uninstall PowerToys.
+- [#2012 - Uninstalling with old control panel fails](https://github.com/microsoft/PowerToys/issues/2012): Please use the modern settings to uninstall. `Windows 10 Settings -> Apps -> Apps & features`
 
 ### Processor support
 
