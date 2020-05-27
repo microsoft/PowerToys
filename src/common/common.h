@@ -47,7 +47,7 @@ void show_last_error_message(LPCWSTR lpszFunction, DWORD dw);
 
 enum WindowState
 {
-    UNKNONW,
+    UNKNOWN,
     MINIMIZED,
     MAXIMIZED,
     SNAPED_TOP_LEFT,
