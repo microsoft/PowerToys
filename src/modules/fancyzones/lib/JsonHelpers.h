@@ -186,7 +186,7 @@ namespace JSONHelpers
 
         std::optional<DeviceInfoData> FindDeviceInfo(const std::wstring& zoneWindowId) const;
 
-        std::optional<CustomZoneSetData> FindCustomZoneSet(const std::wstring& guuid) const;
+        std::optional<CustomZoneSetData> FindCustomZoneSet(const std::wstring& guid) const;
 
         inline const std::wstring GetActiveDeviceId() const
         {

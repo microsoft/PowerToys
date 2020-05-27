@@ -261,10 +261,10 @@ namespace JSONHelpers
         return it != end(deviceInfoMap) ? std::optional{ it->second } : std::nullopt;
     }
 
-    std::optional<CustomZoneSetData> FancyZonesData::FindCustomZoneSet(const std::wstring& guuid) const
+    std::optional<CustomZoneSetData> FancyZonesData::FindCustomZoneSet(const std::wstring& guid) const
     {
         std::scoped_lock lock{ dataLock };
-        auto it = customZoneSetsMap.find(guuid);
+        auto it = customZoneSetsMap.find(guid);
         return it != end(customZoneSetsMap) ? std::optional{ it->second } : std::nullopt;
     }
 

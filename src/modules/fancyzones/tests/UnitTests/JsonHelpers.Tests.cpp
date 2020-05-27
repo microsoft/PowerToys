@@ -1117,7 +1117,7 @@ namespace FancyZonesUnitTests
                 Assert::AreEqual(expected.data.activeZoneSet.uuid.c_str(), actual.activeZoneSet.uuid.c_str());
             }
 
-            TEST_METHOD (DeviceInfoReadTempUnexsisted)
+            TEST_METHOD (DeviceInfoReadTempNonexistent)
             {
                 FancyZonesData data;
                 const std::wstring path = data.GetPersistFancyZonesJSONPath() + L".test_tmp";
@@ -1500,7 +1500,7 @@ namespace FancyZonesUnitTests
                 Assert::AreEqual(expectedGrid.columns(), actualGrid.columns());
             }
 
-            TEST_METHOD (CustomZoneSetsReadTempUnexsisted)
+            TEST_METHOD (CustomZoneSetsReadTempNonexistent)
             {
                 const std::wstring path = m_fzData.GetPersistFancyZonesJSONPath() + L".test_tmp";
                 const std::wstring deviceId = L"default_device_id";
