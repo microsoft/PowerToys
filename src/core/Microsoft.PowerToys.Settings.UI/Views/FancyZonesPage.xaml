@@ -99,7 +99,7 @@
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
-            <CheckBox x:Uid="FancyZones_MoveVindowsAcrossAllMonitorsCheckBoxControl"
+            <CheckBox x:Uid="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl"
                       IsChecked="{ Binding Mode=TwoWay, Path=MoveWindowsAcrossMonitors}"
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
@@ -131,7 +131,7 @@
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
 
-            <TextBlock x:Uid="Appearancce_GroupSettings"
+            <TextBlock x:Uid="Appearance_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <!-- TO DO: Do we still need this numberbox? The colorpicker has an Alpha/Opacity option as well so we could use that -->

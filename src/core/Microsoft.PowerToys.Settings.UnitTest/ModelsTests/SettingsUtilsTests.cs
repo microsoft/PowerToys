@@ -91,7 +91,7 @@ namespace CommonLibTest
         }
 
         [TestMethod]
-        public void CreateSettingsFolder_ShouldCreateFolder_WhenSuccessfull()
+        public void CreateSettingsFolder_ShouldCreateFolder_WhenSuccessful()
         {
             // Arrange
             string file_name = "test\\" + RandomString();
