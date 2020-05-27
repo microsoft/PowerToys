@@ -222,7 +222,7 @@ void OverlayWindow::quick_hide()
 
 void OverlayWindow::was_hidden()
 {
-    target_state->was_hiden();
+    target_state->was_hidden();
 }
 
 void OverlayWindow::destroy()
