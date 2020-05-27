@@ -5,6 +5,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using ControlzEx.Standard;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
@@ -366,64 +367,25 @@ namespace FancyZonesEditor
             int rows = _model.Rows;
             int cols = _model.Columns;
 
-            int childIndex = 0;
-            for (int row = 0; row < rows - 1; row++)
+            foreach (GridResizer resizer in adornerChildren)
             {
-                GridResizer resizer = (GridResizer)adornerChildren[childIndex++];
-                int startCol = -1;
-                int endCol = cols - 1;
-                for (int col = 0; col < cols; col++)
+                if (resizer.Orientation == Orientation.Horizontal)
                 {
-                    if ((startCol == -1) && (_model.CellChildMap[row, col] != _model.CellChildMap[row + 1, col]))
+                    if (resizer.EndCol <= cols)
                     {
-                        startCol = col;
+                        // hard coding this as (resizer.ActualHeight / 2) will still evaluate to 0 here ... a layout hasn't yet happened
+                        Canvas.SetTop(resizer, _rowInfo[resizer.StartRow].End + (spacing / 2) - 24);
+                        Canvas.SetLeft(resizer, (_colInfo[resizer.EndCol - 1].End + _colInfo[resizer.StartCol].Start) / 2);
                     }
-                    else if ((startCol != -1) && (_model.CellChildMap[row, col] == _model.CellChildMap[row + 1, col]))
-                    {
-                        endCol = col - 1;
-                        break;
-                    }
-                }
-
-                if (startCol != -1)
-                {
-                    // hard coding this as (resizer.ActualHeight / 2) will still evaluate to 0 here ... a layout hasn't yet happened
-                    Canvas.SetTop(resizer, _rowInfo[row].End + (spacing / 2) - 24);
-                    Canvas.SetLeft(resizer, (_colInfo[endCol].End + _colInfo[startCol].Start) / 2);
                 }
                 else
                 {
-                    resizer.Visibility = Visibility.Collapsed;
-                }
-            }
-
-            for (int col = 0; col < cols - 1; col++)
-            {
-                GridResizer resizer = (GridResizer)adornerChildren[childIndex++];
-                int startRow = -1;
-                int endRow = rows - 1;
-                for (int row = 0; row < rows; row++)
-                {
-                    if ((startRow == -1) && (_model.CellChildMap[row, col] != _model.CellChildMap[row, col + 1]))
+                    if (resizer.EndRow <= rows)
                     {
-                        startRow = row;
+                        // hard coding this as (resizer.ActualWidth / 2) will still evaluate to 0 here ... a layout hasn't yet happened
+                        Canvas.SetLeft(resizer, _colInfo[resizer.StartCol].End + (spacing / 2) - 24);
+                        Canvas.SetTop(resizer, (_rowInfo[resizer.EndRow - 1].End + _rowInfo[resizer.StartRow].Start) / 2);
                     }
-                    else if ((startRow != -1) && (_model.CellChildMap[row, col] == _model.CellChildMap[row, col + 1]))
-                    {
-                        endRow = row - 1;
-                        break;
-                    }
-                }
-
-                if (startRow != -1)
-                {
-                    Canvas.SetLeft(resizer, _colInfo[col].End + (spacing / 2) - 24); // hard coding this as (resizer.ActualWidth / 2) will still evaluate to 0 here ... a layout hasn't yet happened
-                    Canvas.SetTop(resizer, (_rowInfo[endRow].End + _rowInfo[startRow].Start) / 2);
-                    resizer.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    resizer.Visibility = Visibility.Collapsed;
                 }
             }
         }
@@ -432,8 +394,8 @@ namespace FancyZonesEditor
         {
             ResizeInfo res = new ResizeInfo();
 
-            int rowIndex = resizer.RowIndex;
-            int colIndex = resizer.ColIndex;
+            int rowIndex = resizer.StartRow;
+            int colIndex = resizer.StartCol;
             int[,] indices = _model.CellChildMap;
 
             if (resizer.Orientation == Orientation.Vertical)
@@ -467,13 +429,13 @@ namespace FancyZonesEditor
             {
                 info = _colInfo;
                 percents = _model.ColumnPercents;
-                index = resizer.ColIndex;
+                index = resizer.StartCol;
             }
             else
             {
                 info = _rowInfo;
                 percents = _model.RowPercents;
-                index = resizer.RowIndex;
+                index = resizer.StartRow;
             }
 
             int nextPercent = data.CurrentPercent + data.AdjacentPercent + info[index + 1].Percent;

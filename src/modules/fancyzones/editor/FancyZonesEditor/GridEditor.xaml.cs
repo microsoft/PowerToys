@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using ControlzEx.Standard;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
@@ -229,7 +230,22 @@ namespace FancyZonesEditor
                     offset -= _data.ColumnTop(foundCol);
                 }
 
-                AddDragHandle(Orientation.Vertical, foundRow, cols - 1);
+                // update resizers data
+                foreach (GridResizer r in AdornerLayer.Children)
+                {
+                    if (r.StartCol > foundCol || (r.StartCol == foundCol && r.Orientation == Orientation.Vertical))
+                    {
+                        r.StartCol++;
+                    }
+
+                    if (r.EndCol > foundCol)
+                    {
+                        r.EndCol++;
+                    }
+                }
+
+                AddDragHandle(Orientation.Vertical, foundRow, foundRow + 1, foundCol, foundCol + 1, foundCol + model.Rows - 1);
+
                 _data.SplitColumn(foundCol, spliteeIndex, newChildIndex, space, offset, ActualWidth);
             }
             else
@@ -274,7 +290,22 @@ namespace FancyZonesEditor
                     offset -= _data.RowStart(foundRow);
                 }
 
-                AddDragHandle(Orientation.Horizontal, rows - 1, foundCol);
+                // update resizers data
+                foreach (GridResizer r in AdornerLayer.Children)
+                {
+                    if (r.StartRow > foundRow || (r.StartRow == foundRow && r.Orientation == Orientation.Horizontal))
+                    {
+                        r.StartRow++;
+                    }
+
+                    if (r.EndRow > foundRow)
+                    {
+                        r.EndRow++;
+                    }
+                }
+
+                AddDragHandle(Orientation.Horizontal, foundRow, foundRow + 1, foundCol, foundCol + 1, foundRow);
+
                 _data.SplitRow(foundRow, spliteeIndex, newChildIndex, space, offset, ActualHeight);
             }
         }
@@ -289,54 +320,47 @@ namespace FancyZonesEditor
             if (AdornerLayer.Children.Count == 0)
             {
                 GridLayoutModel model = Model;
-
-                int interiorRows = model.Rows - 1;
-                int interiorCols = model.Columns - 1;
                 int[,] indices = model.CellChildMap;
 
-                for (int col = 0; col < model.Columns; col++)
+                // horizontal resizers
+                for (int row = 0; row < model.Rows - 1; row++)
                 {
-                    for (int row = 0; row < interiorRows; row++)
+                    for (int col = 0; col < model.Columns; col++)
                     {
-                        if (indices[row, col] != indices[row + 1, col]
-                           /* && (col == model.Columns - 1 || (col + 1 < model.Columns && _cellInfo[row, col].RowInfo != _cellInfo[row, col + 1].RowInfo))*/)
+                        if (indices[row, col] != indices[row + 1, col])
                         {
-                            AddDragHandle(Orientation.Horizontal, row, col);
+                            AddDragHandle(Orientation.Horizontal, row, row + 1, col, col + 1, row);
                         }
                     }
                 }
 
-                for (int row = 0; row < Model.Rows; row++)
+                // vertical resizers
+                for (int col = 0; col < model.Columns - 1; col++)
                 {
-                    for (int col = 0; col < interiorCols; col++)
+                    for (int row = 0; row < model.Rows; row++)
                     {
-                        if (indices[row, col] != indices[row, col + 1]
-                            /*&& (row == model.Rows - 1 || (row + 1 < model.Rows && _cellInfo[row, col].ColInfo != _cellInfo[row + 1, col].ColInfo))*/)
+                        if (indices[row, col] != indices[row, col + 1])
                         {
-                            AddDragHandle(Orientation.Vertical, row, col);
+                            AddDragHandle(Orientation.Vertical, row, row + 1, col, col + 1, col + model.Rows - 1);
                         }
                     }
                 }
             }
         }
 
-        private void AddDragHandle(Orientation orientation, int rowIndex, int colIndex)
+        private void AddDragHandle(Orientation orientation, int rowStart, int rowEnd, int colStart, int colEnd, int index)
         {
             GridResizer resizer = new GridResizer
             {
                 Orientation = orientation,
-                RowIndex = rowIndex,
-                ColIndex = colIndex,
+                StartRow = rowStart,
+                EndRow = rowEnd,
+                StartCol = colStart,
+                EndCol = colEnd,
                 Model = Model,
             };
             resizer.DragDelta += Resizer_DragDelta;
             resizer.DragCompleted += Resizer_DragCompleted;
-
-            int index = rowIndex;
-            if (orientation == Orientation.Vertical)
-            {
-                index = colIndex + Model.Rows - 1;
-            }
 
             if (index > AdornerLayer.Children.Count)
             {
@@ -434,52 +458,47 @@ namespace FancyZonesEditor
         private void Resizer_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
         {
             GridResizer resizer = (GridResizer)sender;
+            int index = AdornerLayer.Children.IndexOf(resizer);
             double delta = (resizer.Orientation == Orientation.Vertical) ? e.HorizontalChange : e.VerticalChange;
 
             GridData.ResizeInfo resizeInfo = _data.CalculateResizeInfo(resizer, delta);
+
             if (resizeInfo.IsResizeAllowed)
             {
                 _data.DragResizer(resizer, resizeInfo);
-                if (_data.SwapNegativePercents(resizer.Orientation, resizer.RowIndex, resizer.ColIndex))
+                if (_data.SwapNegativePercents(resizer.Orientation, resizer.StartRow, resizer.StartCol))
                 {
+                    UIElementCollection resizers = AdornerLayer.Children;
+
                     if (resizer.Orientation == Orientation.Vertical)
                     {
                         if (delta < 0)
                         {
-                            resizer.ColIndex--;
-
-                            UIElementCollection resizers = AdornerLayer.Children;
-                            int ind = resizers.IndexOf(resizer);
+                            resizer.StartCol--;
+                            resizer.EndCol--;
 
                             for (int i = 0; i < resizers.Count; i++)
                             {
                                 GridResizer r = (GridResizer)resizers[i];
-                                if (r.Orientation == resizer.Orientation && resizer.RowIndex != r.RowIndex && resizer.ColIndex == r.ColIndex)
+                                if (r.Orientation == resizer.Orientation && resizer.StartRow != r.StartRow && resizer.StartCol == r.StartCol)
                                 {
-                                    r.ColIndex++;
-
-                                    resizers.RemoveAt(ind);
-                                    resizers.Insert(i, resizer);
+                                    r.StartCol++;
+                                    r.EndCol++;
                                     break;
                                 }
                             }
                         }
                         else if (delta > 0)
                         {
-                            resizer.ColIndex++;
-
-                            UIElementCollection resizers = AdornerLayer.Children;
-                            int ind = resizers.IndexOf(resizer);
+                            resizer.StartCol++;
+                            resizer.EndCol++;
 
                             for (int i = 0; i < resizers.Count; i++)
                             {
                                 GridResizer r = (GridResizer)resizers[i];
-                                if (r.Orientation == resizer.Orientation && resizer.RowIndex != r.RowIndex && resizer.ColIndex == r.ColIndex)
+                                if (r.Orientation == resizer.Orientation && resizer.StartRow != r.StartRow && resizer.StartCol == r.StartCol)
                                 {
-                                    r.ColIndex--;
-
-                                    resizers.RemoveAt(i);
-                                    resizers.Insert(ind, resizer);
+                                    r.StartCol--;
                                     break;
                                 }
                             }
@@ -489,40 +508,32 @@ namespace FancyZonesEditor
                     {
                         if (delta < 0)
                         {
-                            resizer.RowIndex--;
-
-                            UIElementCollection resizers = AdornerLayer.Children;
-                            int ind = resizers.IndexOf(resizer);
+                            resizer.StartRow--;
+                            resizer.EndRow--;
 
                             for (int i = 0; i < resizers.Count; i++)
                             {
                                 GridResizer r = (GridResizer)resizers[i];
-                                if (r.Orientation == resizer.Orientation && resizer.RowIndex == r.RowIndex && resizer.ColIndex != r.ColIndex)
+                                if (r.Orientation == resizer.Orientation && resizer.StartRow == r.StartRow && resizer.StartCol != r.StartCol)
                                 {
-                                    r.RowIndex++;
-
-                                    resizers.RemoveAt(ind);
-                                    resizers.Insert(i, resizer);
+                                    r.StartRow++;
+                                    r.EndRow++;
                                     break;
                                 }
                             }
                         }
                         else if (delta > 0)
                         {
-                            resizer.RowIndex++;
-
-                            UIElementCollection resizers = AdornerLayer.Children;
-                            int ind = resizers.IndexOf(resizer);
+                            resizer.StartRow++;
+                            resizer.EndRow++;
 
                             for (int i = 0; i < resizers.Count; i++)
                             {
                                 GridResizer r = (GridResizer)resizers[i];
-                                if (r.Orientation == resizer.Orientation && resizer.RowIndex == r.RowIndex && resizer.ColIndex != r.ColIndex)
+                                if (r.Orientation == resizer.Orientation && resizer.StartRow == r.StartRow && resizer.StartCol != r.StartCol)
                                 {
-                                    r.RowIndex--;
-
-                                    resizers.RemoveAt(i);
-                                    resizers.Insert(ind, r);
+                                    r.StartRow--;
+                                    r.EndRow--;
                                     break;
                                 }
                             }
@@ -532,6 +543,7 @@ namespace FancyZonesEditor
 
                 Size actualSize = new Size(ActualWidth, ActualHeight);
                 ArrangeGridRects(actualSize);
+                AdornerLayer.UpdateLayout();
             }
         }
 
@@ -649,7 +661,7 @@ namespace FancyZonesEditor
                             _startCol = col;
                         }
                     }
-                    else if (_data.ColumnTop(col)  > maxX)
+                    else if (_data.ColumnTop(col) > maxX)
                     {
                         _endCol = col - 1;
                         break;
