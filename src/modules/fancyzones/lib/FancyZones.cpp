@@ -372,7 +372,7 @@ FancyZones::WindowCreated(HWND window) noexcept
                         !fancyZonesData.IsAnotherWindowOfApplicationInstanceZoned(window))
                     {
                         m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, monitor, zoneIndexSet, m_zoneWindowMap);
-                        fancyZonesData.UpdateHandle(window);
+                        fancyZonesData.UpdateProcessIdToHandleMap(window);
                         break;
                     }
                 }

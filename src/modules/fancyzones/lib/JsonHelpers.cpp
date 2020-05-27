@@ -410,7 +410,7 @@ namespace JSONHelpers
         return false;
     }
 
-    void FancyZonesData::UpdateHandle(HWND window)
+    void FancyZonesData::UpdateProcessIdToHandleMap(HWND window)
     {
         std::scoped_lock lock{ dataLock };
         auto processPath = get_process_path(window);

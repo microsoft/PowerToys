@@ -132,7 +132,7 @@ namespace JSONHelpers
 
     struct AppZoneHistoryData
     {
-        std::map<DWORD, HWND> processIdToHandleMap;
+        std::map<DWORD, HWND> processIdToHandleMap; // Maps process id(DWORD) of application to zoned window handle(HWND)
 
         std::wstring zoneSetUuid;
         std::wstring deviceId;
@@ -245,7 +245,7 @@ namespace JSONHelpers
         void RemoveDeletedDesktops(const std::vector<std::wstring>& activeDesktops);
 
         bool IsAnotherWindowOfApplicationInstanceZoned(HWND window) const;
-        void UpdateHandle(HWND window);
+        void UpdateProcessIdToHandleMap(HWND window);
         std::vector<int> GetAppLastZoneIndexSet(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const;
         bool RemoveAppLastZone(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId);
         bool SetAppLastZones(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, const std::vector<int>& zoneIndexSet);
