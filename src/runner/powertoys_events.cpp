@@ -62,7 +62,7 @@ void PowertoysEvents::unregister_system_menu_action(PowertoyModuleIface* module)
     auto it = system_menu_receivers.find(module);
     if (it != system_menu_receivers.end())
     {
-        SystemMenuHelperInstace().Reset(module);
+        SystemMenuHelperInstance().Reset(module);
         system_menu_receivers.erase(it);
     }
 }
@@ -73,18 +73,18 @@ void PowertoysEvents::handle_system_menu_action(const WinHookEvent& data)
     {
         for (auto& module : system_menu_receivers)
         {
-            SystemMenuHelperInstace().Customize(module, data.hwnd);
+            SystemMenuHelperInstance().Customize(module, data.hwnd);
         }
     }
     else if (data.event == EVENT_OBJECT_INVOKED)
     {
-        if (PowertoyModuleIface * module{ SystemMenuHelperInstace().ModuleFromItemId(data.idChild) })
+        if (PowertoyModuleIface * module{ SystemMenuHelperInstance().ModuleFromItemId(data.idChild) })
         {
-            std::wstring itemName = SystemMenuHelperInstace().ItemNameFromItemId(data.idChild);
+            std::wstring itemName = SystemMenuHelperInstance().ItemNameFromItemId(data.idChild);
             // Process event on specified system menu item by responsible module.
             module->signal_system_menu_action(itemName.c_str());
             // Process event on specified system menu item by system menu helper (check/uncheck if needed).
-            SystemMenuHelperInstace().ProcessSelectedItem(module, GetForegroundWindow(), itemName.c_str());
+            SystemMenuHelperInstance().ProcessSelectedItem(module, GetForegroundWindow(), itemName.c_str());
         }
     }
 }
