@@ -11,7 +11,7 @@ namespace PowerToysTests
         protected static void ResetSettings()
         {
             ResetDefaultFancyZonesSettings(false);
-            ResetDefautZoneSettings(true);
+            ResetDefaultZoneSettings(true);
         }
 
         protected static void OpenEditor()

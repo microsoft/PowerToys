@@ -128,7 +128,7 @@ void log_stack_trace(std::wstring& generalErrorDescription)
     MessageBoxW(NULL, errorString.c_str(), L"Unhandled Error", MB_OK | MB_ICONERROR);
 }
 
-LONG WINAPI unhandled_exceptiont_handler(PEXCEPTION_POINTERS info)
+LONG WINAPI unhandled_exception_handler(PEXCEPTION_POINTERS info)
 {
     if (!processing_exception)
     {
@@ -164,7 +164,7 @@ extern "C" void AbortHandler(int signal_number)
 
 void init_global_error_handlers()
 {
-    default_top_level_exception_handler = SetUnhandledExceptionFilter(unhandled_exceptiont_handler);
+    default_top_level_exception_handler = SetUnhandledExceptionFilter(unhandled_exception_handler);
     signal(SIGABRT, &AbortHandler);
 }
 #endif

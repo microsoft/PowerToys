@@ -196,7 +196,7 @@ namespace PowerLauncher
 
         private void OnDeactivated(object sender, EventArgs e)
         {
-            if (_settings.HideWhenDeactive)
+            if (_settings.HideWhenDeactivated)
             {
                 if (isDPIChanged)
                 {
@@ -414,7 +414,7 @@ namespace PowerLauncher
             SearchBox.AutoCompleteTextBlock.Text = ListView_FirstItem(_viewModel.QueryText);
         }
 
-        private const int millisecondsToWait = 200;
+        private const int millisecondsToWait = 100;
         private static DateTime s_lastTimeOfTyping;
 
         private string ListView_FirstItem(String input)

@@ -18,6 +18,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="1" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="0" />
+                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
@@ -27,6 +28,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="0" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                        <Setter Target="SidePanel.Width" Value="Auto" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -50,7 +52,7 @@
                           IsOn="{Binding Mode=TwoWay, Path=IsEnabled}"                          
                            />
 
-            <TextBlock  x:Uid="PowerRename_ShellIntergration"
+            <TextBlock  x:Uid="PowerRename_ShellIntegration"
                         Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <ToggleSwitch x:Uid="PowerRename_Toggle_EnableOnContextMenu"
@@ -76,7 +78,7 @@
                            />
 
             <muxc:NumberBox x:Uid="PowerRename_Toggle_MaxDispListNum"
-                            SpinButtonPlacementMode="Inline"
+                            SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallTopMargin}" 
                             Value="{Binding Mode=TwoWay, Path=MaxDispListNum}"

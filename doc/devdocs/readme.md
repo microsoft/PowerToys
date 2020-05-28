@@ -6,7 +6,7 @@
 - [Coding style](style.md).
 - Try to package new ideas/components into libraries that have nicely defined interfaces.
 - Package new ideas into classes or refactor existing ideas into a class as you extend.
-- When adding new classes/methos/changing existing code: add new unit tests or update the existing tests.
+- When adding new classes/methods/changing existing code: add new unit tests or update the existing tests.
 
 ## Github Workflow
 

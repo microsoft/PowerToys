@@ -302,7 +302,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Switches dekstop focus to the window
+        /// Switches desktop focus to the window
         /// </summary>
         public void SwitchToWindow()
         {

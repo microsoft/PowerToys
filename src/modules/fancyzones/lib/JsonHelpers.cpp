@@ -23,6 +23,7 @@ namespace
     constexpr int c_blankCustomModelId = 0xFFFA;
 
     const wchar_t* FANCY_ZONES_DATA_FILE = L"zones-settings.json";
+    const wchar_t* FANCY_ZONES_APP_ZONE_HISTORY_FILE = L"app-zone-history.json";
     const wchar_t* DEFAULT_GUID = L"{00000000-0000-0000-0000-000000000000}";
     const wchar_t* REG_SETTINGS = L"Software\\SuperFancyZones";
 
@@ -221,6 +222,7 @@ namespace JSONHelpers
     {
         std::wstring result = PTSettingsHelper::get_module_save_folder_location(L"FancyZones");
         jsonFilePath = result + L"\\" + std::wstring(FANCY_ZONES_DATA_FILE);
+        appZoneHistoryFilePath = result + L"\\" + std::wstring(FANCY_ZONES_APP_ZONE_HISTORY_FILE);
     }
 
     json::JsonObject FancyZonesData::GetPersistFancyZonesJSON()
@@ -232,6 +234,18 @@ namespace JSONHelpers
         auto result = json::from_file(save_file_path);
         if (result)
         {
+            if (!result->HasKey(L"app-zone-history"))
+            {
+                auto appZoneHistory = json::from_file(appZoneHistoryFilePath);
+                if (appZoneHistory)
+                {
+                    result->SetNamedValue(L"app-zone-history", appZoneHistory->GetNamedArray(L"app-zone-history"));
+                }
+                else
+                {
+                    result->SetNamedValue(L"app-zone-history", json::JsonArray());
+                }
+            }
             return *result;
         }
         else
@@ -247,10 +261,10 @@ namespace JSONHelpers
         return it != end(deviceInfoMap) ? std::optional{ it->second } : std::nullopt;
     }
 
-    std::optional<CustomZoneSetData> FancyZonesData::FindCustomZoneSet(const std::wstring& guuid) const
+    std::optional<CustomZoneSetData> FancyZonesData::FindCustomZoneSet(const std::wstring& guid) const
     {
         std::scoped_lock lock{ dataLock };
-        auto it = customZoneSetsMap.find(guuid);
+        auto it = customZoneSetsMap.find(guid);
         return it != end(customZoneSetsMap) ? std::optional{ it->second } : std::nullopt;
     }
 
@@ -368,7 +382,52 @@ namespace JSONHelpers
         SaveFancyZonesData();
     }
 
-    int FancyZonesData::GetAppLastZoneIndex(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const
+    bool FancyZonesData::IsAnotherWindowOfApplicationInstanceZoned(HWND window) const
+    {
+        std::scoped_lock lock{ dataLock };
+        auto processPath = get_process_path(window);
+        if (!processPath.empty())
+        {
+            auto history = appZoneHistoryMap.find(processPath);
+            if (history != appZoneHistoryMap.end())
+            {
+                DWORD processId = 0;
+                GetWindowThreadProcessId(window, &processId);
+
+                auto processIdIt = history->second.processIdToHandleMap.find(processId);
+
+                if (processIdIt == history->second.processIdToHandleMap.end())
+                {
+                    return false;
+                }
+                else if (processIdIt->second != window && IsWindow(processIdIt->second))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    void FancyZonesData::UpdateProcessIdToHandleMap(HWND window)
+    {
+        std::scoped_lock lock{ dataLock };
+        auto processPath = get_process_path(window);
+        if (!processPath.empty())
+        {
+            auto history = appZoneHistoryMap.find(processPath);
+            if (history != appZoneHistoryMap.end())
+            {
+                DWORD processId = 0;
+                GetWindowThreadProcessId(window, &processId);
+
+                history->second.processIdToHandleMap[processId] = window;
+            }
+        }
+    }
+
+    std::vector<int> FancyZonesData::GetAppLastZoneIndexSet(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const
     {
         std::scoped_lock lock{ dataLock };
         auto processPath = get_process_path(window);
@@ -380,12 +439,12 @@ namespace JSONHelpers
                 const auto& data = history->second;
                 if (data.zoneSetUuid == zoneSetId && data.deviceId == deviceId)
                 {
-                    return history->second.zoneIndex;
+                    return history->second.zoneIndexSet;
                 }
             }
         }
 
-        return -1;
+        return {};
     }
 
     bool FancyZonesData::RemoveAppLastZone(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId)
@@ -397,9 +456,26 @@ namespace JSONHelpers
             auto history = appZoneHistoryMap.find(processPath);
             if (history != appZoneHistoryMap.end())
             {
-                const auto& data = history->second;
+                auto& data = history->second;
                 if (data.zoneSetUuid == zoneSetId && data.deviceId == deviceId)
                 {
+                    if (!IsAnotherWindowOfApplicationInstanceZoned(window))
+                    {
+                        DWORD processId = 0;
+                        GetWindowThreadProcessId(window, &processId);
+
+                        data.processIdToHandleMap.erase(processId);
+                    }
+
+                    // if there is another instance placed don't erase history
+                    for (auto placedWindow : data.processIdToHandleMap)
+                    {
+                        if (IsWindow(placedWindow.second))
+                        {
+                            return false;
+                        }
+                    }
+
                     appZoneHistoryMap.erase(processPath);
                     SaveFancyZonesData();
                     return true;
@@ -410,16 +486,42 @@ namespace JSONHelpers
         return false;
     }
 
-    bool FancyZonesData::SetAppLastZone(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, int zoneIndex)
+    bool FancyZonesData::SetAppLastZones(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, const std::vector<int>& zoneIndexSet)
     {
         std::scoped_lock lock{ dataLock };
+
+        if (IsAnotherWindowOfApplicationInstanceZoned(window))
+        {
+            return false;
+        }
+
         auto processPath = get_process_path(window);
         if (processPath.empty())
         {
             return false;
         }
 
-        appZoneHistoryMap[processPath] = AppZoneHistoryData{ .zoneSetUuid = zoneSetId, .deviceId = deviceId, .zoneIndex = zoneIndex };
+        DWORD processId = 0;
+        GetWindowThreadProcessId(window, &processId);
+
+        auto history = appZoneHistoryMap.find(processPath);
+
+        if (history != appZoneHistoryMap.end())
+        {
+            auto& data = history->second;
+
+            for (auto placedWindow : data.processIdToHandleMap)
+            {
+                if (IsWindow(placedWindow.second) && processId != placedWindow.first)
+                {
+                    return false;
+                }
+            }
+        }
+
+        auto windowMap = appZoneHistoryMap[processPath].processIdToHandleMap;
+        windowMap[processId] = window;
+        appZoneHistoryMap[processPath] = AppZoneHistoryData{ .processIdToHandleMap = windowMap, .zoneSetUuid = zoneSetId, .deviceId = deviceId, .zoneIndexSet = zoneIndexSet };
         SaveFancyZonesData();
         return true;
     }
@@ -669,8 +771,9 @@ namespace JSONHelpers
     {
         std::scoped_lock lock{ dataLock };
         json::JsonObject root{};
+        json::JsonObject appZoneHistoryRoot{};
 
-        root.SetNamedValue(L"app-zone-history", SerializeAppZoneHistory());
+        appZoneHistoryRoot.SetNamedValue(L"app-zone-history", SerializeAppZoneHistory());
         root.SetNamedValue(L"devices", SerializeDeviceInfos());
         root.SetNamedValue(L"custom-zone-sets", SerializeCustomZoneSets());
 
@@ -681,6 +784,7 @@ namespace JSONHelpers
         }
 
         json::to_file(jsonFilePath, root);
+        json::to_file(appZoneHistoryFilePath, appZoneHistoryRoot);
     }
 
     void FancyZonesData::MigrateCustomZoneSetsFromRegistry()
@@ -719,18 +823,19 @@ namespace JSONHelpers
 
                 switch (zoneSetData.type)
                 {
-                case CustomLayoutType::Grid: {
+                case CustomLayoutType::Grid:
+                {
                     int j = 5;
                     GridLayoutInfo zoneSetInfo(GridLayoutInfo::Minimal{ .rows = data[j++], .columns = data[j++] });
 
-                    for (int row = 0; row < zoneSetInfo.rows(); row++, j+=2)
+                    for (int row = 0; row < zoneSetInfo.rows(); row++, j += 2)
                     {
-                        zoneSetInfo.rowsPercents()[row] = data[j] * 256 + data[j+1];
+                        zoneSetInfo.rowsPercents()[row] = data[j] * 256 + data[j + 1];
                     }
 
-                    for (int col = 0; col < zoneSetInfo.columns(); col++, j+=2)
+                    for (int col = 0; col < zoneSetInfo.columns(); col++, j += 2)
                     {
-                        zoneSetInfo.columnsPercents()[col] = data[j] * 256 + data[j+1];
+                        zoneSetInfo.columnsPercents()[col] = data[j] * 256 + data[j + 1];
                     }
 
                     for (int row = 0; row < zoneSetInfo.rows(); row++)
@@ -743,7 +848,8 @@ namespace JSONHelpers
                     zoneSetData.info = zoneSetInfo;
                     break;
                 }
-                case CustomLayoutType::Canvas: {
+                case CustomLayoutType::Canvas:
+                {
                     CanvasLayoutInfo info;
 
                     int j = 5;
@@ -771,7 +877,7 @@ namespace JSONHelpers
                     break;
                 }
                 default:
-                    abort(); // TODO(stefan): Exception safety
+                    continue;
                 }
                 customZoneSetsMap[uuid] = zoneSetData;
 
@@ -817,7 +923,14 @@ namespace JSONHelpers
         json::JsonObject result{};
 
         result.SetNamedValue(L"app-path", json::value(appZoneHistory.appPath));
-        result.SetNamedValue(L"zone-index", json::value(appZoneHistory.data.zoneIndex));
+
+        json::JsonArray jsonIndexSet;
+        for (int index : appZoneHistory.data.zoneIndexSet)
+        {
+            jsonIndexSet.Append(json::value(index));
+        }
+
+        result.SetNamedValue(L"zone-index-set", jsonIndexSet);
         result.SetNamedValue(L"device-id", json::value(appZoneHistory.data.deviceId));
         result.SetNamedValue(L"zoneset-uuid", json::value(appZoneHistory.data.zoneSetUuid));
 
@@ -831,7 +944,19 @@ namespace JSONHelpers
             AppZoneHistoryJSON result;
 
             result.appPath = zoneSet.GetNamedString(L"app-path");
-            result.data.zoneIndex = static_cast<int>(zoneSet.GetNamedNumber(L"zone-index"));
+            if (zoneSet.HasKey(L"zone-index-set"))
+            {
+                result.data.zoneIndexSet = {};
+                for (auto& value : zoneSet.GetNamedArray(L"zone-index-set"))
+                {
+                    result.data.zoneIndexSet.push_back(static_cast<int>(value.GetNumber()));
+                }
+            }
+            else if (zoneSet.HasKey(L"zone-index"))
+            {
+                result.data.zoneIndexSet = { static_cast<int>(zoneSet.GetNamedNumber(L"zone-index")) };
+            }
+
             result.data.deviceId = zoneSet.GetNamedString(L"device-id");
             result.data.zoneSetUuid = zoneSet.GetNamedString(L"zoneset-uuid");
 
@@ -1036,7 +1161,8 @@ namespace JSONHelpers
         result.SetNamedValue(L"name", json::value(customZoneSet.data.name));
         switch (customZoneSet.data.type)
         {
-        case CustomLayoutType::Canvas: {
+        case CustomLayoutType::Canvas:
+        {
             result.SetNamedValue(L"type", json::value(L"canvas"));
 
             CanvasLayoutInfo info = std::get<CanvasLayoutInfo>(customZoneSet.data.info);
@@ -1044,7 +1170,8 @@ namespace JSONHelpers
 
             break;
         }
-        case CustomLayoutType::Grid: {
+        case CustomLayoutType::Grid:
+        {
             result.SetNamedValue(L"type", json::value(L"grid"));
 
             GridLayoutInfo gridInfo = std::get<GridLayoutInfo>(customZoneSet.data.info);
@@ -1068,7 +1195,7 @@ namespace JSONHelpers
             {
                 return std::nullopt;
             }
-            
+
             result.data.name = customZoneSet.GetNamedString(L"name");
 
             json::JsonObject infoJson = customZoneSet.GetNamedObject(L"info");

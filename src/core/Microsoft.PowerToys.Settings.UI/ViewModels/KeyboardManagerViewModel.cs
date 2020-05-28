@@ -45,7 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             dispatcher = Window.Current.Dispatcher;
             if (SettingsUtils.SettingsExists(PowerToyName))
             {
-                // Todo: Be more resillent while reading and saving settings.
+                // Todo: Be more resilient while reading and saving settings.
                 settings = SettingsUtils.GetSettings<KeyboardManagerSettings>(PowerToyName);
 
                 // Load profile.
@@ -158,8 +158,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private async void OnConfigFileUpdate()
         {
-            // Note: FileSystemWatcher raise notification mutiple times for single update operation.
-            // Todo: Handle duplicate events either by somehow supress them or re-read the configuration everytime since we will be updating the UI only if something is changed.
+            // Note: FileSystemWatcher raise notification multiple times for single update operation.
+            // Todo: Handle duplicate events either by somehow suppress them or re-read the configuration everytime since we will be updating the UI only if something is changed.
             if (LoadProfile())
             {
                 await dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>

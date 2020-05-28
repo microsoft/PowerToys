@@ -20,7 +20,7 @@ struct ScreenSize
     POINT middle() const { return { rect.left + width() / 2, rect.top + height() / 2 }; };
     POINT middle_right() const { return { rect.right, rect.top + height() / 2 }; };
     POINT bottom_left() const { return { rect.left, rect.bottom }; };
-    POINT bottm_midle() const { return { rect.left + width() / 2, rect.bottom }; };
+    POINT bottom_middle() const { return { rect.left + width() / 2, rect.bottom }; };
     POINT bottom_right() const { return { rect.right, rect.bottom }; };
 };
 

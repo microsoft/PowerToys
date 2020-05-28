@@ -83,7 +83,7 @@ public:
         {
             return 1;
         }
-        auto dispatcher = reinterpret_cast<decltype(dispatch_to_backround_handler)*>(GetProcAddress(lib, "dispatch_to_backround_handler"));
+        auto dispatcher = reinterpret_cast<decltype(dispatch_to_background_handler)*>(GetProcAddress(lib, "dispatch_to_background_handler"));
         if (!dispatcher)
         {
             return 1;

@@ -210,7 +210,7 @@ public:
     IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled) noexcept;
     IFACEMETHODIMP MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
     IFACEMETHODIMP_(void)
-    RestoreOrginalTransparency() noexcept;
+    RestoreOriginalTransparency() noexcept;
     IFACEMETHODIMP_(bool)
     IsDragEnabled() noexcept { return m_dragEnabled; }
     IFACEMETHODIMP_(void)
@@ -402,7 +402,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
 
 IFACEMETHODIMP ZoneWindow::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
 {
-    RestoreOrginalTransparency();
+    RestoreOriginalTransparency();
 
     if (m_windowMoveSize != window)
     {
@@ -425,7 +425,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnd(HWND window, POINT const& ptScreen) noexc
 }
 
 IFACEMETHODIMP_(void)
-ZoneWindow::RestoreOrginalTransparency() noexcept
+ZoneWindow::RestoreOriginalTransparency() noexcept
 {
     if (m_host->isMakeDraggedWindowTransparentActive() && draggedWindow != nullptr)
     {
@@ -484,13 +484,13 @@ ZoneWindow::SaveWindowProcessToZoneIndex(HWND window) noexcept
 {
     if (m_activeZoneSet)
     {
-        DWORD zoneIndex = static_cast<DWORD>(m_activeZoneSet->GetZoneIndexFromWindow(window));
-        if (zoneIndex != -1)
+        auto zoneIndexSet = m_activeZoneSet->GetZoneIndexSetFromWindow(window);
+        if (zoneIndexSet.size())
         {
             OLECHAR* guidString;
             if (StringFromCLSID(m_activeZoneSet->Id(), &guidString) == S_OK)
             {
-                JSONHelpers::FancyZonesDataInstance().SetAppLastZone(window, m_uniqueId, guidString, zoneIndex);
+                JSONHelpers::FancyZonesDataInstance().SetAppLastZones(window, m_uniqueId, guidString, zoneIndexSet);
             }
 
             CoTaskMemFree(guidString);
@@ -522,6 +522,10 @@ ZoneWindow::ShowZoneWindow() noexcept
     std::thread{ [=]() {
         AnimateWindow(window, m_showAnimationDuration, AW_BLEND);
         InvalidateRect(window, nullptr, true);
+        if (!m_host->InMoveSize())
+        {
+            HideZoneWindow();
+        }
     } }.detach();
 }
 

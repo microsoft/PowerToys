@@ -42,7 +42,7 @@ namespace FancyZonesEditor
         public const ushort _gridModelId = 0xFFFC;
         public const ushort _priorityGridModelId = 0xFFFB;
         public const ushort _blankCustomModelId = 0xFFFA;
-        public const ushort _lastPrefinedId = _blankCustomModelId;
+        public const ushort _lastDefinedId = _blankCustomModelId;
 
         // hard coded data for all the "Priority Grid" configurations that are unique to "Grid"
         private static readonly byte[][] _priorityData = new byte[][]
@@ -471,7 +471,7 @@ namespace FancyZonesEditor
             return model.Type != LayoutType.Custom;
         }
 
-        // implementation of INotifyProeprtyChanged
+        // implementation of INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
 
         // FirePropertyChanged -- wrapper that calls INPC.PropertyChanged

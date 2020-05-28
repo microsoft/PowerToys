@@ -25,6 +25,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="1" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="0" />
+                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
@@ -34,6 +35,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="0" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                        <Setter Target="SidePanel.Width" Value="Auto" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -55,22 +57,27 @@
                           IsOn="{ Binding Mode=TwoWay, Path=IsEnabled}"
                           Margin="{StaticResource MediumTopMargin}" />
 
+            <Button Margin="{StaticResource MediumTopMargin}"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Command = "{Binding LaunchEditorEventHandler, Source={StaticResource eventViewModel}}"
+                    IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}">
+                <StackPanel Orientation="Horizontal">
+                    <Viewbox Height="12" Width="12">
+                    <PathIcon Data="M896 0v896H0V0h896zM768 768V128H128v640h640zM0 1920v-896h1920v896H0zm128-768v640h1664v-640H128zM1024 0h896v896h-896V0zm768 768V128h-640v640h640z"/>
+                    </Viewbox>
+                    <TextBlock Margin="12,0,0,0" x:Uid="FancyZones_LaunchEditorButtonControl"/>
+                </StackPanel>
+            </Button>
+            
             <TextBlock x:Uid="FancyZones_ZoneBehavior_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        />
-
-            <Button x:Uid="FancyZones_LaunchEditorButtonControl_Header"
-                    Margin="{StaticResource SmallTopMargin}"
-                    Style="{StaticResource AccentButtonStyle}"
-                    Command = "{Binding LaunchEditorEventHandler, Source={StaticResource eventViewModel}}"
-                    IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                    />
 
             <CustomControls:HotkeySettingsControl 
                                           x:Uid="FancyZones_HokeyEditorControl_Header"
                                           Width="320"
                                           HorizontalAlignment="Left"
-                                          Margin="{StaticResource MediumTopMargin}"
+                                          Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}"
                                           IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"        
                                         />
@@ -92,7 +99,7 @@
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
-            <CheckBox x:Uid="FancyZones_MoveVindowsAcrossAllMonitorsCheckBoxControl"
+            <CheckBox x:Uid="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl"
                       IsChecked="{ Binding Mode=TwoWay, Path=MoveWindowsAcrossMonitors}"
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
@@ -105,16 +112,6 @@
 
             <CheckBox x:Uid="FancyZones_ZoneSetChangeMoveWindows"
                       IsChecked="{ Binding Mode=TwoWay, Path=ZoneSetChangeMoveWindows}"
-                      Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
-
-            <CheckBox x:Uid="FancyZones_KeepWindowsPinned"
-                      IsChecked="{ Binding Mode=TwoWay, Path=VirtualDesktopChangeMoveWindows}"
-                      Margin="{StaticResource SmallTopMargin}"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
-
-            <CheckBox x:Uid="FancyZones_VirtualDesktopChangeMoveWindows"
-                      IsChecked="{ Binding Mode=TwoWay, Path=AppLastZoneMoveWindows}"
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
@@ -134,7 +131,7 @@
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
 
-            <TextBlock x:Uid="Appearancce_GroupSettings"
+            <TextBlock x:Uid="Appearance_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <!-- TO DO: Do we still need this numberbox? The colorpicker has an Alpha/Opacity option as well so we could use that -->
@@ -142,19 +139,26 @@
                             Value="{ Binding Mode=TwoWay, Path=HighlightOpacity}"
                             Minimum="0"
                             Maximum="100"
-                            SpinButtonPlacementMode="Inline"
+                            SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallTopMargin}" 
-                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" />
              
             <TextBlock x:Uid="FancyZones_ZoneHighlightColor" 
                        Style="{StaticResource BodyTextBlockStyle}"
                        Margin="{StaticResource SmallTopMargin}" />
 
-            <muxc:ColorPicker x:Name="FancyZones_ZoneHighlightColor"
+            <muxc:DropDownButton Margin="0,4,0,0" IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" Padding="4,4,8,4">
+                <Border Width="48" CornerRadius="2" Height="24">
+                    <Border.Background>
+                        <SolidColorBrush Color="{Binding Path=ZoneHighlightColor, Mode=TwoWay}"/>
+                    </Border.Background>
+                </Border>
+                <muxc:DropDownButton.Flyout>
+                    <Flyout>
+                    <muxc:ColorPicker x:Name="FancyZones_ZoneHighlightColor"
                               Margin="0,6,0,0"
                               HorizontalAlignment="Left"
-                              IsMoreButtonVisible="True"
                               IsColorSliderVisible="True"
                               IsColorChannelTextInputVisible="True"
                               IsHexInputVisible="True"
@@ -162,34 +166,57 @@
                               IsAlphaSliderVisible="False"
                               IsAlphaTextInputVisible="False"
                               Color="{Binding Path=ZoneHighlightColor, Mode=TwoWay}"
-                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                              />
+                    </Flyout>
+                </muxc:DropDownButton.Flyout>
+            
+            </muxc:DropDownButton>
+            
 
             <TextBlock x:Uid="FancyZones_InActiveColor" 
                        Style="{StaticResource BodyTextBlockStyle}"
                        Margin="{StaticResource SmallTopMargin}" />
 
-            <muxc:ColorPicker x:Name="FancyZones_InActiveColorPicker"
+            <muxc:DropDownButton Margin="0,4,0,0" IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" Padding="4,4,8,4">
+                <Border Width="48" CornerRadius="2" Height="24">
+                    <Border.Background>
+                        <SolidColorBrush Color="{Binding Path=ZoneInActiveColor, Mode=TwoWay}"/>
+                    </Border.Background>
+                </Border>
+                <muxc:DropDownButton.Flyout>
+                    <Flyout>
+                        <muxc:ColorPicker x:Name="FancyZones_InActiveColorPicker"
                               Margin="0,6,0,0"
                               HorizontalAlignment="Left"
-                              IsMoreButtonVisible="True"
                               IsColorSliderVisible="True"
                               IsColorChannelTextInputVisible="True"
                               IsHexInputVisible="True"
                               IsAlphaEnabled="False"
                               IsAlphaSliderVisible="False"
                               IsAlphaTextInputVisible="False"
-                              Color="{Binding Path=ZoneInActiveColor, Mode=TwoWay}"
-                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
-
+                              Color="{Binding Path=ZoneInActiveColor, Mode=TwoWay}"/>
+                    </Flyout>
+                </muxc:DropDownButton.Flyout>
+            </muxc:DropDownButton>
+            
+            
             <TextBlock x:Uid="FancyZones_BorderColor" 
                        Style="{StaticResource BodyTextBlockStyle}"
                        Margin="{StaticResource SmallTopMargin}" />
-            
-            <muxc:ColorPicker x:Name="FancyZones_BorderColor"
+
+
+            <muxc:DropDownButton Margin="0,4,0,0" IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" Padding="4,4,8,4">
+                <Border Width="48" CornerRadius="2" Height="24">
+                    <Border.Background>
+                        <SolidColorBrush Color="{Binding Path=ZoneBorderColor, Mode=TwoWay}"/>
+                    </Border.Background>
+                </Border>
+                <muxc:DropDownButton.Flyout>
+                    <Flyout>
+                        <muxc:ColorPicker x:Name="FancyZones_BorderColor"
                               Margin="0,6,0,0"
                               HorizontalAlignment="Left"
-                              IsMoreButtonVisible="True"
-                              IsColorSliderVisible="True"
+                              IsColorSliderVisible="True"                             
                               IsColorChannelTextInputVisible="True"
                               IsHexInputVisible="True"
                               IsAlphaEnabled="False"
@@ -197,8 +224,10 @@
                               IsAlphaTextInputVisible="False"
                               Color="{Binding Path=ZoneBorderColor, Mode=TwoWay}"
                               IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                    </Flyout>
+                </muxc:DropDownButton.Flyout>
+            </muxc:DropDownButton>
 
-            
             <TextBlock x:Uid="FancyZones_ExcludeApps"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
@@ -220,8 +249,8 @@
             <TextBlock x:Uid="About_FancyZones"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Margin="{StaticResource XSmallBottomMargin}"/>
-            
-            <Image Source="https://user-images.githubusercontent.com/9866362/77859136-f04ae880-7207-11ea-8a7f-4295342fe319.gif" />
+
+            <Image MaxWidth="240" Source="https://user-images.githubusercontent.com/9866362/77859136-f04ae880-7207-11ea-8a7f-4295342fe319.gif" />
 
             <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/fancyzones/README.md">
                 <TextBlock x:Uid="Module_overview" />

@@ -69,7 +69,7 @@ void D2DWindow::base_init()
                                                &options,
                                                d2d_factory.put_void()));
     }
-    // For all other stuff - assing nullptr first to release the object, to reset the com_ptr.
+    // For all other stuff - assign nullptr first to release the object, to reset the com_ptr.
     d2d_dc = nullptr;
     d2d_device = nullptr;
     dxgi_factory = nullptr;

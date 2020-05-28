@@ -116,9 +116,9 @@ void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const st
     pimpl->MoveSizeEnd(window, ptScreen, zoneWindowMap);
 }
 
-void WindowMoveHandler::MoveWindowIntoZoneByIndex(HWND window, HMONITOR monitor, int index, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
+void WindowMoveHandler::MoveWindowIntoZoneByIndexSet(HWND window, HMONITOR monitor, const std::vector<int>& indexSet, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
 {
-    pimpl->MoveWindowIntoZoneByIndexSet(window, monitor, { index }, zoneWindowMap);
+    pimpl->MoveWindowIntoZoneByIndexSet(window, monitor, indexSet, zoneWindowMap);
 }
 
 bool WindowMoveHandler::MoveWindowIntoZoneByDirection(HMONITOR monitor, HWND window, DWORD vkCode, bool cycle, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap)
@@ -166,7 +166,7 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
     }
     else if (m_zoneWindowMoveSize)
     {
-        m_zoneWindowMoveSize->RestoreOrginalTransparency();
+        m_zoneWindowMoveSize->RestoreOriginalTransparency();
         m_zoneWindowMoveSize = nullptr;
         for (auto [keyMonitor, zoneWindow] : zoneWindowMap)
         {
@@ -200,7 +200,7 @@ void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptS
             {
                 if (zoneWindow)
                 {
-                    zoneWindow->RestoreOrginalTransparency();
+                    zoneWindow->RestoreOriginalTransparency();
                     zoneWindow->HideZoneWindow();
                 }
             }
@@ -213,7 +213,7 @@ void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptS
                 if (iter->second != m_zoneWindowMoveSize)
                 {
                     // The drag has moved to a different monitor.
-                    m_zoneWindowMoveSize->RestoreOrginalTransparency();
+                    m_zoneWindowMoveSize->RestoreOriginalTransparency();
 
                     if (!m_settings->GetSettings()->showZonesOnAllMonitors)
                     {
@@ -256,7 +256,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
     }
     else
     {
-        ::RemoveProp(window, ZONE_STAMP);
+        ::RemoveProp(window, MULTI_ZONE_STAMP);
 
         auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
         if (monitor)

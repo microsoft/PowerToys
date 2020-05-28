@@ -38,6 +38,16 @@ bool KeyboardManagerState::CheckUIState(KeyboardManagerUIState state)
             return true;
         }
     }
+    // If we are checking for EditKeyboardWindowActivated then it's possible the state could be DetectSingleKeyRemapWindowActivated but not in focus
+    else if (state == KeyboardManagerUIState::EditKeyboardWindowActivated && uiState == KeyboardManagerUIState::DetectSingleKeyRemapWindowActivated)
+    {
+        return true;
+    }
+    // If we are checking for EditShortcutsWindowActivated then it's possible the state could be DetectShortcutWindowActivated but not in focus
+    else if (state == KeyboardManagerUIState::EditShortcutsWindowActivated && uiState == KeyboardManagerUIState::DetectShortcutWindowActivated)
+    {
+        return true;
+    }
 
     return false;
 }
@@ -256,7 +266,7 @@ void KeyboardManagerState::SelectDetectedRemapKey(DWORD key)
 
 void KeyboardManagerState::SelectDetectedShortcut(DWORD key)
 {
-    // Set the new key and store if a change occured
+    // Set the new key and store if a change occurred
     std::unique_lock<std::mutex> lock(detectedShortcut_mutex);
     bool updateUI = detectedShortcut.SetKey(key);
     lock.unlock();
