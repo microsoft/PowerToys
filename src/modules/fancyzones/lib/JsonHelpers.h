@@ -132,6 +132,8 @@ namespace JSONHelpers
 
     struct AppZoneHistoryData
     {
+        std::map<DWORD, HWND> processIdToHandleMap; // Maps process id(DWORD) of application to zoned window handle(HWND)
+
         std::wstring zoneSetUuid;
         std::wstring deviceId;
         std::vector<int> zoneIndexSet;
@@ -184,7 +186,7 @@ namespace JSONHelpers
 
         std::optional<DeviceInfoData> FindDeviceInfo(const std::wstring& zoneWindowId) const;
 
-        std::optional<CustomZoneSetData> FindCustomZoneSet(const std::wstring& guuid) const;
+        std::optional<CustomZoneSetData> FindCustomZoneSet(const std::wstring& guid) const;
 
         inline const std::wstring GetActiveDeviceId() const
         {
@@ -223,6 +225,12 @@ namespace JSONHelpers
         {
             deviceInfoMap[deviceId] = data;
         }
+
+        inline void SetSettingsModulePath(std::wstring_view moduleName)
+        {
+            std::wstring result = PTSettingsHelper::get_module_save_folder_location(moduleName);
+            jsonFilePath = result + L"\\" + std::wstring(L"zones-settings.json");
+        }
 #endif
 
         inline void SetActiveDeviceId(const std::wstring& deviceId)
@@ -242,6 +250,8 @@ namespace JSONHelpers
         void UpdatePrimaryDesktopData(const std::wstring& desktopId);
         void RemoveDeletedDesktops(const std::vector<std::wstring>& activeDesktops);
 
+        bool IsAnotherWindowOfApplicationInstanceZoned(HWND window) const;
+        void UpdateProcessIdToHandleMap(HWND window);
         std::vector<int> GetAppLastZoneIndexSet(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const;
         bool RemoveAppLastZone(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId);
         bool SetAppLastZones(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, const std::vector<int>& zoneIndexSet);

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Wox.Infrastructure.Storage
 {
-    public class WoxJsonStorage<T> : JsonStrorage<T> where T : new()
+    public class WoxJsonStorage<T> : JsonStorage<T> where T : new()
     {
         public WoxJsonStorage()
         {

@@ -39,7 +39,7 @@ namespace FancyZonesUnitTests
         Assert::AreEqual(expected.makeDraggedWindowTransparent, actual.makeDraggedWindowTransparent);
         Assert::AreEqual(expected.zoneColor.c_str(), actual.zoneColor.c_str());
         Assert::AreEqual(expected.zoneBorderColor.c_str(), actual.zoneBorderColor.c_str());
-        Assert::AreEqual(expected.zoneHightlightColor.c_str(), actual.zoneHightlightColor.c_str());
+        Assert::AreEqual(expected.zoneHighlightColor.c_str(), actual.zoneHighlightColor.c_str());
         Assert::AreEqual(expected.zoneHighlightOpacity, actual.zoneHighlightOpacity);
         Assert::AreEqual(expected.excludedApps.c_str(), actual.excludedApps.c_str());
         Assert::AreEqual(expected.excludedAppsArray.size(), actual.excludedAppsArray.size());
@@ -54,7 +54,7 @@ namespace FancyZonesUnitTests
     TEST_CLASS (FancyZonesSettingsCreationUnitTest)
     {
         HINSTANCE m_hInst;
-        PCWSTR m_moduleName = L"FancyZonesTest";
+        PCWSTR m_moduleName = L"FancyZonesUnitTests";
         std::wstring m_tmpName;
 
         const PowerToysSettings::HotkeyObject m_defaultHotkeyObject = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, VK_OEM_3);
@@ -67,8 +67,7 @@ namespace FancyZonesUnitTests
             }
             TEST_METHOD_CLEANUP(Cleanup)
                 {
-                    std::filesystem::remove(m_tmpName);
-                    std::filesystem::remove(PTSettingsHelper::get_module_save_folder_location(m_moduleName));
+                    std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_moduleName));
                 }
 
                 TEST_METHOD (CreateWithHinstanceDefault)
@@ -117,7 +116,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
-                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
+                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
                     values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
                     values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
                     values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
@@ -153,7 +152,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
-                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
+                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
                     values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
                     values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
                     values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
@@ -183,7 +182,7 @@ namespace FancyZonesUnitTests
                         .makeDraggedWindowTransparent = m_defaultSettings.makeDraggedWindowTransparent,
                         .zoneColor = L"FAFAFA",
                         .zoneBorderColor = L"CCDDEE",
-                        .zoneHightlightColor = L"#00FFD7",
+                        .zoneHighlightColor = L"#00FFD7",
                         .zoneHighlightOpacity = 45,
                         .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, VK_OEM_3),
                         .excludedApps = L"app",
@@ -193,7 +192,7 @@ namespace FancyZonesUnitTests
                     PowerToysSettings::PowerToyValues values(m_moduleName);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
-                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
+                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
                     values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
                     values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
                     values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
@@ -255,7 +254,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
                     values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
-                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
+                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
                     values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
                     values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
 
@@ -287,7 +286,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
-                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
+                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
                     values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
                     values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
 
@@ -319,7 +318,7 @@ namespace FancyZonesUnitTests
                     values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                     values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                     values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
-                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
+                    values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
                     values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
                     values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
 
@@ -367,7 +366,7 @@ namespace FancyZonesUnitTests
     TEST_CLASS (FancyZonesSettingsCallbackUnitTests)
     {
         winrt::com_ptr<IFancyZonesSettings> m_settings = nullptr;
-        PCWSTR m_moduleName = L"FancyZonesTest";
+        PCWSTR m_moduleName = L"FancyZonesUnitTests";
 
         struct FZCallback : public winrt::implements<FZCallback, IFancyZonesCallback>
         {
@@ -432,7 +431,7 @@ namespace FancyZonesUnitTests
                     .makeDraggedWindowTransparent = true,
                     .zoneColor = L"FAFAFA",
                     .zoneBorderColor = L"CCDDEE",
-                    .zoneHightlightColor = L"#00FFD7",
+                    .zoneHighlightColor = L"#00FFD7",
                     .zoneHighlightOpacity = 45,
                     .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, true, true, false, VK_OEM_3),
                     .excludedApps = L"app",
@@ -453,7 +452,7 @@ namespace FancyZonesUnitTests
                 values.add_property(L"fancyzones_makeDraggedWindowTransparent", expected.makeDraggedWindowTransparent);
                 values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                 values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
-                values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
+                values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
                 values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
                 values.add_property(L"fancyzones_editor_hotkey", expected.editorHotkey.get_json());
                 values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
@@ -466,8 +465,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD_CLEANUP(Cleanup)
                 {
-                    const auto settingsFile = PTSettingsHelper::get_module_save_folder_location(m_moduleName) + L"\\settings.json";
-                    std::filesystem::remove(settingsFile);
+                    std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_moduleName));
                 }
 
                 TEST_METHOD (CallbackSetConfig)
@@ -541,7 +539,7 @@ namespace FancyZonesUnitTests
     {
         winrt::com_ptr<IFancyZonesSettings> m_settings = nullptr;
         PowerToysSettings::Settings* m_ptSettings = nullptr;
-        PCWSTR m_moduleName = L"FancyZonesTest";
+        PCWSTR m_moduleName = L"FancyZonesUnitTests";
 
         std::wstring serializedPowerToySettings(const Settings& settings)
         {
@@ -571,8 +569,8 @@ namespace FancyZonesUnitTests
             ptSettings.add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, settings.zoneHighlightOpacity, 0, 100, 1);
             ptSettings.add_color_picker(L"fancyzones_zoneColor", IDS_SETTING_DESCRIPTION_ZONECOLOR, settings.zoneColor);
             ptSettings.add_color_picker(L"fancyzones_zoneBorderColor", IDS_SETTING_DESCRIPTION_ZONE_BORDER_COLOR, settings.zoneBorderColor);
-            ptSettings.add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, settings.zoneHightlightColor);
-            ptSettings.add_multiline_string(L"fancyzones_excluded_apps", IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION, settings.excludedApps);
+            ptSettings.add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, settings.zoneHighlightColor);
+            ptSettings.add_multiline_string(L"fancyzones_excluded_apps", IDS_SETTING_EXCLUDED_APPS_DESCRIPTION, settings.excludedApps);
 
             return ptSettings.serialize();
         }
@@ -595,7 +593,7 @@ namespace FancyZonesUnitTests
                 values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
                 values.add_property(L"use_cursorpos_editor_startupscreen", expected.use_cursorpos_editor_startupscreen);
                 values.add_property(L"fancyzones_show_on_all_monitors", expected.showZonesOnAllMonitors);
-                values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHightlightColor);
+                values.add_property(L"fancyzones_zoneHighlightColor", expected.zoneHighlightColor);
                 values.add_property(L"fancyzones_zoneColor", expected.zoneColor);
                 values.add_property(L"fancyzones_zoneBorderColor", expected.zoneBorderColor);
                 values.add_property(L"fancyzones_highlight_opacity", expected.zoneHighlightOpacity);
@@ -631,17 +629,16 @@ namespace FancyZonesUnitTests
                 m_ptSettings->add_bool_toggle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, expected.use_cursorpos_editor_startupscreen);
                 m_ptSettings->add_bool_toggle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, expected.showZonesOnAllMonitors);
                 m_ptSettings->add_bool_toggle(L"fancyzones_makeDraggedWindowTransparent", IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT, expected.makeDraggedWindowTransparent);
-                m_ptSettings->add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, expected.zoneHightlightColor);
+                m_ptSettings->add_color_picker(L"fancyzones_zoneHighlightColor", IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, expected.zoneHighlightColor);
                 m_ptSettings->add_color_picker(L"fancyzones_zoneColor", IDS_SETTING_DESCRIPTION_ZONECOLOR, expected.zoneColor);
                 m_ptSettings->add_color_picker(L"fancyzones_zoneBorderColor", IDS_SETTING_DESCRIPTION_ZONE_BORDER_COLOR, expected.zoneBorderColor);
                 m_ptSettings->add_int_spinner(L"fancyzones_highlight_opacity", IDS_SETTINGS_HIGHLIGHT_OPACITY, expected.zoneHighlightOpacity, 0, 100, 1);
-                m_ptSettings->add_multiline_string(L"fancyzones_excluded_apps", IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION, expected.excludedApps);
+                m_ptSettings->add_multiline_string(L"fancyzones_excluded_apps", IDS_SETTING_EXCLUDED_APPS_DESCRIPTION, expected.excludedApps);
             }
 
             TEST_METHOD_CLEANUP(Cleanup)
                 {
-                    const auto settingsFile = PTSettingsHelper::get_module_save_folder_location(m_moduleName) + L"\\settings.json";
-                    std::filesystem::remove(settingsFile);
+                    std::filesystem::remove_all(PTSettingsHelper::get_module_save_folder_location(m_moduleName));
                 }
 
                 TEST_METHOD (GetConfig)
@@ -702,7 +699,7 @@ namespace FancyZonesUnitTests
                         .makeDraggedWindowTransparent = true,
                         .zoneColor = L"#FAFAFA",
                         .zoneBorderColor = L"CCDDEE",
-                        .zoneHightlightColor = L"#00AABB",
+                        .zoneHighlightColor = L"#00AABB",
                         .zoneHighlightOpacity = 45,
                         .editorHotkey = PowerToysSettings::HotkeyObject::from_settings(false, false, false, false, VK_OEM_3),
                         .excludedApps = L"app\r\napp2",

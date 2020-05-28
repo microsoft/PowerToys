@@ -19,7 +19,7 @@ struct Settings
     bool makeDraggedWindowTransparent = true;
     std::wstring zoneColor = L"#F5FCFF";
     std::wstring zoneBorderColor = L"#FFFFFF";
-    std::wstring zoneHightlightColor = L"#008CFF";
+    std::wstring zoneHighlightColor = L"#008CFF";
     int zoneHighlightOpacity = 50;
     PowerToysSettings::HotkeyObject editorHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, VK_OEM_3);
     std::wstring excludedApps = L"";

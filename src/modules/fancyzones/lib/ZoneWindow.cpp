@@ -210,7 +210,7 @@ public:
     IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled) noexcept;
     IFACEMETHODIMP MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
     IFACEMETHODIMP_(void)
-    RestoreOrginalTransparency() noexcept;
+    RestoreOriginalTransparency() noexcept;
     IFACEMETHODIMP_(bool)
     IsDragEnabled() noexcept { return m_dragEnabled; }
     IFACEMETHODIMP_(void)
@@ -402,7 +402,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
 
 IFACEMETHODIMP ZoneWindow::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
 {
-    RestoreOrginalTransparency();
+    RestoreOriginalTransparency();
 
     if (m_windowMoveSize != window)
     {
@@ -425,7 +425,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnd(HWND window, POINT const& ptScreen) noexc
 }
 
 IFACEMETHODIMP_(void)
-ZoneWindow::RestoreOrginalTransparency() noexcept
+ZoneWindow::RestoreOriginalTransparency() noexcept
 {
     if (m_host->isMakeDraggedWindowTransparentActive() && draggedWindow != nullptr)
     {

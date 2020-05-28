@@ -10,7 +10,7 @@ namespace Wox.Infrastructure.Exception
 {
     public class ExceptionFormatter
     {
-        public static string FormatExcpetion(System.Exception exception)
+        public static string FormatException(System.Exception exception)
         {
             return CreateExceptionReport(exception);
         }

@@ -52,7 +52,7 @@
             Margin="24,8,24,24" 
             BorderThickness="4"
             CornerRadius="4" 
-            Visibility="{Binding Results.Visbility}">
+            Visibility="{Binding Results.Visibility}">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="16" Opacity="0.8" ShadowDepth="0" />
             </Border.Effect>

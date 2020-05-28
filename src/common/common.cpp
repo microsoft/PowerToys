@@ -171,17 +171,17 @@ ShortcutGuideFilter get_shortcutguide_filtered_window()
     {
         return result;
     }
-    static HWND cortanda_hwnd = nullptr;
-    if (cortanda_hwnd == nullptr)
+    static HWND cortana_hwnd = nullptr;
+    if (cortana_hwnd == nullptr)
     {
         if (strcmp(class_name.data(), "Windows.UI.Core.CoreWindow") == 0 &&
             get_process_path(active_window).ends_with(L"SearchUI.exe"))
         {
-            cortanda_hwnd = active_window;
+            cortana_hwnd = active_window;
             return result;
         }
     }
-    else if (cortanda_hwnd == active_window)
+    else if (cortana_hwnd == active_window)
     {
         return result;
     }
@@ -321,7 +321,7 @@ WindowState get_window_state(HWND hwnd)
 
     if (GetWindowPlacement(hwnd, &placement) == 0)
     {
-        return UNKNONW;
+        return UNKNOWN;
     }
 
     if (placement.showCmd == SW_MINIMIZE || placement.showCmd == SW_SHOWMINIMIZED || IsIconic(hwnd))
@@ -337,7 +337,7 @@ WindowState get_window_state(HWND hwnd)
     auto rectp = get_window_pos(hwnd);
     if (!rectp)
     {
-        return UNKNONW;
+        return UNKNOWN;
     }
 
     auto rect = *rectp;
@@ -511,7 +511,7 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWOR
     siex.StartupInfo.cb = sizeof(siex);
 
     PROCESS_INFORMATION process_info = { 0 };
-    auto succedded = CreateProcessW(file.c_str(),
+    auto succeeded = CreateProcessW(file.c_str(),
                                     const_cast<LPWSTR>(executable_args.c_str()),
                                     nullptr,
                                     nullptr,
@@ -535,7 +535,7 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWOR
     {
         CloseHandle(process_info.hThread);
     }
-    return succedded;
+    return succeeded;
 }
 
 bool run_same_elevation(const std::wstring& file, const std::wstring& params)
@@ -547,7 +547,7 @@ bool run_same_elevation(const std::wstring& file, const std::wstring& params)
     }
     STARTUPINFO si = { 0 };
     PROCESS_INFORMATION pi = { 0 };
-    auto succedded = CreateProcessW(file.c_str(),
+    auto succeeded = CreateProcessW(file.c_str(),
                                     const_cast<LPWSTR>(executable_args.c_str()),
                                     nullptr,
                                     nullptr,
@@ -565,7 +565,7 @@ bool run_same_elevation(const std::wstring& file, const std::wstring& params)
     {
         CloseHandle(pi.hThread);
     }
-    return succedded;
+    return succeeded;
 }
 
 std::wstring get_process_path(HWND window) noexcept

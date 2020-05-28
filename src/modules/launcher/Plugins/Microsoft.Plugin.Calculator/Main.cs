@@ -6,7 +6,7 @@ using System.Windows;
 using Mages.Core;
 using Wox.Plugin;
 
-namespace Microsoft.Plugin.Caculator
+namespace Microsoft.Plugin.Calculator
 {
     public class Main : IPlugin, IPluginI18n
     {
@@ -113,12 +113,12 @@ namespace Microsoft.Plugin.Caculator
 
         public string GetTranslatedPluginTitle()
         {
-            return Context.API.GetTranslation("wox_plugin_caculator_plugin_name");
+            return Context.API.GetTranslation("wox_plugin_calculator_plugin_name");
         }
 
         public string GetTranslatedPluginDescription()
         {
-            return Context.API.GetTranslation("wox_plugin_caculator_plugin_description");
+            return Context.API.GetTranslation("wox_plugin_calculator_plugin_description");
         }
     }
 }

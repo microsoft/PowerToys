@@ -126,7 +126,7 @@ int runner(bool isProcessElevated)
         std::wstring baseModuleFolder = L"modules/";
 
         std::unordered_set<std::wstring> known_dlls = {
-            L"shortcut_guide.dll",
+            L"ShortcutGuide.dll",
             L"fancyzones.dll",
             L"PowerRenameExt.dll",
             L"Microsoft.Launcher.dll",
@@ -135,11 +135,13 @@ int runner(bool isProcessElevated)
             L"KeyboardManager.dll"
         };
 
+        // TODO(stefan): When all modules get their OutputDir delete this and simplify "search for .dll logic"
         std::unordered_set<std::wstring> module_folders = {
             L"",
             L"FileExplorerPreview/",
             L"FancyZones/",
-            L"PowerRename/"
+            L"PowerRename/",
+            L"ShortcutGuide/"
         };
 
         for (std::wstring subfolderName : module_folders)
@@ -347,7 +349,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     {
         // Singletons initialization order needs to be preserved, first events and
         // then modules to guarantee the reverse destruction order.
-        SystemMenuHelperInstace();
+        SystemMenuHelperInstance();
         powertoys_events();
         modules();
 

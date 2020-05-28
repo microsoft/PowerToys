@@ -18,7 +18,7 @@ namespace UnitTests_PreviewHandlerCommon
         { }
 
         [TestMethod]
-        public void FormHandlerControl_ShouldCreateHandle_OnIntialization()
+        public void FormHandlerControl_ShouldCreateHandle_OnInitialization()
         {
             // Arrange and act
             using (var testFormHandlerControl = new TestFormControl()) 
@@ -29,7 +29,7 @@ namespace UnitTests_PreviewHandlerCommon
         }
 
         [TestMethod]
-        public void FormHandlerControl_ShouldSetVisibleFalse_OnIntialization()
+        public void FormHandlerControl_ShouldSetVisibleFalse_OnInitialization()
         {
             // Arrange and act
             using (var testFormHandlerControl = new TestFormControl())
@@ -40,7 +40,7 @@ namespace UnitTests_PreviewHandlerCommon
         }
 
         [TestMethod]
-        public void FormHandlerControl_ShouldSetFormBorderStyle_OnIntialization()
+        public void FormHandlerControl_ShouldSetFormBorderStyle_OnInitialization()
         {
             // Arrange and act
             using (var testFormHandlerControl = new TestFormControl())
