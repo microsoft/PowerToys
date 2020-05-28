@@ -102,7 +102,7 @@ build:
             - 'modules\launcher\Wox.Infrastructure.dll'
             - 'modules\launcher\Wox.Plugin.dll'
             - 'modules\Microsoft.Launcher.dll'
-            - 'modules\PowerRenameExt.dll'
+            - 'modules\PowerRename\PowerRenameExt.dll'
             - 'modules\ShortcutGuide\ShortcutGuide.dll'
             - 'Notifications.dll'
             - 'os-detection.dll'
