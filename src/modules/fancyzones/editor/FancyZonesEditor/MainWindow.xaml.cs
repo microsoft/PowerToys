@@ -157,6 +157,7 @@ namespace FancyZonesEditor
                 {
                     model.Persist();
                 }
+
                 Close();
             }
         }
