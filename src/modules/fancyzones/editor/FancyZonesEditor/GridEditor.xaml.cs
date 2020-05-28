@@ -458,10 +458,12 @@ namespace FancyZonesEditor
         private void Resizer_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
         {
             GridResizer resizer = (GridResizer)sender;
-            int index = AdornerLayer.Children.IndexOf(resizer);
-            double delta = (resizer.Orientation == Orientation.Vertical) ? e.HorizontalChange : e.VerticalChange;
+            Settings settings = ((App)Application.Current).ZoneSettings;
 
-            GridData.ResizeInfo resizeInfo = _data.CalculateResizeInfo(resizer, delta);
+            double delta = (resizer.Orientation == Orientation.Vertical) ? e.HorizontalChange : e.VerticalChange;
+            int spacing = settings.ShowSpacing ? settings.Spacing : 0;
+
+            GridData.ResizeInfo resizeInfo = _data.CalculateResizeInfo(resizer, delta, spacing);
 
             if (resizeInfo.IsResizeAllowed)
             {

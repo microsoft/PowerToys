@@ -18,7 +18,7 @@ namespace FancyZonesEditor
             {
             }
 
-            public int NewPercent { get; private set; }
+            public int NewPercent { get; set; }
 
             public int AdjacentPercent { get; private set; }
 
@@ -42,7 +42,7 @@ namespace FancyZonesEditor
                 NewPercent = (int)((CurrentPercent + AdjacentPercent) * newExtent / (CurrentExtent + _adjacentExtent));
             }
 
-            public void CalcAdjacentZones(int index, int size, RowColInfo[] info, Func<int, bool> indexCmpr)
+            public void CalcAdjacentZones(int index, int spacing, int size, RowColInfo[] info, Func<int, bool> indexCmpr)
             {
                 int ind = index;
                 while (ind > 0 && indexCmpr(ind))
@@ -59,6 +59,29 @@ namespace FancyZonesEditor
                 {
                     TotalPercent += info[ind].Percent;
                     ind++;
+                }
+            }
+
+            public void FixAccuracyError(RowColInfo[] info, int[] percents, int index)
+            {
+                int total = 0;
+                for (int i = 0; i < info.Length; i++)
+                {
+                    total += info[i].Percent;
+                }
+
+                int diff = total - 10000;
+                if (diff != 0)
+                {
+                    TotalPercent -= diff;
+
+                    while (index >= info.Length)
+                    {
+                        index--;
+                    }
+
+                    info[index].Percent -= diff;
+                    percents[index] -= diff;
                 }
             }
 
@@ -390,7 +413,7 @@ namespace FancyZonesEditor
             }
         }
 
-        public ResizeInfo CalculateResizeInfo(GridResizer resizer, double delta)
+        public ResizeInfo CalculateResizeInfo(GridResizer resizer, double delta, int spacing)
         {
             ResizeInfo res = new ResizeInfo();
 
@@ -398,23 +421,36 @@ namespace FancyZonesEditor
             int colIndex = resizer.StartCol;
             int[,] indices = _model.CellChildMap;
 
+            RowColInfo[] info;
+            int[] percents;
+            int index;
+
             if (resizer.Orientation == Orientation.Vertical)
             {
                 res.CurrentExtent = _colInfo[colIndex].Extent;
                 res.CurrentPercent = _colInfo[colIndex].Percent;
 
+                info = _colInfo;
+                percents = _model.ColumnPercents;
+                index = colIndex;
+
                 Func<int, bool> indexCmpr = i => indices[rowIndex, i] == indices[rowIndex, i - 1];
-                res.CalcAdjacentZones(colIndex, _model.Columns, _colInfo, indexCmpr);
+                res.CalcAdjacentZones(colIndex, spacing, _model.Columns, _colInfo, indexCmpr);
             }
             else
             {
                 res.CurrentExtent = _rowInfo[rowIndex].Extent;
                 res.CurrentPercent = _rowInfo[rowIndex].Percent;
 
+                info = _rowInfo;
+                percents = _model.RowPercents;
+                index = rowIndex;
+
                 Func<int, bool> indexCmpr = i => indices[i, colIndex] == indices[i - 1, colIndex];
-                res.CalcAdjacentZones(rowIndex, _model.Rows, _rowInfo, indexCmpr);
+                res.CalcAdjacentZones(rowIndex, spacing, _model.Rows, _rowInfo, indexCmpr);
             }
 
+            res.FixAccuracyError(info, percents, delta > 0 ? index + 2 : index + 1);
             res.CalcNewPercent(delta);
             return res;
         }
