@@ -44,8 +44,8 @@ bool Tasklist::update_buttons(std::vector<TasklistButton>& buttons)
     if (elements->get_Length(&count) < 0)
         return false;
     winrt::com_ptr<IUIAutomationElement> child;
-    std::vector<TasklistButton> found_butttons;
-    found_butttons.reserve(count);
+    std::vector<TasklistButton> found_buttons;
+    found_buttons.reserve(count);
     for (int i = 0; i < count; ++i)
     {
         child = nullptr;
@@ -82,11 +82,11 @@ bool Tasklist::update_buttons(std::vector<TasklistButton>& buttons)
             button.name = automation_id;
             SysFreeString(automation_id);
         }
-        found_butttons.push_back(button);
+        found_buttons.push_back(button);
     }
     // assign keynums
     buttons.clear();
-    for (auto& button : found_butttons)
+    for (auto& button : found_buttons)
     {
         if (buttons.empty())
         {

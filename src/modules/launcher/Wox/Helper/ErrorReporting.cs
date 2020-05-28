@@ -11,7 +11,7 @@ namespace Wox.Helper
         private static void Report(Exception e)
         {
             var logger = LogManager.GetLogger("UnHandledException");
-            logger.Fatal(ExceptionFormatter.FormatExcpetion(e));
+            logger.Fatal(ExceptionFormatter.FormatException(e));
             
             var reportWindow = new ReportWindow(e);
             reportWindow.Show();

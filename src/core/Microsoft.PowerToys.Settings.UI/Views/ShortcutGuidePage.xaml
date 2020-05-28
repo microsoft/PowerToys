@@ -68,8 +68,8 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource MediumTopMargin}"
                     IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
-            
-            <muxc:RadioButtons x:Uid="RadioButtons_Name_Theme" 
+
+            <muxc:RadioButtons x:Uid="ShortcutGuide_Theme"
                                Margin="{StaticResource SmallTopMargin}"
                                IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
                                SelectedIndex="{ Binding Mode=TwoWay, Path=ThemeIndex}">

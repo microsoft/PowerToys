@@ -53,7 +53,7 @@ private:
 
     const std::wstring m_zoneColorName = L"fancyzones_zoneColor";
     const std::wstring m_zoneBorderColorName = L"fancyzones_zoneBorderColor";
-    const std::wstring m_zoneHiglightName = L"fancyzones_zoneHighlightColor";
+    const std::wstring m_zoneHighlightName = L"fancyzones_zoneHighlightColor";
     const std::wstring m_editorHotkeyName = L"fancyzones_editor_hotkey";
     const std::wstring m_excludedAppsName = L"fancyzones_excluded_apps";
     const std::wstring m_zoneHighlightOpacity = L"fancyzones_highlight_opacity";
@@ -81,16 +81,16 @@ IFACEMETHODIMP_(bool) FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ in
 
     for (auto const& setting : m_configBools)
     {
-        settings.add_bool_toogle(setting.name, setting.resourceId, *setting.value);
+        settings.add_bool_toggle(setting.name, setting.resourceId, *setting.value);
     }
 
-    settings.add_color_picker(m_zoneHiglightName, IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, m_settings.zoneHightlightColor);
+    settings.add_color_picker(m_zoneHighlightName, IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, m_settings.zoneHighlightColor);
     settings.add_color_picker(m_zoneColorName, IDS_SETTING_DESCRIPTION_ZONECOLOR, m_settings.zoneColor);
     settings.add_color_picker(m_zoneBorderColorName, IDS_SETTING_DESCRIPTION_ZONE_BORDER_COLOR, m_settings.zoneBorderColor);
     
     settings.add_int_spinner(m_zoneHighlightOpacity, IDS_SETTINGS_HIGHLIGHT_OPACITY, m_settings.zoneHighlightOpacity, 0, 100, 1);
     
-    settings.add_multiline_string(m_excludedAppsName, IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION, m_settings.excludedApps);
+    settings.add_multiline_string(m_excludedAppsName, IDS_SETTING_EXCLUDED_APPS_DESCRIPTION, m_settings.excludedApps);
 
     return settings.serialize_to_buffer(buffer, buffer_size);
 }
@@ -144,9 +144,9 @@ void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept try
         m_settings.zoneBorderColor = std::move(*val);
     }
 
-    if (auto val = values.get_string_value(m_zoneHiglightName))
+    if (auto val = values.get_string_value(m_zoneHighlightName))
     {
-        m_settings.zoneHightlightColor = std::move(*val);
+        m_settings.zoneHighlightColor = std::move(*val);
     }
 
     if (const auto val = values.get_json(m_editorHotkeyName))
@@ -195,7 +195,7 @@ void FancyZonesSettings::SaveSettings() noexcept try
 
     values.add_property(m_zoneColorName, m_settings.zoneColor);
     values.add_property(m_zoneBorderColorName, m_settings.zoneBorderColor);
-    values.add_property(m_zoneHiglightName, m_settings.zoneHightlightColor);
+    values.add_property(m_zoneHighlightName, m_settings.zoneHighlightColor);
     values.add_property(m_zoneHighlightOpacity, m_settings.zoneHighlightOpacity);
     values.add_property(m_editorHotkeyName, m_settings.editorHotkey.get_json());
     values.add_property(m_excludedAppsName, m_settings.excludedApps);

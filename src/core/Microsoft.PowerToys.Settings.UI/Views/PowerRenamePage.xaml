@@ -52,7 +52,7 @@
                           IsOn="{Binding Mode=TwoWay, Path=IsEnabled}"                          
                            />
 
-            <TextBlock  x:Uid="PowerRename_ShellIntergration"
+            <TextBlock  x:Uid="PowerRename_ShellIntegration"
                         Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <ToggleSwitch x:Uid="PowerRename_Toggle_EnableOnContextMenu"

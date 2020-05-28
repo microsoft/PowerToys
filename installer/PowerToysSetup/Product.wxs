@@ -807,12 +807,12 @@
       
       <!-- Calculator Plugin -->
       <Component Id="calculatorComponent" Directory="CalculatorPluginFolder" Guid="19DE1022-583C-4969-9AFC-D43CB944003D">
-        <?foreach File in plugin.json;Wox.Infrastructure.dll;Microsoft.Plugin.Caculator.deps.json;Microsoft.Plugin.Caculator.dll;Wox.Plugin.dll?>
-          <File Id="Calculator_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Caculator\$(var.File)" />
+        <?foreach File in plugin.json;Wox.Infrastructure.dll;Microsoft.Plugin.Calculator.deps.json;Microsoft.Plugin.Calculator.dll;Wox.Plugin.dll?>
+          <File Id="Calculator_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="calculatorImagesComponent" Directory="CalculatorImagesFolder" Guid="07EC9232-CF9A-4CDB-8D8E-E79DC75096C0">
-        <File Id="calculatorPluginImg" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Caculator\Images\calculator.png" />
+        <File Id="calculatorPluginImg" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Images\calculator.png" />
       </Component>
        <Component Id="calculatorLanguagesComponent" Directory="CalculatorLanguagesFolder" Guid="2D8019E7-664F-4529-9FAA-83C8DACF0732">
         <?foreach LanguageFile in de.xaml;en.xaml;pl.xaml;tr.xaml;zh-cn.xaml;zh-tw.xaml?>
@@ -824,13 +824,13 @@
           <?else?>
             <?define IdSafeLanguage = $(var.LanguageFile)?>
           <?endif?>
-          <File Id="File_calc_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Caculator\Languages\$(var.LanguageFile)" />
+          <File Id="File_calc_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Languages\$(var.LanguageFile)" />
           <?undef IdSafeLanguage?>
         <?endforeach?>
       </Component>
       <Component Id="calculatorpinyindbComponent" Directory="CalculatorpinyindbFolder" Guid="D5527670-BE9A-4AA9-9D36-1249F2184B5B">
         <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
-          <File Id="CalcPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Caculator\pinyindb\$(var.File)" />
+          <File Id="CalcPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\pinyindb\$(var.File)" />
         <?endforeach?>
       </Component>
 

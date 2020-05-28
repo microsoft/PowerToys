@@ -92,6 +92,7 @@ namespace FancyZonesUnitTests
             Assert::IsFalse(std::filesystem::exists(ZoneWindowUtils::GetAppliedZoneSetTmpPath()));
             Assert::IsFalse(std::filesystem::exists(ZoneWindowUtils::GetCustomZoneSetsTmpPath()));
 
+            m_fancyZonesData.SetSettingsModulePath(L"FancyZonesUnitTests");
             m_fancyZonesData.clear_data();
         }
 
@@ -724,10 +725,10 @@ namespace FancyZonesUnitTests
 
             auto window = Mocks::WindowCreate(m_hInst);
 
-            int orginalWidth = 450;
-            int orginalHeight = 550;
+            int originalWidth = 450;
+            int originalHeight = 550;
 
-            SetWindowPos(window, nullptr, 150, 150, orginalWidth, orginalHeight, SWP_SHOWWINDOW);
+            SetWindowPos(window, nullptr, 150, 150, originalWidth, originalHeight, SWP_SHOWWINDOW);
             SetWindowLong(window, GWL_STYLE, GetWindowLong(window, GWL_STYLE) & ~WS_SIZEBOX);
 
             auto zone = MakeZone(RECT{ 50, 50, 300, 300 });
@@ -737,8 +738,8 @@ namespace FancyZonesUnitTests
 
             RECT inZoneRect;
             GetWindowRect(window, &inZoneRect);
-            Assert::AreEqual(orginalWidth, (int)inZoneRect.right - (int) inZoneRect.left);
-            Assert::AreEqual(orginalHeight, (int)inZoneRect.bottom - (int)inZoneRect.top);
+            Assert::AreEqual(originalWidth, (int)inZoneRect.right - (int) inZoneRect.left);
+            Assert::AreEqual(originalHeight, (int)inZoneRect.bottom - (int)inZoneRect.top);
         }
     };
 }

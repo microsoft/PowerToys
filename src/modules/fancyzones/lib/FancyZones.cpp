@@ -48,13 +48,13 @@ public:
         std::unique_lock writeLock(m_lock);
         m_windowMoveHandler.MoveSizeStart(window, monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId));
     }
-    
+
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
         m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId));
     }
-    
+
     void MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
@@ -102,7 +102,7 @@ public:
     ToggleEditor() noexcept;
     IFACEMETHODIMP_(void)
     SettingsChanged() noexcept;
-    
+
     void WindowCreated(HWND window) noexcept;
 
     // IZoneWindowHost
@@ -134,7 +134,7 @@ public:
     GetZoneHighlightColor() noexcept
     {
         // Skip the leading # and convert to long
-        const auto color = m_settings->GetSettings()->zoneHightlightColor;
+        const auto color = m_settings->GetSettings()->zoneHighlightColor;
         const auto tmp = std::stol(color.substr(1), nullptr, 16);
         const auto nR = (tmp & 0xFF0000) >> 16;
         const auto nG = (tmp & 0xFF00) >> 8;
@@ -198,6 +198,8 @@ private:
     bool OnSnapHotkey(DWORD vkCode) noexcept;
 
     void RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept;
+
+    bool IsSplashScreen(HWND window);
 
     void OnEditorExitEvent() noexcept;
     bool ProcessSnapHotkey() noexcept;
@@ -314,6 +316,7 @@ IFACEMETHODIMP_(void)
 FancyZones::WindowCreated(HWND window) noexcept
 {
     std::shared_lock readLock(m_lock);
+
     if (m_settings->GetSettings()->appLastZone_moveWindows && IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
     {
         auto zoneWindow = m_workAreaHandler.GetWorkArea(window);
@@ -322,15 +325,18 @@ FancyZones::WindowCreated(HWND window) noexcept
             const auto activeZoneSet = zoneWindow->ActiveZoneSet();
             if (activeZoneSet)
             {
-                const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+                auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
 
                 wil::unique_cotaskmem_string guidString;
                 if (SUCCEEDED(StringFromCLSID(activeZoneSet->Id(), &guidString)))
                 {
                     std::vector<int> zoneIndexSet = fancyZonesData.GetAppLastZoneIndexSet(window, zoneWindow->UniqueId(), guidString.get());
-                    if (zoneIndexSet.size())
+                    if (zoneIndexSet.size() &&
+                        !IsSplashScreen(window) &&
+                        !fancyZonesData.IsAnotherWindowOfApplicationInstanceZoned(window))
                     {
                         m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, zoneWindow);
+                        fancyZonesData.UpdateProcessIdToHandleMap(window);
                     }
                 }
             }
@@ -624,7 +630,6 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
     return 0;
 }
 
-
 void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 {
     if (changeType == DisplayChangeType::VirtualDesktop ||
@@ -863,6 +868,18 @@ void FancyZones::RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept
     {
         JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
     }
+}
+
+bool FancyZones::IsSplashScreen(HWND window)
+{
+    wchar_t splashClassName[] = L"MsoSplash"; // shouldn't be localized
+    wchar_t className[MAX_PATH];
+    if (GetClassName(window, className, MAX_PATH) == 0)
+    {
+        return false;
+    }
+
+    return wcscmp(splashClassName, className) == 0;
 }
 
 void FancyZones::OnEditorExitEvent() noexcept

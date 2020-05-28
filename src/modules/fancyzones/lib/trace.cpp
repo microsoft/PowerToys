@@ -189,7 +189,7 @@ void Trace::SettingsChanged(const Settings& settings) noexcept
         TraceLoggingBoolean(settings.makeDraggedWindowTransparent, "MakeDraggedWindowTransparent"),
         TraceLoggingWideString(settings.zoneColor.c_str(), "ZoneColor"),
         TraceLoggingWideString(settings.zoneBorderColor.c_str(), "ZoneBorderColor"),
-        TraceLoggingWideString(settings.zoneHightlightColor.c_str(), "ZoneHighlightColor"),
+        TraceLoggingWideString(settings.zoneHighlightColor.c_str(), "ZoneHighlightColor"),
         TraceLoggingInt32(settings.zoneHighlightOpacity, "ZoneHighlightOpacity"),
         TraceLoggingWideString(hotkeyStr.c_str(), "Hotkey"),
         TraceLoggingInt32(static_cast<int>(settings.excludedAppsArray.size()), "ExcludedAppsCount"));

@@ -73,7 +73,7 @@ Here's an example from [the example PowerToy implementation](/src/modules/exampl
     settings.set_video_link(L"https://www.youtube.com/watch?v=d3LHo2yXKoY&t=21462");
 
     // Add a bool property with a toggle editor.
-    settings.add_bool_toogle(
+    settings.add_bool_toggle(
       L"test_bool_toggle", // property name.
       L"This is what a BoolToggle property looks like", // description or resource id of the localized string.
       g_settings.test_bool_prop // property value.
@@ -204,10 +204,10 @@ settings.set_video_link(L"https://www.youtube.com/watch?v=d3LHo2yXKoY&t=21462");
 
 A boolean property, edited with a Toggle control.
 
-It can be added to a `Settings` object by calling `add_bool_toogle`.
+It can be added to a `Settings` object by calling `add_bool_toggle`.
 ```cpp
 // Add a bool property with a toggle editor.
-settings.add_bool_toogle(
+settings.add_bool_toggle(
   L"test_bool_toggle", // property name.
   L"This is what a BoolToggle property looks like", // description or resource id of the localized string.
   g_settings.test_bool_prop // property value.

@@ -23,18 +23,18 @@ bool TargetState::signal_event(unsigned vk_code, bool key_down)
         // It can be safely done when the user releases the WinKey.
         instance->quick_hide();
     }
-    bool supress = false;
+    bool suppress = false;
     if (!key_down && (vk_code == VK_LWIN || vk_code == VK_RWIN) &&
         state == Shown &&
-        std::chrono::system_clock::now() - singnal_timestamp > std::chrono::milliseconds(300) &&
+        std::chrono::system_clock::now() - signal_timestamp > std::chrono::milliseconds(300) &&
         !key_was_pressed)
     {
-        supress = true;
+        suppress = true;
     }
     events.push_back({ key_down, vk_code });
     lock.unlock();
     cv.notify_one();
-    if (supress)
+    if (suppress)
     {
         // Send a fake key-stroke to prevent the start menu from appearing.
         // We use 0xCF VK code, which is reserved. It still prevents the
@@ -54,10 +54,10 @@ bool TargetState::signal_event(unsigned vk_code, bool key_down)
         input[2].ki.dwExtraInfo = CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG;
         SendInput(3, input, sizeof(INPUT));
     }
-    return supress;
+    return suppress;
 }
 
-void TargetState::was_hiden()
+void TargetState::was_hidden()
 {
     std::unique_lock<std::mutex> lock(mutex);
     state = Hidden;
@@ -173,7 +173,7 @@ void TargetState::handle_timeout()
     }
     if (std::chrono::system_clock::now() - winkey_timestamp < delay)
         return;
-    singnal_timestamp = std::chrono::system_clock::now();
+    signal_timestamp = std::chrono::system_clock::now();
     key_was_pressed = false;
     state = Shown;
     lock.unlock();

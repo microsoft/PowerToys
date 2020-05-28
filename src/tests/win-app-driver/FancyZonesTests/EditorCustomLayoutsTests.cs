@@ -316,7 +316,7 @@ namespace PowerToysTests
         public void TestCleanup()
         {
             CloseEditor();
-            ResetDefautZoneSettings(false);
+            ResetDefaultZoneSettings(false);
         }
     }
 }

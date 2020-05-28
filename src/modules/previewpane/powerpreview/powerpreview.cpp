@@ -61,7 +61,7 @@ bool PowerPreviewModule::get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_siz
 
     for (auto previewHandler : this->m_previewHandlers)
     {
-        settings.add_bool_toogle(
+        settings.add_bool_toggle(
             previewHandler->GetToggleSettingName(),
             previewHandler->GetToggleSettingDescription(),
             previewHandler->GetToggleSettingState());

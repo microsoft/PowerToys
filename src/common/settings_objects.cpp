@@ -37,13 +37,13 @@ namespace PowerToysSettings
         m_json.SetNamedValue(L"video_link", json::value(video_link));
     }
 
-    // add_bool_toogle overloads.
-    void Settings::add_bool_toogle(std::wstring_view name, UINT description_resource_id, bool value)
+    // add_bool_toggle overloads.
+    void Settings::add_bool_toggle(std::wstring_view name, UINT description_resource_id, bool value)
     {
-        add_bool_toogle(name, get_resource(description_resource_id), value);
+        add_bool_toggle(name, get_resource(description_resource_id), value);
     }
 
-    void Settings::add_bool_toogle(std::wstring_view name, std::wstring_view description, bool value)
+    void Settings::add_bool_toggle(std::wstring_view name, std::wstring_view description, bool value)
     {
         json::JsonObject toggle;
         toggle.SetNamedValue(L"display_name", json::value(description));

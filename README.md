@@ -4,7 +4,7 @@
 
 Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. Inspired by the [Windows 95 era PowerToys project](https://en.wikipedia.org/wiki/Microsoft_PowerToys), this reboot provides power users with ways to squeeze more efficiency out of the Windows 10 shell and customize it for individual workflows.  A great overview of the Windows 95 PowerToys can be found [here](https://socket3.wordpress.com/2016/10/22/using-windows-95-powertoys/).
 
-[What's Happening](#whats-happening)   |   [Downloading & Release notes][github-release-link]   |   [Contributing to PowerToys](#contributing)
+[What's Happening](#whats-happening)   |   [Downloading & Release notes][github-release-link]   |   [Contributing to PowerToys](#contributing) | [Known issues](#known-issues)
 
 ## Build status
 
@@ -71,9 +71,9 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 
 ## Installing and running Microsoft PowerToys
 
- **Requirements:** 
- - Microsoft PowerToys requires Windows 10 1803 (build 17134) or later.
- - Have [.NET Core 3.1 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.4-windows-x64-installer). The installer will prompt this but we want to directly make people aware.
+**Requirements**
+- Windows 10 1803 (build 17134) or later.
+- Have [.NET Core 3.1 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.4-windows-x64-installer). The installer will prompt this but we want to directly make people aware.
 
 ### Via Github with MSI [Recommended]
 
@@ -107,6 +107,11 @@ To upgrade PowerToys, run the following command from the command line / PowerShe
 ```powershell
 choco upgrade powertoys
 ```
+
+### Known issues
+
+- [#2012 - Uninstalling with old control panel fails](https://github.com/microsoft/PowerToys/issues/2012): Please use the modern settings to uninstall. `Windows 10 Settings -> Apps -> Apps & features`
+- [#3447 - PowerToys Settings window is empty](https://github.com/microsoft/PowerToys/issues/3447): Workaround appears to be run as admin.  We are proactively looking into this as a hotfix.
 
 ### Processor support
 
@@ -149,7 +154,7 @@ Please read the [developer docs](/doc/devdocs) for a detailed breakdown.
 
 ## Contributing
 
-This project welcomes contributions of all times. Help spec'ing, design, documentation, finding bugs are ways everyone can help on top of coding features / bug fixes. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
+This project welcomes contributions of all types. Help spec'ing, design, documentation, finding bugs are ways everyone can help on top of coding features / bug fixes. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
 
 We ask that **before you start work on a feature that you would like to contribute**, please read our [Contributor's Guide](contributing.md). We will be happy to work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid any wasted or duplicate effort.
 

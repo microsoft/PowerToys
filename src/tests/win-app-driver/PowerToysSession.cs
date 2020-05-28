@@ -213,7 +213,7 @@ namespace PowerToysTests
             ResetSettings(_settingsFolderPath, _settingsPath, _defaultSettings, relaunch);
         }
 
-        public static void ResetDefautZoneSettings(bool relaunch)
+        public static void ResetDefaultZoneSettings(bool relaunch)
         {
             ResetSettings(_settingsFolderPath, _zoneSettingsPath, _defaultZoneSettings, relaunch);
         }

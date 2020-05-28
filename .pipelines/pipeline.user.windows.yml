@@ -74,7 +74,7 @@ build:
             - 'modules\ImageResizerExt.dll'
             - 'modules\KeyboardManager.dll'
             - 'modules\launcher\Microsoft.PowerToys.Settings.UI.Lib.dll'
-            - 'modules\launcher\Plugins\Microsoft.Plugin.Calculator\Microsoft.Plugin.Caculator.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Calculator\Microsoft.Plugin.Calculator.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Calculator\Wox.Infrastructure.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Calculator\Wox.Plugin.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Folder\Microsoft.Plugin.Folder.dll'

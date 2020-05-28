@@ -364,7 +364,7 @@ namespace UnitTestsCommonLib
             const auto value = true;
 
             Settings settings(nullptr, m_moduleName);
-            settings.add_bool_toogle(m_defaultSettingsName, m_defaultSettingsDescription, value);
+            settings.add_bool_toggle(m_defaultSettingsName, m_defaultSettingsDescription, value);
 
             auto expected = m_defaultSettingsJson;
             auto expectedProperties = createSettingsProperties(L"bool_toggle");
@@ -381,7 +381,7 @@ namespace UnitTestsCommonLib
             const auto value = false;
 
             Settings settings(nullptr, m_moduleName);
-            settings.add_bool_toogle(m_defaultSettingsName, m_defaultSettingsDescription, value);
+            settings.add_bool_toggle(m_defaultSettingsName, m_defaultSettingsDescription, value);
 
             auto expected = m_defaultSettingsJson;
             auto expectedProperties = createSettingsProperties(L"bool_toggle");

@@ -40,4 +40,4 @@ private:
     std::unordered_map<PowertoyModuleIface*, std::vector<ItemInfo>> Configurations{};
 };
 
-SystemMenuHelper& SystemMenuHelperInstace();
+SystemMenuHelper& SystemMenuHelperInstance();
