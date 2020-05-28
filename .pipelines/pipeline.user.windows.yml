@@ -103,7 +103,7 @@ build:
             - 'modules\launcher\Wox.Plugin.dll'
             - 'modules\Microsoft.Launcher.dll'
             - 'modules\PowerRenameExt.dll'
-            - 'modules\shortcut_guide.dll'
+            - 'modules\ShortcutGuide\ShortcutGuide.dll'
             - 'Notifications.dll'
             - 'os-detection.dll'
             - 'PowerToys.exe'
