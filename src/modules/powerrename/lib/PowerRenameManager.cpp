@@ -805,11 +805,13 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                         newNameToUse++;
                                     }
 
-                                    if (*newNameToUse == 0)
+                                    if (*newNameToUse != 0)
                                     {
                                         auto endOfNewNameToUse = newNameToUse + wcslen(newNameToUse) - 1;
                                         while (endOfNewNameToUse > newNameToUse && iswspace((wchar_t)*endOfNewNameToUse))
+                                        {
                                             endOfNewNameToUse--;
+                                        }
                                         endOfNewNameToUse[1] = '\0';
                                     }
                                 }
