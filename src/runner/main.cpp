@@ -135,10 +135,12 @@ int runner(bool isProcessElevated)
             L"KeyboardManager.dll"
         };
 
+        // TODO(stefan): When all modules get their OutputDir delete this and simplify "search for .dll logic"
         std::unordered_set<std::wstring> module_folders = {
             L"",
             L"FileExplorerPreview/",
-            L"FancyZones/"
+            L"FancyZones/",
+            L"shortcut_guide/"
         };
 
         for (std::wstring subfolderName : module_folders)
