@@ -29,6 +29,26 @@
       "name": "ChromeLow",
       "lightHex": "#FFF2F2F2",
       "darkHex": "#FF171717"-->
+
+        <CubicEase x:Key="CubicEaseOut" EasingMode="EaseOut"/>
+        
+        <!-- Some of the durations are different to give a 'parallax' feel (like start menu has as well) -->
+        <Storyboard x:Key="IntroStoryboard">
+            <DoubleAnimation From="20" To="0" Duration="0:0:0.2" Storyboard.TargetName="SearchBoxBorder" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" EasingFunction="{StaticResource CubicEaseOut}"/>
+            <DoubleAnimation From="20" To="0" Duration="0:0:0.250" Storyboard.TargetName="SearchBox" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" EasingFunction="{StaticResource CubicEaseOut}"/>
+            <DoubleAnimation From="0.5" To="1" Duration="0:0:0.150" Storyboard.TargetName="SearchBoxBorder" Storyboard.TargetProperty="(UIElement.Opacity)" EasingFunction="{StaticResource CubicEaseOut}"/>
+            <DoubleAnimation From="-10" To="0" Duration="0:0:0.2" Storyboard.TargetName="ListBoxBorder" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" EasingFunction="{StaticResource CubicEaseOut}"/>
+            <DoubleAnimation From="0.5" To="1" Duration="0:0:0.1" Storyboard.TargetName="ListBoxBorder" Storyboard.TargetProperty="(UIElement.Opacity)" EasingFunction="{StaticResource CubicEaseOut}"/>
+        </Storyboard>
+
+        <!-- Duration is a bit shorter, since it's an outro animation and you want it to be gone asap -->
+        <Storyboard x:Key="OutroStoryboard" Completed="OutroStoryboard_Completed">
+            <DoubleAnimation From="0" To="20" Duration="0:0:0.18" Storyboard.TargetName="SearchBoxBorder" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" EasingFunction="{StaticResource CubicEaseOut}"/>
+            <DoubleAnimation From="1" To="0.0" Duration="0:0:0.18" Storyboard.TargetName="SearchBoxBorder" Storyboard.TargetProperty="(UIElement.Opacity)" EasingFunction="{StaticResource CubicEaseOut}"/>
+            <DoubleAnimation From="0" To="-10" Duration="0:0:0.18" Storyboard.TargetName="ListBoxBorder" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" EasingFunction="{StaticResource CubicEaseOut}"/>
+            <DoubleAnimation From="1" To="0.0" Duration="0:0:0.18" Storyboard.TargetName="ListBoxBorder" Storyboard.TargetProperty="(UIElement.Opacity)" EasingFunction="{StaticResource CubicEaseOut}"/>
+        </Storyboard>
+       
     </Window.Resources>
     <Grid Width="720">
         <Grid.RowDefinitions>
@@ -44,9 +64,17 @@
             Background="{DynamicResource SystemChromeLow}"
             BorderBrush="{DynamicResource SystemChromeLow}">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="16" Opacity="0.8" ShadowDepth="0" />
+                <DropShadowEffect BlurRadius="12" Opacity="0.3" ShadowDepth="0" />
             </Border.Effect>
-            <local:LauncherControl x:Name="SearchBox" />
+            <local:LauncherControl x:Name="SearchBox">
+                <local:LauncherControl.RenderTransform>
+                    <TranslateTransform />
+                </local:LauncherControl.RenderTransform>
+            </local:LauncherControl>
+            <Border.RenderTransform>
+                <TranslateTransform />
+            </Border.RenderTransform>
+            
         </Border>
         <Border 
             x:Name="ListBoxBorder"
@@ -57,11 +85,19 @@
             Visibility="{Binding Results.Visbility}"
             Background="{DynamicResource SystemChromeLow}"
             BorderBrush="{DynamicResource SystemChromeLow}">
+            <Border.RenderTransform>
+                <TranslateTransform />
+            </Border.RenderTransform>
             <Border.Effect>
-                <DropShadowEffect BlurRadius="16" Opacity="0.8" ShadowDepth="0" />
+                <DropShadowEffect BlurRadius="12" Opacity="0.3" ShadowDepth="0" />
             </Border.Effect>
             <local:ResultList x:Name="ListBox" 
-                              PreviewMouseDown="ListBox_PreviewMouseDown"/>
+                              PreviewMouseDown="ListBox_PreviewMouseDown"
+                              >
+                <local:ResultList.RenderTransform>
+                    <TranslateTransform />
+                </local:ResultList.RenderTransform>
+            </local:ResultList>
         </Border>
     </Grid> 
     <Window.InputBindings>

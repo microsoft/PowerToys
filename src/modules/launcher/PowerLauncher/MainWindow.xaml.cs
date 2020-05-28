@@ -88,6 +88,9 @@ namespace PowerLauncher
                 if (Visibility == System.Windows.Visibility.Visible)
                 {
                     Activate();
+
+                    (this.FindResource("IntroStoryboard") as Storyboard).Begin();
+
                     UpdatePosition();
 
                     _settings.ActivateTimes++;
@@ -124,7 +127,8 @@ namespace PowerLauncher
         { 
             if (_settings.HideWhenDeactive)
             {
-                Hide();
+                (this.FindResource("OutroStoryboard") as Storyboard).Begin();
+             //   Hide();
             }              
         }
 
@@ -300,6 +304,16 @@ namespace PowerLauncher
             {
                 e.Handled = true;
             }
+        }
+
+        private void Window_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("Changed");
+        }
+
+        private void OutroStoryboard_Completed(object sender, EventArgs e)
+        {
+            Hide();
         }
     }
 }
