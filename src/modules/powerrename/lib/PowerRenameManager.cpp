@@ -763,7 +763,6 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                     StringCchCopy(sourceName, ARRAYSIZE(sourceName), originalName);
                                 }
 
-
                                 PWSTR newName = nullptr;
                                 // Failure here means we didn't match anything or had nothing to match
                                 // Call put_newName with null in that case to reset it
@@ -799,7 +798,22 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                         StringCchCopy(resultName, ARRAYSIZE(resultName), newName);
                                     }
                                 }
-                                
+                                if ( newNameToUse != nullptr )
+                                {
+                                    while (iswspace((wchar_t)*newNameToUse))
+                                    {
+                                        newNameToUse++;
+                                    }
+
+                                    if (*newNameToUse == 0)
+                                    {
+                                        auto endOfNewNameToUse = newNameToUse + wcslen(newNameToUse) - 1;
+                                        while (endOfNewNameToUse > newNameToUse && iswspace((wchar_t)*endOfNewNameToUse))
+                                            endOfNewNameToUse--;
+                                        endOfNewNameToUse[1] = '\0';
+                                    }
+                                }
+
                                 // No change from originalName so set newName to
                                 // null so we clear it from our UI as well.
                                 if (lstrcmp(originalName, newNameToUse) == 0)
