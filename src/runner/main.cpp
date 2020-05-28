@@ -126,7 +126,7 @@ int runner(bool isProcessElevated)
         std::wstring baseModuleFolder = L"modules/";
 
         std::unordered_set<std::wstring> known_dlls = {
-            L"shortcut_guide.dll",
+            L"ShortcutGuide.dll",
             L"fancyzones.dll",
             L"PowerRenameExt.dll",
             L"Microsoft.Launcher.dll",
@@ -140,7 +140,7 @@ int runner(bool isProcessElevated)
             L"",
             L"FileExplorerPreview/",
             L"FancyZones/",
-            L"shortcut_guide/"
+            L"ShortcutGuide/"
         };
 
         for (std::wstring subfolderName : module_folders)

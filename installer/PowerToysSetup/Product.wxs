@@ -3,7 +3,7 @@
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
      xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension" >
 
-  <?define ShortcutGuideProjectName="shortcut_guide"?>
+  <?define ShortcutGuideProjectName="ShortcutGuide"?>
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
@@ -573,7 +573,7 @@
 
     <DirectoryRef Id="ShortcutGuideInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ShortcutGuideProjectName)\">
       <Component Id="Module_ShortcutGuide" Guid="CBD0AC09-91D3-428E-B2B3-05745ADF3473" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\$(var.ShortcutGuideProjectName)\shortcut_guide.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ShortcutGuideProjectName)\$(var.ShortcutGuideProjectName).dll" KeyPath="yes" />
       </Component>
     </DirectoryRef>
 
