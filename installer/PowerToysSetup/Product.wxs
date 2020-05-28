@@ -3,8 +3,8 @@
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
      xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension" >
 
-  <?define ShortcutGuideProjectName="ShortcutGuide"?>
   <?define PowerRenameProjectName="PowerRename"?>
+  <?define ShortcutGuideProjectName="ShortcutGuide"?>
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
@@ -220,7 +220,6 @@
           <Directory Id="ModulesInstallFolder" Name="modules">
             <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)"/>
             <Directory Id="ShortcutGuideInstallFolder" Name="$(var.ShortcutGuideProjectName)"/>
-
             <!-- Resource file directories -->
             <?foreach Language in ar;bg;ca;cs;de;es;eu-ES;fr;he;hu;it;nb-NO;nl;pl;pt-BR;ru;sk;tr;zh-Hans?>
               <!--NB: Ids can't contain hyphens-->
