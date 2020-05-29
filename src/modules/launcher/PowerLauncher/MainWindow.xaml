@@ -59,7 +59,7 @@
             x:Name="SearchBoxBorder" 
             Grid.Row="0" 
             Margin="24,24,24,8"  
-            BorderThickness="4" 
+            BorderThickness="0" 
             CornerRadius="4"
             Background="{DynamicResource SystemChromeLow}"
             BorderBrush="{DynamicResource SystemChromeLow}">
@@ -80,7 +80,7 @@
             x:Name="ListBoxBorder"
             Grid.Row="1" 
             Margin="24,8,24,24" 
-            BorderThickness="4"
+            BorderThickness="0"
             CornerRadius="4" 
             Visibility="{Binding Results.Visbility}"
             Background="{DynamicResource SystemChromeLow}"

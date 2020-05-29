@@ -10,125 +10,133 @@
     d:DesignWidth="720">
 
     <UserControl.Resources>
-        <!-- These colors are based on the UWP XAML resources -->
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Styles/UWPScrollBarStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
 
-        <!-- Dark theme (a.k.a. "Default") -->
-        <!--<SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#30FFFFFF" />
+
+            <!-- These colors are based on the UWP XAML resources -->
+
+            <!-- Dark theme (a.k.a. "Default") -->
+            <!--<SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#30FFFFFF" />
         <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#61FFFFFF" />
         <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#30FFFFFF" />
         <SolidColorBrush x:Key="ButtonBorderPressed" Color="#61FFFFFF" />
         <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#FFFFFFFF" />-->
-        
-        <!-- Light theme -->
-        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#2E000000" />
-        <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#61000000" />
-        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#33000000" />
-        <SolidColorBrush x:Key="ButtonBorderPressed" Color="#61000000" />
-        <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#FF000000" />
 
-        <!-- High contrast -->
-        <!--<SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#33FFFFFF" />
+            <!-- Light theme -->
+            <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#2E000000" />
+            <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#61000000" />
+            <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#33000000" />
+            <SolidColorBrush x:Key="ButtonBorderPressed" Color="#61000000" />
+            <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#FF000000" />
+
+            <!-- High contrast -->
+            <!--<SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#33FFFFFF" />
         <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#66FFFFFF" />
         <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#33FFFFFF" />
         <SolidColorBrush x:Key="ButtonBorderPressed" Color="#66FFFFFF" />-->
 
 
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        <Style x:Key="FocusVisual">
-            <Setter Property="Control.Template">
-                <Setter.Value>
-                    <ControlTemplate>
-                        <Rectangle Margin="2" StrokeDashArray="1 2" SnapsToDevicePixels="true" StrokeThickness="1" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <Style x:Key="FocusVisual">
+                <Setter Property="Control.Template">
+                    <Setter.Value>
+                        <ControlTemplate>
+                            <Rectangle Margin="2" StrokeDashArray="1 2" SnapsToDevicePixels="true" StrokeThickness="1" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
 
-        <Style x:Key="IconButtonStyle" TargetType="{x:Type Button}">
-            <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Padding" Value="1"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type Button}">
-                        <Border x:Name="border" CornerRadius="4" Background="Transparent" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="Transparent" SnapsToDevicePixels="true">
-                            <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsDefaulted" Value="true">
-                                <Setter Property="Background" TargetName="border" Value="Transparent"/>
-                                <Setter Property="BorderBrush" TargetName="border" Value="Transparent"/>
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="true">
-                                <Setter Property="Background" TargetName="border" Value="{DynamicResource ButtonBackgroundPointerOver}"/>
-                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource ButtonBorderPointerOver}"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="true">
-                                <Setter Property="Background" TargetName="border" Value="{DynamicResource ButtonBackgroundPressed}"/>
-                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource ButtonBorderPressed}"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="false">
-                                <!--<Setter Property="Background" TargetName="border" Value="{StaticResource Button.Disabled.Background}"/>
+            <Style x:Key="IconButtonStyle" TargetType="{x:Type Button}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="Padding" Value="1"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border x:Name="border" CornerRadius="4" Background="Transparent" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="Transparent" SnapsToDevicePixels="true">
+                                <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsDefaulted" Value="true">
+                                    <Setter Property="Background" TargetName="border" Value="Transparent"/>
+                                    <Setter Property="BorderBrush" TargetName="border" Value="Transparent"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="true">
+                                    <Setter Property="Background" TargetName="border" Value="{DynamicResource ButtonBackgroundPointerOver}"/>
+                                    <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource ButtonBorderPointerOver}"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="true">
+                                    <Setter Property="Background" TargetName="border" Value="{DynamicResource ButtonBackgroundPressed}"/>
+                                    <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource ButtonBorderPressed}"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="false">
+                                    <!--<Setter Property="Background" TargetName="border" Value="{StaticResource Button.Disabled.Background}"/>
                                 <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource Button.Disabled.Border}"/>
                                 <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="{StaticResource Button.Disabled.Foreground}"/>-->
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
 
-        <Style x:Key="ResultsListViewItemContainerStyle"  TargetType="ListViewItem">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type ListViewItem}">
-                        <Grid Background="Transparent">
-                            <Border x:Name="HighlightBorder" BorderThickness="0" Background="Transparent" BorderBrush="Transparent" SnapsToDevicePixels="true"/>
-                            <ContentPresenter x:Name="contentPresenter" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                        </Grid>
-                        <ControlTemplate.Triggers>
-                            <!-- Setting the opacity of the highlight border to improve the contrast of the AccentColorbrush when selected. In UWP we could call a different brush, in WPF we need to play with the opacity of the WindowGlassBrush-->
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Opacity" TargetName="HighlightBorder" Value="0.1" />
-                                <Setter Property="Background" TargetName="HighlightBorder" Value="{DynamicResource ListViewItemBackgroundPointerOver}"/>
-                            </Trigger>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="Opacity" TargetName="HighlightBorder" Value="0.4" />
-                                <Setter Property="Background" TargetName="HighlightBorder" Value="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}"/> <!-- Accent color brush -->
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        
-        <Style x:Key="CommandButtonListViewItemContainerStyle"  TargetType="ListViewItem">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type ListViewItem}">
-                        <Border x:Name="border" CornerRadius="4" Background="Transparent" BorderBrush="Transparent" SnapsToDevicePixels="true">
-                            <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="true">
-                                <Setter Property="Background" TargetName="border" Value="Transparent"/>
-                                <Setter Property="BorderBrush" TargetName="border" Value="Transparent"/>
-                            </Trigger>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="Background" TargetName="border" Value="{DynamicResource ButtonBackgroundPressed}"/>
-                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource ButtonBorderPressed}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+            <Style x:Key="ResultsListViewItemContainerStyle"  TargetType="ListViewItem">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ListViewItem}">
+                            <Grid Background="Transparent">
+                                <Border x:Name="HighlightBorder" BorderThickness="0" Background="Transparent" BorderBrush="Transparent" SnapsToDevicePixels="true"/>
+                                <ContentPresenter x:Name="contentPresenter" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <!-- Setting the opacity of the highlight border to improve the contrast of the AccentColorbrush when selected. In UWP we could call a different brush, in WPF we need to play with the opacity of the WindowGlassBrush-->
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Opacity" TargetName="HighlightBorder" Value="0.1" />
+                                    <Setter Property="Background" TargetName="HighlightBorder" Value="{DynamicResource ListViewItemBackgroundPointerOver}"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Opacity" TargetName="HighlightBorder" Value="0.4" />
+                                    <Setter Property="Background" TargetName="HighlightBorder" Value="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}"/>
+                                    <!-- Accent color brush -->
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="CommandButtonListViewItemContainerStyle"  TargetType="ListViewItem">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ListViewItem}">
+                            <Border x:Name="border" CornerRadius="4" Background="Transparent" BorderBrush="Transparent" SnapsToDevicePixels="true">
+                                <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="true">
+                                    <Setter Property="Background" TargetName="border" Value="Transparent"/>
+                                    <Setter Property="BorderBrush" TargetName="border" Value="Transparent"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" TargetName="border" Value="{DynamicResource ButtonBackgroundPressed}"/>
+                                    <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource ButtonBorderPressed}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
     </UserControl.Resources>
 
     <Grid VerticalAlignment="Top">
@@ -145,7 +153,6 @@
             ScrollViewer.HorizontalScrollBarVisibility="Disabled"                       
             SelectionMode="Single"
             SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
-            ScrollViewer.VerticalScrollBarVisibility="Disabled"
             ItemContainerStyle="{StaticResource ResultsListViewItemContainerStyle}">
             
             <!--AllowFocusOnInteraction="False"
@@ -177,7 +184,6 @@
                         <ListView                                  
                             HorizontalAlignment="Right" 
                             VerticalAlignment="Center"                                  
-                            Margin="0,0,24,0" 
                             Background="Transparent"
                             BorderThickness="0"
                             Grid.RowSpan="2" 
