@@ -3,6 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows;
 using interop;
 using Windows.UI.Popups;
@@ -21,6 +24,8 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 
         public static bool IsUserAnAdmin { get; set; }
 
+        public static int PowerToysPID { get; set; }
+
         [STAThread]
         public static void Main(string[] args)
         {
@@ -31,6 +36,8 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 
                 if (args.Length >= ArgumentsQty)
                 {
+                    PowerToysPID = int.Parse(args[2]);
+
                     if (args[4] == "true")
                     {
                         IsElevated = true;
@@ -48,6 +55,8 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                     {
                         IsUserAnAdmin = false;
                     }
+
+                    WaitForPowerToys();
 
                     ipcmanager = new TwoWayPipeMessageIPCManaged(args[1], args[0], null);
                     ipcmanager.Start();
@@ -67,6 +76,24 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
         public static TwoWayPipeMessageIPCManaged GetTwoWayIPCManager()
         {
             return ipcmanager;
+        }
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
+
+        internal static void WaitForPowerToys()
+        {
+            new Thread(() =>
+            {
+                const uint INFINITE = 0xFFFFFFFF;
+                const uint WAIT_OBJECT_0 = 0x00000000;
+
+                IntPtr powerToysProcHandle = Process.GetProcessById(Program.PowerToysPID).Handle;
+                if (WaitForSingleObject(powerToysProcHandle, INFINITE) == WAIT_OBJECT_0)
+                {
+                    Environment.Exit(0);
+                }
+            }).Start();
         }
     }
 }
