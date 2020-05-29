@@ -186,7 +186,52 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
     std::wstring_view action{ args[1] };
 
-    if (action == L"-start_PowerLauncher")
+    if (action == L"-run-non-elevated")
+    {
+        int nextArg = 2;
+
+        std::wstring_view target;
+        std::wstring_view pidFile;
+
+        while (nextArg < nArgs)
+        {
+            if (std::wstring_view(args[nextArg]) == L"-target" && nextArg + 1 < nArgs)
+            {
+                target = args[nextArg + 1];
+                nextArg += 2;
+            }
+            else if (std::wstring_view(args[nextArg]) == L"-pidFile" && nextArg + 1 < nArgs)
+            {
+                pidFile = args[nextArg + 1];
+                nextArg += 2;
+            }
+            else
+            {
+                nextArg++;
+            }
+        }
+
+        HANDLE hMapFile = NULL;
+        PDWORD pidBuffer = NULL;
+
+        if (!pidFile.empty())
+        {
+            hMapFile = OpenFileMappingW(FILE_MAP_WRITE, FALSE, pidFile.data());
+            pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
+        }
+
+        run_non_elevated(L"modules\\launcher\\PowerLauncher.exe", L"", pidBuffer);
+        
+        // cleanup
+        if (!pidFile.empty())
+        {
+            FlushViewOfFile(pidBuffer, sizeof(DWORD));
+            UnmapViewOfFile(pidBuffer);
+            FlushFileBuffers(hMapFile);
+            CloseHandle(hMapFile);
+        }
+    }
+    else if (action == L"-start_PowerLauncher")
     {
         HANDLE hMapFile = OpenFileMappingW(FILE_MAP_WRITE, FALSE, POWER_LAUNCHER_PID_SHARED_FILE);
         if (hMapFile)
