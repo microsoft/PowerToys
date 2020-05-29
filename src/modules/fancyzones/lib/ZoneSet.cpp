@@ -576,7 +576,7 @@ bool ZoneSet::CalculateUniquePriorityGridLayout(Rect workArea, int zoneCount, in
 bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
 {
     wil::unique_cotaskmem_string guidStr;
-    if (SUCCEEDED_LOG(StringFromCLSID(m_config.Id, &guidStr)))
+    if (SUCCEEDED(StringFromCLSID(m_config.Id, &guidStr)))
     {
         const std::wstring guid = guidStr.get();
 

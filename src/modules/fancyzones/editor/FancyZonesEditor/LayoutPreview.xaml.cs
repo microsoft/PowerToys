@@ -106,8 +106,8 @@ namespace FancyZonesEditor
 
             int spacing = settings.ShowSpacing ? settings.Spacing : 0;
 
-            int width = (int)settings.WorkArea.Width;
-            int height = (int)settings.WorkArea.Height;
+            int width = (int)Settings.WorkArea.Width;
+            int height = (int)Settings.WorkArea.Height;
 
             double totalWidth = width - (spacing * (cols + 1));
             double totalHeight = height - (spacing * (rows + 1));
@@ -265,8 +265,8 @@ namespace FancyZonesEditor
             Body.Children.Add(viewbox);
             Canvas frame = new Canvas
             {
-                Width = canvas.ReferenceWidth,
-                Height = canvas.ReferenceHeight,
+                Width = Settings.WorkArea.Width,
+                Height = Settings.WorkArea.Height,
             };
             viewbox.Child = frame;
             foreach (Int32Rect zone in canvas.Zones)

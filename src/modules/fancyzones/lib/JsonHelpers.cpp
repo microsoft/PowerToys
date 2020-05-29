@@ -853,9 +853,9 @@ namespace JSONHelpers
                     CanvasLayoutInfo info;
 
                     int j = 5;
-                    info.referenceWidth = data[j] * 256 + data[j + 1];
+                    info.lastWorkAreaWidth = data[j] * 256 + data[j + 1];
                     j += 2;
-                    info.referenceHeight = data[j] * 256 + data[j + 1];
+                    info.lastWorkAreaHeight = data[j] * 256 + data[j + 1];
                     j += 2;
 
                     int count = data[j++];
@@ -1023,8 +1023,9 @@ namespace JSONHelpers
     json::JsonObject CanvasLayoutInfo::ToJson(const CanvasLayoutInfo& canvasInfo)
     {
         json::JsonObject infoJson{};
-        infoJson.SetNamedValue(L"ref-width", json::value(canvasInfo.referenceWidth));
-        infoJson.SetNamedValue(L"ref-height", json::value(canvasInfo.referenceHeight));
+        infoJson.SetNamedValue(L"ref-width", json::value(canvasInfo.lastWorkAreaWidth));
+        infoJson.SetNamedValue(L"ref-height", json::value(canvasInfo.lastWorkAreaHeight));
+
         json::JsonArray zonesJson;
 
         for (const auto& [x, y, width, height] : canvasInfo.zones)
@@ -1045,8 +1046,9 @@ namespace JSONHelpers
         try
         {
             CanvasLayoutInfo info;
-            info.referenceWidth = static_cast<int>(infoJson.GetNamedNumber(L"ref-width"));
-            info.referenceHeight = static_cast<int>(infoJson.GetNamedNumber(L"ref-height"));
+            info.lastWorkAreaWidth = static_cast<int>(infoJson.GetNamedNumber(L"ref-width"));
+            info.lastWorkAreaHeight = static_cast<int>(infoJson.GetNamedNumber(L"ref-height"));
+
             json::JsonArray zonesJson = infoJson.GetNamedArray(L"zones");
             uint32_t size = zonesJson.Size();
             info.zones.reserve(size);

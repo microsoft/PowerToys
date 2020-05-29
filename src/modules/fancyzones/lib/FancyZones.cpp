@@ -487,7 +487,6 @@ void FancyZones::ToggleEditor() noexcept
     const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
     fancyZonesData.CustomZoneSetsToJsonFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
 
-    // Do not scale window params by the dpi, that will be done in the editor - see LayoutModel.Apply
     const auto taskbar_x_offset = mi.rcWork.left - mi.rcMonitor.left;
     const auto taskbar_y_offset = mi.rcWork.top - mi.rcMonitor.top;
     const auto x = mi.rcMonitor.left + taskbar_x_offset;
