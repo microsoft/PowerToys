@@ -276,7 +276,7 @@
     <value>To exclude an application from snapping to zones add its name here (one per line). These apps will react only to Windows Snap.</value>
   </data>
   <data name="FancyZones_HighlightOpacity.Header" xml:space="preserve">
-    <value>Zone highlight opacity (%)</value>
+    <value>Zone highlight opacity</value>
   </data>
   <data name="FancyZones_HokeyEditorControl_Header.Header" xml:space="preserve">
     <value>Edit hot key / shortcut</value>
@@ -426,7 +426,7 @@
     <value>Enable Shortcut Guide</value>
   </data>
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
-    <value>Opacity of background (%)</value>
+    <value>Opacity of background</value>
   </data>
   <data name="ShortcutGuide_Theme.Header" xml:space="preserve">
     <value>Choose Shortcut Guide overlay color</value>
