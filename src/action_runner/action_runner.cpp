@@ -236,24 +236,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             CloseHandle(hMapFile);
         }
     }
-    else if (action == L"-start_PowerLauncher")
-    {
-        HANDLE hMapFile = OpenFileMappingW(FILE_MAP_WRITE, FALSE, POWER_LAUNCHER_PID_SHARED_FILE);
-        if (hMapFile)
-        {
-            PDWORD pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
-            if (pidBuffer)
-            {
-                *pidBuffer = 0;
-                run_same_elevation(L"modules\\launcher\\PowerLauncher.exe", L"", pidBuffer);
-                FlushViewOfFile(pidBuffer, sizeof(DWORD));
-                UnmapViewOfFile(pidBuffer);
-            }
-
-            FlushFileBuffers(hMapFile);
-            CloseHandle(hMapFile);
-        }
-    }
     else if (action == L"-install_dotnet")
     {
         if (dotnet_is_installed())
