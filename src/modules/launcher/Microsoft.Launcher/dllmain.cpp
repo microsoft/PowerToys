@@ -132,7 +132,7 @@ public:
    // Enable the powertoy
   virtual void enable()
   {
-      if (is_process_elevated(false) == false)
+      if (!is_process_elevated(false))
       {
           SHELLEXECUTEINFOW sei{ sizeof(sei) };
           sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
@@ -146,32 +146,34 @@ public:
       {
           std::wstring action_runner_path = get_module_folderpath();
           action_runner_path += L"\\action_runner.exe";
-          SHELLEXECUTEINFOW sei{ sizeof(sei) };
-          sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC };
-          sei.lpFile = action_runner_path.c_str();
-          sei.nShow = SW_SHOWNORMAL;
-          sei.lpParameters = L"-start_PowerLauncher";
- 
+
           // Set up the shared file from which to retrieve the PID of PowerLauncher
           HANDLE hMapFile = CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(DWORD), POWER_LAUNCHER_PID_SHARED_FILE);
-          PDWORD pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
-          *pidBuffer = 0;
-          m_hProcess = NULL;
-          ShellExecuteExW(&sei);
-          
-          const int maxRetries = 20;
-          for (int retry = 0; retry < maxRetries; ++retry)
+          if (hMapFile)
           {
-              Sleep(50);
-              DWORD pid = *pidBuffer;
-              if (pid)
+              PDWORD pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
+              if (pidBuffer)
               {
-                  m_hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
-                  break;
-              }
-          }
+                  *pidBuffer = 0;
+                  m_hProcess = NULL;
 
-          CloseHandle(hMapFile);
+                  if (run_non_elevated(action_runner_path, L"-start_PowerLauncher", nullptr))
+                  {
+                      const int maxRetries = 20;
+                      for (int retry = 0; retry < maxRetries; ++retry)
+                      {
+                          Sleep(50);
+                          DWORD pid = *pidBuffer;
+                          if (pid)
+                          {
+                              m_hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+                              break;
+                          }
+                      }
+                  }
+              }
+              CloseHandle(hMapFile);
+          }
       }
 
       m_enabled = true;

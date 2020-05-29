@@ -510,8 +510,8 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWOR
     siex.lpAttributeList = pptal;
     siex.StartupInfo.cb = sizeof(siex);
 
-    PROCESS_INFORMATION process_info = { 0 };
-    auto succedded = CreateProcessW(file.c_str(),
+    PROCESS_INFORMATION pi = { 0 };
+    auto succeeded = CreateProcessW(file.c_str(),
                                     const_cast<LPWSTR>(executable_args.c_str()),
                                     nullptr,
                                     nullptr,
@@ -520,34 +520,38 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWOR
                                     nullptr,
                                     nullptr,
                                     &siex.StartupInfo,
-                                    &process_info);
-
-    if (process_info.hProcess)
+                                    &pi);
+    if (succeeded)
     {
-        if (returnPid)
+        if (pi.hProcess)
         {
-            *returnPid = GetProcessId(process_info.hProcess);
-        }
+            if (returnPid)
+            {
+                *returnPid = GetProcessId(pi.hProcess);
+            }
 
-        CloseHandle(process_info.hProcess);
+            CloseHandle(pi.hProcess);
+        }
+        if (pi.hThread)
+        {
+            CloseHandle(pi.hThread);
+        }
     }
-    if (process_info.hThread)
-    {
-        CloseHandle(process_info.hThread);
-    }
-    return succedded;
+    
+    return succeeded;
 }
 
-bool run_same_elevation(const std::wstring& file, const std::wstring& params)
+bool run_same_elevation(const std::wstring& file, const std::wstring& params, DWORD* returnPid)
 {
     auto executable_args = L"\"" + file + L"\"";
     if (!params.empty())
     {
         executable_args += L" " + params;
     }
+    
     STARTUPINFO si = { 0 };
     PROCESS_INFORMATION pi = { 0 };
-    auto succedded = CreateProcessW(file.c_str(),
+    auto succeeded = CreateProcessW(file.c_str(),
                                     const_cast<LPWSTR>(executable_args.c_str()),
                                     nullptr,
                                     nullptr,
@@ -557,15 +561,26 @@ bool run_same_elevation(const std::wstring& file, const std::wstring& params)
                                     nullptr,
                                     &si,
                                     &pi);
-    if (pi.hProcess)
+
+    if (succeeded)
     {
-        CloseHandle(pi.hProcess);
+        if (pi.hProcess)
+        {
+            if (returnPid)
+            {
+                *returnPid = GetProcessId(pi.hProcess);
+            }
+
+            CloseHandle(pi.hProcess);
+        }
+
+        if (pi.hThread)
+        {
+            CloseHandle(pi.hThread);
+        }
     }
-    if (pi.hThread)
-    {
-        CloseHandle(pi.hThread);
-    }
-    return succedded;
+
+    return succeeded;
 }
 
 std::wstring get_process_path(HWND window) noexcept
