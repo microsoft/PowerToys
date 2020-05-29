@@ -72,8 +72,8 @@ bool run_elevated(const std::wstring& file, const std::wstring& params);
 // Run command as non-elevated user, returns true if succeeded, puts the process id into returnPid if returnPid != NULL
 bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid);
 
-// Run command with the same elevation, returns true if succedded
-bool run_same_elevation(const std::wstring& file, const std::wstring& params);
+// Run command with the same elevation, returns true if succeeded
+bool run_same_elevation(const std::wstring& file, const std::wstring& params, DWORD* returnPid);
 
 // Returns true if the current process is running from administrator account
 bool check_user_is_admin();
@@ -137,4 +137,4 @@ struct overloaded : Ts...
 template<class... Ts>
 overloaded(Ts...)->overloaded<Ts...>;
 
-#define POWER_LAUNCHER_PID_SHARED_FILE L"Global\\3cbfbad4-199b-4e2c-9825-942d5d3d3c74"
+#define POWER_LAUNCHER_PID_SHARED_FILE L"Local\\3cbfbad4-199b-4e2c-9825-942d5d3d3c74"
