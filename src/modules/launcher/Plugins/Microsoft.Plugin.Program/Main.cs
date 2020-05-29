@@ -207,7 +207,7 @@ namespace Microsoft.Plugin.Program
 
         void InitializeTimer()
         {
-            //multiple file writes occur on install / unistall.  Adding a delay before actually indexing.
+            //multiple file writes occur on install / uninstall.  Adding a delay before actually indexing.
             var delayInterval = 5000; 
             _timer = new System.Timers.Timer(delayInterval);
             _timer.Enabled = true;

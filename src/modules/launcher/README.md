@@ -6,7 +6,11 @@ modular for additional plugins. Press Alt+Space and start typing!
 ![](../../../doc/images/Launcher/QuickStart.gif)
 
 # 1\. Get Started 
-## 1\.1 Features
+## 1\.1 Requirements
+
+- Windows 10 version 1903 or higher
+
+## 1\.2 Features
 Search for applications, folders, or files
 ![](../../../doc/images/Launcher/Features.gif)
 
@@ -27,13 +31,13 @@ Do a simple calculation using calculator
 
 ![](../../../doc/images/Launcher/FeaturesCalculator.gif)
 
-## 1\.2 Settings 
+## 1\.3 Settings 
   | **Settings**   |               **Action** |
   | --------------- | ------------------------------------------------------------------------------- |
   | Maximum number of results  |   Maximum number of results shown without scrolling on PowerToys Run |
   | Open PowerToys Run shortcut |  The keyboard shortcut to open/hide PowerToys Run |
 
-## 1\.3 Keyboard Shortcuts
+## 1\.4 Keyboard Shortcuts
   | **Shortcuts**   |   **Action** |
   | ------------------ | ---------------------------------------------------------------------------------|
   | Alt+Space |         Open or hide PowerToys Run |
@@ -68,4 +72,4 @@ For a list of all known issues/suggestions, check it out
 
 [Wox](https://github.com/Wox-launcher/Wox/)
 
-[Beta Tadele's Window Walker](https://github.com/Wox-launcher/Wox/)
+[Beta Tadele's Window Walker](https://github.com/betsegaw/windowwalker)

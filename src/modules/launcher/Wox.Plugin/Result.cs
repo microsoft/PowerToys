@@ -62,7 +62,7 @@ namespace Wox.Plugin
         public IList<int> SubTitleHighlightData { get; set; }
 
         /// <summary>
-        /// Only resulsts that originQuery match with curren query will be displayed in the panel
+        /// Only results that originQuery match with current query will be displayed in the panel
         /// </summary>
         internal Query OriginQuery { get; set; }
 

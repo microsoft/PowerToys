@@ -7,6 +7,6 @@
     "Version":"1.0.0",
     "Language":"csharp",
     "Website":"http://www.wox.one/plugin",
-    "ExecuteFileName":"Microsoft.Plugin.Caculator.dll",
+    "ExecuteFileName":"Microsoft.Plugin.Calculator.dll",
     "IcoPath":"Images\\calculator.png"
 }

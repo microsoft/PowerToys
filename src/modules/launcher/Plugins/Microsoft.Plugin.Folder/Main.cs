@@ -221,7 +221,7 @@ namespace Microsoft.Plugin.Folder
                 throw;
             }
 
-            // Intial ordering, this order can be updated later by UpdateResultView.MainViewModel based on history of user selection.
+            // Initial ordering, this order can be updated later by UpdateResultView.MainViewModel based on history of user selection.
             return results.Concat(folderList.OrderBy(x => x.Title)).Concat(fileList.OrderBy(x => x.Title)).ToList();
         }
 

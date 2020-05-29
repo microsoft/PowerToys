@@ -1,7 +1,7 @@
 parameters:
   configuration: 'Release'
   platform: ''
-  additionalBuildArguments: ''
+  additionalBuildArguments: '/p:CIBuild=true'
 
 jobs:
 - job: Build${{ parameters.platform }}${{ parameters.configuration }}

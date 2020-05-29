@@ -17,6 +17,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="1" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="0" />
+                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
@@ -26,6 +27,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="0" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                        <Setter Target="SidePanel.Width" Value="Auto" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -44,11 +46,11 @@
             <TextBlock x:Uid="FileExplorerPreview_Description"
                        TextWrapping="Wrap"/>
 
-            <ToggleSwitch x:Uid="FileEplorerPreview_ToggleSwitch_Preview_SVG"
+            <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG"
                           Margin="{StaticResource MediumTopMargin}"
                           IsOn="{Binding Mode=TwoWay, Path=SVGRenderIsEnabled}" />
 
-            <ToggleSwitch x:Uid="FileEplorerPreview_ToggleSwitch_Preview_MD"
+            <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD"
                           Margin="{StaticResource SmallTopMargin}"
                           IsOn="{Binding Mode=TwoWay, Path=MDRenderIsEnabled}" />
 

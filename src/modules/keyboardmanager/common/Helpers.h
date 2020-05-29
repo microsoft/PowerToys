@@ -69,4 +69,13 @@ namespace KeyboardManagerHelper
 
     // Function to return the list of key name in the order for the drop down based on the key codes
     winrt::Windows::Foundation::Collections::IVector<winrt::Windows::Foundation::IInspectable> ToBoxValue(const std::vector<std::wstring>& list);
+
+    // Function to set the value of a key event based on the arguments
+    void SetKeyEvent(LPINPUT keyEventArray, int index, DWORD inputType, WORD keyCode, DWORD flags, ULONG_PTR extraInfo);
+
+    // Function to return the window in focus
+    HWND GetFocusWindowHandle();
+
+    // Function to return the executable name of the application in focus
+    std::wstring GetCurrentApplication(bool keepPath);
 }

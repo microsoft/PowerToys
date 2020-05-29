@@ -3,12 +3,12 @@
 
 /*
   Usage:
-    When creating animation contstructor takes one parameter - how long
+    When creating animation constructor takes one parameter - how long
     should the animation take in seconds.
 
     Call reset() when starting animation.
 
-    When redering, call value() to get value from 0 to 1 - depending on animation
+    When rendering, call value() to get value from 0 to 1 - depending on animation
     progress.
 */
 class Animation

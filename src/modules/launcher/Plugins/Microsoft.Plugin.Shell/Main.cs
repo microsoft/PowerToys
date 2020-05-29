@@ -317,7 +317,7 @@ namespace Microsoft.Plugin.Shell
 
         private void OnWinRPressed()
         {
-            _context.API.ChangeQuery($"{_context.CurrentPluginMetadata.ActionKeywords[0]}{Wox.Plugin.Query.TermSeperater}");
+            _context.API.ChangeQuery($"{_context.CurrentPluginMetadata.ActionKeywords[0]}{Wox.Plugin.Query.TermSeparator}");
             Application.Current.MainWindow.Visibility = Visibility.Visible;
         }
 

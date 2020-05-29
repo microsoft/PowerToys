@@ -3,6 +3,9 @@
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
      xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension" >
 
+  <?define PowerRenameProjectName="PowerRename"?>
+  <?define ShortcutGuideProjectName="ShortcutGuide"?>
+
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
   <Product Id="*"
@@ -215,6 +218,8 @@
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
           <Directory Id="SvgsInstallFolder" Name="svgs"/>
           <Directory Id="ModulesInstallFolder" Name="modules">
+            <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)"/>
+            <Directory Id="ShortcutGuideInstallFolder" Name="$(var.ShortcutGuideProjectName)"/>
             <!-- Resource file directories -->
             <?foreach Language in ar;bg;ca;cs;de;es;eu-ES;fr;he;hu;it;nb-NO;nl;pl;pt-BR;ru;sk;tr;zh-Hans?>
               <!--NB: Ids can't contain hyphens-->
@@ -402,21 +407,6 @@
     </DirectoryRef>
 
     <DirectoryRef Id="ModulesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
-      <Component Id="Module_ShortcutGuide" Guid="CBD0AC09-91D3-428E-B2B3-05745ADF3473" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\shortcut_guide.dll" KeyPath="yes" />
-      </Component>
-
-      <Component Id="Module_PowerRename" Guid="E4401D08-27FE-4F96-BA17-0C61FD79E684" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\PowerRenameExt.dll" KeyPath="yes" />
-        <RegistryKey Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
-          <RegistryValue Type="string" Value="PowerRename Shell Extension" />
-          <RegistryValue Type="string" Key="InprocServer32" Value="[ModulesInstallFolder]PowerRenameExt.dll" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
-        </RegistryKey>
-        <RegistryKey Root="HKCR" Key="AllFileSystemObjects\ShellEx\ContextMenuHandlers\PowerRenameExt">
-          <RegistryValue Type="string" Value="{0440049F-D1DC-4E46-B27B-98393D79486B}"/>
-        </RegistryKey>
-      </Component>
       
       <Component Id="Module_Launcher" Guid="9A343236-B49D-451D-A27D-4C336F460A45" Win64="yes">
         <File Source="$(var.BinX64Dir)modules\Microsoft.Launcher.dll" />
@@ -571,7 +561,27 @@
         </RegistryKey>
       </Component>
     </DirectoryRef>
-    
+
+    <DirectoryRef Id="PowerRenameInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)">
+      <Component Id="Module_PowerRename" Guid="E4401D08-27FE-4F96-BA17-0C61FD79E684" Win64="yes">
+        <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRenameExt.dll" KeyPath="yes" />
+        <RegistryKey Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
+          <RegistryValue Type="string" Value="PowerRename Shell Extension" />
+          <RegistryValue Type="string" Key="InprocServer32" Value="[PowerRenameInstallFolder]PowerRenameExt.dll" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
+        </RegistryKey>
+        <RegistryKey Root="HKCR" Key="AllFileSystemObjects\ShellEx\ContextMenuHandlers\PowerRenameExt">
+          <RegistryValue Type="string" Value="{0440049F-D1DC-4E46-B27B-98393D79486B}"/>
+        </RegistryKey>
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="ShortcutGuideInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ShortcutGuideProjectName)\">
+      <Component Id="Module_ShortcutGuide" Guid="CBD0AC09-91D3-428E-B2B3-05745ADF3473" Win64="yes">
+        <File Source="$(var.BinX64Dir)modules\$(var.ShortcutGuideProjectName)\$(var.ShortcutGuideProjectName).dll" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
     <DirectoryRef Id="FileExplorerPreviewInstallFolder" FileSource="$(var.RepoDir)\modules\FileExplorerPreview\">
       <Component Id="Module_PowerPreview" Guid="FF1700D5-1B07-4E07-9A62-4D206645EEA9" Win64="yes">
         <!-- Component to include PowerPreview Module Source dll's -->
@@ -807,12 +817,12 @@
       
       <!-- Calculator Plugin -->
       <Component Id="calculatorComponent" Directory="CalculatorPluginFolder" Guid="19DE1022-583C-4969-9AFC-D43CB944003D">
-        <?foreach File in plugin.json;Wox.Infrastructure.dll;Microsoft.Plugin.Caculator.deps.json;Microsoft.Plugin.Caculator.dll;Wox.Plugin.dll?>
-          <File Id="Calculator_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Caculator\$(var.File)" />
+        <?foreach File in plugin.json;Wox.Infrastructure.dll;Microsoft.Plugin.Calculator.deps.json;Microsoft.Plugin.Calculator.dll;Wox.Plugin.dll?>
+          <File Id="Calculator_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="calculatorImagesComponent" Directory="CalculatorImagesFolder" Guid="07EC9232-CF9A-4CDB-8D8E-E79DC75096C0">
-        <File Id="calculatorPluginImg" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Caculator\Images\calculator.png" />
+        <File Id="calculatorPluginImg" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Images\calculator.png" />
       </Component>
        <Component Id="calculatorLanguagesComponent" Directory="CalculatorLanguagesFolder" Guid="2D8019E7-664F-4529-9FAA-83C8DACF0732">
         <?foreach LanguageFile in de.xaml;en.xaml;pl.xaml;tr.xaml;zh-cn.xaml;zh-tw.xaml?>
@@ -824,13 +834,13 @@
           <?else?>
             <?define IdSafeLanguage = $(var.LanguageFile)?>
           <?endif?>
-          <File Id="File_calc_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Caculator\Languages\$(var.LanguageFile)" />
+          <File Id="File_calc_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Languages\$(var.LanguageFile)" />
           <?undef IdSafeLanguage?>
         <?endforeach?>
       </Component>
       <Component Id="calculatorpinyindbComponent" Directory="CalculatorpinyindbFolder" Guid="D5527670-BE9A-4AA9-9D36-1249F2184B5B">
         <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
-          <File Id="CalcPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Caculator\pinyindb\$(var.File)" />
+          <File Id="CalcPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\pinyindb\$(var.File)" />
         <?endforeach?>
       </Component>
 

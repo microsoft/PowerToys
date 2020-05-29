@@ -69,75 +69,11 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\WiX.3.11.2\build\wix.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WiX.3.11.2\build\wix.props'))" />
   </Target>
-
   <PropertyGroup>
-    <PreBuildEvent>setlocal enableDelayedExpansion
-
-rem Publish Settings
-SET settingsProfileFolderName=..\..\..\..\src\core\Microsoft.PowerToys.Settings.UI.Runner\Properties\PublishProfiles\
-rem Create the publish profile folder if it doesn%27t exist
-IF NOT EXIST !settingsProfileFolderName! (mkdir !settingsProfileFolderName!)
-SET settingsProfileFileName=SettingsProfile.pubxml
-SET settingsPublishProfile=!settingsProfileFolderName!!settingsProfileFileName!
-
-rem Create the publish profile pubxml
-echo ^&lt;%3fxml version="1.0" encoding="utf-8"%3f^&gt; &gt; !settingsPublishProfile!
-echo ^&lt;^^!-- &gt;&gt; !settingsPublishProfile!
-echo https://go.microsoft.com/fwlink/%3fLinkID=208121.  &gt;&gt; !settingsPublishProfile!
-echo --^&gt; &gt;&gt; !settingsPublishProfile!
-echo ^&lt;Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003"^&gt; &gt;&gt; !settingsPublishProfile!
-echo   ^&lt;PropertyGroup^&gt; &gt;&gt; !settingsPublishProfile!
-echo     ^&lt;PublishProtocol^&gt;FileSystem^&lt;/PublishProtocol^&gt; &gt;&gt; !settingsPublishProfile!
-echo     ^&lt;Configuration^&gt;$(ConfigurationName)^&lt;/Configuration^&gt; &gt;&gt; !settingsPublishProfile!
-echo     ^&lt;Platform^&gt;$(PlatformName)^&lt;/Platform^&gt; &gt;&gt; !settingsPublishProfile!
-echo     ^&lt;TargetFramework^&gt;netcoreapp3.1^&lt;/TargetFramework^&gt; &gt;&gt; !settingsPublishProfile!
-echo     ^&lt;PublishDir^&gt;..\..\..\$(PlatformName)\$(ConfigurationName)\SettingsUIRunner^&lt;/PublishDir^&gt; &gt;&gt; !settingsPublishProfile!
-echo     ^&lt;RuntimeIdentifier^&gt;win-x64^&lt;/RuntimeIdentifier^&gt; &gt;&gt; !settingsPublishProfile!
-echo     ^&lt;SelfContained^&gt;false^&lt;/SelfContained^&gt; &gt;&gt; !settingsPublishProfile!
-echo     ^&lt;PublishSingleFile^&gt;False^&lt;/PublishSingleFile^&gt; &gt;&gt; !settingsPublishProfile!
-echo     ^&lt;PublishReadyToRun^&gt;False^&lt;/PublishReadyToRun^&gt; &gt;&gt; !settingsPublishProfile!
-echo   ^&lt;/PropertyGroup^&gt; &gt;&gt; !settingsPublishProfile!
-echo ^&lt;/Project^&gt; &gt;&gt; !settingsPublishProfile!
-
-rem In case of Release we should not use Debug CRT in VCRT forwarders
-IF $(ConfigurationName)==Release (
-"$(MSBuildBinPath)\msbuild.exe" ..\..\..\..\src\core\Microsoft.PowerToys.Settings.UI.Runner\Microsoft.PowerToys.Settings.UI.Runner.csproj -t:Publish -p:Configuration="$(ConfigurationName)" -p:Platform="$(PlatformName)" -p:AppxBundle=Never -p:VCRTForwarders-IncludeDebugCRT=false -p:PublishProfile=!settingsProfileFileName!
-) ELSE (
-"$(MSBuildBinPath)\msbuild.exe" ..\..\..\..\src\core\Microsoft.PowerToys.Settings.UI.Runner\Microsoft.PowerToys.Settings.UI.Runner.csproj -t:Publish -p:Configuration="$(ConfigurationName)" -p:Platform="$(PlatformName)" -p:AppxBundle=Never -p:PublishProfile=!settingsProfileFileName!
-)
-
-rem Publish Launcher
-SET launcherProfileFolderName=..\..\..\..\src\modules\launcher\PowerLauncher\Properties\PublishProfiles\
-
-rem Create the publish profile folder if it doesn%27t exist
-IF NOT EXIST !launcherProfileFolderName! (mkdir !launcherProfileFolderName!)
-SET launcherProfileFileName=LauncherProfile.pubxml
-SET launcherPublishProfile=!launcherProfileFolderName!!launcherProfileFileName!
-
-rem Create the publish profile pubxml
-echo ^&lt;%3fxml version="1.0" encoding="utf-8"%3f^&gt; &gt; !launcherPublishProfile!
-echo ^&lt;^^!-- &gt;&gt; !launcherPublishProfile!
-echo https://go.microsoft.com/fwlink/%3fLinkID=208121.  &gt;&gt; !launcherPublishProfile!
-echo --^&gt; &gt;&gt; !launcherPublishProfile!
-echo ^&lt;Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003"^&gt; &gt;&gt; !launcherPublishProfile!
-echo   ^&lt;PropertyGroup^&gt; &gt;&gt; !launcherPublishProfile!
-echo     ^&lt;PublishProtocol^&gt;FileSystem^&lt;/PublishProtocol^&gt; &gt;&gt; !launcherPublishProfile!
-echo     ^&lt;Configuration^&gt;$(ConfigurationName)^&lt;/Configuration^&gt; &gt;&gt; !launcherPublishProfile!
-echo     ^&lt;Platform^&gt;$(PlatformName)^&lt;/Platform^&gt; &gt;&gt; !launcherPublishProfile!
-echo     ^&lt;TargetFramework^&gt;netcoreapp3.1^&lt;/TargetFramework^&gt; &gt;&gt; !launcherPublishProfile!
-echo     ^&lt;PublishDir^&gt;..\..\..\..\$(PlatformName)\$(ConfigurationName)\modules\launcher^&lt;/PublishDir^&gt; &gt;&gt; !launcherPublishProfile!
-echo     ^&lt;RuntimeIdentifier^&gt;win-x64^&lt;/RuntimeIdentifier^&gt; &gt;&gt; !launcherPublishProfile!
-echo     ^&lt;SelfContained^&gt;false^&lt;/SelfContained^&gt; &gt;&gt; !launcherPublishProfile!
-echo     ^&lt;PublishSingleFile^&gt;False^&lt;/PublishSingleFile^&gt; &gt;&gt; !launcherPublishProfile!
-echo     ^&lt;PublishReadyToRun^&gt;False^&lt;/PublishReadyToRun^&gt; &gt;&gt; !launcherPublishProfile!
-echo   ^&lt;/PropertyGroup^&gt; &gt;&gt; !launcherPublishProfile!
-echo ^&lt;/Project^&gt; &gt;&gt; !launcherPublishProfile!
-
-rem In case of Release we should not use Debug CRT in VCRT forwarders
-IF $(ConfigurationName)==Release (
-"$(MSBuildBinPath)\msbuild.exe" ..\..\..\..\src\modules\launcher\PowerLauncher\PowerLauncher.csproj -t:Publish -p:Configuration="$(ConfigurationName)" -p:Platform="$(PlatformName)" -p:AppxBundle=Never -p:VCRTForwarders-IncludeDebugCRT=false -p:PublishProfile=!launcherProfileFileName!
-) ELSE (
-"$(MSBuildBinPath)\msbuild.exe" ..\..\..\..\src\modules\launcher\PowerLauncher\PowerLauncher.csproj -t:Publish -p:Configuration="$(ConfigurationName)" -p:Platform="$(PlatformName)" -p:AppxBundle=Never -p:PublishProfile=!launcherProfileFileName!
+    <PreBuildEvent>IF NOT DEFINED IsPipeline (
+call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64 -winsdk=10.0.18362.0
+SET PTRoot=..\..\..\..
+call "..\..\publish.cmd"
 )</PreBuildEvent>
   </PropertyGroup>
   <!--

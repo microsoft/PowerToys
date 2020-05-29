@@ -73,7 +73,7 @@ Here's an example from [the example PowerToy implementation](/src/modules/exampl
     settings.set_video_link(L"https://www.youtube.com/watch?v=d3LHo2yXKoY&t=21462");
 
     // Add a bool property with a toggle editor.
-    settings.add_bool_toogle(
+    settings.add_bool_toggle(
       L"test_bool_toggle", // property name.
       L"This is what a BoolToggle property looks like", // description or resource id of the localized string.
       g_settings.test_bool_prop // property value.
@@ -104,7 +104,7 @@ Here's an example from [the example PowerToy implementation](/src/modules/exampl
     );
 
     // Add a custom action property. When using this settings type, the "PowertoyModuleIface::call_custom_action()"
-    // method should be overriden as well.
+    // method should be overridden as well.
     settings.add_custom_action(
       L"test_custom_action", // action name.
       L"This is what a CustomAction property looks like", // label above the field.
@@ -174,7 +174,7 @@ or
 ```cpp
 settings.set_description(description_resource_id);
 ```
-where `description_resource_id` is the UINT index of a resouce string in the project .rc file.
+where `description_resource_id` is the UINT index of a resource string in the project .rc file.
 
 #### icon_key
 The identifier of the PowerToy icon in the [`settings-web` project](/src/settings-web#updating-the-icons).
@@ -204,10 +204,10 @@ settings.set_video_link(L"https://www.youtube.com/watch?v=d3LHo2yXKoY&t=21462");
 
 A boolean property, edited with a Toggle control.
 
-It can be added to a `Settings` object by calling `add_bool_toogle`.
+It can be added to a `Settings` object by calling `add_bool_toggle`.
 ```cpp
 // Add a bool property with a toggle editor.
-settings.add_bool_toogle(
+settings.add_bool_toggle(
   L"test_bool_toggle", // property name.
   L"This is what a BoolToggle property looks like", // description or resource id of the localized string.
   g_settings.test_bool_prop // property value.
@@ -297,7 +297,7 @@ A custom action property, invoked from the settings by a Button control. This ca
 It can be added to a `Settings` object by calling `add_custom_action`.
 ```cpp
 // Add a custom action property. When using this settings type, the "PowertoyModuleIface::call_custom_action()"
-// method should be overriden as well.
+// method should be overridden as well.
 settings.add_custom_action(
   L"test_custom_action", // action name.
   L"This is what a CustomAction property looks like", // label above the field: a string literal or a resource id

@@ -15,7 +15,7 @@ namespace
     }
 }
 
-SystemMenuHelper& SystemMenuHelperInstace()
+SystemMenuHelper& SystemMenuHelperInstance()
 {
     static SystemMenuHelper instance;
     return instance;
@@ -132,7 +132,7 @@ bool SystemMenuHelper::AddSeparator(PowertoyModuleIface* module, HWND window)
 
         if (InsertMenuItem(systemMenu, GetMenuItemCount(systemMenu) - KSeparatorPos, true, &separator))
         {
-            IdMappings[separator.wID] = { module, L"sepparator_dummy_name" };
+            IdMappings[separator.wID] = { module, L"separator_dummy_name" };
             return true;
         }
     }

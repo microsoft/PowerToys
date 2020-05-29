@@ -2,8 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
@@ -89,5 +91,74 @@ namespace PowerLauncher.UI
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        private void SuggestionsList_RightTapped(object sender, Windows.UI.Xaml.Input.RightTappedRoutedEventArgs e)
+        {
+            Debug.WriteLine($"Right Tap was triggered on {e.OriginalSource}");
+        }
+
+        private void FontIcon_Loaded(object sender, RoutedEventArgs e)
+        {
+            DisableRightClick(sender);
+        }
+
+        private void ToolTip_Loaded(object sender, RoutedEventArgs e)
+        {
+            DisableRightClick(sender);
+        }
+
+
+        private void GridView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+        {
+            DisableRightClick(sender);
+        }
+
+        private void DisableRightClick(object o)
+        {
+            var element = o as UIElement;
+            if (element != null)
+            {
+                DisableRightClick(element, isRecursive: true);
+            }
+        }
+
+        public void DisableRightClick(UIElement element, bool isRecursive)
+        {
+            element.IsRightTapEnabled = false;
+
+
+            if (isRecursive)
+            {
+                var children = FindChildren<UIElement>(element);
+                foreach (var child in children)
+                {
+                    child.IsRightTapEnabled = false;
+                }
+            }
+        }
+
+        private static List<T> FindChildren<T>(DependencyObject startNode, List<T> results = null)
+  where T : DependencyObject
+        {
+            if (results == null)
+            {
+                results = new List<T>();
+            }
+
+            int count = VisualTreeHelper.GetChildrenCount(startNode);
+            for (int i = 0; i < count; i++)
+            {
+                DependencyObject current = VisualTreeHelper.GetChild(startNode, i);
+                if ((current.GetType()).Equals(typeof(T)) || (current.GetType().GetTypeInfo().IsSubclassOf(typeof(T))))
+                {
+                    T asType = (T)current;
+                    results.Add(asType);
+                }
+                FindChildren<T>(current, results);
+            }
+
+            return results;
+        }
+
     }
 }
