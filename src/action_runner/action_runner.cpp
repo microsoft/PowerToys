@@ -225,7 +225,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
         }
 
-        run_non_elevated(L"modules\\launcher\\PowerLauncher.exe", L"", pidBuffer);
+        run_non_elevated(target.data(), L"", pidBuffer);
         
         // cleanup
         if (!pidFile.empty())
