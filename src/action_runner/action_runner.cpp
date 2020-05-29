@@ -188,6 +188,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     if (action == L"-run-non-elevated")
     {
+        if (is_process_elevated(false) == true)
+        {
+            drop_elevated_privileges();
+        }
+
         int nextArg = 2;
 
         std::wstring_view target;
