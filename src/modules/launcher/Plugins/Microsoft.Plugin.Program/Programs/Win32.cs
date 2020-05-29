@@ -464,15 +464,7 @@ namespace Microsoft.Plugin.Program.Programs
                     programs = programs.Concat(startMenu);
                 }
 
-                var programsWithoutLnk = programs.Where(x => string.IsNullOrEmpty(x.LnkResolvedPath));
-                var programsAsList = programs.ToList();
-
-                foreach(var app in programsWithoutLnk)
-                {
-                    programsAsList.RemoveAll(x => (x.FullPath == app.FullPath) && string.IsNullOrEmpty(x.LnkResolvedPath));
-                }
-
-                return programsAsList.ToArray();
+                return programs.ToArray();
             }
 #if DEBUG //This is to make developer aware of any unhandled exception and add in handling.
             catch (Exception e)
