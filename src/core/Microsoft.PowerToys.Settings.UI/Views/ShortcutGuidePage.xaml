@@ -58,12 +58,14 @@
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallTopMargin}"
+                            MinWidth="240"
                             Value="{ Binding Mode=TwoWay, Path=PressTime}"
                             IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" SmallChange="50" LargeChange="100"/>
 
             <Slider x:Uid="ShortcutGuide_OverlayOpacity"
                     Minimum="0"
                     Maximum="100"
+                    Width="240"
                     Value="{ Binding Mode=TwoWay, Path=OverlayOpacity}"
                     HorizontalAlignment="Left"
                     Margin="{StaticResource MediumTopMargin}"

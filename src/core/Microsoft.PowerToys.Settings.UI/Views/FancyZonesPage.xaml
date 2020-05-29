@@ -75,7 +75,7 @@
 
             <CustomControls:HotkeySettingsControl 
                                           x:Uid="FancyZones_HokeyEditorControl_Header"
-                                          Width="320"
+                                          Width="240"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}"
@@ -134,11 +134,11 @@
             <TextBlock x:Uid="Appearance_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <!-- TO DO: Do we still need this numberbox? The colorpicker has an Alpha/Opacity option as well so we could use that -->
             <muxc:NumberBox x:Uid="FancyZones_HighlightOpacity"
                             Value="{ Binding Mode=TwoWay, Path=HighlightOpacity}"
                             Minimum="0"
                             Maximum="100"
+                            Width="240"
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallTopMargin}" 
@@ -235,6 +235,9 @@
                      Margin="{StaticResource SmallTopMargin}"
                      Text="{ Binding Mode=TwoWay, Path=ExcludedApps}"
                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                     Width="380"
+                     Height="160"
+                     HorizontalAlignment="Left"
                      TextWrapping="Wrap"
                      AcceptsReturn="True"/>
 
