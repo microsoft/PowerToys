@@ -105,8 +105,27 @@ namespace KeyboardEventHandlers
     {
         // The mutex should be unlocked before SendInput is called to avoid re-entry into the same mutex. More details can be found at https://github.com/microsoft/PowerToys/pull/1789#issuecomment-607555837
         std::unique_lock<std::mutex> lock(map_mutex);
+
+        // Check if any shortcut is currently in the invoked state
+        bool isShortcutInvoked = false;
         for (auto& it : reMap)
         {
+            if (it.second.isShortcutInvoked)
+            {
+                isShortcutInvoked = true;
+                break;
+            }
+        }
+
+        // Iterate through the shortcut remaps and apply whichever has been pressed
+        for (auto& it : reMap)
+        {
+            // If a shortcut is currently in the invoked state then skip till the shortcut that is currently invoked
+            if (isShortcutInvoked && !it.second.isShortcutInvoked)
+            {
+                continue;
+            }
+
             const size_t src_size = it.first.Size();
             const size_t dest_size = it.second.targetShortcut.Size();
 
