@@ -131,7 +131,7 @@ build:
       artifacts:
         - to: 'x64 Symbols'
           include:
-            - '**/x64/*.pdb'
+            - '**/x64/*/*.pdb'
 
 package:
   commands:
