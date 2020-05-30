@@ -6,7 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
         xmlns:local="clr-namespace:PowerLauncher"
         mc:Ignorable="d"       
-        Title="PowerLaunch"
+        Title="PowerToys Run"
         Topmost="True"
         SizeToContent="Height"
         ResizeMode="NoResize"
@@ -66,7 +66,8 @@
             <Border.Effect>
                 <DropShadowEffect BlurRadius="12" Opacity="0.3" ShadowDepth="0" />
             </Border.Effect>
-            <local:LauncherControl x:Name="SearchBox">
+            <local:LauncherControl 
+                x:Name="SearchBox">
                 <local:LauncherControl.RenderTransform>
                     <TranslateTransform />
                 </local:LauncherControl.RenderTransform>
@@ -91,8 +92,7 @@
                 <DropShadowEffect BlurRadius="12" Opacity="0.3" ShadowDepth="0" />
             </Border.Effect>
             <local:ResultList x:Name="ListBox" 
-                              PreviewMouseDown="ListBox_PreviewMouseDown"
-                              >
+                PreviewMouseDown="ListBox_PreviewMouseDown" >
                 <local:ResultList.RenderTransform>
                     <TranslateTransform />
                 </local:ResultList.RenderTransform>

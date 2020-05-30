@@ -27,8 +27,6 @@ namespace PowerLauncher
         private Settings _settings;
         private MainViewModel _viewModel;
         private bool _isTextSetProgramatically;
-        const int ROW_HEIGHT = 75;
-        const int MAX_LIST_HEIGHT = 300;
         bool _deletePressed = false;
         Timer _firstDeleteTimer = new Timer();
 
