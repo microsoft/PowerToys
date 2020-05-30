@@ -128,10 +128,11 @@ build:
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
     - !!buildcommand
+      name: 'Copying x64 Symbols'
       artifacts:
         - to: 'x64 Symbols'
           include:
-            - '**/x64/*.pdb'
+            - 'x64/**/*.pdb'
 
 package:
   commands:
