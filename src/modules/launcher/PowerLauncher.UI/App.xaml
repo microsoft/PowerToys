@@ -34,6 +34,115 @@
                 </Setter>
             </Style>
 
+            <Style x:Key="ListViewItemNoRightTap" TargetType="ListViewItem">
+                <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+                <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+                <Setter Property="Background" Value="{ThemeResource ListViewItemBackground}" />
+                <Setter Property="Foreground" Value="{ThemeResource ListViewItemForeground}" />
+                <Setter Property="TabNavigation" Value="Local" />
+                <Setter Property="IsHoldingEnabled" Value="True" />
+                <Setter Property="IsRightTapEnabled" Value="False" />
+                <Setter Property="Padding" Value="12,0,12,0" />
+                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="MinWidth" Value="{ThemeResource ListViewItemMinWidth}" />
+                <Setter Property="MinHeight" Value="{ThemeResource ListViewItemMinHeight}" />
+                <Setter Property="AllowDrop" Value="False" />
+                <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+                <Setter Property="FocusVisualMargin" Value="0" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ListViewItem">
+                            <ListViewItemPresenter IsRightTapEnabled="False" ContentTransitions="{TemplateBinding ContentTransitions}"
+                        x:Name="Root"
+                        Control.IsTemplateFocusTarget="True"
+                        FocusVisualMargin="{TemplateBinding FocusVisualMargin}"
+                        SelectionCheckMarkVisualEnabled="{ThemeResource ListViewItemSelectionCheckMarkVisualEnabled}"
+                        CheckBrush="{ThemeResource ListViewItemCheckBrush}"
+                        CheckBoxBrush="{ThemeResource ListViewItemCheckBoxBrush}"
+                        DragBackground="{ThemeResource ListViewItemDragBackground}"
+                        DragForeground="{ThemeResource ListViewItemDragForeground}"
+                        FocusBorderBrush="{ThemeResource ListViewItemFocusBorderBrush}"
+                        FocusSecondaryBorderBrush="{ThemeResource ListViewItemFocusSecondaryBorderBrush}"
+                        PlaceholderBackground="{ThemeResource ListViewItemPlaceholderBackground}"
+                        PointerOverBackground="{ThemeResource ListViewItemBackgroundPointerOver}"
+                        PointerOverForeground="{ThemeResource ListViewItemForegroundPointerOver}"
+                        SelectedBackground="{ThemeResource ListViewItemBackgroundSelected}"
+                        SelectedForeground="{ThemeResource ListViewItemForegroundSelected}"
+                        SelectedPointerOverBackground="{ThemeResource ListViewItemBackgroundSelectedPointerOver}"
+                        PressedBackground="{ThemeResource ListViewItemBackgroundPressed}"
+                        SelectedPressedBackground="{ThemeResource ListViewItemBackgroundSelectedPressed}"
+                        DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}"
+                        DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}"
+                        ReorderHintOffset="{ThemeResource ListViewItemReorderHintThemeOffset}"
+                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                        ContentMargin="{TemplateBinding Padding}"
+                        CheckMode="{ThemeResource ListViewItemCheckMode}"
+                        RevealBackground="{ThemeResource ListViewItemRevealBackground}"
+                        RevealBorderThickness="{ThemeResource ListViewItemRevealBorderThemeThickness}"
+                        RevealBorderBrush="{ThemeResource ListViewItemRevealBorderBrush}">
+
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="CommonStates">
+                                        <VisualState x:Name="Normal" />
+                                        <VisualState x:Name="Selected" />
+
+                                        <VisualState x:Name="PointerOver">
+                                            <VisualState.Setters>
+                                                <Setter Target="Root.(RevealBrush.State)" Value="PointerOver" />
+                                                <Setter Target="Root.RevealBorderBrush" Value="{ThemeResource ListViewItemRevealBorderBrushPointerOver}" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+
+                                        <VisualState x:Name="PointerOverSelected">
+                                            <VisualState.Setters>
+                                                <Setter Target="Root.(RevealBrush.State)" Value="PointerOver" />
+                                                <Setter Target="Root.RevealBorderBrush" Value="{ThemeResource ListViewItemRevealBorderBrushPointerOver}" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="PointerOverPressed">
+                                            <VisualState.Setters>
+                                                <Setter Target="Root.(RevealBrush.State)" Value="Pressed" />
+                                                <Setter Target="Root.RevealBorderBrush" Value="{ThemeResource ListViewItemRevealBorderBrushPressed}" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+
+                                        <VisualState x:Name="Pressed">
+                                            <VisualState.Setters>
+                                                <Setter Target="Root.(RevealBrush.State)" Value="Pressed" />
+                                                <Setter Target="Root.RevealBorderBrush" Value="{ThemeResource ListViewItemRevealBorderBrushPressed}" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+
+                                        <VisualState x:Name="PressedSelected">
+                                            <VisualState.Setters>
+                                                <Setter Target="Root.(RevealBrush.State)" Value="Pressed" />
+                                                <Setter Target="Root.RevealBorderBrush" Value="{ThemeResource ListViewItemRevealBorderBrushPressed}" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+
+                                    </VisualStateGroup>
+
+                                    <VisualStateGroup x:Name="DisabledStates">
+                                        <VisualState x:Name="Enabled" />
+
+                                        <VisualState x:Name="Disabled">
+                                            <VisualState.Setters>
+                                                <Setter Target="Root.RevealBorderThickness" Value="0" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+
+                                    </VisualStateGroup>
+
+                                </VisualStateManager.VisualStateGroups>
+                            </ListViewItemPresenter>
+
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
             <Style x:Key="IconOnlyButton" TargetType="Button">
                 <Setter Property="Background" Value="{ThemeResource ButtonRevealBackground}" />
                 <!--<Setter Property="Foreground" Value="{ThemeResource PrimaryTextColor}" />-->
@@ -50,7 +159,7 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
-                            <Grid x:Name="RootGrid" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}">
+                            <Grid x:Name="RootGrid" IsRightTapEnabled="False" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}">
 
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
@@ -98,7 +207,7 @@
                                     </VisualStateGroup>
 
                                 </VisualStateManager.VisualStateGroups>
-                                <ContentPresenter x:Name="ContentPresenter" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" CornerRadius="{TemplateBinding CornerRadius}" Content="{TemplateBinding Content}" ContentTransitions="{TemplateBinding ContentTransitions}" ContentTemplate="{TemplateBinding ContentTemplate}" Padding="{TemplateBinding Padding}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" AutomationProperties.AccessibilityView="Raw" />
+                                <ContentPresenter x:Name="ContentPresenter" IsRightTapEnabled="False" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" CornerRadius="{TemplateBinding CornerRadius}" Content="{TemplateBinding Content}" ContentTransitions="{TemplateBinding ContentTransitions}" ContentTemplate="{TemplateBinding ContentTemplate}" Padding="{TemplateBinding Padding}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" AutomationProperties.AccessibilityView="Raw" />
 
                             </Grid>
 

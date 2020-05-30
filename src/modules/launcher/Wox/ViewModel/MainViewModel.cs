@@ -17,7 +17,9 @@ using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
+using Microsoft.PowerLauncher.Telemetry;
 using Wox.Storage;
+using Microsoft.PowerToys.Telemetry;
 
 namespace Wox.ViewModel
 {
@@ -249,7 +251,7 @@ namespace Wox.ViewModel
         /// <summary>
         /// we need move cursor to end when we manually changed query
         /// but we don't want to move cursor to end when query is updated from TextBox. 
-        /// Also we don't want to force the results to change unless explicity told to.
+        /// Also we don't want to force the results to change unless explicitly told to.
         /// </summary>
         /// <param name="queryText"></param>
         /// <param name="requery">Optional Parameter that if true, will automatically execute a query against the updated text</param>
@@ -274,13 +276,13 @@ namespace Wox.ViewModel
                 _selectedResults = value;
                 if (SelectedIsFromQueryResults())
                 {
-                    ContextMenu.Visbility = Visibility.Collapsed;
-                    History.Visbility = Visibility.Collapsed;
+                    ContextMenu.Visibility = Visibility.Collapsed;
+                    History.Visibility = Visibility.Collapsed;
                     ChangeQueryText(_queryTextBeforeLeaveResults);
                 }
                 else
                 {
-                    Results.Visbility = Visibility.Collapsed;
+                    Results.Visibility = Visibility.Collapsed;
                     _queryTextBeforeLeaveResults = QueryText;
 
 
@@ -297,13 +299,29 @@ namespace Wox.ViewModel
                         QueryText = string.Empty;
                     }
                 }
-                _selectedResults.Visbility = Visibility.Visible;
+                _selectedResults.Visibility = Visibility.Visible;
             }
         }
 
         public Visibility ProgressBarVisibility { get; set; }
 
-        public Visibility MainWindowVisibility { get; set; } // = Visibility.Hidden;
+        private Visibility _visibility;
+
+        public Visibility MainWindowVisibility {
+            get { return _visibility; }
+            set {
+                _visibility = value;
+                if(value == Visibility.Visible)
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new LauncherShowEvent());
+                }
+                else
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new LauncherHideEvent());
+                }
+            
+            }
+        }
 
         public ICommand EscCommand { get; set; }
         public ICommand SelectNextItemCommand { get; set; }
@@ -380,6 +398,8 @@ namespace Wox.ViewModel
         {
             if (!string.IsNullOrEmpty(QueryText))
             {
+                var queryTimer = new System.Diagnostics.Stopwatch();
+                queryTimer.Start();
                 _updateSource?.Cancel();
                 var currentUpdateSource = new CancellationTokenSource();
                 _updateSource = currentUpdateSource;
@@ -435,6 +455,16 @@ namespace Wox.ViewModel
                         { // update to hidden if this is still the current query
                             ProgressBarVisibility = Visibility.Hidden;
                         }
+
+                        queryTimer.Stop();
+                        var queryEvent = new LauncherQueryEvent()
+                        {
+                            QueryTimeMs = queryTimer.ElapsedMilliseconds,
+                            NumResults = Results.Results.Count,
+                            QueryLength = query.RawQuery.Length
+                        };
+                        PowerToysTelemetry.Log.WriteEvent(queryEvent);
+
                     }, currentCancellationToken);
                 }
             }
@@ -442,7 +472,7 @@ namespace Wox.ViewModel
             {
                 Results.SelectedItem = null;
                 Results.Clear();                
-                Results.Visbility = Visibility.Collapsed;
+                Results.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -625,9 +655,9 @@ namespace Wox.ViewModel
                 Results.AddResults(list, metadata.ID);
             }
 
-            if (Results.Visbility != Visibility.Visible && list.Count > 0)
+            if (Results.Visibility != Visibility.Visible && list.Count > 0)
             {
-                Results.Visbility = Visibility.Visible;
+                Results.Visibility = Visibility.Visible;
             }
         }
 

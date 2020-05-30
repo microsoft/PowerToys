@@ -12,6 +12,9 @@ using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using System.Windows.Controls;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Timers;
+using Microsoft.PowerLauncher.Telemetry;
+using Microsoft.PowerToys.Telemetry;
 
 namespace PowerLauncher
 {
@@ -26,6 +29,8 @@ namespace PowerLauncher
         private bool _isTextSetProgramatically;
         const int ROW_HEIGHT = 75;
         const int MAX_LIST_HEIGHT = 300;
+        bool _deletePressed = false;
+        Timer _firstDeleteTimer = new Timer();
 
         #endregion
 
@@ -34,8 +39,23 @@ namespace PowerLauncher
             DataContext = mainVM;
             _viewModel = mainVM;
             _settings = settings;
+
+            InitializeComponent();
+
+            _firstDeleteTimer.Elapsed += CheckForFirstDelete;
+            _firstDeleteTimer.Interval = 1000;
+
         }
 
+        private void CheckForFirstDelete(object sender, ElapsedEventArgs e)
+        {
+            _firstDeleteTimer.Stop();
+            if (_deletePressed)
+            {
+                PowerToysTelemetry.Log.WriteEvent(new LauncherFirstDeleteEvent());
+            }
+
+        }
         public MainWindow()
         {
             InitializeComponent();
@@ -49,7 +69,6 @@ namespace PowerLauncher
         private void OnLoaded(object sender, RoutedEventArgs _)
         {
             WindowsInteropHelper.DisableControlBox(this);
-
             InitializePosition();
 
             SearchBox.QueryTextBox.DataContext = _viewModel;
@@ -87,30 +106,26 @@ namespace PowerLauncher
             {
                 if (Visibility == System.Windows.Visibility.Visible)
                 {
+                    _deletePressed = false;
+                    _firstDeleteTimer.Start();
                     Activate();
-
                     (this.FindResource("IntroStoryboard") as Storyboard).Begin();
-
                     UpdatePosition();
-
+                    SearchBox.QueryTextBox.Focus();
                     _settings.ActivateTimes++;
                     if (!_viewModel.LastQuerySelected)
                     {
                         _viewModel.LastQuerySelected = true;
                     }
-
-                    SearchBox.QueryTextBox.Focus();
-
-                    // to select the text so that the user can continue to type
-                    if (!string.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
-                    {
-                        SearchBox.QueryTextBox.SelectAll();
-                    }
+                }
+                else
+                {
+                    _firstDeleteTimer.Stop();
                 }
             }
             else if (e.PropertyName == nameof(MainViewModel.SystemQueryText))
             {
-                _isTextSetProgramatically = true;
+                this._isTextSetProgramatically = true;
                 SearchBox.QueryTextBox.Text = _viewModel.SystemQueryText;
             }
         }
@@ -124,8 +139,8 @@ namespace PowerLauncher
         }
 
         private void OnDeactivated(object sender, EventArgs e)
-        { 
-            if (_settings.HideWhenDeactive)
+        {
+            if (_settings.HideWhenDeactivated)
             {
                 (this.FindResource("OutroStoryboard") as Storyboard).Begin();
              //   Hide();
@@ -173,7 +188,7 @@ namespace PowerLauncher
             var screen = Screen.FromPoint(System.Windows.Forms.Cursor.Position);
             var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
             var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
-            var top = (dip2.Y - SearchBox.QueryTextBox.ActualHeight) / 4 + dip1.Y;
+            var top = (dip2.Y - this.SearchBox.ActualHeight) / 4 + dip1.Y;
             return top;
         }
 
@@ -213,6 +228,10 @@ namespace PowerLauncher
                 _viewModel.SelectPrevPageCommand.Execute(null);
                 e.Handled = true;
             }
+            else if (e.Key == Key.Back)
+            {
+                _deletePressed = true;
+            }
             else
             {
                 _viewModel.HandleContextMenu(e.Key, Keyboard.Modifiers);
@@ -242,7 +261,9 @@ namespace PowerLauncher
             SearchBox.AutoCompleteTextBlock.Text = ListView_FirstItem(_viewModel.QueryText);
         }
 
-        private string ListView_FirstItem(string input)
+        private const int millisecondsToWait = 100;
+        private static DateTime s_lastTimeOfTyping;
+        private string ListView_FirstItem(String input)
         {
             if (!string.IsNullOrEmpty(input))
             {
@@ -259,12 +280,8 @@ namespace PowerLauncher
 
             return string.Empty;
         }
-
-        private const int millisecondsToWait = 75;
-        private static DateTime s_lastTimeOfTyping;
-
         private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
+        {          
             if (_isTextSetProgramatically)
             {
                 var textBox = ((TextBox)sender);

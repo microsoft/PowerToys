@@ -3,6 +3,9 @@
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
      xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension" >
 
+  <?define PowerRenameProjectName="PowerRename"?>
+  <?define ShortcutGuideProjectName="ShortcutGuide"?>
+
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
   <Product Id="*"
@@ -47,8 +50,8 @@
       <UIRef Id="WixUI_PTInstallDir"/>
       <Publish Dialog="ExitDialog"
             Control="Finish"
-            Event="DoAction"
-            Value="LaunchApplication">WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed</Publish>
+            Event="EndDialog"
+            Value="Return">NOT Installed</Publish>
       <Publish Dialog="MaintenanceTypeDlg" Control="RemoveButton" Property="_REMOVE_ALL" Value="Yes">1</Publish>
       <Publish Dialog="UserExit" Control="Finish" Event="DoAction" Value="TelemetryLogInstallCancel">NOT Installed</Publish>
       <Publish Dialog="FatalError" Control="Finish" Event="DoAction" Value="TelemetryLogInstallFail">NOT Installed</Publish>
@@ -62,11 +65,8 @@
     <WixVariable Id="WixUILicenseRtf" Value="$(var.RepoDir)\installer\License.rtf" />
     <Property Id="INSTALLSTARTMENUSHORTCUT" Value="1"/>
     <Property Id="CREATESCHEDULEDTASK" Value="1"/>
-    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1"/>
-    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch PowerToys" />
-    <Property Id="WixShellExecTarget" Value="[#PowerToys.exe]" />
-    <CustomAction Id="LaunchApplication" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes" />
-
+    <Property Id="WixShellExecTarget" Value="[#action_runner.exe]" />
+    
     <Property Id ="EXISTINGPOWERRENAMEEXTPATH">
       <RegistrySearch Id="ExistingExtPath" Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}\InprocServer32" Type="raw"/>
     </Property>
@@ -90,7 +90,30 @@
       <Custom Action="TelemetryLogUninstallSuccess" After="InstallFinalize">
         Installed and (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
+      
+      <Custom Action="InstallDotNet" After="InstallFinalize">
+        NOT Installed
+      </Custom>
+
+      <Custom Action="TerminateProcesses" Before="InstallValidate" />
+      
     </InstallExecuteSequence>
+
+    <CustomAction
+      Id="TerminateProcesses"
+      Return="ignore"
+      Impersonate="no"
+      Execute="immediate"
+      BinaryKey="PTCustomActions"
+      DllEntry="TerminateProcessesCA" />
+
+    <CustomAction 
+      Id="InstallDotNet"
+      FileKey="action_runner.exe"
+      ExeCommand="-install_dotnet"
+      Return="asyncNoWait"
+      Execute="immediate"
+      Impersonate="no" />
 
     <CustomAction Id="SetRegisterPowerToysSchTaskParam"
                   Property="RegisterPowerToysSchTask"
@@ -195,6 +218,8 @@
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
           <Directory Id="SvgsInstallFolder" Name="svgs"/>
           <Directory Id="ModulesInstallFolder" Name="modules">
+            <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)"/>
+            <Directory Id="ShortcutGuideInstallFolder" Name="$(var.ShortcutGuideProjectName)"/>
             <!-- Resource file directories -->
             <?foreach Language in ar;bg;ca;cs;de;es;eu-ES;fr;he;hu;it;nb-NO;nl;pl;pt-BR;ru;sk;tr;zh-Hans?>
               <!--NB: Ids can't contain hyphens-->
@@ -213,6 +238,7 @@
               <?undef IdSafeLanguage?>
             <?endforeach?>
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
+            <Directory Id="FancyZonesInstallFolder" Name="FancyZones" />
             <Directory Id="LauncherInstallFolder" Name="launcher">
               <Directory Id="AssetsFolder" Name="Assets" />
               <Directory Id="LauncherImagesFolder" Name="Images" />
@@ -310,7 +336,7 @@
           </RegistryKey>
         </RegistryKey>
 
-        
+
       </Component>
 
       <Component Id="settings_exe" Guid="A5A461A9-7097-4CBA-9D39-3DBBB6B7B80C" Win64="yes">
@@ -325,8 +351,20 @@
       <Component Id="License_rtf" Guid="3E5AE43B-CFB4-449B-A346-94CAAFF3312E" Win64="yes">
         <File Source="$(var.RepoDir)\installer\License.rtf" Id="License.rtf" KeyPath="yes" />
       </Component>
+      <Component Id="Notice_md" Guid="E2FE99F5-5DF7-44EA-8B1C-2BDF8CEC5E6D" Win64="yes">
+        <File Source="$(var.RepoDir)\Notice.md" Id="Notice.md" KeyPath="yes" />
+      </Component>
       <Component Id="powertoysinterop_dll" Guid="B7DD2DF4-C8F2-46FA-9571-D6EF1588ADF3" Win64="yes">
         <File Id="PowerToysInterop.dll" KeyPath="yes" Checksum="yes" />
+      </Component>
+      <Component Id="osDetection_dll" Guid="AA370C25-4AC8-447B-A2FF-C99365C6BE67" Win64="yes">
+        <File Source="$(var.BinX64Dir)os-detection.dll" KeyPath="yes" Checksum="yes" />
+      </Component>
+      <Component Id="vcredist_dlls" Guid="CBE26CB0-3AD0-4336-A7D6-503046BADEBC" Win64="yes">
+        <!-- VCRuntime -->
+        <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
+          <File Id="$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
+        <?endforeach?>
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="SvgsInstallFolder" FileSource="$(var.BinX64Dir)svgs\">
@@ -346,40 +384,29 @@
         <File Source="$(var.BinX64Dir)svgs\overlay_portrait.svg" />
       </Component>
     </DirectoryRef>
-    <DirectoryRef Id="ModulesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
-      <Component Id="Module_ShortcutGuide" Guid="CBD0AC09-91D3-428E-B2B3-05745ADF3473" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\shortcut_guide.dll" KeyPath="yes" />
-      </Component>
+    <DirectoryRef Id="FancyZonesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
       <Component Id="Module_FancyZones" Guid="C6B5272E-6ED4-4B80-B0E7-2FF0355D8CF4" Win64="yes">
         <File Source="$(var.BinX64Dir)modules\fancyzones.dll" KeyPath="yes" />
-        <File Source="$(var.BinX64Dir)modules\FancyZonesEditor.exe" >
+        <File Source="$(var.BinX64Dir)modules\FancyZones\FancyZonesEditor.exe" >
           <netfx:NativeImage Id="FancyZonesEditor.exe" Platform="64bit" Priority="0" />
         </File>
-        <File Source="$(var.BinX64Dir)modules\ControlzEx.dll" />
-        <File Source="$(var.BinX64Dir)modules\MahApps.Metro.dll" />
-        <File Source="$(var.BinX64Dir)modules\Microsoft.Xaml.Behaviors.dll" />
-        <File Source="$(var.BinX64Dir)modules\FancyZonesEditor.exe.config" />
-        <File Source="$(var.BinX64Dir)modules\Microsoft.Bcl.AsyncInterfaces.dll" />
-        <File Source="$(var.BinX64Dir)modules\System.Buffers.dll" />
-        <File Source="$(var.BinX64Dir)modules\System.Memory.dll" />
-        <File Source="$(var.BinX64Dir)modules\System.Numerics.Vectors.dll" />
-        <File Source="$(var.BinX64Dir)modules\System.Runtime.CompilerServices.Unsafe.dll" />
-        <File Source="$(var.BinX64Dir)modules\System.Text.Encodings.Web.dll" />
-        <File Source="$(var.BinX64Dir)modules\System.Text.Json.dll" />
-        <File Source="$(var.BinX64Dir)modules\System.Threading.Tasks.Extensions.dll" />
-        <File Source="$(var.BinX64Dir)modules\System.ValueTuple.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\ControlzEx.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\MahApps.Metro.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\Microsoft.Xaml.Behaviors.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\FancyZonesEditor.exe.config" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\Microsoft.Bcl.AsyncInterfaces.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\System.Buffers.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\System.Memory.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\System.Numerics.Vectors.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\System.Runtime.CompilerServices.Unsafe.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\System.Text.Encodings.Web.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\System.Text.Json.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\System.Threading.Tasks.Extensions.dll" />
+        <File Source="$(var.BinX64Dir)modules\FancyZones\System.ValueTuple.dll" />
       </Component>
-      <Component Id="Module_PowerRename" Guid="E4401D08-27FE-4F96-BA17-0C61FD79E684" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\PowerRenameExt.dll" KeyPath="yes" />
-        <RegistryKey Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
-          <RegistryValue Type="string" Value="PowerRename Shell Extension" />
-          <RegistryValue Type="string" Key="InprocServer32" Value="[ModulesInstallFolder]PowerRenameExt.dll" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
-        </RegistryKey>
-        <RegistryKey Root="HKCR" Key="AllFileSystemObjects\ShellEx\ContextMenuHandlers\PowerRenameExt">
-          <RegistryValue Type="string" Value="{0440049F-D1DC-4E46-B27B-98393D79486B}"/>
-        </RegistryKey>
-      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="ModulesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
       
       <Component Id="Module_Launcher" Guid="9A343236-B49D-451D-A27D-4C336F460A45" Win64="yes">
         <File Source="$(var.BinX64Dir)modules\Microsoft.Launcher.dll" />
@@ -402,6 +429,11 @@
         </File>
         <File Source="$(var.BinX64Dir)modules\Newtonsoft.Json.dll" />
         <File Source="$(var.BinX64Dir)modules\ImageResizerExt.dll" KeyPath="yes" />
+
+        <!-- VCRuntime -->
+        <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
+          <File Id="ImageResizer_$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
+        <?endforeach?>
       </Component>
       <Component Id="Module_ImageResizer_Registry" Guid="8B593E2C-2D9B-4EBC-93F7-A2B69707DAC9" Win64="yes">
         <RegistryKey Root="HKCR" Key="CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32">
@@ -529,7 +561,27 @@
         </RegistryKey>
       </Component>
     </DirectoryRef>
-    
+
+    <DirectoryRef Id="PowerRenameInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)">
+      <Component Id="Module_PowerRename" Guid="E4401D08-27FE-4F96-BA17-0C61FD79E684" Win64="yes">
+        <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRenameExt.dll" KeyPath="yes" />
+        <RegistryKey Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
+          <RegistryValue Type="string" Value="PowerRename Shell Extension" />
+          <RegistryValue Type="string" Key="InprocServer32" Value="[PowerRenameInstallFolder]PowerRenameExt.dll" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
+        </RegistryKey>
+        <RegistryKey Root="HKCR" Key="AllFileSystemObjects\ShellEx\ContextMenuHandlers\PowerRenameExt">
+          <RegistryValue Type="string" Value="{0440049F-D1DC-4E46-B27B-98393D79486B}"/>
+        </RegistryKey>
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="ShortcutGuideInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ShortcutGuideProjectName)\">
+      <Component Id="Module_ShortcutGuide" Guid="CBD0AC09-91D3-428E-B2B3-05745ADF3473" Win64="yes">
+        <File Source="$(var.BinX64Dir)modules\$(var.ShortcutGuideProjectName)\$(var.ShortcutGuideProjectName).dll" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
     <DirectoryRef Id="FileExplorerPreviewInstallFolder" FileSource="$(var.RepoDir)\modules\FileExplorerPreview\">
       <Component Id="Module_PowerPreview" Guid="FF1700D5-1B07-4E07-9A62-4D206645EEA9" Win64="yes">
         <!-- Component to include PowerPreview Module Source dll's -->
@@ -537,6 +589,7 @@
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\powerpreview.dll" KeyPath="yes" />
         <!-- File to include common library used by preview handlers -->
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PreviewHandlerCommon.dll" />
+        <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\Telemetry.dll" />
         <!-- File to include dll for Svg Preview Handler -->
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgPreviewHandler.dll" />
         <!-- Files to include dll's for Markdown Preview Handler and it's dependencies -->
@@ -558,7 +611,7 @@
         <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.Runner.exe"/>
         <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.exe"/>
         <!-- dll -->
-        <?foreach File in concrt140_app.dll;Microsoft.Bcl.AsyncInterfaces.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;Microsoft.PowerToys.Settings.UI.Runner.dll;Microsoft.Toolkit.dll;Microsoft.Toolkit.Uwp.dll;Microsoft.Toolkit.Uwp.UI.dll;Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Wpf.UI.Controls.dll;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;PowerToysInterop.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Runtime.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll?>
+        <?foreach File in concrt140_app.dll;Microsoft.Bcl.AsyncInterfaces.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;Microsoft.PowerToys.Settings.UI.Runner.dll;Microsoft.Toolkit.dll;Microsoft.Toolkit.Uwp.dll;Microsoft.Toolkit.Uwp.UI.dll;Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Wpf.UI.Controls.dll;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactivity.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;PowerToysInterop.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Runtime.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;Telemetry.dll?>
           <File Id="SettingsV2_$(var.File)" Source="$(var.BinX64Dir)SettingsUIRunner\$(var.File)" />
         <?endforeach?>
         <!-- json -->
@@ -578,6 +631,10 @@
         <!-- xml -->
         <File Id="SettingsV2_Microsoft.PowerToys.Settings.UI.xr.xml" Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.xr.xml"/>
         <File Id="SettingsV2_Microsoft.Toolkit.Win32.UI.XamlHost.xml" Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.Toolkit.Win32.UI.XamlHost.xml"/>
+        <!-- VCRuntime -->
+        <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
+          <File Id="SettingsV2_$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
+        <?endforeach?>
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="SettingsV2AssetsInstallFolder" FileSource="$(var.BinX64Dir)SettingsUIRunner\Assets">
@@ -669,7 +726,10 @@
       <ComponentRef Id="action_runner_exe" />
       <ComponentRef Id="powertoys_toast_clsid" />
       <ComponentRef Id="License_rtf" />
+      <ComponentRef Id="Notice_md" />
       <ComponentRef Id="powertoysinterop_dll" />
+      <ComponentRef Id="osDetection_dll" />
+      <ComponentRef Id="vcredist_dlls" />
       <ComponentRef Id="PowerToysSvgs" />
       <ComponentRef Id="Module_ShortcutGuide" />
       <ComponentRef Id="Module_FancyZones" />
@@ -720,10 +780,14 @@
   <Fragment>
     <ComponentGroup Id="LauncherComponents">
       <Component Id="launcherInstallComponent" Directory="LauncherInstallFolder" Guid="5E688DB4-C522-4268-BA54-ED1CDFFE9DB6">
-        <?foreach File in App.xbf;clrcompression.dll;ColorCode.Core.dll;ColorCode.UWP.dll;ColorCode.UWP.pri;concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;LauncherControl.xbf;Mages.Core.dll;Microsoft.CSharp.dll;Microsoft.Graphics.Canvas.dll;Microsoft.Graphics.Canvas.winmd;Microsoft.Search.Interop.dll;Microsoft.Toolkit.dll;Microsoft.Toolkit.Parsers.dll;Microsoft.Toolkit.Uwp.dll;Microsoft.Toolkit.Uwp.pri;Microsoft.Toolkit.Uwp.UI.Animations.dll;Microsoft.Toolkit.Uwp.UI.Animations.pri;Microsoft.Toolkit.Uwp.UI.Controls.dll;Microsoft.Toolkit.Uwp.UI.Controls.pri;Microsoft.Toolkit.Uwp.UI.dll;Microsoft.Toolkit.Uwp.UI.pri;Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Win32.UI.XamlHost.pri;Microsoft.Toolkit.Win32.UI.XamlHost.winmd;Microsoft.Toolkit.Win32.UI.XamlHost.xml;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;Microsoft.UI.Xaml.pri;Microsoft.UI.Xaml.winmd;Microsoft.VisualBasic.dll;Microsoft.Win32.Primitives.dll;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactions.pri;Microsoft.Xaml.Interactivity.dll;Microsoft.Xaml.Interactivity.pri;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;mscorlib.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;netstandard.dll;Newtonsoft.Json.dll;NHotkey.dll;NHotkey.Wpf.dll;NLog.dll;NLog.Extensions.Logging.dll;NLog.Web.AspNetCore.dll;NoiseAsset_256x256_PNG.png;Pinyin4Net.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;PowerLauncher.runtimeconfig.dev.json;PowerLauncher.runtimeconfig.json;PowerLauncher.UI.exe;PowerLauncher.UI.xr.xml;PropertyChanged.dll;resources.pri;ResultList.xbf;SQLite.Interop.dll;System.AppContext.dll;System.Buffers.dll;System.Collections.Concurrent.dll;System.Collections.dll;System.Collections.Immutable.dll;System.Collections.NonGeneric.dll;System.Collections.Specialized.dll;System.ComponentModel.Annotations.dll;System.ComponentModel.Composition.dll;System.ComponentModel.DataAnnotations.dll;System.ComponentModel.dll;System.ComponentModel.EventBasedAsync.dll;System.ComponentModel.Primitives.dll;System.ComponentModel.TypeConverter.dll;System.Configuration.dll;System.Console.dll;System.Core.dll;System.Data.Common.dll;System.Data.dll;System.Data.OleDb.dll;System.Data.SqlClient.dll;System.Data.SQLite.dll;System.Diagnostics.Contracts.dll;System.Diagnostics.Debug.dll;System.Diagnostics.DiagnosticSource.dll;System.Diagnostics.FileVersionInfo.dll;System.Diagnostics.Process.dll;System.Diagnostics.StackTrace.dll;System.Diagnostics.TextWriterTraceListener.dll;System.Diagnostics.Tools.dll;System.Diagnostics.TraceSource.dll;System.Diagnostics.Tracing.dll;System.dll;System.Drawing.dll;System.Drawing.Primitives.dll;System.Dynamic.Runtime.dll;System.Globalization.Calendars.dll;System.Globalization.dll;System.Globalization.Extensions.dll;System.IO.Compression.dll;System.IO.Compression.FileSystem.dll;System.IO.Compression.ZipFile.dll;System.IO.dll;System.IO.FileSystem.dll;System.IO.FileSystem.DriveInfo.dll;System.IO.FileSystem.Primitives.dll;System.IO.FileSystem.Watcher.dll;System.IO.IsolatedStorage.dll;System.IO.MemoryMappedFiles.dll;System.IO.Pipes.AccessControl.dll;System.IO.Pipes.dll;System.IO.Ports.dll;System.IO.UnmanagedMemoryStream.dll;System.Linq.dll;System.Linq.Expressions.dll;System.Linq.Parallel.dll;System.Linq.Queryable.dll;System.Memory.dll;System.Net.dll;System.Net.Http.dll;System.Net.Http.Rtc.dll;System.Net.HttpListener.dll;System.Net.Mail.dll;System.Net.NameResolution.dll;System.Net.NetworkInformation.dll;System.Net.Ping.dll;System.Net.Primitives.dll;System.Net.Requests.dll;System.Net.Security.dll;System.Net.ServicePoint.dll;System.Net.Sockets.dll;System.Net.WebClient.dll;System.Net.WebHeaderCollection.dll;System.Net.WebProxy.dll;System.Net.WebSockets.Client.dll;System.Net.WebSockets.dll;System.Numerics.dll;System.Numerics.Vectors.dll;System.Numerics.Vectors.WindowsRuntime.dll;System.ObjectModel.dll;System.Private.DataContractSerialization.dll;System.Private.Reflection.Metadata.Ecma335.dll;System.Private.ServiceModel.dll;System.Private.Uri.dll;System.Private.Xml.dll;System.Private.Xml.Linq.dll;System.Reflection.Context.dll;System.Reflection.DispatchProxy.dll;System.Reflection.dll;System.Reflection.Emit.dll;System.Reflection.Emit.ILGeneration.dll;System.Reflection.Emit.Lightweight.dll;System.Reflection.Extensions.dll;System.Reflection.Metadata.dll;System.Reflection.Primitives.dll;System.Reflection.TypeExtensions.dll;System.Resources.Reader.dll;System.Resources.ResourceManager.dll;System.Resources.Writer.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Runtime.CompilerServices.VisualC.dll;System.Runtime.dll;System.Runtime.Extensions.dll;System.Runtime.Handles.dll;System.Runtime.InteropServices.dll;System.Runtime.InteropServices.RuntimeInformation.dll;System.Runtime.InteropServices.WindowsRuntime.dll;System.Runtime.Numerics.dll;System.Runtime.Serialization.dll;System.Runtime.Serialization.Formatters.dll;System.Runtime.Serialization.Json.dll;System.Runtime.Serialization.Primitives.dll;System.Runtime.Serialization.Xml.dll;System.Runtime.WindowsRuntime.dll;System.Runtime.WindowsRuntime.UI.Xaml.dll;System.Security.AccessControl.dll;System.Security.Claims.dll;System.Security.Cryptography.Algorithms.dll;System.Security.Cryptography.Cng.dll;System.Security.Cryptography.Csp.dll;System.Security.Cryptography.Encoding.dll;System.Security.Cryptography.Primitives.dll;System.Security.Cryptography.X509Certificates.dll;System.Security.dll;System.Security.Permissions.dll;System.Security.Principal.dll;System.Security.Principal.Windows.dll;System.Security.SecureString.dll;System.ServiceModel.dll;System.ServiceModel.Duplex.dll;System.ServiceModel.Http.dll;System.ServiceModel.NetTcp.dll;System.ServiceModel.Primitives.dll;System.ServiceModel.Security.dll;System.ServiceModel.Web.dll;System.ServiceProcess.dll;System.Text.Encoding.CodePages.dll;System.Text.Encoding.dll;System.Text.Encoding.Extensions.dll;System.Text.RegularExpressions.dll;System.Threading.dll;System.Threading.Overlapped.dll;System.Threading.Tasks.Dataflow.dll;System.Threading.Tasks.dll;System.Threading.Tasks.Extensions.dll;System.Threading.Tasks.Parallel.dll;System.Threading.Thread.dll;System.Threading.ThreadPool.dll;System.Threading.Timer.dll;System.Transactions.dll;System.Transactions.Local.dll;System.ValueTuple.dll;System.Web.dll;System.Web.HttpUtility.dll;System.Windows.dll;System.Xml.dll;System.Xml.Linq.dll;System.Xml.ReaderWriter.dll;System.Xml.Serialization.dll;System.Xml.XDocument.dll;System.Xml.XmlDocument.dll;System.Xml.XmlSerializer.dll;System.Xml.XPath.dll;System.Xml.XPath.XDocument.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;WindowsBase.dll;WindowsInput.dll;Wox.Core.deps.json;Wox.Core.dll;Wox.deps.json;Wox.dll;Wox.exe;Wox.Infrastructure.deps.json;Wox.Infrastructure.dll;Wox.Plugin.deps.json;Wox.Plugin.dll;Wox.runtimeconfig.dev.json;Wox.runtimeconfig.json;PowerToysInterop.dll?>
+        <?foreach File in App.xbf;ColorCode.Core.dll;ColorCode.UWP.dll;ColorCode.UWP.pri;concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;LauncherControl.xbf;Mages.Core.dll;Microsoft.Graphics.Canvas.dll;Microsoft.Graphics.Canvas.winmd;Microsoft.Search.Interop.dll;Microsoft.Toolkit.dll;Microsoft.Toolkit.Parsers.dll;Microsoft.Toolkit.Uwp.dll;Microsoft.Toolkit.Uwp.pri;Microsoft.Toolkit.Uwp.UI.Animations.dll;Microsoft.Toolkit.Uwp.UI.Animations.pri;Microsoft.Toolkit.Uwp.UI.Controls.dll;Microsoft.Toolkit.Uwp.UI.Controls.pri;Microsoft.Toolkit.Uwp.UI.dll;Microsoft.Toolkit.Uwp.UI.pri;Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Win32.UI.XamlHost.pri;Microsoft.Toolkit.Win32.UI.XamlHost.winmd;Microsoft.Toolkit.Win32.UI.XamlHost.xml;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;Microsoft.UI.Xaml.pri;Microsoft.UI.Xaml.winmd;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactions.pri;Microsoft.Xaml.Interactivity.dll;Microsoft.Xaml.Interactivity.pri;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;netstandard.dll;Newtonsoft.Json.dll;NHotkey.dll;NHotkey.Wpf.dll;NLog.dll;NLog.Extensions.Logging.dll;NoiseAsset_256x256_PNG.png;Pinyin4Net.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;PowerLauncher.runtimeconfig.json;PowerLauncher.UI.exe;PowerLauncher.UI.xr.xml;resources.pri;ResultList.xbf;SQLite.Interop.dll;System.ComponentModel.Composition.dll;System.Data.OleDb.dll;System.Data.SqlClient.dll;System.Data.SQLite.dll;System.IO.Ports.dll;System.Net.Http.Rtc.dll;System.Numerics.Vectors.WindowsRuntime.dll;System.Private.Reflection.Metadata.Ecma335.dll;System.Private.ServiceModel.dll;System.Reflection.Context.dll;System.Security.Permissions.dll;System.ServiceModel.dll;System.ServiceModel.Duplex.dll;System.ServiceModel.Http.dll;System.ServiceModel.NetTcp.dll;System.ServiceModel.Primitives.dll;System.ServiceModel.Security.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;WindowsInput.dll;Wox.Core.dll;Wox.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;Telemetry.dll;PowerLauncher.Telemetry.dll;PropertyChanged.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.Lib.dll" />
+        <!-- VCRuntime -->
+        <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
+          <File Id="File_$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
+        <?endforeach?>
       </Component>  
       <Component Id="launcherAssetsComponent" Directory="AssetsFolder" Guid="6A86A414-D68B-49F0-A7AD-A342528D7ACD">
         <?foreach File in LockScreenLogo.scale-200.png;SplashScreen.scale-200.png;Square150x150Logo.scale-200.png;Square44x44Logo.scale-200.png;Square44x44Logo.targetsize-24_altform-unplated.png;StoreLogo.png;Wide310x150Logo.scale-200.png?>
@@ -753,12 +817,12 @@
       
       <!-- Calculator Plugin -->
       <Component Id="calculatorComponent" Directory="CalculatorPluginFolder" Guid="19DE1022-583C-4969-9AFC-D43CB944003D">
-        <?foreach File in plugin.json;Wox.Infrastructure.dll;Microsoft.Plugin.Caculator.deps.json;Microsoft.Plugin.Caculator.dll;Wox.Plugin.dll?>
-          <File Id="Calculator_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Caculator\$(var.File)" />
+        <?foreach File in plugin.json;Wox.Infrastructure.dll;Microsoft.Plugin.Calculator.deps.json;Microsoft.Plugin.Calculator.dll;Wox.Plugin.dll?>
+          <File Id="Calculator_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="calculatorImagesComponent" Directory="CalculatorImagesFolder" Guid="07EC9232-CF9A-4CDB-8D8E-E79DC75096C0">
-        <File Id="calculatorPluginImg" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Caculator\Images\calculator.png" />
+        <File Id="calculatorPluginImg" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Images\calculator.png" />
       </Component>
        <Component Id="calculatorLanguagesComponent" Directory="CalculatorLanguagesFolder" Guid="2D8019E7-664F-4529-9FAA-83C8DACF0732">
         <?foreach LanguageFile in de.xaml;en.xaml;pl.xaml;tr.xaml;zh-cn.xaml;zh-tw.xaml?>
@@ -770,13 +834,13 @@
           <?else?>
             <?define IdSafeLanguage = $(var.LanguageFile)?>
           <?endif?>
-          <File Id="File_calc_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Caculator\Languages\$(var.LanguageFile)" />
+          <File Id="File_calc_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Languages\$(var.LanguageFile)" />
           <?undef IdSafeLanguage?>
         <?endforeach?>
       </Component>
       <Component Id="calculatorpinyindbComponent" Directory="CalculatorpinyindbFolder" Guid="D5527670-BE9A-4AA9-9D36-1249F2184B5B">
         <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
-          <File Id="CalcPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Caculator\pinyindb\$(var.File)" />
+          <File Id="CalcPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\pinyindb\$(var.File)" />
         <?endforeach?>
       </Component>
 
@@ -813,7 +877,7 @@
     
       <!-- Program Plugin -->
       <Component Id="ProgramComponent" Directory="ProgramPluginFolder" Guid="3C5CA6E6-3D36-4F4E-B40E-38AA5E5CB799">
-        <?foreach File in AppxPackagingTlb.dll;plugin.json;ShObjIdlTlb.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;Microsoft.Plugin.Program.deps.json;Microsoft.Plugin.Program.dll?>
+        <?foreach File in plugin.json;Wox.Infrastructure.dll;Wox.Plugin.dll;Microsoft.Plugin.Program.deps.json;Microsoft.Plugin.Program.dll?>
           <File Id="Program_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Program\$(var.File)" />
         <?endforeach?>
       </Component>

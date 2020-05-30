@@ -6,11 +6,14 @@
     xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
+        <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Collapsed" FalseValue="Visible"/>
+        <converters:BoolToVisibilityConverter x:Key="VisibleIfTrueConverter"/>
         <viewModel:GeneralViewModel x:Key="eventViewModel"/>
     </Page.Resources>
 
@@ -25,6 +28,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="1" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="0" />
+                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
@@ -34,6 +38,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="0" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                        <Setter Target="SidePanel.Width" Value="Auto" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -49,23 +54,11 @@
 
         <StackPanel Orientation="Vertical" 
                     x:Name="GeneralSettingsView">
+            <TextBlock x:Uid="Admin_Mode"
+                       Style="{StaticResource SubtitleTextBlockStyle}"/>
 
-            <ToggleSwitch x:Uid="GeneralPage_ToggleSwitch_RunAtStartUp"  
-                          Margin="{StaticResource SmallTopMargin}" 
-                          IsOn="{Binding Mode=TwoWay, Path=Startup, Source={StaticResource eventViewModel}}"/>
-
-            <ToggleSwitch x:Uid="GeneralPage_ToggleSwitch_AutoDownloadUpdates" 
-                          Margin="{StaticResource SmallTopMargin}" 
-                          IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates, Source={StaticResource eventViewModel}}"/>
-
-            <TextBlock Text="{Binding Mode=TwoWay, Path=RunningAsAdminText, Source={StaticResource eventViewModel}}"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Margin="{StaticResource MediumTopMargin}"/>
-            
-            <ToggleSwitch Margin="{StaticResource SmallTopMargin}" 
-                          Header="{Binding Mode=TwoWay, Path=AlwaysRunAsAdminText, Source={StaticResource eventViewModel}}"
-                          IsEnabled="{Binding Mode=TwoWay, Path=IsElevated, Source={StaticResource eventViewModel}}"
-                          IsOn="{Binding Mode=TwoWay, Path=RunElevated, Source={StaticResource eventViewModel}}"/>
+            <TextBlock Text="{Binding Mode=TwoWay, Path=RunningAsText, Source={StaticResource eventViewModel}}"
+                       Margin="{StaticResource SmallTopMargin}"/>
 
             <Button x:Uid="GeneralPage_RestartAsAdmin_Button"
                     Margin="{StaticResource SmallTopMargin}"
@@ -74,10 +67,23 @@
                     IsEnabled="{Binding Mode=TwoWay, Path=IsAdminButtonEnabled, Source={StaticResource eventViewModel}}"
                     />
 
+            <TextBlock x:Uid="General_RunAsAdminRequired"
+                       Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                       Visibility="{Binding Mode=TwoWay, Path=IsElevated, Source={StaticResource eventViewModel}, Converter={StaticResource BoolToVisibilityConverter}}"
+                       Margin="0,24,0,-8" />
 
-            <TextBlock x:Uid="Appearancce_GroupSettings"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Margin="{StaticResource MediumTopMargin}"/>
+            <ToggleSwitch Margin="{StaticResource SmallTopMargin}"
+                          x:Uid="GeneralSettings_AlwaysRunAsAdminText"
+                          IsEnabled="{Binding Mode=TwoWay, Path=IsElevated, Source={StaticResource eventViewModel}}"
+                          IsOn="{Binding Mode=TwoWay, Path=RunElevated, Source={StaticResource eventViewModel}}"/>
+            
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/blob/master/doc/devdocs/run-as-admin-detection.md">
+                <TextBlock x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link" />
+            </HyperlinkButton>
+
+
+            <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior"
+                       Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <muxc:RadioButtons x:Uid="RadioButtons_Name_Theme" Margin="{StaticResource SmallTopMargin}">
                 <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark"
@@ -92,6 +98,35 @@
                              Content="System default"
                              IsChecked="{ Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked, Source={StaticResource eventViewModel}}"/>
             </muxc:RadioButtons>
+            
+            <ToggleSwitch x:Uid="GeneralPage_ToggleSwitch_RunAtStartUp"  
+                          Margin="{StaticResource SmallTopMargin}" 
+                          IsOn="{Binding Mode=TwoWay, Path=Startup, Source={StaticResource eventViewModel}}"/>
+            
+            
+
+            <TextBlock x:Uid="General_Updates"
+                        Style="{StaticResource SettingsGroupTitleStyle}"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Version: " x:Uid="General_Version"  />
+                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" Margin="4,-6,0,0">
+                    <TextBlock Text="{x:Bind ViewModel.PowerToysVersion }" />
+                </HyperlinkButton>
+            </StackPanel>
+           
+            
+            <Button x:Uid="GeneralPage_CheckForUpdates"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Foreground="White"
+                    Margin="{StaticResource SmallTopMargin}"
+                    Command="{Binding CheckFoUpdatesEventHandler, Source={StaticResource eventViewModel}}"
+                    />
+
+            <ToggleSwitch x:Uid="GeneralPage_ToggleSwitch_AutoDownloadUpdates" 
+                          Margin="{StaticResource MediumTopMargin}"
+                          Visibility="{Binding Mode=TwoWay, Path=IsAdmin, Source={StaticResource eventViewModel}, Converter={StaticResource VisibleIfTrueConverter}}"
+                          IsOn="{Binding Mode=TwoWay, Path=AutoDownloadUpdates, Source={StaticResource eventViewModel}}"/>
+            
         </StackPanel>
 
         <StackPanel x:Name="SidePanel"
@@ -104,32 +139,27 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <TextBlock Text="{x:Bind ViewModel.PowerToysVersion }"
-                       FontWeight="Bold"
-                       Margin="{StaticResource SmallTopMargin}" />
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/">
+                <TextBlock x:Uid="General_Repository"/>
+            </HyperlinkButton>
 
-            <Button x:Uid="GeneralPage_CheckForUpdates"
-                    Margin="{StaticResource SmallTopMargin}"
-                    Style="{StaticResource AccentButtonStyle}"
-                    Foreground="White"
-                    Command = "{Binding CheckFoUpdatesEventHandler, Source={StaticResource eventViewModel}}"
-                    />
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <TextBlock x:Uid="GeneralPage_ReportAbug"/>
+            </HyperlinkButton>
 
-            <HyperlinkButton x:Uid="GeneralPage_ReportAbug"
-                             NavigateUri="https://github.com/microsoft/PowerToys/issues"
-                             Margin="{StaticResource SmallTopMargin}" />
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <TextBlock x:Uid="GeneralPage_RequestAFeature_URL"/>
+            </HyperlinkButton>
 
-            <HyperlinkButton x:Uid="GeneralPage_RequestAFeature_URL" 
-                             NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
+            <HyperlinkButton NavigateUri=" http://go.microsoft.com/fwlink/?LinkId=521839">
+                <TextBlock x:Uid="GeneralPage_PrivacyStatement_URL"/>
+            </HyperlinkButton>
 
-            <HyperlinkButton x:Uid="GeneralPage_PrivacyStatement_URL"
-                             NavigateUri=" http://go.microsoft.com/fwlink/?LinkId=521839" />
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/blob/master/NOTICE.md">
+                <TextBlock x:Uid="OpenSource_Notice"/>
+            </HyperlinkButton>
 
-            <HyperlinkButton x:Uid="OpenSource_Notice"
-                             NavigateUri="https://github.com/microsoft/PowerToys/blob/master/NOTICE.md"/>
 
-            <HyperlinkButton x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link"
-                             NavigateUri="https://github.com/microsoft/PowerToys/blob/master/doc/devdocs/run-as-admin-detection.md"/>
         </StackPanel>
     </Grid>
 </Page>

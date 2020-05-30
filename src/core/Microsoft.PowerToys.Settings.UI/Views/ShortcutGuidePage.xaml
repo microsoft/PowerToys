@@ -19,6 +19,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="1" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="0" />
+                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
@@ -28,6 +29,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="0" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                        <Setter Target="SidePanel.Width" Value="Auto" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -46,18 +48,18 @@
 
             <ToggleSwitch x:Uid="ShortcutGuide_Enable"
                           IsOn="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                          Margin="{StaticResource SmallTopMargin}"/>
+                          Margin="{StaticResource MediumTopMargin}"/>
 
             <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior" 
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <muxc:NumberBox x:Uid="ShortcutGuide_PressTime"
                             Minimum="100"
-                            SpinButtonPlacementMode="Inline"
+                            SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallTopMargin}"
                             Value="{ Binding Mode=TwoWay, Path=PressTime}"
-                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" SmallChange="50" LargeChange="100"/>
 
             <Slider x:Uid="ShortcutGuide_OverlayOpacity"
                     Minimum="0"
@@ -67,8 +69,7 @@
                     Margin="{StaticResource MediumTopMargin}"
                     IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
-
-            <muxc:RadioButtons x:Uid="RadioButtons_Name_Theme" 
+            <muxc:RadioButtons x:Uid="ShortcutGuide_Theme"
                                Margin="{StaticResource SmallTopMargin}"
                                IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
                                SelectedIndex="{ Binding Mode=TwoWay, Path=ThemeIndex}">
@@ -91,15 +92,19 @@
             Grid.Column="1">
 
             <TextBlock 
-                x:Uid="About_This_Feature"
+                x:Uid="About_ShortcutGuide"
                 Style="{StaticResource SettingsGroupTitleStyle}"
                 Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <Image Source="https://raw.githubusercontent.com/microsoft/PowerToys/dev/build-features/doc/images/shortcut_guide/usage.png" />
+            <Image MaxWidth="240" Source="https://raw.githubusercontent.com/microsoft/PowerToys/dev/build-features/doc/images/shortcut_guide/usage.png" />
 
-            <HyperlinkButton 
-                x:Uid="Module_overview"
-                NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/shortcut_guide/README.md"/>
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/shortcut_guide/README.md">
+                <TextBlock x:Uid="Module_overview"/>
+            </HyperlinkButton>
+
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <TextBlock x:Uid="Give_Feedback" />
+            </HyperlinkButton>
         </StackPanel>
     </Grid>
 </Page>

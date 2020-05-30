@@ -93,6 +93,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="1" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="0" />
+                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
@@ -102,6 +103,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="0" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                        <Setter Target="SidePanel.Width" Value="Auto" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -121,7 +123,7 @@
 
             <ToggleSwitch x:Uid="KeyboardManager_EnableToggle"
                           IsOn="{x:Bind Path=ViewModel.Enabled, Mode=TwoWay}"
-                          Margin="{StaticResource SmallTopMargin}" />
+                          Margin="{StaticResource MediumTopMargin}" />
 
             <!--<TextBlock x:Uid="KeyboardManager_ConfigHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
@@ -139,13 +141,13 @@
             <TextBlock x:Uid="KeyboardManager_RemapKeyboardHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <TextBlock Text="Description of the Remap Keyboard (subfeature)"
+            <TextBlock Text="Click below to remap a single key to another key"
                        Margin="{StaticResource SmallTopMargin}"
                        TextWrapping="Wrap"/>
 
             <Button x:Uid="KeyboardManager_RemapKeyboardButton"
                     Margin="{StaticResource SmallTopMargin}"
-                    Style="{StaticResource ButtonRevealStyle}"
+                    Style="{StaticResource AccentButtonStyle}"
                     Command="{Binding Path=RemapKeyboardCommand}"
                     IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>
 
@@ -158,23 +160,31 @@
                       CornerRadius="4"
                       MinWidth="350"
                       MaxHeight="200"
-                      Margin="{StaticResource MediumTopBottomMargin}"
+                      Margin="{StaticResource SmallTopBottomMargin}"
                       HorizontalAlignment="Left"
                       SelectionMode="None"
                       IsSwipeEnabled="False"
                       Visibility="{x:Bind Path=ViewModel.RemapKeys, Mode=OneWay, Converter={StaticResource visibleIfNotEmptyConverter}}"
-                      /> 
+                      />
 
+            <!--<AppBarButton x:Uid="KeyboardManager_RemapKeyboardButton"
+                    Icon="Add"
+                    Width="370"
+                    Style="{StaticResource AddItemAppBarButtonStyle}"
+                    Command="{Binding Path=RemapKeyboardCommand}"
+                    Margin="{StaticResource AddItemButtonMargin}"
+                    HorizontalAlignment="Left"
+                    IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>-->
 
             <TextBlock x:Uid="KeyboardManager_RemapShortcutsHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <TextBlock Text="Description of the Remap Shortcuts (subfeature)"
+            <TextBlock Text="Click below to remap a shortcut (hotkey) to another shortcut"
                        TextWrapping="Wrap" Margin="{StaticResource SmallTopMargin}"/>
 
             <Button x:Uid="KeyboardManager_RemapShortcutsButton"
                     Margin="{StaticResource SmallTopMargin}"
-                    Style="{StaticResource ButtonRevealStyle}"
+                    Style="{StaticResource AccentButtonStyle}"
                     Command="{Binding Path=EditShortcutCommand}"
                     IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"
                     />
@@ -188,12 +198,22 @@
                       CornerRadius="4"
                       MinWidth="350"
                       MaxHeight="200"
-                      Margin="{StaticResource MediumTopBottomMargin}"
+                      Margin="{StaticResource SmallTopBottomMargin}"
                       HorizontalAlignment="Left"
                       SelectionMode="None"
                       IsSwipeEnabled="False"
                       Visibility="{x:Bind Path=ViewModel.RemapShortcuts, Mode=OneWay, Converter={StaticResource visibleIfNotEmptyConverter}}"
                       />
+
+            <!--<AppBarButton x:Uid="KeyboardManager_RemapShortcutsButton"
+                    Icon="Add"
+                    Width="370"
+                    Style="{StaticResource AddItemAppBarButtonStyle}"
+                    Command="{Binding Path=EditShortcutCommand}"
+                    IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"
+                    Margin="{StaticResource AddItemButtonMargin}"
+                    HorizontalAlignment="Left"
+                    />-->
         </StackPanel>
 
         <StackPanel 
@@ -204,11 +224,17 @@
             Grid.Column="1">
 
             <TextBlock
-                Text="About this feature"
+                x:Uid="About_KeyboardManager"
                 Style="{StaticResource SettingsGroupTitleStyle}"
                 Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <HyperlinkButton Content="Module overview"/>
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/keyboardmanager">
+                <TextBlock x:Uid="Module_overview" />
+            </HyperlinkButton>
+
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <TextBlock x:Uid="Give_Feedback" />
+            </HyperlinkButton>
         </StackPanel>
     </Grid>
 </Page>

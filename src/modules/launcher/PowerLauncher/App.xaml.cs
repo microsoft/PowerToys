@@ -1,3 +1,5 @@
+using Microsoft.PowerLauncher.Telemetry;
+using Microsoft.PowerToys.Telemetry;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -47,6 +49,8 @@ namespace PowerLauncher
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
+            var bootTime = new System.Diagnostics.Stopwatch();
+            bootTime.Start();
             Stopwatch.Normal("|App.OnStartup|Startup cost", () =>
             {
                 Log.Info("|App.OnStartup|Begin Wox startup ----------------------------------------------------");
@@ -77,9 +81,10 @@ namespace PowerLauncher
                 // load plugin before change language, because plugin language also needs be changed
                 InternationalizationManager.Instance.Settings = _settings;
                 InternationalizationManager.Instance.ChangeLanguage(_settings.Language);
-                // main windows needs initialized before theme change because of blur settigns
-                //ThemeManager.Instance.Settings = _settings;
-                //ThemeManager.Instance.ChangeTheme(_settings.Theme);
+
+                // main windows needs initialized before theme change because of blur settings
+                ThemeManager.Instance.Settings = _settings;
+                ThemeManager.Instance.ChangeTheme(_settings.Theme);
 
                 Http.Proxy = _settings.Proxy;
 
@@ -90,12 +95,14 @@ namespace PowerLauncher
                 _mainVM.MainWindowVisibility = Visibility.Hidden; 
                 Log.Info("|App.OnStartup|End Wox startup ----------------------------------------------------  ");
 
-                
+                bootTime.Stop();
 
-        //[Conditional("RELEASE")]
-                    // check udpate every 5 hours
+                PowerToysTelemetry.Log.WriteEvent(new LauncherBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
 
-                    // check updates on startup
+                //[Conditional("RELEASE")]
+                // check update every 5 hours
+
+                // check updates on startup
             });
         }
 

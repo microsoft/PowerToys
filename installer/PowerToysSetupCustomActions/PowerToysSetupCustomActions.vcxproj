@@ -54,14 +54,13 @@
       <PreprocessorDefinitions>WIN64;_DEBUG;_WINDOWS;_USRDLL;CUSTOMACTIONTEST_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Pathcch.lib;comsupp.lib;taskschd.lib;Secur32.lib;msi.lib;dutil.lib;wcautil.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Psapi.lib;Pathcch.lib;comsupp.lib;taskschd.lib;Secur32.lib;msi.lib;dutil.lib;wcautil.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(WIX)sdk\$(WixPlatformToolset)\lib\x64;$(SolutionDir)\packages\WiX.3.11.2\tools\sdk\vs2017\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>CustomAction.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -77,14 +76,13 @@
       <PreprocessorDefinitions>WIN64;NDEBUG;_WINDOWS;_USRDLL;CUSTOMACTIONTEST_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Pathcch.lib;comsupp.lib;taskschd.lib;Secur32.lib;msi.lib;dutil.lib;wcautil.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Psapi.lib;Pathcch.lib;comsupp.lib;taskschd.lib;Secur32.lib;msi.lib;dutil.lib;wcautil.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(WIX)sdk\$(WixPlatformToolset)\lib\x64;$(SolutionDir)\packages\WiX.3.11.2\tools\sdk\vs2017\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>CustomAction.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -95,11 +93,16 @@
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
   </ItemDefinitionGroup>
+<ItemDefinitionGroup Condition="'$(CIBuild)'!='true'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+    </ClCompile>
+  </ItemDefinitionGroup>  
   <ItemGroup>
     <ClCompile Include="CustomAction.cpp" />
     <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

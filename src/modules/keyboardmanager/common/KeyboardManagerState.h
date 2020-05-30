@@ -55,8 +55,9 @@ private:
     StackPanel currentSingleKeyUI;
     std::mutex currentSingleKeyUI_mutex;
 
-    // Stores the UI element which is to be updated based on the shortcut entered
-    StackPanel currentShortcutUI;
+    // Stores the UI element which is to be updated based on the shortcut entered (each stackpanel represents a row of keys)
+    StackPanel currentShortcutUI1;
+    StackPanel currentShortcutUI2;
     std::mutex currentShortcutUI_mutex;
     
     // Stores the current configuration name.
@@ -75,7 +76,7 @@ private:
 
 public:
     // The map members and their mutexes are left as public since the maps are used extensively in dllmain.cpp.
-    // Maps which store the remappings for each of the features. The bool fields should be initalised to false. They are used to check the current state of the shortcut (i.e is that particular shortcut currently pressed down or not).
+    // Maps which store the remappings for each of the features. The bool fields should be initialized to false. They are used to check the current state of the shortcut (i.e is that particular shortcut currently pressed down or not).
     // Stores single key remappings
     std::unordered_map<DWORD, DWORD> singleKeyReMap;
     std::mutex singleKeyReMap_mutex;
@@ -126,7 +127,7 @@ public:
     bool AddOSLevelShortcut(const Shortcut& originalSC, const Shortcut& newSC);
 
     // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
-    void ConfigureDetectShortcutUI(const StackPanel& textBlock);
+    void ConfigureDetectShortcutUI(const StackPanel& textBlock1, const StackPanel& textBlock2);
 
     // Function to set the textblock of the detect remap key UI so that it can be accessed by the hook
     void ConfigureDetectSingleKeyRemapUI(const StackPanel& textBlock);
@@ -178,9 +179,9 @@ public:
     // Save the updated configuration.
     bool SaveConfigToFile();
 
-    // Sets the Current Active Configuartion Name.
+    // Sets the Current Active Configuration Name.
     void SetCurrentConfigName(const std::wstring& configName);
 
-    // Gets the Current Active Configuartion Name.
+    // Gets the Current Active Configuration Name.
     std::wstring GetCurrentConfigName();
 };

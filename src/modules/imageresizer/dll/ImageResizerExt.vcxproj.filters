@@ -19,17 +19,11 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ImageResizerExt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ImageResizerExt_i.c">
-      <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="ContextMenuHandler.cpp">
       <Filter>Source Files</Filter>
@@ -46,11 +40,14 @@
     <ClInclude Include="trace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClCompile Include="ImageResizerExt_i.c">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -60,9 +57,6 @@
     <ClInclude Include="dllmain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImageResizerExt_i.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
     <ClInclude Include="ContextMenuHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -70,6 +64,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Settings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageResizerExt_i.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -88,15 +88,16 @@
     <None Include="ContextMenuHandler.rgs">
       <Filter>Resource Files</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Midl Include="ImageResizerExt.idl">
-      <Filter>Source Files</Filter>
-    </Midl>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\ui\Resources\ImageResizer.ico">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="ImageResizerExt.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
   </ItemGroup>
 </Project>

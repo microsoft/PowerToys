@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "Settings.h"
 #include "PowerRenameInterfaces.h"
 #include "settings_helpers.h"
@@ -6,10 +6,12 @@
 #include <filesystem>
 #include <commctrl.h>
 #include <algorithm>
+#include <fstream>
 
 namespace
 {
     const wchar_t c_powerRenameDataFilePath[] = L"\\power-rename-settings.json";
+    const wchar_t c_powerRenameUIFlagsFilePath[] = L"\\power-rename-ui-flags";
     const wchar_t c_searchMRUListFilePath[] = L"\\search-mru.json";
     const wchar_t c_replaceMRUListFilePath[] = L"\\replace-mru.json";
 
@@ -29,7 +31,7 @@ namespace
     const wchar_t c_mruList[] = L"MRUList";
     const wchar_t c_insertionIdx[] = L"InsertionIdx";
 
-    long GetRegNumber(const std::wstring& valueName, long defaultValue)
+    unsigned int GetRegNumber(const std::wstring& valueName, unsigned int defaultValue)
     {
         DWORD type = REG_DWORD;
         DWORD data = 0;
@@ -41,7 +43,7 @@ namespace
         return defaultValue;
     }
 
-    void SetRegNumber(const std::wstring& valueName, long value)
+    void SetRegNumber(const std::wstring& valueName, unsigned int value)
     {
         SHSetValue(HKEY_CURRENT_USER, c_rootRegPath, valueName.c_str(), REG_DWORD, &value, sizeof(value));
     }
@@ -86,7 +88,7 @@ namespace
 class MRUListHandler
 {
 public:
-    MRUListHandler(int size, const std::wstring& filePath, const std::wstring& regPath) :
+    MRUListHandler(unsigned int size, const std::wstring& filePath, const std::wstring& regPath) :
         pushIdx(0),
         nextIdx(1),
         size(size),
@@ -112,9 +114,9 @@ private:
     bool Exists(const std::wstring& data);
 
     std::vector<std::wstring> items;
-    long pushIdx;
-    long nextIdx;
-    long size;
+    unsigned int pushIdx;
+    unsigned int nextIdx;
+    unsigned int size;
     const std::wstring jsonFilePath;
     const std::wstring registryFilePath;
 };
@@ -140,7 +142,7 @@ bool MRUListHandler::Next(std::wstring& data)
         return false;
     }
     // Go backwards to consume latest items first.
-    long idx = (pushIdx + size - nextIdx) % size;
+    unsigned int idx = (pushIdx + size - nextIdx) % size;
     if (items[idx].empty())
     {
         Reset();
@@ -212,15 +214,15 @@ void MRUListHandler::ParseJson()
         const json::JsonObject& jsonObject = json.value();
         try
         {
-            long oldSize{ size };
+            unsigned int oldSize{ size };
             if (json::has(jsonObject, c_maxMRUSize, json::JsonValueType::Number))
             {
-                oldSize = (long)jsonObject.GetNamedNumber(c_maxMRUSize);
+                oldSize = (unsigned int)jsonObject.GetNamedNumber(c_maxMRUSize);
             }
-            long oldPushIdx{ 0 };
+            unsigned int oldPushIdx{ 0 };
             if (json::has(jsonObject, c_insertionIdx, json::JsonValueType::Number))
             {
-                oldPushIdx = (long)jsonObject.GetNamedNumber(c_insertionIdx);
+                oldPushIdx = (unsigned int)jsonObject.GetNamedNumber(c_insertionIdx);
                 if (oldPushIdx < 0 || oldPushIdx >= oldSize)
                 {
                     oldPushIdx = 0;
@@ -240,7 +242,7 @@ void MRUListHandler::ParseJson()
                 else
                 {
                     std::vector<std::wstring> temp;
-                    for (uint32_t i = 0; i < min(jsonArray.Size(), size); ++i)
+                    for (unsigned int i = 0; i < min(jsonArray.Size(), size); ++i)
                     {
                         int idx = (oldPushIdx + oldSize - (i + 1)) % oldSize;
                         temp.push_back(std::wstring(jsonArray.GetStringAt(idx)));
@@ -248,7 +250,7 @@ void MRUListHandler::ParseJson()
                     if (size > oldSize)
                     {
                         std::reverse(std::begin(temp), std::end(temp));
-                        pushIdx = (long)temp.size();
+                        pushIdx = (unsigned int)temp.size();
                         temp.resize(size);
                     }
                     else
@@ -295,7 +297,7 @@ private:
     CRenameMRU(int size, const std::wstring& filePath, const std::wstring& regPath);
 
     std::unique_ptr<MRUListHandler> mruList;
-    long refCount = 0;
+    unsigned int refCount = 0;
 };
 
 CRenameMRU::CRenameMRU(int size, const std::wstring& filePath, const std::wstring& regPath) :
@@ -307,7 +309,7 @@ CRenameMRU::CRenameMRU(int size, const std::wstring& filePath, const std::wstrin
 HRESULT CRenameMRU::CreateInstance(_In_ const std::wstring& filePath, _In_ const std::wstring& regPath, _Outptr_ IUnknown** ppUnk)
 {
     *ppUnk = nullptr;
-    long maxMRUSize = CSettingsInstance().GetMaxMRUSize();
+    unsigned int maxMRUSize = CSettingsInstance().GetMaxMRUSize();
     HRESULT hr = maxMRUSize > 0 ? S_OK : E_FAIL;
     if (SUCCEEDED(hr))
     {
@@ -330,7 +332,7 @@ IFACEMETHODIMP_(ULONG) CRenameMRU::AddRef()
 
 IFACEMETHODIMP_(ULONG) CRenameMRU::Release()
 {
-    long cnt = InterlockedDecrement(&refCount);
+    unsigned int cnt = InterlockedDecrement(&refCount);
 
     if (cnt == 0)
     {
@@ -395,6 +397,7 @@ CSettings::CSettings()
 {
     std::wstring result = PTSettingsHelper::get_module_save_folder_location(L"PowerRename");
     jsonFilePath = result + std::wstring(c_powerRenameDataFilePath);
+    UIFlagsFilePath = result + std::wstring(c_powerRenameUIFlagsFilePath);
     Load();
 }
 
@@ -408,11 +411,11 @@ void CSettings::Save()
     jsonData.SetNamedValue(c_persistState,            json::value(settings.persistState));
     jsonData.SetNamedValue(c_mruEnabled,              json::value(settings.MRUEnabled));
     jsonData.SetNamedValue(c_maxMRUSize,              json::value(settings.maxMRUSize));
-    jsonData.SetNamedValue(c_flags,                   json::value(settings.flags));
     jsonData.SetNamedValue(c_searchText,              json::value(settings.searchText));
     jsonData.SetNamedValue(c_replaceText,             json::value(settings.replaceText));
 
     json::to_file(jsonFilePath, jsonData);
+    GetSystemTimeAsFileTime(&lastLoadedTime);
 }
 
 void CSettings::Load()
@@ -422,12 +425,13 @@ void CSettings::Load()
         MigrateFromRegistry();
 
         Save();
+        WriteFlags();
     }
     else
     {
         ParseJson();
+        ReadFlags();
     }
-    GetSystemTimeAsFileTime(&lastLoadedTime);
 }
 
 void CSettings::Reload()
@@ -440,7 +444,6 @@ void CSettings::Reload()
         Load();
     }
 }
-
 
 void CSettings::MigrateFromRegistry()
 {
@@ -485,11 +488,7 @@ void CSettings::ParseJson()
             }
             if (json::has(jsonSettings, c_maxMRUSize, json::JsonValueType::Number))
             {
-                settings.maxMRUSize = (long)jsonSettings.GetNamedNumber(c_maxMRUSize);
-            }
-            if (json::has(jsonSettings, c_flags, json::JsonValueType::Number))
-            {
-                settings.flags = (long)jsonSettings.GetNamedNumber(c_flags);
+                settings.maxMRUSize = (unsigned int)jsonSettings.GetNamedNumber(c_maxMRUSize);
             }
             if (json::has(jsonSettings, c_searchText, json::JsonValueType::String))
             {
@@ -501,6 +500,25 @@ void CSettings::ParseJson()
             }
         }
         catch (const winrt::hresult_error&) { }
+    }
+    GetSystemTimeAsFileTime(&lastLoadedTime);
+}
+
+void CSettings::ReadFlags()
+{
+    std::ifstream file(UIFlagsFilePath, std::ios::binary);
+    if (file.is_open())
+    {
+        file >> settings.flags;
+    }
+}
+
+void CSettings::WriteFlags()
+{
+    std::ofstream file(UIFlagsFilePath, std::ios::binary);
+    if (file.is_open())
+    {
+        file << settings.flags;
     }
 }
 

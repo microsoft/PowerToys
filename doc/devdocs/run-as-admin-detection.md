@@ -8,7 +8,7 @@ If you're running any application as an administrator (aka elevated) and PowerTo
 
 We understand users will run applications elevated. We do as well.  We have two options for you when this scenario happens:
 
-1. **Recommended:** PowerToys will prompt when we detect a process that is elevated.  Go to PowerToys settings inside the General Tab and click "Relaunch as adminstrator".
+1. **Recommended:** PowerToys will prompt when we detect a process that is elevated.  Go to PowerToys settings inside the General Tab and click "Relaunch as administrator".
 2. Enable "Always run as administrator" in the PowerToys settings.
 
 ## What is "Run as Administrator" / Elevated processes

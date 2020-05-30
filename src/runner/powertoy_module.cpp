@@ -1,7 +1,5 @@
 #include "pch.h"
 #include "powertoy_module.h"
-#include "lowlevel_keyboard_event.h"
-#include <algorithm>
 
 std::map<std::wstring, PowertoyModule>& modules()
 {
@@ -24,7 +22,7 @@ PowertoyModule load_powertoy(const std::wstring& filename)
         FreeLibrary(handle);
         winrt::throw_last_error();
     }
-    module->register_system_menu_helper(&SystemMenuHelperInstace());
+    module->register_system_menu_helper(&SystemMenuHelperInstance());
     return PowertoyModule(module, handle);
 }
 
@@ -53,7 +51,7 @@ PowertoyModule::PowertoyModule(PowertoyModuleIface* module, HMODULE handle) :
             powertoys_events().register_receiver(*want_signals, module);
         }
     }
-    if (SystemMenuHelperInstace().HasCustomConfig(module))
+    if (SystemMenuHelperInstance().HasCustomConfig(module))
     {
         powertoys_events().register_system_menu_action(module);
     }

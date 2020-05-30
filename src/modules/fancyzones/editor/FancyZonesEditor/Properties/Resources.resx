@@ -127,7 +127,7 @@
     <value>Cancel</value>
   </data>
   <data name="Choose_Layout" xml:space="preserve">
-    <value>Choose your layout</value>
+    <value>Choose your layout for this desktop</value>
   </data>
   <data name="Custom" xml:space="preserve">
     <value>Custom</value>

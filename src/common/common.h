@@ -6,12 +6,12 @@
 #include <memory>
 #include <vector>
 
-// Returns RECT with positions of the minmize/maximize buttons of the given window.
+// Returns RECT with positions of the minimize/maximize buttons of the given window.
 // Does not always work, since some apps draw custom toolbars.
 std::optional<RECT> get_button_pos(HWND hwnd);
 // Gets position of given window.
 std::optional<RECT> get_window_pos(HWND hwnd);
-// Gets mouse postion.
+// Gets mouse position.
 std::optional<POINT> get_mouse_pos();
 
 // Test if window can be zoned by FancyZones
@@ -47,7 +47,7 @@ void show_last_error_message(LPCWSTR lpszFunction, DWORD dw);
 
 enum WindowState
 {
-    UNKNONW,
+    UNKNOWN,
     MINIMIZED,
     MAXIMIZED,
     SNAPED_TOP_LEFT,
@@ -63,16 +63,16 @@ WindowState get_window_state(HWND hwnd);
 // Returns true if the current process is running with elevated privileges
 bool is_process_elevated(const bool use_cached_value = true);
 
-// Drops the elevated privilages if present
+// Drops the elevated privileges if present
 bool drop_elevated_privileges();
 
 // Run command as elevated user, returns true if succeeded
 bool run_elevated(const std::wstring& file, const std::wstring& params);
 
-// Run command as non-elevated user, returns true if succeeded
-bool run_non_elevated(const std::wstring& file, const std::wstring& params);
+// Run command as non-elevated user, returns true if succeeded, puts the process id into returnPid if returnPid != NULL
+bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid);
 
-// Run command with the same elevation, returns true if succedded
+// Run command with the same elevation, returns true if succeeded
 bool run_same_elevation(const std::wstring& file, const std::wstring& params);
 
 // Returns true if the current process is running from administrator account
@@ -98,6 +98,8 @@ std::wstring get_resource_string(UINT resource_id, HINSTANCE instance, const wch
 //  extern "C" IMAGE_DOS_HEADER __ImageBase;
 // is added to the .cpp file.
 #define GET_RESOURCE_STRING(resource_id) get_resource_string(resource_id, reinterpret_cast<HINSTANCE>(&__ImageBase), L#resource_id)
+
+std::optional<std::string> exec_and_read_output(const std::wstring_view command, const DWORD timeout = INFINITE);
 
 // Helper class for various COM-related APIs, e.g working with security descriptors
 template<typename T>
@@ -134,3 +136,5 @@ struct overloaded : Ts...
 };
 template<class... Ts>
 overloaded(Ts...)->overloaded<Ts...>;
+
+#define POWER_LAUNCHER_PID_SHARED_FILE L"Global\\3cbfbad4-199b-4e2c-9825-942d5d3d3c74"

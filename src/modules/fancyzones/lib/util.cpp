@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "util.h"
 
+#include <common/common.h>
 #include <common/dpi_aware.h>
 
 typedef BOOL(WINAPI* GetDpiForMonitorInternalFunc)(HMONITOR, UINT, UINT*, UINT*);
@@ -88,8 +89,8 @@ void OrderMonitors(std::vector<std::pair<HMONITOR, RECT>>& monitorInfo)
             size_t current = candidates[j];
 
             // Compare (top, left) lexicographically
-            if (std::tie(monitorInfo[current].second.top, monitorInfo[current].second.left)
-                < std::tie(monitorInfo[smallest].second.top, monitorInfo[smallest].second.left))
+            if (std::tie(monitorInfo[current].second.top, monitorInfo[current].second.left) <
+                std::tie(monitorInfo[smallest].second.top, monitorInfo[smallest].second.left))
             {
                 smallest = current;
             }
@@ -114,7 +115,7 @@ void SizeWindowToRect(HWND window, RECT rect) noexcept
     WINDOWPLACEMENT placement{};
     ::GetWindowPlacement(window, &placement);
 
-    //wait if SW_SHOWMINIMIZED would be removed from window (Issue #1685)    
+    //wait if SW_SHOWMINIMIZED would be removed from window (Issue #1685)
     for (int i = 0; i < 5 && (placement.showCmd & SW_SHOWMINIMIZED) != 0; i++)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -127,6 +128,13 @@ void SizeWindowToRect(HWND window, RECT rect) noexcept
         placement.showCmd = SW_RESTORE | SW_SHOWNA;
     }
 
+    // Remove maximized show command to make sure window is moved to the correct zone.
+    if (placement.showCmd & SW_SHOWMAXIMIZED)
+    {
+        placement.showCmd = SW_RESTORE;
+        placement.flags &= ~WPF_RESTORETOMAXIMIZED;
+    }
+
     placement.rcNormalPosition = rect;
     placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
 
@@ -134,4 +142,24 @@ void SizeWindowToRect(HWND window, RECT rect) noexcept
     // Do it again, allowing Windows to resize the window and set correct scaling
     // This fixes Issue #365
     ::SetWindowPlacement(window, &placement);
+}
+
+bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& excludedApps) noexcept
+{
+    auto filtered = get_fancyzones_filtered_window(window);
+    if (!filtered.zonable)
+    {
+        return false;
+    }
+    // Filter out user specified apps
+    CharUpperBuffW(filtered.process_path.data(), (DWORD)filtered.process_path.length());
+    if (find_app_name_in_path(filtered.process_path, excludedApps))
+    {
+        return false;
+    }
+    if (find_app_name_in_path(filtered.process_path, { L"POWERLAUNCHER.EXE" }))
+    {
+        return false;
+    }
+    return true;
 }

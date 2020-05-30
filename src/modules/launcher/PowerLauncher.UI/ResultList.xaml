@@ -5,10 +5,11 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    xmlns:ToolkitBehaviors="using:Microsoft.Toolkit.Uwp.UI.Animations.Behaviors"
     xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    Loaded="UserControl_Loaded"
+    ActualThemeChanged="UserControl_ActualThemeChanged"
     d:DesignHeight="300"
     d:DesignWidth="720">
     <UserControl.Resources>
@@ -19,7 +20,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="GridViewItem">
-                        <ListViewItemPresenter x:Name="Root" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
+                        <ListViewItemPresenter x:Name="Root" IsRightTapEnabled="False" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates">
                                     <VisualState x:Name="Normal"/>
@@ -45,6 +46,7 @@
     <Grid 
         x:Name="PowerBar"  
         Background="{ThemeResource BackdropAcrylicBrush}"
+        IsRightTapEnabled="False"
         VerticalAlignment="Top">
 
         <ListView
@@ -54,15 +56,18 @@
             MinHeight="{Binding Results.MaxHeight}"
             AllowFocusOnInteraction="False"
             IsItemClickEnabled="True"
+            IsRightTapEnabled="False"
+            RightTapped="SuggestionsList_RightTapped"
             Margin="0"
             Padding="{ThemeResource AutoSuggestListPadding}"
             ItemsSource="{Binding Results.Results, Mode=OneWay}"
             SelectionMode="Single"
             SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
-            Style="{StaticResource ListViewNoAnimations}">
+            Style="{StaticResource ListViewNoAnimations}"
+            ItemContainerStyle="{StaticResource ListViewItemNoRightTap}">
             <ListView.ItemTemplate>
                 <DataTemplate >
-                    <Grid Height="72" Width="642" Background="Transparent" RowSpacing="0">
+                    <Grid IsRightTapEnabled ="False" Height="72" Width="642" Background="Transparent" RowSpacing="0">
                         <Interactivity:Interaction.Behaviors>
                             <Core:EventTriggerBehavior EventName="PointerEntered">
                                 <Core:InvokeCommandAction Command="{Binding ActivateContextButtonsHoverCommand}"/>
@@ -80,9 +85,9 @@
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <Image x:Name="AppIcon" Height="36" MaxWidth="56" Grid.RowSpan="2" Margin="-8,0,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />
-                        <TextBlock x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" Margin="0,0,0,-2" VerticalAlignment="Bottom"/>
-                        <TextBlock x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Opacity="0.6" Margin="0,2,0,0" VerticalAlignment="Top"/>
+                        <Image x:Name="AppIcon" IsRightTapEnabled ="False" Height="36" MaxWidth="56" Grid.RowSpan="2" Margin="-8,0,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />
+                        <TextBlock x:Name="Title" IsRightTapEnabled ="False" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" Margin="0,0,0,-2" VerticalAlignment="Bottom"/>
+                        <TextBlock x:Name="Path" IsRightTapEnabled ="False" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Opacity="0.6" Margin="0,2,0,0" VerticalAlignment="Top"/>
                         <GridView 
                                    ItemContainerStyle="{StaticResource CommandButtonGridViewItemContainerStyle}"
                                    HorizontalAlignment="Right" 
@@ -96,21 +101,24 @@
                                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"                       
                                    ItemsSource="{Binding ContextMenuItems}" 
                                    SelectionMode="Single"
-                                   SelectedIndex="{Binding ContextMenuSelectedIndex}">
+                                   SelectedIndex="{Binding ContextMenuSelectedIndex}"
+                                   ContainerContentChanging="GridView_ContainerContentChanging"
+                                   IsRightTapEnabled ="False">
                             <GridView.ItemTemplate>
                                 <DataTemplate>
-                                    <Button Command="{Binding Command}" VerticalAlignment="Center" CornerRadius="4" Height="42" Width="42" BorderThickness="1" Style="{ThemeResource IconOnlyButton}">
+                                    <Button  IsRightTapEnabled ="False"  Command="{Binding Command}" VerticalAlignment="Center" CornerRadius="4" Height="42" Width="42" BorderThickness="1" Style="{ThemeResource IconOnlyButton}" Click="ContextButton_OnClick">
                                         <ToolTipService.ToolTip>
-                                            <TextBlock Text="{Binding Title}"/>
+                                            <TextBlock x:Name="ToolTip" Loaded="ToolTip_Loaded" IsRightTapEnabled="False" Text="{Binding Title}"/>
                                         </ToolTipService.ToolTip>
                                         <Button.Content>
-                                            <FontIcon FontFamily="{Binding FontFamily}" FontSize="16" Glyph="{Binding Glyph}"/>
+                                            <FontIcon x:Name="FontIcon" Loaded="FontIcon_Loaded"  IsRightTapEnabled="False" FontFamily="{Binding FontFamily}" FontSize="16" Glyph="{Binding Glyph}"/>
                                         </Button.Content>
                                         <Button.KeyboardAccelerators>
                                             <KeyboardAccelerator
                                                 Key="{Binding AcceleratorKey}"
                                                 Modifiers="{Binding AcceleratorModifiers}"
                                                 IsEnabled="{Binding IsAcceleratorKeyEnabled}"
+                                                Invoked="ContextButton_OnAcceleratorInvoked"
                                             />
                                         </Button.KeyboardAccelerators>
                                     </Button>

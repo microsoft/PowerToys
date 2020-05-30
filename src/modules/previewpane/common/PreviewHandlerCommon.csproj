@@ -122,7 +122,6 @@
     <Compile Include="handlers\PreviewHandlerBase.cs" />
     <Compile Include="handlers\StreamBasedPreviewHandler.cs" />
     <Compile Include="examplehandler\TestCustomHandler.cs" />
-    <Compile Include="Telemetry\TelemetryBase.cs" />
     <Compile Include="Utilities\StreamWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -137,5 +136,6 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

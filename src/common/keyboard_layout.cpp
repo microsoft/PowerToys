@@ -181,7 +181,7 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
     keyboardLayoutMap[VK_BROWSER_STOP] = L"Browser Stop";
     keyboardLayoutMap[VK_BROWSER_SEARCH] = L"Browser Search";
     keyboardLayoutMap[VK_BROWSER_FAVORITES] = L"Browser Favorites";
-    keyboardLayoutMap[VK_BROWSER_HOME] = L"Browser Start & Home";
+    keyboardLayoutMap[VK_BROWSER_HOME] = L"Browser Home";
     keyboardLayoutMap[VK_VOLUME_MUTE] = L"Volume Mute";
     keyboardLayoutMap[VK_VOLUME_DOWN] = L"Volume Down";
     keyboardLayoutMap[VK_VOLUME_UP] = L"Volume Up";
@@ -191,8 +191,8 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
     keyboardLayoutMap[VK_MEDIA_PLAY_PAUSE] = L"Play/Pause Media";
     keyboardLayoutMap[VK_LAUNCH_MAIL] = L"Start Mail";
     keyboardLayoutMap[VK_LAUNCH_MEDIA_SELECT] = L"Select Media";
-    keyboardLayoutMap[VK_LAUNCH_APP1] = L"Start Application 1";
-    keyboardLayoutMap[VK_LAUNCH_APP2] = L"Start Application 2";
+    keyboardLayoutMap[VK_LAUNCH_APP1] = L"Start App 1";
+    keyboardLayoutMap[VK_LAUNCH_APP2] = L"Start App 2";
     keyboardLayoutMap[VK_PACKET] = L"Packet";
     keyboardLayoutMap[VK_ATTN] = L"Attn";
     keyboardLayoutMap[VK_CRSEL] = L"CrSel";

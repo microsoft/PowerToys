@@ -10,17 +10,17 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Windows.ApplicationModel;
 using Windows.Management.Deployment;
-using AppxPackaing;
-using Shell;
 using Wox.Infrastructure;
 using Microsoft.Plugin.Program.Logger;
-using IStream = AppxPackaing.IStream;
 using Rect = System.Windows.Rect;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Wox.Plugin;
 using System.Windows.Input;
+using System.Runtime.InteropServices.ComTypes;
+using Wox.Plugin.SharedCommands;
+using System.Reflection;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -54,12 +54,12 @@ namespace Microsoft.Plugin.Program.Programs
 
         private void InitializeAppInfo()
         {
+            AppxPackageHelper _helper = new AppxPackageHelper();
             var path = Path.Combine(Location, "AppxManifest.xml");
 
             var namespaces = XmlNamespaces(path);
             InitPackageVersion(namespaces);
 
-            var appxFactory = new AppxFactory();
             IStream stream;
             const uint noAttribute = 0x80;
             const Stgm exclusiveRead = Stgm.Read | Stgm.ShareExclusive;
@@ -67,20 +67,15 @@ namespace Microsoft.Plugin.Program.Programs
 
             if (hResult == Hresult.Ok)
             {
-                var reader = appxFactory.CreateManifestReader(stream);
-                var manifestApps = reader.GetApplications();
                 var apps = new List<Application>();
-                while (manifestApps.GetHasCurrent() != 0)
+             
+                List<AppxPackageHelper.IAppxManifestApplication> _apps = _helper.getAppsFromManifest(stream);
+                foreach(var _app in _apps)
                 {
-                    var manifestApp = manifestApps.GetCurrent();
-                    var appListEntry = manifestApp.GetStringValue("AppListEntry");
-                    if (appListEntry != "none")
-                    {
-                        var app = new Application(manifestApp, this);
-                        apps.Add(app);
-                    }
-                    manifestApps.MoveNext();
+                    var app = new Application(_app, this);
+                    apps.Add(app);
                 }
+                
                 Apps = apps.Where(a => a.AppListEntry != "none").ToArray();
             }
             else
@@ -257,10 +252,11 @@ namespace Microsoft.Plugin.Program.Programs
             public string UserModelId { get; set; }
             public string BackgroundColor { get; set; }
 
+            public string EntryPoint { get; set; }
             public string Name => DisplayName;
             public string Location => Package.Location;
-
             public bool Enabled { get; set; }
+            public bool CanRunElevated {get;set;}
 
             public string LogoUri { get; set; }
             public string LogoPath { get; set; }
@@ -284,7 +280,7 @@ namespace Microsoft.Plugin.Program.Programs
 
                 var result = new Result
                 {
-                    SubTitle = "UWP application",
+                    SubTitle = "Packaged application",
                     Icon = Logo,
                     Score = score,
                     ContextData = this,
@@ -311,32 +307,60 @@ namespace Microsoft.Plugin.Program.Programs
 
             public List<ContextMenuResult> ContextMenus(IPublicAPI api)
             {
-                var contextMenus = new List<ContextMenuResult>
-                {
-                    new ContextMenuResult
-                    {
-                        Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
-                        Glyph = "\xE838",
-                        FontFamily = "Segoe MDL2 Assets",
-                        AcceleratorKey = Key.E,
-                        AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
-                        Action = _ =>
-                        {
-                            Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", Package.Location));
+                var contextMenus = new List<ContextMenuResult>();
 
-                            return true;
-                        }
-                    }
-                };
+                if (CanRunElevated)
+                {
+                    contextMenus.Add(
+                            new ContextMenuResult
+                            {
+                                PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                                Title = api.GetTranslation("wox_plugin_program_run_as_administrator"),
+                                Glyph = "\xE7EF",
+                                FontFamily = "Segoe MDL2 Assets",
+                                AcceleratorKey = Key.Enter,
+                                AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
+                                Action = _ =>
+                                {
+                                    string command = "shell:AppsFolder\\" + UniqueIdentifier;
+                                    command.Trim();
+                                    command = Environment.ExpandEnvironmentVariables(command);
+
+                                    var info = ShellCommand.SetProcessStartInfo(command, verb: "runas");
+                                    info.UseShellExecute = true;
+
+                                    Process.Start(info);
+                                    return true;
+                                }
+                            }
+                        );
+                }
+               contextMenus.Add(
+                   new ContextMenuResult
+                   {
+                       PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                       Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
+                       Glyph = "\xE838",
+                       FontFamily = "Segoe MDL2 Assets",
+                       AcceleratorKey = Key.E,
+                       AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
+                       Action = _ =>
+                       {
+                           Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", Package.Location));
+
+                           return true;
+                       }
+                   });
+                
                 return contextMenus;
             }
 
             private async void Launch(IPublicAPI api)
             {
-                var appManager = new ApplicationActivationManager();
+                var appManager = new ApplicationActivationHelper.ApplicationActivationManager();
                 uint unusedPid;
                 const string noArgs = "";
-                const ACTIVATEOPTIONS noFlags = ACTIVATEOPTIONS.AO_NONE;
+                const ApplicationActivationHelper.ActivateOptions noFlags = ApplicationActivationHelper.ActivateOptions.None;
                 await Task.Run(() =>
                 {
                     try
@@ -352,13 +376,30 @@ namespace Microsoft.Plugin.Program.Programs
                 });
             }
 
-            public Application(IAppxManifestApplication manifestApp, UWP package)
+            public Application(AppxPackageHelper.IAppxManifestApplication manifestApp, UWP package)
             {
-                UserModelId = manifestApp.GetAppUserModelId();
-                UniqueIdentifier = manifestApp.GetAppUserModelId();
-                DisplayName = manifestApp.GetStringValue("DisplayName");
-                Description = manifestApp.GetStringValue("Description");
-                BackgroundColor = manifestApp.GetStringValue("BackgroundColor");
+                // This is done because we cannot use the keyword 'out' along with a property
+                string tmpUserModelId;
+                string tmpUniqueIdentifier;
+                string tmpDisplayName;
+                string tmpDescription;
+                string tmpBackgroundColor;
+                string tmpEntryPoint;
+
+                manifestApp.GetAppUserModelId(out tmpUserModelId);
+                manifestApp.GetAppUserModelId(out tmpUniqueIdentifier);
+                manifestApp.GetStringValue("DisplayName", out tmpDisplayName);
+                manifestApp.GetStringValue("Description", out tmpDescription);
+                manifestApp.GetStringValue("BackgroundColor", out tmpBackgroundColor);
+                manifestApp.GetStringValue("EntryPoint", out tmpEntryPoint);
+
+                UserModelId = tmpUserModelId;
+                UniqueIdentifier = tmpUniqueIdentifier;
+                DisplayName = tmpDisplayName;
+                Description = tmpDescription;
+                BackgroundColor = tmpBackgroundColor;
+                EntryPoint = tmpEntryPoint;
+
                 Package = package;
 
                 DisplayName = ResourceFromPri(package.FullName, DisplayName);
@@ -367,6 +408,28 @@ namespace Microsoft.Plugin.Program.Programs
                 LogoPath = LogoPathFromUri(LogoUri);
 
                 Enabled = true;
+                CanRunElevated = IfApplicationcanRunElevated();
+            }
+
+            private bool IfApplicationcanRunElevated()
+            {
+                if (EntryPoint == "Windows.FullTrustApplication")
+                {
+                    return true;
+                }
+                else
+                {
+                    var manifest = Package.Location + "\\AppxManifest.xml";
+                    if (File.Exists(manifest))
+                    {
+                        var file = File.ReadAllText(manifest);
+                        if(file.Contains("TrustLevel=\"mediumIL\"", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
 
             internal string ResourceFromPri(string packageFullName, string resourceReference)
@@ -429,7 +492,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
 
 
-            internal string LogoUriFromManifest(IAppxManifestApplication app)
+            internal string LogoUriFromManifest(AppxPackageHelper.IAppxManifestApplication app)
             {
                 var logoKeyFromVersion = new Dictionary<PackageVersion, string>
                 {
@@ -439,8 +502,9 @@ namespace Microsoft.Plugin.Program.Programs
                 };
                 if (logoKeyFromVersion.ContainsKey(Package.Version))
                 {
+                    string logoUri;
                     var key = logoKeyFromVersion[Package.Version];
-                    var logoUri = app.GetStringValue(key);
+                    app.GetStringValue(key, out logoUri);
                     return logoUri;
                 }
                 else

@@ -38,6 +38,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 {
                     _maxSize = 0;
                 }
+                else
+                {
+                    _maxSize = value;
+                }
             }
         }
 

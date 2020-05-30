@@ -12,3 +12,4 @@ EXPORTS
 	TelemetryLogUninstallFailCA
 	TelemetryLogRepairCancelCA
 	TelemetryLogRepairFailCA
+	TerminateProcessesCA

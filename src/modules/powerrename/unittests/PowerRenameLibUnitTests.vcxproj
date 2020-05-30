@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200514.2\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200514.2\build\native\Microsoft.Windows.CppWinRT.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -22,7 +23,7 @@
     <ProjectGuid>{2151F984-E006-4A9F-92EF-C6DDE3DC8413}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>PowerRenameLibUnitTests</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
     <ProjectName>PowerRenameUnitTests</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -47,6 +48,7 @@
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>false</UseOfMfc>
+    <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -55,6 +57,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>false</UseOfMfc>
+    <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -83,7 +86,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>..\lib\;$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerRename</OutDir>
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -95,12 +98,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>..\lib\;$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\PowerRename</OutDir>
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -117,7 +119,6 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\;..\..\..\common;..\..\..\common\telemetry;..\..\;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -135,7 +136,6 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -156,7 +156,6 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -174,11 +173,17 @@
       <AdditionalDependencies>$(OutDir)PowerRenameLib.lib;$(OutDir)PowerRenameUI.lib;comctl32.lib;pathcch.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Pathcch.lib;$(SolutionDir)$(Platform)\$(Configuration)\obj\PowerRenameUI\PowerRenameUI.res;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(CIBuild)'!='true'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="MockPowerRenameItem.h" />
     <ClInclude Include="MockPowerRenameManagerEvents.h" />
     <ClInclude Include="MockPowerRenameRegExEvents.h" />
-    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="pch.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TestFileHelper.h" />
   </ItemGroup>
@@ -187,11 +192,8 @@
     <ClCompile Include="MockPowerRenameManagerEvents.cpp" />
     <ClCompile Include="MockPowerRenameRegExEvents.cpp" />
     <ClCompile Include="PowerRenameManagerTests.cpp" />
-    <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="PowerRenameRegExTests.cpp" />
     <ClCompile Include="TestFileHelper.cpp" />
@@ -201,7 +203,18 @@
       <Project>{74485049-c722-400f-abe5-86ac52d929b3}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200514.2\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200514.2\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200514.2\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200514.2\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200514.2\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.200514.2\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+  </Target>
 </Project>

@@ -20,6 +20,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="1" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="0" />
+                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
@@ -29,6 +30,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="0" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                        <Setter Target="SidePanel.Width" Value="Auto" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -44,12 +46,11 @@
 
         <StackPanel Orientation="Vertical">
             <TextBlock x:Uid="PowerLauncher_Description"
-                       Style="{StaticResource BodyTextBlockStyle}"
                        TextWrapping="Wrap"/>
 
             <ToggleSwitch x:Uid="PowerLauncher_EnablePowerLauncher" 
                           IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnablePowerLauncher}"
-                          Margin="{StaticResource SmallTopMargin}"/>
+                          Margin="{StaticResource MediumTopMargin}"/>
 
             <TextBlock x:Uid="PowerLauncher_SearchResults"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
@@ -77,7 +78,7 @@
             <muxc:NumberBox x:Uid="PowerLauncher_MaximumNumberOfResults" 
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.MaximumNumberOfResults}"
                             Width="320"
-                            SpinButtonPlacementMode="Inline"
+                            SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallTopMargin}"
                             Minimum="1"
@@ -137,23 +138,29 @@
             Grid.Column="1">
 
             <TextBlock 
-                Text="About this feature"
+                x:Uid="About_PowerLauncher"
                 Style="{StaticResource SettingsGroupTitleStyle}"
                 Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <HyperlinkButton Content="Module overview"/>
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/launcher">
+                <TextBlock x:Uid="Module_overview" />
+            </HyperlinkButton>
+
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <TextBlock x:Uid="Give_Feedback" />
+            </HyperlinkButton>
 
             <TextBlock 
-                Text="Attribution"
+                x:Uid="AttributionTitle"
                 Style="{StaticResource SettingsGroupTitleStyle}" />
 
-            <HyperlinkButton 
-                Content="Wox" 
-                NavigateUri="https://github.com/Wox-launcher/Wox/" />
+            <HyperlinkButton NavigateUri="https://github.com/Wox-launcher/Wox/">
+                <TextBlock Text="Wox"/>
+            </HyperlinkButton>
 
-            <HyperlinkButton 
-                Content="Beta Tadele's Window Walker" 
-                NavigateUri="https://github.com/betsegaw/windowwalker/" />
+            <HyperlinkButton NavigateUri="https://github.com/betsegaw/windowwalker/">
+                <TextBlock Text="Beta Tadele's Window Walker" />
+            </HyperlinkButton>
         </StackPanel>
     </Grid>
 </Page>

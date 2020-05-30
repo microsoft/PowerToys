@@ -83,7 +83,7 @@ namespace Wox.ViewModel
 
 
         public Thickness Margin { get; set; }
-        public Visibility Visbility { get; set; } = Visibility.Hidden;
+        public Visibility Visibility { get; set; } = Visibility.Hidden;
 
         #endregion
 
@@ -203,7 +203,7 @@ namespace Wox.ViewModel
                 else
                 {
                     Margin = new Thickness { Top = 0 };
-                    Visbility = Visibility.Collapsed;
+                    Visibility = Visibility.Collapsed;
                 }
             }
         }

@@ -69,6 +69,13 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\WiX.3.11.2\build\wix.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WiX.3.11.2\build\wix.props'))" />
   </Target>
+  <PropertyGroup>
+    <PreBuildEvent>IF NOT DEFINED IsPipeline (
+call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64 -winsdk=10.0.18362.0
+SET PTRoot=..\..\..\..
+call "..\..\publish.cmd"
+)</PreBuildEvent>
+  </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
 	Other similar extension points exist, see Wix.targets.

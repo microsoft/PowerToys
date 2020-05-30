@@ -11,6 +11,24 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 OverlayWindow* instance = nullptr;
 
+namespace
+{
+    LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+    {
+        LowlevelKeyboardEvent event;
+        if (nCode == HC_ACTION)
+        {
+            event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
+            event.wParam = wParam;
+            if (instance->signal_event(&event) != 0)
+            {
+                return 1;
+            }
+        }
+        return CallNextHookEx(NULL, nCode, wParam, lParam);
+    }
+}
+
 OverlayWindow::OverlayWindow()
 {
     app_name = GET_RESOURCE_STRING(IDS_SHORTCUT_GUIDE);
@@ -24,8 +42,7 @@ const wchar_t* OverlayWindow::get_name()
 
 const wchar_t** OverlayWindow::get_events()
 {
-    static const wchar_t* events[2] = { ll_keyboard, 0 };
-    return events;
+    return nullptr;
 }
 
 bool OverlayWindow::get_config(wchar_t* buffer, int* buffer_size)
@@ -117,6 +134,11 @@ void OverlayWindow::enable()
         winkey_popup->set_theme(theme.value);
         target_state = std::make_unique<TargetState>(pressTime.value);
         winkey_popup->initialize();
+        hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
+        if (!hook_handle)
+        {
+            MessageBoxW(NULL, L"Cannot install keyboard listener.", L"PowerToys - Shortcut Guide", MB_OK | MB_ICONERROR);
+        }
     }
     _enabled = true;
 }
@@ -134,6 +156,14 @@ void OverlayWindow::disable(bool trace_event)
         target_state->exit();
         target_state.reset();
         winkey_popup.reset();
+        if (hook_handle)
+        {
+            bool success = UnhookWindowsHookEx(hook_handle);
+            if (success)
+            {
+                hook_handle = nullptr;
+            }
+        }
     }
 }
 
@@ -149,20 +179,29 @@ bool OverlayWindow::is_enabled()
 
 intptr_t OverlayWindow::signal_event(const wchar_t* name, intptr_t data)
 {
-    if (_enabled && wcscmp(name, ll_keyboard) == 0)
-    {
-        auto& event = *(reinterpret_cast<LowlevelKeyboardEvent*>(data));
-        if (event.wParam == WM_KEYDOWN ||
-            event.wParam == WM_SYSKEYDOWN ||
-            event.wParam == WM_KEYUP ||
-            event.wParam == WM_SYSKEYUP)
-        {
-            bool supress = target_state->signal_event(event.lParam->vkCode,
-                                                      event.wParam == WM_KEYDOWN || event.wParam == WM_SYSKEYDOWN);
-            return supress ? 1 : 0;
-        }
-    }
     return 0;
+}
+
+intptr_t OverlayWindow::signal_event(LowlevelKeyboardEvent* event)
+{
+    if (!_enabled)
+    {
+        return 0;
+    }
+
+    if (event->wParam == WM_KEYDOWN ||
+        event->wParam == WM_SYSKEYDOWN ||
+        event->wParam == WM_KEYUP ||
+        event->wParam == WM_SYSKEYUP)
+    {
+        bool suppress = target_state->signal_event(event->lParam->vkCode,
+            event->wParam == WM_KEYDOWN || event->wParam == WM_SYSKEYDOWN);
+        return suppress ? 1 : 0;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 void OverlayWindow::on_held()
@@ -183,7 +222,7 @@ void OverlayWindow::quick_hide()
 
 void OverlayWindow::was_hidden()
 {
-    target_state->was_hiden();
+    target_state->was_hidden();
 }
 
 void OverlayWindow::destroy()

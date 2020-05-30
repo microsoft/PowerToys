@@ -6,6 +6,8 @@
 #include <sddl.h>
 #include "version.h"
 
+#include <wil/resource.h>
+
 #pragma comment(lib, "advapi32.lib")
 #pragma comment(lib, "shlwapi.lib")
 
@@ -169,17 +171,17 @@ ShortcutGuideFilter get_shortcutguide_filtered_window()
     {
         return result;
     }
-    static HWND cortanda_hwnd = nullptr;
-    if (cortanda_hwnd == nullptr)
+    static HWND cortana_hwnd = nullptr;
+    if (cortana_hwnd == nullptr)
     {
         if (strcmp(class_name.data(), "Windows.UI.Core.CoreWindow") == 0 &&
             get_process_path(active_window).ends_with(L"SearchUI.exe"))
         {
-            cortanda_hwnd = active_window;
+            cortana_hwnd = active_window;
             return result;
         }
     }
-    else if (cortanda_hwnd == active_window)
+    else if (cortana_hwnd == active_window)
     {
         return result;
     }
@@ -189,7 +191,7 @@ ShortcutGuideFilter get_shortcutguide_filtered_window()
     // WinKey + Up just won't maximize the window. Similary, without
     // WS_MINIMIZEBOX the window will not get minimized. A "Save As..." dialog
     // is a example of such window - it can be snapped to both sides and to
-    // all screen conrers, but will not get maximized nor minimized.
+    // all screen corners, but will not get maximized nor minimized.
     // For now, since ShortcutGuide can only disable entire "Windows Controls"
     // group, we require that the window supports all the options.
     result.snappable = ((style & WS_MAXIMIZEBOX) == WS_MAXIMIZEBOX) &&
@@ -319,7 +321,7 @@ WindowState get_window_state(HWND hwnd)
 
     if (GetWindowPlacement(hwnd, &placement) == 0)
     {
-        return UNKNONW;
+        return UNKNOWN;
     }
 
     if (placement.showCmd == SW_MINIMIZE || placement.showCmd == SW_SHOWMINIMIZED || IsIconic(hwnd))
@@ -335,7 +337,7 @@ WindowState get_window_state(HWND hwnd)
     auto rectp = get_window_pos(hwnd);
     if (!rectp)
     {
-        return UNKNONW;
+        return UNKNOWN;
     }
 
     auto rect = *rectp;
@@ -459,7 +461,7 @@ bool run_elevated(const std::wstring& file, const std::wstring& params)
     }
 }
 
-bool run_non_elevated(const std::wstring& file, const std::wstring& params)
+bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid)
 {
     auto executable_args = L"\"" + file + L"\"";
     if (!params.empty())
@@ -509,7 +511,7 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params)
     siex.StartupInfo.cb = sizeof(siex);
 
     PROCESS_INFORMATION process_info = { 0 };
-    auto succedded = CreateProcessW(file.c_str(),
+    auto succeeded = CreateProcessW(file.c_str(),
                                     const_cast<LPWSTR>(executable_args.c_str()),
                                     nullptr,
                                     nullptr,
@@ -519,15 +521,21 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params)
                                     nullptr,
                                     &siex.StartupInfo,
                                     &process_info);
+
     if (process_info.hProcess)
     {
+        if (returnPid)
+        {
+            *returnPid = GetProcessId(process_info.hProcess);
+        }
+
         CloseHandle(process_info.hProcess);
     }
     if (process_info.hThread)
     {
         CloseHandle(process_info.hThread);
     }
-    return succedded;
+    return succeeded;
 }
 
 bool run_same_elevation(const std::wstring& file, const std::wstring& params)
@@ -539,7 +547,7 @@ bool run_same_elevation(const std::wstring& file, const std::wstring& params)
     }
     STARTUPINFO si = { 0 };
     PROCESS_INFORMATION pi = { 0 };
-    auto succedded = CreateProcessW(file.c_str(),
+    auto succeeded = CreateProcessW(file.c_str(),
                                     const_cast<LPWSTR>(executable_args.c_str()),
                                     nullptr,
                                     nullptr,
@@ -557,7 +565,7 @@ bool run_same_elevation(const std::wstring& file, const std::wstring& params)
     {
         CloseHandle(pi.hThread);
     }
-    return succedded;
+    return succeeded;
 }
 
 std::wstring get_process_path(HWND window) noexcept
@@ -569,7 +577,7 @@ std::wstring get_process_path(HWND window) noexcept
     if (name.length() >= app_frame_host.length() &&
         name.compare(name.length() - app_frame_host.length(), app_frame_host.length(), app_frame_host) == 0)
     {
-        // It is a UWP app. We will enumarate the windows and look for one created
+        // It is a UWP app. We will enumerate the windows and look for one created
         // by something with a different PID
         DWORD new_pid = pid;
         EnumChildWindows(
@@ -734,4 +742,65 @@ bool find_app_name_in_path(const std::wstring& where, const std::vector<std::wst
         }
     }
     return false;
+}
+
+std::optional<std::string> exec_and_read_output(const std::wstring_view command, const DWORD timeout)
+{
+    SECURITY_ATTRIBUTES saAttr{ sizeof(saAttr) };
+    saAttr.bInheritHandle = true;
+
+    wil::unique_handle childStdoutRead;
+    wil::unique_handle childStdoutWrite;
+    if (!CreatePipe(&childStdoutRead, &childStdoutWrite, &saAttr, 0))
+    {
+        return std::nullopt;
+    }
+
+    if (!SetHandleInformation(childStdoutRead.get(), HANDLE_FLAG_INHERIT, 0))
+    {
+        return std::nullopt;
+    }
+
+    PROCESS_INFORMATION piProcInfo{};
+    STARTUPINFOW siStartInfo{ sizeof(siStartInfo) };
+
+    siStartInfo.hStdError = childStdoutWrite.get();
+    siStartInfo.hStdOutput = childStdoutWrite.get();
+    siStartInfo.dwFlags |= STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+    siStartInfo.wShowWindow = SW_HIDE;
+
+    std::wstring cmdLine{ command };
+    if (!CreateProcessW(nullptr,
+                        cmdLine.data(),
+                        nullptr,
+                        nullptr,
+                        true,
+                        NORMAL_PRIORITY_CLASS | CREATE_NEW_CONSOLE,
+                        nullptr,
+                        nullptr,
+                        &siStartInfo,
+                        &piProcInfo))
+    {
+        return std::nullopt;
+    }
+
+    WaitForSingleObject(piProcInfo.hProcess, timeout);
+
+    childStdoutWrite.reset();
+    CloseHandle(piProcInfo.hThread);
+
+    std::string childOutput;
+    for (;;)
+    {
+        char buffer[4096];
+        DWORD gotBytes = 0;
+        if (!ReadFile(childStdoutRead.get(), buffer, sizeof(buffer), &gotBytes, nullptr) || !gotBytes)
+        {
+            break;
+        }
+        childOutput += std::string_view{ buffer, gotBytes };
+    }
+
+    CloseHandle(piProcInfo.hProcess);
+    return childOutput;
 }

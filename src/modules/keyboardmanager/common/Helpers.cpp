@@ -2,6 +2,7 @@
 #include "Helpers.h"
 #include <sstream>
 #include "../common/shared_constants.h"
+#include <shlwapi.h>
 
 using namespace winrt::Windows::Foundation;
 
@@ -102,7 +103,7 @@ namespace KeyboardManagerHelper
         else if ((GetKeyType(first) == GetKeyType(second)) && GetKeyType(first) != KeyType::Action)
         {
             // If the keys are of the same modifier type and overlapping, i.e. one is L/R and other is common
-            if ((first == VK_LWIN && second == VK_RWIN) || (first == VK_LCONTROL && second == VK_RCONTROL) || (first == VK_LMENU && second == VK_RMENU) || (first == VK_LSHIFT && second == VK_RSHIFT))
+            if (((first == VK_LWIN && second == VK_RWIN) || (first == VK_RWIN && second == VK_LWIN)) || ((first == VK_LCONTROL && second == VK_RCONTROL) || (first == VK_RCONTROL && second == VK_LCONTROL)) || ((first == VK_LMENU && second == VK_RMENU) || (first == VK_RMENU && second == VK_LMENU)) || ((first == VK_LSHIFT && second == VK_RSHIFT) || (first == VK_RSHIFT && second == VK_LSHIFT)))
             {
                 return ErrorType::NoError;
             }
@@ -157,6 +158,69 @@ namespace KeyboardManagerHelper
             return L"Shortcut must contain an action key";
         case ErrorType::ShortcutNotMoreThanOneActionKey:
             return L"Shortcut cannot have more than one action key";
+        case ErrorType::ShortcutMaxShortcutSizeOneActionKey:
+            return L"Shortcuts can only have up to 2 modifier keys";
+        default:
+            return L"Unexpected error";
         }
+    }
+
+    // Function to set the value of a key event based on the arguments
+    void SetKeyEvent(LPINPUT keyEventArray, int index, DWORD inputType, WORD keyCode, DWORD flags, ULONG_PTR extraInfo)
+    {
+        keyEventArray[index].type = inputType;
+        keyEventArray[index].ki.wVk = keyCode;
+        keyEventArray[index].ki.dwFlags = flags;
+        if (IsExtendedKey(keyCode))
+        {
+            keyEventArray[index].ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
+        }
+        keyEventArray[index].ki.dwExtraInfo = extraInfo;
+    }
+
+    // Function to return the window in focus
+    HWND GetFocusWindowHandle()
+    {
+        // Using GetGUIThreadInfo for getting the process of the window in focus. GetForegroundWindow has issues with UWP apps as it returns the Application Frame Host as its linked process
+        GUITHREADINFO guiThreadInfo;
+        guiThreadInfo.cbSize = sizeof(GUITHREADINFO);
+        GetGUIThreadInfo(0, &guiThreadInfo);
+
+        // If no window in focus, use the active window
+        if (guiThreadInfo.hwndFocus == nullptr)
+        {
+            return guiThreadInfo.hwndActive;
+        }
+        return guiThreadInfo.hwndFocus;
+    }
+
+    // Function to return the executable name of the application in focus
+    std::wstring GetCurrentApplication(bool keepPath)
+    {
+        HWND current_window_handle = GetFocusWindowHandle();
+        DWORD process_id;
+        DWORD nSize = MAX_PATH;
+        WCHAR buffer[MAX_PATH] = { 0 };
+
+        // Get process ID of the focus window
+        DWORD thread_id = GetWindowThreadProcessId(current_window_handle, &process_id);
+        HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, process_id);
+
+        // Get full path of the executable
+        bool res = QueryFullProcessImageName(hProc, 0, buffer, &nSize);
+        std::wstring process_name;
+        CloseHandle(hProc);
+
+        process_name = buffer;
+        if (res)
+        {
+            PathStripPath(buffer);
+
+            if (!keepPath)
+            {
+                process_name = buffer;
+            }
+        }
+        return process_name;
     }
 }

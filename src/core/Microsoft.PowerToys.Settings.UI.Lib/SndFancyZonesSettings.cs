@@ -10,6 +10,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     {
         public FancyZonesSettings FancyZones { get; set; }
 
+        public SndFancyZonesSettings()
+        {
+        }
+
         public SndFancyZonesSettings(FancyZonesSettings settings)
         {
             this.FancyZones = settings;

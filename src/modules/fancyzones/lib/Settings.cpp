@@ -36,14 +36,15 @@ private:
         PCWSTR name;
         bool* value;
         int resourceId;
-    } m_configBools[9 /* 10 */] = { // "Turning FLASHING_ZONE option off"
+    } m_configBools[10 /* 11 */] = { // "Turning FLASHING_ZONE option off"
         { L"fancyzones_shiftDrag", &m_settings.shiftDrag, IDS_SETTING_DESCRIPTION_SHIFTDRAG },
+        { L"fancyzones_mouseSwitch", &m_settings.mouseSwitch, IDS_SETTING_DESCRIPTION_MOUSESWITCH },
         { L"fancyzones_overrideSnapHotkeys", &m_settings.overrideSnapHotkeys, IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS },
+        { L"fancyzones_moveWindowAcrossMonitors", &m_settings.moveWindowAcrossMonitors, IDS_SETTING_DESCRIPTION_MOVE_WINDOW_ACROSS_MONITORS },
         // "Turning FLASHING_ZONE option off"
         //{ L"fancyzones_zoneSetChange_flashZones", &m_settings.zoneSetChange_flashZones, IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES },
         { L"fancyzones_displayChange_moveWindows", &m_settings.displayChange_moveWindows, IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS },
         { L"fancyzones_zoneSetChange_moveWindows", &m_settings.zoneSetChange_moveWindows, IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS },
-        { L"fancyzones_virtualDesktopChange_moveWindows", &m_settings.virtualDesktopChange_moveWindows, IDS_SETTING_DESCRIPTION_VIRTUALDESKTOPCHANGE_MOVEWINDOWS },
         { L"fancyzones_appLastZone_moveWindows", &m_settings.appLastZone_moveWindows, IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS },
         { L"use_cursorpos_editor_startupscreen", &m_settings.use_cursorpos_editor_startupscreen, IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN },
         { L"fancyzones_show_on_all_monitors", &m_settings.showZonesOnAllMonitors, IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS},
@@ -52,7 +53,7 @@ private:
 
     const std::wstring m_zoneColorName = L"fancyzones_zoneColor";
     const std::wstring m_zoneBorderColorName = L"fancyzones_zoneBorderColor";
-    const std::wstring m_zoneHiglightName = L"fancyzones_zoneHighlightColor";
+    const std::wstring m_zoneHighlightName = L"fancyzones_zoneHighlightColor";
     const std::wstring m_editorHotkeyName = L"fancyzones_editor_hotkey";
     const std::wstring m_excludedAppsName = L"fancyzones_excluded_apps";
     const std::wstring m_zoneHighlightOpacity = L"fancyzones_highlight_opacity";
@@ -69,7 +70,7 @@ IFACEMETHODIMP_(bool) FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ in
     settings.set_video_link(L"https://youtu.be/rTtGzZYAXgY");
 
     // Add a custom action property. When using this settings type, the "PowertoyModuleIface::call_custom_action()"
-    // method should be overriden as well.
+    // method should be overridden as well.
     settings.add_custom_action(
         L"ToggledFZEditor", // action name.
         IDS_SETTING_LAUNCH_EDITOR_LABEL,
@@ -80,16 +81,16 @@ IFACEMETHODIMP_(bool) FancyZonesSettings::GetConfig(_Out_ PWSTR buffer, _Out_ in
 
     for (auto const& setting : m_configBools)
     {
-        settings.add_bool_toogle(setting.name, setting.resourceId, *setting.value);
+        settings.add_bool_toggle(setting.name, setting.resourceId, *setting.value);
     }
 
-    settings.add_color_picker(m_zoneHiglightName, IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, m_settings.zoneHightlightColor);
+    settings.add_color_picker(m_zoneHighlightName, IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR, m_settings.zoneHighlightColor);
     settings.add_color_picker(m_zoneColorName, IDS_SETTING_DESCRIPTION_ZONECOLOR, m_settings.zoneColor);
     settings.add_color_picker(m_zoneBorderColorName, IDS_SETTING_DESCRIPTION_ZONE_BORDER_COLOR, m_settings.zoneBorderColor);
     
     settings.add_int_spinner(m_zoneHighlightOpacity, IDS_SETTINGS_HIGHLIGHT_OPACITY, m_settings.zoneHighlightOpacity, 0, 100, 1);
     
-    settings.add_multiline_string(m_excludedAppsName, IDS_SETTING_EXCLCUDED_APPS_DESCRIPTION, m_settings.excludedApps);
+    settings.add_multiline_string(m_excludedAppsName, IDS_SETTING_EXCLUDED_APPS_DESCRIPTION, m_settings.excludedApps);
 
     return settings.serialize_to_buffer(buffer, buffer_size);
 }
@@ -143,9 +144,9 @@ void FancyZonesSettings::LoadSettings(PCWSTR config, bool fromFile) noexcept try
         m_settings.zoneBorderColor = std::move(*val);
     }
 
-    if (auto val = values.get_string_value(m_zoneHiglightName))
+    if (auto val = values.get_string_value(m_zoneHighlightName))
     {
-        m_settings.zoneHightlightColor = std::move(*val);
+        m_settings.zoneHighlightColor = std::move(*val);
     }
 
     if (const auto val = values.get_json(m_editorHotkeyName))
@@ -194,7 +195,7 @@ void FancyZonesSettings::SaveSettings() noexcept try
 
     values.add_property(m_zoneColorName, m_settings.zoneColor);
     values.add_property(m_zoneBorderColorName, m_settings.zoneBorderColor);
-    values.add_property(m_zoneHiglightName, m_settings.zoneHightlightColor);
+    values.add_property(m_zoneHighlightName, m_settings.zoneHighlightColor);
     values.add_property(m_zoneHighlightOpacity, m_settings.zoneHighlightOpacity);
     values.add_property(m_editorHotkeyName, m_settings.editorHotkey.get_json());
     values.add_property(m_excludedAppsName, m_settings.excludedApps);

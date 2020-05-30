@@ -158,7 +158,7 @@ namespace PowerToysTests
         {
             Setup(context, false);
             ResetDefaultFancyZonesSettings(false);
-            ResetDefautZoneSettings(true);
+            ResetDefaultZoneSettings(true);
         }
 
         [ClassCleanup]
@@ -195,7 +195,7 @@ namespace PowerToysTests
                 //editor has already closed
             }
 
-            ResetDefautZoneSettings(false);
+            ResetDefaultZoneSettings(false);
         }
     }
 }

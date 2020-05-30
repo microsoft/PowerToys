@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "PowerRenameExt.h"
 #include <interface/powertoy_module_interface.h>
 #include <settings.h>
@@ -184,7 +184,7 @@ public:
     }
 
     // Return array of the names of all events that this powertoy listens for, with
-    // nullptr as the last element of the array. Nullptr can also be retured for empty list.
+    // nullptr as the last element of the array. Nullptr can also be returned for empty list.
     virtual PCWSTR* get_events() override
     {
         return nullptr;
@@ -204,12 +204,12 @@ public:
         // Link to the GitHub PowerRename sub-page
         settings.set_overview_link(GET_RESOURCE_STRING(IDS_OVERVIEW_LINK));
 
-        settings.add_bool_toogle(
+        settings.add_bool_toggle(
             L"bool_persist_input",
             GET_RESOURCE_STRING(IDS_RESTORE_SEARCH),
             CSettingsInstance().GetPersistState());
 
-        settings.add_bool_toogle(
+        settings.add_bool_toggle(
             L"bool_mru_enabled",
             GET_RESOURCE_STRING(IDS_ENABLE_AUTO),
             CSettingsInstance().GetMRUEnabled());
@@ -222,12 +222,12 @@ public:
             20,
             1);
 
-        settings.add_bool_toogle(
+        settings.add_bool_toggle(
             L"bool_show_icon_on_menu",
             GET_RESOURCE_STRING(IDS_ICON_CONTEXT_MENU),
             CSettingsInstance().GetShowIconOnMenu());
 
-        settings.add_bool_toogle(
+        settings.add_bool_toggle(
             L"bool_show_extended_menu",
             GET_RESOURCE_STRING(IDS_EXTENDED_MENU_INFO),
             CSettingsInstance().GetExtendedContextMenuOnly());

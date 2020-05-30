@@ -28,7 +28,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
             Main._settings
                 .DisabledProgramSources
                 .Where(t1 => !Main._settings
-                                  .ProgramSources // program sourcces added above already, so exlcude
+                                  .ProgramSources // program sources added above already, so exclude
                                   .Any(x => t1.UniqueIdentifier == x.UniqueIdentifier))
                 .Select(x => x)
                 .ToList()

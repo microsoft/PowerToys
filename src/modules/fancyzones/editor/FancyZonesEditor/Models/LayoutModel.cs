@@ -43,7 +43,6 @@ namespace FancyZonesEditor.Models
         protected LayoutModel(string name)
             : this()
         {
-            _guid = Guid.NewGuid();
             Name = name;
         }
 
@@ -115,7 +114,7 @@ namespace FancyZonesEditor.Models
 
         private bool _isSelected;
 
-        // implementation of INotifyProeprtyChanged
+        // implementation of INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
 
         // FirePropertyChanged -- wrapper that calls INPC.PropertyChanged
@@ -163,7 +162,7 @@ namespace FancyZonesEditor.Models
             }
         }
 
-        // Loads all the custom Layouts from tmp file passed by FancuZonesLib
+        // Loads all the custom Layouts from tmp file passed by FancyZonesLib
         public static ObservableCollection<LayoutModel> LoadCustomModels()
         {
             _customModels = new ObservableCollection<LayoutModel>();
@@ -220,8 +219,9 @@ namespace FancyZonesEditor.Models
                     }
                     else if (type.Equals("canvas"))
                     {
-                        int referenceWidth = info.GetProperty("ref-width").GetInt32();
-                        int referenceHeight = info.GetProperty("ref-height").GetInt32();
+                        int lastWorkAreaWidth = info.GetProperty("ref-width").GetInt32();
+                        int lastWorkAreaHeight = info.GetProperty("ref-height").GetInt32();
+
                         JsonElement.ArrayEnumerator zonesEnumerator = info.GetProperty("zones").EnumerateArray();
                         IList<Int32Rect> zones = new List<Int32Rect>();
                         while (zonesEnumerator.MoveNext())
@@ -233,7 +233,7 @@ namespace FancyZonesEditor.Models
                             zones.Add(new Int32Rect(x, y, width, height));
                         }
 
-                        _customModels.Add(new CanvasLayoutModel(uuid, name, LayoutType.Custom, referenceWidth, referenceHeight, zones));
+                        _customModels.Add(new CanvasLayoutModel(uuid, name, LayoutType.Custom, zones, lastWorkAreaWidth, lastWorkAreaHeight));
                     }
                 }
 

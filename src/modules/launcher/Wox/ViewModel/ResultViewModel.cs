@@ -118,6 +118,7 @@ namespace Wox.ViewModel
             {
                 newItems.Add(new ContextMenuItemViewModel
                 {
+                    PluginName = r.PluginName,
                     Title = r.Title,
                     Glyph = r.Glyph,
                     FontFamily = r.FontFamily,
@@ -220,7 +221,7 @@ namespace Wox.ViewModel
         /// <summary>
         ///  Triggers the action on the selected context button
         /// </summary>
-        /// <returns>False if there is nothing selected, oherwise true</returns>
+        /// <returns>False if there is nothing selected, otherwise true</returns>
         public bool ExecuteSelectedContextButton()
         {
             if (HasSelectedContextButton())

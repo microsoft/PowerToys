@@ -1,24 +1,25 @@
 #pragma once
 
-#define ZONE_STAMP L"FancyZones_zone"
+#define MULTI_ZONE_STAMP L"FancyZones_zones"
 #include <common/settings_objects.h>
 
 struct Settings
 {
     // The values specified here are the defaults.
     bool shiftDrag = true;
+    bool mouseSwitch = false;
     bool displayChange_moveWindows = false;
-    bool virtualDesktopChange_moveWindows = false;
     bool zoneSetChange_flashZones = false;
     bool zoneSetChange_moveWindows = false;
     bool overrideSnapHotkeys = false;
+    bool moveWindowAcrossMonitors = false;
     bool appLastZone_moveWindows = false;
     bool use_cursorpos_editor_startupscreen = true;
     bool showZonesOnAllMonitors = false;
     bool makeDraggedWindowTransparent = true;
     std::wstring zoneColor = L"#F5FCFF";
     std::wstring zoneBorderColor = L"#FFFFFF";
-    std::wstring zoneHightlightColor = L"#008CFF";
+    std::wstring zoneHighlightColor = L"#008CFF";
     int zoneHighlightOpacity = 50;
     PowerToysSettings::HotkeyObject editorHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, false, VK_OEM_3);
     std::wstring excludedApps = L"";

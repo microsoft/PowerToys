@@ -69,10 +69,10 @@ namespace FancyZonesEditor
             InitializeComponent();
             Current = this;
 
-            Left = _settings.WorkArea.Left;
-            Top = _settings.WorkArea.Top;
-            Width = _settings.WorkArea.Width;
-            Height = _settings.WorkArea.Height;
+            Left = Settings.WorkArea.Left;
+            Top = Settings.WorkArea.Top;
+            Width = Settings.WorkArea.Width;
+            Height = Settings.WorkArea.Height;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)

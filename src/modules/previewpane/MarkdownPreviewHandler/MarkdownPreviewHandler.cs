@@ -5,6 +5,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Common;
+using Microsoft.PowerToys.Telemetry;
 
 namespace MarkdownPreviewHandler
 {
@@ -27,6 +28,7 @@ namespace MarkdownPreviewHandler
         /// <inheritdoc />
         protected override IPreviewHandlerControl CreatePreviewHandlerControl()
         {
+            PowerToysTelemetry.Log.WriteEvent(new Telemetry.Events.MarkdownFileHandlerLoaded());
             this.markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl();
             return this.markdownPreviewHandlerControl;
         }

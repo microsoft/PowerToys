@@ -106,6 +106,16 @@
       <Version>2.4.0-prerelease.200322001</Version>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\Telemetry.csproj">
+      <Project>{5d00d290-4016-4cfe-9e41-1e7c724509ba}</Project>
+      <Name>Telemetry</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PowerLauncher.Telemetry\PowerLauncher.Telemetry.csproj">
+      <Project>{08c8c05f-0362-41bc-818c-724572df8b06}</Project>
+      <Name>PowerLauncher.Telemetry</Name>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

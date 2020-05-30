@@ -14,7 +14,7 @@
     <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
     <RepositoryType>Github</RepositoryType>
     <PackageTags>PowerToys</PackageTags>
-    <Version>0.15.2.0</Version>
+    <Version>0.18.2.0</Version>
     <Platforms>x64</Platforms>
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <Win32Resource />
@@ -68,11 +68,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\common\interop\interop.vcxproj" />
+    <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\Telemetry.csproj" />
+    <ProjectReference Include="..\Microsoft.PowerToys.Settings.UI.Lib\Microsoft.PowerToys.Settings.UI.Lib.csproj" />
     <ProjectReference Include="..\Microsoft.PowerToys.Settings.UI\Microsoft.PowerToys.Settings.UI.csproj" />
   </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="rem Check required to avoid a recursive loop of building&#xD;&#xA;&#xD;&#xA;IF NOT DEFINED settingsBuildEventCompleted (&#xD;&#xA;setlocal enableDelayedExpansion&#xD;&#xA;SET settingsProfileFolderName=Properties\PublishProfiles\&#xD;&#xA;&#xD;&#xA;rem Create the publish profile folder if it doesn't exist&#xD;&#xA;IF NOT EXIST !settingsProfileFolderName! (mkdir !settingsProfileFolderName!)&#xD;&#xA;SET settingsProfileFileName=SettingsProfile.pubxml&#xD;&#xA;SET settingsPublishProfile=!settingsProfileFolderName!!settingsProfileFileName!&#xD;&#xA;&#xD;&#xA;rem Create the publish profile pubxml&#xD;&#xA;echo ^&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?^&gt; &gt; !settingsPublishProfile!&#xD;&#xA;echo ^&lt;^^!-- &gt;&gt; !settingsPublishProfile!&#xD;&#xA;echo https://go.microsoft.com/fwlink/?LinkID=208121.  &gt;&gt; !settingsPublishProfile!&#xD;&#xA;echo --^&gt; &gt;&gt; !settingsPublishProfile!&#xD;&#xA;echo ^&lt;Project ToolsVersion=&quot;4.0&quot; xmlns=&quot;http://schemas.microsoft.com/developer/msbuild/2003&quot;^&gt; &gt;&gt; !settingsPublishProfile!&#xD;&#xA;echo   ^&lt;PropertyGroup^&gt; &gt;&gt; !settingsPublishProfile!&#xD;&#xA;echo     ^&lt;PublishProtocol^&gt;FileSystem^&lt;/PublishProtocol^&gt; &gt;&gt; !settingsPublishProfile!&#xD;&#xA;echo     ^&lt;Configuration^&gt;$(ConfigurationName)^&lt;/Configuration^&gt; &gt;&gt; !settingsPublishProfile!&#xD;&#xA;echo     ^&lt;Platform^&gt;$(PlatformName)^&lt;/Platform^&gt; &gt;&gt; !settingsPublishProfile!&#xD;&#xA;echo     ^&lt;TargetFramework^&gt;netcoreapp3.1^&lt;/TargetFramework^&gt; &gt;&gt; !settingsPublishProfile!&#xD;&#xA;echo     ^&lt;PublishDir^&gt;..\..\..\$(PlatformName)\$(ConfigurationName)\SettingsUIRunner^&lt;/PublishDir^&gt; &gt;&gt; !settingsPublishProfile!&#xD;&#xA;echo     ^&lt;RuntimeIdentifier^&gt;win-x64^&lt;/RuntimeIdentifier^&gt; &gt;&gt; !settingsPublishProfile!&#xD;&#xA;echo     ^&lt;SelfContained^&gt;false^&lt;/SelfContained^&gt; &gt;&gt; !settingsPublishProfile!&#xD;&#xA;echo     ^&lt;PublishSingleFile^&gt;False^&lt;/PublishSingleFile^&gt; &gt;&gt; !settingsPublishProfile!&#xD;&#xA;echo     ^&lt;PublishReadyToRun^&gt;False^&lt;/PublishReadyToRun^&gt; &gt;&gt; !settingsPublishProfile!&#xD;&#xA;echo   ^&lt;/PropertyGroup^&gt; &gt;&gt; !settingsPublishProfile!&#xD;&#xA;echo ^&lt;/Project^&gt; &gt;&gt; !settingsPublishProfile!&#xD;&#xA;&#xD;&#xA;rem Set a variable to know that the publish event is called to avoid it being called again&#xD;&#xA;SET settingsBuildEventCompleted=1&#xD;&#xA;&#xD;&#xA;rem In case of Release we should not use Debug CRT in VCRT forwarders&#xD;&#xA;IF $(ConfigurationName)==Release (&#xD;&#xA;&quot;$(MSBuildBinPath)\msbuild.exe&quot; Microsoft.PowerToys.Settings.UI.Runner.csproj -t:Build -p:Configuration=&quot;$(ConfigurationName)&quot; -p:Platform=&quot;$(PlatformName)&quot; -p:AppxBundle=Never -p:VCRTForwarders-IncludeDebugCRT=false -p:PublishProfile=!settingsProfileFileName!&#xD;&#xA;) ELSE (&#xD;&#xA;&quot;$(MSBuildBinPath)\msbuild.exe&quot; Microsoft.PowerToys.Settings.UI.Runner.csproj -t:Build -p:Configuration=&quot;$(ConfigurationName)&quot; -p:Platform=&quot;$(PlatformName)&quot; -p:AppxBundle=Never -p:PublishProfile=!settingsProfileFileName!&#xD;&#xA;)&#xD;&#xA;SET settingsBuildEventCompleted=&#xD;&#xA;)&#xD;&#xA;" />
-  </Target>
 
 </Project>

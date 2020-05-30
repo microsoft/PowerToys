@@ -22,10 +22,11 @@ public:
     // Stores the current list of remappings
     static std::vector<std::vector<DWORD>> singleKeyRemapBuffer;
 
-    SingleKeyRemapControl(Grid table, const int colIndex, FontIcon warning, ToolTip toolTip) :
-        singleKeyRemapDropDown(false, warning, toolTip)
+    SingleKeyRemapControl(Grid table, const int colIndex) :
+        singleKeyRemapDropDown(false)
     {
         typeKey.Content(winrt::box_value(L"Type Key"));
+        typeKey.Width(KeyboardManagerConstants::RemapTableDropDownWidth);
         typeKey.Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
             keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectSingleKeyRemapWindowActivated, EditKeyboardWindowHandle);
             // Using the XamlRoot of the typeKey to get the root of the XAML host

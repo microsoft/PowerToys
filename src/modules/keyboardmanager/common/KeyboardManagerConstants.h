@@ -38,4 +38,50 @@ namespace KeyboardManagerConstants
 
     // Initial value for tooltip
     inline const winrt::hstring ToolTipInitialContent = L"Initialised";
+
+    // Minimum and maximum size of a shortcut
+    inline const long MinShortcutSize = 2;
+    inline const long MaxShortcutSize = 3;
+
+    // Default window sizes
+    inline const int DefaultEditKeyboardWindowWidth = 800;
+    inline const int DefaultEditKeyboardWindowHeight = 600;
+    inline const int DefaultEditShortcutsWindowWidth = 1000;
+    inline const int DefaultEditShortcutsWindowHeight = 600;
+
+    // Key Remap table constants
+    inline const long RemapTableColCount = 4;
+    inline const long RemapTableHeaderCount = 2;
+    inline const long RemapTableOriginalColIndex = 0;
+    inline const long RemapTableArrowColIndex = 1;
+    inline const long RemapTableNewColIndex = 2;
+    inline const long RemapTableRemoveColIndex = 3;
+    inline const DWORD RemapTableDropDownWidth = 110;
+
+    // Shortcut table constants
+    inline const long ShortcutTableColCount = 4;
+    inline const long ShortcutTableHeaderCount = 2;
+    inline const long ShortcutTableOriginalColIndex = 0;
+    inline const long ShortcutTableArrowColIndex = 1;
+    inline const long ShortcutTableNewColIndex = 2;
+    inline const long ShortcutTableRemoveColIndex = 3;
+    inline const DWORD ShortcutTableDropDownWidth = 110;
+    inline const DWORD ShortcutTableDropDownSpacing = 10;
+
+    // Drop down height used for both Edit Keyboard and Edit Shortcuts
+    inline const DWORD TableDropDownHeight = 200;
+    inline const DWORD TableArrowColWidth = 20;
+    inline const DWORD TableRemoveColWidth = 20;
+    inline const DWORD TableWarningColWidth = 20;
+
+    // Shared style constants for both Remap Table and Shortcut Table
+    inline const double HeaderButtonWidth = 100;
+
+    
+    // Flags used for distinguishing key events sent by Keyboard Manager
+    inline const ULONG_PTR KEYBOARDMANAGER_SINGLEKEY_FLAG = 0x11;
+    inline const ULONG_PTR KEYBOARDMANAGER_SHORTCUT_FLAG = 0x101;
+
+    // Dummy key event used in between key up and down events to prevent certain global events from happening
+    inline const DWORD DUMMY_KEY = 0xFF;
 }

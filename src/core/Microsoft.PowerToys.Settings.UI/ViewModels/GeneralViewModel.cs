@@ -8,10 +8,10 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Windows.ApplicationModel.Resources;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Windows.Data.Html;
 using Windows.System;
 using Windows.UI.Popups;
@@ -27,7 +27,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
 
-        private ResourceLoader loader = ResourceLoader.GetForCurrentView();
+        private ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
+
+        public readonly string RunningAsUserDefaultText;
+        public readonly string RunningAsAdminDefaultText;
 
         public GeneralViewModel()
         {
@@ -97,12 +100,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _autoDownloadUpdates = GeneralSettingsConfigs.AutoDownloadUpdates;
             _isElevated = ShellPage.IsElevated;
             _runElevated = GeneralSettingsConfigs.RunElevated;
+
+            RunningAsUserDefaultText = loader.GetString("GeneralSettings_RunningAsUserText");
+            RunningAsAdminDefaultText = loader.GetString("GeneralSettings_RunningAsAdminText");
+
+            _isAdmin = ShellPage.IsUserAnAdmin;
         }
 
         private bool _packaged = false;
         private bool _startup = false;
         private bool _isElevated = false;
         private bool _runElevated = false;
+        private bool _isAdmin = false;
         private bool _isDarkThemeRadioButtonChecked = false;
         private bool _isLightThemeRadioButtonChecked = false;
         private bool _isSystemThemeRadioButtonChecked = false;
@@ -126,26 +135,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public string AlwaysRunAsAdminText
-        {
-            get
-            {
-                if (IsElevated)
-                {
-                    return loader.GetString("GeneralSettings_AlwaysRunAsAdminText_IsElevated");
-                }
-                else
-                {
-                    return loader.GetString("GeneralSettings_AlwaysRunAsAdminText_IsNotElevated");
-                }
-            }
-
-            set
-            {
-                OnPropertyChanged("AlwaysRunAsAdminText");
-            }
-        }
-
         // Gets or sets a value indicating whether run powertoys on start-up.
         public bool Startup
         {
@@ -165,17 +154,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public string RunningAsAdminText
+        public string RunningAsText
         {
             get
             {
                 if (!IsElevated)
                 {
-                    return loader.GetString("GeneralSettings_Running as Adminstrator_IsNotElevated");
+                    return RunningAsUserDefaultText;
                 }
                 else
                 {
-                    return loader.GetString("GeneralSettings_RunningAsAdminText_IsElevated");
+                    return RunningAsAdminDefaultText;
                 }
             }
 
@@ -200,7 +189,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _isElevated = value;
                     OnPropertyChanged("IsElevated");
                     OnPropertyChanged("IsAdminButtonEnabled");
-                    OnPropertyChanged("AlwaysRunAsAdminText");
                     OnPropertyChanged("RunningAsAdminText");
                 }
             }
@@ -235,6 +223,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     GeneralSettingsConfigs.RunElevated = value;
                     RaisePropertyChanged();
                 }
+            }
+        }
+
+        // Gets a value indicating whether the user is part of administrators group.
+        public bool IsAdmin
+        {
+            get
+            {
+                return _isAdmin;
             }
         }
 

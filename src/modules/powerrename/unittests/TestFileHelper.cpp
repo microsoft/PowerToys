@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "TestFileHelper.h"
 #include <iostream>
 #include <fstream>

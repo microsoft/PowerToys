@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "resource.h"
 #include "PowerRenameUI.h"
 #include "dpi_aware.h"
@@ -374,7 +374,7 @@ void CPowerRenameUI::_Cleanup()
 
 void CPowerRenameUI::_EnumerateItems(_In_ IUnknown* pdtobj)
 {
-    // Enumerate the data object and popuplate the manager
+    // Enumerate the data object and populate the manager
     if (m_spsrm)
     {
         m_disableCountUpdate = true;
@@ -640,7 +640,7 @@ void CPowerRenameUI::_OnInitDlg()
     _InitAutoComplete();
 
     // Disable rename button by default.  It will be enabled in _UpdateCounts if
-    // there are tiems to be renamed
+    // there are times to be renamed
     EnableWindow(GetDlgItem(m_hwnd, ID_RENAME), FALSE);
 
     // Update UI elements that depend on number of items selected or to be renamed

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "resource.h"
 #include "ImageResizerExt_i.h"
 #include "dllmain.h"
@@ -37,7 +37,7 @@ public:
     // Constructor
     ImageResizerModule()
     {
-        m_enabled = CSettings::GetEnabled();
+        m_enabled = CSettingsInstance().GetEnabled();
         app_name = GET_RESOURCE_STRING(IDS_IMAGERESIZER);
     };
 
@@ -54,7 +54,7 @@ public:
     }
 
     // Return array of the names of all events that this powertoy listens for, with
-    // nullptr as the last element of the array. Nullptr can also be retured for empty
+    // nullptr as the last element of the array. Nullptr can also be returned for empty
     // list.
     virtual const wchar_t** get_events() override
     {
@@ -87,7 +87,7 @@ public:
     virtual void enable()
     {
         m_enabled = true;
-        CSettings::SetEnabled(m_enabled);
+        CSettingsInstance().SetEnabled(m_enabled);
         Trace::EnableImageResizer(m_enabled);
     }
 
@@ -95,7 +95,7 @@ public:
     virtual void disable()
     {
         m_enabled = false;
-        CSettings::SetEnabled(m_enabled);
+        CSettingsInstance().SetEnabled(m_enabled);
         Trace::EnableImageResizer(m_enabled);
     }
 

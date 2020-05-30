@@ -98,6 +98,7 @@
     <Compile Include="Extensions\BitmapEncoderExtensions.cs" />
     <Compile Include="Extensions\ICollectionExtensions.cs" />
     <Compile Include="Extensions\TimeSpanExtensions.cs" />
+    <Compile Include="Models\AdvancedSettings.cs" />
     <Compile Include="Models\ResizeError.cs" />
     <Compile Include="Properties\Settings.cs" />
     <Compile Include="Models\CustomSize.cs" />

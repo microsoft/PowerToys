@@ -28,11 +28,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Text.Json" Version="4.7.0" />
+    <PackageReference Include="System.Text.Json" Version="4.7.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\common\interop\interop.vcxproj" />
+    <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\Telemetry.csproj" />
   </ItemGroup>
 
 </Project>

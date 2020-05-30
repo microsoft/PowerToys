@@ -2,7 +2,6 @@
 #include <WinSafer.h>
 #include <Sddl.h>
 #include <sstream>
-#include <accctrl.h>
 #include <aclapi.h>
 
 #include "powertoy_module.h"
@@ -15,10 +14,12 @@
 
 #include <common/json.h>
 #include <common\settings_helpers.cpp>
+#include <os-detect.h>
 
 #define BUFSIZE 1024
 
 TwoWayPipeMessageIPC* current_settings_ipc = NULL;
+std::atomic_bool g_isLaunchInProgress = false;
 
 json::JsonObject get_power_toys_settings()
 {
@@ -203,14 +204,17 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
                                           nullptr,
                                           &siex.StartupInfo,
                                           process_info);
-
+    g_isLaunchInProgress = false;
     return process_created;
 }
+
 
 DWORD g_settings_process_id = 0;
 
 void run_settings_window()
 {
+    g_isLaunchInProgress = true;
+
     PROCESS_INFORMATION process_info = { 0 };
     HANDLE hToken = nullptr;
 
@@ -223,7 +227,15 @@ void run_settings_window()
 
     // Arg 1: executable path.
     std::wstring executable_path = get_module_folderpath();
-    executable_path.append(L"\\SettingsUIRunner\\Microsoft.PowerToys.Settings.UI.Runner.exe");
+
+    if (UseNewSettings())
+    {
+        executable_path.append(L"\\SettingsUIRunner\\Microsoft.PowerToys.Settings.UI.Runner.exe");
+    }
+    else
+    {
+        executable_path.append(L"\\PowerToysSettings.exe");
+    }
 
     // Arg 2: pipe server. Generate unique names for the pipes, if getting a UUID is possible.
     std::wstring powertoys_pipe_name(L"\\\\.\\pipe\\powertoys_runner_");
@@ -245,7 +257,7 @@ void run_settings_window()
 
     // Arg 4: settings theme.
     const std::wstring settings_theme_setting{ get_general_settings().theme };
-    std::wstring settings_theme;
+    std::wstring settings_theme = L"system";
     if (settings_theme_setting == L"dark" || (settings_theme_setting == L"system" && WindowsColors::is_dark_mode()))
     {
         settings_theme = L"dark";
@@ -267,6 +279,18 @@ void run_settings_window()
         settings_elevatedStatus = L"false";
     }
 
+    bool isAdmin{ get_general_settings().isAdmin };
+    std::wstring settings_isUserAnAdmin;
+
+    if (isAdmin)
+    {
+        settings_isUserAnAdmin = L"true";
+    }
+    else
+    {
+        settings_isUserAnAdmin = L"false";
+    }
+
     std::wstring executable_args = L"\"";
     executable_args.append(executable_path);
     executable_args.append(L"\" ");
@@ -279,6 +303,8 @@ void run_settings_window()
     executable_args.append(settings_theme);
     executable_args.append(L" ");
     executable_args.append(settings_elevatedStatus);
+    executable_args.append(L" ");
+    executable_args.append(settings_isUserAnAdmin);
 
     BOOL process_created = false;
     if (is_process_elevated())
@@ -305,6 +331,10 @@ void run_settings_window()
                             &process_info))
         {
             goto LExit;
+        }
+        else
+        {
+            g_isLaunchInProgress = false;
         }
     }
 
@@ -350,15 +380,27 @@ LExit:
     g_settings_process_id = 0;
 }
 
+#define MAX_TITLE_LENGTH 100
 void bring_settings_to_front()
 {
     auto callback = [](HWND hwnd, LPARAM data) -> BOOL {
         DWORD processId;
         if (GetWindowThreadProcessId(hwnd, &processId) && processId == g_settings_process_id)
         {
-            ShowWindow(hwnd, SW_NORMAL);
-            SetForegroundWindow(hwnd);
-            return FALSE;
+            std::wstring windowTitle = L"PowerToys Settings";
+
+            WCHAR title[MAX_TITLE_LENGTH];
+            int len = GetWindowTextW(hwnd, title, MAX_TITLE_LENGTH);
+            if (len <= 0)
+            {
+                return TRUE;
+            }
+            if (wcsncmp(title, windowTitle.c_str(), len) == 0)
+            {
+                ShowWindow(hwnd, SW_RESTORE);
+                SetForegroundWindow(hwnd);
+                return FALSE;
+            }
         }
 
         return TRUE;
@@ -375,6 +417,21 @@ void open_settings_window()
     }
     else
     {
-        std::thread(run_settings_window).detach();
+        if (!g_isLaunchInProgress)
+        {
+            std::thread(run_settings_window).detach();
+        }
+    }
+}
+
+void close_settings_window()
+{
+    if (g_settings_process_id != 0)
+    {
+        HANDLE proc = OpenProcess(PROCESS_TERMINATE, false, g_settings_process_id);
+        if (proc != INVALID_HANDLE_VALUE)
+        {
+            TerminateProcess(proc, 0);
+        }
     }
 }

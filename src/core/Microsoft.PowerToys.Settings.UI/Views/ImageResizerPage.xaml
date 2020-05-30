@@ -24,6 +24,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="1" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="0" />
+                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
@@ -33,6 +34,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="0" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                        <Setter Target="SidePanel.Width" Value="Auto" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -50,12 +52,9 @@
             <TextBlock x:Uid="ImageResizer_Description"
                        TextWrapping="Wrap"/>
 
-            <TextBlock x:Uid="ImageResizer_EnableGroupSettingsHeader"
-                       Style="{StaticResource SettingsGroupTitleStyle}"/>
-
-            <!--x:Uid="ImageResizer_EnableToggle"-->
-            <ToggleSwitch IsOn="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"
-                          Margin="{StaticResource SmallTopMargin}" />
+            <ToggleSwitch x:Uid="ImageResizer_EnableToggle"
+                          Margin="{StaticResource MediumTopMargin}"
+                          IsOn="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"/>
 
             <TextBlock x:Uid="ImageResizer_CustomSizes"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
@@ -66,7 +65,7 @@
                       Padding="0"
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"
                       Margin="0"
-                      >
+                      SelectionMode="None">
 
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
@@ -100,15 +99,17 @@
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:ImageSize" >
-                        <StackPanel Orientation="Horizontal" Padding="0" Spacing="4">
+                        <StackPanel Orientation="Horizontal" Height="48" Padding="0" Spacing="4">
                             <TextBox Text="{x:Bind Path=Name, Mode=TwoWay}" 
-                                     Width="90" 
-                                     Height="35" 
+                                     Width="90"
+                                     VerticalAlignment="Center"
+                                     Height="34"
                                      Margin="{StaticResource SmallTopMargin}"/>
 
                             <ComboBox SelectedIndex="{x:Bind Path=Fit, Mode=TwoWay}"
-                                      Width="90" 
-                                      Height="35"
+                                      Width="90"
+                                      VerticalAlignment="Center"
+                                      Height="34"
                                       Margin="{StaticResource SmallTopMargin}">
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fill" />
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fit" />
@@ -118,37 +119,44 @@
                             <muxc:NumberBox Value="{x:Bind Path=Width, Mode=TwoWay}" 
                                             Width="68"
                                             Height="34"
+                                            SpinButtonPlacementMode="Compact"
+                                            VerticalAlignment="Center"
                                             Margin="{StaticResource SmallTopMargin}"/>
 
-                            <TextBlock Text="x" 
-                                       FontWeight="SemiBold" 
-                                       TextAlignment="Center" 
+                            <TextBlock Text="&#xE711;"
+                                       FontFamily="Segoe MDL2 Assets"
+                                       TextAlignment="Center"
+                                       VerticalAlignment="Center"
                                        Margin="{StaticResource SmallTopMargin}" 
-                                       Width="25" 
-                                       Height="35"/>
+                                       Width="25"/>
 
                             <muxc:NumberBox Value="{x:Bind Path=Height, Mode=TwoWay}" 
-                                            Width="68" 
+                                            Width="68"
                                             Height="34"
+                                            VerticalAlignment="Center"
+                                            SpinButtonPlacementMode="Compact"
                                             Margin="{StaticResource SmallTopMargin}"/>
 
                             <ComboBox SelectedIndex="{Binding Path=Unit, Mode=TwoWay}"
-                                      Width="90" 
-                                      Height="35"
+                                      Width="90"
+                                      Height="34"
+                                      VerticalAlignment="Center"
                                       Margin="{StaticResource SmallTopMargin}">
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_CM" />
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Inches" />
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Percent" />
                                 <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Pixels" />
                             </ComboBox>
-                            <AppBarButton x:Name="RemoveButton" 
+                            <Button x:Name="RemoveButton" 
                                           Background="Transparent" 
                                           Command = "{Binding DeleteImageSizeEventHandler, Source={StaticResource ViewModel}}"
                                           CommandParameter="{Binding Id}"                                          
-                                          Icon="Delete" 
-                                          Width="52" 
-                                          Height="32"
-                                          Margin="{StaticResource SmallTopMargin}" Padding="0,0,50,100" UseLayoutRounding="False"/>
+                                          FontFamily="Segoe MDL2 Assets"
+                                          Height="34"
+                                          Width="34"
+                                          Content="&#xE74D;"
+                                          VerticalAlignment="Center"
+                                          Margin="{StaticResource SmallTopMargin}" UseLayoutRounding="False"/>
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>
@@ -158,9 +166,11 @@
             <StackPanel Orientation="Horizontal">
                 <AppBarButton Icon="Add"
                               x:Name="AddSizeButton"
+                              Width="560"
+                              Style="{StaticResource AddItemAppBarButtonStyle}"
                               IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}" 
-                              Label="Add Size"
-                              Margin="{StaticResource SmallTopMargin}"
+                             x:Uid="ImageResizer_AddSizeButton"
+                              Margin="{StaticResource AddItemButtonMargin}"
                               Command = "{Binding AddImageSizeEventHandler, Source={StaticResource ViewModel}}"
                           />
             </StackPanel>
@@ -187,7 +197,7 @@
                             Maximum="100"
                             Value="{ Binding Mode=TwoWay, Path=JPEGQualityLevel, Source={StaticResource ViewModel}}"
                             MinWidth="240"
-                            SpinButtonPlacementMode="Inline"
+                            SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallTopMargin}" 
                             IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"/>
@@ -268,25 +278,26 @@
             Grid.Column="1">
 
             <TextBlock 
-                x:Uid="About_This_Feature"
+                x:Uid="About_ImageResizer"
                 Style="{StaticResource SettingsGroupTitleStyle}"
                 Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <HyperlinkButton 
-                x:Uid="Module_overview"
-                NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/imageresizer/README.md"/>
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/imageresizer/README.md">
+                <TextBlock x:Uid="Module_overview" />
+            </HyperlinkButton>
 
-            <HyperlinkButton x:Uid="Give_Feedback"
-                             NavigateUri="https://github.com/microsoft/PowerToys/issues"/>
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <TextBlock x:Uid="Give_Feedback" />
+            </HyperlinkButton>
 
             <TextBlock 
                 x:Uid="AttributionTitle"
                 Style="{StaticResource SettingsGroupTitleStyle}" />
 
             <HyperlinkButton 
-                Content="Brice Lambson" 
-                NavigateUri="https://github.com/bricelam/ImageResizer/" />
-
+                NavigateUri="https://github.com/bricelam/ImageResizer/">
+                <TextBlock Text="Brice Lambson's ImageResizer" TextWrapping="Wrap" />
+            </HyperlinkButton>
         </StackPanel>
 
     </Grid>

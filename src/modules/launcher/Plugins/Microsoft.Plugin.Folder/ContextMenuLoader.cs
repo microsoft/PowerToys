@@ -8,6 +8,7 @@ using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Image;
 using Wox.Plugin.SharedCommands;
 using Wox.Plugin;
+using System.Reflection;
 using System.Windows.Input;
 
 namespace Microsoft.Plugin.Folder
@@ -35,6 +36,7 @@ namespace Microsoft.Plugin.Folder
                 var fileOrFolder = (record.Type == ResultType.File) ? "file" : "folder";
                 contextMenus.Add(new ContextMenuResult
                 {
+                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = "Copy path",
                     Glyph = "\xE8C8",
                     FontFamily = "Segoe MDL2 Assets",
@@ -66,6 +68,7 @@ namespace Microsoft.Plugin.Folder
         {
             return new ContextMenuResult
             {
+                PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                 Title = "Open containing folder",
                 Glyph = "\xE838",
                 FontFamily = "Segoe MDL2 Assets",

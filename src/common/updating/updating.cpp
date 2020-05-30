@@ -7,7 +7,6 @@
 #include <msi.h>
 #include <common/common.h>
 #include <common/json.h>
-#include <common/version.h>
 #include <common/settings_helpers.h>
 #include <common/winstore.h>
 #include <common/notifications.h>
@@ -210,7 +209,7 @@ namespace updating
         return { std::move(path_str) };
     }
 
-    std::future<void> attempt_to_download_installer(const std::filesystem::path& destination, const winrt::Windows::Foundation::Uri& url)
+    std::future<void> try_download_file(const std::filesystem::path& destination, const winrt::Windows::Foundation::Uri& url)
     {
         namespace storage = winrt::Windows::Storage;
 
@@ -219,6 +218,7 @@ namespace updating
         (void)response.EnsureSuccessStatusCode();
         auto msi_installer_file_stream = co_await storage::Streams::FileRandomAccessStream::OpenAsync(destination.c_str(), storage::FileAccessMode::ReadWrite, storage::StorageOpenOptions::AllowReadersAndWriters, storage::Streams::FileOpenDisposition::CreateAlways);
         co_await response.Content().WriteToStreamAsync(msi_installer_file_stream);
+        msi_installer_file_stream.Close();
     }
 
     std::future<void> try_autoupdate(const bool download_updates_automatically)
@@ -245,7 +245,7 @@ namespace updating
             {
                 try
                 {
-                    co_await attempt_to_download_installer(installer_download_dst, new_version->msi_download_url);
+                    co_await try_download_file(installer_download_dst, new_version->msi_download_url);
                     download_success = true;
                     break;
                 }

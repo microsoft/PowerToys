@@ -1,16 +1,12 @@
 #include "pch.h"
 #include "auto_start_helper.h"
 
-#include "general_settings.h"
-
 #include <Lmcons.h>
 
 #include <comdef.h>
 #include <taskschd.h>
 #pragma comment(lib, "taskschd.lib")
 #pragma comment(lib, "comsupp.lib")
-
-#include <Shlobj.h>
 
 // Helper macros from wix.
 // TODO: use "s" and "..." parameters to report errors from these functions.
@@ -37,7 +33,7 @@
 const DWORD USERNAME_DOMAIN_LEN = DNLEN + UNLEN + 2; // Domain Name + '\' + User Name + '\0'
 const DWORD USERNAME_LEN = UNLEN + 1; // User Name + '\0'
 
-bool create_auto_start_task_for_this_user(bool runEvelvated)
+bool create_auto_start_task_for_this_user(bool runElevated)
 {
     HRESULT hr = S_OK;
 
@@ -219,7 +215,7 @@ bool create_auto_start_task_for_this_user(bool runEvelvated)
 
         hr = pPrincipal->put_LogonType(TASK_LOGON_INTERACTIVE_TOKEN);
 
-        if (runEvelvated)
+        if (runElevated)
         {
             hr = pPrincipal->put_RunLevel(_TASK_RUNLEVEL::TASK_RUNLEVEL_HIGHEST);
         }

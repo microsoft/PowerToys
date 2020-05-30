@@ -129,13 +129,13 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.2.9</Version>
+      <Version>6.2.10</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Uwp.UI">
       <Version>6.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Win32.UI.XamlApplication">
-      <Version>6.0.0</Version>
+      <Version>6.0.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
       <Version>2.4.0-prerelease.191217001</Version>
@@ -159,6 +159,10 @@
     <Page Include="Controls\HotkeySettingsControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Styles\Button.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Styles\Page.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -227,6 +231,10 @@
     </AdditionalFiles>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\Telemetry.csproj">
+      <Project>{5d00d290-4016-4cfe-9e41-1e7c724509ba}</Project>
+      <Name>Telemetry</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Microsoft.PowerToys.Settings.UI.Lib\Microsoft.PowerToys.Settings.UI.Lib.csproj">
       <Project>{b1bcc8c6-46b5-4bfa-8f22-20f32d99ec6a}</Project>
       <Name>Microsoft.PowerToys.Settings.UI.Lib</Name>

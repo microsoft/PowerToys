@@ -71,10 +71,9 @@
                     <TranslateTransform />
                 </local:LauncherControl.RenderTransform>
             </local:LauncherControl>
-            <Border.RenderTransform>
-                <TranslateTransform />
-            </Border.RenderTransform>
-            
+                <Border.RenderTransform>
+                    <TranslateTransform />
+                </Border.RenderTransform>
         </Border>
         <Border 
             x:Name="ListBoxBorder"
@@ -82,7 +81,7 @@
             Margin="24,8,24,24" 
             BorderThickness="0"
             CornerRadius="4" 
-            Visibility="{Binding Results.Visbility}"
+            Visibility="{Binding Results.Visibility}"
             Background="{DynamicResource SystemChromeLow}"
             BorderBrush="{DynamicResource SystemChromeLow}">
             <Border.RenderTransform>

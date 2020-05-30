@@ -16,6 +16,13 @@ namespace FancyZonesEditor
             EditorOverlay mainEditor = EditorOverlay.Current;
             if (mainEditor.DataContext is LayoutModel model)
             {
+                // If new custom Canvas layout is created (i.e. edited Blank layout),
+                // it's type needs to be updated
+                if (model.Type == LayoutType.Blank)
+                {
+                    model.Type = LayoutType.Custom;
+                }
+
                 model.Persist();
             }
 

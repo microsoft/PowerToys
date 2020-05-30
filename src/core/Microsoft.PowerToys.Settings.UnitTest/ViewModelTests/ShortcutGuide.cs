@@ -58,7 +58,7 @@ namespace ViewModelTests
             ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel();
 
             // Assert
-            // Initilize mock function of sending IPC message.
+            // Initialize mock function of sending IPC message.
             ShellPage.DefaultSndMSGCallback = msg =>
             {
                 OutGoingGeneralSettings snd = JsonSerializer.Deserialize<OutGoingGeneralSettings>(msg);
@@ -74,9 +74,10 @@ namespace ViewModelTests
         {
             // Arrange
             ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel();
+            Assert.AreEqual(1, viewModel.ThemeIndex);
 
             // Assert
-            // Initilize mock function of sending IPC message.
+            // Initialize mock function of sending IPC message.
             ShellPage.DefaultSndMSGCallback = msg =>
             {
                 ShortcutGuideSettingsIPCMessage snd = JsonSerializer.Deserialize<ShortcutGuideSettingsIPCMessage>(msg);
@@ -92,9 +93,10 @@ namespace ViewModelTests
         {
             // Arrange
             ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel();
+            Assert.AreEqual(900, viewModel.PressTime);
 
             // Assert
-            // Initilize mock function of sending IPC message.
+            // Initialize mock function of sending IPC message.
             ShellPage.DefaultSndMSGCallback = msg =>
             {
                 ShortcutGuideSettingsIPCMessage snd = JsonSerializer.Deserialize<ShortcutGuideSettingsIPCMessage>(msg);
@@ -110,9 +112,10 @@ namespace ViewModelTests
         {
             // Arrange
             ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel();
+            Assert.AreEqual(90, viewModel.OverlayOpacity);
 
             // Assert
-            // Initilize mock function of sending IPC message.
+            // Initialize mock function of sending IPC message.
             ShellPage.DefaultSndMSGCallback = msg =>
             {
                 ShortcutGuideSettingsIPCMessage snd = JsonSerializer.Deserialize<ShortcutGuideSettingsIPCMessage>(msg);

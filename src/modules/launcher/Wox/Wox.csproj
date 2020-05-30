@@ -1,13 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Library</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
-    <StartupObject>Wox.App</StartupObject>
+    <StartupObject></StartupObject>
     <ApplicationIcon>Resources\placeholderLauncher.ico</ApplicationIcon>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <Platforms>x64</Platforms>
@@ -15,7 +14,7 @@
 
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutputPath>..\..\..\..\x64\Debug\modules\launcher\</OutputPath>
+    <OutputPath>..\..\..\..\x64\Debug\modules\launcher\Wox</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
@@ -28,7 +27,7 @@
 
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutputPath>..\..\..\..\x64\Release\modules\launcher\</OutputPath>
+    <OutputPath>..\..\..\..\x64\Release\modules\launcher\Wox</OutputPath>
     <DefineConstants>TRACE;RELEASE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -61,21 +60,21 @@
     <PackageReference Include="Mages" Version="1.6.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="NHotkey.Wpf" Version="2.0.1" />
-    <PackageReference Include="NLog.Web.AspNetCore" Version="4.9.2" />
     <PackageReference Include="NuGet.CommandLine" Version="5.5.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
 
-    <PackageReference Include="System.Data.OleDb" Version="4.7.0" />
+    <PackageReference Include="System.Data.OleDb" Version="4.7.1" />
     <PackageReference Include="PropertyChanged.Fody" Version="3.2.8" />
-    <PackageReference Include="System.Data.SQLite" Version="1.0.112" />
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.112.1" />
+    <PackageReference Include="System.Data.SQLite" Version="1.0.112.2" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.112.2" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
     <PackageReference Include="tlbimp-Microsoft.Search.Interop" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PowerLauncher.Telemetry\PowerLauncher.Telemetry.csproj" />
     <ProjectReference Include="..\Wox.Core\Wox.Core.csproj" />
     <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
     <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj" />

@@ -84,7 +84,6 @@
         Height="68"
         VerticalAlignment="Top">
         <!--Background="{ThemeResource BackdropAcrylicBrush}"-->
-
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="64"/>

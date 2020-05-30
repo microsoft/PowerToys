@@ -3,6 +3,7 @@
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <interface/win_hook_event_data.h>
 #include <common/settings_objects.h>
+#include <common/common.h>
 #include "trace.h"
 #include "resource.h"
 
@@ -69,7 +70,7 @@ public:
   }
 
   // Return array of the names of all events that this powertoy listens for, with
-  // nullptr as the last element of the array. Nullptr can also be retured for empty
+  // nullptr as the last element of the array. Nullptr can also be returned for empty
   // list.
   virtual const wchar_t** get_events() override {
     static const wchar_t* events[] = { nullptr };
@@ -91,6 +92,8 @@ public:
     // Create a Settings object.
     PowerToysSettings::Settings settings(hinstance, get_name());
     settings.set_description(GET_RESOURCE_STRING(IDS_LAUNCHER_SETTINGS_DESC));
+    settings.set_overview_link(L"https://github.com/microsoft/PowerToys/blob/master/src/modules/launcher/README.md");
+
     return settings.serialize_to_buffer(buffer, buffer_size);
   }
 
@@ -129,13 +132,47 @@ public:
    // Enable the powertoy
   virtual void enable()
   {
-      SHELLEXECUTEINFO sei{ sizeof(sei) };
-      sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-      sei.lpFile = L"modules\\launcher\\PowerLauncher.exe";
-      sei.nShow = SW_SHOWNORMAL;
-      ShellExecuteEx(&sei);
+      if (is_process_elevated(false) == false)
+      {
+          SHELLEXECUTEINFOW sei{ sizeof(sei) };
+          sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+          sei.lpFile = L"modules\\launcher\\PowerLauncher.exe";
+          sei.nShow = SW_SHOWNORMAL;
+          ShellExecuteExW(&sei);
 
-      m_hProcess = sei.hProcess;
+          m_hProcess = sei.hProcess;
+      }
+      else
+      {
+          std::wstring action_runner_path = get_module_folderpath();
+          action_runner_path += L"\\action_runner.exe";
+          SHELLEXECUTEINFOW sei{ sizeof(sei) };
+          sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC };
+          sei.lpFile = action_runner_path.c_str();
+          sei.nShow = SW_SHOWNORMAL;
+          sei.lpParameters = L"-start_PowerLauncher";
+ 
+          // Set up the shared file from which to retrieve the PID of PowerLauncher
+          HANDLE hMapFile = CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(DWORD), POWER_LAUNCHER_PID_SHARED_FILE);
+          PDWORD pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
+          *pidBuffer = 0;
+          m_hProcess = NULL;
+          ShellExecuteExW(&sei);
+          
+          const int maxRetries = 20;
+          for (int retry = 0; retry < maxRetries; ++retry)
+          {
+              Sleep(50);
+              DWORD pid = *pidBuffer;
+              if (pid)
+              {
+                  m_hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+                  break;
+              }
+          }
+
+          CloseHandle(hMapFile);
+      }
 
       m_enabled = true;
   }

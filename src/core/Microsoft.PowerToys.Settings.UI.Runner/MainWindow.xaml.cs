@@ -4,7 +4,9 @@
 
 using System;
 using System.Windows;
+using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Settings.UI.Views;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.Toolkit.Wpf.UI.XamlHost;
 using Windows.UI.Popups;
 
@@ -15,7 +17,13 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
     {
         public MainWindow()
         {
+            var bootTime = new System.Diagnostics.Stopwatch();
+            bootTime.Start();
+
             this.InitializeComponent();
+            bootTime.Stop();
+
+            PowerToysTelemetry.Log.WriteEvent(new SettingsBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
         }
 
         private void WindowsXamlHost_ChildChanged(object sender, EventArgs e)
@@ -29,7 +37,8 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                 // send IPC Message
                 shellPage.SetDefaultSndMessageCallback(msg =>
                 {
-                    Program.GetTwoWayIPCManager().Send(msg);
+                    // IPC Manager is null when launching runner directly
+                    Program.GetTwoWayIPCManager()?.Send(msg);
                 });
 
                 // send IPC Message
@@ -40,6 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                 });
 
                 shellPage.SetElevationStatus(Program.IsElevated);
+                shellPage.SetIsUserAnAdmin(Program.IsUserAnAdmin);
                 shellPage.Refresh();
             }
         }

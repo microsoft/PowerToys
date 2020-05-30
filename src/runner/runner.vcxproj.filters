@@ -157,4 +157,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="PowerToys.exe.manifest" />
+  </ItemGroup>
 </Project>

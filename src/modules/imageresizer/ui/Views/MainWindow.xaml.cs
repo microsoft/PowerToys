@@ -39,10 +39,9 @@ namespace ImageResizer.Views
             return openFileDialog.FileNames;
         }
 
-        /*
         public void ShowAdvanced(AdvancedViewModel viewModel)
             => viewModel.Close(new AdvancedWindow(viewModel).ShowDialog() == true);
-        */
+
         void IMainView.Close()
             => Dispatcher.Invoke((Action)Close);
     }

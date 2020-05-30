@@ -1,5 +1,5 @@
 #pragma once
-#include "stdafx.h"
+#include "pch.h"
 
 // Wrapper around SRWLOCK
 class CSRWLock
