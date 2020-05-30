@@ -257,8 +257,10 @@ namespace KeyboardEventHandlers
             // There are 4 cases to be handled if the shortcut has been pressed down
             // 1. The user lets go of one of the modifier keys - reset the keyboard back to the state of the keys actually being pressed down
             // 2. The user keeps the shortcut pressed - the shortcut is repeated (for example you could hold down Ctrl+V and it will keep pasting)
-            // 3. The user lets go of the action key - reset the keyboard back to the state of the keys actually being pressed down
-            // 4. The user presses another key while holding the shortcut down - the system now sees all the new shortcut keys and this extra key pressed at the end. Not handled as resetting the state would trigger the original shortcut once more
+            // 3. The user lets go of the action key - keep modifiers of the new shortcut until some other key event which doesn't apply to the original shortcut
+            // 4. The user presses a modifier key in the original shortcut - suppress that key event since the original shortcut is already held down physically (This case can occur only if a user has a duplicated modifier key (possibly by remapping) or if user presses both L/R versions of a modifier remapped with "Both")
+            // 5. The user presses any key apart from the action key or a modifier key in the original shortcut - revert the keyboard state to just the original modifiers being held down along with the current key press
+            // 6. The user releases any key apart from original modifier or original action key - This can't happen since the key down would have to happen first, which is handled above
             else if (it.second.isShortcutInvoked)
             {
                 // Get the common keys between the two shortcuts
@@ -273,20 +275,32 @@ namespace KeyboardEventHandlers
                     if (it.second.targetShortcut.CheckWinKey(data->lParam->vkCode) || it.second.targetShortcut.CheckCtrlKey(data->lParam->vkCode) || it.second.targetShortcut.CheckAltKey(data->lParam->vkCode) || it.second.targetShortcut.CheckShiftKey(data->lParam->vkCode))
                     {
                         // release all new shortcut keys and the common released modifier except the other common modifiers, and add all original shortcut modifiers except the common ones
-                        key_count = (dest_size - commonKeys + 1) + (src_size - 1 - commonKeys);
+                        key_count = (dest_size - commonKeys) + (src_size - 1 - commonKeys);
                     }
                     else
                     {
                         // release all new shortcut keys except the common modifiers and add all original shortcut modifiers except the common ones
-                        key_count = dest_size + (src_size - 2) - (2 * (size_t)commonKeys);
+                        key_count = (dest_size - 1) + (src_size - 2) - (2 * (size_t)commonKeys);
                     }
+
+                    // If the target shortcut's action key is pressed, then it should be released
+                    bool isActionKeyPressed = false;
+                    if (GetAsyncKeyState(it.second.targetShortcut.GetActionKey()) & 0x8000)
+                    {
+                        isActionKeyPressed = true;
+                        key_count += 1;
+                    }
+
                     LPINPUT keyEventList = new INPUT[key_count]();
                     memset(keyEventList, 0, sizeof(keyEventList));
 
                     // Release new shortcut state (release in reverse order of shortcut to be accurate)
                     int i = 0;
-                    KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetActionKey(), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                    i++;
+                    if (isActionKeyPressed)
+                    {
+                        KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetActionKey(), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        i++;
+                    }
                     if (((it.second.targetShortcut.GetShiftKey() != it.first.GetShiftKey()) || (it.second.targetShortcut.CheckShiftKey(data->lParam->vkCode))) && it.second.targetShortcut.GetShiftKey() != NULL)
                     {
                         KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetShiftKey(), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
@@ -308,7 +322,7 @@ namespace KeyboardEventHandlers
                         i++;
                     }
 
-                    // Set original shortcut key down state except the action key and the released modifier
+                    // Set original shortcut key down state except the action key and the released modifier since the original action key may or may not be held down. If it is held down it will generate it's own key message
                     if ((it.second.targetShortcut.GetWinKey(it.second.winKeyInvoked) != it.first.GetWinKey(it.second.winKeyInvoked)) && (!it.first.CheckWinKey(data->lParam->vkCode)) && it.first.GetWinKey(it.second.winKeyInvoked) != NULL)
                     {
                         KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.first.GetWinKey(it.second.winKeyInvoked), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
@@ -333,8 +347,11 @@ namespace KeyboardEventHandlers
                     it.second.isShortcutInvoked = false;
                     it.second.winKeyInvoked = ModifierKey::Disabled;
                     lock.unlock();
-                    UINT res = SendInput((UINT)key_count, keyEventList, sizeof(INPUT));
-                    delete[] keyEventList;
+                    if (key_count > 0)
+                    {
+                        UINT res = SendInput((UINT)key_count, keyEventList, sizeof(INPUT));
+                        delete[] keyEventList;
+                    }
                     return 1;
                 }
 
@@ -356,8 +373,30 @@ namespace KeyboardEventHandlers
                         return 1;
                     }
 
-                    // Case 3: If the action key is released from the original shortcut then revert the keyboard state to just the original modifiers being held down
+                    // Case 3: If the action key is released from the original shortcut keep modifiers of the new shortcut until some other key event which doesn't apply to the original shortcut
                     if (data->lParam->vkCode == it.first.GetActionKey() && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+                    {
+                        size_t key_count = 1;
+                        LPINPUT keyEventList = new INPUT[key_count]();
+                        memset(keyEventList, 0, sizeof(keyEventList));
+                        KeyboardManagerHelper::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetActionKey(), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+
+                        it.second.isShortcutInvoked = true;
+                        lock.unlock();
+                        UINT res = SendInput((UINT)key_count, keyEventList, sizeof(INPUT));
+                        delete[] keyEventList;
+                        return 1;
+                    }
+
+                    // Case 4: If a modifier key in the original shortcut is pressed then suppress that key event since the original shortcut is already held down physically - This case can occur only if a user has a duplicated modifier key (possibly by remapping) or if user presses both L/R versions of a modifier remapped with "Both"
+                    if ((it.first.CheckWinKey(data->lParam->vkCode) || it.first.CheckCtrlKey(data->lParam->vkCode) || it.first.CheckAltKey(data->lParam->vkCode) || it.first.CheckShiftKey(data->lParam->vkCode)) && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+                    {
+                        it.second.isShortcutInvoked = true;
+                        return 1;
+                    }
+
+                    // Case 5: If any key apart from the action key or a modifier key in the original shortcut is pressed then revert the keyboard state to just the original modifiers being held down along with the current key press
+                    if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
                     {
                         size_t key_count;
                         LPINPUT keyEventList;
@@ -365,7 +404,7 @@ namespace KeyboardEventHandlers
                         // If the original shortcut is a subset of the new shortcut
                         if (commonKeys == src_size - 1)
                         {
-                            key_count = dest_size - commonKeys;
+                            key_count = dest_size - commonKeys + 2;
                             keyEventList = new INPUT[key_count]();
                             memset(keyEventList, 0, sizeof(keyEventList));
 
@@ -392,11 +431,19 @@ namespace KeyboardEventHandlers
                                 KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetWinKey(it.second.winKeyInvoked), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                                 i++;
                             }
+
+                            // Send current key pressed
+                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
+
+                            // Send dummy key since the current key pressed could be a modifier
+                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)KeyboardManagerConstants::DUMMY_KEY, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
                         }
                         else
                         {
-                            // Key up for all new shortcut keys, key down for original shortcut modifiers and dummy key but common keys aren't repeated
-                            key_count = (dest_size) + (src_size - 1) + 1 - (2 * (size_t)commonKeys);
+                            // Key up for all new shortcut keys, key down for original shortcut modifiers, dummy key and current key press but common keys aren't repeated
+                            key_count = (dest_size) + (src_size - 1) + 2 - (2 * (size_t)commonKeys);
                             keyEventList = new INPUT[key_count]();
                             memset(keyEventList, 0, sizeof(keyEventList));
 
@@ -448,6 +495,10 @@ namespace KeyboardEventHandlers
                                 i++;
                             }
 
+                            // Send current key pressed
+                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            i++;
+
                             // Send dummy key
                             KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)KeyboardManagerConstants::DUMMY_KEY, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                             i++;
@@ -460,7 +511,13 @@ namespace KeyboardEventHandlers
                         delete[] keyEventList;
                         return 1;
                     }
+                    // Case 6: If any key apart from original modifier or original action key is released - This can't happen since the key down would have to happen first, which is handled above
                 }
+
+                // Code added for safety: Should not generally occur unless some weird keyboard interaction occurs
+                // If it was in isShortcutInvoked state and none of the above cases occur, then reset the flags
+                it.second.isShortcutInvoked = false;
+                it.second.winKeyInvoked = ModifierKey::Disabled;
             }
         }
 
