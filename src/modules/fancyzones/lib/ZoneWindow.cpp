@@ -204,7 +204,7 @@ public:
     ZoneWindow(HINSTANCE hinstance);
     ~ZoneWindow();
 
-    bool Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, bool flashZones, bool newWorkArea);
+    bool Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, bool flashZones);
 
     IFACEMETHODIMP MoveSizeEnter(HWND window, bool dragEnabled) noexcept;
     IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled) noexcept;
@@ -240,8 +240,7 @@ protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
 
 private:
-    void LoadSettings() noexcept;
-    void InitializeZoneSets(bool newWorkArea) noexcept;
+    void InitializeZoneSets(const std::wstring& parentUniqueId) noexcept;
     void CalculateZoneSet() noexcept;
     void UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept;
     LRESULT WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexcept;
@@ -296,7 +295,7 @@ ZoneWindow::~ZoneWindow()
     Gdiplus::GdiplusShutdown(gdiplusToken);
 }
 
-bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, bool flashZones, bool newWorkArea)
+bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, bool flashZones)
 {
     m_host.copy_from(host);
 
@@ -314,8 +313,7 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
     StringCchPrintf(m_workArea, ARRAYSIZE(m_workArea), L"%d_%d", monitorRect.width(), monitorRect.height());
 
     m_uniqueId = uniqueId;
-    LoadSettings();
-    InitializeZoneSets(newWorkArea);
+    InitializeZoneSets(parentUniqueId);
 
     m_window = wil::unique_hwnd{
         CreateWindowExW(WS_EX_TOOLWINDOW, L"SuperFancyZones_ZoneWindow", L"", WS_POPUP, workAreaRect.left(), workAreaRect.top(), workAreaRect.width(), workAreaRect.height(), nullptr, nullptr, hinstance, this)
@@ -550,18 +548,13 @@ ZoneWindow::UpdateActiveZoneSet() noexcept
 
 #pragma region private
 
-void ZoneWindow::LoadSettings() noexcept
+void ZoneWindow::InitializeZoneSets(const std::wstring& parentUniqueId) noexcept
 {
+    // If there is not defined zone layout for this work area, created default entry.
     JSONHelpers::FancyZonesDataInstance().AddDevice(m_uniqueId);
-}
-
-void ZoneWindow::InitializeZoneSets(bool newWorkArea) noexcept
-{
-    auto parent = m_host->GetParentZoneWindow(m_monitor);
-    if (newWorkArea && parent)
+    if (!parentUniqueId.empty())
     {
-        // Update device info with device info from parent virtual desktop (if empty).
-        JSONHelpers::FancyZonesDataInstance().CloneDeviceInfo(parent->UniqueId(), m_uniqueId);
+        JSONHelpers::FancyZonesDataInstance().CloneDeviceInfo(parentUniqueId, m_uniqueId);
     }
     CalculateZoneSet();
 }
@@ -570,12 +563,6 @@ void ZoneWindow::CalculateZoneSet() noexcept
 {
     const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
     const auto deviceInfoData = fancyZonesData.FindDeviceInfo(m_uniqueId);
-    const auto& activeDeviceId = fancyZonesData.GetActiveDeviceId();
-
-    if (!activeDeviceId.empty() && activeDeviceId != m_uniqueId)
-    {
-        return;
-    }
 
     if (!deviceInfoData.has_value())
     {
@@ -799,10 +786,10 @@ LRESULT CALLBACK ZoneWindow::s_WndProc(HWND window, UINT message, WPARAM wparam,
                                   DefWindowProc(window, message, wparam, lparam);
 }
 
-winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, bool flashZones, bool newWorkArea) noexcept
+winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, bool flashZones) noexcept
 {
     auto self = winrt::make_self<ZoneWindow>(hinstance);
-    if (self->Init(host, hinstance, monitor, uniqueId, flashZones, newWorkArea))
+    if (self->Init(host, hinstance, monitor, uniqueId, parentUniqueId, flashZones))
     {
         return self;
     }
