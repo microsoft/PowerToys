@@ -333,10 +333,10 @@ FancyZones::WindowCreated(HWND window) noexcept
                     std::vector<int> zoneIndexSet = fancyZonesData.GetAppLastZoneIndexSet(window, zoneWindow->UniqueId(), guidString.get());
                     if (zoneIndexSet.size() &&
                         !IsSplashScreen(window) &&
-                        !fancyZonesData.IsAnotherWindowOfApplicationInstanceZoned(window))
+                        !fancyZonesData.IsAnotherWindowOfApplicationInstanceZoned(window, zoneWindow->UniqueId()))
                     {
                         m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, zoneWindow);
-                        fancyZonesData.UpdateProcessIdToHandleMap(window);
+                        fancyZonesData.UpdateProcessIdToHandleMap(window, zoneWindow->UniqueId());
                     }
                 }
             }
