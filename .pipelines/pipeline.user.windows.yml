@@ -130,7 +130,7 @@ build:
     - !!buildcommand
       name: 'Copying x64 Symbols'
       artifacts:
-        - to: 'x64 Symbols'
+        - to: 'Symbols/x64'
           include:
             - 'x64/*/*.pdb'
             - 'x64/*/*/*.pdb'
