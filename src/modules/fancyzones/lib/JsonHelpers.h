@@ -233,7 +233,6 @@ namespace JSONHelpers
         }
 
         void AddDevice(const std::wstring& deviceId);
-        bool RemoveDevicesByVirtualDesktopId(const std::wstring& virtualDesktopId);
         void CloneDeviceInfo(const std::wstring& source, const std::wstring& destination);
         void UpdatePrimaryDesktopData(const std::wstring& desktopId);
         void RemoveDeletedDesktops(const std::vector<std::wstring>& activeDesktops);
@@ -265,6 +264,7 @@ namespace JSONHelpers
 
     private:
         void MigrateCustomZoneSetsFromRegistry();
+        void RemoveDesktopAppZoneHistory(const std::wstring& desktopId);
 
         std::unordered_map<std::wstring, AppZoneHistoryData> appZoneHistoryMap{};
         std::unordered_map<std::wstring, DeviceInfoData> deviceInfoMap{};

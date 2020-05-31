@@ -849,21 +849,11 @@ void FancyZones::RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept
 {
     std::unique_lock writeLock(m_lock);
 
-    std::vector<GUID> deleted{};
-    m_workAreaHandler.RegisterUpdates(ids, deleted);
-
-    bool modified{ false };
-    for (const auto& id : deleted)
+    m_workAreaHandler.RegisterUpdates(ids);
+    std::vector<std::wstring> active{};
+    if (VirtualDesktopUtils::GetVirtualDesktopIds(active))
     {
-        wil::unique_cotaskmem_string virtualDesktopId;
-        if (SUCCEEDED(StringFromCLSID(id, &virtualDesktopId)))
-        {
-            modified |= JSONHelpers::FancyZonesDataInstance().RemoveDevicesByVirtualDesktopId(virtualDesktopId.get());
-        }
-    }
-    if (modified)
-    {
-        JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
+        JSONHelpers::FancyZonesDataInstance().RemoveDeletedDesktops(active);
     }
 }
 

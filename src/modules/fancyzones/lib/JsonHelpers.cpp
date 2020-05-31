@@ -278,25 +278,6 @@ namespace JSONHelpers
         }
     }
 
-    bool FancyZonesData::RemoveDevicesByVirtualDesktopId(const std::wstring& virtualDesktopId)
-    {
-        std::scoped_lock lock{ dataLock };
-        bool modified{ false };
-        for (auto it = deviceInfoMap.begin(); it != deviceInfoMap.end();)
-        {
-            if (ExtractVirtualDesktopId(it->first) == virtualDesktopId)
-            {
-                it = deviceInfoMap.erase(it);
-                modified = true;
-            }
-            else
-            {
-                ++it;
-            }
-        }
-        return modified;
-    }
-
     void FancyZonesData::CloneDeviceInfo(const std::wstring& source, const std::wstring& destination)
     {
         if (source == destination)
@@ -361,9 +342,11 @@ namespace JSONHelpers
         std::scoped_lock lock{ dataLock };
         for (auto it = std::begin(deviceInfoMap); it != std::end(deviceInfoMap);)
         {
-            auto foundId = active.find(ExtractVirtualDesktopId(it->first));
+            std::wstring desktopId = ExtractVirtualDesktopId(it->first);
+            auto foundId = active.find(desktopId);
             if (foundId == std::end(active))
             {
+                RemoveDesktopAppZoneHistory(desktopId);
                 it = deviceInfoMap.erase(it);
             }
             else
@@ -870,6 +853,21 @@ namespace JSONHelpers
 
                 valueLength = ARRAYSIZE(value);
                 dataSize = ARRAYSIZE(data);
+            }
+        }
+    }
+
+    void FancyZonesData::RemoveDesktopAppZoneHistory(const std::wstring& desktopId)
+    {
+        for (auto it = std::begin(appZoneHistoryMap); it != std::end(appZoneHistoryMap);)
+        {
+            if (ExtractVirtualDesktopId(it->second.deviceId) == desktopId)
+            {
+                it = appZoneHistoryMap.erase(it);
+            }
+            else
+            {
+                ++it;
             }
         }
     }
