@@ -412,6 +412,7 @@ namespace JSONHelpers
                         DWORD processId = 0;
                         GetWindowThreadProcessId(window, &processId);
                         data.processIdToHandleMap[processId] = window;
+                        break;
                     }
                 }
             }
@@ -535,7 +536,7 @@ namespace JSONHelpers
 
         if (appZoneHistoryMap.contains(processPath))
         {
-            // application already has history but on other desktop, update with new desktop info
+            // application already has history but on other desktop, add with new desktop info
             appZoneHistoryMap[processPath].push_back(data);
         }
         else
