@@ -61,9 +61,7 @@
     <PackageReference Include="InputSimulator" Version="1.0.4" />
     <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
     <PackageReference Include="Mages" Version="1.6.0" />
-    <PackageReference Include="Microsoft.Toolkit.UI.XamlHost" Version="6.0.1" />
-    <PackageReference Include="Microsoft.Toolkit.Uwp.UI" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Toolkit.Wpf.UI.XamlHost" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.19" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="NHotkey.Wpf" Version="2.0.1" />
     <PackageReference Include="NuGet.CommandLine" Version="5.5.1">
@@ -79,7 +77,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\core\Microsoft.PowerToys.Settings.UI.Lib\Microsoft.PowerToys.Settings.UI.Lib.csproj" />
-    <ProjectReference Include="..\PowerLauncher.UI\PowerLauncher.UI.csproj" />
     <ProjectReference Include="..\Wox.Core\Wox.Core.csproj" />
     <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
     <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj" />

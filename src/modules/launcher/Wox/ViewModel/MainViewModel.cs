@@ -305,7 +305,8 @@ namespace Wox.ViewModel
 
         public Visibility ProgressBarVisibility { get; set; }
 
-        private Visibility _visibility = Visibility.Collapsed;
+        private Visibility _visibility;
+
         public Visibility MainWindowVisibility {
             get { return _visibility; }
             set {
@@ -684,6 +685,22 @@ namespace Wox.ViewModel
                     var _ = PluginManager.QueryForPlugin(plugin, query);
                 }
             };
+        }
+
+        public void HandleContextMenu(Key AcceleratorKey, ModifierKeys AcceleratorModifiers)
+        {
+            var results = SelectedResults;
+            if (results.SelectedItem != null)
+            {
+                foreach (ContextMenuItemViewModel contextMenuItems in results.SelectedItem.ContextMenuItems)
+                {
+                    if (contextMenuItems.AcceleratorKey == AcceleratorKey && contextMenuItems.AcceleratorModifiers == AcceleratorModifiers)
+                    {
+                        MainWindowVisibility = Visibility.Collapsed;
+                        contextMenuItems.Command.Execute(null);
+                    }
+                }
+            }
         }
 
         #endregion
