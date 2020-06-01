@@ -50,7 +50,8 @@
         </Storyboard>-->
        
     </Window.Resources>
-    <Grid Width="720">
+    <Grid Width="720"
+          MouseDown="OnMouseDown">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>

@@ -133,6 +133,11 @@ namespace PowerLauncher
             }
         }
 
+        private void OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left) DragMove();
+        }
+
         private void InitializePosition()
         {
             Top = WindowTop();
