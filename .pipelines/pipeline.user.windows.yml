@@ -41,9 +41,11 @@ build:
       name: 'Build Power Toys'
       command: '.pipelines\build.cmd'
       artifacts:
-        - to: 'Symbols/x64'
+        - to: 'Symbols'
           include:
             - 'x64/**/*.pdb'
+          exclude:
+            - 'x64/Release/obj/**/*.pdb'
         - from: 'x64/Release'
           to: 'Build_Output'
           include:
