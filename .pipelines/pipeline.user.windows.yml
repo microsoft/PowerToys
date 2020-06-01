@@ -43,7 +43,7 @@ build:
       artifacts:
         - to: 'x64 Symbols'
           include:
-            - '**/x64/*.pdb'
+            - '**/x64/**/*.pdb'
         - from: 'x64/Release'
           to: 'Build_Output'
           include:
