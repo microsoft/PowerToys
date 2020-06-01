@@ -218,6 +218,32 @@ namespace FancyZonesEditor
 
                     if (foundExistingSplit)
                     {
+                        UIElementCollection resizers = AdornerLayer.Children;
+                        bool resizerUpdated = false;
+                        foreach (GridResizer resizer in resizers)
+                        {
+                            if (resizer.Orientation == Orientation.Vertical && resizer.StartCol == foundCol)
+                            {
+                                if (resizer.StartRow == foundRow + 1)
+                                {
+                                    resizer.StartRow--;
+                                    resizerUpdated = true;
+                                    break;
+                                }
+                                else if (resizer.EndRow == foundRow)
+                                {
+                                    resizer.EndRow++;
+                                    resizerUpdated = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!resizerUpdated)
+                        {
+                            AddDragHandle(Orientation.Vertical, foundRow, foundRow + 1, foundCol, foundCol + 1, foundCol + model.Rows - 1);
+                        }
+
                         OnGridDimensionsChanged();
                         return;
                     }
@@ -278,6 +304,32 @@ namespace FancyZonesEditor
 
                     if (foundExistingSplit)
                     {
+                        UIElementCollection resizers = AdornerLayer.Children;
+                        bool resizerUpdated = false;
+                        foreach (GridResizer resizer in resizers)
+                        {
+                            if (resizer.Orientation == Orientation.Horizontal && resizer.StartRow == foundRow)
+                            {
+                                if (resizer.StartCol == foundCol + 1)
+                                {
+                                    resizer.StartCol--;
+                                    resizerUpdated = true;
+                                    break;
+                                }
+                                else if (resizer.EndCol == foundCol)
+                                {
+                                    resizer.EndCol++;
+                                    resizerUpdated = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!resizerUpdated)
+                        {
+                            AddDragHandle(Orientation.Horizontal, foundRow, foundRow + 1, foundCol, foundCol + 1, foundRow);
+                        }
+
                         OnGridDimensionsChanged();
                         return;
                     }
