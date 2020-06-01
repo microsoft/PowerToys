@@ -17,6 +17,6 @@ namespace winrt::PowerToysNotifications::implementation
             return;
         }
 
-        dispatch_to_backround_handler(details.Argument());
+        dispatch_to_background_handler(details.Argument());
     }
 }

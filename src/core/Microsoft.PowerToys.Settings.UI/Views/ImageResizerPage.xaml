@@ -24,6 +24,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="1" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="0" />
+                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
@@ -33,6 +34,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="0" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                        <Setter Target="SidePanel.Width" Value="Auto" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -117,6 +119,7 @@
                             <muxc:NumberBox Value="{x:Bind Path=Width, Mode=TwoWay}" 
                                             Width="68"
                                             Height="34"
+                                            SpinButtonPlacementMode="Compact"
                                             VerticalAlignment="Center"
                                             Margin="{StaticResource SmallTopMargin}"/>
 
@@ -131,6 +134,7 @@
                                             Width="68"
                                             Height="34"
                                             VerticalAlignment="Center"
+                                            SpinButtonPlacementMode="Compact"
                                             Margin="{StaticResource SmallTopMargin}"/>
 
                             <ComboBox SelectedIndex="{Binding Path=Unit, Mode=TwoWay}"
@@ -193,7 +197,7 @@
                             Maximum="100"
                             Value="{ Binding Mode=TwoWay, Path=JPEGQualityLevel, Source={StaticResource ViewModel}}"
                             MinWidth="240"
-                            SpinButtonPlacementMode="Inline"
+                            SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallTopMargin}" 
                             IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"/>

@@ -42,7 +42,9 @@ namespace FancyZonesEditor
         public const ushort _gridModelId = 0xFFFC;
         public const ushort _priorityGridModelId = 0xFFFB;
         public const ushort _blankCustomModelId = 0xFFFA;
-        public const ushort _lastPrefinedId = _blankCustomModelId;
+        public const ushort _lastDefinedId = _blankCustomModelId;
+
+        private const int _defaultDPI = 96;
 
         // hard coded data for all the "Priority Grid" configurations that are unique to "Grid"
         private static readonly byte[][] _priorityData = new byte[][]
@@ -84,7 +86,7 @@ namespace FancyZonesEditor
 
             // Initialize the five default layout models: Focus, Columns, Rows, Grid, and PriorityGrid
             DefaultModels = new List<LayoutModel>(5);
-            _focusModel = new CanvasLayoutModel("Focus", LayoutType.Focus, (int)_workArea.Width, (int)_workArea.Height);
+            _focusModel = new CanvasLayoutModel("Focus", LayoutType.Focus);
             DefaultModels.Add(_focusModel);
 
             _columnsModel = new GridLayoutModel("Columns", LayoutType.Columns)
@@ -107,7 +109,7 @@ namespace FancyZonesEditor
             _priorityGridModel = new GridLayoutModel("Priority Grid", LayoutType.PriorityGrid);
             DefaultModels.Add(_priorityGridModel);
 
-            _blankCustomModel = new CanvasLayoutModel("Create new custom", LayoutType.Blank, (int)_workArea.Width, (int)_workArea.Height);
+            _blankCustomModel = new CanvasLayoutModel("Create new custom", LayoutType.Blank);
 
             UpdateLayoutModels();
         }
@@ -213,12 +215,7 @@ namespace FancyZonesEditor
 
         private bool _isCtrlKeyPressed;
 
-        public Rect WorkArea
-        {
-            get { return _workArea; }
-        }
-
-        private Rect _workArea;
+        public static Rect WorkArea { get; private set; }
 
         public static uint Monitor { get; private set; }
 
@@ -252,7 +249,7 @@ namespace FancyZonesEditor
         public static string WorkAreaKey { get; private set; }
 
         // UpdateLayoutModels
-        //  Update the five default layouts based on the new ZoneCount
+        // Update the five default layouts based on the new ZoneCount
         private void UpdateLayoutModels()
         {
             // Update the "Focus" Default Layout
@@ -264,9 +261,9 @@ namespace FancyZonesEditor
                 ZoneCount = 3;
             }
 
-            Int32Rect focusZoneRect = new Int32Rect((int)(_focusModel.ReferenceWidth * 0.1), (int)(_focusModel.ReferenceHeight * 0.1), (int)(_focusModel.ReferenceWidth * 0.6), (int)(_focusModel.ReferenceHeight * 0.6));
-            int focusRectXIncrement = (ZoneCount <= 1) ? 0 : (int)(_focusModel.ReferenceWidth * 0.2) / (ZoneCount - 1);
-            int focusRectYIncrement = (ZoneCount <= 1) ? 0 : (int)(_focusModel.ReferenceHeight * 0.2) / (ZoneCount - 1);
+            Int32Rect focusZoneRect = new Int32Rect((int)(WorkArea.Width * 0.1), (int)(WorkArea.Height * 0.1), (int)(WorkArea.Width * 0.6), (int)(WorkArea.Height * 0.6));
+            int focusRectXIncrement = (ZoneCount <= 1) ? 0 : (int)(WorkArea.Width * 0.2) / (ZoneCount - 1);
+            int focusRectYIncrement = (ZoneCount <= 1) ? 0 : (int)(WorkArea.Height * 0.2) / (ZoneCount - 1);
 
             for (int i = 0; i < ZoneCount; i++)
             {
@@ -416,7 +413,7 @@ namespace FancyZonesEditor
 
         private void ParseCommandLineArgs()
         {
-            _workArea = SystemParameters.WorkArea;
+            WorkArea = SystemParameters.WorkArea;
             Monitor = 0;
 
             string[] args = Environment.GetCommandLineArgs();
@@ -433,7 +430,7 @@ namespace FancyZonesEditor
                 var width = int.Parse(parsedLocation[2]);
                 var height = int.Parse(parsedLocation[3]);
 
-                _workArea = new Rect(x, y, width, height);
+                WorkArea = new Rect(x, y, width, height);
 
                 WorkAreaKey = args[(int)CmdArgs.ResolutionKey];
 
@@ -471,7 +468,7 @@ namespace FancyZonesEditor
             return model.Type != LayoutType.Custom;
         }
 
-        // implementation of INotifyProeprtyChanged
+        // implementation of INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
 
         // FirePropertyChanged -- wrapper that calls INPC.PropertyChanged

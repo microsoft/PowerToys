@@ -17,7 +17,7 @@ class TargetState
 public:
     TargetState(int ms_delay);
     bool signal_event(unsigned vk_code, bool key_down);
-    void was_hiden();
+    void was_hidden();
     void exit();
     void set_delay(int ms_delay);
 
@@ -29,7 +29,7 @@ private:
     void thread_proc();
     std::mutex mutex;
     std::condition_variable cv;
-    std::chrono::system_clock::time_point winkey_timestamp, singnal_timestamp;
+    std::chrono::system_clock::time_point winkey_timestamp, signal_timestamp;
     std::chrono::milliseconds delay;
     std::deque<KeyEvent> events;
     enum

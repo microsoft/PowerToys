@@ -13,13 +13,14 @@ using Windows.Management.Deployment;
 using Wox.Infrastructure;
 using Microsoft.Plugin.Program.Logger;
 using Rect = System.Windows.Rect;
-using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml.Media;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Wox.Plugin;
-using System.Reflection;
-using Wox.Plugin.SharedCommands;
+using System.Windows.Input;
 using System.Runtime.InteropServices.ComTypes;
+using Wox.Plugin.SharedCommands;
+using System.Reflection;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -279,7 +280,7 @@ namespace Microsoft.Plugin.Program.Programs
 
                 var result = new Result
                 {
-                    SubTitle = "UWP application",
+                    SubTitle = "Packaged application",
                     Icon = Logo,
                     Score = score,
                     ContextData = this,
@@ -317,8 +318,8 @@ namespace Microsoft.Plugin.Program.Programs
                                 Title = api.GetTranslation("wox_plugin_program_run_as_administrator"),
                                 Glyph = "\xE7EF",
                                 FontFamily = "Segoe MDL2 Assets",
-                                AcceleratorKey = "Enter",
-                                AcceleratorModifiers = "Control,Shift",
+                                AcceleratorKey = Key.Enter,
+                                AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
                                 Action = _ =>
                                 {
                                     string command = "shell:AppsFolder\\" + UniqueIdentifier;
@@ -341,8 +342,8 @@ namespace Microsoft.Plugin.Program.Programs
                        Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
                        Glyph = "\xE838",
                        FontFamily = "Segoe MDL2 Assets",
-                       AcceleratorKey = "E",
-                       AcceleratorModifiers = "Control,Shift",
+                       AcceleratorKey = Key.E,
+                       AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
                        Action = _ =>
                        {
                            Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", Package.Location));
@@ -350,7 +351,6 @@ namespace Microsoft.Plugin.Program.Programs
                            return true;
                        }
                    });
-
                 
                 return contextMenus;
             }
@@ -448,6 +448,10 @@ namespace Microsoft.Plugin.Program.Programs
                     else if (key.StartsWith("/"))
                     {
                         parsed = prefix + "//" + key;
+                    }
+                    else if (key.Contains("resources", StringComparison.OrdinalIgnoreCase))
+                    {
+                        parsed = prefix + key;
                     }
                     else
                     {

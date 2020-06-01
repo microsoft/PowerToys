@@ -9,6 +9,7 @@ using Wox.Infrastructure.Image;
 using Wox.Plugin.SharedCommands;
 using Wox.Plugin;
 using System.Reflection;
+using System.Windows.Input;
 
 namespace Microsoft.Plugin.Folder
 {
@@ -40,8 +41,8 @@ namespace Microsoft.Plugin.Folder
                     Glyph = "\xE8C8",
                     FontFamily = "Segoe MDL2 Assets",
                     SubTitle = $"Copy the current {fileOrFolder} path to clipboard",
-                    AcceleratorKey = "C",
-                    AcceleratorModifiers = "Control",
+                    AcceleratorKey = Key.C,
+                    AcceleratorModifiers = ModifierKeys.Control,
                     Action = (context) =>
                     {
                         try
@@ -71,8 +72,8 @@ namespace Microsoft.Plugin.Folder
                 Title = "Open containing folder",
                 Glyph = "\xE838",
                 FontFamily = "Segoe MDL2 Assets",
-                AcceleratorKey = "E",
-                AcceleratorModifiers = "Control,Shift",
+                AcceleratorKey = Key.E,
+                AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
                 Action = _ =>
                 {
                     try

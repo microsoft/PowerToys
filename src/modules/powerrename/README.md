@@ -65,7 +65,7 @@ Simple matching examples:
 | .*             | Match all the text in the name                        |
 | ^foo           | Match text that begins with "foo"                     |
 | bar$           | Match text that ends with "bar"                       |
-| ^foo bar$      | Match text that begins with "foo" and ends with "bar" |
+| ^foo.\*bar$     | Match text that begins with "foo" and ends with "bar" |
 | .+?(?=bar)     | Match everything up to "bar"                          |
 | foo[\s\S]\*bar | Match everything between "foo" and "bar"              |
 

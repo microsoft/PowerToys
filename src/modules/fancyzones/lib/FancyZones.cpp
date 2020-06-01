@@ -14,6 +14,7 @@
 #include "lib/util.h"
 #include "trace.h"
 #include "VirtualDesktopUtils.h"
+#include "MonitorWorkAreaHandler.h"
 
 #include <interface/win_hook_event_data.h>
 
@@ -24,19 +25,6 @@ enum class DisplayChangeType
     VirtualDesktop,
     Initialization
 };
-
-namespace std
-{
-    template<>
-    struct hash<GUID>
-    {
-        size_t operator()(const GUID& Value) const
-        {
-            RPC_STATUS status = RPC_S_OK;
-            return ::UuidHash(&const_cast<GUID&>(Value), &status);
-        }
-    };
-}
 
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
 {
@@ -55,30 +43,22 @@ public:
     IFACEMETHODIMP_(void)
     Destroy() noexcept;
 
-    // IFancyZonesCallback
-    IFACEMETHODIMP_(bool)
-    InMoveSize() noexcept
-    {
-        std::shared_lock readLock(m_lock);
-        return m_windowMoveHandler.InMoveSize();
-    }
-
     void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
-        m_windowMoveHandler.MoveSizeStart(window, monitor, ptScreen, m_zoneWindowMap);
+        m_windowMoveHandler.MoveSizeStart(window, monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId));
     }
-    
+
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
-        m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_zoneWindowMap);
+        m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId));
     }
-    
+
     void MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
-        m_windowMoveHandler.MoveSizeEnd(window, ptScreen, m_zoneWindowMap);
+        m_windowMoveHandler.MoveSizeEnd(window, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId));
     }
     IFACEMETHODIMP_(void)
     HandleWinHookEvent(const WinHookEvent* data) noexcept
@@ -122,7 +102,7 @@ public:
     ToggleEditor() noexcept;
     IFACEMETHODIMP_(void)
     SettingsChanged() noexcept;
-    
+
     void WindowCreated(HWND window) noexcept;
 
     // IZoneWindowHost
@@ -154,24 +134,12 @@ public:
     GetZoneHighlightColor() noexcept
     {
         // Skip the leading # and convert to long
-        const auto color = m_settings->GetSettings()->zoneHightlightColor;
+        const auto color = m_settings->GetSettings()->zoneHighlightColor;
         const auto tmp = std::stol(color.substr(1), nullptr, 16);
         const auto nR = (tmp & 0xFF0000) >> 16;
         const auto nG = (tmp & 0xFF00) >> 8;
         const auto nB = (tmp & 0xFF);
         return RGB(nR, nG, nB);
-    }
-    IFACEMETHODIMP_(IZoneWindow*)
-    GetParentZoneWindow(HMONITOR monitor) noexcept
-    {
-        //NOTE: as public method it's unsafe without lock, but it's called from AddZoneWindow through making ZoneWindow that causes deadlock
-        //TODO: needs refactoring
-        auto it = m_zoneWindowMap.find(monitor);
-        if (it != m_zoneWindowMap.end())
-        {
-            return it->second.get();
-        }
-        return nullptr;
     }
     IFACEMETHODIMP_(int)
     GetZoneHighlightOpacity() noexcept
@@ -183,6 +151,13 @@ public:
     isMakeDraggedWindowTransparentActive() noexcept
     {
         return m_settings->GetSettings()->makeDraggedWindowTransparent;
+    }
+
+    IFACEMETHODIMP_(bool)
+    InMoveSize() noexcept
+    {
+        std::shared_lock readLock(m_lock);
+        return m_windowMoveHandler.InMoveSize();
     }
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
@@ -223,10 +198,11 @@ private:
     bool OnSnapHotkey(DWORD vkCode) noexcept;
 
     void RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept;
-    void RegisterNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept;
-    bool IsNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept;
+
+    bool IsSplashScreen(HWND window);
 
     void OnEditorExitEvent() noexcept;
+    bool ProcessSnapHotkey() noexcept;
 
     std::vector<std::pair<HMONITOR, RECT>> GetRawMonitorData() noexcept;
     std::vector<HMONITOR> GetMonitorsSorted() noexcept;
@@ -236,11 +212,11 @@ private:
     mutable std::shared_mutex m_lock;
     HWND m_window{};
     WindowMoveHandler m_windowMoveHandler;
+    MonitorWorkAreaHandler m_workAreaHandler;
 
-    std::map<HMONITOR, winrt::com_ptr<IZoneWindow>> m_zoneWindowMap; // Map of monitor to ZoneWindow (one per monitor)
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
-    GUID m_currentVirtualDesktopId{}; // UUID of the current virtual desktop. Is GUID_NULL until first VD switch per session.
-    std::unordered_map<GUID, std::vector<HMONITOR>> m_processedWorkAreas; // Work area is defined by monitor and virtual desktop id.
+    GUID m_previousDesktopId{}; // UUID of previously active virtual desktop.
+    GUID m_currentDesktopId{}; // UUID of the current virtual desktop.
     wil::unique_handle m_terminateEditorEvent; // Handle of FancyZonesEditor.exe we launch and wait on
     wil::unique_handle m_terminateVirtualDesktopTrackerEvent;
 
@@ -306,7 +282,7 @@ IFACEMETHODIMP_(void)
 FancyZones::Destroy() noexcept
 {
     std::unique_lock writeLock(m_lock);
-    m_zoneWindowMap.clear();
+    m_workAreaHandler.Clear();
     BufferedPaintUnInit();
     if (m_window)
     {
@@ -325,7 +301,6 @@ FancyZones::VirtualDesktopChanged() noexcept
 {
     // VirtualDesktopChanged is called from a reentrant WinHookProc function, therefore we must postpone the actual logic
     // until we're in FancyZones::WndProc, which is not reentrant.
-    std::shared_lock readLock(m_lock);
     PostMessage(m_window, WM_PRIV_VD_SWITCH, 0, 0);
 }
 
@@ -341,33 +316,27 @@ IFACEMETHODIMP_(void)
 FancyZones::WindowCreated(HWND window) noexcept
 {
     std::shared_lock readLock(m_lock);
+
     if (m_settings->GetSettings()->appLastZone_moveWindows && IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
     {
-        for (const auto& [monitor, zoneWindow] : m_zoneWindowMap)
+        auto zoneWindow = m_workAreaHandler.GetWorkArea(window);
+        if (zoneWindow)
         {
-            // WindowCreated is also invoked when a virtual desktop switch occurs, we need a way
-            // to figure out when that happens to avoid moving windows that should not be moved.
-            GUID windowDesktopId{};
-            GUID zoneWindowDesktopId{};
-            if (VirtualDesktopUtils::GetWindowDesktopId(window, &windowDesktopId) &&
-                VirtualDesktopUtils::GetZoneWindowDesktopId(zoneWindow.get(), &zoneWindowDesktopId) &&
-                (windowDesktopId != zoneWindowDesktopId))
-            {
-                return;
-            }
             const auto activeZoneSet = zoneWindow->ActiveZoneSet();
             if (activeZoneSet)
             {
-                const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+                auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
 
                 wil::unique_cotaskmem_string guidString;
                 if (SUCCEEDED(StringFromCLSID(activeZoneSet->Id(), &guidString)))
                 {
-                    int zoneIndex = fancyZonesData.GetAppLastZoneIndex(window, zoneWindow->UniqueId(), guidString.get());
-                    if (zoneIndex != -1)
+                    std::vector<int> zoneIndexSet = fancyZonesData.GetAppLastZoneIndexSet(window, zoneWindow->UniqueId(), guidString.get());
+                    if (zoneIndexSet.size() &&
+                        !IsSplashScreen(window) &&
+                        !fancyZonesData.IsAnotherWindowOfApplicationInstanceZoned(window))
                     {
-                        m_windowMoveHandler.MoveWindowIntoZoneByIndex(window, monitor, zoneIndex, m_zoneWindowMap);
-                        break;
+                        m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, zoneWindow);
+                        fancyZonesData.UpdateProcessIdToHandleMap(window);
                     }
                 }
             }
@@ -398,7 +367,7 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
         }
         else if ((info->vkCode == VK_RIGHT) || (info->vkCode == VK_LEFT))
         {
-            if (m_settings->GetSettings()->overrideSnapHotkeys)
+            if (ProcessSnapHotkey())
             {
                 Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
                 // Win+Left, Win+Right will cycle through Zones in the active ZoneSet when WM_PRIV_LOWLEVELKB's handled
@@ -462,8 +431,8 @@ void FancyZones::ToggleEditor() noexcept
     }
 
     std::shared_lock readLock(m_lock);
-    auto iter = m_zoneWindowMap.find(monitor);
-    if (iter == m_zoneWindowMap.end())
+    auto zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
+    if (!zoneWindow)
     {
         return;
     }
@@ -476,12 +445,9 @@ void FancyZones::ToggleEditor() noexcept
                       } })
         .wait();
 
-    auto zoneWindow = iter->second;
-
     const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
     fancyZonesData.CustomZoneSetsToJsonFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
 
-    // Do not scale window params by the dpi, that will be done in the editor - see LayoutModel.Apply
     const auto taskbar_x_offset = mi.rcWork.left - mi.rcMonitor.left;
     const auto taskbar_y_offset = mi.rcWork.top - mi.rcMonitor.top;
     const auto x = mi.rcMonitor.left + taskbar_x_offset;
@@ -663,16 +629,16 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
     return 0;
 }
 
-
 void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
 {
     if (changeType == DisplayChangeType::VirtualDesktop ||
         changeType == DisplayChangeType::Initialization)
     {
+        m_previousDesktopId = m_currentDesktopId;
         GUID currentVirtualDesktopId{};
         if (VirtualDesktopUtils::GetCurrentVirtualDesktopId(&currentVirtualDesktopId))
         {
-            m_currentVirtualDesktopId = currentVirtualDesktopId;
+            m_currentDesktopId = currentVirtualDesktopId;
         }
         if (changeType == DisplayChangeType::Initialization)
         {
@@ -694,39 +660,35 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
             UpdateWindowsPositions();
         }
     }
-    else if (changeType == DisplayChangeType::VirtualDesktop)
-    {
-        if (m_settings->GetSettings()->virtualDesktopChange_moveWindows)
-        {
-            UpdateWindowsPositions();
-        }
-    }
 }
 
 void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
 {
     std::unique_lock writeLock(m_lock);
-    wil::unique_cotaskmem_string virtualDesktopId;
-    if (SUCCEEDED_LOG(StringFromCLSID(m_currentVirtualDesktopId, &virtualDesktopId)))
+
+    if (m_workAreaHandler.IsNewWorkArea(m_currentDesktopId, monitor))
     {
-        std::wstring uniqueId = ZoneWindowUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId.get());
-        JSONHelpers::FancyZonesDataInstance().SetActiveDeviceId(uniqueId);
-
-        const bool newWorkArea = IsNewWorkArea(m_currentVirtualDesktopId, monitor);
-        // "Turning FLASHING_ZONE option off"
-        //const bool flash = m_settings->GetSettings()->zoneSetChange_flashZones && newWorkArea;
-        const bool flash = false;
-
-        auto zoneWindow = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, flash, newWorkArea);
-        if (zoneWindow)
+        wil::unique_cotaskmem_string virtualDesktopId;
+        if (SUCCEEDED(StringFromCLSID(m_currentDesktopId, &virtualDesktopId)))
         {
-            m_zoneWindowMap[monitor] = std::move(zoneWindow);
-        }
+            std::wstring uniqueId = ZoneWindowUtils::GenerateUniqueId(monitor, deviceId, virtualDesktopId.get());
 
-        if (newWorkArea)
-        {
-            RegisterNewWorkArea(m_currentVirtualDesktopId, monitor);
-            JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
+            // "Turning FLASHING_ZONE option off"
+            //const bool flash = m_settings->GetSettings()->zoneSetChange_flashZones;
+            const bool flash = false;
+
+            std::wstring parentId{};
+            auto parentArea = m_workAreaHandler.GetWorkArea(m_previousDesktopId, monitor);
+            if (parentArea)
+            {
+                parentId = parentArea->UniqueId();
+            }
+            auto workArea = MakeZoneWindow(this, m_hinstance, monitor, uniqueId, parentId, flash);
+            if (workArea)
+            {
+                m_workAreaHandler.AddWorkArea(m_currentDesktopId, monitor, workArea);
+                JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
+            }
         }
     }
 }
@@ -790,13 +752,26 @@ void FancyZones::UpdateZoneWindows() noexcept
 void FancyZones::UpdateWindowsPositions() noexcept
 {
     auto callback = [](HWND window, LPARAM data) -> BOOL {
-        int i = static_cast<int>(reinterpret_cast<UINT_PTR>(::GetProp(window, ZONE_STAMP)));
-        if (i != 0)
+        size_t bitmask = reinterpret_cast<size_t>(::GetProp(window, MULTI_ZONE_STAMP));
+
+        if (bitmask != 0)
         {
-            // i is off by 1 since 0 is special.
+            std::vector<int> indexSet;
+            for (int i = 0; i < std::numeric_limits<size_t>::digits; i++)
+            {
+                if ((1ull << i) & bitmask)
+                {
+                    indexSet.push_back(i);
+                }
+            }
+
             auto strongThis = reinterpret_cast<FancyZones*>(data);
             std::unique_lock writeLock(strongThis->m_lock);
-            strongThis->m_windowMoveHandler.MoveWindowIntoZoneByIndex(window, nullptr, i - 1, strongThis->m_zoneWindowMap);
+            auto zoneWindow = strongThis->m_workAreaHandler.GetWorkArea(window);
+            if (zoneWindow)
+            {
+                strongThis->m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, indexSet, zoneWindow);
+            }
         }
         return TRUE;
     };
@@ -813,11 +788,10 @@ void FancyZones::CycleActiveZoneSet(DWORD vkCode) noexcept
         {
             std::shared_lock readLock(m_lock);
 
-            auto iter = m_zoneWindowMap.find(monitor);
-            if (iter != m_zoneWindowMap.end())
+            auto zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
+            if (zoneWindow)
             {
-                const auto& zoneWindowPtr = iter->second;
-                zoneWindowPtr->CycleActiveZoneSet(vkCode);
+                zoneWindow->CycleActiveZoneSet(vkCode);
             }
         }
     }
@@ -839,7 +813,7 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
                 do
                 {
                     std::unique_lock writeLock(m_lock);
-                    if (m_windowMoveHandler.MoveWindowIntoZoneByDirection(*currMonitorInfo, window, vkCode, false /* cycle through zones */, m_zoneWindowMap))
+                    if (m_windowMoveHandler.MoveWindowIntoZoneByDirection(window, vkCode, false /* cycle through zones */, m_workAreaHandler.GetWorkArea(m_currentDesktopId, *currMonitorInfo)))
                     {
                         return true;
                     }
@@ -866,7 +840,7 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
             {
                 // Single monitor environment.
                 std::unique_lock writeLock(m_lock);
-                return m_windowMoveHandler.MoveWindowIntoZoneByDirection(current, window, vkCode, true /* cycle through zones */, m_zoneWindowMap);
+                return m_windowMoveHandler.MoveWindowIntoZoneByDirection(window, vkCode, true /* cycle through zones */, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
             }
         }
     }
@@ -875,78 +849,71 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
 
 void FancyZones::RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept
 {
-    std::unordered_set<GUID> activeVirtualDesktops(std::begin(ids), std::end(ids));
     std::unique_lock writeLock(m_lock);
+
+    std::vector<GUID> deleted{};
+    m_workAreaHandler.RegisterUpdates(ids, deleted);
+
     bool modified{ false };
-    for (auto it = std::begin(m_processedWorkAreas); it != std::end(m_processedWorkAreas);)
+    for (const auto& id : deleted)
     {
-        auto iter = activeVirtualDesktops.find(it->first);
-        if (iter == activeVirtualDesktops.end())
+        wil::unique_cotaskmem_string virtualDesktopId;
+        if (SUCCEEDED(StringFromCLSID(id, &virtualDesktopId)))
         {
-            // if we couldn't find the GUID in currentVirtualDesktopIds, we must remove it from both m_processedWorkAreas and deviceInfoMap
-            wil::unique_cotaskmem_string virtualDesktopId;
-            if (SUCCEEDED_LOG(StringFromCLSID(it->first, &virtualDesktopId)))
-            {
-                modified |= JSONHelpers::FancyZonesDataInstance().RemoveDevicesByVirtualDesktopId(virtualDesktopId.get());
-            }
-            it = m_processedWorkAreas.erase(it);
-        }
-        else
-        {
-            activeVirtualDesktops.erase(it->first); // virtual desktop already in map, skip it
-            ++it;
+            modified |= JSONHelpers::FancyZonesDataInstance().RemoveDevicesByVirtualDesktopId(virtualDesktopId.get());
         }
     }
     if (modified)
     {
         JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
     }
-    // register new virtual desktops, if any
-    for (const auto& id : activeVirtualDesktops)
-    {
-        m_processedWorkAreas[id] = std::vector<HMONITOR>();
-    }
 }
 
-void FancyZones::RegisterNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept
+bool FancyZones::IsSplashScreen(HWND window)
 {
-    if (!m_processedWorkAreas.contains(virtualDesktopId))
+    wchar_t splashClassName[] = L"MsoSplash"; // shouldn't be localized
+    wchar_t className[MAX_PATH];
+    if (GetClassName(window, className, MAX_PATH) == 0)
     {
-        m_processedWorkAreas[virtualDesktopId] = { monitor };
+        return false;
     }
-    else
-    {
-        m_processedWorkAreas[virtualDesktopId].push_back(monitor);
-    }
-}
 
-bool FancyZones::IsNewWorkArea(GUID virtualDesktopId, HMONITOR monitor) noexcept
-{
-    auto it = m_processedWorkAreas.find(virtualDesktopId);
-    if (it != m_processedWorkAreas.end())
-    {
-        // virtual desktop exists, check if it's processed on given monitor
-        return std::find(it->second.begin(), it->second.end(), monitor) == it->second.end();
-    }
-    return true;
+    return wcscmp(splashClassName, className) == 0;
 }
 
 void FancyZones::OnEditorExitEvent() noexcept
 {
-    // Colect information about changes in zone layout after editor exited.
+    // Collect information about changes in zone layout after editor exited.
     JSONHelpers::FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(ZoneWindowUtils::GetActiveZoneSetTmpPath());
     JSONHelpers::FancyZonesDataInstance().ParseDeletedCustomZoneSetsFromTmpFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
     JSONHelpers::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(ZoneWindowUtils::GetAppliedZoneSetTmpPath());
     JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
-    // Update zone sets for currently active work areas.
-    for (auto& [monitor, zoneWindow] : m_zoneWindowMap)
+
+    for (auto workArea : m_workAreaHandler.GetAllWorkAreas())
     {
-        zoneWindow->UpdateActiveZoneSet();
+        workArea->UpdateActiveZoneSet();
     }
     if (m_settings->GetSettings()->zoneSetChange_moveWindows)
     {
         UpdateWindowsPositions();
     }
+}
+
+bool FancyZones::ProcessSnapHotkey() noexcept
+{
+    if (m_settings->GetSettings()->overrideSnapHotkeys)
+    {
+        const HMONITOR monitor = MonitorFromWindow(GetForegroundWindow(), MONITOR_DEFAULTTONULL);
+        if (monitor)
+        {
+            auto zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
+            if (zoneWindow->ActiveZoneSet() != nullptr)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 std::vector<HMONITOR> FancyZones::GetMonitorsSorted() noexcept
@@ -965,9 +932,10 @@ std::vector<std::pair<HMONITOR, RECT>> FancyZones::GetRawMonitorData() noexcept
     std::shared_lock readLock(m_lock);
 
     std::vector<std::pair<HMONITOR, RECT>> monitorInfo;
-    for (const auto& [monitor, window] : m_zoneWindowMap)
+    const auto& activeWorkAreaMap = m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId);
+    for (const auto& [monitor, workArea] : activeWorkAreaMap)
     {
-        if (window->ActiveZoneSet() != nullptr)
+        if (workArea->ActiveZoneSet() != nullptr)
         {
             MONITORINFOEX mi;
             mi.cbSize = sizeof(mi);

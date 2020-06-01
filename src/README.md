@@ -5,4 +5,4 @@ The PowerToys are split into DLLs for each PowerToy module ([`modules`](/src/mod
 
 The settings window is a separate executable, contained in [`settings`](/src/settings) folder. It utilizes a WebView to display an HTML-based settings window (contained in [`settings-web`](/src/settings-web) folder).
 
-The [`common`](/src/common) contains code for a static libary with helper functions, used by both the runner and the PowerToys modules.
+The [`common`](/src/common) contains code for a static library with helper functions, used by both the runner and the PowerToys modules.

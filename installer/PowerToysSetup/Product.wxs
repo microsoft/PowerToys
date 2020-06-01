@@ -3,6 +3,11 @@
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
      xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension" >
 
+  <?define ImageResizerProjectName="ImageResizer"?>
+  <?define KeyboardManagerProjectName="KeyboardManager"?>
+  <?define PowerRenameProjectName="PowerRename"?>
+  <?define ShortcutGuideProjectName="ShortcutGuide"?>
+
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
   <Product Id="*"
@@ -215,32 +220,32 @@
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
           <Directory Id="SvgsInstallFolder" Name="svgs"/>
           <Directory Id="ModulesInstallFolder" Name="modules">
-            <!-- Resource file directories -->
-            <?foreach Language in ar;bg;ca;cs;de;es;eu-ES;fr;he;hu;it;nb-NO;nl;pl;pt-BR;ru;sk;tr;zh-Hans?>
+            <Directory Id="ImageResizerInstallFolder" Name="$(var.ImageResizerProjectName)">
+              <!-- Resource file directories -->
+              <?foreach Language in ar;bg;ca;cs;de;es;eu-ES;fr;he;hu;it;nb-NO;nl;pl;pt-BR;ru;sk;tr;zh-Hans?>
               <!--NB: Ids can't contain hyphens-->
               <?if $(var.Language) = eu-ES?>
-                <?define IdSafeLanguage = eu_ES?>
+              <?define IdSafeLanguage = eu_ES?>
               <?elseif $(var.Language) = nb-NO?>
-                <?define IdSafeLanguage = nb_NO?>
+              <?define IdSafeLanguage = nb_NO?>
               <?elseif $(var.Language) = pt-BR?>
-                <?define IdSafeLanguage = pt_BR?>
+              <?define IdSafeLanguage = pt_BR?>
               <?elseif $(var.Language) = zh-Hans?>
-                <?define IdSafeLanguage = zh_Hans?>
+              <?define IdSafeLanguage = zh_Hans?>
               <?else?>
-                <?define IdSafeLanguage = $(var.Language)?>
+              <?define IdSafeLanguage = $(var.Language)?>
               <?endif?>
               <Directory Id="Resources$(var.IdSafeLanguage)Folder" Name="$(var.Language)" />
               <?undef IdSafeLanguage?>
-            <?endforeach?>
+              <?endforeach?>
+            </Directory>
+            <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)"/>
+            <Directory Id="ShortcutGuideInstallFolder" Name="$(var.ShortcutGuideProjectName)"/>
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
             <Directory Id="FancyZonesInstallFolder" Name="FancyZones" />
             <Directory Id="LauncherInstallFolder" Name="launcher">
               <Directory Id="AssetsFolder" Name="Assets" />
-              <Directory Id="LauncherImagesFolder" Name="Images" />
-              <Directory Id="LauncherUIControlsFolder" Name="Microsoft.Toolkit.Uwp.UI.Controls" />
-              <Directory Id="LauncherXamlUIFolder" Name="Microsoft.UI.Xaml">
-                <Directory Id="XamlUIAssetsFolder" Name="Assets" />
-              </Directory>
+              <Directory Id="LauncherImagesFolder" Name="Images" />               
               <Directory Id="LauncherpinyindbFolder" Name="pinyindb" />
               <Directory Id="LauncherPluginsFolder" Name="Plugins">
                 <Directory Id="CalculatorPluginFolder" Name="Microsoft.Plugin.Calculator">
@@ -402,113 +407,15 @@
     </DirectoryRef>
 
     <DirectoryRef Id="ModulesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
-      <Component Id="Module_ShortcutGuide" Guid="CBD0AC09-91D3-428E-B2B3-05745ADF3473" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\shortcut_guide.dll" KeyPath="yes" />
-      </Component>
-
-      <Component Id="Module_PowerRename" Guid="E4401D08-27FE-4F96-BA17-0C61FD79E684" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\PowerRenameExt.dll" KeyPath="yes" />
-        <RegistryKey Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
-          <RegistryValue Type="string" Value="PowerRename Shell Extension" />
-          <RegistryValue Type="string" Key="InprocServer32" Value="[ModulesInstallFolder]PowerRenameExt.dll" />
-          <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
-        </RegistryKey>
-        <RegistryKey Root="HKCR" Key="AllFileSystemObjects\ShellEx\ContextMenuHandlers\PowerRenameExt">
-          <RegistryValue Type="string" Value="{0440049F-D1DC-4E46-B27B-98393D79486B}"/>
-        </RegistryKey>
-      </Component>
       
       <Component Id="Module_Launcher" Guid="9A343236-B49D-451D-A27D-4C336F460A45" Win64="yes">
         <File Source="$(var.BinX64Dir)modules\Microsoft.Launcher.dll" />
       </Component>
 
       <Component Id="Module_KeyboardManager" Guid="9279BD82-786F-4F0B-8E49-DB484EE34C9B" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\KeyboardManager.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManager.dll" />
       </Component>
 
-      <Component Id="Module_ImageResizer" Guid="96E63289-759C-4A73-A56B-EE7429932F72" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\ImageResizer.exe">
-          <netfx:NativeImage Id="ImageResizer.exe" Platform="all" Priority="0" />
-        </File>
-        <File Source="$(var.BinX64Dir)modules\GalaSoft.MvvmLight.dll" />
-        <File Source="$(var.BinX64Dir)modules\GalaSoft.MvvmLight.Platform.dll" />
-        <File Source="$(var.BinX64Dir)modules\GalaSoft.MvvmLight.Extras.dll" />
-        <File Source="$(var.BinX64Dir)modules\System.Windows.Interactivity.dll">
-          <!-- NB: Needed since it's only referenced in XAML. -->
-          <netfx:NativeImage Id="Interactivity" Platform="all" Priority="0"/>
-        </File>
-        <File Source="$(var.BinX64Dir)modules\Newtonsoft.Json.dll" />
-        <File Source="$(var.BinX64Dir)modules\ImageResizerExt.dll" KeyPath="yes" />
-
-        <!-- VCRuntime -->
-        <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
-          <File Id="ImageResizer_$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
-        <?endforeach?>
-      </Component>
-      <Component Id="Module_ImageResizer_Registry" Guid="8B593E2C-2D9B-4EBC-93F7-A2B69707DAC9" Win64="yes">
-        <RegistryKey Root="HKCR" Key="CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32">
-          <RegistryValue Value="[ModulesInstallFolder]ImageResizerExt.dll" Type="string" />
-          <RegistryValue Name="ThreadingModel" Value="Apartment" Type="string" />
-        </RegistryKey>
-        <!-- Registry Key for the drag and drop handler -->
-        <RegistryValue Root="HKCR"
-                       Key="Directory\ShellEx\DragDropHandlers\ImageResizer"
-                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
-                       Type="string" />
-        <!-- Registry Keys for the context menu handler for each of the following image formats: bmp, dib, gif, jfif, jpe, jpeg, jpg, jxr, png, rle, tif, tiff, wdp  -->
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.bmp\ShellEx\ContextMenuHandlers\ImageResizer"
-                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
-                       Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.dib\ShellEx\ContextMenuHandlers\ImageResizer"
-                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
-                       Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.gif\ShellEx\ContextMenuHandlers\ImageResizer"
-                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
-                       Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.jfif\ShellEx\ContextMenuHandlers\ImageResizer"
-                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
-                       Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.jpe\ShellEx\ContextMenuHandlers\ImageResizer"
-                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
-                       Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.jpeg\ShellEx\ContextMenuHandlers\ImageResizer"
-                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
-                       Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.jpg\ShellEx\ContextMenuHandlers\ImageResizer"
-                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
-                       Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.jxr\ShellEx\ContextMenuHandlers\ImageResizer"
-                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
-                       Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.png\ShellEx\ContextMenuHandlers\ImageResizer"
-                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
-                       Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.rle\ShellEx\ContextMenuHandlers\ImageResizer"
-                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
-                       Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.tif\ShellEx\ContextMenuHandlers\ImageResizer"
-                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
-                       Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.tiff\ShellEx\ContextMenuHandlers\ImageResizer"
-                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
-                       Type="string" />
-        <RegistryValue Root="HKCR"
-                       Key="SystemFileAssociations\.wdp\ShellEx\ContextMenuHandlers\ImageResizer"
-                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
-                       Type="string" />
-      </Component>
       <Component Id="Module_PowerPreview_PerUserRegistry" Guid="CD90ADC0-7CD5-4A62-B0AF-23545C1E6DD3" Win64="yes">
         <!-- Added a separate component for Per-User registry changes -->
         <!-- Registry Key for Class Registration of Svg Preview Handler -->
@@ -571,7 +478,113 @@
         </RegistryKey>
       </Component>
     </DirectoryRef>
-    
+
+    <DirectoryRef Id="ImageResizerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)">
+      <Component Id="Module_ImageResizer" Guid="96E63289-759C-4A73-A56B-EE7429932F72" Win64="yes">
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizer.exe">
+          <netfx:NativeImage Id="ImageResizer.exe" Platform="all" Priority="0" />
+        </File>
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\GalaSoft.MvvmLight.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\GalaSoft.MvvmLight.Platform.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\GalaSoft.MvvmLight.Extras.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\System.Windows.Interactivity.dll">
+          <!-- NB: Needed since it's only referenced in XAML. -->
+          <netfx:NativeImage Id="Interactivity" Platform="all" Priority="0"/>
+        </File>
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\Newtonsoft.Json.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizerExt.dll" KeyPath="yes" />
+
+        <!-- VCRuntime -->
+        <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
+        <File Id="ImageResizer_$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
+        <?endforeach?>
+      </Component>
+      <Component Id="Module_ImageResizer_Registry" Guid="8B593E2C-2D9B-4EBC-93F7-A2B69707DAC9" Win64="yes">
+        <RegistryKey Root="HKCR" Key="CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32">
+          <RegistryValue Value="[ImageResizerInstallFolder]ImageResizerExt.dll" Type="string" />
+          <RegistryValue Name="ThreadingModel" Value="Apartment" Type="string" />
+        </RegistryKey>
+        <!-- Registry Key for the drag and drop handler -->
+        <RegistryValue Root="HKCR"
+                       Key="Directory\ShellEx\DragDropHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <!-- Registry Keys for the context menu handler for each of the following image formats: bmp, dib, gif, jfif, jpe, jpeg, jpg, jxr, png, rle, tif, tiff, wdp  -->
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.bmp\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.dib\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.gif\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.jfif\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.jpe\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.jpeg\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.jpg\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.jxr\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.png\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.rle\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.tif\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.tiff\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+        <RegistryValue Root="HKCR"
+                       Key="SystemFileAssociations\.wdp\ShellEx\ContextMenuHandlers\ImageResizer"
+                       Value="{51B4D7E5-7568-4234-B4BB-47FB3C016A69}"
+                       Type="string" />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="PowerRenameInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)">
+      <Component Id="Module_PowerRename" Guid="E4401D08-27FE-4F96-BA17-0C61FD79E684" Win64="yes">
+        <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRenameExt.dll" KeyPath="yes" />
+        <RegistryKey Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
+          <RegistryValue Type="string" Value="PowerRename Shell Extension" />
+          <RegistryValue Type="string" Key="InprocServer32" Value="[PowerRenameInstallFolder]PowerRenameExt.dll" />
+          <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
+        </RegistryKey>
+        <RegistryKey Root="HKCR" Key="AllFileSystemObjects\ShellEx\ContextMenuHandlers\PowerRenameExt">
+          <RegistryValue Type="string" Value="{0440049F-D1DC-4E46-B27B-98393D79486B}"/>
+        </RegistryKey>
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="ShortcutGuideInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ShortcutGuideProjectName)\">
+      <Component Id="Module_ShortcutGuide" Guid="CBD0AC09-91D3-428E-B2B3-05745ADF3473" Win64="yes">
+        <File Source="$(var.BinX64Dir)modules\$(var.ShortcutGuideProjectName)\$(var.ShortcutGuideProjectName).dll" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
     <DirectoryRef Id="FileExplorerPreviewInstallFolder" FileSource="$(var.RepoDir)\modules\FileExplorerPreview\">
       <Component Id="Module_PowerPreview" Guid="FF1700D5-1B07-4E07-9A62-4D206645EEA9" Win64="yes">
         <!-- Component to include PowerPreview Module Source dll's -->
@@ -761,7 +774,7 @@
           <?define IdSafeLanguage = $(var.Language)?>
         <?endif?>
         <Component Id="Resources_$(var.IdSafeLanguage)_Component" Directory="Resources$(var.IdSafeLanguage)Folder">
-          <File Id="Resources_ImageResizer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.Language)\ImageResizer.resources.dll" />
+          <File Id="Resources_ImageResizer_$(var.IdSafeLanguage)_File" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\$(var.Language)\ImageResizer.resources.dll" />
         </Component>
         <?undef IdSafeLanguage?>
       <?endforeach?>
@@ -770,7 +783,7 @@
   <Fragment>
     <ComponentGroup Id="LauncherComponents">
       <Component Id="launcherInstallComponent" Directory="LauncherInstallFolder" Guid="5E688DB4-C522-4268-BA54-ED1CDFFE9DB6">
-        <?foreach File in App.xbf;ColorCode.Core.dll;ColorCode.UWP.dll;ColorCode.UWP.pri;concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;LauncherControl.xbf;Mages.Core.dll;Microsoft.Graphics.Canvas.dll;Microsoft.Graphics.Canvas.winmd;Microsoft.Search.Interop.dll;Microsoft.Toolkit.dll;Microsoft.Toolkit.Parsers.dll;Microsoft.Toolkit.Uwp.dll;Microsoft.Toolkit.Uwp.pri;Microsoft.Toolkit.Uwp.UI.Animations.dll;Microsoft.Toolkit.Uwp.UI.Animations.pri;Microsoft.Toolkit.Uwp.UI.Controls.dll;Microsoft.Toolkit.Uwp.UI.Controls.pri;Microsoft.Toolkit.Uwp.UI.dll;Microsoft.Toolkit.Uwp.UI.pri;Microsoft.Toolkit.Win32.UI.XamlHost.dll;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Win32.UI.XamlHost.pri;Microsoft.Toolkit.Win32.UI.XamlHost.winmd;Microsoft.Toolkit.Win32.UI.XamlHost.xml;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.UI.Xaml.dll;Microsoft.UI.Xaml.pri;Microsoft.UI.Xaml.winmd;Microsoft.Xaml.Interactions.dll;Microsoft.Xaml.Interactions.pri;Microsoft.Xaml.Interactivity.dll;Microsoft.Xaml.Interactivity.pri;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;netstandard.dll;Newtonsoft.Json.dll;NHotkey.dll;NHotkey.Wpf.dll;NLog.dll;NLog.Extensions.Logging.dll;NoiseAsset_256x256_PNG.png;Pinyin4Net.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;PowerLauncher.runtimeconfig.json;PowerLauncher.UI.exe;PowerLauncher.UI.xr.xml;resources.pri;ResultList.xbf;SQLite.Interop.dll;System.ComponentModel.Composition.dll;System.Data.OleDb.dll;System.Data.SqlClient.dll;System.Data.SQLite.dll;System.IO.Ports.dll;System.Net.Http.Rtc.dll;System.Numerics.Vectors.WindowsRuntime.dll;System.Private.Reflection.Metadata.Ecma335.dll;System.Private.ServiceModel.dll;System.Reflection.Context.dll;System.Security.Permissions.dll;System.ServiceModel.dll;System.ServiceModel.Duplex.dll;System.ServiceModel.Http.dll;System.ServiceModel.NetTcp.dll;System.ServiceModel.Primitives.dll;System.ServiceModel.Security.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;WindowsInput.dll;Wox.Core.dll;Wox.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;Telemetry.dll;PowerLauncher.Telemetry.dll;PropertyChanged.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll?>
+        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;EntityFramework.SqlServer.dll;EntityFramework.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NHotkey.dll;NHotkey.Wpf.dll;NLog.dll;NLog.Extensions.Logging.dll;Pinyin4Net.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;sni.dll;System.Data.SQLite.EF6.dll;PowerLauncher.runtimeconfig.json;SQLite.Interop.dll;System.Data.OleDb.dll;System.Data.SqlClient.dll;System.Data.SQLite.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;WindowsInput.dll;Wox.Core.dll;Wox.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;Telemetry.dll;PowerLauncher.Telemetry.dll;PropertyChanged.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.Lib.dll" />
@@ -779,40 +792,26 @@
           <File Id="File_$(var.File)" Source="$(var.RepoDir)installer\VCRuntime\$(var.File)" />
         <?endforeach?>
       </Component>  
-      <Component Id="launcherAssetsComponent" Directory="AssetsFolder" Guid="6A86A414-D68B-49F0-A7AD-A342528D7ACD">
-        <?foreach File in LockScreenLogo.scale-200.png;SplashScreen.scale-200.png;Square150x150Logo.scale-200.png;Square44x44Logo.scale-200.png;Square44x44Logo.targetsize-24_altform-unplated.png;StoreLogo.png;Wide310x150Logo.scale-200.png?>
-          <File Source="$(var.BinX64Dir)modules\launcher\Assets\$(var.File)" />
-        <?endforeach?>
-      </Component>
       <Component Id="launcherImagesComponent" Directory="LauncherImagesFolder" Guid="D254220C-1DD9-4C74-8810-1AAB2F940DE8">
         <?foreach File in app.png;app_error.png;Browser.png;calculator.png;cancel.png;close.png;cmd.png;color.png;copy.png;down.png;EXE.png;file.png;find.png;folder.png;history.png;image.png;Link.png;lock.png;logoff.png;ok.png;open.png;plugin.png;recyclebin.png;restart.png;search.png;settings.png;shutdown.png;sleep.png;up.png;update.png;warning.png?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Images\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinX64Dir)modules\launcher\Images\New Message.png" />
       </Component>
-      <Component Id="launcherUIControlsComponent" Directory="LauncherUIControlsFolder" Guid="9C6C3785-D6FB-468A-9BEC-130F0403E7F8">
-          <File Source="$(var.BinX64Dir)modules\launcher\Microsoft.Toolkit.Uwp.UI.Controls\Microsoft.Toolkit.Uwp.UI.Controls.xr.xml" />
-      </Component>
-      <Component Id="launcherXamlAssetsComponent" Directory="XamlUIAssetsFolder" Guid="C7ECA65E-73D3-4C02-A6FA-FD1E3215CC48">
-          <File Source="$(var.BinX64Dir)modules\launcher\Microsoft.UI.Xaml\Assets\NoiseAsset_256X256_PNG.png" />
-      </Component>
       <Component Id="launcherpinyinComponent" Directory="LauncherpinyindbFolder" Guid="F9EA53C7-D6AE-4E62-9800-0D32FBBD9F65">
         <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
           <File Source="$(var.BinX64Dir)modules\launcher\pinyindb\$(var.File)" />
         <?endforeach?>
       </Component>
-      <Component Id="launcherPropertiesComponent" Directory="LauncherPropertiesFolder" Guid="5C18CDB8-DBBB-4D53-A935-943347BC6310">
-        <File Source="$(var.BinX64Dir)modules\launcher\Properties\Default.rd.xml" />
-      </Component>
       
       <!-- Calculator Plugin -->
       <Component Id="calculatorComponent" Directory="CalculatorPluginFolder" Guid="19DE1022-583C-4969-9AFC-D43CB944003D">
-        <?foreach File in plugin.json;Wox.Infrastructure.dll;Microsoft.Plugin.Caculator.deps.json;Microsoft.Plugin.Caculator.dll;Wox.Plugin.dll?>
-          <File Id="Calculator_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Caculator\$(var.File)" />
+        <?foreach File in plugin.json;Wox.Infrastructure.dll;Microsoft.Plugin.Calculator.deps.json;Microsoft.Plugin.Calculator.dll;Wox.Plugin.dll?>
+          <File Id="Calculator_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\$(var.File)" />
         <?endforeach?>
       </Component>
       <Component Id="calculatorImagesComponent" Directory="CalculatorImagesFolder" Guid="07EC9232-CF9A-4CDB-8D8E-E79DC75096C0">
-        <File Id="calculatorPluginImg" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Caculator\Images\calculator.png" />
+        <File Id="calculatorPluginImg" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Images\calculator.png" />
       </Component>
        <Component Id="calculatorLanguagesComponent" Directory="CalculatorLanguagesFolder" Guid="2D8019E7-664F-4529-9FAA-83C8DACF0732">
         <?foreach LanguageFile in de.xaml;en.xaml;pl.xaml;tr.xaml;zh-cn.xaml;zh-tw.xaml?>
@@ -824,13 +823,13 @@
           <?else?>
             <?define IdSafeLanguage = $(var.LanguageFile)?>
           <?endif?>
-          <File Id="File_calc_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Caculator\Languages\$(var.LanguageFile)" />
+          <File Id="File_calc_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Languages\$(var.LanguageFile)" />
           <?undef IdSafeLanguage?>
         <?endforeach?>
       </Component>
       <Component Id="calculatorpinyindbComponent" Directory="CalculatorpinyindbFolder" Guid="D5527670-BE9A-4AA9-9D36-1249F2184B5B">
         <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
-          <File Id="CalcPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Caculator\pinyindb\$(var.File)" />
+          <File Id="CalcPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\pinyindb\$(var.File)" />
         <?endforeach?>
       </Component>
 

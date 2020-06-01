@@ -18,6 +18,7 @@ using Wox.Plugin;
 using Application = System.Windows.Application;
 using Control = System.Windows.Controls.Control;
 using Keys = System.Windows.Forms.Keys;
+using System.Windows.Input;
 using System.Reflection;
 
 namespace Microsoft.Plugin.Shell
@@ -317,7 +318,7 @@ namespace Microsoft.Plugin.Shell
 
         private void OnWinRPressed()
         {
-            _context.API.ChangeQuery($"{_context.CurrentPluginMetadata.ActionKeywords[0]}{Wox.Plugin.Query.TermSeperater}");
+            _context.API.ChangeQuery($"{_context.CurrentPluginMetadata.ActionKeywords[0]}{Wox.Plugin.Query.TermSeparator}");
             Application.Current.MainWindow.Visibility = Visibility.Visible;
         }
 
@@ -346,8 +347,8 @@ namespace Microsoft.Plugin.Shell
                     Title = _context.API.GetTranslation("wox_plugin_cmd_run_as_administrator"),
                     Glyph = "\xE7EF",
                     FontFamily = "Segoe MDL2 Assets",
-                    AcceleratorKey = "Enter",
-                    AcceleratorModifiers = "Control,Shift",
+                    AcceleratorKey = Key.Enter,
+                    AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
                     Action = c =>
                     {
                         Execute(Process.Start, PrepareProcessStartInfo(selectedResult.Title, true));

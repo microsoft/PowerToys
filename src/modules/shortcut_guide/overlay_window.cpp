@@ -315,7 +315,7 @@ void D2DOverlayWindow::animate(int vk_code, int offset)
     AnimateKeys animation;
     std::wstring id;
     animation.vk_code = vk_code;
-    winrt::com_ptr<ID2D1SvgElement> button_letter, parrent;
+    winrt::com_ptr<ID2D1SvgElement> button_letter, parent;
     if (vk_code >= 0x41 && vk_code <= 0x5A)
     {
         id.push_back('A' + (vk_code - 0x41));
@@ -373,16 +373,16 @@ void D2DOverlayWindow::animate(int vk_code, int offset)
     {
         return;
     }
-    button_letter->GetParent(parrent.put());
-    if (!parrent)
+    button_letter->GetParent(parent.put());
+    if (!parent)
     {
         return;
     }
-    parrent->GetPreviousChild(button_letter.get(), animation.button.put());
+    parent->GetPreviousChild(button_letter.get(), animation.button.put());
     if (!animation.button || !animation.button->IsAttributeSpecified(L"fill"))
     {
         animation.button = nullptr;
-        parrent->GetNextChild(button_letter.get(), animation.button.put());
+        parent->GetNextChild(button_letter.get(), animation.button.put());
     }
     if (!animation.button || !animation.button->IsAttributeSpecified(L"fill"))
     {
@@ -414,7 +414,7 @@ void D2DOverlayWindow::on_hide()
         DwmUnregisterThumbnail(thumbnail);
     }
     std::chrono::steady_clock::time_point shown_end_time = std::chrono::steady_clock::now();
-    // Trace the event only if the overaly window was visible.
+    // Trace the event only if the overlay window was visible.
     if (shown_start_time.time_since_epoch().count() > 0)
     {
         Trace::HideGuide(std::chrono::duration_cast<std::chrono::milliseconds>(shown_end_time - shown_start_time).count(), key_pressed);
@@ -512,7 +512,7 @@ void D2DOverlayWindow::resize()
     window_rect = *get_window_pos(hwnd);
     float no_active_scale, font;
     if (window_width >= window_height)
-    { // portriat is broke right now
+    { // portrait is broke right now
         use_overlay = &landscape;
         no_active_scale = 0.3f;
         font = 15.0f;
@@ -626,7 +626,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
         return;
     }
     d2d_dc->Clear();
-    int x_offset = 0, y_offset = 0, dimention = 0;
+    int x_offset = 0, y_offset = 0, dimension = 0;
     auto current_anim_value = (float)animation.value(Animation::AnimFunctions::LINEAR);
     SetLayeredWindowAttributes(hwnd, 0, (int)(255 * current_anim_value), LWA_ALPHA);
     double pos_anim_value = 1 - animation.value(Animation::AnimFunctions::EASE_OUT_EXPO);
@@ -668,7 +668,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
     // Thumbnail logic:
     auto window_state = get_window_state(active_window);
     auto thumb_window = get_window_pos(active_window);
-    bool minature_shown = active_window != nullptr && thumbnail != nullptr && thumb_window && window_state != MINIMIZED;
+    bool miniature_shown = active_window != nullptr && thumbnail != nullptr && thumb_window && window_state != MINIMIZED;
     RECT client_rect;
     if (thumb_window && GetClientRect(active_window, &client_rect))
     {
@@ -679,9 +679,9 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
         thumb_window->top += dy;
         thumb_window->bottom -= dy;
     }
-    if (minature_shown && thumb_window->right - thumb_window->left <= 0 || thumb_window->bottom - thumb_window->top <= 0)
+    if (miniature_shown && thumb_window->right - thumb_window->left <= 0 || thumb_window->bottom - thumb_window->top <= 0)
     {
-        minature_shown = false;
+        miniature_shown = false;
     }
     bool render_monitors = true;
     auto total_monitor_with_screen = total_screen;
@@ -692,7 +692,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
         total_monitor_with_screen.rect.right = max(total_monitor_with_screen.rect.right, thumb_window->right + monitor_dx);
         total_monitor_with_screen.rect.bottom = max(total_monitor_with_screen.rect.bottom, thumb_window->bottom + monitor_dy);
     }
-    // Only allow the new rect beeing slight bigger.
+    // Only allow the new rect being slight bigger.
     if (total_monitor_with_screen.width() - total_screen.width() > (thumb_window->right - thumb_window->left) / 2 ||
         total_monitor_with_screen.height() - total_screen.height() > (thumb_window->bottom - thumb_window->top) / 2)
     {
@@ -703,7 +703,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
         total_monitor_with_screen = total_screen;
     }
     auto rect_and_scale = use_overlay->get_thumbnail_rect_and_scale(0, 0, total_monitor_with_screen.width(), total_monitor_with_screen.height(), 1);
-    if (minature_shown)
+    if (miniature_shown)
     {
         RECT thumbnail_pos;
         if (render_monitors)
@@ -719,7 +719,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
         }
         // If the animation is done show the thumbnail
         //   we cannot animate the thumbnail, the animation lags behind
-        minature_shown = show_thumbnail(thumbnail_pos, current_anim_value);
+        miniature_shown = show_thumbnail(thumbnail_pos, current_anim_value);
     }
     else
     {
@@ -732,7 +732,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
     // render the monitors
     if (render_monitors)
     {
-        brushColor = D2D1::ColorF(colors.desktop_fill_color, minature_shown ? current_anim_value : current_anim_value * 0.3f);
+        brushColor = D2D1::ColorF(colors.desktop_fill_color, miniature_shown ? current_anim_value : current_anim_value * 0.3f);
         brush = nullptr;
         winrt::check_hresult(d2d_dc->CreateSolidColorBrush(brushColor, brush.put()));
         for (auto& monitor : monitors)
@@ -747,16 +747,16 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
         }
     }
     // Finalize the overlay - dimm the buttons if no thumbnail is present and show "No active window"
-    use_overlay->toggle_window_group(minature_shown || window_state == MINIMIZED);
-    if (!minature_shown && window_state != MINIMIZED)
+    use_overlay->toggle_window_group(miniature_shown || window_state == MINIMIZED);
+    if (!miniature_shown && window_state != MINIMIZED)
     {
         no_active.render(d2d_dc);
-        window_state = UNKNONW;
+        window_state = UNKNOWN;
     }
 
     // Set the animation - move the draw window according to animation step
-    auto popin = D2D1::Matrix3x2F::Translation((float)x_offset, (float)y_offset);
-    d2d_dc->SetTransform(popin);
+    auto popIn = D2D1::Matrix3x2F::Translation((float)x_offset, (float)y_offset);
+    d2d_dc->SetTransform(popIn);
 
     // Animate keys
     for (unsigned id = 0; id < key_animations.size();)
@@ -862,15 +862,15 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
         down = GET_RESOURCE_STRING(IDS_NO_ACTION);
         down_disabled = true;
     }
-    auto text_color = D2D1::ColorF(light_mode ? 0x222222 : 0xDDDDDD, active_window_snappable && (minature_shown || window_state == MINIMIZED) ? 1.0f : 0.3f);
+    auto text_color = D2D1::ColorF(light_mode ? 0x222222 : 0xDDDDDD, active_window_snappable && (miniature_shown || window_state == MINIMIZED) ? 1.0f : 0.3f);
     use_overlay->find_element(L"KeyUpGroup")->SetAttributeValue(L"fill-opacity", up_disabled ? 0.3f : 1.0f);
-    text.set_aligment_center().write(d2d_dc, text_color, use_overlay->get_maximize_label(), up);
+    text.set_alignment_center().write(d2d_dc, text_color, use_overlay->get_maximize_label(), up);
     use_overlay->find_element(L"KeyDownGroup")->SetAttributeValue(L"fill-opacity", down_disabled ? 0.3f : 1.0f);
     text.write(d2d_dc, text_color, use_overlay->get_minimize_label(), down);
     use_overlay->find_element(L"KeyLeftGroup")->SetAttributeValue(L"fill-opacity", left_disabled ? 0.3f : 1.0f);
-    text.set_aligment_right().write(d2d_dc, text_color, use_overlay->get_snap_left(), left);
+    text.set_alignment_right().write(d2d_dc, text_color, use_overlay->get_snap_left(), left);
     use_overlay->find_element(L"KeyRightGroup")->SetAttributeValue(L"fill-opacity", right_disabled ? 0.3f : 1.0f);
-    text.set_aligment_left().write(d2d_dc, text_color, use_overlay->get_snap_right(), right);
+    text.set_alignment_left().write(d2d_dc, text_color, use_overlay->get_snap_right(), right);
     // ... and the arrows with numbers
     for (auto&& button : tasklist_buttons)
     {

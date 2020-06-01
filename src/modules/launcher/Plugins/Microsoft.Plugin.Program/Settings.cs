@@ -15,7 +15,7 @@ namespace Microsoft.Plugin.Program
 
         public bool EnableRegistrySource { get; set; } = true;
 
-        internal const char SuffixSeperator = ';';
+        internal const char SuffixSeparator = ';';
 
         /// <summary>
         /// Contains user added folder location contents as well as all user disabled applications

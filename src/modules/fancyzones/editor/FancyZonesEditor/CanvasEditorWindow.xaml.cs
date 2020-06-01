@@ -21,7 +21,7 @@ namespace FancyZonesEditor
 
         private void OnAddZone(object sender, RoutedEventArgs e)
         {
-            _model.AddZone(new Int32Rect(_offset, _offset, (int)(_model.ReferenceWidth * 0.6), (int)(_model.ReferenceHeight * 0.6)));
+            _model.AddZone(new Int32Rect(_offset, _offset, (int)(Settings.WorkArea.Width * 0.6), (int)(Settings.WorkArea.Height * 0.6)));
             _offset += 100;
         }
 

@@ -31,7 +31,7 @@ namespace FancyZonesEditor
 
             KeyUp += MainWindow_KeyUp;
 
-            if (_settings.WorkArea.Height < 900)
+            if (Settings.WorkArea.Height < 900)
             {
                 SizeToContent = SizeToContent.WidthAndHeight;
                 WrapPanelItemSize = 180;
@@ -146,6 +146,7 @@ namespace FancyZonesEditor
         private void Apply_Click(object sender, RoutedEventArgs e)
         {
             EditorOverlay mainEditor = EditorOverlay.Current;
+
             if (mainEditor.DataContext is LayoutModel model)
             {
                 if (model is GridLayoutModel)
@@ -154,7 +155,7 @@ namespace FancyZonesEditor
                 }
                 else
                 {
-                    model.Apply();
+                    model.Persist();
                 }
 
                 Close();

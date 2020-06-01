@@ -24,19 +24,19 @@ D2DText& D2DText::resize(float text_size, float scale)
     return *this;
 }
 
-D2DText& D2DText::set_aligment_left()
+D2DText& D2DText::set_alignment_left()
 {
     winrt::check_hresult(format->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING));
     return *this;
 }
 
-D2DText& D2DText::set_aligment_center()
+D2DText& D2DText::set_alignment_center()
 {
     winrt::check_hresult(format->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER));
     return *this;
 }
 
-D2DText& D2DText::set_aligment_right()
+D2DText& D2DText::set_alignment_right()
 {
     winrt::check_hresult(format->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_TRAILING));
     return *this;
