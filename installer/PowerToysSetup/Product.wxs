@@ -4,6 +4,7 @@
      xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension" >
 
   <?define ImageResizerProjectName="ImageResizer"?>
+  <?define KeyboardManagerProjectName="KeyboardManager"?>
   <?define PowerRenameProjectName="PowerRename"?>
   <?define ShortcutGuideProjectName="ShortcutGuide"?>
 
@@ -416,7 +417,7 @@
       </Component>
 
       <Component Id="Module_KeyboardManager" Guid="9279BD82-786F-4F0B-8E49-DB484EE34C9B" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\KeyboardManager.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManager.dll" />
       </Component>
 
       <Component Id="Module_PowerPreview_PerUserRegistry" Guid="CD90ADC0-7CD5-4A62-B0AF-23545C1E6DD3" Win64="yes">
