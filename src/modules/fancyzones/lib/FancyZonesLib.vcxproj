@@ -101,6 +101,7 @@
     <ClInclude Include="FancyZones.h" />
     <ClInclude Include="FancyZonesWinHookEventIDs.h" />
     <ClInclude Include="JsonHelpers.h" />
+    <ClInclude Include="MonitorWorkAreaHandler.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Settings.h" />
@@ -116,6 +117,7 @@
     <ClCompile Include="FancyZones.cpp" />
     <ClCompile Include="FancyZonesWinHookEventIDs.cpp" />
     <ClCompile Include="JsonHelpers.cpp" />
+    <ClCompile Include="MonitorWorkAreaHandler.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
