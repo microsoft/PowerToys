@@ -41,6 +41,10 @@ build:
       name: 'Build Power Toys'
       command: '.pipelines\build.cmd'
       artifacts:
+        - to: 'Symbols/x64'
+          include:
+            - '**/x64/*.pdb'
+      artifacts:
         - from: 'x64/Release'
           to: 'Build_Output'
           include:
@@ -127,13 +131,6 @@ build:
             - 'PowerToysSetup-*.msi'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
-    - !!buildcommand
-      name: 'Copying x64 Symbols'
-      artifacts:
-        - to: 'Symbols/x64'
-          include:
-            - 'x64/*/*.pdb'
-            - 'x64/*/*/*.pdb'
 
 package:
   commands:
