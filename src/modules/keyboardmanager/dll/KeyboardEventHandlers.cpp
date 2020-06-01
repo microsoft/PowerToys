@@ -406,13 +406,25 @@ namespace KeyboardEventHandlers
                         // If the original shortcut is a subset of the new shortcut
                         if (commonKeys == src_size - 1)
                         {
-                            key_count = dest_size - commonKeys + 2;
+                            key_count = dest_size - commonKeys + 1;
+
+                            // If the target shortcut's action key is pressed, then it should be released and original shortcut's action key should be set
+                            bool isActionKeyPressed = false;
+                            if (GetAsyncKeyState(it.second.targetShortcut.GetActionKey()) & 0x8000)
+                            {
+                                isActionKeyPressed = true;
+                                key_count += 2;
+                            }
+
                             keyEventList = new INPUT[key_count]();
                             memset(keyEventList, 0, sizeof(keyEventList));
 
                             int i = 0;
-                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetActionKey(), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                            i++;
+                            if (isActionKeyPressed)
+                            {
+                                KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetActionKey(), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                i++;
+                            }
                             if ((it.second.targetShortcut.GetShiftKey() != it.first.GetShiftKey()) && it.second.targetShortcut.GetShiftKey() != NULL)
                             {
                                 KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetShiftKey(), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
@@ -434,6 +446,13 @@ namespace KeyboardEventHandlers
                                 i++;
                             }
 
+                            // key down for original shortcut action key
+                            if (isActionKeyPressed)
+                            {
+                                KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.first.GetActionKey(), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                i++;
+                            }
+
                             // Send current key pressed
                             KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                             i++;
@@ -445,14 +464,26 @@ namespace KeyboardEventHandlers
                         else
                         {
                             // Key up for all new shortcut keys, key down for original shortcut modifiers, dummy key and current key press but common keys aren't repeated
-                            key_count = (dest_size) + (src_size - 1) + 2 - (2 * (size_t)commonKeys);
+                            key_count = (dest_size) + (src_size - 1) + 1 - (2 * (size_t)commonKeys);
+
+                            // If the target shortcut's action key is pressed, then it should be released and original shortcut's action key should be set
+                            bool isActionKeyPressed = false;
+                            if (GetAsyncKeyState(it.second.targetShortcut.GetActionKey()) & 0x8000)
+                            {
+                                isActionKeyPressed = true;
+                                key_count += 2;
+                            }
+
                             keyEventList = new INPUT[key_count]();
                             memset(keyEventList, 0, sizeof(keyEventList));
 
                             // Release new shortcut state (release in reverse order of shortcut to be accurate)
                             int i = 0;
-                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetActionKey(), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                            i++;
+                            if (isActionKeyPressed)
+                            {
+                                KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetActionKey(), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                i++;
+                            }
                             if ((it.second.targetShortcut.GetShiftKey() != it.first.GetShiftKey()) && it.second.targetShortcut.GetShiftKey() != NULL)
                             {
                                 KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.second.targetShortcut.GetShiftKey(), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
@@ -494,6 +525,13 @@ namespace KeyboardEventHandlers
                             if ((it.second.targetShortcut.GetShiftKey() != it.first.GetShiftKey()) && it.first.GetShiftKey() != NULL)
                             {
                                 KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.first.GetShiftKey(), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                i++;
+                            }
+
+                            // key down for original shortcut action key
+                            if (isActionKeyPressed)
+                            {
+                                KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.first.GetActionKey(), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                                 i++;
                             }
 
