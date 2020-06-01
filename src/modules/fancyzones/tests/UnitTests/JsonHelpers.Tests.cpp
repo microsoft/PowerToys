@@ -719,7 +719,7 @@ namespace FancyZonesUnitTests
                 .zoneSetUuid = L"zoneset-uuid", .deviceId = L"device-id", .zoneIndexSet = { 54321 }
             };
             AppZoneHistoryJSON appZoneHistory{ L"appPath", std::vector<AppZoneHistoryData>{ data } };
-            json::JsonObject expected = json::JsonObject::Parse(L"{\"app-path\": \"appPath\", \"history\": [{\"device-id\": \"device-id\", \"zoneset-uuid\": \"zoneset-uuid\", \"zone-index-set\": [54321]}]}");
+            json::JsonObject expected = json::JsonObject::Parse(L"{\"app-path\": \"appPath\", \"history\":[{\"zone-index-set\": [54321], \"device-id\": \"device-id\", \"zoneset-uuid\": \"zoneset-uuid\"}]}");
 
             auto actual = AppZoneHistoryJSON::ToJson(appZoneHistory);
             compareJsonObjects(expected, actual);
@@ -795,9 +795,10 @@ namespace FancyZonesUnitTests
             AppZoneHistoryJSON appZoneHistory{
                 L"appPath", std::vector<AppZoneHistoryData>{ data1, data2 }
             };
-            json::JsonObject expected = json::JsonObject::Parse(L"{\"app-path\": \"appPath\", \"history\": [{\"device-id\": \"device-id1\", \"zoneset-uuid\": \"zoneset-uuid1\", \"zone-index-set\": [54321]}, {\"device-id\": \"device-id2\", \"zoneset-uuid\": \"zoneset-uuid2\", \"zone-index-set\": [12345]}]}");
+            json::JsonObject expected = json::JsonObject::Parse(L"{\"app-path\": \"appPath\", \"history\": [{\"zone-index-set\": [54321], \"device-id\": \"device-id1\", \"zoneset-uuid\": \"zoneset-uuid1\"}, {\"zone-index-set\": [12345], \"device-id\": \"device-id2\", \"zoneset-uuid\": \"zoneset-uuid2\"}]}");
 
             auto actual = AppZoneHistoryJSON::ToJson(appZoneHistory);
+            std::wstring s = actual.Stringify().c_str();
             compareJsonObjects(expected, actual);
         }
 

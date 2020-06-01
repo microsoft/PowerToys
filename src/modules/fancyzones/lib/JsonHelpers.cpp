@@ -1046,6 +1046,10 @@ namespace JSONHelpers
                     result.data.push_back(std::move(data.value()));
                 }
             }
+            if (result.data.empty())
+            {
+                return std::nullopt;
+            }
 
             return result;
         }
