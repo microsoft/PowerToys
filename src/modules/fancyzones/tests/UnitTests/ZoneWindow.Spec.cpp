@@ -512,7 +512,7 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(expected, actual);
 
             const auto zoneSet = zoneWindow->ActiveZoneSet();
-            zoneSet->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0, false);
+            zoneSet->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
             const auto actualZoneIndexSet = zoneSet->GetZoneIndexSetFromWindow(window);
             Assert::AreNotEqual({}, actualZoneIndexSet);
         }
@@ -568,7 +568,7 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(expected, actual);
 
             const auto zoneSet = zoneWindow->ActiveZoneSet();
-            zoneSet->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0, false);
+            zoneSet->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
             const auto actualZoneIndex = zoneSet->GetZoneIndexSetFromWindow(window);
             Assert::AreNotEqual({}, actualZoneIndex); //with invalid point zone remains the same
         }
