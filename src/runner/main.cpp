@@ -140,6 +140,7 @@ int runner(bool isProcessElevated)
             L"",
             L"FileExplorerPreview/",
             L"FancyZones/",
+            L"ImageResizer/",
             L"PowerRename/",
             L"ShortcutGuide/"
         };

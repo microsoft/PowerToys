@@ -11,6 +11,7 @@ using Microsoft.Win32;
 using Wox.Infrastructure;
 using Microsoft.Plugin.Program.Logger;
 using Wox.Plugin;
+using System.Windows.Input;
 using System.Reflection;
 
 namespace Microsoft.Plugin.Program.Programs
@@ -100,8 +101,8 @@ namespace Microsoft.Plugin.Program.Programs
                     Title = api.GetTranslation("wox_plugin_program_run_as_administrator"),
                     Glyph = "\xE7EF",
                     FontFamily = "Segoe MDL2 Assets",
-                    AcceleratorKey = "Enter",
-                    AcceleratorModifiers = "Control,Shift",
+                    AcceleratorKey = Key.Enter,
+                    AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
                     Action = _ =>
                     {
                         var info = new ProcessStartInfo
@@ -123,8 +124,8 @@ namespace Microsoft.Plugin.Program.Programs
                     Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
                     Glyph = "\xE838",
                     FontFamily = "Segoe MDL2 Assets",
-                    AcceleratorKey = "E",
-                    AcceleratorModifiers = "Control,Shift",
+                    AcceleratorKey = Key.E,
+                    AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
                     Action = _ =>
                     {
 

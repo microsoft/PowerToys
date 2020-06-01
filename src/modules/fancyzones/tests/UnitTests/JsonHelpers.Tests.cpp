@@ -208,8 +208,8 @@ namespace FancyZonesUnitTests
         TEST_METHOD (ToJson)
         {
             CanvasLayoutInfo info;
-            info.referenceWidth = 123;
-            info.referenceHeight = 321;
+            info.lastWorkAreaWidth = 123;
+            info.lastWorkAreaHeight = 321;
             info.zones = { CanvasLayoutInfo::Rect{ 11, 22, 33, 44 }, CanvasLayoutInfo::Rect{ 55, 66, 77, 88 } };
 
             auto actual = CanvasLayoutInfo::ToJson(info);
@@ -219,15 +219,15 @@ namespace FancyZonesUnitTests
         TEST_METHOD (FromJson)
         {
             CanvasLayoutInfo expected;
-            expected.referenceWidth = 123;
-            expected.referenceHeight = 321;
+            expected.lastWorkAreaWidth = 123;
+            expected.lastWorkAreaHeight = 321;
             expected.zones = { CanvasLayoutInfo::Rect{ 11, 22, 33, 44 }, CanvasLayoutInfo::Rect{ 55, 66, 77, 88 } };
 
             auto actual = CanvasLayoutInfo::FromJson(m_json);
             Assert::IsTrue(actual.has_value());
 
-            Assert::AreEqual(expected.referenceHeight, actual->referenceHeight);
-            Assert::AreEqual(expected.referenceWidth, actual->referenceWidth);
+            Assert::AreEqual(expected.lastWorkAreaHeight, actual->lastWorkAreaHeight);
+            Assert::AreEqual(expected.lastWorkAreaWidth, actual->lastWorkAreaWidth);
             Assert::AreEqual(expected.zones.size(), actual->zones.size());
             for (int i = 0; i < expected.zones.size(); i++)
             {
@@ -596,8 +596,8 @@ namespace FancyZonesUnitTests
 
             auto expectedGrid = std::get<CanvasLayoutInfo>(expected.data.info);
             auto actualGrid = std::get<CanvasLayoutInfo>(actual->data.info);
-            Assert::AreEqual(expectedGrid.referenceWidth, actualGrid.referenceWidth);
-            Assert::AreEqual(expectedGrid.referenceHeight, actualGrid.referenceHeight);
+            Assert::AreEqual(expectedGrid.lastWorkAreaWidth, actualGrid.lastWorkAreaWidth);
+            Assert::AreEqual(expectedGrid.lastWorkAreaHeight, actualGrid.lastWorkAreaHeight);
         }
 
         TEST_METHOD (FromJsonGridInvalidUuid)
@@ -1397,8 +1397,8 @@ namespace FancyZonesUnitTests
                     {
                         auto expectedInfo = std::get<CanvasLayoutInfo>(expected->data.info);
                         auto actualInfo = std::get<CanvasLayoutInfo>(actual.info);
-                        Assert::AreEqual(expectedInfo.referenceWidth, actualInfo.referenceWidth, L"canvas width");
-                        Assert::AreEqual(expectedInfo.referenceHeight, actualInfo.referenceHeight, L"canvas height");
+                        Assert::AreEqual(expectedInfo.lastWorkAreaWidth, actualInfo.lastWorkAreaWidth, L"canvas width");
+                        Assert::AreEqual(expectedInfo.lastWorkAreaHeight, actualInfo.lastWorkAreaHeight, L"canvas height");
                     }
 
                     iter.MoveNext();

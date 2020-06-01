@@ -3,10 +3,10 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
-using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml.Media;
 
 namespace Wox.Infrastructure.Image
 {
@@ -14,6 +14,9 @@ namespace Wox.Infrastructure.Image
     {
         private static readonly ImageCache ImageCache = new ImageCache();
         private static BinaryStorage<ConcurrentDictionary<string, int>> _storage;
+        private static readonly ConcurrentDictionary<string, string> GuidToKey = new ConcurrentDictionary<string, string>();
+        private static IImageHashGenerator _hashGenerator;
+
 
         private static readonly string[] ImageExtensions =
         {
@@ -30,11 +33,13 @@ namespace Wox.Infrastructure.Image
         public static void Initialize()
         {
             _storage = new BinaryStorage<ConcurrentDictionary<string, int>>("Image");
+            _hashGenerator = new ImageHashGenerator();
             ImageCache.Usage = _storage.TryLoad(new ConcurrentDictionary<string, int>());
 
             foreach (var icon in new[] { Constant.DefaultIcon, Constant.ErrorIcon })
             {
                 ImageSource img = new BitmapImage(new Uri(icon));
+                img.Freeze();
                 ImageCache[icon] = img;
             }
             Task.Run(() =>
@@ -96,6 +101,7 @@ namespace Wox.Infrastructure.Image
                 if (path.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
                 {
                     var imageSource = new BitmapImage(new Uri(path));
+                    imageSource.Freeze();
                     return new ImageResult(imageSource, ImageType.Data);
                 }
 
@@ -150,6 +156,11 @@ namespace Wox.Infrastructure.Image
                     image = ImageCache[Constant.ErrorIcon];
                     path = Constant.ErrorIcon;
                 }
+
+                if (type != ImageType.Error)
+                {
+                    image.Freeze();
+                }
             }
             catch (System.Exception e)
             {
@@ -161,22 +172,43 @@ namespace Wox.Infrastructure.Image
             return new ImageResult(image, type);
         }
 
+        private static bool EnableImageHash = true;
+
         public static ImageSource Load(string path, bool loadFullImage = false)
         {
             var imageResult = LoadInternal(path, loadFullImage);
 
             var img = imageResult.ImageSource;
             if (imageResult.ImageType != ImageType.Error && imageResult.ImageType != ImageType.Cache)
-            {                                
+            { // we need to get image hash
+                string hash = EnableImageHash ? _hashGenerator.GetHashFromImage(img) : null;
+                if (hash != null)
+                {
+                    if (GuidToKey.TryGetValue(hash, out string key))
+                    { // image already exists
+                        img = ImageCache[key];
+                    }
+                    else
+                    { // new guid
+                        GuidToKey[hash] = path;
+                    }
+                }
+
                 // update cache
                 ImageCache[path] = img;
             }
+
+
             return img;
         }
 
         private static BitmapImage LoadFullImage(string path)
         {
-            BitmapImage image = new BitmapImage(new Uri(path));
+            BitmapImage image = new BitmapImage();
+            image.BeginInit();
+            image.CacheOption = BitmapCacheOption.OnLoad;
+            image.UriSource = new Uri(path);
+            image.EndInit();
             return image;
         }
     }

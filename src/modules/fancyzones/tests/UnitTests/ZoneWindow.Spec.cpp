@@ -121,7 +121,7 @@ namespace FancyZonesUnitTests
 
             m_fancyZonesData.ParseDeviceInfoFromTmpFile(activeZoneSetTempPath);
 
-            return MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, false);
+            return MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
         }
 
         void testZoneWindow(winrt::com_ptr<IZoneWindow> zoneWindow)
@@ -137,14 +137,14 @@ namespace FancyZonesUnitTests
     public:
         TEST_METHOD(CreateZoneWindow)
         {
-            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, false);
+            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
             testZoneWindow(m_zoneWindow);
             Assert::IsNull(m_zoneWindow->ActiveZoneSet());
         }
 
         TEST_METHOD(CreateZoneWindowNoHinst)
         {
-            m_zoneWindow = MakeZoneWindow(m_hostPtr, {}, m_monitor, m_uniqueId.str(), false, false);
+            m_zoneWindow = MakeZoneWindow(m_hostPtr, {}, m_monitor, m_uniqueId.str(), {}, false);
 
             testZoneWindow(m_zoneWindow);
             Assert::IsNull(m_zoneWindow->ActiveZoneSet());
@@ -152,7 +152,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(CreateZoneWindowNoHinstFlashZones)
         {
-            m_zoneWindow = MakeZoneWindow(m_hostPtr, {}, m_monitor, m_uniqueId.str(), true, false);
+            m_zoneWindow = MakeZoneWindow(m_hostPtr, {}, m_monitor, m_uniqueId.str(), {}, false);
 
             testZoneWindow(m_zoneWindow);
             Assert::IsNull(m_zoneWindow->ActiveZoneSet());
@@ -160,7 +160,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(CreateZoneWindowNoMonitor)
         {
-            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, {}, m_uniqueId.str(), false, false);
+            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, {}, m_uniqueId.str(), {}, false);
 
             Assert::IsNull(m_zoneWindow.get());
             Assert::IsNotNull(m_hostPtr);
@@ -168,7 +168,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(CreateZoneWindowNoMonitorFlashZones)
         {
-            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, {}, m_uniqueId.str(), true, false);
+            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, {}, m_uniqueId.str(), {}, false);
 
             Assert::IsNull(m_zoneWindow.get());
             Assert::IsNotNull(m_hostPtr);
@@ -178,7 +178,7 @@ namespace FancyZonesUnitTests
         {
             // Generate unique id without device id
             std::wstring uniqueId = ZoneWindowUtils::GenerateUniqueId(m_monitor, nullptr, m_virtualDesktopId.c_str());
-            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, uniqueId, false, false);
+            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, uniqueId, {}, false);
 
             const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
             const std::wstring expectedUniqueId = L"FallbackDevice_" + std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom) + L"_" + m_virtualDesktopId;
@@ -194,7 +194,7 @@ namespace FancyZonesUnitTests
         {
             // Generate unique id without virtual desktop id
             std::wstring uniqueId = ZoneWindowUtils::GenerateUniqueId(m_monitor, m_deviceId.c_str(), nullptr);
-            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, uniqueId, false, false);
+            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, uniqueId, {}, false);
 
             const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
             Assert::IsNotNull(m_zoneWindow.get());
@@ -221,7 +221,7 @@ namespace FancyZonesUnitTests
                 m_fancyZonesData.ParseDeviceInfoFromTmpFile(activeZoneSetTempPath);
 
                 //temp file read on initialization
-                auto actual = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, false);
+                auto actual = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
                 testZoneWindow(actual);
 
@@ -245,7 +245,7 @@ namespace FancyZonesUnitTests
             m_fancyZonesData.ParseDeviceInfoFromTmpFile(activeZoneSetTempPath);
 
             //temp file read on initialization
-            auto actual = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, false);
+            auto actual = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
             testZoneWindow(actual);
 
@@ -281,7 +281,7 @@ namespace FancyZonesUnitTests
             m_fancyZonesData.ParseCustomZoneSetFromTmpFile(appliedZoneSetTempPath);
 
             //temp file read on initialization
-            auto actual = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, false);
+            auto actual = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
             testZoneWindow(actual);
 
@@ -328,7 +328,7 @@ namespace FancyZonesUnitTests
             m_fancyZonesData.ParseCustomZoneSetFromTmpFile(appliedZoneSetTempPath);
 
             //temp file read on initialization
-            auto actual = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, false);
+            auto actual = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
             testZoneWindow(actual);
 
@@ -375,7 +375,7 @@ namespace FancyZonesUnitTests
             m_fancyZonesData.ParseCustomZoneSetFromTmpFile(appliedZoneSetTempPath);
 
             //temp file read on initialization
-            auto actual = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, false);
+            auto actual = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
             testZoneWindow(actual);
 
@@ -396,11 +396,11 @@ namespace FancyZonesUnitTests
             const auto parentDeviceInfo = DeviceInfoData{ parentZoneSet, true, spacing, zoneCount };
             m_fancyZonesData.SetDeviceInfo(m_parentUniqueId.str(), parentDeviceInfo);
 
-            auto parentZoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_parentUniqueId.str(), false, false);
+            auto parentZoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_parentUniqueId.str(), {}, false);
             m_zoneWindowHost->m_zoneWindow = parentZoneWindow.get();
 
             // newWorkArea = true - zoneWindow will be cloned from parent
-            auto actualZoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, true);
+            auto actualZoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), m_parentUniqueId.str(), false);
 
             Assert::IsNotNull(actualZoneWindow->ActiveZoneSet());
             const auto actualZoneSet = actualZoneWindow->ActiveZoneSet()->GetZones();
@@ -425,11 +425,11 @@ namespace FancyZonesUnitTests
             const auto parentDeviceInfo = DeviceInfoData{ parentZoneSet, true, spacing, zoneCount };
             m_fancyZonesData.SetDeviceInfo(m_parentUniqueId.str(), parentDeviceInfo);
 
-            auto parentZoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_parentUniqueId.str(), false, false);
+            auto parentZoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_parentUniqueId.str(), {}, false);
             m_zoneWindowHost->m_zoneWindow = parentZoneWindow.get();
 
             // newWorkArea = false - zoneWindow won't be cloned from parent
-            auto actualZoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, false);
+            auto actualZoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
             Assert::IsNull(actualZoneWindow->ActiveZoneSet());
 
@@ -445,7 +445,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(MoveSizeEnter)
         {
-            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, false);
+            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
             const auto expected = S_OK;
             const auto actual = m_zoneWindow->MoveSizeEnter(Mocks::Window(), true);
@@ -456,7 +456,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(MoveSizeEnterTwice)
         {
-            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, false);
+            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
             const auto expected = E_INVALIDARG;
 
@@ -469,7 +469,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(MoveSizeUpdate)
         {
-            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, false);
+            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
             const auto expected = S_OK;
             const auto actual = m_zoneWindow->MoveSizeUpdate(POINT{ 0, 0 }, true);
@@ -480,7 +480,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(MoveSizeUpdatePointNegativeCoordinates)
         {
-            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, false);
+            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
             const auto expected = S_OK;
             const auto actual = m_zoneWindow->MoveSizeUpdate(POINT{ -10, -10 }, true);
@@ -491,7 +491,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(MoveSizeUpdatePointBigCoordinates)
         {
-            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, false);
+            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
             const auto expected = S_OK;
             const auto actual = m_zoneWindow->MoveSizeUpdate(POINT{ m_monitorInfo.rcMonitor.right + 1, m_monitorInfo.rcMonitor.bottom + 1 }, true);
@@ -512,7 +512,7 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(expected, actual);
 
             const auto zoneSet = zoneWindow->ActiveZoneSet();
-            zoneSet->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0, false);
+            zoneSet->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
             const auto actualZoneIndexSet = zoneSet->GetZoneIndexSetFromWindow(window);
             Assert::AreNotEqual({}, actualZoneIndexSet);
         }
@@ -535,7 +535,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(MoveSizeEndDifferentWindows)
         {
-            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, false);
+            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
             const auto window = Mocks::Window();
             m_zoneWindow->MoveSizeEnter(window, true);
@@ -548,7 +548,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(MoveSizeEndWindowNotSet)
         {
-            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, false);
+            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
             const auto expected = E_INVALIDARG;
             const auto actual = m_zoneWindow->MoveSizeEnd(Mocks::Window(), POINT{ 0, 0 });
@@ -568,14 +568,14 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(expected, actual);
 
             const auto zoneSet = zoneWindow->ActiveZoneSet();
-            zoneSet->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0, false);
+            zoneSet->MoveWindowIntoZoneByIndex(window, Mocks::Window(), 0);
             const auto actualZoneIndex = zoneSet->GetZoneIndexSetFromWindow(window);
             Assert::AreNotEqual({}, actualZoneIndex); //with invalid point zone remains the same
         }
 
         TEST_METHOD(MoveWindowIntoZoneByIndexNoActiveZoneSet)
         {
-            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, false);
+            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
             Assert::IsNull(m_zoneWindow->ActiveZoneSet());
 
             m_zoneWindow->MoveWindowIntoZoneByIndex(Mocks::Window(), 0);
@@ -593,7 +593,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(MoveWindowIntoZoneByDirectionNoActiveZoneSet)
         {
-            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, false);
+            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
             Assert::IsNull(m_zoneWindow->ActiveZoneSet());
 
             m_zoneWindow->MoveWindowIntoZoneByIndex(Mocks::Window(), 0);
@@ -631,7 +631,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(SaveWindowProcessToZoneIndexNoActiveZoneSet)
         {
-            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), false, false);
+            m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
             Assert::IsNull(m_zoneWindow->ActiveZoneSet());
 
             m_zoneWindow->SaveWindowProcessToZoneIndex(Mocks::Window());

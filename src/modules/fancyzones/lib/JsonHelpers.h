@@ -45,8 +45,9 @@ namespace JSONHelpers
 
     struct CanvasLayoutInfo
     {
-        int referenceWidth;
-        int referenceHeight;
+        int lastWorkAreaWidth;
+        int lastWorkAreaHeight;
+
         struct Rect
         {
             int x;
@@ -188,12 +189,6 @@ namespace JSONHelpers
 
         std::optional<CustomZoneSetData> FindCustomZoneSet(const std::wstring& guid) const;
 
-        inline const std::wstring GetActiveDeviceId() const
-        {
-            std::scoped_lock lock{ dataLock };
-            return activeDeviceId;
-        }
-
         inline const std::unordered_map<std::wstring, DeviceInfoData>& GetDeviceInfoMap() const
         {
             std::scoped_lock lock{ dataLock };
@@ -218,7 +213,6 @@ namespace JSONHelpers
             appZoneHistoryMap.clear();
             deviceInfoMap.clear();
             customZoneSetsMap.clear();
-            activeDeviceId.clear();
         }
 
         inline void SetDeviceInfo(const std::wstring& deviceId, DeviceInfoData data)
@@ -232,12 +226,6 @@ namespace JSONHelpers
             jsonFilePath = result + L"\\" + std::wstring(L"zones-settings.json");
         }
 #endif
-
-        inline void SetActiveDeviceId(const std::wstring& deviceId)
-        {
-            std::scoped_lock lock{ dataLock };
-            activeDeviceId = deviceId;
-        }
 
         inline bool DeleteTmpFile(std::wstring_view tmpFilePath) const
         {
@@ -282,7 +270,6 @@ namespace JSONHelpers
         std::unordered_map<std::wstring, DeviceInfoData> deviceInfoMap{};
         std::unordered_map<std::wstring, CustomZoneSetData> customZoneSetsMap{};
 
-        std::wstring activeDeviceId;
         std::wstring jsonFilePath;
         std::wstring appZoneHistoryFilePath;
     };
