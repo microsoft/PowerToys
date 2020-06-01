@@ -465,6 +465,18 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
+        // Deduplication code
+        public static Func<ParallelQuery<Win32>, Win32[]> DeduplicatePrograms = (programs) =>
+        {
+            var uniqueExePrograms = programs.Where(x => !string.IsNullOrEmpty(x.LnkResolvedPath) || Extension(x.FullPath) != ExeExtension);
+
+            var p = programs.ToArray();
+
+            var uniquePrograms = uniqueExePrograms.Distinct(new removeDuplicatesComparer());
+            var s = uniquePrograms.ToArray();
+            return s;
+        };
+
         public static Win32[] All(Settings settings)
         {
             try
@@ -486,10 +498,7 @@ namespace Microsoft.Plugin.Program.Programs
                     programs = programs.Concat(startMenu);
                 }
 
-                var uniqueExePrograms = programs.Where(x => !string.IsNullOrEmpty(x.LnkResolvedPath) || Extension(x.FullPath) != ExeExtension);
-
-                var uniquePrograms = uniqueExePrograms.Distinct(new removeDuplicatesComparer());
-                return uniquePrograms.ToArray();
+                return DeduplicatePrograms(programs);
             }
 #if DEBUG //This is to make developer aware of any unhandled exception and add in handling.
             catch (Exception e)
