@@ -95,7 +95,7 @@ namespace Wox.Test.Plugins
         }
 
         [Test] 
-        public void DedupFunction_whenCalled_mustNotRemoveFileExplorer()
+        public void DedupFunction_whenCalled_mustNotRemovelnkWhichdoesNotHaveExe()
         {
             // Arrange
             List<Win32> prgms = new List<Win32>();

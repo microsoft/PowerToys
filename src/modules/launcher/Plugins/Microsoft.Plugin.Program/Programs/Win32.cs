@@ -469,12 +469,8 @@ namespace Microsoft.Plugin.Program.Programs
         public static Func<ParallelQuery<Win32>, Win32[]> DeduplicatePrograms = (programs) =>
         {
             var uniqueExePrograms = programs.Where(x => !string.IsNullOrEmpty(x.LnkResolvedPath) || Extension(x.FullPath) != ExeExtension);
-
-            var p = programs.ToArray();
-
             var uniquePrograms = uniqueExePrograms.Distinct(new removeDuplicatesComparer());
-            var s = uniquePrograms.ToArray();
-            return s;
+            return uniquePrograms.ToArray();
         };
 
         public static Win32[] All(Settings settings)
