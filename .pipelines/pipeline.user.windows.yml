@@ -72,7 +72,7 @@ build:
             - 'modules\FileExplorerPreview\SvgPreviewHandler.dll'
             - 'modules\ImageResizer\ImageResizer.exe'
             - 'modules\ImageResizer\ImageResizerExt.dll'
-            - 'modules\KeyboardManager.dll'
+            - 'modules\KeyboardManager\KeyboardManager.dll'
             - 'modules\launcher\Microsoft.PowerToys.Settings.UI.Lib.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Calculator\Microsoft.Plugin.Calculator.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Calculator\Wox.Infrastructure.dll'
