@@ -393,13 +393,13 @@
     <value>These settings allow you to manage your Windows File Explorer custom preview handlers.</value>
   </data>
   <data name="PowerRename_AutoCompleteHeader.Text" xml:space="preserve">
-    <value>Autocompletion</value>
+    <value>Autocomplete</value>
   </data>
   <data name="OpenSource_Notice.Text" xml:space="preserve">
     <value>Open-source notice</value>
   </data>
   <data name="PowerRename_Toggle_AutoComplete.Header" xml:space="preserve">
-    <value>Enable autocompletion for the search and replace fields</value>
+    <value>Enable autocomplete for the search and replace fields</value>
   </data>
   <data name="FancyZones_BorderColor.Text" xml:space="preserve">
     <value>Zone border color (Default: #FFFFFF)</value>
