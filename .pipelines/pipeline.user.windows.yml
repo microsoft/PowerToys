@@ -41,7 +41,8 @@ build:
       name: 'Build Power Toys'
       command: '.pipelines\build.cmd'
       artifacts:
-        - to: 'Symbols/x64'
+        - from: 'x64/Release'
+          to: 'Symbols/x64'
           include:
             - '**/x64/*/*.pdb'
       artifacts:
@@ -132,19 +133,19 @@ build:
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
 
-package:
-  commands:
-    - !!buildcommand
-      name: 'Build MSIX package'
-      command: 'installer\msix\build_msix_cdpx.cmd'
-      artifacts:
-        - from: 'installer\msix\bin'
-          to: 'Build_MSIX_Package_Output'
-          include:
-            - '*.msix'
-            - '*.msixbundle'
-          signing_options:
-            profile: '400'
+#package:
+#  commands:
+#    - !!buildcommand
+#      name: 'Build MSIX package'
+#      command: 'installer\msix\build_msix_cdpx.cmd'
+#      artifacts:
+#        - from: 'installer\msix\bin'
+#          to: 'Build_MSIX_Package_Output'
+#          include:
+#            - '*.msix'
+#            - '*.msixbundle'
+#          signing_options:
+#            profile: '400'
 
 static_analysis_options:                             
   binskim_options:  
