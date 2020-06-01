@@ -41,6 +41,9 @@ build:
       name: 'Build Power Toys'
       command: '.pipelines\build.cmd'
       artifacts:
+        - to: 'x64 Symbols'
+          include:
+            - '**/x64/*.pdb'
         - from: 'x64/Release'
           to: 'Build_Output'
           include:
@@ -117,11 +120,6 @@ build:
             - 'SettingsUIRunner\Telemetry.dll'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
-      artifacts:
-        - from: 'x64/Release'
-          to: 'Symbols_x64'
-          include:
-            - '**/x64/*/*.pdb'
     - !!buildcommand
       name: 'Build Power Toys Installer'
       command: '.pipelines\build-installer.cmd'
