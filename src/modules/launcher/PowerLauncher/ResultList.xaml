@@ -11,9 +11,9 @@
 
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
+            <!--<ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/Styles/UWPScrollBarStyle.xaml" />
-            </ResourceDictionary.MergedDictionaries>
+            </ResourceDictionary.MergedDictionaries>-->
 
 
             <!-- These colors are based on the UWP XAML resources -->
@@ -150,7 +150,8 @@
             Margin="0"
             ItemsSource="{Binding Results.Results, Mode=OneWay}"
             Padding="0, 0"
-            ScrollViewer.HorizontalScrollBarVisibility="Disabled"                       
+            ScrollViewer.HorizontalScrollBarVisibility="Disabled"       
+            ScrollViewer.VerticalScrollBarVisibility="Disabled"       
             SelectionMode="Single"
             SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
             ItemContainerStyle="{StaticResource ResultsListViewItemContainerStyle}">
