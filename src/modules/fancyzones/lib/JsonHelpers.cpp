@@ -39,7 +39,7 @@ namespace JSONHelpers
     bool isValidGuid(const std::wstring& str)
     {
         GUID id;
-        return SUCCEEDED_LOG(CLSIDFromString(str.c_str(), &id));
+        return SUCCEEDED(CLSIDFromString(str.c_str(), &id));
     }
 
     bool isValidDeviceId(const std::wstring& str)

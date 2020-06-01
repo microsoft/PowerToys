@@ -795,7 +795,7 @@ namespace FancyZonesUnitTests
             AppZoneHistoryJSON appZoneHistory{
                 L"appPath", std::vector<AppZoneHistoryData>{ data1, data2 }
             };
-            json::JsonObject expected = json::JsonObject::Parse(L"{\"app-path\": \"appPath\", \"history\": [{\"device-id\": \"device-id1\", \"zoneset-uuid1\": \"zoneset-uuid\", \"zone-index-set\": [54321]}, {\"device-id\": \"device-id2\", \"zoneset-uuid2\": \"zoneset-uuid\", \"zone-index-set\": [12345]}]}");
+            json::JsonObject expected = json::JsonObject::Parse(L"{\"app-path\": \"appPath\", \"history\": [{\"device-id\": \"device-id1\", \"zoneset-uuid\": \"zoneset-uuid1\", \"zone-index-set\": [54321]}, {\"device-id\": \"device-id2\", \"zoneset-uuid\": \"zoneset-uuid2\", \"zone-index-set\": [12345]}]}");
 
             auto actual = AppZoneHistoryJSON::ToJson(appZoneHistory);
             compareJsonObjects(expected, actual);
@@ -804,15 +804,15 @@ namespace FancyZonesUnitTests
         TEST_METHOD (FromJsonMultipleDesktopAppHistory)
         {
             AppZoneHistoryData data1{
-                .zoneSetUuid = L"zoneset-uuid1", .deviceId = L"device-id1", .zoneIndexSet = { 54321 }
+                .zoneSetUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}", .deviceId = L"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}", .zoneIndexSet = { 54321 }
             };
             AppZoneHistoryData data2{
-                .zoneSetUuid = L"zoneset-uuid2", .deviceId = L"device-id2", .zoneIndexSet = { 12345 }
+                .zoneSetUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}", .deviceId = L"AOC2460#4&fe3a015&0&UID65793_1920_1200_{8a0b9205-6128-45a2-934a-b97f5b271235}", .zoneIndexSet = { 12345 }
             };
             AppZoneHistoryJSON expected{
                 L"appPath", std::vector<AppZoneHistoryData>{ data1, data2 }
             };
-            json::JsonObject json = json::JsonObject::Parse(L"{\"app-path\": \"appPath\", \"history\": [{\"device-id\": \"device-id1\", \"zoneset-uuid1\": \"zoneset-uuid\", \"zone-index-set\": [54321]}, {\"device-id\": \"device-id2\", \"zoneset-uuid2\": \"zoneset-uuid\", \"zone-index-set\": [12345]}]}");
+            json::JsonObject json = json::JsonObject::Parse(L"{\"app-path\": \"appPath\", \"history\": [{\"device-id\": \"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\", \"zoneset-uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\", \"zone-index-set\": [54321]}, {\"device-id\": \"AOC2460#4&fe3a015&0&UID65793_1920_1200_{8a0b9205-6128-45a2-934a-b97f5b271235}\", \"zoneset-uuid\": \"{33A2B101-06E0-437B-A61E-CDBECF502906}\", \"zone-index-set\": [12345]}]}");
 
             auto actual = AppZoneHistoryJSON::FromJson(json);
             Assert::IsTrue(actual.has_value());
