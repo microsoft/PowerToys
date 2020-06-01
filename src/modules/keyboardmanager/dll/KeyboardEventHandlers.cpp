@@ -347,6 +347,8 @@ namespace KeyboardEventHandlers
                     it.second.isShortcutInvoked = false;
                     it.second.winKeyInvoked = ModifierKey::Disabled;
                     lock.unlock();
+
+                    // key count can be 0 if both shortcuts have same modifiers and the action key is not held down. delete will throw an error if keyEventList is empty
                     if (key_count > 0)
                     {
                         UINT res = SendInput((UINT)key_count, keyEventList, sizeof(INPUT));
