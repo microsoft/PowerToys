@@ -12,7 +12,7 @@ If you'd like to work on a PowerToy template, make required modifications to `\t
 
 - Add the new PowerToy project to the `src\modules\` folder for all the relative paths to work.
 - For the module interface implementation take a look at [the interface](/src/modules/interface) and
-    [the example PowerToy implementation](/src/modules/example_powertoy/dllmain.cpp)
+    [the example PowerToy implementation](/tools/project_template/ModuleTemplate/dllmain.cpp)
 - Each PowerToy is built as a DLL and in order to be loaded at run-time, the PowerToy's DLL name needs to be added to the `known_dlls` map in [src/runner/main.cpp](/src/runner/main.cpp).
 
 ## DPI Awareness
@@ -48,7 +48,7 @@ A PowerToy can define settings of the following types:
 
 Here's an example of what the settings look like in the Settings screen:
 
-![Image of the Options](/doc/images/example_powertoy/settings.png)
+![Image of the Options](/doc/images/settings/example_settings.png)
 
 ### How to add your module's settings page
 
@@ -56,7 +56,7 @@ The PowerToy can set its settings information and controls by overriding the [Po
 
 The PowerToy can receive the new values by overriding the [PowerToy's Interface `set_config` method](/src/modules/interface/README.md#set_config), parsing the serialized [`PowerToysSettings::PowerToyValues`](/src/common/settings_object.h) object and applying the new settings.
 
-Here's an example from [the example PowerToy implementation](/src/modules/example_powertoy/dllmain.cpp):
+Here's an example settings implementation:
 ```cpp
   // Return JSON with the configuration options.
   virtual bool get_config(wchar_t* buffer, int* buffer_size) override {
@@ -343,7 +343,7 @@ Loading and saving the settings in the default location can be achieved through 
 
 The PowerToy can load the saved `PowerToyValues` object through the use of the `load_from_settings_file` method.
 
-Here's an example from [the example PowerToy implementation](/src/modules/example_powertoy/dllmain.cpp):
+Here's an example:
 ```cpp
 // Load the settings file.
 void ExamplePowertoy::init_settings() {
@@ -382,7 +382,7 @@ void ExamplePowertoy::init_settings() {
 
 The PowerToy can save the `PowerToyValues` object received in `set_config` through the use of the `save_to_settings_file` method.
 
-Here's an example from [the example PowerToy implementation](/src/modules/example_powertoy/dllmain.cpp):
+Here's an example:
 ```cpp
 // Called by the runner to pass the updated settings values as a serialized JSON.
 virtual void set_config(const wchar_t* config) override { 

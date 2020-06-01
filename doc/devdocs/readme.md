@@ -134,11 +134,6 @@ PowerRename is a Windows Shell Context Menu Extension for advanced bulk renaming
 ### [`Shortcut Guide`](modules/shortcut_guide.md)
 The Windows Shortcut Guide, displayed when the WinKey is held for some time.
 
-### _obsolete_ [`example_powertoy`](modules/example_powertoy.md)
-An example PowerToy, that demonstrates how to create new ones. Please note, that this is going to become a Visual Studio project template soon.
-
-This PowerToy serves as a sample to show how to implement the [PowerToys interface](/src/modules/interface/) when creating a PowerToy. It also showcases the currently implemented settings.
-
 #### Options
 
 This module has a setting to serve as an example for each of the currently implemented settings property:
