@@ -67,7 +67,7 @@
                           IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
                            />
 
-            <TextBlock x:Uid="Miscellaneous" 
+            <TextBlock x:Uid="PowerRename_AutoCompleteHeader" 
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
 
@@ -83,7 +83,7 @@
                             Margin="{StaticResource SmallTopMargin}" 
                             Value="{Binding Mode=TwoWay, Path=MaxDispListNum}"
                             Minimum="0"
-                            Width="320"
+                            Width="240"
                             Maximum="20"
                             IsEnabled="{ Binding Mode=TwoWay, Path=GlobalAndMruEnabled}"
                             />
