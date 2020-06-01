@@ -443,13 +443,18 @@ namespace Microsoft.Plugin.Program.Programs
             return entry;
         }
 
-        public class myCompare : IEqualityComparer<Win32>
+        public class removeDuplicatesComparer : IEqualityComparer<Win32>
         {
             public bool Equals(Win32 app1, Win32 app2)
             {
-                if(!string.IsNullOrEmpty(app1.LnkResolvedPath) && !string.IsNullOrEmpty(app2.LnkResolvedPath))
+                
+                if(!string.IsNullOrEmpty(app1.Name) && !string.IsNullOrEmpty(app2.Name)
+                    && !string.IsNullOrEmpty(app1.ExecutableName) && !string.IsNullOrEmpty(app2.ExecutableName)
+                    && !string.IsNullOrEmpty(app1.FullPath) && !string.IsNullOrEmpty(app2.FullPath))
                 {
-                    return app1.Name.Equals(app2.Name, StringComparison.OrdinalIgnoreCase) && app1.ExecutableName.Equals(app2.ExecutableName, StringComparison.OrdinalIgnoreCase) && app1.FullPath.Equals(app2.FullPath, StringComparison.OrdinalIgnoreCase);
+                    return app1.Name.Equals(app2.Name, StringComparison.OrdinalIgnoreCase) 
+                        && app1.ExecutableName.Equals(app2.ExecutableName, StringComparison.OrdinalIgnoreCase) 
+                        && app1.FullPath.Equals(app2.FullPath, StringComparison.OrdinalIgnoreCase);
                 }
                 return false;
             }
@@ -481,16 +486,10 @@ namespace Microsoft.Plugin.Program.Programs
                     programs = programs.Concat(startMenu);
                 }
 
-                var uniquePrograms = programs.Where(x => !string.IsNullOrEmpty(x.LnkResolvedPath) || Extension(x.FullPath) != ExeExtension);
-                var a1 = uniquePrograms.ToArray();
+                var uniqueExePrograms = programs.Where(x => !string.IsNullOrEmpty(x.LnkResolvedPath) || Extension(x.FullPath) != ExeExtension);
 
-                var test = uniquePrograms.Distinct(new myCompare());
-                var a2 = test.ToArray();
-
-                var result = a1.Where(p => a2.All(p1 => p1.FullPath != p.FullPath));
-                var r1 = result.ToArray();
-
-                return a2;
+                var uniquePrograms = uniqueExePrograms.Distinct(new removeDuplicatesComparer());
+                return uniquePrograms.ToArray();
             }
 #if DEBUG //This is to make developer aware of any unhandled exception and add in handling.
             catch (Exception e)
