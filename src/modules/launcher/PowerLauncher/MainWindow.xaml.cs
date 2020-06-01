@@ -78,8 +78,6 @@ namespace PowerLauncher
             ListBox.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
             ListBox.SuggestionsList.PreviewMouseLeftButtonUp += SuggestionsList_PreviewMouseLeftButtonUp;
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
-
-            _viewModel.ColdStartFix();
         }
 
         private void SuggestionsList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -108,12 +106,19 @@ namespace PowerLauncher
                     _firstDeleteTimer.Start();
                     Activate();
                     //(this.FindResource("IntroStoryboard") as Storyboard).Begin();
+
                     UpdatePosition();
                     SearchBox.QueryTextBox.Focus();
                     _settings.ActivateTimes++;
+
                     if (!_viewModel.LastQuerySelected)
                     {
                         _viewModel.LastQuerySelected = true;
+                    }
+
+                    if (!String.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
+                    {
+                        SearchBox.QueryTextBox.SelectAll();
                     }
                 }
                 else
