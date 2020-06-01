@@ -452,20 +452,20 @@ namespace JSONHelpers
             if (history != std::end(appZoneHistoryMap))
             {
                 auto& perDesktopData = history->second;
-                for (auto& data : perDesktopData)
+                for (auto data = std::begin(perDesktopData); data != std::end(perDesktopData);)
                 {
-                    if (data.deviceId == deviceId && data.zoneSetUuid == zoneSetId)
+                    if (data->deviceId == deviceId && data->zoneSetUuid == zoneSetId)
                     {
                         if (!IsAnotherWindowOfApplicationInstanceZoned(window, deviceId))
                         {
                             DWORD processId = 0;
                             GetWindowThreadProcessId(window, &processId);
 
-                            data.processIdToHandleMap.erase(processId);
+                            data->processIdToHandleMap.erase(processId);
                         }
 
                         // if there is another instance placed don't erase history
-                        for (auto placedWindow : data.processIdToHandleMap)
+                        for (auto placedWindow : data->processIdToHandleMap)
                         {
                             if (IsWindow(placedWindow.second))
                             {
@@ -473,9 +473,17 @@ namespace JSONHelpers
                             }
                         }
 
-                        appZoneHistoryMap.erase(processPath);
+                        data = perDesktopData.erase(data);
+                        if (perDesktopData.empty())
+                        {
+                            appZoneHistoryMap.erase(processPath);
+                        }
                         SaveFancyZonesData();
                         return true;
+                    }
+                    else
+                    {
+                        ++data;
                     }
                 }
             }
