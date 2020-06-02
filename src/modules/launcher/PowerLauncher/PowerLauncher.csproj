@@ -186,7 +186,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Themes\" />
+    <Page Update="Themes\HighContrast.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\Dark.xaml">
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
 
 </Project>

@@ -68,12 +68,13 @@ namespace PowerLauncher
                 StringMatcher.Instance = _stringMatcher;
                 _stringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
 
+                ThemeManager themeManager = new ThemeManager(this);
+                
                 PluginManager.LoadPlugins(_settings.PluginSettings);
                 _mainVM = new MainViewModel(_settings);
                 var window = new MainWindow(_settings, _mainVM);
                 API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet);
                 PluginManager.InitializePlugins(API);
-
                 Current.MainWindow = window;
                 Current.MainWindow.Title = Constant.ExeFileName;
 
