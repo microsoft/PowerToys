@@ -122,7 +122,7 @@ While developing, it's possible to connect the WebView to the development server
 
 ### [`Settings-web`](settings-web.md)
 This project generates the web UI shown in the [PowerToys Settings](/src/editor).
-It's a `ReactJS` project created using [UI Fabric](https://developer.microsoft.com/en-us/fabric#/).
+It's a `ReactJS` project created using [Fluent UI](https://developer.microsoft.com/en-us/fluentui#/).
 
 ## Current modules
 ### [`FancyZones`](modules/fancyzones.md)
