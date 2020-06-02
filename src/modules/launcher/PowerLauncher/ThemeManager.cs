@@ -12,22 +12,25 @@ namespace Wox.Core.Resource
         private readonly Application App;
         private readonly string LightTheme = "Light.Accent1";
         private readonly string DarkTheme = "Dark.Accent1";
-        private readonly string HighContrastTheme = "HighContrast.Accent1";
+        private readonly string HighContrastTheme = "HighContrast.Accent2";
 
         public ThemeManager(Application app)
         {
             this.App = app;
 
+            Uri HighContrastThemeUri = new Uri("pack://application:,,,/Themes/HighContrast.xaml");
             Uri LightThemeUri = new Uri("pack://application:,,,/Themes/Light.xaml");
             Uri DarkThemeUri = new Uri("pack://application:,,,/Themes/Dark.xaml");
-            Uri HighContrastThemeUri = new Uri("pack://application:,,,/Themes/HighContrast.xaml");
 
-            ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(new LibraryTheme(LightThemeUri,
-                                            MahAppsLibraryThemeProvider.DefaultInstance));
-            ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(new LibraryTheme(DarkThemeUri,
-                                                         MahAppsLibraryThemeProvider.DefaultInstance));
-            ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(new LibraryTheme(HighContrastThemeUri,
-                                                        MahAppsLibraryThemeProvider.DefaultInstance));
+            ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
+                new LibraryTheme(HighContrastThemeUri,
+                MahAppsLibraryThemeProvider.DefaultInstance));
+            ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
+                new LibraryTheme(LightThemeUri,
+                MahAppsLibraryThemeProvider.DefaultInstance));
+            ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(
+                new LibraryTheme(DarkThemeUri,
+                MahAppsLibraryThemeProvider.DefaultInstance));
 
             ResetTheme();
             ControlzEx.Theming.ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
@@ -77,13 +80,13 @@ namespace Wox.Core.Resource
 
         private void Current_ThemeChanged(object sender, ThemeChangedEventArgs e)
         {
-            Debug.WriteLine("Theme Updated: " + e.NewTheme);
             ResetTheme();
         }
     }
 
     enum Theme
     {
+        None,
         Light, 
         Dark, 
         HighContrast
