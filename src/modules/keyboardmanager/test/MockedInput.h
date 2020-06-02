@@ -3,7 +3,6 @@
 #include <vector>
 #include <functional>
 #include <interface/lowlevel_keyboard_event_data.h>
-#include <keyboardmanager/common/KeyboardManagerState.h>
 
 class MockedInput :
     public InputInterface
