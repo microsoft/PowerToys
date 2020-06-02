@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using ControlzEx.Standard;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
@@ -628,6 +628,197 @@ namespace FancyZonesEditor
             }
 
             return -1;
+        }
+
+        public void MergeZones(int startRow, int endRow, int startCol, int endCol, Action<int> deleteAction)
+        {
+            int mergedIndex = _model.CellChildMap[startRow, startCol];
+
+            for (int row = startRow; row <= endRow; row++)
+            {
+                for (int col = startCol; col <= endCol; col++)
+                {
+                    int childIndex = _model.CellChildMap[row, col];
+                    if (childIndex != mergedIndex)
+                    {
+                        _model.CellChildMap[row, col] = mergedIndex;
+                        deleteAction(childIndex);
+                    }
+                }
+            }
+
+            CollapseIndices();
+        }
+
+        public void CollapseIndices()
+        {
+            List<int> rowsToRemove = new List<int>(), colsToRemove = new List<int>();
+            int[,] cellChildMap = _model.CellChildMap;
+
+            for (int row = 1; row < _model.Rows; row++)
+            {
+                bool couldBeRemoved = true;
+                for (int col = 0; col < _model.Columns && couldBeRemoved; col++)
+                {
+                    if (cellChildMap[row, col] != cellChildMap[row - 1, col])
+                    {
+                        couldBeRemoved = false;
+                    }
+                }
+
+                if (couldBeRemoved && row > 0)
+                {
+                    rowsToRemove.Add(row);
+                }
+            }
+
+            for (int col = 1; col < _model.Columns; col++)
+            {
+                bool couldBeRemoved = true;
+                for (int row = 0; row < _model.Rows && couldBeRemoved; row++)
+                {
+                    if (cellChildMap[row, col] != cellChildMap[row, col - 1])
+                    {
+                        couldBeRemoved = false;
+                    }
+                }
+
+                if (couldBeRemoved && col > 0)
+                {
+                    colsToRemove.Add(col);
+                }
+            }
+
+            int rows = _model.Rows - rowsToRemove.Count;
+            int cols = _model.Columns - colsToRemove.Count;
+
+            if (rowsToRemove.Count > 0)
+            {
+                int[] rowPercents = _model.RowPercents;
+                int[] newRowPercents = new int[rows];
+                RowColInfo[] newRowInfo = new RowColInfo[rows];
+
+                int removableRowIndex = 0;
+                int removableRow = rowsToRemove[removableRowIndex];
+
+                int dstIndex = 0;
+                for (int i = 0; i < _model.Rows; i++)
+                {
+                    if (i != removableRow)
+                    {
+                        newRowPercents[dstIndex] = rowPercents[i];
+                        newRowInfo[dstIndex] = new RowColInfo(_rowInfo[i]);
+                        dstIndex++;
+                    }
+                    else
+                    {
+                        newRowPercents[dstIndex - 1] += rowPercents[i];
+                        newRowInfo[dstIndex - 1].Percent += rowPercents[i];
+
+                        removableRowIndex++;
+                        if (removableRowIndex < rowsToRemove.Count)
+                        {
+                            removableRow = rowsToRemove[removableRowIndex];
+                        }
+                    }
+                }
+
+                _model.RowPercents = newRowPercents;
+                _rowInfo = newRowInfo;
+            }
+
+            if (colsToRemove.Count > 0)
+            {
+                int[] colPercents = _model.ColumnPercents;
+                int[] newColPercents = new int[cols];
+                RowColInfo[] newColInfo = new RowColInfo[cols];
+
+                int removableColIndex = 0;
+                int removableCol = colsToRemove[removableColIndex];
+
+                int dstIndex = 0;
+                for (int i = 0; i < _model.Columns; i++)
+                {
+                    if (i != removableCol)
+                    {
+                        newColPercents[dstIndex] = colPercents[i];
+                        newColInfo[dstIndex] = new RowColInfo(_colInfo[i]);
+                        dstIndex++;
+                    }
+                    else
+                    {
+                        newColPercents[dstIndex - 1] += colPercents[i];
+                        newColInfo[dstIndex - 1].Percent += colPercents[i];
+
+                        removableColIndex++;
+                        if (removableColIndex < colsToRemove.Count)
+                        {
+                            removableCol = colsToRemove[removableColIndex];
+                        }
+                    }
+                }
+
+                _model.ColumnPercents = newColPercents;
+                _colInfo = newColInfo;
+            }
+
+            if (rowsToRemove.Count > 0 || colsToRemove.Count > 0)
+            {
+                int[,] newCellChildMap = new int[rows, cols];
+                int dstRow = 0, dstCol = 0;
+
+                int removableRowIndex = 0;
+                int removableRow = -1;
+                if (rowsToRemove.Count > 0)
+                {
+                    removableRow = rowsToRemove[removableRowIndex];
+                }
+
+                for (int row = 0; row < _model.Rows; row++)
+                {
+                    if (row != removableRow)
+                    {
+                        int removableColIndex = 0;
+                        int removableCol = -1;
+                        if (colsToRemove.Count > 0)
+                        {
+                            removableCol = colsToRemove[removableColIndex];
+                        }
+
+                        for (int col = 0; col < _model.Columns; col++)
+                        {
+                            if (col != removableCol)
+                            {
+                                newCellChildMap[dstRow, dstCol] = cellChildMap[row, col];
+                                dstCol++;
+                            }
+                            else
+                            {
+                                removableColIndex++;
+                                if (removableColIndex < colsToRemove.Count)
+                                {
+                                    removableCol = colsToRemove[removableColIndex];
+                                }
+                            }
+                        }
+
+                        dstRow++;
+                    }
+                    else
+                    {
+                        removableRowIndex++;
+                        if (removableRowIndex < rowsToRemove.Count)
+                        {
+                            removableRow = rowsToRemove[removableRowIndex];
+                        }
+                    }
+                }
+
+                _model.CellChildMap = newCellChildMap;
+            }
+
+            _model.Rows = rows;
+            _model.Columns = cols;
         }
 
         private GridLayoutModel _model;

@@ -752,23 +752,13 @@ namespace FancyZonesEditor
 
         private void MergeClick(object sender, RoutedEventArgs e)
         {
-            GridLayoutModel model = Model;
-
             MergePanel.Visibility = Visibility.Collapsed;
-            int mergedIndex = model.CellChildMap[_startRow, _startCol];
 
-            for (int row = _startRow; row <= _endRow; row++)
+            Action<int> deleteAction = (childIndex) =>
             {
-                for (int col = _startCol; col <= _endCol; col++)
-                {
-                    int childIndex = model.CellChildMap[row, col];
-                    if (childIndex != mergedIndex)
-                    {
-                        model.CellChildMap[row, col] = mergedIndex;
-                        DeleteZone(childIndex);
-                    }
-                }
-            }
+                DeleteZone(childIndex);
+            };
+            _data.MergeZones(_startRow, _endRow, _startCol, _endCol, deleteAction);
 
             UIElementCollection resizers = AdornerLayer.Children;
             for (int i = 0; i < resizers.Count; i++)
