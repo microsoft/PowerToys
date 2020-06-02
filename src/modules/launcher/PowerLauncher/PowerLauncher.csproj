@@ -48,10 +48,6 @@
   <ItemGroup>
     <Page Include="App.xaml" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <Page Remove="Themes\ThemeBuilder\Template.xaml" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Fody" Version="6.1.1">
@@ -187,6 +183,10 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Themes\" />
   </ItemGroup>
 
 </Project>

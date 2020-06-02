@@ -168,12 +168,8 @@ namespace Wox.ViewModel
             set
             {
                 Settings.Theme = value;
-                ThemeManager.Instance.ChangeTheme(value);
             }
         }
-
-        public List<string> Themes
-            => ThemeManager.Instance.LoadAvailableThemes().Select(Path.GetFileNameWithoutExtension).ToList();
 
         public Brush PreviewBackground
         {
@@ -257,7 +253,6 @@ namespace Wox.ViewModel
             set
             {
                 Settings.QueryBoxFont = value.ToString();
-                ThemeManager.Instance.ChangeTheme(Settings.Theme);
             }
         }
 
@@ -278,7 +273,6 @@ namespace Wox.ViewModel
                 Settings.QueryBoxFontStretch = value.Stretch.ToString();
                 Settings.QueryBoxFontWeight = value.Weight.ToString();
                 Settings.QueryBoxFontStyle = value.Style.ToString();
-                ThemeManager.Instance.ChangeTheme(Settings.Theme);
             }
         }
 
@@ -302,7 +296,6 @@ namespace Wox.ViewModel
             set
             {
                 Settings.ResultFont = value.ToString();
-                ThemeManager.Instance.ChangeTheme(Settings.Theme);
             }
         }
 
@@ -323,7 +316,6 @@ namespace Wox.ViewModel
                 Settings.ResultFontStretch = value.Stretch.ToString();
                 Settings.ResultFontWeight = value.Weight.ToString();
                 Settings.ResultFontStyle = value.Style.ToString();
-                ThemeManager.Instance.ChangeTheme(Settings.Theme);
             }
         }
 
