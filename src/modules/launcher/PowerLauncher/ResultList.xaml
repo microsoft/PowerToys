@@ -15,13 +15,6 @@
                 <ResourceDictionary Source="pack://application:,,,/Styles/UWPScrollBarStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>-->
 
-            <!-- High contrast -->
-            <!--<SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#33FFFFFF" />
-        <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#66FFFFFF" />
-        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#33FFFFFF" />
-        <SolidColorBrush x:Key="ButtonBorderPressed" Color="#66FFFFFF" />-->
-
-
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <Style x:Key="FocusVisual">
                 <Setter Property="Control.Template">

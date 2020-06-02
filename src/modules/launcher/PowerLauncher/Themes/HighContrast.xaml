@@ -14,5 +14,17 @@
     <system:String x:Key="Theme.ColorScheme">Accent1</system:String>
     <Color x:Key="Theme.PrimaryAccentColor">White</Color>
 
-    <SolidColorBrush x:Key="SystemChromeLow" Color="Blue" options:Freeze="True" />
+    <Color x:Key="SystemBaseMediumLowColor">#FF000000</Color>
+    <SolidColorBrush x:Key="SystemChromeLow" Color="#FFFFFFFF" options:Freeze="True" />
+    <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#FF000000" />
+    <SolidColorBrush x:Key="TextBox.Static.Border" Color="Transparent"/>
+    <SolidColorBrush x:Key="TextBox.MouseOver.Border" Color="Transparent"/>
+    <SolidColorBrush x:Key="TextBox.Focus.Border" Color="Transparent"/>
+    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="ButtonBorderPressed" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#FF000000" />
+    <SolidColorBrush x:Key="ControlTextBrushKey" Color="#FF000000" />
+    <SolidColorBrush x:Key="InactiveSelectionHighlightBrushKey" Color="#FFFFFFFF" />
 </ResourceDictionary>

@@ -8,20 +8,25 @@ namespace Wox.Core.Resource
 {
     public class ThemeManager
     {
-        private string currentTheme;
+        private Theme currentTheme;
         private readonly Application App;
-        private readonly Uri LightTheme = new Uri("pack://application:,,,/Themes/Light.xaml");
-        private readonly Uri DarkTheme = new Uri("pack://application:,,,/Themes/Dark.xaml");
-        private readonly Uri HighContrastTheme = new Uri("pack://application:,,,/Themes/HighContrast.xaml");
+        private readonly string LightTheme = "Light.Accent1";
+        private readonly string DarkTheme = "Dark.Accent1";
+        private readonly string HighContrastTheme = "HighContrast.Accent1";
 
         public ThemeManager(Application app)
         {
             this.App = app;
-            ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(new LibraryTheme(LightTheme,
+
+            Uri LightThemeUri = new Uri("pack://application:,,,/Themes/Light.xaml");
+            Uri DarkThemeUri = new Uri("pack://application:,,,/Themes/Dark.xaml");
+            Uri HighContrastThemeUri = new Uri("pack://application:,,,/Themes/HighContrast.xaml");
+
+            ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(new LibraryTheme(LightThemeUri,
                                             MahAppsLibraryThemeProvider.DefaultInstance));
-            ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(new LibraryTheme(DarkTheme,
+            ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(new LibraryTheme(DarkThemeUri,
                                                          MahAppsLibraryThemeProvider.DefaultInstance));
-            ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(new LibraryTheme(HighContrastTheme,
+            ControlzEx.Theming.ThemeManager.Current.AddLibraryTheme(new LibraryTheme(HighContrastThemeUri,
                                                         MahAppsLibraryThemeProvider.DefaultInstance));
 
             ResetTheme();
@@ -40,41 +45,47 @@ namespace Wox.Core.Resource
         {
             if (SystemParameters.HighContrast)
             {
-                ChangeTheme("HighContrast");
+                ChangeTheme(Theme.HighContrast);
             }
             else
             {
                 string baseColor = WindowsThemeHelper.GetWindowsBaseColor();
-                ChangeTheme(baseColor);
+                ChangeTheme((Theme)Enum.Parse(typeof(Theme), baseColor));
             }
         }
 
-        private void ChangeTheme(String theme)
+        private void ChangeTheme(Theme theme)
         {
             if (theme == currentTheme)
                 return;
-            if (theme == "HighContrast")
+            if (theme == Theme.HighContrast)
             {
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(this.App, "HighContrast.Accent1");
-                currentTheme = "HighContrast";
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(this.App, this.HighContrastTheme);
+                currentTheme = Theme.HighContrast;
             }
-            else if (theme == "Light")
+            else if (theme == Theme.Light)
             {
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(this.App, "Light.Accent1");
-                currentTheme = "Light";
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(this.App, this.LightTheme);
+                currentTheme = Theme.Light;
             }
-            else if (theme == "Dark")
+            else if (theme == Theme.Dark)
             {
-                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(this.App, "Dark.Accent1");
-                currentTheme = "Dark";
+                ControlzEx.Theming.ThemeManager.Current.ChangeTheme(this.App, this.DarkTheme);
+                currentTheme = Theme.Dark;
             }
         }
 
         private void Current_ThemeChanged(object sender, ThemeChangedEventArgs e)
         {
-            Debug.WriteLine("New Theme: " + e.NewTheme);
+            Debug.WriteLine("Theme Updated: " + e.NewTheme);
             ResetTheme();
         }
     }
 
+    enum Theme
+    {
+        Light, 
+        Dark, 
+        HighContrast
+    }
 }
