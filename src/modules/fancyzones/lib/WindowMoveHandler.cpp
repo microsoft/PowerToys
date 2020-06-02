@@ -148,9 +148,13 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
 
     m_windowMoveSize = window;
 
+    if (m_settings->GetSettings()->mouseSwitch)
+    {
+        m_secondaryHook->enable();
+    }
+
     // This updates m_dragEnabled depending on if the shift key is being held down.
     UpdateDragState(window);
-    m_secondaryHook->enable();
 
     if (m_dragEnabled)
     {
@@ -321,11 +325,11 @@ void WindowMoveHandlerPrivate::UpdateDragState(HWND window) noexcept
 
     if (m_settings->GetSettings()->shiftDrag)
     {
-        m_dragEnabled = (shift | m_secondaryMouseButtonState);
+        m_dragEnabled = (shift ^ m_secondaryMouseButtonState);
     }
     else
     {
-        m_dragEnabled = !(shift | m_secondaryMouseButtonState);
+        m_dragEnabled = !(shift ^ m_secondaryMouseButtonState);
     }
 
     static bool warning_shown = false;
