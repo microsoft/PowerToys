@@ -10,7 +10,7 @@ public:
     void disable();
 
 private:
-    static HHOOK m_hHook;
+    static HHOOK hHook;
     static std::function<void()> callback;
     static LRESULT CALLBACK SecondaryMouseButtonsProc(int, WPARAM, LPARAM);
 };

@@ -256,7 +256,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
 
     m_inMoveSize = false;
     m_dragEnabled = false;
-    m_dragEnabled = false;
+    m_secondaryMouseButtonState = false;
     m_windowMoveSize = nullptr;
     if (m_zoneWindowMoveSize)
     {

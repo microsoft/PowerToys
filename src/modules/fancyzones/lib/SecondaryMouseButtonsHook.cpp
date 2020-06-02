@@ -3,29 +3,29 @@
 
 #pragma region public
 
-HHOOK SecondaryMouseButtonsHook::m_hHook = {};
+HHOOK SecondaryMouseButtonsHook::hHook = {};
 std::function<void()> SecondaryMouseButtonsHook::callback = {};
 
 SecondaryMouseButtonsHook::SecondaryMouseButtonsHook(std::function<void()> extCallback)
 {
     callback = std::move(extCallback);
-    m_hHook = SetWindowsHookEx(WH_MOUSE_LL, SecondaryMouseButtonsProc, GetModuleHandle(NULL), 0);
+    hHook = SetWindowsHookEx(WH_MOUSE_LL, SecondaryMouseButtonsProc, GetModuleHandle(NULL), 0);
 }
 
 void SecondaryMouseButtonsHook::enable()
 {
-    if (!m_hHook)
+    if (!hHook)
     {
-        m_hHook = SetWindowsHookEx(WH_MOUSE_LL, SecondaryMouseButtonsProc, GetModuleHandle(NULL), 0);
+        hHook = SetWindowsHookEx(WH_MOUSE_LL, SecondaryMouseButtonsProc, GetModuleHandle(NULL), 0);
     }
 }
 
 void SecondaryMouseButtonsHook::disable()
 {
-    if (m_hHook)
+    if (hHook)
     {
-        UnhookWindowsHookEx(m_hHook);
-        m_hHook = NULL;
+        UnhookWindowsHookEx(hHook);
+        hHook = NULL;
     }
 }
 
@@ -42,7 +42,7 @@ LRESULT CALLBACK SecondaryMouseButtonsHook::SecondaryMouseButtonsProc(int nCode,
             callback();
         }
     }
-    return CallNextHookEx(m_hHook, nCode, wParam, lParam);
+    return CallNextHookEx(hHook, nCode, wParam, lParam);
 }
 
 #pragma endregion
