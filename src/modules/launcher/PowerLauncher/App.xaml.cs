@@ -42,7 +42,7 @@ namespace PowerLauncher
         {
             if (SingleInstance<App>.InitializeAsFirstInstance(Unique))
             {
-                _powerToysPid = int.Parse(args[0]);
+                int.TryParse(args[0], out _powerToysPid);
                 using (var application = new App())
                 {
                     application.InitializeComponent();
@@ -53,7 +53,7 @@ namespace PowerLauncher
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            WaitForPowerToys();
+            WaitForPowerToysRunner();
 
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
@@ -122,9 +122,9 @@ namespace PowerLauncher
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
 
-        private void WaitForPowerToys()
+        private void WaitForPowerToysRunner()
         {
-            new Thread(() =>
+            Task.Run(() =>
             {
                 const uint INFINITE = 0xFFFFFFFF;
                 const uint WAIT_OBJECT_0 = 0x00000000;
@@ -134,7 +134,7 @@ namespace PowerLauncher
                 {
                     Environment.Exit(0);
                 }
-            }).Start();
+            });
         }
 
         /// <summary>

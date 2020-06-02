@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using interop;
 using Windows.UI.Popups;
@@ -36,7 +37,8 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 
                 if (args.Length >= ArgumentsQty)
                 {
-                    PowerToysPID = int.Parse(args[2]);
+                    int.TryParse(args[2], out int powerToysPID);
+                    PowerToysPID = powerToysPID;
 
                     if (args[4] == "true")
                     {
@@ -56,7 +58,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                         IsUserAnAdmin = false;
                     }
 
-                    WaitForPowerToys();
+                    WaitForPowerToysRunner();
 
                     ipcmanager = new TwoWayPipeMessageIPCManaged(args[1], args[0], null);
                     ipcmanager.Start();
@@ -81,9 +83,9 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
 
-        internal static void WaitForPowerToys()
+        internal static void WaitForPowerToysRunner()
         {
-            new Thread(() =>
+            Task.Run(() =>
             {
                 const uint INFINITE = 0xFFFFFFFF;
                 const uint WAIT_OBJECT_0 = 0x00000000;
@@ -93,7 +95,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                 {
                     Environment.Exit(0);
                 }
-            }).Start();
+            });
         }
     }
 }
