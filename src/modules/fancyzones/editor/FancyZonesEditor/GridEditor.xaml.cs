@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using ControlzEx.Standard;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
@@ -768,6 +767,24 @@ namespace FancyZonesEditor
                         model.CellChildMap[row, col] = mergedIndex;
                         DeleteZone(childIndex);
                     }
+                }
+            }
+
+            UIElementCollection resizers = AdornerLayer.Children;
+            for (int i = 0; i < resizers.Count; i++)
+            {
+                GridResizer resizer = (GridResizer)resizers[i];
+
+                bool isStartRowColRemovable = resizer.StartRow >= _startRow && resizer.StartCol >= _startCol;
+                bool horizontalResizerToBeRemoved = resizer.Orientation == Orientation.Horizontal
+                    && isStartRowColRemovable && resizer.EndRow <= _endRow && resizer.EndCol - 1 <= _endCol;
+                bool verticalResizerToBeRemoved = resizer.Orientation == Orientation.Vertical
+                    && isStartRowColRemovable && resizer.EndRow - 1 <= _endRow && resizer.EndCol <= _endCol;
+
+                if (horizontalResizerToBeRemoved || verticalResizerToBeRemoved)
+                {
+                    resizers.Remove(resizer);
+                    i--;
                 }
             }
 
