@@ -4,40 +4,35 @@
 #include <functional>
 #include <interface/lowlevel_keyboard_event_data.h>
 
+// Class for mocked keyboard input
 class MockedInput :
     public InputInterface
 {
 private:
-    // false for key up, and true for key down
+    // Stores the states for all the keys - false for key up, and true for key down
     std::vector<bool> keyboardState;
+
+    // Function to be executed as a low level hook. By default it is nullptr so the hook is skipped
     std::function<intptr_t(LowlevelKeyboardEvent*)> hookProc;
 
 public:
     MockedInput()
     {
-        keyboardState.reserve(256);
-        ResetKeyboardState();
+        keyboardState.resize(256, false);
     }
 
-    void SetHookProc(std::function<intptr_t(LowlevelKeyboardEvent*)> hookProcedure)
-    {
-        hookProc = hookProcedure;
-    }
+    // Set the keyboard hook procedure to be tested
+    void SetHookProc(std::function<intptr_t(LowlevelKeyboardEvent*)> hookProcedure);
 
+    // Function to simulate keyboard input
     UINT SendVirtualInput(UINT cInputs, LPINPUT pInputs, int cbSize);
 
-    intptr_t MockedKeyboardHook(LowlevelKeyboardEvent* data)
-    {
-        return hookProc(data);
-    }
+    // Function to simulate keyboard hook behavior
+    intptr_t MockedKeyboardHook(LowlevelKeyboardEvent* data);
 
-    bool GetVirtualKeyState(DWORD key)
-    {
-        return keyboardState[key];
-    }
+    // Function to get the state of a particular key
+    bool GetVirtualKeyState(DWORD key);
 
-    void ResetKeyboardState()
-    {
-        std::fill(keyboardState.begin(), keyboardState.end(), false);
-    }
+    // Function to reset the mocked keyboard state
+    void ResetKeyboardState();
 };
