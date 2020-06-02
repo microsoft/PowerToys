@@ -227,7 +227,7 @@
     <value>Executable name</value>
   </data>
   <data name="PowerLauncher_MaximumNumberOfResults.Header" xml:space="preserve">
-    <value>Maximum numbers of results</value>
+    <value>Maximum number of results</value>
   </data>
   <data name="PowerLauncher_Shortcuts.Text" xml:space="preserve">
     <value>Shortcuts</value>
@@ -276,7 +276,7 @@
     <value>To exclude an application from snapping to zones add its name here (one per line). These apps will react only to Windows Snap.</value>
   </data>
   <data name="FancyZones_HighlightOpacity.Header" xml:space="preserve">
-    <value>Zone highlight opacity (%)</value>
+    <value>Zone highlight opacity</value>
   </data>
   <data name="FancyZones_HokeyEditorControl_Header.Header" xml:space="preserve">
     <value>Edit hot key / shortcut</value>
@@ -378,7 +378,7 @@
     <value>Appear only in extended context menu (Shift + Right-click)</value>
   </data>
   <data name="PowerRename_Toggle_MaxDispListNum.Header" xml:space="preserve">
-    <value>Maximum numbers of items to show in recently used list for autocomplete dropdown</value>
+    <value>Maximum number of items</value>
   </data>
   <data name="PowerRename_Toggle_RestoreFlagsOnLaunch.Header" xml:space="preserve">
     <value>Show values from last use</value>
@@ -392,14 +392,14 @@
   <data name="FileExplorerPreview_Description.Text" xml:space="preserve">
     <value>These settings allow you to manage your Windows File Explorer custom preview handlers.</value>
   </data>
-  <data name="Miscellaneous.Text" xml:space="preserve">
-    <value>Miscellaneous</value>
+  <data name="PowerRename_AutoCompleteHeader.Text" xml:space="preserve">
+    <value>Autocomplete</value>
   </data>
   <data name="OpenSource_Notice.Text" xml:space="preserve">
     <value>Open-source notice</value>
   </data>
   <data name="PowerRename_Toggle_AutoComplete.Header" xml:space="preserve">
-    <value>Enable auto-complete and auto-suggest of recently used list for autocomplete dropdown</value>
+    <value>Enable autocomplete for the search and replace fields</value>
   </data>
   <data name="FancyZones_BorderColor.Text" xml:space="preserve">
     <value>Zone border color (Default: #FFFFFF)</value>
@@ -426,7 +426,7 @@
     <value>Enable Shortcut Guide</value>
   </data>
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
-    <value>Opacity of background (%)</value>
+    <value>Opacity of background</value>
   </data>
   <data name="ShortcutGuide_Theme.Header" xml:space="preserve">
     <value>Choose Shortcut Guide overlay color</value>

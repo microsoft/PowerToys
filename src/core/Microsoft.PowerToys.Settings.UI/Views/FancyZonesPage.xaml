@@ -8,11 +8,13 @@
     xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
         <viewModel:FancyZonesViewModel x:Key="eventViewModel"/>
+        <converters:StringFormatConverter x:Key="StringFormatConverter"/>
     </Page.Resources>
 
     <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
@@ -75,7 +77,7 @@
 
             <CustomControls:HotkeySettingsControl 
                                           x:Uid="FancyZones_HokeyEditorControl_Header"
-                                          Width="320"
+                                          Width="240"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}"
@@ -134,16 +136,21 @@
             <TextBlock x:Uid="Appearance_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <!-- TO DO: Do we still need this numberbox? The colorpicker has an Alpha/Opacity option as well so we could use that -->
-            <muxc:NumberBox x:Uid="FancyZones_HighlightOpacity"
-                            Value="{ Binding Mode=TwoWay, Path=HighlightOpacity}"
-                            Minimum="0"
-                            Maximum="100"
-                            SpinButtonPlacementMode="Compact"
-                            HorizontalAlignment="Left"
-                            Margin="{StaticResource SmallTopMargin}" 
-                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" />
-             
+            <StackPanel Orientation="Horizontal" Margin="{StaticResource SmallTopMargin}" Spacing="12">
+            <Slider x:Uid="FancyZones_HighlightOpacity"
+                    Minimum="0"
+                    Maximum="100"
+                    Width="240"
+                    IsThumbToolTipEnabled="False"
+                    Value="{ Binding Mode=TwoWay, Path=HighlightOpacity}"
+                    HorizontalAlignment="Left"
+                    IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                <TextBlock Text="{ Binding Mode=OneWay, Path=HighlightOpacity, Converter={StaticResource StringFormatConverter}, ConverterParameter=' {0}%' }" 
+                           VerticalAlignment="Center"
+                           FontSize="16"
+                           Margin="0,21,0,0"/>
+            </StackPanel>
+            
             <TextBlock x:Uid="FancyZones_ZoneHighlightColor" 
                        Style="{StaticResource BodyTextBlockStyle}"
                        Margin="{StaticResource SmallTopMargin}" />
@@ -235,6 +242,9 @@
                      Margin="{StaticResource SmallTopMargin}"
                      Text="{ Binding Mode=TwoWay, Path=ExcludedApps}"
                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                     Width="380"
+                     Height="160"
+                     HorizontalAlignment="Left"
                      TextWrapping="Wrap"
                      AcceptsReturn="True"/>
 

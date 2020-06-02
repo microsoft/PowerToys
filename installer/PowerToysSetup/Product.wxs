@@ -3,6 +3,7 @@
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
      xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension" >
 
+  <?define FancyZonesProjectName="FancyZones"?>
   <?define ImageResizerProjectName="ImageResizer"?>
   <?define KeyboardManagerProjectName="KeyboardManager"?>
   <?define PowerRenameProjectName="PowerRename"?>
@@ -242,7 +243,7 @@
             <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)"/>
             <Directory Id="ShortcutGuideInstallFolder" Name="$(var.ShortcutGuideProjectName)"/>
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
-            <Directory Id="FancyZonesInstallFolder" Name="FancyZones" />
+            <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
             <Directory Id="LauncherInstallFolder" Name="launcher">
               <Directory Id="AssetsFolder" Name="Assets" />
               <Directory Id="LauncherImagesFolder" Name="Images" />               
@@ -386,23 +387,23 @@
     </DirectoryRef>
     <DirectoryRef Id="FancyZonesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
       <Component Id="Module_FancyZones" Guid="C6B5272E-6ED4-4B80-B0E7-2FF0355D8CF4" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\fancyzones.dll" KeyPath="yes" />
-        <File Source="$(var.BinX64Dir)modules\FancyZones\FancyZonesEditor.exe" >
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\fancyzones.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.exe" >
           <netfx:NativeImage Id="FancyZonesEditor.exe" Platform="64bit" Priority="0" />
         </File>
-        <File Source="$(var.BinX64Dir)modules\FancyZones\ControlzEx.dll" />
-        <File Source="$(var.BinX64Dir)modules\FancyZones\MahApps.Metro.dll" />
-        <File Source="$(var.BinX64Dir)modules\FancyZones\Microsoft.Xaml.Behaviors.dll" />
-        <File Source="$(var.BinX64Dir)modules\FancyZones\FancyZonesEditor.exe.config" />
-        <File Source="$(var.BinX64Dir)modules\FancyZones\Microsoft.Bcl.AsyncInterfaces.dll" />
-        <File Source="$(var.BinX64Dir)modules\FancyZones\System.Buffers.dll" />
-        <File Source="$(var.BinX64Dir)modules\FancyZones\System.Memory.dll" />
-        <File Source="$(var.BinX64Dir)modules\FancyZones\System.Numerics.Vectors.dll" />
-        <File Source="$(var.BinX64Dir)modules\FancyZones\System.Runtime.CompilerServices.Unsafe.dll" />
-        <File Source="$(var.BinX64Dir)modules\FancyZones\System.Text.Encodings.Web.dll" />
-        <File Source="$(var.BinX64Dir)modules\FancyZones\System.Text.Json.dll" />
-        <File Source="$(var.BinX64Dir)modules\FancyZones\System.Threading.Tasks.Extensions.dll" />
-        <File Source="$(var.BinX64Dir)modules\FancyZones\System.ValueTuple.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ControlzEx.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\MahApps.Metro.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Microsoft.Xaml.Behaviors.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\FancyZonesEditor.exe.config" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Microsoft.Bcl.AsyncInterfaces.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Buffers.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Memory.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Numerics.Vectors.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Runtime.CompilerServices.Unsafe.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Text.Encodings.Web.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Text.Json.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Threading.Tasks.Extensions.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.ValueTuple.dll" />
       </Component>
     </DirectoryRef>
 

@@ -444,6 +444,46 @@ namespace Microsoft.Plugin.Program.Programs
             return entry;
         }
 
+        public class removeDuplicatesComparer : IEqualityComparer<Win32>
+        {
+            public bool Equals(Win32 app1, Win32 app2)
+            {
+                
+                if(!string.IsNullOrEmpty(app1.Name) && !string.IsNullOrEmpty(app2.Name)
+                    && !string.IsNullOrEmpty(app1.ExecutableName) && !string.IsNullOrEmpty(app2.ExecutableName)
+                    && !string.IsNullOrEmpty(app1.FullPath) && !string.IsNullOrEmpty(app2.FullPath))
+                {
+                    return app1.Name.Equals(app2.Name, StringComparison.OrdinalIgnoreCase) 
+                        && app1.ExecutableName.Equals(app2.ExecutableName, StringComparison.OrdinalIgnoreCase) 
+                        && app1.FullPath.Equals(app2.FullPath, StringComparison.OrdinalIgnoreCase);
+                }
+                return false;
+            }
+
+            // Ref : https://stackoverflow.com/questions/2730865/how-do-i-calculate-a-good-hash-code-for-a-list-of-strings
+            public int GetHashCode(Win32 obj)
+            {
+                int namePrime = 13;
+                int executablePrime = 17;
+                int fullPathPrime = 31;
+
+                int result = 1;
+                result = result * namePrime + obj.Name.GetHashCode();
+                result = result * executablePrime + obj.ExecutableName.GetHashCode();
+                result = result * fullPathPrime + obj.FullPath.GetHashCode();
+
+                return result;
+            }
+        }
+
+        // Deduplication code
+        public static Func<ParallelQuery<Win32>, Win32[]> DeduplicatePrograms = (programs) =>
+        {
+            var uniqueExePrograms = programs.Where(x => !string.IsNullOrEmpty(x.LnkResolvedPath) || Extension(x.FullPath) != ExeExtension);
+            var uniquePrograms = uniqueExePrograms.Distinct(new removeDuplicatesComparer());
+            return uniquePrograms.ToArray();
+        };
+
         public static Win32[] All(Settings settings)
         {
             try
@@ -465,15 +505,7 @@ namespace Microsoft.Plugin.Program.Programs
                     programs = programs.Concat(startMenu);
                 }
 
-                var programsWithoutLnk = programs.Where(x => string.IsNullOrEmpty(x.LnkResolvedPath));
-                var programsAsList = programs.ToList();
-
-                foreach(var app in programsWithoutLnk)
-                {
-                    programsAsList.RemoveAll(x => (x.FullPath == app.FullPath) && string.IsNullOrEmpty(x.LnkResolvedPath));
-                }
-
-                return programsAsList.ToArray();
+                return DeduplicatePrograms(programs);
             }
 #if DEBUG //This is to make developer aware of any unhandled exception and add in handling.
             catch (Exception e)
