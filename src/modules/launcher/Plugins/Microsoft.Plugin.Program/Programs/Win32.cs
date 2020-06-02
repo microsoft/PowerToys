@@ -462,7 +462,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             public int GetHashCode(Win32 obj)
             {
-                return obj.FullPath.GetHashCode();
+                return obj.Name.GetHashCode() ^ obj.ExecutableName.GetHashCode() ^ obj.FullPath.GetHashCode();
             }
         }
 
