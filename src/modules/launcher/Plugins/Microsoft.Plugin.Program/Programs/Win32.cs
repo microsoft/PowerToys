@@ -460,9 +460,19 @@ namespace Microsoft.Plugin.Program.Programs
                 return false;
             }
 
+            // Ref : https://stackoverflow.com/questions/2730865/how-do-i-calculate-a-good-hash-code-for-a-list-of-strings
             public int GetHashCode(Win32 obj)
             {
-                return obj.Name.GetHashCode() ^ obj.ExecutableName.GetHashCode() ^ obj.FullPath.GetHashCode();
+                int namePrime = 13;
+                int executablePrime = 17;
+                int fullPathPrime = 31;
+
+                int result = 1;
+                result = result * namePrime + obj.Name.GetHashCode();
+                result = result * executablePrime + obj.ExecutableName.GetHashCode();
+                result = result * fullPathPrime + obj.FullPath.GetHashCode();
+
+                return result;
             }
         }
 
