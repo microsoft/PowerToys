@@ -281,10 +281,6 @@ namespace JSONHelpers
     bool FancyZonesData::RemoveDevicesByVirtualDesktopId(const std::wstring& virtualDesktopId)
     {
         std::scoped_lock lock{ dataLock };
-        if (virtualDesktopId == DEFAULT_GUID)
-        {
-            return false;
-        }
         bool modified{ false };
         for (auto it = deviceInfoMap.begin(); it != deviceInfoMap.end();)
         {
