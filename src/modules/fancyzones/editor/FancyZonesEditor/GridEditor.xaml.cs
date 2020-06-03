@@ -558,6 +558,7 @@ namespace FancyZonesEditor
                                 if (r.Orientation == resizer.Orientation && resizer.StartRow != r.StartRow && resizer.StartCol == r.StartCol)
                                 {
                                     r.StartCol--;
+                                    r.EndCol--;
                                     break;
                                 }
                             }
