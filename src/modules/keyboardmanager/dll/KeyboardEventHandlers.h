@@ -1,7 +1,7 @@
 #pragma once
 #include <keyboardmanager/common/KeyboardManagerState.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
-#include "InputInterface.h"
+#include <keyboardmanager/common/InputInterface.h>
 
 namespace KeyboardEventHandlers
 {

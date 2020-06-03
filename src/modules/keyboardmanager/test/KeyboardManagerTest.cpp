@@ -71,5 +71,38 @@ namespace KeyboardManagerTest
             // Reset test environment
             TestHelpers::ResetTestEnv(mockedInputHandler, testState);
         }
+
+        // Test if correct keyboard states are set for a 2 key shortcut remap key down
+        TEST_METHOD (Remapped2KeyShortcut_ShouldSetTargetShortcutDown_OnKeyDown)
+        {
+            // Set HandleSingleKeyRemapEvent as the hook procedure
+            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
+            mockedInputHandler.SetHookProc(currentHookProc);
+
+            // Remap Ctrl+A to Alt+V
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey(0x41);
+            Shortcut dest;
+            dest.SetKey(VK_MENU);
+            dest.SetKey(0x56);
+            testState.AddOSLevelShortcut(src, dest);
+            INPUT input[2] = { {}, {} };
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = 0x41;
+            // Send Ctrl+A keydown
+            mockedInputHandler.SendVirtualInput(2, input, sizeof(INPUT));
+
+            // Ctrl and A key states should be unchanged, Alt and V key states should be true
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), true);
+
+            // Reset test environment
+            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
+        }
     };
 }

@@ -111,12 +111,12 @@ namespace KeyboardEventHandlers
             const size_t dest_size = it.second.targetShortcut.Size();
 
             // If the shortcut has been pressed down
-            if (!it.second.isShortcutInvoked && it.first.CheckModifiersKeyboardState())
+            if (!it.second.isShortcutInvoked && it.first.CheckModifiersKeyboardState(ii))
             {
                 if (data->lParam->vkCode == it.first.GetActionKey() && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
                 {
                     // Check if any other keys have been pressed apart from the shortcut. If true, then check for the next shortcut
-                    if (!it.first.IsKeyboardStateClearExceptShortcut())
+                    if (!it.first.IsKeyboardStateClearExceptShortcut(ii))
                     {
                         continue;
                     }
@@ -125,11 +125,11 @@ namespace KeyboardEventHandlers
                     LPINPUT keyEventList;
 
                     // Remember which win key was pressed initially
-                    if (GetAsyncKeyState(VK_RWIN) & 0x8000)
+                    if (ii.GetVirtualKeyState(VK_RWIN))
                     {
                         it.second.winKeyInvoked = ModifierKey::Right;
                     }
-                    else if (GetAsyncKeyState(VK_LWIN) & 0x8000)
+                    else if (ii.GetVirtualKeyState(VK_LWIN))
                     {
                         it.second.winKeyInvoked = ModifierKey::Left;
                     }
@@ -320,7 +320,7 @@ namespace KeyboardEventHandlers
                 }
 
                 // The system will see the modifiers of the new shortcut as being held down because of the shortcut remap
-                if (it.second.targetShortcut.CheckModifiersKeyboardState())
+                if (it.second.targetShortcut.CheckModifiersKeyboardState(ii))
                 {
                     // Case 2: If the original shortcut is still held down the keyboard will get a key down message of the action key in the original shortcut and the new shortcut's modifiers will be held down (keys held down send repeated keydown messages)
                     if (data->lParam->vkCode == it.first.GetActionKey() && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))

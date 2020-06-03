@@ -117,7 +117,6 @@
   <ItemGroup>
     <ClInclude Include="Input.h" />
     <ClInclude Include="KeyboardEventHandlers.h" />
-    <ClInclude Include="InputInterface.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>

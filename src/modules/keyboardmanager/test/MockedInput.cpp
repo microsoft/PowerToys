@@ -53,7 +53,7 @@ intptr_t MockedInput::MockedKeyboardHook(LowlevelKeyboardEvent* data)
 }
 
 // Function to get the state of a particular key
-bool MockedInput::GetVirtualKeyState(DWORD key)
+bool MockedInput::GetVirtualKeyState(int key)
 {
     return keyboardState[key];
 }

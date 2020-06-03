@@ -1,5 +1,5 @@
 #pragma once
-#include <keyboardmanager/dll/InputInterface.h>
+#include <keyboardmanager/common/InputInterface.h>
 #include <vector>
 #include <functional>
 #include <interface/lowlevel_keyboard_event_data.h>
@@ -31,7 +31,7 @@ public:
     intptr_t MockedKeyboardHook(LowlevelKeyboardEvent* data);
 
     // Function to get the state of a particular key
-    bool GetVirtualKeyState(DWORD key);
+    bool GetVirtualKeyState(int key);
 
     // Function to reset the mocked keyboard state
     void ResetKeyboardState();
