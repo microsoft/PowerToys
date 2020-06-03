@@ -50,8 +50,23 @@ Various tools used by PowerToys. Includes the Visual Studio 2019 project templat
 
 ### Build Prerequisites
 
+1. install the following:
 - Windows 10 1803 (build 10.0.17134.0) or above to build and run PowerToys.
-- Visual Studio 2019 Community edition or higher, with the 'Desktop Development with C++' component and the Windows 10 SDK version 10.0.18362.0 or higher.
+- Visual Studio 2019 Community edition or higher
+
+2. Run this command in cmd/terminal/ps to install all the workloads and components for VS
+```shell
+"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vs_installer.exe" ^
+modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\community" ^
+--add Microsoft.VisualStudio.Workload.NativeDesktop ^
+--add Microsoft.VisualStudio.Workload.ManagedDesktop ^
+--add Microsoft.VisualStudio.Workload.Universal ^
+--add Microsoft.VisualStudio.Component.Windows10SDK.17134 ^
+--add Microsoft.VisualStudio.ComponentGroup.UWP.VC ^
+--add Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre ^
+--add Microsoft.VisualStudio.Component.VC.ATL.Spectre ^
+--passive 
+```
 
 ### Building the Code
 
