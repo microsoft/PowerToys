@@ -54,7 +54,8 @@ Various tools used by PowerToys. Includes the Visual Studio 2019 project templat
 - Windows 10 1803 (build 10.0.17134.0) or above to build and run PowerToys.
 - Visual Studio 2019 Community edition or higher
 
-2. Run this command in cmd/terminal/ps to install all the workloads and components for VS
+2. Run this command in cmd/terminal/ps to install all the workloads and components for VS.
+**Note:** the script assumes Community edition, update path accordingly.
 ```shell
 "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vs_installer.exe" ^
 modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\community" ^
