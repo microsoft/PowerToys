@@ -21,7 +21,6 @@ using System.Windows.Input;
 using System.Runtime.InteropServices.ComTypes;
 using Wox.Plugin.SharedCommands;
 using System.Reflection;
-using NLog.Targets;
 
 namespace Microsoft.Plugin.Program.Programs
 {
