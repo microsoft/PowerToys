@@ -57,7 +57,8 @@ namespace Microsoft.Plugin.Program.Programs
 
             if(!hasArguments)
             {
-                score += 5;
+                var noArgumentScoreModifier = 5;
+                score += noArgumentScoreModifier;
             }
 
             var result = new Result
