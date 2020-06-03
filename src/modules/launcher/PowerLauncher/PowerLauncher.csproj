@@ -192,6 +192,9 @@
     <Page Update="Themes\Dark.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="Themes\Light.xaml">
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
 
 </Project>
