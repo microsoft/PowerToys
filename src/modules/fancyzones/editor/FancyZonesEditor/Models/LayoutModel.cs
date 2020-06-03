@@ -184,23 +184,22 @@ namespace FancyZonesEditor.Models
                     {
                         int rows = info.GetProperty("rows").GetInt32();
                         int columns = info.GetProperty("columns").GetInt32();
-                        int[] rowsPercentage = new int[rows];
+
+                        List<int> rowsPercentage = new List<int>(rows);
                         JsonElement.ArrayEnumerator rowsPercentageEnumerator = info.GetProperty("rows-percentage").EnumerateArray();
-                        int i = 0;
                         while (rowsPercentageEnumerator.MoveNext())
                         {
-                            rowsPercentage[i++] = rowsPercentageEnumerator.Current.GetInt32();
+                            rowsPercentage.Add(rowsPercentageEnumerator.Current.GetInt32());
                         }
 
-                        i = 0;
-                        int[] columnsPercentage = new int[columns];
+                        List<int> columnsPercentage = new List<int>(columns);
                         JsonElement.ArrayEnumerator columnsPercentageEnumerator = info.GetProperty("columns-percentage").EnumerateArray();
                         while (columnsPercentageEnumerator.MoveNext())
                         {
-                            columnsPercentage[i++] = columnsPercentageEnumerator.Current.GetInt32();
+                            columnsPercentage.Add(columnsPercentageEnumerator.Current.GetInt32());
                         }
 
-                        i = 0;
+                        int i = 0;
                         JsonElement.ArrayEnumerator cellChildMapRows = info.GetProperty("cell-child-map").EnumerateArray();
                         int[,] cellChildMap = new int[rows, columns];
                         while (cellChildMapRows.MoveNext())

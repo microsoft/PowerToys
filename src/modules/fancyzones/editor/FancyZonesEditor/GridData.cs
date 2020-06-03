@@ -42,7 +42,7 @@ namespace FancyZonesEditor
                 NewPercent = (int)((CurrentPercent + AdjacentPercent) * newExtent / (CurrentExtent + _adjacentExtent));
             }
 
-            public void CalcAdjacentZones(int index, int spacing, int size, RowColInfo[] info, Func<int, bool> indexCmpr)
+            public void CalcAdjacentZones(int index, int spacing, int size, List<RowColInfo> info, Func<int, bool> indexCmpr)
             {
                 int ind = index;
                 while (ind > 0 && indexCmpr(ind))
@@ -62,10 +62,10 @@ namespace FancyZonesEditor
                 }
             }
 
-            public void FixAccuracyError(RowColInfo[] info, int[] percents, int index)
+            public void FixAccuracyError(List<RowColInfo> info, List<int> percents, int index)
             {
                 int total = 0;
-                for (int i = 0; i < info.Length; i++)
+                for (int i = 0; i < info.Count; i++)
                 {
                     total += info[i].Percent;
                 }
@@ -75,7 +75,7 @@ namespace FancyZonesEditor
                 {
                     TotalPercent -= diff;
 
-                    while (index >= info.Length)
+                    while (index >= info.Count)
                     {
                         index--;
                     }
@@ -95,16 +95,16 @@ namespace FancyZonesEditor
             int rows = model.Rows;
             int cols = model.Columns;
 
-            _rowInfo = new RowColInfo[rows];
+            _rowInfo = new List<RowColInfo>(rows);
             for (int row = 0; row < rows; row++)
             {
-                _rowInfo[row] = new RowColInfo(model.RowPercents[row]);
+                _rowInfo.Add(new RowColInfo(model.RowPercents[row]));
             }
 
-            _colInfo = new RowColInfo[cols];
+            _colInfo = new List<RowColInfo>(cols);
             for (int col = 0; col < cols; col++)
             {
-                _colInfo[col] = new RowColInfo(model.ColumnPercents[col]);
+                _colInfo.Add(new RowColInfo(model.ColumnPercents[col]));
             }
         }
 
@@ -181,8 +181,6 @@ namespace FancyZonesEditor
             int cols = _model.Columns + 1;
 
             int[,] newCellChildMap = new int[rows, cols];
-            int[] newColPercents = new int[cols];
-            RowColInfo[] newColInfo = new RowColInfo[cols];
 
             int sourceCol = 0;
             for (int col = 0; col < cols; col++)
@@ -205,35 +203,24 @@ namespace FancyZonesEditor
                 }
             }
 
-            sourceCol = 0;
+            RowColInfo[] split = _colInfo[foundCol].Split(offset, space);
+
+            _colInfo[foundCol] = split[0];
+            _colInfo.Insert(foundCol + 1, split[1]);
+
+            _model.ColumnPercents[foundCol] = split[0].Percent;
+            _model.ColumnPercents.Insert(foundCol + 1, split[1].Percent);
+
             double newTotalExtent = actualWidth - (space * (cols + 1));
             for (int col = 0; col < cols; col++)
             {
-                if (col == foundCol)
+                if (col != foundCol && col != foundCol + 1)
                 {
-                    RowColInfo[] split = _colInfo[col].Split(offset, space);
-                    newColInfo[col] = split[0];
-                    newColPercents[col] = split[0].Percent;
-                    col++;
-
-                    newColInfo[col] = split[1];
-                    newColPercents[col] = split[1].Percent;
+                    _colInfo[col].RecalculatePercent(newTotalExtent);
                 }
-                else
-                {
-                    newColInfo[col] = _colInfo[sourceCol];
-                    newColInfo[col].RecalculatePercent(newTotalExtent);
-
-                    newColPercents[col] = _model.ColumnPercents[sourceCol];
-                }
-
-                sourceCol++;
             }
 
             _model.CellChildMap = newCellChildMap;
-            _model.ColumnPercents = newColPercents;
-            _colInfo = newColInfo;
-
             _model.Columns++;
         }
 
@@ -243,8 +230,6 @@ namespace FancyZonesEditor
             int cols = _model.Columns;
 
             int[,] newCellChildMap = new int[rows, cols];
-            int[] newRowPercents = new int[rows];
-            RowColInfo[] newRowInfo = new RowColInfo[rows];
 
             int sourceRow = 0;
             for (int row = 0; row < rows; row++)
@@ -267,35 +252,24 @@ namespace FancyZonesEditor
                 }
             }
 
-            sourceRow = 0;
+            RowColInfo[] split = _rowInfo[foundRow].Split(offset, space);
+
+            _rowInfo[foundRow] = split[0];
+            _rowInfo.Insert(foundRow + 1, split[1]);
+
+            _model.RowPercents[foundRow] = split[0].Percent;
+            _model.RowPercents.Insert(foundRow + 1, split[1].Percent);
+
             double newTotalExtent = actualHeight - (space * (rows + 1));
             for (int row = 0; row < rows; row++)
             {
-                if (row == foundRow)
+                if (row != foundRow && row != foundRow + 1)
                 {
-                    RowColInfo[] split = _rowInfo[row].Split(offset, space);
-                    newRowInfo[row] = split[0];
-                    newRowPercents[row] = split[0].Percent;
-                    row++;
-
-                    newRowInfo[row] = split[1];
-                    newRowPercents[row] = split[1].Percent;
+                    _rowInfo[row].RecalculatePercent(newTotalExtent);
                 }
-                else
-                {
-                    newRowInfo[row] = _rowInfo[sourceRow];
-                    newRowInfo[row].RecalculatePercent(newTotalExtent);
-
-                    newRowPercents[row] = _model.RowPercents[sourceRow];
-                }
-
-                sourceRow++;
             }
 
-            _rowInfo = newRowInfo;
             _model.CellChildMap = newCellChildMap;
-            _model.RowPercents = newRowPercents;
-
             _model.Rows++;
         }
 
@@ -308,14 +282,14 @@ namespace FancyZonesEditor
             double totalHeight = arrangeSize.Height - (spacing * (rows + 1));
 
             double top = spacing;
-            for (int row = 0; row < rows; row++)
+            for (int row = 0; row < _rowInfo.Count; row++)
             {
                 double cellHeight = _rowInfo[row].Recalculate(top, totalHeight);
                 top += cellHeight + spacing;
             }
 
             double left = spacing;
-            for (int col = 0; col < cols; col++)
+            for (int col = 0; col < _colInfo.Count; col++)
             {
                 double cellWidth = _colInfo[col].Recalculate(left, totalWidth);
                 left += cellWidth + spacing;
@@ -421,8 +395,8 @@ namespace FancyZonesEditor
             int colIndex = resizer.StartCol;
             int[,] indices = _model.CellChildMap;
 
-            RowColInfo[] info;
-            int[] percents;
+            List<RowColInfo> info;
+            List<int> percents;
             int index;
 
             if (resizer.Orientation == Orientation.Vertical)
@@ -457,8 +431,8 @@ namespace FancyZonesEditor
 
         public void DragResizer(GridResizer resizer, ResizeInfo data)
         {
-            RowColInfo[] info;
-            int[] percents;
+            List<RowColInfo> info;
+            List<int> percents;
             int index;
 
             if (resizer.Orientation == Orientation.Vertical)
@@ -482,7 +456,7 @@ namespace FancyZonesEditor
 
         public bool SwapNegativePercents(Orientation orientation, int rowIndex, int colIndex)
         {
-            int[] percents;
+            List<int> percents;
             int index;
             Action swapIndicesPrevLine, swapIndicesNextLine;
 
@@ -655,6 +629,7 @@ namespace FancyZonesEditor
             List<int> rowsToRemove = new List<int>(), colsToRemove = new List<int>();
             int[,] cellChildMap = _model.CellChildMap;
 
+            int arrayShift = 0;
             for (int row = 1; row < _model.Rows; row++)
             {
                 bool couldBeRemoved = true;
@@ -668,10 +643,18 @@ namespace FancyZonesEditor
 
                 if (couldBeRemoved && row > 0)
                 {
+                    _rowInfo[row - 1 - arrayShift].Percent += _rowInfo[row - arrayShift].Percent;
+                    _rowInfo.RemoveAt(row - arrayShift);
+
+                    _model.RowPercents[row - 1 - arrayShift] += _model.RowPercents[row - arrayShift];
+                    _model.RowPercents.RemoveAt(row - arrayShift);
+
                     rowsToRemove.Add(row);
+                    arrayShift++;
                 }
             }
 
+            arrayShift = 0;
             for (int col = 1; col < _model.Columns; col++)
             {
                 bool couldBeRemoved = true;
@@ -685,82 +668,19 @@ namespace FancyZonesEditor
 
                 if (couldBeRemoved && col > 0)
                 {
+                    _colInfo[col - 1 - arrayShift].Percent += _colInfo[col - arrayShift].Percent;
+                    _colInfo.RemoveAt(col - arrayShift);
+
+                    _model.ColumnPercents[col - 1 - arrayShift] += _model.ColumnPercents[col - arrayShift];
+                    _model.ColumnPercents.RemoveAt(col - arrayShift);
+
                     colsToRemove.Add(col);
+                    arrayShift++;
                 }
             }
 
             int rows = _model.Rows - rowsToRemove.Count;
             int cols = _model.Columns - colsToRemove.Count;
-
-            if (rowsToRemove.Count > 0)
-            {
-                int[] rowPercents = _model.RowPercents;
-                int[] newRowPercents = new int[rows];
-                RowColInfo[] newRowInfo = new RowColInfo[rows];
-
-                int removableRowIndex = 0;
-                int removableRow = rowsToRemove[removableRowIndex];
-
-                int dstIndex = 0;
-                for (int i = 0; i < _model.Rows; i++)
-                {
-                    if (i != removableRow)
-                    {
-                        newRowPercents[dstIndex] = rowPercents[i];
-                        newRowInfo[dstIndex] = new RowColInfo(_rowInfo[i]);
-                        dstIndex++;
-                    }
-                    else
-                    {
-                        newRowPercents[dstIndex - 1] += rowPercents[i];
-                        newRowInfo[dstIndex - 1].Percent += rowPercents[i];
-
-                        removableRowIndex++;
-                        if (removableRowIndex < rowsToRemove.Count)
-                        {
-                            removableRow = rowsToRemove[removableRowIndex];
-                        }
-                    }
-                }
-
-                _model.RowPercents = newRowPercents;
-                _rowInfo = newRowInfo;
-            }
-
-            if (colsToRemove.Count > 0)
-            {
-                int[] colPercents = _model.ColumnPercents;
-                int[] newColPercents = new int[cols];
-                RowColInfo[] newColInfo = new RowColInfo[cols];
-
-                int removableColIndex = 0;
-                int removableCol = colsToRemove[removableColIndex];
-
-                int dstIndex = 0;
-                for (int i = 0; i < _model.Columns; i++)
-                {
-                    if (i != removableCol)
-                    {
-                        newColPercents[dstIndex] = colPercents[i];
-                        newColInfo[dstIndex] = new RowColInfo(_colInfo[i]);
-                        dstIndex++;
-                    }
-                    else
-                    {
-                        newColPercents[dstIndex - 1] += colPercents[i];
-                        newColInfo[dstIndex - 1].Percent += colPercents[i];
-
-                        removableColIndex++;
-                        if (removableColIndex < colsToRemove.Count)
-                        {
-                            removableCol = colsToRemove[removableColIndex];
-                        }
-                    }
-                }
-
-                _model.ColumnPercents = newColPercents;
-                _colInfo = newColInfo;
-            }
 
             if (rowsToRemove.Count > 0 || colsToRemove.Count > 0)
             {
@@ -785,6 +705,7 @@ namespace FancyZonesEditor
                             removableCol = colsToRemove[removableColIndex];
                         }
 
+                        dstCol = 0;
                         for (int col = 0; col < _model.Columns; col++)
                         {
                             if (col != removableCol)
@@ -822,7 +743,7 @@ namespace FancyZonesEditor
         }
 
         private GridLayoutModel _model;
-        private RowColInfo[] _rowInfo;
-        private RowColInfo[] _colInfo;
+        private List<RowColInfo> _rowInfo;
+        private List<RowColInfo> _colInfo;
     }
 }
