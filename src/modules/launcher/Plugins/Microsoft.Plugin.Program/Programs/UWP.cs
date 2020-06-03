@@ -542,7 +542,8 @@ namespace Microsoft.Plugin.Program.Programs
                     var prefix = path.Substring(0, end);
                     var paths = new List<string> { path };
 
-                    //To be set along with the WPF theme, to either light or dark mode, ie: contract-white or contrast-black.
+                    // TODO: This value must be set in accordance to the WPF theme (work in progress).
+                    // Must be set to `contrast-white` for light theme and to `contrast-black` for dark theme to get an icon of the contrasting color.
                     var theme = "contrast-black";
 
                     var scaleFactors = new Dictionary<PackageVersion, List<int>>
@@ -570,7 +571,7 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                     else
                     {
-                        var targetSizes = new List<int>{ 16, 24, 30, 36, 40, 44, 60, 72, 96, 256 };
+                        var targetSizes = new List<int>{256 , 180, 128, 96, 72, 60, 44, 40, 36, 30, 24, 16};
 
                         foreach (var factor in targetSizes)
                         {
