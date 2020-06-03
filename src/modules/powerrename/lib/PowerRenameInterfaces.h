@@ -14,7 +14,7 @@ enum PowerRenameFlags
     ExtensionOnly = 0x100,
     Uppercase = 0x200,
     Lowercase = 0x400,
-    Capitalized = 0x800
+    Titlecase = 0x800
 };
 
 interface __declspec(uuid("3ECBA62B-E0F0-4472-AA2E-DEE7A1AA46B9")) IPowerRenameRegExEvents : public IUnknown

@@ -3,6 +3,7 @@
 #include "PowerRenameRegEx.h" // Default RegEx handler
 #include <algorithm>
 #include <shlobj.h>
+#include <cstring>
 #include "helpers.h"
 #include "window_helpers.h"
 #include <filesystem>
@@ -774,7 +775,9 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
 
                                 // newName == nullptr likely means we have an empty search string.  We should leave newNameToUse
                                 // as nullptr so we clear the renamed column
-                                if (newName != nullptr)
+                                // Except string transformation is selected.
+                                
+                                if (newName != nullptr )
                                 {
                                     newNameToUse = resultName;
                                     if (flags & NameOnly)
@@ -798,22 +801,91 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                         StringCchCopy(resultName, ARRAYSIZE(resultName), newName);
                                     }
                                 }
-                                if ( newNameToUse != nullptr )
-                                {
-                                    while (iswspace((wchar_t)*newNameToUse))
-                                    {
-                                        newNameToUse++;
-                                    }
 
-                                    if (*newNameToUse != 0)
+                                wchar_t transformedName[MAX_PATH] = { 0 };
+                                newNameToUse = transformedName;
+                                if (flags & Uppercase )
+                                {
+                                    if (flags & NameOnly)
                                     {
-                                        auto endOfNewNameToUse = newNameToUse + wcslen(newNameToUse) - 1;
-                                        while (endOfNewNameToUse > newNameToUse && iswspace((wchar_t)*endOfNewNameToUse))
-                                        {
-                                            endOfNewNameToUse--;
-                                        }
-                                        endOfNewNameToUse[1] = '\0';
+                                        std::wstring stem = fs::path(resultName).stem().wstring();
+                                        std::transform(stem.begin(), stem.end(), stem.begin(), ::towupper);
+                                        StringCchPrintf(transformedName, ARRAYSIZE(transformedName), L"%s%s", stem.c_str() , fs::path(resultName).extension().c_str());
                                     }
+                                    else if (flags & ExtensionOnly)
+                                    {
+                                        std::wstring extension = fs::path(resultName).extension().wstring();
+                                        if (!extension.empty())
+                                        {
+                                            std::transform(extension.begin(), extension.end(), extension.begin(), ::towupper);
+                                            StringCchPrintf(transformedName, ARRAYSIZE(transformedName), L"%s%s", fs::path(resultName).stem().c_str(), extension.c_str());
+                                        }
+                                        else
+                                        {
+                                            StringCchCopy(transformedName, ARRAYSIZE(transformedName), resultName);
+                                            std::transform(transformedName, transformedName + wcslen(transformedName), transformedName, ::towupper);
+                                        }
+                                        
+                                    }
+                                    else
+                                    {
+                                        StringCchCopy(transformedName, ARRAYSIZE(transformedName), resultName);
+                                        std::transform(transformedName, transformedName + wcslen(transformedName), transformedName, ::towupper);
+                                    }
+                                }
+                                else if ( flags & Lowercase )
+                                {
+                                    if (flags & NameOnly)
+                                    {
+                                        std::wstring stem = fs::path(resultName).stem().wstring();
+                                        std::transform(stem.begin(), stem.end(), stem.begin(), ::towlower);
+                                        StringCchPrintf(transformedName, ARRAYSIZE(transformedName), L"%s%s", stem.c_str(), fs::path(resultName).extension().c_str());
+                                    }
+                                    else if (flags & ExtensionOnly)
+                                    {
+                                        std::wstring extension = fs::path(resultName).extension().wstring();
+                                        if (!extension.empty())
+                                        {
+                                            std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
+                                            StringCchPrintf(transformedName, ARRAYSIZE(transformedName), L"%s%s", fs::path(resultName).stem().c_str(), extension.c_str());
+                                        }
+                                        else
+                                        {
+                                            StringCchCopy(transformedName, ARRAYSIZE(transformedName), resultName);
+                                            std::transform(transformedName, transformedName + wcslen(transformedName), transformedName, ::towlower);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        StringCchCopy(transformedName, ARRAYSIZE(transformedName), resultName);
+                                        std::transform(transformedName, transformedName + wcslen(transformedName), transformedName, ::towlower);
+                                    }
+                                }
+                                else if (flags & Titlecase )
+                                {
+                                    // Add advances titlezation
+                                    if ( !(flags & ExtensionOnly) ){
+                                        int resultNameLength = wcslen(resultName);
+                                        for (int i = 0; i < resultNameLength; i++)
+                                        {
+                                            if (!i || iswspace(resultName[i - 1]))
+                                            {
+                                                transformedName[i] = towupper(resultName[i]);
+                                            }
+                                            else
+                                            {
+                                                transformedName[i] = towlower(resultName[i]);
+                                            }
+                                        }
+                                        transformedName[resultNameLength] = '\0';
+                                    }
+                                    else {
+                                        StringCchCopy(transformedName, ARRAYSIZE(transformedName), resultName);
+                                    }
+                                }
+                                else
+                                {
+                                    StringCchCopy(transformedName, ARRAYSIZE(transformedName), resultName);
                                 }
 
                                 // No change from originalName so set newName to
@@ -832,30 +904,6 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                         newNameToUse = uniqueName;
                                     }
                                     itemEnumIndex++;
-                                }
-
-                                if (newNameToUse != nullptr && (flags & Uppercase)) 
-                                {
-                                    std::transform(newNameToUse, newNameToUse + wcslen(newNameToUse), newNameToUse, ::towupper);
-                                }
-                                else if (newNameToUse != nullptr && (flags & Lowercase))
-                                {
-                                    std::transform(newNameToUse, newNameToUse + wcslen(newNameToUse), newNameToUse, ::towlower);
-                                }
-                                else if (newNameToUse != nullptr && (flags & Capitalized))
-                                {
-                                    int newNameToUseLenght = wcslen(newNameToUse);
-                                    for (int i = 0; i < newNameToUseLenght; i++)
-                                    {
-                                        if (!i || iswspace(newNameToUse[i - 1]))
-                                        {
-                                            newNameToUse[i] = towupper(newNameToUse[i]);
-                                        }
-                                        else
-                                        {
-                                            newNameToUse[i] = towlower(newNameToUse[i]);
-                                        }
-                                    }
                                 }
 
 
