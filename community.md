@@ -16,7 +16,7 @@ Rafael has helped do the [upgrade from CppWinRT 1.x to 2.0](https://github.com/m
 
 ## Open source projects
 
-As PowerToys creates new utilities, some will be based off existing techology. We'll continue to do our best to contribute back to these projects but their efforts were the base of some of our projects. We want to be sure their work is direct recognized.
+As PowerToys creates new utilities, some will be based off existing technology. We'll continue to do our best to contribute back to these projects but their efforts were the base of some of our projects. We want to be sure their work is direct recognized.
 
 ### [@jjw24](https://github.com/jjw24/) - Jeremy Wu
 
@@ -44,4 +44,4 @@ Image Resizer is from Brice.
 
 ### [@chrdavis](https://github.com/chrdavis/) - Chris Davis
 
-PowerRename is from Chris's Smart Renamer.
+PowerRename is from Chris's SmartRename.
