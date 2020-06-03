@@ -64,7 +64,7 @@ void KeyboardHook::Start()
     hookHandle = SetWindowsHookEx(
         WH_KEYBOARD_LL, 
         (HOOKPROC)(void*)Marshal::GetFunctionPointerForDelegate(hookProc), 
-        GetModuleHandle(msclr::interop::marshal_as<std::wstring>(curModule->ModuleName).c_str()),
+        0,
         0);
     if (hookHandle == nullptr)
     {

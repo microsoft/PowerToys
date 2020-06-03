@@ -587,7 +587,7 @@ namespace Wox.ViewModel
 
         private void OnHotkey()
         {
-            App.Current.Dispatcher.Invoke(() =>
+            Application.Current.Dispatcher.Invoke(() =>
             {
                 if (!ShouldIgnoreHotkeys())
                 {

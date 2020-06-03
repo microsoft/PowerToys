@@ -44,12 +44,17 @@ bool HotkeyManager::IsActiveProc()
 // KeyboardEvent callback is only fired for relevant key events.
 bool HotkeyManager::FilterKeyboardProc(KeyboardEvent^ ev)
 {
+    auto oldHandle = GetHotkeyHandle(pressedKeys);
+
     // Updating the pressed keys here so we know if the keypress event 
     // should be propagated or not.
     UpdatePressedKeys(ev);
 
     auto pressedKeysHandle = GetHotkeyHandle(pressedKeys);
-    if (hotkeys->ContainsKey(pressedKeysHandle))
+
+    // Check if the hotkey matches the pressed keys, and check if the pressed keys aren't duplicate
+    // (there shouldn't be auto repeating hotkeys)
+    if (hotkeys->ContainsKey(pressedKeysHandle) && oldHandle != pressedKeysHandle)
     {
         return true;
     }
