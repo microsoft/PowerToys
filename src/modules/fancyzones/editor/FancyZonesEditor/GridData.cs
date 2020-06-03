@@ -414,7 +414,17 @@ namespace FancyZonesEditor
                 percents = _model.ColumnPercents;
                 index = colIndex;
 
-                Func<int, bool> indexCmpr = i => indices[rowIndex, i] == indices[rowIndex, i - 1];
+                Func<int, bool> indexCmpr = (ind) =>
+                {
+                    bool sameIndices = true;
+                    for (int i = resizer.StartRow; i < resizer.EndRow && sameIndices; i++)
+                    {
+                        sameIndices &= indices[i, ind] == indices[i, ind - 1];
+                    }
+
+                    return sameIndices;
+                };
+
                 res.CalcAdjacentZones(colIndex, _model.Columns, _colInfo, indexCmpr);
             }
             else
@@ -426,7 +436,17 @@ namespace FancyZonesEditor
                 percents = _model.RowPercents;
                 index = rowIndex;
 
-                Func<int, bool> indexCmpr = i => indices[i, colIndex] == indices[i - 1, colIndex];
+                Func<int, bool> indexCmpr = (ind) =>
+                {
+                    bool sameIndices = true;
+                    for (int i = resizer.StartCol; i < resizer.EndCol && sameIndices; i++)
+                    {
+                        sameIndices &= indices[ind, i] == indices[ind - 1, i];
+                    }
+
+                    return sameIndices;
+                };
+
                 res.CalcAdjacentZones(rowIndex, _model.Rows, _rowInfo, indexCmpr);
             }
 
