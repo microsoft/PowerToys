@@ -515,13 +515,10 @@ namespace FancyZonesEditor
         private void Resizer_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
         {
             GridResizer resizer = (GridResizer)sender;
-            Settings settings = ((App)Application.Current).ZoneSettings;
 
             double delta = (resizer.Orientation == Orientation.Vertical) ? e.HorizontalChange : e.VerticalChange;
-            int spacing = settings.ShowSpacing ? settings.Spacing : 0;
 
-            GridData.ResizeInfo resizeInfo = _data.CalculateResizeInfo(resizer, delta, spacing);
-
+            GridData.ResizeInfo resizeInfo = _data.CalculateResizeInfo(resizer, delta);
             if (resizeInfo.IsResizeAllowed)
             {
                 _data.DragResizer(resizer, resizeInfo);

@@ -42,7 +42,7 @@ namespace FancyZonesEditor
                 NewPercent = (int)((CurrentPercent + AdjacentPercent) * newExtent / (CurrentExtent + _adjacentExtent));
             }
 
-            public void CalcAdjacentZones(int index, int spacing, int size, List<RowColInfo> info, Func<int, bool> indexCmpr)
+            public void CalcAdjacentZones(int index, int size, List<RowColInfo> info, Func<int, bool> indexCmpr)
             {
                 int ind = index;
                 while (ind > 0 && indexCmpr(ind))
@@ -393,7 +393,7 @@ namespace FancyZonesEditor
             }
         }
 
-        public ResizeInfo CalculateResizeInfo(GridResizer resizer, double delta, int spacing)
+        public ResizeInfo CalculateResizeInfo(GridResizer resizer, double delta)
         {
             ResizeInfo res = new ResizeInfo();
 
@@ -415,7 +415,7 @@ namespace FancyZonesEditor
                 index = colIndex;
 
                 Func<int, bool> indexCmpr = i => indices[rowIndex, i] == indices[rowIndex, i - 1];
-                res.CalcAdjacentZones(colIndex, spacing, _model.Columns, _colInfo, indexCmpr);
+                res.CalcAdjacentZones(colIndex, _model.Columns, _colInfo, indexCmpr);
             }
             else
             {
@@ -427,7 +427,7 @@ namespace FancyZonesEditor
                 index = rowIndex;
 
                 Func<int, bool> indexCmpr = i => indices[i, colIndex] == indices[i - 1, colIndex];
-                res.CalcAdjacentZones(rowIndex, spacing, _model.Rows, _rowInfo, indexCmpr);
+                res.CalcAdjacentZones(rowIndex, _model.Rows, _rowInfo, indexCmpr);
             }
 
             res.FixAccuracyError(info, percents, delta > 0 ? index + 2 : index + 1);
