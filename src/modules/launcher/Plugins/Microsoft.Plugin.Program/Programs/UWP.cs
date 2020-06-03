@@ -542,6 +542,9 @@ namespace Microsoft.Plugin.Program.Programs
                     var prefix = path.Substring(0, end);
                     var paths = new List<string> { path };
 
+                    //To be set along with the WPF theme, to either light or dark mode, ie: contract-white or contrast-black.
+                    var theme = "contrast-black";
+
                     var scaleFactors = new Dictionary<PackageVersion, List<int>>
                     {
                         // scale factors on win10: https://docs.microsoft.com/en-us/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets#asset-size-tables,
@@ -555,6 +558,8 @@ namespace Microsoft.Plugin.Program.Programs
                         foreach (var factor in scaleFactors[Package.Version])
                         {
                             paths.Add($"{prefix}.scale-{factor}{extension}");
+                            paths.Add($"{prefix}.scale-{factor}_{theme}{extension}");
+                            paths.Add($"{prefix}.{theme}_scale-{factor}{extension}");
                         }
                     }
 
@@ -565,9 +570,26 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                     else
                     {
-                        ProgramLogger.LogException($"|UWP|LogoPathFromUri|{Package.Location}" +
-                                                    $"|{UserModelId} can't find logo uri for {uri} in package location: {Package.Location}", new FileNotFoundException());
-                        return string.Empty;
+                        var targetSizes = new List<int>{ 16, 24, 30, 36, 40, 44, 60, 72, 96, 256 };
+
+                        foreach (var factor in targetSizes)
+                        {
+                            paths.Add($"{prefix}.targetsize-{factor}{extension}");
+                            paths.Add($"{prefix}.targetsize-{factor}_{theme}{extension}");
+                            paths.Add($"{prefix}.{theme}_targetsize-{factor}{extension}");
+                        }
+
+                        var selectedIconPath = paths.FirstOrDefault(File.Exists);
+                        if (!string.IsNullOrEmpty(selectedIconPath))
+                        {
+                            return selectedIconPath;
+                        }
+                        else
+                        {
+                            ProgramLogger.LogException($"|UWP|LogoPathFromUri|{Package.Location}" +
+                                $"|{UserModelId} can't find logo uri for {uri} in package location: {Package.Location}", new FileNotFoundException());
+                            return string.Empty;
+                        }
                     }
                 }
                 else
