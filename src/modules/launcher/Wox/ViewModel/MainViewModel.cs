@@ -114,6 +114,8 @@ namespace Wox.ViewModel
 
         private void InitializeKeyCommands()
         {
+            IgnoreCommand = new RelayCommand(_ => {});
+
             EscCommand = new RelayCommand(_ =>
             {
                 if (!SelectedIsFromQueryResults())
@@ -323,6 +325,7 @@ namespace Wox.ViewModel
             }
         }
 
+        public ICommand IgnoreCommand { get; set; }
         public ICommand EscCommand { get; set; }
         public ICommand SelectNextItemCommand { get; set; }
         public ICommand SelectPrevItemCommand { get; set; }

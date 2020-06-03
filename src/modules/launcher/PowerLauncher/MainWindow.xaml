@@ -103,5 +103,6 @@
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding EscCommand}" />
         <KeyBinding Key="Enter" Command="{Binding OpenResultCommand}" />
+        <KeyBinding Modifiers="Alt" Key="F4" Command="{Binding IgnoreCommand}" />
     </Window.InputBindings>
 </Window>
