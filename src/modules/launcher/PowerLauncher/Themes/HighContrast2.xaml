@@ -7,15 +7,15 @@
                     mc:Ignorable="options">
 
     <!--  Metadata  -->
-    <system:String x:Key="Theme.Name">HighContrast.Accent2</system:String>
+    <system:String x:Key="Theme.Name">HighContrast.Accent3</system:String>
     <system:String x:Key="Theme.Origin">PowerToysRun</system:String>
-    <system:String x:Key="Theme.DisplayName">Accent2 (HighContrast)</system:String>
+    <system:String x:Key="Theme.DisplayName">Accent3 (HighContrast)</system:String>
     <system:String x:Key="Theme.BaseColorScheme">HighContrast</system:String>
-    <system:String x:Key="Theme.ColorScheme">Accent2</system:String>
+    <system:String x:Key="Theme.ColorScheme">Accent3</system:String>
     <Color x:Key="Theme.PrimaryAccentColor">White</Color>
 
     <Color x:Key="SystemBaseMediumLowColor">#FF000000</Color>
-    <SolidColorBrush x:Key="SystemChromeLow" Color="#FFFFFFFF" options:Freeze="True" />
+    <SolidColorBrush x:Key="SystemChromeLow" Color="Orange" options:Freeze="True" />
     <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#FF000000" />
     <SolidColorBrush x:Key="TextBox.Static.Border" Color="Transparent"/>
     <SolidColorBrush x:Key="TextBox.MouseOver.Border" Color="Transparent"/>
