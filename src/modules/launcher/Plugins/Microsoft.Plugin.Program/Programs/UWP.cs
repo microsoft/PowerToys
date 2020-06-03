@@ -21,6 +21,7 @@ using System.Windows.Input;
 using System.Runtime.InteropServices.ComTypes;
 using Wox.Plugin.SharedCommands;
 using System.Reflection;
+using NLog.Targets;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -571,16 +572,26 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                     else
                     {
-                        var targetSizes = new List<int>{256 , 180, 128, 96, 72, 60, 44, 40, 36, 30, 24, 16};
+                        int appIconSize = 36;
+                        var targetSizes = new List<int>{16, 24, 30, 36, 44, 60, 72, 96, 128, 180, 256}.AsParallel();
+                        Dictionary<string, int> pathFactorPairs = new Dictionary<string, int>();
 
                         foreach (var factor in targetSizes)
                         {
-                            paths.Add($"{prefix}.targetsize-{factor}{extension}");
-                            paths.Add($"{prefix}.targetsize-{factor}_{theme}{extension}");
-                            paths.Add($"{prefix}.{theme}_targetsize-{factor}{extension}");
+                            string simplePath = $"{prefix}.targetsize-{factor}{extension}";
+                            string suffixThemePath = $"{prefix}.targetsize-{factor}_{theme}{extension}";
+                            string prefixThemePath = $"{prefix}.{theme}_targetsize-{factor}{extension}";
+
+                            paths.Add(simplePath);
+                            paths.Add(suffixThemePath);
+                            paths.Add(prefixThemePath);
+
+                            pathFactorPairs.Add(simplePath, factor);
+                            pathFactorPairs.Add(suffixThemePath, factor);
+                            pathFactorPairs.Add(prefixThemePath, factor);
                         }
 
-                        var selectedIconPath = paths.FirstOrDefault(File.Exists);
+                        var selectedIconPath = paths.OrderBy(x => Math.Abs(pathFactorPairs.GetValueOrDefault(x) - appIconSize)).FirstOrDefault(File.Exists);
                         if (!string.IsNullOrEmpty(selectedIconPath))
                         {
                             return selectedIconPath;
@@ -601,7 +612,6 @@ namespace Microsoft.Plugin.Program.Programs
                     return string.Empty;
                 }
             }
-
 
             public ImageSource Logo()
             {
