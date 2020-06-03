@@ -496,6 +496,12 @@ namespace FancyZonesEditor
                 return;
             }
 
+            if (model.Rows != model.RowPercents.Count || model.Columns != model.ColumnPercents.Count)
+            {
+                // Merge was not finished
+                return;
+            }
+
             Settings settings = ((App)Application.Current).ZoneSettings;
 
             int spacing = settings.ShowSpacing ? settings.Spacing : 0;
@@ -754,13 +760,12 @@ namespace FancyZonesEditor
         {
             MergePanel.Visibility = Visibility.Collapsed;
 
-            Action<int> deleteAction = (childIndex) =>
-            {
-                DeleteZone(childIndex);
-            };
-            _data.MergeZones(_startRow, _endRow, _startCol, _endCol, deleteAction);
+            int rows = Model.Rows;
+            int shift = 0;
 
             UIElementCollection resizers = AdornerLayer.Children;
+            List<int> horizontalRemoved = new List<int>(), verticalRemoved = new List<int>();
+
             for (int i = 0; i < resizers.Count; i++)
             {
                 GridResizer resizer = (GridResizer)resizers[i];
@@ -773,10 +778,73 @@ namespace FancyZonesEditor
 
                 if (horizontalResizerToBeRemoved || verticalResizerToBeRemoved)
                 {
+                    if (resizer.Orientation == Orientation.Horizontal)
+                    {
+                        horizontalRemoved.Add(i + shift);
+                        rows--;
+                    }
+                    else
+                    {
+                        verticalRemoved.Add(i - rows + 1);
+                    }
+
                     resizers.Remove(resizer);
                     i--;
+                    shift++;
                 }
             }
+
+            foreach (GridResizer resizer in resizers)
+            {
+                if (resizer.Orientation == Orientation.Horizontal)
+                {
+                    int diff = 0;
+                    for (int i = 0; i < horizontalRemoved.Count && horizontalRemoved[i] < resizer.StartRow; i++)
+                    {
+                        diff++;
+                    }
+
+                    resizer.StartRow -= diff;
+                    resizer.EndRow -= diff;
+
+                    for (int i = 0; i < verticalRemoved.Count && verticalRemoved[i] < resizer.EndCol; i++)
+                    {
+                        if (resizer.StartCol > verticalRemoved[i])
+                        {
+                            resizer.StartCol--;
+                        }
+
+                        resizer.EndCol--;
+                    }
+                }
+                else
+                {
+                    int diff = 0;
+                    for (int i = 0; i < verticalRemoved.Count && verticalRemoved[i] < resizer.StartCol; i++)
+                    {
+                        diff++;
+                    }
+
+                    resizer.StartCol -= diff;
+                    resizer.EndCol -= diff;
+
+                    for (int i = 0; i < horizontalRemoved.Count && horizontalRemoved[i] < resizer.EndRow; i++)
+                    {
+                        if (resizer.StartRow > horizontalRemoved[i])
+                        {
+                            resizer.StartRow--;
+                        }
+
+                        resizer.EndRow--;
+                    }
+                }
+            }
+
+            Action<int> deleteAction = (childIndex) =>
+            {
+                DeleteZone(childIndex);
+            };
+            _data.MergeZones(_startRow, _endRow, _startCol, _endCol, deleteAction);
 
             OnGridDimensionsChanged();
             ClearSelection();

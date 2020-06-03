@@ -301,6 +301,12 @@ namespace FancyZonesEditor
             int rows = _model.Rows;
             int cols = _model.Columns;
 
+            if (_model.CellChildMap.Length < rows * cols)
+            {
+                // Merge was not finished yet, rows and cols values are invalid
+                return;
+            }
+
             double left, top;
             for (int row = 0; row < rows; row++)
             {
