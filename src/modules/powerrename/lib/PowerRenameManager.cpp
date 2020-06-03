@@ -866,7 +866,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 }
                                 else if (newNameToUse != nullptr && flags & Titlecase)
                                 {
-                                    // Add advances titlezation
+                                    // Add advances titlesation
                                     if ( !(flags & ExtensionOnly) ){
                                         int resultNameLength = wcslen(resultName);
                                         for (int i = 0; i < resultNameLength; i++)
@@ -890,6 +890,27 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 {
                                     StringCchCopy(transformedName, ARRAYSIZE(transformedName), resultName);
                                 }
+
+
+                                wchar_t trimmedName[MAX_PATH] = { 0 };
+                                if (newNameToUse != nullptr)
+                                {
+                                    newNameToUse = trimmedName;
+
+                                    int firstNonvalidIndex = 0, lastNonvalidIndex = wcslen( transformedName )-1;
+                                    while (firstNonvalidIndex <= lastNonvalidIndex && iswspace(transformedName[firstNonvalidIndex]))
+                                    {
+                                        firstNonvalidIndex++;
+                                    }
+                                    while (firstNonvalidIndex <= lastNonvalidIndex && (iswspace(transformedName[lastNonvalidIndex]) || transformedName[lastNonvalidIndex] == L'.' ))
+                                    {
+                                        lastNonvalidIndex--;
+                                    }
+                                    transformedName[lastNonvalidIndex + 1] = '\0';
+                                    StringCchCopy(trimmedName, ARRAYSIZE(trimmedName), transformedName+firstNonvalidIndex);
+                                }
+
+                                
 
                                 // No change from originalName so set newName to
                                 // null so we clear it from our UI as well.
