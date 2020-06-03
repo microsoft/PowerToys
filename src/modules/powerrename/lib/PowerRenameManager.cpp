@@ -777,6 +777,35 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 // as nullptr so we clear the renamed column
                                 // Except string transformation is selected.
                                 
+                                if (newName == nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase))
+                                {
+                                    newName = new wchar_t[MAX_PATH]{ 0 };
+                                    if (flags & NameOnly)
+                                    {
+                                        StringCchPrintf(newName, MAX_PATH * sizeof(wchar_t), fs::path(originalName).stem().c_str());
+                                    }
+                                    else if (flags & ExtensionOnly)
+                                    {
+                                        std::wstring extension = fs::path(originalName).extension().wstring();
+                                        if (!extension.empty())
+                                        {
+                                            if (extension.front() == '.')
+                                            {
+                                                extension = extension.erase(0, 1);
+                                            }
+                                            StringCchPrintf(newName, MAX_PATH * sizeof(wchar_t), extension.c_str());
+                                        }
+                                        else
+                                        {
+                                            newName = nullptr;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        StringCchPrintf(newName, MAX_PATH * sizeof(wchar_t), originalName);
+                                    }
+                                }
+
                                 if (newName != nullptr )
                                 {
                                     newNameToUse = resultName;
