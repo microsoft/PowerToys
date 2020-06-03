@@ -17,7 +17,7 @@ UINT MockedInput::SendVirtualInput(UINT cInputs, LPINPUT pInputs, int cbSize)
 
         // Limited to key-up and key-down since KBM does not distinguish between key and syskey messages
         keyEvent.wParam = (pInputs[i].ki.dwFlags & KEYEVENTF_KEYUP) ? WM_KEYUP : WM_KEYDOWN;
-        KBDLLHOOKSTRUCT lParam;
+        KBDLLHOOKSTRUCT lParam = {};
 
         // Set only vkCode and dwExtraInfo since other values are unused
         lParam.vkCode = pInputs[i].ki.wVk;
