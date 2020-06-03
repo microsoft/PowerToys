@@ -803,8 +803,11 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 }
 
                                 wchar_t transformedName[MAX_PATH] = { 0 };
-                                newNameToUse = transformedName;
-                                if (flags & Uppercase )
+                                if (newNameToUse != nullptr)
+                                {
+                                    newNameToUse = transformedName;
+                                }
+                                if (newNameToUse != nullptr && flags & Uppercase)
                                 {
                                     if (flags & NameOnly)
                                     {
@@ -833,7 +836,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                         std::transform(transformedName, transformedName + wcslen(transformedName), transformedName, ::towupper);
                                     }
                                 }
-                                else if ( flags & Lowercase )
+                                else if (newNameToUse != nullptr && flags & Lowercase)
                                 {
                                     if (flags & NameOnly)
                                     {
@@ -861,7 +864,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                         std::transform(transformedName, transformedName + wcslen(transformedName), transformedName, ::towlower);
                                     }
                                 }
-                                else if (flags & Titlecase )
+                                else if (newNameToUse != nullptr && flags & Titlecase)
                                 {
                                     // Add advances titlezation
                                     if ( !(flags & ExtensionOnly) ){
