@@ -111,7 +111,7 @@ choco upgrade powertoys
 ### Known issues
 
 - [#2012 - Uninstalling with old control panel fails](https://github.com/microsoft/PowerToys/issues/2012): Please use the modern settings to uninstall. `Windows 10 Settings -> Apps -> Apps & features`
-- [#3447 - PowerToys Settings window is empty](https://github.com/microsoft/PowerToys/issues/3447): Workaround appears to be run as admin.  We are proactively looking into this as a hotfix.
+- [#3384 - PowerToys Settings window is empty](https://github.com/microsoft/PowerToys/issues/3384): Workaround appears to be run as admin.  We are proactively looking into this as a hotfix.
 
 ### Processor support
 
