@@ -240,7 +240,7 @@ namespace FancyZonesEditor
 
                         if (!resizerUpdated)
                         {
-                            AddDragHandle(Orientation.Vertical, foundRow, foundRow + 1, foundCol, foundCol + 1, foundCol + model.Rows - 1);
+                            AddDragHandle(Orientation.Vertical, foundRow, foundCol);
                         }
 
                         OnGridDimensionsChanged();
@@ -269,9 +269,8 @@ namespace FancyZonesEditor
                     }
                 }
 
-                AddDragHandle(Orientation.Vertical, foundRow, foundRow + 1, foundCol, foundCol + 1, foundCol + model.Rows - 1);
-
                 _data.SplitColumn(foundCol, spliteeIndex, newChildIndex, space, offset, ActualWidth);
+                AddDragHandle(Orientation.Vertical, foundRow, foundCol);
             }
             else
             {
@@ -326,7 +325,7 @@ namespace FancyZonesEditor
 
                         if (!resizerUpdated)
                         {
-                            AddDragHandle(Orientation.Horizontal, foundRow, foundRow + 1, foundCol, foundCol + 1, foundRow);
+                            AddDragHandle(Orientation.Horizontal, foundRow, foundCol);
                         }
 
                         OnGridDimensionsChanged();
@@ -355,10 +354,12 @@ namespace FancyZonesEditor
                     }
                 }
 
-                AddDragHandle(Orientation.Horizontal, foundRow, foundRow + 1, foundCol, foundCol + 1, foundRow);
-
                 _data.SplitRow(foundRow, spliteeIndex, newChildIndex, space, offset, ActualHeight);
+                AddDragHandle(Orientation.Horizontal, foundRow, foundCol);
             }
+
+            Size actualSize = new Size(ActualWidth, ActualHeight);
+            ArrangeGridRects(actualSize);
         }
 
         private void RemoveDragHandles()
@@ -419,6 +420,27 @@ namespace FancyZonesEditor
             }
 
             AdornerLayer.Children.Insert(index, resizer);
+        }
+
+        private void AddDragHandle(Orientation orientation, int foundRow, int foundCol)
+        {
+            GridLayoutModel model = Model;
+            int[,] indices = model.CellChildMap;
+
+            int endRow = foundRow + 1;
+            while (endRow < model.Rows && indices[endRow, foundCol] == indices[endRow - 1, foundCol])
+            {
+                endRow++;
+            }
+
+            int endCol = foundCol + 1;
+            while (endCol < model.Columns && indices[foundRow, endCol] == indices[foundRow, endCol - 1])
+            {
+                endCol++;
+            }
+
+            int index = (orientation == Orientation.Horizontal) ? foundRow : foundCol + model.Rows - 1;
+            AddDragHandle(orientation, foundRow, endRow, foundCol, endCol, index);
         }
 
         private void DeleteZone(int index)
@@ -517,84 +539,140 @@ namespace FancyZonesEditor
             GridResizer resizer = (GridResizer)sender;
 
             double delta = (resizer.Orientation == Orientation.Vertical) ? e.HorizontalChange : e.VerticalChange;
+            if (delta == 0)
+            {
+                return;
+            }
 
             GridData.ResizeInfo resizeInfo = _data.CalculateResizeInfo(resizer, delta);
             if (resizeInfo.IsResizeAllowed)
             {
                 _data.DragResizer(resizer, resizeInfo);
-                if (_data.SwapNegativePercents(resizer.Orientation, resizer.StartRow, resizer.StartCol))
+                if (_data.SwapNegativePercents(resizer.Orientation, resizer.StartRow, resizer.EndRow, resizer.StartCol, resizer.EndCol))
                 {
                     UIElementCollection resizers = AdornerLayer.Children;
 
-                    if (resizer.Orientation == Orientation.Vertical)
+                    Action<GridResizer> incValues = r =>
                     {
-                        if (delta < 0)
+                        if (resizer.Orientation == Orientation.Vertical)
                         {
-                            resizer.StartCol--;
-                            resizer.EndCol--;
+                            r.StartCol++;
+                            r.EndCol++;
+                        }
+                        else
+                        {
+                            r.StartRow++;
+                            r.EndRow++;
+                        }
+                    };
 
-                            for (int i = 0; i < resizers.Count; i++)
+                    Action<GridResizer> decValues = r =>
+                    {
+                        if (resizer.Orientation == Orientation.Vertical)
+                        {
+                            r.StartCol--;
+                            r.EndCol--;
+                        }
+                        else
+                        {
+                            r.StartRow--;
+                            r.EndRow--;
+                        }
+                    };
+
+                    Action<GridResizer> horizontalResizersRowsUpd = r =>
+                    {
+                        if (r.StartCol == resizer.StartCol)
+                        {
+                            r.StartCol++;
+                        }
+                        else if (r.StartCol == resizer.EndCol)
+                        {
+                            r.StartCol--;
+                        }
+
+                        if (r.EndCol == resizer.StartCol)
+                        {
+                            r.EndCol++;
+                        }
+                        else if (r.EndCol == resizer.EndCol)
+                        {
+                            r.EndCol--;
+                        }
+                    };
+
+                    Action<GridResizer> verticalResizersColumnsUpd = r =>
+                    {
+                        if (r.StartRow == resizer.StartRow)
+                        {
+                            r.StartRow++;
+                        }
+                        else if (r.StartRow == resizer.EndRow)
+                        {
+                            r.StartRow--;
+                        }
+
+                        if (r.EndRow == resizer.StartRow)
+                        {
+                            r.EndRow++;
+                        }
+                        else if (r.EndRow == resizer.EndRow)
+                        {
+                            r.EndRow--;
+                        }
+                    };
+
+                    Action differentOrientationResizersUpdate = () =>
+                    {
+                        foreach (GridResizer r in resizers)
+                        {
+                            if (r.Orientation != resizer.Orientation)
                             {
-                                GridResizer r = (GridResizer)resizers[i];
-                                if (r.Orientation == resizer.Orientation && resizer.StartRow != r.StartRow && resizer.StartCol == r.StartCol)
+                                if (resizer.Orientation == Orientation.Vertical)
                                 {
-                                    r.StartCol++;
-                                    r.EndCol++;
-                                    break;
+                                    horizontalResizersRowsUpd(r);
+                                }
+                                else
+                                {
+                                    verticalResizersColumnsUpd(r);
                                 }
                             }
                         }
-                        else if (delta > 0)
-                        {
-                            resizer.StartCol++;
-                            resizer.EndCol++;
+                    };
 
-                            for (int i = 0; i < resizers.Count; i++)
+                    Action<bool> sameOrientationResizersUpdate = isDeltaNegative =>
+                    {
+                        foreach (GridResizer r in resizers)
+                        {
+                            bool isSameCol = resizer.StartRow != r.StartRow && resizer.StartCol == r.StartCol && resizer.Orientation == Orientation.Vertical;
+                            bool isSameRow = resizer.StartRow == r.StartRow && resizer.StartCol != r.StartCol && resizer.Orientation == Orientation.Horizontal;
+                            if (r.Orientation == resizer.Orientation && (isSameCol || isSameRow))
                             {
-                                GridResizer r = (GridResizer)resizers[i];
-                                if (r.Orientation == resizer.Orientation && resizer.StartRow != r.StartRow && resizer.StartCol == r.StartCol)
+                                if (isDeltaNegative)
                                 {
-                                    r.StartCol--;
-                                    r.EndCol--;
-                                    break;
+                                    incValues(r);
                                 }
+                                else
+                                {
+                                    decValues(r);
+                                }
+
+                                break;
                             }
                         }
+                    };
+
+                    if (delta < 0)
+                    {
+                        differentOrientationResizersUpdate();
+                        decValues(resizer);
+                        sameOrientationResizersUpdate(delta < 0);
                     }
                     else
                     {
-                        if (delta < 0)
-                        {
-                            resizer.StartRow--;
-                            resizer.EndRow--;
-
-                            for (int i = 0; i < resizers.Count; i++)
-                            {
-                                GridResizer r = (GridResizer)resizers[i];
-                                if (r.Orientation == resizer.Orientation && resizer.StartRow == r.StartRow && resizer.StartCol != r.StartCol)
-                                {
-                                    r.StartRow++;
-                                    r.EndRow++;
-                                    break;
-                                }
-                            }
-                        }
-                        else if (delta > 0)
-                        {
-                            resizer.StartRow++;
-                            resizer.EndRow++;
-
-                            for (int i = 0; i < resizers.Count; i++)
-                            {
-                                GridResizer r = (GridResizer)resizers[i];
-                                if (r.Orientation == resizer.Orientation && resizer.StartRow == r.StartRow && resizer.StartCol != r.StartCol)
-                                {
-                                    r.StartRow--;
-                                    r.EndRow--;
-                                    break;
-                                }
-                            }
-                        }
+                        incValues(resizer);
+                        differentOrientationResizersUpdate();
+                        sameOrientationResizersUpdate(delta < 0);
                     }
                 }
 
