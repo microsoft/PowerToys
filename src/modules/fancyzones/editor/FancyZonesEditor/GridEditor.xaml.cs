@@ -218,27 +218,46 @@ namespace FancyZonesEditor
                     if (foundExistingSplit)
                     {
                         UIElementCollection resizers = AdornerLayer.Children;
-                        bool resizerUpdated = false;
-                        foreach (GridResizer resizer in resizers)
+                        bool updCurrentResizers = false;
+
+                        GridResizer leftNeighbour = null;
+                        GridResizer rightNeighbour = null;
+                        for (int i = 0; i < resizers.Count && (leftNeighbour == null || rightNeighbour == null); i++)
                         {
+                            GridResizer resizer = (GridResizer)resizers[i];
                             if (resizer.Orientation == Orientation.Vertical && resizer.StartCol == foundCol)
                             {
-                                if (resizer.StartRow == foundRow + 1)
+                                if (leftNeighbour == null && resizer.EndRow == foundRow)
                                 {
-                                    resizer.StartRow--;
-                                    resizerUpdated = true;
-                                    break;
+                                    leftNeighbour = resizer;
+                                    updCurrentResizers = true;
                                 }
-                                else if (resizer.EndRow == foundRow)
+
+                                if (rightNeighbour == null && resizer.StartRow == foundRow + 1)
                                 {
-                                    resizer.EndRow++;
-                                    resizerUpdated = true;
-                                    break;
+                                    rightNeighbour = resizer;
+                                    updCurrentResizers = true;
                                 }
                             }
                         }
 
-                        if (!resizerUpdated)
+                        if (updCurrentResizers)
+                        {
+                            if (leftNeighbour != null && rightNeighbour != null)
+                            {
+                                leftNeighbour.EndRow = rightNeighbour.EndRow;
+                                resizers.Remove(rightNeighbour);
+                            }
+                            else if (leftNeighbour != null)
+                            {
+                                leftNeighbour.EndRow++;
+                            }
+                            else if (rightNeighbour != null)
+                            {
+                                rightNeighbour.StartRow--;
+                            }
+                        }
+                        else
                         {
                             AddDragHandle(Orientation.Vertical, foundRow, foundCol);
                         }
@@ -303,27 +322,46 @@ namespace FancyZonesEditor
                     if (foundExistingSplit)
                     {
                         UIElementCollection resizers = AdornerLayer.Children;
-                        bool resizerUpdated = false;
-                        foreach (GridResizer resizer in resizers)
+                        bool updCurrentResizers = false;
+
+                        GridResizer leftNeighbour = null;
+                        GridResizer rightNeighbour = null;
+                        for (int i = 0; i < resizers.Count && (leftNeighbour == null || rightNeighbour == null); i++)
                         {
+                            GridResizer resizer = (GridResizer)resizers[i];
                             if (resizer.Orientation == Orientation.Horizontal && resizer.StartRow == foundRow)
                             {
-                                if (resizer.StartCol == foundCol + 1)
+                                if (leftNeighbour == null && resizer.EndCol == foundCol)
                                 {
-                                    resizer.StartCol--;
-                                    resizerUpdated = true;
-                                    break;
+                                    leftNeighbour = resizer;
+                                    updCurrentResizers = true;
                                 }
-                                else if (resizer.EndCol == foundCol)
+
+                                if (rightNeighbour == null && resizer.StartCol == foundCol + 1)
                                 {
-                                    resizer.EndCol++;
-                                    resizerUpdated = true;
-                                    break;
+                                    rightNeighbour = resizer;
+                                    updCurrentResizers = true;
                                 }
                             }
                         }
 
-                        if (!resizerUpdated)
+                        if (updCurrentResizers)
+                        {
+                            if (leftNeighbour != null && rightNeighbour != null)
+                            {
+                                leftNeighbour.EndCol = rightNeighbour.EndCol;
+                                resizers.Remove(rightNeighbour);
+                            }
+                            else if (leftNeighbour != null)
+                            {
+                                leftNeighbour.EndCol++;
+                            }
+                            else if (rightNeighbour != null)
+                            {
+                                rightNeighbour.StartCol--;
+                            }
+                        }
+                        else
                         {
                             AddDragHandle(Orientation.Horizontal, foundRow, foundCol);
                         }
