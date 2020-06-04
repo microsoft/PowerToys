@@ -77,24 +77,23 @@
 
             <StackPanel Orientation="Horizontal" Margin="{StaticResource SmallTopMargin}">
                 <TextBlock x:Uid="FancyZones_HotkeyEditorControl"
-                           ToolTipService.ToolTip="Only the shortcuts with the following hotkeys are valid: Win, Ctrl, Alt, Shift."
                            Text="Editor Hotkeys"/>
-                <Viewbox Height="{StaticResource MediumFontSize}" Width="{StaticResource MediumFontSize}" Margin="5,2,0,0" >
+                <Viewbox Height="14" Width="14" Margin="5,2,0,0" >
                     <PathIcon
+                        x:Uid="FancyZones_HotkeyEditorControl_Icon"
                         VerticalAlignment="Center"
-                        ToolTipService.ToolTip="Only the shortcuts with the following hotkeys are valid: Win, Ctrl, Alt, Shift."
                         Data="M960 1920q-133 0-255-34t-230-96-194-150-150-195-97-229T0 960q0-133 34-255t96-230 150-194 195-150 229-97T960 0q133 0 255 34t230 96 194 150 150 195 97 229 34 256q0 133-34 255t-96 230-150 194-195 150-229 97-256 34zm0-1792q-115 0-221 30t-198 84-169 130-130 168-84 199-30 221q0 114 30 220t84 199 130 169 168 130 199 84 221 30q114 0 220-30t199-84 169-130 130-168 84-199 30-221q0-114-30-220t-84-199-130-169-168-130-199-84-221-30zm-64 640h128v640H896V768zm0-256h128v128H896V512z"/>
                 </Viewbox>
             </StackPanel>
 
             <CustomControls:HotkeySettingsControl 
-                                          Width="240"
-                                          HorizontalAlignment="Left"
-                                          ToolTipService.ToolTip="Only shortcuts with the following hotkeys are valid: Win, Ctrl, Alt, Shift."
-                                          Margin="0,8,0,0"
-                                          HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}"
-                                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"    
-                                        />
+                x:Uid="FancyZones_HotkeyEditorControl_TextBox"
+                Width="240"
+                HorizontalAlignment="Left"
+                Margin="0,5,0,0"
+                HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}"
+                IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                />
 
             <CheckBox x:Uid="FancyZones_ShiftDragCheckBoxControl_Header"
                       IsChecked="{ Binding Mode=TwoWay, Path=ShiftDrag}"
