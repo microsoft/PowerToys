@@ -278,7 +278,7 @@
   <data name="FancyZones_HighlightOpacity.Header" xml:space="preserve">
     <value>Zone highlight opacity</value>
   </data>
-  <data name="FancyZones_HokeyEditorControl_Header.Header" xml:space="preserve">
+  <data name="FancyZones_HokeyEditorControl.Text" xml:space="preserve">
     <value>Edit hot key / shortcut</value>
   </data>
   <data name="FancyZones_LaunchEditorButtonControl.Text" xml:space="preserve">
