@@ -6,7 +6,7 @@ interface IZoneWindow;
 class WindowMoveHandler
 {
 public:
-    WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& settings);
+    WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& settings, HWND* fancyZonesWindow);
     ~WindowMoveHandler();
 
     bool InMoveSize() const noexcept;

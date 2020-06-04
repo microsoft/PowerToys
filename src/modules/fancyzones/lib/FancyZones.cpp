@@ -32,7 +32,7 @@ public:
     FancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings) noexcept :
         m_hinstance(hinstance),
         m_settings(settings),
-        m_windowMoveHandler(settings)
+        m_windowMoveHandler(settings, &m_window)
     {
         m_settings->SetCallback(this);
     }

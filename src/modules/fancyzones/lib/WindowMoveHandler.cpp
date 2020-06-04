@@ -10,6 +10,7 @@
 #include "lib/util.h"
 #include "VirtualDesktopUtils.h"
 #include "lib/SecondaryMouseButtonsHook.h"
+#include <lib/FancyZonesWinHookEventIDs.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -46,8 +47,9 @@ namespace WindowMoveHandlerUtils
 class WindowMoveHandlerPrivate
 {
 public:
-    WindowMoveHandlerPrivate(const winrt::com_ptr<IFancyZonesSettings>& settings) :
-        m_settings(settings)
+    WindowMoveHandlerPrivate(const winrt::com_ptr<IFancyZonesSettings>& settings, HWND* fancyZonesWindow) :
+        m_settings(settings),
+        m_fancyZonesWindow(fancyZonesWindow)
     {
         m_secondaryHook = std::make_unique<SecondaryMouseButtonsHook>(std::bind(&WindowMoveHandlerPrivate::UpdateSecondaryMouseButtonState, this));
     };
@@ -79,6 +81,7 @@ private:
 
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
 
+    HWND* m_fancyZonesWindow{};
     HWND m_windowMoveSize{}; // The window that is being moved/sized
     bool m_inMoveSize{}; // Whether or not a move/size operation is currently active
     winrt::com_ptr<IZoneWindow> m_zoneWindowMoveSize; // "Active" ZoneWindow, where the move/size is happening. Will update as drag moves between monitors.
@@ -86,8 +89,8 @@ private:
     bool m_secondaryMouseButtonState{}; // True when secondary mouse button was clicked after windows was moved;
 };
 
-WindowMoveHandler::WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& settings) :
-    pimpl(new WindowMoveHandlerPrivate(settings))
+WindowMoveHandler::WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& settings, HWND* fancyZonesWindow) :
+    pimpl(new WindowMoveHandlerPrivate(settings, fancyZonesWindow))
 {
 }
 
@@ -304,6 +307,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
 void WindowMoveHandlerPrivate::UpdateSecondaryMouseButtonState() noexcept
 {
     m_secondaryMouseButtonState = !m_secondaryMouseButtonState;
+    PostMessageW(*m_fancyZonesWindow, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
 }
 
 void WindowMoveHandlerPrivate::MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& indexSet, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
