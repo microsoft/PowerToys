@@ -281,8 +281,8 @@
   <data name="FancyZones_HighlightOpacity.Header" xml:space="preserve">
     <value>Zone highlight opacity</value>
   </data>
-  <data name="FancyZones_HokeyEditorControl_Header.Header" xml:space="preserve">
-    <value>Edit hot key / shortcut</value>
+  <data name="FancyZones_HotkeyEditorControl.Text" xml:space="preserve">
+    <value>Edit hotkey / shortcut</value>
   </data>
   <data name="FancyZones_LaunchEditorButtonControl.Text" xml:space="preserve">
     <value>Launch zones editor</value>
@@ -589,5 +589,14 @@
   </data>
   <data name="General_RunAsAdminRequired.Text" xml:space="preserve">
     <value>You need to run as administrator to use this setting</value>
+  </data>
+  <data name="FancyZones_HotkeyEditorControl.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Only shortcuts with the following hotkeys are valid: Win, Ctrl, Alt, Shift.</value>
+  </data>
+  <data name="FancyZones_HotkeyEditorControl_Icon.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Only shortcuts with the following hotkeys are valid: Win, Ctrl, Alt, Shift.</value>
+  </data>
+  <data name="FancyZones_HotkeyEditorControl_TextBox.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Only shortcuts with the following hotkeys are valid: Win, Ctrl, Alt, Shift.</value>
   </data>
 </root>
