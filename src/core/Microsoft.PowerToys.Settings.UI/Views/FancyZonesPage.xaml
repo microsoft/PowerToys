@@ -75,14 +75,11 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        />
 
-            <StackPanel Orientation="Horizontal">
-                <TextBlock x:Uid="FancyZones_HokeyEditorControl"
+            <StackPanel Orientation="Horizontal" Margin="{StaticResource SmallTopMargin}">
+                <TextBlock x:Uid="FancyZones_HotkeyEditorControl"
                            ToolTipService.ToolTip="Only the shortcuts with the following hotkeys are valid: Win, Ctrl, Alt, Shift."
-                           Style="{StaticResource BodyTextStyle}"
-                           Margin="{StaticResource SmallTopMargin}"
-                           Text="Editor Hotkeys"
-                           Padding="{StaticResource SmallTopMargin}"/>
-                <Viewbox Height="{StaticResource MediumFontSize}" Width="{StaticResource MediumFontSize}" Margin="5, 27, 0, 0" >
+                           Text="Editor Hotkeys"/>
+                <Viewbox Height="{StaticResource MediumFontSize}" Width="{StaticResource MediumFontSize}" Margin="5,2,0,0" >
                     <PathIcon
                         VerticalAlignment="Center"
                         ToolTipService.ToolTip="Only the shortcuts with the following hotkeys are valid: Win, Ctrl, Alt, Shift."
@@ -94,7 +91,7 @@
                                           Width="240"
                                           HorizontalAlignment="Left"
                                           ToolTipService.ToolTip="Only shortcuts with the following hot keys are valid: Win, Ctrl, Alt, Shift."
-                                          Margin="{StaticResource SmallTopMargin}"
+                                          Margin="0,8,0,0"
                                           HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}"
                                           IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"    
                                         />
