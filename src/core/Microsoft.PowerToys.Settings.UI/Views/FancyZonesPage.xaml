@@ -80,8 +80,9 @@
                            ToolTipService.ToolTip="Only the shortcuts with the following hotkeys are valid: Win, Ctrl, Alt, Shift."
                            Style="{StaticResource BodyTextStyle}"
                            Margin="{StaticResource SmallTopMargin}"
+                           Text="Editor Hotkeys"
                            Padding="{StaticResource SmallTopMargin}"/>
-                <Viewbox Height="12" Width="12" Margin="5, 27, 0, 0" >
+                <Viewbox Height="{StaticResource MediumFontSize}" Width="{StaticResource MediumFontSize}" Margin="5, 27, 0, 0" >
                     <PathIcon
                         VerticalAlignment="Center"
                         ToolTipService.ToolTip="Only the shortcuts with the following hotkeys are valid: Win, Ctrl, Alt, Shift."
