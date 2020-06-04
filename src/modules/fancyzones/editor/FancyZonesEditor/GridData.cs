@@ -220,6 +220,7 @@ namespace FancyZonesEditor
                 }
             }
 
+            FixAccuracyError(_colInfo, _model.ColumnPercents);
             _model.CellChildMap = newCellChildMap;
             _model.Columns++;
         }
@@ -269,6 +270,7 @@ namespace FancyZonesEditor
                 }
             }
 
+            FixAccuracyError(_rowInfo, _model.RowPercents);
             _model.CellChildMap = newCellChildMap;
             _model.Rows++;
         }
@@ -648,6 +650,8 @@ namespace FancyZonesEditor
             }
 
             CollapseIndices();
+            FixAccuracyError(_rowInfo, _model.RowPercents);
+            FixAccuracyError(_colInfo, _model.ColumnPercents);
         }
 
         public void CollapseIndices()
@@ -766,6 +770,31 @@ namespace FancyZonesEditor
 
             _model.Rows = rows;
             _model.Columns = cols;
+        }
+
+        public void FixAccuracyError(List<RowColInfo> info, List<int> percents)
+        {
+            int total = 0;
+            for (int i = 0; i < info.Count; i++)
+            {
+                total += info[i].Percent;
+            }
+
+            int totalDiff = total - 10000;
+            if (totalDiff != 0)
+            {
+                int perLineDiff = totalDiff / percents.Count;
+                int lastLineDiff = totalDiff - (perLineDiff * (percents.Count - 1));
+
+                for (int i = 0; i < percents.Count - 1 && perLineDiff != 0; i++)
+                {
+                    info[i].Percent -= perLineDiff;
+                    percents[i] -= perLineDiff;
+                }
+
+                info[percents.Count - 1].Percent -= lastLineDiff;
+                percents[percents.Count - 1] -= lastLineDiff;
+            }
         }
 
         private GridLayoutModel _model;
