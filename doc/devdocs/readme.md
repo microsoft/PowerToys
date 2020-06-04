@@ -82,7 +82,7 @@ modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\community
 
 ### Compiling Installer (.MSI)
 
-- From the `installer` folder open `PowerToysSetup.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release` or `Debug`, from the `Build` menu choose `Build Solution`.
+- From the `installer` folder open `PowerToysSetup.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`, from the `Build` menu choose `Build Solution`.
 - The resulting `PowerToysSetup.msi` installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
 
 ## Debugging
