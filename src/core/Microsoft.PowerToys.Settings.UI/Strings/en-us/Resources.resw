@@ -294,10 +294,10 @@
     <value>Hold a non-primary mouse button to activate zones while dragging</value>
   </data>
   <data name="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl.Content" xml:space="preserve">
-    <value>Move windows between zones across all monitors when snapping with win+arrow</value>
+    <value>Move windows between zones across all monitors when snapping with (Win + Arrow)</value>
   </data>
   <data name="FancyZones_OverrideSnapHotkeysCheckBoxControl.Content" xml:space="preserve">
-    <value>Override Windows Snap hotkeys (Win + arrow) to move windows between zones</value>
+    <value>Override Windows Snap hotkeys (Win + Arrow) to move windows between zones</value>
   </data>
   <data name="FancyZones_SaveZoneHighlightColor.Content" xml:space="preserve">
     <value>Save Zone Highlight Color Choice</value>
