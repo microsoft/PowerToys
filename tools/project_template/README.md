@@ -11,8 +11,7 @@ If you'd like to work on a PowerToy template, make required modifications to `\t
 ## Create a new PowerToy Module
 
 - Add the new PowerToy project to the `src\modules\` folder for all the relative paths to work.
-- For the module interface implementation take a look at [the interface](/src/modules/interface) and
-    [the example PowerToy implementation](/src/modules/example_powertoy/dllmain.cpp)
+- For the module interface implementation take a look at [the interface](/src/modules/interface).
 - Each PowerToy is built as a DLL and in order to be loaded at run-time, the PowerToy's DLL name needs to be added to the `known_dlls` map in [src/runner/main.cpp](/src/runner/main.cpp).
 
 ## DPI Awareness
@@ -48,7 +47,7 @@ A PowerToy can define settings of the following types:
 
 Here's an example of what the settings look like in the Settings screen:
 
-![Image of the Options](/doc/images/example_powertoy/settings.png)
+![Image of the Options](/doc/images/settings/example_settings.png)
 
 ### How to add your module's settings page
 
@@ -56,7 +55,7 @@ The PowerToy can set its settings information and controls by overriding the [Po
 
 The PowerToy can receive the new values by overriding the [PowerToy's Interface `set_config` method](/src/modules/interface/README.md#set_config), parsing the serialized [`PowerToysSettings::PowerToyValues`](/src/common/settings_object.h) object and applying the new settings.
 
-Here's an example from [the example PowerToy implementation](/src/modules/example_powertoy/dllmain.cpp):
+Here's an example settings implementation:
 ```cpp
   // Return JSON with the configuration options.
   virtual bool get_config(wchar_t* buffer, int* buffer_size) override {
@@ -73,7 +72,7 @@ Here's an example from [the example PowerToy implementation](/src/modules/exampl
     settings.set_video_link(L"https://www.youtube.com/watch?v=d3LHo2yXKoY&t=21462");
 
     // Add a bool property with a toggle editor.
-    settings.add_bool_toogle(
+    settings.add_bool_toggle(
       L"test_bool_toggle", // property name.
       L"This is what a BoolToggle property looks like", // description or resource id of the localized string.
       g_settings.test_bool_prop // property value.
@@ -104,7 +103,7 @@ Here's an example from [the example PowerToy implementation](/src/modules/exampl
     );
 
     // Add a custom action property. When using this settings type, the "PowertoyModuleIface::call_custom_action()"
-    // method should be overriden as well.
+    // method should be overridden as well.
     settings.add_custom_action(
       L"test_custom_action", // action name.
       L"This is what a CustomAction property looks like", // label above the field.
@@ -174,7 +173,7 @@ or
 ```cpp
 settings.set_description(description_resource_id);
 ```
-where `description_resource_id` is the UINT index of a resouce string in the project .rc file.
+where `description_resource_id` is the UINT index of a resource string in the project .rc file.
 
 #### icon_key
 The identifier of the PowerToy icon in the [`settings-web` project](/src/settings-web#updating-the-icons).
@@ -204,10 +203,10 @@ settings.set_video_link(L"https://www.youtube.com/watch?v=d3LHo2yXKoY&t=21462");
 
 A boolean property, edited with a Toggle control.
 
-It can be added to a `Settings` object by calling `add_bool_toogle`.
+It can be added to a `Settings` object by calling `add_bool_toggle`.
 ```cpp
 // Add a bool property with a toggle editor.
-settings.add_bool_toogle(
+settings.add_bool_toggle(
   L"test_bool_toggle", // property name.
   L"This is what a BoolToggle property looks like", // description or resource id of the localized string.
   g_settings.test_bool_prop // property value.
@@ -297,7 +296,7 @@ A custom action property, invoked from the settings by a Button control. This ca
 It can be added to a `Settings` object by calling `add_custom_action`.
 ```cpp
 // Add a custom action property. When using this settings type, the "PowertoyModuleIface::call_custom_action()"
-// method should be overriden as well.
+// method should be overridden as well.
 settings.add_custom_action(
   L"test_custom_action", // action name.
   L"This is what a CustomAction property looks like", // label above the field: a string literal or a resource id
@@ -343,7 +342,7 @@ Loading and saving the settings in the default location can be achieved through 
 
 The PowerToy can load the saved `PowerToyValues` object through the use of the `load_from_settings_file` method.
 
-Here's an example from [the example PowerToy implementation](/src/modules/example_powertoy/dllmain.cpp):
+Here's an example:
 ```cpp
 // Load the settings file.
 void ExamplePowertoy::init_settings() {
@@ -382,7 +381,7 @@ void ExamplePowertoy::init_settings() {
 
 The PowerToy can save the `PowerToyValues` object received in `set_config` through the use of the `save_to_settings_file` method.
 
-Here's an example from [the example PowerToy implementation](/src/modules/example_powertoy/dllmain.cpp):
+Here's an example:
 ```cpp
 // Called by the runner to pass the updated settings values as a serialized JSON.
 virtual void set_config(const wchar_t* config) override { 

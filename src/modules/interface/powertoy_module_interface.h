@@ -4,7 +4,7 @@
   DLL Interface for PowerToys. The powertoy_create() (see below) must return
   an object that implements this interface.
 
-  See src/modules/example_powertoy for simple, noop, PowerToy implementation.
+  See tools/project_template/ModuleTemplate for simple, noop, PowerToy implementation.
 
   The PowerToys runner will, for each PowerToy DLL:
     - load the DLL,

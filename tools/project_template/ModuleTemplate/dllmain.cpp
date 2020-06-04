@@ -75,7 +75,7 @@ public:
     }
 
     // Return array of the names of all events that this powertoy listens for, with
-    // nullptr as the last element of the array. Nullptr can also be retured for empty
+    // nullptr as the last element of the array. Nullptr can also be returned for empty
     // list.
     virtual const wchar_t** get_events() override
     {
@@ -107,7 +107,7 @@ public:
         //settings.set_video_link(L"https://");
 
         // A bool property with a toggle editor.
-        //settings.add_bool_toogle(
+        //settings.add_bool_toggle(
         //  L"bool_toggle_1", // property name.
         //  L"This is what a BoolToggle property looks like", // description or resource id of the localized string.
         //  g_settings.bool_prop // property value.
@@ -138,7 +138,7 @@ public:
         //);
 
         // A custom action property. When using this settings type, the "PowertoyModuleIface::call_custom_action()"
-        // method should be overriden as well.
+        // method should be overridden as well.
         //settings.add_custom_action(
         //  L"custom_action_id", // action name.
         //  L"This is what a CustomAction property looks like", // label above the field.

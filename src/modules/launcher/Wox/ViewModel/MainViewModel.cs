@@ -251,7 +251,7 @@ namespace Wox.ViewModel
         /// <summary>
         /// we need move cursor to end when we manually changed query
         /// but we don't want to move cursor to end when query is updated from TextBox. 
-        /// Also we don't want to force the results to change unless explicity told to.
+        /// Also we don't want to force the results to change unless explicitly told to.
         /// </summary>
         /// <param name="queryText"></param>
         /// <param name="requery">Optional Parameter that if true, will automatically execute a query against the updated text</param>
@@ -276,13 +276,13 @@ namespace Wox.ViewModel
                 _selectedResults = value;
                 if (SelectedIsFromQueryResults())
                 {
-                    ContextMenu.Visbility = Visibility.Collapsed;
-                    History.Visbility = Visibility.Collapsed;
+                    ContextMenu.Visibility = Visibility.Collapsed;
+                    History.Visibility = Visibility.Collapsed;
                     ChangeQueryText(_queryTextBeforeLeaveResults);
                 }
                 else
                 {
-                    Results.Visbility = Visibility.Collapsed;
+                    Results.Visibility = Visibility.Collapsed;
                     _queryTextBeforeLeaveResults = QueryText;
 
 
@@ -299,13 +299,14 @@ namespace Wox.ViewModel
                         QueryText = string.Empty;
                     }
                 }
-                _selectedResults.Visbility = Visibility.Visible;
+                _selectedResults.Visibility = Visibility.Visible;
             }
         }
 
         public Visibility ProgressBarVisibility { get; set; }
 
-        private Visibility _visibility = Visibility.Collapsed;
+        private Visibility _visibility;
+
         public Visibility MainWindowVisibility {
             get { return _visibility; }
             set {
@@ -471,7 +472,7 @@ namespace Wox.ViewModel
             {
                 Results.SelectedItem = null;
                 Results.Clear();                
-                Results.Visbility = Visibility.Collapsed;
+                Results.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -654,9 +655,9 @@ namespace Wox.ViewModel
                 Results.AddResults(list, metadata.ID);
             }
 
-            if (Results.Visbility != Visibility.Visible && list.Count > 0)
+            if (Results.Visibility != Visibility.Visible && list.Count > 0)
             {
-                Results.Visbility = Visibility.Visible;
+                Results.Visibility = Visibility.Visible;
             }
         }
 
@@ -684,6 +685,22 @@ namespace Wox.ViewModel
                     var _ = PluginManager.QueryForPlugin(plugin, query);
                 }
             };
+        }
+
+        public void HandleContextMenu(Key AcceleratorKey, ModifierKeys AcceleratorModifiers)
+        {
+            var results = SelectedResults;
+            if (results.SelectedItem != null)
+            {
+                foreach (ContextMenuItemViewModel contextMenuItems in results.SelectedItem.ContextMenuItems)
+                {
+                    if (contextMenuItems.AcceleratorKey == AcceleratorKey && contextMenuItems.AcceleratorModifiers == AcceleratorModifiers)
+                    {
+                        MainWindowVisibility = Visibility.Collapsed;
+                        contextMenuItems.Command.Execute(null);
+                    }
+                }
+            }
         }
 
         #endregion

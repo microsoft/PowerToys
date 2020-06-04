@@ -33,7 +33,8 @@ THE SOFTWARE.
 
 ### Wox License
 
-**Source**: https://github.com/Wox-launcher/Wox
+**Fork project source**: https://github.com/jjw24/Wox/
+**Base project source**: https://github.com/Wox-launcher/Wox
 
 The MIT License (MIT)
 

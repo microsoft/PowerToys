@@ -7,7 +7,7 @@
 
 namespace PowerPreviewSettings
 {
-	// PowerToy Winodws Explore File Preview Settings.
+	// PowerToy Windows Explore File Preview Settings.
 	class FileExplorerPreviewSettings
 	{
 	private:

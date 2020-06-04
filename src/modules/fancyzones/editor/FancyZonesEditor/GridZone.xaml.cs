@@ -12,7 +12,7 @@ using System.Windows.Shapes;
 namespace FancyZonesEditor
 {
     /// <summary>
-    /// Once you've "Committ"ed the starter grid, then the Zones within the grid come to life for you to be able to further subdivide them
+    /// Once you've "Commit"ted the starter grid, then the Zones within the grid come to life for you to be able to further subdivide them
     /// using splitters
     /// </summary>
     public partial class GridZone : UserControl

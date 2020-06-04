@@ -41,40 +41,45 @@ build:
       name: 'Build Power Toys'
       command: '.pipelines\build.cmd'
       artifacts:
+        - to: 'Symbols'
+          include:
+            - 'x64/**/*.pdb'
+          exclude:
+            - 'x64/Release/obj/**/*.pdb'
         - from: 'x64/Release'
           to: 'Build_Output'
           include:
             - 'action_runner.exe'
-            - 'modules\ar\ImageResizer.resources.dll'
-            - 'modules\bg\ImageResizer.resources.dll'
-            - 'modules\ca\ImageResizer.resources.dll'
-            - 'modules\cs\ImageResizer.resources.dll'
-            - 'modules\de\ImageResizer.resources.dll'
-            - 'modules\es\ImageResizer.resources.dll'
-            - 'modules\eu-ES\ImageResizer.resources.dll'
-            - 'modules\fr\ImageResizer.resources.dll'
-            - 'modules\he\ImageResizer.resources.dll'
-            - 'modules\hu\ImageResizer.resources.dll'
-            - 'modules\it\ImageResizer.resources.dll'
-            - 'modules\nb-NO\ImageResizer.resources.dll'
-            - 'modules\nl\ImageResizer.resources.dll'
-            - 'modules\pl\ImageResizer.resources.dll'
-            - 'modules\pt-BR\ImageResizer.resources.dll'
-            - 'modules\ru\ImageResizer.resources.dll'
-            - 'modules\sk\ImageResizer.resources.dll'
-            - 'modules\tr\ImageResizer.resources.dll'
-            - 'modules\zh-Hans\ImageResizer.resources.dll'
+            - 'modules\ImageResizer\ar\ImageResizer.resources.dll'
+            - 'modules\ImageResizer\bg\ImageResizer.resources.dll'
+            - 'modules\ImageResizer\ca\ImageResizer.resources.dll'
+            - 'modules\ImageResizer\cs\ImageResizer.resources.dll'
+            - 'modules\ImageResizer\de\ImageResizer.resources.dll'
+            - 'modules\ImageResizer\es\ImageResizer.resources.dll'
+            - 'modules\ImageResizer\eu-ES\ImageResizer.resources.dll'
+            - 'modules\ImageResizer\fr\ImageResizer.resources.dll'
+            - 'modules\ImageResizer\he\ImageResizer.resources.dll'
+            - 'modules\ImageResizer\hu\ImageResizer.resources.dll'
+            - 'modules\ImageResizer\it\ImageResizer.resources.dll'
+            - 'modules\ImageResizer\nb-NO\ImageResizer.resources.dll'
+            - 'modules\ImageResizer\nl\ImageResizer.resources.dll'
+            - 'modules\ImageResizer\pl\ImageResizer.resources.dll'
+            - 'modules\ImageResizer\pt-BR\ImageResizer.resources.dll'
+            - 'modules\ImageResizer\ru\ImageResizer.resources.dll'
+            - 'modules\ImageResizer\sk\ImageResizer.resources.dll'
+            - 'modules\ImageResizer\tr\ImageResizer.resources.dll'
+            - 'modules\ImageResizer\zh-Hans\ImageResizer.resources.dll'
             - 'modules\FancyZones\fancyzones.dll'
             - 'modules\FancyZones\FancyZonesEditor.exe'
             - 'modules\FileExplorerPreview\MarkdownPreviewHandler.dll'
             - 'modules\FileExplorerPreview\powerpreview.dll'
             - 'modules\FileExplorerPreview\PreviewHandlerCommon.dll'
             - 'modules\FileExplorerPreview\SvgPreviewHandler.dll'
-            - 'modules\ImageResizer.exe'
-            - 'modules\ImageResizerExt.dll'
-            - 'modules\KeyboardManager.dll'
+            - 'modules\ImageResizer\ImageResizer.exe'
+            - 'modules\ImageResizer\ImageResizerExt.dll'
+            - 'modules\KeyboardManager\KeyboardManager.dll'
             - 'modules\launcher\Microsoft.PowerToys.Settings.UI.Lib.dll'
-            - 'modules\launcher\Plugins\Microsoft.Plugin.Calculator\Microsoft.Plugin.Caculator.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Calculator\Microsoft.Plugin.Calculator.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Calculator\Wox.Infrastructure.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Calculator\Wox.Plugin.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Folder\Microsoft.Plugin.Folder.dll'
@@ -102,8 +107,8 @@ build:
             - 'modules\launcher\Wox.Infrastructure.dll'
             - 'modules\launcher\Wox.Plugin.dll'
             - 'modules\Microsoft.Launcher.dll'
-            - 'modules\PowerRenameExt.dll'
-            - 'modules\shortcut_guide.dll'
+            - 'modules\PowerRename\PowerRenameExt.dll'
+            - 'modules\ShortcutGuide\ShortcutGuide.dll'
             - 'Notifications.dll'
             - 'os-detection.dll'
             - 'PowerToys.exe'
@@ -127,34 +132,20 @@ build:
             - 'PowerToysSetup-*.msi'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
-#    - !!buildcommand
-#      name: 'Archive symbols to Symbol Server'
-#      artifacts:
-#        - to: 'x64 Symbols'
-#          include:
-#            - 'x64/Release/action_runner.pdb'
-#            - 'x64/Release/Notifications.pdb'
-#            - 'x64/Release/PowerRenameUWPUI.pdb'
-#            - 'x64/Release/PowerToys.pdb'
-#            - 'x64/Release/PowerToysSettings.pdb'
-#            - 'x64/Release/modules/fancyzones.pdb'
-#            - 'x64/Release/modules/FancyZonesEditor.pdb'
-#            - 'x64/Release/modules/PowerRenameExt.pdb'
-#            - 'x64/Release/modules/shortcut_guide.pdb'
 
-package:
-  commands:
-    - !!buildcommand
-      name: 'Build MSIX package'
-      command: 'installer\msix\build_msix_cdpx.cmd'
-      artifacts:
-        - from: 'installer\msix\bin'
-          to: 'Build_MSIX_Package_Output'
-          include:
-            - '*.msix'
-            - '*.msixbundle'
-          signing_options:
-            profile: '400'
+#package:
+#  commands:
+#    - !!buildcommand
+#      name: 'Build MSIX package'
+#      command: 'installer\msix\build_msix_cdpx.cmd'
+#      artifacts:
+#        - from: 'installer\msix\bin'
+#          to: 'Build_MSIX_Package_Output'
+#          include:
+#            - '*.msix'
+#            - '*.msixbundle'
+#          signing_options:
+#            profile: '400'
 
 static_analysis_options:                             
   binskim_options:  

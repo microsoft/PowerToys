@@ -13,28 +13,28 @@ namespace Wox.Core.Plugin
         {
             if (File.Exists(path))
             {
-                string tempFoler = Path.Combine(Path.GetTempPath(), "wox\\plugins");
-                if (Directory.Exists(tempFoler))
+                string tempFolder = Path.Combine(Path.GetTempPath(), "wox\\plugins");
+                if (Directory.Exists(tempFolder))
                 {
-                    Directory.Delete(tempFoler, true);
+                    Directory.Delete(tempFolder, true);
                 }
-                UnZip(path, tempFoler, true);
+                UnZip(path, tempFolder, true);
 
-                string iniPath = Path.Combine(tempFoler, "plugin.json");
+                string iniPath = Path.Combine(tempFolder, "plugin.json");
                 if (!File.Exists(iniPath))
                 {
                     MessageBox.Show("Install failed: plugin config is missing");
                     return;
                 }
 
-                PluginMetadata plugin = GetMetadataFromJson(tempFoler);
+                PluginMetadata plugin = GetMetadataFromJson(tempFolder);
                 if (plugin == null || plugin.Name == null)
                 {
                     MessageBox.Show("Install failed: plugin config is invalid");
                     return;
                 }
 
-                string pluginFolerPath = Infrastructure.Constant.PluginsDirectory;
+                string pluginFolderPath = Infrastructure.Constant.PluginsDirectory;
 
                 string newPluginName = plugin.Name
                     .Replace("/", "_")
@@ -46,7 +46,7 @@ namespace Wox.Core.Plugin
                     .Replace("*", "_")
                     .Replace("|", "_")
                     + "-" + Guid.NewGuid();
-                string newPluginPath = Path.Combine(pluginFolerPath, newPluginName);
+                string newPluginPath = Path.Combine(pluginFolderPath, newPluginName);
                 string content = $"Do you want to install following plugin?{Environment.NewLine}{Environment.NewLine}" +
                                  $"Name: {plugin.Name}{Environment.NewLine}" +
                                  $"Version: {plugin.Version}{Environment.NewLine}" +
@@ -72,10 +72,10 @@ namespace Wox.Core.Plugin
                     }
 
                     UnZip(path, newPluginPath, true);
-                    Directory.Delete(tempFoler, true);
+                    Directory.Delete(tempFolder, true);
 
-                    //exsiting plugins may be has loaded by application,
-                    //if we try to delelte those kind of plugins, we will get a  error that indicate the
+                    //existing plugins could be loaded by the application,
+                    //if we try to delete those kind of plugins, we will get a  error that indicate the
                     //file is been used now.
                     //current solution is to restart wox. Ugly.
                     //if (MainWindow.Initialized)
@@ -86,7 +86,7 @@ namespace Wox.Core.Plugin
                                         "Restart Wox to take effect?",
                                         "Install plugin", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                     {
-                        PluginManager.API.RestarApp();
+                        PluginManager.API.RestartApp();
                     }
                 }
             }
@@ -146,17 +146,17 @@ namespace Wox.Core.Plugin
         /// <summary>
         /// unzip 
         /// </summary>
-        /// <param name="zipedFile">The ziped file.</param>
+        /// <param name="zippedFile">The zipped file.</param>
         /// <param name="strDirectory">The STR directory.</param>
-        /// <param name="overWrite">overwirte</param>
-        private static void UnZip(string zipedFile, string strDirectory, bool overWrite)
+        /// <param name="overWrite">overwrite</param>
+        private static void UnZip(string zippedFile, string strDirectory, bool overWrite)
         {
             if (strDirectory == "")
                 strDirectory = Directory.GetCurrentDirectory();
             if (!strDirectory.EndsWith("\\"))
                 strDirectory = strDirectory + "\\";
 
-            using (ZipInputStream s = new ZipInputStream(File.OpenRead(zipedFile)))
+            using (ZipInputStream s = new ZipInputStream(File.OpenRead(zippedFile)))
             {
                 ZipEntry theEntry;
 

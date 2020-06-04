@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Microsoft.Plugin.Caculator
+namespace Microsoft.Plugin.Calculator
 {
     /// <summary>
     /// Tries to convert all numbers in a text from one culture format to another.

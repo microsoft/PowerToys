@@ -87,8 +87,8 @@ namespace Wox.Core.Plugin
                             }
                             else
                             {
-                                string actionReponse = ExecuteCallback(result1.JsonRPCAction);
-                                JsonRPCRequestModel jsonRpcRequestModel = JsonConvert.DeserializeObject<JsonRPCRequestModel>(actionReponse);
+                                string actionResponse = ExecuteCallback(result1.JsonRPCAction);
+                                JsonRPCRequestModel jsonRpcRequestModel = JsonConvert.DeserializeObject<JsonRPCRequestModel>(actionResponse);
                                 if (jsonRpcRequestModel != null
                                     && !String.IsNullOrEmpty(jsonRpcRequestModel.Method)
                                     && jsonRpcRequestModel.Method.StartsWith("Wox."))

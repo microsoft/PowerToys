@@ -43,7 +43,7 @@ namespace Wox.Plugin
         /// <summary>
         /// Restart Wox
         /// </summary>
-        void RestarApp();
+        void RestartApp();
 
         /// <summary>
         /// Hide Wox
@@ -64,7 +64,7 @@ namespace Wox.Plugin
 
         /// <summary>
         /// Reloads any Plugins that have the 
-        /// IReloadable implemented. It refeshes
+        /// IReloadable implemented. It refreshes
         /// Plugin's in memory data with new content
         /// added by user.
         /// </summary>

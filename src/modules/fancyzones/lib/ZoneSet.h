@@ -31,12 +31,12 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      */
     IFACEMETHOD_(std::vector<int>, ZonesFromPoint)(POINT pt) = 0;
     /**
-     * Get index of the zone inside zone layout by window assigned to it.
+     * Get index set of the zones to which the window was assigned.
      *
-     * @param   window Handle of window assigned to zone.
-     * @returns Zone index withing zone layout.
+     * @param   window Handle of the window.
+     * @returns A vector of integers, 0-based, the index set.
      */
-    IFACEMETHOD_(int, GetZoneIndexFromWindow)(HWND window) = 0;
+    IFACEMETHOD_(std::vector<int>, GetZoneIndexSetFromWindow)(HWND window) = 0;
     /**
      * @returns Array of zone objects (defining coordinates of the zone) inside this zone layout.
      */
@@ -48,9 +48,8 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      * @param   zoneWindow The m_window of a ZoneWindow, it's a hidden window representing the
      *                     current monitor desktop work area.
      * @param   index      Zone index within zone layout.
-     * @param   stampZone  Whether the window being added to the zone should be stamped.
      */
-    IFACEMETHOD_(void, MoveWindowIntoZoneByIndex)(HWND window, HWND zoneWindow, int index, bool stampZone) = 0;
+    IFACEMETHOD_(void, MoveWindowIntoZoneByIndex)(HWND window, HWND zoneWindow, int index) = 0;
     /**
      * Assign window to the zones based on the set of zone indices inside zone layout.
      *
@@ -58,10 +57,8 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      * @param   zoneWindow The m_window of a ZoneWindow, it's a hidden window representing the
      *                     current monitor desktop work area.
      * @param   indexSet   The set of zone indices within zone layout.
-     * @param   stampZone  Whether the window being added to the zone should be stamped,
-                           in case a single window is to be added.
      */
-    IFACEMETHOD_(void, MoveWindowIntoZoneByIndexSet)(HWND window, HWND zoneWindow, const std::vector<int>& indexSet, bool stampZone) = 0;
+    IFACEMETHOD_(void, MoveWindowIntoZoneByIndexSet)(HWND window, HWND zoneWindow, const std::vector<int>& indexSet) = 0;
     /**
      * Assign window to the zone based on direction (using WIN + LEFT/RIGHT arrow).
      *
@@ -95,6 +92,14 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
      * @returns Boolean indicating if calculation was successful.
      */
     IFACEMETHOD_(bool, CalculateZones)(MONITORINFO monitorInfo, int zoneCount, int spacing) = 0;
+    /**
+     * Check if the zone with the specified index is empty. Returns true if the zone does not exist.
+     * 
+     * @param   zoneIndex   The index of of the zone within this zone set.
+     *
+     * @returns Boolean indicating whether the zone is empty.
+     */
+    IFACEMETHOD_(bool, IsZoneEmpty)(int zoneIndex) = 0;
 };
 
 #define VERSION_PERSISTEDDATA 0x0000F00D

@@ -5,10 +5,14 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls" xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
+    <Page.Resources>
+        <converters:StringFormatConverter x:Key="StringFormatConverter"/>
+    </Page.Resources>
+    
     <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
@@ -19,6 +23,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="1" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="0" />
+                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
@@ -28,6 +33,7 @@
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="0" />
                         <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                        <Setter Target="SidePanel.Width" Value="Auto" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -53,22 +59,29 @@
 
             <muxc:NumberBox x:Uid="ShortcutGuide_PressTime"
                             Minimum="100"
-                           
-                            SpinButtonPlacementMode="Inline"
+                            SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallTopMargin}"
+                            Width="240"
                             Value="{ Binding Mode=TwoWay, Path=PressTime}"
                             IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" SmallChange="50" LargeChange="100"/>
 
-            <Slider x:Uid="ShortcutGuide_OverlayOpacity"
+            <StackPanel Orientation="Horizontal" Margin="{StaticResource MediumTopMargin}" Spacing="12">
+                <Slider x:Uid="ShortcutGuide_OverlayOpacity"
                     Minimum="0"
                     Maximum="100"
+                    Width="240"
                     Value="{ Binding Mode=TwoWay, Path=OverlayOpacity}"
+                    IsThumbToolTipEnabled="False"
                     HorizontalAlignment="Left"
-                    Margin="{StaticResource MediumTopMargin}"
                     IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                <TextBlock Text="{ Binding Mode=OneWay, Path=OverlayOpacity, Converter={StaticResource StringFormatConverter}, ConverterParameter=' {0}%' }" 
+                           VerticalAlignment="Center"
+                           FontSize="16"
+                           Margin="0,21,0,0"/>
+            </StackPanel>
             
-            <muxc:RadioButtons x:Uid="RadioButtons_Name_Theme" 
+            <muxc:RadioButtons x:Uid="ShortcutGuide_Theme"
                                Margin="{StaticResource SmallTopMargin}"
                                IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
                                SelectedIndex="{ Binding Mode=TwoWay, Path=ThemeIndex}">
@@ -95,7 +108,7 @@
                 Style="{StaticResource SettingsGroupTitleStyle}"
                 Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <Image Source="https://raw.githubusercontent.com/microsoft/PowerToys/dev/build-features/doc/images/shortcut_guide/usage.png" />
+            <Image MaxWidth="240" Source="https://raw.githubusercontent.com/microsoft/PowerToys/dev/build-features/doc/images/shortcut_guide/usage.png" />
 
             <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/shortcut_guide/README.md">
                 <TextBlock x:Uid="Module_overview"/>
