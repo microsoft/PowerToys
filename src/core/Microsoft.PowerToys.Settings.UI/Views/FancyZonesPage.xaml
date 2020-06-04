@@ -70,18 +70,29 @@
                     <TextBlock Margin="12,0,0,0" x:Uid="FancyZones_LaunchEditorButtonControl"/>
                 </StackPanel>
             </Button>
-            
-            <TextBlock x:Uid="FancyZones_ZoneBehavior_GroupSettings"
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock x:Uid="FancyZones_ZoneBehavior_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        />
+
+                <Viewbox Height="12" Width="12" Margin="5, 30, 0, 0">
+                    <PathIcon
+                        VerticalAlignment="Center"
+                        ToolTipService.ToolTip="Only the follwing shortcuts are valid: Win, Ctrl, Alt, Shift."
+                        Data="M960 1920q-133 0-255-34t-230-96-194-150-150-195-97-229T0 960q0-133 34-255t96-230 150-194 195-150 229-97T960 0q133 0 255 34t230 96 194 150 150 195 97 229 34 256q0 133-34 255t-96 230-150 194-195 150-229 97-256 34zm0-1792q-115 0-221 30t-198 84-169 130-130 168-84 199-30 221q0 114 30 220t84 199 130 169 168 130 199 84 221 30q114 0 220-30t199-84 169-130 130-168 84-199 30-221q0-114-30-220t-84-199-130-169-168-130-199-84-221-30zm-64 640h128v640H896V768zm0-256h128v128H896V512z"/>
+                </Viewbox>
+            </StackPanel>
+
 
             <CustomControls:HotkeySettingsControl 
                                           x:Uid="FancyZones_HokeyEditorControl_Header"
                                           Width="240"
                                           HorizontalAlignment="Left"
+                                          ToolTipService.ToolTip="Only the follwing shortcuts are valid: Win, Ctrl, Alt, Shift."
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}"
-                                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"        
+                                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"    
                                         />
 
             <CheckBox x:Uid="FancyZones_ShiftDragCheckBoxControl_Header"
