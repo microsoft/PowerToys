@@ -117,6 +117,11 @@
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
+            <CheckBox x:Uid="FancyZones_AppLastZoneMoveWindows"
+                      IsChecked="{ Binding Mode=TwoWay, Path=AppLastZoneMoveWindows}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+
             <CheckBox x:Uid="FancyZones_UseCursorPosEditorStartupScreen"
                       IsChecked="{ Binding Mode=TwoWay, Path=UseCursorPosEditorStartupScreen}"
                       Margin="{StaticResource SmallTopMargin}"
