@@ -21,21 +21,6 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 <br>
 <br>
 
-### Shortcut Guide
-
-[<img align="left" src="./doc/images/overview/Shortcut guide_small.png" />](/src/modules/shortcut_guide)  [Windows key shortcut guide](/src/modules/shortcut_guide) appears when a user holds the Windows key down for more than one second and shows the available shortcuts for the current state of the desktop.
-<br>
-<br>
-<br>
-<br>
-<br>
-
-### PowerRename
-
-[<img align="left" src="./doc/images/overview/PowerRename_small.PNG" />](/src/modules/powerrename) [PowerRename](/src/modules/powerrename) is a Windows Shell Extension for advanced bulk renaming using search and replace or regular expressions. PowerRename allows simple search and replace or more advanced regular expression matching. While you type in the search and replace input fields, the preview area will show what the items will be renamed to. PowerRename then calls into the Windows Explorer file operations engine to perform the rename. This has the benefit of allowing the rename operation to be undone after PowerRename exits. This code is based on [Chris Davis's SmartRename](https://github.com/chrdavis/SmartRename).
-<br>
-<br>
-
 ### File Explorer (Preview Panes)
 
 [<img align="left" src="./doc/images/overview/PowerPreview_small.PNG" />](/src/modules/previewpane) [File Explorer](/src/modules/previewpane) add-ons right now are just limited to Preview Pane additions for File Explorer. Preview Pane is an existing feature in the File Explorer.  To enable it, you just click the View tab in the ribbon and then click "Preview Pane".
@@ -61,9 +46,24 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 <br>
 <br>
 
+### PowerRename
+
+[<img align="left" src="./doc/images/overview/PowerRename_small.PNG" />](/src/modules/powerrename) [PowerRename](/src/modules/powerrename) is a Windows Shell Extension for advanced bulk renaming using search and replace or regular expressions. PowerRename allows simple search and replace or more advanced regular expression matching. While you type in the search and replace input fields, the preview area will show what the items will be renamed to. PowerRename then calls into the Windows Explorer file operations engine to perform the rename. This has the benefit of allowing the rename operation to be undone after PowerRename exits. This code is based on [Chris Davis's SmartRename](https://github.com/chrdavis/SmartRename).
+<br>
+<br>
+
 ### PowerToys Run
 
 [<img align="left" src="./doc/images/overview/PowerLauncher_small.png" />](src/modules/launcher/) [PowerToys Run](src/modules/launcher/) is a new toy in PowerToys that can help you search and launch your app instantly with a simple alt-space and start typing! It is open source and modular for additional plugins.  Window Walker is now inside too! This PowerToy requires Windows 10 1903 (build 18362) or later.
+<br>
+<br>
+<br>
+<br>
+
+### Shortcut Guide
+
+[<img align="left" src="./doc/images/overview/Shortcut guide_small.png" />](/src/modules/shortcut_guide)  [Windows key shortcut guide](/src/modules/shortcut_guide) appears when a user holds the Windows key down for more than one second and shows the available shortcuts for the current state of the desktop.
+<br>
 <br>
 <br>
 <br>
