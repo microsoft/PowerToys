@@ -482,7 +482,7 @@ namespace FancyZonesEditor
             percents[index + 1] = info[index + 1].Percent = nextPercent - data.NewPercent;
         }
 
-        public bool SwapNegativePercents(Orientation orientation, int rowIndex, int colIndex)
+        public bool SwapNegativePercents(Orientation orientation, int startRow, int endRow, int startCol, int endCol)
         {
             List<int> percents;
             int index;
@@ -491,28 +491,36 @@ namespace FancyZonesEditor
             if (orientation == Orientation.Vertical)
             {
                 percents = _model.ColumnPercents;
-                index = colIndex;
+                index = startCol;
 
                 swapIndicesPrevLine = () =>
                 {
-                    _model.CellChildMap[rowIndex, colIndex] = _model.CellChildMap[rowIndex, colIndex + 1];
+                    for (int row = startRow; row < endRow; row++)
+                    {
+                        _model.CellChildMap[row, startCol] = _model.CellChildMap[row, startCol + 1];
+                    }
+
                     for (int row = 0; row < _model.Rows; row++)
                     {
-                        if (row != rowIndex)
+                        if (row < startRow || row >= endRow)
                         {
-                            _model.CellChildMap[row, colIndex] = _model.CellChildMap[row, colIndex - 1];
+                            _model.CellChildMap[row, startCol] = _model.CellChildMap[row, startCol - 1];
                         }
                     }
                 };
 
                 swapIndicesNextLine = () =>
                 {
-                    _model.CellChildMap[rowIndex, colIndex + 1] = _model.CellChildMap[rowIndex, colIndex];
+                    for (int row = startRow; row < endRow; row++)
+                    {
+                        _model.CellChildMap[row, startCol + 1] = _model.CellChildMap[row, startCol];
+                    }
+
                     for (int row = 0; row < _model.Rows; row++)
                     {
-                        if (row != rowIndex)
+                        if (row < startRow || row >= endRow)
                         {
-                            _model.CellChildMap[row, colIndex + 1] = _model.CellChildMap[row, colIndex + 2];
+                            _model.CellChildMap[row, startCol + 1] = _model.CellChildMap[row, startCol + 2];
                         }
                     }
                 };
@@ -520,28 +528,36 @@ namespace FancyZonesEditor
             else
             {
                 percents = _model.RowPercents;
-                index = rowIndex;
+                index = startRow;
 
                 swapIndicesPrevLine = () =>
                 {
-                    _model.CellChildMap[rowIndex, colIndex] = _model.CellChildMap[rowIndex + 1, colIndex];
+                    for (int col = startCol; col < endCol; col++)
+                    {
+                        _model.CellChildMap[startRow, col] = _model.CellChildMap[startRow + 1, col];
+                    }
+
                     for (int col = 0; col < _model.Columns; col++)
                     {
-                        if (col != colIndex)
+                        if (col < startCol || col >= endCol)
                         {
-                            _model.CellChildMap[rowIndex, col] = _model.CellChildMap[rowIndex - 1, col];
+                            _model.CellChildMap[startRow, col] = _model.CellChildMap[startRow - 1, col];
                         }
                     }
                 };
 
                 swapIndicesNextLine = () =>
                 {
-                    _model.CellChildMap[rowIndex + 1, colIndex] = _model.CellChildMap[rowIndex, colIndex];
+                    for (int col = startCol; col < endCol; col++)
+                    {
+                        _model.CellChildMap[startRow + 1, col] = _model.CellChildMap[startRow, col];
+                    }
+
                     for (int col = 0; col < _model.Columns; col++)
                     {
-                        if (col != colIndex)
+                        if (col < startCol || col >= endCol)
                         {
-                            _model.CellChildMap[rowIndex + 1, col] = _model.CellChildMap[rowIndex + 2, col];
+                            _model.CellChildMap[startRow + 1, col] = _model.CellChildMap[startRow + 2, col];
                         }
                     }
                 };
