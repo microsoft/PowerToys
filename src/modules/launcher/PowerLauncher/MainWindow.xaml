@@ -21,6 +21,7 @@
         Background="Transparent"
         LocationChanged="OnLocationChanged"
         Deactivated="OnDeactivated"
+        IsVisibleChanged="Window_IsVisibleChanged"
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         d:DataContext="{d:DesignInstance vm:MainViewModel}">
     <Window.Resources>
