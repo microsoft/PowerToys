@@ -30,6 +30,7 @@ namespace Microsoft.Plugin.Program.Programs
         public string Description { get; set; }
         public bool Valid { get; set; }
         public bool Enabled { get; set; }
+        public bool hasArguments { get; set; } = false;
         public string Location => ParentDirectory;
 
         private const string ShortcutExtension = "lnk";
@@ -52,6 +53,12 @@ namespace Microsoft.Plugin.Program.Programs
             if (score <= 0)
             { // no need to create result if this is zero
                 return null;
+            }
+
+            if(!hasArguments)
+            {
+                var noArgumentScoreModifier = 5;
+                score += noArgumentScoreModifier;
             }
 
             var result = new Result
@@ -191,6 +198,7 @@ namespace Microsoft.Plugin.Program.Programs
                         program.LnkResolvedPath = program.FullPath;
                         program.FullPath = Path.GetFullPath(target).ToLower();
                         program.ExecutableName = Path.GetFileName(target);
+                        program.hasArguments = _helper.hasArguments;
 
                         var description = _helper.description;
                         if (!string.IsNullOrEmpty(description))

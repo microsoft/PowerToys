@@ -9,25 +9,11 @@
     d:DesignHeight="300"
     d:DesignWidth="720">
     <UserControl.Resources>
-        <Color x:Key="SystemBaseMediumLowColor">#66000000</Color>
-        <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#66000000" />
-        <SolidColorBrush x:Key="TextBox.Static.Border" Color="Transparent"/>
-        <SolidColorBrush x:Key="TextBox.MouseOver.Border" Color="Transparent"/>
-        <SolidColorBrush x:Key="TextBox.Focus.Border" Color="Transparent"/>
-
-        <!--
-            https://github.com/MicrosoftDocs/windows-uwp/issues/2072
-            TextControlPlaceholderForeground is based on SystemBaseMediumLowColor	
-            Light=#66000000	
-            Dark=#66FFFFFF
-            Highcontrast 
-                should be based from SystemColors https://docs.microsoft.com/en-us/archive/blogs/wpf/systemcolors-reference        
-        -->
-
         <Style x:Key="QueryTextBoxStyle" TargetType="{x:Type TextBox}">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ControlTextBrushKey}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource ControlTextBrushKey}"/>
             <Setter Property="KeyboardNavigation.TabNavigation" Value="None"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
@@ -75,7 +61,7 @@
                         <Condition Property="IsInactiveSelectionHighlightEnabled" Value="true"/>
                         <Condition Property="IsSelectionActive" Value="false"/>
                     </MultiTrigger.Conditions>
-                    <Setter Property="SelectionBrush" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}"/>
+                    <Setter Property="SelectionBrush" Value="{DynamicResource InactiveSelectionHighlightBrushKey}"/>
                 </MultiTrigger>
             </Style.Triggers>
         </Style>
