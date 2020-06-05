@@ -195,6 +195,7 @@ namespace FancyZonesEditor
                     offset += Canvas.GetLeft(splitee);
                     int count = splitee.VerticalSnapPoints.Length;
                     bool foundExistingSplit = false;
+                    int splitCol = foundCol;
 
                     for (int i = 0; i <= count; i++)
                     {
@@ -210,7 +211,7 @@ namespace FancyZonesEditor
                         if (_data.ColumnBottom(foundCol + i) == offset)
                         {
                             foundExistingSplit = true;
-
+                            splitCol = foundCol + i;
                             // use existing division
                         }
                     }
@@ -225,7 +226,7 @@ namespace FancyZonesEditor
                         for (int i = 0; i < resizers.Count && (leftNeighbour == null || rightNeighbour == null); i++)
                         {
                             GridResizer resizer = (GridResizer)resizers[i];
-                            if (resizer.Orientation == Orientation.Vertical && resizer.StartCol == foundCol)
+                            if (resizer.Orientation == Orientation.Vertical && resizer.StartCol == splitCol)
                             {
                                 if (leftNeighbour == null && resizer.EndRow == foundRow)
                                 {
@@ -259,7 +260,7 @@ namespace FancyZonesEditor
                         }
                         else
                         {
-                            AddDragHandle(Orientation.Vertical, foundRow, foundCol);
+                            AddDragHandle(Orientation.Vertical, foundRow, splitCol);
                         }
 
                         OnGridDimensionsChanged();
@@ -299,6 +300,7 @@ namespace FancyZonesEditor
                     offset += Canvas.GetTop(splitee);
                     int count = splitee.HorizontalSnapPoints.Length;
                     bool foundExistingSplit = false;
+                    int splitRow = foundRow;
 
                     for (int i = 0; i <= count; i++)
                     {
@@ -314,7 +316,7 @@ namespace FancyZonesEditor
                         if (_data.RowEnd(foundRow + i) == offset)
                         {
                             foundExistingSplit = true;
-
+                            splitRow = foundRow + i;
                             // use existing division
                         }
                     }
@@ -329,7 +331,7 @@ namespace FancyZonesEditor
                         for (int i = 0; i < resizers.Count && (leftNeighbour == null || rightNeighbour == null); i++)
                         {
                             GridResizer resizer = (GridResizer)resizers[i];
-                            if (resizer.Orientation == Orientation.Horizontal && resizer.StartRow == foundRow)
+                            if (resizer.Orientation == Orientation.Horizontal && resizer.StartRow == splitRow)
                             {
                                 if (leftNeighbour == null && resizer.EndCol == foundCol)
                                 {
@@ -363,7 +365,7 @@ namespace FancyZonesEditor
                         }
                         else
                         {
-                            AddDragHandle(Orientation.Horizontal, foundRow, foundCol);
+                            AddDragHandle(Orientation.Horizontal, splitRow, foundCol);
                         }
 
                         OnGridDimensionsChanged();
