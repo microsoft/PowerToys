@@ -143,7 +143,7 @@ namespace JSONHelpers
     struct AppZoneHistoryJSON
     {
         std::wstring appPath;
-        AppZoneHistoryData data;
+        std::vector<AppZoneHistoryData> data;
 
         static json::JsonObject ToJson(const AppZoneHistoryJSON& appZoneHistory);
         static std::optional<AppZoneHistoryJSON> FromJson(const json::JsonObject& zoneSet);
@@ -201,7 +201,7 @@ namespace JSONHelpers
             return customZoneSetsMap;
         }
 
-        inline const std::unordered_map<std::wstring, AppZoneHistoryData>& GetAppZoneHistoryMap() const
+        inline const std::unordered_map<std::wstring, std::vector<AppZoneHistoryData>>& GetAppZoneHistoryMap() const
         {
             std::scoped_lock lock{ dataLock };
             return appZoneHistoryMap;
@@ -233,13 +233,12 @@ namespace JSONHelpers
         }
 
         void AddDevice(const std::wstring& deviceId);
-        bool RemoveDevicesByVirtualDesktopId(const std::wstring& virtualDesktopId);
         void CloneDeviceInfo(const std::wstring& source, const std::wstring& destination);
         void UpdatePrimaryDesktopData(const std::wstring& desktopId);
         void RemoveDeletedDesktops(const std::vector<std::wstring>& activeDesktops);
 
-        bool IsAnotherWindowOfApplicationInstanceZoned(HWND window) const;
-        void UpdateProcessIdToHandleMap(HWND window);
+        bool IsAnotherWindowOfApplicationInstanceZoned(HWND window, const std::wstring_view& deviceId) const;
+        void UpdateProcessIdToHandleMap(HWND window, const std::wstring_view& deviceId);
         std::vector<int> GetAppLastZoneIndexSet(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const;
         bool RemoveAppLastZone(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId);
         bool SetAppLastZones(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, const std::vector<int>& zoneIndexSet);
@@ -265,8 +264,9 @@ namespace JSONHelpers
 
     private:
         void MigrateCustomZoneSetsFromRegistry();
+        void RemoveDesktopAppZoneHistory(const std::wstring& desktopId);
 
-        std::unordered_map<std::wstring, AppZoneHistoryData> appZoneHistoryMap{};
+        std::unordered_map<std::wstring, std::vector<AppZoneHistoryData>> appZoneHistoryMap{};
         std::unordered_map<std::wstring, DeviceInfoData> deviceInfoMap{};
         std::unordered_map<std::wstring, CustomZoneSetData> customZoneSetsMap{};
 

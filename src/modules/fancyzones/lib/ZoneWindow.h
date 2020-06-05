@@ -24,7 +24,7 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      * @param   dragEnabled Boolean indicating is giving hints about active zone layout enabled.
      *                      Hints are given while dragging window while holding SHIFT key.
      */
-    IFACEMETHOD(MoveSizeEnter)(HWND window, bool dragEnabled) = 0;
+    IFACEMETHOD(MoveSizeEnter)(HWND window) = 0;
     /**
      * A window has changed location, shape, or size. Track down window position and give zone layout
      * hints if dragging functionality is enabled.
@@ -42,11 +42,6 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      * @param ptScreen Cursor coordinates where window is dropped.
      */
     IFACEMETHOD(MoveSizeEnd)(HWND window, POINT const& ptScreen) = 0;
-    /**
-     * @returns Boolean indicating is giving hints about active zone layout enabled. Hints are
-     *          given while dragging window while holding SHIFT key.
-     */
-    IFACEMETHOD_(bool, IsDragEnabled)() = 0;
     /**
      * Assign window to the zone based on zone index inside zone layout.
      *

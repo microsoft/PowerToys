@@ -206,13 +206,11 @@ public:
 
     bool Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, bool flashZones);
 
-    IFACEMETHODIMP MoveSizeEnter(HWND window, bool dragEnabled) noexcept;
+    IFACEMETHODIMP MoveSizeEnter(HWND window) noexcept;
     IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled) noexcept;
     IFACEMETHODIMP MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
     IFACEMETHODIMP_(void)
     RestoreOriginalTransparency() noexcept;
-    IFACEMETHODIMP_(bool)
-    IsDragEnabled() noexcept { return m_dragEnabled; }
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByIndex(HWND window, int index) noexcept;
     IFACEMETHODIMP_(void)
@@ -258,7 +256,6 @@ private:
     HWND m_windowMoveSize{};
     bool m_drawHints{};
     bool m_flashMode{};
-    bool m_dragEnabled{};
     winrt::com_ptr<IZoneSet> m_activeZoneSet;
     std::vector<winrt::com_ptr<IZoneSet>> m_zoneSets;
     std::vector<int> m_highlightZone;
@@ -342,7 +339,7 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
     return true;
 }
 
-IFACEMETHODIMP ZoneWindow::MoveSizeEnter(HWND window, bool dragEnabled) noexcept
+IFACEMETHODIMP ZoneWindow::MoveSizeEnter(HWND window) noexcept
 {
     if (m_windowMoveSize)
     {
@@ -363,7 +360,6 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnter(HWND window, bool dragEnabled) noexcept
         SetLayeredWindowAttributes(window, 0, (255 * 50) / 100, LWA_ALPHA);
     }
 
-    m_dragEnabled = dragEnabled;
     m_windowMoveSize = window;
     m_drawHints = true;
     m_highlightZone = {};
@@ -376,8 +372,6 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
     bool redraw = false;
     POINT ptClient = ptScreen;
     MapWindowPoints(nullptr, m_window.get(), &ptClient, 1);
-
-    m_dragEnabled = dragEnabled;
 
     if (dragEnabled)
     {
