@@ -10,7 +10,6 @@
 #include "lib/util.h"
 #include "VirtualDesktopUtils.h"
 #include "lib/SecondaryMouseButtonsHook.h"
-#include <lib/FancyZonesWinHookEventIDs.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
