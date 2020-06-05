@@ -17,6 +17,7 @@
 #include "MonitorWorkAreaHandler.h"
 
 #include <interface/win_hook_event_data.h>
+#include <lib/SecondaryMouseButtonsHook.h>
 
 enum class DisplayChangeType
 {
@@ -32,7 +33,8 @@ public:
     FancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings) noexcept :
         m_hinstance(hinstance),
         m_settings(settings),
-        m_windowMoveHandler(settings, &m_window)
+        m_mouseHook(std::bind(&FancyZones::OnMouseDown, this)),
+        m_windowMoveHandler(settings, &m_mouseHook)
     {
         m_settings->SetCallback(this);
     }
@@ -42,6 +44,14 @@ public:
     Run() noexcept;
     IFACEMETHODIMP_(void)
     Destroy() noexcept;
+
+    void OnMouseDown() noexcept
+    {
+        std::unique_lock writeLock(m_lock);
+        m_windowMoveHandler.OnMouseDown();
+
+        PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
+    }
 
     void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen) noexcept
     {
@@ -60,6 +70,7 @@ public:
         std::unique_lock writeLock(m_lock);
         m_windowMoveHandler.MoveSizeEnd(window, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId));
     }
+
     IFACEMETHODIMP_(void)
     HandleWinHookEvent(const WinHookEvent* data) noexcept
     {
@@ -213,6 +224,7 @@ private:
     HWND m_window{};
     WindowMoveHandler m_windowMoveHandler;
     MonitorWorkAreaHandler m_workAreaHandler;
+    SecondaryMouseButtonsHook m_mouseHook;
 
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
     GUID m_previousDesktopId{}; // UUID of previously active virtual desktop.
