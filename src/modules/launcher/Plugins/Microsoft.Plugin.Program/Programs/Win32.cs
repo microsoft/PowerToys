@@ -13,6 +13,8 @@ using Microsoft.Plugin.Program.Logger;
 using Wox.Plugin;
 using System.Windows.Input;
 using System.Reflection;
+using System.Drawing;
+using System.Security.Policy;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -32,9 +34,15 @@ namespace Microsoft.Plugin.Program.Programs
         public bool Enabled { get; set; }
         public string Location => ParentDirectory;
 
+        public string AppType { get; set; }
+
         private const string ShortcutExtension = "lnk";
         private const string ApplicationReferenceExtension = "appref-ms";
         private const string ExeExtension = "exe";
+        private const string InternetShortcutExtension = "url";
+
+        private const string InternetShortcutApplication = "Internet Shortcut application";
+        private const string Win32Application = "Win32 application";
 
         private int Score(string query)
         {
@@ -44,7 +52,6 @@ namespace Microsoft.Plugin.Program.Programs
             var score = new[] { nameMatch.Score, descriptionMatch.Score, executableNameMatch.Score }.Max();
             return score;
         }
-
 
         public Result Result(string query, IPublicAPI api)
         {
@@ -56,7 +63,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             var result = new Result
             {
-                SubTitle = "Win32 application",
+                SubTitle = AppType,
                 IcoPath = IcoPath,
                 Score = score,
                 ContextData = this,
@@ -93,6 +100,32 @@ namespace Microsoft.Plugin.Program.Programs
 
         public List<ContextMenuResult> ContextMenus(IPublicAPI api)
         {
+            // To add a context menu only to open file location as Internet shortcut applications do not have the functionality to run as admin
+            if(AppType.Equals(InternetShortcutApplication))
+            {
+                var contextMenuItems = new List<ContextMenuResult>
+                {
+                    new ContextMenuResult
+                    {
+                        PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                        Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
+                        Glyph = "\xE838",
+                        FontFamily = "Segoe MDL2 Assets",
+                        AcceleratorKey = Key.E,
+                        AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
+                        Action = _ =>
+                        {
+
+
+                            Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", ParentDirectory));
+
+                            return true;
+                        }
+                    }
+                };
+                return contextMenuItems;
+            }
+
             var contextMenus = new List<ContextMenuResult>
             {
                 new ContextMenuResult
@@ -160,13 +193,77 @@ namespace Microsoft.Plugin.Program.Programs
                     ParentDirectory = Directory.GetParent(path).FullName,
                     Description = string.Empty,
                     Valid = true,
-                    Enabled = true
+                    Enabled = true,
+                    AppType = Win32Application
                 };
                 return p;
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
             {
                 ProgramLogger.LogException($"|Win32|Win32Program|{path}" +
+                                            $"|Permission denied when trying to load the program from {path}", e);
+
+                return new Win32() { Valid = false, Enabled = false };
+            }
+        }
+
+        // This function filters Internet Shortcut programs
+        private static Win32 InternetShortcutProgram(string path)
+        {
+            string[] lines = System.IO.File.ReadAllLines(path);
+            string appName = string.Empty;
+            string iconPath = string.Empty;
+            string scheme = string.Empty;
+            bool validApp = false;
+
+            const string steamScheme = "steam";
+            const string urlPrefix = "URL=";
+            const string iconFilePrefix = "IconFile=";
+
+            foreach(string line in lines)
+            {
+                if(line.StartsWith(urlPrefix))
+                {
+                    var urlPath = line.Substring(urlPrefix.Length);
+                    Uri uri = new Uri(urlPath);
+
+                    if(uri.Scheme.Equals(steamScheme, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        validApp = true;
+                    }
+                }
+
+                if(line.StartsWith(iconFilePrefix))
+                {
+                    iconPath = line.Substring(iconFilePrefix.Length);
+                }
+            }
+
+            if(!validApp)
+            {
+                return new Win32() { Valid = false, Enabled = false };
+            }
+
+            try
+            {
+                var p = new Win32
+                {
+                    Name = Path.GetFileNameWithoutExtension(path),
+                    ExecutableName = Path.GetFileName(path),
+                    IcoPath = iconPath,
+                    FullPath = path.ToLower(),
+                    UniqueIdentifier = path,
+                    ParentDirectory = Directory.GetParent(path).FullName,
+                    Description = InternetShortcutApplication,
+                    Valid = true,
+                    Enabled = true,
+                    AppType = InternetShortcutApplication
+                };
+                return p;
+            }
+            catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
+            {
+                ProgramLogger.LogException($"|Win32|InternetShortcutProgram|{path}" +
                                             $"|Permission denied when trying to load the program from {path}", e);
 
                 return new Win32() { Valid = false, Enabled = false };
@@ -358,8 +455,9 @@ namespace Microsoft.Plugin.Program.Programs
 
             var programs1 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(LnkProgram);
             var programs2 = paths.AsParallel().Where(p => Extension(p) == ApplicationReferenceExtension).Select(Win32Program);
+            var programs3 = paths.AsParallel().Where(p => Extension(p) == InternetShortcutExtension).Select(InternetShortcutProgram);
 
-            return programs1.Concat(programs2).Where(p => p.Valid);
+            return programs1.Concat(programs2).Where(p => p.Valid).Concat(programs3).Where(p => p.Valid);
         }
 
         private static ParallelQuery<Win32> AppPathsPrograms(string[] suffixes)
