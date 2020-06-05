@@ -218,7 +218,7 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result)
 
                         for (int i = 1; i < m.size(); i++)
                         {
-                            std::wregex captureGroup(L"\\$" + std::to_wstring(i) + L"(^|\\D)");
+                            std::wregex captureGroup(L"\\$0*" + std::to_wstring(i) + L"(^|\\D)");
                             res = regex_replace(wstring(res), captureGroup, wstring(m[i])+L"$1");
                         }
                         std::wregex variablesPattern(L"\\$\\d+");
