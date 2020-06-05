@@ -254,7 +254,7 @@ namespace KeyboardEventHandlers
                 }
             }
             // The shortcut has already been pressed down at least once, i.e. the shortcut has been invoked
-            // There are 4 cases to be handled if the shortcut has been pressed down
+            // There are 6 cases to be handled if the shortcut has been pressed down
             // 1. The user lets go of one of the modifier keys - reset the keyboard back to the state of the keys actually being pressed down
             // 2. The user keeps the shortcut pressed - the shortcut is repeated (for example you could hold down Ctrl+V and it will keep pasting)
             // 3. The user lets go of the action key - keep modifiers of the new shortcut until some other key event which doesn't apply to the original shortcut
