@@ -284,7 +284,7 @@ public:
             if (keyboardmanager_object_ptr->HandleKeyboardHookEvent(&event) == 1)
             {
                 // Reset Num Lock whenever a NumLock key down event is suppressed since Num Lock key state change occurs before it is intercepted by low level hooks
-                if (event.lParam->vkCode == VK_NUMLOCK && (event.wParam == WM_KEYDOWN || event.wParam == WM_SYSKEYDOWN))
+                if (event.lParam->vkCode == VK_NUMLOCK && (event.wParam == WM_KEYDOWN || event.wParam == WM_SYSKEYDOWN) && event.lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
                 {
                     KeyboardEventHandlers::SetNumLockToPreviousState();
                 }
@@ -330,9 +330,9 @@ public:
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
     {
         // If key has suppress flag, the suppress it
-        if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SKIP_FLAG)
+        if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
         {
-            return 0;
+            return 1;
         }
 
         // If the Detect Key Window is currently activated, then suppress the keyboard event
