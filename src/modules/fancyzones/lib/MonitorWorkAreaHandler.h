@@ -77,10 +77,8 @@ public:
      * Register changes in current virtual desktop layout.
      *
      * @param[in]  active  Array of currently active virtual desktop identifiers.
-     * @param[out] deleted Array of virtual desktop identifiers belonging to previously registered but now deleted
-     *                      work areas.
      */
-    void RegisterUpdates(const std::vector<GUID>& active, std::vector<GUID>& deleted);
+    void RegisterUpdates(const std::vector<GUID>& active);
 
     /**
      * Clear all persisted work area related data.

@@ -66,6 +66,11 @@ namespace PowerLauncher
                     {
                         _settings.MaxResultsToShow = overloadSettings.properties.maximum_number_of_results;
                     }
+
+                    if (_settings.IgnoreHotkeysOnFullscreen != overloadSettings.properties.ignore_hotkeys_in_fullscreen)
+                    {
+                        _settings.IgnoreHotkeysOnFullscreen = overloadSettings.properties.ignore_hotkeys_in_fullscreen;
+                    }
                 }
                 catch (Exception e)
                 {

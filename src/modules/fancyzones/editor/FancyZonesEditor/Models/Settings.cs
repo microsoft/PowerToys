@@ -21,9 +21,7 @@ namespace FancyZonesEditor
     {
         private enum CmdArgs
         {
-            MonitorHandle = 1,
-            X_Y_Width_Height,
-            ResolutionKey,
+            X_Y_Width_Height = 1,
             ActiveZoneSetTmpFile,
             AppliedZoneSetTmpFile,
             CustomZoneSetsTmpFile,
@@ -217,8 +215,6 @@ namespace FancyZonesEditor
 
         public static Rect WorkArea { get; private set; }
 
-        public static uint Monitor { get; private set; }
-
         public static string UniqueKey { get; private set; }
 
         public static string ActiveZoneSetUUid { get; private set; }
@@ -245,8 +241,6 @@ namespace FancyZonesEditor
         }
 
         private static string _customZoneSetsTmpFile;
-
-        public static string WorkAreaKey { get; private set; }
 
         // UpdateLayoutModels
         // Update the five default layouts based on the new ZoneCount
@@ -414,16 +408,10 @@ namespace FancyZonesEditor
         private void ParseCommandLineArgs()
         {
             WorkArea = SystemParameters.WorkArea;
-            Monitor = 0;
 
             string[] args = Environment.GetCommandLineArgs();
-            if (args.Length == 7)
+            if (args.Length == 5)
             {
-                if (uint.TryParse(args[(int)CmdArgs.MonitorHandle], out uint monitor))
-                {
-                    Monitor = monitor;
-                }
-
                 var parsedLocation = args[(int)CmdArgs.X_Y_Width_Height].Split('_');
                 var x = int.Parse(parsedLocation[0]);
                 var y = int.Parse(parsedLocation[1]);
@@ -431,8 +419,6 @@ namespace FancyZonesEditor
                 var height = int.Parse(parsedLocation[3]);
 
                 WorkArea = new Rect(x, y, width, height);
-
-                WorkAreaKey = args[(int)CmdArgs.ResolutionKey];
 
                 _activeZoneSetTmpFile = args[(int)CmdArgs.ActiveZoneSetTmpFile];
                 _appliedZoneSetTmpFile = args[(int)CmdArgs.AppliedZoneSetTmpFile];

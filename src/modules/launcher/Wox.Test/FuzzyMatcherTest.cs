@@ -187,8 +187,6 @@ namespace Wox.Test
         [TestCase("sql manag", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("sql", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("sql serv", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
-        [TestCase("sqlserv", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, false)]
-        [TestCase("sql servman", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, false)]
         [TestCase("sql serv man", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("sql studio", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("mic", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
@@ -223,6 +221,21 @@ namespace Wox.Test
                 $"Compare:{compareString}{Environment.NewLine}" +
                 $"Raw Score: {matchResult.RawScore}{Environment.NewLine}" +
                 $"Precision Score: {(int)expectedPrecisionScore}");
+        }
+
+        [TestCase("Windows Terminal", "Windows_Terminal", "term")]
+        [TestCase("Windows Terminal", "WindowsTerminal", "term")]
+        public void FuzzyMatchingScore_ShouldBeHigher_WhenPreceedingCharacterIsSpace(string firstCompareStr, string secondCompareStr, string query)
+        {
+            // Arrange
+            var matcher = new StringMatcher();
+
+            // Act
+            var firstScore = matcher.FuzzyMatch(query, firstCompareStr).Score;
+            var secondScore = matcher.FuzzyMatch(query, secondCompareStr).Score;
+
+            // Assert
+            Assert.IsTrue(firstScore > secondScore);
         }
     }
 }

@@ -24,6 +24,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public bool override_win_s_key { get; set; }
 
+        public bool ignore_hotkeys_in_fullscreen { get; set; }
+
         public PowerLauncherProperties()
         {
             open_powerlauncher = new HotkeySettings();
@@ -32,6 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             open_console = new HotkeySettings();
             search_result_preference = "most_recently_used";
             search_type_preference = "application_name";
+            ignore_hotkeys_in_fullscreen = false;
         }
     }
 }

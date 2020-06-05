@@ -122,7 +122,7 @@ While developing, it's possible to connect the WebView to the development server
 
 ### [`Settings-web`](settings-web.md)
 This project generates the web UI shown in the [PowerToys Settings](/src/editor).
-It's a `ReactJS` project created using [UI Fabric](https://developer.microsoft.com/en-us/fabric#/).
+It's a `ReactJS` project created using [Fluent UI](https://developer.microsoft.com/en-us/fluentui#/).
 
 ## Current modules
 ### [`FancyZones`](modules/fancyzones.md)
@@ -133,11 +133,6 @@ PowerRename is a Windows Shell Context Menu Extension for advanced bulk renaming
 
 ### [`Shortcut Guide`](modules/shortcut_guide.md)
 The Windows Shortcut Guide, displayed when the WinKey is held for some time.
-
-### _obsolete_ [`example_powertoy`](modules/example_powertoy.md)
-An example PowerToy, that demonstrates how to create new ones. Please note, that this is going to become a Visual Studio project template soon.
-
-This PowerToy serves as a sample to show how to implement the [PowerToys interface](/src/modules/interface/) when creating a PowerToy. It also showcases the currently implemented settings.
 
 #### Options
 

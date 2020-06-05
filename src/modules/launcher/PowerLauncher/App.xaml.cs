@@ -39,13 +39,10 @@ namespace PowerLauncher
         {
             if (SingleInstance<App>.InitializeAsFirstInstance(Unique))
             {
-                using (new UI.App())
+                using (var application = new App())
                 {
-                    using (var application = new App())
-                    {
-                        application.InitializeComponent();
-                        application.Run();
-                    }
+                    application.InitializeComponent();
+                    application.Run();
                 }
             }
         }
@@ -84,6 +81,7 @@ namespace PowerLauncher
                 // load plugin before change language, because plugin language also needs be changed
                 InternationalizationManager.Instance.Settings = _settings;
                 InternationalizationManager.Instance.ChangeLanguage(_settings.Language);
+
                 // main windows needs initialized before theme change because of blur settings
                 ThemeManager.Instance.Settings = _settings;
                 ThemeManager.Instance.ChangeTheme(_settings.Theme);
@@ -93,8 +91,9 @@ namespace PowerLauncher
                 RegisterExitEvents();
 
                 _settingsWatcher = new SettingsWatcher(_settings);
-
+                
                 _mainVM.MainWindowVisibility = Visibility.Visible;
+                _mainVM.ColdStartFix();
                 Log.Info("|App.OnStartup|End Wox startup ----------------------------------------------------  ");
 
                 bootTime.Stop();

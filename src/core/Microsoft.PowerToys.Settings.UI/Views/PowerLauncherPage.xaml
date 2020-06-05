@@ -77,7 +77,7 @@
 
             <muxc:NumberBox x:Uid="PowerLauncher_MaximumNumberOfResults" 
                             Value="{x:Bind Mode=TwoWay, Path=ViewModel.MaximumNumberOfResults}"
-                            Width="320"
+                            Width="240"
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource SmallTopMargin}"
@@ -85,12 +85,11 @@
                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
 
             <TextBlock x:Uid="PowerLauncher_Shortcuts"
-                       Width="320"
                        HorizontalAlignment="Left"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
             <Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenPowerLauncher"
-                                          Width="320"
+                                          Width="240"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}"
@@ -129,6 +128,12 @@
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideWinSKey}"
                       IsEnabled="False"
                       />-->
+
+            <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.IgnoreHotkeysInFullScreen}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+                      />
         </StackPanel>
         <StackPanel
             x:Name="SidePanel"

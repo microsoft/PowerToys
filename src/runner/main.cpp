@@ -142,7 +142,8 @@ int runner(bool isProcessElevated)
             L"FancyZones/",
             L"ImageResizer/",
             L"PowerRename/",
-            L"ShortcutGuide/"
+            L"ShortcutGuide/",
+            L"KeyboardManager/"
         };
 
         for (std::wstring subfolderName : module_folders)

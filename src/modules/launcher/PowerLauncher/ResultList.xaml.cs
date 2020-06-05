@@ -3,11 +3,11 @@
 namespace PowerLauncher
 {
     /// <summary>
-    /// Interaction logic for LauncherControl.xaml
+    /// Interaction logic for ResultList.xaml
     /// </summary>
-    public partial class LauncherControl : UserControl
+    public partial class ResultList : UserControl
     {
-        public LauncherControl()
+        public ResultList()
         {
             InitializeComponent();
         }

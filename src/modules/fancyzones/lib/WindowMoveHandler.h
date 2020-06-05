@@ -2,15 +2,18 @@
 
 interface IFancyZonesSettings;
 interface IZoneWindow;
+interface SecondaryMouseButtonsHook;
 
 class WindowMoveHandler
 {
 public:
-    WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& settings);
+    WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& settings, SecondaryMouseButtonsHook* mouseHook);
     ~WindowMoveHandler();
 
     bool InMoveSize() const noexcept;
     bool IsDragEnabled() const noexcept;
+
+    void OnMouseDown() noexcept;
 
     void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;

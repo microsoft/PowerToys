@@ -125,38 +125,6 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void FileName_ShouldNOTUpdateValue_WhenNameIsInValid ()
-        {
-            // arrange
-            ImageResizerViewModel viewModel = new ImageResizerViewModel();
-            string[] invalidNames =
-            {
-                string.Empty,
-                " ",            // no name.
-                "%1",           // single name value.
-                "%7 (%5)",      // name max index exceeded.
-                "%8 (%8)",      // name max index exceeded.
-                "%5 (%3 )",     // name contains extra spaces.
-                "%5  (%3)",     // name contains extra spaces.
-                "%5 ( %3)",     // name contains extra spaces.
-                "% 5 ( %3)",     // name contains extra spaces.
-                "%5 (% 3)",     // name contains extra spaces.
-                "%5 ( %3 )",     // name contains extra spaces.
-            };
-
-            // act and Assert
-            foreach (string invalidName in invalidNames)
-            {
-                viewModel = new ImageResizerViewModel();
-                viewModel.FileName = invalidName;
-                Assert.AreNotEqual(invalidName, viewModel.FileName);
-                
-                ImageResizerSettings settings = SettingsUtils.GetSettings<ImageResizerSettings>(Module);
-                Assert.AreNotEqual(invalidName, settings.Properties.ImageresizerFileName.Value);
-            }
-        }
-
-        [TestMethod]
         public void KeepDateModified_ShouldUpdateValue_WhenSuccessful()
         {
             // arrange
