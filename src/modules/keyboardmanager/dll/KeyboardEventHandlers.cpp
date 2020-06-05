@@ -601,4 +601,20 @@ namespace KeyboardEventHandlers
 
         return 0;
     }
+
+    // Function to ensure Num Lock state does not change when it is suppressed by the low level hook
+    void SetNumLockToPreviousState()
+    {
+        // Num Lock's key state is applied before it is intercepted by low level keyboard hooks, so we have to manually set back the state when we suppress the key. This is done by sending an additional key up, key down set of messages.
+        // We need 2 key events because after Num Lock is suppressed, key up to release num lock key and key down to revert the num lock state
+        int key_count = 2;
+        LPINPUT keyEventList = new INPUT[size_t(key_count)]();
+        memset(keyEventList, 0, sizeof(keyEventList));
+
+        // Use the shortcut flag to ensure these are not intercepted by any remapped keys or shortcuts
+        KeyboardManagerHelper::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, VK_NUMLOCK, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
+        KeyboardManagerHelper::SetKeyEvent(keyEventList, 1, INPUT_KEYBOARD, VK_NUMLOCK, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
+        UINT res = SendInput((UINT)key_count, keyEventList, sizeof(INPUT));
+        delete[] keyEventList;
+    }
 }
