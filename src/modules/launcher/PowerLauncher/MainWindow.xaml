@@ -54,10 +54,10 @@
             x:Name="SearchBoxBorder" 
             Grid.Row="0" 
             Margin="24,24,24,8"  
-            BorderThickness="0" 
+            BorderThickness="1" 
             CornerRadius="4"
             Background="{DynamicResource SystemChromeLow}"
-            BorderBrush="{DynamicResource SystemChromeLow}">
+            BorderBrush="{DynamicResource BorderBrush}">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="12" Opacity="0.3" ShadowDepth="0" />
             </Border.Effect>
@@ -75,11 +75,11 @@
             x:Name="ListBoxBorder"
             Grid.Row="1" 
             Margin="24,8,24,24" 
-            BorderThickness="0"
+            BorderThickness="1"
             CornerRadius="4" 
             Visibility="{Binding Results.Visibility}"
             Background="{DynamicResource SystemChromeLow}"
-            BorderBrush="{DynamicResource SystemChromeLow}">
+            BorderBrush="{DynamicResource BorderBrush}">
             <!--<Border.RenderTransform>
                 <TranslateTransform />
             </Border.RenderTransform>-->
