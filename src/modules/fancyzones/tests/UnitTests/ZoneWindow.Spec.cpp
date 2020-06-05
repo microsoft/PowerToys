@@ -129,7 +129,6 @@ namespace FancyZonesUnitTests
             const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
 
             Assert::IsNotNull(zoneWindow.get());
-            Assert::IsFalse(zoneWindow->IsDragEnabled());
             Assert::AreEqual(m_uniqueId.str().c_str(), zoneWindow->UniqueId().c_str());
             Assert::AreEqual(expectedWorkArea, zoneWindow->WorkAreaKey());
         }
@@ -184,7 +183,6 @@ namespace FancyZonesUnitTests
             const std::wstring expectedUniqueId = L"FallbackDevice_" + std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom) + L"_" + m_virtualDesktopId;
 
             Assert::IsNotNull(m_zoneWindow.get());
-            Assert::IsFalse(m_zoneWindow->IsDragEnabled());
             Assert::AreEqual(expectedUniqueId.c_str(), m_zoneWindow->UniqueId().c_str());
             Assert::AreEqual(expectedWorkArea, m_zoneWindow->WorkAreaKey());
             Assert::IsNull(m_zoneWindow->ActiveZoneSet());
@@ -198,7 +196,6 @@ namespace FancyZonesUnitTests
 
             const std::wstring expectedWorkArea = std::to_wstring(m_monitorInfo.rcMonitor.right) + L"_" + std::to_wstring(m_monitorInfo.rcMonitor.bottom);
             Assert::IsNotNull(m_zoneWindow.get());
-            Assert::IsFalse(m_zoneWindow->IsDragEnabled());
             Assert::IsTrue(m_zoneWindow->UniqueId().empty());
             Assert::IsNull(m_zoneWindow->ActiveZoneSet());
             Assert::IsNull(m_zoneWindow->ActiveZoneSet());
@@ -448,10 +445,9 @@ namespace FancyZonesUnitTests
             m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
             const auto expected = S_OK;
-            const auto actual = m_zoneWindow->MoveSizeEnter(Mocks::Window(), true);
+            const auto actual = m_zoneWindow->MoveSizeEnter(Mocks::Window());
 
             Assert::AreEqual(expected, actual);
-            Assert::IsTrue(m_zoneWindow->IsDragEnabled());
         }
 
         TEST_METHOD(MoveSizeEnterTwice)
@@ -460,11 +456,10 @@ namespace FancyZonesUnitTests
 
             const auto expected = E_INVALIDARG;
 
-            m_zoneWindow->MoveSizeEnter(Mocks::Window(), true);
-            const auto actual = m_zoneWindow->MoveSizeEnter(Mocks::Window(), false);
+            m_zoneWindow->MoveSizeEnter(Mocks::Window());
+            const auto actual = m_zoneWindow->MoveSizeEnter(Mocks::Window());
 
             Assert::AreEqual(expected, actual);
-            Assert::IsTrue(m_zoneWindow->IsDragEnabled());
         }
 
         TEST_METHOD(MoveSizeUpdate)
@@ -475,7 +470,6 @@ namespace FancyZonesUnitTests
             const auto actual = m_zoneWindow->MoveSizeUpdate(POINT{ 0, 0 }, true);
 
             Assert::AreEqual(expected, actual);
-            Assert::IsTrue(m_zoneWindow->IsDragEnabled());
         }
 
         TEST_METHOD(MoveSizeUpdatePointNegativeCoordinates)
@@ -486,7 +480,6 @@ namespace FancyZonesUnitTests
             const auto actual = m_zoneWindow->MoveSizeUpdate(POINT{ -10, -10 }, true);
 
             Assert::AreEqual(expected, actual);
-            Assert::IsTrue(m_zoneWindow->IsDragEnabled());
         }
 
         TEST_METHOD(MoveSizeUpdatePointBigCoordinates)
@@ -497,7 +490,6 @@ namespace FancyZonesUnitTests
             const auto actual = m_zoneWindow->MoveSizeUpdate(POINT{ m_monitorInfo.rcMonitor.right + 1, m_monitorInfo.rcMonitor.bottom + 1 }, true);
 
             Assert::AreEqual(expected, actual);
-            Assert::IsTrue(m_zoneWindow->IsDragEnabled());
         }
 
         TEST_METHOD(MoveSizeEnd)
@@ -505,7 +497,7 @@ namespace FancyZonesUnitTests
             auto zoneWindow = InitZoneWindowWithActiveZoneSet();
 
             const auto window = Mocks::Window();
-            zoneWindow->MoveSizeEnter(window, true);
+            zoneWindow->MoveSizeEnter(window);
 
             const auto expected = S_OK;
             const auto actual = zoneWindow->MoveSizeEnd(window, POINT{ 0, 0 });
@@ -522,7 +514,7 @@ namespace FancyZonesUnitTests
             auto zoneWindow = InitZoneWindowWithActiveZoneSet();
 
             const auto window = Mocks::Window();
-            zoneWindow->MoveSizeEnter(window, true);
+            zoneWindow->MoveSizeEnter(window);
 
             const auto expected = S_OK;
             const auto actual = zoneWindow->MoveSizeEnd(window, POINT{ -100, -100 });
@@ -538,7 +530,7 @@ namespace FancyZonesUnitTests
             m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
             const auto window = Mocks::Window();
-            m_zoneWindow->MoveSizeEnter(window, true);
+            m_zoneWindow->MoveSizeEnter(window);
 
             const auto expected = E_INVALIDARG;
             const auto actual = m_zoneWindow->MoveSizeEnd(Mocks::Window(), POINT{ 0, 0 });
@@ -561,7 +553,7 @@ namespace FancyZonesUnitTests
             auto zoneWindow = InitZoneWindowWithActiveZoneSet();
 
             const auto window = Mocks::Window();
-            zoneWindow->MoveSizeEnter(window, true);
+            zoneWindow->MoveSizeEnter(window);
 
             const auto expected = S_OK;
             const auto actual = zoneWindow->MoveSizeEnd(window, POINT{ -1, -1 });

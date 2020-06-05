@@ -165,7 +165,7 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
     if (m_dragEnabled)
     {
         m_zoneWindowMoveSize = iter->second;
-        m_zoneWindowMoveSize->MoveSizeEnter(window, m_dragEnabled);
+        m_zoneWindowMoveSize->MoveSizeEnter(window);
         if (m_settings->GetSettings()->showZonesOnAllMonitors)
         {
             for (auto [keyMonitor, zoneWindow] : zoneWindowMap)
@@ -236,7 +236,7 @@ void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptS
                         m_zoneWindowMoveSize->HideZoneWindow();
                     }
                     m_zoneWindowMoveSize = iter->second;
-                    m_zoneWindowMoveSize->MoveSizeEnter(m_windowMoveSize, m_zoneWindowMoveSize->IsDragEnabled());
+                    m_zoneWindowMoveSize->MoveSizeEnter(m_windowMoveSize);
                 }
 
                 for (auto [keyMonitor, zoneWindow] : zoneWindowMap)
