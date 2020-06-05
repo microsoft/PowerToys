@@ -283,6 +283,11 @@ public:
             event.wParam = wParam;
             if (keyboardmanager_object_ptr->HandleKeyboardHookEvent(&event) == 1)
             {
+                // Reset Num Lock whenever a NumLock key down event is suppressed since Num Lock key state change occurs before it is intercepted by low level hooks
+                if (event.lParam->vkCode == VK_NUMLOCK && (event.wParam == WM_KEYDOWN || event.wParam == WM_SYSKEYDOWN) && event.lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+                {
+                    KeyboardEventHandlers::SetNumLockToPreviousState();
+                }
                 return 1;
             }
         }
@@ -324,6 +329,12 @@ public:
     // Function called by the hook procedure to handle the events. This is the starting point function for remapping
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
     {
+        // If key has suppress flag, then suppress it
+        if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+        {
+            return 1;
+        }
+
         // If the Detect Key Window is currently activated, then suppress the keyboard event
         KeyboardManagerHelper::KeyboardHookDecision singleKeyRemapUIDetected = keyboardManagerState.DetectSingleRemapKeyUIBackend(data);
         if (singleKeyRemapUIDetected == KeyboardManagerHelper::KeyboardHookDecision::Suppress)

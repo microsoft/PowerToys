@@ -542,6 +542,10 @@ namespace Microsoft.Plugin.Program.Programs
                     var prefix = path.Substring(0, end);
                     var paths = new List<string> { path };
 
+                    // TODO: This value must be set in accordance to the WPF theme (work in progress).
+                    // Must be set to `contrast-white` for light theme and to `contrast-black` for dark theme to get an icon of the contrasting color.
+                    var theme = "contrast-black";
+
                     var scaleFactors = new Dictionary<PackageVersion, List<int>>
                     {
                         // scale factors on win10: https://docs.microsoft.com/en-us/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets#asset-size-tables,
@@ -555,6 +559,8 @@ namespace Microsoft.Plugin.Program.Programs
                         foreach (var factor in scaleFactors[Package.Version])
                         {
                             paths.Add($"{prefix}.scale-{factor}{extension}");
+                            paths.Add($"{prefix}.scale-{factor}_{theme}{extension}");
+                            paths.Add($"{prefix}.{theme}_scale-{factor}{extension}");
                         }
                     }
 
@@ -565,9 +571,36 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                     else
                     {
-                        ProgramLogger.LogException($"|UWP|LogoPathFromUri|{Package.Location}" +
-                                                    $"|{UserModelId} can't find logo uri for {uri} in package location: {Package.Location}", new FileNotFoundException());
-                        return string.Empty;
+                        int appIconSize = 36;
+                        var targetSizes = new List<int>{16, 24, 30, 36, 44, 60, 72, 96, 128, 180, 256}.AsParallel();
+                        Dictionary<string, int> pathFactorPairs = new Dictionary<string, int>();
+
+                        foreach (var factor in targetSizes)
+                        {
+                            string simplePath = $"{prefix}.targetsize-{factor}{extension}";
+                            string suffixThemePath = $"{prefix}.targetsize-{factor}_{theme}{extension}";
+                            string prefixThemePath = $"{prefix}.{theme}_targetsize-{factor}{extension}";
+
+                            paths.Add(simplePath);
+                            paths.Add(suffixThemePath);
+                            paths.Add(prefixThemePath);
+
+                            pathFactorPairs.Add(simplePath, factor);
+                            pathFactorPairs.Add(suffixThemePath, factor);
+                            pathFactorPairs.Add(prefixThemePath, factor);
+                        }
+
+                        var selectedIconPath = paths.OrderBy(x => Math.Abs(pathFactorPairs.GetValueOrDefault(x) - appIconSize)).FirstOrDefault(File.Exists);
+                        if (!string.IsNullOrEmpty(selectedIconPath))
+                        {
+                            return selectedIconPath;
+                        }
+                        else
+                        {
+                            ProgramLogger.LogException($"|UWP|LogoPathFromUri|{Package.Location}" +
+                                $"|{UserModelId} can't find logo uri for {uri} in package location: {Package.Location}", new FileNotFoundException());
+                            return string.Empty;
+                        }
                     }
                 }
                 else
@@ -578,7 +611,6 @@ namespace Microsoft.Plugin.Program.Programs
                     return string.Empty;
                 }
             }
-
 
             public ImageSource Logo()
             {
