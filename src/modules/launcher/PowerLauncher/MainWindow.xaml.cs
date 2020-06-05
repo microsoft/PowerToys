@@ -102,6 +102,8 @@ namespace PowerLauncher
         {
             if (Visibility == System.Windows.Visibility.Visible)
             {
+                // Not called on first launch
+                // Additionally called when deactivated by clicking on screen  
                 UpdatePosition();
                 Activate();
 
