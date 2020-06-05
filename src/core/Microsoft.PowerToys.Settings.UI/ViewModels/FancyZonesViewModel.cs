@@ -49,13 +49,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             this._makeDraggedWindowTransparent = Settings.Properties.FancyzonesMakeDraggedWindowTransparent.Value;
             this._highlightOpacity = Settings.Properties.FancyzonesHighlightOpacity.Value;
             this._excludedApps = Settings.Properties.FancyzonesExcludedApps.Value;
-            this._editorHotkey = Settings.Properties.FancyzonesEditorHotkey.Value;
+            this.EditorHotkey = Settings.Properties.FancyzonesEditorHotkey.Value;
 
             string inactiveColor = Settings.Properties.FancyzonesInActiveColor.Value;
             this._zoneInActiveColor = inactiveColor != string.Empty ? inactiveColor.ToColor() : "#F5FCFF".ToColor();
 
             string borderColor = Settings.Properties.FancyzonesBorderColor.Value;
-            this._zoneBorderColor = borderColor != string.Empty ?  borderColor.ToColor() : "#FFFFFF".ToColor();
+            this._zoneBorderColor = borderColor != string.Empty ? borderColor.ToColor() : "#FFFFFF".ToColor();
 
             string highlightColor = Settings.Properties.FancyzonesZoneHighlightColor.Value;
             this._zoneHighlightColor = highlightColor != string.Empty ? highlightColor.ToColor() : "#0078D7".ToColor();
@@ -378,8 +378,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value != _editorHotkey)
                 {
-                    _editorHotkey = value;
-                    Settings.Properties.FancyzonesEditorHotkey.Value = value;
+                    if (value.IsEmpty())
+                    {
+                        _editorHotkey = new HotkeySettings(true, false, false, false, "'", 192);
+                    }
+                    else
+                    {
+                        _editorHotkey = value;
+                    }
+
+                    Settings.Properties.FancyzonesEditorHotkey.Value = _editorHotkey;
                     RaisePropertyChanged();
                 }
             }

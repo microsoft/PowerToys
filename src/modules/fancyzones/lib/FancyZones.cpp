@@ -17,6 +17,7 @@
 #include "MonitorWorkAreaHandler.h"
 
 #include <interface/win_hook_event_data.h>
+#include <lib/SecondaryMouseButtonsHook.h>
 
 enum class DisplayChangeType
 {
@@ -32,7 +33,8 @@ public:
     FancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings) noexcept :
         m_hinstance(hinstance),
         m_settings(settings),
-        m_windowMoveHandler(settings)
+        m_mouseHook(std::bind(&FancyZones::OnMouseDown, this)),
+        m_windowMoveHandler(settings, &m_mouseHook)
     {
         m_settings->SetCallback(this);
     }
@@ -42,6 +44,14 @@ public:
     Run() noexcept;
     IFACEMETHODIMP_(void)
     Destroy() noexcept;
+
+    void OnMouseDown() noexcept
+    {
+        std::unique_lock writeLock(m_lock);
+        m_windowMoveHandler.OnMouseDown();
+
+        PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
+    }
 
     void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen) noexcept
     {
@@ -60,6 +70,7 @@ public:
         std::unique_lock writeLock(m_lock);
         m_windowMoveHandler.MoveSizeEnd(window, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId));
     }
+
     IFACEMETHODIMP_(void)
     HandleWinHookEvent(const WinHookEvent* data) noexcept
     {
@@ -213,6 +224,7 @@ private:
     HWND m_window{};
     WindowMoveHandler m_windowMoveHandler;
     MonitorWorkAreaHandler m_workAreaHandler;
+    SecondaryMouseButtonsHook m_mouseHook;
 
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
     GUID m_previousDesktopId{}; // UUID of previously active virtual desktop.
@@ -333,10 +345,10 @@ FancyZones::WindowCreated(HWND window) noexcept
                     std::vector<int> zoneIndexSet = fancyZonesData.GetAppLastZoneIndexSet(window, zoneWindow->UniqueId(), guidString.get());
                     if (zoneIndexSet.size() &&
                         !IsSplashScreen(window) &&
-                        !fancyZonesData.IsAnotherWindowOfApplicationInstanceZoned(window))
+                        !fancyZonesData.IsAnotherWindowOfApplicationInstanceZoned(window, zoneWindow->UniqueId()))
                     {
                         m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, zoneWindow);
-                        fancyZonesData.UpdateProcessIdToHandleMap(window);
+                        fancyZonesData.UpdateProcessIdToHandleMap(window, zoneWindow->UniqueId());
                     }
                 }
             }
@@ -445,9 +457,6 @@ void FancyZones::ToggleEditor() noexcept
                       } })
         .wait();
 
-    const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
-    fancyZonesData.CustomZoneSetsToJsonFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
-
     const auto taskbar_x_offset = mi.rcWork.left - mi.rcMonitor.left;
     const auto taskbar_y_offset = mi.rcWork.top - mi.rcMonitor.top;
     const auto x = mi.rcMonitor.left + taskbar_x_offset;
@@ -460,6 +469,9 @@ void FancyZones::ToggleEditor() noexcept
         std::to_wstring(width) + L"_" +
         std::to_wstring(height);
 
+    const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+    fancyZonesData.CustomZoneSetsToJsonFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
+
     const auto deviceInfo = fancyZonesData.FindDeviceInfo(zoneWindow->UniqueId());
     if (!deviceInfo.has_value())
     {
@@ -470,12 +482,10 @@ void FancyZones::ToggleEditor() noexcept
     fancyZonesData.SerializeDeviceInfoToTmpFile(deviceInfoJson, ZoneWindowUtils::GetActiveZoneSetTmpPath());
 
     const std::wstring params =
-        /*1*/ std::to_wstring(reinterpret_cast<UINT_PTR>(monitor)) + L" " +
-        /*2*/ editorLocation + L" " +
-        /*3*/ zoneWindow->WorkAreaKey() + L" " +
-        /*4*/ L"\"" + ZoneWindowUtils::GetActiveZoneSetTmpPath() + L"\" " +
-        /*5*/ L"\"" + ZoneWindowUtils::GetAppliedZoneSetTmpPath() + L"\" " +
-        /*6*/ L"\"" + ZoneWindowUtils::GetCustomZoneSetsTmpPath() + L"\"";
+        /*1*/ editorLocation + L" " +
+        /*2*/ L"\"" + ZoneWindowUtils::GetActiveZoneSetTmpPath() + L"\" " +
+        /*3*/ L"\"" + ZoneWindowUtils::GetAppliedZoneSetTmpPath() + L"\" " +
+        /*4*/ L"\"" + ZoneWindowUtils::GetCustomZoneSetsTmpPath() + L"\"";
 
     SHELLEXECUTEINFO sei{ sizeof(sei) };
     sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
@@ -851,21 +861,11 @@ void FancyZones::RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept
 {
     std::unique_lock writeLock(m_lock);
 
-    std::vector<GUID> deleted{};
-    m_workAreaHandler.RegisterUpdates(ids, deleted);
-
-    bool modified{ false };
-    for (const auto& id : deleted)
+    m_workAreaHandler.RegisterUpdates(ids);
+    std::vector<std::wstring> active{};
+    if (VirtualDesktopUtils::GetVirtualDesktopIds(active))
     {
-        wil::unique_cotaskmem_string virtualDesktopId;
-        if (SUCCEEDED(StringFromCLSID(id, &virtualDesktopId)))
-        {
-            modified |= JSONHelpers::FancyZonesDataInstance().RemoveDevicesByVirtualDesktopId(virtualDesktopId.get());
-        }
-    }
-    if (modified)
-    {
-        JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
+        JSONHelpers::FancyZonesDataInstance().RemoveDeletedDesktops(active);
     }
 }
 

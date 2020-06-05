@@ -43,7 +43,7 @@ namespace Wox.Plugin
         /// <summary>
         /// Restart Wox
         /// </summary>
-        void RestarApp();
+        void RestartApp();
 
         /// <summary>
         /// Hide Wox

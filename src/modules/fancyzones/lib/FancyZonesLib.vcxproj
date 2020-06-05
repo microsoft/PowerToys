@@ -104,6 +104,7 @@
     <ClInclude Include="MonitorWorkAreaHandler.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SecondaryMouseButtonsHook.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="util.h" />
@@ -121,6 +122,7 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="SecondaryMouseButtonsHook.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="util.cpp" />

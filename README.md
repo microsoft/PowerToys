@@ -77,7 +77,7 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 
 ### Via Github with MSI [Recommended]
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.18.1-x64.msi` to download the PowerToys installer.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.18.2-x64.msi` to download the PowerToys installer.
 
 **Note:** After installing, you will have to start PowerToys for the first time.  We will improve install experience this moving forward but due to a possible install dependency, we can't start after install currently.
 
@@ -111,7 +111,7 @@ choco upgrade powertoys
 ### Known issues
 
 - [#2012 - Uninstalling with old control panel fails](https://github.com/microsoft/PowerToys/issues/2012): Please use the modern settings to uninstall. `Windows 10 Settings -> Apps -> Apps & features`
-- [#3447 - PowerToys Settings window is empty](https://github.com/microsoft/PowerToys/issues/3447): Workaround appears to be run as admin.  We are proactively looking into this as a hotfix.
+- [#3384 - PowerToys Settings window is empty](https://github.com/microsoft/PowerToys/issues/3384): Workaround appears to be run as admin.  We are proactively looking into this as a hotfix.
 
 ### Processor support
 
