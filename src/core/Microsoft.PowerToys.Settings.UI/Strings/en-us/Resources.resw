@@ -291,7 +291,7 @@
     <value>Make dragged window transparent</value>
   </data>
   <data name="FancyZones_MouseDragCheckBoxControl_Header.Content" xml:space="preserve">
-    <value>Hold a non-primary mouse button to activate zones while dragging</value>
+    <value>Use a non-primary mouse button to toggle zone activation</value>
   </data>
   <data name="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl.Content" xml:space="preserve">
     <value>Move windows between zones across all monitors when snapping with (Win + Arrow)</value>
