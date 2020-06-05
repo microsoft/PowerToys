@@ -21,4 +21,7 @@ namespace KeyboardEventHandlers
 
     // Function to ensure Num Lock state does not change when it is suppressed by the low level hook
     void SetNumLockToPreviousState();
+
+    // Function to ensure Caps Lock state is not detected as pressed down when it is remapped
+    void ResetCapsLockKey();
 };
