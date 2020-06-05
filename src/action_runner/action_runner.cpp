@@ -186,26 +186,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
     std::wstring_view action{ args[1] };
 
-
     if (action == L"-start_PowerLauncher")
     {
-        if (is_process_elevated(false) == true)
-        {
-            drop_elevated_privileges();
-        }
-
         HANDLE hMapFile = OpenFileMappingW(FILE_MAP_WRITE, FALSE, POWER_LAUNCHER_PID_SHARED_FILE);
-        PDWORD pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
-        if (pidBuffer)
+        if (hMapFile)
         {
-            *pidBuffer = 0;
-            run_non_elevated(L"modules\\launcher\\PowerLauncher.exe", L"", pidBuffer);
-            FlushViewOfFile(pidBuffer, sizeof(DWORD));
-            UnmapViewOfFile(pidBuffer);
-        }
+            PDWORD pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
+            if (pidBuffer)
+            {
+                *pidBuffer = 0;
+                run_same_elevation(L"modules\\launcher\\PowerLauncher.exe", L"", pidBuffer);
+                FlushViewOfFile(pidBuffer, sizeof(DWORD));
+                UnmapViewOfFile(pidBuffer);
+            }
 
-        FlushFileBuffers(hMapFile);
-        CloseHandle(hMapFile);
+            FlushFileBuffers(hMapFile);
+            CloseHandle(hMapFile);
+        }
     }
     else if (action == L"-install_dotnet")
     {
