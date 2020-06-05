@@ -24,12 +24,6 @@
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         d:DataContext="{d:DesignInstance vm:MainViewModel}">
     <Window.Resources>
-        <SolidColorBrush x:Key="SystemChromeLow" Color="#FFF2F2F2" />
-        <!--"key": "SystemChromeLowColor",
-      "name": "ChromeLow",
-      "lightHex": "#FFF2F2F2",
-      "darkHex": "#FF171717"-->
-
         <CubicEase x:Key="CubicEaseOut" EasingMode="EaseOut"/>
         
         <!-- Some of the durations are different to give a 'parallax' feel (like start menu has as well) -->

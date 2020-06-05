@@ -68,6 +68,7 @@ namespace PowerLauncher
                 StringMatcher.Instance = _stringMatcher;
                 _stringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
 
+                ThemeManager themeManager = new ThemeManager(this);               
                 PluginManager.LoadPlugins(_settings.PluginSettings);
                 _mainVM = new MainViewModel(_settings);
                 var window = new MainWindow(_settings, _mainVM);
@@ -83,8 +84,6 @@ namespace PowerLauncher
                 InternationalizationManager.Instance.ChangeLanguage(_settings.Language);
 
                 // main windows needs initialized before theme change because of blur settings
-                ThemeManager.Instance.Settings = _settings;
-                ThemeManager.Instance.ChangeTheme(_settings.Theme);
 
                 Http.Proxy = _settings.Proxy;
 

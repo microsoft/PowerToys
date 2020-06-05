@@ -48,10 +48,6 @@
   <ItemGroup>
     <Page Include="App.xaml" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <Page Remove="Themes\ThemeBuilder\Template.xaml" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Fody" Version="6.1.1">
@@ -187,6 +183,27 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Themes\HighContrastBlack.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\HighContrastWhite.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\HighContrast2.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\HighContrast1.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\Dark.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\Light.xaml">
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
 
 </Project>

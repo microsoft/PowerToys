@@ -7,25 +7,24 @@
                     mc:Ignorable="options">
 
     <!--  Metadata  -->
-    <system:String x:Key="Theme.Name">Light.Accent1</system:String>
+    <system:String x:Key="Theme.Name">HighContrast.Accent4</system:String>
     <system:String x:Key="Theme.Origin">PowerToysRun</system:String>
-    <system:String x:Key="Theme.DisplayName">Accent1 (Light)</system:String>
-    <system:String x:Key="Theme.BaseColorScheme">Light</system:String>
-    <system:String x:Key="Theme.ColorScheme">Accent1</system:String>
+    <system:String x:Key="Theme.DisplayName">Accent4 (HighContrast)</system:String>
+    <system:String x:Key="Theme.BaseColorScheme">HighContrast</system:String>
+    <system:String x:Key="Theme.ColorScheme">Accent4</system:String>
     <Color x:Key="Theme.PrimaryAccentColor">White</Color>
 
-    <Color x:Key="SystemBaseMediumLowColor">#66000000</Color>
-    <SolidColorBrush x:Key="SystemChromeLow" Color="#FFF2F2F2" options:Freeze="True" />
-    <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#66000000" />
+    <Color x:Key="SystemBaseMediumLowColor">#FF000000</Color>
+    <SolidColorBrush x:Key="SystemChromeLow" Color="Green" options:Freeze="True" />
+    <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#FF000000" />
     <SolidColorBrush x:Key="TextBox.Static.Border" Color="Transparent"/>
     <SolidColorBrush x:Key="TextBox.MouseOver.Border" Color="Transparent"/>
     <SolidColorBrush x:Key="TextBox.Focus.Border" Color="Transparent"/>
-    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#2E000000" />
-    <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#61000000" />
-    <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#33000000" />
-    <SolidColorBrush x:Key="ButtonBorderPressed" Color="#61000000" />
+    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="ButtonBorderPressed" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#FF000000" />
-    <SolidColorBrush x:Key="ControlTextBrushKey" Color="Black" />
-    <SolidColorBrush x:Key="InactiveSelectionHighlightBrushKey" Color="Black" />
-
+    <SolidColorBrush x:Key="ControlTextBrushKey" Color="#FF000000" />
+    <SolidColorBrush x:Key="InactiveSelectionHighlightBrushKey" Color="#FFFFFFFF" />
 </ResourceDictionary>
