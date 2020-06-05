@@ -3,7 +3,6 @@ using Microsoft.PowerToys.Telemetry;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
@@ -43,6 +42,7 @@ namespace PowerLauncher
             if (SingleInstance<App>.InitializeAsFirstInstance(Unique))
             {
                 int.TryParse(args[0], out _powerToysPid);
+
                 using (var application = new App())
                 {
                     application.InitializeComponent();
