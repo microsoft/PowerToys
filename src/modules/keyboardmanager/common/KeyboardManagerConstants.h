@@ -79,8 +79,9 @@ namespace KeyboardManagerConstants
 
     
     // Flags used for distinguishing key events sent by Keyboard Manager
-    inline const ULONG_PTR KEYBOARDMANAGER_SINGLEKEY_FLAG = 0x11;
-    inline const ULONG_PTR KEYBOARDMANAGER_SHORTCUT_FLAG = 0x101;
+    inline const ULONG_PTR KEYBOARDMANAGER_SINGLEKEY_FLAG = 0x11; // Single key remaps
+    inline const ULONG_PTR KEYBOARDMANAGER_SHORTCUT_FLAG = 0x101; // Shortcut remaps
+    inline const ULONG_PTR KEYBOARDMANAGER_SKIP_FLAG = 0x111; // Key events which must be skipped without suppressing
 
     // Dummy key event used in between key up and down events to prevent certain global events from happening
     inline const DWORD DUMMY_KEY = 0xFF;
