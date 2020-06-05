@@ -329,7 +329,7 @@ public:
     // Function called by the hook procedure to handle the events. This is the starting point function for remapping
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
     {
-        // If key has suppress flag, the suppress it
+        // If key has suppress flag, then suppress it
         if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
         {
             return 1;

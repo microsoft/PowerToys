@@ -77,7 +77,6 @@ namespace KeyboardManagerConstants
     // Shared style constants for both Remap Table and Shortcut Table
     inline const double HeaderButtonWidth = 100;
 
-    
     // Flags used for distinguishing key events sent by Keyboard Manager
     inline const ULONG_PTR KEYBOARDMANAGER_SINGLEKEY_FLAG = 0x11; // Single key remaps
     inline const ULONG_PTR KEYBOARDMANAGER_SHORTCUT_FLAG = 0x101; // Shortcut remaps
