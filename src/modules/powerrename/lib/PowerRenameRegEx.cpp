@@ -211,9 +211,31 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result)
                 else
                 {
                     std::wsmatch m;
+                    std::wstring resultName(sourceToUse);
                     if (std::regex_search(sourceToUse, m, pattern))
                     {
-                        res = sourceToUse.replace(m.prefix().length(), m.length(), replaceTerm);
+                        res = resultName.replace(m.prefix().length(), m.length(), replaceTerm);
+
+                        for ( int i=1 ; i<m.size(); i++ )
+                        {
+                            searchTerm = wstring(L"$" + std::to_wstring(i));
+                            replaceTerm = wstring(m[i]);
+                            size_t pos = 0;
+                            do
+                            {
+                                pos = _Find(resultName, searchTerm, (!(m_flags & CaseSensitive)), pos);
+                                if (pos != std::string::npos)
+                                {
+                                    res = resultName.replace(pos, searchTerm.length(), replaceTerm);
+                                    pos += replaceTerm.length();
+                                }
+                            } while (pos != std::string::npos);
+
+                        }
+
+                        std::wregex variablesPattern(L"\\$\\d+");
+                        res = regex_replace(wstring(res), variablesPattern, L"");
+                        
                     }
                 }
             }
