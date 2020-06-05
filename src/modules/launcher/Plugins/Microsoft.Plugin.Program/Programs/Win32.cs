@@ -13,8 +13,6 @@ using Microsoft.Plugin.Program.Logger;
 using Wox.Plugin;
 using System.Windows.Input;
 using System.Reflection;
-using System.Drawing;
-using System.Security.Policy;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -33,7 +31,6 @@ namespace Microsoft.Plugin.Program.Programs
         public bool Valid { get; set; }
         public bool Enabled { get; set; }
         public string Location => ParentDirectory;
-
         public string AppType { get; set; }
 
         private const string ShortcutExtension = "lnk";
@@ -115,10 +112,7 @@ namespace Microsoft.Plugin.Program.Programs
                         AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
                         Action = _ =>
                         {
-
-
                             Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", ParentDirectory));
-
                             return true;
                         }
                     }
