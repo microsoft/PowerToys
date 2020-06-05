@@ -73,7 +73,7 @@ bool MonitorWorkAreaHandler::IsNewWorkArea(const GUID& desktopId, HMONITOR monit
     return true;
 }
 
-void MonitorWorkAreaHandler::RegisterUpdates(const std::vector<GUID>& active, std::vector<GUID>& deleted)
+void MonitorWorkAreaHandler::RegisterUpdates(const std::vector<GUID>& active)
 {
     std::unordered_set<GUID> activeVirtualDesktops(std::begin(active), std::end(active));
     for (auto desktopIt = std::begin(workAreaMap); desktopIt != std::end(workAreaMap);)
@@ -81,8 +81,7 @@ void MonitorWorkAreaHandler::RegisterUpdates(const std::vector<GUID>& active, st
         auto activeIt = activeVirtualDesktops.find(desktopIt->first);
         if (activeIt == std::end(activeVirtualDesktops))
         {
-            // register deleted virtual desktop
-            deleted.push_back(desktopIt->first);
+            // virtual desktop deleted, remove entry from the map
             desktopIt = workAreaMap.erase(desktopIt);
         }
         else
