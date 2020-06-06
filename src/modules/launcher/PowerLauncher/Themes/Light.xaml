@@ -13,7 +13,8 @@
     <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#61000000" />
     <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#33000000" />
     <SolidColorBrush x:Key="ButtonBorderPressed" Color="#61000000" />
-    <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#FF000000" />
+    <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#FFCCCCCC" />
+    <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="#FF000000" />
     <SolidColorBrush x:Key="ControlTextBrushKey" Color="Black" />
     <SolidColorBrush x:Key="InactiveSelectionHighlightBrushKey" Color="Black" />
 

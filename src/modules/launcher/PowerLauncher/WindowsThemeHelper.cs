@@ -1,12 +1,9 @@
 ﻿namespace Wox.Core.Resource
 {
     using System;
-    using System.Diagnostics;
     using System.Linq;
-    using System.Runtime.CompilerServices;
     using System.Windows;
     using System.Windows.Media;
-    using JetBrains.Annotations;
     using Microsoft.Win32;
     using Windows.UI.ViewManagement;
 
@@ -17,48 +14,43 @@
             return SystemParameters.HighContrast;
         }
 
-        [MustUseReturnValue]
         public static bool AppsUseLightTheme()
         {
-            Color? themeColor = null;
-            try
+            var uiSettings = new global::Windows.UI.ViewManagement.UISettings();
+            var themeColor = ConvertColor(uiSettings.GetColorValue(UIColorType.Background));
+            if (themeColor.Equals(Colors.White))
             {
-                var uiSettings = new global::Windows.UI.ViewManagement.UISettings();
-                themeColor = ConvertColor(uiSettings.GetColorValue(UIColorType.Background));
-                if (themeColor.Equals(Colors.White))
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            catch (Exception exception)
-            {
-                Trace.TraceError(exception.ToString());
-            }
-
-            return true;
-        }
-
-        [MustUseReturnValue]
-        public static string getAppTheme()
-        {
-            if (IsHighContrastEnabled())
-            {
-                return GetHighContrastBaseType();
+                return true;
             }
             else
             {
-                if (AppsUseLightTheme())
+                return false;
+            }
+
+        }
+
+        public static string getAppTheme()
+        {
+            try
+            {
+                if (IsHighContrastEnabled())
                 {
-                    return "Light";
+                    return GetHighContrastBaseType();
                 }
                 else
                 {
-                    return "Dark";
+                    if (AppsUseLightTheme())
+                    {
+                        return "Light";
+                    }
+                    else
+                    {
+                        return "Dark";
+                    }
                 }
+            }catch(Exception e)
+            {
+                return "Light";
             }
         }
 
@@ -80,23 +72,26 @@
                 return "";
         }
 
-        [CanBeNull]
-        [MustUseReturnValue]
-        public static Color? GetWindowsAccentColor()
+        public static Color GetWindowsAccentColor()
         {
-            Color? accentColor = null;
+            var uiSettings = new global::Windows.UI.ViewManagement.UISettings();
+            var accentColor = ConvertColor(uiSettings.GetColorValue(UIColorType.Accent));
+            return accentColor;
+        }
 
-            try
+        public static Color GetWindowsHighLightColor()
+        {
+            Color accentColor;
+            var uiSettings = new global::Windows.UI.ViewManagement.UISettings();
+            if (AppsUseLightTheme())
             {
-                var uiSettings = new global::Windows.UI.ViewManagement.UISettings();
-                accentColor = ConvertColor(uiSettings.GetColorValue(UIColorType.Accent));
-                return accentColor;
+                accentColor = ConvertColor(uiSettings.GetColorValue(UIColorType.AccentLight2));
             }
-            catch (Exception exception)
+            else
             {
-                Trace.TraceError(exception.ToString());
-            }
+                accentColor = ConvertColor(uiSettings.GetColorValue(UIColorType.AccentDark2));
 
+            }
             return accentColor;
         }
 

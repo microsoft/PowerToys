@@ -42,6 +42,7 @@ namespace Wox.Core.Resource
         public void ResetTheme()
         {
             App.Resources.MergedDictionaries[0].Source = new Uri($"/Themes/{currentTheme}.xaml", UriKind.Relative);
+            App.Resources["ListViewItemBackground"] = new SolidColorBrush(WindowsThemeHelper.GetWindowsHighLightColor());
         }
 
         private Color ConvertColor(global::Windows.UI.Color color)

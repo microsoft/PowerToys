@@ -75,14 +75,11 @@
                                 <ContentPresenter x:Name="contentPresenter" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                             </Grid>
                             <ControlTemplate.Triggers>
-                                <!-- Setting the opacity of the highlight border to improve the contrast of the AccentColorbrush when selected. In UWP we could call a different brush, in WPF we need to play with the opacity of the WindowGlassBrush-->
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Opacity" TargetName="HighlightBorder" Value="0.1" />
                                     <Setter Property="Background" TargetName="HighlightBorder" Value="{DynamicResource ListViewItemBackgroundPointerOver}"/>
                                 </Trigger>
                                 <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Opacity" TargetName="HighlightBorder" Value="0.4" />
-                                    <Setter Property="Background" TargetName="HighlightBorder" Value="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}"/>
+                                    <Setter Property="Background" TargetName="HighlightBorder" Value="{DynamicResource ListViewItemBackground}"/>
                                     <!-- Accent color brush -->
                                 </Trigger>
                             </ControlTemplate.Triggers>
