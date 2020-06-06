@@ -74,10 +74,11 @@
         </Border>
         <Border 
             x:Name="ListBoxBorder"
-            Grid.Row="1" 
+            Grid.Row="1"
+            ClipToBounds="True"
             Margin="24,8,24,24" 
             BorderThickness="0"
-            CornerRadius="8" 
+            CornerRadius="4" 
             Visibility="{Binding Results.Visibility}"
             Background="{DynamicResource SystemChromeLow}"
             BorderBrush="{DynamicResource SystemChromeLow}">

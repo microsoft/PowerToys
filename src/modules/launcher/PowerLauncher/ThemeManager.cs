@@ -1,11 +1,10 @@
 ﻿using Microsoft.Win32;
+using PowerLauncher;
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
-using System.Windows.Threading;
-using Windows.UI.ViewManagement;
 
 namespace Wox.Core.Resource
 {
@@ -15,6 +14,7 @@ namespace Wox.Core.Resource
         {
             get => WindowsThemeHelper.getAppTheme();
         }
+
         private readonly Application App;
         
         public ThemeManager(Application app)
@@ -41,7 +41,8 @@ namespace Wox.Core.Resource
 
         public void ResetTheme()
         {
-            App.Resources.MergedDictionaries[0].Source = new Uri($"/Themes/{currentTheme}.xaml", UriKind.Relative);
+            var dict = App.Resources.MergedDictionaries.First(c => ResourceDictionaryExtensions.GetName(c) == "Theme");
+            dict.Source = new Uri($"/Themes/{currentTheme}.xaml", UriKind.Relative);
             App.Resources["ListViewItemBackground"] = new SolidColorBrush(WindowsThemeHelper.GetWindowsHighLightColor());
         }
 
