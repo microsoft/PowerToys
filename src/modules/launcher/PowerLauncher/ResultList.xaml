@@ -15,36 +15,12 @@
                 <ResourceDictionary Source="pack://application:,,,/Styles/UWPScrollBarStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>-->
 
-
-            <!-- These colors are based on the UWP XAML resources -->
-
-            <!-- Dark theme (a.k.a. "Default") -->
-            <!--<SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#30FFFFFF" />
-        <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#61FFFFFF" />
-        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#30FFFFFF" />
-        <SolidColorBrush x:Key="ButtonBorderPressed" Color="#61FFFFFF" />
-        <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#FFFFFFFF" />-->
-
-            <!-- Light theme -->
-            <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#2E000000" />
-            <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#61000000" />
-            <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#33000000" />
-            <SolidColorBrush x:Key="ButtonBorderPressed" Color="#61000000" />
-            <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#FF000000" />
-
-            <!-- High contrast -->
-            <!--<SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#33FFFFFF" />
-        <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#66FFFFFF" />
-        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#33FFFFFF" />
-        <SolidColorBrush x:Key="ButtonBorderPressed" Color="#66FFFFFF" />-->
-
-
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <Style x:Key="FocusVisual">
                 <Setter Property="Control.Template">
                     <Setter.Value>
                         <ControlTemplate>
-                            <Rectangle Margin="2" StrokeDashArray="1 2" SnapsToDevicePixels="true" StrokeThickness="1" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                            <Rectangle Margin="2" StrokeDashArray="1 2" SnapsToDevicePixels="true" StrokeThickness="1" Stroke="{DynamicResource ControlTextBrushKey}"/>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
@@ -52,7 +28,7 @@
 
             <Style x:Key="IconButtonStyle" TargetType="{x:Type Button}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
-                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                <Setter Property="Foreground" Value="{DynamicResource ControlTextBrushKey}"/>
                 <Setter Property="BorderThickness" Value="1"/>
                 <Setter Property="HorizontalContentAlignment" Value="Center"/>
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -89,6 +65,7 @@
 
             <Style x:Key="ResultsListViewItemContainerStyle"  TargetType="ListViewItem">
                 <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{DynamicResource ControlTextBrushKey}" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ListViewItem}">

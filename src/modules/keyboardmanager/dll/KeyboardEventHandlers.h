@@ -19,4 +19,7 @@ namespace KeyboardEventHandlers
 
     // Function to a handle an app-specific shortcut remap
     __declspec(dllexport) intptr_t HandleAppSpecificShortcutRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, KeyboardManagerState& keyboardManagerState) noexcept;
+
+    // Function to ensure Num Lock state does not change when it is suppressed by the low level hook
+    void SetNumLockToPreviousState(InputInterface& ii);
 };
