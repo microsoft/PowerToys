@@ -26,7 +26,7 @@
     <SolidColorBrush x:Key="ButtonBorderPressed" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#FF0000ff" />
     <SolidColorBrush x:Key="ControlTextBrushKey" Color="#FF00ff00" />
-    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#6f6f6f" />
+    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#FFc0c0c0" />
     <SolidColorBrush x:Key="InactiveSelectionHighlightBrushKey" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="BorderBrush" Color="White" />
 </ResourceDictionary>
