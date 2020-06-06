@@ -18,6 +18,7 @@
         AllowsTransparency="True"
         Loaded="OnLoaded"
         Closing="OnClosing"
+        RenderOptions.ClearTypeHint="Enabled"
         Background="Transparent"
         LocationChanged="OnLocationChanged"
         Deactivated="OnDeactivated"
@@ -76,7 +77,7 @@
             Grid.Row="1" 
             Margin="24,8,24,24" 
             BorderThickness="0"
-            CornerRadius="4" 
+            CornerRadius="8" 
             Visibility="{Binding Results.Visibility}"
             Background="{DynamicResource SystemChromeLow}"
             BorderBrush="{DynamicResource SystemChromeLow}">

@@ -7,6 +7,7 @@
     xmlns:Behaviors="http://schemas.microsoft.com/xaml/behaviors"
     mc:Ignorable="d"    
     d:DesignHeight="300"
+    RenderOptions.ClearTypeHint="Enabled"
     d:DesignWidth="720">
 
     <UserControl.Resources>
