@@ -25,7 +25,7 @@ namespace Microsoft.Plugin.Shell
 {
     public class Main : IPlugin, ISettingProvider, IPluginI18n, IContextMenu, ISavable
     {
-        private const string Image = "Images/shell.png";
+        private const string Image = "Images/shell.dark.png";
         private PluginInitContext _context;
         private bool _winRStroked;
         private readonly KeyboardSimulator _keyboardSimulator = new KeyboardSimulator(new InputSimulator());

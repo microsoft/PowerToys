@@ -36,6 +36,11 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Images\calculator.dark.png" />
+    <None Remove="Images\calculator.light.png" />
+  </ItemGroup>
   
   <ItemGroup>
     <None Include="plugin.json">
@@ -49,12 +54,12 @@
   </ItemGroup>
   
   <ItemGroup>
-    <None Include="Images\calculator.png">
+    <Content Include="Images\calculator.dark.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  
-  <ItemGroup>
+    </Content>
+    <Content Include="Images\calculator.light.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Languages\en.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

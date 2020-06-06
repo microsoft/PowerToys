@@ -36,6 +36,11 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Images\windowwalker.dark.png" />
+    <None Remove="Images\windowwalker.light.png" />
+  </ItemGroup>
   
   <ItemGroup>
     <None Include="plugin.json">
@@ -49,12 +54,12 @@
   </ItemGroup>
   
   <ItemGroup>
-    <None Include="Images\windowwalker.png">
+    <Content Include="Images\windowwalker.dark.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  
-  <ItemGroup>
+    </Content>
+    <Content Include="Images\windowwalker.light.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Languages\en.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

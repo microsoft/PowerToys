@@ -38,6 +38,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Images\indexer.dark.png" />
+    <None Remove="Images\indexer.light.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Images\indexer.dark.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\indexer.light.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.Data.OleDb" Version="4.7.1" />
     <PackageReference Include="tlbimp-Microsoft.Search.Interop" Version="1.0.0" />
   </ItemGroup>
@@ -48,9 +62,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Images\WindowsIndexerImg.bmp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="plugin.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

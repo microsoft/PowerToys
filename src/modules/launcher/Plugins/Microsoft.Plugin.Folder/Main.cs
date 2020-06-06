@@ -15,10 +15,10 @@ namespace Microsoft.Plugin.Folder
 {
     public class Main : IPlugin, ISettingProvider, IPluginI18n, ISavable, IContextMenu
     {
-        public const string FolderImagePath = "Images\\folder.png";
-        public const string FileImagePath = "Images\\file.png";
-        public const string DeleteFileFolderImagePath = "Images\\deletefilefolder.png";
-        public const string CopyImagePath = "Images\\copy.png";
+        public const string FolderImagePath = "Images\\folder.dark.png";
+        public const string FileImagePath = "Images\\file.dark.png";
+        public const string DeleteFileFolderImagePath = "Images\\delete.dark.png";
+        public const string CopyImagePath = "Images\\copy.dark.png";
 
         private const string _fileExplorerProgramName = "explorer";
         private static List<string> _driverNames;

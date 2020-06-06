@@ -52,7 +52,7 @@ namespace Microsoft.Plugin.Calculator
                         new Result
                         {
                             Title = result.ToString(),
-                            IcoPath = "Images/calculator.png",
+                            IcoPath = "Images/calculator.dark.png",
                             Score = 300,
                             SubTitle = Context.API.GetTranslation("wox_plugin_calculator_copy_number_to_clipboard"),
                             Action = c =>

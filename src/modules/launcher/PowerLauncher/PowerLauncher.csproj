@@ -44,6 +44,29 @@
   <ItemGroup>
     <ApplicationDefinition Remove="App.xaml" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="app.png" />
+    <None Remove="Images\app.light.png" />
+    <None Remove="Images\app.light1.png" />
+    <None Remove="Images\app_error.dark.png" />
+    <None Remove="Images\app_error.light.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="app.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\app.light.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\app_error.dark.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\app_error.light.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   
   <ItemGroup>
     <Page Include="App.xaml" />
@@ -80,15 +103,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Images\app.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <Resource Include="Images\app.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <None Update="Images\app_error.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="Images\Browser.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

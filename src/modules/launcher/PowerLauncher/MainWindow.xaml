@@ -14,7 +14,7 @@
         WindowStartupLocation="Manual"
         AllowDrop="True"
         ShowInTaskbar="False"
-        Icon="Images/app.png"
+        Icon="Images/app.dark.png"
         AllowsTransparency="True"
         Loaded="OnLoaded"
         Closing="OnClosing"

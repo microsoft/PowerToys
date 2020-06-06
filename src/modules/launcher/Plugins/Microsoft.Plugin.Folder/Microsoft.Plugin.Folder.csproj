@@ -36,6 +36,19 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Images\copy.dark.png" />
+    <None Remove="Images\copy.light.png" />
+    <None Remove="Images\delete.dark.png" />
+    <None Remove="Images\delete.light.png" />
+    <None Remove="Images\file.dark.png" />
+    <None Remove="Images\file.light.png" />
+    <None Remove="Images\folder.dark.png" />
+    <None Remove="Images\folder.light.png" />
+    <None Remove="Images\user.dark.png" />
+    <None Remove="Images\user.light.png" />
+  </ItemGroup>
   
   <ItemGroup>
     <None Include="plugin.json">
@@ -48,18 +61,36 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <None Include="Images\copy.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Images\deletefilefolder.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <Content Include="Images\file.png">
+    <Content Include="Images\copy.dark.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="Images\user.png">
+    <Content Include="Images\copy.light.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\delete.dark.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\delete.light.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\file.dark.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    </Content>
+    <Content Include="Images\file.light.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\folder.dark.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\folder.light.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\user.dark.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\user.light.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Languages\en.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -96,12 +127,6 @@
     <ProjectReference Include="..\..\..\..\core\Microsoft.PowerToys.Settings.UI.Lib\Microsoft.PowerToys.Settings.UI.Lib.csproj" />
     <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <None Include="Images\folder.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <ItemGroup>

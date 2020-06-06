@@ -37,6 +37,19 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Images\app.dark.png" />
+    <None Remove="Images\app.light.png" />
+    <None Remove="Images\disable.dark.png" />
+    <None Remove="Images\disable.light.png" />
+    <None Remove="Images\folder.dark.png" />
+    <None Remove="Images\folder.light.png" />
+    <None Remove="Images\shell.dark.png" />
+    <None Remove="Images\shell.light.png" />
+    <None Remove="Images\user.dark.png" />
+    <None Remove="Images\user.light.png" />
+  </ItemGroup>
   
   <ItemGroup>
     <None Include="plugin.json">
@@ -45,21 +58,36 @@
   </ItemGroup>
   
   <ItemGroup>
-    <None Include="Images\program.png">
+    <Content Include="Images\app.dark.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Images\cmd.png">
+    </Content>
+    <Content Include="Images\app.light.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Images\folder.png">
+    </Content>
+    <Content Include="Images\disable.dark.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Images\disable.png">
+    </Content>
+    <Content Include="Images\disable.light.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Images\user.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    </Content>
+    <Content Include="Images\folder.dark.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\folder.light.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\shell.dark.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\shell.light.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\user.dark.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\user.light.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Languages\en.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

@@ -8,7 +8,7 @@ namespace Microsoft.Plugin.WindowWalker
     public class Main : IPlugin, IPluginI18n
     {
         private static List<SearchResult> _results = new List<SearchResult>();
-        private static string IcoPath = "Images/windowwalker.png";
+        private static string IcoPath = "Images/windowwalker.dark.png";
         private PluginInitContext Context { get; set; }
 
         static Main()
