@@ -55,10 +55,10 @@
   
   <ItemGroup>
     <Content Include="Images\windowwalker.dark.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\windowwalker.light.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Languages\en.xaml">
       <Generator>MSBuild:Compile</Generator>

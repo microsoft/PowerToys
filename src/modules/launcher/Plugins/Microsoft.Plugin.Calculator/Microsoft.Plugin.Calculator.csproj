@@ -55,10 +55,10 @@
   
   <ItemGroup>
     <Content Include="Images\calculator.dark.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\calculator.light.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Languages\en.xaml">
       <Generator>MSBuild:Compile</Generator>
