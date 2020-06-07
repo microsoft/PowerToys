@@ -24,7 +24,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Thumb}">
-                    <Border x:Name="ThumbBorder" CornerRadius="2" Background="{DynamicResource ThumbBrush}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" HorizontalAlignment="Right" Width="4" Margin="0,0,-1,0">
+                    <Border x:Name="ThumbBorder" CornerRadius="2" Background="{DynamicResource ThumbBrush}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" HorizontalAlignment="Right" Width="4" Margin="0,1,0,1">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates" >
                                 <VisualStateGroup.Transitions>
