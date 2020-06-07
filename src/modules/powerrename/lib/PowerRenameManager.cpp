@@ -895,21 +895,43 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 }
                                 else if (newNameToUse != nullptr && flags & Titlecase)
                                 {
-                                    // Add advances titlesation
-                                    if ( !(flags & ExtensionOnly) ){
-                                        int resultNameLength = wcslen(resultName);
-                                        for (int i = 0; i < resultNameLength; i++)
+                                    if ( !(flags & ExtensionOnly) )
+                                    {
+                                        std::vector<std::wstring> exceptions = { L"a", L"an", L"to", L"the", L"at", L"by", L"for", L"in", L"of", L"on", L"up", L"and", L"as", L"but", L"or", L"nor" }; 
+                                        std::wstring stem = fs::path(resultName).stem().wstring();
+                                        std::wstring extension = fs::path(resultName).extension().wstring();
+
+                                        int stemLength = stem.length();
+                                        bool isFirstWord = true;
+                                        for (int i = 0; i < stemLength; i++)
                                         {
-                                            if (!i || iswspace(resultName[i - 1]))
+                                            if (!i || iswspace(stem[i-1]) || iswpunct(stem[i-1]))
                                             {
-                                                transformedName[i] = towupper(resultName[i]);
+                                                if (iswspace(stem[i]) || iswpunct(stem[i]))
+                                                {
+                                                    continue;
+                                                }
+                                                int wordLength = 0 ;
+                                                while (i + wordLength < stemLength && !iswspace(stem[i + wordLength]) && !iswpunct(stem[i + wordLength]))
+                                                {
+                                                    wordLength++;
+                                                }
+                                                if (isFirstWord || i + wordLength == stemLength || std::find(exceptions.begin(), exceptions.end(), stem.substr(i, wordLength)) == exceptions.end())
+                                                {
+                                                    stem[i] = towupper(stem[i]);
+                                                    isFirstWord = false;
+                                                }
+                                                else
+                                                {
+                                                    stem[i] = towlower(stem[i]);
+                                                }
                                             }
                                             else
                                             {
-                                                transformedName[i] = towlower(resultName[i]);
+                                                stem[i] = towlower(stem[i]);
                                             }
                                         }
-                                        transformedName[resultNameLength] = '\0';
+                                        StringCchPrintf(transformedName, ARRAYSIZE(transformedName), L"%s%s", stem.c_str(), extension.c_str());
                                     }
                                     else {
                                         StringCchCopy(transformedName, ARRAYSIZE(transformedName), resultName);
