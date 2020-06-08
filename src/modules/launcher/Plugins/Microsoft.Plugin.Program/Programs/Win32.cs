@@ -452,9 +452,9 @@ namespace Microsoft.Plugin.Program.Programs
                         .Distinct()
                         .ToArray();
 
-            var programs1 = paths.AsParallel().Where(p => Extension(p) == ShortcutExtension).Select(LnkProgram);
-            var programs2 = paths.AsParallel().Where(p => Extension(p) == ApplicationReferenceExtension).Select(Win32Program);
-            var programs3 = paths.AsParallel().Where(p => Extension(p) == InternetShortcutExtension).Select(InternetShortcutProgram);
+            var programs1 = paths.AsParallel().Where(p => Extension(p).Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(LnkProgram);
+            var programs2 = paths.AsParallel().Where(p => Extension(p).Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase)).Select(Win32Program);
+            var programs3 = paths.AsParallel().Where(p => Extension(p).Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(InternetShortcutProgram);
 
             return programs1.Concat(programs2).Where(p => p.Valid).Concat(programs3).Where(p => p.Valid);
         }
