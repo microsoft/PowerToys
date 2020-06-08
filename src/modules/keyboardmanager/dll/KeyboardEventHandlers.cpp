@@ -32,10 +32,10 @@ namespace KeyboardEventHandlers
                     target = VK_LWIN;
                 }
 
-                // If the key being remapped is Caps Lock, then reset the key state to fix issues in certain IME keyboards where the IME shortcut gets invoked since it detects that Caps Lock is pressed even though it is suppressed by the hook - More information at the GitHub issue https://github.com/microsoft/PowerToys/issues/3397
-                if (data->lParam->vkCode == VK_CAPITAL && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+                // If Ctrl/Alt/Shift is being remapped to Caps Lock, then reset the modifier key state to fix issues in certain IME keyboards where the IME shortcut gets invoked since it detects that the modifier and Caps Lock is pressed even though it is suppressed by the hook - More information at the GitHub issue https://github.com/microsoft/PowerToys/issues/3397
+                if (target == VK_CAPITAL && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
                 {
-                    ResetCapsLockKey();
+                    ResetIfModifierKeyForLowerLevelKeyHandlers(it->first);
                 }
 
                 if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
@@ -50,6 +50,13 @@ namespace KeyboardEventHandlers
                 lock.unlock();
                 UINT res = SendInput(key_count, keyEventList, sizeof(INPUT));
                 delete[] keyEventList;
+
+                // If Caps Lock is being remapped to Ctrl/Alt/Shift, then reset the modifier key state to fix issues in certain IME keyboards where the IME shortcut gets invoked since it detects that the modifier and Caps Lock is pressed even though it is suppressed by the hook - More information at the GitHub issue https://github.com/microsoft/PowerToys/issues/3397
+                if (it->first == VK_CAPITAL && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+                {
+                    ResetIfModifierKeyForLowerLevelKeyHandlers(target);
+                }
+
                 return 1;
             }
         }
@@ -624,16 +631,20 @@ namespace KeyboardEventHandlers
         delete[] keyEventList;
     }
 
-    // Function to ensure Caps Lock state is not detected as pressed down when it is remapped
-    void ResetCapsLockKey()
+    // Function to ensure Ctrl/Shift/Alt modifier key state is not detected as pressed down by applications which detect keys at a lower level than hooks when it is remapped
+    void ResetIfModifierKeyForLowerLevelKeyHandlers(DWORD key)
     {
-        int key_count = 1;
-        LPINPUT keyEventList = new INPUT[size_t(key_count)]();
-        memset(keyEventList, 0, sizeof(keyEventList));
+        // If the argument is either of the Ctrl/Shift/Alt modifier key codes
+        if (KeyboardManagerHelper::IsModifierKey(key) && !(key == VK_LWIN || key == VK_RWIN || key == CommonSharedConstants::VK_WIN_BOTH))
+        {
+            int key_count = 1;
+            LPINPUT keyEventList = new INPUT[size_t(key_count)]();
+            memset(keyEventList, 0, sizeof(keyEventList));
 
-        // Use the suppress flag to ensure these are not intercepted by any remapped keys or shortcuts
-        KeyboardManagerHelper::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, VK_CAPITAL, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
-        UINT res = SendInput((UINT)key_count, keyEventList, sizeof(INPUT));
-        delete[] keyEventList;
+            // Use the suppress flag to ensure these are not intercepted by any remapped keys or shortcuts
+            KeyboardManagerHelper::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)key, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
+            UINT res = SendInput((UINT)key_count, keyEventList, sizeof(INPUT));
+            delete[] keyEventList;
+        }
     }
 }
