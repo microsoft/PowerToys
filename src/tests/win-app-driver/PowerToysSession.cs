@@ -265,7 +265,10 @@ namespace PowerToysTests
         {
             try
             {
-                _initialSettings = File.ReadAllText(_settingsPath);
+                if (_initialSettings.Length == 0)
+                {
+                    _initialSettings = File.ReadAllText(_settingsPath);
+                }
             }
             catch (Exception)
             {
@@ -274,7 +277,10 @@ namespace PowerToysTests
 
             try
             {
-                _initialZoneSettings = File.ReadAllText(_zoneSettingsPath);
+                if (_initialZoneSettings.Length == 0)
+                {
+                    _initialZoneSettings = File.ReadAllText(_zoneSettingsPath);
+                }
             }
             catch (Exception)
             {
