@@ -145,8 +145,14 @@ public:
       else
       {
           std::wstring action_runner_path = get_module_folderpath();
-          action_runner_path += L"\\action_runner.exe";
 
+          std::wstring params;
+          params += L"-run-non-elevated ";
+          params += L"-target modules\\launcher\\PowerLauncher.exe ";
+          params += L"-pidFile ";
+          params += POWER_LAUNCHER_PID_SHARED_FILE;
+
+          action_runner_path += L"\\action_runner.exe";
           // Set up the shared file from which to retrieve the PID of PowerLauncher
           HANDLE hMapFile = CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(DWORD), POWER_LAUNCHER_PID_SHARED_FILE);
           if (hMapFile)
@@ -157,9 +163,9 @@ public:
                   *pidBuffer = 0;
                   m_hProcess = NULL;
 
-                  if (run_non_elevated(action_runner_path, L"-start_PowerLauncher", nullptr))
+                  if (run_non_elevated(action_runner_path, params, pidBuffer))
                   {
-                      const int maxRetries = 20;
+                      const int maxRetries = 80;
                       for (int retry = 0; retry < maxRetries; ++retry)
                       {
                           Sleep(50);
