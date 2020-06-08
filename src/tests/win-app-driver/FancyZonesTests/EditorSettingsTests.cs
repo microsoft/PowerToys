@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -179,6 +179,9 @@ namespace PowerToysTests
         public static void ClassInitialize(TestContext context)
         {
             Setup(context, false);
+            if (session == null)
+                return;
+
             ResetSettings();
         }
 
