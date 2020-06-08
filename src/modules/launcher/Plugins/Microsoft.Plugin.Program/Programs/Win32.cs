@@ -213,6 +213,8 @@ namespace Microsoft.Plugin.Program.Programs
             const string steamScheme = "steam";
             const string urlPrefix = "URL=";
             const string iconFilePrefix = "IconFile=";
+            const string hostnameRun = "run";
+            const string hostnameRunGameId = "rungameid";
 
             foreach(string line in lines)
             {
@@ -221,7 +223,10 @@ namespace Microsoft.Plugin.Program.Programs
                     var urlPath = line.Substring(urlPrefix.Length);
                     Uri uri = new Uri(urlPath);
 
-                    if(uri.Scheme.Equals(steamScheme, StringComparison.InvariantCultureIgnoreCase))
+                    // To filter out only those steam shortcuts which have 'run' or 'rungameid' as the hostname
+                    if(uri.Scheme.Equals(steamScheme, StringComparison.OrdinalIgnoreCase)
+                        && (uri.Host.Equals(hostnameRun, StringComparison.OrdinalIgnoreCase)
+                        || uri.Host.Equals(hostnameRunGameId, StringComparison.OrdinalIgnoreCase)))
                     {
                         validApp = true;
                     }
