@@ -32,23 +32,28 @@ namespace PowerToysTests
 
         public static void Setup(TestContext context, bool isLaunchRequired = true)
         {
-            ReadUserSettings(); //read settings before running tests to restore them after
-
             if (session == null)
             {
+                ReadUserSettings(); //read settings before running tests to restore them after
+
                 // Create a new Desktop session to use PowerToys.
                 AppiumOptions appiumOptions = new AppiumOptions();
                 appiumOptions.PlatformName = "Windows";
                 appiumOptions.AddAdditionalCapability("app", "Root");
-                session = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), appiumOptions);
-                Assert.IsNotNull(session);
-
-                trayButton = session.FindElementByAccessibilityId("1502");
-
-                isPowerToysLaunched = CheckPowerToysLaunched();
-                if (!isPowerToysLaunched && isLaunchRequired)
+                try
                 {
-                    LaunchPowerToys();
+                    session = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), appiumOptions);
+                    trayButton = session.FindElementByAccessibilityId("1502");
+
+                    isPowerToysLaunched = CheckPowerToysLaunched();
+                    if (!isPowerToysLaunched && isLaunchRequired)
+                    {
+                        LaunchPowerToys();
+                    }
+                } 
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
                 }
             }
         }
@@ -125,19 +130,33 @@ namespace PowerToysTests
 
         public static void OpenSettings()
         {
-            trayButton.Click();
-            session.FindElementByXPath("//Button[@Name=\"PowerToys\"]").Click();
-            trayButton.Click();
+            try
+            {
+                trayButton.Click();
+                session.FindElementByXPath("//Button[@Name=\"PowerToys\"]").Click();
+                trayButton.Click();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
         public static void OpenFancyZonesSettings()
         {
-            WindowsElement fzNavigationButton = WaitElementByXPath("//Button[@Name=\"FancyZones\"]");
-            Assert.IsNotNull(fzNavigationButton);
+            try
+            {
+                WindowsElement fzNavigationButton = WaitElementByXPath("//Button[@Name=\"FancyZones\"]");
+                Assert.IsNotNull(fzNavigationButton);
 
-            fzNavigationButton.Click();
-            fzNavigationButton.Click();
-        }
+                fzNavigationButton.Click();
+                fzNavigationButton.Click();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+}
 
         public static void CloseSettings()
         {
@@ -149,28 +168,27 @@ namespace PowerToysTests
                     settings.SendKeys(Keys.Alt + Keys.F4);
                 }
             }
-            catch(Exception)
+            catch (Exception ex)
             {
-
+                Console.WriteLine(ex.Message);
             }
         }
 
         private static bool CheckPowerToysLaunched()        
         {
-            trayButton.Click();
             bool isLaunched = false;
-
             try
             {
+                trayButton.Click();
                 WindowsElement pt = WaitElementByXPath("//Button[@Name=\"PowerToys\"]");
                 isLaunched = (pt != null);
+                trayButton.Click(); //close
             }
             catch(OpenQA.Selenium.WebDriverException)
             {
                 //PowerToys not found
             }
-
-            trayButton.Click(); //close
+                        
             return isLaunched;
         }
 
@@ -197,15 +215,20 @@ namespace PowerToysTests
 
         public static void ExitPowerToys()
         {
-            trayButton.Click();
-
-            WindowsElement pt = WaitElementByXPath("//Button[@Name=\"PowerToys\"]");
-            if (pt != null)
+            try
             {
+                trayButton.Click();
+
+                WindowsElement pt = WaitElementByXPath("//Button[@Name=\"PowerToys\"]");
                 new Actions(session).MoveToElement(pt).ContextClick().Perform();
+
                 WaitElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
                 trayButton.Click(); //close tray
                 isPowerToysLaunched = false;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
         }
 
