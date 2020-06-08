@@ -200,12 +200,13 @@ namespace PowerToysTests
             trayButton.Click();
 
             WindowsElement pt = WaitElementByXPath("//Button[@Name=\"PowerToys\"]");
-            Assert.IsNotNull(pt, "Couldn't find \'PowerToys\' button");
-            new Actions(session).MoveToElement(pt).ContextClick().Perform();
-            
-            WaitElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
-            trayButton.Click(); //close tray
-            isPowerToysLaunched = false;
+            if (pt != null)
+            {
+                new Actions(session).MoveToElement(pt).ContextClick().Perform();
+                WaitElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
+                trayButton.Click(); //close tray
+                isPowerToysLaunched = false;
+            }
         }
 
         public static void ResetDefaultFancyZonesSettings(bool relaunch)
