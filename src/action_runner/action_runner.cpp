@@ -188,11 +188,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     if (action == L"-run-non-elevated")
     {
-        if (is_process_elevated(false) == true)
-        {
-            drop_elevated_privileges();
-        }
-
         int nextArg = 2;
 
         std::wstring_view target;
@@ -222,18 +217,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         if (!pidFile.empty())
         {
             hMapFile = OpenFileMappingW(FILE_MAP_WRITE, FALSE, pidFile.data());
-            pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
+            if (hMapFile)
+            {
+                pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
+                if (pidBuffer)
+                {
+                    *pidBuffer = 0;
+                }
+            }
         }
 
-        run_non_elevated(target.data(), L"", pidBuffer);
+        run_same_elevation(target.data(), L"", pidBuffer);
         
         // cleanup
         if (!pidFile.empty())
         {
-            FlushViewOfFile(pidBuffer, sizeof(DWORD));
-            UnmapViewOfFile(pidBuffer);
-            FlushFileBuffers(hMapFile);
-            CloseHandle(hMapFile);
+            if (pidBuffer)
+            {
+                FlushViewOfFile(pidBuffer, sizeof(DWORD));
+                UnmapViewOfFile(pidBuffer);
+            }
+
+            if (hMapFile)
+            {
+                FlushFileBuffers(hMapFile);
+                CloseHandle(hMapFile);
+            }
         }
     }
     else if (action == L"-install_dotnet")

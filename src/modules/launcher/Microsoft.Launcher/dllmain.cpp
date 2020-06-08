@@ -163,9 +163,9 @@ public:
                   *pidBuffer = 0;
                   m_hProcess = NULL;
 
-                  if (run_non_elevated(action_runner_path, L"-start_PowerLauncher", nullptr))
+                  if (run_non_elevated(action_runner_path, params, pidBuffer))
                   {
-                      const int maxRetries = 20;
+                      const int maxRetries = 80;
                       for (int retry = 0; retry < maxRetries; ++retry)
                       {
                           Sleep(50);
