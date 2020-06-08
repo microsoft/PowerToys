@@ -1,3 +1,3 @@
-# moved to wiki
+# This file has been moved
 
-[FancyZone Overview](https://github.com/microsoft/PowerToys/wiki/FancyZones-Overview)
+[FancyZone Overview](https://aka.ms/PowerToysOverview_FancyZones)
