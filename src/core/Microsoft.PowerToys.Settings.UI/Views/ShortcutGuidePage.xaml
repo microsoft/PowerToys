@@ -110,7 +110,7 @@
 
             <Image MaxWidth="240" Source="https://raw.githubusercontent.com/microsoft/PowerToys/dev/build-features/doc/images/shortcut_guide/usage.png" />
 
-            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/shortcut_guide/README.md">
+            <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ShortcutGuide">
                 <TextBlock x:Uid="Module_overview"/>
             </HyperlinkButton>
 

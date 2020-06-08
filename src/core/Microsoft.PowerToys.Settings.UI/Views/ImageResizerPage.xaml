@@ -280,7 +280,7 @@
                 Style="{StaticResource SettingsGroupTitleStyle}"
                 Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/imageresizer/README.md">
+            <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ImageResizer">
                 <TextBlock x:Uid="Module_overview" />
             </HyperlinkButton>
 
