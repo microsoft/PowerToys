@@ -11,11 +11,10 @@
 
 #include <common/common.h>
 #include <common/dpi_aware.h>
-
 #include <common/winstore.h>
 #include <common/notifications.h>
-
 #include <common/updating/updating.h>
+#include <common/RestartManagement.h>
 
 #include "update_state.h"
 #include "update_utils.h"
@@ -33,72 +32,14 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-const wchar_t ExplorerProcessName[] = L"explorer.exe";
-const wchar_t PTUpdateMessageBoxTitle[] = L"PowerToys";
-const wchar_t PTUpdateMessageBoxText[] = L"PowerToys was updated and some components require Windows Explorer to restart. Do you want to restart Windows Explorer now?";
-
-void GetProcessInfo(const std::wstring& processName, std::vector<RM_UNIQUE_PROCESS>& processInfos)
-{
-    DWORD bytesReturned{};
-    std::vector<DWORD> processIds{};
-    processIds.resize(1024);
-    DWORD processIdSize{ (DWORD)processIds.size() * sizeof(DWORD) };
-    EnumProcesses(processIds.data(), processIdSize, &bytesReturned);
-    while (bytesReturned == processIdSize)
-    {
-        processIdSize += processIdSize;
-        processIds.resize(processIdSize / sizeof(DWORD));
-        EnumProcesses(processIds.data(), processIdSize, &bytesReturned);
-    }
-    for (const DWORD& processId : processIds)
-    {
-        HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processId);
-        if (hProcess)
-        {
-            wchar_t name[MAX_PATH];
-            if (GetProcessImageFileName(hProcess, name, MAX_PATH) > 0)
-            {
-                if (wcscmp(processName.c_str(), PathFindFileName(name)) == 0)
-                {
-                    FILETIME creationTime{};
-                    FILETIME exitTime{};
-                    FILETIME kernelTime{};
-                    FILETIME userTime{};
-                    if (GetProcessTimes(hProcess, &creationTime, &exitTime, &kernelTime, &userTime))
-                    {
-                        processInfos.push_back({ processId, creationTime });
-                    }
-                }
-            }
-            CloseHandle(hProcess);
-        }
-    }
-}
-
-void RestartProcess(const std::wstring& processName)
-{
-    DWORD sessionHandle{};
-    WCHAR sessionKey[CCH_RM_SESSION_KEY + 1];
-    if (RmStartSession(&sessionHandle, 0, sessionKey) != ERROR_SUCCESS)
-    {
-        return;
-    }
-    std::vector<RM_UNIQUE_PROCESS> pInfo{};
-    GetProcessInfo(processName, pInfo);
-    if (pInfo.empty() ||
-        RmRegisterResources(sessionHandle, 0, nullptr, 1, pInfo.data(), 0, nullptr) != ERROR_SUCCESS)
-    {
-        return;
-    }
-    RmShutdown(sessionHandle, RmForceShutdown, nullptr);
-    RmRestart(sessionHandle, 0, nullptr);
-    RmEndSession(sessionHandle);
-}
-
 namespace localized_strings
 {
     const wchar_t MSI_VERSION_IS_ALREADY_RUNNING[] = L"An older version of PowerToys is already running.";
     const wchar_t OLDER_MSIX_UNINSTALLED[] = L"An older MSIX version of PowerToys was uninstalled.";
+    const wchar_t EXPLORER_PROCESS_NAME[] = L"explorer.exe";
+    const wchar_t PT_UPDATE_MESSAGE_BOX_TITLE[] = L"PowerToys";
+    const wchar_t PT_UPDATE_MESSAGE_BOX_TEXT[] = L"PowerToys was updated and some components require Windows Explorer to restart. Do you want to restart Windows Explorer now?";
+
 }
 
 namespace
@@ -314,14 +255,14 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     }
 }
 
-void OnSuccessfulUpdate()
+void RequestExplorerRestart()
 {
     if (MessageBox(nullptr,
-                   PTUpdateMessageBoxText,
-                   PTUpdateMessageBoxTitle,
+                   localized_strings::PT_UPDATE_MESSAGE_BOX_TEXT,
+                   localized_strings::PT_UPDATE_MESSAGE_BOX_TITLE,
                    MB_ICONINFORMATION | MB_YESNO | MB_DEFBUTTON1) == IDYES)
     {
-        RestartProcess(ExplorerProcessName);
+        RestartProcess(localized_strings::EXPLORER_PROCESS_NAME);
     }
 }
 
@@ -349,7 +290,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             return 0;
         }
     case SpecialMode::ReportSuccessfulUpdate:
-        OnSuccessfulUpdate();
+        RequestExplorerRestart();
         break;
 
     case SpecialMode::None:
