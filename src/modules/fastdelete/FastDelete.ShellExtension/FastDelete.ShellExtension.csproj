@@ -7,6 +7,7 @@
 
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FastDelete</OutputPath>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <EnableComHosting>true</EnableComHosting>
   </PropertyGroup>
 
 </Project>
