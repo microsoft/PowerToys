@@ -119,6 +119,19 @@ public:
               g_settings.enabled = *v;
             }
 
+            if (g_settings.enabled)
+            {
+                HKEY key;
+                LONG err = RegCreateKeyExW(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\PowerToys FastDelete", 0, nullptr, 0, KEY_WRITE, nullptr, &key, nullptr);
+
+                if (err == ERROR_SUCCESS)
+                {
+                    DWORD value = g_settings.enabled ? 0x1 : 0x0;
+                    RegSetValueExW(key, L"Enabled", 0, REG_DWORD, (const BYTE *)&value, sizeof(value));
+                    RegCloseKey(key);
+                }
+            }
+
             values.save_to_settings_file();
         }
         catch (std::exception&)
