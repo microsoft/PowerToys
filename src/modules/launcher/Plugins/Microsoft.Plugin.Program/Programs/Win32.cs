@@ -38,7 +38,7 @@ namespace Microsoft.Plugin.Program.Programs
         private const string ExeExtension = "exe";
         private const string InternetShortcutExtension = "url";
 
-        private const string InternetShortcutApplication = "Internet Shortcut application";
+        private const string InternetShortcutApplication = "Internet shortcut application";
         private const string Win32Application = "Win32 application";
 
         private int Score(string query)
