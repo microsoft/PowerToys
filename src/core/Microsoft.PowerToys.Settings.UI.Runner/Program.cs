@@ -80,6 +80,9 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
         }
 
         [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, int processId);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
         private static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
 
         internal static void WaitForPowerToysRunner()
@@ -88,8 +91,9 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
             {
                 const uint INFINITE = 0xFFFFFFFF;
                 const uint WAIT_OBJECT_0 = 0x00000000;
+                const uint ProcessAccessFlagSynchronize = 0x00100000;
 
-                IntPtr powerToysProcHandle = Process.GetProcessById(Program.PowerToysPID).Handle;
+                IntPtr powerToysProcHandle = OpenProcess(ProcessAccessFlagSynchronize, false, PowerToysPID);
                 if (WaitForSingleObject(powerToysProcHandle, INFINITE) == WAIT_OBJECT_0)
                 {
                     Environment.Exit(0);
