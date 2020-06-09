@@ -31,6 +31,7 @@ namespace Microsoft.Plugin.Program.Programs
         public bool Valid { get; set; }
         public bool Enabled { get; set; }
         public bool hasArguments { get; set; } = false;
+        public string Arguments { get; set; } = String.Empty;
         public string Location => ParentDirectory;
         public string AppType { get; set; }
 
@@ -68,18 +69,22 @@ namespace Microsoft.Plugin.Program.Programs
             else
             {
                 // To Filter PWAs when the user searches for the main application
-                string edgePWA = "msedge_proxy.exe";
-                string chromePWA = "chrome_proxy.exe";
-                bool isAppPWA = FullPath.Contains(edgePWA) || FullPath.Contains(chromePWA);
+                // All Chromium based applications contain the --app-id argument
+                // Reference : https://codereview.chromium.org/399045/show
+                string proxyWebApp = "_proxy.exe";
+                string appIdArgument = "--app-id";
+                bool isWebApplication = FullPath.Contains(proxyWebApp) && Arguments.Contains(appIdArgument);
 
-                if(isAppPWA && 
+                // Condition to Filter pinned Web Applications or PWAs when searching for the main application
+                if(isWebApplication && 
                     FullPath.Contains(query, StringComparison.OrdinalIgnoreCase) &&
                     !Name.Contains(query, StringComparison.OrdinalIgnoreCase))
                 {
                     return null;
                 }
 
-                if(isAppPWA)
+                // Set the subtitle to 'Web Application'
+                if(isWebApplication)
                 {
                     AppType = ProgressiveWebApplication;
                 }
@@ -316,6 +321,7 @@ namespace Microsoft.Plugin.Program.Programs
                         program.FullPath = Path.GetFullPath(target).ToLower();
                         program.ExecutableName = Path.GetFileName(target);
                         program.hasArguments = _helper.hasArguments;
+                        program.Arguments = _helper.Arguments;
 
                         var description = _helper.description;
                         if (!string.IsNullOrEmpty(description))
