@@ -62,7 +62,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             IStream stream;
             const uint noAttribute = 0x80;
-            const Stgm exclusiveRead = Stgm.Read | Stgm.ShareExclusive;
+            const Stgm exclusiveRead = Stgm.Read | Stgm.DenyWrite;
             var hResult = SHCreateStreamOnFileEx(path, exclusiveRead, noAttribute, false, null, out stream);
 
             if (hResult == Hresult.Ok)
@@ -198,9 +198,8 @@ namespace Microsoft.Plugin.Program.Programs
                     try
                     {
                         var f = p.IsFramework;
-                        var d = p.IsDevelopmentMode;
                         var path = p.InstalledLocation.Path;
-                        valid = !f && !d && !string.IsNullOrEmpty(path);
+                        valid = !f && !string.IsNullOrEmpty(path);
                     }
                     catch (Exception e)
                     {
@@ -653,7 +652,7 @@ namespace Microsoft.Plugin.Program.Programs
         private enum Stgm : uint
         {
             Read = 0x0,
-            ShareExclusive = 0x10,
+            DenyWrite = 0x20,
         }
 
         private enum Hresult : uint
