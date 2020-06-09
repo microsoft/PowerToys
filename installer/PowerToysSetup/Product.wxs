@@ -801,7 +801,7 @@
         </File>
 
         <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\Directory\shell\FastDelete">
-          <RegistryValue Name="" Value="Fast Delete" Type="string" />
+          <RegistryValue Value="Fast Delete" Type="string" />
 
           <RegistryKey Key="command">
             <RegistryValue Name="DelegateExecute" Value="{1e1ecd14-ecd9-4eec-8bd4-02dad39ea829}" Type="string" />
