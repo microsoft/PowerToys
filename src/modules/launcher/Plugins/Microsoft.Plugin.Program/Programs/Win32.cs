@@ -41,6 +41,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         private const string InternetShortcutApplication = "Internet Shortcut application";
         private const string Win32Application = "Win32 application";
+        private const string ProgressiveWebApplication = "Progressive Web application";
 
         private int Score(string query)
         {
@@ -67,13 +68,22 @@ namespace Microsoft.Plugin.Program.Programs
             else
             {
                 // To Filter PWAs when the user searches for the main application
-                string pwaExecutableString = "_proxy.exe";
-                if(FullPath.Contains(pwaExecutableString) && 
+                string edgePWA = "msedge_proxy.exe";
+                string chromePWA = "chrome_proxy.exe";
+                bool isAppPWA = FullPath.Contains(edgePWA) || FullPath.Contains(chromePWA);
+
+                if(isAppPWA && 
                     FullPath.Contains(query, StringComparison.OrdinalIgnoreCase) &&
                     !Name.Contains(query, StringComparison.OrdinalIgnoreCase))
                 {
                     return null;
                 }
+
+                if(isAppPWA)
+                {
+                    AppType = ProgressiveWebApplication;
+                }
+
             }
 
             var result = new Result
