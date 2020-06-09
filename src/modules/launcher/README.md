@@ -1,3 +1,3 @@
 # This file has been moved
 
-[Keyboard Manager Overview](https://aka.ms/PowerToysOverview_PowerToysRun)
+[PowerToys Run Overview](https://aka.ms/PowerToysOverview_PowerToysRun)
