@@ -25,6 +25,7 @@ namespace FancyZonesEditor
             ActiveZoneSetTmpFile,
             AppliedZoneSetTmpFile,
             CustomZoneSetsTmpFile,
+            PowerToysPID,
         }
 
         private static CanvasLayoutModel _blankCustomModel;
@@ -242,6 +243,13 @@ namespace FancyZonesEditor
 
         private static string _customZoneSetsTmpFile;
 
+        public static int PowerToysPID
+        {
+            get { return _powerToysPID; }
+        }
+
+        private static int _powerToysPID;
+
         // UpdateLayoutModels
         // Update the five default layouts based on the new ZoneCount
         private void UpdateLayoutModels()
@@ -410,7 +418,7 @@ namespace FancyZonesEditor
             WorkArea = SystemParameters.WorkArea;
 
             string[] args = Environment.GetCommandLineArgs();
-            if (args.Length == 5)
+            if (args.Length == 6)
             {
                 var parsedLocation = args[(int)CmdArgs.X_Y_Width_Height].Split('_');
                 var x = int.Parse(parsedLocation[0]);
@@ -423,6 +431,8 @@ namespace FancyZonesEditor
                 _activeZoneSetTmpFile = args[(int)CmdArgs.ActiveZoneSetTmpFile];
                 _appliedZoneSetTmpFile = args[(int)CmdArgs.AppliedZoneSetTmpFile];
                 _customZoneSetsTmpFile = args[(int)CmdArgs.CustomZoneSetsTmpFile];
+
+                int.TryParse(args[(int)CmdArgs.PowerToysPID], out _powerToysPID);
 
                 ParseDeviceInfoData();
             }
