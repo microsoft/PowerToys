@@ -78,6 +78,8 @@ namespace PowerLauncher
             ListBox.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
             ListBox.SuggestionsList.PreviewMouseLeftButtonUp += SuggestionsList_PreviewMouseLeftButtonUp;
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+
+            Activate();
         }
 
         private void SuggestionsList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -98,32 +100,16 @@ namespace PowerLauncher
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
+            if (Visibility == System.Windows.Visibility.Visible)
             {
-                if (Visibility == System.Windows.Visibility.Visible)
+                // Not called on first launch
+                // Additionally called when deactivated by clicking on screen  
+                UpdatePosition();
+                Activate();
+
+                if (!_viewModel.LastQuerySelected)
                 {
-                    _deletePressed = false;
-                    _firstDeleteTimer.Start();
-                    Activate();
-                    //(this.FindResource("IntroStoryboard") as Storyboard).Begin();
-
-                    UpdatePosition();
-                    SearchBox.QueryTextBox.Focus();
-                    _settings.ActivateTimes++;
-
-                    if (!_viewModel.LastQuerySelected)
-                    {
-                        _viewModel.LastQuerySelected = true;
-                    }
-
-                    if (!String.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
-                    {
-                        SearchBox.QueryTextBox.SelectAll();
-                    }
-                }
-                else
-                {
-                    _firstDeleteTimer.Stop();
+                    _viewModel.LastQuerySelected = true;
                 }
             }
             else if (e.PropertyName == nameof(MainViewModel.SystemQueryText))
@@ -331,9 +317,28 @@ namespace PowerLauncher
             }
         }
 
-        private void Window_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        private void OnVisibilityChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("Changed");
+            if (Visibility == Visibility.Visible)
+            {
+                _deletePressed = false;
+                _firstDeleteTimer.Start();
+                // (this.FindResource("IntroStoryboard") as Storyboard).Begin();
+
+                SearchBox.QueryTextBox.Focus();
+                Keyboard.Focus(SearchBox.QueryTextBox);
+
+                _settings.ActivateTimes++;
+
+                if (!String.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
+                {
+                    SearchBox.QueryTextBox.SelectAll();
+                }
+            }
+            else
+            {
+                _firstDeleteTimer.Stop();
+            }
         }
 
         private void OutroStoryboard_Completed(object sender, EventArgs e)
