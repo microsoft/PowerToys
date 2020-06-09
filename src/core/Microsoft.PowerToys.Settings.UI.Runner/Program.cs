@@ -91,9 +91,9 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
             {
                 const uint INFINITE = 0xFFFFFFFF;
                 const uint WAIT_OBJECT_0 = 0x00000000;
-                const uint ProcessAccessFlagSynchronize = 0x00100000;
+                const uint SYNCHRONIZE = 0x00100000;
 
-                IntPtr powerToysProcHandle = OpenProcess(ProcessAccessFlagSynchronize, false, PowerToysPID);
+                IntPtr powerToysProcHandle = OpenProcess(SYNCHRONIZE, false, PowerToysPID);
                 if (WaitForSingleObject(powerToysProcHandle, INFINITE) == WAIT_OBJECT_0)
                 {
                     Environment.Exit(0);

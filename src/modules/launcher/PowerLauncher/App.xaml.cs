@@ -129,9 +129,9 @@ namespace PowerLauncher
             {
                 const uint INFINITE = 0xFFFFFFFF;
                 const uint WAIT_OBJECT_0 = 0x00000000;
-                const uint ProcessAccessFlagSynchronize = 0x00100000;
+                const uint SYNCHRONIZE = 0x00100000;
 
-                IntPtr powerToysProcHandle = OpenProcess(ProcessAccessFlagSynchronize, false, _powerToysPid);
+                IntPtr powerToysProcHandle = OpenProcess(SYNCHRONIZE, false, _powerToysPid);
                 if (WaitForSingleObject(powerToysProcHandle, INFINITE) == WAIT_OBJECT_0)
                 {
                     Environment.Exit(0);
