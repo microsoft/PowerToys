@@ -32,9 +32,9 @@
             this.footerPanel1 = new FastDelete.ShellExtension.FooterPanel();
             this.mConfirmButton = new System.Windows.Forms.Button();
             this.mCancelButton = new System.Windows.Forms.Button();
-            this.mInsructionLabel = new Sunburst.SharingManager.Controls.MainInstructionLabel();
+            this.mInstructionLabel = new Sunburst.SharingManager.Controls.MainInstructionLabel();
             this.mConfirmationLabel = new System.Windows.Forms.Label();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.mProgressBar = new System.Windows.Forms.ProgressBar();
             this.tableLayoutPanel1.SuspendLayout();
             this.footerPanel1.SuspendLayout();
             this.SuspendLayout();
@@ -44,9 +44,9 @@
             this.tableLayoutPanel1.ColumnCount = 1;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.Controls.Add(this.footerPanel1, 0, 3);
-            this.tableLayoutPanel1.Controls.Add(this.mInsructionLabel, 0, 0);
+            this.tableLayoutPanel1.Controls.Add(this.mInstructionLabel, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.mConfirmationLabel, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.progressBar1, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.mProgressBar, 0, 2);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -88,6 +88,7 @@
             this.mConfirmButton.TabIndex = 0;
             this.mConfirmButton.Text = "&Delete";
             this.mConfirmButton.UseVisualStyleBackColor = true;
+            this.mConfirmButton.Click += new System.EventHandler(this.mConfirmButton_Click);
             // 
             // mCancelButton
             // 
@@ -100,16 +101,17 @@
             this.mCancelButton.TabIndex = 1;
             this.mCancelButton.Text = "C&ancel";
             this.mCancelButton.UseVisualStyleBackColor = true;
+            this.mCancelButton.Click += new System.EventHandler(this.mCancelButton_Click);
             // 
-            // mInsructionLabel
+            // mInstructionLabel
             // 
-            this.mInsructionLabel.AutoSize = true;
-            this.mInsructionLabel.Location = new System.Drawing.Point(24, 24);
-            this.mInsructionLabel.Margin = new System.Windows.Forms.Padding(24);
-            this.mInsructionLabel.Name = "mInsructionLabel";
-            this.mInsructionLabel.Size = new System.Drawing.Size(566, 45);
-            this.mInsructionLabel.TabIndex = 1;
-            this.mInsructionLabel.Text = "Are you sure you want to delete \"%1\"?";
+            this.mInstructionLabel.AutoSize = true;
+            this.mInstructionLabel.Location = new System.Drawing.Point(24, 24);
+            this.mInstructionLabel.Margin = new System.Windows.Forms.Padding(24);
+            this.mInstructionLabel.Name = "mInstructionLabel";
+            this.mInstructionLabel.Size = new System.Drawing.Size(566, 45);
+            this.mInstructionLabel.TabIndex = 1;
+            this.mInstructionLabel.Text = "Are you sure you want to delete \"%1\"?";
             // 
             // mConfirmationLabel
             // 
@@ -124,17 +126,17 @@
             this.mConfirmationLabel.Text = "This operation cannot be undone. The contents of this folder will not be moved to" +
     " the Recycle Bin.";
             // 
-            // progressBar1
+            // mProgressBar
             // 
-            this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.mProgressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar1.Location = new System.Drawing.Point(24, 229);
-            this.progressBar1.Margin = new System.Windows.Forms.Padding(24);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(930, 46);
-            this.progressBar1.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
-            this.progressBar1.TabIndex = 3;
-            this.progressBar1.Visible = false;
+            this.mProgressBar.Location = new System.Drawing.Point(24, 229);
+            this.mProgressBar.Margin = new System.Windows.Forms.Padding(24);
+            this.mProgressBar.Name = "mProgressBar";
+            this.mProgressBar.Size = new System.Drawing.Size(930, 46);
+            this.mProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            this.mProgressBar.TabIndex = 3;
+            this.mProgressBar.Visible = false;
             // 
             // FastDeleteForm
             // 
@@ -152,6 +154,7 @@
             this.MinimumSize = new System.Drawing.Size(1004, 521);
             this.Name = "FastDeleteForm";
             this.Text = "Fast Delete";
+            this.Load += new System.EventHandler(this.FastDeleteForm_Load);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.footerPanel1.ResumeLayout(false);
@@ -165,8 +168,8 @@
         private FooterPanel footerPanel1;
         private System.Windows.Forms.Button mConfirmButton;
         private System.Windows.Forms.Button mCancelButton;
-        private Sunburst.SharingManager.Controls.MainInstructionLabel mInsructionLabel;
+        private Sunburst.SharingManager.Controls.MainInstructionLabel mInstructionLabel;
         private System.Windows.Forms.Label mConfirmationLabel;
-        private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.ProgressBar mProgressBar;
     }
 }
