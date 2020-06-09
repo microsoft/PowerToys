@@ -149,6 +149,7 @@ private:
     bool CalculateCustomLayout(Rect workArea, int spacing) noexcept;
     bool CalculateGridZones(Rect workArea, JSONHelpers::GridLayoutInfo gridLayoutInfo, int spacing);
     void StampWindow(HWND window, size_t bitmask) noexcept;
+    void SaveWindowSize(HWND window) noexcept;
 
     std::vector<winrt::com_ptr<IZone>> m_zones;
     std::map<HWND, std::vector<int>> m_windowIndexSet;
@@ -303,6 +304,7 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::v
 
     if (!sizeEmpty)
     {
+        SaveWindowSize(window);
         SizeWindowToRect(window, size);
         StampWindow(window, bitmask);
     }
@@ -699,4 +701,23 @@ void ZoneSet::StampWindow(HWND window, size_t bitmask) noexcept
 winrt::com_ptr<IZoneSet> MakeZoneSet(ZoneSetConfig const& config) noexcept
 {
     return winrt::make_self<ZoneSet>(config);
+}
+
+void ZoneSet::SaveWindowSize(HWND window) noexcept
+{
+    HANDLE handle = GetPropW(window, RESTORE_SIZE_STAMP);
+    if (handle)
+    {
+        // Size already set, skip
+        return;
+    }
+
+    RECT rect;
+    if (GetWindowRect(window, &rect))
+    {
+        std::pair<UINT, UINT> windowSizeData = { rect.right - rect.left, rect.bottom - rect.top };
+        HANDLE rawData;
+        memcpy(&rawData, &windowSizeData, sizeof rawData);
+        SetPropW(window, RESTORE_SIZE_STAMP, rawData);
+    }
 }

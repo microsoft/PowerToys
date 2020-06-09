@@ -1,6 +1,7 @@
 #pragma once
 
 #define MULTI_ZONE_STAMP L"FancyZones_zones"
+#define RESTORE_SIZE_STAMP L"FancyZones_RestoreSize"
 #include <common/settings_objects.h>
 
 struct Settings

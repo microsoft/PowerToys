@@ -296,15 +296,23 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
     else
     {
         ::RemoveProp(window, MULTI_ZONE_STAMP);
+
         // restore size?
         {
-            auto windowSizeData = GetPropW(window, L"FancyZones_RestoreSize"); // move string outta here
-            std::pair<UINT, UINT> windowSize;
-            memcpy(&windowSize, &windowSizeData, sizeof windowSize);
+            auto windowSizeData = GetPropW(window, RESTORE_SIZE_STAMP);
+            if (windowSizeData)
+            {
+                std::pair<UINT, UINT> windowSize;
+                memcpy(&windowSize, &windowSizeData, sizeof windowSize);
 
-            PRECT rect;
-            // GetWindowRect(window, )
-            // SizeWindowToRect()
+                RECT rect;
+                if (GetWindowRect(window, &rect))
+                {
+                    rect.right = rect.left + windowSize.first;
+                    rect.bottom = rect.top + windowSize.second;
+                    SizeWindowToRect(window, rect);
+                }
+            }
         }
 
         auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
