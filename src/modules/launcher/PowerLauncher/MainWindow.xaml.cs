@@ -26,7 +26,7 @@ namespace PowerLauncher
         private readonly Storyboard _progressBarStoryboard = new Storyboard();
         private Settings _settings;
         private MainViewModel _viewModel;
-        private bool _isTextSetProgramatically;
+        private bool _isTextSetProgrammatically;
         bool _deletePressed = false;
         Timer _firstDeleteTimer = new Timer();
 
@@ -128,7 +128,7 @@ namespace PowerLauncher
             }
             else if (e.PropertyName == nameof(MainViewModel.SystemQueryText))
             {
-                this._isTextSetProgramatically = true;
+                this._isTextSetProgrammatically = true;
                 SearchBox.QueryTextBox.Text = _viewModel.SystemQueryText;
             }
         }
@@ -290,11 +290,11 @@ namespace PowerLauncher
         }
         private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {          
-            if (_isTextSetProgramatically)
+            if (_isTextSetProgrammatically)
             {
                 var textBox = ((TextBox)sender);
                 textBox.SelectionStart = textBox.Text.Length;
-                _isTextSetProgramatically = false;
+                _isTextSetProgrammatically = false;
             }
             else
             {
