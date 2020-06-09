@@ -153,6 +153,7 @@
             this.MinimizeBox = false;
             this.MinimumSize = new System.Drawing.Size(1004, 521);
             this.Name = "FastDeleteForm";
+            this.ShowInTaskbar = false;
             this.Text = "Fast Delete";
             this.Load += new System.EventHandler(this.FastDeleteForm_Load);
             this.tableLayoutPanel1.ResumeLayout(false);
