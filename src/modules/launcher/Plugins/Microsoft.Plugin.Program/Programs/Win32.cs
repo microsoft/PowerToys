@@ -476,9 +476,9 @@ namespace Microsoft.Plugin.Program.Programs
                 int fullPathPrime = 31;
 
                 int result = 1;
-                result = result * namePrime + obj.Name.GetHashCode();
-                result = result * executablePrime + obj.ExecutableName.GetHashCode();
-                result = result * fullPathPrime + obj.FullPath.GetHashCode();
+                result = result * namePrime + obj.Name.ToLowerInvariant().GetHashCode();
+                result = result * executablePrime + obj.ExecutableName.ToLowerInvariant().GetHashCode();
+                result = result * fullPathPrime + obj.FullPath.ToLowerInvariant().GetHashCode();
 
                 return result;
             }
