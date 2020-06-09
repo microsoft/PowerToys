@@ -54,7 +54,7 @@ public:
     static std::vector<DWORD> GetKeysFromStackPanel(StackPanel parent);
 
     // Function to check if a modifier has been repeated in the previous drop downs
-    static bool CheckRepeatedModifier(StackPanel parent, uint32_t dropDownIndex, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList);
+    static bool CheckRepeatedModifier(StackPanel parent, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList);
 
     // Function to set the warning message
     void SetDropDownError(ComboBox currentDropDown, hstring message);

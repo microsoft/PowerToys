@@ -152,11 +152,11 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
             // If it is the last drop down
             else if (dropDownIndex == parent.Children().Size() - 1)
             {
-                // If last drop down and a modifier is selected: add a new drop down (max of 5 drop downs should be enforced)
+                // If last drop down and a modifier is selected: add a new drop down (max drop down count should be enforced)
                 if (KeyboardManagerHelper::IsModifierKey(keyCodeList[selectedKeyIndex]) && parent.Children().Size() < KeyboardManagerConstants::MaxShortcutSize)
                 {
                     // If it matched any of the previous modifiers then reset that drop down
-                    if (CheckRepeatedModifier(parent, dropDownIndex, selectedKeyIndex, keyCodeList))
+                    if (CheckRepeatedModifier(parent, selectedKeyIndex, keyCodeList))
                     {
                         // warn and reset the drop down
                         errorType = KeyboardManagerHelper::ErrorType::ShortcutCannotHaveRepeatedModifier;
@@ -187,7 +187,7 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
                 if (KeyboardManagerHelper::IsModifierKey(keyCodeList[selectedKeyIndex]))
                 {
                     // If it matched any of the previous modifiers then reset that drop down
-                    if (CheckRepeatedModifier(parent, dropDownIndex, selectedKeyIndex, keyCodeList))
+                    if (CheckRepeatedModifier(parent, selectedKeyIndex, keyCodeList))
                     {
                         // warn and reset the drop down
                         errorType = KeyboardManagerHelper::ErrorType::ShortcutCannotHaveRepeatedModifier;
@@ -302,7 +302,7 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
 void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutControl, StackPanel parent, int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects)
 {
     auto onSelectionChange = [&, table, shortcutControl, colIndex, parent](winrt::Windows::Foundation::IInspectable const& sender) {
-        std::pair<KeyboardManagerHelper::ErrorType, int> validationResult = ValidateShortcutSelection(table, shortcutControl, parent, colIndex, shortcutRemapBuffer,keyDropDownControlObjects);
+        std::pair<KeyboardManagerHelper::ErrorType, int> validationResult = ValidateShortcutSelection(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects);
 
         // Check if the drop down row index was identified from the return value of validateSelection
         if (validationResult.second != -1)
@@ -401,15 +401,27 @@ std::vector<DWORD> KeyDropDownControl::GetKeysFromStackPanel(StackPanel parent)
 }
 
 // Function to check if a modifier has been repeated in the previous drop downs
-bool KeyDropDownControl::CheckRepeatedModifier(StackPanel parent, uint32_t dropDownIndex, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList)
+bool KeyDropDownControl::CheckRepeatedModifier(StackPanel parent, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList)
 {
     // check if modifier has already been added before in a previous drop down
     std::vector<DWORD> currentKeys = GetKeysFromStackPanel(parent);
+    int currentDropDownIndex = -1;
+
+    // Find the key index of the current drop down selection so that we skip that index while searching for repeated modifiers
+    for (int i = 0; i < currentKeys.size(); i++)
+    {
+        if (currentKeys[i] == keyCodeList[selectedKeyIndex])
+        {
+            currentDropDownIndex = i;
+            break;
+        }
+    }
+
     bool matchPreviousModifier = false;
     for (int i = 0; i < currentKeys.size(); i++)
     {
         // Skip the current drop down
-        if (i != dropDownIndex)
+        if (i != currentDropDownIndex)
         {
             // If the key type for the newly added key matches any of the existing keys in the shortcut
             if (KeyboardManagerHelper::GetKeyType(keyCodeList[selectedKeyIndex]) == KeyboardManagerHelper::GetKeyType(currentKeys[i]))
