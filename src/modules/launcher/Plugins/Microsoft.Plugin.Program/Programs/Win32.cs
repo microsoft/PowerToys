@@ -41,7 +41,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         private const string InternetShortcutApplication = "Internet Shortcut application";
         private const string Win32Application = "Win32 application";
-        private const string ProgressiveWebApplication = "Progressive Web application";
+        private const string ProgressiveWebApplication = "Web application";
 
         private int Score(string query)
         {
