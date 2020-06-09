@@ -789,11 +789,11 @@
   <Fragment>
     <ComponentGroup Id="FastDeleteComponents">
       <Component Directory="FastDeleteInstallFolder">
-        <File Source="$(var.BinX64Dir)modules\FastDelete.ShellExtension\FastDelete.dll" />
-        <File Source="$(var.BinX64Dir)modules\FastDelete.ShellExtension\netcoreapp3.1\FastDelete.ShellExtension.dll" />
-        <File Source="$(var.BinX64Dir)modules\FastDelete.ShellExtension\netcoreapp3.1\FastDelete.ShellExtension.deps.json" />
-        <File Source="$(var.BinX64Dir)modules\FastDelete.ShellExtension\netcoreapp3.1\FastDelete.ShellExtension.runtimeconfig.json" />
-        <File Source="$(var.BinX64Dir)modules\FastDelete.ShellExtension\netcoreapp3.1\FastDelete.ShellExtension.comhost.dll">
+        <File Source="$(var.BinX64Dir)modules\FastDelete\FastDelete.dll" />
+        <File Source="$(var.BinX64Dir)modules\FastDelete\netcoreapp3.1\FastDelete.ShellExtension.dll" />
+        <File Source="$(var.BinX64Dir)modules\FastDelete\netcoreapp3.1\FastDelete.ShellExtension.deps.json" />
+        <File Source="$(var.BinX64Dir)modules\FastDelete\netcoreapp3.1\FastDelete.ShellExtension.runtimeconfig.json" />
+        <File Source="$(var.BinX64Dir)modules\FastDelete\netcoreapp3.1\FastDelete.ShellExtension.comhost.dll">
           <AppId Advertise="no" Id="ee6b98b3-1786-4b23-b2a4-b3eefaf2768a" DllSurrogate="">
             <Class Advertise="no" Id="1e1ecd14-ecd9-4eec-8bd4-02dad39ea829" ThreadingModel="apartment"
                    Context="InprocServer32" Version="1.0" />
