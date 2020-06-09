@@ -5,7 +5,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <Platforms>x64</Platforms>
 
-    <BaseOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FastDelete</BaseOutputPath>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FastDelete</OutputPath>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
