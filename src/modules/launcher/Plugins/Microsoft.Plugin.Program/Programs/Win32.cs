@@ -60,6 +60,17 @@ namespace Microsoft.Plugin.Program.Programs
                 var noArgumentScoreModifier = 5;
                 score += noArgumentScoreModifier;
             }
+            else
+            {
+                // To Filter PWAs when the user searches for the main application
+                string pwaExecutableString = "_proxy.exe";
+                if(FullPath.Contains(pwaExecutableString) && 
+                    FullPath.Contains(query, StringComparison.OrdinalIgnoreCase) &&
+                    !Name.Contains(query, StringComparison.OrdinalIgnoreCase))
+                {
+                    return null;
+                }
+            }
 
             var result = new Result
             {
