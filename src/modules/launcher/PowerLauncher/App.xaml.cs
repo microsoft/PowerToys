@@ -21,8 +21,6 @@ using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace PowerLauncher
 {
-
-
     public partial class App : IDisposable, ISingleInstanceApp
     {
         public static PublicAPIInstance API { get; private set; }
@@ -120,6 +118,9 @@ namespace PowerLauncher
         }
 
         [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, int processId);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
         private static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
 
         private void WaitForPowerToysRunner()
@@ -128,8 +129,9 @@ namespace PowerLauncher
             {
                 const uint INFINITE = 0xFFFFFFFF;
                 const uint WAIT_OBJECT_0 = 0x00000000;
+                const uint ProcessAccessFlagSynchronize = 0x00100000;
 
-                IntPtr powerToysProcHandle = Process.GetProcessById(_powerToysPid).Handle;
+                IntPtr powerToysProcHandle = OpenProcess(ProcessAccessFlagSynchronize, false, _powerToysPid);
                 if (WaitForSingleObject(powerToysProcHandle, INFINITE) == WAIT_OBJECT_0)
                 {
                     Environment.Exit(0);
