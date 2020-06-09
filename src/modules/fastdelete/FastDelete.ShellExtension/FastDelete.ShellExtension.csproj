@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
+    <Platforms>x64</Platforms>
 
     <BaseOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\FastDelete</BaseOutputPath>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
