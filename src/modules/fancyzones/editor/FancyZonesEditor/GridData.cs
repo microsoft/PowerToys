@@ -298,7 +298,7 @@ namespace FancyZonesEditor
             }
         }
 
-        public void ManageZones(UIElementCollection zones, int spacing)
+        public void ArrangeZones(UIElementCollection zones, int spacing)
         {
             int rows = _model.Rows;
             int cols = _model.Columns;
@@ -367,7 +367,7 @@ namespace FancyZonesEditor
             }
         }
 
-        public void ManageResizers(UIElementCollection adornerChildren, int spacing)
+        public void ArrangeResizers(UIElementCollection adornerChildren, int spacing)
         {
             int rows = _model.Rows;
             int cols = _model.Columns;
