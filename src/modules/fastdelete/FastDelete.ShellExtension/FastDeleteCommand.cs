@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Microsoft.Win32;
 using ExplorerCommandLib;
 
 namespace FastDelete.ShellExtension
@@ -14,12 +15,17 @@ namespace FastDelete.ShellExtension
 
         public override ExplorerCommandState GetState(IEnumerable<string> selectedFiles)
         {
+            using var key = Registry.CurrentUser.CreateSubKey("SOFTWARE\\Microsoft\\PowerToys FastDelete");
+            object value = key.GetValue("Enabled");
+            bool enable = value != null ? ((int)value == 1) : true;
+            if (!enable) return ExplorerCommandState.Hidden;
+
             try
             {
                 if (Directory.Exists(selectedFiles.Single()))
                     return ExplorerCommandState.Enabled;
                 else
-                    return ExplorerCommandState.Hidden;
+                    return ExplorerCommandState.Disabled;
             }
             catch
             {
