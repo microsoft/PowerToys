@@ -108,7 +108,7 @@
                 Style="{StaticResource SettingsGroupTitleStyle}"
                 Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <Image MaxWidth="240" Source="https://github.com/microsoft/PowerToys/wiki/images/shortcut_guide/usage.png" />
+            <Image MaxWidth="240" Source="https://aka.ms/powerToysShortcutGuideSettingImage" />
 
             <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ShortcutGuide">
                 <TextBlock x:Uid="Module_overview"/>
