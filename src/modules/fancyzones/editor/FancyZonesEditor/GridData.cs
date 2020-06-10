@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using FancyZonesEditor.Models;
@@ -180,6 +181,7 @@ namespace FancyZonesEditor
             int rows = _model.Rows;
             int cols = _model.Columns + 1;
 
+            int[,] cellChildMap = _model.CellChildMap;
             int[,] newCellChildMap = new int[rows, cols];
 
             int sourceCol = 0;
@@ -187,13 +189,13 @@ namespace FancyZonesEditor
             {
                 for (int row = 0; row < rows; row++)
                 {
-                    if ((col > foundCol) && (_model.CellChildMap[row, sourceCol] == spliteeIndex))
+                    if (cellChildMap[row, sourceCol] > spliteeIndex || ((col > foundCol) && (cellChildMap[row, sourceCol] == spliteeIndex)))
                     {
-                        newCellChildMap[row, col] = newChildIndex;
+                        newCellChildMap[row, col] = cellChildMap[row, sourceCol] + 1;
                     }
                     else
                     {
-                        newCellChildMap[row, col] = _model.CellChildMap[row, sourceCol];
+                        newCellChildMap[row, col] = cellChildMap[row, sourceCol];
                     }
                 }
 
@@ -230,6 +232,7 @@ namespace FancyZonesEditor
             int rows = _model.Rows + 1;
             int cols = _model.Columns;
 
+            int[,] cellChildMap = _model.CellChildMap;
             int[,] newCellChildMap = new int[rows, cols];
 
             int sourceRow = 0;
@@ -237,13 +240,13 @@ namespace FancyZonesEditor
             {
                 for (int col = 0; col < cols; col++)
                 {
-                    if ((row > foundRow) && (_model.CellChildMap[sourceRow, col] == spliteeIndex))
+                    if (cellChildMap[sourceRow, col] > spliteeIndex || ((row > foundRow) && (cellChildMap[sourceRow, col] == spliteeIndex)))
                     {
-                        newCellChildMap[row, col] = newChildIndex;
+                        newCellChildMap[row, col] = cellChildMap[sourceRow, col] + 1;
                     }
                     else
                     {
-                        newCellChildMap[row, col] = _model.CellChildMap[sourceRow, col];
+                        newCellChildMap[row, col] = cellChildMap[sourceRow, col];
                     }
                 }
 
@@ -648,19 +651,35 @@ namespace FancyZonesEditor
             return -1;
         }
 
-        public void MergeZones(int startRow, int endRow, int startCol, int endCol, Action<int> deleteAction)
+        public void MergeZones(int startRow, int endRow, int startCol, int endCol, Action<int, int> deleteAction)
         {
-            int mergedIndex = _model.CellChildMap[startRow, startCol];
+            int[,] cells = _model.CellChildMap;
+            int mergedIndex = cells[startRow, startCol];
 
+            SortedSet<int> zonesMerged = new SortedSet<int>();
             for (int row = startRow; row <= endRow; row++)
             {
                 for (int col = startCol; col <= endCol; col++)
                 {
-                    int childIndex = _model.CellChildMap[row, col];
+                    int childIndex = cells[row, col];
                     if (childIndex != mergedIndex)
                     {
-                        _model.CellChildMap[row, col] = mergedIndex;
-                        deleteAction(childIndex);
+                        zonesMerged.Add(cells[row, col]);
+                        cells[row, col] = mergedIndex;
+                    }
+                }
+            }
+
+            deleteAction(zonesMerged.First<int>(), zonesMerged.Last<int>() + 1);
+
+            // update other indices to maintain order
+            for (int row = 0; row < _model.Rows; row++)
+            {
+                for (int col = 0; col < _model.Columns; col++)
+                {
+                    if (cells[row, col] > mergedIndex)
+                    {
+                        cells[row, col] -= zonesMerged.Count;
                     }
                 }
             }

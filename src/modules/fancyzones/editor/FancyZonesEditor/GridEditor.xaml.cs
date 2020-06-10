@@ -289,21 +289,9 @@ namespace FancyZonesEditor
             ArrangeGridRects(actualSize);
         }
 
-        private void DeleteZone(int index)
+        private void DeleteZone(int startIndex, int endIndex)
         {
-            IList<int> freeZones = Model.FreeZones;
-
-            if (freeZones.Contains(index))
-            {
-                return;
-            }
-
-            freeZones.Add(index);
-
-            GridZone zone = (GridZone)Preview.Children[index];
-            zone.Visibility = Visibility.Hidden;
-            zone.MinHeight = 0;
-            zone.MinWidth = 0;
+            Preview.Children.RemoveRange(startIndex, endIndex - startIndex);
         }
 
         private int AddZone()
@@ -559,9 +547,9 @@ namespace FancyZonesEditor
         {
             MergePanel.Visibility = Visibility.Collapsed;
 
-            Action<int> deleteAction = (childIndex) =>
+            Action<int, int> deleteAction = (start, end) =>
             {
-                DeleteZone(childIndex);
+                DeleteZone(start, end);
             };
             _data.MergeZones(_startRow, _endRow, _startCol, _endCol, deleteAction);
             _dragHandles.RemoveDragHandles();
