@@ -132,7 +132,7 @@ namespace KeyboardManagerRemapLogicTests
             // Send A keydown
             mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
 
-            // A key state should be unchanged, and B key state should be true
+            // A key state should be unchanged, and common Win key state should be true
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LWIN), true);
             input[0].ki.dwFlags = KEYEVENTF_KEYUP;
@@ -140,7 +140,7 @@ namespace KeyboardManagerRemapLogicTests
             // Send A keyup
             mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
 
-            // A key state should be unchanged, and B key state should be false
+            // A key state should be unchanged, and common Win key state should be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LWIN), false);
         }
@@ -458,7 +458,7 @@ namespace KeyboardManagerRemapLogicTests
             // Send Ctrl+Shift+A keydown
             mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
-            // A key state should be unchanged, Alt, LWin, V key states should be true
+            // A key state should be unchanged, Ctrl, Shift, V key states should be true
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_SHIFT), true);
@@ -526,7 +526,7 @@ namespace KeyboardManagerRemapLogicTests
             std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
             mockedInputHandler.SetHookProc(currentHookProc);
 
-            // Remap Ctrl+Shift+A to Alt+LWin+V
+            // Remap Ctrl+Shift+A to Alt+Ctrl+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(VK_SHIFT);
@@ -576,7 +576,7 @@ namespace KeyboardManagerRemapLogicTests
             std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
             mockedInputHandler.SetHookProc(currentHookProc);
 
-            // Remap Ctrl+Shift+A to Alt+LWin+V
+            // Remap Ctrl+Shift+A to Ctrl+Shift+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(VK_SHIFT);
@@ -641,10 +641,10 @@ namespace KeyboardManagerRemapLogicTests
             input[1].type = INPUT_KEYBOARD;
             input[1].ki.wVk = 0x41;
 
-            // Send Ctrl+Shift+A keydown
+            // Send Ctrl+A keydown
             mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
-            // Since Ctrl+Shift+A is not remapped, no remapping should be invoked
+            // Since Ctrl+A is not remapped, no remapping should be invoked
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), true);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_SHIFT), false);
@@ -1285,7 +1285,6 @@ namespace KeyboardManagerRemapLogicTests
             dest.SetKey(VK_TAB);
             testState.AddOSLevelShortcut(src, dest);
 
-            // RWin, A, A(Up), C(Down)
             const int nInputs = 3;
             INPUT input[nInputs] = {};
             input[0].type = INPUT_KEYBOARD;
@@ -1301,7 +1300,7 @@ namespace KeyboardManagerRemapLogicTests
             // Send Ctrl+A, release A
             mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
-            //Ctrl, A, Tab key states should be unchanged, Alt should be true
+            // Ctrl, A, Tab key states should be unchanged, Alt should be true
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), true);

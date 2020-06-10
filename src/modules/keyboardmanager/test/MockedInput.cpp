@@ -15,8 +15,29 @@ UINT MockedInput::SendVirtualInput(UINT cInputs, LPINPUT pInputs, int cbSize)
     {
         LowlevelKeyboardEvent keyEvent;
 
-        // Limited to key-up and key-down since KBM does not distinguish between key and syskey messages
-        keyEvent.wParam = (pInputs[i].ki.dwFlags & KEYEVENTF_KEYUP) ? WM_KEYUP : WM_KEYDOWN;
+        // Distinguish between key and sys key by checking if the key is either F10 (for syskeydown) or if the key message is sent while Alt is held down. SYSKEY messages are also sent if there is no window in focus, but that has not been mocked since it would require many changes. More details on key messages at https://docs.microsoft.com/en-us/windows/win32/inputdev/wm-syskeydown
+        if (pInputs[i].ki.dwFlags & KEYEVENTF_KEYUP)
+        {
+            if (keyboardState[VK_MENU] == true)
+            {
+                keyEvent.wParam = WM_SYSKEYUP;
+            }
+            else
+            {
+                keyEvent.wParam = WM_KEYUP;
+            }
+        }
+        else
+        {
+            if (pInputs[i].ki.wVk == VK_F10 || keyboardState[VK_MENU] == true)
+            {
+                keyEvent.wParam = WM_SYSKEYDOWN;
+            }
+            else
+            {
+                keyEvent.wParam = WM_KEYDOWN;
+            }
+        }
         KBDLLHOOKSTRUCT lParam = {};
 
         // Set only vkCode and dwExtraInfo since other values are unused
@@ -32,6 +53,50 @@ UINT MockedInput::SendVirtualInput(UINT cInputs, LPINPUT pInputs, int cbSize)
         {
             // If key up flag is set, then set keyboard state to false
             keyboardState[pInputs[i].ki.wVk] = (pInputs[i].ki.dwFlags & KEYEVENTF_KEYUP) ? false : true;
+
+            // Handling modifier key codes
+            switch (pInputs[i].ki.wVk)
+            {
+            case VK_CONTROL:
+                if (pInputs[i].ki.dwFlags & KEYEVENTF_KEYUP)
+                {
+                    keyboardState[VK_LCONTROL] = false;
+                    keyboardState[VK_RCONTROL] = false;
+                    break;
+                }
+            case VK_LCONTROL:
+                keyboardState[VK_CONTROL] = (pInputs[i].ki.dwFlags & KEYEVENTF_KEYUP) ? false : true;
+                break;
+            case VK_RCONTROL:
+                keyboardState[VK_CONTROL] = (pInputs[i].ki.dwFlags & KEYEVENTF_KEYUP) ? false : true;
+                break;
+            case VK_MENU:
+                if (pInputs[i].ki.dwFlags & KEYEVENTF_KEYUP)
+                {
+                    keyboardState[VK_LMENU] = false;
+                    keyboardState[VK_RMENU] = false;
+                    break;
+                }
+            case VK_LMENU:
+                keyboardState[VK_MENU] = (pInputs[i].ki.dwFlags & KEYEVENTF_KEYUP) ? false : true;
+                break;
+            case VK_RMENU:
+                keyboardState[VK_MENU] = (pInputs[i].ki.dwFlags & KEYEVENTF_KEYUP) ? false : true;
+                break;
+            case VK_SHIFT:
+                if (pInputs[i].ki.dwFlags & KEYEVENTF_KEYUP)
+                {
+                    keyboardState[VK_LSHIFT] = false;
+                    keyboardState[VK_RSHIFT] = false;
+                    break;
+                }
+            case VK_LSHIFT:
+                keyboardState[VK_SHIFT] = (pInputs[i].ki.dwFlags & KEYEVENTF_KEYUP) ? false : true;
+                break;
+            case VK_RSHIFT:
+                keyboardState[VK_SHIFT] = (pInputs[i].ki.dwFlags & KEYEVENTF_KEYUP) ? false : true;
+                break;
+            }
         }
     }
 
