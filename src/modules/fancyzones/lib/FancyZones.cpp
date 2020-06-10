@@ -212,6 +212,7 @@ private:
 
     bool IsSplashScreen(HWND window);
     bool MoveWindowIntoLastKnownZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow);
+    bool ProcessNewWindow(HWND window) noexcept;
 
     void OnEditorExitEvent() noexcept;
     bool ProcessSnapHotkey() noexcept;
@@ -345,20 +346,26 @@ bool FancyZones::MoveWindowIntoLastKnownZone(HWND window, winrt::com_ptr<IZoneWi
     return false;
 }
 
+bool FancyZones::ProcessNewWindow(HWND window) noexcept
+{
+    // Avoid processing splash screens, already stamped (zoned) windows, or those windows
+    // that belong to excluded applications list.
+    if (IsSplashScreen(window) ||
+        (reinterpret_cast<size_t>(::GetProp(window, MULTI_ZONE_STAMP)) != 0) ||
+        IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
+    {
+        return false;
+    }
+    return true;
+}
+
 // IFancyZonesCallback
 IFACEMETHODIMP_(void)
 FancyZones::WindowCreated(HWND window) noexcept
 {
-    // Avoid processing splash screens and already stamped (zoned) windows.
-    if (IsSplashScreen(window) ||
-        reinterpret_cast<size_t>(::GetProp(window, MULTI_ZONE_STAMP)) != 0)
-    {
-        return;
-    }
-
     std::shared_lock readLock(m_lock);
     if (m_settings->GetSettings()->appLastZone_moveWindows &&
-        IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
+        ProcessNewWindow(window))
     {
         POINT cursorPosition{};
         GUID desktopId{};
