@@ -559,13 +559,13 @@ namespace FancyZonesEditor
         {
             MergePanel.Visibility = Visibility.Collapsed;
 
-            _dragHandles.UpdateAfterMerge(_startRow, _endRow, _startCol, _endCol, Model.Rows);
-
             Action<int> deleteAction = (childIndex) =>
             {
                 DeleteZone(childIndex);
             };
             _data.MergeZones(_startRow, _endRow, _startCol, _endCol, deleteAction);
+            _dragHandles.RemoveDragHandles();
+            _dragHandles.InitDragHandles(Model);
 
             OnGridDimensionsChanged();
             ClearSelection();

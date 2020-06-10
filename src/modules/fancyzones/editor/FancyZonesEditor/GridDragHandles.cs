@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using FancyZonesEditor.Models;
@@ -28,7 +27,14 @@ namespace FancyZonesEditor
                     {
                         if (indices[row, col] != indices[row + 1, col])
                         {
-                            AddDragHandle(Orientation.Horizontal, row, row + 1, col, col + 1, row);
+                            int endCol = col + 1;
+                            while (endCol < model.Columns && indices[row, endCol] != indices[row + 1, endCol])
+                            {
+                                endCol++;
+                            }
+
+                            AddDragHandle(Orientation.Horizontal, row, row + 1, col, endCol, row);
+                            col = endCol - 1;
                         }
                     }
                 }
@@ -40,7 +46,14 @@ namespace FancyZonesEditor
                     {
                         if (indices[row, col] != indices[row, col + 1])
                         {
-                            AddDragHandle(Orientation.Vertical, row, row + 1, col, col + 1, col + model.Rows - 1);
+                            int endRow = row + 1;
+                            while (endRow < model.Rows && indices[endRow, col] != indices[endRow, col + 1])
+                            {
+                                endRow++;
+                            }
+
+                            AddDragHandle(Orientation.Vertical, row, endRow, col, col + 1, col + model.Rows - 1);
+                            row = endRow - 1;
                         }
                     }
                 }
@@ -296,86 +309,6 @@ namespace FancyZonesEditor
                 incValues(resizer);
                 differentOrientationResizersUpdate();
                 sameOrientationResizersUpdate(delta < 0);
-            }
-        }
-
-        public void UpdateAfterMerge(int startRow, int endRow, int startCol, int endCol, int rows)
-        {
-            int shift = 0;
-            List<int> horizontalRemoved = new List<int>(), verticalRemoved = new List<int>();
-
-            for (int i = 0; i < _resizers.Count; i++)
-            {
-                GridResizer resizer = (GridResizer)_resizers[i];
-
-                bool isStartRowColRemovable = resizer.StartRow >= startRow && resizer.StartCol >= startCol;
-                bool horizontalResizerToBeRemoved = resizer.Orientation == Orientation.Horizontal
-                    && isStartRowColRemovable && resizer.EndRow <= endRow && resizer.EndCol - 1 <= endCol;
-                bool verticalResizerToBeRemoved = resizer.Orientation == Orientation.Vertical
-                    && isStartRowColRemovable && resizer.EndRow - 1 <= endRow && resizer.EndCol <= endCol;
-
-                if (horizontalResizerToBeRemoved || verticalResizerToBeRemoved)
-                {
-                    if (resizer.Orientation == Orientation.Horizontal)
-                    {
-                        horizontalRemoved.Add(i + shift);
-                        rows--;
-                    }
-                    else
-                    {
-                        verticalRemoved.Add(i - rows + 1);
-                    }
-
-                    _resizers.Remove(resizer);
-                    i--;
-                    shift++;
-                }
-            }
-
-            foreach (GridResizer resizer in _resizers)
-            {
-                if (resizer.Orientation == Orientation.Horizontal)
-                {
-                    int diff = 0;
-                    for (int i = 0; i < horizontalRemoved.Count && horizontalRemoved[i] < resizer.StartRow; i++)
-                    {
-                        diff++;
-                    }
-
-                    resizer.StartRow -= diff;
-                    resizer.EndRow -= diff;
-
-                    for (int i = 0; i < verticalRemoved.Count && verticalRemoved[i] < resizer.EndCol; i++)
-                    {
-                        if (resizer.StartCol > verticalRemoved[i])
-                        {
-                            resizer.StartCol--;
-                        }
-
-                        resizer.EndCol--;
-                    }
-                }
-                else
-                {
-                    int diff = 0;
-                    for (int i = 0; i < verticalRemoved.Count && verticalRemoved[i] < resizer.StartCol; i++)
-                    {
-                        diff++;
-                    }
-
-                    resizer.StartCol -= diff;
-                    resizer.EndCol -= diff;
-
-                    for (int i = 0; i < horizontalRemoved.Count && horizontalRemoved[i] < resizer.EndRow; i++)
-                    {
-                        if (resizer.StartRow > horizontalRemoved[i])
-                        {
-                            resizer.StartRow--;
-                        }
-
-                        resizer.EndRow--;
-                    }
-                }
             }
         }
 
