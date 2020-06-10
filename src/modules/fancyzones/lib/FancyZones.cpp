@@ -211,7 +211,7 @@ private:
     void RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept;
 
     bool IsSplashScreen(HWND window);
-    bool MoveWindowIntoLastKnownPosition(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow);
+    bool MoveWindowIntoLastKnownZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow);
 
     void OnEditorExitEvent() noexcept;
     bool ProcessSnapHotkey() noexcept;
@@ -324,18 +324,16 @@ FancyZones::VirtualDesktopInitialize() noexcept
     PostMessage(m_window, WM_PRIV_VD_INIT, 0, 0);
 }
 
-bool FancyZones::MoveWindowIntoLastKnownPosition(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow) {
+bool FancyZones::MoveWindowIntoLastKnownZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow) {
     const auto activeZoneSet = zoneWindow->ActiveZoneSet();
     if (activeZoneSet)
     {
-        auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
-
         wil::unique_cotaskmem_string guidString;
         if (SUCCEEDED(StringFromCLSID(activeZoneSet->Id(), &guidString)))
         {
+            auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
             std::vector<int> zoneIndexSet = fancyZonesData.GetAppLastZoneIndexSet(window, zoneWindow->UniqueId(), guidString.get());
             if (zoneIndexSet.size() &&
-                !IsSplashScreen(window) &&
                 !fancyZonesData.IsAnotherWindowOfApplicationInstanceZoned(window, zoneWindow->UniqueId()))
             {
                 m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, zoneWindow);
@@ -351,29 +349,33 @@ bool FancyZones::MoveWindowIntoLastKnownPosition(HWND window, winrt::com_ptr<IZo
 IFACEMETHODIMP_(void)
 FancyZones::WindowCreated(HWND window) noexcept
 {
-    std::shared_lock readLock(m_lock);
-
-    if (m_settings->GetSettings()->appLastZone_moveWindows && IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
+    // Avoid processing splash screens and already stamped (zoned) windows.
+    if (IsSplashScreen(window) &&
+        reinterpret_cast<size_t>(::GetProp(window, MULTI_ZONE_STAMP)) != 0)
     {
-        if (reinterpret_cast<size_t>(::GetProp(window, MULTI_ZONE_STAMP)) == 0)
+        return;
+    }
+
+    std::shared_lock readLock(m_lock);
+    if (m_settings->GetSettings()->appLastZone_moveWindows &&
+        IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
+    {
+        POINT cursorPosition{};
+        GUID desktopId{};
+        if (GetCursorPos(&cursorPosition) &&
+            VirtualDesktopUtils::GetWindowDesktopId(window, &desktopId))
         {
-            POINT cursorPosition{};
-            GUID desktopId{};
-            if (GetCursorPos(&cursorPosition) &&
-                VirtualDesktopUtils::GetWindowDesktopId(window, &desktopId))
+            HMONITOR monitor = MonitorFromPoint(cursorPosition, MONITOR_DEFAULTTOPRIMARY);
+            auto zoneWindow = m_workAreaHandler.GetWorkArea(desktopId, monitor);
+            if (zoneWindow && MoveWindowIntoLastKnownZone(window, zoneWindow))
             {
-                HMONITOR monitor = MonitorFromPoint(cursorPosition, MONITOR_DEFAULTTOPRIMARY);
-                auto zoneWindow = m_workAreaHandler.GetWorkArea(desktopId, monitor);
-                if (zoneWindow && MoveWindowIntoLastKnownPosition(window, zoneWindow))
-                {
-                    return;
-                }
+                return;
             }
-            auto zoneWindow = m_workAreaHandler.GetWorkArea(window);
-            if (zoneWindow)
-            {
-                MoveWindowIntoLastKnownPosition(window, zoneWindow);
-            }
+        }
+        auto zoneWindow = m_workAreaHandler.GetWorkArea(window);
+        if (zoneWindow)
+        {
+            MoveWindowIntoLastKnownZone(window, zoneWindow);
         }
     }
 }
