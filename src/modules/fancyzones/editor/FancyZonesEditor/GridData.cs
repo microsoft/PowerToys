@@ -376,7 +376,7 @@ namespace FancyZonesEditor
             {
                 if (resizer.Orientation == Orientation.Horizontal)
                 {
-                    if (resizer.EndCol <= cols)
+                    if (resizer.EndCol <= cols && resizer.StartRow < rows)
                     {
                         // hard coding this as (resizer.ActualHeight / 2) will still evaluate to 0 here ... a layout hasn't yet happened
                         Canvas.SetTop(resizer, _rowInfo[resizer.StartRow].End + (spacing / 2) - 24);
@@ -385,7 +385,7 @@ namespace FancyZonesEditor
                 }
                 else
                 {
-                    if (resizer.EndRow <= rows)
+                    if (resizer.EndRow <= rows && resizer.StartCol < cols)
                     {
                         // hard coding this as (resizer.ActualWidth / 2) will still evaluate to 0 here ... a layout hasn't yet happened
                         Canvas.SetLeft(resizer, _colInfo[resizer.StartCol].End + (spacing / 2) - 24);
