@@ -40,9 +40,10 @@ namespace Microsoft.Plugin.Program.Programs
         private const string ExeExtension = "exe";
         private const string InternetShortcutExtension = "url";
 
-        private const string InternetShortcutApplication = "Internet Shortcut application";
-        private const string Win32Application = "Win32 application";
         private const string ProgressiveWebApplication = "Web application";
+        private const string InternetShortcutApplication = "Internet shortcut application";
+        private const string Win32Application = "Win32 application";
+
 
         private int Score(string query)
         {
@@ -600,9 +601,9 @@ namespace Microsoft.Plugin.Program.Programs
                 int fullPathPrime = 31;
 
                 int result = 1;
-                result = result * namePrime + obj.Name.GetHashCode();
-                result = result * executablePrime + obj.ExecutableName.GetHashCode();
-                result = result * fullPathPrime + obj.FullPath.GetHashCode();
+                result = result * namePrime + obj.Name.ToLowerInvariant().GetHashCode();
+                result = result * executablePrime + obj.ExecutableName.ToLowerInvariant().GetHashCode();
+                result = result * fullPathPrime + obj.FullPath.ToLowerInvariant().GetHashCode();
 
                 return result;
             }
