@@ -171,6 +171,8 @@ namespace FancyZonesEditor
 
         private void OnSplit(object o, SplitEventArgs e)
         {
+            MergeCancelClick(null, null);
+
             UIElementCollection previewChildren = Preview.Children;
             GridZone splitee = (GridZone)o;
 
@@ -370,6 +372,8 @@ namespace FancyZonesEditor
 
         private void Resizer_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
         {
+            MergeCancelClick(null, null);
+
             GridResizer resizer = (GridResizer)sender;
 
             double delta = (resizer.Orientation == Orientation.Vertical) ? e.HorizontalChange : e.VerticalChange;
@@ -559,7 +563,7 @@ namespace FancyZonesEditor
             ClearSelection();
         }
 
-        private void CancelClick(object sender, RoutedEventArgs e)
+        private void MergeCancelClick(object sender, RoutedEventArgs e)
         {
             MergePanel.Visibility = Visibility.Collapsed;
             ClearSelection();
@@ -567,7 +571,7 @@ namespace FancyZonesEditor
 
         private void MergePanelMouseUp(object sender, MouseButtonEventArgs e)
         {
-            CancelClick(null, null);
+            MergeCancelClick(null, null);
         }
 
         protected override Size ArrangeOverride(Size arrangeBounds)
