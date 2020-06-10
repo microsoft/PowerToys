@@ -350,7 +350,7 @@ IFACEMETHODIMP_(void)
 FancyZones::WindowCreated(HWND window) noexcept
 {
     // Avoid processing splash screens and already stamped (zoned) windows.
-    if (IsSplashScreen(window) &&
+    if (IsSplashScreen(window) ||
         reinterpret_cast<size_t>(::GetProp(window, MULTI_ZONE_STAMP)) != 0)
     {
         return;
