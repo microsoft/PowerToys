@@ -14,17 +14,22 @@
     <system:String x:Key="Theme.ColorScheme">Accent3</system:String>
     <Color x:Key="Theme.PrimaryAccentColor">White</Color>
 
-    <Color x:Key="SystemBaseMediumLowColor">#FF000000</Color>
-    <SolidColorBrush x:Key="SystemChromeLow" Color="Orange" options:Freeze="True" />
-    <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#FF000000" />
+    <Color x:Key="SystemBaseMediumLowColor">#ffff00</Color>
+    <SolidColorBrush x:Key="SystemChromeLow" Color="Black" options:Freeze="True" />
+    <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#FFc0c0c0" />
     <SolidColorBrush x:Key="TextBox.Static.Border" Color="Transparent"/>
     <SolidColorBrush x:Key="TextBox.MouseOver.Border" Color="Transparent"/>
     <SolidColorBrush x:Key="TextBox.Focus.Border" Color="Transparent"/>
-    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="Black" />
+    <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="Black" />
+    <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="Black" />
     <SolidColorBrush x:Key="ButtonBorderPressed" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#FF000000" />
-    <SolidColorBrush x:Key="ControlTextBrushKey" Color="#FF000000" />
+    <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#FF0000ff" />
+    <SolidColorBrush x:Key="ControlTextBrushKey" Color="#FF00ff00" />
+    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#FFc0c0c0" />
     <SolidColorBrush x:Key="InactiveSelectionHighlightBrushKey" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="BorderBrush" Color="White" />
+    <SolidColorBrush x:Key="ScrollBarThumbBrush" Color="White" />
+    <SolidColorBrush x:Key="ScrollBarThumbPointerOverBrush" Color="#FF0000ff" />
+    <SolidColorBrush x:Key="ScrollBarThumbPointerPressedBrush" Color="#FF0000ff" />
 </ResourceDictionary>

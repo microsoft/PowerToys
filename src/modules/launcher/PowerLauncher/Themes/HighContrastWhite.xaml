@@ -14,17 +14,22 @@
     <system:String x:Key="Theme.ColorScheme">Accent5</system:String>
     <Color x:Key="Theme.PrimaryAccentColor">White</Color>
 
-    <Color x:Key="SystemBaseMediumLowColor">#FF000000</Color>
-    <SolidColorBrush x:Key="SystemChromeLow" Color="Red" options:Freeze="True" />
-    <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#FF000000" />
+    <Color x:Key="SystemBaseMediumLowColor">#66000000</Color>
+    <SolidColorBrush x:Key="SystemChromeLow" Color="White" options:Freeze="True" />
+    <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#FF600000" />
     <SolidColorBrush x:Key="TextBox.Static.Border" Color="Transparent"/>
     <SolidColorBrush x:Key="TextBox.MouseOver.Border" Color="Transparent"/>
     <SolidColorBrush x:Key="TextBox.Focus.Border" Color="Transparent"/>
-    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="ButtonBorderPressed" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#FF000000" />
-    <SolidColorBrush x:Key="ControlTextBrushKey" Color="#FF000000" />
-    <SolidColorBrush x:Key="InactiveSelectionHighlightBrushKey" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#2E000000" />
+    <SolidColorBrush x:Key="ButtonBorderPointerOver" Color="#61000000" />
+    <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#FF37006e" />
+    <SolidColorBrush x:Key="ButtonBorderPressed" Color="#FF37006e" />
+    <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#FF9a59db" />
+    <SolidColorBrush x:Key="ControlTextBrushKey" Color="Black" />
+    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#FF600000" />
+    <SolidColorBrush x:Key="InactiveSelectionHighlightBrushKey" Color="Black" />
+    <SolidColorBrush x:Key="BorderBrush" Color="Black" />
+    <SolidColorBrush x:Key="ScrollBarThumbBrush" Color="Black" />
+    <SolidColorBrush x:Key="ScrollBarThumbPointerOverBrush" Color="#FF9a59db" />
+    <SolidColorBrush x:Key="ScrollBarThumbPointerPressedBrush" Color="#FF9a59db" />
 </ResourceDictionary>
