@@ -36,7 +36,7 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type Button}">
-                            <Border x:Name="border" CornerRadius="4" Background="Transparent" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="Transparent" SnapsToDevicePixels="true">
+                            <Border x:Name="border" CornerRadius="4" Background="Transparent" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="Transparent" SnapsToDevicePixels="true" Margin="1">
                                 <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                             </Border>
                             <ControlTemplate.Triggers>
@@ -69,7 +69,7 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ListViewItem}">
-                            <Grid Background="Transparent">
+                            <Grid Background="{DynamicResource SystemChromeLow}">
                                 <Border x:Name="HighlightBorder" BorderThickness="0" Background="Transparent" BorderBrush="Transparent" SnapsToDevicePixels="true"/>
                                 <ContentPresenter x:Name="contentPresenter" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                             </Grid>
@@ -157,8 +157,8 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         <Image x:Name="AppIcon" Height="36" MaxWidth="56" Grid.RowSpan="2" Margin="-6,-2,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />
-                        <TextBlock x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" Margin="0,0,0,-2" VerticalAlignment="Bottom"/>
-                        <TextBlock x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Foreground="{DynamicResource SecondaryTextForeground}" Margin="0,2,0,0" VerticalAlignment="Top"/>
+                        <TextBlock x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" Margin="0,0,0,-2" RenderOptions.ClearTypeHint="Enabled"  VerticalAlignment="Bottom"/>
+                        <TextBlock x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" RenderOptions.ClearTypeHint="Enabled" Foreground="{DynamicResource SecondaryTextForeground}" Margin="0,2,0,0" VerticalAlignment="Top" />
                         <ListView                                  
                             HorizontalAlignment="Right" 
                             VerticalAlignment="Center"                                  
