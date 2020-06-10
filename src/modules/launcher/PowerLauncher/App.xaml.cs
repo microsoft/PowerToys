@@ -2,6 +2,7 @@ using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
@@ -20,13 +21,12 @@ using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace PowerLauncher
 {
-    
-
     public partial class App : IDisposable, ISingleInstanceApp
     {
         public static PublicAPIInstance API { get; private set; }
         private const string Unique = "PowerLauncher_Unique_Application_Mutex";
         private static bool _disposed;
+        private static int _powerToysPid;
         private Settings _settings;
         private MainViewModel _mainVM;
         private SettingWindowViewModel _settingsVM;
@@ -35,10 +35,12 @@ namespace PowerLauncher
         private SettingsWatcher _settingsWatcher;
 
         [STAThread]
-        public static void Main()
+        public static void Main(string[] args)
         {
             if (SingleInstance<App>.InitializeAsFirstInstance(Unique))
             {
+                int.TryParse(args[0], out _powerToysPid);
+
                 using (var application = new App())
                 {
                     application.InitializeComponent();
@@ -49,6 +51,8 @@ namespace PowerLauncher
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
+            WaitForPowerToysRunner();
+
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
             Stopwatch.Normal("|App.OnStartup|Startup cost", () =>
@@ -111,6 +115,28 @@ namespace PowerLauncher
             AppDomain.CurrentDomain.ProcessExit += (s, e) => Dispose();
             Current.Exit += (s, e) => Dispose();
             Current.SessionEnding += (s, e) => Dispose();
+        }
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, int processId);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
+
+        private void WaitForPowerToysRunner()
+        {
+            Task.Run(() =>
+            {
+                const uint INFINITE = 0xFFFFFFFF;
+                const uint WAIT_OBJECT_0 = 0x00000000;
+                const uint SYNCHRONIZE = 0x00100000;
+
+                IntPtr powerToysProcHandle = OpenProcess(SYNCHRONIZE, false, _powerToysPid);
+                if (WaitForSingleObject(powerToysProcHandle, INFINITE) == WAIT_OBJECT_0)
+                {
+                    Environment.Exit(0);
+                }
+            });
         }
 
         /// <summary>

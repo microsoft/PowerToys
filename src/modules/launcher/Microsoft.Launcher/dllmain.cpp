@@ -132,12 +132,18 @@ public:
    // Enable the powertoy
   virtual void enable()
   {
+      unsigned long powertoys_pid = GetCurrentProcessId();
+
       if (!is_process_elevated(false))
       {
+          std::wstring executable_args = L"";
+          executable_args.append(std::to_wstring(powertoys_pid));
+
           SHELLEXECUTEINFOW sei{ sizeof(sei) };
           sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
           sei.lpFile = L"modules\\launcher\\PowerLauncher.exe";
           sei.nShow = SW_SHOWNORMAL;
+          sei.lpParameters = executable_args.data(); 
           ShellExecuteExW(&sei);
 
           m_hProcess = sei.hProcess;
@@ -151,6 +157,7 @@ public:
           params += L"-target modules\\launcher\\PowerLauncher.exe ";
           params += L"-pidFile ";
           params += POWER_LAUNCHER_PID_SHARED_FILE;
+          params += L" " + std::to_wstring(powertoys_pid) + L" ";
 
           action_runner_path += L"\\action_runner.exe";
           // Set up the shared file from which to retrieve the PID of PowerLauncher

@@ -192,6 +192,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
         std::wstring_view target;
         std::wstring_view pidFile;
+        std::wstring params;
 
         while (nextArg < nArgs)
         {
@@ -207,6 +208,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             }
             else
             {
+                params = args[nextArg];
                 nextArg++;
             }
         }
@@ -227,7 +229,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             }
         }
 
-        run_same_elevation(target.data(), L"", pidBuffer);
+        run_same_elevation(target.data(), params, pidBuffer);
         
         // cleanup
         if (!pidFile.empty())
