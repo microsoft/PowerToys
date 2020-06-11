@@ -387,7 +387,6 @@ std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetAppZoneH
     {
         HMONITOR monitor = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
         appZoneHistoryInfo = GetAppZoneHistoryInfo(window, monitor, workAreaMap);
-
     }
     // 3. Search application history on remaining monitors.
     if (appZoneHistoryInfo.second.empty())
