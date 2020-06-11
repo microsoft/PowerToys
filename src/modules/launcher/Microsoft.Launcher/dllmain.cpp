@@ -6,6 +6,7 @@
 #include <common/common.h>
 #include "trace.h"
 #include "resource.h"
+#include <common/os-detection/os-detect.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -132,60 +133,64 @@ public:
    // Enable the powertoy
   virtual void enable()
   {
-      unsigned long powertoys_pid = GetCurrentProcessId();
-
-      if (!is_process_elevated(false))
+      // Start PowerLauncher.exe only if the OS is 19H1 or higher
+      if (UseNewSettings())
       {
-          std::wstring executable_args = L"";
-          executable_args.append(std::to_wstring(powertoys_pid));
+          unsigned long powertoys_pid = GetCurrentProcessId();
 
-          SHELLEXECUTEINFOW sei{ sizeof(sei) };
-          sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-          sei.lpFile = L"modules\\launcher\\PowerLauncher.exe";
-          sei.nShow = SW_SHOWNORMAL;
-          sei.lpParameters = executable_args.data(); 
-          ShellExecuteExW(&sei);
-
-          m_hProcess = sei.hProcess;
-      }
-      else
-      {
-          std::wstring action_runner_path = get_module_folderpath();
-
-          std::wstring params;
-          params += L"-run-non-elevated ";
-          params += L"-target modules\\launcher\\PowerLauncher.exe ";
-          params += L"-pidFile ";
-          params += POWER_LAUNCHER_PID_SHARED_FILE;
-          params += L" " + std::to_wstring(powertoys_pid) + L" ";
-
-          action_runner_path += L"\\action_runner.exe";
-          // Set up the shared file from which to retrieve the PID of PowerLauncher
-          HANDLE hMapFile = CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(DWORD), POWER_LAUNCHER_PID_SHARED_FILE);
-          if (hMapFile)
+          if (!is_process_elevated(false))
           {
-              PDWORD pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
-              if (pidBuffer)
-              {
-                  *pidBuffer = 0;
-                  m_hProcess = NULL;
+              std::wstring executable_args = L"";
+              executable_args.append(std::to_wstring(powertoys_pid));
 
-                  if (run_non_elevated(action_runner_path, params, pidBuffer))
+              SHELLEXECUTEINFOW sei{ sizeof(sei) };
+              sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+              sei.lpFile = L"modules\\launcher\\PowerLauncher.exe";
+              sei.nShow = SW_SHOWNORMAL;
+              sei.lpParameters = executable_args.data();
+              ShellExecuteExW(&sei);
+
+              m_hProcess = sei.hProcess;
+          }
+          else
+          {
+              std::wstring action_runner_path = get_module_folderpath();
+
+              std::wstring params;
+              params += L"-run-non-elevated ";
+              params += L"-target modules\\launcher\\PowerLauncher.exe ";
+              params += L"-pidFile ";
+              params += POWER_LAUNCHER_PID_SHARED_FILE;
+              params += L" " + std::to_wstring(powertoys_pid) + L" ";
+
+              action_runner_path += L"\\action_runner.exe";
+              // Set up the shared file from which to retrieve the PID of PowerLauncher
+              HANDLE hMapFile = CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(DWORD), POWER_LAUNCHER_PID_SHARED_FILE);
+              if (hMapFile)
+              {
+                  PDWORD pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
+                  if (pidBuffer)
                   {
-                      const int maxRetries = 80;
-                      for (int retry = 0; retry < maxRetries; ++retry)
+                      *pidBuffer = 0;
+                      m_hProcess = NULL;
+
+                      if (run_non_elevated(action_runner_path, params, pidBuffer))
                       {
-                          Sleep(50);
-                          DWORD pid = *pidBuffer;
-                          if (pid)
+                          const int maxRetries = 80;
+                          for (int retry = 0; retry < maxRetries; ++retry)
                           {
-                              m_hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
-                              break;
+                              Sleep(50);
+                              DWORD pid = *pidBuffer;
+                              if (pid)
+                              {
+                                  m_hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+                                  break;
+                              }
                           }
                       }
                   }
+                  CloseHandle(hMapFile);
               }
-              CloseHandle(hMapFile);
           }
       }
 
