@@ -213,7 +213,7 @@ private:
     bool IsSplashScreen(HWND window);
     bool ProcessNewWindow(HWND window) noexcept;
     winrt::com_ptr<IZoneWindow> WorkAreaFromCursorPosition() noexcept;
-    std::vector<int> HistoryInWorkArea(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept;
+    std::vector<int> GetZoneIndexSetFromWorkAreaHistory(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept;
     void MoveWindowIntoLastKnownZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<int>& zoneIndexSet) noexcept;
 
     void OnEditorExitEvent() noexcept;
@@ -353,7 +353,7 @@ winrt::com_ptr<IZoneWindow> FancyZones::WorkAreaFromCursorPosition() noexcept
     return nullptr;
 }
 
-std::vector<int> FancyZones::HistoryInWorkArea(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
+std::vector<int> FancyZones::GetZoneIndexSetFromWorkAreaHistory(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
 {
     const auto activeZoneSet = zoneWindow->ActiveZoneSet();
     if (activeZoneSet)
@@ -369,10 +369,6 @@ std::vector<int> FancyZones::HistoryInWorkArea(HWND window, winrt::com_ptr<IZone
 
 void FancyZones::MoveWindowIntoLastKnownZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<int>& zoneIndexSet) noexcept
 {
-    if (zoneIndexSet.size())
-    {
-        return;
-    }
     auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
     if (!fancyZonesData.IsAnotherWindowOfApplicationInstanceZoned(window, zoneWindow->UniqueId()))
     {
@@ -390,21 +386,24 @@ FancyZones::WindowCreated(HWND window) noexcept
     {
         std::vector<int> zoneIndexSet{};
         // Try to find application history in active monitor work area.
-        auto zoneWindow = WorkAreaFromCursorPosition();
-        if (zoneWindow)
+        auto workArea = WorkAreaFromCursorPosition();
+        if (workArea)
         {
-            zoneIndexSet = HistoryInWorkArea(window, zoneWindow);
+            zoneIndexSet = GetZoneIndexSetFromWorkAreaHistory(window, workArea);
         }
         if (zoneIndexSet.empty())
         {
             // Fallback to primary monitor work area.
-            zoneWindow = m_workAreaHandler.GetWorkArea(window);
-            if (zoneWindow)
+            workArea = m_workAreaHandler.GetWorkArea(window);
+            if (workArea)
             {
-                zoneIndexSet = HistoryInWorkArea(window, zoneWindow);
+                zoneIndexSet = GetZoneIndexSetFromWorkAreaHistory(window, workArea);
             }
         }
-        MoveWindowIntoLastKnownZone(window, zoneWindow, zoneIndexSet);
+        if (!zoneIndexSet.empty())
+        {
+            MoveWindowIntoLastKnownZone(window, workArea, zoneIndexSet);
+        }
     }
 }
 
