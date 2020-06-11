@@ -11,7 +11,6 @@ using Microsoft.Win32;
 using Wox.Infrastructure;
 using Microsoft.Plugin.Program.Logger;
 using Wox.Plugin;
-using Wox.Core.Resource;
 using System.Windows.Input;
 using System.Reflection;
 
@@ -34,9 +33,7 @@ namespace Microsoft.Plugin.Program.Programs
         public bool hasArguments { get; set; } = false;
         public string Arguments { get; set; } = String.Empty;
         public string Location => ParentDirectory;
-        public string AppType { get; set; }
-
-        private static readonly Internationalization _translator = InternationalizationManager.Instance;
+        public uint AppType { get; set; }
 
         private const string ShortcutExtension = "lnk";
         private const string ApplicationReferenceExtension = "appref-ms";
@@ -45,6 +42,14 @@ namespace Microsoft.Plugin.Program.Programs
 
         private const string proxyWebApp = "_proxy.exe";
         private const string appIdArgument = "--app-id";
+
+        private const string WebApplication = "Web application";
+        private const string InternetShortcutApplication = "Internet shortcut application";
+        private const string Win32Application = "Win32 application";
+
+        private const uint WEB_APPLICATION = 0;
+        private const uint INTERNET_SHORTCUT_APPLICATION = 1;
+        private const uint WIN32_APPLICATION = 2;
 
         private int Score(string query)
         {
@@ -74,7 +79,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
 
             // Set the subtitle to 'Web Application'
-            AppType = _translator.GetTranslation("powertoys_run_plugin_program_web_application");
+            AppType = WEB_APPLICATION;
 
             string[] subqueries = query.Split();
             bool nameContainsQuery = false;
@@ -94,6 +99,27 @@ namespace Microsoft.Plugin.Program.Programs
                 }
             }
             return pathContainsQuery && !nameContainsQuery;
+        }
+
+        // Function to set the subtitle based on the Type of application
+        public string SetSubtitle(uint AppType, IPublicAPI api)
+        {
+            if(AppType == WIN32_APPLICATION)
+            {
+                return api.GetTranslation("powertoys_run_plugin_program_win32_application");
+            }
+            else if(AppType == INTERNET_SHORTCUT_APPLICATION)
+            {
+                return api.GetTranslation("powertoys_run_plugin_program_internet_shortcut_application");
+            }
+            else if(AppType == WEB_APPLICATION)
+            {
+                return api.GetTranslation("powertoys_run_plugin_program_web_application");
+            }
+            else
+            {
+                return String.Empty;
+            }
         }
 
         public Result Result(string query, IPublicAPI api)
@@ -120,7 +146,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             var result = new Result
             {
-                SubTitle = AppType,
+                SubTitle = SetSubtitle(AppType, api),
                 IcoPath = IcoPath,
                 Score = score,
                 ContextData = this,
@@ -158,7 +184,7 @@ namespace Microsoft.Plugin.Program.Programs
         public List<ContextMenuResult> ContextMenus(IPublicAPI api)
         {
             // To add a context menu only to open file location as Internet shortcut applications do not have the functionality to run as admin
-            if(AppType.Equals(_translator.GetTranslation("powertoys_run_plugin_program_internet_shortcut_application")))
+            if(AppType == INTERNET_SHORTCUT_APPLICATION)
             {
                 var contextMenuItems = new List<ContextMenuResult>
                 {
@@ -248,7 +274,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Description = string.Empty,
                     Valid = true,
                     Enabled = true,
-                    AppType = _translator.GetTranslation("powertoys_run_plugin_program_win32_application")
+                    AppType = WIN32_APPLICATION
                 };
                 return p;
             }
@@ -305,7 +331,6 @@ namespace Microsoft.Plugin.Program.Programs
 
             try
             {
-                string InternetShortcutApplication = _translator.GetTranslation("powertoys_run_plugin_program_internet_shortcut_application");
                 var p = new Win32
                 {
                     Name = Path.GetFileNameWithoutExtension(path),
@@ -314,10 +339,9 @@ namespace Microsoft.Plugin.Program.Programs
                     FullPath = path.ToLower(),
                     UniqueIdentifier = path,
                     ParentDirectory = Directory.GetParent(path).FullName,
-                    Description = InternetShortcutApplication,
                     Valid = true,
                     Enabled = true,
-                    AppType = InternetShortcutApplication
+                    AppType = INTERNET_SHORTCUT_APPLICATION
                 };
                 return p;
             }
