@@ -211,13 +211,13 @@ private:
     void RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept;
 
     bool IsSplashScreen(HWND window);
-    bool ProcessNewWindow(HWND window) noexcept;
+    bool ShouldProcessNewWindow(HWND window) noexcept;
     winrt::com_ptr<IZoneWindow> WorkAreaFromCursorPosition() noexcept;
     std::vector<int> GetZoneIndexSetFromWorkAreaHistory(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept;
     void MoveWindowIntoLastKnownZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<int>& zoneIndexSet) noexcept;
 
     void OnEditorExitEvent() noexcept;
-    bool ProcessSnapHotkey() noexcept;
+    bool ShouldProcessSnapHotkey() noexcept;
 
     std::vector<std::pair<HMONITOR, RECT>> GetRawMonitorData() noexcept;
     std::vector<HMONITOR> GetMonitorsSorted() noexcept;
@@ -327,7 +327,7 @@ FancyZones::VirtualDesktopInitialize() noexcept
     PostMessage(m_window, WM_PRIV_VD_INIT, 0, 0);
 }
 
-bool FancyZones::ProcessNewWindow(HWND window) noexcept
+bool FancyZones::ShouldProcessNewWindow(HWND window) noexcept
 {
     // Avoid processing splash screens, already stamped (zoned) windows, or those windows
     // that belong to excluded applications list.
@@ -382,7 +382,7 @@ IFACEMETHODIMP_(void)
 FancyZones::WindowCreated(HWND window) noexcept
 {
     std::shared_lock readLock(m_lock);
-    if (m_settings->GetSettings()->appLastZone_moveWindows && ProcessNewWindow(window))
+    if (m_settings->GetSettings()->appLastZone_moveWindows && ShouldProcessNewWindow(window))
     {
         std::vector<int> zoneIndexSet{};
         // Try to find application history in active monitor work area.
@@ -430,7 +430,7 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
         }
         else if ((info->vkCode == VK_RIGHT) || (info->vkCode == VK_LEFT))
         {
-            if (ProcessSnapHotkey())
+            if (ShouldProcessSnapHotkey())
             {
                 Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
                 // Win+Left, Win+Right will cycle through Zones in the active ZoneSet when WM_PRIV_LOWLEVELKB's handled
@@ -950,7 +950,7 @@ void FancyZones::OnEditorExitEvent() noexcept
     }
 }
 
-bool FancyZones::ProcessSnapHotkey() noexcept
+bool FancyZones::ShouldProcessSnapHotkey() noexcept
 {
     if (m_settings->GetSettings()->overrideSnapHotkeys)
     {
