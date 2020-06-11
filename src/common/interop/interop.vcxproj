@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\..\installer\Version.props" />
   <PropertyGroup>
@@ -124,13 +124,17 @@
     <WriteLinesToFile File="Generated Files\AssemblyInfo.cpp" Lines="@(HeaderLines)" Overwrite="true" Encoding="Unicode" WriteOnlyWhenDifferent="true" />
   </Target>
   <ItemGroup>
+    <ClInclude Include="HotkeyManager.h" />
     <ClInclude Include="interop.h" />
+    <ClInclude Include="KeyboardHook.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Generated Files\AssemblyInfo.cpp" />
+    <ClCompile Include="HotkeyManager.cpp" />
     <ClCompile Include="interop.cpp" />
+    <ClCompile Include="KeyboardHook.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
