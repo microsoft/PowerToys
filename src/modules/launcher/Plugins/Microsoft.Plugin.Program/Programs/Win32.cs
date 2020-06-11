@@ -40,6 +40,9 @@ namespace Microsoft.Plugin.Program.Programs
         private const string ExeExtension = "exe";
         private const string InternetShortcutExtension = "url";
 
+        private const string proxyWebApp = "_proxy.exe";
+        private const string appIdArgument = "--app-id";
+
         private const string WebApplication = "Web application";
         private const string InternetShortcutApplication = "Internet shortcut application";
         private const string Win32Application = "Win32 application";
@@ -58,8 +61,6 @@ namespace Microsoft.Plugin.Program.Programs
             // To Filter PWAs when the user searches for the main application
             // All Chromium based applications contain the --app-id argument
             // Reference : https://codereview.chromium.org/399045/show
-            string proxyWebApp = "_proxy.exe";
-            string appIdArgument = "--app-id";
             bool isWebApplication = FullPath.Contains(proxyWebApp) && Arguments.Contains(appIdArgument);
             return isWebApplication;
         }
@@ -80,7 +81,7 @@ namespace Microsoft.Plugin.Program.Programs
             bool nameContainsQuery = false;
             bool pathContainsQuery = false;
 
-            // check if any space separated query is a part of the app name
+            // check if any space separated query is a part of the app name or path name
             foreach (var subquery in subqueries)
             {
                 if (FullPath.Contains(subquery, StringComparison.OrdinalIgnoreCase))
