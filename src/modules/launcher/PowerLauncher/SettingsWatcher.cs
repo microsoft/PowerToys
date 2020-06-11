@@ -52,7 +52,7 @@ namespace PowerLauncher
                     var openPowerlauncher = ConvertHotkey(overloadSettings.properties.open_powerlauncher);
                     if (_settings.Hotkey != openPowerlauncher)
                     {
-                        _settings.Hotkey = ConvertHotkey(overloadSettings.properties.open_powerlauncher);
+                        _settings.Hotkey = openPowerlauncher;
                     }
 
                     var shell = PluginManager.AllPlugins.Find(pp => pp.Metadata.Name == "Shell");

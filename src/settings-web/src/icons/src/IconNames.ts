@@ -1817,7 +1817,7 @@ export const enum IconNames {
     BarChartVerticalFill = 'BarChartVerticalFill',
     StackedColumnChart2Fill = 'StackedColumnChart2Fill',
     PlainText = 'PlainText',
-    AccessibiltyChecker = 'AccessibiltyChecker',
+    AccessibilityChecker = 'AccessibilityChecker',
     DatabaseSync = 'DatabaseSync',
     ReservationOrders = 'ReservationOrders',
     TabOneColumn = 'TabOneColumn',

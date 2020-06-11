@@ -186,22 +186,65 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
     std::wstring_view action{ args[1] };
 
-    if (action == L"-start_PowerLauncher")
+    if (action == L"-run-non-elevated")
     {
-        HANDLE hMapFile = OpenFileMappingW(FILE_MAP_WRITE, FALSE, POWER_LAUNCHER_PID_SHARED_FILE);
-        if (hMapFile)
+        int nextArg = 2;
+
+        std::wstring_view target;
+        std::wstring_view pidFile;
+        std::wstring params;
+
+        while (nextArg < nArgs)
         {
-            PDWORD pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
+            if (std::wstring_view(args[nextArg]) == L"-target" && nextArg + 1 < nArgs)
+            {
+                target = args[nextArg + 1];
+                nextArg += 2;
+            }
+            else if (std::wstring_view(args[nextArg]) == L"-pidFile" && nextArg + 1 < nArgs)
+            {
+                pidFile = args[nextArg + 1];
+                nextArg += 2;
+            }
+            else
+            {
+                params = args[nextArg];
+                nextArg++;
+            }
+        }
+
+        HANDLE hMapFile = NULL;
+        PDWORD pidBuffer = NULL;
+
+        if (!pidFile.empty())
+        {
+            hMapFile = OpenFileMappingW(FILE_MAP_WRITE, FALSE, pidFile.data());
+            if (hMapFile)
+            {
+                pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
+                if (pidBuffer)
+                {
+                    *pidBuffer = 0;
+                }
+            }
+        }
+
+        run_same_elevation(target.data(), params, pidBuffer);
+        
+        // cleanup
+        if (!pidFile.empty())
+        {
             if (pidBuffer)
             {
-                *pidBuffer = 0;
-                run_same_elevation(L"modules\\launcher\\PowerLauncher.exe", L"", pidBuffer);
                 FlushViewOfFile(pidBuffer, sizeof(DWORD));
                 UnmapViewOfFile(pidBuffer);
             }
 
-            FlushFileBuffers(hMapFile);
-            CloseHandle(hMapFile);
+            if (hMapFile)
+            {
+                FlushFileBuffers(hMapFile);
+                CloseHandle(hMapFile);
+            }
         }
     }
     else if (action == L"-install_dotnet")

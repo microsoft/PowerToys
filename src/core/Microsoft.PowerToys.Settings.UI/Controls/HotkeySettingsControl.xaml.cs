@@ -7,6 +7,7 @@ using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+using System;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 namespace Microsoft.PowerToys.Settings.UI.Controls
@@ -23,7 +24,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 null);
 
         private HotkeySettings hotkeySettings;
-        private HotkeySettings internalSettings = new HotkeySettings();
+        private HotkeySettings internalSettings;
+        private HotkeySettings lastValidSettings;
+        private HotkeySettingsControlHook hook;
+        private bool _isActive;
 
         public HotkeySettings HotkeySettings
         {
@@ -48,74 +52,85 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             InitializeComponent();
             internalSettings = new HotkeySettings();
 
-            HotkeyTextBox.PreviewKeyDown += HotkeyTextBox_KeyDown;
-            HotkeyTextBox.LostFocus += HotkeyTextBox_LosingFocus;
+            HotkeyTextBox.GettingFocus += HotkeyTextBox_GettingFocus;
+            HotkeyTextBox.LosingFocus += HotkeyTextBox_LosingFocus;
+            hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive);
         }
 
-        private static bool IsDown(Windows.System.VirtualKey key)
+        private void KeyEventHandler(int key, bool matchValue, int matchValueCode, string matchValueText)
         {
-            return Window.Current.CoreWindow.GetKeyState(key).HasFlag(CoreVirtualKeyStates.Down);
+            switch ((Windows.System.VirtualKey)key)
+            {
+                case Windows.System.VirtualKey.LeftWindows:
+                case Windows.System.VirtualKey.RightWindows:
+                    internalSettings.Win = matchValue;
+                    break;
+                case Windows.System.VirtualKey.Control:
+                case Windows.System.VirtualKey.LeftControl:
+                case Windows.System.VirtualKey.RightControl:
+                    internalSettings.Ctrl = matchValue;
+                    break;
+                case Windows.System.VirtualKey.Menu:
+                case Windows.System.VirtualKey.LeftMenu:
+                case Windows.System.VirtualKey.RightMenu:
+                    internalSettings.Alt = matchValue;
+                    break;
+                case Windows.System.VirtualKey.Shift:
+                case Windows.System.VirtualKey.LeftShift:
+                case Windows.System.VirtualKey.RightShift:
+                    internalSettings.Shift = matchValue;
+                    break;
+                case Windows.System.VirtualKey.Escape:
+                    internalSettings = new HotkeySettings();
+                    HotkeySettings = new HotkeySettings();
+                    return;
+                default:
+                    internalSettings.Code = matchValueCode;
+                    internalSettings.Key = matchValueText;
+                    break;
+            }
         }
 
-        private void HotkeyTextBox_KeyDown(object sender, KeyRoutedEventArgs e)
+        private async void Hotkey_KeyDown(int key)
         {
-            e.Handled = true;
-            if (
-                e.Key == Windows.System.VirtualKey.LeftWindows ||
-                e.Key == Windows.System.VirtualKey.RightWindows ||
-                e.Key == Windows.System.VirtualKey.Control ||
-                e.Key == Windows.System.VirtualKey.Menu ||
-                e.Key == Windows.System.VirtualKey.Shift)
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
-                return;
-            }
+                KeyEventHandler(key, true, key, Lib.Utilities.Helper.GetKeyName((uint)key));
+                if (internalSettings.Code > 0)
+                {
+                    lastValidSettings = internalSettings.Clone();
+                    HotkeyTextBox.Text = lastValidSettings.ToString();
+                }
+            });
+        }
 
-            if (e.Key == Windows.System.VirtualKey.Escape)
+        private async void Hotkey_KeyUp(int key)
+        {
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
-                internalSettings = new HotkeySettings();
-                HotkeySettings = new HotkeySettings();
-                return;
-            }
+                KeyEventHandler(key, false, 0, string.Empty);
+            });
+        }
 
-            var settings = new HotkeySettings();
+        private bool Hotkey_IsActive()
+        {
+            return _isActive;
+        }
 
-            // Display HotKey value
-            if (IsDown(Windows.System.VirtualKey.LeftWindows) ||
-                IsDown(Windows.System.VirtualKey.RightWindows))
-            {
-                settings.Win = true;
-            }
-
-            if (IsDown(Windows.System.VirtualKey.Control))
-            {
-                settings.Ctrl = true;
-            }
-
-            if (IsDown(Windows.System.VirtualKey.Menu))
-            {
-                settings.Alt = true;
-            }
-
-            if (IsDown(Windows.System.VirtualKey.Shift))
-            {
-                settings.Shift = true;
-            }
-
-            settings.Key = Lib.Utilities.Helper.GetKeyName((uint)e.Key);
-
-            settings.Code = (int)e.OriginalKey;
-            internalSettings = settings;
-            HotkeyTextBox.Text = internalSettings.ToString();
+        private void HotkeyTextBox_GettingFocus(object sender, RoutedEventArgs e)
+        {
+            _isActive = true;
         }
 
         private void HotkeyTextBox_LosingFocus(object sender, RoutedEventArgs e)
         {
-            if (internalSettings.IsValid() || internalSettings.IsEmpty())
+            if (lastValidSettings != null && (lastValidSettings.IsValid() || lastValidSettings.IsEmpty()))
             {
-                HotkeySettings = internalSettings;
+                HotkeySettings = lastValidSettings.Clone();
             }
 
             HotkeyTextBox.Text = hotkeySettings.ToString();
+            _isActive = false;
         }
     }
 }

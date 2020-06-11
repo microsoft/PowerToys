@@ -35,6 +35,9 @@ public:
     // Function to set selection handler for single key remap drop down. Needs to be called after the constructor since the singleKeyControl StackPanel is null if called in the constructor
     void SetSelectionHandler(Grid& table, StackPanel& singleKeyControl, int colIndex, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer);
 
+    // Function for validating the selection of shortcuts for the drop down
+    std::pair<KeyboardManagerHelper::ErrorType, int> ValidateShortcutSelection(Grid table, StackPanel shortcutControl, StackPanel parent, int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects);
+
     // Function to set selection handler for shortcut drop down. Needs to be called after the constructor since the shortcutControl StackPanel is null if called in the constructor
     void SetSelectionHandler(Grid& table, StackPanel& shortcutControl, StackPanel parent, int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects);
 
@@ -48,10 +51,10 @@ public:
     static void AddDropDown(Grid table, StackPanel shortcutControl, StackPanel parent, const int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects);
 
     // Function to get the list of key codes from the shortcut combo box stack panel
-    std::vector<DWORD> GetKeysFromStackPanel(StackPanel parent);
+    static std::vector<DWORD> GetKeysFromStackPanel(StackPanel parent);
 
     // Function to check if a modifier has been repeated in the previous drop downs
-    bool CheckRepeatedModifier(StackPanel parent, uint32_t dropDownIndex, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList);
+    static bool CheckRepeatedModifier(StackPanel parent, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList);
 
     // Function to set the warning message
     void SetDropDownError(ComboBox currentDropDown, hstring message);

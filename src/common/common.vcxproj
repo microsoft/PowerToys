@@ -125,6 +125,8 @@
     <ClInclude Include="keyboard_layout.h" />
     <ClInclude Include="keyboard_layout_impl.h" />
     <ClInclude Include="notifications.h" />
+    <ClInclude Include="os-detection\os-detect.h" />
+    <ClInclude Include="RestartManagement.h" />
     <ClInclude Include="shared_constants.h" />
     <ClInclude Include="timeutil.h" />
     <ClInclude Include="two_way_pipe_message_ipc.h" />
@@ -158,9 +160,11 @@
     <ClCompile Include="monitors.cpp" />
     <ClCompile Include="notifications.cpp" />
     <ClCompile Include="on_thread_executor.cpp" />
+    <ClCompile Include="os-detection\os-detect.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="RestartManagement.cpp" />
     <ClCompile Include="settings_helpers.cpp" />
     <ClCompile Include="settings_objects.cpp" />
     <ClCompile Include="icon_helpers.cpp" />

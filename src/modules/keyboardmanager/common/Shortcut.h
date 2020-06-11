@@ -3,6 +3,7 @@
 #include "../common/keyboard_layout.h"
 #include "../common/shared_constants.h"
 #include <interface/lowlevel_keyboard_event_data.h>
+#include "InputInterface.h"
 
 // Enum type to store different states of the win key
 enum class ModifierKey
@@ -167,10 +168,10 @@ public:
     void SetKeyCodes(const std::vector<DWORD>& keys);
 
     // Function to check if all the modifiers in the shortcut have been pressed down
-    bool CheckModifiersKeyboardState() const;
+    bool CheckModifiersKeyboardState(InputInterface& ii) const;
 
     // Function to check if any keys are pressed down except those in the shortcut
-    bool IsKeyboardStateClearExceptShortcut() const;
+    bool IsKeyboardStateClearExceptShortcut(InputInterface& ii) const;
 
     // Function to get the number of modifiers that are common between the current shortcut and the shortcut in the argument
     int GetCommonModifiersCount(const Shortcut& input) const;

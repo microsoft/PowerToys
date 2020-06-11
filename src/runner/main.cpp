@@ -11,17 +11,19 @@
 
 #include <common/common.h>
 #include <common/dpi_aware.h>
-
 #include <common/winstore.h>
 #include <common/notifications.h>
-
 #include <common/updating/updating.h>
+#include <common/RestartManagement.h>
 
 #include "update_state.h"
 #include "update_utils.h"
 #include "action_runner_utils.h"
 
 #include <winrt/Windows.System.h>
+
+#include <Psapi.h>
+#include <RestartManager.h>
 
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
@@ -30,10 +32,16 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
+// Window Explorer process name should not be localized.
+const wchar_t EXPLORER_PROCESS_NAME[] = L"explorer.exe";
+
 namespace localized_strings
 {
     const wchar_t MSI_VERSION_IS_ALREADY_RUNNING[] = L"An older version of PowerToys is already running.";
     const wchar_t OLDER_MSIX_UNINSTALLED[] = L"An older MSIX version of PowerToys was uninstalled.";
+    const wchar_t PT_UPDATE_MESSAGE_BOX_TITLE[] = L"PowerToys";
+    const wchar_t PT_UPDATE_MESSAGE_BOX_TEXT[] = L"PowerToys was updated and some components require Windows Explorer to restart. Do you want to restart Windows Explorer now?";
+
 }
 
 namespace
@@ -249,6 +257,17 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     }
 }
 
+void RequestExplorerRestart()
+{
+    if (MessageBox(nullptr,
+                   localized_strings::PT_UPDATE_MESSAGE_BOX_TEXT,
+                   localized_strings::PT_UPDATE_MESSAGE_BOX_TITLE,
+                   MB_ICONINFORMATION | MB_YESNO | MB_DEFBUTTON1) == IDYES)
+    {
+        RestartProcess(EXPLORER_PROCESS_NAME);
+    }
+}
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     winrt::init_apartment();
@@ -273,7 +292,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             return 0;
         }
     case SpecialMode::ReportSuccessfulUpdate:
-        notifications::show_toast(GET_RESOURCE_STRING(IDS_AUTOUPDATE_SUCCESS));
+        RequestExplorerRestart();
         break;
 
     case SpecialMode::None:

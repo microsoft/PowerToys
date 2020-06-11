@@ -65,7 +65,7 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/tree/master/src/modules/previewpane">
+            <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_FileExplorerAddOns">
                 <TextBlock x:Uid="Module_overview" />
             </HyperlinkButton>
 
