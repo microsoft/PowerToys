@@ -53,6 +53,49 @@ namespace Microsoft.Plugin.Program.Programs
             return score;
         }
 
+        public bool IsWebApplication()
+        {
+            // To Filter PWAs when the user searches for the main application
+            // All Chromium based applications contain the --app-id argument
+            // Reference : https://codereview.chromium.org/399045/show
+            string proxyWebApp = "_proxy.exe";
+            string appIdArgument = "--app-id";
+            bool isWebApplication = FullPath.Contains(proxyWebApp) && Arguments.Contains(appIdArgument);
+            return isWebApplication;
+        }
+
+        // Condition to Filter pinned Web Applications or PWAs when searching for the main application
+        public bool FilterWebApplication(string query)
+        {
+            // If the app is not a web application, then do not filter it
+            if(!IsWebApplication())
+            {
+                return false;
+            }
+
+            // Set the subtitle to 'Web Application'
+            AppType = WebApplication;
+
+            string[] subqueries = query.Split();
+            bool nameContainsQuery = false;
+            bool pathContainsQuery = false;
+
+            // check if any space separated query is a part of the app name
+            foreach (var subquery in subqueries)
+            {
+                if (FullPath.Contains(subquery, StringComparison.OrdinalIgnoreCase))
+                {
+                    pathContainsQuery = true;
+                }
+
+                if(Name.Contains(subquery, StringComparison.OrdinalIgnoreCase))
+                {
+                    nameContainsQuery = true;
+                }
+            }
+            return pathContainsQuery && !nameContainsQuery;
+        }
+
         public Result Result(string query, IPublicAPI api)
         {
             var score = Score(query);
@@ -68,27 +111,11 @@ namespace Microsoft.Plugin.Program.Programs
             }
             else
             {
-                // To Filter PWAs when the user searches for the main application
-                // All Chromium based applications contain the --app-id argument
-                // Reference : https://codereview.chromium.org/399045/show
-                string proxyWebApp = "_proxy.exe";
-                string appIdArgument = "--app-id";
-                bool isWebApplication = FullPath.Contains(proxyWebApp) && Arguments.Contains(appIdArgument);
-
-                // Condition to Filter pinned Web Applications or PWAs when searching for the main application
-                if(isWebApplication && 
-                    FullPath.Contains(query, StringComparison.OrdinalIgnoreCase) &&
-                    !Name.Contains(query, StringComparison.OrdinalIgnoreCase))
+                // Filter Web Applications when searching for the main application
+                if (FilterWebApplication(query))
                 {
                     return null;
                 }
-
-                // Set the subtitle to 'Web Application'
-                if(isWebApplication)
-                {
-                    AppType = WebApplication;
-                }
-
             }
 
             var result = new Result
