@@ -32,11 +32,13 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
+// Window Explorer process name should not be localized.
+const wchar_t EXPLORER_PROCESS_NAME[] = L"explorer.exe";
+
 namespace localized_strings
 {
     const wchar_t MSI_VERSION_IS_ALREADY_RUNNING[] = L"An older version of PowerToys is already running.";
     const wchar_t OLDER_MSIX_UNINSTALLED[] = L"An older MSIX version of PowerToys was uninstalled.";
-    const wchar_t EXPLORER_PROCESS_NAME[] = L"explorer.exe";
     const wchar_t PT_UPDATE_MESSAGE_BOX_TITLE[] = L"PowerToys";
     const wchar_t PT_UPDATE_MESSAGE_BOX_TEXT[] = L"PowerToys was updated and some components require Windows Explorer to restart. Do you want to restart Windows Explorer now?";
 
