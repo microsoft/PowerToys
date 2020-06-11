@@ -212,7 +212,7 @@ private:
 
     bool IsSplashScreen(HWND window);
     bool ShouldProcessNewWindow(HWND window) noexcept;
-    std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetZoneIndexSetFromWorkAreaHistory(HWND window, winrt::com_ptr<IZoneWindow> workArea);
+    std::vector<int> GetZoneIndexSetFromWorkAreaHistory(HWND window, winrt::com_ptr<IZoneWindow> workArea) noexcept;
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetZoneIndexSetFromWorkAreaHistory(HWND window, HMONITOR monitor, std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& workAreaMap) noexcept;
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetZoneIndexSetFromHistory(HWND window) noexcept;
     void MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<int>& zoneIndexSet) noexcept;
@@ -341,8 +341,8 @@ bool FancyZones::ShouldProcessNewWindow(HWND window) noexcept
     return true;
 }
 
-std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetZoneIndexSetFromWorkAreaHistory(
-    HWND window, winrt::com_ptr<IZoneWindow> workArea)
+std::vector<int> FancyZones::GetZoneIndexSetFromWorkAreaHistory(
+    HWND window, winrt::com_ptr<IZoneWindow> workArea) noexcept
 {
     const auto activeZoneSet = workArea->ActiveZoneSet();
     if (activeZoneSet)
@@ -350,13 +350,10 @@ std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetZoneInde
         wil::unique_cotaskmem_string zoneSetId;
         if (SUCCEEDED(StringFromCLSID(activeZoneSet->Id(), &zoneSetId)))
         {
-            return {
-                workArea,
-                JSONHelpers::FancyZonesDataInstance().GetAppLastZoneIndexSet(window, workArea->UniqueId(), zoneSetId.get())
-            };
+            return JSONHelpers::FancyZonesDataInstance().GetAppLastZoneIndexSet(window, workArea->UniqueId(), zoneSetId.get());
         }
     }
-    return { nullptr, {} };
+    return {};
 }
 
 std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetZoneIndexSetFromWorkAreaHistory(
@@ -368,7 +365,7 @@ std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetZoneInde
     {
         auto workArea = workAreaMap[monitor];
         workAreaMap.erase(monitor); // monitor processed, remove entry from the map
-        return GetZoneIndexSetFromWorkAreaHistory(window, workArea);
+        return { workArea, GetZoneIndexSetFromWorkAreaHistory(window, workArea) };
     }
     return { nullptr, {} };
 }
@@ -397,10 +394,10 @@ std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetZoneInde
     {
         for (const auto& [monitor, workArea] : workAreaMap)
         {
-            out = GetZoneIndexSetFromWorkAreaHistory(window, workArea);
-            if (!out.second.empty())
+            auto zoneIndexSet = GetZoneIndexSetFromWorkAreaHistory(window, workArea);
+            if (!zoneIndexSet.empty())
             {
-                break;
+                return { workArea, zoneIndexSet };
             }
         }
     }
