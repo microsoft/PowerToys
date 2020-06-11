@@ -14,6 +14,7 @@
 #include <common/settings_helpers.h>
 #include <keyboardmanager/common/trace.h>
 #include "KeyboardEventHandlers.h"
+#include "Input.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -55,6 +56,9 @@ private:
 
     // Variable which stores all the state information to be shared between the UI and back-end
     KeyboardManagerState keyboardManagerState;
+
+    // Object of class which implements InputInterface. Required for calling library functions while enabling testing
+    Input inputHandler;
 
 public:
     // Constructor
@@ -286,7 +290,7 @@ public:
                 // Reset Num Lock whenever a NumLock key down event is suppressed since Num Lock key state change occurs before it is intercepted by low level hooks
                 if (event.lParam->vkCode == VK_NUMLOCK && (event.wParam == WM_KEYDOWN || event.wParam == WM_SYSKEYDOWN) && event.lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
                 {
-                    KeyboardEventHandlers::SetNumLockToPreviousState();
+                    KeyboardEventHandlers::SetNumLockToPreviousState(keyboardmanager_object_ptr->inputHandler);
                 }
                 return 1;
             }
@@ -347,7 +351,7 @@ public:
         }
 
         // Remap a key
-        intptr_t SingleKeyRemapResult = KeyboardEventHandlers::HandleSingleKeyRemapEvent(data, keyboardManagerState);
+        intptr_t SingleKeyRemapResult = KeyboardEventHandlers::HandleSingleKeyRemapEvent(inputHandler, data, keyboardManagerState);
 
         // Single key remaps have priority. If a key is remapped, only the remapped version should be visible to the shortcuts and hence the event should be suppressed here.
         if (SingleKeyRemapResult == 1)
@@ -367,10 +371,10 @@ public:
         }
 
         //// Remap a key to behave like a modifier instead of a toggle
-        //intptr_t SingleKeyToggleToModResult = KeyboardEventHandlers::HandleSingleKeyToggleToModEvent(data, keyboardManagerState);
+        //intptr_t SingleKeyToggleToModResult = KeyboardEventHandlers::HandleSingleKeyToggleToModEvent(inputHandler, data, keyboardManagerState);
 
         //// Handle an app-specific shortcut remapping
-        //intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(data, keyboardManagerState);
+        //intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(inputHandler, data, keyboardManagerState);
 
         //// If an app-specific shortcut is remapped then the os-level shortcut remapping should be suppressed.
         //if (AppSpecificShortcutRemapResult == 1)
@@ -379,7 +383,7 @@ public:
         //}
 
         // Handle an os-level shortcut remapping
-        intptr_t OSLevelShortcutRemapResult = KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(data, keyboardManagerState);
+        intptr_t OSLevelShortcutRemapResult = KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(inputHandler, data, keyboardManagerState);
 
         // If any of the supported types of remappings took place, then suppress the key event
         if ((SingleKeyRemapResult + OSLevelShortcutRemapResult) > 0)
