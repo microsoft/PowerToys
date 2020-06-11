@@ -215,7 +215,7 @@ private:
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetZoneIndexSetFromWorkAreaHistory(HWND window, winrt::com_ptr<IZoneWindow> workArea);
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetZoneIndexSetFromWorkAreaHistory(HWND window, HMONITOR monitor, std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& workAreaMap) noexcept;
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetZoneIndexSetFromHistory(HWND window) noexcept;
-    void MoveWindowIntoLastKnownZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<int>& zoneIndexSet) noexcept;
+    void MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<int>& zoneIndexSet) noexcept;
 
     void OnEditorExitEvent() noexcept;
     bool ShouldProcessSnapHotkey() noexcept;
@@ -407,7 +407,7 @@ std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetZoneInde
     return out;
 }
 
-void FancyZones::MoveWindowIntoLastKnownZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<int>& zoneIndexSet) noexcept
+void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<int>& zoneIndexSet) noexcept
 {
     auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
     if (!fancyZonesData.IsAnotherWindowOfApplicationInstanceZoned(window, zoneWindow->UniqueId()))
@@ -427,7 +427,7 @@ FancyZones::WindowCreated(HWND window) noexcept
         auto data = GetZoneIndexSetFromHistory(window);
         if (!data.second.empty())
         {
-            MoveWindowIntoLastKnownZone(window, data.first, data.second);
+            MoveWindowIntoZone(window, data.first, data.second);
         }
     }
 }
