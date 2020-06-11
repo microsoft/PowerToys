@@ -11,6 +11,7 @@ using Microsoft.Win32;
 using Wox.Infrastructure;
 using Microsoft.Plugin.Program.Logger;
 using Wox.Plugin;
+using Wox.Core.Resource;
 using System.Windows.Input;
 using System.Reflection;
 
@@ -35,6 +36,8 @@ namespace Microsoft.Plugin.Program.Programs
         public string Location => ParentDirectory;
         public string AppType { get; set; }
 
+        private static readonly Internationalization _translator = InternationalizationManager.Instance;
+
         private const string ShortcutExtension = "lnk";
         private const string ApplicationReferenceExtension = "appref-ms";
         private const string ExeExtension = "exe";
@@ -42,10 +45,6 @@ namespace Microsoft.Plugin.Program.Programs
 
         private const string proxyWebApp = "_proxy.exe";
         private const string appIdArgument = "--app-id";
-
-        private const string WebApplication = "Web application";
-        private const string InternetShortcutApplication = "Internet shortcut application";
-        private const string Win32Application = "Win32 application";
 
         private int Score(string query)
         {
@@ -75,7 +74,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
 
             // Set the subtitle to 'Web Application'
-            AppType = WebApplication;
+            AppType = _translator.GetTranslation("powertoys_run_plugin_program_web_application");
 
             string[] subqueries = query.Split();
             bool nameContainsQuery = false;
@@ -159,7 +158,7 @@ namespace Microsoft.Plugin.Program.Programs
         public List<ContextMenuResult> ContextMenus(IPublicAPI api)
         {
             // To add a context menu only to open file location as Internet shortcut applications do not have the functionality to run as admin
-            if(AppType.Equals(InternetShortcutApplication))
+            if(AppType.Equals(_translator.GetTranslation("powertoys_run_plugin_program_internet_shortcut_application")))
             {
                 var contextMenuItems = new List<ContextMenuResult>
                 {
@@ -249,7 +248,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Description = string.Empty,
                     Valid = true,
                     Enabled = true,
-                    AppType = Win32Application
+                    AppType = _translator.GetTranslation("powertoys_run_plugin_program_win32_application")
                 };
                 return p;
             }
@@ -306,6 +305,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             try
             {
+                string InternetShortcutApplication = _translator.GetTranslation("powertoys_run_plugin_program_internet_shortcut_application");
                 var p = new Win32
                 {
                     Name = Path.GetFileNameWithoutExtension(path),
