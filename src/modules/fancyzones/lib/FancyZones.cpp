@@ -213,8 +213,8 @@ private:
     bool IsSplashScreen(HWND window);
     bool ShouldProcessNewWindow(HWND window) noexcept;
     std::vector<int> GetZoneIndexSetFromWorkAreaHistory(HWND window, winrt::com_ptr<IZoneWindow> workArea) noexcept;
-    std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetZoneIndexSetFromWorkAreaHistory(HWND window, HMONITOR monitor, std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& workAreaMap) noexcept;
-    std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetZoneIndexSetFromHistory(HWND window) noexcept;
+    std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& workAreaMap) noexcept;
+    std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetAppZoneHistoryInfo(HWND window) noexcept;
     void MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<int>& zoneIndexSet) noexcept;
 
     void OnEditorExitEvent() noexcept;
@@ -356,7 +356,7 @@ std::vector<int> FancyZones::GetZoneIndexSetFromWorkAreaHistory(
     return {};
 }
 
-std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetZoneIndexSetFromWorkAreaHistory(
+std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetAppZoneHistoryInfo(
     HWND window,
     HMONITOR monitor,
     std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& workAreaMap) noexcept
@@ -370,9 +370,9 @@ std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetZoneInde
     return { nullptr, {} };
 }
 
-std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetZoneIndexSetFromHistory(HWND window) noexcept
+std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetAppZoneHistoryInfo(HWND window) noexcept
 {
-    std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> out{ nullptr, {} };
+    std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> appZoneHistoryInfo{ nullptr, {} };
     auto workAreaMap = m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId);
 
     // 1. Search application history on currently active monitor (based on cursor position).
@@ -380,17 +380,17 @@ std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetZoneInde
     if (GetCursorPos(&cursorPosition))
     {
         HMONITOR monitor = MonitorFromPoint(cursorPosition, MONITOR_DEFAULTTOPRIMARY);
-        out = GetZoneIndexSetFromWorkAreaHistory(window, monitor, workAreaMap);
+        appZoneHistoryInfo = GetAppZoneHistoryInfo(window, monitor, workAreaMap);
     }
     // 2. Search application history on primary monitor.
-    if (out.second.empty())
+    if (appZoneHistoryInfo.second.empty())
     {
         HMONITOR monitor = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
-        out = GetZoneIndexSetFromWorkAreaHistory(window, monitor, workAreaMap);
+        appZoneHistoryInfo = GetAppZoneHistoryInfo(window, monitor, workAreaMap);
 
     }
     // 3. Search application history on remaining monitors.
-    if (out.second.empty())
+    if (appZoneHistoryInfo.second.empty())
     {
         for (const auto& [monitor, workArea] : workAreaMap)
         {
@@ -401,7 +401,7 @@ std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetZoneInde
             }
         }
     }
-    return out;
+    return appZoneHistoryInfo;
 }
 
 void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<int>& zoneIndexSet) noexcept
@@ -421,10 +421,10 @@ FancyZones::WindowCreated(HWND window) noexcept
     std::shared_lock readLock(m_lock);
     if (m_settings->GetSettings()->appLastZone_moveWindows && ShouldProcessNewWindow(window))
     {
-        auto data = GetZoneIndexSetFromHistory(window);
-        if (!data.second.empty())
+        std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> appZoneHistoryInfo = GetAppZoneHistoryInfo(window);
+        if (!appZoneHistoryInfo.second.empty())
         {
-            MoveWindowIntoZone(window, data.first, data.second);
+            MoveWindowIntoZone(window, appZoneHistoryInfo.first, appZoneHistoryInfo.second);
         }
     }
 }
