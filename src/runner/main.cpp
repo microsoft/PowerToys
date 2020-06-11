@@ -264,7 +264,7 @@ void RequestExplorerRestart()
                    localized_strings::PT_UPDATE_MESSAGE_BOX_TITLE,
                    MB_ICONINFORMATION | MB_YESNO | MB_DEFBUTTON1) == IDYES)
     {
-        RestartProcess(localized_strings::EXPLORER_PROCESS_NAME);
+        RestartProcess(EXPLORER_PROCESS_NAME);
     }
 }
 
