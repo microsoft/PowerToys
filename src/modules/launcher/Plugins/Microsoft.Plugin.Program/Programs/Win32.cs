@@ -43,10 +43,6 @@ namespace Microsoft.Plugin.Program.Programs
         private const string proxyWebApp = "_proxy.exe";
         private const string appIdArgument = "--app-id";
 
-        private const string WebApplication = "Web application";
-        private const string InternetShortcutApplication = "Internet shortcut application";
-        private const string Win32Application = "Win32 application";
-
         private const uint WEB_APPLICATION = 0;
         private const uint INTERNET_SHORTCUT_APPLICATION = 1;
         private const uint WIN32_APPLICATION = 2;
