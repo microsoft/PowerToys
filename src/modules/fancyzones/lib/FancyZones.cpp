@@ -470,7 +470,7 @@ FancyZones::WindowCreated(HWND window) noexcept
         }
         else if (!primaryActive)
         {
-            // No application history on currently active monitor, open window u
+            // No application history on currently active monitor, open window un-zoned.
             OpenOnCurrentlyActiveMonitor(window, primary, active);
         }
     }
