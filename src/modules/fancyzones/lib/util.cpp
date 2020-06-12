@@ -161,5 +161,9 @@ bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& excludedA
     {
         return false;
     }
+    if (find_app_name_in_path(filtered.process_path, { L"FANCYZONESEDITOR.EXE" }))
+    {
+        return false;
+    }
     return true;
 }
