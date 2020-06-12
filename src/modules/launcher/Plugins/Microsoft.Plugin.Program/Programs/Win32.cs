@@ -31,16 +31,24 @@ namespace Microsoft.Plugin.Program.Programs
         public bool Valid { get; set; }
         public bool Enabled { get; set; }
         public bool hasArguments { get; set; } = false;
+        public string Arguments { get; set; } = String.Empty;
         public string Location => ParentDirectory;
-        public string AppType { get; set; }
+        public uint AppType { get; set; }
 
         private const string ShortcutExtension = "lnk";
         private const string ApplicationReferenceExtension = "appref-ms";
         private const string ExeExtension = "exe";
         private const string InternetShortcutExtension = "url";
 
-        private const string InternetShortcutApplication = "Internet shortcut application";
-        private const string Win32Application = "Win32 application";
+        private const string proxyWebApp = "_proxy.exe";
+        private const string appIdArgument = "--app-id";
+
+        private enum ApplicationTypes
+        {
+            WEB_APPLICATION = 0,
+            INTERNET_SHORTCUT_APPLICATION = 1,
+            WIN32_APPLICATION = 2
+        }
 
         private int Score(string query)
         {
@@ -49,6 +57,68 @@ namespace Microsoft.Plugin.Program.Programs
             var executableNameMatch = StringMatcher.FuzzySearch(query, ExecutableName);
             var score = new[] { nameMatch.Score, descriptionMatch.Score, executableNameMatch.Score }.Max();
             return score;
+        }
+
+        public bool IsWebApplication()
+        {
+            // To Filter PWAs when the user searches for the main application
+            // All Chromium based applications contain the --app-id argument
+            // Reference : https://codereview.chromium.org/399045/show
+            bool isWebApplication = FullPath.Contains(proxyWebApp) && Arguments.Contains(appIdArgument);
+            return isWebApplication;
+        }
+
+        // Condition to Filter pinned Web Applications or PWAs when searching for the main application
+        public bool FilterWebApplication(string query)
+        {
+            // If the app is not a web application, then do not filter it
+            if(!IsWebApplication())
+            {
+                return false;
+            }
+
+            // Set the subtitle to 'Web Application'
+            AppType = (uint)ApplicationTypes.WEB_APPLICATION;
+
+            string[] subqueries = query.Split();
+            bool nameContainsQuery = false;
+            bool pathContainsQuery = false;
+
+            // check if any space separated query is a part of the app name or path name
+            foreach (var subquery in subqueries)
+            {
+                if (FullPath.Contains(subquery, StringComparison.OrdinalIgnoreCase))
+                {
+                    pathContainsQuery = true;
+                }
+
+                if(Name.Contains(subquery, StringComparison.OrdinalIgnoreCase))
+                {
+                    nameContainsQuery = true;
+                }
+            }
+            return pathContainsQuery && !nameContainsQuery;
+        }
+
+        // Function to set the subtitle based on the Type of application
+        public string SetSubtitle(uint AppType, IPublicAPI api)
+        {
+            if(AppType == (uint)ApplicationTypes.WIN32_APPLICATION)
+            {
+                return api.GetTranslation("powertoys_run_plugin_program_win32_application");
+            }
+            else if(AppType == (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION)
+            {
+                return api.GetTranslation("powertoys_run_plugin_program_internet_shortcut_application");
+            }
+            else if(AppType == (uint)ApplicationTypes.WEB_APPLICATION)
+            {
+                return api.GetTranslation("powertoys_run_plugin_program_web_application");
+            }
+            else
+            {
+                return String.Empty;
+            }
         }
 
         public Result Result(string query, IPublicAPI api)
@@ -64,10 +134,18 @@ namespace Microsoft.Plugin.Program.Programs
                 var noArgumentScoreModifier = 5;
                 score += noArgumentScoreModifier;
             }
+            else
+            {
+                // Filter Web Applications when searching for the main application
+                if (FilterWebApplication(query))
+                {
+                    return null;
+                }
+            }
 
             var result = new Result
             {
-                SubTitle = AppType,
+                SubTitle = SetSubtitle(AppType, api),
                 IcoPath = IcoPath,
                 Score = score,
                 ContextData = this,
@@ -105,7 +183,7 @@ namespace Microsoft.Plugin.Program.Programs
         public List<ContextMenuResult> ContextMenus(IPublicAPI api)
         {
             // To add a context menu only to open file location as Internet shortcut applications do not have the functionality to run as admin
-            if(AppType.Equals(InternetShortcutApplication))
+            if(AppType == (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION)
             {
                 var contextMenuItems = new List<ContextMenuResult>
                 {
@@ -195,7 +273,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Description = string.Empty,
                     Valid = true,
                     Enabled = true,
-                    AppType = Win32Application
+                    AppType = (uint)ApplicationTypes.WIN32_APPLICATION
                 };
                 return p;
             }
@@ -260,10 +338,9 @@ namespace Microsoft.Plugin.Program.Programs
                     FullPath = path.ToLower(),
                     UniqueIdentifier = path,
                     ParentDirectory = Directory.GetParent(path).FullName,
-                    Description = InternetShortcutApplication,
                     Valid = true,
                     Enabled = true,
-                    AppType = InternetShortcutApplication
+                    AppType = (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION
                 };
                 return p;
             }
@@ -295,6 +372,7 @@ namespace Microsoft.Plugin.Program.Programs
                         program.FullPath = Path.GetFullPath(target).ToLower();
                         program.ExecutableName = Path.GetFileName(target);
                         program.hasArguments = _helper.hasArguments;
+                        program.Arguments = _helper.Arguments;
 
                         var description = _helper.description;
                         if (!string.IsNullOrEmpty(description))
