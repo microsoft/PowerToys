@@ -230,28 +230,6 @@ namespace PowerRenameManagerTests
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", DEFAULT_FLAGS | ExcludeSubfolders);
         }
 
-        TEST_METHOD (VerifyEmptySearhboxTransform)
-        {
-            rename_pairs renamePairs[] = {
-                { L"foo", L"FOO", true, true, 0 },
-                { L"bAr", L"BAR", true, true, 0 },
-                { L"FOO", L"FOO_norename", true, false, 0 }
-            };
-
-            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"", L"", DEFAULT_FLAGS | Uppercase);
-        }
-
-        TEST_METHOD (VerifyNoMatchTransform)
-        {
-            rename_pairs renamePairs[] = {
-                { L"foo", L"FOO", true, true, 0 },
-                { L"bAr", L"BAR", true, true, 0 },
-                { L"FOO", L"FOO_norename", true, false, 0 }
-            };
-
-            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"test", L"test1", DEFAULT_FLAGS | Uppercase);
-        }
-
         TEST_METHOD (VerifyUppercaseTransform)
         {
             rename_pairs renamePairs[] = {
