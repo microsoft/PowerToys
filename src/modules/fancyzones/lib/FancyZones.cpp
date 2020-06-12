@@ -215,7 +215,7 @@ private:
     std::vector<int> GetZoneIndexSetFromWorkAreaHistory(HWND window, winrt::com_ptr<IZoneWindow> workArea) noexcept;
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& workAreaMap) noexcept;
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, bool isPrimaryMonitor) noexcept;
-    void OpenOnCurrentlyActiveMonitor(HWND window, HMONITOR primary, HMONITOR active) noexcept;
+    void OpenWindowOnActiveMonitor(HWND window, HMONITOR primary, HMONITOR active) noexcept;
     void MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<int>& zoneIndexSet) noexcept;
 
     void OnEditorExitEvent() noexcept;
@@ -395,41 +395,77 @@ std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetAppZoneH
     return appZoneHistoryInfo;
 }
 
-void FancyZones::OpenOnCurrentlyActiveMonitor(HWND window, HMONITOR primary, HMONITOR active) noexcept
+void FancyZones::OpenWindowOnActiveMonitor(HWND window, HMONITOR primary, HMONITOR active) noexcept
 {
-    // By default window is opened on primary monitor. Adjust window coordinates so they fit
-    // on currently active monitor (work area) and move window.
-    MONITORINFOEX primaryMi;
-    primaryMi.cbSize = sizeof(primaryMi);
-    if (GetMonitorInfo(primary, &primaryMi))
+    // By default windows opens new window on primary monitor.
+    // Adjust coordinates to fit monitor resolution (work area) on active monitor.
+    // Try to preserve window width and height, adjust top-left corner if needed.
+    HMONITOR windowMonitor = MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY);
+    if (windowMonitor == active)
     {
-        RECT windowRect{};
-        if (GetWindowRect(window, &windowRect))
+        // Some applications by design open in last known position, unrelated to FancyZones.
+        // If that position is already on currently active monitor, skip custom positioning.
+        return;
+    }
+    RECT windowRect{};
+    if (GetWindowRect(window, &windowRect))
+    {
+        MONITORINFOEX primaryMi;
+        primaryMi.cbSize = sizeof(primaryMi);
+        if (GetMonitorInfo(primary, &primaryMi))
         {
-            int primaryW = primaryMi.rcWork.right - primaryMi.rcWork.left;
-            int primaryH = primaryMi.rcWork.bottom - primaryMi.rcWork.top;
-            double leftScale = (double)windowRect.left / primaryW;
-            double topScale = (double)windowRect.top / primaryH;
-
             MONITORINFOEX activeMi;
             activeMi.cbSize = sizeof(activeMi);
             if (GetMonitorInfo(active, &activeMi))
             {
+                int primaryW = primaryMi.rcWork.right - primaryMi.rcWork.left;
+                int primaryH = primaryMi.rcWork.bottom - primaryMi.rcWork.top;
+
                 int activeW = abs(activeMi.rcWork.right - activeMi.rcWork.left);
                 int activeH = abs(activeMi.rcWork.bottom - activeMi.rcWork.top);
 
-                // Scale top-left coordinate, keep width and height (if possible).
-                int left = activeMi.rcWork.left + leftScale * activeW;
-                int top = activeMi.rcWork.top + topScale * activeH;
+                int windowW = windowRect.right - windowRect.left;
+                int windowH = windowRect.bottom - windowRect.top;
 
-                int width = windowRect.right - windowRect.left;
-                int height = windowRect.bottom - windowRect.top;
+                int leftOffset = windowRect.left - primaryMi.rcWork.left;
+                int topOffset  = windowRect.top - primaryMi.rcWork.top;
 
-                RECT newPosition{ left,
-                                  top,
-                                  min(left + width, activeMi.rcWork.right),
-                                  min(top + height, activeMi.rcWork.bottom) };
+                // Try to maintain top-left coordinate proportion relative to top-left corner of work area,
+                // so we can support having multiple instances of same application open in cascade manner.
+                double leftScale = (double)leftOffset / primaryW;
+                double topScale = (double)topOffset / primaryH;
 
+                int left   = activeMi.rcWork.left + leftScale * activeW;
+                int top    = activeMi.rcWork.top + topScale * activeH;
+                int right  = left + windowW;
+                int bottom = top + windowH;
+
+                if (right > activeMi.rcWork.right)
+                {
+                    right = activeMi.rcWork.right;
+                    if (windowW > activeW)
+                    {
+                        left = activeMi.rcWork.left;
+                    }
+                    else
+                    {
+                        left = right - activeW;
+                    }
+                }
+                if (bottom > activeMi.rcWork.bottom)
+                {
+                    bottom = activeMi.rcWork.bottom;
+                    if (windowH > activeH)
+                    {
+                        top = activeMi.rcWork.top;
+                    }
+                    else
+                    {
+                        top = bottom - activeH;
+                    }
+                }
+
+                RECT newPosition{ left, top, right, bottom };
                 SizeWindowToRect(window, newPosition);
             }
         }
@@ -462,7 +498,7 @@ FancyZones::WindowCreated(HWND window) noexcept
             active = MonitorFromPoint(cursorPosition, MONITOR_DEFAULTTOPRIMARY);
         }
 
-        bool primaryActive = (primary == active);
+        const bool primaryActive = (primary == active);
         std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> appZoneHistoryInfo = GetAppZoneHistoryInfo(window, active, primaryActive);
         if (!appZoneHistoryInfo.second.empty())
         {
@@ -471,7 +507,7 @@ FancyZones::WindowCreated(HWND window) noexcept
         else if (!primaryActive)
         {
             // No application history on currently active monitor, open window un-zoned.
-            OpenOnCurrentlyActiveMonitor(window, primary, active);
+            OpenWindowOnActiveMonitor(window, primary, active);
         }
     }
 }
