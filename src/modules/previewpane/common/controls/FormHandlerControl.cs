@@ -15,6 +15,12 @@ namespace Common
     public abstract class FormHandlerControl : Form, IPreviewHandlerControl
     {
         /// <summary>
+        /// Needed to make the form a child window.
+        /// </summary>
+        private static int gwlStyle = -16;
+        private static int wsChild = 0x40000000;
+
+        /// <summary>
         /// Holds the parent window handle.
         /// </summary>
         private IntPtr parentHwnd;
@@ -150,6 +156,12 @@ namespace Common
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         private static extern IntPtr GetFocus();
 
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
         /// <summary>
         /// Update the Form Control window with the passed rectangle.
         /// </summary>
@@ -158,6 +170,13 @@ namespace Common
         {
             this.InvokeOnControlThread(() =>
             {
+                // We must set the WS_CHILD style to change the form to a control within the Explorer preview pane
+                int windowStyle = GetWindowLong(this.Handle, gwlStyle);
+                if ((windowStyle & wsChild) == 0)
+                {
+                    SetWindowLong(this.Handle, gwlStyle, windowStyle | wsChild);
+                }
+
                 SetParent(this.Handle, this.parentHwnd);
                 this.Bounds = windowBounds;
             });
