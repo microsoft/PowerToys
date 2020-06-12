@@ -43,9 +43,12 @@ namespace Microsoft.Plugin.Program.Programs
         private const string proxyWebApp = "_proxy.exe";
         private const string appIdArgument = "--app-id";
 
-        private const uint WEB_APPLICATION = 0;
-        private const uint INTERNET_SHORTCUT_APPLICATION = 1;
-        private const uint WIN32_APPLICATION = 2;
+        private enum ApplicationTypes
+        {
+            WEB_APPLICATION = 0,
+            INTERNET_SHORTCUT_APPLICATION = 1,
+            WIN32_APPLICATION = 2
+        }
 
         private int Score(string query)
         {
@@ -75,7 +78,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
 
             // Set the subtitle to 'Web Application'
-            AppType = WEB_APPLICATION;
+            AppType = (uint)ApplicationTypes.WEB_APPLICATION;
 
             string[] subqueries = query.Split();
             bool nameContainsQuery = false;
@@ -100,15 +103,15 @@ namespace Microsoft.Plugin.Program.Programs
         // Function to set the subtitle based on the Type of application
         public string SetSubtitle(uint AppType, IPublicAPI api)
         {
-            if(AppType == WIN32_APPLICATION)
+            if(AppType == (uint)ApplicationTypes.WIN32_APPLICATION)
             {
                 return api.GetTranslation("powertoys_run_plugin_program_win32_application");
             }
-            else if(AppType == INTERNET_SHORTCUT_APPLICATION)
+            else if(AppType == (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION)
             {
                 return api.GetTranslation("powertoys_run_plugin_program_internet_shortcut_application");
             }
-            else if(AppType == WEB_APPLICATION)
+            else if(AppType == (uint)ApplicationTypes.WEB_APPLICATION)
             {
                 return api.GetTranslation("powertoys_run_plugin_program_web_application");
             }
@@ -180,7 +183,7 @@ namespace Microsoft.Plugin.Program.Programs
         public List<ContextMenuResult> ContextMenus(IPublicAPI api)
         {
             // To add a context menu only to open file location as Internet shortcut applications do not have the functionality to run as admin
-            if(AppType == INTERNET_SHORTCUT_APPLICATION)
+            if(AppType == (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION)
             {
                 var contextMenuItems = new List<ContextMenuResult>
                 {
@@ -270,7 +273,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Description = string.Empty,
                     Valid = true,
                     Enabled = true,
-                    AppType = WIN32_APPLICATION
+                    AppType = (uint)ApplicationTypes.WIN32_APPLICATION
                 };
                 return p;
             }
@@ -337,7 +340,7 @@ namespace Microsoft.Plugin.Program.Programs
                     ParentDirectory = Directory.GetParent(path).FullName,
                     Valid = true,
                     Enabled = true,
-                    AppType = INTERNET_SHORTCUT_APPLICATION
+                    AppType = (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION
                 };
                 return p;
             }
