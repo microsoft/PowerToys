@@ -257,6 +257,11 @@ namespace Microsoft.Plugin.Folder
 
             var folderName = search.TrimEnd('\\').Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.None).Last();
             var sanitizedPath = Regex.Replace(search, @"[\/\\]+", "\\");
+            // A network path must start with \\
+            if (sanitizedPath.StartsWith("\\"))
+            {
+                sanitizedPath = sanitizedPath.Insert(0, "\\");
+            }
 
             return new Result
             {
