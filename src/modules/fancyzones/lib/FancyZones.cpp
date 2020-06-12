@@ -449,7 +449,7 @@ void FancyZones::OpenWindowOnActiveMonitor(HWND window, HMONITOR primary, HMONIT
                     }
                     else
                     {
-                        left = right - activeW;
+                        left = right - windowW;
                     }
                 }
                 if (bottom > activeMi.rcWork.bottom)
@@ -461,7 +461,7 @@ void FancyZones::OpenWindowOnActiveMonitor(HWND window, HMONITOR primary, HMONIT
                     }
                     else
                     {
-                        top = bottom - activeH;
+                        top = bottom - windowH;
                     }
                 }
 
