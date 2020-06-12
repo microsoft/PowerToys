@@ -214,7 +214,8 @@ private:
     bool ShouldProcessNewWindow(HWND window) noexcept;
     std::vector<int> GetZoneIndexSetFromWorkAreaHistory(HWND window, winrt::com_ptr<IZoneWindow> workArea) noexcept;
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& workAreaMap) noexcept;
-    std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetAppZoneHistoryInfo(HWND window) noexcept;
+    std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, bool isPrimaryMonitor) noexcept;
+    void OpenOnCurrentlyActiveMonitor(HWND window, HMONITOR primary, HMONITOR active) noexcept;
     void MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<int>& zoneIndexSet) noexcept;
 
     void OnEditorExitEvent() noexcept;
@@ -370,27 +371,17 @@ std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetAppZoneH
     return { nullptr, {} };
 }
 
-std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetAppZoneHistoryInfo(HWND window) noexcept
+std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, bool isPrimaryMonitor) noexcept
 {
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> appZoneHistoryInfo{ nullptr, {} };
     auto workAreaMap = m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId);
 
-    // 1. Search application history on currently active monitor (based on cursor position).
-    POINT cursorPosition{};
-    if (GetCursorPos(&cursorPosition))
+    // Search application history on currently active monitor.
+    appZoneHistoryInfo = GetAppZoneHistoryInfo(window, monitor, workAreaMap);
+
+    if (isPrimaryMonitor && appZoneHistoryInfo.second.empty())
     {
-        HMONITOR monitor = MonitorFromPoint(cursorPosition, MONITOR_DEFAULTTOPRIMARY);
-        appZoneHistoryInfo = GetAppZoneHistoryInfo(window, monitor, workAreaMap);
-    }
-    // 2. Search application history on primary monitor.
-    if (appZoneHistoryInfo.second.empty())
-    {
-        HMONITOR monitor = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
-        appZoneHistoryInfo = GetAppZoneHistoryInfo(window, monitor, workAreaMap);
-    }
-    // 3. Search application history on remaining monitors.
-    if (appZoneHistoryInfo.second.empty())
-    {
+        // No application history on primary monitor, search on remaining monitors.
         for (const auto& [monitor, workArea] : workAreaMap)
         {
             auto zoneIndexSet = GetZoneIndexSetFromWorkAreaHistory(window, workArea);
@@ -400,7 +391,49 @@ std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetAppZoneH
             }
         }
     }
+
     return appZoneHistoryInfo;
+}
+
+void FancyZones::OpenOnCurrentlyActiveMonitor(HWND window, HMONITOR primary, HMONITOR active) noexcept
+{
+    // By default window is opened on primary monitor. Adjust window coordinates so they fit
+    // on currently active monitor (work area) and move window.
+    MONITORINFOEX primaryMi;
+    primaryMi.cbSize = sizeof(primaryMi);
+    if (GetMonitorInfo(primary, &primaryMi))
+    {
+        RECT windowRect{};
+        if (GetWindowRect(window, &windowRect))
+        {
+            int primaryW = primaryMi.rcWork.right - primaryMi.rcWork.left;
+            int primaryH = primaryMi.rcWork.bottom - primaryMi.rcWork.top;
+            double leftScale = (double)windowRect.left / primaryW;
+            double topScale = (double)windowRect.top / primaryH;
+
+            MONITORINFOEX activeMi;
+            activeMi.cbSize = sizeof(activeMi);
+            if (GetMonitorInfo(active, &activeMi))
+            {
+                int activeW = abs(activeMi.rcWork.right - activeMi.rcWork.left);
+                int activeH = abs(activeMi.rcWork.bottom - activeMi.rcWork.top);
+
+                // Scale top-left coordinate, keep width and height (if possible).
+                int left = activeMi.rcWork.left + leftScale * activeW;
+                int top = activeMi.rcWork.top + topScale * activeH;
+
+                int width = windowRect.right - windowRect.left;
+                int height = windowRect.bottom - windowRect.top;
+
+                RECT newPosition{ left,
+                                  top,
+                                  min(left + width, activeMi.rcWork.right),
+                                  min(top + height, activeMi.rcWork.bottom) };
+
+                SizeWindowToRect(window, newPosition);
+            }
+        }
+    }
 }
 
 void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<int>& zoneIndexSet) noexcept
@@ -420,10 +453,25 @@ FancyZones::WindowCreated(HWND window) noexcept
     std::shared_lock readLock(m_lock);
     if (m_settings->GetSettings()->appLastZone_moveWindows && ShouldProcessNewWindow(window))
     {
-        std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> appZoneHistoryInfo = GetAppZoneHistoryInfo(window);
+        HMONITOR primary = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
+        HMONITOR active = primary;
+
+        POINT cursorPosition{};
+        if (GetCursorPos(&cursorPosition))
+        {
+            active = MonitorFromPoint(cursorPosition, MONITOR_DEFAULTTOPRIMARY);
+        }
+
+        bool primaryActive = (primary == active);
+        std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> appZoneHistoryInfo = GetAppZoneHistoryInfo(window, active, primaryActive);
         if (!appZoneHistoryInfo.second.empty())
         {
             MoveWindowIntoZone(window, appZoneHistoryInfo.first, appZoneHistoryInfo.second);
+        }
+        else if (!primaryActive)
+        {
+            // No application history on currently active monitor, open window u
+            OpenOnCurrentlyActiveMonitor(window, primary, active);
         }
     }
 }
