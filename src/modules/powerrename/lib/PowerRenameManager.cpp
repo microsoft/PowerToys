@@ -782,7 +782,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                     newName = new wchar_t[MAX_PATH]{ 0 };
                                     if (flags & NameOnly)
                                     {
-                                        StringCchPrintf(newName, MAX_PATH * sizeof(wchar_t), fs::path(originalName).stem().c_str());
+                                        StringCchCopy(newName, MAX_PATH, fs::path(originalName).stem().c_str());
                                     }
                                     else if (flags & ExtensionOnly)
                                     {
@@ -793,7 +793,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                             {
                                                 extension = extension.erase(0, 1);
                                             }
-                                            StringCchPrintf(newName, MAX_PATH * sizeof(wchar_t), extension.c_str());
+                                            StringCchCopy(newName, MAX_PATH, extension.c_str());
                                         }
                                         else
                                         {
@@ -802,7 +802,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                     }
                                     else
                                     {
-                                        StringCchPrintf(newName, MAX_PATH * sizeof(wchar_t), originalName);
+                                        StringCchCopy(newName, MAX_PATH, originalName);
                                     }
                                 }
 
