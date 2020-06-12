@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Windows;
@@ -22,9 +21,6 @@ namespace FancyZonesEditor
         private enum CmdArgs
         {
             X_Y_Width_Height = 1,
-            ActiveZoneSetTmpFile,
-            AppliedZoneSetTmpFile,
-            CustomZoneSetsTmpFile,
             PowerToysPID,
         }
 
@@ -43,7 +39,11 @@ namespace FancyZonesEditor
         public const ushort _blankCustomModelId = 0xFFFA;
         public const ushort _lastDefinedId = _blankCustomModelId;
 
-        private const int _defaultDPI = 96;
+        private const string ZonesSettingsFile = "\\Microsoft\\PowerToys\\FancyZones\\zones-settings.json";
+
+        private const string ActiveZoneSetsTmpFileName = "FancyZonesActiveZoneSets.json";
+        private const string AppliedZoneSetsTmpFileName = "FancyZonesAppliedZoneSets.json";
+        private const string DeletedCustomZoneSetsTmpFileName = "FancyZonesDeletedCustomZoneSets.json";
 
         // hard coded data for all the "Priority Grid" configurations that are unique to "Grid"
         private static readonly byte[][] _priorityData = new byte[][]
@@ -81,6 +81,15 @@ namespace FancyZonesEditor
 
         public Settings()
         {
+            string tmpDirPath = Path.GetTempPath();
+
+            ActiveZoneSetTmpFile = tmpDirPath + ActiveZoneSetsTmpFileName;
+            AppliedZoneSetTmpFile = tmpDirPath + AppliedZoneSetsTmpFileName;
+            DeletedCustomZoneSetsTmpFile = tmpDirPath + DeletedCustomZoneSetsTmpFileName;
+
+            var localAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            FancyZonesSettingsFile = localAppDataDir + ZonesSettingsFile;
+
             ParseCommandLineArgs();
 
             // Initialize the five default layout models: Focus, Columns, Rows, Grid, and PriorityGrid
@@ -222,26 +231,13 @@ namespace FancyZonesEditor
 
         public static LayoutType ActiveZoneSetLayoutType { get; private set; }
 
-        public static string ActiveZoneSetTmpFile
-        {
-            get { return _activeZoneSetTmpFile; }
-        }
+        public static string ActiveZoneSetTmpFile { get; private set; }
 
-        private static string _activeZoneSetTmpFile;
+        public static string AppliedZoneSetTmpFile { get; private set; }
 
-        public static string AppliedZoneSetTmpFile
-        {
-            get { return _appliedZoneSetTmpFile; }
-        }
+        public static string DeletedCustomZoneSetsTmpFile { get; private set; }
 
-        private static string _appliedZoneSetTmpFile;
-
-        public static string CustomZoneSetsTmpFile
-        {
-            get { return _customZoneSetsTmpFile; }
-        }
-
-        private static string _customZoneSetsTmpFile;
+        public static string FancyZonesSettingsFile { get; private set; }
 
         public static int PowerToysPID
         {
@@ -357,12 +353,21 @@ namespace FancyZonesEditor
             }
         }
 
-        private void ParseDeviceInfoData()
+        private void ParseDeviceInfoData(string deviceInfo = null)
         {
             try
             {
-                FileStream inputStream = File.Open(Settings.ActiveZoneSetTmpFile, FileMode.Open);
-                var jsonObject = JsonDocument.Parse(inputStream, options: default).RootElement;
+                JsonElement jsonObject;
+                if (deviceInfo == null)
+                {
+                    FileStream inputStream = File.Open(Settings.ActiveZoneSetTmpFile, FileMode.Open);
+                    jsonObject = JsonDocument.Parse(inputStream, options: default).RootElement;
+                    inputStream.Close();
+                }
+                else
+                {
+                    jsonObject = JsonDocument.Parse(deviceInfo, options: default).RootElement;
+                }
 
                 UniqueKey = jsonObject.GetProperty("device-id").GetString();
                 ActiveZoneSetUUid = jsonObject.GetProperty("active-zoneset").GetProperty("uuid").GetString();
@@ -404,8 +409,6 @@ namespace FancyZonesEditor
                     _spacing = jsonObject.GetProperty("editor-spacing").GetInt32();
                     _zoneCount = jsonObject.GetProperty("editor-zone-count").GetInt32();
                 }
-
-                inputStream.Close();
             }
             catch (Exception ex)
             {
@@ -418,9 +421,42 @@ namespace FancyZonesEditor
             WorkArea = SystemParameters.WorkArea;
 
             string[] args = Environment.GetCommandLineArgs();
-            if (args.Length == 6)
+
+            if (args.Length == 2)
+            {
+                if (args[1].Equals("Debug"))
+                {
+                    const string debugDeviceInfoJson =
+                        @"{
+                        ""device-id"": ""BOE06C6#4&a213ba1&0&UID265988_1920_1080_{03891D5D-CC32-4FD9-9B94-846FE43F4690}"",
+                        ""active-zoneset"": {
+                            ""uuid"": ""{C82EBE61-9234-49BA-8392-09963C2C4CED}"",
+                            ""type"": ""columns""
+                        },
+                        ""editor-show-spacing"": true,
+                        ""editor-spacing"": 16,
+                        ""editor-zone-count"": 4
+                    }";
+
+                    ParseDeviceInfoData(debugDeviceInfoJson);
+                }
+                else
+                {
+                    string title = "FancyZones Editor Error";
+                    MessageBox.Show("FancyZones Editor arguments are invalid.", title);
+                    ((App)Application.Current).Shutdown();
+                }
+            }
+            else if (args.Length == 3)
             {
                 var parsedLocation = args[(int)CmdArgs.X_Y_Width_Height].Split('_');
+                if (parsedLocation.Length != 4)
+                {
+                    string title = "FancyZones Editor Error";
+                    MessageBox.Show("FancyZones Editor arguments are invalid.", title);
+                    ((App)Application.Current).Shutdown();
+                }
+
                 var x = int.Parse(parsedLocation[0]);
                 var y = int.Parse(parsedLocation[1]);
                 var width = int.Parse(parsedLocation[2]);
@@ -428,13 +464,14 @@ namespace FancyZonesEditor
 
                 WorkArea = new Rect(x, y, width, height);
 
-                _activeZoneSetTmpFile = args[(int)CmdArgs.ActiveZoneSetTmpFile];
-                _appliedZoneSetTmpFile = args[(int)CmdArgs.AppliedZoneSetTmpFile];
-                _customZoneSetsTmpFile = args[(int)CmdArgs.CustomZoneSetsTmpFile];
-
                 int.TryParse(args[(int)CmdArgs.PowerToysPID], out _powerToysPID);
-
                 ParseDeviceInfoData();
+            }
+            else
+            {
+                string title = "FancyZones Editor Error";
+                MessageBox.Show("FancyZones Editor should not be run as standalone application.", title);
+                ((App)Application.Current).Shutdown();
             }
         }
 
