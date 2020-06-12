@@ -215,7 +215,7 @@ private:
     std::vector<int> GetZoneIndexSetFromWorkAreaHistory(HWND window, winrt::com_ptr<IZoneWindow> workArea) noexcept;
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& workAreaMap) noexcept;
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, bool isPrimaryMonitor) noexcept;
-    void OpenWindowOnActiveMonitor(HWND window, HMONITOR primary, HMONITOR active) noexcept;
+    void OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept;
     void MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<int>& zoneIndexSet) noexcept;
 
     void OnEditorExitEvent() noexcept;
@@ -395,13 +395,12 @@ std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetAppZoneH
     return appZoneHistoryInfo;
 }
 
-void FancyZones::OpenWindowOnActiveMonitor(HWND window, HMONITOR primary, HMONITOR active) noexcept
+void FancyZones::OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept
 {
     // By default windows opens new window on primary monitor.
-    // Adjust coordinates to fit monitor resolution (work area) on active monitor.
     // Try to preserve window width and height, adjust top-left corner if needed.
     HMONITOR windowMonitor = MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY);
-    if (windowMonitor == active)
+    if (windowMonitor == monitor)
     {
         // Some applications by design open in last known position, unrelated to FancyZones.
         // If that position is already on currently active monitor, skip custom positioning.
@@ -410,64 +409,48 @@ void FancyZones::OpenWindowOnActiveMonitor(HWND window, HMONITOR primary, HMONIT
     RECT windowRect{};
     if (GetWindowRect(window, &windowRect))
     {
-        MONITORINFOEX primaryMi;
-        primaryMi.cbSize = sizeof(primaryMi);
-        if (GetMonitorInfo(primary, &primaryMi))
+        MONITORINFOEX mi;
+        mi.cbSize = sizeof(mi);
+        if (GetMonitorInfo(monitor, &mi))
         {
-            MONITORINFOEX activeMi;
-            activeMi.cbSize = sizeof(activeMi);
-            if (GetMonitorInfo(active, &activeMi))
+            int monitorW = mi.rcWork.right - mi.rcWork.left;
+            int monitorH = mi.rcWork.bottom - mi.rcWork.top;
+
+            int windowW = windowRect.right - windowRect.left;
+            int windowH = windowRect.bottom - windowRect.top;
+
+            int left   = mi.rcWork.left + windowRect.left;
+            int top    = mi.rcWork.top + windowRect.top;
+            int right  = left + windowW;
+            int bottom = top + windowH;
+
+            if (right > mi.rcWork.right)
             {
-                int primaryW = primaryMi.rcWork.right - primaryMi.rcWork.left;
-                int primaryH = primaryMi.rcWork.bottom - primaryMi.rcWork.top;
-
-                int activeW = abs(activeMi.rcWork.right - activeMi.rcWork.left);
-                int activeH = abs(activeMi.rcWork.bottom - activeMi.rcWork.top);
-
-                int windowW = windowRect.right - windowRect.left;
-                int windowH = windowRect.bottom - windowRect.top;
-
-                int leftOffset = windowRect.left - primaryMi.rcWork.left;
-                int topOffset  = windowRect.top - primaryMi.rcWork.top;
-
-                // Try to maintain top-left coordinate proportion relative to top-left corner of work area,
-                // so we can support having multiple instances of same application open in cascade manner.
-                double leftScale = (double)leftOffset / primaryW;
-                double topScale = (double)topOffset / primaryH;
-
-                int left   = activeMi.rcWork.left + leftScale * activeW;
-                int top    = activeMi.rcWork.top + topScale * activeH;
-                int right  = left + windowW;
-                int bottom = top + windowH;
-
-                if (right > activeMi.rcWork.right)
+                right = mi.rcWork.right;
+                if (windowW > monitorW)
                 {
-                    right = activeMi.rcWork.right;
-                    if (windowW > activeW)
-                    {
-                        left = activeMi.rcWork.left;
-                    }
-                    else
-                    {
-                        left = right - windowW;
-                    }
+                    left = mi.rcWork.left;
                 }
-                if (bottom > activeMi.rcWork.bottom)
+                else
                 {
-                    bottom = activeMi.rcWork.bottom;
-                    if (windowH > activeH)
-                    {
-                        top = activeMi.rcWork.top;
-                    }
-                    else
-                    {
-                        top = bottom - windowH;
-                    }
+                    left = right - windowW;
                 }
-
-                RECT newPosition{ left, top, right, bottom };
-                SizeWindowToRect(window, newPosition);
             }
+            if (bottom > mi.rcWork.bottom)
+            {
+                bottom = mi.rcWork.bottom;
+                if (windowH > monitorH)
+                {
+                    top = mi.rcWork.top;
+                }
+                else
+                {
+                    top = bottom - windowH;
+                }
+            }
+
+            RECT newPosition{ left, top, right, bottom };
+            SizeWindowToRect(window, newPosition);
         }
     }
 }
@@ -507,7 +490,7 @@ FancyZones::WindowCreated(HWND window) noexcept
         else if (!primaryActive)
         {
             // No application history on currently active monitor, open window un-zoned.
-            OpenWindowOnActiveMonitor(window, primary, active);
+            OpenWindowOnActiveMonitor(window, active);
         }
     }
 }
