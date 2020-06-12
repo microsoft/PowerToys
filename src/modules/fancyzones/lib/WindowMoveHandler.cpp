@@ -63,10 +63,7 @@ public:
     }
 
     void OnMouseDown() noexcept;
-
-    void OnShiftDown() noexcept;
-
-    void OnShiftUp() noexcept;
+    void OnShiftChangeState(bool state) noexcept;
 
     void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
@@ -114,14 +111,9 @@ void WindowMoveHandler::OnMouseDown() noexcept
     pimpl->OnMouseDown();
 }
 
-void WindowMoveHandler::OnShiftDown() noexcept
+void WindowMoveHandler::OnShiftChangeState(bool state) noexcept
 {
-    pimpl->OnShiftDown();
-}
-
-void WindowMoveHandler::OnShiftUp() noexcept
-{
-    pimpl->OnShiftUp();
+    pimpl->OnShiftChangeState(state);
 }
 
 void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
@@ -154,14 +146,9 @@ void WindowMoveHandlerPrivate::OnMouseDown() noexcept
     m_secondaryMouseButtonState = !m_secondaryMouseButtonState;
 }
 
-void WindowMoveHandlerPrivate::OnShiftDown() noexcept
+void WindowMoveHandlerPrivate::OnShiftChangeState(bool state) noexcept
 {
-    m_shiftKeyState = true;
-}
-
-void WindowMoveHandlerPrivate::OnShiftUp() noexcept
-{
-    m_shiftKeyState = false;
+    m_shiftKeyState = state;
 }
 
 void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept

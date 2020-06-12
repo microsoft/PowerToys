@@ -35,7 +35,7 @@ public:
         m_hinstance(hinstance),
         m_settings(settings),
         m_mouseHook(std::bind(&FancyZones::OnMouseDown, this)),
-        m_shiftHook(std::bind(&FancyZones::OnShiftDown, this), std::bind(&FancyZones::OnShiftUp, this)),
+        m_shiftHook(std::bind(&FancyZones::OnShiftChangeState, this, std::placeholders::_1)),
         m_windowMoveHandler(settings, &m_mouseHook, &m_shiftHook)
     {
         m_settings->SetCallback(this);
@@ -55,18 +55,10 @@ public:
         PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
     }
 
-    void OnShiftDown() noexcept
+    void OnShiftChangeState(bool state) noexcept
     {
         std::unique_lock writeLock(m_lock);
-        m_windowMoveHandler.OnShiftDown();
-
-        PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
-    }
-
-    void OnShiftUp() noexcept
-    {
-        std::unique_lock writeLock(m_lock);
-        m_windowMoveHandler.OnShiftUp();
+        m_windowMoveHandler.OnShiftChangeState(state);
 
         PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
     }

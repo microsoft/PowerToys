@@ -4,13 +4,11 @@
 #pragma region public
 
 HHOOK ShiftKeyHook::hHook = {};
-std::function<void()> ShiftKeyHook::callbackKeyDown = {};
-std::function<void()> ShiftKeyHook::callbackKeyUp = {};
+std::function<void(bool)> ShiftKeyHook::callback = {};
 
-ShiftKeyHook::ShiftKeyHook(std::function<void()> extCallbackKeyDown, std::function<void()> extCallbackKeyUp)
+ShiftKeyHook::ShiftKeyHook(std::function<void(bool)> extCallback)
 {
-    callbackKeyDown = std::move(extCallbackKeyDown);
-    callbackKeyUp = std::move(extCallbackKeyUp);
+    callback = std::move(extCallback);
     hHook = SetWindowsHookEx(WH_KEYBOARD_LL, ShiftKeyHookProc, GetModuleHandle(NULL), 0);
 }
 
@@ -44,7 +42,7 @@ LRESULT CALLBACK ShiftKeyHook::ShiftKeyHookProc(int nCode, WPARAM wParam, LPARAM
             PKBDLLHOOKSTRUCT kbdHookStruct = (PKBDLLHOOKSTRUCT)lParam;
             if (kbdHookStruct->vkCode == VK_LSHIFT)
             {
-                callbackKeyDown();
+                callback(true);
             }
         }
         else if (wParam == WM_KEYUP)
@@ -52,7 +50,7 @@ LRESULT CALLBACK ShiftKeyHook::ShiftKeyHookProc(int nCode, WPARAM wParam, LPARAM
             PKBDLLHOOKSTRUCT kbdHookStruct = (PKBDLLHOOKSTRUCT)lParam;
             if (kbdHookStruct->vkCode == VK_LSHIFT)
             {
-                callbackKeyUp();
+                callback(false);
             }
         }
     }

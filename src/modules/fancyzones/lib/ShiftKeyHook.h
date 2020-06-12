@@ -5,13 +5,12 @@
 class ShiftKeyHook
 {
 public:
-    ShiftKeyHook(std::function<void()>, std::function<void()>);
+    ShiftKeyHook(std::function<void(bool)>);
     void enable();
     void disable();
 
 private:
     static HHOOK hHook;
-    static std::function<void()> callbackKeyDown;
-    static std::function<void()> callbackKeyUp;
+    static std::function<void(bool)> callback;
     static LRESULT CALLBACK ShiftKeyHookProc(int, WPARAM, LPARAM);
 };

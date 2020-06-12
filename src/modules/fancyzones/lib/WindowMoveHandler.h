@@ -15,8 +15,7 @@ public:
     bool IsDragEnabled() const noexcept;
 
     void OnMouseDown() noexcept;
-    void OnShiftDown() noexcept;
-    void OnShiftUp() noexcept;
+    void OnShiftChangeState(bool state) noexcept;  //True for shift down event false for shift up
 
     void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
