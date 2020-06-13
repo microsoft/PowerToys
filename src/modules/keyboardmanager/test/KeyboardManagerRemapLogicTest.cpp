@@ -163,7 +163,7 @@ namespace KeyboardManagerRemapLogicTests
                     return false;
             });
 
-            // Remap Caps Lock to Ctrl key
+            // Remap Caps Lock to Ctrl
             testState.AddSingleKeyRemap(VK_CAPITAL, VK_CONTROL);
             const int nInputs = 1;
 
@@ -196,7 +196,7 @@ namespace KeyboardManagerRemapLogicTests
                     return false;
             });
 
-            // Remap Caps Lock to Ctrl key
+            // Remap Ctrl to Caps Lock
             testState.AddSingleKeyRemap(VK_CONTROL, VK_CAPITAL);
             const int nInputs = 1;
 
@@ -204,7 +204,7 @@ namespace KeyboardManagerRemapLogicTests
             input[0].type = INPUT_KEYBOARD;
             input[0].ki.wVk = VK_CONTROL;
 
-            // Send Caps Lock keydown
+            // Send Ctrl keydown
             mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
 
             // SendVirtualInput should be called exactly once with the above condition
