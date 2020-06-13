@@ -15,6 +15,10 @@ private:
     // Function to be executed as a low level hook. By default it is nullptr so the hook is skipped
     std::function<intptr_t(LowlevelKeyboardEvent*)> hookProc;
 
+    // Stores the count of sendVirtualInput calls given if the condition sendVirtualInputCallCondition is satisfied
+    int sendVirtualInputCallCount = 0;
+    std::function<bool(LowlevelKeyboardEvent*)> sendVirtualInputCallCondition;
+
 public:
     MockedInput()
     {
@@ -35,4 +39,10 @@ public:
 
     // Function to reset the mocked keyboard state
     void ResetKeyboardState();
+
+    // Function to set SendVirtualInput call count condition
+    void SetSendVirtualInputTestHandler(std::function<bool(LowlevelKeyboardEvent*)> condition);
+
+    // Function to get SendVirtualInput call count
+    int GetSendVirtualInputCallCount();
 };

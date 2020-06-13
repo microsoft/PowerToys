@@ -144,6 +144,72 @@ namespace KeyboardManagerRemapLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LWIN), false);
         }
+
+        // Test if SendVirtualInput is sent exactly once with the suppress flag when Caps Lock is remapped to Ctrl
+        TEST_METHOD (HandleSingleKeyRemapEvent_ShouldSendVirutalInputWithSuppressFlagExactlyOnce_WhenCapsLockIsMappedToCtrlAltShift)
+        {
+            // Reset test environment
+            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
+
+            // Set HandleSingleKeyRemapEvent as the hook procedure
+            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleSingleKeyRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
+            mockedInputHandler.SetHookProc(currentHookProc);
+
+            // Set sendvirtualinput call count condition to return true if the key event was sent with the suppress flag
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* data) {
+                if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+                    return true;
+                else
+                    return false;
+            });
+
+            // Remap Caps Lock to Ctrl key
+            testState.AddSingleKeyRemap(VK_CAPITAL, VK_CONTROL);
+            const int nInputs = 1;
+
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CAPITAL;
+
+            // Send Caps Lock keydown
+            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+
+            // SendVirtualInput should be called exactly once with the above condition
+            Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
+        }
+
+        // Test if SendVirtualInput is sent exactly once with the suppress flag when Ctrl is remapped to Caps Lock
+        TEST_METHOD (HandleSingleKeyRemapEvent_ShouldSendVirutalInputWithSuppressFlagExactlyOnce_WhenCtrlAltShiftIsMappedToCapsLock)
+        {
+            // Reset test environment
+            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
+
+            // Set HandleSingleKeyRemapEvent as the hook procedure
+            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleSingleKeyRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
+            mockedInputHandler.SetHookProc(currentHookProc);
+
+            // Set sendvirtualinput call count condition to return true if the key event was sent with the suppress flag
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* data) {
+                if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+                    return true;
+                else
+                    return false;
+            });
+
+            // Remap Caps Lock to Ctrl key
+            testState.AddSingleKeyRemap(VK_CONTROL, VK_CAPITAL);
+            const int nInputs = 1;
+
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+
+            // Send Caps Lock keydown
+            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+
+            // SendVirtualInput should be called exactly once with the above condition
+            Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
+        }
     };
 
     TEST_CLASS (OSLevelShortcutRemappingTests)
