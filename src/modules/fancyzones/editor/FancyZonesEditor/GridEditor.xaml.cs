@@ -99,8 +99,6 @@ namespace FancyZonesEditor
 
         private void OnFullSplit(object o, SplitEventArgs e)
         {
-            CancelClick(null, null);
-
             UIElementCollection previewChildren = Preview.Children;
             UIElement splitee = (UIElement)o;
 
