@@ -38,6 +38,12 @@ namespace Microsoft.Plugin.Calculator
             {
                 var result = MagesEngine.Interpret(query.Search);
 
+                // This could happen for some incorrect queries, like pi(2) 
+                if(result == null)
+                {
+                    return new List<Result>();
+                }
+
                 if (result.ToString() == "NaN")
                     result = Context.API.GetTranslation("wox_plugin_calculator_not_a_number");
 

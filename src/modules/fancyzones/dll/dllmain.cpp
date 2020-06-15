@@ -281,7 +281,6 @@ void FancyZonesModule::HandleWinHookEvent(WinHookEvent* data) noexcept
         // switches virtual desktops.
         if (data->hwnd == GetDesktopWindow())
         {
-            Trace::VirtualDesktopChanged();
             m_app.as<IFancyZonesCallback>()->VirtualDesktopChanged();
         }
     }

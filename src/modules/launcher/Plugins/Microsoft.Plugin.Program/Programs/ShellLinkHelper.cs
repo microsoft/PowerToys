@@ -103,6 +103,7 @@ namespace Microsoft.Plugin.Program.Programs
         public String description = String.Empty;
 
         // Sets to true if the program takes in arguments
+        public String Arguments = String.Empty;
         public bool hasArguments = false;
 
         // Retrieve the target path using Shell Link
@@ -130,6 +131,7 @@ namespace Microsoft.Plugin.Program.Programs
 
                 StringBuilder argumentBuffer = new StringBuilder(MAX_PATH);
                 ((IShellLinkW)link).GetArguments(argumentBuffer, argumentBuffer.Capacity);
+                Arguments = argumentBuffer.ToString();
 
                 // Set variable to true if the program takes in any arguments
                 if (argumentBuffer.Length != 0)
