@@ -1,17 +1,25 @@
 ﻿using Microsoft.Plugin.Indexer.Interface;
+using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
 using System.Data.OleDb;
-using System.Windows.Documents;
 
 namespace Microsoft.Plugin.Indexer.SearchHelper
 {
-    public class WindowsIndexerSearch : ISearch
+    public class OleDBSearch : ISearch
     {
-        public List<DBResults> Query(string connectionString, string sqlQuery)
+        private static bool HasNullField(OleDbDataReader oleDbDataReader)
         {
-            List<DBResults> result = new List<DBResults>();
+            for(int i = 0; i < oleDbDataReader.FieldCount; i++)
+            {
+                if (oleDbDataReader.GetValue(0) == DBNull.Value)
+                    return true;
+            }
+            return false;
+        }
+
+        public List<OleDBResult> Query(string connectionString, string sqlQuery)
+        {
+            List<OleDBResult> result = new List<OleDBResult>();
 
             using (OleDbConnection conn = new OleDbConnection(connectionString))
             {
@@ -21,13 +29,14 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                 // now create an OleDB command object with the query we built above and the connection we just opened.
                 using (OleDbCommand command = new OleDbCommand(sqlQuery, conn))
                 {
-                    using (DbDataReader WDSResults = command.ExecuteReader())
+                    using (OleDbDataReader WDSResults = command.ExecuteReader())
                     {
                         if (WDSResults.HasRows)
                         {
                             while (WDSResults.Read())
                             {
-                                result.Add(new DBResults(WDSResults));
+                                if(!HasNullField(WDSResults))
+                                    result.Add(new OleDBResult(WDSResults));
                             }
                         }
                     }

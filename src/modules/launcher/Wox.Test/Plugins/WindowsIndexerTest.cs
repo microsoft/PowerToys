@@ -148,7 +148,7 @@ namespace Wox.Test.Plugins
 
             try
             {
-                _api.WDSResults.Read();
+                _api.oleDBResult.Read();
             }
             catch(InvalidOperationException)
             {

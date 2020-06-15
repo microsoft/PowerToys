@@ -10,13 +10,12 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 {
     public class WindowsSearchAPI
     {
-        public List<DBResults> WDSResults;
-        public bool DisplayHiddenFiles = false;
-        public UInt32 FILE_ATTRIBUTE_HIDDEN = 0x2;
+        private readonly bool DisplayHiddenFiles = false;
+        private readonly UInt32 FILE_ATTRIBUTE_HIDDEN = 0x2;
         private readonly object _lock = new object();
-        private WindowsIndexerSearch WindowsIndexerSearch;
+        private readonly OleDBSearch WindowsIndexerSearch;
 
-        public WindowsSearchAPI(WindowsIndexerSearch windowsIndexerSearch)
+        public WindowsSearchAPI(OleDBSearch windowsIndexerSearch)
         {
             this.WindowsIndexerSearch = windowsIndexerSearch;
         }
@@ -28,29 +27,27 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             // Generate SQL from our parameters, converting the userQuery from AQS->WHERE clause
             string sqlQuery = queryHelper.GenerateSQLFromUserQuery(keyword);
 
-            // execute the command, which returns the results as an OleDbDataReader.
-            WDSResults = WindowsIndexerSearch.Query(queryHelper.ConnectionString, sqlQuery);
+            // execute the command, which returns the results as an OleDBResults.
+            List<OleDBResult> oleDBResults = WindowsIndexerSearch.Query(queryHelper.ConnectionString, sqlQuery);
 
-            // Lopp over all records from the database
-            foreach(IDataRecord data in WDSResults)
+            // Loop over all records from the database
+            foreach(OleDBResult oleDBResult in oleDBResults)
             {
-                if (data.GetValue(0) != DBNull.Value && data.GetValue(1) != DBNull.Value && data.GetValue(2) != DBNull.Value)
-                {
-                    UInt32 fileAttributes = (UInt32)data.GetInt64(2);
-                    bool isFileHidden = (fileAttributes & FILE_ATTRIBUTE_HIDDEN) == FILE_ATTRIBUTE_HIDDEN;
+                UInt32 fileAttributes = (UInt32)((Int64)oleDBResult.fieldData[2]);
+                bool isFileHidden = (fileAttributes & FILE_ATTRIBUTE_HIDDEN) == FILE_ATTRIBUTE_HIDDEN;
 
-                    if (DisplayHiddenFiles || !isFileHidden)
+                if (DisplayHiddenFiles || !isFileHidden)
+                {
+                    var uri_path = new Uri((string)oleDBResult.fieldData[0]);
+                    var result = new SearchResult
                     {
-                        var uri_path = new Uri(data.GetString(0));
-                        var result = new SearchResult
-                        {
-                            Path = uri_path.LocalPath,
-                            Title = data.GetString(1)
-                        };
-                        _Result.Add(result);
-                    }                                 
-                }
+                        Path = uri_path.LocalPath,
+                        Title = (string)oleDBResult.fieldData[1]
+                    };
+                    _Result.Add(result);
+                }                                 
             }
+
             return _Result;
         }
 

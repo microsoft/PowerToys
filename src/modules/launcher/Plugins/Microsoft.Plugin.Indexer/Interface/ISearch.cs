@@ -5,6 +5,6 @@ namespace Microsoft.Plugin.Indexer.Interface
 {
     interface ISearch
     {
-        List<DBResults> Query(string connectionString, string sqlQuery);
+        List<OleDBResult> Query(string connectionString, string sqlQuery);
     }
 }
