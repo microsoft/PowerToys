@@ -15,12 +15,15 @@ namespace KeyboardManagerRemapLogicTests
     TEST_CLASS (MockedInputSanityTests)
     {
     public:
-        // Test if mocked input is working
-        TEST_METHOD (MockedInput_ShouldSetKeyboardState_OnKeyEvent)
+        TEST_METHOD_INITIALIZE(InitializeTestEnv)
         {
             // Reset test environment
             TestHelpers::ResetTestEnv(mockedInputHandler, testState);
+        }
 
+        // Test if mocked input is working
+        TEST_METHOD (MockedInput_ShouldSetKeyboardState_OnKeyEvent)
+        {
             // Send key down and key up for A key (0x41) and check keyboard state both times
             const int nInputs = 1;
             INPUT input[nInputs] = {};
@@ -45,8 +48,7 @@ namespace KeyboardManagerRemapLogicTests
     TEST_CLASS (SingleKeyRemappingTests)
     {
     public:
-        // Test if correct keyboard states are set for a single key remap
-        TEST_METHOD (RemappedKey_ShouldSetTargetKeyState_OnKeyEvent)
+        TEST_METHOD_INITIALIZE(InitializeTestEnv)
         {
             // Reset test environment
             TestHelpers::ResetTestEnv(mockedInputHandler, testState);
@@ -54,7 +56,11 @@ namespace KeyboardManagerRemapLogicTests
             // Set HandleSingleKeyRemapEvent as the hook procedure
             std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleSingleKeyRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
             mockedInputHandler.SetHookProc(currentHookProc);
+        }
 
+        // Test if correct keyboard states are set for a single key remap
+        TEST_METHOD (RemappedKey_ShouldSetTargetKeyState_OnKeyEvent)
+        {
             // Remap A to B
             testState.AddSingleKeyRemap(0x41, 0x42);
             const int nInputs = 1;
@@ -82,13 +88,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if key is suppressed if a key is disabled by single key remap
         TEST_METHOD (RemappedKeyDisabled_ShouldNotChangeKeyState_OnKeyEvent)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleSingleKeyRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleSingleKeyRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap A to 0x0 (disabled)
             testState.AddSingleKeyRemap(0x41, 0x0);
             const int nInputs = 1;
@@ -114,13 +113,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set for a remap to Win (Both) key
         TEST_METHOD (RemappedKeyToWinBoth_ShouldSetWinLeftKeyState_OnKeyEvent)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleSingleKeyRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleSingleKeyRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap A to Common Win key
             testState.AddSingleKeyRemap(0x41, CommonSharedConstants::VK_WIN_BOTH);
             const int nInputs = 1;
@@ -148,13 +140,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if SendVirtualInput is sent exactly once with the suppress flag when Caps Lock is remapped to Ctrl
         TEST_METHOD (HandleSingleKeyRemapEvent_ShouldSendVirutalInputWithSuppressFlagExactlyOnce_WhenCapsLockIsMappedToCtrlAltShift)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleSingleKeyRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleSingleKeyRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Set sendvirtualinput call count condition to return true if the key event was sent with the suppress flag
             mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* data) {
                 if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
@@ -181,13 +166,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if SendVirtualInput is sent exactly once with the suppress flag when Ctrl is remapped to Caps Lock
         TEST_METHOD (HandleSingleKeyRemapEvent_ShouldSendVirutalInputWithSuppressFlagExactlyOnce_WhenCtrlAltShiftIsMappedToCapsLock)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleSingleKeyRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleSingleKeyRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Set sendvirtualinput call count condition to return true if the key event was sent with the suppress flag
             mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* data) {
                 if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
@@ -215,8 +193,7 @@ namespace KeyboardManagerRemapLogicTests
     TEST_CLASS (OSLevelShortcutRemappingTests)
     {
     public:
-        // Test if correct keyboard states are set for a 2 key shortcut remap wih different modifiers key down
-        TEST_METHOD (RemappedTwoKeyShortcutWithDiffModifiers_ShouldSetTargetShortcutDown_OnKeyDown)
+        TEST_METHOD_INITIALIZE(InitializeTestEnv)
         {
             // Reset test environment
             TestHelpers::ResetTestEnv(mockedInputHandler, testState);
@@ -224,7 +201,11 @@ namespace KeyboardManagerRemapLogicTests
             // Set HandleOSLevelShortcutRemapEvent as the hook procedure
             std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
             mockedInputHandler.SetHookProc(currentHookProc);
+        }
 
+        // Test if correct keyboard states are set for a 2 key shortcut remap wih different modifiers key down
+        TEST_METHOD (RemappedTwoKeyShortcutWithDiffModifiers_ShouldSetTargetShortcutDown_OnKeyDown)
+        {
             // Remap Ctrl+A to Alt+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
@@ -254,13 +235,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set for a 2 key shortcut remap with same modifiers key down
         TEST_METHOD (RemappedTwoKeyShortcutWithSameModifiers_ShouldSetTargetShortcutDown_OnKeyDown)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Ctrl+A to Ctrl+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
@@ -289,13 +263,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set for a 2 key shortcut remap with different modifiers key down followed by key up
         TEST_METHOD (RemappedTwoKeyShortcutWithDiffModifiers_ShouldClearKeyboard_OnKeyUp)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Ctrl+A to Alt+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
@@ -331,13 +298,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set for a 2 key shortcut remap with same modifiers key down followed by key up
         TEST_METHOD (RemappedTwoKeyShortcutWithSameModifiers_ShouldClearKeyboard_OnKeyUp)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Ctrl+A to Ctrl+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
@@ -372,13 +332,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set when a 2 key shortcut is remapped, and a 3 key shortcut containing those keys is invoked - Ex: Ctrl+A remapped, but user presses Ctrl+Shift+A
         TEST_METHOD (RemappedTwoKeyShortcutInvokingAShortcutContainingThoseKeys_ShouldNotBeRemapped_OnKeyDown)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Ctrl+A to Alt+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
@@ -411,13 +364,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set for a 3 key shortcut remap wih different modifiers key down
         TEST_METHOD (RemappedThreeKeyShortcutWithDiffModifiers_ShouldSetTargetShortcutDown_OnKeyDown)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Ctrl+Shift+A to Alt+LWin+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
@@ -453,13 +399,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set for a 3 key shortcut remap wih partially different modifiers key down
         TEST_METHOD (RemappedThreeKeyShortcutWithPartiallyDiffModifiers_ShouldSetTargetShortcutDown_OnKeyDown)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Ctrl+Shift+A to Alt+Ctrl+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
@@ -494,13 +433,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set for a 3 key shortcut remap with same modifiers key down
         TEST_METHOD (RemappedThreeKeyShortcutWithSameModifiers_ShouldSetTargetShortcutDown_OnKeyDown)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Ctrl+Shift+A to Ctrl+Shift+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
@@ -534,13 +466,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set for a 3 key shortcut remap with different modifiers key down followed by key up
         TEST_METHOD (RemappedThreeKeyShortcutWithDiffModifiers_ShouldClearKeyboard_OnKeyUp)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Ctrl+Shift+A to Alt+LWin+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
@@ -585,13 +510,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set for a 3 key shortcut remap with partially different modifiers key down followed by key up
         TEST_METHOD (RemappedThreeKeyShortcutWithPartiallyDiffModifiers_ShouldClearKeyboard_OnKeyUp)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Ctrl+Shift+A to Alt+Ctrl+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
@@ -635,13 +553,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set for a 3 key shortcut remap with same modifiers key down followed by key up
         TEST_METHOD (RemappedThreeKeyShortcutWithSameModifiers_ShouldClearKeyboard_OnKeyUp)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Ctrl+Shift+A to Ctrl+Shift+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
@@ -684,13 +595,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set when a 3 key shortcut is remapped, and a 2 key shortcut which is a subset of those keys is invoked - Ex: Ctrl+Shift+A remapped, but user presses Ctrl+A
         TEST_METHOD (RemappedThreeKeyShortcutInvokingAShortcutSubsetOfThoseKeys_ShouldNotBeRemapped_OnKeyDown)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Ctrl+Shift+A to Alt+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
@@ -721,13 +625,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set for a 3 key to 2 key shortcut remap with different modifiers key down
         TEST_METHOD (RemappedThreeKeyToTwoKeyShortcutWithDiffModifiers_ShouldSetTargetShortcutDown_OnKeyDown)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Ctrl+Shift+A to Alt+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
@@ -761,13 +658,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set for a 3 key to 2 key shortcut remap with partially different modifiers key down
         TEST_METHOD (RemappedThreeKeyToTwoKeyShortcutWithPartiallyDiffModifiers_ShouldSetTargetShortcutDown_OnKeyDown)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Ctrl+Shift+A to Ctrl+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
@@ -800,13 +690,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set for a 3 key to 2 key shortcut remap with different modifiers key down followed by key up
         TEST_METHOD (RemappedThreeKeyToTwoKeyShortcutWithDiffModifiers_ShouldClearKeyboard_OnKeyUp)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Ctrl+Shift+A to Alt+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
@@ -849,13 +732,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set for a 3 key to 2 key shortcut remap with partially different modifiers key down followed by key up
         TEST_METHOD (RemappedThreeKeyToTwoKeyShortcutWithPartiallyDiffModifiers_ShouldClearKeyboard_OnKeyUp)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Ctrl+Shift+A to Ctrl+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
@@ -897,13 +773,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set for a 2 key to 3 key shortcut remap with different modifiers key down
         TEST_METHOD (RemappedTwoKeyToThreeKeyShortcutWithDiffModifiers_ShouldSetTargetShortcutDown_OnKeyDown)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Ctrl+A to Alt+Shift+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
@@ -935,13 +804,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set for a 2 key to 3 key shortcut remap with partially different modifiers key down
         TEST_METHOD (RemappedTwoKeyToThreeKeyShortcutWithPartiallyDiffModifiers_ShouldSetTargetShortcutDown_OnKeyDown)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Ctrl+A to Ctrl+Shift+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
@@ -972,13 +834,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set for a 2 key to 3 key shortcut remap with different modifiers key down followed by key up
         TEST_METHOD (RemappedTwoKeyToThreeKeyShortcutWithDiffModifiers_ShouldClearKeyboard_OnKeyUp)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Ctrl+A to Alt+Shift+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
@@ -1016,13 +871,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set for a 2 key to 3 key shortcut remap with partially different modifiers key down followed by key up
         TEST_METHOD (RemappedTwoKeyToThreeKeyShortcutWithPartiallyDiffModifiers_ShouldClearKeyboard_OnKeyUp)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Ctrl+A to Ctrl+Shift+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
@@ -1059,13 +907,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set if a shortcut remap is pressed and then an unremapped shortcut with the same modifier is pressed - Ex: Ctrl+A is remapped. User invokes Ctrl+A then releases A and presses C (while Ctrl is held), should invoke Ctrl+C
         TEST_METHOD (InvokingUnremappedShortcutAfterRemappedShortcutWithSameModifier_ShouldSetUnremappedShortcut_OnKeyDown)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Ctrl+A to Alt+Shift+V
             Shortcut src;
             src.SetKey(VK_CONTROL);
@@ -1103,13 +944,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set for a shortcut remap with win both modifier
         TEST_METHOD (RemappedShortcutWithWinBothModifier_ShouldSetRemappedShortcut_OnKeyEvent)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Win+A to Alt+V
             Shortcut src;
             src.SetKey(CommonSharedConstants::VK_WIN_BOTH);
@@ -1241,13 +1075,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set if a win both shortcut remap is pressed and then an unremapped shortcut with the LWin modifier is pressed
         TEST_METHOD (InvokingUnremappedShortcutWithLWinAfterRemappedShortcutWithWinBothModifier_ShouldSetUnremappedShortcutWithLWinKey_OnKeyDown)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Win+A to Alt+V
             Shortcut src;
             src.SetKey(CommonSharedConstants::VK_WIN_BOTH);
@@ -1288,13 +1115,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if correct keyboard states are set if a win both shortcut remap is pressed and then an unremapped shortcut with the RWin modifier is pressed
         TEST_METHOD (InvokingUnremappedShortcutWithRWinAfterRemappedShortcutWithWinBothModifier_ShouldSetUnremappedShortcutWithRWinKey_OnKeyDown)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Win+A to Alt+V
             Shortcut src;
             src.SetKey(CommonSharedConstants::VK_WIN_BOTH);
@@ -1335,13 +1155,6 @@ namespace KeyboardManagerRemapLogicTests
         // Test if target modifier is still held down even if the action key of the original shortcut is released - required for Alt+Tab/Win+Space cases
         TEST_METHOD (RemappedShortcutModifiers_ShouldBeDetectedAsPressed_OnReleasingActionKeyButHoldingModifiers)
         {
-            // Reset test environment
-            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
-
-            // Set HandleOSLevelShortcutRemapEvent as the hook procedure
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
-
             // Remap Ctrl+A to Alt+Tab
             Shortcut src;
             src.SetKey(VK_CONTROL);
