@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Data.OleDb;
 using System.Diagnostics;
 using Microsoft.Search.Interop;
@@ -9,58 +10,47 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 {
     public class WindowsSearchAPI
     {
-        public OleDbConnection conn;
-        public OleDbCommand command;
-        public OleDbDataReader WDSResults;
+        public List<DBResults> WDSResults;
         public bool DisplayHiddenFiles = false;
         public UInt32 FILE_ATTRIBUTE_HIDDEN = 0x2;
         private readonly object _lock = new object();
-        
+        private WindowsIndexerSearch WindowsIndexerSearch;
+
+        public WindowsSearchAPI(WindowsIndexerSearch windowsIndexerSearch)
+        {
+            this.WindowsIndexerSearch = windowsIndexerSearch;
+        }
 
         public List<SearchResult> ExecuteQuery(ISearchQueryHelper queryHelper, string keyword)
         {
             List<SearchResult> _Result = new List<SearchResult>();
+
             // Generate SQL from our parameters, converting the userQuery from AQS->WHERE clause
             string sqlQuery = queryHelper.GenerateSQLFromUserQuery(keyword);
 
-            // --- Perform the query ---
-            // create an OleDbConnection object which connects to the indexer provider with the windows application
-            using (conn = new OleDbConnection(queryHelper.ConnectionString))
-            {
-                // open the connection
-                conn.Open();
+            // execute the command, which returns the results as an OleDbDataReader.
+            WDSResults = WindowsIndexerSearch.Query(queryHelper.ConnectionString, sqlQuery);
 
-                // now create an OleDB command object with the query we built above and the connection we just opened.
-                using (command = new OleDbCommand(sqlQuery, conn))
+            // Lopp over all records from the database
+            foreach(IDataRecord data in WDSResults)
+            {
+                if (data.GetValue(0) != DBNull.Value && data.GetValue(1) != DBNull.Value && data.GetValue(2) != DBNull.Value)
                 {
-                    // execute the command, which returns the results as an OleDbDataReader.
-                    using (WDSResults = command.ExecuteReader())
+                    UInt32 fileAttributes = (UInt32)data.GetInt64(2);
+                    bool isFileHidden = (fileAttributes & FILE_ATTRIBUTE_HIDDEN) == FILE_ATTRIBUTE_HIDDEN;
+
+                    if (DisplayHiddenFiles || !isFileHidden)
                     {
-                        if(WDSResults.HasRows)
+                        var uri_path = new Uri(data.GetString(0));
+                        var result = new SearchResult
                         {
-                            while (WDSResults.Read())
-                            {
-                                if (WDSResults.GetValue(0) != DBNull.Value && WDSResults.GetValue(1) != DBNull.Value && WDSResults.GetValue(2) != DBNull.Value)
-                                {
-                                    UInt32 fileAttributes = (UInt32)WDSResults.GetInt64(2);
-                                    bool isFileHidden = (fileAttributes & FILE_ATTRIBUTE_HIDDEN) == FILE_ATTRIBUTE_HIDDEN;
-                                    if (DisplayHiddenFiles || !isFileHidden)
-                                    {
-                                        var uri_path = new Uri(WDSResults.GetString(0));
-                                        var result = new SearchResult
-                                        {
-                                            Path = uri_path.LocalPath,
-                                            Title = WDSResults.GetString(1)
-                                        };
-                                        _Result.Add(result);
-                                    }                                 
-                                }
-                            }
-                        }
-                    }
+                            Path = uri_path.LocalPath,
+                            Title = data.GetString(1)
+                        };
+                        _Result.Add(result);
+                    }                                 
                 }
             }
-
             return _Result;
         }
 
