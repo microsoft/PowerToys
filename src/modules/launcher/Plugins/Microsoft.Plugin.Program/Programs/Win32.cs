@@ -47,7 +47,8 @@ namespace Microsoft.Plugin.Program.Programs
         {
             WEB_APPLICATION = 0,
             INTERNET_SHORTCUT_APPLICATION = 1,
-            WIN32_APPLICATION = 2
+            WIN32_APPLICATION = 2,
+            ENVIRONMENT_VARIABLE_APPLICATION = 3
         }
 
         private int Score(string query)
@@ -114,6 +115,10 @@ namespace Microsoft.Plugin.Program.Programs
             else if(AppType == (uint)ApplicationTypes.WEB_APPLICATION)
             {
                 return api.GetTranslation("powertoys_run_plugin_program_web_application");
+            }
+            else if(AppType == (uint)ApplicationTypes.ENVIRONMENT_VARIABLE_APPLICATION)
+            {
+                return "Environment variable Application";
             }
             else
             {
@@ -558,11 +563,12 @@ namespace Microsoft.Plugin.Program.Programs
             var programs3 = allPaths.AsParallel().Where(p => Extension(p).Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(InternetShortcutProgram);
             var programs4 = allPaths.AsParallel().Where(p => Extension(p).Equals(ExeExtension, StringComparison.OrdinalIgnoreCase)).Select(ExeProgram);
 
-            var test = programs1.Concat(programs2).Where(p => p.Valid)
+            var allPrograms = programs1.Concat(programs2).Where(p => p.Valid)
                 .Concat(programs3).Where(p => p.Valid)
-                .Concat(programs4).Where(p => p.Valid);
+                .Concat(programs4).Where(p => p.Valid)
+                .Select( p => { p.AppType = (uint)ApplicationTypes.ENVIRONMENT_VARIABLE_APPLICATION; return p; });
 
-            return test;
+            return allPrograms;
         }
 
         private static ParallelQuery<Win32> StartMenuPrograms(string[] suffixes)
@@ -701,7 +707,7 @@ namespace Microsoft.Plugin.Program.Programs
         // Deduplication code
         public static Func<ParallelQuery<Win32>, Win32[]> DeduplicatePrograms = (programs) =>
         {
-            //var uniqueExePrograms = programs.Where(x => !string.IsNullOrEmpty(x.LnkResolvedPath) || Extension(x.FullPath) != ExeExtension);
+            var uniqueExePrograms = programs.Where(x => !(string.IsNullOrEmpty(x.LnkResolvedPath) && (Extension(x.FullPath) == ExeExtension) && !(x.AppType == (uint)ApplicationTypes.ENVIRONMENT_VARIABLE_APPLICATION)));
             var uniquePrograms = programs.Distinct(new removeDuplicatesComparer());
             return uniquePrograms.ToArray();
         };
@@ -727,11 +733,11 @@ namespace Microsoft.Plugin.Program.Programs
                     programs = programs.Concat(startMenu);
                 }
 
-                /*if (settings.EnablePathEnvironmentVariableSource)
+                if (settings.EnablePathEnvironmentVariableSource)
                 {
                     var appPathEnvironment = PathEnvironmentPrograms(settings.ProgramSuffixes);
                     programs = programs.Concat(appPathEnvironment);
-                }*/
+                }
 
                 return DeduplicatePrograms(programs);
             }
