@@ -453,7 +453,6 @@ namespace Microsoft.Plugin.Program.Programs
         // Function to obtain the list of applications, the locations of which have been added to the env variable PATH
         private static ParallelQuery<Win32> PathEnvironmentPrograms(string[] suffixes)
         {
-            var disabledProgramsList = Main._settings.DisabledProgramSources;
 
             // To get all the locations stored in the PATH env variable
             var pathEnvVariable = Environment.GetEnvironmentVariable("PATH");
@@ -473,8 +472,6 @@ namespace Microsoft.Plugin.Program.Programs
             }
 
             var allPaths = toFilterAllPaths
-                        .Where(t1 => !disabledProgramsList.Any(x => x.UniqueIdentifier == t1))
-                        .Select(t1 => t1)
                         .Distinct()
                         .ToArray();
 
@@ -601,12 +598,10 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 
                 if(!string.IsNullOrEmpty(app1.Name) && !string.IsNullOrEmpty(app2.Name)
-                    && !string.IsNullOrEmpty(app1.ExecutableName) && !string.IsNullOrEmpty(app2.ExecutableName)
-                    && !string.IsNullOrEmpty(app1.FullPath) && !string.IsNullOrEmpty(app2.FullPath))
+                    && !string.IsNullOrEmpty(app1.ExecutableName) && !string.IsNullOrEmpty(app2.ExecutableName))
                 {
-                    return app1.Name.Equals(app2.Name, StringComparison.OrdinalIgnoreCase) 
-                        && app1.ExecutableName.Equals(app2.ExecutableName, StringComparison.OrdinalIgnoreCase) 
-                        && app1.FullPath.Equals(app2.FullPath, StringComparison.OrdinalIgnoreCase);
+                    return app1.Name.Equals(app2.Name, StringComparison.OrdinalIgnoreCase)
+                        && app1.ExecutableName.Equals(app2.ExecutableName, StringComparison.OrdinalIgnoreCase);
                 }
                 return false;
             }
@@ -616,12 +611,10 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 int namePrime = 13;
                 int executablePrime = 17;
-                int fullPathPrime = 31;
 
                 int result = 1;
                 result = result * namePrime + obj.Name.ToLowerInvariant().GetHashCode();
                 result = result * executablePrime + obj.ExecutableName.ToLowerInvariant().GetHashCode();
-                result = result * fullPathPrime + obj.FullPath.ToLowerInvariant().GetHashCode();
 
                 return result;
             }
@@ -656,11 +649,11 @@ namespace Microsoft.Plugin.Program.Programs
                     programs = programs.Concat(startMenu);
                 }
 
-                if (settings.EnablePathEnvironmentVariableSource)
+                /*if (settings.EnablePathEnvironmentVariableSource)
                 {
                     var appPathEnvironment = PathEnvironmentPrograms(settings.ProgramSuffixes);
                     programs = programs.Concat(appPathEnvironment);
-                }
+                }*/
 
                 return DeduplicatePrograms(programs);
             }
