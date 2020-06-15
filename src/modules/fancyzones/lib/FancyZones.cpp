@@ -649,6 +649,10 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
         GUID currentVirtualDesktopId{};
         if (VirtualDesktopUtils::GetCurrentVirtualDesktopId(&currentVirtualDesktopId))
         {
+            if (m_currentDesktopId != GUID_NULL)
+            {
+                Trace::VirtualDesktopChanged();
+            }
             m_currentDesktopId = currentVirtualDesktopId;
         }
         if (changeType == DisplayChangeType::Initialization)
