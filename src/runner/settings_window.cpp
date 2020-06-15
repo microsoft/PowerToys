@@ -291,6 +291,10 @@ void run_settings_window()
         settings_isUserAnAdmin = L"false";
     }
 
+    // create general settings file to initialze the settings file with installation configurations like :
+    // 1. Run on start up.
+    PTSettingsHelper::save_general_settings(save_settings.to_json());
+
     std::wstring executable_args = L"\"";
     executable_args.append(executable_path);
     executable_args.append(L"\" ");
