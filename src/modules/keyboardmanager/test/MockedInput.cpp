@@ -45,6 +45,12 @@ UINT MockedInput::SendVirtualInput(UINT cInputs, LPINPUT pInputs, int cbSize)
         lParam.dwExtraInfo = pInputs[i].ki.dwExtraInfo;
         keyEvent.lParam = &lParam;
 
+        // If the SendVirtualInput call condition is true, increment the count. If no condition is set then always increment the count
+        if (sendVirtualInputCallCondition == nullptr || sendVirtualInputCallCondition(&keyEvent))
+        {
+            sendVirtualInputCallCount++;
+        }
+
         // Call low level hook handler
         intptr_t result = MockedKeyboardHook(&keyEvent);
 
@@ -127,4 +133,17 @@ bool MockedInput::GetVirtualKeyState(int key)
 void MockedInput::ResetKeyboardState()
 {
     std::fill(keyboardState.begin(), keyboardState.end(), false);
+}
+
+// Function to set SendVirtualInput call count condition
+void MockedInput::SetSendVirtualInputTestHandler(std::function<bool(LowlevelKeyboardEvent*)> condition)
+{
+    sendVirtualInputCallCount = 0;
+    sendVirtualInputCallCondition = condition;
+}
+
+// Function to get SendVirtualInput call count
+int MockedInput::GetSendVirtualInputCallCount()
+{
+    return sendVirtualInputCallCount;
 }
