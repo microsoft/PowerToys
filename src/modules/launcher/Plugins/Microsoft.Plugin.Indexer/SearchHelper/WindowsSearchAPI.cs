@@ -1,23 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
-using System.Data.OleDb;
-using System.Diagnostics;
+using Microsoft.Plugin.Indexer.Interface;
 using Microsoft.Search.Interop;
 
 namespace Microsoft.Plugin.Indexer.SearchHelper
 {
     public class WindowsSearchAPI
     {
-        private readonly bool DisplayHiddenFiles = false;
-        private readonly UInt32 FILE_ATTRIBUTE_HIDDEN = 0x2;
-        private readonly object _lock = new object();
-        private readonly OleDBSearch WindowsIndexerSearch;
+        public bool DisplayHiddenFiles { get; set; }
 
-        public WindowsSearchAPI(OleDBSearch windowsIndexerSearch)
+        private readonly ISearch WindowsIndexerSearch;
+        private readonly object _lock = new object();
+        private readonly UInt32 FILE_ATTRIBUTE_HIDDEN = 0x2;
+
+        public WindowsSearchAPI(ISearch windowsIndexerSearch, bool displayHiddenFiles = false)
         {
             this.WindowsIndexerSearch = windowsIndexerSearch;
+            this.DisplayHiddenFiles = displayHiddenFiles;
         }
 
         public List<SearchResult> ExecuteQuery(ISearchQueryHelper queryHelper, string keyword)
@@ -33,6 +32,8 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             // Loop over all records from the database
             foreach(OleDBResult oleDBResult in oleDBResults)
             {
+                if (oleDBResult.fieldData[0] == DBNull.Value || oleDBResult.fieldData[1] == DBNull.Value || oleDBResult.fieldData[2] == DBNull.Value)
+                    continue;
                 UInt32 fileAttributes = (UInt32)((Int64)oleDBResult.fieldData[2]);
                 bool isFileHidden = (fileAttributes & FILE_ATTRIBUTE_HIDDEN) == FILE_ATTRIBUTE_HIDDEN;
 

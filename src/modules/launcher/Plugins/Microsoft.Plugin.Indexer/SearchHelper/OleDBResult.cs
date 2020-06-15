@@ -8,12 +8,11 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 {
     public class OleDBResult
     {
-        public List<object> fieldData = new List<object>();
+        public List<object> fieldData;
 
-        public OleDBResult(OleDbDataReader dbDataReader)
+        public OleDBResult(List<object> fieldData)
         {
-            for (int i = 0; i < dbDataReader.FieldCount; i++)
-                fieldData.Add(dbDataReader.GetValue(i));
+            this.fieldData = fieldData;
         }
     }
 }

@@ -6,16 +6,7 @@ using System.Data.OleDb;
 namespace Microsoft.Plugin.Indexer.SearchHelper
 {
     public class OleDBSearch : ISearch
-    {
-        private static bool HasNullField(OleDbDataReader oleDbDataReader)
-        {
-            for(int i = 0; i < oleDbDataReader.FieldCount; i++)
-            {
-                if (oleDbDataReader.GetValue(0) == DBNull.Value)
-                    return true;
-            }
-            return false;
-        }
+    {       
 
         public List<OleDBResult> Query(string connectionString, string sqlQuery)
         {
@@ -35,8 +26,10 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                         {
                             while (WDSResults.Read())
                             {
-                                if(!HasNullField(WDSResults))
-                                    result.Add(new OleDBResult(WDSResults));
+                                List<Object> fieldData = new List<object>();
+                                for (int i = 0; i < WDSResults.FieldCount; i++)
+                                    fieldData.Add(WDSResults.GetValue(i));
+                                result.Add(new OleDBResult(fieldData));
                             }
                         }
                     }
