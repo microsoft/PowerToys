@@ -650,7 +650,7 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
         if (VirtualDesktopUtils::GetCurrentVirtualDesktopId(&currentVirtualDesktopId))
         {
             m_currentDesktopId = currentVirtualDesktopId;
-            if (m_currentDesktopId != m_previousDesktopId)
+            if (m_previousDesktopId != GUID_NULL && m_currentDesktopId != m_previousDesktopId)
             {
                 Trace::VirtualDesktopChanged();
             }
