@@ -357,7 +357,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-        private static IEnumerable<string> ProgramPaths(string directory, string[] suffixes)
+        private static IEnumerable<string> ProgramPaths(string directory, string[] suffixes, bool recursiveSearch = true)
         {
             if (!Directory.Exists(directory))
             {
@@ -394,6 +394,12 @@ namespace Microsoft.Plugin.Program.Programs
 
                 try
                 {
+                    // If the search is set to be non-recursive, then do not enqueue the child directories.
+                    if(!recursiveSearch)
+                    {
+                        continue;
+                    }
+
                     foreach (var childDirectory in Directory.EnumerateDirectories(currentDirectory, "*", SearchOption.TopDirectoryOnly))
                     {
                         folderQueue.Enqueue(childDirectory);
@@ -442,6 +448,46 @@ namespace Microsoft.Plugin.Program.Programs
                             where e != ShortcutExtension && e != ExeExtension
                             select Win32Program(p);
             return programs1.Concat(programs2).Concat(programs3);
+        }
+
+        // Function to obtain the list of applications, the locations of which have been added to the env variable PATH
+        private static ParallelQuery<Win32> PathEnvironmentPrograms(string[] suffixes)
+        {
+            var disabledProgramsList = Main._settings.DisabledProgramSources;
+
+            // To get all the locations stored in the PATH env variable
+            var pathEnvVariable = Environment.GetEnvironmentVariable("PATH");
+            string[] searchPaths = pathEnvVariable.Split(Path.PathSeparator);
+            IEnumerable<String> toFilterAllPaths = new List<String>();
+            bool isRecursiveSearch = true;
+
+            foreach(string path in searchPaths)
+            {
+                if(path.Length > 0)
+                {
+                    // to expand any environment variables present in the path
+                    string directory = Environment.ExpandEnvironmentVariables(path);
+                    var paths = ProgramPaths(directory, suffixes, !isRecursiveSearch);
+                    toFilterAllPaths = toFilterAllPaths.Concat(paths);
+                }
+            }
+
+            var allPaths = toFilterAllPaths
+                        .Where(t1 => !disabledProgramsList.Any(x => x.UniqueIdentifier == t1))
+                        .Select(t1 => t1)
+                        .Distinct()
+                        .ToArray();
+
+            var programs1 = allPaths.AsParallel().Where(p => Extension(p).Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(LnkProgram);
+            var programs2 = allPaths.AsParallel().Where(p => Extension(p).Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase)).Select(Win32Program);
+            var programs3 = allPaths.AsParallel().Where(p => Extension(p).Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(InternetShortcutProgram);
+            var programs4 = allPaths.AsParallel().Where(p => Extension(p).Equals(ExeExtension, StringComparison.OrdinalIgnoreCase)).Select(ExeProgram);
+
+            var test = programs1.Concat(programs2).Where(p => p.Valid)
+                .Concat(programs3).Where(p => p.Valid)
+                .Concat(programs4).Where(p => p.Valid);
+
+            return test;
         }
 
         private static ParallelQuery<Win32> StartMenuPrograms(string[] suffixes)
@@ -584,8 +630,8 @@ namespace Microsoft.Plugin.Program.Programs
         // Deduplication code
         public static Func<ParallelQuery<Win32>, Win32[]> DeduplicatePrograms = (programs) =>
         {
-            var uniqueExePrograms = programs.Where(x => !string.IsNullOrEmpty(x.LnkResolvedPath) || Extension(x.FullPath) != ExeExtension);
-            var uniquePrograms = uniqueExePrograms.Distinct(new removeDuplicatesComparer());
+            //var uniqueExePrograms = programs.Where(x => !string.IsNullOrEmpty(x.LnkResolvedPath) || Extension(x.FullPath) != ExeExtension);
+            var uniquePrograms = programs.Distinct(new removeDuplicatesComparer());
             return uniquePrograms.ToArray();
         };
 
@@ -608,6 +654,12 @@ namespace Microsoft.Plugin.Program.Programs
                 {
                     var startMenu = StartMenuPrograms(settings.ProgramSuffixes);
                     programs = programs.Concat(startMenu);
+                }
+
+                if (settings.EnablePathEnvironmentVariableSource)
+                {
+                    var appPathEnvironment = PathEnvironmentPrograms(settings.ProgramSuffixes);
+                    programs = programs.Concat(appPathEnvironment);
                 }
 
                 return DeduplicatePrograms(programs);

@@ -15,6 +15,8 @@ namespace Microsoft.Plugin.Program
 
         public bool EnableRegistrySource { get; set; } = true;
 
+        public bool EnablePathEnvironmentVariableSource { get; set; } = true;
+
         internal const char SuffixSeparator = ';';
 
         /// <summary>
