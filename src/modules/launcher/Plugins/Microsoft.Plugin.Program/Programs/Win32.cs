@@ -57,10 +57,6 @@ namespace Microsoft.Plugin.Program.Programs
             var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
             var executableNameMatch = StringMatcher.FuzzySearch(query, ExecutableName);
             var score = new[] { nameMatch.Score, descriptionMatch.Score, executableNameMatch.Score }.Max();
-            if(score > 80)
-            {
-                var t = score;
-            }
             return score;
         }
 
@@ -122,6 +118,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             else if(AppType == (uint)ApplicationTypes.ENVIRONMENT_VARIABLE_APPLICATION)
             {
+                // To be localised once the value of this string is decided
                 return "Environment variable Application";
             }
             else
