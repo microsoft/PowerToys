@@ -57,6 +57,10 @@ namespace Microsoft.Plugin.Program.Programs
             var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
             var executableNameMatch = StringMatcher.FuzzySearch(query, ExecutableName);
             var score = new[] { nameMatch.Score, descriptionMatch.Score, executableNameMatch.Score }.Max();
+            if(score > 80)
+            {
+                var t = score;
+            }
             return score;
         }
 
@@ -708,7 +712,7 @@ namespace Microsoft.Plugin.Program.Programs
         public static Func<ParallelQuery<Win32>, Win32[]> DeduplicatePrograms = (programs) =>
         {
             var uniqueExePrograms = programs.Where(x => !(string.IsNullOrEmpty(x.LnkResolvedPath) && (Extension(x.FullPath) == ExeExtension) && !(x.AppType == (uint)ApplicationTypes.ENVIRONMENT_VARIABLE_APPLICATION)));
-            var uniquePrograms = programs.Distinct(new removeDuplicatesComparer());
+            var uniquePrograms = uniqueExePrograms.Distinct(new removeDuplicatesComparer());
             return uniquePrograms.ToArray();
         };
 
