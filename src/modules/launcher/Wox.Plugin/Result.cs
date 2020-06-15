@@ -9,9 +9,16 @@ namespace Wox.Plugin
     public class Result
     {
 
+        private string _title;
         private string _pluginDirectory;
         private string _icoPath;
-        public string Title { get; set; }
+        public string Title { 
+            get { return _title; } 
+            set
+            {
+                _title = value.Replace("\n", " ");
+            }
+        }
         public string SubTitle { get; set; }
 
         public string Glyph { get; set; }
