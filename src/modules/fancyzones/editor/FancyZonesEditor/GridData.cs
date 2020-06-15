@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using FancyZonesEditor.Models;
@@ -651,12 +650,19 @@ namespace FancyZonesEditor
             return -1;
         }
 
-        public void MergeZones(int startRow, int endRow, int startCol, int endCol, Action<int, int> deleteAction)
+        public void MergeZones(int startRow, int endRow, int startCol, int endCol, Action<int> deleteAction, int zoneCount)
         {
             int[,] cells = _model.CellChildMap;
             int mergedIndex = cells[startRow, startCol];
 
-            SortedSet<int> zonesMerged = new SortedSet<int>();
+            // maintain indices order after merge
+            Dictionary<int, int> indexReplacement = new Dictionary<int, int>();
+            List<int> zoneIndices = new List<int>(zoneCount);
+            for (int i = 0; i < zoneCount; i++)
+            {
+                zoneIndices.Add(i);
+            }
+
             for (int row = startRow; row <= endRow; row++)
             {
                 for (int col = startCol; col <= endCol; col++)
@@ -664,23 +670,32 @@ namespace FancyZonesEditor
                     int childIndex = cells[row, col];
                     if (childIndex != mergedIndex)
                     {
-                        zonesMerged.Add(cells[row, col]);
-                        cells[row, col] = mergedIndex;
+                        indexReplacement[childIndex] = mergedIndex;
+                        zoneIndices[childIndex] = -1;
                     }
                 }
             }
 
-            deleteAction(zonesMerged.First<int>(), zonesMerged.Last<int>() + 1);
+            for (int i = zoneIndices.Count - 1; i >= 0; i--)
+            {
+                int index = zoneIndices[i];
+                if (index == -1)
+                {
+                    deleteAction(i);
+                    zoneIndices.RemoveAt(i);
+                }
+            }
 
-            // update other indices to maintain order
+            for (int i = zoneIndices.Count - 1; i >= 0; i--)
+            {
+                indexReplacement[zoneIndices[i]] = i;
+            }
+
             for (int row = 0; row < _model.Rows; row++)
             {
                 for (int col = 0; col < _model.Columns; col++)
                 {
-                    if (cells[row, col] > mergedIndex)
-                    {
-                        cells[row, col] -= zonesMerged.Count;
-                    }
+                    cells[row, col] = indexReplacement[cells[row, col]];
                 }
             }
 
