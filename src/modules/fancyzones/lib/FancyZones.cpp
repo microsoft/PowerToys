@@ -215,7 +215,6 @@ private:
     std::vector<int> GetZoneIndexSetFromWorkAreaHistory(HWND window, winrt::com_ptr<IZoneWindow> workArea) noexcept;
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& workAreaMap) noexcept;
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, bool isPrimaryMonitor) noexcept;
-    void OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept;
     void MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<int>& zoneIndexSet) noexcept;
 
     void OnEditorExitEvent() noexcept;
@@ -395,66 +394,6 @@ std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetAppZoneH
     return appZoneHistoryInfo;
 }
 
-void FancyZones::OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept
-{
-    // By default windows opens new window on primary monitor.
-    // Try to preserve window width and height, adjust top-left corner if needed.
-    HMONITOR windowMonitor = MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY);
-    if (windowMonitor == monitor)
-    {
-        // Some applications by design open in last known position, unrelated to FancyZones.
-        // If that position is already on currently active monitor, skip custom positioning.
-        return;
-    }
-    RECT windowRect{};
-    if (GetWindowRect(window, &windowRect))
-    {
-        MONITORINFOEX mi;
-        mi.cbSize = sizeof(mi);
-        if (GetMonitorInfo(monitor, &mi))
-        {
-            int monitorW = mi.rcWork.right - mi.rcWork.left;
-            int monitorH = mi.rcWork.bottom - mi.rcWork.top;
-
-            int windowW = windowRect.right - windowRect.left;
-            int windowH = windowRect.bottom - windowRect.top;
-
-            int left   = mi.rcWork.left + windowRect.left;
-            int top    = mi.rcWork.top + windowRect.top;
-            int right  = left + windowW;
-            int bottom = top + windowH;
-
-            if (right > mi.rcWork.right)
-            {
-                right = mi.rcWork.right;
-                if (windowW > monitorW)
-                {
-                    left = mi.rcWork.left;
-                }
-                else
-                {
-                    left = right - windowW;
-                }
-            }
-            if (bottom > mi.rcWork.bottom)
-            {
-                bottom = mi.rcWork.bottom;
-                if (windowH > monitorH)
-                {
-                    top = mi.rcWork.top;
-                }
-                else
-                {
-                    top = bottom - windowH;
-                }
-            }
-
-            RECT newPosition{ left, top, right, bottom };
-            SizeWindowToRect(window, newPosition);
-        }
-    }
-}
-
 void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<int>& zoneIndexSet) noexcept
 {
     auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
@@ -486,11 +425,6 @@ FancyZones::WindowCreated(HWND window) noexcept
         if (!appZoneHistoryInfo.second.empty())
         {
             MoveWindowIntoZone(window, appZoneHistoryInfo.first, appZoneHistoryInfo.second);
-        }
-        else if (!primaryActive)
-        {
-            // No application history on currently active monitor, open window un-zoned.
-            OpenWindowOnActiveMonitor(window, active);
         }
     }
 }
