@@ -33,7 +33,10 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             foreach(OleDBResult oleDBResult in oleDBResults)
             {
                 if (oleDBResult.fieldData[0] == DBNull.Value || oleDBResult.fieldData[1] == DBNull.Value || oleDBResult.fieldData[2] == DBNull.Value)
+                {
                     continue;
+                }
+
                 UInt32 fileAttributes = (UInt32)((Int64)oleDBResult.fieldData[2]);
                 bool isFileHidden = (fileAttributes & FILE_ATTRIBUTE_HIDDEN) == FILE_ATTRIBUTE_HIDDEN;
 

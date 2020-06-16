@@ -28,7 +28,9 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                             {
                                 List<Object> fieldData = new List<object>();
                                 for (int i = 0; i < WDSResults.FieldCount; i++)
+                                {
                                     fieldData.Add(WDSResults.GetValue(i));
+                                }
                                 result.Add(new OleDBResult(fieldData));
                             }
                         }
