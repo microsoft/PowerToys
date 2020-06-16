@@ -40,7 +40,7 @@ LRESULT CALLBACK ShiftKeyHook::ShiftKeyHookProc(int nCode, WPARAM wParam, LPARAM
         if (wParam == WM_KEYDOWN)
         {
             PKBDLLHOOKSTRUCT kbdHookStruct = (PKBDLLHOOKSTRUCT)lParam;
-            if (kbdHookStruct->vkCode == VK_SHIFT)
+            if (kbdHookStruct->vkCode == VK_LSHIFT || kbdHookStruct->vkCode == VK_RSHIFT)
             {
                 callback(true);
             }
@@ -48,7 +48,7 @@ LRESULT CALLBACK ShiftKeyHook::ShiftKeyHookProc(int nCode, WPARAM wParam, LPARAM
         else if (wParam == WM_KEYUP)
         {
             PKBDLLHOOKSTRUCT kbdHookStruct = (PKBDLLHOOKSTRUCT)lParam;
-            if (kbdHookStruct->vkCode == VK_SHIFT)
+            if (kbdHookStruct->vkCode == VK_LSHIFT || kbdHookStruct->vkCode == VK_RSHIFT)
             {
                 callback(false);
             }
