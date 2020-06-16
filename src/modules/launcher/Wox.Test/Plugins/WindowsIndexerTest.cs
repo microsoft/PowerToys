@@ -141,6 +141,20 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
+        public void ExecuteQuery_ShouldDisposeAllConnections_AfterFunctionCall()
+        {
+            // Arrange
+            OleDBSearch oleDbSearch = new OleDBSearch();
+            WindowsSearchAPI _api = new WindowsSearchAPI(oleDbSearch);
+
+            // Act
+            _api.Search("FilePath");
+
+            // Assert
+            Assert.IsTrue(oleDbSearch.HaveAllDisposableItemsBeenDisposed());
+        }
+
+        [Test]
         public void WindowsSearchAPI_ShouldShowHiddenFiles_WhenDisplayHiddenFilesIsTrue()
         {
             // Arrange
