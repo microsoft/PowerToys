@@ -905,7 +905,7 @@ void CPowerRenameUI::_ValidateFlagCheckbox(_In_ DWORD checkBoxId)
             Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_TITLECASE), FALSE);
         }
     }
-    if (checkBoxId == IDC_TRANSFORM_LOWERCASE)
+    else if (checkBoxId == IDC_TRANSFORM_LOWERCASE)
     {
         if (Button_GetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_LOWERCASE)) == BST_CHECKED)
         {
@@ -913,7 +913,7 @@ void CPowerRenameUI::_ValidateFlagCheckbox(_In_ DWORD checkBoxId)
             Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_TITLECASE), FALSE);
         }
     }
-    if (checkBoxId == IDC_TRANSFORM_TITLECASE)
+    else if (checkBoxId == IDC_TRANSFORM_TITLECASE)
     {
         if (Button_GetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_TITLECASE)) == BST_CHECKED)
         {
@@ -921,7 +921,7 @@ void CPowerRenameUI::_ValidateFlagCheckbox(_In_ DWORD checkBoxId)
             Button_SetCheck(GetDlgItem(m_hwnd, IDC_TRANSFORM_LOWERCASE), FALSE);
         }
     }
-    if (checkBoxId == IDC_CHECK_NAMEONLY)
+    else if (checkBoxId == IDC_CHECK_NAMEONLY)
     {
         if (Button_GetCheck(GetDlgItem(m_hwnd, IDC_CHECK_NAMEONLY)) == BST_CHECKED)
         {

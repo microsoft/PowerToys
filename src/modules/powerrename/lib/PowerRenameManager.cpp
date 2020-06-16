@@ -797,6 +797,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                         }
                                         else
                                         {
+                                            delete[] newName;
                                             newName = nullptr;
                                         }
                                     }
@@ -806,7 +807,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                     }
                                 }
 
-                                if (newName != nullptr )
+                                if (newName != nullptr)
                                 {
                                     newNameToUse = resultName;
                                     if (flags & NameOnly)
@@ -991,7 +992,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                     PostMessage(pwtd->hwndManager, SRM_REGEX_ITEM_UPDATED, GetCurrentThreadId(), id);
                                 }
 
-                                CoTaskMemFree(newName);
+                                delete[] newName;
                                 CoTaskMemFree(currentNewName);
                                 CoTaskMemFree(originalName);
                             }
