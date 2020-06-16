@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Media;
+using Wox.Plugin.SharedCommands;
 
 namespace Wox.Plugin
 {
@@ -16,7 +17,7 @@ namespace Wox.Plugin
             get { return _title; } 
             set
             {
-                _title = value.Replace("\n", " ");
+                _title = Helper.RemoveNewLineFromString(value);
             }
         }
         public string SubTitle { get; set; }
