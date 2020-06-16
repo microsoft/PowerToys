@@ -122,9 +122,9 @@
                                             Storyboard.TargetName="ScrollThumb"
                                             Storyboard.TargetProperty="Width" 
                                             Duration="0:0:0.15">
-                                <!--<DoubleAnimation.EasingFunction>
+                                <DoubleAnimation.EasingFunction>
                                     <CubicEase EasingMode="EaseOut" />
-                                </DoubleAnimation.EasingFunction>-->
+                                </DoubleAnimation.EasingFunction>
                             </DoubleAnimation>
 
                             <DoubleAnimation To="1"
@@ -270,7 +270,36 @@
         </Style.Triggers>
     </Style>
 
-    <Style x:Key="{x:Type ScrollViewer}" TargetType="{x:Type ScrollViewer}">
+    <Style TargetType="{x:Type ScrollViewer}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ScrollViewer}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <ScrollContentPresenter CanContentScroll="{TemplateBinding CanContentScroll}" CanHorizontallyScroll="False" CanVerticallyScroll="False" HorizontalAlignment="Stretch" Grid.ColumnSpan="2" Grid.RowSpan="2" Cursor="{TemplateBinding Cursor}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                        <ScrollBar Grid.Column="1" x:Name="PART_VerticalScrollBar" 
+                        Value="{TemplateBinding VerticalOffset}" Maximum="{
+                        TemplateBinding ScrollableHeight}" ViewportSize="{
+                        TemplateBinding ViewportHeight}" Background="Transparent" />
+                        <ScrollBar Grid.Row="1" x:Name="PART_HorizontalScrollBar" 
+                        Orientation="Horizontal" Value="{TemplateBinding 
+                        HorizontalOffset}" Maximum="{TemplateBinding ScrollableWidth}"
+                        ViewportSize="{TemplateBinding ViewportWidth}" 
+                        Background="Transparent" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!--<Style x:Key="{x:Type ScrollViewer}" TargetType="{x:Type ScrollViewer}">
         <Setter Property="OverridesDefaultStyle" Value="True" />
         <Setter Property="Template">
             <Setter.Value>
@@ -306,5 +335,5 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-    </Style>
+    </Style>-->
 </ResourceDictionary>
