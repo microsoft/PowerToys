@@ -56,15 +56,30 @@ void dispatch_json_action_to_module(const json::JsonObject& powertoys_configs)
         // so it has to be the "restart as (non-)elevated" button.
         if (name == L"general")
         {
-            if (is_process_elevated())
+            try
             {
-                schedule_restart_as_non_elevated();
-                PostQuitMessage(0);
+                const auto value = powertoy_element.Value().GetObjectW();
+                const auto action = value.GetNamedString(L"action_name");
+                if (action == L"restart_elevation")
+                {
+                    if (is_process_elevated())
+                    {
+                        schedule_restart_as_non_elevated();
+                        PostQuitMessage(0);
+                    }
+                    else
+                    {
+                        schedule_restart_as_elevated();
+                        PostQuitMessage(0);
+                    }
+                }
+                else if (action == L"check_for_updates")
+                {
+                    // TODO
+                }
             }
-            else
+            catch (...)
             {
-                schedule_restart_as_elevated();
-                PostQuitMessage(0);
             }
         }
         else if (modules().find(name) != modules().end())
