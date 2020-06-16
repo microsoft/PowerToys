@@ -39,7 +39,7 @@ namespace PowerLauncher
         {
             if (SingleInstance<App>.InitializeAsFirstInstance(Unique))
             {
-              //  int.TryParse(args[0], out _powerToysPid);
+                int.TryParse(args[0], out _powerToysPid);
 
                 using (var application = new App())
                 {
