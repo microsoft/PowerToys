@@ -49,7 +49,6 @@ public:
 
     void OnMouseDown() noexcept
     {
-        std::unique_lock writeLock(m_lock);
         m_windowMoveHandler.OnMouseDown();
 
         PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
@@ -57,7 +56,6 @@ public:
 
     void OnShiftChangeState(bool state) noexcept
     {
-        std::unique_lock writeLock(m_lock);
         m_windowMoveHandler.OnShiftChangeState(state);
 
         PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
