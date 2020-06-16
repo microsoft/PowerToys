@@ -48,7 +48,6 @@ namespace
 {
     const wchar_t MSI_VERSION_MUTEX_NAME[] = L"Local\\PowerToyRunMutex";
     const wchar_t MSIX_VERSION_MUTEX_NAME[] = L"Local\\PowerToyMSIXRunMutex";
-
     const wchar_t PT_URI_PROTOCOL_SCHEME[] = L"powertoys://";
 }
 

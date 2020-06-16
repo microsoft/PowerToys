@@ -128,6 +128,7 @@
                                        TextAlignment="Center"
                                        VerticalAlignment="Center"
                                        Margin="{StaticResource SmallTopMargin}" 
+                                       Opacity="{x:Bind Path=ExtraBoxOpacity, Mode=OneWay}"                                    
                                        Width="25"/>
 
                             <muxc:NumberBox Value="{x:Bind Path=Height, Mode=TwoWay}" 
@@ -135,6 +136,8 @@
                                             Height="34"
                                             VerticalAlignment="Center"
                                             SpinButtonPlacementMode="Compact"
+                                            Opacity="{x:Bind Path=ExtraBoxOpacity, Mode=OneWay}"
+                                            IsEnabled="{x:Bind Path=EnableEtraBoxes, Mode=OneWay}"
                                             Margin="{StaticResource SmallTopMargin}"/>
 
                             <ComboBox SelectedIndex="{Binding Path=Unit, Mode=TwoWay}"
