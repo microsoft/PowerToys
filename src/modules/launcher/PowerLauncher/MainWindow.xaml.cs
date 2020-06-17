@@ -16,9 +16,10 @@ using System.Timers;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 
+
 namespace PowerLauncher
 {
-    public partial class MainWindow
+    public partial class MainWindow : IDisposable
     {
 
         #region Private Fields
@@ -268,6 +269,8 @@ namespace PowerLauncher
 
         private const int millisecondsToWait = 100;
         private static DateTime s_lastTimeOfTyping;
+        private bool disposedValue = false;
+
         private string ListView_FirstItem(String input)
         {
             if (!string.IsNullOrEmpty(input))
@@ -355,6 +358,35 @@ namespace PowerLauncher
         private void OutroStoryboard_Completed(object sender, EventArgs e)
         {
             Hide();
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _firstDeleteTimer.Dispose();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        // ~MainWindow()
+        // {
+        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
