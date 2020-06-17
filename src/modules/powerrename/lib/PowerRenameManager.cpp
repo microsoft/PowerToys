@@ -779,7 +779,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 
                                 if (newName == nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase))
                                 {
-                                    newName = StrDup(sourceName);
+                                    SHStrDup(sourceName, &newName);
                                 }
 
                                 if (newName != nullptr)
@@ -814,7 +814,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 }
 
                                 PWSTR transformedName = nullptr ;
-                                if (newNameToUse != nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase) )
+                                if (newNameToUse != nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase))
                                 {
                                     if (SUCCEEDED(GetTransformedFileName(trimmedName, &transformedName, flags)))
                                     {
@@ -840,7 +840,6 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                     }
                                     itemEnumIndex++;
                                 }
-
 
                                 spItem->put_newName(newNameToUse);
 

@@ -279,7 +279,7 @@ namespace PowerRenameManagerTests
                 { L"foo.bar", L"foo.bar_rename", false, false, 0 }
             };
 
-            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", DEFAULT_FLAGS | Lowercase | ExtensionOnly );
+            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", DEFAULT_FLAGS | Lowercase | ExtensionOnly);
         }
     };
 }

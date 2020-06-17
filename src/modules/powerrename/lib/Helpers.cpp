@@ -11,9 +11,9 @@ HRESULT GetTrimmedFileName(_In_ PCWSTR source, _Outptr_ PWSTR* result)
     *result = nullptr;
     wchar_t trimmedName[MAX_PATH] = { 0 };
     PWSTR newName = nullptr;
-    newName = StrDup(source);
+    SHStrDup(source, &newName);
 
-    HRESULT hr = (source && wcslen(source) > 0 ) ? S_OK : E_INVALIDARG;     
+    HRESULT hr = (source && wcslen(source) > 0) ? S_OK : E_INVALIDARG;     
 
 
     size_t firstNonvalidIndex = 0, lastNonvalidIndex = wcslen(newName) - 1;
@@ -28,9 +28,8 @@ HRESULT GetTrimmedFileName(_In_ PCWSTR source, _Outptr_ PWSTR* result)
     newName[lastNonvalidIndex + 1] = '\0';
     StringCchCopy(trimmedName, ARRAYSIZE(trimmedName), newName + firstNonvalidIndex);
     
-    *result = StrDup(trimmedName);
-    hr = (*result) ? S_OK : E_OUTOFMEMORY;
-
+    hr = SHStrDup(trimmedName, result);
+    
     return hr;
     
 }
@@ -147,8 +146,7 @@ HRESULT GetTransformedFileName(_In_ PCWSTR source, _Outptr_ PWSTR* result , DWOR
         StringCchCopy(transformedName, ARRAYSIZE(transformedName), source);
     }
 
-    *result = StrDup(transformedName);
-    hr = (*result) ? S_OK : E_OUTOFMEMORY;
+    hr = SHStrDup(transformedName, result);
 
     return hr;
 }
