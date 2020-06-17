@@ -28,6 +28,11 @@ enum class DisplayChangeType
     Initialization
 };
 
+namespace
+{
+    constexpr int LEFT_TOP_PADDING = 10;
+}
+
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
 {
 public:
@@ -224,6 +229,7 @@ private:
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& workAreaMap) noexcept;
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, bool isPrimaryMonitor) noexcept;
     void MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<int>& zoneIndexSet) noexcept;
+    void OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept;
 
     void OnEditorExitEvent() noexcept;
     bool ShouldProcessSnapHotkey() noexcept;
@@ -413,6 +419,79 @@ void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zon
     }
 }
 
+int RectWidth(const RECT& rect)
+{
+    return rect.right - rect.left;
+}
+
+int RectHeight(const RECT& rect)
+{
+    return rect.bottom - rect.top;
+}
+
+RECT FitOnScreen(HWND window, const RECT& windowRect, HMONITOR monitor, const RECT& monitorRect) 
+{
+    int left = monitorRect.left + windowRect.left;
+    int top  = monitorRect.top  + windowRect.top;
+
+    // New window position on active monitor. If window fits the screen, this will be final position.
+    RECT newPosition = { left,
+                         top,
+                         left + RectWidth(windowRect),
+                         top  + RectHeight(windowRect) };
+
+    if (newPosition.right > monitorRect.right)
+    {
+        newPosition.left = monitorRect.left + LEFT_TOP_PADDING;
+        int width = min(RectWidth(windowRect), RectWidth(monitorRect) - LEFT_TOP_PADDING);
+        newPosition.right = newPosition.left + width;
+    }
+    if (newPosition.bottom > monitorRect.bottom)
+    {
+        newPosition.top = monitorRect.top + LEFT_TOP_PADDING;
+        int height = min(RectHeight(windowRect), RectHeight(monitorRect) - LEFT_TOP_PADDING);
+        newPosition.bottom = newPosition.top + height;
+    }
+
+    return newPosition;
+}
+
+void FancyZones::OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept
+{
+    // By default windows opens new window on primary monitor.
+    // Try to preserve window width and height, adjust top-left corner if needed.
+    HMONITOR origin = MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY);
+    if (origin == monitor)
+    {
+        // Some applications by design open in last known position, unrelated to FancyZones.
+        // If that position is already on currently active monitor, skip custom positioning.
+        return;
+    }
+    RECT windowRect{};
+    if (GetWindowRect(window, &windowRect))
+    {
+        MONITORINFOEX mi;
+        mi.cbSize = sizeof(mi);
+        if (GetMonitorInfo(monitor, &mi))
+        {
+            RECT newPosition = FitOnScreen(window, windowRect, monitor, mi.rcWork);
+
+            int W = RectWidth(newPosition);
+            int H = RectHeight(newPosition);
+
+            const bool sizeChanged = (W != RectWidth(windowRect)) || (H != RectHeight(windowRect));
+
+            SetWindowPos(window,
+                         nullptr,
+                         newPosition.left,
+                         newPosition.top,
+                         W,
+                         H,
+                         sizeChanged ? 0 : SWP_NOSIZE);
+        }
+    }
+}
+
 // IFancyZonesCallback
 IFACEMETHODIMP_(void)
 FancyZones::WindowCreated(HWND window) noexcept
@@ -434,6 +513,10 @@ FancyZones::WindowCreated(HWND window) noexcept
         if (!appZoneHistoryInfo.second.empty())
         {
             MoveWindowIntoZone(window, appZoneHistoryInfo.first, appZoneHistoryInfo.second);
+        }
+        else
+        {
+            OpenWindowOnActiveMonitor(window, active);
         }
     }
 }
