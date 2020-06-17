@@ -18,6 +18,7 @@
 
 #include <interface/win_hook_event_data.h>
 #include <lib/SecondaryMouseButtonsHook.h>
+#include <lib/ShiftKeyHook.h>
 
 enum class DisplayChangeType
 {
@@ -34,7 +35,8 @@ public:
         m_hinstance(hinstance),
         m_settings(settings),
         m_mouseHook(std::bind(&FancyZones::OnMouseDown, this)),
-        m_windowMoveHandler(settings, &m_mouseHook)
+        m_shiftHook(std::bind(&FancyZones::OnShiftChangeState, this, std::placeholders::_1)),
+        m_windowMoveHandler(settings, &m_mouseHook, &m_shiftHook)
     {
         m_settings->SetCallback(this);
     }
@@ -47,8 +49,14 @@ public:
 
     void OnMouseDown() noexcept
     {
-        std::unique_lock writeLock(m_lock);
         m_windowMoveHandler.OnMouseDown();
+
+        PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
+    }
+
+    void OnShiftChangeState(bool state) noexcept
+    {
+        m_windowMoveHandler.OnShiftChangeState(state);
 
         PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
     }
@@ -230,6 +238,7 @@ private:
     WindowMoveHandler m_windowMoveHandler;
     MonitorWorkAreaHandler m_workAreaHandler;
     SecondaryMouseButtonsHook m_mouseHook;
+    ShiftKeyHook m_shiftHook;
 
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
     GUID m_previousDesktopId{}; // UUID of previously active virtual desktop.
