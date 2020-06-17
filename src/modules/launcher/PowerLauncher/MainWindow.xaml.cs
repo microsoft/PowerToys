@@ -89,7 +89,6 @@ namespace PowerLauncher
 
             GiveProcessForegroundPermission();
             Activate();
-
         }
 
         private void SuggestionsList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
