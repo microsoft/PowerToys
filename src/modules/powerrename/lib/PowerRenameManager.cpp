@@ -779,32 +779,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 
                                 if (newName == nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase))
                                 {
-                                    newName = new wchar_t[MAX_PATH]{ 0 };
-                                    if (flags & NameOnly)
-                                    {
-                                        StringCchCopy(newName, MAX_PATH, fs::path(originalName).stem().c_str());
-                                    }
-                                    else if (flags & ExtensionOnly)
-                                    {
-                                        std::wstring extension = fs::path(originalName).extension().wstring();
-                                        if (!extension.empty())
-                                        {
-                                            if (extension.front() == '.')
-                                            {
-                                                extension = extension.erase(0, 1);
-                                            }
-                                            StringCchCopy(newName, MAX_PATH, extension.c_str());
-                                        }
-                                        else
-                                        {
-                                            delete[] newName;
-                                            newName = nullptr;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        StringCchCopy(newName, MAX_PATH, originalName);
-                                    }
+                                    newName = StrDup(sourceName);
                                 }
 
                                 if (newName != nullptr)
@@ -902,9 +877,9 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                         std::wstring stem = fs::path(resultName).stem().wstring();
                                         std::wstring extension = fs::path(resultName).extension().wstring();
 
-                                        int stemLength = stem.length();
+                                        size_t stemLength = stem.length();
                                         bool isFirstWord = true;
-                                        for (int i = 0; i < stemLength; i++)
+                                        for (size_t i = 0; i < stemLength; i++)
                                         {
                                             if (!i || iswspace(stem[i-1]) || iswpunct(stem[i-1]))
                                             {
@@ -912,7 +887,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                                 {
                                                     continue;
                                                 }
-                                                int wordLength = 0 ;
+                                                size_t wordLength = 0 ;
                                                 while (i + wordLength < stemLength && !iswspace(stem[i + wordLength]) && !iswpunct(stem[i + wordLength]))
                                                 {
                                                     wordLength++;
@@ -949,7 +924,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 {
                                     newNameToUse = trimmedName;
 
-                                    int firstNonvalidIndex = 0, lastNonvalidIndex = wcslen( transformedName )-1;
+                                    size_t firstNonvalidIndex = 0, lastNonvalidIndex = wcslen( transformedName )-1;
                                     while (firstNonvalidIndex <= lastNonvalidIndex && iswspace(transformedName[firstNonvalidIndex]))
                                     {
                                         firstNonvalidIndex++;
@@ -992,7 +967,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                     PostMessage(pwtd->hwndManager, SRM_REGEX_ITEM_UPDATED, GetCurrentThreadId(), id);
                                 }
 
-                                delete[] newName;
+                                CoTaskMemFree(newName);
                                 CoTaskMemFree(currentNewName);
                                 CoTaskMemFree(originalName);
                             }
