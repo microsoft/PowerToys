@@ -36,6 +36,11 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Images\windowwalker.dark.png" />
+    <None Remove="Images\windowwalker.light.png" />
+  </ItemGroup>
   
   <ItemGroup>
     <None Include="plugin.json">
@@ -49,6 +54,8 @@
   </ItemGroup>
   
   <ItemGroup>
+    <Content Include="Images\windowwalker.dark.png" />
+    <Content Include="Images\windowwalker.light.png" />
     <Content Include="Languages\en.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -60,15 +67,6 @@
     <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
     <PackageReference Include="Mages" Version="1.6.0" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <None Update="Images\windowwalker.dark.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\windowwalker.light.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>
