@@ -1,0 +1,18 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:String x:Key="wox_plugin_everything_is_not_running">Everything Service läuft nicht</system:String>
+    <system:String x:Key="wox_plugin_everything_query_error">Everything Plugin hat einen Fehler (drücke Enter zum kopieren der Fehlernachricht)</system:String>
+    <system:String x:Key="wox_plugin_everything_copied">kopiert</system:String>
+    <system:String x:Key="wox_plugin_everything_canot_start">Kann {0} nicht starten</system:String>
+    <system:String x:Key="wox_plugin_everything_open_containing_folder">Öffne enthaltenden Ordner</system:String>
+    <system:String x:Key="wox_plugin_everything_open_with_editor">Openen met {0}</system:String>
+    <system:String x:Key="wox_plugin_everything_editor_path">Editor pad</system:String>
+    
+    <system:String x:Key="wox_plugin_everything_plugin_name">Everything</system:String>
+    <system:String x:Key="wox_plugin_everything_plugin_description">Suche Dateien mit Everything</system:String>
+
+    <system:String x:Key="wox_plugin_everything_use_location_as_working_dir">Verwenden Suchergebnis Standort als ausführbare Arbeitsverzeichnis</system:String>
+
+</ResourceDictionary>

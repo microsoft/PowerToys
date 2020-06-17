@@ -1,0 +1,22 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:String x:Key="wox_plugin_everything_is_not_running">Everything Service is not running</system:String>
+    <system:String x:Key="wox_plugin_everything_query_error">Error while querying Everything</system:String>
+    <system:String x:Key="wox_plugin_everything_copied">Copied</system:String>
+    <system:String x:Key="wox_plugin_everything_canot_start">Can’t start {0}</system:String>
+    <system:String x:Key="wox_plugin_everything_open_containing_folder">Open parent folder</system:String>
+    <system:String x:Key="wox_plugin_everything_open_with_editor">Open with {0}</system:String>
+    <system:String x:Key="wox_plugin_everything_editor_path">Editor Path</system:String>
+    <system:String x:Key="wox_plugin_everything_copy_path">Copy path</system:String>
+    <system:String x:Key="wox_plugin_everything_copy">Copy</system:String>
+    <system:String x:Key="wox_plugin_everything_delete">Delete</system:String>
+    <system:String x:Key="wox_plugin_everything_canot_delete">Can't delete {0}</system:String>
+    
+    <system:String x:Key="wox_plugin_everything_plugin_name">Everything</system:String>
+    <system:String x:Key="wox_plugin_everything_plugin_description">Search on-disk files using Everything</system:String>
+
+    <system:String x:Key="wox_plugin_everything_use_location_as_working_dir">Use search result's location as executable working directory</system:String>
+
+</ResourceDictionary>

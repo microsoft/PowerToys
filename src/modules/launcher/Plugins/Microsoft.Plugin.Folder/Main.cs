@@ -278,14 +278,16 @@ namespace Microsoft.Plugin.Folder
             };
         }
 
+        // TODO: Localize the string
         public string GetTranslatedPluginTitle()
         {
-            return _context.API.GetTranslation("wox_plugin_folder_plugin_name");
+            return "Everything Search Plugin";
         }
 
+        // TODO: Localize the string
         public string GetTranslatedPluginDescription()
         {
-            return _context.API.GetTranslation("wox_plugin_folder_plugin_description");
+            return "Returns files and folders using Everything";
         }
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)

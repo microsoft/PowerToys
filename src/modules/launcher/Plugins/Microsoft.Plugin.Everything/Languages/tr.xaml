@@ -1,0 +1,22 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:String x:Key="wox_plugin_everything_is_not_running">Everything Servisi çalışmıyor</system:String>
+    <system:String x:Key="wox_plugin_everything_query_error">Sorgu Everything üzerinde çalıştırılırken hata oluştu</system:String>
+    <system:String x:Key="wox_plugin_everything_copied">Kopyalandı</system:String>
+    <system:String x:Key="wox_plugin_everything_canot_start">{0} başlatılamıyor</system:String>
+    <system:String x:Key="wox_plugin_everything_open_containing_folder">İçeren klasörü aç</system:String>
+    <system:String x:Key="wox_plugin_everything_open_with_editor">{0} ile aç</system:String>
+    <system:String x:Key="wox_plugin_everything_editor_path">Düzenleyici Konumu</system:String>
+    <system:String x:Key="wox_plugin_everything_copy_path">Konumu Kopyala</system:String>
+    <system:String x:Key="wox_plugin_everything_copy">Kopyala</system:String>
+    <system:String x:Key="wox_plugin_everything_delete">Sil</system:String>
+    <system:String x:Key="wox_plugin_everything_canot_delete">{0} silinemiyor</system:String>
+
+    <system:String x:Key="wox_plugin_everything_plugin_name">Everything</system:String>
+    <system:String x:Key="wox_plugin_everything_plugin_description">Everything programı yardımıyla diskteki dosyalarınızı arayın.</system:String>
+
+    <system:String x:Key="wox_plugin_everything_use_location_as_working_dir">Programın çalışma klasörü olarak sonuç klasörünü kullan</system:String>
+
+</ResourceDictionary>
