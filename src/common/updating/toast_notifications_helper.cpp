@@ -17,6 +17,8 @@ namespace
 
 namespace localized_strings
 {
+    const wchar_t GITHUB_NEW_VERSION_AVAILABLE[] = L"An update to PowerToys is available.\n";
+    const wchar_t GITHUB_NEW_VERSION_DOWNLOAD_STARTED[] = L"PowerToys download started.\n";
     const wchar_t GITHUB_NEW_VERSION_READY_TO_INSTALL[] = L"An update to PowerToys is ready to install.\n";
     const wchar_t GITHUB_NEW_VERSION_DOWNLOAD_INSTALL_ERROR[] = L"Error: couldn't download PowerToys installer. Visit our GitHub page to update.\n";
     const wchar_t GITHUB_NEW_VERSION_UPDATE_NOW[] = L"Update now";
@@ -28,6 +30,7 @@ namespace localized_strings
     const wchar_t GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT[] = L"An update to PowerToys is available. Visit our GitHub page to update.\n";
     const wchar_t GITHUB_NEW_VERSION_UNAVAILABLE[] = L"PowerToys is up to date.\n";
     const wchar_t GITHUB_NEW_VERSION_AGREE[] = L"Visit";
+    const wchar_t GITHUB_NEW_VERSION_ABORT[] = L"Abort";
     const wchar_t GITHUB_NEW_VERSION_SNOOZE_TITLE[] = L"Click Snooze to be reminded in:";
     const wchar_t GITHUB_NEW_VERSION_UPDATE_SNOOZE_1D[] = L"1 day";
     const wchar_t GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D[] = L"5 days";
@@ -50,6 +53,11 @@ namespace notifications
         notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG, false };
         std::wstring contents = GITHUB_NEW_VERSION_UNAVAILABLE;
         notifications::show_toast(std::move(contents), {});
+    }
+
+    void show_download_started()
+    {
+        notifications::show_toast(localized_strings::GITHUB_NEW_VERSION_DOWNLOAD_STARTED);
     }
 
     void show_visit_github(const updating::new_version_download_info& info)
@@ -79,6 +87,20 @@ namespace notifications
                                                    { notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_NOW, L"powertoys://update_now/" },
                                                      notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART, L"powertoys://schedule_update/" },
                                                      notifications::snooze_button{ GITHUB_NEW_VERSION_SNOOZE_TITLE, { { GITHUB_NEW_VERSION_UPDATE_SNOOZE_1D, 24 * 60 }, { GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D, 120 * 60 } } } },
+                                                   std::move(toast_params));
+    }
+
+    void show_version_ready_to_install_immediately(const updating::new_version_download_info& info)
+    {
+        notifications::toast_params toast_params{ UPDATE_READY_TOAST_TAG, false };
+        std::wstring new_version_ready{ GITHUB_NEW_VERSION_AVAILABLE };
+        new_version_ready += current_version_to_next_version(info);
+
+        notifications::show_toast_with_activations(std::move(new_version_ready),
+                                                   {},
+                                                   { notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_NOW, L"powertoys://update_now/" },
+                                                     notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART, L"powertoys://schedule_update/" },
+                                                     notifications::link_button{ GITHUB_NEW_VERSION_ABORT, L"powertoys://update_abort/" } },
                                                    std::move(toast_params));
     }
 

@@ -27,6 +27,7 @@ namespace updating
 
     std::future<std::optional<new_version_download_info>> get_new_github_version_info_async();
     std::future<void> try_autoupdate(const bool download_updates_automatically);
+    std::future<void> try_update_immediately(const bool download_updates_automatically);
     std::filesystem::path get_pending_updates_path();
 
     constexpr inline std::wstring_view installer_filename_pattern = L"powertoyssetup";

@@ -66,6 +66,19 @@ void github_update_worker()
     }
 }
 
+void github_update_immediately()
+{
+    const bool download_updates_automatically = get_general_settings().downloadUpdatesAutomatically;
+    try
+    {
+        updating::try_update_immediately(download_updates_automatically).get();
+    }
+    catch (...)
+    {
+        // Couldn't autoupdate
+    }
+}
+
 bool launch_pending_update()
 {
     try

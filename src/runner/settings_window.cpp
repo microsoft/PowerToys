@@ -11,6 +11,7 @@
 #include "common/windows_colors.h"
 #include "common/common.h"
 #include "restart_elevated.h"
+#include "update_utils.h"
 
 #include <common/json.h>
 #include <common\settings_helpers.cpp>
@@ -75,7 +76,9 @@ void dispatch_json_action_to_module(const json::JsonObject& powertoys_configs)
                 }
                 else if (action == L"check_for_updates")
                 {
-                    // TODO
+                    std::thread{ [] {
+                        github_update_immediately();
+                    } }.detach();
                 }
             }
             catch (...)

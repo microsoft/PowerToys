@@ -47,7 +47,7 @@ namespace updating
         headers.UserAgent().TryParseAdd(USER_AGENT);
         return client;
     }
-
+    
     std::wstring get_msi_package_path()
     {
         std::wstring package_path;
@@ -200,6 +200,15 @@ namespace updating
         return { std::move(path_str) };
     }
 
+    std::filesystem::path create_download_path(const std::wstring& filename)
+    {
+        auto installer_download_dst = get_pending_updates_path();
+        std::error_code _;
+        std::filesystem::create_directories(installer_download_dst, _);
+        installer_download_dst /= filename;
+        return installer_download_dst;
+    }
+
     std::future<void> try_download_file(const std::filesystem::path& destination, const winrt::Windows::Foundation::Uri& url)
     {
         namespace storage = winrt::Windows::Storage;
@@ -222,11 +231,7 @@ namespace updating
         
         if (download_updates_automatically && !could_be_costly_connection())
         {
-            auto installer_download_dst = get_pending_updates_path();
-            std::error_code _;
-            std::filesystem::create_directories(installer_download_dst, _);
-            installer_download_dst /= new_version->installer_filename;
-
+            auto installer_download_dst = create_download_path(new_version->msi_filename);
             bool download_success = false;
             for (size_t i = 0; i < MAX_DOWNLOAD_ATTEMPTS; ++i)
             {
@@ -252,6 +257,34 @@ namespace updating
         else
         {
             notifications::show_visit_github(new_version.value());
+        }
+    }
+
+    std::future<void> try_update_immediately(const bool download_updates_automatically)
+    {
+        const auto new_version = co_await get_new_github_version_info_async();
+        if (!new_version)
+        {
+            notifications::show_unavailable();
+            co_return;
+        }
+
+        if (!download_updates_automatically)
+        {
+            notifications::show_visit_github(new_version.value());
+            co_return;
+        }
+
+        auto installer_download_dst = create_download_path(new_version->msi_filename);
+        try
+        {
+            notifications::show_download_started();
+            co_await try_download_file(installer_download_dst, new_version->msi_download_url);
+            notifications::show_version_ready_to_install_immediately(new_version.value());
+        }
+        catch (...)
+        {
+            notifications::show_install_error(new_version.value());
         }
     }
 }

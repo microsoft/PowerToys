@@ -240,6 +240,10 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
 
         return toast_notification_handler_result::exit_success;
     }
+    else if (param == L"update_abort/")
+    {
+        return toast_notification_handler_result::exit_success;
+    }
     else
     {
         return toast_notification_handler_result::exit_error;
