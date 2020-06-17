@@ -276,15 +276,20 @@ namespace updating
         }
 
         auto installer_download_dst = create_download_path(new_version->msi_filename);
-        try
+        if (!std::filesystem::exists(installer_download_dst))
         {
-            notifications::show_download_started();
-            co_await try_download_file(installer_download_dst, new_version->msi_download_url);
-            notifications::show_version_ready_to_install_immediately(new_version.value());
+            try
+            {
+                notifications::show_download_started();
+                co_await try_download_file(installer_download_dst, new_version->msi_download_url);
+            }
+            catch (...)
+            {
+                notifications::show_install_error(new_version.value());
+                co_return;
+            }
         }
-        catch (...)
-        {
-            notifications::show_install_error(new_version.value());
-        }
+
+        notifications::show_version_ready_to_install_immediately(new_version.value());
     }
 }
