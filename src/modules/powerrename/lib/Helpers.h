@@ -3,6 +3,7 @@
 #include <common.h>
 #include <lib/PowerRenameInterfaces.h>
 
+HRESULT GetTransformedFileName(_In_ PCWSTR source, _Outptr_ PWSTR* result, DWORD flags);
 HRESULT EnumerateDataObject(_In_ IUnknown* pdo, _In_ IPowerRenameManager* psrm);
 BOOL GetEnumeratedFileName(
     __out_ecount(cchMax) PWSTR pszUniqueName,

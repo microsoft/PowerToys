@@ -807,136 +807,31 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                     }
                                 }
 
-                                wchar_t transformedName[MAX_PATH] = { 0 };
-                                if (newNameToUse != nullptr)
-                                {
-                                    newNameToUse = transformedName;
-                                }
-                                if (newNameToUse != nullptr && flags & Uppercase)
-                                {
-                                    if (flags & NameOnly)
-                                    {
-                                        std::wstring stem = fs::path(resultName).stem().wstring();
-                                        std::transform(stem.begin(), stem.end(), stem.begin(), ::towupper);
-                                        StringCchPrintf(transformedName, ARRAYSIZE(transformedName), L"%s%s", stem.c_str() , fs::path(resultName).extension().c_str());
-                                    }
-                                    else if (flags & ExtensionOnly)
-                                    {
-                                        std::wstring extension = fs::path(resultName).extension().wstring();
-                                        if (!extension.empty())
-                                        {
-                                            std::transform(extension.begin(), extension.end(), extension.begin(), ::towupper);
-                                            StringCchPrintf(transformedName, ARRAYSIZE(transformedName), L"%s%s", fs::path(resultName).stem().c_str(), extension.c_str());
-                                        }
-                                        else
-                                        {
-                                            StringCchCopy(transformedName, ARRAYSIZE(transformedName), resultName);
-                                            std::transform(transformedName, transformedName + wcslen(transformedName), transformedName, ::towupper);
-                                        }
-                                        
-                                    }
-                                    else
-                                    {
-                                        StringCchCopy(transformedName, ARRAYSIZE(transformedName), resultName);
-                                        std::transform(transformedName, transformedName + wcslen(transformedName), transformedName, ::towupper);
-                                    }
-                                }
-                                else if (newNameToUse != nullptr && flags & Lowercase)
-                                {
-                                    if (flags & NameOnly)
-                                    {
-                                        std::wstring stem = fs::path(resultName).stem().wstring();
-                                        std::transform(stem.begin(), stem.end(), stem.begin(), ::towlower);
-                                        StringCchPrintf(transformedName, ARRAYSIZE(transformedName), L"%s%s", stem.c_str(), fs::path(resultName).extension().c_str());
-                                    }
-                                    else if (flags & ExtensionOnly)
-                                    {
-                                        std::wstring extension = fs::path(resultName).extension().wstring();
-                                        if (!extension.empty())
-                                        {
-                                            std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
-                                            StringCchPrintf(transformedName, ARRAYSIZE(transformedName), L"%s%s", fs::path(resultName).stem().c_str(), extension.c_str());
-                                        }
-                                        else
-                                        {
-                                            StringCchCopy(transformedName, ARRAYSIZE(transformedName), resultName);
-                                            std::transform(transformedName, transformedName + wcslen(transformedName), transformedName, ::towlower);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        StringCchCopy(transformedName, ARRAYSIZE(transformedName), resultName);
-                                        std::transform(transformedName, transformedName + wcslen(transformedName), transformedName, ::towlower);
-                                    }
-                                }
-                                else if (newNameToUse != nullptr && flags & Titlecase)
-                                {
-                                    if ( !(flags & ExtensionOnly) )
-                                    {
-                                        std::vector<std::wstring> exceptions = { L"a", L"an", L"to", L"the", L"at", L"by", L"for", L"in", L"of", L"on", L"up", L"and", L"as", L"but", L"or", L"nor" }; 
-                                        std::wstring stem = fs::path(resultName).stem().wstring();
-                                        std::wstring extension = fs::path(resultName).extension().wstring();
-
-                                        size_t stemLength = stem.length();
-                                        bool isFirstWord = true;
-                                        for (size_t i = 0; i < stemLength; i++)
-                                        {
-                                            if (!i || iswspace(stem[i-1]) || iswpunct(stem[i-1]))
-                                            {
-                                                if (iswspace(stem[i]) || iswpunct(stem[i]))
-                                                {
-                                                    continue;
-                                                }
-                                                size_t wordLength = 0 ;
-                                                while (i + wordLength < stemLength && !iswspace(stem[i + wordLength]) && !iswpunct(stem[i + wordLength]))
-                                                {
-                                                    wordLength++;
-                                                }
-                                                if (isFirstWord || i + wordLength == stemLength || std::find(exceptions.begin(), exceptions.end(), stem.substr(i, wordLength)) == exceptions.end())
-                                                {
-                                                    stem[i] = towupper(stem[i]);
-                                                    isFirstWord = false;
-                                                }
-                                                else
-                                                {
-                                                    stem[i] = towlower(stem[i]);
-                                                }
-                                            }
-                                            else
-                                            {
-                                                stem[i] = towlower(stem[i]);
-                                            }
-                                        }
-                                        StringCchPrintf(transformedName, ARRAYSIZE(transformedName), L"%s%s", stem.c_str(), extension.c_str());
-                                    }
-                                    else {
-                                        StringCchCopy(transformedName, ARRAYSIZE(transformedName), resultName);
-                                    }
-                                }
-                                else
-                                {
-                                    StringCchCopy(transformedName, ARRAYSIZE(transformedName), resultName);
-                                }
-
-
                                 wchar_t trimmedName[MAX_PATH] = { 0 };
                                 if (newNameToUse != nullptr)
                                 {
                                     newNameToUse = trimmedName;
-
-                                    size_t firstNonvalidIndex = 0, lastNonvalidIndex = wcslen( transformedName )-1;
-                                    while (firstNonvalidIndex <= lastNonvalidIndex && iswspace(transformedName[firstNonvalidIndex]))
+                                    size_t firstNonvalidIndex = 0, lastNonvalidIndex = wcslen(resultName) - 1;
+                                    while (firstNonvalidIndex <= lastNonvalidIndex && iswspace(resultName[firstNonvalidIndex]))
                                     {
                                         firstNonvalidIndex++;
                                     }
-                                    while (firstNonvalidIndex <= lastNonvalidIndex && (iswspace(transformedName[lastNonvalidIndex]) || transformedName[lastNonvalidIndex] == L'.' ))
+                                    while (firstNonvalidIndex <= lastNonvalidIndex && (iswspace(resultName[lastNonvalidIndex]) || resultName[lastNonvalidIndex] == L'.'))
                                     {
                                         lastNonvalidIndex--;
                                     }
-                                    transformedName[lastNonvalidIndex + 1] = '\0';
-                                    StringCchCopy(trimmedName, ARRAYSIZE(trimmedName), transformedName+firstNonvalidIndex);
+                                    resultName[lastNonvalidIndex + 1] = '\0';
+                                    StringCchCopy(trimmedName, ARRAYSIZE(trimmedName), resultName + firstNonvalidIndex);
                                 }
 
+                                PWSTR transformedName = nullptr ;
+                                if (newNameToUse != nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase) )
+                                {
+                                    if (SUCCEEDED(GetTransformedFileName(trimmedName, &transformedName, flags)))
+                                    {
+                                        newNameToUse = transformedName;
+                                    }
+                                }
                                 
 
                                 // No change from originalName so set newName to

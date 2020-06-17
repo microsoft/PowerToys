@@ -1,6 +1,128 @@
 #include "pch.h"
 #include "Helpers.h"
 #include <ShlGuid.h>
+#include <cstring>
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
+HRESULT GetTransformedFileName(_In_ PCWSTR source, _Outptr_ PWSTR* result , DWORD flags)
+{
+    *result = nullptr;
+    wchar_t transformedName[MAX_PATH] = { 0 };
+    
+    HRESULT hr = (source && wcslen(source) > 0 && flags) ? S_OK : E_INVALIDARG;
+    if (flags & Uppercase)
+    {
+        if (flags & NameOnly)
+        {
+            std::wstring stem = fs::path(source).stem().wstring();
+            std::transform(stem.begin(), stem.end(), stem.begin(), ::towupper);
+            StringCchPrintf(transformedName, ARRAYSIZE(transformedName), L"%s%s", stem.c_str(), fs::path(source).extension().c_str());
+        }
+        else if (flags & ExtensionOnly)
+        {
+            std::wstring extension = fs::path(source).extension().wstring();
+            if (!extension.empty())
+            {
+                std::transform(extension.begin(), extension.end(), extension.begin(), ::towupper);
+                StringCchPrintf(transformedName, ARRAYSIZE(transformedName), L"%s%s", fs::path(source).stem().c_str(), extension.c_str());
+            }
+            else
+            {
+                StringCchCopy(transformedName, ARRAYSIZE(transformedName), source);
+                std::transform(transformedName, transformedName + wcslen(transformedName), transformedName, ::towupper);
+            }
+        }
+        else
+        {
+            StringCchCopy(transformedName, ARRAYSIZE(transformedName), source);
+            std::transform(transformedName, transformedName + wcslen(transformedName), transformedName, ::towupper);
+        }
+    }
+    else if (flags & Lowercase)
+    {
+        if (flags & NameOnly)
+        {
+            std::wstring stem = fs::path(source).stem().wstring();
+            std::transform(stem.begin(), stem.end(), stem.begin(), ::towlower);
+            StringCchPrintf(transformedName, ARRAYSIZE(transformedName), L"%s%s", stem.c_str(), fs::path(source).extension().c_str());
+        }
+        else if (flags & ExtensionOnly)
+        {
+            std::wstring extension = fs::path(source).extension().wstring();
+            if (!extension.empty())
+            {
+                std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
+                StringCchPrintf(transformedName, ARRAYSIZE(transformedName), L"%s%s", fs::path(source).stem().c_str(), extension.c_str());
+            }
+            else
+            {
+                StringCchCopy(transformedName, ARRAYSIZE(transformedName), source);
+                std::transform(transformedName, transformedName + wcslen(transformedName), transformedName, ::towlower);
+            }
+        }
+        else
+        {
+            StringCchCopy(transformedName, ARRAYSIZE(transformedName), source);
+            std::transform(transformedName, transformedName + wcslen(transformedName), transformedName, ::towlower);
+        }
+    }
+    else if (flags & Titlecase)
+    {
+        if (!(flags & ExtensionOnly))
+        {
+            std::vector<std::wstring> exceptions = { L"a", L"an", L"to", L"the", L"at", L"by", L"for", L"in", L"of", L"on", L"up", L"and", L"as", L"but", L"or", L"nor" };
+            std::wstring stem = fs::path(source).stem().wstring();
+            std::wstring extension = fs::path(source).extension().wstring();
+
+            size_t stemLength = stem.length();
+            bool isFirstWord = true;
+            for (size_t i = 0; i < stemLength; i++)
+            {
+                if (!i || iswspace(stem[i - 1]) || iswpunct(stem[i - 1]))
+                {
+                    if (iswspace(stem[i]) || iswpunct(stem[i]))
+                    {
+                        continue;
+                    }
+                    size_t wordLength = 0;
+                    while (i + wordLength < stemLength && !iswspace(stem[i + wordLength]) && !iswpunct(stem[i + wordLength]))
+                    {
+                        wordLength++;
+                    }
+                    if (isFirstWord || i + wordLength == stemLength || std::find(exceptions.begin(), exceptions.end(), stem.substr(i, wordLength)) == exceptions.end())
+                    {
+                        stem[i] = towupper(stem[i]);
+                        isFirstWord = false;
+                    }
+                    else
+                    {
+                        stem[i] = towlower(stem[i]);
+                    }
+                }
+                else
+                {
+                    stem[i] = towlower(stem[i]);
+                }
+            }
+            StringCchPrintf(transformedName, ARRAYSIZE(transformedName), L"%s%s", stem.c_str(), extension.c_str());
+        }
+        else
+        {
+            StringCchCopy(transformedName, ARRAYSIZE(transformedName), source);
+        }
+    }
+    else
+    {
+        StringCchCopy(transformedName, ARRAYSIZE(transformedName), source);
+    }
+
+    *result = StrDup(transformedName);
+    hr = (*result) ? S_OK : E_OUTOFMEMORY;
+
+    return hr;
+}
 
 HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* psrm, _In_ int depth = 0)
 {
