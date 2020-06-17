@@ -278,10 +278,24 @@ namespace updating
         auto installer_download_dst = create_download_path(new_version->msi_filename);
         if (!std::filesystem::exists(installer_download_dst))
         {
+            notifications::show_download_start();
+
             try
             {
-                notifications::show_download_started();
+                std::atomic<bool> isReady = false;
+                std::thread thread = std::thread([&isReady]() {
+                    float p = 0;
+                    while (!isReady)
+                    {
+                        p += 0.1f;
+                        notifications::update_download_progress(p);
+                        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                    }
+                });
+
                 co_await try_download_file(installer_download_dst, new_version->msi_download_url);
+                isReady = true;
+                thread.join();
             }
             catch (...)
             {

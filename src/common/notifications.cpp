@@ -150,10 +150,10 @@ void notifications::register_background_toast_handler()
     }
 }
 
-void notifications::show_toast(std::wstring message, toast_params params)
+void notifications::show_toast(std::wstring message, toast_params params, float progress)
 {
     // The toast won't be actually activated in the background, since it doesn't have any buttons
-    show_toast_with_activations(std::move(message), {}, {}, std::move(params));
+    show_toast_with_activations(std::move(message), {}, {}, std::move(params), progress);
 }
 
 inline void xml_escape(std::wstring data)
@@ -187,7 +187,7 @@ inline void xml_escape(std::wstring data)
     data.swap(buffer);
 }
 
-void notifications::show_toast_with_activations(std::wstring message, std::wstring_view background_handler_id, std::vector<action_t> actions, toast_params params)
+void notifications::show_toast_with_activations(std::wstring message, std::wstring_view background_handler_id, std::vector<action_t> actions, toast_params params, float progress)
 {
     // DO NOT LOCALIZE any string in this function, because they're XML tags and a subject to
     // https://docs.microsoft.com/en-us/windows/uwp/design/shell/tiles-and-notifications/toast-xml-schema
@@ -204,7 +204,16 @@ void notifications::show_toast_with_activations(std::wstring message, std::wstri
     toast_xml += title;
     toast_xml += L"</text><text>";
     toast_xml += message;
-    toast_xml += L"</text></binding></visual><actions>";
+    toast_xml += L"</text>";
+    if (progress != -1)
+    {
+        toast_xml += L"<progress title = \"\" value = \"";
+        toast_xml += std::to_wstring(progress);
+        toast_xml += L"\" valueStringOverride = \"";
+        toast_xml += std::to_wstring(static_cast<int>(progress * 100));
+        toast_xml += L"%\" status = \"Downloading...\"/>"; 
+    }
+    toast_xml += L"</binding></visual><actions>";
     for (size_t i = 0; i < size(actions); ++i)
     {
         std::visit(overloaded{
@@ -314,4 +323,28 @@ void notifications::show_toast_with_activations(std::wstring message, std::wstri
     }
 
     notifier.Show(notification);
+}
+
+void notifications::update_toast(std::wstring plaintext_message, toast_params params, float progress)
+{
+    static uint32_t sequence = 1;
+    const auto notifier = winstore::running_as_packaged() ? ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
+                                                            ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(WIN32_AUMID);
+    
+    winrt::Windows::Foundation::Collections::StringMap map;
+    map.Insert(L"value", std::to_wstring(progress));
+    map.Insert(L"valueStringOverride", std::to_wstring(static_cast<int>(progress * 100)));
+    map.Insert(L"status", L"Downloading...");
+
+   
+    
+    winrt::Windows::UI::Notifications::NotificationData data(map, sequence);
+    std::wstring tag = L"";
+    if (params.tag.has_value() && params.tag->length() < 64)
+    {
+        tag = *params.tag;
+    }
+
+    winrt::Windows::UI::Notifications::NotificationUpdateResult res = notifier.Update(data, tag);
+    sequence++;
 }

@@ -55,9 +55,10 @@ namespace notifications
         notifications::show_toast(std::move(contents), {});
     }
 
-    void show_download_started()
+    void show_download_start()
     {
-        notifications::show_toast(localized_strings::GITHUB_NEW_VERSION_DOWNLOAD_STARTED);
+        notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG };
+        notifications::show_toast(localized_strings::GITHUB_NEW_VERSION_DOWNLOAD_STARTED, toast_params, 0);
     }
 
     void show_visit_github(const updating::new_version_download_info& info)
@@ -92,7 +93,7 @@ namespace notifications
 
     void show_version_ready_to_install_immediately(const updating::new_version_download_info& info)
     {
-        notifications::toast_params toast_params{ UPDATE_READY_TOAST_TAG, false };
+        notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG, false };
         std::wstring new_version_ready{ GITHUB_NEW_VERSION_AVAILABLE };
         new_version_ready += current_version_to_next_version(info);
 
@@ -112,5 +113,11 @@ namespace notifications
     void show_uninstallation_error()
     {
         notifications::show_toast(localized_strings::UNINSTALLATION_UNKNOWN_ERROR);
+    }
+
+    void update_download_progress(float progress)
+    {
+        notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG };
+        notifications::update_toast(localized_strings::GITHUB_NEW_VERSION_DOWNLOAD_STARTED, toast_params, progress);
     }
 }
