@@ -807,21 +807,10 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                     }
                                 }
 
-                                wchar_t trimmedName[MAX_PATH] = { 0 };
-                                if (newNameToUse != nullptr)
+                                PWSTR trimmedName = nullptr;
+                                if (newNameToUse != nullptr && SUCCEEDED(GetTrimmedFileName(resultName, &trimmedName)))
                                 {
                                     newNameToUse = trimmedName;
-                                    size_t firstNonvalidIndex = 0, lastNonvalidIndex = wcslen(resultName) - 1;
-                                    while (firstNonvalidIndex <= lastNonvalidIndex && iswspace(resultName[firstNonvalidIndex]))
-                                    {
-                                        firstNonvalidIndex++;
-                                    }
-                                    while (firstNonvalidIndex <= lastNonvalidIndex && (iswspace(resultName[lastNonvalidIndex]) || resultName[lastNonvalidIndex] == L'.'))
-                                    {
-                                        lastNonvalidIndex--;
-                                    }
-                                    resultName[lastNonvalidIndex + 1] = '\0';
-                                    StringCchCopy(trimmedName, ARRAYSIZE(trimmedName), resultName + firstNonvalidIndex);
                                 }
 
                                 PWSTR transformedName = nullptr ;

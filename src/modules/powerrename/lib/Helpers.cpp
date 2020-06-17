@@ -6,6 +6,35 @@
 
 namespace fs = std::filesystem;
 
+HRESULT GetTrimmedFileName(_In_ PCWSTR source, _Outptr_ PWSTR* result)
+{
+    *result = nullptr;
+    wchar_t trimmedName[MAX_PATH] = { 0 };
+    PWSTR newName = nullptr;
+    newName = StrDup(source);
+
+    HRESULT hr = (source && wcslen(source) > 0 ) ? S_OK : E_INVALIDARG;     
+
+
+    size_t firstNonvalidIndex = 0, lastNonvalidIndex = wcslen(newName) - 1;
+    while (firstNonvalidIndex <= lastNonvalidIndex && iswspace(newName[firstNonvalidIndex]))
+    {
+        firstNonvalidIndex++;
+    }
+    while (firstNonvalidIndex <= lastNonvalidIndex && (iswspace(newName[lastNonvalidIndex]) || newName[lastNonvalidIndex] == L'.'))
+    {
+        lastNonvalidIndex--;
+    }
+    newName[lastNonvalidIndex + 1] = '\0';
+    StringCchCopy(trimmedName, ARRAYSIZE(trimmedName), newName + firstNonvalidIndex);
+    
+    *result = StrDup(trimmedName);
+    hr = (*result) ? S_OK : E_OUTOFMEMORY;
+
+    return hr;
+    
+}
+
 HRESULT GetTransformedFileName(_In_ PCWSTR source, _Outptr_ PWSTR* result , DWORD flags)
 {
     *result = nullptr;
