@@ -64,6 +64,14 @@ namespace PowerLauncher
             _viewModel.Save();
         }
 
+        private void GiveProcessForegroundPermission()
+        {
+            // Use SendInput hack to allow Activate to work
+            WindowsInteropHelper.INPUT input = new WindowsInteropHelper.INPUT { type = WindowsInteropHelper.INPUTTYPE.INPUT_MOUSE, data = { } };
+            WindowsInteropHelper.INPUT[] inputs = new WindowsInteropHelper.INPUT[] { input };
+            WindowsInteropHelper.SendInput(1, inputs, WindowsInteropHelper.INPUT.Size);
+        }
+
         private void OnLoaded(object sender, RoutedEventArgs _)
         {
             WindowsInteropHelper.DisableControlBox(this);
@@ -79,18 +87,8 @@ namespace PowerLauncher
             ListBox.SuggestionsList.PreviewMouseLeftButtonUp += SuggestionsList_PreviewMouseLeftButtonUp;
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
-            WindowsInteropHelper.INPUT input = new WindowsInteropHelper.INPUT { type = WindowsInteropHelper.INPUTTYPE.INPUT_MOUSE, data = { } };
-            WindowsInteropHelper.INPUT[] inputs = new WindowsInteropHelper.INPUT[] { input };
-            WindowsInteropHelper.SendInput(1, inputs, WindowsInteropHelper.INPUT.Size);
-            bool ret1 = Activate();
-            System.IO.FileStream fileStream = System.IO.File.Open("debuggingOnLoaded.txt",
-                System.IO.FileMode.Append, System.IO.FileAccess.Write);
-            // Encapsulate the filestream object in a StreamWriter instance.
-            System.IO.StreamWriter fileWriter = new System.IO.StreamWriter(fileStream);
-            // Write the current date time to the file
-            fileWriter.WriteLine(ret1 + "\n");
-            fileWriter.Flush();
-            fileWriter.Close();
+            GiveProcessForegroundPermission();
+            Activate();
 
         }
 
@@ -117,17 +115,8 @@ namespace PowerLauncher
                 // Not called on first launch
                 // Additionally called when deactivated by clicking on screen  
                 UpdatePosition();
-                WindowsInteropHelper.INPUT input = new WindowsInteropHelper.INPUT { type = WindowsInteropHelper.INPUTTYPE.INPUT_KEYBOARD, data = { ki = { wVk = 0x41, dwFlags = 2} } };
-                WindowsInteropHelper.INPUT[] inputs = new WindowsInteropHelper.INPUT[] { input };
-                WindowsInteropHelper.SendInput(1, inputs, WindowsInteropHelper.INPUT.Size);
-                bool ret1 = Activate();
-                System.IO.FileStream fileStream = System.IO.File.Open("debuggingOnVisible.txt", System.IO.FileMode.Append, System.IO.FileAccess.Write);
-                // Encapsulate the filestream object in a StreamWriter instance.
-                System.IO.StreamWriter fileWriter = new System.IO.StreamWriter(fileStream);
-                // Write the current date time to the file
-                fileWriter.WriteLine(ret1 + "\n");
-                fileWriter.Flush();
-                fileWriter.Close();
+                GiveProcessForegroundPermission();
+                Activate();
 
                 if (!_viewModel.LastQuerySelected)
                 {

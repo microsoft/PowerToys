@@ -55,7 +55,7 @@ namespace Wox.Helper
             [FieldOffset(0)]
             internal MOUSEINPUT mi;
             [FieldOffset(0)]
-            public KEYBDINPUT ki;
+            internal KEYBDINPUT ki;
             [FieldOffset(0)]
             internal HARDWAREINPUT hi;
         }
@@ -72,11 +72,11 @@ namespace Wox.Helper
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct KEYBDINPUT
+        internal struct KEYBDINPUT
         {
-            public short wVk;
+            internal short wVk;
             internal short wScan;
-            public uint dwFlags;
+            internal uint dwFlags;
             internal int time;
             internal UIntPtr dwExtraInfo;
         }
