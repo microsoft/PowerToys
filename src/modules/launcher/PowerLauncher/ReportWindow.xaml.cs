@@ -42,7 +42,7 @@ namespace PowerLauncher
             ErrorTextbox.Document.Blocks.Add(paragraph);
         }
 
-        private Paragraph Hyperlink(string textBeforeUrl, string url)
+        private static Paragraph Hyperlink(string textBeforeUrl, string url)
         {
             var paragraph = new Paragraph();
             paragraph.Margin = new Thickness(0);
