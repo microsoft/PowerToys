@@ -32,6 +32,12 @@ namespace KeyboardEventHandlers
                     target = VK_LWIN;
                 }
 
+                // If Ctrl/Alt/Shift is being remapped to Caps Lock, then reset the modifier key state to fix issues in certain IME keyboards where the IME shortcut gets invoked since it detects that the modifier and Caps Lock is pressed even though it is suppressed by the hook - More information at the GitHub issue https://github.com/microsoft/PowerToys/issues/3397
+                if (target == VK_CAPITAL && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+                {
+                    ResetIfModifierKeyForLowerLevelKeyHandlers(ii, it->first);
+                }
+
                 if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
                 {
                     KeyboardManagerHelper::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)target, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
@@ -44,6 +50,13 @@ namespace KeyboardEventHandlers
                 lock.unlock();
                 UINT res = ii.SendVirtualInput(key_count, keyEventList, sizeof(INPUT));
                 delete[] keyEventList;
+
+                // If Caps Lock is being remapped to Ctrl/Alt/Shift, then reset the modifier key state to fix issues in certain IME keyboards where the IME shortcut gets invoked since it detects that the modifier and Caps Lock is pressed even though it is suppressed by the hook - More information at the GitHub issue https://github.com/microsoft/PowerToys/issues/3397
+                if (it->first == VK_CAPITAL && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+                {
+                    ResetIfModifierKeyForLowerLevelKeyHandlers(ii, target);
+                }
+
                 return 1;
             }
         }
@@ -611,10 +624,27 @@ namespace KeyboardEventHandlers
         LPINPUT keyEventList = new INPUT[size_t(key_count)]();
         memset(keyEventList, 0, sizeof(keyEventList));
 
-        // Use the shortcut flag to ensure these are not intercepted by any remapped keys or shortcuts
+        // Use the suppress flag to ensure these are not intercepted by any remapped keys or shortcuts
         KeyboardManagerHelper::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, VK_NUMLOCK, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
         KeyboardManagerHelper::SetKeyEvent(keyEventList, 1, INPUT_KEYBOARD, VK_NUMLOCK, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
         UINT res = ii.SendVirtualInput((UINT)key_count, keyEventList, sizeof(INPUT));
         delete[] keyEventList;
+    }
+
+    // Function to ensure Ctrl/Shift/Alt modifier key state is not detected as pressed down by applications which detect keys at a lower level than hooks when it is remapped
+    void ResetIfModifierKeyForLowerLevelKeyHandlers(InputInterface& ii, DWORD key)
+    {
+        // If the argument is either of the Ctrl/Shift/Alt modifier key codes
+        if (KeyboardManagerHelper::IsModifierKey(key) && !(key == VK_LWIN || key == VK_RWIN || key == CommonSharedConstants::VK_WIN_BOTH))
+        {
+            int key_count = 1;
+            LPINPUT keyEventList = new INPUT[size_t(key_count)]();
+            memset(keyEventList, 0, sizeof(keyEventList));
+
+            // Use the suppress flag to ensure these are not intercepted by any remapped keys or shortcuts
+            KeyboardManagerHelper::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)key, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
+            UINT res = ii.SendVirtualInput((UINT)key_count, keyEventList, sizeof(INPUT));
+            delete[] keyEventList;
+        }
     }
 }

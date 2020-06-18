@@ -4,6 +4,12 @@
 #include <common/common.h>
 #include <common/dpi_aware.h>
 
+namespace
+{
+    const wchar_t POWER_TOYS_APP_POWER_LAUCHER[] = L"POWERLAUNCHER.EXE";
+    const wchar_t POWER_TOYS_APP_FANCY_ZONES_EDITOR[] = L"FANCYZONESEDITOR.EXE";
+}
+
 typedef BOOL(WINAPI* GetDpiForMonitorInternalFunc)(HMONITOR, UINT, UINT*, UINT*);
 UINT GetDpiForMonitor(HMONITOR monitor) noexcept
 {
@@ -157,7 +163,11 @@ bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& excludedA
     {
         return false;
     }
-    if (find_app_name_in_path(filtered.process_path, { L"POWERLAUNCHER.EXE" }))
+    if (find_app_name_in_path(filtered.process_path, { POWER_TOYS_APP_POWER_LAUCHER }))
+    {
+        return false;
+    }
+    if (find_app_name_in_path(filtered.process_path, { POWER_TOYS_APP_FANCY_ZONES_EDITOR }))
     {
         return false;
     }

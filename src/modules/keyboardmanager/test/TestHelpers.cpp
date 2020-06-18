@@ -8,6 +8,7 @@ namespace TestHelpers
     {
         input.ResetKeyboardState();
         input.SetHookProc(nullptr);
+        input.SetSendVirtualInputTestHandler(nullptr);
         state.ClearSingleKeyRemaps();
         state.ClearOSLevelShortcuts();
     }

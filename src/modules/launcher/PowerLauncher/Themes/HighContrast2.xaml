@@ -26,10 +26,21 @@
     <SolidColorBrush x:Key="ButtonBorderPressed" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#FF0000ff" />
     <SolidColorBrush x:Key="ControlTextBrushKey" Color="#FF00ff00" />
-    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#FFc0c0c0" />
+    <SolidColorBrush x:Key="SecondaryTextForeground" Color="#FFc0c0c0" />
     <SolidColorBrush x:Key="InactiveSelectionHighlightBrushKey" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="BorderBrush" Color="White" />
-    <SolidColorBrush x:Key="ScrollBarThumbBrush" Color="White" />
-    <SolidColorBrush x:Key="ScrollBarThumbPointerOverBrush" Color="#FF0000ff" />
-    <SolidColorBrush x:Key="ScrollBarThumbPointerPressedBrush" Color="#FF0000ff" />
+    
+    <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="White" />
+    <Color x:Key="ScrollBarThumbPointerOver">#FF0000ff</Color>
+    <Color x:Key="ScrollBarThumbPointerPressed">#FF0000ff</Color>
+
+    <Color x:Key="ScrollBarBackgroundPointerOver">#FF000000</Color>
+
+    <SolidColorBrush x:Key="ScrollBarLineButtonForeground">#FFFFFFFF</SolidColorBrush>
+    <Color x:Key="ScrollBarLineButtonForegroundPointerOver">#FFFFFFFF</Color>
+    <Color x:Key="ScrollBarLineButtonForegroundPointerPressed">#FFFFFFFF</Color>
+
+    <SolidColorBrush x:Key="ScrollBarLineButtonBackground" Color="Transparent"/>
+    <Color x:Key="ScrollBarLineButtonBackgroundPointerOver">#FF000000</Color>
+    <Color x:Key="ScrollBarLineButtonBackgroundPointerPressed">#FF000000</Color>
 </ResourceDictionary>

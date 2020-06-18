@@ -75,8 +75,13 @@ bool launch_pending_update()
         {
             UpdateState::store([](UpdateState& state) {
                 state.pending_update = false;
+                state.pending_installer_filename = {};
             });
-            launch_action_runner(UPDATE_NOW_LAUNCH_STAGE1_START_PT_CMDARG);
+            std::wstring args{ UPDATE_NOW_LAUNCH_STAGE1_START_PT_CMDARG };
+            args += L' ';
+            args += update_state.pending_installer_filename;
+
+            launch_action_runner(args.c_str());
             return true;
         }
     }
