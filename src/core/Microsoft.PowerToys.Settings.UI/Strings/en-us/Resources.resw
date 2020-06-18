@@ -599,4 +599,7 @@
   <data name="FancyZones_HotkeyEditorControl_TextBox.ToolTipService.ToolTip" xml:space="preserve">
     <value>Only shortcuts with the following hotkeys are valid: Win, Ctrl, Alt, Shift.</value>
   </data>
+  <data name="FancyZones_RestoreSize.Content" xml:space="preserve">
+    <value>Restore the original size of windows when unsnapping</value>
+  </data>
 </root>

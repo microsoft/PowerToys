@@ -133,6 +133,11 @@
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
+            <CheckBox x:Uid="FancyZones_RestoreSize"
+                      IsChecked="{ Binding Mode=TwoWay, Path=RestoreSize}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+
             <CheckBox x:Uid="FancyZones_UseCursorPosEditorStartupScreen"
                       IsChecked="{ Binding Mode=TwoWay, Path=UseCursorPosEditorStartupScreen}"
                       Margin="{StaticResource SmallTopMargin}"
