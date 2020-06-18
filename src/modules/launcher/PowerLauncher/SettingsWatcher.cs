@@ -73,7 +73,9 @@ namespace PowerLauncher
                         _settings.IgnoreHotkeysOnFullscreen = overloadSettings.properties.ignore_hotkeys_in_fullscreen;
                     }
                 }
-                catch (Exception e)
+                // the settings application can hold a lock on the settings.json file which will result in a IOException.  
+                // This should be changed to properly synch with the settings app instead of retrying.
+                catch (IOException e)
                 {
                     retry = true;
                     Thread.Sleep(1000);
