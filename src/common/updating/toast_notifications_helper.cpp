@@ -94,7 +94,7 @@ namespace notifications
     void show_version_ready_to_install_immediately(const updating::new_version_download_info& info)
     {
         notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG, false };
-        std::wstring new_version_ready{ GITHUB_NEW_VERSION_AVAILABLE };
+        std::wstring new_version_ready{ GITHUB_NEW_VERSION_READY_TO_INSTALL };
         new_version_ready += current_version_to_next_version(info);
 
         notifications::show_toast_with_activations(std::move(new_version_ready),
