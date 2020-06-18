@@ -130,7 +130,7 @@ int runner(bool isProcessElevated)
         chdir_current_executable();
         // Load Powertoys DLLS
         // For now only load known DLLs
-        
+
         std::wstring baseModuleFolder = L"modules/";
 
         std::unordered_set<std::wstring> known_dlls = {
@@ -232,21 +232,32 @@ enum class toast_notification_handler_result
     exit_error
 };
 
+
 toast_notification_handler_result toast_notification_handler(const std::wstring_view param)
 {
-    if (param == L"cant_drag_elevated_disable/")
+    const std::wstring_view cant_drag_elevated_disable = L"cant_drag_elevated_disable/";
+    const std::wstring_view update_now = L"update_now/";
+    const std::wstring_view schedule_update = L"schedule_update/";
+
+    if (param == cant_drag_elevated_disable)
     {
         return disable_cant_drag_elevated_warning() ? toast_notification_handler_result::exit_success : toast_notification_handler_result::exit_error;
     }
-    else if (param == L"update_now/")
+    else if (param.starts_with(update_now))
     {
-        launch_action_runner(UPDATE_NOW_LAUNCH_STAGE1_CMDARG);
+        std::wstring args{ UPDATE_NOW_LAUNCH_STAGE1_CMDARG };
+        const auto installerFilename = param.data() + size(update_now);
+        args += L' ';
+        args += installerFilename;
+        launch_action_runner(args.c_str());
         return toast_notification_handler_result::exit_success;
     }
-    else if (param == L"schedule_update/")
+    else if (param.starts_with(schedule_update))
     {
-        UpdateState::store([](UpdateState& state) {
+        const auto installerFilename = param.data() + size(schedule_update);
+        UpdateState::store([=](UpdateState& state) {
             state.pending_update = true;
+            state.pending_installer_filename = installerFilename;
         });
 
         return toast_notification_handler_result::exit_success;

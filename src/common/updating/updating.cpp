@@ -93,8 +93,8 @@ namespace updating
 
         return package_path;
     }
-
     bool offer_msi_uninstallation()
+
     {
         const auto selection = SHMessageBoxCheckW(nullptr, localized_strings::OFFER_UNINSTALL_MSI, localized_strings::OFFER_UNINSTALL_MSI_TITLE, MB_ICONQUESTION | MB_YESNO, IDNO, DONT_SHOW_AGAIN_RECORD_REGISTRY_PATH);
         return selection == IDYES;
@@ -139,22 +139,26 @@ namespace updating
 
             if (github_version > current_version)
             {
-                const std::wstring_view required_asset_extension = winstore::running_as_packaged() ? L".msix" : L".msi";
                 const std::wstring_view required_architecture = get_architecture_string(get_current_architecture());
                 constexpr const std::wstring_view required_filename_pattern = updating::installer_filename_pattern;
-                for (auto asset_elem : json_body.GetNamedArray(L"assets"))
+                // Desc-sorted by its priority
+                const std::array<std::wstring_view, 2> asset_extensions = { L".exe", L".msi" };
+                for (const auto asset_extension : asset_extensions)
                 {
-                    auto asset{ asset_elem.GetObjectW() };
-                    std::wstring filename_lower = asset.GetNamedString(L"name", {}).c_str();
-                    std::transform(begin(filename_lower), end(filename_lower), begin(filename_lower), ::towlower);
-
-                    const bool extension_matched = filename_lower.ends_with(required_asset_extension);
-                    const bool architecture_matched = filename_lower.find(required_architecture) != std::wstring::npos;
-                    const bool filename_matched = filename_lower.find(required_filename_pattern) != std::wstring::npos;
-                    if (extension_matched && architecture_matched && filename_matched)
+                    for (auto asset_elem : json_body.GetNamedArray(L"assets"))
                     {
-                        winrt::Windows::Foundation::Uri msi_download_url{ asset.GetNamedString(L"browser_download_url") };
-                        co_return new_version_download_info{ std::move(release_page_uri), new_version.c_str(), std::move(msi_download_url), std::move(filename_lower) };
+                        auto asset{ asset_elem.GetObjectW() };
+                        std::wstring filename_lower = asset.GetNamedString(L"name", {}).c_str();
+                        std::transform(begin(filename_lower), end(filename_lower), begin(filename_lower), ::towlower);
+
+                        const bool extension_matched = filename_lower.ends_with(asset_extension);
+                        const bool architecture_matched = filename_lower.find(required_architecture) != std::wstring::npos;
+                        const bool filename_matched = filename_lower.find(required_filename_pattern) != std::wstring::npos;
+                        if (extension_matched && architecture_matched && filename_matched)
+                        {
+                            winrt::Windows::Foundation::Uri msi_download_url{ asset.GetNamedString(L"browser_download_url") };
+                            co_return new_version_download_info{ std::move(release_page_uri), new_version.c_str(), std::move(msi_download_url), std::move(filename_lower) };
+                        }
                     }
                 }
             }
@@ -216,9 +220,9 @@ namespace updating
         auto client = create_http_client();
         auto response = co_await client.GetAsync(url);
         (void)response.EnsureSuccessStatusCode();
-        auto msi_installer_file_stream = co_await storage::Streams::FileRandomAccessStream::OpenAsync(destination.c_str(), storage::FileAccessMode::ReadWrite, storage::StorageOpenOptions::AllowReadersAndWriters, storage::Streams::FileOpenDisposition::CreateAlways);
-        co_await response.Content().WriteToStreamAsync(msi_installer_file_stream);
-        msi_installer_file_stream.Close();
+        auto file_stream = co_await storage::Streams::FileRandomAccessStream::OpenAsync(destination.c_str(), storage::FileAccessMode::ReadWrite, storage::StorageOpenOptions::AllowReadersAndWriters, storage::Streams::FileOpenDisposition::CreateAlways);
+        co_await response.Content().WriteToStreamAsync(file_stream);
+        file_stream.Close();
     }
 
     std::future<void> try_autoupdate(const bool download_updates_automatically)
@@ -238,14 +242,14 @@ namespace updating
             auto installer_download_dst = get_pending_updates_path();
             std::error_code _;
             std::filesystem::create_directories(installer_download_dst, _);
-            installer_download_dst /= new_version->msi_filename;
+            installer_download_dst /= new_version->installer_filename;
 
             bool download_success = false;
             for (size_t i = 0; i < MAX_DOWNLOAD_ATTEMPTS; ++i)
             {
                 try
                 {
-                    co_await try_download_file(installer_download_dst, new_version->msi_download_url);
+                    co_await try_download_file(installer_download_dst, new_version->installer_download_url);
                     download_success = true;
                     break;
                 }
@@ -271,8 +275,8 @@ namespace updating
 
             notifications::show_toast_with_activations(std::move(new_version_ready),
                                                        {},
-                                                       { notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_NOW, L"powertoys://update_now/" },
-                                                         notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART, L"powertoys://schedule_update/" },
+                                                       { notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_NOW, L"powertoys://update_now/" + new_version->installer_filename },
+                                                         notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART, L"powertoys://schedule_update/" + new_version->installer_filename },
                                                          notifications::snooze_button{ GITHUB_NEW_VERSION_SNOOZE_TITLE, { { GITHUB_NEW_VERSION_UPDATE_SNOOZE_1D, 24 * 60 }, { GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D, 120 * 60 } } } },
                                                        std::move(toast_params));
         }

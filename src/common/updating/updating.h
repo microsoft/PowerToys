@@ -21,8 +21,8 @@ namespace updating
     {
         winrt::Windows::Foundation::Uri release_page_uri;
         std::wstring version_string;
-        winrt::Windows::Foundation::Uri msi_download_url;
-        std::wstring msi_filename;
+        winrt::Windows::Foundation::Uri installer_download_url;
+        std::wstring installer_filename;
     };
 
     std::future<std::optional<new_version_download_info>> get_new_github_version_info_async();
