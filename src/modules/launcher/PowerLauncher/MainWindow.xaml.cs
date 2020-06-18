@@ -299,7 +299,7 @@ namespace PowerLauncher
             else
             {
                 var text = ((TextBox)sender).Text;
-                if (text == string.Empty)
+                if (string.IsNullOrEmpty(text))
                 {
                     SearchBox.AutoCompleteTextBlock.Text = string.Empty;
                 }
