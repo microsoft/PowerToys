@@ -306,12 +306,12 @@ namespace PowerLauncher
                 _viewModel.QueryText = text;
                 var latestTimeOfTyping = DateTime.Now;
 
-                Task.Run(() => DelayedCheck(latestTimeOfTyping, text));
+                Task.Run(() => DelayedCheck(latestTimeOfTyping));
                 s_lastTimeOfTyping = latestTimeOfTyping;
             }
         }
 
-        private async Task DelayedCheck(DateTime latestTimeOfTyping, string text)
+        private async Task DelayedCheck(DateTime latestTimeOfTyping)
         {
             await Task.Delay(millisecondsToWait);
             if (latestTimeOfTyping.Equals(s_lastTimeOfTyping))
