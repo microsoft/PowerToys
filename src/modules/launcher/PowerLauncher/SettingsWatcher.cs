@@ -82,7 +82,7 @@ namespace PowerLauncher
             Monitor.Exit(_watcher);
         }
 
-        private string ConvertHotkey(HotkeySettings hotkey)
+        private static string ConvertHotkey(HotkeySettings hotkey)
         {
             Key key = KeyInterop.KeyFromVirtualKey(hotkey.Code);
             HotkeyModel model = new HotkeyModel(hotkey.Alt, hotkey.Shift, hotkey.Win, hotkey.Ctrl, key);
