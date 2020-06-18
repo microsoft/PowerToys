@@ -258,5 +258,11 @@
   <ItemGroup>
     <Resource Include="images\FancyZonesEditor.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj">
+      <Project>{4AED67B6-55FD-486F-B917-E543DEE2CB3C}</Project>
+      <Name>ManagedCommon</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

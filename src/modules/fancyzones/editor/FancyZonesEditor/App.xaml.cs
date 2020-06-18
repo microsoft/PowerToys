@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using FancyZonesEditor.Models;
+using ManagedCommon;
 
 namespace FancyZonesEditor
 {
@@ -24,7 +25,7 @@ namespace FancyZonesEditor
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            WaitForPowerToysRunner();
+            RunnerHelper.WaitForPowerToysRunner(Settings.PowerToysPID);
 
             LayoutModel foundModel = null;
 
@@ -61,28 +62,6 @@ namespace FancyZonesEditor
             EditorOverlay overlay = new EditorOverlay();
             overlay.Show();
             overlay.DataContext = foundModel;
-        }
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, int processId);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
-
-        private void WaitForPowerToysRunner()
-        {
-            Task.Run(() =>
-            {
-                const uint INFINITE = 0xFFFFFFFF;
-                const uint WAIT_OBJECT_0 = 0x00000000;
-                const uint SYNCHRONIZE = 0x00100000;
-
-                IntPtr powerToysProcHandle = OpenProcess(SYNCHRONIZE, false, Settings.PowerToysPID);
-                if (WaitForSingleObject(powerToysProcHandle, INFINITE) == WAIT_OBJECT_0)
-                {
-                    Environment.Exit(0);
-                }
-            });
         }
     }
 }
