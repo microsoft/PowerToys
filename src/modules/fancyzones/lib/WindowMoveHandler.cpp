@@ -297,7 +297,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
     {
         ::RemoveProp(window, MULTI_ZONE_STAMP);
 
-        // restore size?
+        if (m_settings->GetSettings()->restoreSize)
         {
             auto windowSizeData = GetPropW(window, RESTORE_SIZE_STAMP);
             if (windowSizeData)
@@ -312,6 +312,8 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
                     rect.bottom = rect.top + windowSize.second;
                     SizeWindowToRect(window, rect);
                 }
+
+                ::RemoveProp(window, RESTORE_SIZE_STAMP);
             }
         }
 
