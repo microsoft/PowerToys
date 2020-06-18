@@ -808,7 +808,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 }
 
                                 PWSTR trimmedName = nullptr;
-                                if (newNameToUse != nullptr && SUCCEEDED(GetTrimmedFileName(resultName, &trimmedName)))
+                                if (newNameToUse != nullptr && SUCCEEDED(GetTrimmedFileName(newNameToUse, &trimmedName)))
                                 {
                                     newNameToUse = trimmedName;
                                 }
@@ -816,7 +816,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 PWSTR transformedName = nullptr ;
                                 if (newNameToUse != nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase))
                                 {
-                                    if (SUCCEEDED(GetTransformedFileName(trimmedName, &transformedName, flags)))
+                                    if (SUCCEEDED(GetTransformedFileName(newNameToUse, &transformedName, flags)))
                                     {
                                         newNameToUse = transformedName;
                                     }

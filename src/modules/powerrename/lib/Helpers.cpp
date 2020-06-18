@@ -8,13 +8,16 @@ namespace fs = std::filesystem;
 
 HRESULT GetTrimmedFileName(_In_ PCWSTR source, _Outptr_ PWSTR* result)
 {
+    HRESULT hr = (source && wcslen(source) > 0) ? S_OK : E_INVALIDARG;     
+    if (!SUCCEEDED(hr))
+    {
+        return hr;
+    }
+
     *result = nullptr;
     wchar_t trimmedName[MAX_PATH] = { 0 };
     PWSTR newName = nullptr;
     SHStrDup(source, &newName);
-
-    HRESULT hr = (source && wcslen(source) > 0) ? S_OK : E_INVALIDARG;     
-
 
     size_t firstNonvalidIndex = 0, lastNonvalidIndex = wcslen(newName) - 1;
     while (firstNonvalidIndex <= lastNonvalidIndex && iswspace(newName[firstNonvalidIndex]))
@@ -28,18 +31,24 @@ HRESULT GetTrimmedFileName(_In_ PCWSTR source, _Outptr_ PWSTR* result)
     newName[lastNonvalidIndex + 1] = '\0';
     StringCchCopy(trimmedName, ARRAYSIZE(trimmedName), newName + firstNonvalidIndex);
     
+    CoTaskMemFree(newName);
+
     hr = SHStrDup(trimmedName, result);
-    
     return hr;
     
 }
 
 HRESULT GetTransformedFileName(_In_ PCWSTR source, _Outptr_ PWSTR* result , DWORD flags)
 {
+    HRESULT hr = (source && wcslen(source) > 0 && flags) ? S_OK : E_INVALIDARG;
+    if (!SUCCEEDED(hr))
+    {
+        return hr;
+    }
+
     *result = nullptr;
     wchar_t transformedName[MAX_PATH] = { 0 };
     
-    HRESULT hr = (source && wcslen(source) > 0 && flags) ? S_OK : E_INVALIDARG;
     if (flags & Uppercase)
     {
         if (flags & NameOnly)
