@@ -277,7 +277,7 @@ namespace PowerLauncher
                 int selectedIndex = _viewModel.Results.SelectedIndex;
                 if (selectedItem != null && selectedIndex == 0)
                 {
-                    if (selectedItem.IndexOf(input) == 0)
+                    if (selectedItem.IndexOf(input, StringComparison.InvariantCultureIgnoreCase) == 0)
                     {
                         return selectedItem;
                     }
