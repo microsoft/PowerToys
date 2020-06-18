@@ -40,7 +40,7 @@ namespace PowerLauncher
         {
             if (SingleInstance<App>.InitializeAsFirstInstance(Unique))
             {
-                if (args.Length > 0)
+                if (args?.Length > 0)
                 {
                     int.TryParse(args[0], out _powerToysPid);
                 }
