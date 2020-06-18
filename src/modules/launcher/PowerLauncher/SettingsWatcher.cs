@@ -19,6 +19,7 @@ namespace PowerLauncher
     public class SettingsWatcher : BaseModel
     {
         private static int MAX_RETRIES = 10;
+        private static object _watcherSyncObject = new object();
         private FileSystemWatcher _watcher;
         private Settings _settings;
         public SettingsWatcher(Settings settings)
@@ -40,7 +41,7 @@ namespace PowerLauncher
 
         public void OverloadSettings()
         {
-            Monitor.Enter(_watcher);
+            Monitor.Enter(_watcherSyncObject);
             var retry = true;
             for (int i = 0; retry && i < MAX_RETRIES; i++)
             {
@@ -79,7 +80,7 @@ namespace PowerLauncher
                     Debug.WriteLine(e.Message);
                 }
             }
-            Monitor.Exit(_watcher);
+            Monitor.Exit(_watcherSyncObject);
         }
 
         private static string ConvertHotkey(HotkeySettings hotkey)
