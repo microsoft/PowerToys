@@ -522,16 +522,17 @@ namespace Microsoft.Plugin.Program.Programs
             return programs1.Concat(programs2).Concat(programs3);
         }
 
-        private static ParallelQuery<Win32> StartMenuPrograms(string[] suffixes)
+        private static ParallelQuery<Win32> IndexPath(string[] suffixes, List<string> IndexLocation)
         {
             var disabledProgramsList = Main._settings.DisabledProgramSources;
 
-            var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
-            var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms);
-            var paths1 = ProgramPaths(directory1, suffixes);
-            var paths2 = ProgramPaths(directory2, suffixes);
-
-            var toFilter = paths1.Concat(paths2);
+            IEnumerable<string> toFilter = new List<string>();
+            foreach (string location in IndexLocation)
+            {
+                var _paths = ProgramPaths(location, suffixes);
+                toFilter = toFilter.Concat(_paths);
+            }
+           
             var paths = toFilter
                         .Where(t1 => !disabledProgramsList.Any(x => x.UniqueIdentifier == t1))
                         .Select(t1 => t1)
@@ -543,6 +544,23 @@ namespace Microsoft.Plugin.Program.Programs
             var programs3 = paths.AsParallel().Where(p => Extension(p).Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(InternetShortcutProgram);
 
             return programs1.Concat(programs2).Where(p => p.Valid).Concat(programs3).Where(p => p.Valid);
+        }
+
+        private static ParallelQuery<Win32> StartMenuPrograms(string[] suffixes)
+        {
+            var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
+            var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms);
+            List<string> IndexLocation = new List<string>() { directory1, directory2};
+
+            return IndexPath(suffixes, IndexLocation);
+        }
+
+        private static ParallelQuery<Win32> DesktopPrograms(string[] suffixes)
+        {
+            var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            List<string> IndexLocation = new List<string>() { directory1 };
+
+            return IndexPath(suffixes, IndexLocation);
         }
 
         private static ParallelQuery<Win32> AppPathsPrograms(string[] suffixes)
@@ -686,6 +704,12 @@ namespace Microsoft.Plugin.Program.Programs
                 {
                     var startMenu = StartMenuPrograms(settings.ProgramSuffixes);
                     programs = programs.Concat(startMenu);
+                }
+
+                if (settings.EnableDesktopSource)
+                {
+                    var desktop = DesktopPrograms(settings.ProgramSuffixes);
+                    programs = programs.Concat(desktop);
                 }
 
                 return DeduplicatePrograms(programs);
