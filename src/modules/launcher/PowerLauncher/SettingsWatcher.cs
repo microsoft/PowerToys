@@ -26,14 +26,7 @@ namespace PowerLauncher
         {
             _settings = settings;
             // Set up watcher
-            try
-            {
-                _watcher = Helper.GetFileWatcher(PowerLauncherSettings.POWERTOYNAME, "settings.json", OverloadSettings);
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e.Message);
-            }
+             _watcher = Helper.GetFileWatcher(PowerLauncherSettings.POWERTOYNAME, "settings.json", OverloadSettings);
 
             // Load initial settings file
             OverloadSettings();
