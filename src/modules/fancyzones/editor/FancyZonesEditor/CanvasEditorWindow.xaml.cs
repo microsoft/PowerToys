@@ -21,8 +21,7 @@ namespace FancyZonesEditor
 
         private void OnAddZone(object sender, RoutedEventArgs e)
         {
-            _model.AddZone(new Int32Rect(_offset, _offset, (int)(Settings.WorkArea.Width * 0.6), (int)(Settings.WorkArea.Height * 0.6)));
-            _offset += 100;
+            _model.AddZone(new Int32Rect(_x_offset, _y_offset, (int)(Settings.WorkArea.Width * 0.4), (int)(Settings.WorkArea.Height * 0.4)));
         }
 
         protected new void OnCancel(object sender, RoutedEventArgs e)
@@ -31,7 +30,8 @@ namespace FancyZonesEditor
             _stashedModel.RestoreTo(_model);
         }
 
-        private int _offset = 100;
+        private int _x_offset = (int)(Settings.WorkArea.Width * 0.5) - (int)(Settings.WorkArea.Width * 0.2);
+        private int _y_offset = (int)(Settings.WorkArea.Height * 0.5) - (int)(Settings.WorkArea.Height * 0.2);
         private CanvasLayoutModel _model;
         private CanvasLayoutModel _stashedModel;
     }
