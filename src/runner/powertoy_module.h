@@ -49,5 +49,5 @@ private:
     std::unique_ptr<PowertoyModuleIface, PowertoyModuleDeleter> module;
 };
 
-PowertoyModule load_powertoy(const std::wstring& filename);
+PowertoyModule load_powertoy(const std::wstring_view filename);
 std::map<std::wstring, PowertoyModule>& modules();
