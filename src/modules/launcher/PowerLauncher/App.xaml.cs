@@ -1,3 +1,4 @@
+using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 using System;
@@ -55,7 +56,7 @@ namespace PowerLauncher
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            WaitForPowerToysRunner();
+            RunnerHelper.WaitForPowerToysRunner(_powerToysPid);
 
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
@@ -119,28 +120,6 @@ namespace PowerLauncher
             AppDomain.CurrentDomain.ProcessExit += (s, e) => Dispose();
             Current.Exit += (s, e) => Dispose();
             Current.SessionEnding += (s, e) => Dispose();
-        }
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, int processId);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
-
-        private static void WaitForPowerToysRunner()
-        {
-            Task.Run(() =>
-            {
-                const uint INFINITE = 0xFFFFFFFF;
-                const uint WAIT_OBJECT_0 = 0x00000000;
-                const uint SYNCHRONIZE = 0x00100000;
-
-                IntPtr powerToysProcHandle = OpenProcess(SYNCHRONIZE, false, _powerToysPid);
-                if (WaitForSingleObject(powerToysProcHandle, INFINITE) == WAIT_OBJECT_0)
-                {
-                    Environment.Exit(0);
-                }
-            });
         }
 
         /// <summary>
