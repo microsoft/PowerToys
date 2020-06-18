@@ -66,9 +66,11 @@ namespace PowerLauncher
 
         private void BringProcessToForeground()
         {
-            // Use SendInput hack to allow Activate to work
+            // Use SendInput hack to allow Activate to work - required to resolve focus issue https://github.com/microsoft/PowerToys/issues/4270
             WindowsInteropHelper.INPUT input = new WindowsInteropHelper.INPUT { type = WindowsInteropHelper.INPUTTYPE.INPUT_MOUSE, data = { } };
             WindowsInteropHelper.INPUT[] inputs = new WindowsInteropHelper.INPUT[] { input };
+
+            // Send empty mouse event. This makes this thread the last to send input, and hence allows it to pass foreground permission checks
             WindowsInteropHelper.SendInput(1, inputs, WindowsInteropHelper.INPUT.Size);
             Activate();
         }
