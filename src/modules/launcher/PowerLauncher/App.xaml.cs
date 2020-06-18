@@ -42,7 +42,7 @@ namespace PowerLauncher
             {
                 if (args?.Length > 0)
                 {
-                    int.TryParse(args[0], out _powerToysPid);
+                    _ = int.TryParse(args[0], out _powerToysPid);
                 }
 
                 using (var application = new App())
