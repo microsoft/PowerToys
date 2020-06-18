@@ -258,24 +258,21 @@ namespace updating
         }
 
         auto installer_download_dst = create_download_path(new_version->msi_filename);
-        if (!std::filesystem::exists(installer_download_dst))
+        notifications::show_download_start();
+
+        try
         {
-            notifications::show_download_start();
+            auto progressUpdateHandle = [](float progress) {
+                notifications::update_download_progress(progress);
+            };
 
-            try
-            {
-                auto progressUpdateHandle = [](float progress) {
-                    notifications::update_download_progress(progress);
-                };
-
-                http::HttpClient client;
-                co_await client.download(new_version->msi_download_url, installer_download_dst, progressUpdateHandle);
-            }
-            catch (...)
-            {
-                notifications::show_install_error(new_version.value());
-                co_return;
-            }
+            http::HttpClient client;
+            co_await client.download(new_version->msi_download_url, installer_download_dst, progressUpdateHandle);
+        }
+        catch (...)
+        {
+            notifications::show_install_error(new_version.value());
+            co_return;
         }
 
         notifications::show_version_ready_to_install_immediately(new_version.value());
