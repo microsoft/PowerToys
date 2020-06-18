@@ -127,7 +127,7 @@ namespace PowerLauncher
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
 
-        private void WaitForPowerToysRunner()
+        private static void WaitForPowerToysRunner()
         {
             Task.Run(() =>
             {
