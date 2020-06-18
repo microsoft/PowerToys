@@ -806,23 +806,23 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                         StringCchCopy(resultName, ARRAYSIZE(resultName), newName);
                                     }
                                 }
-
-                                PWSTR trimmedName = nullptr;
-                                if (newNameToUse != nullptr && SUCCEEDED(GetTrimmedFileName(newNameToUse, &trimmedName)))
+                                
+                                wchar_t trimmedName[MAX_PATH] = { 0 };
+                                if (newNameToUse != nullptr && SUCCEEDED(GetTrimmedFileName(trimmedName, ARRAYSIZE(trimmedName), newNameToUse)))
                                 {
                                     newNameToUse = trimmedName;
                                 }
+                                
 
-                                PWSTR transformedName = nullptr ;
+                                wchar_t transformedName[MAX_PATH] = { 0 };
                                 if (newNameToUse != nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase))
                                 {
-                                    if (SUCCEEDED(GetTransformedFileName(newNameToUse, &transformedName, flags)))
+                                    if (SUCCEEDED(GetTransformedFileName(transformedName, ARRAYSIZE(transformedName), newNameToUse, flags)))
                                     {
                                         newNameToUse = transformedName;
                                     }
                                 }
                                 
-
                                 // No change from originalName so set newName to
                                 // null so we clear it from our UI as well.
                                 if (lstrcmp(originalName, newNameToUse) == 0)

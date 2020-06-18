@@ -6,156 +6,157 @@
 
 namespace fs = std::filesystem;
 
-HRESULT GetTrimmedFileName(_In_ PCWSTR source, _Outptr_ PWSTR* result)
+HRESULT GetTrimmedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source)
 {
     HRESULT hr = (source && wcslen(source) > 0) ? S_OK : E_INVALIDARG;     
-    if (!SUCCEEDED(hr))
+    if (SUCCEEDED(hr))
     {
-        return hr;
+        PWSTR newName = nullptr;
+        hr = SHStrDup(source, &newName);
+        if (SUCCEEDED(hr))
+        {
+            size_t firstNonvalidIndex = 0, lastNonvalidIndex = wcslen(newName) - 1;
+            while (firstNonvalidIndex <= lastNonvalidIndex && iswspace(newName[firstNonvalidIndex]))
+            {
+                firstNonvalidIndex++;
+            }
+            while (firstNonvalidIndex <= lastNonvalidIndex && (iswspace(newName[lastNonvalidIndex]) || newName[lastNonvalidIndex] == L'.'))
+            {
+                lastNonvalidIndex--;
+            }
+            newName[lastNonvalidIndex + 1] = '\0';
+
+            hr = StringCchCopy(result, cchMax, newName + firstNonvalidIndex);
+        }
+        CoTaskMemFree(newName);
     }
 
-    *result = nullptr;
-    wchar_t trimmedName[MAX_PATH] = { 0 };
-    PWSTR newName = nullptr;
-    SHStrDup(source, &newName);
-
-    size_t firstNonvalidIndex = 0, lastNonvalidIndex = wcslen(newName) - 1;
-    while (firstNonvalidIndex <= lastNonvalidIndex && iswspace(newName[firstNonvalidIndex]))
-    {
-        firstNonvalidIndex++;
-    }
-    while (firstNonvalidIndex <= lastNonvalidIndex && (iswspace(newName[lastNonvalidIndex]) || newName[lastNonvalidIndex] == L'.'))
-    {
-        lastNonvalidIndex--;
-    }
-    newName[lastNonvalidIndex + 1] = '\0';
-    StringCchCopy(trimmedName, ARRAYSIZE(trimmedName), newName + firstNonvalidIndex);
-    
-    CoTaskMemFree(newName);
-
-    hr = SHStrDup(trimmedName, result);
     return hr;
-    
 }
 
-HRESULT GetTransformedFileName(_In_ PCWSTR source, _Outptr_ PWSTR* result , DWORD flags)
+HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, DWORD flags)
 {
     HRESULT hr = (source && wcslen(source) > 0 && flags) ? S_OK : E_INVALIDARG;
-    if (!SUCCEEDED(hr))
+    if (SUCCEEDED(hr))
     {
-        return hr;
-    }
-
-    *result = nullptr;
-    wchar_t transformedName[MAX_PATH] = { 0 };
-    
-    if (flags & Uppercase)
-    {
-        if (flags & NameOnly)
+        if (flags & Uppercase)
         {
-            std::wstring stem = fs::path(source).stem().wstring();
-            std::transform(stem.begin(), stem.end(), stem.begin(), ::towupper);
-            StringCchPrintf(transformedName, ARRAYSIZE(transformedName), L"%s%s", stem.c_str(), fs::path(source).extension().c_str());
-        }
-        else if (flags & ExtensionOnly)
-        {
-            std::wstring extension = fs::path(source).extension().wstring();
-            if (!extension.empty())
+            if (flags & NameOnly)
             {
-                std::transform(extension.begin(), extension.end(), extension.begin(), ::towupper);
-                StringCchPrintf(transformedName, ARRAYSIZE(transformedName), L"%s%s", fs::path(source).stem().c_str(), extension.c_str());
+                std::wstring stem = fs::path(source).stem().wstring();
+                std::transform(stem.begin(), stem.end(), stem.begin(), ::towupper);
+                hr = StringCchPrintf(result, cchMax, L"%s%s", stem.c_str(), fs::path(source).extension().c_str());
             }
-            else
+            else if (flags & ExtensionOnly)
             {
-                StringCchCopy(transformedName, ARRAYSIZE(transformedName), source);
-                std::transform(transformedName, transformedName + wcslen(transformedName), transformedName, ::towupper);
-            }
-        }
-        else
-        {
-            StringCchCopy(transformedName, ARRAYSIZE(transformedName), source);
-            std::transform(transformedName, transformedName + wcslen(transformedName), transformedName, ::towupper);
-        }
-    }
-    else if (flags & Lowercase)
-    {
-        if (flags & NameOnly)
-        {
-            std::wstring stem = fs::path(source).stem().wstring();
-            std::transform(stem.begin(), stem.end(), stem.begin(), ::towlower);
-            StringCchPrintf(transformedName, ARRAYSIZE(transformedName), L"%s%s", stem.c_str(), fs::path(source).extension().c_str());
-        }
-        else if (flags & ExtensionOnly)
-        {
-            std::wstring extension = fs::path(source).extension().wstring();
-            if (!extension.empty())
-            {
-                std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
-                StringCchPrintf(transformedName, ARRAYSIZE(transformedName), L"%s%s", fs::path(source).stem().c_str(), extension.c_str());
-            }
-            else
-            {
-                StringCchCopy(transformedName, ARRAYSIZE(transformedName), source);
-                std::transform(transformedName, transformedName + wcslen(transformedName), transformedName, ::towlower);
-            }
-        }
-        else
-        {
-            StringCchCopy(transformedName, ARRAYSIZE(transformedName), source);
-            std::transform(transformedName, transformedName + wcslen(transformedName), transformedName, ::towlower);
-        }
-    }
-    else if (flags & Titlecase)
-    {
-        if (!(flags & ExtensionOnly))
-        {
-            std::vector<std::wstring> exceptions = { L"a", L"an", L"to", L"the", L"at", L"by", L"for", L"in", L"of", L"on", L"up", L"and", L"as", L"but", L"or", L"nor" };
-            std::wstring stem = fs::path(source).stem().wstring();
-            std::wstring extension = fs::path(source).extension().wstring();
-
-            size_t stemLength = stem.length();
-            bool isFirstWord = true;
-            for (size_t i = 0; i < stemLength; i++)
-            {
-                if (!i || iswspace(stem[i - 1]) || iswpunct(stem[i - 1]))
+                std::wstring extension = fs::path(source).extension().wstring();
+                if (!extension.empty())
                 {
-                    if (iswspace(stem[i]) || iswpunct(stem[i]))
+                    std::transform(extension.begin(), extension.end(), extension.begin(), ::towupper);
+                    hr = StringCchPrintf(result, cchMax, L"%s%s", fs::path(source).stem().c_str(), extension.c_str());
+                }
+                else
+                {
+                    hr = StringCchCopy(result, cchMax, source);
+                    if (SUCCEEDED(hr))
                     {
-                        continue;
+                        std::transform(result, result + wcslen(result), result, ::towupper);
                     }
-                    size_t wordLength = 0;
-                    while (i + wordLength < stemLength && !iswspace(stem[i + wordLength]) && !iswpunct(stem[i + wordLength]))
+                }
+            }
+            else
+            {
+                hr = StringCchCopy(result, cchMax, source);
+                if (SUCCEEDED(hr))
+                {
+                    std::transform(result, result + wcslen(result), result, ::towupper);
+                }
+            }
+        }
+        else if (flags & Lowercase)
+        {
+            if (flags & NameOnly)
+            {
+                std::wstring stem = fs::path(source).stem().wstring();
+                std::transform(stem.begin(), stem.end(), stem.begin(), ::towlower);
+                hr = StringCchPrintf(result, cchMax, L"%s%s", stem.c_str(), fs::path(source).extension().c_str());
+            }
+            else if (flags & ExtensionOnly)
+            {
+                std::wstring extension = fs::path(source).extension().wstring();
+                if (!extension.empty())
+                {
+                    std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
+                    hr = StringCchPrintf(result, cchMax, L"%s%s", fs::path(source).stem().c_str(), extension.c_str());
+                }
+                else
+                {
+                    hr = StringCchCopy(result, cchMax, source);
+                    if (SUCCEEDED(hr))
                     {
-                        wordLength++;
+                        std::transform(result, result + wcslen(result), result, ::towlower);
                     }
-                    if (isFirstWord || i + wordLength == stemLength || std::find(exceptions.begin(), exceptions.end(), stem.substr(i, wordLength)) == exceptions.end())
+                }
+            }
+            else
+            {
+                hr = StringCchCopy(result, cchMax, source);
+                if (SUCCEEDED(hr))
+                {
+                    std::transform(result, result + wcslen(result), result, ::towlower);
+                }
+            }
+        }
+        else if (flags & Titlecase)
+        {
+            if (!(flags & ExtensionOnly))
+            {
+                std::vector<std::wstring> exceptions = { L"a", L"an", L"to", L"the", L"at", L"by", L"for", L"in", L"of", L"on", L"up", L"and", L"as", L"but", L"or", L"nor" };
+                std::wstring stem = fs::path(source).stem().wstring();
+                std::wstring extension = fs::path(source).extension().wstring();
+
+                size_t stemLength = stem.length();
+                bool isFirstWord = true;
+                for (size_t i = 0; i < stemLength; i++)
+                {
+                    if (!i || iswspace(stem[i - 1]) || iswpunct(stem[i - 1]))
                     {
-                        stem[i] = towupper(stem[i]);
-                        isFirstWord = false;
+                        if (iswspace(stem[i]) || iswpunct(stem[i]))
+                        {
+                            continue;
+                        }
+                        size_t wordLength = 0;
+                        while (i + wordLength < stemLength && !iswspace(stem[i + wordLength]) && !iswpunct(stem[i + wordLength]))
+                        {
+                            wordLength++;
+                        }
+                        if (isFirstWord || i + wordLength == stemLength || std::find(exceptions.begin(), exceptions.end(), stem.substr(i, wordLength)) == exceptions.end())
+                        {
+                            stem[i] = towupper(stem[i]);
+                            isFirstWord = false;
+                        }
+                        else
+                        {
+                            stem[i] = towlower(stem[i]);
+                        }
                     }
                     else
                     {
                         stem[i] = towlower(stem[i]);
                     }
                 }
-                else
-                {
-                    stem[i] = towlower(stem[i]);
-                }
+                hr = StringCchPrintf(result, cchMax, L"%s%s", stem.c_str(), extension.c_str());
             }
-            StringCchPrintf(transformedName, ARRAYSIZE(transformedName), L"%s%s", stem.c_str(), extension.c_str());
+            else
+            {
+                hr = StringCchCopy(result, cchMax, source);
+            }
         }
         else
         {
-            StringCchCopy(transformedName, ARRAYSIZE(transformedName), source);
+            hr = StringCchCopy(result, cchMax, source);
         }
     }
-    else
-    {
-        StringCchCopy(transformedName, ARRAYSIZE(transformedName), source);
-    }
-
-    hr = SHStrDup(transformedName, result);
 
     return hr;
 }
