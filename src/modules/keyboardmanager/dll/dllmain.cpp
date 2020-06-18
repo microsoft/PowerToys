@@ -12,6 +12,7 @@
 #include <keyboardmanager/common/RemapShortcut.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <common/settings_helpers.h>
+#include <common/debug_control.h>
 #include <keyboardmanager/common/trace.h>
 #include "KeyboardEventHandlers.h"
 #include "Input.h"
@@ -298,11 +299,9 @@ public:
         return CallNextHookEx(hook_handle_copy, nCode, wParam, lParam);
     }
 
-    // Prevent system-wide input lagging while paused in the debugger
-    //#define DISABLE_LOWLEVEL_KBHOOK_WHEN_DEBUGGED
     void start_lowlevel_keyboard_hook()
     {
-#if defined(_DEBUG) && defined(DISABLE_LOWLEVEL_KBHOOK_WHEN_DEBUGGED)
+#if defined(DISABLE_LOWLEVEL_KBHOOK_WHEN_DEBUGGED)
         if (IsDebuggerPresent())
         {
             return;

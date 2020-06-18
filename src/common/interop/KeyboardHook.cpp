@@ -3,6 +3,7 @@
 #include <exception>
 #include <msclr\marshal.h>
 #include <msclr\marshal_cppstd.h>
+#include <common/debug_control.h>
 
 using namespace interop;
 using namespace System::Runtime::InteropServices;
@@ -45,9 +46,9 @@ void KeyboardHook::DispatchProc()
 
         // Release lock while callback is being invoked
         Monitor::Exit(queue);
-        
+
         keyboardEventCallback->Invoke(nextEv);
-        
+
         // Re-aquire lock
         Monitor::Enter(queue);
     }
@@ -60,15 +61,23 @@ void KeyboardHook::Start()
     hookProc = gcnew HookProcDelegate(this, &KeyboardHook::HookProc);
     Process ^ curProcess = Process::GetCurrentProcess();
     ProcessModule ^ curModule = curProcess->MainModule;
-    // register low level hook procedure
-    hookHandle = SetWindowsHookEx(
-        WH_KEYBOARD_LL, 
-        (HOOKPROC)(void*)Marshal::GetFunctionPointerForDelegate(hookProc), 
-        0,
-        0);
-    if (hookHandle == nullptr)
+#if defined(DISABLE_LOWLEVEL_KBHOOK_WHEN_DEBUGGED)
+    const bool hookDisabled = IsDebuggerPresent();
+#else
+    const bool hookDisabled = false;
+#endif
+    if (!hookDisabled)
     {
-        throw std::exception("SetWindowsHookEx failed.");
+        // register low level hook procedure
+        hookHandle = SetWindowsHookEx(
+            WH_KEYBOARD_LL,
+            (HOOKPROC)(void*)Marshal::GetFunctionPointerForDelegate(hookProc),
+            0,
+            0);
+        if (hookHandle == nullptr)
+        {
+            throw std::exception("SetWindowsHookEx failed.");
+        }
     }
 
     kbEventDispatch->Start();
