@@ -207,11 +207,7 @@ void notifications::show_toast_with_activations(std::wstring message, std::wstri
     toast_xml += L"</text>";
     if (progress != -1)
     {
-        toast_xml += L"<progress title = \"\" value = \"";
-        toast_xml += std::to_wstring(progress);
-        toast_xml += L"\" valueStringOverride = \"";
-        toast_xml += std::to_wstring(static_cast<int>(progress * 100));
-        toast_xml += L"%\" status = \"Downloading...\"/>"; 
+        toast_xml += L"<progress title = \"PowerToys update\" value = \"{progressValue}\" valueStringOverride = \"{progressValueString}\" status = \"{progressStatus}\"/>";
     }
     toast_xml += L"</binding></visual><actions>";
     for (size_t i = 0; i < size(actions); ++i)
@@ -303,6 +299,16 @@ void notifications::show_toast_with_activations(std::wstring message, std::wstri
     toast_xml_doc.LoadXml(toast_xml);
     ToastNotification notification{ toast_xml_doc };
 
+    if (progress != -1)
+    {
+        winrt::Windows::Foundation::Collections::StringMap map;
+        map.Insert(L"progressValue", std::to_wstring(progress));
+        map.Insert(L"progressValueString", std::to_wstring(static_cast<int>(progress * 100)) + std::wstring(L"%"));
+        map.Insert(L"progressStatus", L"Downloading...");
+        winrt::Windows::UI::Notifications::NotificationData data(map);
+        notification.Data(data);
+    }
+    
     const auto notifier = winstore::running_as_packaged() ? ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
                                                             ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(WIN32_AUMID);
 
@@ -327,18 +333,20 @@ void notifications::show_toast_with_activations(std::wstring message, std::wstri
 
 void notifications::update_toast(std::wstring plaintext_message, toast_params params, float progress)
 {
-    static uint32_t sequence = 1;
     const auto notifier = winstore::running_as_packaged() ? ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
                                                             ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(WIN32_AUMID);
-    
-    winrt::Windows::Foundation::Collections::StringMap map;
-    map.Insert(L"value", std::to_wstring(progress));
-    map.Insert(L"valueStringOverride", std::to_wstring(static_cast<int>(progress * 100)));
-    map.Insert(L"status", L"Downloading...");
+    if (progress > 1)
+    {
+        progress = 1;
+    }
 
-   
+    winrt::Windows::Foundation::Collections::StringMap map;
+    map.Insert(L"progressValue", std::to_wstring(progress));
+    map.Insert(L"progressValueString", std::to_wstring(static_cast<int>(progress * 100)) + std::wstring(L"%"));
+    map.Insert(L"progressStatus", progress < 1 ? L"Downloading..." : L"Download complete");
+
     
-    winrt::Windows::UI::Notifications::NotificationData data(map, sequence);
+    winrt::Windows::UI::Notifications::NotificationData data(map);
     std::wstring tag = L"";
     if (params.tag.has_value() && params.tag->length() < 64)
     {
@@ -346,5 +354,4 @@ void notifications::update_toast(std::wstring plaintext_message, toast_params pa
     }
 
     winrt::Windows::UI::Notifications::NotificationUpdateResult res = notifier.Update(data, tag);
-    sequence++;
 }
