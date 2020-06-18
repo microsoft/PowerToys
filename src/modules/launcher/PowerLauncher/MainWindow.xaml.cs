@@ -313,7 +313,7 @@ namespace PowerLauncher
 
         private async Task DelayedCheck(DateTime latestTimeOfTyping)
         {
-            await Task.Delay(millisecondsToWait);
+            await Task.Delay(millisecondsToWait).ConfigureAwait(false);
             if (latestTimeOfTyping.Equals(s_lastTimeOfTyping))
             {
                 await System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
