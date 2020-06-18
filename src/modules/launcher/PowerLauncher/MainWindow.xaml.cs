@@ -23,8 +23,6 @@ namespace PowerLauncher
     {
 
         #region Private Fields
-
-        private readonly Storyboard _progressBarStoryboard = new Storyboard();
         private Settings _settings;
         private MainViewModel _viewModel;
         private bool _isTextSetProgrammatically;
