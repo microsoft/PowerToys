@@ -42,7 +42,7 @@ namespace notifications
 
     std::wstring current_version_to_next_version(const updating::new_version_download_info& info)
     {
-        auto current_version_to_next_version = std::wstring(L"0.18.1");  //VersionHelper{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION }.toWstring();
+        auto current_version_to_next_version = VersionHelper{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION }.toWstring();
         current_version_to_next_version += L" -> ";
         current_version_to_next_version += info.version_string;
         return current_version_to_next_version;
@@ -52,13 +52,13 @@ namespace notifications
     {
         notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG, false };
         std::wstring contents = GITHUB_NEW_VERSION_UNAVAILABLE;
-        notifications::show_toast(std::move(contents), {});
+        notifications::show_toast(std::move(contents), std::move(toast_params));
     }
 
     void show_download_start()
     {
         notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG };
-        notifications::show_toast(localized_strings::GITHUB_NEW_VERSION_DOWNLOAD_STARTED, toast_params, 0);
+        notifications::show_toast(localized_strings::GITHUB_NEW_VERSION_DOWNLOAD_STARTED, std::move(toast_params), 0);
     }
 
     void show_visit_github(const updating::new_version_download_info& info)
@@ -118,6 +118,6 @@ namespace notifications
     void update_download_progress(float progress)
     {
         notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG };
-        notifications::update_toast(localized_strings::GITHUB_NEW_VERSION_DOWNLOAD_STARTED, toast_params, progress);
+        notifications::update_toast(localized_strings::GITHUB_NEW_VERSION_DOWNLOAD_STARTED, std::move(toast_params), progress);
     }
 }
