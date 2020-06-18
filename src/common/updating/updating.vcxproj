@@ -169,11 +169,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="http_client.h" />
     <ClInclude Include="toast_notifications_helper.h" />
     <ClInclude Include="updating.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="http_client.cpp" />
     <ClCompile Include="toast_notifications_helper.cpp" />
     <ClCompile Include="updating.cpp" />
     <ClCompile Include="pch.cpp">

@@ -24,6 +24,9 @@
     <ClInclude Include="toast_notifications_helper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="http_client.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -33,6 +36,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="toast_notifications_helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="http_client.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

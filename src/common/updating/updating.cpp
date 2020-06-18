@@ -2,6 +2,7 @@
 
 #include "version.h"
 
+#include "http_client.h"
 #include "updating.h"
 #include "toast_notifications_helper.h"
 
@@ -12,9 +13,6 @@
 #include <common/winstore.h>
 #include <common/notifications.h>
 
-#include <winrt/Windows.Web.Http.h>
-#include <winrt/Windows.Web.Http.Headers.h>
-#include <winrt/Windows.Storage.Streams.h>
 #include <winrt/Windows.Management.Deployment.h>
 #include <winrt/Windows.Networking.Connectivity.h>
 
@@ -24,7 +22,6 @@ namespace
 {
     const wchar_t POWER_TOYS_UPGRADE_CODE[] = L"{42B84BF7-5FBF-473B-9C8B-049DC16F7708}";
     const wchar_t DONT_SHOW_AGAIN_RECORD_REGISTRY_PATH[] = L"delete_previous_powertoys_confirm";
-    const wchar_t USER_AGENT[] = L"Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; WOW64; Trident/6.0)";
     const wchar_t LATEST_RELEASE_ENDPOINT[] = L"https://api.github.com/repos/microsoft/PowerToys/releases/latest";
     const wchar_t MSIX_PACKAGE_NAME[] = L"Microsoft.PowerToys";
     const wchar_t MSIX_PACKAGE_PUBLISHER[] = L"CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US";
@@ -40,14 +37,6 @@ namespace localized_strings
 
 namespace updating
 {
-    inline winrt::Windows::Web::Http::HttpClient create_http_client()
-    {
-        winrt::Windows::Web::Http::HttpClient client;
-        auto headers = client.DefaultRequestHeaders();
-        headers.UserAgent().TryParseAdd(USER_AGENT);
-        return client;
-    }
-    
     std::wstring get_msi_package_path()
     {
         std::wstring package_path;
@@ -113,10 +102,8 @@ namespace updating
     {
         try
         {
-            auto client = create_http_client();
-            auto response = co_await client.GetAsync(winrt::Windows::Foundation::Uri{ LATEST_RELEASE_ENDPOINT });
-            (void)response.EnsureSuccessStatusCode();
-            const auto body = co_await response.Content().ReadAsStringAsync();
+            http::HttpClient client;
+            const auto body = co_await client.request(winrt::Windows::Foundation::Uri{ LATEST_RELEASE_ENDPOINT });
             auto json_body = json::JsonValue::Parse(body).GetObjectW();
             auto new_version = json_body.GetNamedString(L"tag_name");
             winrt::Windows::Foundation::Uri release_page_uri{ json_body.GetNamedString(L"html_url") };
@@ -211,14 +198,8 @@ namespace updating
 
     std::future<void> try_download_file(const std::filesystem::path& destination, const winrt::Windows::Foundation::Uri& url)
     {
-        namespace storage = winrt::Windows::Storage;
-
-        auto client = create_http_client();
-        auto response = co_await client.GetAsync(url);
-        (void)response.EnsureSuccessStatusCode();
-        auto file_stream = co_await storage::Streams::FileRandomAccessStream::OpenAsync(destination.c_str(), storage::FileAccessMode::ReadWrite, storage::StorageOpenOptions::AllowReadersAndWriters, storage::Streams::FileOpenDisposition::CreateAlways);
-        co_await response.Content().WriteToStreamAsync(file_stream);
-        file_stream.Close();
+        http::HttpClient client;
+        co_await client.download(url, destination);
     }
 
     std::future<void> try_autoupdate(const bool download_updates_automatically)
@@ -237,7 +218,8 @@ namespace updating
             {
                 try
                 {
-                    co_await try_download_file(installer_download_dst, new_version->installer_download_url);
+                    http::HttpClient client;
+                    co_await client.download(new_version->msi_download_url, installer_download_dst);
                     download_success = true;
                     break;
                 }
@@ -282,20 +264,12 @@ namespace updating
 
             try
             {
-                std::atomic<bool> isReady = false;
-                std::thread thread = std::thread([&isReady]() {
-                    float p = 0;
-                    while (!isReady)
-                    {
-                        p += 0.1f;
-                        notifications::update_download_progress(p);
-                        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-                    }
-                });
+                auto progressUpdateHandle = [](float progress) {
+                    notifications::update_download_progress(progress);
+                };
 
-                co_await try_download_file(installer_download_dst, new_version->msi_download_url);
-                isReady = true;
-                thread.join();
+                http::HttpClient client;
+                co_await client.download(new_version->msi_download_url, installer_download_dst, progressUpdateHandle);
             }
             catch (...)
             {
