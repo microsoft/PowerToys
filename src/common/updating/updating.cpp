@@ -196,12 +196,6 @@ namespace updating
         return installer_download_dst;
     }
 
-    std::future<void> try_download_file(const std::filesystem::path& destination, const winrt::Windows::Foundation::Uri& url)
-    {
-        http::HttpClient client;
-        co_await client.download(url, destination);
-    }
-
     std::future<void> try_autoupdate(const bool download_updates_automatically)
     {
         const auto new_version = co_await get_new_github_version_info_async();
