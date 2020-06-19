@@ -205,14 +205,14 @@ namespace updating
         
         if (download_updates_automatically && !could_be_costly_connection())
         {
-            auto installer_download_dst = create_download_path() / new_version->msi_filename;
+            auto installer_download_dst = create_download_path() / new_version->installer_filename;
             bool download_success = false;
             for (size_t i = 0; i < MAX_DOWNLOAD_ATTEMPTS; ++i)
             {
                 try
                 {
                     http::HttpClient client;
-                    co_await client.download(new_version->msi_download_url, installer_download_dst);
+                    co_await client.download(new_version->installer_download_url, installer_download_dst);
                     download_success = true;
                     break;
                 }
@@ -250,7 +250,7 @@ namespace updating
             co_return;
         }
 
-        auto installer_download_dst = create_download_path() / new_version->msi_filename;
+        auto installer_download_dst = create_download_path() / new_version->installer_filename;
         updating::notifications::show_download_start(new_version.value());
 
         try
@@ -260,7 +260,7 @@ namespace updating
             };
 
             http::HttpClient client;
-            co_await client.download(new_version->msi_download_url, installer_download_dst, progressUpdateHandle);
+            co_await client.download(new_version->installer_download_url, installer_download_dst, progressUpdateHandle);
         }
         catch (...)
         {
