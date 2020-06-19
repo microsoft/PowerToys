@@ -61,7 +61,7 @@ void KeyboardHook::Start()
     hookProc = gcnew HookProcDelegate(this, &KeyboardHook::HookProc);
     Process ^ curProcess = Process::GetCurrentProcess();
     ProcessModule ^ curModule = curProcess->MainModule;
-#if defined(DISABLE_LOWLEVEL_KBHOOK_WHEN_DEBUGGED)
+#if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
     const bool hookDisabled = IsDebuggerPresent();
 #else
     const bool hookDisabled = false;

@@ -135,7 +135,7 @@ void OverlayWindow::enable()
         winkey_popup->set_theme(theme.value);
         target_state = std::make_unique<TargetState>(pressTime.value);
         winkey_popup->initialize();
-#if defined(DISABLE_LOWLEVEL_KBHOOK_WHEN_DEBUGGED)
+#if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
         const bool hook_disabled = IsDebuggerPresent();
 #else
         const bool hook_disabled = false;

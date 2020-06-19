@@ -301,7 +301,7 @@ public:
 
     void start_lowlevel_keyboard_hook()
     {
-#if defined(DISABLE_LOWLEVEL_KBHOOK_WHEN_DEBUGGED)
+#if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
         if (IsDebuggerPresent())
         {
             return;
