@@ -36,6 +36,10 @@ namespace
 namespace localized_strings 
 {
     constexpr std::wstring_view SNOOZE_BUTTON = L"Snooze";
+
+    constexpr std::wstring_view PT_UPDATE = L"PowerToys update";
+    constexpr std::wstring_view DOWNLOAD_IN_PROGRESS = L"Downloading...";
+    constexpr std::wstring_view DOWNLOAD_COMPLETE = L"Download complete";
 }
 
 static DWORD loop_thread_id()
@@ -334,9 +338,11 @@ void notifications::show_toast_with_progress_bar(std::wstring message, float pro
     toast_xml += L"</text><text>";
     toast_xml += message;
     toast_xml += L"</text>";
-    toast_xml += L"<progress title = \"PowerToys update ";
+    toast_xml += LR"(<progress title=")";
+    toast_xml += localized_strings::PT_UPDATE;
+    toast_xml += L" ";
     toast_xml += version;
-    toast_xml += L"\" value = \"{progressValue}\" valueStringOverride = \"{progressValueString}\" status = \"{progressStatus}\"/>";
+    toast_xml += LR"(" value="{progressValue}" valueStringOverride="{progressValueString}" status="{progressStatus}"/>)";
     toast_xml += L"</binding></visual></toast>";
 
     XmlDocument toast_xml_doc;
@@ -349,7 +355,7 @@ void notifications::show_toast_with_progress_bar(std::wstring message, float pro
         winrt::Windows::Foundation::Collections::StringMap map;
         map.Insert(L"progressValue", std::to_wstring(progress));
         map.Insert(L"progressValueString", std::to_wstring(static_cast<int>(progress * 100)) + std::wstring(L"%"));
-        map.Insert(L"progressStatus", L"Downloading...");
+        map.Insert(L"progressStatus", localized_strings::DOWNLOAD_IN_PROGRESS);
         winrt::Windows::UI::Notifications::NotificationData data(map);
         notification.Data(data);
     }
@@ -388,7 +394,7 @@ void notifications::update_progress_bar_toast(std::wstring plaintext_message, fl
     winrt::Windows::Foundation::Collections::StringMap map;
     map.Insert(L"progressValue", std::to_wstring(progress));
     map.Insert(L"progressValueString", std::to_wstring(static_cast<int>(progress * 100)) + std::wstring(L"%"));
-    map.Insert(L"progressStatus", progress < 1 ? L"Downloading..." : L"Download complete");
+    map.Insert(L"progressStatus", progress < 1 ? localized_strings::DOWNLOAD_IN_PROGRESS : localized_strings::DOWNLOAD_COMPLETE);
 
     
     winrt::Windows::UI::Notifications::NotificationData data(map);
