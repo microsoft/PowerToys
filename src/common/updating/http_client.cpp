@@ -30,9 +30,9 @@ namespace http
     {
         auto response = co_await m_client.GetAsync(url);
         (void)response.EnsureSuccessStatusCode();
-        auto msi_installer_file_stream = co_await storage::Streams::FileRandomAccessStream::OpenAsync(dstFilePath.c_str(), storage::FileAccessMode::ReadWrite, storage::StorageOpenOptions::AllowReadersAndWriters, storage::Streams::FileOpenDisposition::CreateAlways);
-        co_await response.Content().WriteToStreamAsync(msi_installer_file_stream);
-        msi_installer_file_stream.Close();
+        auto file_stream = co_await storage::Streams::FileRandomAccessStream::OpenAsync(dstFilePath.c_str(), storage::FileAccessMode::ReadWrite, storage::StorageOpenOptions::AllowReadersAndWriters, storage::Streams::FileOpenDisposition::CreateAlways);
+        co_await response.Content().WriteToStreamAsync(file_stream);
+        file_stream.Close();
     }
 
     std::future<void> HttpClient::download(const winrt::Windows::Foundation::Uri& url, const std::wstring& dstFilePath, const std::function<void(float)>& progressUpdateCallback)
