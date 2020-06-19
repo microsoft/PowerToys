@@ -36,88 +36,91 @@ namespace localized_strings
     const wchar_t GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D[] = L"5 days";
 }
 
-namespace notifications
+namespace updating
 {
-    using namespace localized_strings;
-
-    std::wstring current_version_to_next_version(const updating::new_version_download_info& info)
+    namespace notifications
     {
-        auto current_version_to_next_version = VersionHelper{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION }.toWstring();
-        current_version_to_next_version += L" -> ";
-        current_version_to_next_version += info.version_string;
-        return current_version_to_next_version;
-    }
+        using namespace localized_strings;
 
-    void show_unavailable()
-    {
-        notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG, false };
-        std::wstring contents = GITHUB_NEW_VERSION_UNAVAILABLE;
-        notifications::show_toast(std::move(contents), std::move(toast_params));
-    }
+        std::wstring current_version_to_next_version(const updating::new_version_download_info& info)
+        {
+            auto current_version_to_next_version = VersionHelper{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION }.toWstring();
+            current_version_to_next_version += L" -> ";
+            current_version_to_next_version += info.version_string;
+            return current_version_to_next_version;
+        }
 
-    void show_download_start(const updating::new_version_download_info& info)
-    {
-        notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG };
-        notifications::show_toast_with_progress_bar(localized_strings::GITHUB_NEW_VERSION_DOWNLOAD_STARTED, 0, info.version_string, std::move(toast_params));
-    }
+        void show_unavailable()
+        {
+            ::notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG, false };
+            std::wstring contents = GITHUB_NEW_VERSION_UNAVAILABLE;
+            ::notifications::show_toast(std::move(contents), std::move(toast_params));
+        }
 
-    void show_visit_github(const updating::new_version_download_info& info)
-    {
-        notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG, false };
-        std::wstring contents = GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT;
-        contents += current_version_to_next_version(info);
-        notifications::show_toast_with_activations(std::move(contents), {}, { notifications::link_button{ GITHUB_NEW_VERSION_AGREE, info.release_page_uri.ToString().c_str() } }, std::move(toast_params));
-    }
+        void show_download_start(const updating::new_version_download_info& info)
+        {
+            ::notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG };
+            ::notifications::show_toast_with_progress_bar(localized_strings::GITHUB_NEW_VERSION_DOWNLOAD_STARTED, 0, info.version_string, std::move(toast_params));
+        }
 
-    void show_install_error(const updating::new_version_download_info& info)
-    {
-        notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG, false };
-        std::wstring contents = GITHUB_NEW_VERSION_DOWNLOAD_INSTALL_ERROR;
-        contents += current_version_to_next_version(info);
-        notifications::show_toast_with_activations(std::move(contents), {}, { notifications::link_button{ GITHUB_NEW_VERSION_AGREE, info.release_page_uri.ToString().c_str() } }, std::move(toast_params));
-    }
+        void show_visit_github(const updating::new_version_download_info& info)
+        {
+            ::notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG, false };
+            std::wstring contents = GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT;
+            contents += current_version_to_next_version(info);
+            ::notifications::show_toast_with_activations(std::move(contents), {}, { ::notifications::link_button{ GITHUB_NEW_VERSION_AGREE, info.release_page_uri.ToString().c_str() } }, std::move(toast_params));
+        }
 
-    void show_version_ready(const updating::new_version_download_info& info)
-    {
-        notifications::toast_params toast_params{ UPDATE_READY_TOAST_TAG, false };
-        std::wstring new_version_ready{ GITHUB_NEW_VERSION_READY_TO_INSTALL };
-        new_version_ready += current_version_to_next_version(info);
+        void show_install_error(const updating::new_version_download_info& info)
+        {
+            ::notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG, false };
+            std::wstring contents = GITHUB_NEW_VERSION_DOWNLOAD_INSTALL_ERROR;
+            contents += current_version_to_next_version(info);
+            ::notifications::show_toast_with_activations(std::move(contents), {}, { ::notifications::link_button{ GITHUB_NEW_VERSION_AGREE, info.release_page_uri.ToString().c_str() } }, std::move(toast_params));
+        }
 
-        notifications::show_toast_with_activations(std::move(new_version_ready),
-                                                   {},
-                                                   { notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_NOW, L"powertoys://update_now/" },
-                                                     notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART, L"powertoys://schedule_update/" },
-                                                     notifications::snooze_button{ GITHUB_NEW_VERSION_SNOOZE_TITLE, { { GITHUB_NEW_VERSION_UPDATE_SNOOZE_1D, 24 * 60 }, { GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D, 120 * 60 } } } },
-                                                   std::move(toast_params));
-    }
+        void show_version_ready(const updating::new_version_download_info& info)
+        {
+            ::notifications::toast_params toast_params{ UPDATE_READY_TOAST_TAG, false };
+            std::wstring new_version_ready{ GITHUB_NEW_VERSION_READY_TO_INSTALL };
+            new_version_ready += current_version_to_next_version(info);
 
-    void show_version_ready_to_install_immediately(const updating::new_version_download_info& info)
-    {
-        notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG, false };
-        std::wstring new_version_ready{ GITHUB_NEW_VERSION_READY_TO_INSTALL };
-        new_version_ready += current_version_to_next_version(info);
+            ::notifications::show_toast_with_activations(std::move(new_version_ready),
+                                                       {},
+                                                         { ::notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_NOW, L"powertoys://update_now/" },
+                                                           ::notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART, L"powertoys://schedule_update/" },
+                                                           ::notifications::snooze_button{ GITHUB_NEW_VERSION_SNOOZE_TITLE, { { GITHUB_NEW_VERSION_UPDATE_SNOOZE_1D, 24 * 60 }, { GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D, 120 * 60 } } } },
+                                                       std::move(toast_params));
+        }
 
-        notifications::show_toast_with_activations(std::move(new_version_ready),
-                                                   {},
-                                                   { notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_NOW, L"powertoys://update_now/" },
-                                                     notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART, L"powertoys://schedule_update/" },
-                                                     notifications::link_button{ GITHUB_NEW_VERSION_ABORT, L"powertoys://update_abort/" } },
-                                                   std::move(toast_params));
-    }
+        void show_version_ready_to_install_immediately(const updating::new_version_download_info& info)
+        {
+            ::notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG, false };
+            std::wstring new_version_ready{ GITHUB_NEW_VERSION_READY_TO_INSTALL };
+            new_version_ready += current_version_to_next_version(info);
 
-    void show_uninstallation_success()
-    {
-        notifications::show_toast(localized_strings::UNINSTALLATION_SUCCESS);
-    }
+            ::notifications::show_toast_with_activations(std::move(new_version_ready),
+                                                       {},
+                                                         { ::notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_NOW, L"powertoys://update_now/" },
+                                                           ::notifications::link_button{ GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART, L"powertoys://schedule_update/" },
+                                                           ::notifications::link_button{ GITHUB_NEW_VERSION_ABORT, L"powertoys://update_abort/" } },
+                                                       std::move(toast_params));
+        }
 
-    void show_uninstallation_error()
-    {
-        notifications::show_toast(localized_strings::UNINSTALLATION_UNKNOWN_ERROR);
-    }
+        void show_uninstallation_success()
+        {
+            ::notifications::show_toast(localized_strings::UNINSTALLATION_SUCCESS);
+        }
 
-    void update_download_progress(float progress)
-    {
-        notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG };
-        notifications::update_progress_bar_toast(localized_strings::GITHUB_NEW_VERSION_DOWNLOAD_STARTED, progress, std::move(toast_params));
+        void show_uninstallation_error()
+        {
+            ::notifications::show_toast(localized_strings::UNINSTALLATION_UNKNOWN_ERROR);
+        }
+
+        void update_download_progress(float progress)
+        {
+            ::notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG };
+            ::notifications::update_progress_bar_toast(localized_strings::GITHUB_NEW_VERSION_DOWNLOAD_STARTED, progress, std::move(toast_params));
+        }
     }
 }

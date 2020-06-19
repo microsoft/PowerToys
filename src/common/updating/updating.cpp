@@ -88,11 +88,11 @@ namespace updating
         {
             try
             {
-                notifications::show_toast(*system_message);
+                ::notifications::show_toast(*system_message);
             }
             catch (...)
             {
-                notifications::show_uninstallation_error();
+                updating::notifications::show_uninstallation_error();
             }
         }
         return false;
@@ -224,15 +224,15 @@ namespace updating
             }
             if (!download_success)
             {
-                notifications::show_install_error(new_version.value());
+                updating::notifications::show_install_error(new_version.value());
                 co_return;
             }
 
-            notifications::show_version_ready(new_version.value());
+            updating::notifications::show_version_ready(new_version.value());
         }
         else
         {
-            notifications::show_visit_github(new_version.value());
+            updating::notifications::show_visit_github(new_version.value());
         }
     }
 
@@ -241,23 +241,23 @@ namespace updating
         const auto new_version = co_await get_new_github_version_info_async();
         if (!new_version)
         {
-            notifications::show_unavailable();
+            updating::notifications::show_unavailable();
             co_return;
         }
 
         if (!download_updates_automatically)
         {
-            notifications::show_visit_github(new_version.value());
+            updating::notifications::show_visit_github(new_version.value());
             co_return;
         }
 
         auto installer_download_dst = create_download_path(new_version->msi_filename);
-        notifications::show_download_start(new_version.value());
+        updating::notifications::show_download_start(new_version.value());
 
         try
         {
             auto progressUpdateHandle = [](float progress) {
-                notifications::update_download_progress(progress);
+                updating::notifications::update_download_progress(progress);
             };
 
             http::HttpClient client;
@@ -265,10 +265,10 @@ namespace updating
         }
         catch (...)
         {
-            notifications::show_install_error(new_version.value());
+            updating::notifications::show_install_error(new_version.value());
             co_return;
         }
 
-        notifications::show_version_ready_to_install_immediately(new_version.value());
+        updating::notifications::show_version_ready_to_install_immediately(new_version.value());
     }
 }
