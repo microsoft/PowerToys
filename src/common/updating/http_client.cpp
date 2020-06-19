@@ -14,13 +14,13 @@ namespace http
 
     HttpClient::HttpClient()
     {
-        auto headers = client.DefaultRequestHeaders();
+        auto headers = m_client.DefaultRequestHeaders();
         headers.UserAgent().TryParseAdd(USER_AGENT);
     }
 
     std::future<std::wstring> HttpClient::request(const winrt::Windows::Foundation::Uri& url)
     {
-        auto response = co_await client.GetAsync(url);
+        auto response = co_await m_client.GetAsync(url);
         (void)response.EnsureSuccessStatusCode();
         auto body = co_await response.Content().ReadAsStringAsync();
         co_return std::wstring(body);
@@ -28,7 +28,7 @@ namespace http
 
     std::future<void> HttpClient::download(const winrt::Windows::Foundation::Uri& url, const std::wstring& dstFilePath)
     {
-        auto response = co_await client.GetAsync(url);
+        auto response = co_await m_client.GetAsync(url);
         (void)response.EnsureSuccessStatusCode();
         auto msi_installer_file_stream = co_await storage::Streams::FileRandomAccessStream::OpenAsync(dstFilePath.c_str(), storage::FileAccessMode::ReadWrite, storage::StorageOpenOptions::AllowReadersAndWriters, storage::Streams::FileOpenDisposition::CreateAlways);
         co_await response.Content().WriteToStreamAsync(msi_installer_file_stream);
@@ -39,7 +39,7 @@ namespace http
     {
         m_progressChangeHandle = progressUpdateHandle;
 
-        auto response = co_await client.GetAsync(url, HttpCompletionOption::ResponseHeadersRead);
+        auto response = co_await m_client.GetAsync(url, HttpCompletionOption::ResponseHeadersRead);
         response.EnsureSuccessStatusCode();
 
         uint64_t totalBytes = response.Content().Headers().ContentLength().GetUInt64();

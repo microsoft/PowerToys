@@ -17,7 +17,7 @@ namespace http
         std::future<void> downloadFile(uint64_t totalDownloadSize, const winrt::Windows::Storage::Streams::IInputStream& contentStream, const std::wstring& dstFilePath);
 
     private:
-        winrt::Windows::Web::Http::HttpClient client;
+        winrt::Windows::Web::Http::HttpClient m_client;
         std::function<void(float)> m_progressChangeHandle;
     };
 }
