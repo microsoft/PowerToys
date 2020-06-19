@@ -13,6 +13,7 @@ using Microsoft.Plugin.Program.Logger;
 using Wox.Plugin;
 using System.Windows.Input;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -293,11 +294,10 @@ namespace Microsoft.Plugin.Program.Programs
             string scheme = string.Empty;
             bool validApp = false;
 
-            const string steamScheme = "steam";
+            Regex urlSchemes = new Regex(@"^steam:\/\/rungameid\/|^com\.epicgames\.launcher:\/\/apps\/");
+
             const string urlPrefix = "URL=";
             const string iconFilePrefix = "IconFile=";
-            const string hostnameRun = "run";
-            const string hostnameRunGameId = "rungameid";
 
             foreach(string line in lines)
             {
@@ -307,9 +307,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Uri uri = new Uri(urlPath);
 
                     // To filter out only those steam shortcuts which have 'run' or 'rungameid' as the hostname
-                    if(uri.Scheme.Equals(steamScheme, StringComparison.OrdinalIgnoreCase)
-                        && (uri.Host.Equals(hostnameRun, StringComparison.OrdinalIgnoreCase)
-                        || uri.Host.Equals(hostnameRunGameId, StringComparison.OrdinalIgnoreCase)))
+                    if(urlSchemes.Match(urlPath).Success)
                     {
                         validApp = true;
                     }
