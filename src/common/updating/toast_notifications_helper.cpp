@@ -55,10 +55,10 @@ namespace notifications
         notifications::show_toast(std::move(contents), std::move(toast_params));
     }
 
-    void show_download_start()
+    void show_download_start(const updating::new_version_download_info& info)
     {
         notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG };
-        notifications::show_toast(localized_strings::GITHUB_NEW_VERSION_DOWNLOAD_STARTED, std::move(toast_params), 0);
+        notifications::show_toast_with_progress_bar(localized_strings::GITHUB_NEW_VERSION_DOWNLOAD_STARTED, 0, info.version_string, std::move(toast_params));
     }
 
     void show_visit_github(const updating::new_version_download_info& info)
@@ -118,6 +118,6 @@ namespace notifications
     void update_download_progress(float progress)
     {
         notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG };
-        notifications::update_toast(localized_strings::GITHUB_NEW_VERSION_DOWNLOAD_STARTED, std::move(toast_params), progress);
+        notifications::update_progress_bar_toast(localized_strings::GITHUB_NEW_VERSION_DOWNLOAD_STARTED, progress, std::move(toast_params));
     }
 }

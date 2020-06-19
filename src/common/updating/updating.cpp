@@ -258,7 +258,7 @@ namespace updating
         }
 
         auto installer_download_dst = create_download_path(new_version->msi_filename);
-        notifications::show_download_start();
+        notifications::show_download_start(new_version.value());
 
         try
         {
