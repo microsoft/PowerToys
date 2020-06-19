@@ -350,15 +350,12 @@ void notifications::show_toast_with_progress_bar(std::wstring message, float pro
     toast_xml_doc.LoadXml(toast_xml);
     ToastNotification notification{ toast_xml_doc };
 
-    if (progress != -1)
-    {
-        winrt::Windows::Foundation::Collections::StringMap map;
-        map.Insert(L"progressValue", std::to_wstring(progress));
-        map.Insert(L"progressValueString", std::to_wstring(static_cast<int>(progress * 100)) + std::wstring(L"%"));
-        map.Insert(L"progressStatus", localized_strings::DOWNLOAD_IN_PROGRESS);
-        winrt::Windows::UI::Notifications::NotificationData data(map);
-        notification.Data(data);
-    }
+    winrt::Windows::Foundation::Collections::StringMap map;
+    map.Insert(L"progressValue", std::to_wstring(progress));
+    map.Insert(L"progressValueString", std::to_wstring(static_cast<int>(progress * 100)) + std::wstring(L"%"));
+    map.Insert(L"progressStatus", localized_strings::DOWNLOAD_IN_PROGRESS);
+    winrt::Windows::UI::Notifications::NotificationData data(map);
+    notification.Data(data);
     
     const auto notifier = winstore::running_as_packaged() ? ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
                                                             ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(WIN32_AUMID);
