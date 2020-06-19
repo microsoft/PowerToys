@@ -75,6 +75,17 @@ namespace KeyboardManagerHelper
         case VK_NUMLOCK:
         case VK_SNAPSHOT:
         case VK_CANCEL:
+            // If the extended flag is not set for the following keys, their NumPad versions are sent. This causes weird behavior when NumLock is on (more information at https://github.com/microsoft/PowerToys/issues/3478)
+        case VK_INSERT:
+        case VK_HOME:
+        case VK_PRIOR:
+        case VK_DELETE:
+        case VK_END:
+        case VK_NEXT:
+        case VK_LEFT:
+        case VK_DOWN:
+        case VK_RIGHT:
+        case VK_UP:
             return true;
         default:
             return false;
