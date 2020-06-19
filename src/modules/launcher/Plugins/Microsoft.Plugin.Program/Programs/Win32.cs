@@ -27,7 +27,7 @@ namespace Microsoft.Plugin.Program.Programs
         public string LnkResolvedPath { get; set; }
         public string ParentDirectory { get; set; }
         public string ExecutableName { get; set; }
-        public string Description { get; set; }
+        public string Description { get; set; } = String.Empty;
         public bool Valid { get; set; }
         public bool Enabled { get; set; }
         public bool hasArguments { get; set; } = false;

@@ -30,7 +30,7 @@ namespace Microsoft.Plugin.Indexer
         private PluginJsonStorage<Settings> _storage;
 
         // To access Windows Search functionalities
-        private readonly WindowsSearchAPI _api = new WindowsSearchAPI();
+        private readonly WindowsSearchAPI _api = new WindowsSearchAPI(new OleDBSearch());
 
         // Reserved keywords in oleDB
         private string ReservedStringPattern = @"^[\/\\\$\%]+$";

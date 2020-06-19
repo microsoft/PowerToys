@@ -22,9 +22,11 @@ namespace PowerToysTests
         protected static string _settingsFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\FancyZones");
         protected static string _settingsPath = _settingsFolderPath + "\\settings.json"; 
         protected static string _zoneSettingsPath = _settingsFolderPath + "\\zones-settings.json";
+        protected static string _appHistoryPath = _settingsFolderPath + "\\app-zone-history.json";
 
         protected static string _initialSettings = "";
         protected static string _initialZoneSettings = "";
+        protected static string _initialAppHistorySettings = "";
 
         protected const string _defaultSettings = "{\"version\":\"1.0\",\"name\":\"FancyZones\",\"properties\":{\"fancyzones_shiftDrag\":{\"value\":true},\"fancyzones_mouseSwitch\":{\"value\":false},\"fancyzones_overrideSnapHotkeys\":{\"value\":false},\"fancyzones_moveWindowAcrossMonitors\":{\"value\":false},\"fancyzones_zoneSetChange_flashZones\":{\"value\":false},\"fancyzones_displayChange_moveWindows\":{\"value\":false},\"fancyzones_zoneSetChange_moveWindows\":{\"value\":false},\"fancyzones_appLastZone_moveWindows\":{\"value\":false},\"use_cursorpos_editor_startupscreen\":{\"value\":true},\"fancyzones_zoneHighlightColor\":{\"value\":\"#0078D7\"},\"fancyzones_highlight_opacity\":{\"value\":90},\"fancyzones_editor_hotkey\":{\"value\":{\"win\":true,\"ctrl\":false,\"alt\":false,\"shift\":false,\"code\":192,\"key\":\"`\"}},\"fancyzones_excluded_apps\":{\"value\":\"\"}}}";
         protected const string _defaultZoneSettings = "{\"app-zone-history\":[],\"devices\":[],\"custom-zone-sets\":[]}";
@@ -32,23 +34,28 @@ namespace PowerToysTests
 
         public static void Setup(TestContext context, bool isLaunchRequired = true)
         {
-            ReadUserSettings(); //read settings before running tests to restore them after
-
             if (session == null)
             {
+                ReadUserSettings(); //read settings before running tests to restore them after
+
                 // Create a new Desktop session to use PowerToys.
                 AppiumOptions appiumOptions = new AppiumOptions();
                 appiumOptions.PlatformName = "Windows";
                 appiumOptions.AddAdditionalCapability("app", "Root");
-                session = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), appiumOptions);
-                Assert.IsNotNull(session);
-
-                trayButton = session.FindElementByAccessibilityId("1502");
-
-                isPowerToysLaunched = CheckPowerToysLaunched();
-                if (!isPowerToysLaunched && isLaunchRequired)
+                try
                 {
-                    LaunchPowerToys();
+                    session = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), appiumOptions);
+                    trayButton = session.FindElementByAccessibilityId("1502");
+
+                    isPowerToysLaunched = CheckPowerToysLaunched();
+                    if (!isPowerToysLaunched && isLaunchRequired)
+                    {
+                        LaunchPowerToys();
+                    }
+                } 
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
                 }
             }
         }
@@ -125,19 +132,33 @@ namespace PowerToysTests
 
         public static void OpenSettings()
         {
-            trayButton.Click();
-            session.FindElementByXPath("//Button[@Name=\"PowerToys\"]").Click();
-            trayButton.Click();
+            try
+            {
+                trayButton.Click();
+                session.FindElementByXPath("//Button[@Name=\"PowerToys\"]").Click();
+                trayButton.Click();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
         public static void OpenFancyZonesSettings()
         {
-            WindowsElement fzNavigationButton = WaitElementByXPath("//Button[@Name=\"FancyZones\"]");
-            Assert.IsNotNull(fzNavigationButton);
+            try
+            {
+                WindowsElement fzNavigationButton = WaitElementByXPath("//Button[@Name=\"FancyZones\"]");
+                Assert.IsNotNull(fzNavigationButton);
 
-            fzNavigationButton.Click();
-            fzNavigationButton.Click();
-        }
+                fzNavigationButton.Click();
+                fzNavigationButton.Click();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+}
 
         public static void CloseSettings()
         {
@@ -149,28 +170,27 @@ namespace PowerToysTests
                     settings.SendKeys(Keys.Alt + Keys.F4);
                 }
             }
-            catch(Exception)
+            catch (Exception ex)
             {
-
+                Console.WriteLine(ex.Message);
             }
         }
 
         private static bool CheckPowerToysLaunched()        
         {
-            trayButton.Click();
             bool isLaunched = false;
-
             try
             {
+                trayButton.Click();
                 WindowsElement pt = WaitElementByXPath("//Button[@Name=\"PowerToys\"]");
                 isLaunched = (pt != null);
+                trayButton.Click(); //close
             }
             catch(OpenQA.Selenium.WebDriverException)
             {
                 //PowerToys not found
             }
-
-            trayButton.Click(); //close
+                        
             return isLaunched;
         }
 
@@ -197,15 +217,21 @@ namespace PowerToysTests
 
         public static void ExitPowerToys()
         {
-            trayButton.Click();
+            try
+            {
+                trayButton.Click();
 
-            WindowsElement pt = WaitElementByXPath("//Button[@Name=\"PowerToys\"]");
-            Assert.IsNotNull(pt, "Couldn't find \'PowerToys\' button");
-            new Actions(session).MoveToElement(pt).ContextClick().Perform();
-            
-            WaitElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
-            trayButton.Click(); //close tray
-            isPowerToysLaunched = false;
+                WindowsElement pt = WaitElementByXPath("//Button[@Name=\"PowerToys\"]");
+                new Actions(session).MoveToElement(pt).ContextClick().Perform();
+
+                WaitElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
+                trayButton.Click(); //close tray
+                isPowerToysLaunched = false;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
         public static void ResetDefaultFancyZonesSettings(bool relaunch)
@@ -241,21 +267,33 @@ namespace PowerToysTests
         {
             try
             {
-                _initialSettings = File.ReadAllText(_settingsPath);
+                if (_initialSettings.Length == 0)
+                {
+                    _initialSettings = File.ReadAllText(_settingsPath);
+                }
             }
             catch (Exception)
-            {
-                //failed to read settings
-            }
+            { }
 
             try
             {
-                _initialZoneSettings = File.ReadAllText(_zoneSettingsPath);
+                if (_initialZoneSettings.Length == 0)
+                {
+                    _initialZoneSettings = File.ReadAllText(_zoneSettingsPath);
+                }
             }
             catch (Exception)
+            { }
+
+            try
             {
-                //failed to read settings
+                if (_initialAppHistorySettings.Length == 0)
+                {
+                    _initialAppHistorySettings = File.ReadAllText(_appHistoryPath);
+                }
             }
+            catch (Exception)
+            { }
         }
 
         private static void RestoreUserSettings()
@@ -276,6 +314,15 @@ namespace PowerToysTests
             else
             {
                 File.Delete(_zoneSettingsPath);
+            }
+
+            if (_initialAppHistorySettings.Length > 0)
+            {
+                File.WriteAllText(_appHistoryPath, _initialAppHistorySettings);
+            }
+            else
+            {
+                File.Delete(_appHistoryPath);
             }
         }
     }
