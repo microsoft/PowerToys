@@ -240,10 +240,7 @@ namespace Microsoft.Plugin.Program.Programs
                     AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
                     Action = _ =>
                     {
-
-
                         Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", ParentDirectory));
-
                         return true;
                     }
                 }
@@ -292,6 +289,7 @@ namespace Microsoft.Plugin.Program.Programs
             string[] lines = System.IO.File.ReadAllLines(path);
             string appName = string.Empty;
             string iconPath = string.Empty;
+            string urlPath = string.Empty;
             string scheme = string.Empty;
             bool validApp = false;
 
@@ -305,7 +303,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 if(line.StartsWith(urlPrefix))
                 {
-                    var urlPath = line.Substring(urlPrefix.Length);
+                    urlPath = line.Substring(urlPrefix.Length);
                     Uri uri = new Uri(urlPath);
 
                     // To filter out only those steam shortcuts which have 'run' or 'rungameid' as the hostname
@@ -335,7 +333,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Name = Path.GetFileNameWithoutExtension(path),
                     ExecutableName = Path.GetFileName(path),
                     IcoPath = iconPath,
-                    FullPath = path.ToLower(),
+                    FullPath = urlPath,
                     UniqueIdentifier = path,
                     ParentDirectory = Directory.GetParent(path).FullName,
                     Valid = true,
