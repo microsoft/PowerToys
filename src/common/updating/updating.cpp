@@ -187,12 +187,11 @@ namespace updating
         return { std::move(path_str) };
     }
 
-    std::filesystem::path create_download_path(const std::wstring& filename)
+    std::filesystem::path create_download_path()
     {
         auto installer_download_dst = get_pending_updates_path();
         std::error_code _;
         std::filesystem::create_directories(installer_download_dst, _);
-        installer_download_dst /= filename;
         return installer_download_dst;
     }
 
@@ -206,7 +205,7 @@ namespace updating
         
         if (download_updates_automatically && !could_be_costly_connection())
         {
-            auto installer_download_dst = create_download_path(new_version->msi_filename);
+            auto installer_download_dst = create_download_path() / new_version->msi_filename;
             bool download_success = false;
             for (size_t i = 0; i < MAX_DOWNLOAD_ATTEMPTS; ++i)
             {
@@ -251,7 +250,7 @@ namespace updating
             co_return;
         }
 
-        auto installer_download_dst = create_download_path(new_version->msi_filename);
+        auto installer_download_dst = create_download_path() / new_version->msi_filename;
         updating::notifications::show_download_start(new_version.value());
 
         try
