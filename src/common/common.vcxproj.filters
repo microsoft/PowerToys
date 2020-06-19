@@ -117,6 +117,9 @@
     <ClInclude Include="RestartManagement.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="debug_control.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d2d_svg.cpp">
