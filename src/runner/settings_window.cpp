@@ -77,7 +77,7 @@ void dispatch_json_action_to_module(const json::JsonObject& powertoys_configs)
                 else if (action == L"check_for_updates")
                 {
                     std::thread{ [] {
-                        github_update_immediately();
+                        check_for_updates();
                     } }.detach();
                 }
             }

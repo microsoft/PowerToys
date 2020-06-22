@@ -69,8 +69,8 @@ namespace updating
 
         return package_path;
     }
-    bool offer_msi_uninstallation()
 
+    bool offer_msi_uninstallation()
     {
         const auto selection = SHMessageBoxCheckW(nullptr, localized_strings::OFFER_UNINSTALL_MSI, localized_strings::OFFER_UNINSTALL_MSI_TITLE, MB_ICONQUESTION | MB_YESNO, IDNO, DONT_SHOW_AGAIN_RECORD_REGISTRY_PATH);
         return selection == IDYES;
@@ -235,7 +235,7 @@ namespace updating
         }
     }
 
-    std::future<void> try_update_immediately(const bool download_updates_automatically)
+    std::future<void> check_new_version_available()
     {
         const auto new_version = co_await get_new_github_version_info_async();
         if (!new_version)
@@ -244,10 +244,15 @@ namespace updating
             co_return;
         }
 
-        if (!download_updates_automatically)
+        updating::notifications::show_available(new_version.value());
+    }
+
+    std::future<std::wstring> download_update()
+    {
+        const auto new_version = co_await get_new_github_version_info_async();
+        if (!new_version)
         {
-            updating::notifications::show_visit_github(new_version.value());
-            co_return;
+            co_return L"";
         }
 
         auto installer_download_dst = create_download_path() / new_version->installer_filename;
@@ -265,9 +270,9 @@ namespace updating
         catch (...)
         {
             updating::notifications::show_install_error(new_version.value());
-            co_return;
+            co_return L"";
         }
 
-        updating::notifications::show_version_ready_to_install_immediately(new_version.value());
+        co_return new_version->installer_filename;
     }
 }

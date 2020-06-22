@@ -66,12 +66,11 @@ void github_update_worker()
     }
 }
 
-void github_update_immediately()
+void check_for_updates()
 {
-    const bool download_updates_automatically = get_general_settings().downloadUpdatesAutomatically;
     try
     {
-        updating::try_update_immediately(download_updates_automatically).get();
+        updating::check_new_version_available();
     }
     catch (...)
     {
