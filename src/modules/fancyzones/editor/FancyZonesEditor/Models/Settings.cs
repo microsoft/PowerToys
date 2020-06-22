@@ -20,8 +20,16 @@ namespace FancyZonesEditor
     {
         private enum CmdArgs
         {
-            X_Y_Width_Height = 1,
+            WorkAreaSize = 1,
             PowerToysPID,
+        }
+
+        private enum WorkAreaCmdArgElements
+        {
+            X = 0,
+            Y,
+            Width,
+            Height,
         }
 
         private static CanvasLayoutModel _blankCustomModel;
@@ -435,7 +443,7 @@ namespace FancyZonesEditor
             }
             else if (args.Length == 3)
             {
-                var parsedLocation = args[(int)CmdArgs.X_Y_Width_Height].Split('_');
+                var parsedLocation = args[(int)CmdArgs.WorkAreaSize].Split('_');
                 if (parsedLocation.Length != 4)
                 {
                     string title = "FancyZones Editor Error";
@@ -443,10 +451,10 @@ namespace FancyZonesEditor
                     ((App)Application.Current).Shutdown();
                 }
 
-                var x = int.Parse(parsedLocation[0]);
-                var y = int.Parse(parsedLocation[1]);
-                var width = int.Parse(parsedLocation[2]);
-                var height = int.Parse(parsedLocation[3]);
+                var x = int.Parse(parsedLocation[(int)WorkAreaCmdArgElements.X]);
+                var y = int.Parse(parsedLocation[(int)WorkAreaCmdArgElements.Y]);
+                var width = int.Parse(parsedLocation[(int)WorkAreaCmdArgElements.Width]);
+                var height = int.Parse(parsedLocation[(int)WorkAreaCmdArgElements.Height]);
 
                 WorkArea = new Rect(x, y, width, height);
 
