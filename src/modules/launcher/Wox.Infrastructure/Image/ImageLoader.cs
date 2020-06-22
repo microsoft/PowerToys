@@ -185,10 +185,12 @@ namespace Wox.Infrastructure.Image
                 if (hash != null)
                 {
                     int ImageCacheValue;
-                    if (GuidToKey.TryGetValue(hash, out string key)
-                        && ImageCache.Usage.TryGetValue(path, out ImageCacheValue))
+                    if (GuidToKey.TryGetValue(hash, out string key))
                     { // image already exists
-                        img = ImageCache[key];
+                        if(ImageCache.Usage.TryGetValue(path, out ImageCacheValue))
+                        {
+                            img = ImageCache[key];
+                        }
                     }
                     else
                     { // new guid
