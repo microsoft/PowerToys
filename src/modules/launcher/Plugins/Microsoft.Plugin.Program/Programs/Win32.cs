@@ -294,7 +294,7 @@ namespace Microsoft.Plugin.Program.Programs
             string scheme = string.Empty;
             bool validApp = false;
 
-            Regex urlSchemes = new Regex(@"^steam:\/\/rungameid\/|^com\.epicgames\.launcher:\/\/apps\/");
+            Regex InternetShortcutURLPrefixes = new Regex(@"^steam:\/\/(rungameid|run)\/|^com\.epicgames\.launcher:\/\/apps\/");
 
             const string urlPrefix = "URL=";
             const string iconFilePrefix = "IconFile=";
@@ -307,7 +307,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Uri uri = new Uri(urlPath);
 
                     // To filter out only those steam shortcuts which have 'run' or 'rungameid' as the hostname
-                    if(urlSchemes.Match(urlPath).Success)
+                    if(InternetShortcutURLPrefixes.Match(urlPath).Success)
                     {
                         validApp = true;
                     }
