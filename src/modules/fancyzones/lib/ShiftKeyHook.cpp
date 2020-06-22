@@ -38,6 +38,7 @@ void ShiftKeyHook::disable()
 {
     if (hHook)
     {
+        callback(false);
         UnhookWindowsHookEx(hHook);
         hHook = NULL;
     }
