@@ -126,7 +126,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-        private bool FilterPartialMatchForRunCommands(string query)
+        public bool FilterPartialMatchForRunCommands(string query)
         {
             if (AppType == (uint)ApplicationTypes.RUN_COMMAND
                 && !query.Equals(Name, StringComparison.OrdinalIgnoreCase))
