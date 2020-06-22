@@ -3,16 +3,17 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media;
+using Windows.ApplicationModel.Chat;
 
 namespace Wox.Infrastructure.Image
 {
     [Serializable]
     public class ImageCache
     {
-        private const int MaxCached = 5000;
+        private const int MaxCached = 50;
         public ConcurrentDictionary<string, int> Usage = new ConcurrentDictionary<string, int>();
         private readonly ConcurrentDictionary<string, ImageSource> _data = new ConcurrentDictionary<string, ImageSource>();
-
+        private int cnt = 0;
 
         public ImageSource this[string path]
         {
@@ -22,7 +23,26 @@ namespace Wox.Infrastructure.Image
                 var i = _data[path];
                 return i;
             }
-            set { _data[path] = value; }
+            set 
+            {
+                cnt++;
+                _data[path] = value; 
+
+                if(cnt > 2*MaxCached)
+                {
+                    cnt = MaxCached;
+                    Cleanup();
+                    foreach(var key in _data.Keys)
+                    {
+                        int dictValue;
+                        if(!Usage.TryGetValue(key, out dictValue))
+                        {
+                            ImageSource test;
+                            _data.TryRemove(key, out test);
+                        }
+                    }
+                }
+            }
         }
 
         public void Cleanup()
