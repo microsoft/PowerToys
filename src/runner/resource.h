@@ -1,3 +1,11 @@
+//{{NO_DEPENDENCIES}}
+// Microsoft Visual C++ generated include file.
+// Used by runner.rc
+
+#define FILE_DESCRIPTION "PowerToys Runner"
+#define INTERNAL_NAME "PowerToys"
+#define ORIGINAL_FILENAME "PowerToys.exe"
+
 #define APPICON 101
 #define ID_TRAY_MENU 102
 

@@ -128,7 +128,7 @@
     <ClInclude Include="interop.h" />
     <ClInclude Include="KeyboardHook.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Resource.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Generated Files\AssemblyInfo.cpp" />
@@ -140,10 +140,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="app.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="app.ico" />
+    <ResourceCompile Include="interop.rc" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

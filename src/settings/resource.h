@@ -1,1 +1,9 @@
+//{{NO_DEPENDENCIES}}
+// Microsoft Visual C++ generated include file.
+// Used by settings.rc
+
+#define FILE_DESCRIPTION "PowerToys Settings"
+#define INTERNAL_NAME "PowerToysSettings"
+#define ORIGINAL_FILENAME "PowerToysSettings.exe"
+
 #define APPICON 101
