@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Media;
 using Windows.ApplicationModel.Chat;
 
@@ -25,22 +26,24 @@ namespace Wox.Infrastructure.Image
             }
             set 
             {
-                cnt++;
-                _data[path] = value; 
+                _data[path] = value;
 
-                if(cnt > 2*MaxCached)
+                if (_data.Count > 2 * MaxCached)
                 {
-                    cnt = MaxCached;
-                    Cleanup();
-                    foreach(var key in _data.Keys)
+                    Task.Run(() =>
                     {
-                        int dictValue;
-                        if(!Usage.TryGetValue(key, out dictValue))
+                        Cleanup();
+                        foreach (var key in _data.Keys)
                         {
-                            ImageSource test;
-                            _data.TryRemove(key, out test);
+                            int dictValue;
+                            if (!Usage.TryGetValue(key, out dictValue))
+                            {
+                                ImageSource test;
+                                _data.TryRemove(key, out test);
+                            }
                         }
                     }
+                    );
                 }
             }
         }
