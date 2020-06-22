@@ -118,8 +118,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             else if(AppType == (uint)ApplicationTypes.RUN_COMMAND)
             {
-                // To be localised once the value of this string is decided
-                return "Run command";
+                return api.GetTranslation("powertoys_run_plugin_program_run_command");
             }
             else
             {
