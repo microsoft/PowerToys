@@ -699,10 +699,12 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 
                 if(!string.IsNullOrEmpty(app1.Name) && !string.IsNullOrEmpty(app2.Name)
-                    && !string.IsNullOrEmpty(app1.ExecutableName) && !string.IsNullOrEmpty(app2.ExecutableName))
+                    && !string.IsNullOrEmpty(app1.ExecutableName) && !string.IsNullOrEmpty(app2.ExecutableName)
+                    && !string.IsNullOrEmpty(app1.FullPath) && !string.IsNullOrEmpty(app2.FullPath))
                 {
                     return app1.Name.Equals(app2.Name, StringComparison.OrdinalIgnoreCase)
-                        && app1.ExecutableName.Equals(app2.ExecutableName, StringComparison.OrdinalIgnoreCase);
+                        && app1.ExecutableName.Equals(app2.ExecutableName, StringComparison.OrdinalIgnoreCase)
+                        && app1.FullPath.Equals(app2.FullPath, StringComparison.OrdinalIgnoreCase);
                 }
                 return false;
             }
@@ -712,10 +714,12 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 int namePrime = 13;
                 int executablePrime = 17;
+                int fullPathPrime = 31;
 
                 int result = 1;
                 result = result * namePrime + obj.Name.ToLowerInvariant().GetHashCode();
                 result = result * executablePrime + obj.ExecutableName.ToLowerInvariant().GetHashCode();
+                result = result * fullPathPrime + obj.FullPath.ToLowerInvariant().GetHashCode();
 
                 return result;
             }
