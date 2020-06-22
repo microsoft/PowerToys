@@ -64,6 +64,17 @@ namespace PowerLauncher
             _viewModel.Save();
         }
 
+        private void BringProcessToForeground()
+        {
+            // Use SendInput hack to allow Activate to work - required to resolve focus issue https://github.com/microsoft/PowerToys/issues/4270
+            WindowsInteropHelper.INPUT input = new WindowsInteropHelper.INPUT { type = WindowsInteropHelper.INPUTTYPE.INPUT_MOUSE, data = { } };
+            WindowsInteropHelper.INPUT[] inputs = new WindowsInteropHelper.INPUT[] { input };
+
+            // Send empty mouse event. This makes this thread the last to send input, and hence allows it to pass foreground permission checks
+            WindowsInteropHelper.SendInput(1, inputs, WindowsInteropHelper.INPUT.Size);
+            Activate();
+        }
+
         private void OnLoaded(object sender, RoutedEventArgs _)
         {
             WindowsInteropHelper.DisableControlBox(this);
@@ -79,7 +90,7 @@ namespace PowerLauncher
             ListBox.SuggestionsList.PreviewMouseLeftButtonUp += SuggestionsList_PreviewMouseLeftButtonUp;
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
-            Activate();
+            BringProcessToForeground();
         }
 
         private void SuggestionsList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -105,7 +116,7 @@ namespace PowerLauncher
                 // Not called on first launch
                 // Additionally called when deactivated by clicking on screen  
                 UpdatePosition();
-                Activate();
+                BringProcessToForeground();
 
                 if (!_viewModel.LastQuerySelected)
                 {
