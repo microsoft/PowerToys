@@ -119,7 +119,7 @@ namespace Microsoft.Plugin.Program.Programs
             else if(AppType == (uint)ApplicationTypes.ENVIRONMENT_VARIABLE_APPLICATION)
             {
                 // To be localised once the value of this string is decided
-                return "Environment variable Application";
+                return "Run command";
             }
             else
             {
