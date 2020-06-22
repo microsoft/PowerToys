@@ -229,7 +229,6 @@ private:
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& workAreaMap) noexcept;
     std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> GetAppZoneHistoryInfo(HWND window, HMONITOR monitor, bool isPrimaryMonitor) noexcept;
     void MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<int>& zoneIndexSet) noexcept;
-    void OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept;
 
     void OnEditorExitEvent() noexcept;
     bool ShouldProcessSnapHotkey() noexcept;
@@ -429,10 +428,10 @@ int RectHeight(const RECT& rect)
     return rect.bottom - rect.top;
 }
 
-RECT FitOnScreen(HWND window, const RECT& windowRect, HMONITOR monitor, const RECT& monitorRect) 
+RECT FitOnScreen(const RECT& windowRect, const RECT& originMonitorRect, const RECT& destMonitorRect)
 {
-    int left = monitorRect.left + windowRect.left;
-    int top  = monitorRect.top  + windowRect.top;
+    int left = destMonitorRect.left + (windowRect.left - originMonitorRect.left);
+    int top = destMonitorRect.top + (windowRect.top - originMonitorRect.top);
 
     // New window position on active monitor. If window fits the screen, this will be final position.
     RECT newPosition = { left,
@@ -440,23 +439,42 @@ RECT FitOnScreen(HWND window, const RECT& windowRect, HMONITOR monitor, const RE
                          left + RectWidth(windowRect),
                          top  + RectHeight(windowRect) };
 
-    if (newPosition.right > monitorRect.right)
+    if (newPosition.right > destMonitorRect.right)
     {
-        newPosition.left = monitorRect.left + LEFT_TOP_PADDING;
-        int width = min(RectWidth(windowRect), RectWidth(monitorRect) - LEFT_TOP_PADDING);
-        newPosition.right = newPosition.left + width;
+        // Set left window border to left border of screen (add padding). Resize window width if needed.
+        newPosition.left = destMonitorRect.left + LEFT_TOP_PADDING;
+        int W = min(RectWidth(windowRect), RectWidth(destMonitorRect) - LEFT_TOP_PADDING);
+        newPosition.right = newPosition.left + W;
     }
-    if (newPosition.bottom > monitorRect.bottom)
+    if (newPosition.bottom > destMonitorRect.bottom)
     {
-        newPosition.top = monitorRect.top + LEFT_TOP_PADDING;
-        int height = min(RectHeight(windowRect), RectHeight(monitorRect) - LEFT_TOP_PADDING);
-        newPosition.bottom = newPosition.top + height;
+        // Set top window border to top border of screen (add padding). Resize window height if needed.
+        newPosition.top = destMonitorRect.top + LEFT_TOP_PADDING;
+        int H = min(RectHeight(windowRect), RectHeight(destMonitorRect) - LEFT_TOP_PADDING);
+        newPosition.bottom = newPosition.top + H;
     }
 
     return newPosition;
 }
 
-void FancyZones::OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept
+RECT Convert(const RECT& rect, HMONITOR monitor)
+{
+    UINT dpiX;
+    UINT dpiY;
+    RECT converted = rect;
+    if (SUCCEEDED(DPIAware::GetScreenDPI(monitor, dpiX, dpiY)))
+    {
+        double scaleX = (double)DPIAware::DEFAULT_DPI / dpiX;
+        double scaleY = (double)DPIAware::DEFAULT_DPI / dpiY;
+        converted.left   *= scaleX;
+        converted.top    *= scaleY;
+        converted.right  *= scaleX;
+        converted.bottom *= scaleY;
+    }
+    return converted;
+}
+
+void OpenWindowOnActiveMonitor(HWND window, const RECT& windowRect, HMONITOR monitor) noexcept
 {
     // By default windows opens new window on primary monitor.
     // Try to preserve window width and height, adjust top-left corner if needed.
@@ -467,27 +485,27 @@ void FancyZones::OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexce
         // If that position is already on currently active monitor, skip custom positioning.
         return;
     }
-    RECT windowRect{};
-    if (GetWindowRect(window, &windowRect))
-    {
-        MONITORINFOEX mi;
-        mi.cbSize = sizeof(mi);
-        if (GetMonitorInfo(monitor, &mi))
-        {
-            RECT newPosition = FitOnScreen(window, windowRect, monitor, mi.rcWork);
 
+    MONITORINFOEX originMi;
+    originMi.cbSize = sizeof(originMi);
+    if (GetMonitorInfo(origin, &originMi))
+    {
+        MONITORINFOEX destMi;
+        destMi.cbSize = sizeof(destMi);
+        if (GetMonitorInfo(monitor, &destMi))
+        {
+            RECT newPosition = FitOnScreen(windowRect, originMi.rcWork, destMi.rcWork);
             int W = RectWidth(newPosition);
             int H = RectHeight(newPosition);
 
             const bool sizeChanged = (W != RectWidth(windowRect)) || (H != RectHeight(windowRect));
-
             SetWindowPos(window,
-                         nullptr,
-                         newPosition.left,
-                         newPosition.top,
-                         W,
-                         H,
-                         sizeChanged ? 0 : SWP_NOSIZE);
+                            nullptr,
+                            newPosition.left,
+                            newPosition.top,
+                            W,
+                            H,
+                            sizeChanged ? 0 : SWP_NOSIZE);
         }
     }
 }
@@ -516,7 +534,13 @@ FancyZones::WindowCreated(HWND window) noexcept
         }
         else
         {
-            OpenWindowOnActiveMonitor(window, active);
+            RECT windowRect{};
+            if (GetWindowRect(window, &windowRect))
+            {
+                RECT converted = Convert(windowRect, active);
+                m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
+                    OpenWindowOnActiveMonitor(window, converted, active); } }).wait();
+            }
         }
     }
 }
