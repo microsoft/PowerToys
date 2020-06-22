@@ -184,12 +184,10 @@ namespace Wox.Infrastructure.Image
                 string hash = EnableImageHash ? _hashGenerator.GetHashFromImage(img) : null;
                 if (hash != null)
                 {
-                    int test;
+                    int ImageCacheValue;
                     if (GuidToKey.TryGetValue(hash, out string key)
-                        && ImageCache.Usage.TryGetValue(path, out test))
+                        && ImageCache.Usage.TryGetValue(path, out ImageCacheValue))
                     { // image already exists
-                        var cnt = ImageCache.CacheSize();
-                        var uniquecnt = ImageCache.UniqueImagesInCache();
                         img = ImageCache[key];
                     }
                     else
