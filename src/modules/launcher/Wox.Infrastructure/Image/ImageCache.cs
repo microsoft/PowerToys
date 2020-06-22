@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Media;
-using Windows.ApplicationModel.Chat;
 
 namespace Wox.Infrastructure.Image
 {
@@ -14,7 +13,7 @@ namespace Wox.Infrastructure.Image
         private const int MaxCached = 50;
         public ConcurrentDictionary<string, int> Usage = new ConcurrentDictionary<string, int>();
         private readonly ConcurrentDictionary<string, ImageSource> _data = new ConcurrentDictionary<string, ImageSource>();
-        private int cnt = 0;
+        private const int permissibleFactor = 2;
 
         public ImageSource this[string path]
         {
@@ -28,7 +27,9 @@ namespace Wox.Infrastructure.Image
             {
                 _data[path] = value;
 
-                if (_data.Count > 2 * MaxCached)
+                // To prevent the dictionary from drastically increasing in size by caching images, the dictionary size is not allowed to grow more than the permissibleFactor * maxCached size
+                // This is done so that we don't constantly perform this resizing operation and also maintain the image cache size at the same time
+                if (_data.Count > permissibleFactor * MaxCached)
                 {
                     Task.Run(() =>
                     {
