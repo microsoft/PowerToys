@@ -48,7 +48,7 @@ namespace Microsoft.Plugin.Program.Programs
             WEB_APPLICATION = 0,
             INTERNET_SHORTCUT_APPLICATION = 1,
             WIN32_APPLICATION = 2,
-            ENVIRONMENT_VARIABLE_APPLICATION = 3
+            RUN_COMMAND = 3
         }
 
         private int Score(string query)
@@ -116,7 +116,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 return api.GetTranslation("powertoys_run_plugin_program_web_application");
             }
-            else if(AppType == (uint)ApplicationTypes.ENVIRONMENT_VARIABLE_APPLICATION)
+            else if(AppType == (uint)ApplicationTypes.RUN_COMMAND)
             {
                 // To be localised once the value of this string is decided
                 return "Run command";
@@ -129,7 +129,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         private bool FilterPartialMatchForRunCommands(string query)
         {
-            if (AppType == (uint)ApplicationTypes.ENVIRONMENT_VARIABLE_APPLICATION
+            if (AppType == (uint)ApplicationTypes.RUN_COMMAND
                 && !query.Equals(Name, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
@@ -584,7 +584,7 @@ namespace Microsoft.Plugin.Program.Programs
             var allPrograms = programs1.Concat(programs2).Where(p => p.Valid)
                 .Concat(programs3).Where(p => p.Valid)
                 .Concat(programs4).Where(p => p.Valid)
-                .Select( p => { p.AppType = (uint)ApplicationTypes.ENVIRONMENT_VARIABLE_APPLICATION; return p; });
+                .Select( p => { p.AppType = (uint)ApplicationTypes.RUN_COMMAND; return p; });
 
             return allPrograms;
         }
@@ -725,7 +725,7 @@ namespace Microsoft.Plugin.Program.Programs
         // Deduplication code
         public static Func<ParallelQuery<Win32>, Win32[]> DeduplicatePrograms = (programs) =>
         {
-            var uniqueExePrograms = programs.Where(x => !(string.IsNullOrEmpty(x.LnkResolvedPath) && (Extension(x.FullPath) == ExeExtension) && !(x.AppType == (uint)ApplicationTypes.ENVIRONMENT_VARIABLE_APPLICATION)));
+            var uniqueExePrograms = programs.Where(x => !(string.IsNullOrEmpty(x.LnkResolvedPath) && (Extension(x.FullPath) == ExeExtension) && !(x.AppType == (uint)ApplicationTypes.RUN_COMMAND)));
             var uniquePrograms = uniqueExePrograms.Distinct(new removeDuplicatesComparer());
             return uniquePrograms.ToArray();
         };
