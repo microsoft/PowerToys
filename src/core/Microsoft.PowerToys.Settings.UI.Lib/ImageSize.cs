@@ -68,6 +68,36 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             }
         }
 
+        public int ExtraBoxOpacity
+        {
+            get
+            {
+                if (Unit == 2)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 100;
+                }
+            }
+        }
+
+        public bool EnableEtraBoxes
+        {
+            get
+            {
+                if (Unit == 2)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+        }
+
         [JsonPropertyName("name")]
         public string Name
         {
@@ -154,6 +184,8 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 {
                     _unit = value;
                     OnPropertyChanged();
+                    OnPropertyChanged("ExtraBoxOpacity");
+                    OnPropertyChanged("EnableEtraBoxes");
                 }
             }
         }

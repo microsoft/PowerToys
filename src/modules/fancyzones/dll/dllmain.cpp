@@ -1,6 +1,7 @@
 #include "pch.h"
 #include <common/settings_objects.h>
 #include <common/common.h>
+#include <common/debug_control.h>
 #include <interface/powertoy_module_interface.h>
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <interface/win_hook_event_data.h>
@@ -78,11 +79,18 @@ public:
             InitializeWinhookEventIds();
             Trace::FancyZones::EnableFancyZones(true);
             m_app = MakeFancyZones(reinterpret_cast<HINSTANCE>(&__ImageBase), m_settings);
-
-            s_llKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
-            if (!s_llKeyboardHook)
+#if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
+            const bool hook_disabled = IsDebuggerPresent();
+#else
+            const bool hook_disabled = false;
+#endif
+            if (!hook_disabled)
             {
-                MessageBoxW(NULL, L"Cannot install keyboard listener.", L"PowerToys - FancyZones", MB_OK | MB_ICONERROR);
+                s_llKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
+                if (!s_llKeyboardHook)
+                {
+                    MessageBoxW(NULL, L"Cannot install keyboard listener.", L"PowerToys - FancyZones", MB_OK | MB_ICONERROR);
+                }
             }
 
             std::array<DWORD, 6> events_to_subscribe = {

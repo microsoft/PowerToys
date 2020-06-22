@@ -224,6 +224,7 @@ namespace JSONHelpers
         {
             std::wstring result = PTSettingsHelper::get_module_save_folder_location(moduleName);
             jsonFilePath = result + L"\\" + std::wstring(L"zones-settings.json");
+            appZoneHistoryFilePath = result + L"\\" + std::wstring(L"app-zone-history.json");
         }
 #endif
 
