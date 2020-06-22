@@ -6,6 +6,14 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
     <Version>$(Version).0</Version>
+    <Authors>Microsoft Corporation</Authors>
+    <Product>PowerToys</Product>
+    <Description>PowerToys Settings UI Lib</Description>
+    <Copyright>Copyright (C) 2020 Microsoft Corporation</Copyright>
+    <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
+    <RepositoryType>Github</RepositoryType>
+    <PackageTags>PowerToys</PackageTags>
+    <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
