@@ -320,10 +320,15 @@ void notifications::show_toast_with_activations(std::wstring message, std::wstri
     notifier.Show(notification);
 }
 
-void notifications::show_toast_with_progress_bar(std::wstring message, float progress, const std::wstring& version, toast_params params)
+void notifications::show_toast_with_progress_bar(std::wstring message, const std::wstring& version, toast_params params)
 {
     // DO NOT LOCALIZE any string in this function, because they're XML tags and a subject to
     // https://docs.microsoft.com/en-us/windows/uwp/design/shell/tiles-and-notifications/toast-xml-schema
+
+    if (!params.progress.has_value())
+    {
+        return;
+    }
 
     std::wstring toast_xml;
     toast_xml.reserve(2048);
@@ -350,6 +355,7 @@ void notifications::show_toast_with_progress_bar(std::wstring message, float pro
     toast_xml_doc.LoadXml(toast_xml);
     ToastNotification notification{ toast_xml_doc };
 
+    float progress = params.progress.value();
     winrt::Windows::Foundation::Collections::StringMap map;
     map.Insert(L"progressValue", std::to_wstring(progress));
     map.Insert(L"progressValueString", std::to_wstring(static_cast<int>(progress * 100)) + std::wstring(L"%"));
@@ -379,10 +385,16 @@ void notifications::show_toast_with_progress_bar(std::wstring message, float pro
     notifier.Show(notification);
 }
 
-void notifications::update_progress_bar_toast(std::wstring plaintext_message, float progress, toast_params params)
+void notifications::update_progress_bar_toast(std::wstring plaintext_message, toast_params params)
 {
+    if (!params.progress.has_value())
+    {
+        return;
+    }
+
     const auto notifier = winstore::running_as_packaged() ? ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
                                                             ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(WIN32_AUMID);
+    float progress = params.progress.value();
     if (progress > 1)
     {
         progress = 1;
