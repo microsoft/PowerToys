@@ -500,12 +500,12 @@ void OpenWindowOnActiveMonitor(HWND window, const RECT& windowRect, HMONITOR mon
 
             const bool sizeChanged = (W != RectWidth(windowRect)) || (H != RectHeight(windowRect));
             SetWindowPos(window,
-                            nullptr,
-                            newPosition.left,
-                            newPosition.top,
-                            W,
-                            H,
-                            sizeChanged ? 0 : SWP_NOSIZE);
+                         nullptr,
+                         newPosition.left,
+                         newPosition.top,
+                         W,
+                         H,
+                         sizeChanged ? 0 : SWP_NOSIZE);
         }
     }
 }
