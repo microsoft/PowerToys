@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-  
+  <Import Project="..\..\..\..\installer\Version.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -13,6 +13,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <Platforms>x64</Platforms>
     <AssetTargetFallback>uap10.0.18362</AssetTargetFallback>
+    <Version>$(Version).0</Version>
   </PropertyGroup>
 
 

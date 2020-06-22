@@ -406,10 +406,6 @@
 
     <DirectoryRef Id="ModulesInstallFolder" FileSource="$(var.BinX64Dir)modules\">
       
-      <Component Id="Module_Launcher" Guid="9A343236-B49D-451D-A27D-4C336F460A45" Win64="yes">
-        <File Source="$(var.BinX64Dir)modules\Microsoft.Launcher.dll" />
-      </Component>
-
       <Component Id="Module_PowerPreview_PerUserRegistry" Guid="CD90ADC0-7CD5-4A62-B0AF-23545C1E6DD3" Win64="yes">
         <!-- Added a separate component for Per-User registry changes -->
         <!-- Registry Key for Class Registration of Svg Preview Handler -->
@@ -742,7 +738,6 @@
       <ComponentRef Id="Module_ImageResizer_Registry" />
       <ComponentRef Id="Module_PowerPreview" />
       <ComponentRef Id="Module_PowerPreview_PerUserRegistry" />
-      <ComponentRef Id="Module_Launcher" />
       <ComponentRef Id="Module_KeyboardManager" />
       <ComponentRef Id="SettingsV2" />
       <ComponentRef Id="SettingsV2Assets" />
@@ -783,6 +778,7 @@
   <Fragment>
     <ComponentGroup Id="LauncherComponents">
       <Component Id="launcherInstallComponent" Directory="LauncherInstallFolder" Guid="5E688DB4-C522-4268-BA54-ED1CDFFE9DB6">
+        <File Source="$(var.BinX64Dir)modules\Launcher\Microsoft.Launcher.dll" />
         <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;EntityFramework.SqlServer.dll;EntityFramework.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;Pinyin4Net.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Toolkit.Win32.UI.XamlHost.Managed.dll;Microsoft.Toolkit.Wpf.UI.XamlHost.dll;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;sni.dll;System.Data.SQLite.EF6.dll;PowerLauncher.runtimeconfig.json;SQLite.Interop.dll;System.Data.OleDb.dll;System.Data.SqlClient.dll;System.Data.SQLite.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;WindowsInput.dll;Wox.Core.dll;Wox.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;Telemetry.dll;PowerLauncher.Telemetry.dll;PropertyChanged.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;MahApps.Metro.dll?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
         <?endforeach?>

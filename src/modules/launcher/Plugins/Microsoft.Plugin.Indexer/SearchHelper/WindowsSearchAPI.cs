@@ -1,55 +1,55 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.OleDb;
+using Microsoft.Plugin.Indexer.Interface;
 using Microsoft.Search.Interop;
 
 namespace Microsoft.Plugin.Indexer.SearchHelper
 {
     public class WindowsSearchAPI
     {
-        public OleDbConnection conn;
-        public OleDbCommand command;
-        public OleDbDataReader WDSResults;
+        public bool DisplayHiddenFiles { get; set; }
+
+        private readonly ISearch WindowsIndexerSearch;
         private readonly object _lock = new object();
-        
+        private readonly UInt32 FILE_ATTRIBUTE_HIDDEN = 0x2;
+
+        public WindowsSearchAPI(ISearch windowsIndexerSearch, bool displayHiddenFiles = false)
+        {
+            this.WindowsIndexerSearch = windowsIndexerSearch;
+            this.DisplayHiddenFiles = displayHiddenFiles;
+        }
 
         public List<SearchResult> ExecuteQuery(ISearchQueryHelper queryHelper, string keyword)
         {
             List<SearchResult> _Result = new List<SearchResult>();
+
             // Generate SQL from our parameters, converting the userQuery from AQS->WHERE clause
             string sqlQuery = queryHelper.GenerateSQLFromUserQuery(keyword);
 
-            // --- Perform the query ---
-            // create an OleDbConnection object which connects to the indexer provider with the windows application
-            using (conn = new OleDbConnection(queryHelper.ConnectionString))
-            {
-                // open the connection
-                conn.Open();
+            // execute the command, which returns the results as an OleDBResults.
+            List<OleDBResult> oleDBResults = WindowsIndexerSearch.Query(queryHelper.ConnectionString, sqlQuery);
 
-                // now create an OleDB command object with the query we built above and the connection we just opened.
-                using (command = new OleDbCommand(sqlQuery, conn))
+            // Loop over all records from the database
+            foreach(OleDBResult oleDBResult in oleDBResults)
+            {
+                if (oleDBResult.fieldData[0] == DBNull.Value || oleDBResult.fieldData[1] == DBNull.Value || oleDBResult.fieldData[2] == DBNull.Value)
                 {
-                    // execute the command, which returns the results as an OleDbDataReader.
-                    using (WDSResults = command.ExecuteReader())
-                    {
-                        if(WDSResults.HasRows)
-                        {
-                            while (WDSResults.Read())
-                            {
-                                if (WDSResults.GetValue(0) != DBNull.Value && WDSResults.GetValue(1) != DBNull.Value)
-                                {
-                                    var uri_path = new Uri(WDSResults.GetString(0));
-                                    var result = new SearchResult
-                                    {
-                                        Path = uri_path.LocalPath,
-                                        Title = WDSResults.GetString(1)
-                                    };
-                                    _Result.Add(result);
-                                }
-                            }
-                        }
-                    }
+                    continue;
                 }
+
+                UInt32 fileAttributes = (UInt32)((Int64)oleDBResult.fieldData[2]);
+                bool isFileHidden = (fileAttributes & FILE_ATTRIBUTE_HIDDEN) == FILE_ATTRIBUTE_HIDDEN;
+
+                if (DisplayHiddenFiles || !isFileHidden)
+                {
+                    var uri_path = new Uri((string)oleDBResult.fieldData[0]);
+                    var result = new SearchResult
+                    {
+                        Path = uri_path.LocalPath,
+                        Title = (string)oleDBResult.fieldData[1]
+                    };
+                    _Result.Add(result);
+                }                                 
             }
 
             return _Result;
@@ -91,7 +91,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             queryHelper.QueryMaxResults = maxCount;
 
             // Set list of columns we want to display, getting the path presently
-            queryHelper.QuerySelectColumns = "System.ItemUrl, System.FileName";
+            queryHelper.QuerySelectColumns = "System.ItemUrl, System.FileName, System.FileAttributes";
 
             // Set additional query restriction
             queryHelper.QueryWhereRestrictions = "AND scope='file:'";

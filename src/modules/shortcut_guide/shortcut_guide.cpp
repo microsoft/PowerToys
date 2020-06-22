@@ -6,6 +6,7 @@
 
 #include <common/common.h>
 #include <common/settings_objects.h>
+#include <common/debug_control.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -134,10 +135,18 @@ void OverlayWindow::enable()
         winkey_popup->set_theme(theme.value);
         target_state = std::make_unique<TargetState>(pressTime.value);
         winkey_popup->initialize();
-        hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
-        if (!hook_handle)
+#if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
+        const bool hook_disabled = IsDebuggerPresent();
+#else
+        const bool hook_disabled = false;
+#endif
+        if (!hook_disabled)
         {
-            MessageBoxW(NULL, L"Cannot install keyboard listener.", L"PowerToys - Shortcut Guide", MB_OK | MB_ICONERROR);
+            hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
+            if (!hook_handle)
+            {
+                MessageBoxW(NULL, L"Cannot install keyboard listener.", L"PowerToys - Shortcut Guide", MB_OK | MB_ICONERROR);
+            }
         }
     }
     _enabled = true;
@@ -195,7 +204,7 @@ intptr_t OverlayWindow::signal_event(LowlevelKeyboardEvent* event)
         event->wParam == WM_SYSKEYUP)
     {
         bool suppress = target_state->signal_event(event->lParam->vkCode,
-            event->wParam == WM_KEYDOWN || event->wParam == WM_SYSKEYDOWN);
+                                                   event->wParam == WM_KEYDOWN || event->wParam == WM_SYSKEYDOWN);
         return suppress ? 1 : 0;
     }
     else

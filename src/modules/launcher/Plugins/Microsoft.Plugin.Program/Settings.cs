@@ -13,6 +13,8 @@ namespace Microsoft.Plugin.Program
 
         public bool EnableStartMenuSource { get; set; } = true;
 
+        public bool EnableDesktopSource { get; set; } = true;
+
         public bool EnableRegistrySource { get; set; } = true;
 
         internal const char SuffixSeparator = ';';

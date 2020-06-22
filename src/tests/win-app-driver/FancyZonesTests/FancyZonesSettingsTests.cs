@@ -713,6 +713,9 @@ namespace PowerToysTests
         public static void ClassInitialize(TestContext context)
         {
             Setup(context);
+            if (session == null)
+                return;
+
             Init();
         }
 
@@ -740,6 +743,9 @@ namespace PowerToysTests
         [TestInitialize]
         public void TestInitialize()
         {
+            if (session == null)
+                return;
+
             try
             {
                 _initialSettingsJson = JObject.Parse(_initialSettings);

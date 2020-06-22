@@ -34,7 +34,8 @@ const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& MonitorWorkArea
     {
         return workAreaMap[desktopId];
     }
-    return {};
+    static const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>> empty;
+    return empty;
 }
 
 std::vector<winrt::com_ptr<IZoneWindow>> MonitorWorkAreaHandler::GetAllWorkAreas()

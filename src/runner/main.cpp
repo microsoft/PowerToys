@@ -48,7 +48,6 @@ namespace
 {
     const wchar_t MSI_VERSION_MUTEX_NAME[] = L"Local\\PowerToyRunMutex";
     const wchar_t MSIX_VERSION_MUTEX_NAME[] = L"Local\\PowerToyMSIXRunMutex";
-
     const wchar_t PT_URI_PROTOCOL_SCHEME[] = L"powertoys://";
 }
 
@@ -128,48 +127,27 @@ int runner(bool isProcessElevated)
         notifications::register_background_toast_handler();
 
         chdir_current_executable();
-        // Load Powertoys DLLS
-        // For now only load known DLLs
+        // Load Powertoys DLLs
 
-        std::wstring baseModuleFolder = L"modules/";
-
-        std::unordered_set<std::wstring> known_dlls = {
-            L"ShortcutGuide.dll",
-            L"fancyzones.dll",
-            L"PowerRenameExt.dll",
-            L"Microsoft.Launcher.dll",
-            L"ImageResizerExt.dll",
-            L"powerpreview.dll",
-            L"KeyboardManager.dll"
+        const std::array<std::wstring_view, 7> knownModules = {
+            L"modules/FancyZones/fancyzones.dll",
+            L"modules/FileExplorerPreview/powerpreview.dll",
+            L"modules/ImageResizer/ImageResizerExt.dll",
+            L"modules/KeyboardManager/KeyboardManager.dll",
+            L"modules/Launcher/Microsoft.Launcher.dll",
+            L"modules/PowerRename/PowerRenameExt.dll",
+            L"modules/ShortcutGuide/ShortcutGuide.dll",
         };
 
-        // TODO(stefan): When all modules get their OutputDir delete this and simplify "search for .dll logic"
-        std::unordered_set<std::wstring> module_folders = {
-            L"",
-            L"FileExplorerPreview/",
-            L"FancyZones/",
-            L"ImageResizer/",
-            L"PowerRename/",
-            L"ShortcutGuide/",
-            L"KeyboardManager/"
-        };
-
-        for (std::wstring subfolderName : module_folders)
+        for (const auto & moduleSubdir : knownModules)
         {
-            for (auto& file : std::filesystem::directory_iterator(baseModuleFolder + subfolderName))
+            try
             {
-                if (file.path().extension() != L".dll")
-                    continue;
-                if (known_dlls.find(file.path().filename()) == known_dlls.end())
-                    continue;
-                try
-                {
-                    auto module = load_powertoy(file.path().wstring());
-                    modules().emplace(module->get_name(), std::move(module));
-                }
-                catch (...)
-                {
-                }
+                auto module = load_powertoy(moduleSubdir);
+                modules().emplace(module->get_name(), std::move(module));
+            }
+            catch (...)
+            {
             }
         }
         // Start initial powertoys
