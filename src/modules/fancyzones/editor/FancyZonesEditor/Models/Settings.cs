@@ -357,51 +357,55 @@ namespace FancyZonesEditor
         {
             try
             {
+                string layoutType = "blank";
+                ActiveZoneSetUUid = "null";
+                JsonElement jsonObject = default(JsonElement);
+
                 if (File.Exists(Settings.ActiveZoneSetTmpFile))
                 {
                     FileStream inputStream = File.Open(Settings.ActiveZoneSetTmpFile, FileMode.Open);
-                    JsonElement jsonObject = JsonDocument.Parse(inputStream, options: default).RootElement;
+                    jsonObject = JsonDocument.Parse(inputStream, options: default).RootElement;
                     inputStream.Close();
                     UniqueKey = jsonObject.GetProperty("device-id").GetString();
                     ActiveZoneSetUUid = jsonObject.GetProperty("active-zoneset").GetProperty("uuid").GetString();
-                    string layoutType = jsonObject.GetProperty("active-zoneset").GetProperty("type").GetString();
+                    layoutType = jsonObject.GetProperty("active-zoneset").GetProperty("type").GetString();
+                }
 
-                    if (debug || ActiveZoneSetUUid == "null" || layoutType == "blank")
+                if (debug || ActiveZoneSetUUid == "null" || layoutType == "blank")
+                {
+                    // Default or there is no active layout on current device
+                    ActiveZoneSetLayoutType = LayoutType.Focus;
+                    _showSpacing = true;
+                    _spacing = 16;
+                    _zoneCount = 3;
+                }
+                else
+                {
+                    switch (layoutType)
                     {
-                        // Default or there is no active layout on current device
-                        ActiveZoneSetLayoutType = LayoutType.Focus;
-                        _showSpacing = true;
-                        _spacing = 16;
-                        _zoneCount = 3;
+                        case "focus":
+                            ActiveZoneSetLayoutType = LayoutType.Focus;
+                            break;
+                        case "columns":
+                            ActiveZoneSetLayoutType = LayoutType.Columns;
+                            break;
+                        case "rows":
+                            ActiveZoneSetLayoutType = LayoutType.Rows;
+                            break;
+                        case "grid":
+                            ActiveZoneSetLayoutType = LayoutType.Grid;
+                            break;
+                        case "priority-grid":
+                            ActiveZoneSetLayoutType = LayoutType.PriorityGrid;
+                            break;
+                        case "custom":
+                            ActiveZoneSetLayoutType = LayoutType.Custom;
+                            break;
                     }
-                    else
-                    {
-                        switch (layoutType)
-                        {
-                            case "focus":
-                                ActiveZoneSetLayoutType = LayoutType.Focus;
-                                break;
-                            case "columns":
-                                ActiveZoneSetLayoutType = LayoutType.Columns;
-                                break;
-                            case "rows":
-                                ActiveZoneSetLayoutType = LayoutType.Rows;
-                                break;
-                            case "grid":
-                                ActiveZoneSetLayoutType = LayoutType.Grid;
-                                break;
-                            case "priority-grid":
-                                ActiveZoneSetLayoutType = LayoutType.PriorityGrid;
-                                break;
-                            case "custom":
-                                ActiveZoneSetLayoutType = LayoutType.Custom;
-                                break;
-                        }
 
-                        _showSpacing = jsonObject.GetProperty("editor-show-spacing").GetBoolean();
-                        _spacing = jsonObject.GetProperty("editor-spacing").GetInt32();
-                        _zoneCount = jsonObject.GetProperty("editor-zone-count").GetInt32();
-                    }
+                    _showSpacing = jsonObject.GetProperty("editor-show-spacing").GetBoolean();
+                    _spacing = jsonObject.GetProperty("editor-spacing").GetInt32();
+                    _zoneCount = jsonObject.GetProperty("editor-zone-count").GetInt32();
                 }
             }
             catch (Exception ex)
