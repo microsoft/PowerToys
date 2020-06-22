@@ -1,9 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\..\installer\Version.props" />
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
+    <Version>$(Version).0</Version>
   </PropertyGroup>
 
   <ItemGroup>
