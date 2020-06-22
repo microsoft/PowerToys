@@ -353,61 +353,55 @@ namespace FancyZonesEditor
             }
         }
 
-        private void ParseDeviceInfoData(string deviceInfo = null)
+        private void ParseDeviceInfoData(bool debug = false)
         {
             try
             {
-                JsonElement jsonObject;
-                if (deviceInfo == null)
+                if (File.Exists(Settings.ActiveZoneSetTmpFile))
                 {
                     FileStream inputStream = File.Open(Settings.ActiveZoneSetTmpFile, FileMode.Open);
-                    jsonObject = JsonDocument.Parse(inputStream, options: default).RootElement;
+                    JsonElement jsonObject = JsonDocument.Parse(inputStream, options: default).RootElement;
                     inputStream.Close();
-                }
-                else
-                {
-                    jsonObject = JsonDocument.Parse(deviceInfo, options: default).RootElement;
-                }
+                    UniqueKey = jsonObject.GetProperty("device-id").GetString();
+                    ActiveZoneSetUUid = jsonObject.GetProperty("active-zoneset").GetProperty("uuid").GetString();
+                    string layoutType = jsonObject.GetProperty("active-zoneset").GetProperty("type").GetString();
 
-                UniqueKey = jsonObject.GetProperty("device-id").GetString();
-                ActiveZoneSetUUid = jsonObject.GetProperty("active-zoneset").GetProperty("uuid").GetString();
-                string layoutType = jsonObject.GetProperty("active-zoneset").GetProperty("type").GetString();
-
-                if (ActiveZoneSetUUid == "null" || layoutType == "blank")
-                {
-                    // Default selection is Focus
-                    ActiveZoneSetLayoutType = LayoutType.Focus;
-                    _showSpacing = true;
-                    _spacing = 16;
-                    _zoneCount = 3;
-                }
-                else
-                {
-                    switch (layoutType)
+                    if (debug || ActiveZoneSetUUid == "null" || layoutType == "blank")
                     {
-                        case "focus":
-                            ActiveZoneSetLayoutType = LayoutType.Focus;
-                            break;
-                        case "columns":
-                            ActiveZoneSetLayoutType = LayoutType.Columns;
-                            break;
-                        case "rows":
-                            ActiveZoneSetLayoutType = LayoutType.Rows;
-                            break;
-                        case "grid":
-                            ActiveZoneSetLayoutType = LayoutType.Grid;
-                            break;
-                        case "priority-grid":
-                            ActiveZoneSetLayoutType = LayoutType.PriorityGrid;
-                            break;
-                        case "custom":
-                            ActiveZoneSetLayoutType = LayoutType.Custom;
-                            break;
+                        // Default or there is no active layout on current device
+                        ActiveZoneSetLayoutType = LayoutType.Focus;
+                        _showSpacing = true;
+                        _spacing = 16;
+                        _zoneCount = 3;
                     }
+                    else
+                    {
+                        switch (layoutType)
+                        {
+                            case "focus":
+                                ActiveZoneSetLayoutType = LayoutType.Focus;
+                                break;
+                            case "columns":
+                                ActiveZoneSetLayoutType = LayoutType.Columns;
+                                break;
+                            case "rows":
+                                ActiveZoneSetLayoutType = LayoutType.Rows;
+                                break;
+                            case "grid":
+                                ActiveZoneSetLayoutType = LayoutType.Grid;
+                                break;
+                            case "priority-grid":
+                                ActiveZoneSetLayoutType = LayoutType.PriorityGrid;
+                                break;
+                            case "custom":
+                                ActiveZoneSetLayoutType = LayoutType.Custom;
+                                break;
+                        }
 
-                    _showSpacing = jsonObject.GetProperty("editor-show-spacing").GetBoolean();
-                    _spacing = jsonObject.GetProperty("editor-spacing").GetInt32();
-                    _zoneCount = jsonObject.GetProperty("editor-zone-count").GetInt32();
+                        _showSpacing = jsonObject.GetProperty("editor-show-spacing").GetBoolean();
+                        _spacing = jsonObject.GetProperty("editor-spacing").GetInt32();
+                        _zoneCount = jsonObject.GetProperty("editor-zone-count").GetInt32();
+                    }
                 }
             }
             catch (Exception ex)
@@ -426,19 +420,7 @@ namespace FancyZonesEditor
             {
                 if (args[1].Equals("Debug"))
                 {
-                    const string debugDeviceInfoJson =
-                        @"{
-                        ""device-id"": ""BOE06C6#4&a213ba1&0&UID265988_1920_1080_{03891D5D-CC32-4FD9-9B94-846FE43F4690}"",
-                        ""active-zoneset"": {
-                            ""uuid"": ""{C82EBE61-9234-49BA-8392-09963C2C4CED}"",
-                            ""type"": ""columns""
-                        },
-                        ""editor-show-spacing"": true,
-                        ""editor-spacing"": 16,
-                        ""editor-zone-count"": 4
-                    }";
-
-                    ParseDeviceInfoData(debugDeviceInfoJson);
+                    ParseDeviceInfoData(true /* debug mode */);
                 }
                 else
                 {
