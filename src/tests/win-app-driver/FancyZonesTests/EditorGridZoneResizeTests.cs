@@ -393,6 +393,7 @@ namespace PowerToysTests
             Assert.IsTrue(thumb.Rect.Right > 0);
         }
 
+        [TestMethod]
         public void MergeSelectSplit()
         {
             OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
