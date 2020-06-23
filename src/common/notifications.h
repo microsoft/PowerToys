@@ -43,10 +43,13 @@ namespace notifications
     {
         std::optional<std::wstring_view> tag;
         bool resend_if_scheduled = true;
+        std::optional<float> progress;
+        std::optional<std::wstring_view> subtitle;
     };
 
     using action_t = std::variant<link_button, background_activated_button, snooze_button>;
 
     void show_toast(std::wstring plaintext_message, toast_params params = {});
     void show_toast_with_activations(std::wstring plaintext_message, std::wstring_view background_handler_id, std::vector<action_t> actions, toast_params params = {});
+    void update_progress_bar_toast(std::wstring plaintext_message, toast_params params);
 }

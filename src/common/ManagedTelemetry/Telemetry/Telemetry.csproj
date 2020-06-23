@@ -1,9 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\..\..\..\installer\Version.props" />
   <PropertyGroup>
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>$(Version).0</Version>
+    <Authors>Microsoft Corporation</Authors>
+    <Product>PowerToys</Product>
+    <Description>PowerToys Telemetry</Description>
+    <Copyright>Copyright (C) 2020 Microsoft Corporation</Copyright>
+    <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
+    <RepositoryType>Github</RepositoryType>
+    <PackageTags>PowerToys</PackageTags>
+    <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
 
   <ItemGroup>

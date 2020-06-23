@@ -66,6 +66,18 @@ void github_update_worker()
     }
 }
 
+void check_for_updates()
+{
+    try
+    {
+        updating::check_new_version_available();
+    }
+    catch (...)
+    {
+        // Couldn't autoupdate
+    }
+}
+
 bool launch_pending_update()
 {
     try

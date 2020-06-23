@@ -13,6 +13,7 @@ using Microsoft.Plugin.Program.Logger;
 using Wox.Plugin;
 using System.Windows.Input;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -262,10 +263,7 @@ namespace Microsoft.Plugin.Program.Programs
                     AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
                     Action = _ =>
                     {
-
-
                         Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", ParentDirectory));
-
                         return true;
                     }
                 }
@@ -314,26 +312,24 @@ namespace Microsoft.Plugin.Program.Programs
             string[] lines = System.IO.File.ReadAllLines(path);
             string appName = string.Empty;
             string iconPath = string.Empty;
+            string urlPath = string.Empty;
             string scheme = string.Empty;
             bool validApp = false;
 
-            const string steamScheme = "steam";
+            Regex InternetShortcutURLPrefixes = new Regex(@"^steam:\/\/(rungameid|run)\/|^com\.epicgames\.launcher:\/\/apps\/");
+
             const string urlPrefix = "URL=";
             const string iconFilePrefix = "IconFile=";
-            const string hostnameRun = "run";
-            const string hostnameRunGameId = "rungameid";
 
             foreach(string line in lines)
             {
                 if(line.StartsWith(urlPrefix))
                 {
-                    var urlPath = line.Substring(urlPrefix.Length);
+                    urlPath = line.Substring(urlPrefix.Length);
                     Uri uri = new Uri(urlPath);
 
                     // To filter out only those steam shortcuts which have 'run' or 'rungameid' as the hostname
-                    if(uri.Scheme.Equals(steamScheme, StringComparison.OrdinalIgnoreCase)
-                        && (uri.Host.Equals(hostnameRun, StringComparison.OrdinalIgnoreCase)
-                        || uri.Host.Equals(hostnameRunGameId, StringComparison.OrdinalIgnoreCase)))
+                    if(InternetShortcutURLPrefixes.Match(urlPath).Success)
                     {
                         validApp = true;
                     }
@@ -357,7 +353,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Name = Path.GetFileNameWithoutExtension(path),
                     ExecutableName = Path.GetFileName(path),
                     IcoPath = iconPath,
-                    FullPath = path.ToLower(),
+                    FullPath = urlPath,
                     UniqueIdentifier = path,
                     ParentDirectory = Directory.GetParent(path).FullName,
                     Valid = true,
@@ -550,6 +546,7 @@ namespace Microsoft.Plugin.Program.Programs
             return programs1.Concat(programs2).Concat(programs3);
         }
 
+
         // Function to obtain the list of applications, the locations of which have been added to the env variable PATH
         private static ParallelQuery<Win32> PathEnvironmentPrograms(string[] suffixes)
         {
@@ -588,16 +585,17 @@ namespace Microsoft.Plugin.Program.Programs
             return allPrograms;
         }
 
-        private static ParallelQuery<Win32> StartMenuPrograms(string[] suffixes)
+        private static ParallelQuery<Win32> IndexPath(string[] suffixes, List<string> IndexLocation)
         {
             var disabledProgramsList = Main._settings.DisabledProgramSources;
 
-            var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
-            var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms);
-            var paths1 = ProgramPaths(directory1, suffixes);
-            var paths2 = ProgramPaths(directory2, suffixes);
-
-            var toFilter = paths1.Concat(paths2);
+            IEnumerable<string> toFilter = new List<string>();
+            foreach (string location in IndexLocation)
+            {
+                var _paths = ProgramPaths(location, suffixes);
+                toFilter = toFilter.Concat(_paths);
+            }
+           
             var paths = toFilter
                         .Where(t1 => !disabledProgramsList.Any(x => x.UniqueIdentifier == t1))
                         .Select(t1 => t1)
@@ -609,6 +607,23 @@ namespace Microsoft.Plugin.Program.Programs
             var programs3 = paths.AsParallel().Where(p => Extension(p).Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(InternetShortcutProgram);
 
             return programs1.Concat(programs2).Where(p => p.Valid).Concat(programs3).Where(p => p.Valid);
+        }
+
+        private static ParallelQuery<Win32> StartMenuPrograms(string[] suffixes)
+        {
+            var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
+            var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms);
+            List<string> IndexLocation = new List<string>() { directory1, directory2};
+
+            return IndexPath(suffixes, IndexLocation);
+        }
+
+        private static ParallelQuery<Win32> DesktopPrograms(string[] suffixes)
+        {
+            var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            List<string> IndexLocation = new List<string>() { directory1 };
+
+            return IndexPath(suffixes, IndexLocation);
         }
 
         private static ParallelQuery<Win32> AppPathsPrograms(string[] suffixes)
@@ -758,6 +773,12 @@ namespace Microsoft.Plugin.Program.Programs
                 {
                     var appPathEnvironment = PathEnvironmentPrograms(settings.ProgramSuffixes);
                     programs = programs.Concat(appPathEnvironment);
+                }
+
+                if (settings.EnableDesktopSource)
+                {
+                    var desktop = DesktopPrograms(settings.ProgramSuffixes);
+                    programs = programs.Concat(desktop);
                 }
 
                 return DeduplicatePrograms(programs);

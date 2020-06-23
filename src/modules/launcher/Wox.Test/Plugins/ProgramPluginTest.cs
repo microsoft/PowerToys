@@ -144,6 +144,24 @@ namespace Wox.Test.Plugins
             AppType = 3 // Run command
         };
 
+        Win32 dummy_internetShortcut_app = new Win32
+        {
+            Name = "Shop Titans",
+            ExecutableName = "Shop Titans.url",           
+            FullPath = "steam://rungameid/1258080",
+            ParentDirectory = "C:\\Users\\temp\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Steam",
+            LnkResolvedPath = null
+        };
+
+        Win32 dummy_internetShortcut_app_duplicate = new Win32
+        {
+            Name = "Shop Titans",
+            ExecutableName = "Shop Titans.url",
+            FullPath = "steam://rungameid/1258080",
+            ParentDirectory = "C:\\Users\\temp\\Desktop",
+            LnkResolvedPath = null
+        };
+
         [Test]
         public void DedupFunction_whenCalled_mustRemoveDuplicateNotepads()
         {
@@ -151,6 +169,21 @@ namespace Wox.Test.Plugins
             List<Win32> prgms = new List<Win32>();
             prgms.Add(notepad_appdata);
             prgms.Add(notepad_users);
+
+            // Act
+            Win32[] apps = Win32.DeduplicatePrograms(prgms.AsParallel());
+
+            // Assert
+            Assert.AreEqual(apps.Length, 1);
+        }
+
+        [Test]
+        public void DedupFunction_whenCalled_MustRemoveInternetShortcuts()
+        {
+            // Arrange
+            List<Win32> prgms = new List<Win32>();
+            prgms.Add(dummy_internetShortcut_app);
+            prgms.Add(dummy_internetShortcut_app_duplicate);
 
             // Act
             Win32[] apps = Win32.DeduplicatePrograms(prgms.AsParallel());

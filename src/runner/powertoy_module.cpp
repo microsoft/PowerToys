@@ -7,9 +7,9 @@ std::map<std::wstring, PowertoyModule>& modules()
     return modules;
 }
 
-PowertoyModule load_powertoy(const std::wstring& filename)
+PowertoyModule load_powertoy(const std::wstring_view filename)
 {
-    auto handle = winrt::check_pointer(LoadLibraryW(filename.c_str()));
+    auto handle = winrt::check_pointer(LoadLibraryW(filename.data()));
     auto create = reinterpret_cast<powertoy_create_func>(GetProcAddress(handle, "powertoy_create"));
     if (!create)
     {
