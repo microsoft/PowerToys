@@ -54,7 +54,6 @@
     <ClInclude Include="unhandled_exception_handler.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h" />
     <ClInclude Include="lowlevel_keyboard_event.h">
       <Filter>Events</Filter>
     </ClInclude>
@@ -97,6 +96,9 @@
     <ClInclude Include="action_runner_utils.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Utils">
@@ -108,9 +110,12 @@
     <Filter Include="Events">
       <UniqueIdentifier>{d409b25e-c0f1-4913-bb32-da4a21339c76}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="runner.rc" />
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{74d0b535-16ee-46cc-9adf-dc4668bbcfda}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{18a4e642-9246-4494-b916-8505aed19914}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="svgs\icon.ico" />
@@ -159,5 +164,10 @@
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="PowerToys.exe.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="runner.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

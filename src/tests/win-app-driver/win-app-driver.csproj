@@ -6,8 +6,10 @@
   <!-- We don't have GenerateAssemblyInfo task until we use .net core, so we generate it with WriteLinesToFile -->
   <PropertyGroup>
     <AssemblyTitle>win-app-driver</AssemblyTitle>
+    <AssemblyDescription>PowerToys WinAppDriver</AssemblyDescription>
     <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
     <AssemblyCopyright>Copyright (C) 2020 Microsoft Corp.</AssemblyCopyright>
+    <AssemblyProduct>PowerToys</AssemblyProduct>
   </PropertyGroup>
   <ItemGroup>
     <AssemblyVersionFiles Include="Generated Files\AssemblyInfo.cs" />
@@ -23,14 +25,15 @@
       <HeaderLines Include="using System.Runtime.InteropServices%3b" />
       <HeaderLines Include="using System.Windows%3b" />
       <HeaderLines Include="[assembly: AssemblyTitle(&quot;$(AssemblyTitle)&quot;)]" />
-      <HeaderLines Include="[assembly: AssemblyDescription(&quot;&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyDescription(&quot;$(AssemblyDescription)&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyConfiguration(&quot;&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyCompany(&quot;$(AssemblyCompany)&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyCopyright(&quot;$(AssemblyCopyright)&quot;)]" />
-      <HeaderLines Include="[assembly: AssemblyProduct(&quot;$(AssemblyTitle)&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyProduct(&quot;$(AssemblyProduct)&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyTrademark(&quot;&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyCulture(&quot;&quot;)]" />
       <HeaderLines Include="[assembly: ComVisible(false)]" />
+      <HeaderLines Include="[assembly: NeutralResourcesLanguage(&quot;en-US&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyVersion(&quot;$(Version).0&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyFileVersion(&quot;$(Version).0&quot;)]" />
     </ItemGroup>
