@@ -50,6 +50,12 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                     System.Windows.Application.Current.Shutdown(); // close application
                 });
 
+                // send IPC Message
+                shellPage.SetCheckForUpdatesMessageCallback(msg =>
+                {
+                    Program.GetTwoWayIPCManager().Send(msg);
+                });
+
                 shellPage.SetElevationStatus(Program.IsElevated);
                 shellPage.SetIsUserAnAdmin(Program.IsUserAnAdmin);
                 shellPage.Refresh();

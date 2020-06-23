@@ -6,6 +6,7 @@
 
 #include <common/common.h>
 #include <common/updating/updating.h>
+#include <common/updating/http_client.h>
 
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Storage.h>
@@ -164,7 +165,8 @@ bool install_dotnet()
     {
         try
         {
-            updating::try_download_file(dotnet_download_path, download_link).wait();
+            http::HttpClient client;
+            client.download(download_link, dotnet_download_path).wait();
             download_success = true;
             break;
         }

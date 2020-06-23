@@ -216,6 +216,7 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     const std::wstring_view cant_drag_elevated_disable = L"cant_drag_elevated_disable/";
     const std::wstring_view update_now = L"update_now/";
     const std::wstring_view schedule_update = L"schedule_update/";
+    const std::wstring_view download_and_install_update = L"download_and_install_update/";
 
     if (param == cant_drag_elevated_disable)
     {
@@ -237,6 +238,17 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
             state.pending_update = true;
             state.pending_installer_filename = installerFilename;
         });
+
+        return toast_notification_handler_result::exit_success;
+    }
+    else if (param.starts_with(download_and_install_update))
+    {
+        std::wstring installer_filename = updating::download_update().get();
+     
+        std::wstring args{ UPDATE_NOW_LAUNCH_STAGE1_CMDARG };
+        args += L' ';
+        args += installer_filename;
+        launch_action_runner(args.c_str());
 
         return toast_notification_handler_result::exit_success;
     }
