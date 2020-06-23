@@ -355,7 +355,7 @@ void notifications::show_toast_with_progress_bar(std::wstring message, const std
     toast_xml_doc.LoadXml(toast_xml);
     ToastNotification notification{ toast_xml_doc };
 
-    float progress = params.progress.value();
+    float progress = std::clamp(params.progress.value(), 0.0f, 1.0f);
     winrt::Windows::Foundation::Collections::StringMap map;
     map.Insert(L"progressValue", std::to_wstring(progress));
     map.Insert(L"progressValueString", std::to_wstring(static_cast<int>(progress * 100)) + std::wstring(L"%"));
@@ -394,12 +394,8 @@ void notifications::update_progress_bar_toast(std::wstring plaintext_message, to
 
     const auto notifier = winstore::running_as_packaged() ? ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
                                                             ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(WIN32_AUMID);
-    float progress = params.progress.value();
-    if (progress > 1)
-    {
-        progress = 1;
-    }
-
+    
+    float progress = std::clamp(params.progress.value(), 0.0f, 1.0f);
     winrt::Windows::Foundation::Collections::StringMap map;
     map.Insert(L"progressValue", std::to_wstring(progress));
     map.Insert(L"progressValueString", std::to_wstring(static_cast<int>(progress * 100)) + std::wstring(L"%"));
