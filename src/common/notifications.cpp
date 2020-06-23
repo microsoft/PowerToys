@@ -213,10 +213,10 @@ void notifications::show_toast_with_activations(std::wstring message, std::wstri
     {
         toast_xml += LR"(<progress title=")";
         toast_xml += localized_strings::PT_UPDATE;
-        if (params.downloadingVersion)
+        if (params.subtitle)
         {
             toast_xml += L" ";
-            toast_xml += *params.downloadingVersion;
+            toast_xml += *params.subtitle;
         }
         toast_xml += LR"(" value="{progressValue}" valueStringOverride="{progressValueString}" status="{progressStatus}"/>)";
     }

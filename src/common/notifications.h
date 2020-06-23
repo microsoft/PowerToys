@@ -44,7 +44,7 @@ namespace notifications
         std::optional<std::wstring_view> tag;
         bool resend_if_scheduled = true;
         std::optional<float> progress;
-        std::optional<std::wstring_view> downloadingVersion;
+        std::optional<std::wstring_view> subtitle;
     };
 
     using action_t = std::variant<link_button, background_activated_button, snooze_button>;
