@@ -393,6 +393,33 @@ namespace PowerToysTests
             Assert.IsTrue(thumb.Rect.Right > 0);
         }
 
+        public void MergeSelectSplit()
+        {
+            OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
+            WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
+            Assert.IsNotNull(gridEditor);
+
+            ReadOnlyCollection<WindowsElement> zones = session.FindElementsByClassName("GridZone");
+            ReadOnlyCollection<AppiumWebElement> thumbs = gridEditor.FindElementsByClassName("Thumb");
+            Assert.AreEqual(3, zones.Count);
+            Assert.AreEqual(2, thumbs.Count);
+
+            Move(zones[0], thumbs[0].Rect.X + thumbs[0].Rect.Width + 10, true, true, -(zones[0].Rect.Height / 2) + 10);
+
+            WindowsElement mergeButton = session.FindElementByName("Merge zones");
+            Assert.IsNotNull(mergeButton, "Cannot merge: no merge button");
+
+            int splitPos = zones[0].Rect.Y + zones[0].Rect.Height / 2;
+
+            new Actions(session).MoveToElement(zones[0]).Click().Perform();
+
+            zones = session.FindElementsByClassName("GridZone");
+            Assert.AreEqual(4, zones.Count);
+
+            mergeButton = session.FindElementByName("Merge zones");
+            Assert.IsNull(mergeButton, "Cannot merge: no merge button");
+        }
+
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
