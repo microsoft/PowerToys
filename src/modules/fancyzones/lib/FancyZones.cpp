@@ -428,6 +428,24 @@ inline int RectHeight(const RECT& rect)
     return rect.bottom - rect.top;
 }
 
+inline bool IsSameRect(const RECT& lhs, const RECT& rhs)
+{
+    return lhs.left   == rhs.left &&
+           lhs.top    == rhs.top &&
+           lhs.right  == rhs.right &&
+           lhs.bottom == rhs.bottom;
+}
+
+bool WindowInExpectedPosition(HWND window, const RECT& expected)
+{
+    WINDOWPLACEMENT placement{};
+    if (GetWindowPlacement(window, &placement))
+    {
+        return IsSameRect(expected, placement.rcNormalPosition);
+    }
+    return false;
+}
+
 RECT FitOnScreen(const RECT& windowRect, const RECT& originMonitorRect, const RECT& destMonitorRect)
 {
     // New window position on active monitor. If window fits the screen, this will be final position.
@@ -457,6 +475,12 @@ void OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept
     // By default Windows opens new window on primary monitor.
     // Try to preserve window width and height, adjust top-left corner if needed.
     HMONITOR origin = MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY);
+    if (origin == monitor)
+    {
+        // Certain applications by design open in last known position, regardless of FancyZones.
+        // If that position is on currently active monitor, skip custom positioning.
+        return;
+    }
 
     WINDOWPLACEMENT placement{};
     if (GetWindowPlacement(window, &placement))
@@ -471,6 +495,13 @@ void OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept
             {
                 RECT newPosition = FitOnScreen(placement.rcNormalPosition, originMi.rcWork, destMi.rcWork);
                 SizeWindowToRect(window, newPosition);
+
+                // Certain applications could perform their own custom positioning afterwards, so check if window
+                // is in expected position, and if not, try to move it there one more time.
+                if (!WindowInExpectedPosition(window, newPosition))
+                {
+                    SizeWindowToRect(window, newPosition);
+                }
             }
         }
     }
