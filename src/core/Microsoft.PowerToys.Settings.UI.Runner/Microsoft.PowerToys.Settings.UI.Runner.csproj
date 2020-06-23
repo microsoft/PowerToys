@@ -9,13 +9,15 @@
     <StartupObject>Microsoft.PowerToys.Settings.UI.Runner.Program</StartupObject>
     <Authors>Microsoft Corporation</Authors>
     <Product>PowerToys</Product>
-    <Description>Windows system utilities to maximize productivity</Description>
+    <Description>PowerToys Settings UI Runner</Description>
+    <Copyright>Copyright (C) 2020 Microsoft Corporation</Copyright>
     <Company>Microsoft Corporation</Company>
     <PackageIcon>logo.png</PackageIcon>
     <PackageIconUrl />
     <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
     <RepositoryType>Github</RepositoryType>
     <PackageTags>PowerToys</PackageTags>
+    <NeutralLanguage>en-US</NeutralLanguage>
     <Version>$(Version).0</Version>
     <Platforms>x64</Platforms>
     <ApplicationIcon>icon.ico</ApplicationIcon>
