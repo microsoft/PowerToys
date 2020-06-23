@@ -185,6 +185,7 @@ void Trace::SettingsChanged(const Settings& settings) noexcept
         TraceLoggingBoolean(settings.moveWindowAcrossMonitors, "MoveWindowAcrossMonitors"),
         TraceLoggingBoolean(settings.appLastZone_moveWindows, "MoveWindowsToLastZoneOnAppOpening"),
         TraceLoggingBoolean(settings.restoreSize, "RestoreSize"),
+        TraceLoggingBoolean(settings.openWindowOnActiveMonitor, "OpenWindowOnActiveMonitor"),
         TraceLoggingBoolean(settings.use_cursorpos_editor_startupscreen, "UseCursorPosOnEditorStartup"),
         TraceLoggingBoolean(settings.showZonesOnAllMonitors, "ShowZonesOnAllMonitors"),
         TraceLoggingBoolean(settings.makeDraggedWindowTransparent, "MakeDraggedWindowTransparent"),

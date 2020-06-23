@@ -481,7 +481,7 @@ IFACEMETHODIMP_(void)
 FancyZones::WindowCreated(HWND window) noexcept
 {
     std::shared_lock readLock(m_lock);
-    if (m_settings->GetSettings()->appLastZone_moveWindows && ShouldProcessNewWindow(window))
+    if (ShouldProcessNewWindow(window))
     {
         HMONITOR primary = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
         HMONITOR active = primary;
@@ -492,13 +492,18 @@ FancyZones::WindowCreated(HWND window) noexcept
             active = MonitorFromPoint(cursorPosition, MONITOR_DEFAULTTOPRIMARY);
         }
 
-        const bool primaryActive = (primary == active);
-        std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> appZoneHistoryInfo = GetAppZoneHistoryInfo(window, active, primaryActive);
-        if (!appZoneHistoryInfo.second.empty())
+        bool windowZoned{ false };
+        if (m_settings->GetSettings()->appLastZone_moveWindows)
         {
-            MoveWindowIntoZone(window, appZoneHistoryInfo.first, appZoneHistoryInfo.second);
+            const bool primaryActive = (primary == active);
+            std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> appZoneHistoryInfo = GetAppZoneHistoryInfo(window, active, primaryActive);
+            if (!appZoneHistoryInfo.second.empty())
+            {
+                MoveWindowIntoZone(window, appZoneHistoryInfo.first, appZoneHistoryInfo.second);
+                windowZoned = true;
+            }
         }
-        else
+        if (!windowZoned && m_settings->GetSettings()->openWindowOnActiveMonitor)
         {
             m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] { OpenWindowOnActiveMonitor(window, active); } }).wait();
         }
