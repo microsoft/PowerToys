@@ -126,15 +126,15 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-        public bool FilterPartialMatchForRunCommands(string query)
+        public bool QueryEqualsNameForRunCommands(string query)
         {
             if (AppType == (uint)ApplicationTypes.RUN_COMMAND
                 && !query.Equals(Name, StringComparison.OrdinalIgnoreCase))
             {
-                return true;
+                return false;
             }
 
-            return false;
+            return true;
         }
 
         public Result Result(string query, IPublicAPI api)
@@ -160,7 +160,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
 
             // NOTE: This is to display run commands only when there is an exact match, like in start menu
-            if(FilterPartialMatchForRunCommands(query))
+            if(!QueryEqualsNameForRunCommands(query))
             {
                 return null;
             }
