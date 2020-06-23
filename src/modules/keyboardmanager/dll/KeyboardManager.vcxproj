@@ -51,11 +51,13 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\$(ProjectName)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\$(ProjectName)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
