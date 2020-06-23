@@ -32,6 +32,12 @@ namespace FancyZonesEditor
             Height,
         }
 
+        private enum ParseDeviceMode
+        {
+            Prod,
+            Debug,
+        }
+
         private static CanvasLayoutModel _blankCustomModel;
         private readonly CanvasLayoutModel _focusModel;
         private readonly GridLayoutModel _rowsModel;
@@ -361,7 +367,7 @@ namespace FancyZonesEditor
             }
         }
 
-        private void ParseDeviceInfoData(bool debug = false)
+        private void ParseDeviceInfoData(ParseDeviceMode mode = ParseDeviceMode.Prod)
         {
             try
             {
@@ -379,7 +385,7 @@ namespace FancyZonesEditor
                     layoutType = jsonObject.GetProperty("active-zoneset").GetProperty("type").GetString();
                 }
 
-                if (debug || ActiveZoneSetUUid == "null" || layoutType == "blank")
+                if (mode == ParseDeviceMode.Debug || ActiveZoneSetUUid == "null" || layoutType == "blank")
                 {
                     // Default or there is no active layout on current device
                     ActiveZoneSetLayoutType = LayoutType.Focus;
@@ -432,7 +438,7 @@ namespace FancyZonesEditor
             {
                 if (args[1].Equals("Debug"))
                 {
-                    ParseDeviceInfoData(true /* debug mode */);
+                    ParseDeviceInfoData(ParseDeviceMode.Debug);
                 }
                 else
                 {
