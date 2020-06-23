@@ -25,6 +25,11 @@ KeyboardHook::KeyboardHook(
 KeyboardHook::~KeyboardHook()
 {
     quit = true;
+
+    Monitor::Enter(queue);
+    Monitor::Pulse(queue);
+    Monitor::Exit(queue);
+
     kbEventDispatch->Join();
 
     // Unregister low level hook procedure

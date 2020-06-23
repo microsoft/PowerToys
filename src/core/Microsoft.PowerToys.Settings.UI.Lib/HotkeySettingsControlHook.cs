@@ -49,5 +49,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                     break;
             }
         }
+
+        public void Dispose()
+        {
+            // Dispose the KeyboardHook object to terminate the hook threads
+            hook.Dispose();
+        }
     }
 }

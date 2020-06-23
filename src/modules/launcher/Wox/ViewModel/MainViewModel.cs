@@ -22,12 +22,13 @@ using interop;
 
 namespace Wox.ViewModel
 {
-    public class MainViewModel : BaseModel, ISavable
+    public class MainViewModel : BaseModel, ISavable, IDisposable
     {
         #region Private Fields
 
         private bool _isQueryRunning;
         private Query _lastQuery;
+        private static bool _disposed;
         private string _queryTextBeforeLeaveResults;
 
         private readonly WoxJsonStorage<History> _historyItemsStorage;
@@ -55,6 +56,7 @@ namespace Wox.ViewModel
             _saved = false;
             _queryTextBeforeLeaveResults = "";
             _lastQuery = new Query();
+            _disposed = false;
 
             _settings = settings;
 
@@ -109,14 +111,6 @@ namespace Wox.ViewModel
                         UpdateResultView(e.Results, pair.Metadata, e.Query);
                     }, _updateToken);
                 };
-            }
-        }
-
-        ~MainViewModel()
-        {
-            if (_hotkeyHandle != 0)
-            {
-                _hotkeyManager.UnregisterHotkey(_hotkeyHandle);
             }
         }
 
@@ -713,6 +707,19 @@ namespace Wox.ViewModel
                     }
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                if (_hotkeyHandle != 0)
+                {
+                    _hotkeyManager.UnregisterHotkey(_hotkeyHandle);
+                }
+                _hotkeyManager.Dispose();
+                _disposed = true;
+            }         
         }
 
         #endregion

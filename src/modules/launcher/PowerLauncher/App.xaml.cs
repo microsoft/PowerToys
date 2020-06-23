@@ -25,7 +25,7 @@ namespace PowerLauncher
     {
         public static PublicAPIInstance API { get; private set; }
         private const string Unique = "PowerLauncher_Unique_Application_Mutex";
-        private static bool _disposed;
+        private static bool _disposed = false;
         private static int _powerToysPid;
         private Settings _settings;
         private MainViewModel _mainVM;
@@ -60,7 +60,7 @@ namespace PowerLauncher
             bootTime.Start();
             Stopwatch.Normal("|App.OnStartup|Startup cost", () =>
             {
-                Log.Info("|App.OnStartup|Begin Wox startup ----------------------------------------------------");
+                Log.Info("|App.OnStartup|Begin PowerToys Run startup ----------------------------------------------------");
                 Log.Info($"|App.OnStartup|Runtime info:{ErrorReporting.RuntimeInfo()}");
                 RegisterAppDomainExceptions();
                 RegisterDispatcherUnhandledException();
@@ -100,7 +100,7 @@ namespace PowerLauncher
                 
                 _mainVM.MainWindowVisibility = Visibility.Visible;
                 _mainVM.ColdStartFix();
-                Log.Info("|App.OnStartup|End Wox startup ----------------------------------------------------  ");
+                Log.Info("|App.OnStartup|End PowerToys Run startup ----------------------------------------------------  ");
 
                 bootTime.Stop();
 
@@ -137,7 +137,7 @@ namespace PowerLauncher
                 IntPtr powerToysProcHandle = OpenProcess(SYNCHRONIZE, false, _powerToysPid);
                 if (WaitForSingleObject(powerToysProcHandle, INFINITE) == WAIT_OBJECT_0)
                 {
-                    Environment.Exit(0);
+                    Application.Current.Shutdown();
                 }
             });
         }
@@ -168,7 +168,9 @@ namespace PowerLauncher
             if (!_disposed)
             {
                 API.SaveAppAllSettings();
+                _mainVM.Dispose();
                 _disposed = true;
+                Log.Info("|App.OnExit| Exit PowerToys Run ----------------------------------------------------  ");
             }
         }
 
