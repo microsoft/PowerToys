@@ -430,82 +430,48 @@ int RectHeight(const RECT& rect)
 
 RECT FitOnScreen(const RECT& windowRect, const RECT& originMonitorRect, const RECT& destMonitorRect)
 {
+    // New window position on active monitor. If window fits the screen, this will be final position.
     int left = destMonitorRect.left + (windowRect.left - originMonitorRect.left);
     int top = destMonitorRect.top + (windowRect.top - originMonitorRect.top);
+    int W = RectWidth(windowRect);
+    int H = RectHeight(windowRect);
 
-    // New window position on active monitor. If window fits the screen, this will be final position.
-    RECT newPosition = { left,
-                         top,
-                         left + RectWidth(windowRect),
-                         top  + RectHeight(windowRect) };
-
-    if (newPosition.right > destMonitorRect.right)
+    if ((left < destMonitorRect.left) || (left + W > destMonitorRect.right))
     {
         // Set left window border to left border of screen (add padding). Resize window width if needed.
-        newPosition.left = destMonitorRect.left + LEFT_TOP_PADDING;
-        int W = min(RectWidth(windowRect), RectWidth(destMonitorRect) - LEFT_TOP_PADDING);
-        newPosition.right = newPosition.left + W;
+        left = destMonitorRect.left + LEFT_TOP_PADDING;
+        W = min(W, RectWidth(destMonitorRect) - LEFT_TOP_PADDING);
     }
-    if (newPosition.bottom > destMonitorRect.bottom)
+    if ((top < destMonitorRect.top) || (top + H > destMonitorRect.bottom))
     {
         // Set top window border to top border of screen (add padding). Resize window height if needed.
-        newPosition.top = destMonitorRect.top + LEFT_TOP_PADDING;
-        int H = min(RectHeight(windowRect), RectHeight(destMonitorRect) - LEFT_TOP_PADDING);
-        newPosition.bottom = newPosition.top + H;
+        top = destMonitorRect.top + LEFT_TOP_PADDING;
+        H = min(H, RectHeight(destMonitorRect) - LEFT_TOP_PADDING);
     }
 
-    return newPosition;
+    return { left, top, left + W, top + H };
 }
 
-RECT Convert(const RECT& rect, HMONITOR monitor)
-{
-    UINT dpiX;
-    UINT dpiY;
-    RECT converted = rect;
-    if (SUCCEEDED(DPIAware::GetScreenDPI(monitor, dpiX, dpiY)))
-    {
-        double scaleX = (double)DPIAware::DEFAULT_DPI / dpiX;
-        double scaleY = (double)DPIAware::DEFAULT_DPI / dpiY;
-        converted.left   *= scaleX;
-        converted.top    *= scaleY;
-        converted.right  *= scaleX;
-        converted.bottom *= scaleY;
-    }
-    return converted;
-}
-
-void OpenWindowOnActiveMonitor(HWND window, const RECT& windowRect, HMONITOR monitor) noexcept
+void OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept
 {
     // By default windows opens new window on primary monitor.
     // Try to preserve window width and height, adjust top-left corner if needed.
     HMONITOR origin = MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY);
-    if (origin == monitor)
-    {
-        // Some applications by design open in last known position, unrelated to FancyZones.
-        // If that position is already on currently active monitor, skip custom positioning.
-        return;
-    }
 
-    MONITORINFOEX originMi;
-    originMi.cbSize = sizeof(originMi);
-    if (GetMonitorInfo(origin, &originMi))
+    WINDOWPLACEMENT placement{};
+    if (GetWindowPlacement(window, &placement))
     {
-        MONITORINFOEX destMi;
-        destMi.cbSize = sizeof(destMi);
-        if (GetMonitorInfo(monitor, &destMi))
+        MONITORINFOEX originMi;
+        originMi.cbSize = sizeof(originMi);
+        if (GetMonitorInfo(origin, &originMi))
         {
-            RECT newPosition = FitOnScreen(windowRect, originMi.rcWork, destMi.rcWork);
-            int W = RectWidth(newPosition);
-            int H = RectHeight(newPosition);
-
-            const bool sizeChanged = (W != RectWidth(windowRect)) || (H != RectHeight(windowRect));
-            SetWindowPos(window,
-                         nullptr,
-                         newPosition.left,
-                         newPosition.top,
-                         W,
-                         H,
-                         sizeChanged ? 0 : SWP_NOSIZE);
+            MONITORINFOEX destMi;
+            destMi.cbSize = sizeof(destMi);
+            if (GetMonitorInfo(monitor, &destMi))
+            {
+                RECT newPosition = FitOnScreen(placement.rcNormalPosition, originMi.rcWork, destMi.rcWork);
+                SizeWindowToRect(window, newPosition);
+            }
         }
     }
 }
@@ -534,13 +500,7 @@ FancyZones::WindowCreated(HWND window) noexcept
         }
         else
         {
-            RECT windowRect{};
-            if (GetWindowRect(window, &windowRect))
-            {
-                RECT converted = Convert(windowRect, active);
-                m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
-                    OpenWindowOnActiveMonitor(window, converted, active); } }).wait();
-            }
+            m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] { OpenWindowOnActiveMonitor(window, active); } }).wait();
         }
     }
 }
