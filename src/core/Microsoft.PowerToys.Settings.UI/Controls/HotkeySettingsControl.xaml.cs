@@ -8,6 +8,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using System;
+using System.Data;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 namespace Microsoft.PowerToys.Settings.UI.Controls
@@ -54,7 +55,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             HotkeyTextBox.GettingFocus += HotkeyTextBox_GettingFocus;
             HotkeyTextBox.LosingFocus += HotkeyTextBox_LosingFocus;
+            HotkeyTextBox.Unloaded += HotkeyTextBox_Unloaded;
             hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive);
+        }
+
+        private void HotkeyTextBox_Unloaded(object sender, RoutedEventArgs e)
+        {
+            // Dispose the HotkeySettingsControlHook object to terminate the hook threads when the textbox is unloaded
+            hook.Dispose();
         }
 
         private void KeyEventHandler(int key, bool matchValue, int matchValueCode, string matchValueText)
