@@ -126,6 +126,24 @@ namespace Wox.Test.Plugins
             LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\test proxy.lnk"
         };
 
+        Win32 cmd_run_command = new Win32
+        {
+            Name = "cmd",
+            ExecutableName = "cmd.exe",
+            FullPath = "c:\\windows\\system32\\cmd.exe",
+            LnkResolvedPath = null,
+            AppType = 3 // Run command
+        };
+
+        Win32 cmder_run_command = new Win32
+        {
+            Name = "Cmder",
+            ExecutableName = "Cmder.exe",
+            FullPath = "c:\\tools\\cmder\\cmder.exe",
+            LnkResolvedPath = null,
+            AppType = 3 // Run command
+        };
+
         Win32 dummy_internetShortcut_app = new Win32
         {
             Name = "Shop Titans",
@@ -292,6 +310,28 @@ namespace Wox.Test.Plugins
             }
             // unreachable code
             return true;
+        }
+
+        [TestCase("Command Prompt")]
+        [TestCase("cmd")]
+        [TestCase("cmd.exe")]
+        [TestCase("ignoreQueryText")]
+        public void Win32Applications_ShouldNotBeFiltered_WhenFilteringRunCommands(string query)
+        {
+            // Even if there is an exact match in the name or exe name, win32 applications should never be filtered
+            Assert.IsTrue(command_prompt.QueryEqualsNameForRunCommands(query));
+        }
+
+        [TestCase("cmd")]
+        [TestCase("Cmd")]
+        [TestCase("CMD")]
+        public void RunCommands_ShouldNotBeFiltered_OnExactMatch(string query)
+        {
+            // Partial matches should be filtered as cmd is not equal to cmder
+            Assert.IsFalse(cmder_run_command.QueryEqualsNameForRunCommands(query));
+
+            // the query matches the name (cmd) and is therefore not filtered (case-insensitive)
+            Assert.IsTrue(cmd_run_command.QueryEqualsNameForRunCommands(query));
         }
     }
 }
