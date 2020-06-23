@@ -14,6 +14,14 @@
     <Platforms>x64</Platforms>
     <AssetTargetFallback>uap10.0.18362</AssetTargetFallback>
     <Version>$(Version).0</Version>
+    <Authors>Microsoft Corporation</Authors>
+    <Product>PowerToys</Product>
+    <Description>PowerToys PowerLauncher</Description>
+    <Copyright>Copyright (C) 2020 Microsoft Corporation</Copyright>
+    <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
+    <RepositoryType>Github</RepositoryType>
+    <PackageTags>PowerToys</PackageTags>
+    <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
 
 
