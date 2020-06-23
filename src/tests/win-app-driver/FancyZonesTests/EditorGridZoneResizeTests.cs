@@ -409,15 +409,13 @@ namespace PowerToysTests
             WindowsElement mergeButton = session.FindElementByName("Merge zones");
             Assert.IsNotNull(mergeButton, "Cannot merge: no merge button");
 
-            int splitPos = zones[0].Rect.Y + zones[0].Rect.Height / 2;
-
             new Actions(session).MoveToElement(zones[0]).Click().Perform();
 
             zones = session.FindElementsByClassName("GridZone");
             Assert.AreEqual(4, zones.Count);
 
             mergeButton = session.FindElementByName("Merge zones");
-            Assert.IsNull(mergeButton, "Cannot merge: no merge button");
+            Assert.IsNull(mergeButton, "Can still merge: merge button exists");
         }
 
         [ClassInitialize]
