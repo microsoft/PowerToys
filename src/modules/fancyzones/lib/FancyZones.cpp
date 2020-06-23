@@ -418,12 +418,12 @@ void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zon
     }
 }
 
-int RectWidth(const RECT& rect)
+inline int RectWidth(const RECT& rect)
 {
     return rect.right - rect.left;
 }
 
-int RectHeight(const RECT& rect)
+inline int RectHeight(const RECT& rect)
 {
     return rect.bottom - rect.top;
 }
@@ -454,7 +454,7 @@ RECT FitOnScreen(const RECT& windowRect, const RECT& originMonitorRect, const RE
 
 void OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept
 {
-    // By default windows opens new window on primary monitor.
+    // By default Windows opens new window on primary monitor.
     // Try to preserve window width and height, adjust top-left corner if needed.
     HMONITOR origin = MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY);
 

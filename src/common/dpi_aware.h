@@ -5,7 +5,6 @@ namespace DPIAware
 {
     constexpr inline int DEFAULT_DPI = 96;
 
-    HRESULT GetScreenDPI(HMONITOR monitor, UINT& dpi_x, UINT& dpi_y);
     HRESULT GetScreenDPIForWindow(HWND hwnd, UINT& dpi_x, UINT& dpi_y);
     HRESULT GetScreenDPIForPoint(POINT p, UINT& dpi_x, UINT& dpi_y);
     void Convert(HMONITOR monitor_handle, int& width, int& height);

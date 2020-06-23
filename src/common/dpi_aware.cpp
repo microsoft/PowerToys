@@ -5,11 +5,6 @@
 
 namespace DPIAware
 {
-    HRESULT GetScreenDPI(HMONITOR monitor, UINT& dpi_x, UINT& dpi_y)
-    {
-        return GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &dpi_x, &dpi_y);
-    }
-
     HRESULT GetScreenDPIForWindow(HWND hwnd, UINT& dpi_x, UINT& dpi_y)
     {
         auto monitor_handle = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
