@@ -208,7 +208,19 @@ void notifications::show_toast_with_activations(std::wstring message, std::wstri
     toast_xml += title;
     toast_xml += L"</text><text>";
     toast_xml += message;
-    toast_xml += L"</text></binding></visual><actions>";
+    toast_xml += L"</text>";
+    if (params.progress)
+    {
+        toast_xml += LR"(<progress title=")";
+        toast_xml += localized_strings::PT_UPDATE;
+        if (params.downloadingVersion)
+        {
+            toast_xml += L" ";
+            toast_xml += *params.downloadingVersion;
+        }
+        toast_xml += LR"(" value="{progressValue}" valueStringOverride="{progressValueString}" status="{progressStatus}"/>)";
+    }
+    toast_xml += L"</binding></visual><actions>";
     for (size_t i = 0; i < size(actions); ++i)
     {
         std::visit(overloaded{
@@ -298,71 +310,17 @@ void notifications::show_toast_with_activations(std::wstring message, std::wstri
     toast_xml_doc.LoadXml(toast_xml);
     ToastNotification notification{ toast_xml_doc };
 
-    const auto notifier = winstore::running_as_packaged() ? ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
-                                                            ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(WIN32_AUMID);
-
-    // Set a tag-related params if it has a valid length
-    if (params.tag.has_value() && params.tag->length() < 64)
+    if (params.progress)
     {
-        notification.Tag(*params.tag);
-        if (!params.resend_if_scheduled)
-        {
-            for (const auto& scheduled_toast : notifier.GetScheduledToastNotifications())
-            {
-                if (scheduled_toast.Tag() == *params.tag)
-                {
-                    return;
-                }
-            }
-        }
+        float progress = std::clamp(params.progress.value(), 0.0f, 1.0f);
+        winrt::Windows::Foundation::Collections::StringMap map;
+        map.Insert(L"progressValue", std::to_wstring(progress));
+        map.Insert(L"progressValueString", std::to_wstring(static_cast<int>(progress * 100)) + std::wstring(L"%"));
+        map.Insert(L"progressStatus", localized_strings::DOWNLOAD_IN_PROGRESS);
+        winrt::Windows::UI::Notifications::NotificationData data(map);
+        notification.Data(data);
     }
 
-    notifier.Show(notification);
-}
-
-void notifications::show_toast_with_progress_bar(std::wstring message, const std::wstring& version, toast_params params)
-{
-    // DO NOT LOCALIZE any string in this function, because they're XML tags and a subject to
-    // https://docs.microsoft.com/en-us/windows/uwp/design/shell/tiles-and-notifications/toast-xml-schema
-
-    if (!params.progress.has_value())
-    {
-        return;
-    }
-
-    std::wstring toast_xml;
-    toast_xml.reserve(2048);
-    std::wstring title{ L"PowerToys" };
-    if (winstore::running_as_packaged())
-    {
-        title += L" (Experimental)";
-    }
-
-    toast_xml += LR"(<?xml version="1.0"?><toast><visual><binding template="ToastGeneric"><text>)";
-    toast_xml += title;
-    toast_xml += L"</text><text>";
-    toast_xml += message;
-    toast_xml += L"</text>";
-    toast_xml += LR"(<progress title=")";
-    toast_xml += localized_strings::PT_UPDATE;
-    toast_xml += L" ";
-    toast_xml += version;
-    toast_xml += LR"(" value="{progressValue}" valueStringOverride="{progressValueString}" status="{progressStatus}"/>)";
-    toast_xml += L"</binding></visual></toast>";
-
-    XmlDocument toast_xml_doc;
-    xml_escape(toast_xml);
-    toast_xml_doc.LoadXml(toast_xml);
-    ToastNotification notification{ toast_xml_doc };
-
-    float progress = std::clamp(params.progress.value(), 0.0f, 1.0f);
-    winrt::Windows::Foundation::Collections::StringMap map;
-    map.Insert(L"progressValue", std::to_wstring(progress));
-    map.Insert(L"progressValueString", std::to_wstring(static_cast<int>(progress * 100)) + std::wstring(L"%"));
-    map.Insert(L"progressStatus", localized_strings::DOWNLOAD_IN_PROGRESS);
-    winrt::Windows::UI::Notifications::NotificationData data(map);
-    notification.Data(data);
-    
     const auto notifier = winstore::running_as_packaged() ? ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
                                                             ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(WIN32_AUMID);
 

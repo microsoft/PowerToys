@@ -74,8 +74,8 @@ namespace updating
 
         void show_download_start(const updating::new_version_download_info& info)
         {
-            ::notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG, false, 0.0f };
-            ::notifications::show_toast_with_progress_bar(localized_strings::GITHUB_NEW_VERSION_DOWNLOAD_STARTED, info.version_string, std::move(toast_params));
+            ::notifications::toast_params toast_params{ UPDATE_NOTIFY_TOAST_TAG, false, 0.0f, info.version_string };
+            ::notifications::show_toast_with_activations(localized_strings::GITHUB_NEW_VERSION_DOWNLOAD_STARTED, {}, {}, std::move(toast_params));
         }
 
         void show_visit_github(const updating::new_version_download_info& info)
