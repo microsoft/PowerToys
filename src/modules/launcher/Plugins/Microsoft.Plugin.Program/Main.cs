@@ -13,7 +13,7 @@ using Wox.Plugin;
 using Microsoft.Plugin.Program.Views;
 
 using Stopwatch = Wox.Infrastructure.Stopwatch;
-
+using Microsoft.Plugin.Program.Programs;
 
 namespace Microsoft.Plugin.Program
 {
@@ -104,6 +104,17 @@ namespace Microsoft.Plugin.Program
         public void Init(PluginInitContext context)
         {
             _context = context;
+        public void ResetUWPIconPath(Theme theme)
+        {
+            foreach (UWP.Application app in _uwps)
+            {
+                app.ResetPath(theme);
+            }
+        }
+
+        public void onThemeChanged(Theme _, Theme currentTheme)
+        {
+            ResetUWPIconPath(currentTheme);
         }
 
         public static void IndexWin32Programs()

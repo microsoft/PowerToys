@@ -404,7 +404,6 @@ namespace Microsoft.Plugin.Program.Programs
                 DisplayName = ResourceFromPri(package.FullName, DisplayName);
                 Description = ResourceFromPri(package.FullName, Description);
                 LogoUri = LogoUriFromManifest(manifestApp);
-                LogoPath = LogoPathFromUri(LogoUri);
 
                 Enabled = true;
                 CanRunElevated = IfApplicationcanRunElevated();
@@ -516,7 +515,15 @@ namespace Microsoft.Plugin.Program.Programs
                 }
             }
 
-            internal string LogoPathFromUri(string uri)
+            public void ResetPath(Theme theme)
+            {
+                if(theme == Theme.Light || theme == Theme.HighContrastWhite)
+                    LogoPath = LogoPathFromUri(LogoUri, "contrast-white");
+                else
+                    LogoPath = LogoPathFromUri(LogoUri, "contrast-black");
+            }
+
+            internal string LogoPathFromUri(string uri, string theme)
             {
                 // all https://msdn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets
                 // windows 10 https://msdn.microsoft.com/en-us/library/windows/apps/dn934817.aspx
@@ -543,7 +550,6 @@ namespace Microsoft.Plugin.Program.Programs
 
                     // TODO: This value must be set in accordance to the WPF theme (work in progress).
                     // Must be set to `contrast-white` for light theme and to `contrast-black` for dark theme to get an icon of the contrasting color.
-                    var theme = "contrast-black";
 
                     var scaleFactors = new Dictionary<PackageVersion, List<int>>
                     {
