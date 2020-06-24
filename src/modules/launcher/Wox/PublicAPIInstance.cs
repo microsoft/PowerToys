@@ -21,6 +21,8 @@ namespace Wox
         private readonly Alphabet _alphabet;
         private readonly ThemeManager _themeManager;
 
+        public event ThemeChangedHandler ThemeChanged;
+
         #region Constructor
 
         public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, Alphabet alphabet, ThemeManager themeManager)
@@ -29,6 +31,7 @@ namespace Wox
             _mainVM = mainVM;
             _alphabet = alphabet;
             _themeManager = themeManager;
+            _themeManager.ThemeChanged += OnThemeChanged;
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
         }
 
@@ -140,9 +143,19 @@ namespace Wox
             });
         }
 
+        public Theme GetCurrentTheme()
+        {
+            return _themeManager.GetCurrentTheme();
+        }
+
         #endregion
 
-        #region Private Methods
+        #region Protected Methods
+
+        protected void OnThemeChanged(Theme previousTheme, Theme currentTheme)
+        {
+            ThemeChanged?.Invoke(previousTheme, currentTheme);
+        }
 
         #endregion
     }

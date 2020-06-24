@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 
-namespace Wox.Infrastructure
+namespace Wox.Plugin
 {
     public class ThemeManager
     {
@@ -18,6 +18,8 @@ namespace Wox.Infrastructure
         private readonly string HighContrastTwoTheme = "HighContrast.Accent3";
         private readonly string HighContrastBlackTheme = "HighContrast.Accent4";
         private readonly string HighContrastWhiteTheme = "HighContrast.Accent5";
+
+        public event ThemeChangedHandler ThemeChanged;
 
         public ThemeManager(Application app)
         {
@@ -60,9 +62,13 @@ namespace Wox.Infrastructure
                 }
             };
         }
-        
 
-        public static Theme GetHighContrastBaseType()
+        public Theme GetCurrentTheme()
+        {
+            return currentTheme;
+        }
+        
+        private static Theme GetHighContrastBaseType()
         {
             string RegistryKey = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes";
             string theme = (string) Registry.GetValue(RegistryKey, "CurrentTheme", string.Empty);
@@ -80,7 +86,7 @@ namespace Wox.Infrastructure
                 return Theme.None;
         }
 
-        public void ResetTheme()
+        private void ResetTheme()
         {
             if (SystemParameters.HighContrast)
             {
@@ -96,6 +102,7 @@ namespace Wox.Infrastructure
 
         private void ChangeTheme(Theme theme)
         {
+            Theme previousTheme = currentTheme;
             if (theme == currentTheme)
                 return;
             if (theme == Theme.HighContrastOne)
@@ -132,7 +139,7 @@ namespace Wox.Infrastructure
             {
                 currentTheme = Theme.None;
             }
-            Debug.WriteLine("Theme Changed to :" + currentTheme);
+            ThemeChanged?.Invoke(previousTheme, currentTheme);
         }
 
         private void Current_ThemeChanged(object sender, ThemeChangedEventArgs e)
@@ -140,6 +147,8 @@ namespace Wox.Infrastructure
             ResetTheme();
         }
     }
+
+    public delegate void ThemeChangedHandler(Theme previousTheme, Theme newTheme);
 
     public enum Theme
     {
