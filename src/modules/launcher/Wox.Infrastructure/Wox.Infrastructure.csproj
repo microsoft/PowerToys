@@ -47,7 +47,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ControlzEx" Version="4.3.0" />
     <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
+    <PackageReference Include="MahApps.Metro" Version="2.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.6.2" />
     <PackageReference Include="NLog.Schema" Version="4.7.0" />

@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 
-namespace Wox.Core.Resource
+namespace Wox.Infrastructure
 {
     public class ThemeManager
     {

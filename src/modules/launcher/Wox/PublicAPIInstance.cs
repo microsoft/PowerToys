@@ -19,14 +19,16 @@ namespace Wox
         private readonly SettingWindowViewModel _settingsVM;
         private readonly MainViewModel _mainVM;
         private readonly Alphabet _alphabet;
+        private readonly ThemeManager _themeManager;
 
         #region Constructor
 
-        public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, Alphabet alphabet)
+        public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, Alphabet alphabet, ThemeManager themeManager)
         {
             _settingsVM = settingsVM;
             _mainVM = mainVM;
             _alphabet = alphabet;
+            _themeManager = themeManager;
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
         }
 

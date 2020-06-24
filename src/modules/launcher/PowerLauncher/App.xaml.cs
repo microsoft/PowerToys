@@ -31,6 +31,7 @@ namespace PowerLauncher
         private Settings _settings;
         private MainViewModel _mainVM;
         private MainWindow _mainWindow;
+        private ThemeManager _themeManager;
         private SettingWindowViewModel _settingsVM;
         private readonly Alphabet _alphabet = new Alphabet();
         private StringMatcher _stringMatcher;
@@ -77,11 +78,11 @@ namespace PowerLauncher
                 StringMatcher.Instance = _stringMatcher;
                 _stringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
 
-                ThemeManager themeManager = new ThemeManager(this);               
                 PluginManager.LoadPlugins(_settings.PluginSettings);
                 _mainVM = new MainViewModel(_settings);
                 _mainWindow = new MainWindow(_settings, _mainVM);
-                API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet);
+                _themeManager = new ThemeManager(this);
+                API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet, _themeManager);
                 PluginManager.InitializePlugins(API);
 
                 Current.MainWindow = _mainWindow;
