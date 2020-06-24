@@ -301,7 +301,14 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
 
         if (m_settings->GetSettings()->restoreSize)
         {
-            RestoreSize(window);
+            if (WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
+            {
+                ::RemoveProp(window, RESTORE_SIZE_STAMP);
+            }
+            else
+            {
+                RestoreSize(window);
+            }
         }
 
         auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
