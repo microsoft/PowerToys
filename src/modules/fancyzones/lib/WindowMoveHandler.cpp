@@ -4,6 +4,7 @@
 #include <common/notifications.h>
 #include <common/notifications/fancyzones_notifications.h>
 #include <common/window_helpers.h>
+#include <common/dpi_aware.h>
 
 #include "lib/Settings.h"
 #include "lib/ZoneWindow.h"
@@ -378,8 +379,11 @@ void WindowMoveHandlerPrivate::RestoreSize(HWND window) noexcept
     auto windowSizeData = GetPropW(window, RESTORE_SIZE_STAMP);
     if (windowSizeData)
     {
-        std::pair<UINT, UINT> windowSize;
+        std::pair<int, int> windowSize;
         memcpy(&windowSize, &windowSizeData, sizeof windowSize);
+
+        // (width, height)
+        DPIAware::Convert(MonitorFromWindow(window, MONITOR_DEFAULTTONULL), windowSize.first, windowSize.second);
 
         RECT rect;
         if (GetWindowRect(window, &rect))

@@ -715,7 +715,12 @@ void ZoneSet::SaveWindowSize(HWND window) noexcept
     RECT rect;
     if (GetWindowRect(window, &rect))
     {
-        std::pair<UINT, UINT> windowSizeData = { rect.right - rect.left, rect.bottom - rect.top };
+        int width = rect.right - rect.left;
+        int height = rect.bottom - rect.top;
+
+        DPIAware::InverseConvert(MonitorFromWindow(window, MONITOR_DEFAULTTONULL), width, height);
+        
+        std::pair<int, int> windowSizeData = { width, height };
         HANDLE rawData;
         memcpy(&rawData, &windowSizeData, sizeof rawData);
         SetPropW(window, RESTORE_SIZE_STAMP, rawData);
