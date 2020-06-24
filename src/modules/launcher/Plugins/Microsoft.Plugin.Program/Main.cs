@@ -104,6 +104,10 @@ namespace Microsoft.Plugin.Program
         public void Init(PluginInitContext context)
         {
             _context = context;
+            _context.API.ThemeChanged += onThemeChanged;
+            ResetUWPIconPath(_context.API.GetCurrentTheme());
+        }
+
         public void ResetUWPIconPath(Theme theme)
         {
             foreach (UWP.Application app in _uwps)
