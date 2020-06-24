@@ -70,7 +70,7 @@ namespace PowerLauncher
             WindowsInteropHelper.INPUT[] inputs = new WindowsInteropHelper.INPUT[] { input };
 
             // Send empty mouse event. This makes this thread the last to send input, and hence allows it to pass foreground permission checks
-            WindowsInteropHelper.SendInput(1, inputs, WindowsInteropHelper.INPUT.Size);
+            _ = WindowsInteropHelper.SendInput(1, inputs, WindowsInteropHelper.INPUT.Size);
             Activate();
         }
 
