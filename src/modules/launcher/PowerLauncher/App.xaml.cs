@@ -150,18 +150,22 @@ namespace PowerLauncher
         {
             if (!_disposed)
             {
-                if (disposing)
+                Stopwatch.Normal("|App.OnExit|Exit cost", () =>
                 {
-                    _mainWindow.Dispose();
-                    API.SaveAppAllSettings();
-                    _mainVM.Dispose();
-                    _disposed = true;
-                }
+                    Log.Info("|App.OnExit| Start PowerToys Run Exit----------------------------------------------------  ");
+                    if (disposing)
+                    {
+                        _mainWindow.Dispose();
+                        API.SaveAppAllSettings();
+                        _mainVM.Dispose();
+                        _disposed = true;
+                    }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
-                _disposed = true;
-                Log.Info("|App.OnExit| Exit PowerToys Run ----------------------------------------------------  ");
+                    // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                    // TODO: set large fields to null
+                    _disposed = true;
+                    Log.Info("|App.OnExit| End PowerToys Run Exit ----------------------------------------------------  ");
+                });
             }
         }
 

@@ -709,17 +709,26 @@ namespace Wox.ViewModel
             }
         }
 
-        public void Dispose()
+        protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
             {
-                if (_hotkeyHandle != 0)
+                if (disposing)
                 {
-                    _hotkeyManager.UnregisterHotkey(_hotkeyHandle);
-                }
-                _hotkeyManager.Dispose();
-                _disposed = true;
+                    if (_hotkeyHandle != 0)
+                    {
+                        _hotkeyManager.UnregisterHotkey(_hotkeyHandle);
+                    }
+                    _hotkeyManager.Dispose();
+                    _disposed = true;
+                }   
             }         
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
 
         #endregion

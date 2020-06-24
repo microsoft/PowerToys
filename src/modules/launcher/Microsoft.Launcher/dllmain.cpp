@@ -46,7 +46,7 @@ private:
   std::wstring app_name;
 
   // Time to wait for process to close after sending WM_CLOSE signal
-  static const int MAX_WAIT_MILLISEC = 30000;
+  static const int MAX_WAIT_MILLISEC = 2000;
 
 
 public:
