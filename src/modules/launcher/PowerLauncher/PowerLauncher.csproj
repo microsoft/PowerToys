@@ -95,7 +95,9 @@
     <ProjectReference Include="..\Wox.Core\Wox.Core.csproj" />
     <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
     <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj" />
-    <ProjectReference Include="..\Wox\Wox.csproj" />
+	<ProjectReference Include="..\Wox\Wox.csproj">
+	    <NoWarn>NU1701</NoWarn>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
