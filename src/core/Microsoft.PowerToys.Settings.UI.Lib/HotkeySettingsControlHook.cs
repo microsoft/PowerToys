@@ -6,7 +6,7 @@ using interop;
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public delegate void KeyEvent(int key);
-    
+
     public delegate bool IsActive();
 
     public class HotkeySettingsControlHook
@@ -48,6 +48,12 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                     keyUp(ev.key);
                     break;
             }
+        }
+
+        public void Dispose()
+        {
+            // Dispose the KeyboardHook object to terminate the hook threads
+            hook.Dispose();
         }
     }
 }
