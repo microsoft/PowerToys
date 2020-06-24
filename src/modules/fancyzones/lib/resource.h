@@ -1,3 +1,17 @@
+//{{NO_DEPENDENCIES}}
+// Microsoft Visual C++ generated include file.
+// Used by fancyzones.rc
+
+//////////////////////////////
+// Non-localizable
+
+#define FILE_DESCRIPTION "PowerToys FancyZones"
+#define INTERNAL_NAME "fancyzones"
+#define ORIGINAL_FILENAME "fancyzones.dll"
+
+// Non-localizable
+//////////////////////////////
+
 #define IDS_SETTING_DESCRIPTION_SHIFTDRAG                           101
 #define IDS_SETTING_DESCRIPTION_MOUSESWITCH                         102
 #define IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS               103

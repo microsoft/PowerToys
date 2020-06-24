@@ -6,7 +6,7 @@ using interop;
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public delegate void KeyEvent(int key);
-    
+
     public delegate bool IsActive();
 
     public class HotkeySettingsControlHook

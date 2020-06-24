@@ -34,6 +34,68 @@ namespace Wox.Helper
             }
         }
 
+        [DllImport("user32.dll")]
+        public static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct INPUT
+        {
+            public INPUTTYPE type;
+            public InputUnion data;
+
+            public static int Size
+            {
+                get { return Marshal.SizeOf(typeof(INPUT)); }
+            }
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
+        public struct InputUnion
+        {
+            [FieldOffset(0)]
+            internal MOUSEINPUT mi;
+            [FieldOffset(0)]
+            internal KEYBDINPUT ki;
+            [FieldOffset(0)]
+            internal HARDWAREINPUT hi;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct MOUSEINPUT
+        {
+            internal int dx;
+            internal int dy;
+            internal int mouseData;
+            internal uint dwFlags;
+            internal uint time;
+            internal UIntPtr dwExtraInfo;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct KEYBDINPUT
+        {
+            internal short wVk;
+            internal short wScan;
+            internal uint dwFlags;
+            internal int time;
+            internal UIntPtr dwExtraInfo;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct HARDWAREINPUT
+        {
+            internal int uMsg;
+            internal short wParamL;
+            internal short wParamH;
+        }
+
+        public enum INPUTTYPE : uint
+        {
+            INPUT_MOUSE = 0,
+            INPUT_KEYBOARD = 1,
+            INPUT_HARDWARE = 2,
+        }
+
         [DllImport("user32.dll", SetLastError = true)]
         private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
 
