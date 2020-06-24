@@ -1,11 +1,11 @@
 #include "pch.h"
 #include "Dialog.h"
 
-IAsyncOperation<bool> Dialog::PartialRemappingConfirmationDialog(XamlRoot root)
+IAsyncOperation<bool> Dialog::PartialRemappingConfirmationDialog(XamlRoot root, std::wstring dialogTitle)
 {
     ContentDialog confirmationDialog;
     confirmationDialog.XamlRoot(root);
-    confirmationDialog.Title(box_value(L"Some of the keys could not be remapped. Do you want to continue anyway?"));
+    confirmationDialog.Title(box_value(dialogTitle));
     confirmationDialog.IsPrimaryButtonEnabled(true);
     confirmationDialog.DefaultButton(ContentDialogButton::Primary);
     confirmationDialog.PrimaryButtonText(winrt::hstring(L"Continue Anyway"));
