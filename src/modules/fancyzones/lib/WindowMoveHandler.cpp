@@ -387,7 +387,7 @@ void WindowMoveHandlerPrivate::RestoreSize(HWND window) noexcept
     if (windowSizeData)
     {
         std::array<int, 2> windowSize;
-        memcpy(&windowSize, &windowSizeData, sizeof windowSize);
+        memcpy(windowSize.data(), &windowSizeData, sizeof windowSize);
 
         // {width, height}
         DPIAware::Convert(MonitorFromWindow(window, MONITOR_DEFAULTTONULL), windowSize[0], windowSize[1]);

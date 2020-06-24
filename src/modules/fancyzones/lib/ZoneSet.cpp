@@ -722,7 +722,7 @@ void ZoneSet::SaveWindowSize(HWND window) noexcept
         
         std::array<int, 2> windowSizeData = { width, height };
         HANDLE rawData;
-        memcpy(&rawData, &windowSizeData, sizeof rawData);
+        memcpy(&rawData, windowSizeData.data(), sizeof rawData);
         SetPropW(window, RESTORE_SIZE_STAMP, rawData);
     }
 }
