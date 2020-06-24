@@ -57,7 +57,7 @@ namespace KeyboardManagerConstants
     inline const long RemapTableArrowColIndex = 1;
     inline const long RemapTableNewColIndex = 2;
     inline const long RemapTableRemoveColIndex = 3;
-    inline const DWORD RemapTableDropDownWidth = 110;
+    inline const DWORD64 RemapTableDropDownWidth = 110;
 
     // Shortcut table constants
     inline const long ShortcutTableColCount = 4;
@@ -66,17 +66,17 @@ namespace KeyboardManagerConstants
     inline const long ShortcutTableArrowColIndex = 1;
     inline const long ShortcutTableNewColIndex = 2;
     inline const long ShortcutTableRemoveColIndex = 3;
-    inline const DWORD ShortcutTableDropDownWidth = 110;
-    inline const DWORD ShortcutTableDropDownSpacing = 10;
+    inline const DWORD64 ShortcutTableDropDownWidth = 110;
+    inline const DWORD64 ShortcutTableDropDownSpacing = 10;
 
     // Drop down height used for both Edit Keyboard and Edit Shortcuts
-    inline const DWORD TableDropDownHeight = 200;
-    inline const DWORD TableArrowColWidth = 20;
-    inline const DWORD TableRemoveColWidth = 20;
-    inline const DWORD TableWarningColWidth = 20;
+    inline const DWORD64 TableDropDownHeight = 200;
+    inline const DWORD64 TableArrowColWidth = 20;
+    inline const DWORD64 TableRemoveColWidth = 20;
+    inline const DWORD64 TableWarningColWidth = 20;
 
     // Shared style constants for both Remap Table and Shortcut Table
-    inline const double HeaderButtonWidth = 100;
+    inline const DWORD64 HeaderButtonWidth = 100;
 
     // Flags used for distinguishing key events sent by Keyboard Manager
     inline const ULONG_PTR KEYBOARDMANAGER_SINGLEKEY_FLAG = 0x11; // Single key remaps

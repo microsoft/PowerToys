@@ -16,7 +16,7 @@ enum class KeyDelayState
 // Virtual key + timestamp (in millis since Windows startup)
 struct KeyTimedEvent
 {
-    DWORD time;
+    DWORD64 time;
     WPARAM message;
 };
 
@@ -61,7 +61,7 @@ private:
 
     // Check if <duration> milliseconds passed since <first> millisecond.
     // Also checks for overflow conditions.
-    bool CheckIfMillisHaveElapsed(DWORD first, DWORD last, DWORD duration);
+    bool CheckIfMillisHaveElapsed(DWORD64 first, DWORD64 last, DWORD64 duration);
 
     std::thread _delayThread;
     bool _quit;
@@ -81,11 +81,11 @@ private:
     std::condition_variable _cv;
 
     // Keeps track of the time at which the initial KEY_DOWN event happened.
-    DWORD _initialHoldKeyDown;
+    DWORD64 _initialHoldKeyDown;
 
     // Virtual Key provided in the constructor. Passed to callback functions.
     DWORD _key;
 
-    static const DWORD LONG_PRESS_DELAY_MILLIS = 900;
-    static const DWORD ON_HOLD_WAIT_TIMEOUT_MILLIS = 50;
+    static const DWORD64 LONG_PRESS_DELAY_MILLIS = 900;
+    static const DWORD64 ON_HOLD_WAIT_TIMEOUT_MILLIS = 50;
 };
