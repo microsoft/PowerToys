@@ -18,7 +18,7 @@ namespace Wox.Infrastructure.Storage
         public const string FileSuffix = ".json";
         public string FilePath { get; set; }
         public string DirectoryPath { get; set; }
-
+        private StorageHelper _storageHelper = new StorageHelper(1);
 
         internal JsonStorage()
         {
@@ -31,8 +31,16 @@ namespace Wox.Infrastructure.Storage
             };
         }
 
-        public T Load()
+        public T Load(bool validateItem = true)
         {
+            if(_storageHelper.clearCache)
+            {
+                if(File.Exists(FilePath))
+                {
+                    File.Delete(FilePath);
+                }
+            }
+
             if (File.Exists(FilePath))
             {
                 var serialized = File.ReadAllText(FilePath);

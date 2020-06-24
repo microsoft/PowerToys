@@ -14,6 +14,7 @@ namespace Wox.Infrastructure.Storage
     /// </summary>
     public class BinaryStorage<T>
     {
+        private StorageHelper _storageHelper = new StorageHelper(0);
         public BinaryStorage(string filename)
         {
             const string directoryName = "Cache";
@@ -28,6 +29,14 @@ namespace Wox.Infrastructure.Storage
 
         public T TryLoad(T defaultData)
         {
+            if(_storageHelper.clearCache)
+            {
+                if(File.Exists(FilePath))
+                {
+                    File.Delete(FilePath);
+                }
+            }
+
             if (File.Exists(FilePath))
             {
                 if (new FileInfo(FilePath).Length == 0)

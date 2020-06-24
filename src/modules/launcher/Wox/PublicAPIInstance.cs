@@ -9,6 +9,7 @@ using Wox.Core.Resource;
 using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
+using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using Wox.ViewModel;
 
@@ -19,6 +20,7 @@ namespace Wox
         private readonly SettingWindowViewModel _settingsVM;
         private readonly MainViewModel _mainVM;
         private readonly Alphabet _alphabet;
+        private readonly StorageHelper _storageHelper;
 
         #region Constructor
 
@@ -74,6 +76,7 @@ namespace Wox
             PluginManager.Save();
             ImageLoader.Save();
             _alphabet.Save();
+            _storageHelper.Close();
         }
 
         public void ReloadAllPluginData()
