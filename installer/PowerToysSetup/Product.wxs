@@ -401,8 +401,8 @@
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Text.Json.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.Threading.Tasks.Extensions.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\System.ValueTuple.dll" />
-	    <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ManagedCommon.dll" />	  
-	    <File Id="FancyZones_Telemetry.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Telemetry.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\ManagedCommon.dll" />	  
+        <File Id="FancyZones_Telemetry.dll" Source="$(var.BinX64Dir)modules\$(var.FancyZonesProjectName)\Telemetry.dll" />
       </Component>
     </DirectoryRef>
 
