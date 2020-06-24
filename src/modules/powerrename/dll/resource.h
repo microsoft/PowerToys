@@ -1,3 +1,17 @@
+//{{NO_DEPENDENCIES}}
+// Microsoft Visual C++ generated include file.
+// Used by PowerRenameExt.rc
+
+//////////////////////////////
+// Non-localizable
+
+#define FILE_DESCRIPTION "PowerToys PowerRenameExt"
+#define INTERNAL_NAME "PowerRenameExt"
+#define ORIGINAL_FILENAME "PowerRenameExt.dll"
+
+// Non-localizable
+//////////////////////////////
+
 #define IDS_POWERRENAME                 801
 #define IDI_RENAME                      132
 #define IDS_POWERRENAME_APP_NAME        2101
@@ -10,7 +24,6 @@
 #define IDS_EXTENDED_MENU_INFO          2108
 
 // Next default values for new objects
-
 //
 
 #ifdef APSTUDIO_INVOKED
