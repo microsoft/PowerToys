@@ -1,3 +1,4 @@
+using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 using System;
@@ -29,6 +30,7 @@ namespace PowerLauncher
         private static int _powerToysPid;
         private Settings _settings;
         private MainViewModel _mainVM;
+        private MainWindow _mainWindow;
         private SettingWindowViewModel _settingsVM;
         private readonly Alphabet _alphabet = new Alphabet();
         private StringMatcher _stringMatcher;
@@ -39,9 +41,9 @@ namespace PowerLauncher
         {
             if (SingleInstance<App>.InitializeAsFirstInstance(Unique))
             {
-                if (args.Length > 0)
+                if (args?.Length > 0)
                 {
-                    int.TryParse(args[0], out _powerToysPid);
+                    _ = int.TryParse(args[0], out _powerToysPid);
                 }
 
                 using (var application = new App())
@@ -54,7 +56,7 @@ namespace PowerLauncher
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            WaitForPowerToysRunner();
+            RunnerHelper.WaitForPowerToysRunner(_powerToysPid);
 
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
@@ -78,11 +80,11 @@ namespace PowerLauncher
                 ThemeManager themeManager = new ThemeManager(this);               
                 PluginManager.LoadPlugins(_settings.PluginSettings);
                 _mainVM = new MainViewModel(_settings);
-                var window = new MainWindow(_settings, _mainVM);
+                _mainWindow = new MainWindow(_settings, _mainVM);
                 API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet);
                 PluginManager.InitializePlugins(API);
 
-                Current.MainWindow = window;
+                Current.MainWindow = _mainWindow;
                 Current.MainWindow.Title = Constant.ExeFileName;
 
                 // happlebao todo temp fix for instance code logic
@@ -120,28 +122,6 @@ namespace PowerLauncher
             Current.SessionEnding += (s, e) => Dispose();
         }
 
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, int processId);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
-
-        private void WaitForPowerToysRunner()
-        {
-            Task.Run(() =>
-            {
-                const uint INFINITE = 0xFFFFFFFF;
-                const uint WAIT_OBJECT_0 = 0x00000000;
-                const uint SYNCHRONIZE = 0x00100000;
-
-                IntPtr powerToysProcHandle = OpenProcess(SYNCHRONIZE, false, _powerToysPid);
-                if (WaitForSingleObject(powerToysProcHandle, INFINITE) == WAIT_OBJECT_0)
-                {
-                    Environment.Exit(0);
-                }
-            });
-        }
-
         /// <summary>
         /// let exception throw as normal is better for Debug
         /// </summary>
@@ -161,20 +141,40 @@ namespace PowerLauncher
             AppDomain.CurrentDomain.UnhandledException += ErrorReporting.UnhandledExceptionHandle;
         }
 
-        public void Dispose()
+        public void OnSecondAppStarted()
         {
-            // if sessionending is called, exit proverbially be called when log off / shutdown
-            // but if sessionending is not called, exit won't be called when log off / shutdown
+            Current.MainWindow.Visibility = Visibility.Visible;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
             if (!_disposed)
             {
-                API.SaveAppAllSettings();
+                if (disposing)
+                {
+                    _mainWindow.Dispose();
+                    API.SaveAppAllSettings();
+                    _disposed = true;
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
                 _disposed = true;
             }
         }
 
-        public void OnSecondAppStarted()
+        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        // ~App()
+        // {
+        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
         {
-            Current.MainWindow.Visibility = Visibility.Visible;
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

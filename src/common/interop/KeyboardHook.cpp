@@ -25,6 +25,12 @@ KeyboardHook::KeyboardHook(
 KeyboardHook::~KeyboardHook()
 {
     quit = true;
+
+    // Notify the DispatchProc thread so that it isn't stuck at the Wait step
+    Monitor::Enter(queue);
+    Monitor::Pulse(queue);
+    Monitor::Exit(queue);
+
     kbEventDispatch->Join();
 
     // Unregister low level hook procedure
