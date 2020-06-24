@@ -720,7 +720,7 @@ void ZoneSet::SaveWindowSize(HWND window) noexcept
 
         DPIAware::InverseConvert(MonitorFromWindow(window, MONITOR_DEFAULTTONULL), width, height);
         
-        std::pair<int, int> windowSizeData = { width, height };
+        std::array<int, 2> windowSizeData = { width, height };
         HANDLE rawData;
         memcpy(&rawData, &windowSizeData, sizeof rawData);
         SetPropW(window, RESTORE_SIZE_STAMP, rawData);

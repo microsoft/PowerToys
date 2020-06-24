@@ -386,17 +386,17 @@ void WindowMoveHandlerPrivate::RestoreSize(HWND window) noexcept
     auto windowSizeData = GetPropW(window, RESTORE_SIZE_STAMP);
     if (windowSizeData)
     {
-        std::pair<int, int> windowSize;
+        std::array<int, 2> windowSize;
         memcpy(&windowSize, &windowSizeData, sizeof windowSize);
 
-        // (width, height)
-        DPIAware::Convert(MonitorFromWindow(window, MONITOR_DEFAULTTONULL), windowSize.first, windowSize.second);
+        // {width, height}
+        DPIAware::Convert(MonitorFromWindow(window, MONITOR_DEFAULTTONULL), windowSize[0], windowSize[1]);
 
         RECT rect;
         if (GetWindowRect(window, &rect))
         {
-            rect.right = rect.left + windowSize.first;
-            rect.bottom = rect.top + windowSize.second;
+            rect.right = rect.left + windowSize[0];
+            rect.bottom = rect.top + windowSize[1];
             SizeWindowToRect(window, rect);
         }
 
