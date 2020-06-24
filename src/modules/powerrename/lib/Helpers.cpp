@@ -15,18 +15,18 @@ HRESULT GetTrimmedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source)
         hr = SHStrDup(source, &newName);
         if (SUCCEEDED(hr))
         {
-            size_t firstNonvalidIndex = 0, lastNonvalidIndex = wcslen(newName) - 1;
-            while (firstNonvalidIndex <= lastNonvalidIndex && iswspace(newName[firstNonvalidIndex]))
+            size_t firstValidIndex = 0, lastValidIndex = wcslen(newName) - 1;
+            while (firstValidIndex <= lastValidIndex && iswspace(newName[firstValidIndex]))
             {
-                firstNonvalidIndex++;
+                firstValidIndex++;
             }
-            while (firstNonvalidIndex <= lastNonvalidIndex && (iswspace(newName[lastNonvalidIndex]) || newName[lastNonvalidIndex] == L'.'))
+            while (firstValidIndex <= lastValidIndex && (iswspace(newName[lastValidIndex]) || newName[lastValidIndex] == L'.'))
             {
-                lastNonvalidIndex--;
+                lastValidIndex--;
             }
-            newName[lastNonvalidIndex + 1] = '\0';
+            newName[lastValidIndex + 1] = '\0';
 
-            hr = StringCchCopy(result, cchMax, newName + firstNonvalidIndex);
+            hr = StringCchCopy(result, cchMax, newName + firstValidIndex);
         }
         CoTaskMemFree(newName);
     }
