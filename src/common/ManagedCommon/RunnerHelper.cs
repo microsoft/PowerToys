@@ -27,7 +27,7 @@ namespace ManagedCommon
                 if (NativeMethods.WaitForSingleObject(powerToysProcHandle, INFINITE) == WAIT_OBJECT_0)
                 {
                     PowerToysTelemetry.Log.WriteEvent(new DebugEvent() { Message = $"[{assembly}][{callingMethod}]WaitForPowerToysRunner Event Notified powerToysPID={powerToysPID}" });
-                    Environment.Exit(0);
+                    Application.Current.Shutdown();
                 }
             });
         }
