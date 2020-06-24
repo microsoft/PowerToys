@@ -118,6 +118,12 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
 
                 size_t stemLength = stem.length();
                 bool isFirstWord = true;
+
+                while (stemLength > 0 && (iswspace(stem[stemLength - 1]) || iswpunct(stem[stemLength - 1])))
+                {
+                    stemLength--;
+                }
+
                 for (size_t i = 0; i < stemLength; i++)
                 {
                     if (!i || iswspace(stem[i - 1]) || iswpunct(stem[i - 1]))
