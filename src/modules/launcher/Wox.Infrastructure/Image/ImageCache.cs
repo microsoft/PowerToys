@@ -31,14 +31,17 @@ namespace Wox.Infrastructure.Image
                 // This is done so that we don't constantly perform this resizing operation and also maintain the image cache size at the same time
                 if (_data.Count > permissibleFactor * MaxCached)
                 {
+                    // This function resizes the Usage dictionary, taking the top 'maxCached' number of items and filtering the image icons that are not accessed frequently.
                     Cleanup();
+
+                    // To delete the images from the data dictionary based on the resizing of the Usage Dictionary.
                     foreach (var key in _data.Keys)
                     {
                         int dictValue;
                         if (!Usage.TryGetValue(key, out dictValue))
                         {
-                            ImageSource test;
-                            _data.TryRemove(key, out test);
+                            ImageSource imgSource;
+                            _data.TryRemove(key, out imgSource);
                         }
                     }
                 }
