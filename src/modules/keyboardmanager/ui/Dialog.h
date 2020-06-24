@@ -37,5 +37,5 @@ namespace Dialog
         return isSuccess;
     }
 
-    IAsyncOperation<bool> PartialRemappingConfirmationDialog(winrt::Windows::UI::Xaml::XamlRoot root);
+    IAsyncOperation<bool> PartialRemappingConfirmationDialog(winrt::Windows::UI::Xaml::XamlRoot root, std::wstring dialogTitle);
 };
