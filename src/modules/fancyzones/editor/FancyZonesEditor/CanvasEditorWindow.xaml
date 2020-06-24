@@ -12,7 +12,7 @@
         SizeToContent="Height"            
         Background="White"
         ResizeMode="NoResize"
-        WindowStartupLocation="Manual"
+        WindowStartupLocation="CenterScreen"
         Closed="OnClosed">
 
 
