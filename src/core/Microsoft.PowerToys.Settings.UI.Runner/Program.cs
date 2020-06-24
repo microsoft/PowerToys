@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using interop;
+using ManagedCommon;
 using Windows.UI.Popups;
 
 namespace Microsoft.PowerToys.Settings.UI.Runner
@@ -57,7 +58,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                         IsUserAnAdmin = false;
                     }
 
-                    WaitForPowerToysRunner();
+                    RunnerHelper.WaitForPowerToysRunner(PowerToysPID);
 
                     ipcmanager = new TwoWayPipeMessageIPCManaged(args[1], args[0], null);
                     ipcmanager.Start();
@@ -77,28 +78,6 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
         public static TwoWayPipeMessageIPCManaged GetTwoWayIPCManager()
         {
             return ipcmanager;
-        }
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, int processId);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
-
-        internal static void WaitForPowerToysRunner()
-        {
-            Task.Run(() =>
-            {
-                const uint INFINITE = 0xFFFFFFFF;
-                const uint WAIT_OBJECT_0 = 0x00000000;
-                const uint SYNCHRONIZE = 0x00100000;
-
-                IntPtr powerToysProcHandle = OpenProcess(SYNCHRONIZE, false, PowerToysPID);
-                if (WaitForSingleObject(powerToysProcHandle, INFINITE) == WAIT_OBJECT_0)
-                {
-                    Environment.Exit(0);
-                }
-            });
         }
     }
 }

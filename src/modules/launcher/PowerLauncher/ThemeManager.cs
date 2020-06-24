@@ -62,7 +62,7 @@ namespace Wox.Core.Resource
         }
         
 
-        public Theme GetHighContrastBaseType()
+        public static Theme GetHighContrastBaseType()
         {
             string RegistryKey = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes";
             string theme = (string) Registry.GetValue(RegistryKey, "CurrentTheme", string.Empty);

@@ -173,7 +173,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Resource.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="PowerRenameTest.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="targetver.h" />

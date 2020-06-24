@@ -34,6 +34,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public static IPCMessageCallback SndRestartAsAdminMsgCallback { get; set; }
 
         /// <summary>
+        /// Gets or sets iPC callback function for checking updates.
+        /// </summary>
+        public static IPCMessageCallback CheckForUpdatesMsgCallback { get; set; }
+
+        /// <summary>
         /// Gets view model.
         /// </summary>
         public ShellViewModel ViewModel { get; } = new ShellViewModel();
@@ -72,6 +77,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void SetRestartAdminSndMessageCallback(IPCMessageCallback implementation)
         {
             SndRestartAsAdminMsgCallback = implementation;
+        }
+
+        /// <summary>
+        /// Set check for updates IPC callback function.
+        /// </summary>
+        /// <param name="implementation">delegate function implementation.</param>
+        public void SetCheckForUpdatesMessageCallback(IPCMessageCallback implementation)
+        {
+            CheckForUpdatesMsgCallback = implementation;
         }
 
         public void SetElevationStatus(bool isElevated)

@@ -1,3 +1,17 @@
+//{{NO_DEPENDENCIES}}
+// Microsoft Visual C++ generated include file.
+// Used by ShortcutGuide.rc
+
+//////////////////////////////
+// Non-localizable
+
+#define FILE_DESCRIPTION "PowerToys ShortcutGuide"
+#define INTERNAL_NAME "ShortcutGuide"
+#define ORIGINAL_FILENAME "ShortcutGuide.dll"
+
+// Non-localizable
+//////////////////////////////
+
 #define IDS_SETTING_DESCRIPTION_PRESS_TIME         101
 #define IDS_SETTING_DESCRIPTION_OVERLAY_OPACITY    102
 #define IDS_SETTING_DESCRIPTION_THEME              103
