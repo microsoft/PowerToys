@@ -58,7 +58,9 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                         IsUserAnAdmin = false;
                     }
 
-                    RunnerHelper.WaitForPowerToysRunner(PowerToysPID);
+                    RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () => {
+                        Environment.Exit(0);
+                    });
 
                     ipcmanager = new TwoWayPipeMessageIPCManaged(args[1], args[0], null);
                     ipcmanager.Start();
