@@ -3,15 +3,21 @@
 
 bool is_start_visible()
 {
-    static winrt::com_ptr<IAppVisibility> app_visibility;
+    static const auto app_visibility = []() {
+        winrt::com_ptr<IAppVisibility> result;
+        CoCreateInstance(CLSID_AppVisibility,
+                         nullptr,
+                         CLSCTX_INPROC_SERVER,
+                         __uuidof(result),
+                         result.put_void());
+        return result;
+    }();
+
     if (!app_visibility)
     {
-        winrt::check_hresult(CoCreateInstance(CLSID_AppVisibility,
-                                              nullptr,
-                                              CLSCTX_INPROC_SERVER,
-                                              __uuidof(app_visibility),
-                                              app_visibility.put_void()));
+        return false;
     }
+
     BOOL visible;
     auto result = app_visibility->IsLauncherVisible(&visible);
     return SUCCEEDED(result) && visible;
