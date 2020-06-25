@@ -26,7 +26,7 @@ namespace PowerLauncher
     {
         public static PublicAPIInstance API { get; private set; }
         private const string Unique = "PowerLauncher_Unique_Application_Mutex";
-        private static bool _disposed;
+        private static bool _disposed = false;
         private static int _powerToysPid;
         private Settings _settings;
         private MainViewModel _mainVM;
@@ -56,13 +56,16 @@ namespace PowerLauncher
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            RunnerHelper.WaitForPowerToysRunner(_powerToysPid);
+            RunnerHelper.WaitForPowerToysRunner(_powerToysPid, () => {
+                Dispose();
+                Environment.Exit(0);
+            });
 
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
             Stopwatch.Normal("|App.OnStartup|Startup cost", () =>
             {
-                Log.Info("|App.OnStartup|Begin Wox startup ----------------------------------------------------");
+                Log.Info("|App.OnStartup|Begin PowerToys Run startup ----------------------------------------------------");
                 Log.Info($"|App.OnStartup|Runtime info:{ErrorReporting.RuntimeInfo()}");
                 RegisterAppDomainExceptions();
                 RegisterDispatcherUnhandledException();
@@ -102,7 +105,7 @@ namespace PowerLauncher
                 
                 _mainVM.MainWindowVisibility = Visibility.Visible;
                 _mainVM.ColdStartFix();
-                Log.Info("|App.OnStartup|End Wox startup ----------------------------------------------------  ");
+                Log.Info("|App.OnStartup|End PowerToys Run startup ----------------------------------------------------  ");
 
                 bootTime.Stop();
 
@@ -150,16 +153,22 @@ namespace PowerLauncher
         {
             if (!_disposed)
             {
-                if (disposing)
+                Stopwatch.Normal("|App.OnExit|Exit cost", () =>
                 {
-                    _mainWindow.Dispose();
-                    API.SaveAppAllSettings();
-                    _disposed = true;
-                }
+                    Log.Info("|App.OnExit| Start PowerToys Run Exit----------------------------------------------------  ");
+                    if (disposing)
+                    {
+                        _mainWindow.Dispose();
+                        API.SaveAppAllSettings();
+                        _mainVM.Dispose();
+                        _disposed = true;
+                    }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
-                _disposed = true;
+                    // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                    // TODO: set large fields to null
+                    _disposed = true;
+                    Log.Info("|App.OnExit| End PowerToys Run Exit ----------------------------------------------------  ");
+                });
             }
         }
 

@@ -52,6 +52,16 @@ namespace Wox.Infrastructure.Image
         {
             return _data.Values.Distinct().Count();
         }
+
+        public Dictionary<string, int> GetUsageAsDictionary()
+        {
+            return new Dictionary<string, int>(Usage);
+        }
+
+        public void SetUsageAsDictionary(Dictionary<string, int> usage)
+        {
+            Usage = new ConcurrentDictionary<string, int>(usage);
+        }
     }
 
 }
