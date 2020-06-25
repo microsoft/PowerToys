@@ -32,7 +32,7 @@ namespace Wox.Infrastructure.Storage
 
         public T TryLoad(T defaultData)
         {
-            // Depending on the version number of the previously installed PT Run, delete the cache if it found to be incompatible
+            // Depending on the version number of the previously installed PT Run, delete the cache if it is found to be incompatible
             if (_storageHelper.clearCache)
             {
                 if(File.Exists(FilePath))
