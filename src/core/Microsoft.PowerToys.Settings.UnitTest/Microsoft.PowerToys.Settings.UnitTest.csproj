@@ -1,6 +1,43 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="..\..\..\installer\Version.props" />
+  <!-- We don't have GenerateAssemblyInfo task until we use .net core, so we generate it with WriteLinesToFile -->
+  <PropertyGroup>
+    <AssemblyTitle>Microsoft.PowerToys.Settings.UnitTest</AssemblyTitle>
+    <AssemblyDescription>PowerToys Settings UnitTest</AssemblyDescription>
+    <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
+    <AssemblyCopyright>Copyright (C) 2020 Microsoft Corp.</AssemblyCopyright>
+    <AssemblyProduct>PowerToys</AssemblyProduct>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyVersionFiles Include="Generated Files\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Target Name="GenerateAssemblyInfo" BeforeTargets="PrepareForBuild">
+    <ItemGroup>
+      <HeaderLines Include="// Copyright (c) Microsoft Corporation" />
+      <HeaderLines Include="// The Microsoft Corporation licenses this file to you under the MIT license." />
+      <HeaderLines Include="// See the LICENSE file in the project root for more information." />
+      <HeaderLines Include="#pragma warning disable SA1516" />
+      <HeaderLines Include="using System.Reflection%3b" />
+      <HeaderLines Include="using System.Resources%3b" />
+      <HeaderLines Include="using System.Runtime.InteropServices%3b" />
+      <HeaderLines Include="using System.Windows%3b" />
+      <HeaderLines Include="[assembly: AssemblyTitle(&quot;$(AssemblyTitle)&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyDescription(&quot;$(AssemblyDescription)&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyConfiguration(&quot;&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyCompany(&quot;$(AssemblyCompany)&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyCopyright(&quot;$(AssemblyCopyright)&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyProduct(&quot;$(AssemblyProduct)&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyTrademark(&quot;&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyCulture(&quot;&quot;)]" />
+      <HeaderLines Include="[assembly: ComVisible(false)]" />
+      <HeaderLines Include="[assembly: NeutralResourcesLanguage(&quot;en-US&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyVersion(&quot;$(Version).0&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyFileVersion(&quot;$(Version).0&quot;)]" />
+    </ItemGroup>
+    <WriteLinesToFile File="Generated Files\AssemblyInfo.cs" Lines="@(HeaderLines)" Overwrite="true" Encoding="Unicode" WriteOnlyWhenDifferent="true" />
+  </Target>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -119,6 +156,9 @@
     <SDKReference Include="TestPlatform.Universal, Version=$(UnitTestPlatformVersion)" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Generated Files\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="ViewModelTests\FancyZones.cs" />
     <Compile Include="ViewModelTests\General.cs" />
     <Compile Include="ModelsTests\HelperTest.cs" />
@@ -126,7 +166,6 @@
     <Compile Include="ModelsTests\BasePTModuleSettingsTest.cs" />
     <Compile Include="ModelsTests\BasePTSettingsTest.cs" />
     <Compile Include="ModelsTests\SettingsUtilsTests.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnitTestApp.xaml.cs">
       <DependentUpon>UnitTestApp.xaml</DependentUpon>
     </Compile>
@@ -180,7 +219,6 @@
       <Name>Microsoft.PowerToys.Settings.UI</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

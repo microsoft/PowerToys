@@ -54,6 +54,15 @@
     <ClInclude Include="FancyZonesWinHookEventIDs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SecondaryMouseButtonsHook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MonitorWorkAreaHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShiftKeyHook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -90,6 +99,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FancyZonesWinHookEventIDs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SecondaryMouseButtonsHook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MonitorWorkAreaHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShiftKeyHook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

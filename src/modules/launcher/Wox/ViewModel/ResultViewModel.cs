@@ -4,14 +4,13 @@ using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Controls.Ribbon;
 using System.Windows.Input;
+using System.Windows.Media;
 using Wox.Core.Plugin;
 using Wox.Infrastructure;
-using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
-using Windows.UI.Xaml.Media;
-
+using Wox.Helper;
 
 namespace Wox.ViewModel
 {
@@ -65,7 +64,6 @@ namespace Wox.ViewModel
         }
         public void ActivateContextButtons(ActivationType activationType)
         {
-            
             if (ContextMenuItems == null)
             {
                 LoadContextMenu();
@@ -129,7 +127,7 @@ namespace Wox.ViewModel
                     {
                         bool hideWindow = r.Action != null && r.Action(new ActionContext
                         {
-                            SpecialKeyState = GlobalHotkey.Instance.CheckModifiers()
+                            SpecialKeyState = KeyboardHelper.CheckModifiers()
                         });
 
                         if (hideWindow)

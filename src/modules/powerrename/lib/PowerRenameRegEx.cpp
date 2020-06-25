@@ -210,11 +210,7 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result)
                 }
                 else
                 {
-                    std::wsmatch m;
-                    if (std::regex_search(sourceToUse, m, pattern))
-                    {
-                        res = sourceToUse.replace(m.prefix().length(), m.length(), replaceTerm);
-                    }
+                    res = regex_replace(wstring(source), pattern, replaceTerm, regex_constants::format_first_only);
                 }
             }
             else

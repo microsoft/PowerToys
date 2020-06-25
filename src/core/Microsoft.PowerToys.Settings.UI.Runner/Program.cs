@@ -3,8 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows;
 using interop;
+using ManagedCommon;
 using Windows.UI.Popups;
 
 namespace Microsoft.PowerToys.Settings.UI.Runner
@@ -21,6 +25,8 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 
         public static bool IsUserAnAdmin { get; set; }
 
+        public static int PowerToysPID { get; set; }
+
         [STAThread]
         public static void Main(string[] args)
         {
@@ -31,6 +37,9 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
 
                 if (args.Length >= ArgumentsQty)
                 {
+                    int.TryParse(args[2], out int powerToysPID);
+                    PowerToysPID = powerToysPID;
+
                     if (args[4] == "true")
                     {
                         IsElevated = true;
@@ -48,6 +57,8 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                     {
                         IsUserAnAdmin = false;
                     }
+
+                    RunnerHelper.WaitForPowerToysRunner(PowerToysPID);
 
                     ipcmanager = new TwoWayPipeMessageIPCManaged(args[1], args[0], null);
                     ipcmanager.Start();

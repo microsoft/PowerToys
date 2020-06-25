@@ -2,22 +2,27 @@
 
 interface IFancyZonesSettings;
 interface IZoneWindow;
+class SecondaryMouseButtonsHook;
+class ShiftKeyHook;
 
 class WindowMoveHandler
 {
 public:
-    WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& settings);
+    WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& settings, SecondaryMouseButtonsHook* mouseHook, ShiftKeyHook* shiftHook);
     ~WindowMoveHandler();
 
     bool InMoveSize() const noexcept;
     bool IsDragEnabled() const noexcept;
 
-    void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
-    void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
-    void MoveSizeEnd(HWND window, POINT const& ptScreen, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
+    void OnMouseDown() noexcept;
+    void OnShiftChangeState(bool state) noexcept;  //True for shift down event false for shift up
 
-    void MoveWindowIntoZoneByIndexSet(HWND window, HMONITOR monitor, const std::vector<int>& indexSet, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
-    bool MoveWindowIntoZoneByDirection(HMONITOR monitor, HWND window, DWORD vkCode, bool cycle, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap);
+    void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
+    void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
+    void MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
+
+    void MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& indexSet, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept;
+    bool MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow);
 
 private:
     class WindowMoveHandlerPrivate* pimpl;

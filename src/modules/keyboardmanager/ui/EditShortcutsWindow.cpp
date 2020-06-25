@@ -37,7 +37,7 @@ static IAsyncAction OnClickAccept(
         });
     if (isSuccess != KeyboardManagerHelper::ErrorType::NoError)
     {
-        if (!co_await Dialog::PartialRemappingConfirmationDialog(root))
+        if (!co_await Dialog::PartialRemappingConfirmationDialog(root, L"Some of the shortcuts could not be remapped. Do you want to continue anyway?"))
         {
             co_return;
         }
@@ -86,7 +86,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Window Creation
     HWND _hWndEditShortcutsWindow = CreateWindow(
         szWindowClass,
-        L"Remap Shortcuts",
+        L"Remap shortcuts",
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX,
         (desktopRect.right / 2) - (windowWidth / 2),
         (desktopRect.bottom / 2) - (windowHeight / 2),
@@ -128,7 +128,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
     // Header text
     TextBlock headerText;
-    headerText.Text(L"Remap Shortcuts");
+    headerText.Text(L"Remap shortcuts");
     headerText.FontSize(30);
     headerText.Margin({ 0, 0, 0, 0 });
     header.SetAlignLeftWithPanel(headerText, true);

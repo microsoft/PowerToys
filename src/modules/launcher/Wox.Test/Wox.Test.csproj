@@ -40,6 +40,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\Plugins\Microsoft.Plugin.Indexer\Microsoft.Plugin.Indexer.csproj" />
+    <ProjectReference Include="..\Plugins\Microsoft.Plugin.Program\Microsoft.Plugin.Program.csproj" />
     <ProjectReference Include="..\Wox.Core\Wox.Core.csproj" />
     <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
     <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj" />
@@ -53,7 +54,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.0" />
-    <PackageReference Include="tlbimp-Microsoft.Search.Interop" Version="1.0.0" />
   </ItemGroup>
   
 </Project>

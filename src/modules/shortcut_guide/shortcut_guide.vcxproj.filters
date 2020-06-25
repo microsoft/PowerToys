@@ -36,7 +36,9 @@
     <ClInclude Include="trace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
@@ -45,11 +47,16 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{aa4b6713-589d-42ef-804d-3a045833f83f}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="shortcut_guide.rc" />
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{d7932c11-20ad-4625-adbc-0780ea5e308d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="shortcut_guide.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

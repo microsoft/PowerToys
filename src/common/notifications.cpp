@@ -36,6 +36,10 @@ namespace
 namespace localized_strings 
 {
     constexpr std::wstring_view SNOOZE_BUTTON = L"Snooze";
+
+    constexpr std::wstring_view PT_UPDATE = L"PowerToys update";
+    constexpr std::wstring_view DOWNLOAD_IN_PROGRESS = L"Downloading...";
+    constexpr std::wstring_view DOWNLOAD_COMPLETE = L"Download complete";
 }
 
 static DWORD loop_thread_id()
@@ -204,7 +208,19 @@ void notifications::show_toast_with_activations(std::wstring message, std::wstri
     toast_xml += title;
     toast_xml += L"</text><text>";
     toast_xml += message;
-    toast_xml += L"</text></binding></visual><actions>";
+    toast_xml += L"</text>";
+    if (params.progress)
+    {
+        toast_xml += LR"(<progress title=")";
+        toast_xml += localized_strings::PT_UPDATE;
+        if (params.subtitle)
+        {
+            toast_xml += L" ";
+            toast_xml += *params.subtitle;
+        }
+        toast_xml += LR"(" value="{progressValue}" valueStringOverride="{progressValueString}" status="{progressStatus}"/>)";
+    }
+    toast_xml += L"</binding></visual><actions>";
     for (size_t i = 0; i < size(actions); ++i)
     {
         std::visit(overloaded{
@@ -294,6 +310,17 @@ void notifications::show_toast_with_activations(std::wstring message, std::wstri
     toast_xml_doc.LoadXml(toast_xml);
     ToastNotification notification{ toast_xml_doc };
 
+    if (params.progress)
+    {
+        float progress = std::clamp(params.progress.value(), 0.0f, 1.0f);
+        winrt::Windows::Foundation::Collections::StringMap map;
+        map.Insert(L"progressValue", std::to_wstring(progress));
+        map.Insert(L"progressValueString", std::to_wstring(static_cast<int>(progress * 100)) + std::wstring(L"%"));
+        map.Insert(L"progressStatus", localized_strings::DOWNLOAD_IN_PROGRESS);
+        winrt::Windows::UI::Notifications::NotificationData data(map);
+        notification.Data(data);
+    }
+
     const auto notifier = winstore::running_as_packaged() ? ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
                                                             ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(WIN32_AUMID);
 
@@ -314,4 +341,31 @@ void notifications::show_toast_with_activations(std::wstring message, std::wstri
     }
 
     notifier.Show(notification);
+}
+
+void notifications::update_progress_bar_toast(std::wstring plaintext_message, toast_params params)
+{
+    if (!params.progress.has_value())
+    {
+        return;
+    }
+
+    const auto notifier = winstore::running_as_packaged() ? ToastNotificationManager::ToastNotificationManager::CreateToastNotifier() :
+                                                            ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(WIN32_AUMID);
+    
+    float progress = std::clamp(params.progress.value(), 0.0f, 1.0f);
+    winrt::Windows::Foundation::Collections::StringMap map;
+    map.Insert(L"progressValue", std::to_wstring(progress));
+    map.Insert(L"progressValueString", std::to_wstring(static_cast<int>(progress * 100)) + std::wstring(L"%"));
+    map.Insert(L"progressStatus", progress < 1 ? localized_strings::DOWNLOAD_IN_PROGRESS : localized_strings::DOWNLOAD_COMPLETE);
+
+    
+    winrt::Windows::UI::Notifications::NotificationData data(map);
+    std::wstring tag = L"";
+    if (params.tag.has_value() && params.tag->length() < 64)
+    {
+        tag = *params.tag;
+    }
+
+    winrt::Windows::UI::Notifications::NotificationUpdateResult res = notifier.Update(data, tag);
 }

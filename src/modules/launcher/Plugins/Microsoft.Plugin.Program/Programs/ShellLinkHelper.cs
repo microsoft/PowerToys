@@ -102,6 +102,9 @@ namespace Microsoft.Plugin.Program.Programs
         // To initialize the app description
         public String description = String.Empty;
 
+        // Sets to true if the program takes in arguments
+        public String Arguments = String.Empty;
+        public bool hasArguments = false;
 
         // Retrieve the target path using Shell Link
         public string retrieveTargetPath(string path)
@@ -125,6 +128,16 @@ namespace Microsoft.Plugin.Program.Programs
                 buffer = new StringBuilder(MAX_PATH);
                 ((IShellLinkW)link).GetDescription(buffer, MAX_PATH);
                 description = buffer.ToString();
+
+                StringBuilder argumentBuffer = new StringBuilder(MAX_PATH);
+                ((IShellLinkW)link).GetArguments(argumentBuffer, argumentBuffer.Capacity);
+                Arguments = argumentBuffer.ToString();
+
+                // Set variable to true if the program takes in any arguments
+                if (argumentBuffer.Length != 0)
+                {
+                    hasArguments = true;
+                }
             }
             return target;
         }

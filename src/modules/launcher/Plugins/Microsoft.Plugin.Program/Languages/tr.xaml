@@ -36,4 +36,10 @@
 
     <system:String x:Key="wox_plugin_program_invalid_path">Geçersiz Konum</system:String>
 
+    <!--Application subtitle-->
+    <system:String x:Key="powertoys_run_plugin_program_win32_application">Win32 application</system:String>
+    <system:String x:Key="powertoys_run_plugin_program_internet_shortcut_application">Internet shortcut application</system:String>
+    <system:String x:Key="powertoys_run_plugin_program_web_application">Web application</system:String>
+    <system:String x:Key="powertoys_run_plugin_program_run_command">Run command</system:String>
+
 </ResourceDictionary>

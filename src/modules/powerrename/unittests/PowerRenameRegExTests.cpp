@@ -301,7 +301,7 @@ TEST_METHOD(VerifyReplaceFirstWildCardUseRegex)
     VerifyReplaceFirstWildcard(sreTable, ARRAYSIZE(sreTable), UseRegularExpressions);
 }
 
-TEST_METHOD(VerifyReplaceFirstWildCardUseRegexMatchAllOccurances)
+TEST_METHOD(VerifyReplaceFirstWildCardUseRegexMatchAllOccurrences)
 {
     SearchReplaceExpected sreTable[] = {
         //search, replace, test, result
@@ -310,7 +310,7 @@ TEST_METHOD(VerifyReplaceFirstWildCardUseRegexMatchAllOccurances)
     VerifyReplaceFirstWildcard(sreTable, ARRAYSIZE(sreTable), UseRegularExpressions | MatchAllOccurences);
 }
 
-TEST_METHOD(VerifyReplaceFirstWildCardMatchAllOccurances)
+TEST_METHOD(VerifyReplaceFirstWildCardMatchAllOccurrences)
 {
     SearchReplaceExpected sreTable[] = {
         //search, replace, test, result

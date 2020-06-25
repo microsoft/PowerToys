@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using WindowsInput;
 using WindowsInput.Native;
-using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin.SharedCommands;
@@ -18,6 +17,7 @@ using Wox.Plugin;
 using Application = System.Windows.Application;
 using Control = System.Windows.Controls.Control;
 using Keys = System.Windows.Forms.Keys;
+using System.Windows.Input;
 using System.Reflection;
 
 namespace Microsoft.Plugin.Shell
@@ -288,7 +288,6 @@ namespace Microsoft.Plugin.Shell
         public void Init(PluginInitContext context)
         {
             this._context = context;
-            context.API.GlobalKeyboardEvent += API_GlobalKeyboardEvent;
         }
 
         bool API_GlobalKeyboardEvent(int keyevent, int vkcode, SpecialKeyState state)
@@ -346,8 +345,8 @@ namespace Microsoft.Plugin.Shell
                     Title = _context.API.GetTranslation("wox_plugin_cmd_run_as_administrator"),
                     Glyph = "\xE7EF",
                     FontFamily = "Segoe MDL2 Assets",
-                    AcceleratorKey = "Enter",
-                    AcceleratorModifiers = "Control,Shift",
+                    AcceleratorKey = Key.Enter,
+                    AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
                     Action = c =>
                     {
                         Execute(Process.Start, PrepareProcessStartInfo(selectedResult.Title, true));

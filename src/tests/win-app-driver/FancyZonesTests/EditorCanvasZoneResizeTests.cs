@@ -261,6 +261,9 @@ namespace PowerToysTests
         public static void ClassInitialize(TestContext context)
         {
             Setup(context, false);
+            if (session == null)
+                return;
+
             ResetSettings();
 
             if (!isPowerToysLaunched)
@@ -281,6 +284,9 @@ namespace PowerToysTests
         [TestInitialize]
         public void TestInitialize()
         {
+            if (session == null)
+                return;
+
             //create canvas zone
             OpenCreatorWindow("Create new custom", "Custom layout creator");
             session.FindElementByAccessibilityId("newZoneButton").Click();
@@ -289,6 +295,9 @@ namespace PowerToysTests
         [TestCleanup]
         public void TestCleanup()
         {
+            if (session == null)
+                return;
+
             new Actions(session).MoveToElement(session.FindElementByXPath("//Button[@Name=\"Cancel\"]")).Click().Perform();
         }
     }

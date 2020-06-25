@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "lowlevel_keyboard_event.h"
 #include "powertoys_events.h"
+#include <common/debug_control.h>
 
 namespace
 {
@@ -22,12 +23,9 @@ namespace
     }
 }
 
-// Prevent system-wide input lagging while paused in the debugger
-//#define DISABLE_LOWLEVEL_KBHOOK_WHEN_DEBUGGED
-
 void start_lowlevel_keyboard_hook()
 {
-#if defined(_DEBUG) && defined(DISABLE_LOWLEVEL_KBHOOK_WHEN_DEBUGGED)
+#if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
     if (IsDebuggerPresent())
     {
         return;

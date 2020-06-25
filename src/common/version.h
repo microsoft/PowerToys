@@ -11,9 +11,10 @@
     "." STRINGIZE(VERSION_MINOR) "." STRINGIZE(VERSION_REVISION) ".0"
 #define PRODUCT_VERSION FILE_VERSION
 #define PRODUCT_VERSION_STRING FILE_VERSION_STRING
-#define COMPANY_NAME "Microsoft Corporation"
 
-#define COPYRIGHT_NOTE "Copyright (C) 2019 Microsoft Corporation"
+#define COMPANY_NAME "Microsoft Corporation"
+#define COPYRIGHT_NOTE "Copyright (C) 2020 Microsoft Corporation"
+#define PRODUCT_NAME "PowerToys"
 
 enum class version_architecture
 {

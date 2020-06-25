@@ -8,11 +8,13 @@
     xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
         <viewModel:FancyZonesViewModel x:Key="eventViewModel"/>
+        <converters:StringFormatConverter x:Key="StringFormatConverter"/>
     </Page.Resources>
 
     <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
@@ -68,19 +70,30 @@
                     <TextBlock Margin="12,0,0,0" x:Uid="FancyZones_LaunchEditorButtonControl"/>
                 </StackPanel>
             </Button>
-            
+
             <TextBlock x:Uid="FancyZones_ZoneBehavior_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        />
 
+            <StackPanel Orientation="Horizontal" Margin="{StaticResource SmallTopMargin}">
+                <TextBlock x:Uid="FancyZones_HotkeyEditorControl"
+                           Text="Editor Hotkeys"/>
+                <Viewbox Height="14" Width="14" Margin="5,2,0,0" >
+                    <PathIcon
+                        x:Uid="FancyZones_HotkeyEditorControl_Icon"
+                        VerticalAlignment="Center"
+                        Data="M960 1920q-133 0-255-34t-230-96-194-150-150-195-97-229T0 960q0-133 34-255t96-230 150-194 195-150 229-97T960 0q133 0 255 34t230 96 194 150 150 195 97 229 34 256q0 133-34 255t-96 230-150 194-195 150-229 97-256 34zm0-1792q-115 0-221 30t-198 84-169 130-130 168-84 199-30 221q0 114 30 220t84 199 130 169 168 130 199 84 221 30q114 0 220-30t199-84 169-130 130-168 84-199 30-221q0-114-30-220t-84-199-130-169-168-130-199-84-221-30zm-64 640h128v640H896V768zm0-256h128v128H896V512z"/>
+                </Viewbox>
+            </StackPanel>
+
             <CustomControls:HotkeySettingsControl 
-                                          x:Uid="FancyZones_HokeyEditorControl_Header"
-                                          Width="320"
-                                          HorizontalAlignment="Left"
-                                          Margin="{StaticResource SmallTopMargin}"
-                                          HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}"
-                                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"        
-                                        />
+                x:Uid="FancyZones_HotkeyEditorControl_TextBox"
+                Width="240"
+                HorizontalAlignment="Left"
+                Margin="0,5,0,0"
+                HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}"
+                IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                />
 
             <CheckBox x:Uid="FancyZones_ShiftDragCheckBoxControl_Header"
                       IsChecked="{ Binding Mode=TwoWay, Path=ShiftDrag}"
@@ -115,6 +128,11 @@
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
+            <CheckBox x:Uid="FancyZones_AppLastZoneMoveWindows"
+                      IsChecked="{ Binding Mode=TwoWay, Path=AppLastZoneMoveWindows}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+
             <CheckBox x:Uid="FancyZones_UseCursorPosEditorStartupScreen"
                       IsChecked="{ Binding Mode=TwoWay, Path=UseCursorPosEditorStartupScreen}"
                       Margin="{StaticResource SmallTopMargin}"
@@ -134,16 +152,21 @@
             <TextBlock x:Uid="Appearance_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <!-- TO DO: Do we still need this numberbox? The colorpicker has an Alpha/Opacity option as well so we could use that -->
-            <muxc:NumberBox x:Uid="FancyZones_HighlightOpacity"
-                            Value="{ Binding Mode=TwoWay, Path=HighlightOpacity}"
-                            Minimum="0"
-                            Maximum="100"
-                            SpinButtonPlacementMode="Compact"
-                            HorizontalAlignment="Left"
-                            Margin="{StaticResource SmallTopMargin}" 
-                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" />
-             
+            <StackPanel Orientation="Horizontal" Margin="{StaticResource SmallTopMargin}" Spacing="12">
+            <Slider x:Uid="FancyZones_HighlightOpacity"
+                    Minimum="0"
+                    Maximum="100"
+                    Width="240"
+                    IsThumbToolTipEnabled="False"
+                    Value="{ Binding Mode=TwoWay, Path=HighlightOpacity}"
+                    HorizontalAlignment="Left"
+                    IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                <TextBlock Text="{ Binding Mode=OneWay, Path=HighlightOpacity, Converter={StaticResource StringFormatConverter}, ConverterParameter=' {0}%' }" 
+                           VerticalAlignment="Center"
+                           FontSize="16"
+                           Margin="0,21,0,0"/>
+            </StackPanel>
+            
             <TextBlock x:Uid="FancyZones_ZoneHighlightColor" 
                        Style="{StaticResource BodyTextBlockStyle}"
                        Margin="{StaticResource SmallTopMargin}" />
@@ -235,6 +258,9 @@
                      Margin="{StaticResource SmallTopMargin}"
                      Text="{ Binding Mode=TwoWay, Path=ExcludedApps}"
                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                     Width="380"
+                     Height="160"
+                     HorizontalAlignment="Left"
                      TextWrapping="Wrap"
                      AcceptsReturn="True"/>
 
@@ -250,9 +276,9 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <Image MaxWidth="240" Source="https://user-images.githubusercontent.com/9866362/77859136-f04ae880-7207-11ea-8a7f-4295342fe319.gif" />
+            <Image MaxWidth="240" Source="https://aka.ms/powerToysFancyZoneSettingImage" />
 
-            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/fancyzones/README.md">
+            <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_FancyZones">
                 <TextBlock x:Uid="Module_overview" />
             </HyperlinkButton>
 

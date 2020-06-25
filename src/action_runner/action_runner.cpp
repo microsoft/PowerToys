@@ -6,6 +6,7 @@
 
 #include <common/common.h>
 #include <common/updating/updating.h>
+#include <common/updating/http_client.h>
 
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Storage.h>
@@ -56,18 +57,11 @@ std::optional<fs::path> copy_self_to_temp_dir()
     return std::move(dst_path);
 }
 
-bool install_new_version_stage_1(const bool must_restart = false)
+bool install_new_version_stage_1(const std::wstring_view installer_filename, const bool must_restart = false)
 {
-    std::optional<fs::path> installer;
-    for (auto path : fs::directory_iterator{ updating::get_pending_updates_path() })
-    {
-        if (path.path().native().find(updating::installer_filename_pattern) != std::wstring::npos)
-        {
-            installer.emplace(std::move(path));
-            break;
-        }
-    }
-    if (!installer)
+    const fs::path installer{ updating::get_pending_updates_path() / installer_filename };
+
+    if (!fs::is_regular_file(installer))
     {
         return false;
     }
@@ -84,7 +78,7 @@ bool install_new_version_stage_1(const bool must_restart = false)
 
         std::wstring arguments{ UPDATE_NOW_LAUNCH_STAGE2_CMDARG };
         arguments += L" \"";
-        arguments += installer->c_str();
+        arguments += installer.c_str();
         arguments += L"\" \"";
         arguments += get_module_folderpath();
         arguments += L"\" ";
@@ -103,15 +97,35 @@ bool install_new_version_stage_1(const bool must_restart = false)
     }
 }
 
-bool install_new_version_stage_2(std::wstring_view installer_path, std::wstring_view install_path, const bool launch_powertoys)
+bool install_new_version_stage_2(std::wstring installer_path, std::wstring_view install_path, const bool launch_powertoys)
 {
-    if (MsiInstallProductW(installer_path.data(), nullptr) != ERROR_SUCCESS)
+    std::transform(begin(installer_path), end(installer_path), begin(installer_path), ::towlower);
+
+    bool success = true;
+
+    if (installer_path.ends_with(L".msi"))
     {
-        return false;
+        success = MsiInstallProductW(installer_path.data(), nullptr) == ERROR_SUCCESS;
+    }
+    else
+    {
+        // If it's not .msi, then it's our .exe installer
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC };
+        sei.lpFile = installer_path.c_str();
+        sei.nShow = SW_SHOWNORMAL;
+
+        success = ShellExecuteExW(&sei) == TRUE;
     }
 
     std::error_code _;
     fs::remove(installer_path, _);
+
+    if (!success)
+    {
+        return false;
+    }
+
     if (launch_powertoys)
     {
         std::wstring new_pt_path{ install_path };
@@ -151,7 +165,8 @@ bool install_dotnet()
     {
         try
         {
-            updating::try_download_file(dotnet_download_path, download_link).wait();
+            http::HttpClient client;
+            client.download(download_link, dotnet_download_path).wait();
             download_success = true;
             break;
         }
@@ -186,26 +201,66 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
     std::wstring_view action{ args[1] };
 
-
-    if (action == L"-start_PowerLauncher")
+    if (action == L"-run-non-elevated")
     {
-        if (is_process_elevated(false) == true)
+        int nextArg = 2;
+
+        std::wstring_view target;
+        std::wstring_view pidFile;
+        std::wstring params;
+
+        while (nextArg < nArgs)
         {
-            drop_elevated_privileges();
+            if (std::wstring_view(args[nextArg]) == L"-target" && nextArg + 1 < nArgs)
+            {
+                target = args[nextArg + 1];
+                nextArg += 2;
+            }
+            else if (std::wstring_view(args[nextArg]) == L"-pidFile" && nextArg + 1 < nArgs)
+            {
+                pidFile = args[nextArg + 1];
+                nextArg += 2;
+            }
+            else
+            {
+                params = args[nextArg];
+                nextArg++;
+            }
         }
 
-        HANDLE hMapFile = OpenFileMappingW(FILE_MAP_WRITE, FALSE, POWER_LAUNCHER_PID_SHARED_FILE);
-        PDWORD pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
-        if (pidBuffer)
+        HANDLE hMapFile = NULL;
+        PDWORD pidBuffer = NULL;
+
+        if (!pidFile.empty())
         {
-            *pidBuffer = 0;
-            run_non_elevated(L"modules\\launcher\\PowerLauncher.exe", L"", pidBuffer);
-            FlushViewOfFile(pidBuffer, sizeof(DWORD));
-            UnmapViewOfFile(pidBuffer);
+            hMapFile = OpenFileMappingW(FILE_MAP_WRITE, FALSE, pidFile.data());
+            if (hMapFile)
+            {
+                pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
+                if (pidBuffer)
+                {
+                    *pidBuffer = 0;
+                }
+            }
         }
 
-        FlushFileBuffers(hMapFile);
-        CloseHandle(hMapFile);
+        run_same_elevation(target.data(), params, pidBuffer);
+
+        // cleanup
+        if (!pidFile.empty())
+        {
+            if (pidBuffer)
+            {
+                FlushViewOfFile(pidBuffer, sizeof(DWORD));
+                UnmapViewOfFile(pidBuffer);
+            }
+
+            if (hMapFile)
+            {
+                FlushFileBuffers(hMapFile);
+                CloseHandle(hMapFile);
+            }
+        }
     }
     else if (action == L"-install_dotnet")
     {
@@ -221,11 +276,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
     else if (action == UPDATE_NOW_LAUNCH_STAGE1_CMDARG)
     {
-        return !install_new_version_stage_1();
+        std::wstring_view installerFilename{ args[2] };
+        return !install_new_version_stage_1(installerFilename);
     }
     else if (action == UPDATE_NOW_LAUNCH_STAGE1_START_PT_CMDARG)
     {
-        return !install_new_version_stage_1(true);
+        std::wstring_view installerFilename{ args[2] };
+        return !install_new_version_stage_1(installerFilename, true);
     }
     else if (action == UPDATE_NOW_LAUNCH_STAGE2_CMDARG)
     {

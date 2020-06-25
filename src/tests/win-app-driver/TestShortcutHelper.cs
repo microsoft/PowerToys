@@ -111,6 +111,9 @@ namespace PowerToysTests
         [TestInitialize]
         public void TestInitialize()
         {
+            if (session == null)
+                return;
+
             isWinKeyPressed = false;
 
             // If the start menu is open, close it.

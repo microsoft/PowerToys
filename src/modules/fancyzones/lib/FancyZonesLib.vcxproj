@@ -49,12 +49,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\FancyZones\</OutDir>
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\FancyZones\</OutDir>
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -101,9 +101,12 @@
     <ClInclude Include="FancyZones.h" />
     <ClInclude Include="FancyZonesWinHookEventIDs.h" />
     <ClInclude Include="JsonHelpers.h" />
+    <ClInclude Include="MonitorWorkAreaHandler.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SecondaryMouseButtonsHook.h" />
     <ClInclude Include="Settings.h" />
+    <ClInclude Include="ShiftKeyHook.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="VirtualDesktopUtils.h" />
@@ -116,10 +119,13 @@
     <ClCompile Include="FancyZones.cpp" />
     <ClCompile Include="FancyZonesWinHookEventIDs.cpp" />
     <ClCompile Include="JsonHelpers.cpp" />
+    <ClCompile Include="MonitorWorkAreaHandler.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="SecondaryMouseButtonsHook.cpp" />
     <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="ShiftKeyHook.cpp" />
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="VirtualDesktopUtils.cpp" />

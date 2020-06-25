@@ -9,25 +9,11 @@
     d:DesignHeight="300"
     d:DesignWidth="720">
     <UserControl.Resources>
-        <Color x:Key="SystemBaseMediumLowColor">#66000000</Color>
-        <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#66000000" />
-        <SolidColorBrush x:Key="TextBox.Static.Border" Color="Transparent"/>
-        <SolidColorBrush x:Key="TextBox.MouseOver.Border" Color="Transparent"/>
-        <SolidColorBrush x:Key="TextBox.Focus.Border" Color="Transparent"/>
-
-        <!--
-            https://github.com/MicrosoftDocs/windows-uwp/issues/2072
-            TextControlPlaceholderForeground is based on SystemBaseMediumLowColor	
-            Light=#66000000	
-            Dark=#66FFFFFF
-            Highcontrast 
-                should be based from SystemColors https://docs.microsoft.com/en-us/archive/blogs/wpf/systemcolors-reference        
-        -->
-
         <Style x:Key="QueryTextBoxStyle" TargetType="{x:Type TextBox}">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ControlTextBrushKey}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource ControlTextBrushKey}"/>
             <Setter Property="KeyboardNavigation.TabNavigation" Value="None"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
@@ -45,7 +31,7 @@
                                         <Setter Property="Foreground" Value="Transparent"/>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding Path=Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
-                                                <Setter Property="Foreground" Value="LightGray"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForeground}"/>
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -75,159 +61,15 @@
                         <Condition Property="IsInactiveSelectionHighlightEnabled" Value="true"/>
                         <Condition Property="IsSelectionActive" Value="false"/>
                     </MultiTrigger.Conditions>
-                    <Setter Property="SelectionBrush" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}"/>
+                    <Setter Property="SelectionBrush" Value="{DynamicResource InactiveSelectionHighlightBrushKey}"/>
                 </MultiTrigger>
             </Style.Triggers>
         </Style>
-
-        <Style TargetType="TextBox" x:Key="CustomAutoSuggestBoxTextBoxStyle">
-            <!--<Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}" />
-            <Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}" />
-            <Setter Property="Foreground" Value="{ThemeResource TextControlForeground}" />-->
-
-            <!--<Setter Property="BorderBrush" Value="{ThemeResource TextControlBorderBrush}" />
-            <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextControlSelectionHighlightColor}" />-->
-
-            <!--<Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
-            <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
-            <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Auto" />
-            <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
-            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
-            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
-            <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
-            -->
-
-            <!--<Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type TextBox}">
-                        <Grid>
-                            <TextBox 
-                                Background="{TemplateBinding Background}" 
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                Text="{TemplateBinding Tag}" 
-                                Panel.ZIndex="0">
-                                <TextBox.Style>
-                                    <Style TargetType="{x:Type TextBox}">
-                                        <Setter Property="Foreground" Value="Transparent"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Path=Text, Source={x:Reference textSource}}" Value="">
-                                                <Setter Property="Foreground" Value="DarkGray"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBox.Style>
-                            </TextBox>
-                            <TextBox 
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                Foreground="{TemplateBinding Foreground}"
-                                AcceptsReturn="{TemplateBinding AcceptsReturn}"
-                                AcceptsTab="{TemplateBinding AcceptsTab}"
-                                Text="{Binding Path=Text}"
-                                x:Name="textSource" 
-                                Background="Transparent" 
-                                Panel.ZIndex="2" />
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>-->
-            <!--            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Grid>
-                            b<VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup x:Name="CommonStates">
-                                    <VisualState x:Name="Disabled">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="Background">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBackgroundDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBorderBrushDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlForegroundDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlPlaceholderForegroundDisabled}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                    <VisualState x:Name="Normal" />
-                                    <VisualState x:Name="PointerOver">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBorderBrushPointerOver}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#FF7e7e7e" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PrimaryTextColor}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                    <VisualState x:Name="Focused">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBorderBrushFocused}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="Foreground">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PrimaryTextColor}" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="RequestedTheme">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="Light" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                </VisualStateGroup>
-                            </VisualStateManager.VisualStateGroups>
-                            <Border 
-                                x:Name="BorderElement"
-                                Grid.Row="1" 
-                                Background="Transparent"
-                                BorderBrush="{TemplateBinding BorderBrush}"                     
-                                Grid.ColumnSpan="3"
-                                Grid.RowSpan="1" />
-                            <ScrollViewer
-                                x:Name="ContentElement"
-                                Grid.Row="1"
-                                HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
-                                HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
-                                VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
-                                VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
-                                IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
-                                IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
-                                IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
-                                IsTabStop="False" 
-                                Margin="12,0,0,0"
-                                Padding="{TemplateBinding Padding}"
-                                CornerRadius="4"
-                                VerticalAlignment="Center"
-                                AutomationProperties.AccessibilityView="Raw"
-                                ZoomMode="Disabled" />
-                            <ContentControl 
-                                x:Name="PlaceholderTextContentPresenter"
-                                Grid.Row="1" 
-                                Opacity="0.6"
-                                Foreground="{DynamicResource TextControlPlaceholderForeground}"
-                                Margin="12,0,0,0"
-                                Padding="{TemplateBinding Padding}"
-                                IsTabStop="False"
-                                Grid.ColumnSpan="3"
-                                VerticalAlignment="Center"
-                                Content="{TemplateBinding PlaceholderText}"
-                                IsHitTestVisible="False" />
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>-->
-        </Style>
     </UserControl.Resources>
     <Grid 
-        Height="60"
+        Height="68"
         VerticalAlignment="Top">
         <!--Background="{ThemeResource BackdropAcrylicBrush}"-->
-
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="64"/>
@@ -241,6 +83,7 @@
             Margin="24, 0, 0, 0"
             VerticalAlignment="Center"
             FontSize="24"
+            Foreground="{DynamicResource TextControlPlaceholderForeground}"
          />
 
         <!--
@@ -260,14 +103,12 @@
             />
 
         <TextBlock
-            x:Name="SearchLogo"
-            x:FieldModifier="public"
             Grid.Column="1"
             Text="&#xE721;"
             FontFamily="Segoe MDL2 Assets"
             FontSize="24" 
-            HorizontalAlignment="Center"
+            HorizontalAlignment="Center" 
             VerticalAlignment="Center"
-            />
+            Foreground="{DynamicResource TextControlPlaceholderForeground}" />
     </Grid>
 </UserControl>

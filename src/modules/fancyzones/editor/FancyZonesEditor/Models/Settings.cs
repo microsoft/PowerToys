@@ -21,12 +21,11 @@ namespace FancyZonesEditor
     {
         private enum CmdArgs
         {
-            MonitorHandle = 1,
-            X_Y_Width_Height,
-            ResolutionKey,
+            X_Y_Width_Height = 1,
             ActiveZoneSetTmpFile,
             AppliedZoneSetTmpFile,
             CustomZoneSetsTmpFile,
+            PowerToysPID,
         }
 
         private static CanvasLayoutModel _blankCustomModel;
@@ -43,6 +42,8 @@ namespace FancyZonesEditor
         public const ushort _priorityGridModelId = 0xFFFB;
         public const ushort _blankCustomModelId = 0xFFFA;
         public const ushort _lastDefinedId = _blankCustomModelId;
+
+        private const int _defaultDPI = 96;
 
         // hard coded data for all the "Priority Grid" configurations that are unique to "Grid"
         private static readonly byte[][] _priorityData = new byte[][]
@@ -84,7 +85,7 @@ namespace FancyZonesEditor
 
             // Initialize the five default layout models: Focus, Columns, Rows, Grid, and PriorityGrid
             DefaultModels = new List<LayoutModel>(5);
-            _focusModel = new CanvasLayoutModel("Focus", LayoutType.Focus, (int)_workArea.Width, (int)_workArea.Height);
+            _focusModel = new CanvasLayoutModel("Focus", LayoutType.Focus);
             DefaultModels.Add(_focusModel);
 
             _columnsModel = new GridLayoutModel("Columns", LayoutType.Columns)
@@ -107,7 +108,7 @@ namespace FancyZonesEditor
             _priorityGridModel = new GridLayoutModel("Priority Grid", LayoutType.PriorityGrid);
             DefaultModels.Add(_priorityGridModel);
 
-            _blankCustomModel = new CanvasLayoutModel("Create new custom", LayoutType.Blank, (int)_workArea.Width, (int)_workArea.Height);
+            _blankCustomModel = new CanvasLayoutModel("Create new custom", LayoutType.Blank);
 
             UpdateLayoutModels();
         }
@@ -213,14 +214,7 @@ namespace FancyZonesEditor
 
         private bool _isCtrlKeyPressed;
 
-        public Rect WorkArea
-        {
-            get { return _workArea; }
-        }
-
-        private Rect _workArea;
-
-        public static uint Monitor { get; private set; }
+        public static Rect WorkArea { get; private set; }
 
         public static string UniqueKey { get; private set; }
 
@@ -249,10 +243,15 @@ namespace FancyZonesEditor
 
         private static string _customZoneSetsTmpFile;
 
-        public static string WorkAreaKey { get; private set; }
+        public static int PowerToysPID
+        {
+            get { return _powerToysPID; }
+        }
+
+        private static int _powerToysPID;
 
         // UpdateLayoutModels
-        //  Update the five default layouts based on the new ZoneCount
+        // Update the five default layouts based on the new ZoneCount
         private void UpdateLayoutModels()
         {
             // Update the "Focus" Default Layout
@@ -264,9 +263,9 @@ namespace FancyZonesEditor
                 ZoneCount = 3;
             }
 
-            Int32Rect focusZoneRect = new Int32Rect((int)(_focusModel.ReferenceWidth * 0.1), (int)(_focusModel.ReferenceHeight * 0.1), (int)(_focusModel.ReferenceWidth * 0.6), (int)(_focusModel.ReferenceHeight * 0.6));
-            int focusRectXIncrement = (ZoneCount <= 1) ? 0 : (int)(_focusModel.ReferenceWidth * 0.2) / (ZoneCount - 1);
-            int focusRectYIncrement = (ZoneCount <= 1) ? 0 : (int)(_focusModel.ReferenceHeight * 0.2) / (ZoneCount - 1);
+            Int32Rect focusZoneRect = new Int32Rect((int)(WorkArea.Width * 0.1), (int)(WorkArea.Height * 0.1), (int)(WorkArea.Width * 0.6), (int)(WorkArea.Height * 0.6));
+            int focusRectXIncrement = (ZoneCount <= 1) ? 0 : (int)(WorkArea.Width * 0.2) / (ZoneCount - 1);
+            int focusRectYIncrement = (ZoneCount <= 1) ? 0 : (int)(WorkArea.Height * 0.2) / (ZoneCount - 1);
 
             for (int i = 0; i < ZoneCount; i++)
             {
@@ -416,30 +415,24 @@ namespace FancyZonesEditor
 
         private void ParseCommandLineArgs()
         {
-            _workArea = SystemParameters.WorkArea;
-            Monitor = 0;
+            WorkArea = SystemParameters.WorkArea;
 
             string[] args = Environment.GetCommandLineArgs();
-            if (args.Length == 7)
+            if (args.Length == 6)
             {
-                if (uint.TryParse(args[(int)CmdArgs.MonitorHandle], out uint monitor))
-                {
-                    Monitor = monitor;
-                }
-
                 var parsedLocation = args[(int)CmdArgs.X_Y_Width_Height].Split('_');
                 var x = int.Parse(parsedLocation[0]);
                 var y = int.Parse(parsedLocation[1]);
                 var width = int.Parse(parsedLocation[2]);
                 var height = int.Parse(parsedLocation[3]);
 
-                _workArea = new Rect(x, y, width, height);
-
-                WorkAreaKey = args[(int)CmdArgs.ResolutionKey];
+                WorkArea = new Rect(x, y, width, height);
 
                 _activeZoneSetTmpFile = args[(int)CmdArgs.ActiveZoneSetTmpFile];
                 _appliedZoneSetTmpFile = args[(int)CmdArgs.AppliedZoneSetTmpFile];
                 _customZoneSetsTmpFile = args[(int)CmdArgs.CustomZoneSetsTmpFile];
+
+                int.TryParse(args[(int)CmdArgs.PowerToysPID], out _powerToysPID);
 
                 ParseDeviceInfoData();
             }

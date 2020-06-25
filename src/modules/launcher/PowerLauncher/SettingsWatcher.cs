@@ -19,20 +19,14 @@ namespace PowerLauncher
     public class SettingsWatcher : BaseModel
     {
         private static int MAX_RETRIES = 10;
+        private static object _watcherSyncObject = new object();
         private FileSystemWatcher _watcher;
         private Settings _settings;
         public SettingsWatcher(Settings settings)
         {
             _settings = settings;
             // Set up watcher
-            try
-            {
-                _watcher = Helper.GetFileWatcher(PowerLauncherSettings.POWERTOYNAME, "settings.json", OverloadSettings);
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e.Message);
-            }
+             _watcher = Helper.GetFileWatcher(PowerLauncherSettings.POWERTOYNAME, "settings.json", OverloadSettings);
 
             // Load initial settings file
             OverloadSettings();
@@ -40,7 +34,7 @@ namespace PowerLauncher
 
         public void OverloadSettings()
         {
-            Monitor.Enter(_watcher);
+            Monitor.Enter(_watcherSyncObject);
             var retry = true;
             for (int i = 0; retry && i < MAX_RETRIES; i++)
             {
@@ -52,7 +46,7 @@ namespace PowerLauncher
                     var openPowerlauncher = ConvertHotkey(overloadSettings.properties.open_powerlauncher);
                     if (_settings.Hotkey != openPowerlauncher)
                     {
-                        _settings.Hotkey = ConvertHotkey(overloadSettings.properties.open_powerlauncher);
+                        _settings.Hotkey = openPowerlauncher;
                     }
 
                     var shell = PluginManager.AllPlugins.Find(pp => pp.Metadata.Name == "Shell");
@@ -66,18 +60,25 @@ namespace PowerLauncher
                     {
                         _settings.MaxResultsToShow = overloadSettings.properties.maximum_number_of_results;
                     }
+
+                    if (_settings.IgnoreHotkeysOnFullscreen != overloadSettings.properties.ignore_hotkeys_in_fullscreen)
+                    {
+                        _settings.IgnoreHotkeysOnFullscreen = overloadSettings.properties.ignore_hotkeys_in_fullscreen;
+                    }
                 }
-                catch (Exception e)
+                // the settings application can hold a lock on the settings.json file which will result in a IOException.  
+                // This should be changed to properly synch with the settings app instead of retrying.
+                catch (IOException e)
                 {
                     retry = true;
                     Thread.Sleep(1000);
                     Debug.WriteLine(e.Message);
                 }
             }
-            Monitor.Exit(_watcher);
+            Monitor.Exit(_watcherSyncObject);
         }
 
-        private string ConvertHotkey(HotkeySettings hotkey)
+        private static string ConvertHotkey(HotkeySettings hotkey)
         {
             Key key = KeyInterop.KeyFromVirtualKey(hotkey.Code);
             HotkeyModel model = new HotkeyModel(hotkey.Alt, hotkey.Shift, hotkey.Win, hotkey.Ctrl, key);

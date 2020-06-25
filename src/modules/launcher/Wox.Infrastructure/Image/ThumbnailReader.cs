@@ -4,9 +4,6 @@ using System.IO;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using System.Windows;
-using Windows.Storage.Streams;
-using BitmapSourceWPF = System.Windows.Media.Imaging.BitmapSource;
-using BitmapImageUWP = Windows.UI.Xaml.Media.Imaging.BitmapImage;
 
 namespace Wox.Infrastructure.Image
 {
@@ -106,36 +103,14 @@ namespace Wox.Infrastructure.Image
             public int Height { set { height = value; } }
         };
 
-        public static BitmapImageUWP ByteToImage(byte[] imageData)
-        {
-            using (InMemoryRandomAccessStream ms = new InMemoryRandomAccessStream())
-            {
-                using (DataWriter writer = new DataWriter(ms.GetOutputStreamAt(0)))
-                {
-                    writer.WriteBytes(imageData);
-                    writer.StoreAsync().GetResults();
-                }
-                BitmapImageUWP image = new BitmapImageUWP();
-                image.SetSource(ms);
-                return image;
-            }
-        }
 
-        public static BitmapImageUWP GetThumbnail(string fileName, int width, int height, ThumbnailOptions options)
+        public static BitmapSource GetThumbnail(string fileName, int width, int height, ThumbnailOptions options)
         {
             IntPtr hBitmap = GetHBitmap(Path.GetFullPath(fileName), width, height, options);
+
             try
             {
-                byte[] data;
-                BitmapSourceWPF bitmapSourceWPF = Imaging.CreateBitmapSourceFromHBitmap(hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());              
-                PngBitmapEncoder encoder = new PngBitmapEncoder();
-                encoder.Frames.Add(BitmapFrame.Create(bitmapSourceWPF));
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    encoder.Save(ms);
-                    data = ms.ToArray();
-                }
-                return ByteToImage(data);
+                return Imaging.CreateBitmapSourceFromHBitmap(hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
             }
             finally
             {
@@ -143,7 +118,7 @@ namespace Wox.Infrastructure.Image
                 DeleteObject(hBitmap);
             }
         }
-        
+
         private static IntPtr GetHBitmap(string fileName, int width, int height, ThumbnailOptions options)
         {
             IShellItem nativeShellItem;
@@ -165,7 +140,7 @@ namespace Wox.Infrastructure.Image
             // if extracting image thumbnail and failed, extract shell icon
             if (options == ThumbnailOptions.ThumbnailOnly && hr == HResult.ExtractionFailed)
             {
-                hr = ((IShellItemImageFactory) nativeShellItem).GetImage(nativeSize, ThumbnailOptions.IconOnly, out hBitmap);
+                hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, ThumbnailOptions.IconOnly, out hBitmap);
             }
 
             Marshal.ReleaseComObject(nativeShellItem);

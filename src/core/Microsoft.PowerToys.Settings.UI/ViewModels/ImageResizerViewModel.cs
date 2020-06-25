@@ -178,10 +178,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
-                var regex = @"[%]{1}[1-6]{1} [(]{1}[%]{1}[1-6]{1}[)]{1}";
-                Match match = Regex.Match(value.Trim(), regex);
-
-                if (!string.IsNullOrWhiteSpace(value) && match.Success)
+                if (!string.IsNullOrWhiteSpace(value))
                 {
                     _fileName = value;
                     Settings.Properties.ImageresizerFileName.Value = value;

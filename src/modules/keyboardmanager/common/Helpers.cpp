@@ -2,6 +2,7 @@
 #include "Helpers.h"
 #include <sstream>
 #include "../common/shared_constants.h"
+#include <shlwapi.h>
 
 using namespace winrt::Windows::Foundation;
 
@@ -74,6 +75,17 @@ namespace KeyboardManagerHelper
         case VK_NUMLOCK:
         case VK_SNAPSHOT:
         case VK_CANCEL:
+            // If the extended flag is not set for the following keys, their NumPad versions are sent. This causes weird behavior when NumLock is on (more information at https://github.com/microsoft/PowerToys/issues/3478)
+        case VK_INSERT:
+        case VK_HOME:
+        case VK_PRIOR:
+        case VK_DELETE:
+        case VK_END:
+        case VK_NEXT:
+        case VK_LEFT:
+        case VK_DOWN:
+        case VK_RIGHT:
+        case VK_UP:
             return true;
         default:
             return false;
@@ -162,5 +174,64 @@ namespace KeyboardManagerHelper
         default:
             return L"Unexpected error";
         }
+    }
+
+    // Function to set the value of a key event based on the arguments
+    void SetKeyEvent(LPINPUT keyEventArray, int index, DWORD inputType, WORD keyCode, DWORD flags, ULONG_PTR extraInfo)
+    {
+        keyEventArray[index].type = inputType;
+        keyEventArray[index].ki.wVk = keyCode;
+        keyEventArray[index].ki.dwFlags = flags;
+        if (IsExtendedKey(keyCode))
+        {
+            keyEventArray[index].ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
+        }
+        keyEventArray[index].ki.dwExtraInfo = extraInfo;
+    }
+
+    // Function to return the window in focus
+    HWND GetFocusWindowHandle()
+    {
+        // Using GetGUIThreadInfo for getting the process of the window in focus. GetForegroundWindow has issues with UWP apps as it returns the Application Frame Host as its linked process
+        GUITHREADINFO guiThreadInfo;
+        guiThreadInfo.cbSize = sizeof(GUITHREADINFO);
+        GetGUIThreadInfo(0, &guiThreadInfo);
+
+        // If no window in focus, use the active window
+        if (guiThreadInfo.hwndFocus == nullptr)
+        {
+            return guiThreadInfo.hwndActive;
+        }
+        return guiThreadInfo.hwndFocus;
+    }
+
+    // Function to return the executable name of the application in focus
+    std::wstring GetCurrentApplication(bool keepPath)
+    {
+        HWND current_window_handle = GetFocusWindowHandle();
+        DWORD process_id;
+        DWORD nSize = MAX_PATH;
+        WCHAR buffer[MAX_PATH] = { 0 };
+
+        // Get process ID of the focus window
+        DWORD thread_id = GetWindowThreadProcessId(current_window_handle, &process_id);
+        HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, process_id);
+
+        // Get full path of the executable
+        bool res = QueryFullProcessImageName(hProc, 0, buffer, &nSize);
+        std::wstring process_name;
+        CloseHandle(hProc);
+
+        process_name = buffer;
+        if (res)
+        {
+            PathStripPath(buffer);
+
+            if (!keepPath)
+            {
+                process_name = buffer;
+            }
+        }
+        return process_name;
     }
 }

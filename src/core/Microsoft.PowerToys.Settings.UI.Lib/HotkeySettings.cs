@@ -2,9 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using System.Text;
 using System.Text.Json.Serialization;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
@@ -28,6 +28,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             Shift = shift;
             Key = key;
             Code = code;
+        }
+
+        public HotkeySettings Clone()
+        {
+            return new HotkeySettings(Win, Ctrl, Alt, Shift, Key, Code);
         }
 
         [JsonPropertyName("win")]
@@ -72,8 +77,16 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 output.Append("Shift + ");
             }
 
-            var localKey = Helper.GetKeyName((uint) Code);
-            output.Append(localKey);
+            if (Code > 0)
+            {
+                var localKey = Helper.GetKeyName((uint)Code);
+                output.Append(localKey);
+            }
+            else if (output.Length >= 2)
+            {
+                output.Remove(output.Length - 2, 2);
+            }
+
             return output.ToString();
         }
 

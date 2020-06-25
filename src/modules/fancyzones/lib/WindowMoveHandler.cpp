@@ -9,6 +9,8 @@
 #include "lib/ZoneWindow.h"
 #include "lib/util.h"
 #include "VirtualDesktopUtils.h"
+#include "lib/SecondaryMouseButtonsHook.h"
+#include <lib/ShiftKeyHook.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -42,13 +44,13 @@ namespace WindowMoveHandlerUtils
     }
 }
 
-
 class WindowMoveHandlerPrivate
 {
 public:
-    WindowMoveHandlerPrivate(const winrt::com_ptr<IFancyZonesSettings>& settings) :
-        m_settings(settings)
-    {};
+    WindowMoveHandlerPrivate(const winrt::com_ptr<IFancyZonesSettings>& settings, SecondaryMouseButtonsHook* mouseHook, ShiftKeyHook* shiftHook) :
+        m_settings(settings),
+        m_mouseHook(mouseHook),
+        m_shiftHook(shiftHook){};
 
     bool IsDragEnabled() const noexcept
     {
@@ -60,31 +62,34 @@ public:
         return m_inMoveSize;
     }
 
-    void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
-    void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
-    void MoveSizeEnd(HWND window, POINT const& ptScreen, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
+    void OnMouseDown() noexcept;
+    void OnShiftChangeState(bool state) noexcept;
 
-    void MoveWindowIntoZoneByIndexSet(HWND window, HMONITOR monitor, const std::vector<int>& indexSet, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
-    bool MoveWindowIntoZoneByDirection(HMONITOR monitor, HWND window, DWORD vkCode, bool cycle, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap);
+    void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
+    void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
+    void MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
+
+    void MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& indexSet, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept;
+    bool MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow);
 
 private:
     void UpdateDragState(HWND window) noexcept;
 
 private:
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
+    SecondaryMouseButtonsHook* m_mouseHook{};
+    ShiftKeyHook* m_shiftHook{};
 
     HWND m_windowMoveSize{}; // The window that is being moved/sized
     bool m_inMoveSize{}; // Whether or not a move/size operation is currently active
     winrt::com_ptr<IZoneWindow> m_zoneWindowMoveSize; // "Active" ZoneWindow, where the move/size is happening. Will update as drag moves between monitors.
     bool m_dragEnabled{}; // True if we should be showing zone hints while dragging
+    bool m_secondaryMouseButtonState{}; // True when secondary mouse button was clicked after window was moved
+    bool m_shiftKeyState{}; // True when shift key was pressed after window was moved
 };
 
-
-WindowMoveHandler::WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& settings) :
-    pimpl(new WindowMoveHandlerPrivate(settings))
-{
-    
-}
+WindowMoveHandler::WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& settings, SecondaryMouseButtonsHook* mouseHook, ShiftKeyHook* shiftHook) :
+    pimpl(new WindowMoveHandlerPrivate(settings, mouseHook, shiftHook)) {}
 
 WindowMoveHandler::~WindowMoveHandler()
 {
@@ -101,32 +106,52 @@ bool WindowMoveHandler::IsDragEnabled() const noexcept
     return pimpl->IsDragEnabled();
 }
 
-void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
+void WindowMoveHandler::OnMouseDown() noexcept
+{
+    pimpl->OnMouseDown();
+}
+
+void WindowMoveHandler::OnShiftChangeState(bool state) noexcept
+{
+    pimpl->OnShiftChangeState(state);
+}
+
+void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
 {
     pimpl->MoveSizeStart(window, monitor, ptScreen, zoneWindowMap);
 }
 
-void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
+void WindowMoveHandler::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
 {
     pimpl->MoveSizeUpdate(monitor, ptScreen, zoneWindowMap);
 }
 
-void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
+void WindowMoveHandler::MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
 {
     pimpl->MoveSizeEnd(window, ptScreen, zoneWindowMap);
 }
 
-void WindowMoveHandler::MoveWindowIntoZoneByIndexSet(HWND window, HMONITOR monitor, const std::vector<int>& indexSet, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
+void WindowMoveHandler::MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& indexSet, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
 {
-    pimpl->MoveWindowIntoZoneByIndexSet(window, monitor, indexSet, zoneWindowMap);
+    pimpl->MoveWindowIntoZoneByIndexSet(window, indexSet, zoneWindow);
 }
 
-bool WindowMoveHandler::MoveWindowIntoZoneByDirection(HMONITOR monitor, HWND window, DWORD vkCode, bool cycle, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap)
+bool WindowMoveHandler::MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow)
 {
-    return pimpl->MoveWindowIntoZoneByDirection(monitor, window, vkCode, cycle, zoneWindowMap);
+    return pimpl->MoveWindowIntoZoneByDirection(window, vkCode, cycle, zoneWindow);
 }
 
-void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
+void WindowMoveHandlerPrivate::OnMouseDown() noexcept
+{
+    m_secondaryMouseButtonState = !m_secondaryMouseButtonState;
+}
+
+void WindowMoveHandlerPrivate::OnShiftChangeState(bool state) noexcept
+{
+    m_shiftKeyState = state;
+}
+
+void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
 {
     if (!IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray) || WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
     {
@@ -143,13 +168,23 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
 
     m_windowMoveSize = window;
 
+    if (m_settings->GetSettings()->mouseSwitch)
+    {
+        m_mouseHook->enable();
+    }
+
+    if (m_settings->GetSettings()->shiftDrag)
+    {
+        m_shiftHook->enable();
+    }
+
     // This updates m_dragEnabled depending on if the shift key is being held down.
     UpdateDragState(window);
 
     if (m_dragEnabled)
     {
         m_zoneWindowMoveSize = iter->second;
-        m_zoneWindowMoveSize->MoveSizeEnter(window, m_dragEnabled);
+        m_zoneWindowMoveSize->MoveSizeEnter(window);
         if (m_settings->GetSettings()->showZonesOnAllMonitors)
         {
             for (auto [keyMonitor, zoneWindow] : zoneWindowMap)
@@ -178,7 +213,7 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
     }
 }
 
-void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
+void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
 {
     if (!m_inMoveSize)
     {
@@ -220,7 +255,7 @@ void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptS
                         m_zoneWindowMoveSize->HideZoneWindow();
                     }
                     m_zoneWindowMoveSize = iter->second;
-                    m_zoneWindowMoveSize->MoveSizeEnter(m_windowMoveSize, m_zoneWindowMoveSize->IsDragEnabled());
+                    m_zoneWindowMoveSize->MoveSizeEnter(m_windowMoveSize);
                 }
 
                 for (auto [keyMonitor, zoneWindow] : zoneWindowMap)
@@ -239,15 +274,19 @@ void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptS
     }
 }
 
-void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
+void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
 {
     if (window != m_windowMoveSize && !IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
     {
         return;
     }
 
+    m_mouseHook->disable();
+    m_shiftHook->disable();
+
     m_inMoveSize = false;
     m_dragEnabled = false;
+    m_secondaryMouseButtonState = false;
     m_windowMoveSize = nullptr;
     if (m_zoneWindowMoveSize)
     {
@@ -288,73 +327,28 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
     }
 }
 
-void WindowMoveHandlerPrivate::MoveWindowIntoZoneByIndexSet(HWND window, HMONITOR monitor, const std::vector<int>& indexSet, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
+void WindowMoveHandlerPrivate::MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& indexSet, winrt::com_ptr<IZoneWindow> zoneWindow) noexcept
 {
     if (window != m_windowMoveSize)
     {
-        const HMONITOR hm = (monitor != nullptr) ? monitor : MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
-        if (hm)
-        {
-            auto zoneWindow = zoneWindowMap.find(hm);
-            if (zoneWindow != zoneWindowMap.end())
-            {
-                const auto& zoneWindowPtr = zoneWindow->second;
-                // Only process windows located on currently active work area.
-                GUID windowDesktopId{};
-                GUID zoneWindowDesktopId{};
-                if (VirtualDesktopUtils::GetWindowDesktopId(window, &windowDesktopId) &&
-                    VirtualDesktopUtils::GetZoneWindowDesktopId(zoneWindowPtr.get(), &zoneWindowDesktopId) &&
-                    (windowDesktopId != zoneWindowDesktopId))
-                {
-                    return;
-                }
-                zoneWindowPtr->MoveWindowIntoZoneByIndexSet(window, indexSet);
-            }
-        }
+        zoneWindow->MoveWindowIntoZoneByIndexSet(window, indexSet);
     }
 }
 
-bool WindowMoveHandlerPrivate::MoveWindowIntoZoneByDirection(HMONITOR monitor, HWND window, DWORD vkCode, bool cycle, const std::map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap)
+bool WindowMoveHandlerPrivate::MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow)
 {
-    auto iter = zoneWindowMap.find(monitor);
-    if (iter != std::end(zoneWindowMap))
-    {
-        const auto& zoneWindowPtr = iter->second;
-        return zoneWindowPtr->MoveWindowIntoZoneByDirection(window, vkCode, cycle);
-    }
-    return false;
+    return zoneWindow && zoneWindow->MoveWindowIntoZoneByDirection(window, vkCode, cycle);
 }
 
 void WindowMoveHandlerPrivate::UpdateDragState(HWND window) noexcept
 {
-    const bool shift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
-    const bool mouseL = GetAsyncKeyState(VK_LBUTTON) & 0x8000;
-    const bool mouseR = GetAsyncKeyState(VK_RBUTTON) & 0x8000;
-    const bool mouseM = GetAsyncKeyState(VK_MBUTTON) & 0x8000;
-    const bool mouseX1 = GetAsyncKeyState(VK_XBUTTON1) & 0x8000;
-    const bool mouseX2 = GetAsyncKeyState(VK_XBUTTON2) & 0x8000;
-
-    // Note, Middle, X1 and X2 can also be used in addition to R/L
-    bool mouse = mouseM | mouseX1 | mouseX2;
-    // If the user has swapped their Right and Left Buttons, use the "Right" equivalent
-    if (GetSystemMetrics(SM_SWAPBUTTON))
-    {
-        mouse |= mouseL;
-    }
-    else
-    {
-        mouse |= mouseR;
-    }
-
-    mouse &= m_settings->GetSettings()->mouseSwitch;
-
     if (m_settings->GetSettings()->shiftDrag)
     {
-        m_dragEnabled = (shift | mouse);
+        m_dragEnabled = (m_shiftKeyState ^ m_secondaryMouseButtonState);
     }
     else
     {
-        m_dragEnabled = !(shift | mouse);
+        m_dragEnabled = !(m_shiftKeyState ^ m_secondaryMouseButtonState);
     }
 
     static bool warning_shown = false;

@@ -352,7 +352,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         // callback function to launch the URL to check for updates.
         private async void CheckForUpdates_Click()
         {
-            await Launcher.LaunchUriAsync(new Uri("https://github.com/microsoft/PowerToys/releases"));
+            GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+            settings.CustomActionName = "check_for_updates";
+
+            OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
+            GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
+
+            if (ShellPage.CheckForUpdatesMsgCallback != null)
+            {
+                ShellPage.CheckForUpdatesMsgCallback(customaction.ToString());
+            }
         }
 
         public void Restart_Elevated()

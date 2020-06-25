@@ -1815,7 +1815,7 @@
   { "name": "BarChartVerticalFill", "unicode": "F830" },
   { "name": "StackedColumnChart2Fill", "unicode": "F831" },
   { "name": "PlainText", "unicode": "F834" },
-  { "name": "AccessibiltyChecker", "unicode": "F835" },
+  { "name": "AccessibilityChecker", "unicode": "F835" },
   { "name": "DatabaseSync", "unicode": "F842" },
   { "name": "ReservationOrders", "unicode": "F845" },
   { "name": "TabOneColumn", "unicode": "F849" },

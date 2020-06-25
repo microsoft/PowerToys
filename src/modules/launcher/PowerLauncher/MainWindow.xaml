@@ -4,10 +4,9 @@
         xmlns:vm="clr-namespace:Wox.ViewModel;assembly=Wox"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-        mc:Ignorable="d"
-        xmlns:xaml="clr-namespace:Microsoft.Toolkit.Wpf.UI.XamlHost;assembly=Microsoft.Toolkit.Wpf.UI.XamlHost"
         xmlns:local="clr-namespace:PowerLauncher"
-        Title="PowerLaunch"
+        mc:Ignorable="d"       
+        Title="PowerToys Run"
         Topmost="True"
         SizeToContent="Height"
         ResizeMode="NoResize"
@@ -18,16 +17,35 @@
         Icon="Images/app.png"
         AllowsTransparency="True"
         Loaded="OnLoaded"
-        Initialized="OnInitialized"
         Closing="OnClosing"
-        Drop="OnDrop"
+        Background="Transparent"
         LocationChanged="OnLocationChanged"
         Deactivated="OnDeactivated"
-        Background="Transparent"
-        Width="720"
+        IsVisibleChanged="OnVisibilityChanged"
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         d:DataContext="{d:DesignInstance vm:MainViewModel}">
-    <Grid Width="720" 
+    <Window.Resources>
+        <CubicEase x:Key="CubicEaseOut" EasingMode="EaseOut"/>
+        
+        <!-- Some of the durations are different to give a 'parallax' feel (like start menu has as well) -->
+        <!--<Storyboard x:Key="IntroStoryboard">
+            <DoubleAnimation From="20" To="0" Duration="0:0:0.2" Storyboard.TargetName="SearchBoxBorder" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" EasingFunction="{StaticResource CubicEaseOut}"/>
+            <DoubleAnimation From="20" To="0" Duration="0:0:0.250" Storyboard.TargetName="SearchBox" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" EasingFunction="{StaticResource CubicEaseOut}"/>
+            <DoubleAnimation From="0.5" To="1" Duration="0:0:0.150" Storyboard.TargetName="SearchBoxBorder" Storyboard.TargetProperty="(UIElement.Opacity)" EasingFunction="{StaticResource CubicEaseOut}"/>
+            <DoubleAnimation From="-10" To="0" Duration="0:0:0.2" Storyboard.TargetName="ListBoxBorder" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" EasingFunction="{StaticResource CubicEaseOut}"/>
+            <DoubleAnimation From="0.5" To="1" Duration="0:0:0.1" Storyboard.TargetName="ListBoxBorder" Storyboard.TargetProperty="(UIElement.Opacity)" EasingFunction="{StaticResource CubicEaseOut}"/>
+        </Storyboard>-->
+
+        <!-- Duration is a bit shorter, since it's an outro animation and you want it to be gone asap -->
+        <!--<Storyboard x:Key="OutroStoryboard" Completed="OutroStoryboard_Completed">
+            <DoubleAnimation From="0" To="20" Duration="0:0:0.18" Storyboard.TargetName="SearchBoxBorder" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" EasingFunction="{StaticResource CubicEaseOut}"/>
+            <DoubleAnimation From="1" To="0.0" Duration="0:0:0.18" Storyboard.TargetName="SearchBoxBorder" Storyboard.TargetProperty="(UIElement.Opacity)" EasingFunction="{StaticResource CubicEaseOut}"/>
+            <DoubleAnimation From="0" To="-10" Duration="0:0:0.18" Storyboard.TargetName="ListBoxBorder" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" EasingFunction="{StaticResource CubicEaseOut}"/>
+            <DoubleAnimation From="1" To="0.0" Duration="0:0:0.18" Storyboard.TargetName="ListBoxBorder" Storyboard.TargetProperty="(UIElement.Opacity)" EasingFunction="{StaticResource CubicEaseOut}"/>
+        </Storyboard>-->
+       
+    </Window.Resources>
+    <Grid Width="720"
           MouseDown="OnMouseDown">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -37,34 +55,49 @@
             x:Name="SearchBoxBorder" 
             Grid.Row="0" 
             Margin="24,24,24,8"  
-            BorderThickness="4" 
-            CornerRadius="4">
+            BorderThickness="1" 
+            CornerRadius="4"
+            Background="{DynamicResource SystemChromeLow}"
+            BorderBrush="{DynamicResource BorderBrush}">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="16" Opacity="0.8" ShadowDepth="0" />
+                <DropShadowEffect BlurRadius="12" Opacity="0.3" ShadowDepth="0" />
             </Border.Effect>
-            <local:LauncherControl
-                x:Name="SearchBox" 
-                Height="60"/>
+            <local:LauncherControl 
+                x:Name="SearchBox">
+                <!--<local:LauncherControl.RenderTransform>
+                    <TranslateTransform />
+                </local:LauncherControl.RenderTransform>-->
+            </local:LauncherControl>
+                <!--<Border.RenderTransform>
+                    <TranslateTransform />
+                </Border.RenderTransform>-->
         </Border>
         <Border 
             x:Name="ListBoxBorder"
             Grid.Row="1" 
             Margin="24,8,24,24" 
-            BorderThickness="4"
+            BorderThickness="1"
             CornerRadius="4" 
-            Visibility="{Binding Results.Visibility}">
+            Visibility="{Binding Results.Visibility}"
+            Background="{DynamicResource SystemChromeLow}"
+            BorderBrush="{DynamicResource BorderBrush}">
+            <!--<Border.RenderTransform>
+                <TranslateTransform />
+            </Border.RenderTransform>-->
             <Border.Effect>
-                <DropShadowEffect BlurRadius="16" Opacity="0.8" ShadowDepth="0" />
+                <DropShadowEffect BlurRadius="12" Opacity="0.3" ShadowDepth="0" />
             </Border.Effect>
-            <xaml:WindowsXamlHost
-                x:Name="ListBox"
-                InitialTypeName="PowerLauncher.UI.ResultList" 
-                ChildChanged="WindowsXamlHostListView_ChildChanged" 
-                PreviewMouseDown="WindowsXamlHost_PreviewMouseDown" />
+            <local:ResultList x:Name="ListBox" 
+                PreviewMouseDown="ListBox_PreviewMouseDown" >
+                <!--<local:ResultList.RenderTransform>
+                    <TranslateTransform />
+                </local:ResultList.RenderTransform>-->
+            </local:ResultList>
         </Border>
     </Grid> 
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding EscCommand}" />
         <KeyBinding Key="Enter" Command="{Binding OpenResultCommand}" />
+        <KeyBinding Modifiers="Alt" Key="F4" Command="{Binding IgnoreCommand}" />
     </Window.InputBindings>
 </Window>

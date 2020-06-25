@@ -11,17 +11,19 @@
 
 #include <common/common.h>
 #include <common/dpi_aware.h>
-
 #include <common/winstore.h>
 #include <common/notifications.h>
-
 #include <common/updating/updating.h>
+#include <common/RestartManagement.h>
 
 #include "update_state.h"
 #include "update_utils.h"
 #include "action_runner_utils.h"
 
 #include <winrt/Windows.System.h>
+
+#include <Psapi.h>
+#include <RestartManager.h>
 
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
@@ -30,17 +32,22 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
+// Window Explorer process name should not be localized.
+const wchar_t EXPLORER_PROCESS_NAME[] = L"explorer.exe";
+
 namespace localized_strings
 {
     const wchar_t MSI_VERSION_IS_ALREADY_RUNNING[] = L"An older version of PowerToys is already running.";
     const wchar_t OLDER_MSIX_UNINSTALLED[] = L"An older MSIX version of PowerToys was uninstalled.";
+    const wchar_t PT_UPDATE_MESSAGE_BOX_TITLE[] = L"PowerToys";
+    const wchar_t PT_UPDATE_MESSAGE_BOX_TEXT[] = L"PowerToys was updated and some components require Windows Explorer to restart. Do you want to restart Windows Explorer now?";
+
 }
 
 namespace
 {
     const wchar_t MSI_VERSION_MUTEX_NAME[] = L"Local\\PowerToyRunMutex";
     const wchar_t MSIX_VERSION_MUTEX_NAME[] = L"Local\\PowerToyMSIXRunMutex";
-
     const wchar_t PT_URI_PROTOCOL_SCHEME[] = L"powertoys://";
 }
 
@@ -120,43 +127,27 @@ int runner(bool isProcessElevated)
         notifications::register_background_toast_handler();
 
         chdir_current_executable();
-        // Load Powertoys DLLS
-        // For now only load known DLLs
-        
-        std::wstring baseModuleFolder = L"modules/";
+        // Load Powertoys DLLs
 
-        std::unordered_set<std::wstring> known_dlls = {
-            L"shortcut_guide.dll",
-            L"fancyzones.dll",
-            L"PowerRenameExt.dll",
-            L"Microsoft.Launcher.dll",
-            L"ImageResizerExt.dll",
-            L"powerpreview.dll",
-            L"KeyboardManager.dll"
+        const std::array<std::wstring_view, 7> knownModules = {
+            L"modules/FancyZones/fancyzones.dll",
+            L"modules/FileExplorerPreview/powerpreview.dll",
+            L"modules/ImageResizer/ImageResizerExt.dll",
+            L"modules/KeyboardManager/KeyboardManager.dll",
+            L"modules/Launcher/Microsoft.Launcher.dll",
+            L"modules/PowerRename/PowerRenameExt.dll",
+            L"modules/ShortcutGuide/ShortcutGuide.dll",
         };
 
-        std::unordered_set<std::wstring> module_folders = {
-            L"",
-            L"FileExplorerPreview/",
-            L"FancyZones/"
-        };
-
-        for (std::wstring subfolderName : module_folders)
+        for (const auto & moduleSubdir : knownModules)
         {
-            for (auto& file : std::filesystem::directory_iterator(baseModuleFolder + subfolderName))
+            try
             {
-                if (file.path().extension() != L".dll")
-                    continue;
-                if (known_dlls.find(file.path().filename()) == known_dlls.end())
-                    continue;
-                try
-                {
-                    auto module = load_powertoy(file.path().wstring());
-                    modules().emplace(module->get_name(), std::move(module));
-                }
-                catch (...)
-                {
-                }
+                auto module = load_powertoy(moduleSubdir);
+                modules().emplace(module->get_name(), std::move(module));
+            }
+            catch (...)
+            {
             }
         }
         // Start initial powertoys
@@ -219,28 +210,62 @@ enum class toast_notification_handler_result
     exit_error
 };
 
+
 toast_notification_handler_result toast_notification_handler(const std::wstring_view param)
 {
-    if (param == L"cant_drag_elevated_disable/")
+    const std::wstring_view cant_drag_elevated_disable = L"cant_drag_elevated_disable/";
+    const std::wstring_view update_now = L"update_now/";
+    const std::wstring_view schedule_update = L"schedule_update/";
+    const std::wstring_view download_and_install_update = L"download_and_install_update/";
+
+    if (param == cant_drag_elevated_disable)
     {
         return disable_cant_drag_elevated_warning() ? toast_notification_handler_result::exit_success : toast_notification_handler_result::exit_error;
     }
-    else if (param == L"update_now/")
+    else if (param.starts_with(update_now))
     {
-        launch_action_runner(UPDATE_NOW_LAUNCH_STAGE1_CMDARG);
+        std::wstring args{ UPDATE_NOW_LAUNCH_STAGE1_CMDARG };
+        const auto installerFilename = param.data() + size(update_now);
+        args += L' ';
+        args += installerFilename;
+        launch_action_runner(args.c_str());
         return toast_notification_handler_result::exit_success;
     }
-    else if (param == L"schedule_update/")
+    else if (param.starts_with(schedule_update))
     {
-        UpdateState::store([](UpdateState& state) {
+        const auto installerFilename = param.data() + size(schedule_update);
+        UpdateState::store([=](UpdateState& state) {
             state.pending_update = true;
+            state.pending_installer_filename = installerFilename;
         });
+
+        return toast_notification_handler_result::exit_success;
+    }
+    else if (param.starts_with(download_and_install_update))
+    {
+        std::wstring installer_filename = updating::download_update().get();
+     
+        std::wstring args{ UPDATE_NOW_LAUNCH_STAGE1_CMDARG };
+        args += L' ';
+        args += installer_filename;
+        launch_action_runner(args.c_str());
 
         return toast_notification_handler_result::exit_success;
     }
     else
     {
         return toast_notification_handler_result::exit_error;
+    }
+}
+
+void RequestExplorerRestart()
+{
+    if (MessageBox(nullptr,
+                   localized_strings::PT_UPDATE_MESSAGE_BOX_TEXT,
+                   localized_strings::PT_UPDATE_MESSAGE_BOX_TITLE,
+                   MB_ICONINFORMATION | MB_YESNO | MB_DEFBUTTON1) == IDYES)
+    {
+        RestartProcess(EXPLORER_PROCESS_NAME);
     }
 }
 
@@ -268,7 +293,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             return 0;
         }
     case SpecialMode::ReportSuccessfulUpdate:
-        notifications::show_toast(GET_RESOURCE_STRING(IDS_AUTOUPDATE_SUCCESS));
+        RequestExplorerRestart();
         break;
 
     case SpecialMode::None:
@@ -351,6 +376,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         modules();
 
         auto general_settings = load_general_settings();
+        apply_general_settings(general_settings);
         int rvalue = 0;
         const bool elevated = is_process_elevated();
         if ((elevated ||

@@ -46,32 +46,44 @@ Contains the source code of the PowerToys runner and of all of the PowerToys mod
 
 Various tools used by PowerToys. Includes the Visual Studio 2019 project template for new PowerToys.
 
-## Building code
+## Compiling PowerToys
 
-### Build Prerequisites
+### Prerequisites for Compiling PowerToys
 
-- Windows 10 1803 (build 10.0.17134.0) or above to build and run PowerToys.
-- Visual Studio 2019 Community edition or higher, with the 'Desktop Development with C++' component and the Windows 10 SDK version 10.0.18362.0 or higher.
+1. Windows 10 April 2018 Update (version 1803) or newer
+2. Visual Studio Community/Professional/Enterprise 2019
+3. Run the command below in cmd/terminal to install all the workloads and components for VS.<br />
+**Note:** the script assumes VS is installed and Community edition. Please update path accordingly if Professional/Enterprise.
 
-### Building the Code
+```shell
+"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vs_installer.exe" ^
+modify --installpath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\community" ^
+--add Microsoft.VisualStudio.Workload.NativeDesktop ^
+--add Microsoft.VisualStudio.Workload.ManagedDesktop ^
+--add Microsoft.VisualStudio.Workload.Universal ^
+--add Microsoft.VisualStudio.Component.Windows10SDK.17134 ^
+--add Microsoft.VisualStudio.ComponentGroup.UWP.VC ^
+--add Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre ^
+--add Microsoft.VisualStudio.Component.VC.ATL.Spectre
+```
+
+### Compiling Source Code
 
 - Open `powertoys.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release` or `Debug`, from the `Build` menu choose `Build Solution`.
 - The PowerToys binaries will be in your repo under `x64\Release`.
 - If you want to copy the `PowerToys.exe` binary to a different location, you'll also need to copy the `modules` and the `svgs` folders.
 
-### Building the .msi Installer
+## Building the Installer (.MSI)
 
-* From the `installer` folder open `PowerToysSetup.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release` or `Debug`, from the `Build` menu choose `Build Solution`.
-* The resulting `PowerToysSetup.msi` installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
+### Prerequisites Building the Installer (.MSI)
 
-#### Prerequisites to Build the MSI Installer
+1. Install the [WiX Toolset Visual Studio 2019 Extension](https://marketplace.visualstudio.com/items?itemName=RobMensching.WiXToolset).
+2. Install the [WiX Toolset build tools](https://wixtoolset.org/releases/).
 
-* Install the [WiX Toolset Visual Studio 2019 Extension](https://marketplace.visualstudio.com/items?itemName=RobMensching.WiXToolset).
-* Install the [WiX Toolset build tools](https://wixtoolset.org/releases/).
+### Compiling Installer (.MSI)
 
-### Building the MSIX Installer
-
-Please follow the [installer instructions](./installer/readme.md) which include items such as creating the self-signed cert for testing.
+- From the `installer` folder open `PowerToysSetup.sln` in Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`, from the `Build` menu choose `Build Solution`.
+- The resulting `PowerToysSetup.msi` installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
 
 ## Debugging
 
@@ -79,8 +91,8 @@ The following configuration issue only applies if the user is a member of the Ad
 
 Some PowerToys modules require being run with the highest permission level if the current user is a member of the Administrators group. The highest permission level is required to be able to perform some actions when an elevated application (e.g. Task Manager) is in the foreground or is the target of an action. Without elevated privileges some PowerToys modules will still work but with some limitations:
 
-- the `FancyZones` module will be not be able to move an elevated window to a zone.
-- the `Shortcut Guide` module will not appear if the foreground window belongs to an elevated application.
+- The `FancyZones` module will be not be able to move an elevated window to a zone.
+- The `Shortcut Guide` module will not appear if the foreground window belongs to an elevated application.
 
 To run and debug PowerToys from Visual Studio when the user is a member of the Administrators group, Visual Studio has to be started with elevated privileges. If you want to avoid running Visual Studio with elevated privileges and don't mind the limitations described above, you can do the following: open the `runner` project properties and navigate to the `Linker -> Manifest File` settings, edit the `UAC Execution Level` property and change it from `highestAvailable (level='highestAvailable')` to `asInvoker (/level='asInvoker')`, save the changes.
 
@@ -122,7 +134,7 @@ While developing, it's possible to connect the WebView to the development server
 
 ### [`Settings-web`](settings-web.md)
 This project generates the web UI shown in the [PowerToys Settings](/src/editor).
-It's a `ReactJS` project created using [UI Fabric](https://developer.microsoft.com/en-us/fabric#/).
+It's a `ReactJS` project created using [Fluent UI](https://developer.microsoft.com/en-us/fluentui#/).
 
 ## Current modules
 ### [`FancyZones`](modules/fancyzones.md)
@@ -133,11 +145,6 @@ PowerRename is a Windows Shell Context Menu Extension for advanced bulk renaming
 
 ### [`Shortcut Guide`](modules/shortcut_guide.md)
 The Windows Shortcut Guide, displayed when the WinKey is held for some time.
-
-### _obsolete_ [`example_powertoy`](modules/example_powertoy.md)
-An example PowerToy, that demonstrates how to create new ones. Please note, that this is going to become a Visual Studio project template soon.
-
-This PowerToy serves as a sample to show how to implement the [PowerToys interface](/src/modules/interface/) when creating a PowerToy. It also showcases the currently implemented settings.
 
 #### Options
 

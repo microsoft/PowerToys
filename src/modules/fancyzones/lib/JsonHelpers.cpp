@@ -39,7 +39,7 @@ namespace JSONHelpers
     bool isValidGuid(const std::wstring& str)
     {
         GUID id;
-        return SUCCEEDED_LOG(CLSIDFromString(str.c_str(), &id));
+        return SUCCEEDED(CLSIDFromString(str.c_str(), &id));
     }
 
     bool isValidDeviceId(const std::wstring& str)
@@ -278,29 +278,6 @@ namespace JSONHelpers
         }
     }
 
-    bool FancyZonesData::RemoveDevicesByVirtualDesktopId(const std::wstring& virtualDesktopId)
-    {
-        std::scoped_lock lock{ dataLock };
-        if (virtualDesktopId == DEFAULT_GUID)
-        {
-            return false;
-        }
-        bool modified{ false };
-        for (auto it = deviceInfoMap.begin(); it != deviceInfoMap.end();)
-        {
-            if (ExtractVirtualDesktopId(it->first) == virtualDesktopId)
-            {
-                it = deviceInfoMap.erase(it);
-                modified = true;
-            }
-            else
-            {
-                ++it;
-            }
-        }
-        return modified;
-    }
-
     void FancyZonesData::CloneDeviceInfo(const std::wstring& source, const std::wstring& destination)
     {
         if (source == destination)
@@ -335,11 +312,14 @@ namespace JSONHelpers
             return deviceId.substr(0, deviceId.rfind('_') + 1) + desktopId;
         };
         std::scoped_lock lock{ dataLock };
-        for (auto& [path, data] : appZoneHistoryMap)
+        for (auto& [path, perDesktopData] : appZoneHistoryMap)
         {
-            if (ExtractVirtualDesktopId(data.deviceId) == DEFAULT_GUID)
+            for (auto& data : perDesktopData)
             {
-                data.deviceId = replaceDesktopId(data.deviceId);
+                if (ExtractVirtualDesktopId(data.deviceId) == DEFAULT_GUID)
+                {
+                    data.deviceId = replaceDesktopId(data.deviceId);
+                }
             }
         }
         std::vector<std::wstring> toReplace{};
@@ -356,10 +336,6 @@ namespace JSONHelpers
             mapEntry.key() = replaceDesktopId(id);
             deviceInfoMap.insert(std::move(mapEntry));
         }
-        if (activeDeviceId == DEFAULT_GUID)
-        {
-            activeDeviceId = replaceDesktopId(activeDeviceId);
-        }
         SaveFancyZonesData();
     }
 
@@ -369,9 +345,11 @@ namespace JSONHelpers
         std::scoped_lock lock{ dataLock };
         for (auto it = std::begin(deviceInfoMap); it != std::end(deviceInfoMap);)
         {
-            auto foundId = active.find(ExtractVirtualDesktopId(it->first));
+            std::wstring desktopId = ExtractVirtualDesktopId(it->first);
+            auto foundId = active.find(desktopId);
             if (foundId == std::end(active))
             {
+                RemoveDesktopAppZoneHistory(desktopId);
                 it = deviceInfoMap.erase(it);
             }
             else
@@ -382,27 +360,34 @@ namespace JSONHelpers
         SaveFancyZonesData();
     }
 
-    bool FancyZonesData::IsAnotherWindowOfApplicationInstanceZoned(HWND window) const
+    bool FancyZonesData::IsAnotherWindowOfApplicationInstanceZoned(HWND window, const std::wstring_view& deviceId) const
     {
         std::scoped_lock lock{ dataLock };
         auto processPath = get_process_path(window);
         if (!processPath.empty())
         {
             auto history = appZoneHistoryMap.find(processPath);
-            if (history != appZoneHistoryMap.end())
+            if (history != std::end(appZoneHistoryMap))
             {
-                DWORD processId = 0;
-                GetWindowThreadProcessId(window, &processId);
-
-                auto processIdIt = history->second.processIdToHandleMap.find(processId);
-
-                if (processIdIt == history->second.processIdToHandleMap.end())
+                auto& perDesktopData = history->second;
+                for (auto& data : perDesktopData)
                 {
-                    return false;
-                }
-                else if (processIdIt->second != window && IsWindow(processIdIt->second))
-                {
-                    return true;
+                    if (data.deviceId == deviceId)
+                    {
+                        DWORD processId = 0;
+                        GetWindowThreadProcessId(window, &processId);
+
+                        auto processIdIt = data.processIdToHandleMap.find(processId);
+
+                        if (processIdIt == std::end(data.processIdToHandleMap))
+                        {
+                            return false;
+                        }
+                        else if (processIdIt->second != window && IsWindow(processIdIt->second))
+                        {
+                            return true;
+                        }
+                    }
                 }
             }
         }
@@ -410,19 +395,26 @@ namespace JSONHelpers
         return false;
     }
 
-    void FancyZonesData::UpdateProcessIdToHandleMap(HWND window)
+    void FancyZonesData::UpdateProcessIdToHandleMap(HWND window, const std::wstring_view& deviceId)
     {
         std::scoped_lock lock{ dataLock };
         auto processPath = get_process_path(window);
         if (!processPath.empty())
         {
             auto history = appZoneHistoryMap.find(processPath);
-            if (history != appZoneHistoryMap.end())
+            if (history != std::end(appZoneHistoryMap))
             {
-                DWORD processId = 0;
-                GetWindowThreadProcessId(window, &processId);
-
-                history->second.processIdToHandleMap[processId] = window;
+                auto& perDesktopData = history->second;
+                for (auto& data : perDesktopData)
+                {
+                    if (data.deviceId == deviceId)
+                    {
+                        DWORD processId = 0;
+                        GetWindowThreadProcessId(window, &processId);
+                        data.processIdToHandleMap[processId] = window;
+                        break;
+                    }
+                }
             }
         }
     }
@@ -434,12 +426,15 @@ namespace JSONHelpers
         if (!processPath.empty())
         {
             auto history = appZoneHistoryMap.find(processPath);
-            if (history != appZoneHistoryMap.end())
+            if (history != std::end(appZoneHistoryMap))
             {
-                const auto& data = history->second;
-                if (data.zoneSetUuid == zoneSetId && data.deviceId == deviceId)
+                const auto& perDesktopData = history->second;
+                for (const auto& data : perDesktopData)
                 {
-                    return history->second.zoneIndexSet;
+                    if (data.zoneSetUuid == zoneSetId && data.deviceId == deviceId)
+                    {
+                        return data.zoneIndexSet;
+                    }
                 }
             }
         }
@@ -454,31 +449,42 @@ namespace JSONHelpers
         if (!processPath.empty())
         {
             auto history = appZoneHistoryMap.find(processPath);
-            if (history != appZoneHistoryMap.end())
+            if (history != std::end(appZoneHistoryMap))
             {
-                auto& data = history->second;
-                if (data.zoneSetUuid == zoneSetId && data.deviceId == deviceId)
+                auto& perDesktopData = history->second;
+                for (auto data = std::begin(perDesktopData); data != std::end(perDesktopData);)
                 {
-                    if (!IsAnotherWindowOfApplicationInstanceZoned(window))
+                    if (data->deviceId == deviceId && data->zoneSetUuid == zoneSetId)
                     {
-                        DWORD processId = 0;
-                        GetWindowThreadProcessId(window, &processId);
-
-                        data.processIdToHandleMap.erase(processId);
-                    }
-
-                    // if there is another instance placed don't erase history
-                    for (auto placedWindow : data.processIdToHandleMap)
-                    {
-                        if (IsWindow(placedWindow.second))
+                        if (!IsAnotherWindowOfApplicationInstanceZoned(window, deviceId))
                         {
-                            return false;
-                        }
-                    }
+                            DWORD processId = 0;
+                            GetWindowThreadProcessId(window, &processId);
 
-                    appZoneHistoryMap.erase(processPath);
-                    SaveFancyZonesData();
-                    return true;
+                            data->processIdToHandleMap.erase(processId);
+                        }
+
+                        // if there is another instance placed don't erase history
+                        for (auto placedWindow : data->processIdToHandleMap)
+                        {
+                            if (IsWindow(placedWindow.second))
+                            {
+                                return false;
+                            }
+                        }
+
+                        data = perDesktopData.erase(data);
+                        if (perDesktopData.empty())
+                        {
+                            appZoneHistoryMap.erase(processPath);
+                        }
+                        SaveFancyZonesData();
+                        return true;
+                    }
+                    else
+                    {
+                        ++data;
+                    }
                 }
             }
         }
@@ -490,7 +496,7 @@ namespace JSONHelpers
     {
         std::scoped_lock lock{ dataLock };
 
-        if (IsAnotherWindowOfApplicationInstanceZoned(window))
+        if (IsAnotherWindowOfApplicationInstanceZoned(window, deviceId))
         {
             return false;
         }
@@ -505,23 +511,48 @@ namespace JSONHelpers
         GetWindowThreadProcessId(window, &processId);
 
         auto history = appZoneHistoryMap.find(processPath);
-
-        if (history != appZoneHistoryMap.end())
+        if (history != std::end(appZoneHistoryMap))
         {
-            auto& data = history->second;
-
-            for (auto placedWindow : data.processIdToHandleMap)
+            auto& perDesktopData = history->second;
+            for (auto& data : perDesktopData)
             {
-                if (IsWindow(placedWindow.second) && processId != placedWindow.first)
+                if (data.deviceId == deviceId)
                 {
-                    return false;
+                    for (auto placedWindow : data.processIdToHandleMap)
+                    {
+                        if (IsWindow(placedWindow.second) && processId != placedWindow.first)
+                        {
+                            return false;
+                        }
+                    }
+                    // application already has history on this desktop, but zone (or zone layout) has changed
+                    data.processIdToHandleMap[processId] = window;
+                    data.zoneSetUuid = zoneSetId;
+                    data.zoneIndexSet = zoneIndexSet;
+                    SaveFancyZonesData();
+                    return true;
                 }
             }
         }
 
-        auto windowMap = appZoneHistoryMap[processPath].processIdToHandleMap;
-        windowMap[processId] = window;
-        appZoneHistoryMap[processPath] = AppZoneHistoryData{ .processIdToHandleMap = windowMap, .zoneSetUuid = zoneSetId, .deviceId = deviceId, .zoneIndexSet = zoneIndexSet };
+        std::map<DWORD, HWND> processIdToHandleMap{};
+        processIdToHandleMap[processId] = window;
+        AppZoneHistoryData data{ .processIdToHandleMap = processIdToHandleMap,
+                                 .zoneSetUuid = zoneSetId,
+                                 .deviceId = deviceId,
+                                 .zoneIndexSet = zoneIndexSet };
+
+        if (appZoneHistoryMap.contains(processPath))
+        {
+            // application already has history but on other desktop, add with new desktop info
+            appZoneHistoryMap[processPath].push_back(data);
+        }
+        else
+        {
+            // new application, create entry in app zone history map
+            appZoneHistoryMap[processPath] = std::vector<AppZoneHistoryData>{ data };
+        }
+
         SaveFancyZonesData();
         return true;
     }
@@ -552,15 +583,10 @@ namespace JSONHelpers
             {
                 if (auto deviceInfo = DeviceInfoJSON::FromJson(zoneSetJson.value()); deviceInfo.has_value())
                 {
-                    activeDeviceId = deviceInfo->deviceId;
-                    deviceInfoMap[activeDeviceId] = std::move(deviceInfo->data);
+                    deviceInfoMap[deviceInfo->deviceId] = std::move(deviceInfo->data);
                     DeleteTmpFile(tmpFilePath);
                 }
             }
-        }
-        else
-        {
-            activeDeviceId.clear();
         }
     }
 
@@ -853,9 +879,9 @@ namespace JSONHelpers
                     CanvasLayoutInfo info;
 
                     int j = 5;
-                    info.referenceWidth = data[j] * 256 + data[j + 1];
+                    info.lastWorkAreaWidth = data[j] * 256 + data[j + 1];
                     j += 2;
-                    info.referenceHeight = data[j] * 256 + data[j + 1];
+                    info.lastWorkAreaHeight = data[j] * 256 + data[j + 1];
                     j += 2;
 
                     int count = data[j++];
@@ -883,6 +909,34 @@ namespace JSONHelpers
 
                 valueLength = ARRAYSIZE(value);
                 dataSize = ARRAYSIZE(data);
+            }
+        }
+    }
+
+    void FancyZonesData::RemoveDesktopAppZoneHistory(const std::wstring& desktopId)
+    {
+        for (auto it = std::begin(appZoneHistoryMap); it != std::end(appZoneHistoryMap);)
+        {
+            auto& perDesktopData = it->second;
+            for (auto desktopIt = std::begin(perDesktopData); desktopIt != std::end(perDesktopData);)
+            {
+                if (ExtractVirtualDesktopId(desktopIt->deviceId) == desktopId)
+                {
+                    desktopIt = perDesktopData.erase(desktopIt);
+                }
+                else
+                {
+                    ++desktopIt;
+                }
+            }
+
+            if (perDesktopData.empty())
+            {
+                it = appZoneHistoryMap.erase(it);
+            }
+            else
+            {
+                ++it;
             }
         }
     }
@@ -924,17 +978,53 @@ namespace JSONHelpers
 
         result.SetNamedValue(L"app-path", json::value(appZoneHistory.appPath));
 
-        json::JsonArray jsonIndexSet;
-        for (int index : appZoneHistory.data.zoneIndexSet)
+        json::JsonArray appHistoryArray;
+        for (const auto& data : appZoneHistory.data)
         {
-            jsonIndexSet.Append(json::value(index));
+            json::JsonObject desktopData;
+            json::JsonArray jsonIndexSet;
+            for (int index : data.zoneIndexSet)
+            {
+                jsonIndexSet.Append(json::value(index));
+            }
+
+            desktopData.SetNamedValue(L"zone-index-set", jsonIndexSet);
+            desktopData.SetNamedValue(L"device-id", json::value(data.deviceId));
+            desktopData.SetNamedValue(L"zoneset-uuid", json::value(data.zoneSetUuid));
+
+            appHistoryArray.Append(desktopData);
         }
 
-        result.SetNamedValue(L"zone-index-set", jsonIndexSet);
-        result.SetNamedValue(L"device-id", json::value(appZoneHistory.data.deviceId));
-        result.SetNamedValue(L"zoneset-uuid", json::value(appZoneHistory.data.zoneSetUuid));
+        result.SetNamedValue(L"history", appHistoryArray);
 
         return result;
+    }
+
+    std::optional<AppZoneHistoryData> ParseSingleAppZoneHistoryItem(const json::JsonObject& json)
+    {
+        AppZoneHistoryData data;
+        if (json.HasKey(L"zone-index-set"))
+        {
+            data.zoneIndexSet = {};
+            for (auto& value : json.GetNamedArray(L"zone-index-set"))
+            {
+                data.zoneIndexSet.push_back(static_cast<int>(value.GetNumber()));
+            }
+        }
+        else if (json.HasKey(L"zone-index"))
+        {
+            data.zoneIndexSet = { static_cast<int>(json.GetNamedNumber(L"zone-index")) };
+        }
+
+        data.deviceId = json.GetNamedString(L"device-id");
+        data.zoneSetUuid = json.GetNamedString(L"zoneset-uuid");
+
+        if (!isValidGuid(data.zoneSetUuid) || !isValidDeviceId(data.deviceId))
+        {
+            return std::nullopt;
+        }
+
+        return data;
     }
 
     std::optional<AppZoneHistoryJSON> AppZoneHistoryJSON::FromJson(const json::JsonObject& zoneSet)
@@ -944,23 +1034,27 @@ namespace JSONHelpers
             AppZoneHistoryJSON result;
 
             result.appPath = zoneSet.GetNamedString(L"app-path");
-            if (zoneSet.HasKey(L"zone-index-set"))
+            if (zoneSet.HasKey(L"history"))
             {
-                result.data.zoneIndexSet = {};
-                for (auto& value : zoneSet.GetNamedArray(L"zone-index-set"))
+                auto appHistoryArray = zoneSet.GetNamedArray(L"history");
+                for (uint32_t i = 0; i < appHistoryArray.Size(); ++i)
                 {
-                    result.data.zoneIndexSet.push_back(static_cast<int>(value.GetNumber()));
+                    json::JsonObject json = appHistoryArray.GetObjectAt(i);
+                    if (auto data = ParseSingleAppZoneHistoryItem(json); data.has_value())
+                    {
+                        result.data.push_back(std::move(data.value()));
+                    }
                 }
             }
-            else if (zoneSet.HasKey(L"zone-index"))
+            else
             {
-                result.data.zoneIndexSet = { static_cast<int>(zoneSet.GetNamedNumber(L"zone-index")) };
+                // handle previous file format, with single desktop layout information per application
+                if (auto data = ParseSingleAppZoneHistoryItem(zoneSet); data.has_value())
+                {
+                    result.data.push_back(std::move(data.value()));
+                }
             }
-
-            result.data.deviceId = zoneSet.GetNamedString(L"device-id");
-            result.data.zoneSetUuid = zoneSet.GetNamedString(L"zoneset-uuid");
-
-            if (!isValidGuid(result.data.zoneSetUuid) || !isValidDeviceId(result.data.deviceId))
+            if (result.data.empty())
             {
                 return std::nullopt;
             }
@@ -1023,8 +1117,9 @@ namespace JSONHelpers
     json::JsonObject CanvasLayoutInfo::ToJson(const CanvasLayoutInfo& canvasInfo)
     {
         json::JsonObject infoJson{};
-        infoJson.SetNamedValue(L"ref-width", json::value(canvasInfo.referenceWidth));
-        infoJson.SetNamedValue(L"ref-height", json::value(canvasInfo.referenceHeight));
+        infoJson.SetNamedValue(L"ref-width", json::value(canvasInfo.lastWorkAreaWidth));
+        infoJson.SetNamedValue(L"ref-height", json::value(canvasInfo.lastWorkAreaHeight));
+
         json::JsonArray zonesJson;
 
         for (const auto& [x, y, width, height] : canvasInfo.zones)
@@ -1045,8 +1140,9 @@ namespace JSONHelpers
         try
         {
             CanvasLayoutInfo info;
-            info.referenceWidth = static_cast<int>(infoJson.GetNamedNumber(L"ref-width"));
-            info.referenceHeight = static_cast<int>(infoJson.GetNamedNumber(L"ref-height"));
+            info.lastWorkAreaWidth = static_cast<int>(infoJson.GetNamedNumber(L"ref-width"));
+            info.lastWorkAreaHeight = static_cast<int>(infoJson.GetNamedNumber(L"ref-height"));
+
             json::JsonArray zonesJson = infoJson.GetNamedArray(L"zones");
             uint32_t size = zonesJson.Size();
             info.zones.reserve(size);
