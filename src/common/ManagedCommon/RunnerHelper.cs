@@ -11,7 +11,7 @@ namespace ManagedCommon
 {
     public static class RunnerHelper
     {
-        public static void WaitForPowerToysRunner(int powerToysPID)
+        public static void WaitForPowerToysRunner(int powerToysPID, Action act)
         {
             var stackTrace = new StackTrace();
             var assembly = Assembly.GetCallingAssembly().GetName();
@@ -27,7 +27,7 @@ namespace ManagedCommon
                 if (NativeMethods.WaitForSingleObject(powerToysProcHandle, INFINITE) == WAIT_OBJECT_0)
                 {
                     PowerToysTelemetry.Log.WriteEvent(new DebugEvent() { Message = $"[{assembly}][{callingMethod}]WaitForPowerToysRunner Event Notified powerToysPID={powerToysPID}" });
-                    Environment.Exit(0);
+                    act.Invoke();
                 }
             });
         }

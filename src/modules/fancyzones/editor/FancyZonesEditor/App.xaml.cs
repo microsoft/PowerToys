@@ -25,7 +25,9 @@ namespace FancyZonesEditor
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            RunnerHelper.WaitForPowerToysRunner(Settings.PowerToysPID);
+            RunnerHelper.WaitForPowerToysRunner(Settings.PowerToysPID, () => {
+                Environment.Exit(0);
+            });
 
             LayoutModel foundModel = null;
 

@@ -82,7 +82,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>Shlwapi.lib;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>shlwapi.lib;shcore.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(CIBuild)'!='true'">
@@ -111,7 +111,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>Shlwapi.lib;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>shlwapi.lib;shcore.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>

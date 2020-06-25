@@ -44,5 +44,6 @@ steps:
       **\UnitTests-SvgPreviewHandler.dll
       **\UnitTests-PreviewHandlerCommon.dll
       **\powerpreviewTest.dll
+      **\UnitTests-CommonLib.dll
       !**\*TestAdapter.dll
       !**\obj\**

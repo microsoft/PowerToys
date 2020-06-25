@@ -21,7 +21,7 @@ namespace Wox.Infrastructure
     {
         private readonly HanyuPinyinOutputFormat Format = new HanyuPinyinOutputFormat();
         private ConcurrentDictionary<string, string[][]> PinyinCache;
-        private BinaryStorage<ConcurrentDictionary<string, string[][]>> _pinyinStorage;
+        private BinaryStorage<Dictionary<string, string[][]>> _pinyinStorage;
         private Settings _settings;
          
         public void Initialize([NotNull] Settings settings)
@@ -36,8 +36,8 @@ namespace Wox.Infrastructure
 
             Stopwatch.Normal("|Wox.Infrastructure.Alphabet.Initialize|Preload pinyin cache", () =>
             {
-                _pinyinStorage = new BinaryStorage<ConcurrentDictionary<string, string[][]>>("Pinyin");
-                PinyinCache = _pinyinStorage.TryLoad(new ConcurrentDictionary<string, string[][]>());
+                _pinyinStorage = new BinaryStorage<Dictionary<string, string[][]>>("Pinyin");
+                SetPinyinCacheAsDictionary(_pinyinStorage.TryLoad(new Dictionary<string, string[][]>()));
 
                 // force pinyin library static constructor initialize
                 PinyinHelper.toHanyuPinyinStringArray('T', Format);
@@ -79,7 +79,7 @@ namespace Wox.Infrastructure
             {
                 return; 
             }
-            _pinyinStorage.Save(PinyinCache);
+            _pinyinStorage.Save(GetPinyinCacheAsDictionary());
         }
 
         private static string[] EmptyStringArray = new string[0];
@@ -184,6 +184,16 @@ namespace Wox.Infrastructure
                 select $"{a1};{a2}"
             ).ToArray();
             return combination;
+        }
+
+        private Dictionary<string, string[][]> GetPinyinCacheAsDictionary()
+        {
+            return new Dictionary<string, string[][]>(PinyinCache);
+        }
+
+        private void SetPinyinCacheAsDictionary(Dictionary<string, string[][]> usage)
+        {
+            PinyinCache = new ConcurrentDictionary<string, string[][]>(usage);
         }
     }
 }
