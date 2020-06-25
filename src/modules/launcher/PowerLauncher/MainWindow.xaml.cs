@@ -279,7 +279,8 @@ namespace PowerLauncher
                 {
                     if (selectedItem.IndexOf(input, StringComparison.InvariantCultureIgnoreCase) == 0)
                     {
-                        return selectedItem;
+                        // Use the same case as the input query for the matched portion of the string
+                        return input + selectedItem.Substring(input.Length);
                     }
                 }
             }
