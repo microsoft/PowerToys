@@ -18,7 +18,10 @@ namespace Wox.Infrastructure.Storage
         public const string FileSuffix = ".json";
         public string FilePath { get; set; }
         public string DirectoryPath { get; set; }
-        private StorageHelper _storageHelper = new StorageHelper(1);
+
+        // This storage helper returns whether or not to delete the json storage items
+        private static readonly int JSON_STORAGE = 1;
+        private StorageHelper _storageHelper = new StorageHelper(JSON_STORAGE);
 
         internal JsonStorage()
         {
@@ -33,7 +36,8 @@ namespace Wox.Infrastructure.Storage
 
         public T Load(bool validateItem = true)
         {
-            if(_storageHelper.clearCache)
+            // Depending on the version number of the previously installed PT Run, delete the cache if it found to be incompatible
+            if (_storageHelper.clearCache)
             {
                 if(File.Exists(FilePath))
                 {

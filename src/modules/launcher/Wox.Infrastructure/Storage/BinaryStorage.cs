@@ -14,7 +14,10 @@ namespace Wox.Infrastructure.Storage
     /// </summary>
     public class BinaryStorage<T>
     {
-        private StorageHelper _storageHelper = new StorageHelper(0);
+        // This storage helper returns whether or not to delete the binary storage items
+        private static readonly int BINARY_STORAGE = 0;
+        private StorageHelper _storageHelper = new StorageHelper(BINARY_STORAGE);
+
         public BinaryStorage(string filename)
         {
             const string directoryName = "Cache";
@@ -29,7 +32,8 @@ namespace Wox.Infrastructure.Storage
 
         public T TryLoad(T defaultData)
         {
-            if(_storageHelper.clearCache)
+            // Depending on the version number of the previously installed PT Run, delete the cache if it found to be incompatible
+            if (_storageHelper.clearCache)
             {
                 if(File.Exists(FilePath))
                 {
