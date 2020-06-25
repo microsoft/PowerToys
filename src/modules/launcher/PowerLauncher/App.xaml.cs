@@ -83,7 +83,6 @@ namespace PowerLauncher
                 _mainVM = new MainViewModel(_settings);
                 _mainWindow = new MainWindow(_settings, _mainVM);
                 _themeManager = new ThemeManager(this);
-                _themeManager.ThemeChanged += OnThemeChanged;
                 API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet, _themeManager);
                 PluginManager.InitializePlugins(API);
 
@@ -105,6 +104,7 @@ namespace PowerLauncher
                 
                 _mainVM.MainWindowVisibility = Visibility.Visible;
                 _mainVM.ColdStartFix();
+                _themeManager.ThemeChanged += OnThemeChanged;
                 Log.Info("|App.OnStartup|End Wox startup ----------------------------------------------------  ");
 
                 bootTime.Stop();
