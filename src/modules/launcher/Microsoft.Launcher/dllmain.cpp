@@ -45,6 +45,10 @@ private:
   //contains the name of the powerToys
   std::wstring app_name;
 
+  // Time to wait for process to close after sending WM_CLOSE signal
+  static const int MAX_WAIT_MILLISEC = 2000;
+
+
 public:
   // Constructor
   Microsoft_Launcher() {
@@ -55,7 +59,7 @@ public:
   ~Microsoft_Launcher() {
       if (m_enabled)
       {
-          TerminateProcess(m_hProcess, 1);
+          terminateProcess();
       }
       m_enabled = false;
   }
@@ -201,8 +205,8 @@ public:
   virtual void disable()
   {
       if (m_enabled)
-      {
-          TerminateProcess(m_hProcess, 1);
+      {      
+          terminateProcess();
       }
 
       m_enabled = false;
@@ -227,6 +231,28 @@ public:
       return 0;
     }
     return 0;
+  }
+
+  // Callback to send WM_CLOSE signal to each top level window.
+  static BOOL CALLBACK requestMainWindowClose(HWND nextWindow, LPARAM closePid) {
+      DWORD windowPid;
+      GetWindowThreadProcessId(nextWindow, &windowPid);
+
+      if (windowPid == (DWORD)closePid)
+          ::PostMessage(nextWindow, WM_CLOSE, 0, 0);
+
+      return true;
+  }
+
+  // Terminate process by sending WM_CLOSE signal and if it fails, force terminate.
+  void terminateProcess() {
+      DWORD processID = GetProcessId(m_hProcess);
+      EnumWindows(&requestMainWindowClose, processID);
+      const DWORD result = WaitForSingleObject(m_hProcess, MAX_WAIT_MILLISEC);
+      if (result == WAIT_TIMEOUT)
+      {
+          TerminateProcess(m_hProcess, 1);
+      }
   }
 
   /* Register helper class to handle system menu items related actions. */
