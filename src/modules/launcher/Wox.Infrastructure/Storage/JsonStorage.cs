@@ -34,7 +34,7 @@ namespace Wox.Infrastructure.Storage
             };
         }
 
-        public T Load(bool validateItem = true)
+        public T Load()
         {
             // Depending on the version number of the previously installed PT Run, delete the cache if it found to be incompatible
             if (_storageHelper.clearCache)
