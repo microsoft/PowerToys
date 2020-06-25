@@ -83,6 +83,7 @@ namespace PowerLauncher
                 _mainVM = new MainViewModel(_settings);
                 _mainWindow = new MainWindow(_settings, _mainVM);
                 _themeManager = new ThemeManager(this);
+                _themeManager.ThemeChanged += OnThemeChanged;
                 API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet, _themeManager);
                 PluginManager.InitializePlugins(API);
 
@@ -122,6 +123,16 @@ namespace PowerLauncher
             AppDomain.CurrentDomain.ProcessExit += (s, e) => Dispose();
             Current.Exit += (s, e) => Dispose();
             Current.SessionEnding += (s, e) => Dispose();
+        }
+
+        /// <summary>
+        /// Callback when windows theme is changed.
+        /// </summary>
+        /// <param name="previousTheme">Previous Theme</param>
+        /// <param name="currentTheme">Current Theme</param>
+        private void OnThemeChanged(Theme previousTheme, Theme currentTheme)
+        {
+            _mainVM.Query();
         }
 
         /// <summary>
