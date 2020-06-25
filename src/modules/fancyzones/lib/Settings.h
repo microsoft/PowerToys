@@ -2,6 +2,7 @@
 
 #define MULTI_ZONE_STAMP L"FancyZones_zones"
 #define RESTORE_SIZE_STAMP L"FancyZones_RestoreSize"
+#define RESTORE_ORIGIN_STAMP L"FancyZones_RestoreOrigin"
 #include <common/settings_objects.h>
 
 struct Settings

@@ -942,6 +942,7 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
                     bool moved = m_windowMoveHandler.MoveWindowIntoZoneByDirection(window, vkCode, false /* cycle through zones */, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
                     if (!moved)
                     {
+                        RestoreWindowOrigin(window);
                         RestoreWindowSize(window);
                     }
                     return true;

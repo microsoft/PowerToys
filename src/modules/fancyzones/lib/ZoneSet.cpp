@@ -303,7 +303,7 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::v
 
     if (!sizeEmpty)
     {
-        SaveWindowSize(window);
+        SaveWindowSizeAndOrigin(window);
         SizeWindowToRect(window, size);
         StampWindow(window, bitmask);
     }
