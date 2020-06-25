@@ -75,7 +75,6 @@ public:
 
 private:
     void UpdateDragState(HWND window) noexcept;
-    void RestoreSize(HWND window) noexcept;
 
 private:
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
@@ -307,7 +306,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
             }
             else
             {
-                RestoreSize(window);
+                RestoreWindowSize(window);
             }
         }
 
@@ -378,28 +377,5 @@ void WindowMoveHandlerPrivate::UpdateDragState(HWND window) noexcept
             notifications::show_toast_with_activations(GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED), {}, std::move(actions));
             warning_shown = true;
         }
-    }
-}
-
-void WindowMoveHandlerPrivate::RestoreSize(HWND window) noexcept
-{
-    auto windowSizeData = GetPropW(window, RESTORE_SIZE_STAMP);
-    if (windowSizeData)
-    {
-        std::array<int, 2> windowSize;
-        memcpy(windowSize.data(), &windowSizeData, sizeof windowSize);
-
-        // {width, height}
-        DPIAware::Convert(MonitorFromWindow(window, MONITOR_DEFAULTTONULL), windowSize[0], windowSize[1]);
-
-        RECT rect;
-        if (GetWindowRect(window, &rect))
-        {
-            rect.right = rect.left + windowSize[0];
-            rect.bottom = rect.top + windowSize[1];
-            SizeWindowToRect(window, rect);
-        }
-
-        ::RemoveProp(window, RESTORE_SIZE_STAMP);
     }
 }
