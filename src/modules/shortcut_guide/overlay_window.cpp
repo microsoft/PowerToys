@@ -184,8 +184,8 @@ D2D1_RECT_F D2DOverlaySVG::get_snap_right() const
     return result;
 }
 
-D2DOverlayWindow::D2DOverlayWindow() :
-    total_screen({}), animation(0.3)
+D2DOverlayWindow::D2DOverlayWindow(std::optional<std::function<std::remove_pointer_t<WNDPROC>>> pre_wnd_proc) :
+    total_screen({}), animation(0.3), D2DWindow(std::move(pre_wnd_proc))
 {
     tasklist_thread = std::thread([&] {
         while (running)
@@ -213,6 +213,7 @@ D2DOverlayWindow::D2DOverlayWindow() :
 void D2DOverlayWindow::show(HWND active_window, bool snappable)
 {
     std::unique_lock lock(mutex);
+    hidden = false;
     tasklist_buttons.clear();
     this->active_window = active_window;
     this->active_window_snappable = snappable;
@@ -414,7 +415,7 @@ void D2DOverlayWindow::on_hide()
         DwmUnregisterThumbnail(thumbnail);
     }
     std::chrono::steady_clock::time_point shown_end_time = std::chrono::steady_clock::now();
-    // Trace the event only if the overlay window was visible.
+    // Trace the event only if the overlay window _ visible.
     if (shown_start_time.time_since_epoch().count() > 0)
     {
         Trace::HideGuide(std::chrono::duration_cast<std::chrono::milliseconds>(shown_end_time - shown_start_time).count(), key_pressed);
@@ -471,6 +472,11 @@ void D2DOverlayWindow::quick_hide()
     {
         DwmUnregisterThumbnail(thumbnail);
     }
+}
+
+HWND D2DOverlayWindow::get_window_handle()
+{
+    return hwnd;
 }
 
 float D2DOverlayWindow::get_overlay_opacity()
@@ -619,12 +625,12 @@ void D2DOverlayWindow::hide_thumbnail()
 
 void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_dc)
 {
-    if (!winkey_held() || is_start_visible())
+    if (!hidden && !instance->overlay_visible())
     {
         hide();
-        instance->was_hidden();
         return;
     }
+
     d2d_dc->Clear();
     int x_offset = 0, y_offset = 0, dimension = 0;
     auto current_anim_value = (float)animation.value(Animation::AnimFunctions::LINEAR);
