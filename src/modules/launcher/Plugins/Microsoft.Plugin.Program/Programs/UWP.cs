@@ -551,10 +551,7 @@ namespace Microsoft.Plugin.Program.Programs
                 {
                     var end = path.Length - extension.Length;
                     var prefix = path.Substring(0, end);
-                    var paths = new List<string> { path };
-
-                    // TODO: This value must be set in accordance to the WPF theme (work in progress).
-                    // Must be set to `contrast-white` for light theme and to `contrast-black` for dark theme to get an icon of the contrasting color.
+                    var paths = new List<string> { path };                    
 
                     var scaleFactors = new Dictionary<PackageVersion, List<int>>
                     {
