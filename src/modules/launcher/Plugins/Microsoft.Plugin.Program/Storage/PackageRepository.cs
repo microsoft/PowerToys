@@ -14,7 +14,7 @@ namespace Microsoft.Plugin.Program.Storage
     /// A repository for storing packaged applications such as UWP apps or appx packaged desktop apps.
     /// This repository will also monitor for changes to the PackageCatelog and update the repository accordingly
     /// </summary>
-    internal class PackageRepository : ListRepository<UWP.Application>, IRepository<UWP.Application>
+    internal class PackageRepository : ListRepository<UWP.Application>, IRepository<UWP.Application>, IProgramRepository
     {
         IPackageCatalog _packageCatalog;
         public PackageRepository(IPackageCatalog packageCatalog, IStorage<IList<UWP.Application>> storage) : base(storage)
@@ -42,7 +42,7 @@ namespace Microsoft.Plugin.Program.Storage
                 //Note there are sometimes multiple packages per application and this doesn't necessarily mean that we haven't found the app.
                 //eg. "Could not find file 'C:\\Program Files\\WindowsApps\\Microsoft.WindowsTerminalPreview_2020.616.45.0_neutral_~_8wekyb3d8bbwe\\AppxManifest.xml'."
 
-                catch ( System.IO.FileNotFoundException e)
+                catch (System.IO.FileNotFoundException e)
                 {
                     ProgramLogger.LogException($"|UWP|OnPackageInstalling|{args.Package.InstalledLocation}|{e.Message}", e);
                 }
@@ -56,7 +56,7 @@ namespace Microsoft.Plugin.Program.Storage
                 //find apps associated with this package. 
                 var uwp = new UWP(args.Package);
                 var apps = _items.Where(a => a.Package.Equals(uwp)).ToArray();
-                foreach(var app in apps)
+                foreach (var app in apps)
                 {
                     Remove(app);
                 }
