@@ -56,7 +56,6 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 <br>
 <br>
 <br>
-<br>
 
 ### Shortcut Guide
 
