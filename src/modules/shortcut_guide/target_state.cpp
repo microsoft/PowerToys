@@ -32,7 +32,7 @@ bool TargetState::signal_event(unsigned vk_code, bool key_down)
     const bool win_key_released = !key_down && (vk_code == VK_LWIN || vk_code == VK_RWIN);
     constexpr auto overlay_fade_in_animation_time = std::chrono::milliseconds(300);
     const auto overlay_active = state == Shown && (std::chrono::system_clock::now() - signal_timestamp > overlay_fade_in_animation_time);
-    const bool suppress_win_release = win_key_released && overlay_active && !nonwin_key_was_pressed_during_shown;
+    const bool suppress_win_release = win_key_released && (state == ForceShown || overlay_active) && !nonwin_key_was_pressed_during_shown;
 
     events.push_back({ key_down, vk_code });
     lock.unlock();
