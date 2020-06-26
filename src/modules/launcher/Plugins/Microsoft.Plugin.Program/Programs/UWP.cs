@@ -571,6 +571,7 @@ namespace Microsoft.Plugin.Program.Programs
                         }
                     }
 
+                    paths = paths.OrderByDescending(x => x.Contains(theme)).ToList();
                     var selected = paths.FirstOrDefault(File.Exists);
                     if (!string.IsNullOrEmpty(selected))
                     {
@@ -597,6 +598,7 @@ namespace Microsoft.Plugin.Program.Programs
                             pathFactorPairs.Add(prefixThemePath, factor);
                         }
 
+                        paths = paths.OrderByDescending(x => x.Contains(theme)).ToList();
                         var selectedIconPath = paths.OrderBy(x => Math.Abs(pathFactorPairs.GetValueOrDefault(x) - appIconSize)).FirstOrDefault(File.Exists);
                         if (!string.IsNullOrEmpty(selectedIconPath))
                         {
