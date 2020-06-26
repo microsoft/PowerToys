@@ -21,6 +21,7 @@ using System.Windows.Input;
 using System.Runtime.InteropServices.ComTypes;
 using Wox.Plugin.SharedCommands;
 using System.Reflection;
+using Wox.Infrastructure.Image;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -640,7 +641,7 @@ namespace Microsoft.Plugin.Program.Programs
                     ProgramLogger.LogException($"|UWP|ImageFromPath|{path}" +
                                                     $"|Unable to get logo for {UserModelId} from {path} and" +
                                                     $" located in {Package.Location}", new FileNotFoundException());
-                    return new BitmapImage(new Uri(Constant.ErrorIcon));
+                    return new BitmapImage(new Uri(ImageLoader.ErrorIconPath));
                 }
             }
 

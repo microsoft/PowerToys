@@ -18,8 +18,8 @@ namespace Wox.Infrastructure.Image
         private static BinaryStorage<Dictionary<string, int>> _storage;
         private static readonly ConcurrentDictionary<string, string> GuidToKey = new ConcurrentDictionary<string, string>();
         private static IImageHashGenerator _hashGenerator;
-        private static string ErrorIconPath;
-        private static string DefaultIconPath;
+        public static string ErrorIconPath;
+        public static string DefaultIconPath;
 
         private static readonly string[] ImageExtensions =
         {
