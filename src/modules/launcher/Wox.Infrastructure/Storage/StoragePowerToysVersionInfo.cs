@@ -6,7 +6,7 @@ using System.Windows.Markup;
 
 namespace Wox.Infrastructure.Storage
 {
-    public class StorageHelper
+    public class StoragePowerToysVersionInfo
     {
         // This detail is accessed by the storage items and is used to decide if the cache must be deleted or not
         public bool clearCache = false;
@@ -75,7 +75,7 @@ namespace Wox.Infrastructure.Storage
             return filePath;
         }
 
-        public StorageHelper(String AssociatedFilePath, int type)
+        public StoragePowerToysVersionInfo(String AssociatedFilePath, int type)
         {
             FilePath = GetFilePath(AssociatedFilePath, type);
             // Get the previous version of PowerToys and cache Storage details from the CacheDetails.json storage file
