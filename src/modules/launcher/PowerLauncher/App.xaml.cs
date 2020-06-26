@@ -2,6 +2,7 @@ using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
@@ -16,6 +17,7 @@ using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.UserSettings;
 using Wox.ViewModel;
+using Wox.Plugin;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace PowerLauncher
@@ -29,6 +31,7 @@ namespace PowerLauncher
         private static bool _disposed;
         private Settings _settings;
         private MainViewModel _mainVM;
+        private ThemeManager _themeManager;
         private SettingWindowViewModel _settingsVM;
         private readonly Alphabet _alphabet = new Alphabet();
         private StringMatcher _stringMatcher;
@@ -67,12 +70,12 @@ namespace PowerLauncher
                 _stringMatcher = new StringMatcher(_alphabet);
                 StringMatcher.Instance = _stringMatcher;
                 _stringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
-
-                ThemeManager themeManager = new ThemeManager(this);               
+              
                 PluginManager.LoadPlugins(_settings.PluginSettings);
                 _mainVM = new MainViewModel(_settings);
                 var window = new MainWindow(_settings, _mainVM);
-                API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet);
+                _themeManager = new ThemeManager(this);
+                API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet, _themeManager);
                 PluginManager.InitializePlugins(API);
 
                 Current.MainWindow = window;
@@ -93,6 +96,7 @@ namespace PowerLauncher
                 
                 _mainVM.MainWindowVisibility = Visibility.Visible;
                 _mainVM.ColdStartFix();
+                _themeManager.ThemeChanged += OnThemeChanged;
                 Log.Info("|App.OnStartup|End Wox startup ----------------------------------------------------  ");
 
                 bootTime.Stop();
@@ -111,6 +115,16 @@ namespace PowerLauncher
             AppDomain.CurrentDomain.ProcessExit += (s, e) => Dispose();
             Current.Exit += (s, e) => Dispose();
             Current.SessionEnding += (s, e) => Dispose();
+        }
+
+        /// <summary>
+        /// Callback when windows theme is changed.
+        /// </summary>
+        /// <param name="previousTheme">Previous Theme</param>
+        /// <param name="currentTheme">Current Theme</param>
+        private void OnThemeChanged(Theme previousTheme, Theme currentTheme)
+        {
+            _mainVM.Query();
         }
 
         /// <summary>

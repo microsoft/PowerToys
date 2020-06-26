@@ -5,6 +5,7 @@ using System.Threading;
 using System.Windows;
 using Mages.Core;
 using Wox.Plugin;
+using System.Drawing;
 
 namespace Microsoft.Plugin.Calculator
 {
@@ -22,6 +23,7 @@ namespace Microsoft.Plugin.Calculator
         private static readonly Regex RegBrackets = new Regex(@"[\(\)\[\]]", RegexOptions.Compiled);
         private static readonly Engine MagesEngine;
         private PluginInitContext Context { get; set; }
+        private string IconPath { get; set; }
 
         static Main()
         {
@@ -52,7 +54,7 @@ namespace Microsoft.Plugin.Calculator
                         new Result
                         {
                             Title = result.ToString(),
-                            IcoPath = "Images/calculator.dark.png",
+                            IcoPath = IconPath,
                             Score = 300,
                             SubTitle = Context.API.GetTranslation("wox_plugin_calculator_copy_number_to_clipboard"),
                             Action = c =>
@@ -109,9 +111,27 @@ namespace Microsoft.Plugin.Calculator
         public void Init(PluginInitContext context)
         {
             Context = context;
+            Context.API.ThemeChanged += OnThemeChanged;
+            ResetCalculatorIconPath(Context.API.GetCurrentTheme());
         }
 
-        public string GetTranslatedPluginTitle()
+        private void ResetCalculatorIconPath(Theme theme)
+        {
+            string ThemeString;
+            if (theme == Theme.Light || theme == Theme.HighContrastWhite)
+                ThemeString = "light";
+            else
+                ThemeString = "dark";
+
+            IconPath = "Images/calculator." + ThemeString + ".png";
+        }
+
+        private void OnThemeChanged(Theme _, Theme newTheme)
+        {
+            ResetCalculatorIconPath(newTheme);
+        }
+    
+    public string GetTranslatedPluginTitle()
         {
             return Context.API.GetTranslation("wox_plugin_calculator_plugin_name");
         }
