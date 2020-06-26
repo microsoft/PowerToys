@@ -44,7 +44,7 @@ namespace Microsoft.Plugin.Program.Storage
 
                 catch ( System.IO.FileNotFoundException e)
                 {
-                    ProgramLogger.LogException($"|UWP|OnPackageInstalling|{e.Message}", e);
+                    ProgramLogger.LogException($"|UWP|OnPackageInstalling|{args.Package.InstalledLocation}|{e.Message}", e);
                 }
             }
         }
