@@ -9,7 +9,6 @@ using Wox.Core.Resource;
 using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
-using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using Wox.ViewModel;
 
