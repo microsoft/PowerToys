@@ -265,7 +265,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 var displayNameMatch = StringMatcher.FuzzySearch(query, DisplayName);
                 var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
-                var score = new[] { displayNameMatch.Score, descriptionMatch.Score }.Max();
+                var score = new[] { displayNameMatch.Score, descriptionMatch.Score/2 }.Max();
                 return score;
             }
 
