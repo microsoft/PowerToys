@@ -54,13 +54,13 @@
         <Border 
             x:Name="SearchBoxBorder" 
             Grid.Row="0" 
-            Margin="24,24,24,8"  
+            Margin="24,24,24,24"  
             BorderThickness="1" 
             CornerRadius="4"
             Background="{DynamicResource SystemChromeLow}"
             BorderBrush="{DynamicResource BorderBrush}">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="12" Opacity="0.3" ShadowDepth="0" />
+                <DropShadowEffect BlurRadius="32" Opacity="0.28" ShadowDepth="1" />
             </Border.Effect>
             <local:LauncherControl 
                 x:Name="SearchBox">
@@ -75,7 +75,7 @@
         <Border 
             x:Name="ListBoxBorder"
             Grid.Row="1" 
-            Margin="24,8,24,24" 
+            Margin="24,-8,24,24" 
             BorderThickness="1"
             CornerRadius="4" 
             Visibility="{Binding Results.Visibility}"
@@ -85,7 +85,7 @@
                 <TranslateTransform />
             </Border.RenderTransform>-->
             <Border.Effect>
-                <DropShadowEffect BlurRadius="12" Opacity="0.3" ShadowDepth="0" />
+                <DropShadowEffect BlurRadius="32" Opacity="0.28" ShadowDepth="1" />
             </Border.Effect>
             <local:ResultList x:Name="ListBox" 
                 PreviewMouseDown="ListBox_PreviewMouseDown" >

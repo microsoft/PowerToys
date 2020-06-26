@@ -72,7 +72,7 @@
         <!--Background="{ThemeResource BackdropAcrylicBrush}"-->
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="64"/>
+            <ColumnDefinition Width="72"/>
         </Grid.ColumnDefinitions>
 
         <TextBlock
