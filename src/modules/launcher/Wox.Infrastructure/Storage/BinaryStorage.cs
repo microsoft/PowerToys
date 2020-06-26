@@ -16,7 +16,7 @@ namespace Wox.Infrastructure.Storage
     {
         // This storage helper returns whether or not to delete the binary storage items
         private static readonly int BINARY_STORAGE = 0;
-        private StorageHelper _storageHelper = new StorageHelper(BINARY_STORAGE);
+        private StorageHelper _storageHelper;
 
         public BinaryStorage(string filename)
         {
@@ -32,6 +32,7 @@ namespace Wox.Infrastructure.Storage
 
         public T TryLoad(T defaultData)
         {
+            _storageHelper = new StorageHelper(FilePath, BINARY_STORAGE);
             // Depending on the version number of the previously installed PT Run, delete the cache if it is found to be incompatible
             if (_storageHelper.clearCache)
             {
@@ -123,6 +124,7 @@ namespace Wox.Infrastructure.Storage
                     Log.Exception($"|BinaryStorage.Save|serialize error for file <{FilePath}>", e);
                 }
             }
+            _storageHelper.Close();
         }
     }
 }

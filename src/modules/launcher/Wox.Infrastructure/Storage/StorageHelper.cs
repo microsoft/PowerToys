@@ -13,7 +13,7 @@ namespace Wox.Infrastructure.Storage
 
         
         private String currentPowerToysVersion = String.Empty;
-        private String FilePath = String.Empty;
+        private String FilePath { get; set; } = String.Empty;
 
         // As of now this information is not pertinent but may be in the future
         // There may be cases when we want to delete only the .cache files and not the .json storage files
@@ -44,8 +44,6 @@ namespace Wox.Infrastructure.Storage
 
         public string GetPreviousVersion()
         {
-            GetFilePath();
-
             if (File.Exists(FilePath))
             {
                 return File.ReadAllText(FilePath);
@@ -58,25 +56,28 @@ namespace Wox.Infrastructure.Storage
             }
         }
 
-        private void GetFilePath()
+        private string GetFilePath(String AssociatedFilePath, int type)
         {
-            const string directoryName = "Cache";
-            var directoryPath = Path.Combine(Constant.DataDirectory, directoryName);
-            Helper.ValidateDirectory(directoryPath);
-            var filename = "Version";
-            const string fileSuffix = ".txt";
-            FilePath = Path.Combine(directoryPath, $"{filename}{fileSuffix}");
+            string suffix = string.Empty;
+            string cacheSuffix = ".cache";
+            string jsonSuffix = ".json";
+
+            if(type == (uint)StorageType.BINARY_STORAGE)
+            {
+                suffix = cacheSuffix;
+            }
+            else if(type == (uint)StorageType.JSON_STORAGE)
+            {
+                suffix = jsonSuffix;
+            }
+
+            string filePath = AssociatedFilePath.Substring(0, AssociatedFilePath.Length - suffix.Length) + "_version.txt";
+            return filePath;
         }
 
-        public StorageHelper()
+        public StorageHelper(String AssociatedFilePath, int type)
         {
-            GetFilePath();
-            currentPowerToysVersion = Microsoft.PowerToys.Settings.UI.Lib.Utilities.Helper.GetProductVersion();
-        }
-
-        public StorageHelper(int type)
-        {
-
+            FilePath = GetFilePath(AssociatedFilePath, type);
             // Get the previous version of PowerToys and cache Storage details from the CacheDetails.json storage file
             String previousVersion = GetPreviousVersion();
             currentPowerToysVersion = Microsoft.PowerToys.Settings.UI.Lib.Utilities.Helper.GetProductVersion();

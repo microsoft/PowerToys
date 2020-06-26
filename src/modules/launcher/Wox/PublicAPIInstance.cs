@@ -70,9 +70,6 @@ namespace Wox
 
         public void SaveAppAllSettings()
         {
-            StorageHelper _storageHelper = new StorageHelper();
-            _storageHelper.Close();
-
             _mainVM.Save();
             _settingsVM.Save();
             PluginManager.Save();
