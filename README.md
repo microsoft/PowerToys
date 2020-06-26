@@ -72,9 +72,9 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 - Windows 10 1803 (build 17134) or later.
 - Have [.NET Core 3.1 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.4-windows-x64-installer). The installer will prompt this but we want to directly make people aware.
 
-### Via Github with MSI [Recommended]
+### Via GitHub with MSI [Recommended]
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.18.2-x64.msi` to download the PowerToys installer.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.19.0-x64.msi` to download the PowerToys installer.
 
 **Note:** After installing, you will have to start PowerToys for the first time.  We will improve install experience this moving forward but due to a possible install dependency, we can't start after install currently.
 
@@ -107,8 +107,8 @@ choco upgrade powertoys
 
 ### Known issues
 
-- [#2012 - Uninstalling with old control panel fails](https://github.com/microsoft/PowerToys/issues/2012): Please use the modern settings to uninstall. `Windows 10 Settings -> Apps -> Apps & features`
-- [#3384 - PowerToys Settings window is empty](https://github.com/microsoft/PowerToys/issues/3384): Workaround appears to be run as admin.  We are proactively looking into this as a hotfix.
+- PT Run, Newly installed apps can't be found [#3553](https://github.com/microsoft/PowerToys/issues/3553).  Packaged apps should be resolved.
+- PT Run, CPU / Memory, still investigating [#3208](https://github.com/microsoft/PowerToys/issues/3208).  We have 2 leads and fixed one item.
 
 ### Processor support
 
@@ -120,26 +120,28 @@ We currently support the matrix below.
 
 ## What's Happening
 
-### May 2020 Update
+### June 2020 Update
 
-Our goals for 0.18 release cycle was three big items, PowerToys Run, Keyboard manager, and migrating to the new settings system.  This is also the first time we'll test out the auto-updating system.
+Our goals for 0.19 release cycle had one big goal, add in stability / quality fixes. We've addressed over 100 issues across all our utilities. We've improved our installer experience and this will be the last time during upgrade you'll see Windows Explorer flash on you.
 
-Feedback is critical. We know there are areas for improvement on PT Run. We would love feedback so we can improve. We also would love to know if you want us to be more aggressive on auto-upgrading.
+The team was heavily focused on improving PowerToys Run search quality and speed.
 
-- We shipped [v0.18][github-release-link]!
-- New Utilities
-   - PowerToys Run, our new application launcher (use alt-space to activate)
-   - Keyboard manager, a quick easy way to remap your keyboard
-- Fixed [#243](https://github.com/microsoft/PowerToys/issues/243)'s setting issue
-- Improved performance on FancyZones [#1264](https://github.com/microsoft/PowerToys/issues/1264)
-- Lots of bug fixes!
+Feedback is critical. We know there are areas for improvement on PowerToys Run. We would love feedback so we can improve. We also would love to know if you want us to be more aggressive on auto-upgrading.
 
-For [0.19](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F4), we are proactively working on:
+- We shipped [v0.19][github-release-link]!
+- Big push for PowerToys Run search quality fixes
+- PowerToys Run can now remap to any key shortcut (minus restricted ones such as WinKey+L)
+- Improved FancyZones on Virtual Desktops and multi-thread design
+- Installer after 0.19 will no longer restart Windows Explorer
+- Fixed [#2012 - Uninstalling with old control panel fails](https://github.com/microsoft/PowerToys/issues/2012)
+- Fixed [#3384 - PowerToys Settings window is empty](https://github.com/microsoft/PowerToys/issues/3384)
+- Over 100 bug fixes!
 
-- Enable PT Run to be mapped to Win-Keys
+For [0.20](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F5), we are proactively working on:
+
 - Stability / tech debt fixes
-- Performance improvements with FancyZones
-- A testing utility for FancyZones to be sure we can test different window configurations.
+- Start work on FZ Editor V2
+- OOBE improvements
 
 ### Version 1.0 plan
 
