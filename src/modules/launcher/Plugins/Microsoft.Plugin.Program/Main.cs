@@ -13,28 +13,26 @@ using Wox.Plugin;
 using Microsoft.Plugin.Program.Views;
 
 using Stopwatch = Wox.Infrastructure.Stopwatch;
+using Windows.ApplicationModel;
+using Microsoft.Plugin.Program.Storage;
 using Microsoft.Plugin.Program.Programs;
 
 namespace Microsoft.Plugin.Program
 {
-    public class Main : ISettingProvider, IPlugin, IPluginI18n, IContextMenu, ISavable, IReloadable, IDisposable
+    public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable, IReloadable, IDisposable
     {
         private static readonly object IndexLock = new object();
         internal static Programs.Win32[] _win32s { get; set; }
-        internal static Programs.UWP.Application[] _uwps { get; set; }
         internal static Settings _settings { get; set; }
-
-        FileSystemWatcher _watcher = null;
-        System.Timers.Timer _timer = null;
 
         private static bool IsStartupIndexProgramsRequired => _settings.LastIndexTime.AddDays(3) < DateTime.Today;
 
         private static PluginInitContext _context;
 
         private static BinaryStorage<Programs.Win32[]> _win32Storage;
-        private static BinaryStorage<Programs.UWP.Application[]> _uwpStorage;
         private readonly PluginJsonStorage<Settings> _settingsStorage;
         private bool _disposed = false;
+        private PackageRepository _packageRepository = new PackageRepository(new PackageCatalogWrapper(), new BinaryStorage<IList<UWP.Application>>("UWP"));
 
         public Main()
         {
@@ -45,11 +43,10 @@ namespace Microsoft.Plugin.Program
             {
                 _win32Storage = new BinaryStorage<Programs.Win32[]>("Win32");
                 _win32s = _win32Storage.TryLoad(new Programs.Win32[] { });
-                _uwpStorage = new BinaryStorage<Programs.UWP.Application[]>("UWP");
-                _uwps = _uwpStorage.TryLoad(new Programs.UWP.Application[] { });
+
+                _packageRepository.Load();
             });
             Log.Info($"|Microsoft.Plugin.Program.Main|Number of preload win32 programs <{_win32s.Length}>");
-            Log.Info($"|Microsoft.Plugin.Program.Main|Number of preload uwps <{_uwps.Length}>");
 
             var a = Task.Run(() =>
             {
@@ -59,42 +56,38 @@ namespace Microsoft.Plugin.Program
 
             var b = Task.Run(() =>
             {
-                if (IsStartupIndexProgramsRequired || !_uwps.Any())
-                    Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Win32Program index cost", IndexUWPPrograms);
+                if (IsStartupIndexProgramsRequired || !_packageRepository.Any())
+                    Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Win32Program index cost", _packageRepository.IndexPrograms);
             });
+
 
             Task.WaitAll(a, b);
 
             _settings.LastIndexTime = DateTime.Today;
-
-            InitializeFileWatchers();
-            InitializeTimer();
         }
 
         public void Save()
         {
             _settingsStorage.Save();
             _win32Storage.Save(_win32s);
-            _uwpStorage.Save(_uwps);
+            _packageRepository.Save();
         }
 
         public List<Result> Query(Query query)
         {
             Programs.Win32[] win32;
-            Programs.UWP.Application[] uwps;
 
             lock (IndexLock)
             {
                 // just take the reference inside the lock to eliminate query time issues.
                 win32 = _win32s;
-                uwps = _uwps;
             }
 
             var results1 = win32.AsParallel()
                 .Where(p => p.Enabled)
                 .Select(p => p.Result(query.Search, _context.API));
 
-            var results2 = uwps.AsParallel()
+            var results2 = _packageRepository.AsParallel()
                 .Where(p => p.Enabled)
                 .Select(p => p.Result(query.Search, _context.API));
 
@@ -116,7 +109,7 @@ namespace Microsoft.Plugin.Program
 
         public void UpdateUWPIconPath(Theme theme)
         {
-            foreach (UWP.Application app in _uwps)
+            foreach (UWP.Application app in _packageRepository)
             {
                 app.UpdatePath(theme);
             }
@@ -131,31 +124,16 @@ namespace Microsoft.Plugin.Program
             }
         }
 
-        public static void IndexUWPPrograms()
-        {
-            var windows10 = new Version(10, 0);
-            var support = Environment.OSVersion.Version.Major >= windows10.Major;
 
-            var applications = support ? Programs.UWP.All() : new Programs.UWP.Application[] { };
-            lock (IndexLock)
-            {
-                _uwps = applications;
-            }
-        }
 
-        public static void IndexPrograms()
+        public void IndexPrograms()
         {
             var t1 = Task.Run(() => IndexWin32Programs());
-            var t2 = Task.Run(() => IndexUWPPrograms());
+            var t2 = Task.Run(() => _packageRepository.IndexPrograms());
 
             Task.WaitAll(t1, t2);
 
             _settings.LastIndexTime = DateTime.Today;
-        }
-
-        public Control CreateSettingPanel()
-        {
-            return new ProgramSetting(_context, _settings, _win32s, _uwps);
         }
 
         public string GetTranslatedPluginTitle()
@@ -221,52 +199,5 @@ namespace Microsoft.Plugin.Program
             }
         }
 
-        void InitializeFileWatchers()
-        {
-            // Create a new FileSystemWatcher and set its properties.
-            _watcher = new FileSystemWatcher();
-            var resolvedPath = Environment.ExpandEnvironmentVariables("%ProgramFiles%");
-            _watcher.Path = resolvedPath;
-
-            //Filter to create and deletes of 'microsoft.system.package.metadata' directories. 
-            _watcher.NotifyFilter = NotifyFilters.DirectoryName | NotifyFilters.FileName;
-            _watcher.IncludeSubdirectories = true;
-
-            // Add event handlers.
-            _watcher.Created += OnChanged;
-            _watcher.Deleted += OnChanged;
-
-            // Begin watching.
-            _watcher.EnableRaisingEvents = true;
-        }
-
-        void InitializeTimer()
-        {
-            //multiple file writes occur on install / uninstall.  Adding a delay before actually indexing.
-            var delayInterval = 5000; 
-            _timer = new System.Timers.Timer(delayInterval);
-            _timer.Enabled = true;
-            _timer.AutoReset = false;
-            _timer.Elapsed += FileWatchElapsedTimer;
-            _timer.Stop();
-        }
-
-        //When a watched directory changes then reset the timer.
-        private void OnChanged(object source, FileSystemEventArgs e)
-        {
-            Log.Debug($"|Microsoft.Plugin.Program.Main|Directory Changed: {e.FullPath} {e.ChangeType} - Resetting timer.");
-            _timer.Stop();
-            _timer.Start();
-        }
-
-        private void FileWatchElapsedTimer(object sender, ElapsedEventArgs e)
-        {
-            Task.Run(() =>
-            {
-                Log.Debug($"|Microsoft.Plugin.Program.Main| ReIndexing UWP Programs");
-                IndexUWPPrograms();
-                Log.Debug($"|Microsoft.Plugin.Program.Main| Done ReIndexing");
-            });
-        }
     }
 }
