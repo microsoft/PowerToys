@@ -56,7 +56,10 @@ namespace PowerLauncher
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            RunnerHelper.WaitForPowerToysRunner(_powerToysPid);
+            RunnerHelper.WaitForPowerToysRunner(_powerToysPid, () => {
+                Dispose();
+                Environment.Exit(0);
+            });
 
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
