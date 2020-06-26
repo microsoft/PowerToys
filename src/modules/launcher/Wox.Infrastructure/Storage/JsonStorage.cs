@@ -43,7 +43,7 @@ namespace Wox.Infrastructure.Storage
                 if(File.Exists(FilePath))
                 {
                     File.Delete(FilePath);
-                    Log.Info("|JsonStorage.TryLoad|Deleting cached data");
+                    Log.Info($"|JsonStorage.TryLoad|Deleting cached data|<{FilePath}>");
                 }
             }
 
@@ -111,7 +111,7 @@ namespace Wox.Infrastructure.Storage
             string serialized = JsonConvert.SerializeObject(_data, Formatting.Indented);
             File.WriteAllText(FilePath, serialized);
             _storageHelper.Close();
-            Log.Info("|JsonStorage.Save|Saving cached data");
+            Log.Info($"|JsonStorage.Save|Saving cached data| <{FilePath}>");
         }
     }
 }
