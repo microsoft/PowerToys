@@ -376,6 +376,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         modules();
 
         auto general_settings = load_general_settings();
+
+        // Apply the general settings but don't save it as the modules() variable has not been loaded yet
         apply_general_settings(general_settings, false);
         int rvalue = 0;
         const bool elevated = is_process_elevated();
