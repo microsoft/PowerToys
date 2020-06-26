@@ -68,6 +68,12 @@ namespace Wox.Infrastructure.Storage
             FilePath = Path.Combine(directoryPath, $"{filename}{fileSuffix}");
         }
 
+        public StorageHelper()
+        {
+            GetFilePath();
+            currentPowerToysVersion = Microsoft.PowerToys.Settings.UI.Lib.Utilities.Helper.GetProductVersion();
+        }
+
         public StorageHelper(int type)
         {
 

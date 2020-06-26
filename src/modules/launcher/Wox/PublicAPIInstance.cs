@@ -20,7 +20,6 @@ namespace Wox
         private readonly SettingWindowViewModel _settingsVM;
         private readonly MainViewModel _mainVM;
         private readonly Alphabet _alphabet;
-        private readonly StorageHelper _storageHelper;
 
         #region Constructor
 
@@ -71,12 +70,14 @@ namespace Wox
 
         public void SaveAppAllSettings()
         {
+            StorageHelper _storageHelper = new StorageHelper();
+            _storageHelper.Close();
+
             _mainVM.Save();
             _settingsVM.Save();
             PluginManager.Save();
             ImageLoader.Save();
             _alphabet.Save();
-            _storageHelper.Close();
         }
 
         public void ReloadAllPluginData()
