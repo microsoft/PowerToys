@@ -124,9 +124,13 @@ namespace Microsoft.Plugin.Calculator
         private void ResetCalculatorIconPath(Theme theme)
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
+            {
                 IconPath = "Images/calculator_light.png";
+            }
             else
+            {
                 IconPath = "Images/calculator_dark.png";
+            }
         }
 
         private void OnThemeChanged(Theme _, Theme newTheme)

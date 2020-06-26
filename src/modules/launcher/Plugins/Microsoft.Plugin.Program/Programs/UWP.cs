@@ -517,10 +517,14 @@ namespace Microsoft.Plugin.Program.Programs
 
             public void ResetPath(Theme theme)
             {
-                if(theme == Theme.Light || theme == Theme.HighContrastWhite)
+                if (theme == Theme.Light || theme == Theme.HighContrastWhite)
+                {
                     LogoPath = LogoPathFromUri(LogoUri, "contrast-white");
+                }
                 else
+                {
                     LogoPath = LogoPathFromUri(LogoUri, "contrast-black");
+                }
             }
 
             internal string LogoPathFromUri(string uri, string theme)

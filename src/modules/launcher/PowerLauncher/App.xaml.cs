@@ -88,6 +88,7 @@ namespace PowerLauncher
                 _themeManager = new ThemeManager(this);
                 API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet, _themeManager);
                 PluginManager.InitializePlugins(API);
+                ImageLoader.UpdateIconTheme(_themeManager.GetCurrentTheme());
 
                 Current.MainWindow = _mainWindow;
                 Current.MainWindow.Title = Constant.ExeFileName;
@@ -135,6 +136,7 @@ namespace PowerLauncher
         /// <param name="currentTheme">Current Theme</param>
         private void OnThemeChanged(Theme previousTheme, Theme currentTheme)
         {
+            ImageLoader.UpdateIconTheme(currentTheme);
             _mainVM.Query();
         }
 
