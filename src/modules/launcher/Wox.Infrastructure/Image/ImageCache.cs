@@ -1,4 +1,5 @@
-﻿using System;
+﻿using interop;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,7 +39,7 @@ namespace Wox.Infrastructure.Image
                     foreach (var key in _data.Keys)
                     {
                         int dictValue;
-                        if (!Usage.TryGetValue(key, out dictValue))
+                        if (!Usage.TryGetValue(key, out dictValue) && !(key.Equals(Constant.ErrorIcon) || key.Equals(Constant.DefaultIcon)))
                         {
                             ImageSource imgSource;
                             _data.TryRemove(key, out imgSource);
