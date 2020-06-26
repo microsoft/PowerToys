@@ -133,6 +133,11 @@ constexpr UINT alternative_switch_vk_code = VK_OEM_2;
 void OverlayWindow::enable()
 {
     auto switcher = [&](HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT {
+        if (msg == WM_KEYDOWN && wparam == VK_ESCAPE && instance->target_state->active())
+        {
+            instance->target_state->toggle_force_shown();
+            return 0;
+        }
         if (msg != WM_HOTKEY)
         {
             return 0;

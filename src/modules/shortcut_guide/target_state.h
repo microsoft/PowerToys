@@ -30,8 +30,8 @@ private:
     void handle_timeout();
     void handle_shown(const bool forced);
     void thread_proc();
-    std::mutex mutex;
-    std::condition_variable cv;
+    std::recursive_mutex mutex;
+    std::condition_variable_any cv;
     std::chrono::system_clock::time_point winkey_timestamp, signal_timestamp;
     std::chrono::milliseconds delay;
     std::deque<KeyEvent> events;

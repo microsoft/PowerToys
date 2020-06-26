@@ -62,7 +62,7 @@ bool TargetState::signal_event(unsigned vk_code, bool key_down)
 
 void TargetState::was_hidden()
 {
-    std::unique_lock<std::mutex> lock(mutex);
+    std::unique_lock<std::recursive_mutex> lock(mutex);
     // Ignore callbacks from the D2DOverlayWindow
     if (state == ForceShown)
     {
