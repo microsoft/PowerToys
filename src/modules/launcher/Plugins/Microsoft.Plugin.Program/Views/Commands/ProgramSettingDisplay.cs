@@ -61,20 +61,6 @@ namespace Microsoft.Plugin.Program.Views.Commands
                                                         Enabled = t1.Enabled
                                                     }
                                              ));
-
-            Main._uwps
-                .Where(t1 => !ProgramSetting.ProgramSettingDisplayList.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier))
-                .ToList()
-                .ForEach(t1 => ProgramSetting.ProgramSettingDisplayList
-                                             .Add(
-                                                     new ProgramSource
-                                                     {
-                                                         Name = t1.DisplayName,
-                                                         Location = t1.Package.Location,
-                                                         UniqueIdentifier = t1.UniqueIdentifier,
-                                                         Enabled = t1.Enabled
-                                                     }
-                                              ));
         }
 
         internal static void SetProgramSourcesStatus(this List<ProgramSource> list, List<ProgramSource> selectedProgramSourcesToDisable, bool status)
@@ -85,11 +71,6 @@ namespace Microsoft.Plugin.Program.Views.Commands
                 .ForEach(t1 => t1.Enabled = status);
 
             Main._win32s
-                .Where(t1 => selectedProgramSourcesToDisable.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier && t1.Enabled != status))
-                .ToList()
-                .ForEach(t1 => t1.Enabled = status);
-
-            Main._uwps
                 .Where(t1 => selectedProgramSourcesToDisable.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier && t1.Enabled != status))
                 .ToList()
                 .ForEach(t1 => t1.Enabled = status);
@@ -133,7 +114,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
 
         internal static bool IsReindexRequired(this List<ProgramSource> selectedItems)
         {
-            if (selectedItems.Where(t1 => t1.Enabled && !Main._uwps.Any(x => t1.UniqueIdentifier == x.UniqueIdentifier)).Count() > 0
+            if (selectedItems.Where(t1 => t1.Enabled).Count() > 0
                 && selectedItems.Where(t1 => t1.Enabled && !Main._win32s.Any(x => t1.UniqueIdentifier == x.UniqueIdentifier)).Count() > 0)
                 return true;
 
