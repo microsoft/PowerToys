@@ -8,7 +8,7 @@ namespace Microsoft.Plugin.WindowWalker
     public class Main : IPlugin, IPluginI18n
     {
         private static List<SearchResult> _results = new List<SearchResult>();
-        private static string IcoPath = "Images/windowwalker.dark.png";
+        private string IconPath { get; set; }
         private PluginInitContext Context { get; set; }
 
         static Main()
@@ -24,7 +24,7 @@ namespace Microsoft.Plugin.WindowWalker
             return _results.Select(x => new Result()
             {
                 Title = x.Result.Title,
-                IcoPath = IcoPath,
+                IcoPath = IconPath,
                 SubTitle = "Running: " + x.Result.ProcessName,
                 Action = c =>
                 {
@@ -38,6 +38,24 @@ namespace Microsoft.Plugin.WindowWalker
         public void Init(PluginInitContext context)
         {
             Context = context;
+            Context.API.ThemeChanged += OnThemeChanged;
+            ResetCalculatorIconPath(context.API.GetCurrentTheme());
+        }
+
+        private void ResetCalculatorIconPath(Theme theme)
+        {
+            string ThemeString;
+            if (theme == Theme.Light || theme == Theme.HighContrastWhite)
+                ThemeString = "light";
+            else
+                ThemeString = "dark";
+
+            IconPath = "Images/windowwalker." + ThemeString + ".png";
+        }
+
+        private void OnThemeChanged(Theme _, Theme newTheme)
+        {
+            ResetCalculatorIconPath(newTheme);
         }
 
         public string GetTranslatedPluginTitle()
