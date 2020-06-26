@@ -90,14 +90,9 @@ namespace Wox.Infrastructure.Storage
             String previousVersion = GetPreviousVersion();
             currentPowerToysVersion = Microsoft.PowerToys.Settings.UI.Lib.Utilities.Helper.GetProductVersion();
 
-            // After this version we no longer have to delete the cache
-            // Right now, it has been set to a large value
-            // NOTE: This must be changed to the least portable version number so that we no longer delete cache after that version
-            String portableVersion = "v10.0.0";
-
             // If the previous version is below a set threshold, then we want to delete the file
             // However, we do not want to delete the cache if the same version of powerToys is being launched
-            if (Lessthan(previousVersion, portableVersion) && !previousVersion.Equals(currentPowerToysVersion, StringComparison.OrdinalIgnoreCase))
+            if (Lessthan(previousVersion, currentPowerToysVersion))
             {
                 clearCache = true;
             }
