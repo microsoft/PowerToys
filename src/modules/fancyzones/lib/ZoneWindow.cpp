@@ -381,6 +381,14 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
     if (dragEnabled)
     {
         auto highlightZone = ZonesFromPoint(ptClient);
+
+        if (GetAsyncKeyState(VK_CONTROL) & 0x8000)
+        {
+            std::vector<int> newHighlightZone;
+            std::set_union(begin(highlightZone), end(highlightZone), begin(m_highlightZone), end(m_highlightZone), std::back_inserter(newHighlightZone));
+            highlightZone = std::move(newHighlightZone);
+        }
+
         redraw = (highlightZone != m_highlightZone);
         m_highlightZone = std::move(highlightZone);
     }
@@ -410,7 +418,8 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnd(HWND window, POINT const& ptScreen) noexc
     {
         POINT ptClient = ptScreen;
         MapWindowPoints(nullptr, m_window.get(), &ptClient, 1);
-        m_activeZoneSet->MoveWindowIntoZoneByPoint(window, m_window.get(), ptClient);
+        m_activeZoneSet->MoveWindowIntoZoneByIndexSet(window, m_window.get(), m_highlightZone);
+        // m_activeZoneSet->MoveWindowIntoZoneByPoint(window, m_window.get(), ptClient);
 
         SaveWindowProcessToZoneIndex(window);
     }
