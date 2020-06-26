@@ -405,6 +405,7 @@ namespace Microsoft.Plugin.Program.Programs
                 DisplayName = ResourceFromPri(package.FullName, DisplayName);
                 Description = ResourceFromPri(package.FullName, Description);
                 LogoUri = LogoUriFromManifest(manifestApp);
+                LogoPath = LogoPathFromUri(LogoUri);
 
                 Enabled = true;
                 CanRunElevated = IfApplicationcanRunElevated();
@@ -516,15 +517,7 @@ namespace Microsoft.Plugin.Program.Programs
                 }
             }
 
-            public void ResetPath(Theme theme)
-            {
-                if (theme == Theme.Light || theme == Theme.HighContrastWhite)
-                    LogoPath = LogoPathFromUri(LogoUri, "contrast-white");
-                else
-                    LogoPath = LogoPathFromUri(LogoUri, "contrast-black");
-            }
-
-            internal string LogoPathFromUri(string uri, string theme)
+            internal string LogoPathFromUri(string uri)
             {
                 // all https://msdn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets
                 // windows 10 https://msdn.microsoft.com/en-us/library/windows/apps/dn934817.aspx

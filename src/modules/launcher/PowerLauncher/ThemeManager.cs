@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 
-namespace Wox.Plugin
+namespace Wox.Core.Resource
 {
     public class ThemeManager
     {
@@ -18,8 +18,6 @@ namespace Wox.Plugin
         private readonly string HighContrastTwoTheme = "HighContrast.Accent3";
         private readonly string HighContrastBlackTheme = "HighContrast.Accent4";
         private readonly string HighContrastWhiteTheme = "HighContrast.Accent5";
-
-        public event ThemeChangedHandler ThemeChanged;
 
         public ThemeManager(Application app)
         {
@@ -62,11 +60,7 @@ namespace Wox.Plugin
                 }
             };
         }
-
-        public Theme GetCurrentTheme()
-        {
-            return currentTheme;
-        }
+        
 
         public Theme GetHighContrastBaseType()
         {
@@ -86,7 +80,7 @@ namespace Wox.Plugin
                 return Theme.None;
         }
 
-        private void ResetTheme()
+        public void ResetTheme()
         {
             if (SystemParameters.HighContrast)
             {
@@ -102,7 +96,6 @@ namespace Wox.Plugin
 
         private void ChangeTheme(Theme theme)
         {
-            Theme previousTheme = currentTheme;
             if (theme == currentTheme)
                 return;
             if (theme == Theme.HighContrastOne)
@@ -139,7 +132,7 @@ namespace Wox.Plugin
             {
                 currentTheme = Theme.None;
             }
-            ThemeChanged?.Invoke(previousTheme, currentTheme);
+            Debug.WriteLine("Theme Changed to :" + currentTheme);
         }
 
         private void Current_ThemeChanged(object sender, ThemeChangedEventArgs e)
@@ -147,8 +140,6 @@ namespace Wox.Plugin
             ResetTheme();
         }
     }
-
-    public delegate void ThemeChangedHandler(Theme previousTheme, Theme newTheme);
 
     public enum Theme
     {

@@ -58,17 +58,6 @@ namespace Wox.Plugin
         void ShowApp();
 
         /// <summary>
-        /// Get current theme
-        /// </summary>
-        Theme GetCurrentTheme();
-
-        /// <summary>
-        /// Theme change event
-        /// </summary>
-        event ThemeChangedHandler ThemeChanged;
-
-
-        /// <summary>
         /// Save all Wox settings
         /// </summary>
         void SaveAppAllSettings();

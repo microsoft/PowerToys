@@ -20,19 +20,14 @@ namespace Wox
         private readonly SettingWindowViewModel _settingsVM;
         private readonly MainViewModel _mainVM;
         private readonly Alphabet _alphabet;
-        private readonly ThemeManager _themeManager;
-
-        public event ThemeChangedHandler ThemeChanged;
 
         #region Constructor
 
-        public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, Alphabet alphabet, ThemeManager themeManager)
+        public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, Alphabet alphabet)
         {
             _settingsVM = settingsVM;
             _mainVM = mainVM;
             _alphabet = alphabet;
-            _themeManager = themeManager;
-            _themeManager.ThemeChanged += OnThemeChanged;
             GlobalHotkey.Instance.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
         }
@@ -146,18 +141,9 @@ namespace Wox
             });
         }
 
-        public Theme GetCurrentTheme()
-        {
-            return _themeManager.GetCurrentTheme();
-        }
         #endregion
 
-        #region Protected Methods
-
-        protected void OnThemeChanged(Theme previousTheme, Theme currentTheme)
-        {
-            ThemeChanged?.Invoke(previousTheme, currentTheme);
-        }
+        #region Private Methods
 
         private bool KListener_hookedKeyboardCallback(KeyEvent keyevent, int vkcode, SpecialKeyState state)
         {
