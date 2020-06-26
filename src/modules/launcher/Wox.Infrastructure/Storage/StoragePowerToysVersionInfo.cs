@@ -28,6 +28,7 @@ namespace Wox.Infrastructure.Storage
         {
             string version = "v";
             string period = ".";
+            const int versionLength = 3;
 
             // If there is some error in populating/retrieving the version numbers, then the cache must be deleted
             // This case will not be hit, but is present as a fail safe
@@ -39,7 +40,7 @@ namespace Wox.Infrastructure.Storage
             string[] split1 = version1.Split( new string[] { version, period }, StringSplitOptions.RemoveEmptyEntries); 
             string[] split2 = version2.Split( new string[] { version, period }, StringSplitOptions.RemoveEmptyEntries); 
 
-            for(int i=0; i<3; i++)
+            for(int i=0; i<versionLength; i++)
             {
                 if(int.Parse(split1[i]) < int.Parse(split2[i]))
                 {
