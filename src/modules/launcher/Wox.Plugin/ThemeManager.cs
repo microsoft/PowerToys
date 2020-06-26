@@ -102,7 +102,7 @@ namespace Wox.Plugin
 
         private void ChangeTheme(Theme theme)
         {
-            Theme previousTheme = currentTheme;
+            Theme oldTheme = currentTheme;
             if (theme == currentTheme)
                 return;
             if (theme == Theme.HighContrastOne)
@@ -139,7 +139,7 @@ namespace Wox.Plugin
             {
                 currentTheme = Theme.None;
             }
-            ThemeChanged?.Invoke(previousTheme, currentTheme);
+            ThemeChanged?.Invoke(oldTheme, currentTheme);
         }
 
         private void Current_ThemeChanged(object sender, ThemeChangedEventArgs e)
@@ -148,7 +148,7 @@ namespace Wox.Plugin
         }
     }
 
-    public delegate void ThemeChangedHandler(Theme previousTheme, Theme newTheme);
+    public delegate void ThemeChangedHandler(Theme oldTheme, Theme newTheme);
 
     public enum Theme
     {

@@ -118,10 +118,11 @@ namespace Microsoft.Plugin.Calculator
         {
             Context = context;
             Context.API.ThemeChanged += OnThemeChanged;
-            ResetCalculatorIconPath(Context.API.GetCurrentTheme());
+            UpdateIconPath(Context.API.GetCurrentTheme());
         }
 
-        private void ResetCalculatorIconPath(Theme theme)
+        // Todo : Update with theme based IconPath
+        private void UpdateIconPath(Theme theme)
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
             {
@@ -135,7 +136,7 @@ namespace Microsoft.Plugin.Calculator
 
         private void OnThemeChanged(Theme _, Theme newTheme)
         {
-            ResetCalculatorIconPath(newTheme);
+            UpdateIconPath(newTheme);
         }
 
         public string GetTranslatedPluginTitle()

@@ -152,9 +152,9 @@ namespace Wox
 
         #region Protected Methods
 
-        protected void OnThemeChanged(Theme previousTheme, Theme currentTheme)
+        protected void OnThemeChanged(Theme oldTheme, Theme newTheme)
         {
-            ThemeChanged?.Invoke(previousTheme, currentTheme);
+            ThemeChanged?.Invoke(oldTheme, newTheme);
         }
 
         #endregion

@@ -33,19 +33,20 @@ namespace Wox.Infrastructure.Image
         };
 
 
-        public static void Initialize()
+        public static void Initialize(Theme theme)
         {
             _storage = new BinaryStorage<Dictionary<string, int>>("Image");
             _hashGenerator = new ImageHashGenerator();
             ImageCache.SetUsageAsDictionary(_storage.TryLoad(new Dictionary<string, int>()));
 
-            // Todo : Add icons specific to each theme
+            // Todo : Add error and default icon specific to each theme
             foreach (var icon in new[] { Constant.DefaultIcon, Constant.ErrorIcon })
             {
                 ImageSource img = new BitmapImage(new Uri(icon));
                 img.Freeze();
                 ImageCache[icon] = img;
             }
+            UpdateIconPath(theme);
             Task.Run(() =>
             {
                 Stopwatch.Normal("|ImageLoader.Initialize|Preload images cost", () =>
@@ -59,8 +60,14 @@ namespace Wox.Infrastructure.Image
             });
         }
 
+        public static void Save()
+        {
+            ImageCache.Cleanup();
+            _storage.Save(ImageCache.GetUsageAsDictionary());
+        }
+
         //Todo : Update it with icons specific to each theme.
-        public static void UpdateIconTheme(Plugin.Theme theme)
+        public static void UpdateIconPath(Theme theme)
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
             {
@@ -72,12 +79,6 @@ namespace Wox.Infrastructure.Image
                 ErrorIconPath = Constant.ErrorIcon;
                 DefaultIconPath = Constant.DefaultIcon;
             }
-        }
-
-        public static void Save()
-        {
-            ImageCache.Cleanup();
-            _storage.Save(ImageCache.GetUsageAsDictionary());
         }
 
         private class ImageResult

@@ -72,7 +72,8 @@ namespace PowerLauncher
                 RegisterAppDomainExceptions();
                 RegisterDispatcherUnhandledException();
 
-                ImageLoader.Initialize();
+                _themeManager = new ThemeManager(this);
+                ImageLoader.Initialize(_themeManager.GetCurrentTheme());
 
                 _settingsVM = new SettingWindowViewModel();
                 _settings = _settingsVM.Settings;
@@ -85,10 +86,8 @@ namespace PowerLauncher
                 PluginManager.LoadPlugins(_settings.PluginSettings);
                 _mainVM = new MainViewModel(_settings);
                 _mainWindow = new MainWindow(_settings, _mainVM);
-                _themeManager = new ThemeManager(this);
                 API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet, _themeManager);
                 PluginManager.InitializePlugins(API);
-                ImageLoader.UpdateIconTheme(_themeManager.GetCurrentTheme());
 
                 Current.MainWindow = _mainWindow;
                 Current.MainWindow.Title = Constant.ExeFileName;
@@ -132,11 +131,11 @@ namespace PowerLauncher
         /// <summary>
         /// Callback when windows theme is changed.
         /// </summary>
-        /// <param name="previousTheme">Previous Theme</param>
-        /// <param name="currentTheme">Current Theme</param>
-        private void OnThemeChanged(Theme previousTheme, Theme currentTheme)
+        /// <param name="oldTheme">Previous Theme</param>
+        /// <param name="newTheme">Current Theme</param>
+        private void OnThemeChanged(Theme oldTheme, Theme newTheme)
         {
-            ImageLoader.UpdateIconTheme(currentTheme);
+            ImageLoader.UpdateIconPath(newTheme);
             _mainVM.Query();
         }
 

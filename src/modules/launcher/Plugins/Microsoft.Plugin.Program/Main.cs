@@ -104,21 +104,21 @@ namespace Microsoft.Plugin.Program
         public void Init(PluginInitContext context)
         {
             _context = context;
-            _context.API.ThemeChanged += onThemeChanged;
-            ResetUWPIconPath(_context.API.GetCurrentTheme());
+            _context.API.ThemeChanged += OnThemeChanged;
+            UpdateUWPIconPath(_context.API.GetCurrentTheme());
         }
 
-        public void ResetUWPIconPath(Theme theme)
+        public void OnThemeChanged(Theme _, Theme currentTheme)
+        {
+            UpdateUWPIconPath(currentTheme);
+        }
+
+        public void UpdateUWPIconPath(Theme theme)
         {
             foreach (UWP.Application app in _uwps)
             {
-                app.ResetPath(theme);
+                app.UpdatePath(theme);
             }
-        }
-
-        public void onThemeChanged(Theme _, Theme currentTheme)
-        {
-            ResetUWPIconPath(currentTheme);
         }
 
         public static void IndexWin32Programs()

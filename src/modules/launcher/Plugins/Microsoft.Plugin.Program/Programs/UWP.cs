@@ -516,7 +516,7 @@ namespace Microsoft.Plugin.Program.Programs
                 }
             }
 
-            public void ResetPath(Theme theme)
+            public void UpdatePath(Theme theme)
             {
                 if (theme == Theme.Light || theme == Theme.HighContrastWhite)
                 {
