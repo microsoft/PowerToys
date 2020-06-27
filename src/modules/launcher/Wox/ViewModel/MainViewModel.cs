@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using NHotkey;
-using NHotkey.Wpf;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Helper;
@@ -20,15 +18,17 @@ using Wox.Plugin;
 using Microsoft.PowerLauncher.Telemetry;
 using Wox.Storage;
 using Microsoft.PowerToys.Telemetry;
+using interop;
 
 namespace Wox.ViewModel
 {
-    public class MainViewModel : BaseModel, ISavable
+    public class MainViewModel : BaseModel, ISavable, IDisposable
     {
         #region Private Fields
 
         private bool _isQueryRunning;
         private Query _lastQuery;
+        private static bool _disposed;
         private string _queryTextBeforeLeaveResults;
 
         private readonly WoxJsonStorage<History> _historyItemsStorage;
@@ -42,7 +42,8 @@ namespace Wox.ViewModel
         private CancellationTokenSource _updateSource;
         private CancellationToken _updateToken;
         private bool _saved;
-
+        private HotkeyManager _hotkeyManager;
+        private ushort _hotkeyHandle;
         private readonly Internationalization _translator = InternationalizationManager.Instance;
 
         #endregion
@@ -51,9 +52,11 @@ namespace Wox.ViewModel
 
         public MainViewModel(Settings settings)
         {
+            _hotkeyManager = new HotkeyManager();
             _saved = false;
             _queryTextBeforeLeaveResults = "";
             _lastQuery = new Query();
+            _disposed = false;
 
             _settings = settings;
 
@@ -80,7 +83,7 @@ namespace Wox.ViewModel
                     {
                         if (_settings.PreviousHotkey != "")
                         {
-                            RemoveHotkey(_settings.PreviousHotkey);
+                            _hotkeyManager.UnregisterHotkey(_hotkeyHandle);
                         }
 
                         if (_settings.Hotkey != "")
@@ -111,9 +114,10 @@ namespace Wox.ViewModel
             }
         }
 
-
         private void InitializeKeyCommands()
         {
+            IgnoreCommand = new RelayCommand(_ => {});
+
             EscCommand = new RelayCommand(_ =>
             {
                 if (!SelectedIsFromQueryResults())
@@ -184,11 +188,11 @@ namespace Wox.ViewModel
                         {
                             MainWindowVisibility = Visibility.Collapsed;
 
-                            Task.Run(() =>
+                            Application.Current.Dispatcher.Invoke(() =>
                             {
                                 result.Action(new ActionContext
                                 {
-                                    SpecialKeyState = GlobalHotkey.Instance.CheckModifiers()
+                                    SpecialKeyState = KeyboardHelper.CheckModifiers()
                                 });
                             });
 
@@ -323,6 +327,7 @@ namespace Wox.ViewModel
             }
         }
 
+        public ICommand IgnoreCommand { get; set; }
         public ICommand EscCommand { get; set; }
         public ICommand SelectNextItemCommand { get; set; }
         public ICommand SelectPrevItemCommand { get; set; }
@@ -521,32 +526,31 @@ namespace Wox.ViewModel
         }
         #region Hotkey
 
-        private void SetHotkey(string hotkeyStr, EventHandler<HotkeyEventArgs> action)
+        private void SetHotkey(string hotkeyStr, HotkeyCallback action)
         {
             var hotkey = new HotkeyModel(hotkeyStr);
             SetHotkey(hotkey, action);
         }
 
-        private void SetHotkey(HotkeyModel hotkey, EventHandler<HotkeyEventArgs> action)
+        private void SetHotkey(HotkeyModel hotkeyModel, HotkeyCallback action)
         {
-            string hotkeyStr = hotkey.ToString();
+            string hotkeyStr = hotkeyModel.ToString();
             try
             {
-                HotkeyManager.Current.AddOrReplace(hotkeyStr, hotkey.CharKey, hotkey.ModifierKeys, action);
+                Hotkey hotkey = new Hotkey();
+                hotkey.Alt = hotkeyModel.Alt;
+                hotkey.Shift = hotkeyModel.Shift;
+                hotkey.Ctrl = hotkeyModel.Ctrl;
+                hotkey.Win = hotkeyModel.Win;
+                hotkey.Key = (byte) KeyInterop.VirtualKeyFromKey(hotkeyModel.CharKey);
+
+                _hotkeyHandle = _hotkeyManager.RegisterHotkey(hotkey, action);
             }
             catch (Exception)
             {
                 string errorMsg =
                     string.Format(InternationalizationManager.Instance.GetTranslation("registerHotkeyFailed"), hotkeyStr);
                 MessageBox.Show(errorMsg);
-            }
-        }
-
-        public void RemoveHotkey(string hotkeyStr)
-        {
-            if (!string.IsNullOrEmpty(hotkeyStr))
-            {
-                HotkeyManager.Current.Remove(hotkeyStr);
             }
         }
 
@@ -569,7 +573,7 @@ namespace Wox.ViewModel
             if (_settings.CustomPluginHotkeys == null) return;
             foreach (CustomPluginHotkey hotkey in _settings.CustomPluginHotkeys)
             {
-                SetHotkey(hotkey.Hotkey, (s, e) =>
+                SetHotkey(hotkey.Hotkey, () =>
                 {
                     if (ShouldIgnoreHotkeys()) return;
                     MainWindowVisibility = Visibility.Visible;
@@ -578,31 +582,33 @@ namespace Wox.ViewModel
             }
         }
 
-        private void OnHotkey(object sender, HotkeyEventArgs e)
+        private void OnHotkey()
         {
-            if (!ShouldIgnoreHotkeys())
+            Application.Current.Dispatcher.Invoke(() =>
             {
+                if (!ShouldIgnoreHotkeys())
+                {
 
-                if (_settings.LastQueryMode == LastQueryMode.Empty)
-                {
-                    ChangeQueryText(string.Empty);
-                }
-                else if (_settings.LastQueryMode == LastQueryMode.Preserved)
-                {
-                    LastQuerySelected = true;
-                }
-                else if (_settings.LastQueryMode == LastQueryMode.Selected)
-                {
-                    LastQuerySelected = false;
-                }
-                else
-                {
-                    throw new ArgumentException($"wrong LastQueryMode: <{_settings.LastQueryMode}>");
-                }
+                    if (_settings.LastQueryMode == LastQueryMode.Empty)
+                    {
+                        ChangeQueryText(string.Empty);
+                    }
+                    else if (_settings.LastQueryMode == LastQueryMode.Preserved)
+                    {
+                        LastQuerySelected = true;
+                    }
+                    else if (_settings.LastQueryMode == LastQueryMode.Selected)
+                    {
+                        LastQuerySelected = false;
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"wrong LastQueryMode: <{_settings.LastQueryMode}>");
+                    }
 
-                ToggleWox();
-                e.Handled = true;
-            }
+                    ToggleWox();
+                }
+            });
         }
 
         private void ToggleWox()
@@ -701,6 +707,28 @@ namespace Wox.ViewModel
                     }
                 }
             }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    if (_hotkeyHandle != 0)
+                    {
+                        _hotkeyManager.UnregisterHotkey(_hotkeyHandle);
+                    }
+                    _hotkeyManager.Dispose();
+                    _disposed = true;
+                }   
+            }         
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
 
         #endregion

@@ -17,6 +17,7 @@ UpdateState deserialize(const json::JsonObject& json)
 
     result.github_update_last_checked_date = timeutil::from_string(json.GetNamedString(L"github_update_last_checked_date", L"invalid").c_str());
     result.pending_update = json.GetNamedBoolean(L"pending_update", false);
+    result.pending_installer_filename = json.GetNamedString(L"pending_installer_filename", L"");
 
     return result;
 }
@@ -29,6 +30,7 @@ json::JsonObject serialize(const UpdateState& state)
         json.SetNamedValue(L"github_update_last_checked_date", json::value(timeutil::to_string(*state.github_update_last_checked_date)));
     }
     json.SetNamedValue(L"pending_update", json::value(state.pending_update));
+    json.SetNamedValue(L"pending_installer_filename", json::value(state.pending_installer_filename));
 
     return json;
 }

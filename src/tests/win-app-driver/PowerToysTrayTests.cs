@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
@@ -95,6 +95,9 @@ namespace PowerToysTests
         [TestInitialize]
         public void TestInitialize()
         {
+            if (session == null)
+                return;
+
             isSettingsOpened = false;
             isTrayOpened = false;
         }

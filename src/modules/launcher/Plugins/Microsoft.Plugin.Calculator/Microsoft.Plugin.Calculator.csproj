@@ -49,6 +49,12 @@
   </ItemGroup>
   
   <ItemGroup>
+
+    <None Include="Images\calculator_light.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="Languages\en.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -103,10 +109,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <None Update="Images\calculator.dark.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Images\calculator.light.png">
+    <None Update="Images\calculator_dark.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -11,10 +11,11 @@
 #include "common/windows_colors.h"
 #include "common/common.h"
 #include "restart_elevated.h"
+#include "update_utils.h"
 
 #include <common/json.h>
 #include <common\settings_helpers.cpp>
-#include <os-detect.h>
+#include <common/os-detection/os-detect.h>
 
 #define BUFSIZE 1024
 
@@ -56,15 +57,32 @@ void dispatch_json_action_to_module(const json::JsonObject& powertoys_configs)
         // so it has to be the "restart as (non-)elevated" button.
         if (name == L"general")
         {
-            if (is_process_elevated())
+            try
             {
-                schedule_restart_as_non_elevated();
-                PostQuitMessage(0);
+                const auto value = powertoy_element.Value().GetObjectW();
+                const auto action = value.GetNamedString(L"action_name");
+                if (action == L"restart_elevation")
+                {
+                    if (is_process_elevated())
+                    {
+                        schedule_restart_as_non_elevated();
+                        PostQuitMessage(0);
+                    }
+                    else
+                    {
+                        schedule_restart_as_elevated();
+                        PostQuitMessage(0);
+                    }
+                }
+                else if (action == L"check_for_updates")
+                {
+                    std::thread{ [] {
+                        check_for_updates();
+                    } }.detach();
+                }
             }
-            else
+            catch (...)
             {
-                schedule_restart_as_elevated();
-                PostQuitMessage(0);
             }
         }
         else if (modules().find(name) != modules().end())
@@ -290,6 +308,10 @@ void run_settings_window()
     {
         settings_isUserAnAdmin = L"false";
     }
+
+    // create general settings file to initialze the settings file with installation configurations like :
+    // 1. Run on start up.
+    PTSettingsHelper::save_general_settings(save_settings.to_json());
 
     std::wstring executable_args = L"\"";
     executable_args.append(executable_path);

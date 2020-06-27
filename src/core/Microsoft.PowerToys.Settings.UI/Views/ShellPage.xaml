@@ -83,7 +83,7 @@
                 <!-- TO DO: Update icon -->
                 <winui:NavigationViewItem x:Uid="Shell_PowerLauncher" helpers:NavHelper.NavigateTo="views:PowerLauncherPage">
                     <winui:NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE8A7;"/>
+                        <FontIcon Glyph="&#xE773;"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 

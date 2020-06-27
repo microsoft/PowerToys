@@ -8,27 +8,31 @@ using Wox.Core.Plugin;
 using Wox.Core.Resource;
 using Wox.Helper;
 using Wox.Infrastructure;
-using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
 using Wox.ViewModel;
 
 namespace Wox
 {
-    public class PublicAPIInstance : IPublicAPI
+    public class PublicAPIInstance : IPublicAPI, IDisposable
     {
         private readonly SettingWindowViewModel _settingsVM;
         private readonly MainViewModel _mainVM;
         private readonly Alphabet _alphabet;
+        private bool _disposed = false;
+        private readonly ThemeManager _themeManager;
+
+        public event ThemeChangedHandler ThemeChanged;
 
         #region Constructor
 
-        public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, Alphabet alphabet)
+        public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, Alphabet alphabet, ThemeManager themeManager)
         {
             _settingsVM = settingsVM;
             _mainVM = mainVM;
             _alphabet = alphabet;
-            GlobalHotkey.Instance.hookedKeyboardCallback += KListener_hookedKeyboardCallback;
+            _themeManager = themeManager;
+            _themeManager.ThemeChanged += OnThemeChanged;
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
         }
 
@@ -124,7 +128,6 @@ namespace Wox
             return PluginManager.AllPlugins.ToList();
         }
 
-        public event WoxGlobalKeyboardEventHandler GlobalKeyboardEvent;
 
         [Obsolete("This will be removed in Wox 1.3")]
         public void PushResults(Query query, PluginMetadata plugin, List<Result> results)
@@ -141,17 +144,36 @@ namespace Wox
             });
         }
 
+        public Theme GetCurrentTheme()
+        {
+            return _themeManager.GetCurrentTheme();
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
         #endregion
 
-        #region Private Methods
+        #region Protected Methods
 
-        private bool KListener_hookedKeyboardCallback(KeyEvent keyevent, int vkcode, SpecialKeyState state)
+        protected void OnThemeChanged(Theme oldTheme, Theme newTheme)
         {
-            if (GlobalKeyboardEvent != null)
-            {
-                return GlobalKeyboardEvent((int)keyevent, vkcode, state);
+            ThemeChanged?.Invoke(oldTheme, newTheme);
+        }
+   
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {            
+                if (disposing)
+                {
+                    _themeManager.ThemeChanged -= OnThemeChanged;
+                    _disposed = true;
+                }               
             }
-            return true;
         }
         #endregion
     }

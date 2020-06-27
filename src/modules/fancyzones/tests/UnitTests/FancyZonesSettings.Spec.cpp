@@ -546,7 +546,7 @@ namespace FancyZonesUnitTests
             PowerToysSettings::Settings ptSettings(HINSTANCE{}, m_moduleName);
             ptSettings.set_description(IDS_SETTING_DESCRIPTION);
             ptSettings.set_icon_key(L"pt-fancy-zones");
-            ptSettings.set_overview_link(L"https://github.com/microsoft/PowerToys/blob/master/src/modules/fancyzones/README.md");
+            ptSettings.set_overview_link(L"https://aka.ms/PowerToysOverview_FancyZones");
             ptSettings.set_video_link(L"https://youtu.be/rTtGzZYAXgY");
 
             ptSettings.add_custom_action(
@@ -609,7 +609,7 @@ namespace FancyZonesUnitTests
                 m_ptSettings = new PowerToysSettings::Settings(hInst, m_moduleName);
                 m_ptSettings->set_description(IDS_SETTING_DESCRIPTION);
                 m_ptSettings->set_icon_key(L"pt-fancy-zones");
-                m_ptSettings->set_overview_link(L"https://github.com/microsoft/PowerToys/blob/master/src/modules/fancyzones/README.md");
+                m_ptSettings->set_overview_link(L"https://aka.ms/PowerToysOverview_FancyZones");
                 m_ptSettings->set_video_link(L"https://youtu.be/rTtGzZYAXgY");
 
                 m_ptSettings->add_custom_action(

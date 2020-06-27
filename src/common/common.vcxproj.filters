@@ -111,6 +111,15 @@
     <ClInclude Include="two_way_pipe_message_ipc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="os-detection\os-detect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RestartManagement.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="debug_control.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d2d_svg.cpp">
@@ -178,6 +187,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="two_way_pipe_message_ipc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="os-detection\os-detect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RestartManagement.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

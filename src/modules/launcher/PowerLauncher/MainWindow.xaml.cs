@@ -16,17 +16,16 @@ using System.Timers;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 
+
 namespace PowerLauncher
 {
-    public partial class MainWindow
+    public partial class MainWindow : IDisposable
     {
 
         #region Private Fields
-
-        private readonly Storyboard _progressBarStoryboard = new Storyboard();
         private Settings _settings;
         private MainViewModel _viewModel;
-        private bool _isTextSetProgramatically;
+        private bool _isTextSetProgrammatically;
         bool _deletePressed = false;
         Timer _firstDeleteTimer = new Timer();
 
@@ -64,6 +63,17 @@ namespace PowerLauncher
             _viewModel.Save();
         }
 
+        private void BringProcessToForeground()
+        {
+            // Use SendInput hack to allow Activate to work - required to resolve focus issue https://github.com/microsoft/PowerToys/issues/4270
+            WindowsInteropHelper.INPUT input = new WindowsInteropHelper.INPUT { type = WindowsInteropHelper.INPUTTYPE.INPUT_MOUSE, data = { } };
+            WindowsInteropHelper.INPUT[] inputs = new WindowsInteropHelper.INPUT[] { input };
+
+            // Send empty mouse event. This makes this thread the last to send input, and hence allows it to pass foreground permission checks
+            _ = WindowsInteropHelper.SendInput(1, inputs, WindowsInteropHelper.INPUT.Size);
+            Activate();
+        }
+
         private void OnLoaded(object sender, RoutedEventArgs _)
         {
             WindowsInteropHelper.DisableControlBox(this);
@@ -78,6 +88,8 @@ namespace PowerLauncher
             ListBox.SuggestionsList.SelectionChanged += SuggestionsList_SelectionChanged;
             ListBox.SuggestionsList.PreviewMouseLeftButtonUp += SuggestionsList_PreviewMouseLeftButtonUp;
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+
+            BringProcessToForeground();
         }
 
         private void SuggestionsList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -98,37 +110,21 @@ namespace PowerLauncher
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
+            if (Visibility == System.Windows.Visibility.Visible)
             {
-                if (Visibility == System.Windows.Visibility.Visible)
+                // Not called on first launch
+                // Additionally called when deactivated by clicking on screen  
+                UpdatePosition();
+                BringProcessToForeground();
+
+                if (!_viewModel.LastQuerySelected)
                 {
-                    _deletePressed = false;
-                    _firstDeleteTimer.Start();
-                    Activate();
-                    //(this.FindResource("IntroStoryboard") as Storyboard).Begin();
-
-                    UpdatePosition();
-                    SearchBox.QueryTextBox.Focus();
-                    _settings.ActivateTimes++;
-
-                    if (!_viewModel.LastQuerySelected)
-                    {
-                        _viewModel.LastQuerySelected = true;
-                    }
-
-                    if (!String.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
-                    {
-                        SearchBox.QueryTextBox.SelectAll();
-                    }
-                }
-                else
-                {
-                    _firstDeleteTimer.Stop();
+                    _viewModel.LastQuerySelected = true;
                 }
             }
             else if (e.PropertyName == nameof(MainViewModel.SystemQueryText))
             {
-                this._isTextSetProgramatically = true;
+                this._isTextSetProgrammatically = true;
                 SearchBox.QueryTextBox.Text = _viewModel.SystemQueryText;
             }
         }
@@ -271,6 +267,8 @@ namespace PowerLauncher
 
         private const int millisecondsToWait = 100;
         private static DateTime s_lastTimeOfTyping;
+        private bool disposedValue = false;
+
         private string ListView_FirstItem(String input)
         {
             if (!string.IsNullOrEmpty(input))
@@ -279,9 +277,10 @@ namespace PowerLauncher
                 int selectedIndex = _viewModel.Results.SelectedIndex;
                 if (selectedItem != null && selectedIndex == 0)
                 {
-                    if (selectedItem.IndexOf(input) == 0)
+                    if (selectedItem.IndexOf(input, StringComparison.InvariantCultureIgnoreCase) == 0)
                     {
-                        return selectedItem;
+                        // Use the same case as the input query for the matched portion of the string
+                        return input + selectedItem.Substring(input.Length);
                     }
                 }
             }
@@ -290,30 +289,30 @@ namespace PowerLauncher
         }
         private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {          
-            if (_isTextSetProgramatically)
+            if (_isTextSetProgrammatically)
             {
                 var textBox = ((TextBox)sender);
                 textBox.SelectionStart = textBox.Text.Length;
-                _isTextSetProgramatically = false;
+                _isTextSetProgrammatically = false;
             }
             else
             {
                 var text = ((TextBox)sender).Text;
-                if (text == string.Empty)
+                if (string.IsNullOrEmpty(text))
                 {
                     SearchBox.AutoCompleteTextBlock.Text = string.Empty;
                 }
                 _viewModel.QueryText = text;
                 var latestTimeOfTyping = DateTime.Now;
 
-                Task.Run(() => DelayedCheck(latestTimeOfTyping, text));
+                Task.Run(() => DelayedCheck(latestTimeOfTyping));
                 s_lastTimeOfTyping = latestTimeOfTyping;
             }
         }
 
-        private async Task DelayedCheck(DateTime latestTimeOfTyping, string text)
+        private async Task DelayedCheck(DateTime latestTimeOfTyping)
         {
-            await Task.Delay(millisecondsToWait);
+            await Task.Delay(millisecondsToWait).ConfigureAwait(false);
             if (latestTimeOfTyping.Equals(s_lastTimeOfTyping))
             {
                 await System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
@@ -331,14 +330,62 @@ namespace PowerLauncher
             }
         }
 
-        private void Window_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        private void OnVisibilityChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("Changed");
+            if (Visibility == Visibility.Visible)
+            {
+                _deletePressed = false;
+                _firstDeleteTimer.Start();
+                // (this.FindResource("IntroStoryboard") as Storyboard).Begin();
+
+                SearchBox.QueryTextBox.Focus();
+                Keyboard.Focus(SearchBox.QueryTextBox);
+
+                _settings.ActivateTimes++;
+
+                if (!String.IsNullOrEmpty(SearchBox.QueryTextBox.Text))
+                {
+                    SearchBox.QueryTextBox.SelectAll();
+                }
+            }
+            else
+            {
+                _firstDeleteTimer.Stop();
+            }
         }
 
         private void OutroStoryboard_Completed(object sender, EventArgs e)
         {
             Hide();
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _firstDeleteTimer.Dispose();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        // ~MainWindow()
+        // {
+        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

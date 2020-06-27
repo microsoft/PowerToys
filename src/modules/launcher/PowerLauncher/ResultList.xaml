@@ -11,9 +11,9 @@
 
     <UserControl.Resources>
         <ResourceDictionary>
-            <!--<ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/Styles/UWPScrollBarStyle.xaml" />
-            </ResourceDictionary.MergedDictionaries>-->
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Styles/ModernScrollBarStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
 
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <Style x:Key="FocusVisual">
@@ -76,7 +76,7 @@
                             <ControlTemplate.Triggers>
                                 <!-- Setting the opacity of the highlight border to improve the contrast of the AccentColorbrush when selected. In UWP we could call a different brush, in WPF we need to play with the opacity of the WindowGlassBrush-->
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Opacity" TargetName="HighlightBorder" Value="0.1" />
+                                    <Setter Property="Opacity" TargetName="HighlightBorder" Value="1" />
                                     <Setter Property="Background" TargetName="HighlightBorder" Value="{DynamicResource ListViewItemBackgroundPointerOver}"/>
                                 </Trigger>
                                 <Trigger Property="IsSelected" Value="True">
@@ -128,7 +128,7 @@
             ItemsSource="{Binding Results.Results, Mode=OneWay}"
             Padding="0, 0"
             ScrollViewer.HorizontalScrollBarVisibility="Disabled"       
-            ScrollViewer.VerticalScrollBarVisibility="Disabled"       
+            ScrollViewer.VerticalScrollBarVisibility="Auto"       
             SelectionMode="Single"
             SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
             ItemContainerStyle="{StaticResource ResultsListViewItemContainerStyle}">
@@ -156,9 +156,9 @@
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <Image x:Name="AppIcon" Height="36" MaxWidth="56" Grid.RowSpan="2" Margin="-8,0,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />
+                        <Image x:Name="AppIcon" Height="36" MaxWidth="56" Grid.RowSpan="2" Margin="-6,-2,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />
                         <TextBlock x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" Margin="0,0,0,-2" VerticalAlignment="Bottom"/>
-                        <TextBlock x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Opacity="0.6" Margin="0,2,0,0" VerticalAlignment="Top"/>
+                        <TextBlock x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Foreground="{DynamicResource SecondaryTextForeground}" Margin="0,2,0,0" VerticalAlignment="Top"/>
                         <ListView                                  
                             HorizontalAlignment="Right" 
                             VerticalAlignment="Center"                                  
@@ -170,10 +170,10 @@
                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                             ItemsSource="{Binding ContextMenuItems}" 
                             SelectionMode="Single"
+                            Margin="0,0,-8,0"
                             SelectedIndex="{Binding ContextMenuSelectedIndex}"
                             Visibility="{Binding AreContextButtonsActive, Converter={StaticResource BooleanToVisibilityConverter}}"
                             ItemContainerStyle="{StaticResource CommandButtonListViewItemContainerStyle}">
-                            <!-- Right margin is now set to 24 to cater for the scrollbar. If we fix the weird width issue we can put it back to 0 (or 8 if there's no spacing by default) -->
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <StackPanel Orientation="Horizontal"

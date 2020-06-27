@@ -21,6 +21,7 @@ using System.Windows.Input;
 using System.Runtime.InteropServices.ComTypes;
 using Wox.Plugin.SharedCommands;
 using System.Reflection;
+using Wox.Infrastructure.Image;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -62,7 +63,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             IStream stream;
             const uint noAttribute = 0x80;
-            const Stgm exclusiveRead = Stgm.Read | Stgm.ShareExclusive;
+            const Stgm exclusiveRead = Stgm.Read | Stgm.DenyWrite;
             var hResult = SHCreateStreamOnFileEx(path, exclusiveRead, noAttribute, false, null, out stream);
 
             if (hResult == Hresult.Ok)
@@ -109,7 +110,7 @@ namespace Microsoft.Plugin.Program.Programs
             else
             {
                 ProgramLogger.LogException($"|UWP|XmlNamespaces|{path}" +
-                                                $"|Error occured while trying to get the XML from {path}", new ArgumentNullException());
+                                                $"|Error occurred while trying to get the XML from {path}", new ArgumentNullException());
 
                 return new string[] { };
             }
@@ -156,7 +157,7 @@ namespace Microsoft.Plugin.Program.Programs
 #if !DEBUG
                     catch (Exception e)
                     {
-                        ProgramLogger.LogException($"|UWP|All|{p.InstalledLocation}|An unexpected error occured and "
+                        ProgramLogger.LogException($"|UWP|All|{p.InstalledLocation}|An unexpected error occurred and "
                                                         + $"unable to convert Package to UWP for {p.Id.FullName}", e);
                         return new Application[] { };
                     }
@@ -198,13 +199,12 @@ namespace Microsoft.Plugin.Program.Programs
                     try
                     {
                         var f = p.IsFramework;
-                        var d = p.IsDevelopmentMode;
                         var path = p.InstalledLocation.Path;
-                        valid = !f && !d && !string.IsNullOrEmpty(path);
+                        valid = !f && !string.IsNullOrEmpty(path);
                     }
                     catch (Exception e)
                     {
-                        ProgramLogger.LogException("UWP" ,"CurrentUserPackages", $"id","An unexpected error occured and "
+                        ProgramLogger.LogException("UWP" ,"CurrentUserPackages", $"id","An unexpected error occurred and "
                                                    + $"unable to verify if package is valid", e);
                         return false;
                     }
@@ -266,7 +266,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 var displayNameMatch = StringMatcher.FuzzySearch(query, DisplayName);
                 var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
-                var score = new[] { displayNameMatch.Score, descriptionMatch.Score }.Max();
+                var score = new[] { displayNameMatch.Score, descriptionMatch.Score/2 }.Max();
                 return score;
             }
 
@@ -405,7 +405,6 @@ namespace Microsoft.Plugin.Program.Programs
                 DisplayName = ResourceFromPri(package.FullName, DisplayName);
                 Description = ResourceFromPri(package.FullName, Description);
                 LogoUri = LogoUriFromManifest(manifestApp);
-                LogoPath = LogoPathFromUri(LogoUri);
 
                 Enabled = true;
                 CanRunElevated = IfApplicationcanRunElevated();
@@ -517,7 +516,19 @@ namespace Microsoft.Plugin.Program.Programs
                 }
             }
 
-            internal string LogoPathFromUri(string uri)
+            public void UpdatePath(Theme theme)
+            {
+                if (theme == Theme.Light || theme == Theme.HighContrastWhite)
+                {
+                    LogoPath = LogoPathFromUri(LogoUri, "contrast-white");
+                }
+                else
+                {
+                    LogoPath = LogoPathFromUri(LogoUri, "contrast-black");
+                }
+            }
+
+            internal string LogoPathFromUri(string uri, string theme)
             {
                 // all https://msdn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets
                 // windows 10 https://msdn.microsoft.com/en-us/library/windows/apps/dn934817.aspx
@@ -540,7 +551,7 @@ namespace Microsoft.Plugin.Program.Programs
                 {
                     var end = path.Length - extension.Length;
                     var prefix = path.Substring(0, end);
-                    var paths = new List<string> { path };
+                    var paths = new List<string> { path };                    
 
                     var scaleFactors = new Dictionary<PackageVersion, List<int>>
                     {
@@ -555,9 +566,12 @@ namespace Microsoft.Plugin.Program.Programs
                         foreach (var factor in scaleFactors[Package.Version])
                         {
                             paths.Add($"{prefix}.scale-{factor}{extension}");
+                            paths.Add($"{prefix}.scale-{factor}_{theme}{extension}");
+                            paths.Add($"{prefix}.{theme}_scale-{factor}{extension}");
                         }
                     }
 
+                    paths = paths.OrderByDescending(x => x.Contains(theme)).ToList();
                     var selected = paths.FirstOrDefault(File.Exists);
                     if (!string.IsNullOrEmpty(selected))
                     {
@@ -565,9 +579,37 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                     else
                     {
-                        ProgramLogger.LogException($"|UWP|LogoPathFromUri|{Package.Location}" +
-                                                    $"|{UserModelId} can't find logo uri for {uri} in package location: {Package.Location}", new FileNotFoundException());
-                        return string.Empty;
+                        int appIconSize = 36;
+                        var targetSizes = new List<int>{16, 24, 30, 36, 44, 60, 72, 96, 128, 180, 256}.AsParallel();
+                        Dictionary<string, int> pathFactorPairs = new Dictionary<string, int>();
+
+                        foreach (var factor in targetSizes)
+                        {
+                            string simplePath = $"{prefix}.targetsize-{factor}{extension}";
+                            string suffixThemePath = $"{prefix}.targetsize-{factor}_{theme}{extension}";
+                            string prefixThemePath = $"{prefix}.{theme}_targetsize-{factor}{extension}";
+
+                            paths.Add(simplePath);
+                            paths.Add(suffixThemePath);
+                            paths.Add(prefixThemePath);
+
+                            pathFactorPairs.Add(simplePath, factor);
+                            pathFactorPairs.Add(suffixThemePath, factor);
+                            pathFactorPairs.Add(prefixThemePath, factor);
+                        }
+
+                        paths = paths.OrderByDescending(x => x.Contains(theme)).ToList();
+                        var selectedIconPath = paths.OrderBy(x => Math.Abs(pathFactorPairs.GetValueOrDefault(x) - appIconSize)).FirstOrDefault(File.Exists);
+                        if (!string.IsNullOrEmpty(selectedIconPath))
+                        {
+                            return selectedIconPath;
+                        }
+                        else
+                        {
+                            ProgramLogger.LogException($"|UWP|LogoPathFromUri|{Package.Location}" +
+                                $"|{UserModelId} can't find logo uri for {uri} in package location: {Package.Location}", new FileNotFoundException());
+                            return string.Empty;
+                        }
                     }
                 }
                 else
@@ -578,7 +620,6 @@ namespace Microsoft.Plugin.Program.Programs
                     return string.Empty;
                 }
             }
-
 
             public ImageSource Logo()
             {
@@ -599,7 +640,7 @@ namespace Microsoft.Plugin.Program.Programs
                     ProgramLogger.LogException($"|UWP|ImageFromPath|{path}" +
                                                     $"|Unable to get logo for {UserModelId} from {path} and" +
                                                     $" located in {Package.Location}", new FileNotFoundException());
-                    return new BitmapImage(new Uri(Constant.ErrorIcon));
+                    return new BitmapImage(new Uri(ImageLoader.ErrorIconPath));
                 }
             }
 
@@ -621,7 +662,7 @@ namespace Microsoft.Plugin.Program.Programs
         private enum Stgm : uint
         {
             Read = 0x0,
-            ShareExclusive = 0x10,
+            DenyWrite = 0x20,
         }
 
         private enum Hresult : uint

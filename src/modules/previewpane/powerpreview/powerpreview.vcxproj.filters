@@ -11,18 +11,30 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="trace.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="CLSID.h" />
     <ClInclude Include="registry_wrapper.h" />
     <ClInclude Include="registry_wrapper_interface.h" />
     <ClInclude Include="powerpreview.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="powerpreview.rc" />
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="powerpreview.def" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{b7f5e645-7a71-434f-b1de-3f92cb78f610}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{9999f820-649a-456b-9eb5-e36d0d14ca5d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="powerpreview.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

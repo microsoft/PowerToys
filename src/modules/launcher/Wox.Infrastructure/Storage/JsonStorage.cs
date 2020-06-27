@@ -19,6 +19,9 @@ namespace Wox.Infrastructure.Storage
         public string FilePath { get; set; }
         public string DirectoryPath { get; set; }
 
+        // This storage helper returns whether or not to delete the json storage items
+        private static readonly int JSON_STORAGE = 1;
+        private StoragePowerToysVersionInfo _storageHelper;
 
         internal JsonStorage()
         {
@@ -33,6 +36,17 @@ namespace Wox.Infrastructure.Storage
 
         public T Load()
         {
+            _storageHelper = new StoragePowerToysVersionInfo(FilePath, JSON_STORAGE);
+            // Depending on the version number of the previously installed PT Run, delete the cache if it is found to be incompatible
+            if (_storageHelper.clearCache)
+            {
+                if(File.Exists(FilePath))
+                {
+                    File.Delete(FilePath);
+                    Log.Info($"|JsonStorage.TryLoad|Deleting cached data|<{FilePath}>");
+                }
+            }
+
             if (File.Exists(FilePath))
             {
                 var serialized = File.ReadAllText(FilePath);
@@ -96,6 +110,8 @@ namespace Wox.Infrastructure.Storage
         {
             string serialized = JsonConvert.SerializeObject(_data, Formatting.Indented);
             File.WriteAllText(FilePath, serialized);
+            _storageHelper.Close();
+            Log.Info($"|JsonStorage.Save|Saving cached data| <{FilePath}>");
         }
     }
 }

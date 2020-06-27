@@ -7,11 +7,10 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Wox.Core.Plugin;
 using Wox.Infrastructure;
-using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
-
+using Wox.Helper;
 
 namespace Wox.ViewModel
 {
@@ -128,7 +127,7 @@ namespace Wox.ViewModel
                     {
                         bool hideWindow = r.Action != null && r.Action(new ActionContext
                         {
-                            SpecialKeyState = GlobalHotkey.Instance.CheckModifiers()
+                            SpecialKeyState = KeyboardHelper.CheckModifiers()
                         });
 
                         if (hideWindow)
@@ -173,7 +172,7 @@ namespace Wox.ViewModel
                     catch (Exception e)
                     {
                         Log.Exception($"|ResultViewModel.Image|IcoPath is empty and exception when calling Icon() for result <{Result.Title}> of plugin <{Result.PluginDirectory}>", e);
-                        imagePath = Constant.ErrorIcon;
+                        imagePath = ImageLoader.ErrorIconPath;
                     }
                 }
                 

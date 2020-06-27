@@ -1,4 +1,0 @@
-﻿[*.cs]
-
-# SA1201: Elements should appear in the correct order
-dotnet_diagnostic.SA1201.severity = none

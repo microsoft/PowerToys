@@ -21,6 +21,7 @@
         Background="Transparent"
         LocationChanged="OnLocationChanged"
         Deactivated="OnDeactivated"
+        IsVisibleChanged="OnVisibilityChanged"
         Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
         d:DataContext="{d:DesignInstance vm:MainViewModel}">
     <Window.Resources>
@@ -53,13 +54,13 @@
         <Border 
             x:Name="SearchBoxBorder" 
             Grid.Row="0" 
-            Margin="24,24,24,8"  
-            BorderThickness="0" 
+            Margin="24,24,24,24"  
+            BorderThickness="1" 
             CornerRadius="4"
             Background="{DynamicResource SystemChromeLow}"
-            BorderBrush="{DynamicResource SystemChromeLow}">
+            BorderBrush="{DynamicResource BorderBrush}">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="12" Opacity="0.3" ShadowDepth="0" />
+                <DropShadowEffect BlurRadius="32" Opacity="0.28" ShadowDepth="1" />
             </Border.Effect>
             <local:LauncherControl 
                 x:Name="SearchBox">
@@ -74,17 +75,17 @@
         <Border 
             x:Name="ListBoxBorder"
             Grid.Row="1" 
-            Margin="24,8,24,24" 
-            BorderThickness="0"
+            Margin="24,-8,24,24" 
+            BorderThickness="1"
             CornerRadius="4" 
             Visibility="{Binding Results.Visibility}"
             Background="{DynamicResource SystemChromeLow}"
-            BorderBrush="{DynamicResource SystemChromeLow}">
+            BorderBrush="{DynamicResource BorderBrush}">
             <!--<Border.RenderTransform>
                 <TranslateTransform />
             </Border.RenderTransform>-->
             <Border.Effect>
-                <DropShadowEffect BlurRadius="12" Opacity="0.3" ShadowDepth="0" />
+                <DropShadowEffect BlurRadius="32" Opacity="0.28" ShadowDepth="1" />
             </Border.Effect>
             <local:ResultList x:Name="ListBox" 
                 PreviewMouseDown="ListBox_PreviewMouseDown" >
@@ -97,5 +98,6 @@
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding EscCommand}" />
         <KeyBinding Key="Enter" Command="{Binding OpenResultCommand}" />
+        <KeyBinding Modifiers="Alt" Key="F4" Command="{Binding IgnoreCommand}" />
     </Window.InputBindings>
 </Window>

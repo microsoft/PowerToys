@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using WindowsInput;
 using WindowsInput.Native;
-using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin.SharedCommands;
@@ -289,7 +288,6 @@ namespace Microsoft.Plugin.Shell
         public void Init(PluginInitContext context)
         {
             this._context = context;
-            context.API.GlobalKeyboardEvent += API_GlobalKeyboardEvent;
         }
 
         bool API_GlobalKeyboardEvent(int keyevent, int vkcode, SpecialKeyState state)

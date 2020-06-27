@@ -48,11 +48,12 @@
 
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
-    <PackageReference Include="Microsoft.Toolkit.Wpf.UI.XamlHost" Version="6.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.6.2" />
     <PackageReference Include="NLog.Schema" Version="4.7.0" />
-    <PackageReference Include="Pinyin4DotNet" Version="2016.4.23.4" />
+    <PackageReference Include="Pinyin4DotNet" Version="2016.4.23.4">
+       <NoWarn>NU1701</NoWarn>
+    </PackageReference>
     <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>

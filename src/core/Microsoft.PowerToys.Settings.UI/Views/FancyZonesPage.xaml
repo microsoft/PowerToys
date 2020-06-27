@@ -276,9 +276,9 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Margin="{StaticResource XSmallBottomMargin}"/>
 
-            <Image MaxWidth="240" Source="https://user-images.githubusercontent.com/9866362/77859136-f04ae880-7207-11ea-8a7f-4295342fe319.gif" />
+            <Image MaxWidth="240" Source="https://aka.ms/powerToysFancyZoneSettingImage" />
 
-            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/blob/master/src/modules/fancyzones/README.md">
+            <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_FancyZones">
                 <TextBlock x:Uid="Module_overview" />
             </HyperlinkButton>
 

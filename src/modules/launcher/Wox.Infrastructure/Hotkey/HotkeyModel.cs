@@ -45,6 +45,11 @@ namespace Wox.Infrastructure.Hotkey
             }
         }
 
+        public HotkeyModel()
+        {
+
+        }
+
         public HotkeyModel(string hotkeyString)
         {
             Parse(hotkeyString);

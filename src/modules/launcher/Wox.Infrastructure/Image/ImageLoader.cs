@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,16 +8,18 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
+using Wox.Plugin;
 
 namespace Wox.Infrastructure.Image
 {
     public static class ImageLoader
     {
         private static readonly ImageCache ImageCache = new ImageCache();
-        private static BinaryStorage<ConcurrentDictionary<string, int>> _storage;
+        private static BinaryStorage<Dictionary<string, int>> _storage;
         private static readonly ConcurrentDictionary<string, string> GuidToKey = new ConcurrentDictionary<string, string>();
         private static IImageHashGenerator _hashGenerator;
-
+        public static string ErrorIconPath;
+        public static string DefaultIconPath;
 
         private static readonly string[] ImageExtensions =
         {
@@ -30,18 +33,20 @@ namespace Wox.Infrastructure.Image
         };
 
 
-        public static void Initialize()
+        public static void Initialize(Theme theme)
         {
-            _storage = new BinaryStorage<ConcurrentDictionary<string, int>>("Image");
+            _storage = new BinaryStorage<Dictionary<string, int>>("Image");
             _hashGenerator = new ImageHashGenerator();
-            ImageCache.Usage = _storage.TryLoad(new ConcurrentDictionary<string, int>());
+            ImageCache.SetUsageAsDictionary(_storage.TryLoad(new Dictionary<string, int>()));
 
+            // Todo : Add error and default icon specific to each theme
             foreach (var icon in new[] { Constant.DefaultIcon, Constant.ErrorIcon })
             {
                 ImageSource img = new BitmapImage(new Uri(icon));
                 img.Freeze();
                 ImageCache[icon] = img;
             }
+            UpdateIconPath(theme);
             Task.Run(() =>
             {
                 Stopwatch.Normal("|ImageLoader.Initialize|Preload images cost", () =>
@@ -58,7 +63,22 @@ namespace Wox.Infrastructure.Image
         public static void Save()
         {
             ImageCache.Cleanup();
-            _storage.Save(ImageCache.Usage);
+            _storage.Save(ImageCache.GetUsageAsDictionary());
+        }
+
+        //Todo : Update it with icons specific to each theme.
+        public static void UpdateIconPath(Theme theme)
+        {
+            if (theme == Theme.Light || theme == Theme.HighContrastWhite)
+            {
+                ErrorIconPath = Constant.ErrorIcon;
+                DefaultIconPath = Constant.DefaultIcon;
+            }
+            else
+            {
+                ErrorIconPath = Constant.ErrorIcon;
+                DefaultIconPath = Constant.DefaultIcon;
+            }
         }
 
         private class ImageResult
@@ -91,7 +111,7 @@ namespace Wox.Infrastructure.Image
             {
                 if (string.IsNullOrEmpty(path))
                 {
-                    return new ImageResult(ImageCache[Constant.ErrorIcon], ImageType.Error);
+                    return new ImageResult(ImageCache[ErrorIconPath], ImageType.Error);
                 }
                 if (ImageCache.ContainsKey(path))
                 {
@@ -153,8 +173,8 @@ namespace Wox.Infrastructure.Image
                 }
                 else
                 {
-                    image = ImageCache[Constant.ErrorIcon];
-                    path = Constant.ErrorIcon;
+                    image = ImageCache[ErrorIconPath];
+                    path = ErrorIconPath;
                 }
 
                 if (type != ImageType.Error)
@@ -166,7 +186,7 @@ namespace Wox.Infrastructure.Image
             {
                 Log.Exception($"|ImageLoader.Load|Failed to get thumbnail for {path}", e);
                 type = ImageType.Error;
-                image = ImageCache[Constant.ErrorIcon];
+                image = ImageCache[ErrorIconPath];
                 ImageCache[path] = image;
             }
             return new ImageResult(image, type);
@@ -184,9 +204,13 @@ namespace Wox.Infrastructure.Image
                 string hash = EnableImageHash ? _hashGenerator.GetHashFromImage(img) : null;
                 if (hash != null)
                 {
+                    int ImageCacheValue;
                     if (GuidToKey.TryGetValue(hash, out string key))
                     { // image already exists
-                        img = ImageCache[key];
+                        if(ImageCache.Usage.TryGetValue(path, out ImageCacheValue))
+                        {
+                            img = ImageCache[key];
+                        }
                     }
                     else
                     { // new guid

@@ -58,6 +58,16 @@ namespace Wox.Plugin
         void ShowApp();
 
         /// <summary>
+        /// Get current theme
+        /// </summary>
+        Theme GetCurrentTheme();
+
+        /// <summary>
+        /// Theme change event
+        /// </summary>
+        event ThemeChangedHandler ThemeChanged;
+
+        /// <summary>
         /// Save all Wox settings
         /// </summary>
         void SaveAppAllSettings();
@@ -114,11 +124,5 @@ namespace Wox.Plugin
         /// </summary>
         /// <returns></returns>
         List<PluginPair> GetAllPlugins();
-
-        /// <summary>
-        /// Fired after global keyboard events
-        /// if you want to hook something like Ctrl+R, you should use this event
-        /// </summary>
-        event WoxGlobalKeyboardEventHandler GlobalKeyboardEvent;
     }
 }
