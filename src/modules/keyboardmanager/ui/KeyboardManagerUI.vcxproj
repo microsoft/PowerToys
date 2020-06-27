@@ -16,7 +16,7 @@
     <ProjectGuid>{EAF23649-EF6E-478B-980E-81FAD96CCA2A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>KeyboardManagerUI</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <CppWinRTEnabled>true</CppWinRTEnabled>
     <ProjectName>KeyboardManagerUI</ProjectName>
   </PropertyGroup>

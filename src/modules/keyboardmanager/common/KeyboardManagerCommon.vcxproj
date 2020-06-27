@@ -15,7 +15,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{8AFFA899-0B73-49EC-8C50-0FADDA57B2FC}</ProjectGuid>
     <RootNamespace>KeyboardManagerCommon</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
