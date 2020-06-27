@@ -31,24 +31,25 @@
                                         <DataTemplate>
                                             <Grid Background="{Binding Background, ElementName=PART_ContentHost}" RenderOptions.ClearTypeHint="Enabled" TextOptions.TextFormattingMode="Display">
                                                 <ContentPresenter Content="{Binding Path=Content, ElementName=PART_ContentHost}"/>
-                                                <TextBlock Margin="15, 1, 0, 0" Text="{TemplateBinding Tag}">
-                                                    <TextBlock.Style>
-                                                        <Style TargetType="{x:Type TextBlock}">
-                                                            <Setter Property="Foreground" Value="Transparent"/>
-
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding Path=Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
-                                                                        <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForeground}"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </TextBlock.Style>
-                                                </TextBlock>
+                                               
                                             </Grid>
                                         </DataTemplate>
                                     </ScrollViewer.ContentTemplate>
                                 </ScrollViewer>
                             </Border>
+                            <TextBlock Margin="14, 0, 0, 0" Text="{TemplateBinding Tag}">
+                                <TextBlock.Style>
+                                    <Style TargetType="{x:Type TextBlock}">
+                                        <Setter Property="Foreground" Value="Transparent"/>
+
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path=Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
+                                                <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForeground}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsEnabled" Value="false">
