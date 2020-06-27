@@ -14,19 +14,25 @@ using Wox.ViewModel;
 
 namespace Wox
 {
-    public class PublicAPIInstance : IPublicAPI
+    public class PublicAPIInstance : IPublicAPI, IDisposable
     {
         private readonly SettingWindowViewModel _settingsVM;
         private readonly MainViewModel _mainVM;
         private readonly Alphabet _alphabet;
+        private bool _disposed = false;
+        private readonly ThemeManager _themeManager;
+
+        public event ThemeChangedHandler ThemeChanged;
 
         #region Constructor
 
-        public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, Alphabet alphabet)
+        public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, Alphabet alphabet, ThemeManager themeManager)
         {
             _settingsVM = settingsVM;
             _mainVM = mainVM;
             _alphabet = alphabet;
+            _themeManager = themeManager;
+            _themeManager.ThemeChanged += OnThemeChanged;
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
         }
 
@@ -138,10 +144,37 @@ namespace Wox
             });
         }
 
+        public Theme GetCurrentTheme()
+        {
+            return _themeManager.GetCurrentTheme();
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
         #endregion
 
-        #region Private Methods
+        #region Protected Methods
 
+        protected void OnThemeChanged(Theme oldTheme, Theme newTheme)
+        {
+            ThemeChanged?.Invoke(oldTheme, newTheme);
+        }
+   
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {            
+                if (disposing)
+                {
+                    _themeManager.ThemeChanged -= OnThemeChanged;
+                    _disposed = true;
+                }               
+            }
+        }
         #endregion
     }
 }

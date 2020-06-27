@@ -6,18 +6,21 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 
-namespace Wox.Core.Resource
+namespace Wox.Plugin
 {
-    public class ThemeManager
+    public class ThemeManager : IDisposable
     {
         private Theme currentTheme;
         private readonly Application App;
+        private bool _disposed = false;
         private readonly string LightTheme = "Light.Accent1";
         private readonly string DarkTheme = "Dark.Accent1";
         private readonly string HighContrastOneTheme = "HighContrast.Accent2";
         private readonly string HighContrastTwoTheme = "HighContrast.Accent3";
         private readonly string HighContrastBlackTheme = "HighContrast.Accent4";
         private readonly string HighContrastWhiteTheme = "HighContrast.Accent5";
+
+        public event ThemeChangedHandler ThemeChanged;
 
         public ThemeManager(Application app)
         {
@@ -52,17 +55,23 @@ namespace Wox.Core.Resource
             ResetTheme();
             ControlzEx.Theming.ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
             ControlzEx.Theming.ThemeManager.Current.ThemeChanged += Current_ThemeChanged;
-            SystemParameters.StaticPropertyChanged += (sender, args) =>
+            SystemParameters.StaticPropertyChanged += SystemParameters_StaticPropertyChanged;
+        }
+
+        private void SystemParameters_StaticPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(SystemParameters.HighContrast))
             {
-                if (args.PropertyName == nameof(SystemParameters.HighContrast))
-                {
-                    ResetTheme();
-                }
-            };
+                ResetTheme();
+            }
+        }
+
+        public Theme GetCurrentTheme()
+        {
+            return currentTheme;
         }
         
-
-        public static Theme GetHighContrastBaseType()
+        private static Theme GetHighContrastBaseType()
         {
             string RegistryKey = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes";
             string theme = (string) Registry.GetValue(RegistryKey, "CurrentTheme", string.Empty);
@@ -80,7 +89,7 @@ namespace Wox.Core.Resource
                 return Theme.None;
         }
 
-        public void ResetTheme()
+        private void ResetTheme()
         {
             if (SystemParameters.HighContrast)
             {
@@ -96,6 +105,7 @@ namespace Wox.Core.Resource
 
         private void ChangeTheme(Theme theme)
         {
+            Theme oldTheme = currentTheme;
             if (theme == currentTheme)
                 return;
             if (theme == Theme.HighContrastOne)
@@ -132,14 +142,35 @@ namespace Wox.Core.Resource
             {
                 currentTheme = Theme.None;
             }
-            Debug.WriteLine("Theme Changed to :" + currentTheme);
+            ThemeChanged?.Invoke(oldTheme, currentTheme);
         }
 
         private void Current_ThemeChanged(object sender, ThemeChangedEventArgs e)
         {
             ResetTheme();
         }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {            
+                if (disposing)
+                {
+                    ControlzEx.Theming.ThemeManager.Current.ThemeChanged -= Current_ThemeChanged;
+                    SystemParameters.StaticPropertyChanged -= SystemParameters_StaticPropertyChanged;
+                    _disposed = true;
+                }               
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
     }
+
+    public delegate void ThemeChangedHandler(Theme oldTheme, Theme newTheme);
 
     public enum Theme
     {
