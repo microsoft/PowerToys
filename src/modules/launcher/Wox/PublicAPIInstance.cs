@@ -14,11 +14,12 @@ using Wox.ViewModel;
 
 namespace Wox
 {
-    public class PublicAPIInstance : IPublicAPI
+    public class PublicAPIInstance : IPublicAPI, IDisposable
     {
         private readonly SettingWindowViewModel _settingsVM;
         private readonly MainViewModel _mainVM;
         private readonly Alphabet _alphabet;
+        private bool _disposed = false;
         private readonly ThemeManager _themeManager;
 
         public event ThemeChangedHandler ThemeChanged;
@@ -148,6 +149,12 @@ namespace Wox
             return _themeManager.GetCurrentTheme();
         }
 
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
         #endregion
 
         #region Protected Methods
@@ -156,7 +163,18 @@ namespace Wox
         {
             ThemeChanged?.Invoke(oldTheme, newTheme);
         }
-
+   
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {            
+                if (disposing)
+                {
+                    _themeManager.ThemeChanged -= OnThemeChanged;
+                    _disposed = true;
+                }               
+            }
+        }
         #endregion
     }
 }

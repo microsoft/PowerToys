@@ -17,7 +17,7 @@ using Microsoft.Plugin.Program.Programs;
 
 namespace Microsoft.Plugin.Program
 {
-    public class Main : ISettingProvider, IPlugin, IPluginI18n, IContextMenu, ISavable, IReloadable
+    public class Main : ISettingProvider, IPlugin, IPluginI18n, IContextMenu, ISavable, IReloadable, IDisposable
     {
         private static readonly object IndexLock = new object();
         internal static Programs.Win32[] _win32s { get; set; }
@@ -34,6 +34,7 @@ namespace Microsoft.Plugin.Program
         private static BinaryStorage<Programs.Win32[]> _win32Storage;
         private static BinaryStorage<Programs.UWP.Application[]> _uwpStorage;
         private readonly PluginJsonStorage<Settings> _settingsStorage;
+        private bool _disposed = false;
 
         public Main()
         {
@@ -201,6 +202,25 @@ namespace Microsoft.Plugin.Program
         public void UpdateSettings(PowerLauncherSettings settings)
         {
         }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _context.API.ThemeChanged -= OnThemeChanged;
+                    _disposed = true;
+                }
+            }
+        }
+
         void InitializeFileWatchers()
         {
             // Create a new FileSystemWatcher and set its properties.

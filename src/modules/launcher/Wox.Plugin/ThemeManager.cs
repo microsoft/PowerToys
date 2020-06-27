@@ -8,10 +8,11 @@ using System.Windows;
 
 namespace Wox.Plugin
 {
-    public class ThemeManager
+    public class ThemeManager : IDisposable
     {
         private Theme currentTheme;
         private readonly Application App;
+        private bool _disposed = false;
         private readonly string LightTheme = "Light.Accent1";
         private readonly string DarkTheme = "Dark.Accent1";
         private readonly string HighContrastOneTheme = "HighContrast.Accent2";
@@ -54,13 +55,15 @@ namespace Wox.Plugin
             ResetTheme();
             ControlzEx.Theming.ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncWithAppMode;
             ControlzEx.Theming.ThemeManager.Current.ThemeChanged += Current_ThemeChanged;
-            SystemParameters.StaticPropertyChanged += (sender, args) =>
+            SystemParameters.StaticPropertyChanged += SystemParameters_StaticPropertyChanged;
+        }
+
+        private void SystemParameters_StaticPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(SystemParameters.HighContrast))
             {
-                if (args.PropertyName == nameof(SystemParameters.HighContrast))
-                {
-                    ResetTheme();
-                }
-            };
+                ResetTheme();
+            }
         }
 
         public Theme GetCurrentTheme()
@@ -145,6 +148,25 @@ namespace Wox.Plugin
         private void Current_ThemeChanged(object sender, ThemeChangedEventArgs e)
         {
             ResetTheme();
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {            
+                if (disposing)
+                {
+                    ControlzEx.Theming.ThemeManager.Current.ThemeChanged -= Current_ThemeChanged;
+                    SystemParameters.StaticPropertyChanged -= SystemParameters_StaticPropertyChanged;
+                    _disposed = true;
+                }               
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 
