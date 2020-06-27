@@ -84,7 +84,7 @@
             </Border.RenderTransform>-->
             <Rectangle Fill="{DynamicResource SystemChromeLow}" RadiusX="4" RadiusY="4" Stroke="{DynamicResource BorderBrush}" StrokeThickness="1">
                 <Rectangle.Effect>
-                    <DropShadowEffect BlurRadius="12" Opacity="0.3" ShadowDepth="0" />
+                    <DropShadowEffect BlurRadius="32" Opacity="0.28" ShadowDepth="1" />
                 </Rectangle.Effect>
             </Rectangle>
             <local:ResultList x:Name="ListBox" 
