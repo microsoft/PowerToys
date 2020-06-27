@@ -49,7 +49,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <None Include="Images\calculator.png">
+    <None Include="Images\calculator_light.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -106,6 +106,12 @@
     <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
     <PackageReference Include="Mages" Version="1.6.0" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Update="Images\calculator_dark.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

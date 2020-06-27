@@ -287,5 +287,14 @@ namespace Wox.Core.Plugin
                 RemoveActionKeyword(id, oldActionKeyword);
             }
         }
+
+        public static void Dispose()
+        {
+            foreach (var plugin in AllPlugins)
+            {
+                var disposablePlugin = plugin as IDisposable;
+                disposablePlugin?.Dispose();
+            }
+        }
     }
 }

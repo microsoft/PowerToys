@@ -17,6 +17,7 @@ using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.UserSettings;
+using Wox.Plugin;
 using Wox.ViewModel;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
@@ -26,11 +27,12 @@ namespace PowerLauncher
     {
         public static PublicAPIInstance API { get; private set; }
         private const string Unique = "PowerLauncher_Unique_Application_Mutex";
-        private static bool _disposed;
+        private static bool _disposed = false;
         private static int _powerToysPid;
         private Settings _settings;
         private MainViewModel _mainVM;
         private MainWindow _mainWindow;
+        private ThemeManager _themeManager;
         private SettingWindowViewModel _settingsVM;
         private readonly Alphabet _alphabet = new Alphabet();
         private StringMatcher _stringMatcher;
@@ -56,18 +58,22 @@ namespace PowerLauncher
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            RunnerHelper.WaitForPowerToysRunner(_powerToysPid);
+            RunnerHelper.WaitForPowerToysRunner(_powerToysPid, () => {
+                Dispose();
+                Environment.Exit(0);
+            });
 
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
             Stopwatch.Normal("|App.OnStartup|Startup cost", () =>
             {
-                Log.Info("|App.OnStartup|Begin Wox startup ----------------------------------------------------");
+                Log.Info("|App.OnStartup|Begin PowerToys Run startup ----------------------------------------------------");
                 Log.Info($"|App.OnStartup|Runtime info:{ErrorReporting.RuntimeInfo()}");
                 RegisterAppDomainExceptions();
                 RegisterDispatcherUnhandledException();
 
-                ImageLoader.Initialize();
+                _themeManager = new ThemeManager(this);
+                ImageLoader.Initialize(_themeManager.GetCurrentTheme());
 
                 _settingsVM = new SettingWindowViewModel();
                 _settings = _settingsVM.Settings;
@@ -77,11 +83,10 @@ namespace PowerLauncher
                 StringMatcher.Instance = _stringMatcher;
                 _stringMatcher.UserSettingSearchPrecision = _settings.QuerySearchPrecision;
 
-                ThemeManager themeManager = new ThemeManager(this);               
                 PluginManager.LoadPlugins(_settings.PluginSettings);
                 _mainVM = new MainViewModel(_settings);
                 _mainWindow = new MainWindow(_settings, _mainVM);
-                API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet);
+                API = new PublicAPIInstance(_settingsVM, _mainVM, _alphabet, _themeManager);
                 PluginManager.InitializePlugins(API);
 
                 Current.MainWindow = _mainWindow;
@@ -102,7 +107,8 @@ namespace PowerLauncher
                 
                 _mainVM.MainWindowVisibility = Visibility.Visible;
                 _mainVM.ColdStartFix();
-                Log.Info("|App.OnStartup|End Wox startup ----------------------------------------------------  ");
+                _themeManager.ThemeChanged += OnThemeChanged;
+                Log.Info("|App.OnStartup|End PowerToys Run startup ----------------------------------------------------  ");
 
                 bootTime.Stop();
 
@@ -120,6 +126,17 @@ namespace PowerLauncher
             AppDomain.CurrentDomain.ProcessExit += (s, e) => Dispose();
             Current.Exit += (s, e) => Dispose();
             Current.SessionEnding += (s, e) => Dispose();
+        }
+
+        /// <summary>
+        /// Callback when windows theme is changed.
+        /// </summary>
+        /// <param name="oldTheme">Previous Theme</param>
+        /// <param name="newTheme">Current Theme</param>
+        private void OnThemeChanged(Theme oldTheme, Theme newTheme)
+        {
+            ImageLoader.UpdateIconPath(newTheme);
+            _mainVM.Query();
         }
 
         /// <summary>
@@ -150,16 +167,26 @@ namespace PowerLauncher
         {
             if (!_disposed)
             {
-                if (disposing)
+                Stopwatch.Normal("|App.OnExit|Exit cost", () =>
                 {
-                    _mainWindow.Dispose();
-                    API.SaveAppAllSettings();
-                    _disposed = true;
-                }
+                    Log.Info("|App.OnExit| Start PowerToys Run Exit----------------------------------------------------  ");
+                    if (disposing)
+                    {
+                        _themeManager.ThemeChanged -= OnThemeChanged;
+                        API.SaveAppAllSettings();
+                        PluginManager.Dispose();
+                        _mainWindow.Dispose();
+                        API.Dispose();
+                        _mainVM.Dispose();
+                        _themeManager.Dispose();
+                        _disposed = true;
+                    }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
-                _disposed = true;
+                    // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                    // TODO: set large fields to null
+                    _disposed = true;
+                    Log.Info("|App.OnExit| End PowerToys Run Exit ----------------------------------------------------  ");
+                });
             }
         }
 

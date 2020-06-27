@@ -21,6 +21,7 @@ using System.Windows.Input;
 using System.Runtime.InteropServices.ComTypes;
 using Wox.Plugin.SharedCommands;
 using System.Reflection;
+using Wox.Infrastructure.Image;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -265,7 +266,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 var displayNameMatch = StringMatcher.FuzzySearch(query, DisplayName);
                 var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
-                var score = new[] { displayNameMatch.Score, descriptionMatch.Score }.Max();
+                var score = new[] { displayNameMatch.Score, descriptionMatch.Score/2 }.Max();
                 return score;
             }
 
@@ -404,7 +405,6 @@ namespace Microsoft.Plugin.Program.Programs
                 DisplayName = ResourceFromPri(package.FullName, DisplayName);
                 Description = ResourceFromPri(package.FullName, Description);
                 LogoUri = LogoUriFromManifest(manifestApp);
-                LogoPath = LogoPathFromUri(LogoUri);
 
                 Enabled = true;
                 CanRunElevated = IfApplicationcanRunElevated();
@@ -516,7 +516,19 @@ namespace Microsoft.Plugin.Program.Programs
                 }
             }
 
-            internal string LogoPathFromUri(string uri)
+            public void UpdatePath(Theme theme)
+            {
+                if (theme == Theme.Light || theme == Theme.HighContrastWhite)
+                {
+                    LogoPath = LogoPathFromUri(LogoUri, "contrast-white");
+                }
+                else
+                {
+                    LogoPath = LogoPathFromUri(LogoUri, "contrast-black");
+                }
+            }
+
+            internal string LogoPathFromUri(string uri, string theme)
             {
                 // all https://msdn.microsoft.com/windows/uwp/controls-and-patterns/tiles-and-notifications-app-assets
                 // windows 10 https://msdn.microsoft.com/en-us/library/windows/apps/dn934817.aspx
@@ -539,11 +551,7 @@ namespace Microsoft.Plugin.Program.Programs
                 {
                     var end = path.Length - extension.Length;
                     var prefix = path.Substring(0, end);
-                    var paths = new List<string> { path };
-
-                    // TODO: This value must be set in accordance to the WPF theme (work in progress).
-                    // Must be set to `contrast-white` for light theme and to `contrast-black` for dark theme to get an icon of the contrasting color.
-                    var theme = "contrast-black";
+                    var paths = new List<string> { path };                    
 
                     var scaleFactors = new Dictionary<PackageVersion, List<int>>
                     {
@@ -563,6 +571,7 @@ namespace Microsoft.Plugin.Program.Programs
                         }
                     }
 
+                    paths = paths.OrderByDescending(x => x.Contains(theme)).ToList();
                     var selected = paths.FirstOrDefault(File.Exists);
                     if (!string.IsNullOrEmpty(selected))
                     {
@@ -589,6 +598,7 @@ namespace Microsoft.Plugin.Program.Programs
                             pathFactorPairs.Add(prefixThemePath, factor);
                         }
 
+                        paths = paths.OrderByDescending(x => x.Contains(theme)).ToList();
                         var selectedIconPath = paths.OrderBy(x => Math.Abs(pathFactorPairs.GetValueOrDefault(x) - appIconSize)).FirstOrDefault(File.Exists);
                         if (!string.IsNullOrEmpty(selectedIconPath))
                         {
@@ -630,7 +640,7 @@ namespace Microsoft.Plugin.Program.Programs
                     ProgramLogger.LogException($"|UWP|ImageFromPath|{path}" +
                                                     $"|Unable to get logo for {UserModelId} from {path} and" +
                                                     $" located in {Package.Location}", new FileNotFoundException());
-                    return new BitmapImage(new Uri(Constant.ErrorIcon));
+                    return new BitmapImage(new Uri(ImageLoader.ErrorIconPath));
                 }
             }
 

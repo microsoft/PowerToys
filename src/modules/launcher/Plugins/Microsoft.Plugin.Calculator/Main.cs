@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -8,7 +10,7 @@ using Wox.Plugin;
 
 namespace Microsoft.Plugin.Calculator
 {
-    public class Main : IPlugin, IPluginI18n
+    public class Main : IPlugin, IPluginI18n, IDisposable
     {
         private static readonly Regex RegValidExpressChar = new Regex(
                         @"^(" +
@@ -22,6 +24,8 @@ namespace Microsoft.Plugin.Calculator
         private static readonly Regex RegBrackets = new Regex(@"[\(\)\[\]]", RegexOptions.Compiled);
         private static readonly Engine MagesEngine;
         private PluginInitContext Context { get; set; }
+        private string IconPath { get; set; }
+        private bool _disposed = false;
 
         static Main()
         {
@@ -58,7 +62,7 @@ namespace Microsoft.Plugin.Calculator
                         new Result
                         {
                             Title = result.ToString(),
-                            IcoPath = "Images/calculator.png",
+                            IcoPath = IconPath,
                             Score = 300,
                             SubTitle = Context.API.GetTranslation("wox_plugin_calculator_copy_number_to_clipboard"),
                             Action = c =>
@@ -115,6 +119,26 @@ namespace Microsoft.Plugin.Calculator
         public void Init(PluginInitContext context)
         {
             Context = context;
+            Context.API.ThemeChanged += OnThemeChanged;
+            UpdateIconPath(Context.API.GetCurrentTheme());
+        }
+
+        // Todo : Update with theme based IconPath
+        private void UpdateIconPath(Theme theme)
+        {
+            if (theme == Theme.Light || theme == Theme.HighContrastWhite)
+            {
+                IconPath = "Images/calculator_light.png";
+            }
+            else
+            {
+                IconPath = "Images/calculator_dark.png";
+            }
+        }
+
+        private void OnThemeChanged(Theme _, Theme newTheme)
+        {
+            UpdateIconPath(newTheme);
         }
 
         public string GetTranslatedPluginTitle()
@@ -125,6 +149,24 @@ namespace Microsoft.Plugin.Calculator
         public string GetTranslatedPluginDescription()
         {
             return Context.API.GetTranslation("wox_plugin_calculator_plugin_description");
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    Context.API.ThemeChanged -= OnThemeChanged;
+                    _disposed = true;
+                }
+            }
         }
     }
 }
