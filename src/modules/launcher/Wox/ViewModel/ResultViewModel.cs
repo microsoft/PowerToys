@@ -69,7 +69,16 @@ namespace Wox.ViewModel
                 LoadContextMenu();
             }
 
-            AreContextButtonsActive = true;
+            // Result does not contain any context menu items - we don't need to show the context menu ListView at all.
+            if (ContextMenuItems.Count > 0)
+            {
+                AreContextButtonsActive = true;
+            }
+            else
+            {
+                AreContextButtonsActive = false;
+            }
+         
 
             if (activationType == ActivationType.Selection)
             {
@@ -105,7 +114,15 @@ namespace Wox.ViewModel
                 IsHovered = false;
             }
 
-            AreContextButtonsActive = IsSelected || IsHovered;
+            // Result does not contain any context menu items - we don't need to show the context menu ListView at all.
+            if (ContextMenuItems.Count > 0)
+            {
+                AreContextButtonsActive = IsSelected || IsHovered;
+            }
+            else
+            {
+                AreContextButtonsActive = false;
+            }  
         }
 
 
