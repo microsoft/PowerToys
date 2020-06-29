@@ -16,7 +16,6 @@ SecondaryMouseButtonsHook::SecondaryMouseButtonsHook(std::function<void()> extCa
         return;
     }
 #endif
-    hHook = SetWindowsHookEx(WH_MOUSE_LL, SecondaryMouseButtonsProc, GetModuleHandle(NULL), 0);
 }
 
 void SecondaryMouseButtonsHook::enable()

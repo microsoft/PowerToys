@@ -17,7 +17,6 @@ ShiftKeyHook::ShiftKeyHook(std::function<void(bool)> extCallback)
         return;
     }
 #endif
-    hHook = SetWindowsHookEx(WH_KEYBOARD_LL, ShiftKeyHookProc, GetModuleHandle(NULL), 0);
 }
 
 void ShiftKeyHook::enable()
