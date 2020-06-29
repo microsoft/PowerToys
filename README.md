@@ -107,8 +107,9 @@ choco upgrade powertoys
 
 ### Known issues
 
-- PT Run, Newly installed apps can't be found [#3553](https://github.com/microsoft/PowerToys/issues/3553).  Packaged apps should be resolved.
+- PT Run, Newly installed apps can't be found [#3553](https://github.com/microsoft/PowerToys/issues/3553).  We will address this in 0.20.
 - PT Run, CPU / Memory, still investigating [#3208](https://github.com/microsoft/PowerToys/issues/3208).  We have 2 leads and fixed one item.
+- WinKey remapping for PT Run can be quirky [#4578](https://github.com/microsoft/PowerToys/issues/4578)
 
 ### Processor support
 
