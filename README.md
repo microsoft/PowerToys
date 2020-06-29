@@ -122,11 +122,9 @@ We currently support the matrix below.
 
 ### June 2020 Update
 
-Our goals for 0.19 release cycle had one big goal, add in stability / quality fixes. We've addressed over 100 issues across all our utilities. We've improved our installer experience and this will be the last time during upgrade you'll see Windows Explorer flash on you.
+Our goals for 0.19 release cycle had one big goal, add in stability / quality fixes. We've addressed over 100 issues across all our utilities. We've improved our installer experience and parts will start coming online in 0.19 and 0.20.  In this release, it will be the last time during upgrade you'll see Windows Explorer flash on you. For 0.20, the .NET Core install experience much smoother.
 
-The team was heavily focused on improving PowerToys Run search quality and speed.
-
-Feedback is critical. We know there are areas for improvement on PowerToys Run. We would love feedback so we can improve. We also would love to know if you want us to be more aggressive on auto-upgrading.
+We'd also stress feedback is critical. We know there are areas for improvement on PowerToys Run. We would love feedback so we can improve. We also would love to know if you want us to be more aggressive on auto-upgrading.
 
 - We shipped [v0.19][github-release-link]!
 - Big push for PowerToys Run search quality fixes
@@ -137,11 +135,12 @@ Feedback is critical. We know there are areas for improvement on PowerToys Run. 
 - Fixed [#3384 - PowerToys Settings window is empty](https://github.com/microsoft/PowerToys/issues/3384)
 - Over 100 bug fixes!
 
-For [0.20](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F5), we are proactively working on:
+For [0.20](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F6), we are proactively working on:
 
-- Stability / tech debt fixes
+- Stability
 - Start work on FZ Editor V2
-- OOBE improvements
+- Start work on OOBE improvements
+- Keyboard manager improvements
 
 ### Version 1.0 plan
 
