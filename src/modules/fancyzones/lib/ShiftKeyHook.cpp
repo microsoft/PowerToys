@@ -11,12 +11,6 @@ std::function<void(bool)> ShiftKeyHook::callback = {};
 ShiftKeyHook::ShiftKeyHook(std::function<void(bool)> extCallback)
 {
     callback = std::move(extCallback);
-#if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
-    if (IsDebuggerPresent())
-    {
-        return;
-    }
-#endif
 }
 
 void ShiftKeyHook::enable()

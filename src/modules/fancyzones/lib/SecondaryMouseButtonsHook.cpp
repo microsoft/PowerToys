@@ -10,12 +10,6 @@ std::function<void()> SecondaryMouseButtonsHook::callback = {};
 SecondaryMouseButtonsHook::SecondaryMouseButtonsHook(std::function<void()> extCallback)
 {
     callback = std::move(extCallback);
-#if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
-    if (IsDebuggerPresent())
-    {
-        return;
-    }
-#endif
 }
 
 void SecondaryMouseButtonsHook::enable()
