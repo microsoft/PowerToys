@@ -11,13 +11,6 @@ std::function<void(bool)> ShiftKeyHook::callback = {};
 ShiftKeyHook::ShiftKeyHook(std::function<void(bool)> extCallback)
 {
     callback = std::move(extCallback);
-#if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
-    if (IsDebuggerPresent())
-    {
-        return;
-    }
-#endif
-    hHook = SetWindowsHookEx(WH_KEYBOARD_LL, ShiftKeyHookProc, GetModuleHandle(NULL), 0);
 }
 
 void ShiftKeyHook::enable()
