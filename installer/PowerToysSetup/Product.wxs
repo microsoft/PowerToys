@@ -809,7 +809,6 @@
         <?endforeach?>
       </Component>
       <Component Id="calculatorImagesComponent" Directory="CalculatorImagesFolder" Guid="07EC9232-CF9A-4CDB-8D8E-E79DC75096C0">
-        <File Id="calculatorPluginImg_calculator" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Images\calculator.png" />
         <File Id="calculatorPluginImg_calculator_light" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Images\calculator_light.png" />
         <File Id="calculatorPluginImg_calculator_dark" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Images\calculator_dark.png" />
       </Component>
