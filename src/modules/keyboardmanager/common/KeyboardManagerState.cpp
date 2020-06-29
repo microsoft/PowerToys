@@ -169,7 +169,7 @@ bool KeyboardManagerState::AddAppSpecificShortcut(const std::wstring& app, const
     // Convert app name to lower case
     std::wstring process_name;
     process_name.resize(app.length());
-    std::transform(app.begin(), app.end(), process_name.begin(), tolower);
+    std::transform(app.begin(), app.end(), process_name.begin(), towlower);
 
     appSpecificShortcutReMap[process_name][originalSC] = RemapShortcut(newSC);
     return true;
