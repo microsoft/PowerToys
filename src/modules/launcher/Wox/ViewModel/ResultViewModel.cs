@@ -115,7 +115,7 @@ namespace Wox.ViewModel
             }
 
             // Result does not contain any context menu items - we don't need to show the context menu ListView at all.
-            if (ContextMenuItems != null && ContextMenuItems.Count > 0)
+            if (ContextMenuItems?.Count > 0)
             {
                 AreContextButtonsActive = IsSelected || IsHovered;
             }
