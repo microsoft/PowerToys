@@ -198,7 +198,7 @@ namespace Microsoft.Plugin.Program.Programs
                 result.Title = Name;
                 result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
             }
-
+            result.ToolTipText = result.Title + Environment.NewLine + FullPath;
             return result;
         }
 

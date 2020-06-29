@@ -74,6 +74,7 @@ namespace Microsoft.Plugin.Indexer
                             r.Title = searchResult.Title;
                             r.SubTitle = "Search: " + path;
                             r.IcoPath = path;
+                            r.ToolTipText = searchResult.Title + Environment.NewLine + path;
                             r.Action = c =>
                             {
                                 bool hide;
