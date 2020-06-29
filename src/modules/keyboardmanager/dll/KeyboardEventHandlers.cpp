@@ -602,6 +602,9 @@ namespace KeyboardEventHandlers
                 return 0;
             }
 
+            // Convert process name to lower case
+            std::transform(process_name.begin(), process_name.end(), process_name.begin(), towlower);
+
             std::unique_lock<std::mutex> lock(keyboardManagerState.appSpecificShortcutReMap_mutex);
             auto it = keyboardManagerState.appSpecificShortcutReMap.find(process_name);
             if (it != keyboardManagerState.appSpecificShortcutReMap.end())
