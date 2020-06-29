@@ -102,11 +102,14 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="KeyboardManagerRemapLogicTest.cpp" />
+    <ClCompile Include="MockedInputSanityTests.cpp" />
+    <ClCompile Include="SetKeyEventTests.cpp" />
+    <ClCompile Include="OSLevelShortcutRemappingTests.cpp" />
     <ClCompile Include="MockedInput.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="SingleKeyRemappingTests.cpp" />
     <ClCompile Include="TestHelpers.cpp" />
   </ItemGroup>
   <ItemGroup>

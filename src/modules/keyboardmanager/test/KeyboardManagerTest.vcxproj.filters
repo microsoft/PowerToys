@@ -24,7 +24,16 @@
     <ClCompile Include="TestHelpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KeyboardManagerRemapLogicTest.cpp">
+    <ClCompile Include="SingleKeyRemappingTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MockedInputSanityTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SetKeyEventTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OSLevelShortcutRemappingTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
