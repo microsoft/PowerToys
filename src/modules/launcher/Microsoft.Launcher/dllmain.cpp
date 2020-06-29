@@ -187,7 +187,7 @@ public:
                               DWORD pid = *pidBuffer;
                               if (pid)
                               {
-                                  m_hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+                                  m_hProcess = OpenProcess(PROCESS_TERMINATE | PROCESS_QUERY_INFORMATION, FALSE, pid);
                                   break;
                               }
                           }
