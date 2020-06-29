@@ -127,6 +127,8 @@ Our goals for 0.19 release cycle had one big goal, add in stability / quality fi
 
 We'd also stress feedback is critical. We know there are areas for improvement on PowerToys Run. We would love feedback so we can improve. We also would love to know if you want us to be more aggressive on auto-upgrading.
 
+Lastly, we'd like to thank everyone who filed a bug, gave feedback or made a pull-request. The PowerToys team is extremely grateful to have the support of an amazing active community.
+
 - We shipped [v0.19][github-release-link]!
 - Big push for PowerToys Run search quality fixes
 - PowerToys Run can now remap to any key shortcut (minus restricted ones such as WinKey+L)
