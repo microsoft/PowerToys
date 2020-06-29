@@ -829,6 +829,19 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 {
                                     newNameToUse = nullptr;
                                 }
+                                
+
+                                wchar_t datedName[MAX_PATH] = { 0 };
+                                wchar_t date[MAX_PATH] = { 0 };
+                                SYSTEMTIME LocalTime;
+                                if (newNameToUse != nullptr)
+                                {
+                                    spItem->get_date(&LocalTime);
+                                    if (SUCCEEDED(GetDatedFileName(datedName, ARRAYSIZE(datedName), newNameToUse, LocalTime)))
+                                    {
+                                        newNameToUse = datedName;
+                                    }
+                                }
 
                                 wchar_t uniqueName[MAX_PATH] = { 0 };
                                 if (newNameToUse != nullptr && (flags & EnumerateItems))

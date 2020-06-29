@@ -42,6 +42,13 @@ IFACEMETHODIMP CPowerRenameItem::get_path(_Outptr_ PWSTR* path)
     return hr;
 }
 
+IFACEMETHODIMP CPowerRenameItem::get_date(_Outptr_ SYSTEMTIME* date)
+{
+    CSRWSharedAutoLock lock(&m_lock);
+    *date = m_date;
+    return S_OK;
+}
+
 IFACEMETHODIMP CPowerRenameItem::get_shellItem(_Outptr_ IShellItem** ppsi)
 {
     return SHCreateItemFromParsingName(m_path, nullptr, IID_PPV_ARGS(ppsi));
@@ -88,6 +95,8 @@ IFACEMETHODIMP CPowerRenameItem::get_isFolder(_Out_ bool* isFolder)
     *isFolder = m_isFolder;
     return S_OK;
 }
+
+
 
 IFACEMETHODIMP CPowerRenameItem::get_isSubFolderContent(_Out_ bool* isSubFolderContent)
 {
@@ -213,6 +222,24 @@ HRESULT CPowerRenameItem::_Init(_In_ IShellItem* psi)
             {
                 // Some items can be both folders and streams (ex: zip folders).
                 m_isFolder = (att & SFGAO_FOLDER) && !(att & SFGAO_STREAM);
+                
+                HANDLE hFile = CreateFileW(m_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+                if (hFile != INVALID_HANDLE_VALUE)
+                {
+                    FILETIME CreationTime ;
+                    if (GetFileTime(hFile, &CreationTime, NULL, NULL))
+                    {
+                        SYSTEMTIME SystemTime, LocalTime;
+                        if (FileTimeToSystemTime(&CreationTime, &SystemTime))
+                        {
+                            SystemTimeToTzSpecificLocalTime(NULL, &SystemTime, &LocalTime);
+                            if (SUCCEEDED(hr))
+                            {
+                                m_date = LocalTime;
+                            }
+                        }
+                    }
+                }
             }
         }
     }

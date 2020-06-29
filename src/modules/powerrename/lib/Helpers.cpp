@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Helpers.h"
+#include <regex>
 #include <ShlGuid.h>
 #include <cstring>
 #include <filesystem>
@@ -168,6 +169,47 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
     return hr;
 }
 
+HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SYSTEMTIME LocalTime)
+{
+    HRESULT hr = (source && wcslen(source) > 0) ? S_OK : E_INVALIDARG;     
+    if (SUCCEEDED(hr))
+    {
+        // ~[\\]\$
+        std::wregex pattern(L"\\$YYYY");
+        std::wstring res = source;
+        wchar_t replaceTerm[MAX_PATH] = {0};
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%d"),LocalTime.wYear);
+        res = regex_replace(std::wstring(res), pattern, replaceTerm);
+
+        pattern = L"\\$MM" ;
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%02d"), LocalTime.wMonth);
+        res = regex_replace(std::wstring(res), pattern, replaceTerm);
+
+        pattern = L"\\$DD";
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%02d"), LocalTime.wDay);
+        res = regex_replace(std::wstring(res), pattern, replaceTerm);
+
+        pattern = L"\\$hh";
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%02d"), LocalTime.wHour);
+        res = regex_replace(std::wstring(res), pattern, replaceTerm);
+
+        pattern = L"\\$mm";
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%02d"), LocalTime.wMinute);
+        res = regex_replace(std::wstring(res), pattern, replaceTerm);
+
+        pattern = L"\\$ss";
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%02d"), LocalTime.wSecond);
+        res = regex_replace(std::wstring(res), pattern, replaceTerm);
+
+        pattern = L"\\$SSS";
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%03d"), LocalTime.wMilliseconds);
+        res = regex_replace(std::wstring(res), pattern, replaceTerm);
+
+        hr = StringCchCopy(result, cchMax, res.c_str());
+    }
+
+    return hr;
+}
 HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* psrm, _In_ int depth = 0)
 {
     HRESULT hr = E_INVALIDARG;
