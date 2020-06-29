@@ -223,6 +223,7 @@ HRESULT CPowerRenameItem::_Init(_In_ IShellItem* psi)
                 // Some items can be both folders and streams (ex: zip folders).
                 m_isFolder = (att & SFGAO_FOLDER) && !(att & SFGAO_STREAM);
                 
+                hr = E_FAIL;
                 HANDLE hFile = CreateFileW(m_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
                 if (hFile != INVALID_HANDLE_VALUE)
                 {
@@ -232,11 +233,11 @@ HRESULT CPowerRenameItem::_Init(_In_ IShellItem* psi)
                         SYSTEMTIME SystemTime, LocalTime;
                         if (FileTimeToSystemTime(&CreationTime, &SystemTime))
                         {
-                            SystemTimeToTzSpecificLocalTime(NULL, &SystemTime, &LocalTime);
-                            if (SUCCEEDED(hr))
+                            if (SystemTimeToTzSpecificLocalTime(NULL, &SystemTime, &LocalTime))
                             {
                                 m_date = LocalTime;
-                            }
+                                hr = S_OK;
+                            } 
                         }
                     }
                 }
