@@ -187,7 +187,7 @@ public:
                               DWORD pid = *pidBuffer;
                               if (pid)
                               {
-                                  m_hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+                                  m_hProcess = OpenProcess(PROCESS_TERMINATE | PROCESS_QUERY_INFORMATION | SYNCHRONIZE, FALSE, pid);
                                   break;
                               }
                           }
@@ -249,7 +249,7 @@ public:
       DWORD processID = GetProcessId(m_hProcess);
       EnumWindows(&requestMainWindowClose, processID);
       const DWORD result = WaitForSingleObject(m_hProcess, MAX_WAIT_MILLISEC);
-      if (result == WAIT_TIMEOUT)
+      if (result == WAIT_TIMEOUT || result == WAIT_FAILED)
       {
           TerminateProcess(m_hProcess, 1);
       }
