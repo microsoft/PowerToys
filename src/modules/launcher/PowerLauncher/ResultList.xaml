@@ -160,9 +160,11 @@
                             <ToolTip 
                                 Placement="Bottom"
                                 Visibility="{Binding Result.ToolTipVisibility}"
-                                >
+                                BorderThickness="0"
+                                Background="{DynamicResource ControlTextBrushKey}">
                                 <TextBlock 
                                     Text="{Binding Result.ToolTipText}"
+                                    Foreground="{DynamicResource SystemChromeLow}"
                                     TextWrapping="Wrap" />
                             </ToolTip>
                         </Grid.ToolTip>
