@@ -22,6 +22,7 @@ using System.Runtime.InteropServices.ComTypes;
 using Wox.Plugin.SharedCommands;
 using System.Reflection;
 using Wox.Infrastructure.Image;
+using Wox.Infrastructure.Logger;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -351,7 +352,31 @@ namespace Microsoft.Plugin.Program.Programs
                            return true;
                        }
                    });
-                
+
+                contextMenus.Add(new ContextMenuResult
+                {
+                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                    Title = "Open in Console",
+                    Glyph = "\xE756",
+                    FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = Key.C,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+
+                    Action = (context) =>
+                    {
+                        try
+                        {
+                            Helper.OpenInConsole(Package.Location);
+                            return true;
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Exception(e.Message, e);
+                            return false;
+                        }
+                    }
+                });
+
                 return contextMenus;
             }
 

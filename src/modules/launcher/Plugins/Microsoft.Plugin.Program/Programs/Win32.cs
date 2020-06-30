@@ -14,6 +14,7 @@ using Wox.Plugin;
 using System.Windows.Input;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Wox.Infrastructure.Logger;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -205,32 +206,11 @@ namespace Microsoft.Plugin.Program.Programs
 
         public List<ContextMenuResult> ContextMenus(IPublicAPI api)
         {
-            // To add a context menu only to open file location as Internet shortcut applications do not have the functionality to run as admin
-            if(AppType == (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION)
-            {
-                var contextMenuItems = new List<ContextMenuResult>
-                {
-                    new ContextMenuResult
-                    {
-                        PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                        Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
-                        Glyph = "\xE838",
-                        FontFamily = "Segoe MDL2 Assets",
-                        AcceleratorKey = Key.E,
-                        AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
-                        Action = _ =>
-                        {
-                            Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", ParentDirectory));
-                            return true;
-                        }
-                    }
-                };
-                return contextMenuItems;
-            }
+            var contextMenus = new List<ContextMenuResult>();
 
-            var contextMenus = new List<ContextMenuResult>
+            if (AppType != (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION)
             {
-                new ContextMenuResult
+                contextMenus.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = api.GetTranslation("wox_plugin_program_run_as_administrator"),
@@ -252,7 +232,10 @@ namespace Microsoft.Plugin.Program.Programs
 
                         return true;
                     }
-                },
+                });
+            }
+
+            contextMenus.Add(
                 new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
@@ -266,8 +249,33 @@ namespace Microsoft.Plugin.Program.Programs
                         Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", ParentDirectory));
                         return true;
                     }
-                }
-            };
+                });
+
+            contextMenus.Add(
+                new ContextMenuResult
+                {
+                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                    Title = "Open in Console",
+                    Glyph = "\xE756",
+                    FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = Key.C,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+
+                    Action = (context) =>
+                    {
+                        try
+                        {
+                            Helper.OpenInConsole(ParentDirectory);
+                            return true;
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Exception(e.Message, e);
+                            return false;
+                        }
+                    }
+                });
+
             return contextMenus;
         }
 

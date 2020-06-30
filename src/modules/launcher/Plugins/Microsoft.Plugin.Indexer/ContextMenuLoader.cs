@@ -93,9 +93,7 @@ namespace Microsoft.Plugin.Indexer
                         }
                         catch (Exception e)
                         {
-                            var message = "Fail to set text in clipboard";
-                            LogException(message, e);
-                            _context.API.ShowMsg(message);
+                            Log.Exception(e.Message, e);
                             return false;
                         }
                     }
