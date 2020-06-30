@@ -15,7 +15,7 @@ bool Input::GetVirtualKeyState(int key)
 }
 
 // Function to get the foreground process name
-std::wstring Input::GetForegroundProcess()
+void Input::GetForegroundProcess(_Out_ std::wstring& foregroundProcess)
 {
-    return KeyboardManagerHelper::GetCurrentApplication(false);
+    foregroundProcess = KeyboardManagerHelper::GetCurrentApplication(false);
 }

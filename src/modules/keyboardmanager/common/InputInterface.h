@@ -1,5 +1,6 @@
 #pragma once
 #include "windows.h"
+#include <string>
 
 // Interface used to wrap keyboard input library methods
 class InputInterface
@@ -12,5 +13,5 @@ public:
     virtual bool GetVirtualKeyState(int key) = 0;
 
     // Function to get the foreground process name
-    virtual std::wstring GetForegroundProcess() = 0;
+    virtual void GetForegroundProcess(_Out_ std::wstring& foregroundProcess) = 0;
 };

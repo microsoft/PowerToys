@@ -52,5 +52,5 @@ public:
     void SetForegroundProcess(std::wstring process);
 
     // Function to get the foreground process name
-    std::wstring GetForegroundProcess();
+    void GetForegroundProcess(_Out_ std::wstring& foregroundProcess);
 };

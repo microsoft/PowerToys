@@ -15,8 +15,8 @@ namespace RemappingLogicTests
     private:
         MockedInput mockedInputHandler;
         KeyboardManagerState testState;
-        const std::wstring testApp1 = L"TestProcess1.exe";
-        const std::wstring testApp2 = L"TestProcess2.exe";
+        std::wstring testApp1 = L"TestProcess1.exe";
+        std::wstring testApp2 = L"TestProcess2.exe";
 
     public:
         TEST_METHOD_INITIALIZE(InitializeTestEnv)
@@ -62,7 +62,7 @@ namespace RemappingLogicTests
         }
 
         // Test if the app specific remap takes place when the target app is not in foreground
-        TEST_METHOD (AppSpecificShortcut_ShouldGetRemapped_WhenAppIsInForeground)
+        TEST_METHOD (AppSpecificShortcut_ShouldNotGetRemapped_WhenAppIsNotInForeground)
         {
             // Remap Ctrl+A to Alt+V
             Shortcut src;
@@ -87,10 +87,10 @@ namespace RemappingLogicTests
             mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
             // Ctrl and A key states should be unchanged, Alt and V key states should be true
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), true);
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), false);
         }
     };
 }
