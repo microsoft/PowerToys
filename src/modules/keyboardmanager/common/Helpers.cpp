@@ -189,8 +189,8 @@ namespace KeyboardManagerHelper
         keyEventArray[index].ki.dwExtraInfo = extraInfo;
     }
 
-    // Function to return the window in focus using GUIThreadInfo method
-    HWND GetFocusWindowHandle()
+    // Function to return window handle for a full screen UWP app
+    HWND GetFullscreenUWPWindowHandle()
     {
         // Using GetGUIThreadInfo for getting the process of the window in focus. GetForegroundWindow has issues with UWP apps as it returns the Application Frame Host as its linked process
         GUITHREADINFO guiThreadInfo;
@@ -225,7 +225,7 @@ namespace KeyboardManagerHelper
             // If the UWP app is in full-screen, then using GetForegroundWindow approach might fail
             if (process_path == L"ApplicationFrameHost.exe")
             {
-                HWND fullscreen_window_handle = GetFocusWindowHandle();
+                HWND fullscreen_window_handle = GetFullscreenUWPWindowHandle();
                 if (fullscreen_window_handle != nullptr)
                 {
                     process_path = get_process_path(fullscreen_window_handle);
