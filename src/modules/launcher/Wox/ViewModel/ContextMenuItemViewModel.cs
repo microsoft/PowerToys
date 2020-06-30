@@ -9,7 +9,7 @@ namespace Wox.ViewModel
 {
     public class ContextMenuItemViewModel : BaseModel
     {
-        private ICommand command;
+        private ICommand _command;
         private readonly IBaseModel baseModel;
 
         public string PluginName { get; set; }
@@ -19,14 +19,14 @@ namespace Wox.ViewModel
         public ICommand Command {
             get
             {
-                return this.command;
+                return this._command;
             }
 
             set
             {
-                if (value != this.command)
+                if (value != this._command)
                 {
-                    this.command = value;
+                    this._command = value;
                     baseModel.OnPropertyChanged();
                 }
             }
