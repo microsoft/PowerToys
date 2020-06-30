@@ -189,7 +189,7 @@ namespace KeyboardManagerHelper
         keyEventArray[index].ki.dwExtraInfo = extraInfo;
     }
 
-    // Function to return the window in focus
+    // Function to return the window in focus using GUIThreadInfo method
     HWND GetFocusWindowHandle()
     {
         // Using GetGUIThreadInfo for getting the process of the window in focus. GetForegroundWindow has issues with UWP apps as it returns the Application Frame Host as its linked process
@@ -208,31 +208,44 @@ namespace KeyboardManagerHelper
     // Function to return the executable name of the application in focus
     std::wstring GetCurrentApplication(bool keepPath)
     {
-        HWND current_window_handle = GetFocusWindowHandle();
-        DWORD process_id;
-        DWORD nSize = MAX_PATH;
-        WCHAR buffer[MAX_PATH] = { 0 };
-
-        // Get process ID of the focus window
-        DWORD thread_id = GetWindowThreadProcessId(current_window_handle, &process_id);
-        HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, process_id);
-
-        // Get full path of the executable
-        bool res = QueryFullProcessImageName(hProc, 0, buffer, &nSize);
+        HWND current_window_handle = GetForegroundWindow();
         std::wstring process_name;
-        CloseHandle(hProc);
-        HWND y = GetForegroundWindow();
-        std::wstring x = get_process_path(y);
-        process_name = buffer;
-        if (res)
-        {
-            PathStripPath(buffer);
 
+        if (current_window_handle != nullptr)
+        {
+            std::wstring process_path = get_process_path(current_window_handle);
+            process_name = process_path;
+            
+            // Get process name from path
+            PathStripPath(&process_path[0]);
+
+            // Remove elements after null character
+            process_path.erase(std::find(process_path.begin(), process_path.end(), L'\0'), process_path.end());
+
+            // If the UWP app is in full-screen, then using GetForegroundWindow approach might fail
+            if (process_path == L"ApplicationFrameHost.exe")
+            {
+                HWND fullscreen_window_handle = GetFocusWindowHandle();
+                if (fullscreen_window_handle != nullptr)
+                {
+                    process_path = get_process_path(fullscreen_window_handle);
+                    process_name = process_path;
+
+                    // Get process name from path
+                    PathStripPath(&process_path[0]);
+
+                    // Remove elements after null character
+                    process_path.erase(std::find(process_path.begin(), process_path.end(), L'\0'), process_path.end());
+                }
+            }
+
+            // If keepPath is false, then return only the name of the process
             if (!keepPath)
             {
-                process_name = buffer;
+                process_name = process_path;
             }
         }
-         return process_name;
+
+        return process_name;
     }
 }

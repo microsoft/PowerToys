@@ -73,7 +73,7 @@ namespace KeyboardManagerHelper
     // Function to set the value of a key event based on the arguments
     void SetKeyEvent(LPINPUT keyEventArray, int index, DWORD inputType, WORD keyCode, DWORD flags, ULONG_PTR extraInfo);
 
-    // Function to return the window in focus
+    // Function to return the window in focus using GUIThreadInfo method
     HWND GetFocusWindowHandle();
 
     // Function to return the executable name of the application in focus

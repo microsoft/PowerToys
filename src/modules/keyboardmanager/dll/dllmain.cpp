@@ -68,21 +68,6 @@ public:
         // Load the initial configuration.
         load_config();
 
-        Shortcut src;
-        src.SetKey(VK_CONTROL);
-        src.SetKey(0x41);
-        Shortcut dest;
-        dest.SetKey(VK_CONTROL);
-        dest.SetKey(0x56);
-        keyboardManagerState.AddAppSpecificShortcut(L"msedge.exe", src, dest);
-        Shortcut src1;
-        src1.SetKey(VK_CONTROL);
-        src1.SetKey(0x41);
-        Shortcut dest1;
-        dest1.SetKey(VK_SHIFT);
-        dest1.SetKey(0x32);
-        keyboardManagerState.AddAppSpecificShortcut(L"calculator.exe", src1, dest1);
-
         // Set the static pointer to the newest object of the class
         keyboardmanager_object_ptr = this;
     };
