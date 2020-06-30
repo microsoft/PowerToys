@@ -36,7 +36,7 @@ namespace Wox.ViewModel
                 if (value != this._items)
                 {
                     this._items = value;
-                    OnPropertyChanged("ContextMenuItems");
+                    OnPropertyChanged();
                 }
             }
         }
@@ -50,42 +50,10 @@ namespace Wox.ViewModel
         public bool IsSelected { get; set; }
 
         public bool IsHovered { get; set; }
+        
+        public bool AreContextButtonsActive { get; set; }
 
-        private bool areContextButtonsActive;
-        public bool AreContextButtonsActive
-        {
-            get
-            {
-                return this.areContextButtonsActive;
-            }
-
-            set
-            {
-                if (value != this.areContextButtonsActive)
-                {
-                    this.areContextButtonsActive = value;
-                    OnPropertyChanged("AreContextButtonsActive");
-                }
-            }
-        }
-
-        private int contextMenuSelectedIndex;
-
-        public int ContextMenuSelectedIndex {
-            get
-            {
-                return this.contextMenuSelectedIndex;
-            }    
-
-            set
-            {
-                if (value != this.contextMenuSelectedIndex)
-                {
-                    this.contextMenuSelectedIndex = value;
-                    OnPropertyChanged("ContextMenuSelectedIndex");
-                }
-            }
-        }
+        public int ContextMenuSelectedIndex { get; set; }
 
         const int NoSelectionIndex = -1;
 
