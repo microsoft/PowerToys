@@ -10,10 +10,72 @@ namespace Wox.ViewModel
     public class ContextMenuItemViewModel : BaseModel
     {
         public string PluginName { get; set; }
-        public string Title { get; set; }
-        public string Glyph { get; set; }
-        public string FontFamily { get; set; }
-        public ICommand Command { get; set; }
+
+        private string title;
+        private string glyph;
+        private string fontfamily;
+        private ICommand command;
+
+        public string Title {
+            get
+            {
+                return this.title;
+            }
+
+            set
+            {
+                if (value != this.title)
+                {
+                    this.title = value;
+                    OnPropertyChanged("Title");
+                }
+            }
+        }
+        public string Glyph {
+            get
+            {
+                return this.glyph;
+            }
+
+            set
+            {
+                if (value != this.glyph)
+                {
+                    this.glyph = value;
+                    OnPropertyChanged("Glyph");
+                }
+            }
+        }
+        public string FontFamily {
+            get
+            {
+                return this.fontfamily;
+            }
+
+            set
+            {
+                if (value != this.fontfamily)
+                {
+                    this.fontfamily = value;
+                    OnPropertyChanged("FontFamily");
+                }
+            }
+        }
+        public ICommand Command {
+            get
+            {
+                return this.command;
+            }
+
+            set
+            {
+                if (value != this.command)
+                {
+                    this.command = value;
+                    OnPropertyChanged("Command");
+                }
+            }
+        }
         public Key AcceleratorKey { get; set; }
         public ModifierKeys AcceleratorModifiers { get; set; }
         public bool IsAcceleratorKeyEnabled { get; set; }
