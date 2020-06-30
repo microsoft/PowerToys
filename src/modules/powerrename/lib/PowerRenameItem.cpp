@@ -96,8 +96,6 @@ IFACEMETHODIMP CPowerRenameItem::get_isFolder(_Out_ bool* isFolder)
     return S_OK;
 }
 
-
-
 IFACEMETHODIMP CPowerRenameItem::get_isSubFolderContent(_Out_ bool* isSubFolderContent)
 {
     CSRWSharedAutoLock lock(&m_lock);

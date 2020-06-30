@@ -47,16 +47,16 @@ protected:
 
     HRESULT _Init(_In_ IShellItem* psi);
 
-    bool          m_selected = true;
-    bool          m_isFolder = false;
-    int           m_id = -1;
-    int           m_iconIndex = -1;
-    UINT          m_depth = 0;
-    HRESULT       m_error = S_OK;
-    PWSTR         m_path = nullptr;
-    PWSTR         m_originalName = nullptr;
-    PWSTR         m_newName = nullptr;
-    SYSTEMTIME    m_date ;
-    CSRWLock      m_lock;
-    long          m_refCount = 0;
+    bool        m_selected = true;
+    bool        m_isFolder = false;
+    int         m_id = -1;
+    int         m_iconIndex = -1;
+    UINT        m_depth = 0;
+    HRESULT     m_error = S_OK;
+    PWSTR       m_path = nullptr;
+    PWSTR       m_originalName = nullptr;
+    PWSTR       m_newName = nullptr;
+    SYSTEMTIME  m_date ;
+    CSRWLock    m_lock;
+    long        m_refCount = 0;
 };

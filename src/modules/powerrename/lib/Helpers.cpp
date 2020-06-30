@@ -174,7 +174,6 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
     HRESULT hr = (source && wcslen(source) > 0) ? S_OK : E_INVALIDARG;     
     if (SUCCEEDED(hr))
     {
-        // ~[\\]\$
         std::wregex pattern(L"\\$YYYY");
         std::wstring res = source;
         wchar_t replaceTerm[MAX_PATH] = {0};
@@ -210,6 +209,7 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
 
     return hr;
 }
+
 HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* psrm, _In_ int depth = 0)
 {
     HRESULT hr = E_INVALIDARG;
