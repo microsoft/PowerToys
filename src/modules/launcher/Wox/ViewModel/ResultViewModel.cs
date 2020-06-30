@@ -149,7 +149,7 @@ namespace Wox.ViewModel
             var newItems = new List<ContextMenuItemViewModel>();
             foreach (var r in results)
             {
-                newItems.Add(new ContextMenuItemViewModel
+                newItems.Add(new ContextMenuItemViewModel(new BaseModel())
                 {
                     PluginName = r.PluginName,
                     Title = r.Title,

@@ -10,6 +10,8 @@ namespace Wox.ViewModel
     public class ContextMenuItemViewModel : BaseModel
     {
         private ICommand command;
+        private readonly IBaseModel baseModel;
+
         public string PluginName { get; set; }
         public string Title { get; set; }
         public string Glyph { get; set; }
@@ -25,10 +27,16 @@ namespace Wox.ViewModel
                 if (value != this.command)
                 {
                     this.command = value;
-                    OnPropertyChanged();
+                    baseModel.OnPropertyChanged();
                 }
             }
         }
+
+        public ContextMenuItemViewModel(IBaseModel baseModel)
+        {
+            this.baseModel = baseModel;
+        }
+
         public Key AcceleratorKey { get; set; }
         public ModifierKeys AcceleratorModifiers { get; set; }
         public bool IsAcceleratorKeyEnabled { get; set; }

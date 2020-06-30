@@ -6,14 +6,15 @@ using JetBrains.Annotations;
 
 namespace Wox.Plugin
 {
-    public class BaseModel : INotifyPropertyChanged
+    public class BaseModel : INotifyPropertyChanged, IBaseModel
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
         [NotifyPropertyChangedInvocator]
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        public void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
     }
 }
