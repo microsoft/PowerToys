@@ -54,23 +54,7 @@ namespace Wox.ViewModel
                 return _settings.MaxResultsToShow * 75;
             }
         }
-
-        private int selectedIndex;
-        public int SelectedIndex {
-            get
-            {
-                return this.selectedIndex;
-            }
-
-            set
-            {
-                if (value != this.selectedIndex)
-                {
-                    this.selectedIndex = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
+        public int SelectedIndex { get; set; }
 
         private ResultViewModel _selectedItem;
         public ResultViewModel SelectedItem
