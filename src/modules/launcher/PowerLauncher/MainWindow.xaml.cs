@@ -110,18 +110,21 @@ namespace PowerLauncher
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (Visibility == System.Windows.Visibility.Visible)
+            if(e.PropertyName == nameof(MainViewModel.MainWindowVisibility)) 
             {
-                // Not called on first launch
-                // Additionally called when deactivated by clicking on screen  
-                UpdatePosition();
-                BringProcessToForeground();
-
-                if (!_viewModel.LastQuerySelected)
+                if (Visibility == System.Windows.Visibility.Visible)
                 {
-                    _viewModel.LastQuerySelected = true;
+                    // Not called on first launch
+                    // Additionally called when deactivated by clicking on screen  
+                    UpdatePosition();
+                    BringProcessToForeground();
+
+                    if (!_viewModel.LastQuerySelected)
+                    {
+                        _viewModel.LastQuerySelected = true;
+                    }
                 }
-            }
+            }          
             else if (e.PropertyName == nameof(MainViewModel.SystemQueryText))
             {
                 this._isTextSetProgrammatically = true;
