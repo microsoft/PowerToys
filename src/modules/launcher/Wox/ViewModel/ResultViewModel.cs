@@ -66,7 +66,6 @@ namespace Wox.ViewModel
             
             ContextMenuSelectedIndex = NoSelectionIndex;
             ContextMenuItems = LoadContextMenu();
-            AreContextButtonsActive = false;
             
             ActivateContextButtonsHoverCommand = new RelayCommand(ActivateContextButtonsHoverAction);
             ActivateContextButtonsSelectionCommand = new RelayCommand(ActivateContextButtonsSelectionAction);
