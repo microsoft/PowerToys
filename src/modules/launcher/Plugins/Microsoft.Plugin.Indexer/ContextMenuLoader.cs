@@ -65,6 +65,39 @@ namespace Microsoft.Plugin.Indexer
                         }
                     }
                 });
+                contextMenus.Add(new ContextMenuResult
+                {
+                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                    Title = "Open in Console",
+                    Glyph = "\xE756",
+                    FontFamily = "Segoe MDL2 Assets",
+                    SubTitle = $"Open current {fileOrFolder} path in console",
+                    AcceleratorKey = Key.C,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+
+                    Action = (context) =>
+                    {
+                        try
+                        {
+                            var processStartInfo = new ProcessStartInfo
+                            {
+                                WorkingDirectory = Path.GetDirectoryName(record.Path),
+                                FileName = "cmd.exe"
+                            };
+
+                            Process proc = Process.Start(processStartInfo);
+                            return true;
+                        }
+                        catch (Exception e)
+                        {
+                            var message = "Fail to set text in clipboard";
+                            LogException(message, e);
+                            _context.API.ShowMsg(message);
+                            return false;
+                        }
+                    }
+                });
+
             }
 
             return contextMenus;
