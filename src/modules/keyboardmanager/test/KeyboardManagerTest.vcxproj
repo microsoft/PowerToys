@@ -102,6 +102,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AppSpecificShortcutRemappingTests.cpp" />
     <ClCompile Include="KeyboardManagerRemapLogicTest.cpp" />
     <ClCompile Include="MockedInput.cpp" />
     <ClCompile Include="pch.cpp">

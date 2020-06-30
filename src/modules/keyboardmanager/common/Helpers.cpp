@@ -221,7 +221,8 @@ namespace KeyboardManagerHelper
         bool res = QueryFullProcessImageName(hProc, 0, buffer, &nSize);
         std::wstring process_name;
         CloseHandle(hProc);
-
+        HWND y = GetForegroundWindow();
+        std::wstring x = get_process_path(y);
         process_name = buffer;
         if (res)
         {
@@ -232,6 +233,6 @@ namespace KeyboardManagerHelper
                 process_name = buffer;
             }
         }
-        return process_name;
+         return process_name;
     }
 }
