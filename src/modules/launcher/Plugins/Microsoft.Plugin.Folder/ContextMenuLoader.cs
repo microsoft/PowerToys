@@ -37,7 +37,7 @@ namespace Microsoft.Plugin.Folder
                 contextMenus.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = "Copy path (Ctrl+C)",
+                    Title = "Copy path",
                     Glyph = "\xE8C8",
                     FontFamily = "Segoe MDL2 Assets",
                     SubTitle = $"Copy the current {fileOrFolder} path to clipboard",
