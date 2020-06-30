@@ -41,9 +41,41 @@ namespace Wox.ViewModel
             }
         }
 
-        public ICommand ActivateContextButtonsHoverCommand { get; set; }
+        private ICommand activateContextButtonsHoverCommand;
+        public ICommand ActivateContextButtonsHoverCommand {
+            get
+            {
+                return this.activateContextButtonsHoverCommand;
+            }
+
+            set
+            {
+                if (value != this.activateContextButtonsHoverCommand)
+                {
+                    this.activateContextButtonsHoverCommand = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private ICommand deactivateContextButtonsHoverCommand;
+        public ICommand DeactivateContextButtonsHoverCommand
+        {
+            get
+            {
+                return this.deactivateContextButtonsHoverCommand;
+            }
+
+            set
+            {
+                if (value != this.deactivateContextButtonsHoverCommand)
+                {
+                    this.deactivateContextButtonsHoverCommand = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public ICommand ActivateContextButtonsSelectionCommand { get; set; }
-        public ICommand DeactivateContextButtonsHoverCommand { get; set; }
 
         public ICommand DeactivateContextButtonsSelectionCommand { get; set; }
 
