@@ -10,6 +10,7 @@ using Wox.Plugin.SharedCommands;
 using Wox.Plugin;
 using System.Reflection;
 using System.Windows.Input;
+using Wox.Infrastructure;
 
 namespace Microsoft.Plugin.Folder
 {
@@ -48,6 +49,41 @@ namespace Microsoft.Plugin.Folder
                         try
                         {
                             Clipboard.SetText(record.FullPath);
+                            return true;
+                        }
+                        catch (Exception e)
+                        {
+                            var message = "Fail to set text in clipboard";
+                            LogException(message, e);
+                            _context.API.ShowMsg(message);
+                            return false;
+                        }
+                    }
+                });
+
+                contextMenus.Add(new ContextMenuResult
+                {
+                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                    Title = "Open in Console",
+                    Glyph = "\xE756",
+                    FontFamily = "Segoe MDL2 Assets",
+                    SubTitle = $"Open current {fileOrFolder} path in console",
+                    AcceleratorKey = Key.C,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+
+                    Action = (context) =>
+                    {
+                        try
+                        {
+                            if (fileOrFolder == "file")
+                            {
+                                Helper.OpenInConsole(Path.GetDirectoryName(record.FullPath));
+                            }
+                            else
+                            {
+                                Helper.OpenInConsole(record.FullPath);
+                            }
+
                             return true;
                         }
                         catch (Exception e)

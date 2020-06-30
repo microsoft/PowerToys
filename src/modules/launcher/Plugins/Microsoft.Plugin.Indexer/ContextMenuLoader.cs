@@ -8,6 +8,7 @@ using Wox.Plugin;
 using Microsoft.Plugin.Indexer.SearchHelper;
 using System.Windows.Input;
 using System.Reflection;
+using Wox.Infrastructure;
 
 namespace Microsoft.Plugin.Indexer
 {
@@ -79,13 +80,15 @@ namespace Microsoft.Plugin.Indexer
                     {
                         try
                         {
-                            var processStartInfo = new ProcessStartInfo
+                            if (fileOrFolder == "file")
                             {
-                                WorkingDirectory = Path.GetDirectoryName(record.Path),
-                                FileName = "cmd.exe"
-                            };
+                                Helper.OpenInConsole(Path.GetDirectoryName(record.Path));
+                            }
+                            else
+                            {
+                                Helper.OpenInConsole(record.Path);
+                            }
 
-                            Process proc = Process.Start(processStartInfo);
                             return true;
                         }
                         catch (Exception e)
@@ -97,7 +100,6 @@ namespace Microsoft.Plugin.Indexer
                         }
                     }
                 });
-
             }
 
             return contextMenus;
