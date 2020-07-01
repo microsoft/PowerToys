@@ -185,6 +185,9 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
 
     m_windowMoveSize = window;
 
+    // Optional?
+    m_ctrlHook->enable();
+
     if (m_settings->GetSettings()->mouseSwitch)
     {
         m_mouseHook->enable();
@@ -297,6 +300,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
 
     m_mouseHook->disable();
     m_shiftHook->disable();
+    m_ctrlHook->disable();
 
     m_inMoveSize = false;
     m_dragEnabled = false;
