@@ -16,9 +16,6 @@
     <Image Include="Rename.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{e6495fd5-e473-4d50-b8bf-8456bb457595}</UniqueIdentifier>
     </Filter>
@@ -30,5 +27,8 @@
     <ResourceCompile Include="PowerRenameUI.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

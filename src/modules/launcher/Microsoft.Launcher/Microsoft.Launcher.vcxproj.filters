@@ -13,9 +13,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{5d14850e-4c90-4022-9ad1-9ca85dc4dc27}</UniqueIdentifier>
     </Filter>
@@ -27,5 +24,8 @@
     <ResourceCompile Include="Microsoft.Launcher.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
