@@ -54,13 +54,12 @@ namespace FancyZonesEditor
         public const ushort _lastDefinedId = _blankCustomModelId;
 
         // Localizable strings
+        private const string ErrorMessageBoxTitle = "FancyZones Editor Error";
         private const string ErrorParsingDeviceInfo = "Error parsing device info data.";
         private const string ErrorInvalidArgs = "FancyZones Editor arguments are invalid.";
         private const string ErrorNonStandaloneApp = "FancyZones Editor should not be run as standalone application.";
 
         // Non-localizable strings
-        private const string ErrorMessageBoxTitle = "FancyZones Editor Error";
-
         private const string ZonesSettingsFile = "\\Microsoft\\PowerToys\\FancyZones\\zones-settings.json";
 
         private const string ActiveZoneSetsTmpFileName = "FancyZonesActiveZoneSets.json";
