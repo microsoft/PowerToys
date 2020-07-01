@@ -128,7 +128,7 @@ namespace PowerLauncher
             else if (e.PropertyName == nameof(MainViewModel.SystemQueryText))
             {
                 this._isTextSetProgrammatically = true;
-                SearchBox.QueryTextBox.Text = _viewModel.SystemQueryText;
+                SearchBox.QueryTextBox.Text = GetSearchText(_viewModel.SystemQueryText, _viewModel.QueryText);
             }
         }
 
@@ -265,14 +265,14 @@ namespace PowerLauncher
 
             // To populate the AutoCompleteTextBox as soon as the selection is changed or set.
             // Setting it here instead of when the text is changed as there is a delay in executing the query and populating the result
-            SearchBox.AutoCompleteTextBlock.Text = ListView_FirstItem(_viewModel.QueryText);
+            SearchBox.AutoCompleteTextBlock.Text = GetAutoCompleteText(_viewModel.QueryText);
         }
 
         private const int millisecondsToWait = 100;
         private static DateTime s_lastTimeOfTyping;
         private bool disposedValue = false;
 
-        private string ListView_FirstItem(String input)
+        private string GetAutoCompleteText(String input)
         {
             if (!string.IsNullOrEmpty(input))
             {
@@ -290,6 +290,26 @@ namespace PowerLauncher
 
             return string.Empty;
         }
+
+        private string GetSearchText(String input, string query)
+        {
+            if (!string.IsNullOrEmpty(input))
+            {
+                string selectedItem = _viewModel.Results?.SelectedItem?.ToString();
+                int selectedIndex = _viewModel.Results.SelectedIndex;
+                if (selectedItem != null && selectedIndex == 0)
+                {
+                    if (input.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) == 0)
+                    {
+                        return query + input.Substring(query.Length);
+                    }
+                }
+                return input;
+            }
+
+            return string.Empty;
+        }
+
         private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {          
             if (_isTextSetProgrammatically)
