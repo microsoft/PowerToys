@@ -212,7 +212,7 @@ public:
     bool Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, bool flashZones);
 
     IFACEMETHODIMP MoveSizeEnter(HWND window) noexcept;
-    IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled) noexcept;
+    IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool holdZones) noexcept;
     IFACEMETHODIMP MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
     IFACEMETHODIMP_(void)
     RestoreOriginalTransparency() noexcept;
@@ -372,7 +372,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnter(HWND window) noexcept
     return S_OK;
 }
 
-IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled) noexcept
+IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool holdZones) noexcept
 {
     bool redraw = false;
     POINT ptClient = ptScreen;
@@ -382,7 +382,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
     {
         auto highlightZone = ZonesFromPoint(ptClient);
 
-        if (GetAsyncKeyState(VK_CONTROL) & 0x8000)
+        if (holdZones)
         {
             std::vector<int> newHighlightZone;
             std::set_union(begin(highlightZone), end(highlightZone), begin(m_highlightZone), end(m_highlightZone), std::back_inserter(newHighlightZone));

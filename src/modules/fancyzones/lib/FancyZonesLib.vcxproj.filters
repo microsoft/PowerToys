@@ -60,7 +60,7 @@
     <ClInclude Include="MonitorWorkAreaHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ShiftKeyHook.h">
+    <ClInclude Include="GenericKeyHook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -107,7 +107,7 @@
     <ClCompile Include="MonitorWorkAreaHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ShiftKeyHook.cpp">
+    <ClCompile Include="GenericKeyHook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

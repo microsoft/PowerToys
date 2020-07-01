@@ -32,8 +32,11 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      * @param   ptScreen    Cursor coordinates.
      * @param   dragEnabled Boolean indicating is giving hints about active zone layout enabled.
      *                      Hints are given while dragging window while holding SHIFT key.
+     * @param   holdZones   When this parameter is true, add the zone(s) the user is hovering over to
+     *                      highlighted zones, otherwise, just set highlighted zones to the zone(s) the
+     *                      user is currently hovering over.
      */
-    IFACEMETHOD(MoveSizeUpdate)(POINT const& ptScreen, bool dragEnabled) = 0;
+    IFACEMETHOD(MoveSizeUpdate)(POINT const& ptScreen, bool dragEnabled, bool holdZones) = 0;
     /**
      * The movement or resizing of a window has finished. Assign window to the zone of it
      * is dropped within zone borders.
