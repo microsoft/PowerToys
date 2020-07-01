@@ -14,6 +14,7 @@ class OverlayWindow : public PowertoyModuleIface
 {
 public:
     OverlayWindow();
+
     virtual const wchar_t* get_name() override;
     virtual const wchar_t** get_events() override;
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override;
@@ -38,6 +39,8 @@ public:
     intptr_t signal_event(LowlevelKeyboardEvent* event);
 
     virtual void destroy() override;
+
+    bool overlay_visible() const;
 
 private:
     std::wstring app_name;
