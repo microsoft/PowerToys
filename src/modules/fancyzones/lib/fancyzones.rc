@@ -19,6 +19,7 @@ BEGIN
     IDS_SETTING_DESCRIPTION_ZONEHIGHLIGHTCOLOR                 "Zone highlight color (Default #008CFF)"
     IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN "Follow mouse cursor instead of focus when launching editor in a multi screen environment"
     IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS            "Move newly created windows to their last known zone"
+    IDS_SETTING_DESCRIPTION_RESTORESIZE                        "Restore the original size of windows when unsnapping"
     IDS_SETTING_LAUNCH_EDITOR_LABEL                            "Zone configuration"
     IDS_SETTING_LAUNCH_EDITOR_BUTTON                           "Edit zones"
     IDS_SETTING_LAUNCH_EDITOR_DESCRIPTION                      "To launch the zone editor, select the Edit zones button below or press the zone editor hotkey anytime"

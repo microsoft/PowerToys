@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "util.h"
+#include "Settings.h"
 
 #include <common/common.h>
 #include <common/dpi_aware.h>
@@ -172,4 +173,85 @@ bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& excludedA
         return false;
     }
     return true;
+}
+
+void SaveWindowSizeAndOrigin(HWND window) noexcept
+{
+    HANDLE handle = GetPropW(window, RESTORE_SIZE_STAMP);
+    if (handle)
+    {
+        // Size already set, skip
+        return;
+    }
+
+    RECT rect;
+    if (GetWindowRect(window, &rect))
+    {
+        int width = rect.right - rect.left;
+        int height = rect.bottom - rect.top;
+        int originX = rect.left;
+        int originY = rect.top;
+
+        DPIAware::InverseConvert(MonitorFromWindow(window, MONITOR_DEFAULTTONULL), width, height);
+        DPIAware::InverseConvert(MonitorFromWindow(window, MONITOR_DEFAULTTONULL), originX, originY);
+
+        std::array<int, 2> windowSizeData = { width, height };
+        std::array<int, 2> windowOriginData = { originX, originY };
+        HANDLE rawData;
+        memcpy(&rawData, windowSizeData.data(), sizeof rawData);
+        SetPropW(window, RESTORE_SIZE_STAMP, rawData);
+        memcpy(&rawData, windowOriginData.data(), sizeof rawData);
+        SetPropW(window, RESTORE_ORIGIN_STAMP, rawData);
+    }
+}
+
+void RestoreWindowSize(HWND window) noexcept
+{
+    auto windowSizeData = GetPropW(window, RESTORE_SIZE_STAMP);
+    if (windowSizeData)
+    {
+        std::array<int, 2> windowSize;
+        memcpy(windowSize.data(), &windowSizeData, sizeof windowSize);
+
+        // {width, height}
+        DPIAware::Convert(MonitorFromWindow(window, MONITOR_DEFAULTTONULL), windowSize[0], windowSize[1]);
+
+        RECT rect;
+        if (GetWindowRect(window, &rect))
+        {
+            rect.right = rect.left + windowSize[0];
+            rect.bottom = rect.top + windowSize[1];
+            SizeWindowToRect(window, rect);
+        }
+
+        ::RemoveProp(window, RESTORE_SIZE_STAMP);
+    }
+}
+
+void RestoreWindowOrigin(HWND window) noexcept
+{
+    auto windowOriginData = GetPropW(window, RESTORE_ORIGIN_STAMP);
+    if (windowOriginData)
+    {
+        std::array<int, 2> windowOrigin;
+        memcpy(windowOrigin.data(), &windowOriginData, sizeof windowOrigin);
+
+        // {width, height}
+        DPIAware::Convert(MonitorFromWindow(window, MONITOR_DEFAULTTONULL), windowOrigin[0], windowOrigin[1]);
+
+        RECT rect;
+        if (GetWindowRect(window, &rect))
+        {
+            int xOffset = windowOrigin[0] - rect.left;
+            int yOffset = windowOrigin[1] - rect.top;
+
+            rect.left += xOffset;
+            rect.right += xOffset;
+            rect.top += yOffset;
+            rect.bottom += yOffset;
+            SizeWindowToRect(window, rect);
+        }
+
+        ::RemoveProp(window, RESTORE_ORIGIN_STAMP);
+    }
 }

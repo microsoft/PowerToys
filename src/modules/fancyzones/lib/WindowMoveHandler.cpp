@@ -4,6 +4,7 @@
 #include <common/notifications.h>
 #include <common/notifications/fancyzones_notifications.h>
 #include <common/window_helpers.h>
+#include <common/dpi_aware.h>
 
 #include "lib/Settings.h"
 #include "lib/ZoneWindow.h"
@@ -296,6 +297,18 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
     else
     {
         ::RemoveProp(window, MULTI_ZONE_STAMP);
+
+        if (m_settings->GetSettings()->restoreSize)
+        {
+            if (WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
+            {
+                ::RemoveProp(window, RESTORE_SIZE_STAMP);
+            }
+            else
+            {
+                RestoreWindowSize(window);
+            }
+        }
 
         auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
         if (monitor)

@@ -36,7 +36,7 @@ private:
         PCWSTR name;
         bool* value;
         int resourceId;
-    } m_configBools[10 /* 11 */] = { // "Turning FLASHING_ZONE option off"
+    } m_configBools[11 /* 12 */] = { // "Turning FLASHING_ZONE option off"
         { L"fancyzones_shiftDrag", &m_settings.shiftDrag, IDS_SETTING_DESCRIPTION_SHIFTDRAG },
         { L"fancyzones_mouseSwitch", &m_settings.mouseSwitch, IDS_SETTING_DESCRIPTION_MOUSESWITCH },
         { L"fancyzones_overrideSnapHotkeys", &m_settings.overrideSnapHotkeys, IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS },
@@ -46,6 +46,7 @@ private:
         { L"fancyzones_displayChange_moveWindows", &m_settings.displayChange_moveWindows, IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS },
         { L"fancyzones_zoneSetChange_moveWindows", &m_settings.zoneSetChange_moveWindows, IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS },
         { L"fancyzones_appLastZone_moveWindows", &m_settings.appLastZone_moveWindows, IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS },
+        { L"fancyzones_restoreSize", &m_settings.restoreSize, IDS_SETTING_DESCRIPTION_RESTORESIZE },
         { L"use_cursorpos_editor_startupscreen", &m_settings.use_cursorpos_editor_startupscreen, IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN },
         { L"fancyzones_show_on_all_monitors", &m_settings.showZonesOnAllMonitors, IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS},
         { L"fancyzones_makeDraggedWindowTransparent", &m_settings.makeDraggedWindowTransparent, IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT},
