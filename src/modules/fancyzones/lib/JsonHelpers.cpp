@@ -518,14 +518,7 @@ namespace JSONHelpers
             {
                 if (data.deviceId == deviceId)
                 {
-                    for (auto placedWindow : data.processIdToHandleMap)
-                    {
-                        if (IsWindow(placedWindow.second) && processId != placedWindow.first)
-                        {
-                            return false;
-                        }
-                    }
-                    // application already has history on this desktop, but zone (or zone layout) has changed
+                    // application already has history on this work area, update it with new window position
                     data.processIdToHandleMap[processId] = window;
                     data.zoneSetUuid = zoneSetId;
                     data.zoneIndexSet = zoneIndexSet;
@@ -535,7 +528,7 @@ namespace JSONHelpers
             }
         }
 
-        std::map<DWORD, HWND> processIdToHandleMap{};
+        std::unordered_map<DWORD, HWND> processIdToHandleMap{};
         processIdToHandleMap[processId] = window;
         AppZoneHistoryData data{ .processIdToHandleMap = processIdToHandleMap,
                                  .zoneSetUuid = zoneSetId,
