@@ -174,7 +174,7 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
         m_mouseHook->enable();
     }
 
-    if (m_settings->GetSettings()->shiftDrag)
+    if (m_settings->GetSettings()->shiftDrag || !m_settings->GetSettings()->mouseSwitch)
     {
         m_shiftHook->enable();
     }
