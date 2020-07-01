@@ -31,6 +31,8 @@ enum class DisplayChangeType
 namespace
 {
     constexpr int LEFT_TOP_PADDING = 10;
+    constexpr int CUSTOM_POSITIONING_MAX_RETRIES = 5;
+    constexpr int CUSTOM_POSITIONING_WAIT_TIME = 200;
 }
 
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
@@ -497,9 +499,14 @@ void OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept
                 SizeWindowToRect(window, newPosition);
 
                 // Certain applications could perform their own custom positioning afterwards, so check if window
-                // is in expected position, and if not, try to move it there one more time.
-                if (!WindowInExpectedPosition(window, newPosition))
+                // is in expected position, and if not, try to move it there again.
+                for (int i = 0; i < CUSTOM_POSITIONING_MAX_RETRIES; ++i)
                 {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(CUSTOM_POSITIONING_WAIT_TIME));
+                    if (WindowInExpectedPosition(window, newPosition))
+                    {
+                        break;
+                    }
                     SizeWindowToRect(window, newPosition);
                 }
             }
