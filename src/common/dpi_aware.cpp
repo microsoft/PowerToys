@@ -46,8 +46,8 @@ namespace DPIAware
         UINT dpi_x, dpi_y;
         if (GetDpiForMonitor(monitor_handle, MDT_EFFECTIVE_DPI, &dpi_x, &dpi_y) == S_OK)
         {
-            width = width * dpi_x / DEFAULT_DPI;
-            height = height * dpi_y / DEFAULT_DPI;
+            width = width * static_cast<int>(dpi_x) / DEFAULT_DPI;
+            height = height * static_cast<int>(dpi_y) / DEFAULT_DPI;
         }
     }
 
@@ -62,8 +62,8 @@ namespace DPIAware
         UINT dpi_x, dpi_y;
         if (GetDpiForMonitor(monitor_handle, MDT_EFFECTIVE_DPI, &dpi_x, &dpi_y) == S_OK)
         {
-            width = width * DEFAULT_DPI / dpi_x;
-            height = height * DEFAULT_DPI / dpi_y;
+            width = width * DEFAULT_DPI / static_cast<int>(dpi_x);
+            height = height * DEFAULT_DPI / static_cast<int>(dpi_y);
         }
     }
 
