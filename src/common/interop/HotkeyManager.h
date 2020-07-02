@@ -26,7 +26,7 @@ public
 public
     delegate void HotkeyCallback();
 
-typedef unsigned short HOTKEY_HANDLE;
+    typedef unsigned short HOTKEY_HANDLE;
 
 public
     ref class HotkeyManager
@@ -46,12 +46,9 @@ public
         IsActiveCallback ^ isActiveCallback;
         FilterKeyboardEvent ^ filterKeyboardCallback;
 
-
         void KeyboardEventProc(KeyboardEvent ^ ev);
         bool IsActiveProc();
         bool FilterKeyboardProc(KeyboardEvent ^ ev);
         HOTKEY_HANDLE GetHotkeyHandle(Hotkey ^ hotkey);
-        void UpdatePressedKeys(KeyboardEvent ^ ev);
-        void UpdatePressedKey(DWORD code, bool replaceWith, unsigned char replaceWithKey);
     };
 }
