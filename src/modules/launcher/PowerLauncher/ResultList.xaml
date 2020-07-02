@@ -123,7 +123,6 @@
             Background="Transparent"
             BorderThickness="0"
             MaxHeight="{Binding Results.MaxHeight}"
-            MinHeight="{Binding Results.MinHeight}"          
             Margin="0"
             ItemsSource="{Binding Results.Results, Mode=OneWay}"
             Padding="0, 0"
