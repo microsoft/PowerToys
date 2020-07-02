@@ -11,5 +11,6 @@
 
     <system:String x:Key="wox_plugin_folder_plugin_name">Foldery</system:String>
     <system:String x:Key="wox_plugin_folder_plugin_description">Otwórz ulubione foldery bezpośrednio z poziomu Woxa</system:String>
-
+    <system:String x:Key="Microsoft_plugin_folder_copy_path">Copy path (Ctrl+C)</system:String>
+    
 </ResourceDictionary>

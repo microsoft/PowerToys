@@ -11,5 +11,6 @@
 
     <system:String x:Key="wox_plugin_folder_plugin_name">文件夹</system:String>
     <system:String x:Key="wox_plugin_folder_plugin_description">在Wox中直接打开收藏的文件夹</system:String>
+    <system:String x:Key="Microsoft_plugin_folder_copy_path">Copy path (Ctrl+C)</system:String>
 
 </ResourceDictionary>
