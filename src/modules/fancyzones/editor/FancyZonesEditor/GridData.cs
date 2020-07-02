@@ -277,6 +277,208 @@ namespace FancyZonesEditor
             _model.Rows++;
         }
 
+        public void SplitOnDrag(GridResizer resizer, double delta, double space, double actualWidth, double actualHeight)
+        {
+            if (resizer.Orientation == Orientation.Vertical)
+            {
+                int rows = _model.Rows;
+                int cols = _model.Columns + 1;
+                int[,] cellChildMap = _model.CellChildMap;
+                int[,] newCellChildMap = new int[rows, cols];
+
+                double newTotalExtent = actualWidth - (space * (cols + 1));
+                int draggedResizerStartCol = resizer.StartCol;
+
+                if (delta > 0)
+                {
+                    int sourceCol = 0;
+                    for (int col = 0; col < cols; col++)
+                    {
+                        for (int row = 0; row < rows; row++)
+                        {
+                            if (col == draggedResizerStartCol + 1 && (row < resizer.StartRow || row >= resizer.EndRow))
+                            {
+                                newCellChildMap[row, col] = cellChildMap[row, sourceCol + 1];
+                            }
+                            else
+                            {
+                                newCellChildMap[row, col] = cellChildMap[row, sourceCol];
+                            }
+                        }
+
+                        if (col != draggedResizerStartCol)
+                        {
+                            sourceCol++;
+                        }
+                    }
+
+                    RowColInfo[] split = _colInfo[draggedResizerStartCol + 1].Split(delta, space);
+
+                    _colInfo[draggedResizerStartCol + 1] = split[0];
+                    _colInfo.Insert(draggedResizerStartCol + 2, split[1]);
+
+                    _model.ColumnPercents[draggedResizerStartCol + 1] = split[0].Percent;
+                    _model.ColumnPercents.Insert(draggedResizerStartCol + 2, split[1].Percent);
+
+                    for (int col = 0; col < cols; col++)
+                    {
+                        if (col != draggedResizerStartCol + 1 && col != draggedResizerStartCol + 2)
+                        {
+                            _colInfo[col].RecalculatePercent(newTotalExtent);
+                        }
+                    }
+                }
+                else
+                {
+                    int sourceCol = 0;
+                    for (int col = 0; col < cols; col++)
+                    {
+                        for (int row = 0; row < rows; row++)
+                        {
+                            if (col == draggedResizerStartCol + 1 && (row >= resizer.StartRow && row < resizer.EndRow))
+                            {
+                                newCellChildMap[row, col] = cellChildMap[row, sourceCol + 1];
+                            }
+                            else
+                            {
+                                newCellChildMap[row, col] = cellChildMap[row, sourceCol];
+                            }
+                        }
+
+                        if (col != draggedResizerStartCol)
+                        {
+                            sourceCol++;
+                        }
+                    }
+
+                    double end = 0;
+                    if (draggedResizerStartCol > 0)
+                    {
+                        end = _colInfo[draggedResizerStartCol - 1].End;
+                    }
+
+                    RowColInfo[] split = _colInfo[draggedResizerStartCol].Split(end - delta, space);
+
+                    _colInfo[draggedResizerStartCol] = split[0];
+                    _colInfo.Insert(draggedResizerStartCol, split[1]);
+
+                    _model.ColumnPercents[draggedResizerStartCol] = split[0].Percent;
+                    _model.ColumnPercents.Insert(draggedResizerStartCol, split[1].Percent);
+
+                    for (int col = 0; col < cols; col++)
+                    {
+                        if (col != draggedResizerStartCol)
+                        {
+                            _colInfo[col].RecalculatePercent(newTotalExtent);
+                        }
+                    }
+                }
+
+                FixAccuracyError(_colInfo, _model.ColumnPercents);
+                _model.CellChildMap = newCellChildMap;
+                _model.Columns++;
+            }
+            else
+            {
+                int rows = _model.Rows + 1;
+                int cols = _model.Columns;
+                int[,] cellChildMap = _model.CellChildMap;
+                int[,] newCellChildMap = new int[rows, cols];
+
+                double newTotalExtent = actualWidth - (space * (rows + 1));
+                int draggedResizerStartRow = resizer.StartRow;
+
+                if (delta > 0)
+                {
+                    int sourcRow = 0;
+                    for (int row = 0; row < rows; row++) 
+                    {
+                        for (int col = 0; col < cols; col++)
+                        {
+                            if (row == draggedResizerStartRow + 1 && (col < resizer.StartCol || col >= resizer.EndCol))
+                            {
+                                newCellChildMap[row, col] = cellChildMap[sourcRow + 1, col];
+                            }
+                            else
+                            {
+                                newCellChildMap[row, col] = cellChildMap[sourcRow, col];
+                            }
+                        }
+
+                        if (row != draggedResizerStartRow)
+                        {
+                            sourcRow++;
+                        }
+                    }
+
+                    RowColInfo[] split = _rowInfo[draggedResizerStartRow + 1].Split(delta, space);
+
+                    _rowInfo[draggedResizerStartRow + 1] = split[0];
+                    _rowInfo.Insert(draggedResizerStartRow + 2, split[1]);
+
+                    _model.RowPercents[draggedResizerStartRow + 1] = split[0].Percent;
+                    _model.RowPercents.Insert(draggedResizerStartRow + 2, split[1].Percent);
+
+                    for (int row = 0; row < rows; row++)
+                    {
+                        if (row != draggedResizerStartRow + 1 && row != draggedResizerStartRow + 2)
+                        {
+                            _rowInfo[row].RecalculatePercent(newTotalExtent);
+                        }
+                    }
+                }
+                else
+                {
+                    int sourceRow = 0;
+                    for (int row = 0; row < rows; row++) 
+                    {
+                        for (int col = 0; col < cols; col++)
+                        {
+                            if (row == draggedResizerStartRow + 1 && (col >= resizer.StartCol && col < resizer.EndCol))
+                            {
+                                newCellChildMap[row, col] = cellChildMap[sourceRow + 1, col];
+                            }
+                            else
+                            {
+                                newCellChildMap[row, col] = cellChildMap[sourceRow, col];
+                            }
+                        }
+
+                        if (row != draggedResizerStartRow)
+                        {
+                            sourceRow++;
+                        }
+                    }
+
+                    double end = 0;
+                    if (draggedResizerStartRow > 0)
+                    {
+                        end = _rowInfo[draggedResizerStartRow - 1].End;
+                    }
+
+                    RowColInfo[] split = _rowInfo[draggedResizerStartRow].Split(end - delta, space);
+
+                    _rowInfo[draggedResizerStartRow] = split[0];
+                    _rowInfo.Insert(draggedResizerStartRow, split[1]);
+
+                    _model.RowPercents[draggedResizerStartRow] = split[0].Percent;
+                    _model.RowPercents.Insert(draggedResizerStartRow, split[1].Percent);
+
+                    for (int row = 0; row < rows; row++)
+                    {
+                        if (row != draggedResizerStartRow)
+                        {
+                            _rowInfo[row].RecalculatePercent(newTotalExtent);
+                        }
+                    }
+                }
+
+                FixAccuracyError(_rowInfo, _model.RowPercents);
+                _model.CellChildMap = newCellChildMap;
+                _model.Rows++;
+            }
+        }
+
         public void RecalculateZones(int spacing, Size arrangeSize)
         {
             int rows = _model.Rows;
@@ -721,7 +923,7 @@ namespace FancyZonesEditor
                     }
                 }
 
-                if (couldBeRemoved && row > 0)
+                if (couldBeRemoved)
                 {
                     _rowInfo[row - 1 - arrayShift].Percent += _rowInfo[row - arrayShift].Percent;
                     _rowInfo.RemoveAt(row - arrayShift);
@@ -746,7 +948,7 @@ namespace FancyZonesEditor
                     }
                 }
 
-                if (couldBeRemoved && col > 0)
+                if (couldBeRemoved)
                 {
                     _colInfo[col - 1 - arrayShift].Percent += _colInfo[col - arrayShift].Percent;
                     _colInfo.RemoveAt(col - arrayShift);
