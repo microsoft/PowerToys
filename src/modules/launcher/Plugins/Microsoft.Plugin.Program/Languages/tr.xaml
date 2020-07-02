@@ -30,7 +30,8 @@
 
     <system:String x:Key="wox_plugin_program_run_as_administrator">Yönetici Olarak Çalıştır</system:String>
     <system:String x:Key="wox_plugin_program_open_containing_folder">İçeren Klasörü Aç</system:String>
-
+    <system:String x:Key="wox_plugin_program_open_in_console">Open in console</system:String>
+    
     <system:String x:Key="wox_plugin_program_plugin_name">Program</system:String>
     <system:String x:Key="wox_plugin_program_plugin_description">Programları Wox'tan arayın</system:String>
 

@@ -356,12 +356,11 @@ namespace Microsoft.Plugin.Program.Programs
                 contextMenus.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = "Open in Console",
+                    Title = api.GetTranslation("wox_plugin_program_open_in_console"),
                     Glyph = "\xE756",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-
                     Action = (context) =>
                     {
                         try

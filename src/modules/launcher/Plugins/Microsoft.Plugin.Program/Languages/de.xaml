@@ -30,7 +30,8 @@
 
     <system:String x:Key="wox_plugin_program_run_as_administrator">Als Administrator ausführen</system:String>
     <system:String x:Key="wox_plugin_program_open_containing_folder">Enthaltenden Ordner öffnen</system:String>
-
+    <system:String x:Key="wox_plugin_program_open_in_console">Open in console</system:String>
+    
     <system:String x:Key="wox_plugin_program_plugin_name">Programm</system:String>
     <system:String x:Key="wox_plugin_program_plugin_description">Suche Programme mit Wox</system:String>
 
