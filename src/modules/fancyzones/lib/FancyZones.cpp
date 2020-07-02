@@ -469,7 +469,10 @@ RECT FitOnScreen(const RECT& windowRect, const RECT& originMonitorRect, const RE
         H = min(H, RectHeight(destMonitorRect) - LEFT_TOP_PADDING);
     }
 
-    return { left, top, left + W, top + H };
+    return { .left   = left,
+             .top    = top,
+             .right  = left + W,
+             .bottom = top + H };
 }
 
 void OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept
