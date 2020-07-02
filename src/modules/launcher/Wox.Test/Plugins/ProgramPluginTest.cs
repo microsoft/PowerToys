@@ -318,7 +318,7 @@ namespace Wox.Test.Plugins
         [TestCase("ignoreQueryText")]
         public void Win32Applications_ShouldNotBeFiltered_WhenFilteringRunCommands(string query)
         {
-            // Even if there is an exact match in the name or exe name, win32 applications should never be filtered
+            // Even if there is an exact match in the name or exe name, applications should never be filtered
             Assert.IsTrue(command_prompt.QueryEqualsNameForRunCommands(query));
         }
 
