@@ -10,7 +10,6 @@ namespace Wox.ViewModel
     public class ContextMenuItemViewModel : BaseModel
     {
         private ICommand _command;
-        private readonly IBaseModel baseModel;
 
         public string PluginName { get; set; }
         public string Title { get; set; }
@@ -27,14 +26,9 @@ namespace Wox.ViewModel
                 if (value != this._command)
                 {
                     this._command = value;
-                    baseModel.OnPropertyChanged();
+                    OnPropertyChanged();
                 }
             }
-        }
-
-        public ContextMenuItemViewModel(IBaseModel baseModel)
-        {
-            this.baseModel = baseModel;
         }
 
         public Key AcceleratorKey { get; set; }

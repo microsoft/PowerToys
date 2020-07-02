@@ -1,30 +1,56 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Input;
-using Moq;
-using Moq.Protected;
+﻿using System.Windows.Input;
 using NUnit.Framework;
 using Wox.Plugin;
 using Wox.ViewModel;
+using System.Runtime.CompilerServices;
 
 namespace Wox.Test
 {
     [TestFixture]
-    class Wox
+    public class Wox
     {
+        // A Dummy class to test that OnPropertyChanged() is called while we set the variable
+        public class DummyTestClass : BaseModel
+        {
+            public bool isFunctionCalled = false;
+            private ICommand _item;
+
+            public ICommand Item
+            {
+                get
+                {
+                    return this._item;
+                }
+
+                set
+                {
+                    if (value != this._item)
+                    {
+                        this._item = value;
+                        OnPropertyChanged();
+                    }
+                }
+            }
+
+            // Overriding the OnPropertyChanged() function to test if it is being called
+            public override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+            {
+                isFunctionCalled = true;
+            }
+        }
+
+
         [Test]
-        public void ContextMenuItemCommand_MustCallOnPropertyChanged_WhenSet()
+        public void AnyVariable_MustCallOnPropertyChanged_WhenSet()
         {
             // Arrange
-            var mockBaseModel = new Mock<IBaseModel>();
+            DummyTestClass testClass = new DummyTestClass();
 
             // Act
-            ContextMenuItemViewModel item = new ContextMenuItemViewModel(mockBaseModel.Object);
-            item.Command = new RelayCommand(null);
+            testClass.Item = new RelayCommand(null);
 
             // Assert
-            mockBaseModel.Verify(m => m.OnPropertyChanged("Command"));
+            Assert.IsTrue(testClass.isFunctionCalled);
 
         }
 
