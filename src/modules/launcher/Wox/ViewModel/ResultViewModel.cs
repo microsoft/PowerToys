@@ -22,25 +22,7 @@ namespace Wox.ViewModel
             Hover
         };
 
-        private List<ContextMenuItemViewModel> _items = new List<ContextMenuItemViewModel>();
-
-        public List<ContextMenuItemViewModel> ContextMenuItems
-        {
-            get
-            {
-                return this._items;
-            }
-            
-            set
-            {
-                // List<> does not implement the INotifyPropertyChanged interface and must call OnPropertyChanged() to prevent memory leaks
-                if (value != this._items)
-                {
-                    this._items = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
+        public ObservableCollection<ContextMenuItemViewModel> ContextMenuItems { get; set; }
 
         public ICommand ActivateContextButtonsHoverCommand { get; set; }
         public ICommand ActivateContextButtonsSelectionCommand { get; set; }
@@ -141,10 +123,10 @@ namespace Wox.ViewModel
         }
 
 
-        public List<ContextMenuItemViewModel> LoadContextMenu()
+        public ObservableCollection<ContextMenuItemViewModel> LoadContextMenu()
         {
             var results = PluginManager.GetContextMenusForPlugin(Result);
-            var newItems = new List<ContextMenuItemViewModel>();
+            var newItems = new ObservableCollection<ContextMenuItemViewModel>();
             foreach (var r in results)
             {
                 newItems.Add(new ContextMenuItemViewModel()
