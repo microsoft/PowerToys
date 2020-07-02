@@ -195,6 +195,24 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void RestoreSize_ShouldSetValue2True_WhenSuccessful()
+        {
+            // arrange
+            FancyZonesViewModel viewModel = new FancyZonesViewModel();
+            Assert.IsFalse(viewModel.RestoreSize); // check if value was initialized to false.
+
+            // Assert
+            ShellPage.DefaultSndMSGCallback = msg =>
+            {
+                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
+                Assert.IsTrue(snd.Powertoys.FancyZones.Properties.FancyzonesRestoreSize.Value);
+            };
+
+            // act
+            viewModel.RestoreSize = true;
+        }
+
+        [TestMethod]
         public void UseCursorPosEditorStartupScreen_ShouldSetValue2False_WhenSuccessful()
         {
             // arrange

@@ -309,7 +309,8 @@ namespace PowerToysTests
             Assert.AreNotEqual(toggleValues[3], GetPropertyValue<bool>(savedProps, "fancyzones_moveWindowAcrossMonitors"));
             Assert.AreNotEqual(toggleValues[4], GetPropertyValue<bool>(savedProps, "fancyzones_displayChange_moveWindows"));
             Assert.AreNotEqual(toggleValues[5], GetPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_moveWindows"));
-            Assert.AreNotEqual(toggleValues[7], GetPropertyValue<bool>(savedProps, "fancyzones_appLastZone_moveWindows"));
+            Assert.AreNotEqual(toggleValues[6], GetPropertyValue<bool>(savedProps, "fancyzones_appLastZone_moveWindows"));
+            Assert.AreNotEqual(toggleValues[7], GetPropertyValue<bool>(savedProps, "fancyzones_restoreSize"));
             Assert.AreNotEqual(toggleValues[8], GetPropertyValue<bool>(savedProps, "use_cursorpos_editor_startupscreen"));
             Assert.AreNotEqual(toggleValues[9], GetPropertyValue<bool>(savedProps, "fancyzones_show_on_all_monitors"));
             Assert.AreNotEqual(toggleValues[10], GetPropertyValue<bool>(savedProps, "fancyzones_makeDraggedWindowTransparent"));
@@ -348,7 +349,8 @@ namespace PowerToysTests
             Assert.AreEqual(toggleValues[3], GetPropertyValue<bool>(savedProps, "fancyzones_moveWindowAcrossMonitors"));
             Assert.AreEqual(toggleValues[4], GetPropertyValue<bool>(savedProps, "fancyzones_displayChange_moveWindows"));
             Assert.AreEqual(toggleValues[5], GetPropertyValue<bool>(savedProps, "fancyzones_zoneSetChange_moveWindows"));
-            Assert.AreEqual(toggleValues[7], GetPropertyValue<bool>(savedProps, "fancyzones_appLastZone_moveWindows"));
+            Assert.AreEqual(toggleValues[6], GetPropertyValue<bool>(savedProps, "fancyzones_appLastZone_moveWindows"));
+            Assert.AreEqual(toggleValues[7], GetPropertyValue<bool>(savedProps, "fancyzones_restoreSize"));
             Assert.AreEqual(toggleValues[8], GetPropertyValue<bool>(savedProps, "use_cursorpos_editor_startupscreen"));
             Assert.AreEqual(toggleValues[9], GetPropertyValue<bool>(savedProps, "fancyzones_show_on_all_monitors"));
             Assert.AreEqual(toggleValues[10], GetPropertyValue<bool>(savedProps, "fancyzones_makeDraggedWindowTransparent"));

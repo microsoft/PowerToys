@@ -233,8 +233,7 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result)
                 } while (pos != std::string::npos);
             }
 
-            *result = StrDup(res.c_str());
-            hr = (*result) ? S_OK : E_OUTOFMEMORY;
+            hr = SHStrDup(res.c_str(), result);
         }
         catch (regex_error e)
         {
