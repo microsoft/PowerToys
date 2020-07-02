@@ -8,6 +8,7 @@ using Wox.Plugin;
 using Microsoft.Plugin.Program.Programs;
 using Moq;
 using System.IO;
+using Microsoft.Plugin.Program;
 
 namespace Wox.Test.Plugins
 {
@@ -332,6 +333,33 @@ namespace Wox.Test.Plugins
 
             // the query matches the name (cmd) and is therefore not filtered (case-insensitive)
             Assert.IsTrue(cmd_run_command.QueryEqualsNameForRunCommands(query));
+        }
+
+        [Test]
+        public void Win32Program_ReturnContextMenuWithOpenInConsole_WhenContextMenusIsCalled()
+        {
+            // Arrange
+            var programPLugin = new Main();
+            var mock = new Mock<IPublicAPI>();
+            mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns("open in console");
+            var pluginInInitContext = new PluginInitContext();
+            pluginInInitContext.API = mock.Object;
+            programPLugin.con
+
+            chrome.ContextMenus
+
+            // Act
+            programPLugin.con
+
+            Result result = new Result
+            {
+                SubTitle = "DummyResult",
+                IcoPath = "C:/dummy.jpg",
+                Score = 1,
+            };
+
+            programPLugin.LoadContextMenus(result);
+
         }
     }
 }
