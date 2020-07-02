@@ -58,7 +58,7 @@ namespace Microsoft.Plugin.Folder
                             return false;
                         }
                     }
-                }); ;
+                });
             }
 
             return contextMenus;
