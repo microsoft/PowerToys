@@ -15,6 +15,5 @@ namespace Wox.Plugin
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
     }
 }

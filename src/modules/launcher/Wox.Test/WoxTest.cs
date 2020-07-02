@@ -33,7 +33,7 @@ namespace Wox.Test
             }
 
             // Overriding the OnPropertyChanged() function to test if it is being called
-            public override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+            protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
             {
                 isFunctionCalled = true;
             }
