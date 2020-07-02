@@ -33,6 +33,7 @@ namespace Wox.ViewModel
             
             set
             {
+                // List<> does not implement the INotifyPropertyChanged interface and must call OnPropertyChanged() to prevent memory leaks
                 if (value != this._items)
                 {
                     this._items = value;
@@ -50,7 +51,7 @@ namespace Wox.ViewModel
         public bool IsSelected { get; set; }
 
         public bool IsHovered { get; set; }
-        
+
         public bool AreContextButtonsActive { get; set; }
 
         public int ContextMenuSelectedIndex { get; set; }
@@ -84,8 +85,6 @@ namespace Wox.ViewModel
         }
         public void ActivateContextButtons(ActivationType activationType)
         {
-            
-
             // Result does not contain any context menu items - we don't need to show the context menu ListView at all.
             if (ContextMenuItems.Count > 0)
             {
@@ -95,7 +94,6 @@ namespace Wox.ViewModel
             {
                 AreContextButtonsActive = false;
             }
-
 
             if (activationType == ActivationType.Selection)
             {

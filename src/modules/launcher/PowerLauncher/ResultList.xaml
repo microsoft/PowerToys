@@ -193,7 +193,7 @@
                                     </Button>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
-                        </ListView> 
+                        </ListView>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>

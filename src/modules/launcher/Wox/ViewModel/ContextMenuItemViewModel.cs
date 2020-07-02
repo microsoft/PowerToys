@@ -23,6 +23,7 @@ namespace Wox.ViewModel
 
             set
             {
+                // ICommand does not implement the INotifyPropertyChanged interface and must call OnPropertyChanged() to prevent memory leaks
                 if (value != this._command)
                 {
                     this._command = value;
