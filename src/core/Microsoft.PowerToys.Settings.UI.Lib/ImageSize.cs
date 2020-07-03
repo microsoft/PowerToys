@@ -152,7 +152,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                     newWidth = 0;
                 }
 
-                if (_width != value && newWidth >= 0)
+                if (_width != value)
                 {
                     _width = newWidth;
                     OnPropertyChanged();
@@ -178,7 +178,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                     newHeight = 0;
                 }
 
-                if (_height != value && newHeight >= 0)
+                if (_height != value)
                 {
                     _height = newHeight;
                     OnPropertyChanged();
