@@ -274,7 +274,7 @@ namespace Microsoft.Plugin.Program.Programs
             // Function to set the subtitle based on the Type of application
             public string SetSubtitle(IPublicAPI api)
             {
-                return "Packaged application";
+                return api.GetTranslation("powertoys_run_plugin_program_packaged_application");
             }
 
             // Function to get matching indices
