@@ -43,6 +43,8 @@ namespace ViewModelTests
             {
                 DeleteFolder(ModuleName);
             }
+
+            ShellPage.DefaultSndMSGCallback = null;
         }
 
         public void DeleteFolder(string powertoy)

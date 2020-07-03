@@ -445,9 +445,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
-            SndFancyZonesSettings outsettings = new SndFancyZonesSettings(Settings);
-            SndModuleSettings<SndFancyZonesSettings> ipcMessage = new SndModuleSettings<SndFancyZonesSettings>(outsettings);
-            ShellPage.DefaultSndMSGCallback(ipcMessage.ToJsonString());
+            if (ShellPage.DefaultSndMSGCallback != null)
+            {
+                SndFancyZonesSettings outsettings = new SndFancyZonesSettings(Settings);
+                SndModuleSettings<SndFancyZonesSettings> ipcMessage = new SndModuleSettings<SndFancyZonesSettings>(outsettings);
+                ShellPage.DefaultSndMSGCallback(ipcMessage.ToJsonString());
+            }
         }
     }
 }
