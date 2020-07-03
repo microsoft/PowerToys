@@ -9,13 +9,7 @@
 template<uint16_t APIVersion>
 bool IsAPIContractVxAvailable()
 {
-    static bool isAPIContractVxAvailableInitialized = false;
-    static bool isAPIContractVxAvailable = false;
-    if (!isAPIContractVxAvailableInitialized)
-    {
-        isAPIContractVxAvailableInitialized = true;
-        isAPIContractVxAvailable = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", APIVersion);
-    }
+    static bool isAPIContractVxAvailable = winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", APIVersion);
 
     return isAPIContractVxAvailable;
 }
