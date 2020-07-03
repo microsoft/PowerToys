@@ -7,6 +7,8 @@ using Microsoft.Plugin.Indexer.SearchHelper;
 using Microsoft.Plugin.Indexer.Interface;
 using Moq;
 using System.Linq;
+using Microsoft.Plugin.Indexer;
+using Wox.Plugin;
 
 namespace Wox.Test.Plugins
 {
@@ -213,6 +215,24 @@ namespace Wox.Test.Plugins
             Assert.IsTrue(windowsSearchAPIResults.Count() == 1);
             Assert.IsFalse(windowsSearchAPIResults.Any(x => x.Title == "file1.txt"));
             Assert.IsTrue(windowsSearchAPIResults.Any(x => x.Title == "file2.txt"));
+        }
+
+        [Test]
+        public void ContextMenuLoader_ReturnContextMenuWithOpenInConsole_WhenLoadContextMenusIsCalled()
+        {
+            // Arrange 
+            var mock = new Mock<IPublicAPI>();
+            mock.Setup(api => api.GetTranslation(It.IsAny<string>())).Returns("open in console");
+            var contextMenuLoader = new ContextMenuLoader(mock.Object);
+            var searchResult = new SearchResult() { Path = "C:/", Title = "DummyFile.cs" };
+            var result = new Result() { ContextData = searchResult };
+
+            // Act
+            List<ContextMenuResult> contextMenuResults = contextMenuLoader.LoadContextMenus(result);
+
+            // Assert
+            Assert.AreEqual(contextMenuResults.Count, 2);
+            Assert.AreEqual(contextMenuResults[1].Title, "Open in Console");
         }
     }
 }

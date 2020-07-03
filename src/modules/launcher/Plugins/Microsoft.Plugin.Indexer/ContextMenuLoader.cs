@@ -14,7 +14,7 @@ namespace Microsoft.Plugin.Indexer
 {
     internal class ContextMenuLoader : IContextMenu
     {
-        private readonly PluginInitContext _context;
+        private readonly IPublicAPI _API;
 
         public enum ResultType
         {
@@ -22,9 +22,9 @@ namespace Microsoft.Plugin.Indexer
             File
         }
 
-        public ContextMenuLoader(PluginInitContext context)
+        public ContextMenuLoader(IPublicAPI API)
         {
-            _context = context;
+            _API = API;
         }
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
@@ -61,7 +61,7 @@ namespace Microsoft.Plugin.Indexer
                         {
                             var message = "Fail to set text in clipboard";
                             LogException(message, e);
-                            _context.API.ShowMsg(message);
+                            _API.ShowMsg(message);
                             return false;
                         }
                     }
@@ -123,7 +123,7 @@ namespace Microsoft.Plugin.Indexer
                     {
                         var message = $"Fail to open file at {record.Path}";
                         LogException(message, e);
-                        _context.API.ShowMsg(message);
+                        _API.ShowMsg(message);
                         return false;
                     }
 
