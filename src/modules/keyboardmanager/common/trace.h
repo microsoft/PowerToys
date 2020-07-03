@@ -14,4 +14,7 @@ public:
 
     // Log number of os level shortcut remaps when the user uses Edit Shortcuts and saves settings
     static void OSLevelShortcutRemapCount(const DWORD count) noexcept;
+
+    // Log number of app specific shortcut remaps when the user uses Edit Shortcuts and saves settings
+    static void AppSpecificShortcutRemapCount(const DWORD count) noexcept;
 };

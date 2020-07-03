@@ -6,15 +6,18 @@
 HWND ShortcutControl::EditShortcutsWindowHandle = nullptr;
 KeyboardManagerState* ShortcutControl::keyboardManagerState = nullptr;
 // Initialized as new vector
-std::map<std::wstring, std::vector<std::vector<Shortcut>>> ShortcutControl::shortcutRemapBuffer;
+std::vector<std::pair<std::vector<Shortcut>, std::wstring>> ShortcutControl::shortcutRemapBuffer;
 
 // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
-void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, Shortcut originalKeys, Shortcut newKeys)
+void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, Shortcut originalKeys, Shortcut newKeys, std::wstring targetAppName)
 {
+    // Textbox for target application
+    TextBox targetAppTextBox;
+
     // Create new ShortcutControl objects dynamically so that we does not get destructed
     std::vector<std::unique_ptr<ShortcutControl>> newrow;
-    newrow.push_back(std::move(std::unique_ptr<ShortcutControl>(new ShortcutControl(parent, 0))));
-    newrow.push_back(std::move(std::unique_ptr<ShortcutControl>(new ShortcutControl(parent, 1))));
+    newrow.push_back(std::move(std::unique_ptr<ShortcutControl>(new ShortcutControl(parent, 0, targetAppTextBox))));
+    newrow.push_back(std::move(std::unique_ptr<ShortcutControl>(new ShortcutControl(parent, 1, targetAppTextBox))));
     keyboardRemapControlObjects.push_back(std::move(newrow));
 
     // Add to grid
@@ -39,20 +42,29 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     // ShortcutControl for the new shortcut
     parent.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getShortcutControl());
 
-    // Textbox for target application
-    ComboBox targetAppTextBox;
-    targetAppTextBox.IsEditable(true);
     targetAppTextBox.Width(100);
-    targetAppTextBox.ItemsSource(single_threaded_vector<winrt::Windows::Foundation::IInspectable>({ box_value(KeyboardManagerConstants::DefaultAppName) }));
     targetAppTextBox.VerticalAlignment(VerticalAlignment::Center);
-    targetAppTextBox.SelectedIndex(0);
-    targetAppTextBox.TextSubmitted([&](auto const& sender, auto const& args) {
-        // If the shortcut buffer for that app has not yet been created, create it
-        if (shortcutRemapBuffer.find(targetAppTextBox.Text()) == shortcutRemapBuffer.end())
+    targetAppTextBox.HorizontalAlignment(HorizontalAlignment::Left);
+
+    auto initializeAppSpecificBuffer = [&, targetAppTextBox]() {
+        std::wstring appName = targetAppTextBox.Text().c_str();
+    };
+
+    // LosingFocus handler will be called whenever text is updated by a user and then they click something else or tab to another control. Does not get called if Text is updated while the TextBox isn't in focus (i.e. from code)
+    targetAppTextBox.LosingFocus([initializeAppSpecificBuffer, targetAppTextBox](auto const& sender, auto const& e) {
+        initializeAppSpecificBuffer();
+    });
+
+    // TextChanged handler is called after every character is changed in text. Required for cases not handled in the LosingFocus handler
+    targetAppTextBox.TextChanged([initializeAppSpecificBuffer, targetAppTextBox](Windows::Foundation::IInspectable const& sender, Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) {
+        // This should be called only when the textbox isn't in focus
+        if (targetAppTextBox.FocusState() == FocusState::Unfocused)
         {
-            shortcutRemapBuffer[targetAppTextBox.Text()] = std::vector<std::vector<Shortcut>>();
+            initializeAppSpecificBuffer();
         }
     });
+    
+    targetAppTextBox.Text(targetAppName);
 
     parent.SetColumn(targetAppTextBox, KeyboardManagerConstants::ShortcutTableTargetAppColIndex);
     parent.SetRow(targetAppTextBox, parent.RowDefinitions().Size() - 1);
@@ -103,19 +115,19 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     if (originalKeys.IsValidShortcut() && newKeys.IsValidShortcut())
     {
         // change to load app name
-        shortcutRemapBuffer[KeyboardManagerConstants::DefaultAppName].push_back(std::vector<Shortcut>{ Shortcut(), Shortcut() });
-        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->AddShortcutToControl(originalKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutDropDownStackPanel, *keyboardManagerState, 0);
-        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->AddShortcutToControl(newKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->shortcutDropDownStackPanel, *keyboardManagerState, 1);
+        shortcutRemapBuffer.push_back(std::make_pair<std::vector<Shortcut>, std::wstring>(std::vector<Shortcut>{ Shortcut(), Shortcut()}, std::wstring(targetAppName)));
+        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->AddShortcutToControl(originalKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutDropDownStackPanel, *keyboardManagerState, 0, targetAppTextBox);
+        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->AddShortcutToControl(newKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->shortcutDropDownStackPanel, *keyboardManagerState, 1, targetAppTextBox);
     }
     else
     {
         // Initialize both shortcuts as empty shortcuts
-        shortcutRemapBuffer[KeyboardManagerConstants::DefaultAppName].push_back(std::vector<Shortcut>{ Shortcut(), Shortcut() });
+        shortcutRemapBuffer.push_back(std::make_pair<std::vector<Shortcut>, std::wstring>(std::vector<Shortcut>{ Shortcut(), Shortcut() }, std::wstring(targetAppName)));
     }
 }
 
 // Function to add a shortcut to the shortcut control as combo boxes
-void ShortcutControl::AddShortcutToControl(Shortcut& shortcut, Grid table, StackPanel parent, KeyboardManagerState& keyboardManagerState, const int colIndex)
+void ShortcutControl::AddShortcutToControl(Shortcut& shortcut, Grid table, StackPanel parent, KeyboardManagerState& keyboardManagerState, const int colIndex, TextBox targetApp)
 {
     // Delete the existing drop down menus
     parent.Children().Clear();
@@ -126,7 +138,7 @@ void ShortcutControl::AddShortcutToControl(Shortcut& shortcut, Grid table, Stack
     std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyCodeList(true);
     if (shortcutKeyCodes.size() != 0)
     {
-        KeyDropDownControl::AddDropDown(table, shortcutControlLayout, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects);
+        KeyDropDownControl::AddDropDown(table, shortcutControlLayout, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp);
         for (int i = 0; i < shortcutKeyCodes.size(); i++)
         {
             // New drop down gets added automatically when the SelectedIndex is set
@@ -151,7 +163,7 @@ StackPanel ShortcutControl::getShortcutControl()
 }
 
 // Function to create the detect shortcut UI window
-void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, KeyboardManagerState& keyboardManagerState, const int colIndex, Grid table)
+void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::pair<std::vector<Shortcut>, std::wstring>>& shortcutRemapBuffer, KeyboardManagerState& keyboardManagerState, const int colIndex, Grid table, TextBox targetApp)
 {
     // ContentDialog for detecting shortcuts. This is the parent UI element.
     ContentDialog detectShortcutBox;
@@ -184,14 +196,15 @@ void ShortcutControl::createDetectShortcutWindow(winrt::Windows::Foundation::IIn
                          &shortcutRemapBuffer,
                          unregisterKeys,
                          colIndex,
-                         table] {
+                         table,
+                         targetApp] {
         // Save the detected shortcut in the linked text block
         Shortcut detectedShortcutKeys = keyboardManagerState.GetDetectedShortcut();
 
         if (!detectedShortcutKeys.IsEmpty())
         {
             // The shortcut buffer gets set in this function
-            AddShortcutToControl(detectedShortcutKeys, table, linkedShortcutStackPanel, keyboardManagerState, colIndex);
+            AddShortcutToControl(detectedShortcutKeys, table, linkedShortcutStackPanel, keyboardManagerState, colIndex, targetApp);
         }
         // Hide the type shortcut UI
         detectShortcutBox.Hide();
