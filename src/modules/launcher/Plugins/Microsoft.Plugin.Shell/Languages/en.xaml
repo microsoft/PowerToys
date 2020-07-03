@@ -10,5 +10,5 @@
     <system:String x:Key="wox_plugin_cmd_plugin_description">Allows to execute system commands from Wox. Commands should start with ></system:String>
     <system:String x:Key="wox_plugin_cmd_cmd_has_been_executed_times">this command has been executed {0} times</system:String>
     <system:String x:Key="wox_plugin_cmd_execute_through_shell">execute command through command shell</system:String>
-    <system:String x:Key="wox_plugin_cmd_run_as_administrator">Run As Administrator</system:String>
+    <system:String x:Key="wox_plugin_cmd_run_as_administrator">Run As Administrator (Ctrl+Shift+Enter)</system:String>
 </ResourceDictionary>

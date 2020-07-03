@@ -937,7 +937,20 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
             {
                 // Single monitor environment.
                 std::unique_lock writeLock(m_lock);
-                return m_windowMoveHandler.MoveWindowIntoZoneByDirection(window, vkCode, true /* cycle through zones */, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
+                if (m_settings->GetSettings()->restoreSize)
+                {
+                    bool moved = m_windowMoveHandler.MoveWindowIntoZoneByDirection(window, vkCode, false /* cycle through zones */, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
+                    if (!moved)
+                    {
+                        RestoreWindowOrigin(window);
+                        RestoreWindowSize(window);
+                    }
+                    return true;
+                }
+                else
+                {
+                    return m_windowMoveHandler.MoveWindowIntoZoneByDirection(window, vkCode, true /* cycle through zones */, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
+                }
             }
         }
     }

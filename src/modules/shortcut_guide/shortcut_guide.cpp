@@ -10,6 +10,7 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
+// TODO: refactor singleton
 OverlayWindow* instance = nullptr;
 
 namespace
@@ -125,12 +126,36 @@ void OverlayWindow::set_config(const wchar_t* config)
     }
 }
 
+constexpr int alternative_switch_hotkey_id = 0x2;
+constexpr UINT alternative_switch_modifier_mask = MOD_WIN | MOD_SHIFT;
+constexpr UINT alternative_switch_vk_code = VK_OEM_2;
+
 void OverlayWindow::enable()
 {
+    auto switcher = [&](HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT {
+        if (msg == WM_KEYDOWN && wparam == VK_ESCAPE && instance->target_state->active())
+        {
+            instance->target_state->toggle_force_shown();
+            return 0;
+        }
+        if (msg != WM_HOTKEY)
+        {
+            return 0;
+        }
+        const auto vk_code = HIWORD(lparam);
+        const auto modifiers_mask = LOWORD(lparam);
+        if (alternative_switch_vk_code != vk_code || alternative_switch_modifier_mask != modifiers_mask)
+        {
+            return 0;
+        }
+        instance->target_state->toggle_force_shown();
+        return 0;
+    };
+
     if (!_enabled)
     {
         Trace::EnableShortcutGuide(true);
-        winkey_popup = std::make_unique<D2DOverlayWindow>();
+        winkey_popup = std::make_unique<D2DOverlayWindow>(std::move(switcher));
         winkey_popup->apply_overlay_opacity(((float)overlayOpacity.value) / 100.0f);
         winkey_popup->set_theme(theme.value);
         target_state = std::make_unique<TargetState>(pressTime.value);
@@ -148,6 +173,7 @@ void OverlayWindow::enable()
                 MessageBoxW(NULL, L"Cannot install keyboard listener.", L"PowerToys - Shortcut Guide", MB_OK | MB_ICONERROR);
             }
         }
+        RegisterHotKey(winkey_popup->get_window_handle(), alternative_switch_hotkey_id, alternative_switch_modifier_mask, alternative_switch_vk_code);
     }
     _enabled = true;
 }
@@ -161,6 +187,7 @@ void OverlayWindow::disable(bool trace_event)
         {
             Trace::EnableShortcutGuide(false);
         }
+        UnregisterHotKey(winkey_popup->get_window_handle(), alternative_switch_hotkey_id);
         winkey_popup->hide();
         target_state->exit();
         target_state.reset();
@@ -239,6 +266,11 @@ void OverlayWindow::destroy()
     this->disable(false);
     delete this;
     instance = nullptr;
+}
+
+bool OverlayWindow::overlay_visible() const
+{
+    return target_state->active();
 }
 
 void OverlayWindow::init_settings()

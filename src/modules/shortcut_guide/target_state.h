@@ -21,24 +21,30 @@ public:
     void exit();
     void set_delay(int ms_delay);
 
+    void toggle_force_shown();
+    bool active() const;
+
 private:
     KeyEvent next();
     void handle_hidden();
     void handle_timeout();
-    void handle_shown();
+    void handle_shown(const bool forced);
     void thread_proc();
-    std::mutex mutex;
-    std::condition_variable cv;
+    std::recursive_mutex mutex;
+    std::condition_variable_any cv;
     std::chrono::system_clock::time_point winkey_timestamp, signal_timestamp;
     std::chrono::milliseconds delay;
     std::deque<KeyEvent> events;
-    enum
+    enum State
     {
         Hidden,
         Timeout,
         Shown,
+        ForceShown,
         Exiting
-    } state = Hidden;
-    bool key_was_pressed = false;
+    };
+    std::atomic<State> state = Hidden;
+
+    bool nonwin_key_was_pressed_during_shown = false;
     std::thread thread;
 };
