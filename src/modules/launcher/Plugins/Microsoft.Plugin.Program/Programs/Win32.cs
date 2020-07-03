@@ -198,7 +198,11 @@ namespace Microsoft.Plugin.Program.Programs
                 result.Title = Name;
                 result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
             }
-            result.ToolTipText = result.Title + Environment.NewLine + FullPath;
+
+            var nameToolTip = string.Format("{0} : {1}", api.GetTranslation("powertoys_run_plugin_program_file_name"), result.Title);
+            var pathToolTip = string.Format("{0} : {1}", api.GetTranslation("powertoys_run_plugin_program_file_path"), FullPath);
+            result.ToolTipText = nameToolTip + Environment.NewLine + pathToolTip;
+
             return result;
         }
 

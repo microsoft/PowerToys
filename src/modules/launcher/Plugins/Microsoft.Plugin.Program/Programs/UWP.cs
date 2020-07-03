@@ -302,7 +302,11 @@ namespace Microsoft.Plugin.Program.Programs
                     result.Title = DisplayName;
                     result.TitleHighlightData = StringMatcher.FuzzySearch(query, DisplayName).MatchData;
                 }
-                result.ToolTipText = result.Title + Environment.NewLine + Package.Location;
+
+                var nameToolTip = string.Format("{0} : {1}", api.GetTranslation("powertoys_run_plugin_program_file_name"), result.Title);
+                var pathToolTip = string.Format("{0} : {1}", api.GetTranslation("powertoys_run_plugin_program_file_path"), Package.Location);
+                result.ToolTipText = nameToolTip + Environment.NewLine + pathToolTip;
+
                 return result;
             }
 
