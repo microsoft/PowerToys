@@ -52,7 +52,7 @@ namespace Microsoft.Plugin.Program.Programs
             RUN_COMMAND = 3
         }
 
-        private int Score(string query)
+        protected virtual int Score(string query)
         {
             var nameMatch = StringMatcher.FuzzySearch(query, Name);
             var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
@@ -138,6 +138,11 @@ namespace Microsoft.Plugin.Program.Programs
             return true;
         }
 
+        protected virtual List<int> GetMatchingData(string query)
+        {
+            return StringMatcher.FuzzySearch(query, Name).MatchData;
+        }
+
         public Result Result(string query, IPublicAPI api)
         {
             var score = Score(query);
@@ -187,17 +192,9 @@ namespace Microsoft.Plugin.Program.Programs
                 }
             };
 
-            if (Description.Length >= Name.Length &&
-                Description.Substring(0, Name.Length) == Name)
-            {
-                result.Title = Description;
-                result.TitleHighlightData = StringMatcher.FuzzySearch(query, Description).MatchData;
-            }
-            else
-            {
-                result.Title = Name;
-                result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
-            }
+            // To set the title for the result to always be the name of the application            
+            result.Title = Name;
+            result.TitleHighlightData = GetMatchingData(query);
 
             return result;
         }

@@ -9,6 +9,8 @@ namespace Microsoft.Plugin.Program.Programs
         Result Result(string query, IPublicAPI api);
         string UniqueIdentifier { get; set; }
         string Name { get; }
+        string Description { get; set; }
         string Location { get; }
+        string SetSubtitle(uint AppType, IPublicAPI api);
     }
 }

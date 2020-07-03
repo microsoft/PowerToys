@@ -262,12 +262,23 @@ namespace Microsoft.Plugin.Program.Programs
             public string LogoPath { get; set; }
             public UWP Package { get; set; }
 
-            private int Score(string query)
+            protected virtual int Score(string query)
             {
                 var displayNameMatch = StringMatcher.FuzzySearch(query, DisplayName);
                 var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
                 var score = new[] { displayNameMatch.Score, descriptionMatch.Score/2 }.Max();
                 return score;
+            }
+
+            // Function to set the subtitle based on the Type of application
+            public string SetSubtitle(uint AppType, IPublicAPI api)
+            {
+                return "Packaged application";
+            }
+
+            protected virtual List<int> GetMatchingData(string query)
+            {
+                return StringMatcher.FuzzySearch(query, Name).MatchData;
             }
 
             public Result Result(string query, IPublicAPI api)
@@ -280,7 +291,7 @@ namespace Microsoft.Plugin.Program.Programs
 
                 var result = new Result
                 {
-                    SubTitle = "Packaged application",
+                    SubTitle = SetSubtitle(1, api),
                     Icon = Logo,
                     Score = score,
                     ContextData = this,
@@ -291,17 +302,10 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                 };
 
-                if (Description.Length >= DisplayName.Length &&
-                    Description.Substring(0, DisplayName.Length) == DisplayName)
-                {
-                    result.Title = Description;
-                    result.TitleHighlightData = StringMatcher.FuzzySearch(query, Description).MatchData;
-                }
-                else
-                {
-                    result.Title = DisplayName;
-                    result.TitleHighlightData = StringMatcher.FuzzySearch(query, DisplayName).MatchData;
-                }
+                // To set the title to always be the displayname of the packaged application
+                result.Title = DisplayName;
+                result.TitleHighlightData = GetMatchingData(query);
+                
                 return result;
             }
 
@@ -375,6 +379,8 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                 });
             }
+
+            protected Application() { }
 
             public Application(AppxPackageHelper.IAppxManifestApplication manifestApp, UWP package)
             {

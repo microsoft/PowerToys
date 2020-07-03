@@ -12,7 +12,7 @@ using System.IO;
 namespace Wox.Test.Plugins
 {
     [TestFixture]
-    public class ProgramPluginTest
+    public class Win32Tests
     {
         Win32 notepad_appdata = new Win32
         {
@@ -332,6 +332,34 @@ namespace Wox.Test.Plugins
 
             // the query matches the name (cmd) and is therefore not filtered (case-insensitive)
             Assert.IsTrue(cmd_run_command.QueryEqualsNameForRunCommands(query));
+        }
+
+        public class mockWin32Class : Win32
+        {
+            protected override int Score(string query)
+            {
+                return 100;
+            }
+
+            protected override List<int> GetMatchingData(string query)
+            {
+                return null;
+            }
+        }
+
+        [Test]
+        public void Win32Apps_ShouldSetNameAsTitle_WhileCreatingResult()
+        {
+            Mock<IPublicAPI> mockAPI = new Mock<IPublicAPI>();
+            mockAPI.Setup(m => m.GetTranslation(It.IsAny<string>())).Returns("subtitle");
+
+            mockWin32Class item = new mockWin32Class();
+            item.Name = "Name";
+            item.Description = "NameName";
+
+            Result res = item.Result("Name", mockAPI.Object);
+
+            Assert.IsTrue(res.Title.Equals("Name"));
         }
     }
 }
