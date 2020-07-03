@@ -13,37 +13,47 @@ namespace Wox.Test.Plugins
 {
     class UWPTests
     {
+        // Mock UWP.Application class to test the Result Properties
         public class mockUWP : UWP.Application
         {
-           /* public mockUWP(AppxPackageHelper.IAppxManifestApplication manifestApp, UWP package) : base( manifestApp, package)
-            {
-                
-            }*/
-
             protected override int Score(string query)
             {
-                return 100;
+                // To prevent the result from being filtered, the score must be a positive integer
+                const int scoreGreateThanZero = 1;
+                return scoreGreateThanZero;
             }
 
+            // Stubbing out the StringMatcher.Fuzzysearch() functionality
             protected override List<int> GetMatchingData(string query)
             {
                 return null;
             }
         }
 
-        [Test]
-        public void Win32Apps_ShouldSetNameAsTitle_WhileCreatingResult()
+        [TestCase("Name", "NamePrefixInDescription")]
+        [TestCase("ignoreName", "ignoreDescription")]
+        public void PackagedApps_ShouldSetNameAsTitle_WhileCreatingResult(string Name, string Description)
         {
+            // Arrange
+            // Mocking the GetTranslation function called by SetSubtitle
+            string subtitle = "subtitle";
             Mock<IPublicAPI> mockAPI = new Mock<IPublicAPI>();
-            mockAPI.Setup(m => m.GetTranslation(It.IsAny<string>())).Returns("subtitle");
+            mockAPI.Setup(m => m.GetTranslation(It.IsAny<string>())).Returns(subtitle);
 
-            mockUWP item = new mockUWP();
-            item.DisplayName = "Name";
-            item.Description = "NameName";
+            // Create an object of the mock packaged App Class and set the name and description
+            mockUWP item = new mockUWP
+            {
+                DisplayName = Name,
+                Description = Description
+            };
 
-            Result res = item.Result("Name", mockAPI.Object);
+            // Act
+            // The query string value does not matter
+            string query = "ignore";
+            Result res = item.Result(query, mockAPI.Object);
 
-            Assert.IsTrue(res.Title.Equals("Name"));
+            // Assert
+            Assert.IsTrue(res.Title.Equals(Name));
         }
     }
 }

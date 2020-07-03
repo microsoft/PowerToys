@@ -262,6 +262,7 @@ namespace Microsoft.Plugin.Program.Programs
             public string LogoPath { get; set; }
             public UWP Package { get; set; }
 
+            // Function to calculate the score of a result
             protected virtual int Score(string query)
             {
                 var displayNameMatch = StringMatcher.FuzzySearch(query, DisplayName);
@@ -291,7 +292,7 @@ namespace Microsoft.Plugin.Program.Programs
 
                 var result = new Result
                 {
-                    SubTitle = SetSubtitle(1, api),
+                    SubTitle = SetSubtitle(api),
                     Icon = Logo,
                     Score = score,
                     ContextData = this,
@@ -380,6 +381,7 @@ namespace Microsoft.Plugin.Program.Programs
                 });
             }
 
+            // Empty constructor, called by the derived class when testing mocked packaged applications
             protected Application() { }
 
             public Application(AppxPackageHelper.IAppxManifestApplication manifestApp, UWP package)

@@ -334,32 +334,47 @@ namespace Wox.Test.Plugins
             Assert.IsTrue(cmd_run_command.QueryEqualsNameForRunCommands(query));
         }
 
-        public class mockWin32Class : Win32
+        // Mock Win32 class to test the Result properties
+        public class mockWin32 : Win32
         {
             protected override int Score(string query)
             {
-                return 100;
+                // To prevent the result from being filtered, the score must be a positive integer
+                const int scoreGreateThanZero = 1;
+                return scoreGreateThanZero;
             }
 
+            // Stubbing out the StringMatcher.Fuzzysearch() functionality
             protected override List<int> GetMatchingData(string query)
             {
                 return null;
             }
         }
 
-        [Test]
-        public void Win32Apps_ShouldSetNameAsTitle_WhileCreatingResult()
+        [TestCase("Name", "NamePrefixInDescription")]
+        [TestCase("ignoreName", "ignoreDescription")]
+        public void Win32Apps_ShouldSetNameAsTitle_WhileCreatingResult(string Name, string Description)
         {
+            // Arrange
+            // Mocking the GetTranslation function called by SetSubtitle
+            string subtitle = "subtitle";
             Mock<IPublicAPI> mockAPI = new Mock<IPublicAPI>();
-            mockAPI.Setup(m => m.GetTranslation(It.IsAny<string>())).Returns("subtitle");
+            mockAPI.Setup(m => m.GetTranslation(It.IsAny<string>())).Returns(subtitle);
 
-            mockWin32Class item = new mockWin32Class();
-            item.Name = "Name";
-            item.Description = "NameName";
+            // Create an object of the mock Win32 Class and set the name and description
+            mockWin32 item = new mockWin32
+            {
+                Name = Name,
+                Description = Description
+            };
 
-            Result res = item.Result("Name", mockAPI.Object);
+            // Act
+            // The query string value not matter
+            string query = "ignore";
+            Result res = item.Result(query, mockAPI.Object);
 
-            Assert.IsTrue(res.Title.Equals("Name"));
+            // Assert
+            Assert.IsTrue(res.Title.Equals(Name));
         }
     }
 }

@@ -52,6 +52,7 @@ namespace Microsoft.Plugin.Program.Programs
             RUN_COMMAND = 3
         }
 
+        // Function to calculate the score of a result
         protected virtual int Score(string query)
         {
             var nameMatch = StringMatcher.FuzzySearch(query, Name);
@@ -173,7 +174,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             var result = new Result
             {
-                SubTitle = SetSubtitle(AppType, api),
+                SubTitle = SetSubtitle(api),
                 IcoPath = IcoPath,
                 Score = score,
                 ContextData = this,
