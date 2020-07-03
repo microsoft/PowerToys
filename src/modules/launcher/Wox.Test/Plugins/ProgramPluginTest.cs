@@ -9,18 +9,21 @@ using Microsoft.Plugin.Program.Programs;
 using Moq;
 using System.IO;
 using Microsoft.Plugin.Program;
+using System.IO.Packaging;
+using Windows.ApplicationModel;
 
 namespace Wox.Test.Plugins
 {
     [TestFixture]
     public class ProgramPluginTest
     {
-        Win32 notepad_appdata = new Win32
+        static Win32 notepad_appdata = new Win32
         {
             Name = "Notepad",
             ExecutableName = "notepad.exe",
             FullPath = "c:\\windows\\system32\\notepad.exe",
-            LnkResolvedPath = "c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\accessories\\notepad.lnk"
+            LnkResolvedPath = "c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\accessories\\notepad.lnk",
+            AppType = 2
         };
 
         Win32 notepad_users = new Win32
@@ -28,7 +31,8 @@ namespace Wox.Test.Plugins
             Name = "Notepad",
             ExecutableName = "notepad.exe",
             FullPath = "c:\\windows\\system32\\notepad.exe",
-            LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\accessories\\notepad.lnk"
+            LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\accessories\\notepad.lnk",
+            AppType = 2
         };
 
         Win32 azure_command_prompt = new Win32
@@ -36,7 +40,8 @@ namespace Wox.Test.Plugins
             Name = "Microsoft Azure Command Prompt - v2.9",
             ExecutableName = "cmd.exe",
             FullPath = "c:\\windows\\system32\\cmd.exe",
-            LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\microsoft azure\\microsoft azure sdk for .net\\v2.9\\microsoft azure command prompt - v2.9.lnk"
+            LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\microsoft azure\\microsoft azure sdk for .net\\v2.9\\microsoft azure command prompt - v2.9.lnk",
+            AppType = 2
         };
 
         Win32 visual_studio_command_prompt = new Win32
@@ -44,7 +49,8 @@ namespace Wox.Test.Plugins
             Name = "x64 Native Tools Command Prompt for VS 2019",
             ExecutableName = "cmd.exe",
             FullPath = "c:\\windows\\system32\\cmd.exe",
-            LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\visual studio 2019\\visual studio tools\\vc\\x64 native tools command prompt for vs 2019.lnk"
+            LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\visual studio 2019\\visual studio tools\\vc\\x64 native tools command prompt for vs 2019.lnk",
+            AppType = 2
         };
 
         Win32 command_prompt = new Win32
@@ -52,7 +58,8 @@ namespace Wox.Test.Plugins
             Name = "Command Prompt",
             ExecutableName = "cmd.exe",
             FullPath = "c:\\windows\\system32\\cmd.exe",
-            LnkResolvedPath ="c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\system tools\\command prompt.lnk"
+            LnkResolvedPath ="c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\system tools\\command prompt.lnk",
+            AppType = 2
         };
 
         Win32 file_explorer = new Win32
@@ -60,7 +67,8 @@ namespace Wox.Test.Plugins
             Name = "File Explorer",
             ExecutableName = "File Explorer.lnk",
             FullPath = "c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\system tools\\file explorer.lnk",
-            LnkResolvedPath = null
+            LnkResolvedPath = null,
+            AppType = 2
         };
 
         Win32 wordpad = new Win32
@@ -68,7 +76,8 @@ namespace Wox.Test.Plugins
             Name = "Wordpad",
             ExecutableName = "wordpad.exe",
             FullPath = "c:\\program files\\windows nt\\accessories\\wordpad.exe",
-            LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\accessories\\wordpad.lnk"
+            LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\accessories\\wordpad.lnk",
+            AppType = 2
         };
 
         Win32 wordpad_duplicate = new Win32
@@ -76,7 +85,8 @@ namespace Wox.Test.Plugins
             Name = "WORDPAD",
             ExecutableName = "WORDPAD.EXE",
             FullPath = "c:\\program files\\windows nt\\accessories\\wordpad.exe",
-            LnkResolvedPath = null
+            LnkResolvedPath = null,
+            AppType = 2
         };
 
         Win32 twitter_pwa = new Win32
@@ -84,7 +94,8 @@ namespace Wox.Test.Plugins
             Name = "Twitter",
             FullPath = "c:\\program files (x86)\\google\\chrome\\application\\chrome_proxy.exe",
             LnkResolvedPath = "c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\chrome apps\\twitter.lnk",
-            Arguments = " --profile-directory=Default --app-id=jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi"
+            Arguments = " --profile-directory=Default --app-id=jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi",
+            AppType = 0
         };
 
         Win32 pinned_webpage = new Win32
@@ -92,7 +103,8 @@ namespace Wox.Test.Plugins
             Name = "Web page",
             FullPath = "c:\\program files (x86)\\microsoft\\edge\\application\\msedge_proxy.exe",
             LnkResolvedPath = "c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\web page.lnk",
-            Arguments = "--profile-directory=Default --app-id=homljgmgpmcbpjbnjpfijnhipfkiclkd"
+            Arguments = "--profile-directory=Default --app-id=homljgmgpmcbpjbnjpfijnhipfkiclkd",
+            AppType = 0
         };
 
         Win32 edge_named_pinned_webpage = new Win32
@@ -100,7 +112,8 @@ namespace Wox.Test.Plugins
             Name = "edge - Bing",
             FullPath = "c:\\program files (x86)\\microsoft\\edge\\application\\msedge_proxy.exe",
             LnkResolvedPath = "c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\edge - bing.lnk",
-            Arguments = "  --profile-directory=Default --app-id=aocfnapldcnfbofgmbbllojgocaelgdd"
+            Arguments = "  --profile-directory=Default --app-id=aocfnapldcnfbofgmbbllojgocaelgdd",
+            AppType = 0
         };
 
         Win32 msedge = new Win32
@@ -108,7 +121,8 @@ namespace Wox.Test.Plugins
             Name = "Microsoft Edge",
             ExecutableName = "msedge.exe",
             FullPath = "c:\\program files (x86)\\microsoft\\edge\\application\\msedge.exe",
-            LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\microsoft edge.lnk"
+            LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\microsoft edge.lnk",
+            AppType = 2
         };
 
         Win32 chrome = new Win32
@@ -116,7 +130,8 @@ namespace Wox.Test.Plugins
             Name = "Google Chrome",
             ExecutableName = "chrome.exe",
             FullPath = "c:\\program files (x86)\\google\\chrome\\application\\chrome.exe",
-            LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\google chrome.lnk"
+            LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\google chrome.lnk",
+            AppType = 2
         };
 
         Win32 dummy_proxy_app = new Win32
@@ -124,7 +139,8 @@ namespace Wox.Test.Plugins
             Name = "Proxy App",
             ExecutableName = "test_proxy.exe",
             FullPath = "c:\\program files (x86)\\microsoft\\edge\\application\\test_proxy.exe",
-            LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\test proxy.lnk"
+            LnkResolvedPath = "c:\\programdata\\microsoft\\windows\\start menu\\programs\\test proxy.lnk",
+            AppType = 2
         };
 
         Win32 cmd_run_command = new Win32
@@ -151,7 +167,8 @@ namespace Wox.Test.Plugins
             ExecutableName = "Shop Titans.url",           
             FullPath = "steam://rungameid/1258080",
             ParentDirectory = "C:\\Users\\temp\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Steam",
-            LnkResolvedPath = null
+            LnkResolvedPath = null,
+            AppType = 1
         };
 
         Win32 dummy_internetShortcut_app_duplicate = new Win32
@@ -160,7 +177,8 @@ namespace Wox.Test.Plugins
             ExecutableName = "Shop Titans.url",
             FullPath = "steam://rungameid/1258080",
             ParentDirectory = "C:\\Users\\temp\\Desktop",
-            LnkResolvedPath = null
+            LnkResolvedPath = null,
+            AppType = 1
         };
 
         [Test]
@@ -336,30 +354,80 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void Win32Program_ReturnContextMenuWithOpenInConsole_WhenContextMenusIsCalled()
+        public void WEB_APPLICATION_ReturnContextMenuWithOpenInConsole_WhenContextMenusIsCalled()
         {
             // Arrange
-            var programPLugin = new Main();
             var mock = new Mock<IPublicAPI>();
             mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns("open in console");
-            var pluginInInitContext = new PluginInitContext();
-            pluginInInitContext.API = mock.Object;
-            programPLugin.con
-
-            chrome.ContextMenus
 
             // Act
-            programPLugin.con
+            List<ContextMenuResult> contextMenuResults = pinned_webpage.ContextMenus(mock.Object);
 
-            Result result = new Result
-            {
-                SubTitle = "DummyResult",
-                IcoPath = "C:/dummy.jpg",
-                Score = 1,
-            };
-
-            programPLugin.LoadContextMenus(result);
-
+            // Assert
+            Assert.AreEqual(contextMenuResults.Count, 3);
+            mock.Verify(x => x.GetTranslation("wox_plugin_program_open_in_console"), Times.Once());
         }
+
+        [Test]
+        public void INTERNET_SHORTCUT_APPLICATION_ReturnContextMenuWithOpenInConsole_WhenContextMenusIsCalled()
+        {
+            // Arrange
+            var mock = new Mock<IPublicAPI>();
+            mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns("open in console");
+
+            // Act
+            List<ContextMenuResult> contextMenuResults = dummy_internetShortcut_app.ContextMenus(mock.Object);
+
+            // Assert
+            Assert.AreEqual(contextMenuResults.Count, 2);
+            mock.Verify(x => x.GetTranslation("wox_plugin_program_open_in_console"), Times.Once());
+        }
+
+        [Test]
+        public void WIN32_APPLICATION_ReturnContextMenuWithOpenInConsole_WhenContextMenusIsCalled()
+        {
+            // Arrange
+            var mock = new Mock<IPublicAPI>();
+            mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns("open in console");
+
+            // Act
+            List<ContextMenuResult> contextMenuResults = chrome.ContextMenus(mock.Object);
+
+            // Assert
+            Assert.AreEqual(contextMenuResults.Count, 3);
+            mock.Verify(x => x.GetTranslation("wox_plugin_program_open_in_console"), Times.Once());
+        }
+
+        [Test]
+        public void RUN_COMMAND_ReturnContextMenuWithOpenInConsole_WhenContextMenusIsCalled()
+        {
+            // Arrange
+            var mock = new Mock<IPublicAPI>();
+            mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns("open in console");
+
+            // Act
+            List<ContextMenuResult> contextMenuResults = cmd_run_command.ContextMenus(mock.Object);
+
+            // Assert
+            Assert.AreEqual(contextMenuResults.Count, 3);
+            mock.Verify(x => x.GetTranslation("wox_plugin_program_open_in_console"), Times.Once());
+        }
+
+        //[Test]
+        //public void getUWPProgram()
+        //{
+        //    // Arrange
+        //    var x = new Main();
+        //    UWP.Application uwp_program = x.uwp;
+        //    var mock = new Mock<IPublicAPI>();
+        //    mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns("open in console");
+
+        //    // Act
+        //    List<ContextMenuResult> contextMenuResults = uwp_program.ContextMenus(mock.Object);
+
+        //    // Assert
+        //    Assert.AreEqual(contextMenuResults.Count, 3);
+        //    mock.Verify(x => x.GetTranslation("wox_plugin_program_open_in_console"), Times.Once());
+        //}
     }
 }
