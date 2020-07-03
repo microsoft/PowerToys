@@ -183,5 +183,16 @@ namespace ViewModelTests
             Assert.AreEqual(viewModel.Sizes.Count, sizeOfOriginalArray - 1);
             Assert.IsFalse(viewModel.Sizes.Contains(deleteCandidate));
         }
+
+        [TestMethod]
+        public void UpdateWidthAndHeight_ShouldUpateSize_WhenCorrectValuesAreProvided()
+        {
+            // arrange
+            ImageSize imageSize = new ImageSize();
+
+            double negativeWidth = -1.0;
+            double negativeHeight = -1.0;
+
+        }
     }
 }
