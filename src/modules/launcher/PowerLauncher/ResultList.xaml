@@ -137,7 +137,13 @@
             <!--Style="{StaticResource ListViewNoAnimations}"-->
             <ListView.ItemTemplate>
                 <DataTemplate >
-                    <Grid Height="72" Width="642" Background="Transparent" >
+                    <Grid 
+                        Height="72" 
+                        Width="642" 
+                        Background="Transparent"
+                        ToolTipService.BetweenShowDelay="0"
+                        ToolTipService.InitialShowDelay="1500"
+                        >
                         <Behaviors:Interaction.Triggers>
                             <Behaviors:EventTrigger EventName="MouseEnter">
                                 <Behaviors:InvokeCommandAction Command="{Binding ActivateContextButtonsHoverCommand}"/>
@@ -157,7 +163,6 @@
                         </Grid.RowDefinitions>
                         <Grid.ToolTip>
                             <ToolTip 
-                                Placement="Bottom"
                                 Visibility="{Binding Result.ToolTipVisibility}"
                                 BorderThickness="1"
                                 BorderBrush="{DynamicResource ToolTipBorderBrushKey}"
