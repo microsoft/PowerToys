@@ -126,7 +126,7 @@ namespace Microsoft.Plugin.Indexer
         {
             // initialize the context of the plugin
             _context = context;
-            _contextMenuLoader = new ContextMenuLoader(context.API);
+            _contextMenuLoader = new ContextMenuLoader(context);
             _storage = new PluginJsonStorage<Settings>();
             _settings = _storage.Load();
         }

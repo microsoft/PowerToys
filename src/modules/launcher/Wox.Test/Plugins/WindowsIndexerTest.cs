@@ -222,8 +222,9 @@ namespace Wox.Test.Plugins
         {
             // Arrange 
             var mock = new Mock<IPublicAPI>();
-            mock.Setup(api => api.GetTranslation(It.IsAny<string>())).Returns("open in console");
-            var contextMenuLoader = new ContextMenuLoader(mock.Object);
+            mock.Setup(api => api.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
+            var pluginInitContext = new PluginInitContext() { API = mock.Object };
+            var contextMenuLoader = new ContextMenuLoader(pluginInitContext);
             var searchResult = new SearchResult() { Path = "C:/", Title = "DummyFile.cs" };
             var result = new Result() { ContextData = searchResult };
 
@@ -232,7 +233,7 @@ namespace Wox.Test.Plugins
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 2);
-            Assert.AreEqual(contextMenuResults[1].Title, "Open in Console");
+            mock.Verify(x => x.GetTranslation("Microsoft_plugin_indexer_open_in_console"), Times.Once());
         }
     }
 }

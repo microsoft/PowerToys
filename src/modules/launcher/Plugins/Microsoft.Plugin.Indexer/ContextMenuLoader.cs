@@ -14,7 +14,7 @@ namespace Microsoft.Plugin.Indexer
 {
     internal class ContextMenuLoader : IContextMenu
     {
-        private readonly IPublicAPI _API;
+        private readonly PluginInitContext _context;
 
         public enum ResultType
         {
@@ -22,9 +22,9 @@ namespace Microsoft.Plugin.Indexer
             File
         }
 
-        public ContextMenuLoader(IPublicAPI API)
+        public ContextMenuLoader(PluginInitContext context)
         {
-            _API = API;
+            _context = context;
         }
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
@@ -43,7 +43,7 @@ namespace Microsoft.Plugin.Indexer
                 contextMenus.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = _API.GetTranslation("Microsoft_plugin_indexer_copy_path"),
+                    Title = _context.API.GetTranslation("Microsoft_plugin_indexer_copy_path"),
                     Glyph = "\xE8C8",
                     FontFamily = "Segoe MDL2 Assets",
                     SubTitle = $"Copy the current {fileOrFolder} path to clipboard",
@@ -61,7 +61,7 @@ namespace Microsoft.Plugin.Indexer
                         {
                             var message = "Fail to set text in clipboard";
                             LogException(message, e);
-                            _API.ShowMsg(message);
+                            _context.API.ShowMsg(message);
                             return false;
                         }
                     }
@@ -69,7 +69,7 @@ namespace Microsoft.Plugin.Indexer
                 contextMenus.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = _API.GetTranslation("Microsoft_plugin_indexer_open_in_console"),
+                    Title = _context.API.GetTranslation("Microsoft_plugin_indexer_open_in_console"),
                     Glyph = "\xE756",
                     FontFamily = "Segoe MDL2 Assets",
                     SubTitle = $"Open current {fileOrFolder} path in console",
@@ -108,7 +108,7 @@ namespace Microsoft.Plugin.Indexer
             return new ContextMenuResult
             {
                 PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                Title = _API.GetTranslation("Microsoft_plugin_indexer_open_containing_folder"),
+                Title = _context.API.GetTranslation("Microsoft_plugin_indexer_open_containing_folder"),
                 Glyph = "\xE838",
                 FontFamily = "Segoe MDL2 Assets",
                 AcceleratorKey = Key.E,
@@ -123,7 +123,7 @@ namespace Microsoft.Plugin.Indexer
                     {
                         var message = $"Fail to open file at {record.Path}";
                         LogException(message, e);
-                        _API.ShowMsg(message);
+                        _context.API.ShowMsg(message);
                         return false;
                     }
 
