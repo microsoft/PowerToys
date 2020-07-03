@@ -28,8 +28,8 @@
     <system:String x:Key="wox_plugin_program_update_file_suffixes">Dateiendungen wurden erfolgreich aktualisiert</system:String>
     <system:String x:Key="wox_plugin_program_suffixes_cannot_empty">Dateiendungen dürfen nicht leer sein</system:String>
 
-    <system:String x:Key="wox_plugin_program_run_as_administrator">Als Administrator ausführen</system:String>
-    <system:String x:Key="wox_plugin_program_open_containing_folder">Enthaltenden Ordner öffnen</system:String>
+    <system:String x:Key="wox_plugin_program_run_as_administrator">Als Administrator ausführen (Ctrl+Shift+Enter)</system:String>
+    <system:String x:Key="wox_plugin_program_open_containing_folder">Enthaltenden Ordner öffnen (Ctrl+Shift+E)</system:String>
 
     <system:String x:Key="wox_plugin_program_plugin_name">Programm</system:String>
     <system:String x:Key="wox_plugin_program_plugin_description">Suche Programme mit Wox</system:String>
