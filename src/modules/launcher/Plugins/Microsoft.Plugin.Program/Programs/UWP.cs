@@ -277,6 +277,7 @@ namespace Microsoft.Plugin.Program.Programs
                 return "Packaged application";
             }
 
+            // Function to get matching indices
             protected virtual List<int> GetMatchingData(string query)
             {
                 return StringMatcher.FuzzySearch(query, Name).MatchData;
