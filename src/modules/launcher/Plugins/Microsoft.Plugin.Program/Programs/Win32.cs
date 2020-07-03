@@ -103,7 +103,7 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         // Function to set the subtitle based on the Type of application
-        public string SetSubtitle(uint AppType, IPublicAPI api)
+        public string SetSubtitle(IPublicAPI api)
         {
             if(AppType == (uint)ApplicationTypes.WIN32_APPLICATION)
             {
