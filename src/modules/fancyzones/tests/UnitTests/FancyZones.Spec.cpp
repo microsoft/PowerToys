@@ -74,6 +74,7 @@ namespace FancyZonesUnitTests
             ptSettings.add_bool_toggle(L"fancyzones_displayChange_moveWindows", IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS, settings.displayChange_moveWindows);
             ptSettings.add_bool_toggle(L"fancyzones_zoneSetChange_moveWindows", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS, settings.zoneSetChange_moveWindows);
             ptSettings.add_bool_toggle(L"fancyzones_appLastZone_moveWindows", IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS, settings.appLastZone_moveWindows);
+            ptSettings.add_bool_toggle(L"fancyzones_restoreSize", IDS_SETTING_DESCRIPTION_RESTORESIZE, settings.restoreSize);
             ptSettings.add_bool_toggle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, settings.use_cursorpos_editor_startupscreen);
             ptSettings.add_bool_toggle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, settings.showZonesOnAllMonitors);
             ptSettings.add_bool_toggle(L"fancyzones_makeDraggedWindowTransparent", IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT, settings.makeDraggedWindowTransparent);
@@ -119,6 +120,7 @@ namespace FancyZonesUnitTests
                         .overrideSnapHotkeys = false,
                         .moveWindowAcrossMonitors = false,
                         .appLastZone_moveWindows = true,
+                        .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
                         .zoneColor = L"#abafee",
                         .zoneBorderColor = L"FAFAFA",
@@ -148,6 +150,7 @@ namespace FancyZonesUnitTests
                         .overrideSnapHotkeys = false,
                         .moveWindowAcrossMonitors = false,
                         .appLastZone_moveWindows = true,
+                        .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
                         .zoneColor = L"#FAFAFA",
                         .zoneBorderColor = L"#abafee",
@@ -177,6 +180,7 @@ namespace FancyZonesUnitTests
                         .overrideSnapHotkeys = false,
                         .moveWindowAcrossMonitors = false,
                         .appLastZone_moveWindows = true,
+                        .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
                         .showZonesOnAllMonitors = false,
                         .makeDraggedWindowTransparent = true,
@@ -208,6 +212,7 @@ namespace FancyZonesUnitTests
                         .overrideSnapHotkeys = false,
                         .moveWindowAcrossMonitors = false,
                         .appLastZone_moveWindows = true,
+                        .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
                         .showZonesOnAllMonitors = false,
                         .makeDraggedWindowTransparent = true,
@@ -239,6 +244,7 @@ namespace FancyZonesUnitTests
                         .overrideSnapHotkeys = false,
                         .moveWindowAcrossMonitors = false,
                         .appLastZone_moveWindows = true,
+                        .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
                         .showZonesOnAllMonitors = false,
                         .makeDraggedWindowTransparent = true,
@@ -280,6 +286,7 @@ namespace FancyZonesUnitTests
             ptSettings.add_bool_toggle(L"fancyzones_displayChange_moveWindows", IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS, settings.displayChange_moveWindows);
             ptSettings.add_bool_toggle(L"fancyzones_zoneSetChange_moveWindows", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS, settings.zoneSetChange_moveWindows);
             ptSettings.add_bool_toggle(L"fancyzones_appLastZone_moveWindows", IDS_SETTING_DESCRIPTION_APPLASTZONE_MOVEWINDOWS, settings.appLastZone_moveWindows);
+            ptSettings.add_bool_toggle(L"fancyzones_restoreSize", IDS_SETTING_DESCRIPTION_RESTORESIZE, settings.restoreSize);
             ptSettings.add_bool_toggle(L"use_cursorpos_editor_startupscreen", IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN, settings.use_cursorpos_editor_startupscreen);
             ptSettings.add_bool_toggle(L"fancyzones_show_on_all_monitors", IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS, settings.showZonesOnAllMonitors);
             ptSettings.add_bool_toggle(L"fancyzones_makeDraggedWindowTransparent", IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT, settings.makeDraggedWindowTransparent);

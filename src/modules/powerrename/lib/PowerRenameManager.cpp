@@ -3,6 +3,7 @@
 #include "PowerRenameRegEx.h" // Default RegEx handler
 #include <algorithm>
 #include <shlobj.h>
+#include <cstring>
 #include "helpers.h"
 #include "window_helpers.h"
 #include <filesystem>
@@ -763,7 +764,6 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                     StringCchCopy(sourceName, ARRAYSIZE(sourceName), originalName);
                                 }
 
-
                                 PWSTR newName = nullptr;
                                 // Failure here means we didn't match anything or had nothing to match
                                 // Call put_newName with null in that case to reset it
@@ -775,6 +775,13 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
 
                                 // newName == nullptr likely means we have an empty search string.  We should leave newNameToUse
                                 // as nullptr so we clear the renamed column
+                                // Except string transformation is selected.
+                                
+                                if (newName == nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase))
+                                {
+                                    SHStrDup(sourceName, &newName);
+                                }
+
                                 if (newName != nullptr)
                                 {
                                     newNameToUse = resultName;
@@ -797,6 +804,22 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                     else
                                     {
                                         StringCchCopy(resultName, ARRAYSIZE(resultName), newName);
+                                    }
+                                }
+                                
+                                wchar_t trimmedName[MAX_PATH] = { 0 };
+                                if (newNameToUse != nullptr && SUCCEEDED(GetTrimmedFileName(trimmedName, ARRAYSIZE(trimmedName), newNameToUse)))
+                                {
+                                    newNameToUse = trimmedName;
+                                }
+                                
+
+                                wchar_t transformedName[MAX_PATH] = { 0 };
+                                if (newNameToUse != nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase))
+                                {
+                                    if (SUCCEEDED(GetTransformedFileName(transformedName, ARRAYSIZE(transformedName), newNameToUse, flags)))
+                                    {
+                                        newNameToUse = transformedName;
                                     }
                                 }
                                 

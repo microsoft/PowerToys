@@ -22,7 +22,7 @@ namespace Wox.ViewModel
             Hover
         };
 
-        public List<ContextMenuItemViewModel> ContextMenuItems { get; set; }
+        public ObservableCollection<ContextMenuItemViewModel> ContextMenuItems { get; set; } = new ObservableCollection<ContextMenuItemViewModel>();
 
         public ICommand ActivateContextButtonsHoverCommand { get; set; }
         public ICommand ActivateContextButtonsSelectionCommand { get; set; }
@@ -46,7 +46,10 @@ namespace Wox.ViewModel
             {
                 Result = result;
             }
+            
             ContextMenuSelectedIndex = NoSelectionIndex;
+            LoadContextMenu();
+            
             ActivateContextButtonsHoverCommand = new RelayCommand(ActivateContextButtonsHoverAction);
             ActivateContextButtonsSelectionCommand = new RelayCommand(ActivateContextButtonsSelectionAction);
             DeactivateContextButtonsHoverCommand = new RelayCommand(DeactivateContextButtonsHoverAction);
@@ -64,11 +67,6 @@ namespace Wox.ViewModel
         }
         public void ActivateContextButtons(ActivationType activationType)
         {
-            if (ContextMenuItems == null)
-            {
-                LoadContextMenu();
-            }
-
             // Result does not contain any context menu items - we don't need to show the context menu ListView at all.
             if (ContextMenuItems.Count > 0)
             {
@@ -78,14 +76,13 @@ namespace Wox.ViewModel
             {
                 AreContextButtonsActive = false;
             }
-         
 
             if (activationType == ActivationType.Selection)
             {
                 IsSelected = true;
                 EnableContextMenuAcceleratorKeys();
             }
-            else if(activationType == ActivationType.Hover)
+            else if (activationType == ActivationType.Hover)
             {
                 IsHovered = true;
             }
@@ -122,17 +119,17 @@ namespace Wox.ViewModel
             else
             {
                 AreContextButtonsActive = false;
-            }  
+            }
         }
 
 
         public void LoadContextMenu()
         {
             var results = PluginManager.GetContextMenusForPlugin(Result);
-            var newItems = new List<ContextMenuItemViewModel>();
+            ContextMenuItems.Clear();
             foreach (var r in results)
             {
-                newItems.Add(new ContextMenuItemViewModel
+                ContextMenuItems.Add(new ContextMenuItemViewModel()
                 {
                     PluginName = r.PluginName,
                     Title = r.Title,
@@ -155,13 +152,11 @@ namespace Wox.ViewModel
                     })
                 });
             }
-
-            ContextMenuItems = newItems;
         }
 
         private void EnableContextMenuAcceleratorKeys()
         {
-            foreach(var i in ContextMenuItems)
+            foreach (var i in ContextMenuItems)
             {
                 i.IsAcceleratorKeyEnabled = true;
             }
@@ -192,7 +187,7 @@ namespace Wox.ViewModel
                         imagePath = ImageLoader.ErrorIconPath;
                     }
                 }
-                
+
                 // will get here either when icoPath has value\icon delegate is null\when had exception in delegate
                 return ImageLoader.Load(imagePath);
             }
@@ -201,10 +196,10 @@ namespace Wox.ViewModel
         //Returns false if we've already reached the last item.
         public bool SelectNextContextButton()
         {
-            if(ContextMenuSelectedIndex == (ContextMenuItems.Count -1))
+            if (ContextMenuSelectedIndex == (ContextMenuItems.Count - 1))
             {
                 ContextMenuSelectedIndex = NoSelectionIndex;
-                return false; 
+                return false;
             }
 
             ContextMenuSelectedIndex++;

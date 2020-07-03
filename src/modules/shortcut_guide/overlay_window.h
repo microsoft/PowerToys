@@ -46,13 +46,15 @@ struct AnimateKeys
 class D2DOverlayWindow : public D2DWindow
 {
 public:
-    D2DOverlayWindow();
+    D2DOverlayWindow(std::optional<std::function<std::remove_pointer_t<WNDPROC>>> pre_wnd_proc = std::nullopt);
     void show(HWND active_window, bool snappable);
     void animate(int vk_code);
     ~D2DOverlayWindow();
     void apply_overlay_opacity(float opacity);
     void set_theme(const std::wstring& theme);
     void quick_hide();
+
+    HWND get_window_handle();
 
 private:
     void animate(int vk_code, int offset);

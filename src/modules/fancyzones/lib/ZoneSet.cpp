@@ -303,6 +303,7 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::v
 
     if (!sizeEmpty)
     {
+        SaveWindowSizeAndOrigin(window);
         SizeWindowToRect(window, size);
         StampWindow(window, bitmask);
     }
@@ -700,3 +701,4 @@ winrt::com_ptr<IZoneSet> MakeZoneSet(ZoneSetConfig const& config) noexcept
 {
     return winrt::make_self<ZoneSet>(config);
 }
+

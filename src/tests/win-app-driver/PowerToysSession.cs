@@ -14,13 +14,13 @@ namespace PowerToysTests
     {
         protected const string WindowsApplicationDriverUrl = "http://127.0.0.1:4723";
         protected const string AppPath = "C:\\Program Files\\PowerToys\\PowerToys.exe";
-        
+
         protected static WindowsDriver<WindowsElement> session;
         protected static bool isPowerToysLaunched = false;
         protected static WindowsElement trayButton;
 
         protected static string _settingsFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\FancyZones");
-        protected static string _settingsPath = _settingsFolderPath + "\\settings.json"; 
+        protected static string _settingsPath = _settingsFolderPath + "\\settings.json";
         protected static string _zoneSettingsPath = _settingsFolderPath + "\\zones-settings.json";
         protected static string _appHistoryPath = _settingsFolderPath + "\\app-zone-history.json";
 
@@ -30,7 +30,7 @@ namespace PowerToysTests
 
         protected const string _defaultSettings = "{\"version\":\"1.0\",\"name\":\"FancyZones\",\"properties\":{\"fancyzones_shiftDrag\":{\"value\":true},\"fancyzones_mouseSwitch\":{\"value\":false},\"fancyzones_overrideSnapHotkeys\":{\"value\":false},\"fancyzones_moveWindowAcrossMonitors\":{\"value\":false},\"fancyzones_zoneSetChange_flashZones\":{\"value\":false},\"fancyzones_displayChange_moveWindows\":{\"value\":false},\"fancyzones_zoneSetChange_moveWindows\":{\"value\":false},\"fancyzones_appLastZone_moveWindows\":{\"value\":false},\"use_cursorpos_editor_startupscreen\":{\"value\":true},\"fancyzones_zoneHighlightColor\":{\"value\":\"#0078D7\"},\"fancyzones_highlight_opacity\":{\"value\":90},\"fancyzones_editor_hotkey\":{\"value\":{\"win\":true,\"ctrl\":false,\"alt\":false,\"shift\":false,\"code\":192,\"key\":\"`\"}},\"fancyzones_excluded_apps\":{\"value\":\"\"}}}";
         protected const string _defaultZoneSettings = "{\"app-zone-history\":[],\"devices\":[],\"custom-zone-sets\":[]}";
-            
+
 
         public static void Setup(TestContext context, bool isLaunchRequired = true)
         {
@@ -52,7 +52,7 @@ namespace PowerToysTests
                     {
                         LaunchPowerToys();
                     }
-                } 
+                }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
@@ -176,7 +176,7 @@ namespace PowerToysTests
             }
         }
 
-        private static bool CheckPowerToysLaunched()        
+        private static bool CheckPowerToysLaunched()
         {
             bool isLaunched = false;
             try
@@ -190,7 +190,7 @@ namespace PowerToysTests
             {
                 //PowerToys not found
             }
-                        
+
             return isLaunched;
         }
 
