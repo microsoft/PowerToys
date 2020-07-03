@@ -43,7 +43,7 @@ namespace Microsoft.Plugin.Indexer
                 contextMenus.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = _context.API.GetTranslation("Microsoft_plugin_indexer_copy_path"),
+                    Title = _API.GetTranslation("Microsoft_plugin_indexer_copy_path"),
                     Glyph = "\xE8C8",
                     FontFamily = "Segoe MDL2 Assets",
                     SubTitle = $"Copy the current {fileOrFolder} path to clipboard",
@@ -69,7 +69,7 @@ namespace Microsoft.Plugin.Indexer
                 contextMenus.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = "Open in Console",
+                    Title = _API.GetTranslation("Microsoft_plugin_indexer_open_in_console"),
                     Glyph = "\xE756",
                     FontFamily = "Segoe MDL2 Assets",
                     SubTitle = $"Open current {fileOrFolder} path in console",

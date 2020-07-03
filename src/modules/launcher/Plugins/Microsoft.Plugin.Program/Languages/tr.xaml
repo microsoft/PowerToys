@@ -30,7 +30,7 @@
 
     <system:String x:Key="wox_plugin_program_run_as_administrator">Yönetici Olarak Çalıştır (Ctrl+Shift+Enter)</system:String>
     <system:String x:Key="wox_plugin_program_open_containing_folder">İçeren Klasörü Aç (Ctrl+Shift+E)</system:String>
-        <system:String x:Key="wox_plugin_program_open_in_console">Open in console</system:String>
+    <system:String x:Key="wox_plugin_program_open_in_console">Open in console (Ctrl+Shift+C)</system:String>
 
 
     <system:String x:Key="wox_plugin_program_plugin_name">Program</system:String>

@@ -64,7 +64,7 @@ namespace Microsoft.Plugin.Folder
                 contextMenus.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = "Open in Console",
+                    Title = _context.API.GetTranslation("Microsoft_plugin_folder_open_in_console"),
                     Glyph = "\xE756",
                     FontFamily = "Segoe MDL2 Assets",
                     SubTitle = $"Open current {fileOrFolder} path in console",
