@@ -7,9 +7,6 @@
 class ShortcutControl
 {
 private:
-    // Textblock to display the selected shortcut
-    TextBlock shortcutText;
-
     // Stack panel for the drop downs to display the selected shortcut
     StackPanel shortcutDropDownStackPanel;
 
@@ -25,7 +22,7 @@ public:
     // Pointer to the keyboard manager state
     static KeyboardManagerState* keyboardManagerState;
     // Stores the current list of remappings
-    static std::vector<std::vector<Shortcut>> shortcutRemapBuffer;
+    static std::map<std::wstring, std::vector<std::vector<Shortcut>>> shortcutRemapBuffer;
     // Vector to store dynamically allocated KeyDropDownControl objects to avoid early destruction
     std::vector<std::unique_ptr<KeyDropDownControl>> keyDropDownControlObjects;
 
@@ -61,5 +58,5 @@ public:
     StackPanel getShortcutControl();
 
     // Function to create the detect shortcut UI window
-    void createDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, KeyboardManagerState& keyboardManagerState, const int colIndex, Grid table);
+    void createDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, std::map<std::wstring, std::vector<std::vector<Shortcut>>>& shortcutRemapBuffer, KeyboardManagerState& keyboardManagerState, const int colIndex, Grid table);
 };

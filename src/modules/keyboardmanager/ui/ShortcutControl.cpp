@@ -6,7 +6,7 @@
 HWND ShortcutControl::EditShortcutsWindowHandle = nullptr;
 KeyboardManagerState* ShortcutControl::keyboardManagerState = nullptr;
 // Initialized as new vector
-std::vector<std::vector<Shortcut>> ShortcutControl::shortcutRemapBuffer;
+std::map<std::wstring, std::vector<std::vector<Shortcut>>> ShortcutControl::shortcutRemapBuffer;
 
 // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
 void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, Shortcut originalKeys, Shortcut newKeys)
@@ -38,6 +38,25 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
 
     // ShortcutControl for the new shortcut
     parent.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getShortcutControl());
+
+    // Textbox for target application
+    ComboBox targetAppTextBox;
+    targetAppTextBox.IsEditable(true);
+    targetAppTextBox.Width(100);
+    targetAppTextBox.ItemsSource(single_threaded_vector<winrt::Windows::Foundation::IInspectable>({ box_value(KeyboardManagerConstants::DefaultAppName) }));
+    targetAppTextBox.VerticalAlignment(VerticalAlignment::Center);
+    targetAppTextBox.SelectedIndex(0);
+    targetAppTextBox.TextSubmitted([&](auto const& sender, auto const& args) {
+        // If the shortcut buffer for that app has not yet been created, create it
+        if (shortcutRemapBuffer.find(targetAppTextBox.Text()) == shortcutRemapBuffer.end())
+        {
+            shortcutRemapBuffer[targetAppTextBox.Text()] = std::vector<std::vector<Shortcut>>();
+        }
+    });
+
+    parent.SetColumn(targetAppTextBox, KeyboardManagerConstants::ShortcutTableTargetAppColIndex);
+    parent.SetRow(targetAppTextBox, parent.RowDefinitions().Size() - 1);
+    parent.Children().Append(targetAppTextBox);
 
     // Delete row button
     Windows::UI::Xaml::Controls::Button deleteShortcut;
@@ -83,14 +102,15 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     // Set the shortcut text if the two vectors are not empty (i.e. default args)
     if (originalKeys.IsValidShortcut() && newKeys.IsValidShortcut())
     {
-        shortcutRemapBuffer.push_back(std::vector<Shortcut>{ Shortcut(), Shortcut() });
+        // change to load app name
+        shortcutRemapBuffer[KeyboardManagerConstants::DefaultAppName].push_back(std::vector<Shortcut>{ Shortcut(), Shortcut() });
         keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->AddShortcutToControl(originalKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutDropDownStackPanel, *keyboardManagerState, 0);
         keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->AddShortcutToControl(newKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->shortcutDropDownStackPanel, *keyboardManagerState, 1);
     }
     else
     {
         // Initialize both shortcuts as empty shortcuts
-        shortcutRemapBuffer.push_back(std::vector<Shortcut>{ Shortcut(), Shortcut() });
+        shortcutRemapBuffer[KeyboardManagerConstants::DefaultAppName].push_back(std::vector<Shortcut>{ Shortcut(), Shortcut() });
     }
 }
 

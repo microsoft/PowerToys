@@ -166,6 +166,8 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     ColumnDefinition newColumn;
     newColumn.MinWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
     newColumn.MaxWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
+    ColumnDefinition targetAppColumn;
+    targetAppColumn.MinWidth(KeyboardManagerConstants::TableRemoveColWidth);
     ColumnDefinition removeColumn;
     removeColumn.MinWidth(KeyboardManagerConstants::TableRemoveColWidth);
     shortcutTable.Margin({ 10, 10, 10, 20 });
@@ -173,6 +175,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     shortcutTable.ColumnDefinitions().Append(originalColumn);
     shortcutTable.ColumnDefinitions().Append(arrowColumn);
     shortcutTable.ColumnDefinitions().Append(newColumn);
+    shortcutTable.ColumnDefinitions().Append(targetAppColumn);
     shortcutTable.ColumnDefinitions().Append(removeColumn);
     shortcutTable.RowDefinitions().Append(RowDefinition());
 
@@ -188,13 +191,22 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     newShortcutHeader.FontWeight(Text::FontWeights::Bold());
     newShortcutHeader.Margin({ 0, 0, 0, 10 });
 
+    // Third header textblock in the header row of the shortcut table
+    TextBlock targetAppHeader;
+    targetAppHeader.Text(L"Target App:");
+    targetAppHeader.FontWeight(Text::FontWeights::Bold());
+    targetAppHeader.Margin({ 0, 0, 0, 10 });
+
     shortcutTable.SetColumn(originalShortcutHeader, KeyboardManagerConstants::ShortcutTableOriginalColIndex);
     shortcutTable.SetRow(originalShortcutHeader, 0);
     shortcutTable.SetColumn(newShortcutHeader, KeyboardManagerConstants::ShortcutTableNewColIndex);
     shortcutTable.SetRow(newShortcutHeader, 0);
+    shortcutTable.SetColumn(targetAppHeader, KeyboardManagerConstants::ShortcutTableTargetAppColIndex);
+    shortcutTable.SetRow(targetAppHeader, 0);
 
     shortcutTable.Children().Append(originalShortcutHeader);
     shortcutTable.Children().Append(newShortcutHeader);
+    shortcutTable.Children().Append(targetAppHeader);
 
     // Store handle of edit shortcuts window
     ShortcutControl::EditShortcutsWindowHandle = _hWndEditShortcutsWindow;
@@ -203,6 +215,8 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     KeyDropDownControl::keyboardManagerState = &keyboardManagerState;
     // Clear the shortcut remap buffer
     ShortcutControl::shortcutRemapBuffer.clear();
+    // Initialize with OS level shortcut buffer
+    ShortcutControl::shortcutRemapBuffer[KeyboardManagerConstants::DefaultAppName] = std::vector<std::vector<Shortcut>>();
     // Vector to store dynamically allocated control objects to avoid early destruction
     std::vector<std::vector<std::unique_ptr<ShortcutControl>>> keyboardRemapControlObjects;
 
