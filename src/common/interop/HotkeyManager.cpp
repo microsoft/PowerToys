@@ -5,15 +5,14 @@ using namespace interop;
 
 HotkeyManager::HotkeyManager()
 {
-    keyboardEventCallback = gcnew KeyboardEventCallback(this, &HotkeyManager::KeyboardEventProc); 
+    keyboardEventCallback = gcnew KeyboardEventCallback(this, &HotkeyManager::KeyboardEventProc);
     isActiveCallback = gcnew IsActiveCallback(this, &HotkeyManager::IsActiveProc);
     filterKeyboardCallback = gcnew FilterKeyboardEvent(this, &HotkeyManager::FilterKeyboardProc);
 
     keyboardHook = gcnew KeyboardHook(
         keyboardEventCallback,
         isActiveCallback,
-        filterKeyboardCallback
-    );
+        filterKeyboardCallback);
     hotkeys = gcnew Dictionary<HOTKEY_HANDLE, HotkeyCallback ^>();
     pressedKeys = gcnew Hotkey();
     keyboardHook->Start();
@@ -25,8 +24,9 @@ HotkeyManager::~HotkeyManager()
 }
 
 // When all Shortcut keys are pressed, fire the HotkeyCallback event.
-void HotkeyManager::KeyboardEventProc(KeyboardEvent^ ev)
+void HotkeyManager::KeyboardEventProc(KeyboardEvent ^ ev)
 {
+    // pressedKeys always stores the latest keyboard state
     auto pressedKeysHandle = GetHotkeyHandle(pressedKeys);
     if (hotkeys->ContainsKey(pressedKeysHandle))
     {
@@ -42,22 +42,24 @@ bool HotkeyManager::IsActiveProc()
 }
 
 // KeyboardEvent callback is only fired for relevant key events.
-bool HotkeyManager::FilterKeyboardProc(KeyboardEvent^ ev)
+bool HotkeyManager::FilterKeyboardProc(KeyboardEvent ^ ev)
 {
-    auto oldHandle = GetHotkeyHandle(pressedKeys);
+    // Updating the pressed keys here so we know if the keypress event should be propagated or not.
+    pressedKeys->Win = (GetAsyncKeyState(VK_LWIN) & 0x8000) || (GetAsyncKeyState(VK_RWIN) & 0x8000);
+    pressedKeys->Ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
+    pressedKeys->Alt = GetAsyncKeyState(VK_MENU) & 0x8000;
+    pressedKeys->Shift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
+    pressedKeys->Key = ev->key;
 
-    // Updating the pressed keys here so we know if the keypress event 
-    // should be propagated or not.
-    UpdatePressedKeys(ev);
-
+    // Convert to hotkey handle
     auto pressedKeysHandle = GetHotkeyHandle(pressedKeys);
 
-    // Check if the hotkey matches the pressed keys, and check if the pressed keys aren't duplicate
-    // (there shouldn't be auto repeating hotkeys)
-    if (hotkeys->ContainsKey(pressedKeysHandle) && oldHandle != pressedKeysHandle)
+    // Check if any hotkey matches the pressed keys if the current key event is a key down event
+    if ((ev->message == WM_KEYDOWN || ev->message == WM_SYSKEYDOWN) && hotkeys->ContainsKey(pressedKeysHandle))
     {
         return true;
     }
+
     return false;
 }
 
@@ -82,52 +84,4 @@ HOTKEY_HANDLE HotkeyManager::GetHotkeyHandle(Hotkey ^ hotkey)
     handle |= hotkey->Shift << 10;
     handle |= hotkey->Alt << 11;
     return handle;
-}
-
-void HotkeyManager::UpdatePressedKey(DWORD code, bool replaceWith, unsigned char replaceWithKey)
-{
-    switch (code)
-    {
-    case VK_LWIN:
-    case VK_RWIN:
-        pressedKeys->Win = replaceWith;
-        break;
-    case VK_CONTROL:
-    case VK_LCONTROL:
-    case VK_RCONTROL:
-        pressedKeys->Ctrl = replaceWith;
-        break;
-    case VK_SHIFT:
-    case VK_LSHIFT:
-    case VK_RSHIFT:
-        pressedKeys->Shift = replaceWith;
-        break;
-    case VK_MENU:
-    case VK_LMENU:
-    case VK_RMENU:
-        pressedKeys->Alt = replaceWith;
-        break;
-    default:
-        pressedKeys->Key = replaceWithKey;
-        break;
-    }
-}
-
-void HotkeyManager::UpdatePressedKeys(KeyboardEvent ^ ev)
-{
-    switch (ev->message)
-    {
-    case WM_KEYDOWN:
-    case WM_SYSKEYDOWN:
-    {
-        UpdatePressedKey(ev->key, true, ev->key);
-    }
-    break;
-    case WM_KEYUP:
-    case WM_SYSKEYUP:
-    {
-        UpdatePressedKey(ev->key, false, 0);
-    }
-    break;
-    }
 }

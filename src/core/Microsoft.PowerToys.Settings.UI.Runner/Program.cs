@@ -74,9 +74,6 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                         MessageBoxButton.OK);
                     app.Shutdown();
                 }
-
-                // Terminate all threads of the process
-                Environment.Exit(0);
             }
         }
 
