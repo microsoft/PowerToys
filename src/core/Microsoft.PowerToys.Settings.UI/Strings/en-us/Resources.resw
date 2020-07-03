@@ -312,7 +312,7 @@
     <value>Move newly created windows to their last known zone</value>
   </data>
   <data name="FancyZones_OpenWindowOnActiveMonitor.Content" xml:space="preserve">
-    <value>Open newly created windows on active monitor</value>
+    <value>Move newly created windows to the current active monitor</value>
   </data>
   <data name="FancyZones_UseCursorPosEditorStartupScreen.Content" xml:space="preserve">
     <value>Follow mouse cursor instead of focus when launching editor in a multi screen environment</value>

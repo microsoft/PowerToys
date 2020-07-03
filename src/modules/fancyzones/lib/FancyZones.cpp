@@ -30,7 +30,7 @@ enum class DisplayChangeType
 
 namespace
 {
-    constexpr int LEFT_TOP_PADDING = 10;
+    constexpr int CUSTOM_POSITIONING_LEFT_TOP_PADDING = 16;
     constexpr int CUSTOM_POSITIONING_MAX_RETRIES = 5;
     constexpr int CUSTOM_POSITIONING_WAIT_TIME = 200;
 }
@@ -459,14 +459,14 @@ RECT FitOnScreen(const RECT& windowRect, const RECT& originMonitorRect, const RE
     if ((left < destMonitorRect.left) || (left + W > destMonitorRect.right))
     {
         // Set left window border to left border of screen (add padding). Resize window width if needed.
-        left = destMonitorRect.left + LEFT_TOP_PADDING;
-        W = min(W, RectWidth(destMonitorRect) - LEFT_TOP_PADDING);
+        left = destMonitorRect.left + CUSTOM_POSITIONING_LEFT_TOP_PADDING;
+        W = min(W, RectWidth(destMonitorRect) - CUSTOM_POSITIONING_LEFT_TOP_PADDING);
     }
     if ((top < destMonitorRect.top) || (top + H > destMonitorRect.bottom))
     {
         // Set top window border to top border of screen (add padding). Resize window height if needed.
-        top = destMonitorRect.top + LEFT_TOP_PADDING;
-        H = min(H, RectHeight(destMonitorRect) - LEFT_TOP_PADDING);
+        top = destMonitorRect.top + CUSTOM_POSITIONING_LEFT_TOP_PADDING;
+        H = min(H, RectHeight(destMonitorRect) - CUSTOM_POSITIONING_LEFT_TOP_PADDING);
     }
 
     return { .left   = left,
@@ -522,7 +522,9 @@ IFACEMETHODIMP_(void)
 FancyZones::WindowCreated(HWND window) noexcept
 {
     std::shared_lock readLock(m_lock);
-    if (ShouldProcessNewWindow(window))
+    const bool moveToAppLastZone   = m_settings->GetSettings()->appLastZone_moveWindows;
+    const bool openOnActiveMonitor = m_settings->GetSettings()->openWindowOnActiveMonitor;
+    if ((moveToAppLastZone || openOnActiveMonitor) && ShouldProcessNewWindow(window))
     {
         HMONITOR primary = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
         HMONITOR active = primary;
@@ -534,7 +536,7 @@ FancyZones::WindowCreated(HWND window) noexcept
         }
 
         bool windowZoned{ false };
-        if (m_settings->GetSettings()->appLastZone_moveWindows)
+        if (moveToAppLastZone)
         {
             const bool primaryActive = (primary == active);
             std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> appZoneHistoryInfo = GetAppZoneHistoryInfo(window, active, primaryActive);
@@ -544,7 +546,7 @@ FancyZones::WindowCreated(HWND window) noexcept
                 windowZoned = true;
             }
         }
-        if (!windowZoned && m_settings->GetSettings()->openWindowOnActiveMonitor)
+        if (!windowZoned && openOnActiveMonitor)
         {
             m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] { OpenWindowOnActiveMonitor(window, active); } }).wait();
         }
