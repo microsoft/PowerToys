@@ -108,7 +108,7 @@ namespace Microsoft.Plugin.Indexer
             return new ContextMenuResult
             {
                 PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                Title = _context.API.GetTranslation("Microsoft_plugin_indexer_open_containing_folder"),
+                Title = _API.GetTranslation("Microsoft_plugin_indexer_open_containing_folder"),
                 Glyph = "\xE838",
                 FontFamily = "Segoe MDL2 Assets",
                 AcceleratorKey = Key.E,
