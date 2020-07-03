@@ -358,7 +358,7 @@ namespace Wox.Test.Plugins
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();
-            mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns("open in console");
+            mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
 
             // Act
             List<ContextMenuResult> contextMenuResults = pinned_webpage.ContextMenus(mock.Object);
@@ -373,7 +373,7 @@ namespace Wox.Test.Plugins
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();
-            mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns("open in console");
+            mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
 
             // Act
             List<ContextMenuResult> contextMenuResults = dummy_internetShortcut_app.ContextMenus(mock.Object);
@@ -388,7 +388,7 @@ namespace Wox.Test.Plugins
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();
-            mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns("open in console");
+            mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
 
             // Act
             List<ContextMenuResult> contextMenuResults = chrome.ContextMenus(mock.Object);
@@ -403,7 +403,7 @@ namespace Wox.Test.Plugins
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();
-            mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns("open in console");
+            mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
 
             // Act
             List<ContextMenuResult> contextMenuResults = cmd_run_command.ContextMenus(mock.Object);
@@ -412,22 +412,5 @@ namespace Wox.Test.Plugins
             Assert.AreEqual(contextMenuResults.Count, 3);
             mock.Verify(x => x.GetTranslation("wox_plugin_program_open_in_console"), Times.Once());
         }
-
-        //[Test]
-        //public void getUWPProgram()
-        //{
-        //    // Arrange
-        //    var x = new Main();
-        //    UWP.Application uwp_program = x.uwp;
-        //    var mock = new Mock<IPublicAPI>();
-        //    mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns("open in console");
-
-        //    // Act
-        //    List<ContextMenuResult> contextMenuResults = uwp_program.ContextMenus(mock.Object);
-
-        //    // Assert
-        //    Assert.AreEqual(contextMenuResults.Count, 3);
-        //    mock.Verify(x => x.GetTranslation("wox_plugin_program_open_in_console"), Times.Once());
-        //}
     }
 }
