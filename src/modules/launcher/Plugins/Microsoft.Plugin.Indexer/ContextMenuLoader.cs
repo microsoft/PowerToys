@@ -13,7 +13,7 @@ using System.Linq;
 
 namespace Microsoft.Plugin.Indexer
 {
-    internal class ContextMenuLoader : IContextMenu
+    public class ContextMenuLoader : IContextMenu
     {
         private readonly IPublicAPI _api;
 
@@ -46,7 +46,7 @@ namespace Microsoft.Plugin.Indexer
                 // Test to check if File can be Run as admin, if yes, we add a 'run as admin' context menu item
                 if(CanFileBeRunAsAdmin(record.Path))
                 {
-                    contextMenus.Add(CreateRunAsAdminResult(record));
+                    contextMenus.Add(CreateRunAsAdminContextMenu(record));
                 }
 
                 var fileOrFolder = (type == ResultType.File) ? "file" : "folder";
@@ -82,12 +82,12 @@ namespace Microsoft.Plugin.Indexer
         }
 
         // Function to add the context menu item to run as admin
-        private ContextMenuResult CreateRunAsAdminResult(SearchResult record)
+        private ContextMenuResult CreateRunAsAdminContextMenu(SearchResult record)
         {
             return new ContextMenuResult
             {
                 PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                Title = _api.GetTranslation("Run as admin"),
+                Title = _api.GetTranslation("Microsoft_plugin_indexer_run_as_admin"),
                 Glyph = "\xE7EF",
                 FontFamily = "Segoe MDL2 Assets",
                 AcceleratorKey = Key.Enter,

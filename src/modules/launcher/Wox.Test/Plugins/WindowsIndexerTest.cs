@@ -5,7 +5,9 @@ using System.Data.OleDb;
 using Microsoft.Search.Interop;
 using Microsoft.Plugin.Indexer.SearchHelper;
 using Microsoft.Plugin.Indexer.Interface;
+using Microsoft.Plugin.Indexer;
 using Moq;
+using Wox.Plugin;
 using System.Linq;
 
 namespace Wox.Test.Plugins
@@ -213,6 +215,27 @@ namespace Wox.Test.Plugins
             Assert.IsTrue(windowsSearchAPIResults.Count() == 1);
             Assert.IsFalse(windowsSearchAPIResults.Any(x => x.Title == "file1.txt"));
             Assert.IsTrue(windowsSearchAPIResults.Any(x => x.Title == "file2.txt"));
+        }
+
+        [Test]
+        public void LoadContextMenus_MustLoadRunAsAdmin_WhenFileIsAnApp()
+        {
+            // Arrange
+            var mockapi = new Mock<IPublicAPI>();
+            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path")).Returns("mocked translation");
+
+            ContextMenuLoader _contextMenuLoader = new ContextMenuLoader(mockapi.Object);
+
+            // Act
+            Result result = new Result
+            {
+                ContextData = new SearchResult { Path = "item.exe" }
+            };
+
+            List<ContextMenuResult> contextMenuItems = _contextMenuLoader.LoadContextMenus(result);
+
+            // Assert
+            Assert.IsTrue(contextMenuItems.Any(c => c.Title == "mocked translation"));
         }
     }
 }
