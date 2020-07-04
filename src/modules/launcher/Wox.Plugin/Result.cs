@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Windows;
 using System.Windows.Media;
+using System.Windows;
 
 namespace Wox.Plugin
 {
@@ -11,7 +11,7 @@ namespace Wox.Plugin
     {
 
         private string _title;
-        private string _toolTipText;
+        private ToolTipData _toolTipData;
         private string _pluginDirectory;
         private string _icoPath;
         public string Title { 
@@ -29,16 +29,16 @@ namespace Wox.Plugin
 
         public Visibility ToolTipVisibility { get; set; } = Visibility.Collapsed;
 
-        public string ToolTipText
+        public ToolTipData ToolTipData
         {
-            get { return _toolTipText; }
+            get
+            {
+                return _toolTipData;
+            }
             set
             {
-                if (!string.IsNullOrEmpty(value))
-                {
-                    ToolTipVisibility = Visibility.Visible;
-                    _toolTipText = value;
-                }
+                _toolTipData = value;
+                ToolTipVisibility = Visibility.Visible;
             }
         }
 

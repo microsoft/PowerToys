@@ -199,9 +199,9 @@ namespace Microsoft.Plugin.Program.Programs
                 result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
             }
 
-            var nameToolTip = string.Format("{0} : {1}", api.GetTranslation("powertoys_run_plugin_program_file_name"), result.Title);
-            var pathToolTip = string.Format("{0} : {1}", api.GetTranslation("powertoys_run_plugin_program_file_path"), FullPath);
-            result.ToolTipText = nameToolTip + Environment.NewLine + pathToolTip;
+            var toolTipTitle = string.Format("{0} : {1}", api.GetTranslation("powertoys_run_plugin_program_file_name"), result.Title);
+            var toolTipText = string.Format("{0} : {1}", api.GetTranslation("powertoys_run_plugin_program_file_path"), FullPath);
+            result.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
 
             return result;
         }

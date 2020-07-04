@@ -113,6 +113,13 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+            <Style x:Key="CollapsableTextblock" TargetType="TextBlock">
+                <Style.Triggers>
+                    <Trigger Property="Text" Value="">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -142,7 +149,7 @@
                         Width="642" 
                         Background="Transparent"
                         ToolTipService.BetweenShowDelay="0"
-                        ToolTipService.InitialShowDelay="1500"
+                        ToolTipService.InitialShowDelay="1000"
                         >
                         <Behaviors:Interaction.Triggers>
                             <Behaviors:EventTrigger EventName="MouseEnter">
@@ -167,10 +174,18 @@
                                 BorderThickness="1"
                                 BorderBrush="{DynamicResource ToolTipBorderBrushKey}"
                                 Background="{DynamicResource ToolTipBackgroundBrushKey}">
-                                <TextBlock 
-                                    Text="{Binding Result.ToolTipText}"
-                                    Foreground="{DynamicResource ToolTipForegroundBrushKey}"
-                                    TextWrapping="Wrap" />
+                                <StackPanel>
+                                    <TextBlock 
+                                        Style="{DynamicResource CollapsableTextblock}"
+                                        Text="{Binding Result.ToolTipData.Title}"
+                                        Foreground="{DynamicResource ToolTipForegroundBrushKey}"
+                                        TextWrapping="Wrap" />
+                                    <TextBlock 
+                                        Style="{DynamicResource CollapsableTextblock}"
+                                        Text="{Binding Result.ToolTipData.Text}"
+                                        Foreground="{DynamicResource ToolTipForegroundBrushKey}"
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
                             </ToolTip>
                         </Grid.ToolTip>
                         <Image x:Name="AppIcon" Height="36" MaxWidth="56" Grid.RowSpan="2" Margin="-6,-2,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />
