@@ -217,25 +217,85 @@ namespace Wox.Test.Plugins
             Assert.IsTrue(windowsSearchAPIResults.Any(x => x.Title == "file2.txt"));
         }
 
-        [Test]
-        public void LoadContextMenus_MustLoadRunAsAdmin_WhenFileIsAnApp()
+        [TestCase("item.exe")]
+        [TestCase("item.bat")]
+        [TestCase("item.appref-ms")]
+        [TestCase("item.lnk")]
+        public void LoadContextMenus_MustLoadRunAsAdmin_WhenFileIsAnApp(string path)
         {
             // Arrange
             var mockapi = new Mock<IPublicAPI>();
-            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path")).Returns("mocked translation");
+            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path")).Returns("copy path");
+            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_admin")).Returns("run as admin");
+            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder")).Returns("open folder");
 
             ContextMenuLoader _contextMenuLoader = new ContextMenuLoader(mockapi.Object);
 
             // Act
             Result result = new Result
             {
-                ContextData = new SearchResult { Path = "item.exe" }
+                ContextData = new SearchResult { Path = path }
             };
 
             List<ContextMenuResult> contextMenuItems = _contextMenuLoader.LoadContextMenus(result);
 
             // Assert
-            Assert.IsTrue(contextMenuItems.Any(c => c.Title == "mocked translation"));
+            Assert.IsTrue(contextMenuItems.Any(c => c.Title.Equals("copy path")));
+            Assert.IsTrue(contextMenuItems.Any(c => c.Title.Equals("run as admin")));
+            Assert.IsTrue(contextMenuItems.Any(c => c.Title.Equals("open folder")));
+        }
+
+        [TestCase("item.pdf")]
+        [TestCase("item.xls")]
+        [TestCase("item.ppt")]
+        public void LoadContextMenus_MustNotLoadRunAsAdmin_WhenFileIsAnNotApp(string path)
+        {
+            // Arrange
+            var mockapi = new Mock<IPublicAPI>();
+            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path")).Returns("copy path");
+            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_admin")).Returns("run as admin");
+            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder")).Returns("open folder");
+
+            ContextMenuLoader _contextMenuLoader = new ContextMenuLoader(mockapi.Object);
+
+            // Act
+            Result result = new Result
+            {
+                ContextData = new SearchResult { Path = path }
+            };
+
+            List<ContextMenuResult> contextMenuItems = _contextMenuLoader.LoadContextMenus(result);
+
+            // Assert
+            Assert.IsTrue(contextMenuItems.Any(c => c.Title.Equals("copy path")));
+            Assert.IsFalse(contextMenuItems.Any(c => c.Title.Equals("run as admin")));
+            Assert.IsTrue(contextMenuItems.Any(c => c.Title.Equals("open folder")));
+        }
+
+        [TestCase("C:/PowerToys")]
+        [TestCase("TestFolder")]
+        public void LoadContextMenus_MustNotLoadRunAsAdmin_ForFolder(string path)
+        {
+            // Arrange
+            var mockapi = new Mock<IPublicAPI>();
+            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path")).Returns("copy path");
+            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_admin")).Returns("run as admin");
+            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder")).Returns("open folder");
+
+            ContextMenuLoader _contextMenuLoader = new ContextMenuLoader(mockapi.Object);
+
+            // Act
+            Result result = new Result
+            {
+                ContextData = new SearchResult { Path = path }
+            };
+
+            List<ContextMenuResult> contextMenuItems = _contextMenuLoader.LoadContextMenus(result);
+
+            // Assert
+            Assert.IsTrue(contextMenuItems.Any(c => c.Title.Equals("copy path")));
+            Assert.IsFalse(contextMenuItems.Any(c => c.Title.Equals("run as admin")));
+            Assert.IsFalse(contextMenuItems.Any(c => c.Title.Equals("open folder")));
         }
     }
 }
