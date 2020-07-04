@@ -45,26 +45,27 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     targetAppTextBox.Width(100);
     targetAppTextBox.VerticalAlignment(VerticalAlignment::Center);
     targetAppTextBox.HorizontalAlignment(HorizontalAlignment::Left);
-
-    auto initializeAppSpecificBuffer = [&, targetAppTextBox]() {
-        std::wstring appName = targetAppTextBox.Text().c_str();
-    };
-
-    // LosingFocus handler will be called whenever text is updated by a user and then they click something else or tab to another control. Does not get called if Text is updated while the TextBox isn't in focus (i.e. from code)
-    targetAppTextBox.LosingFocus([initializeAppSpecificBuffer, targetAppTextBox](auto const& sender, auto const& e) {
-        initializeAppSpecificBuffer();
-    });
-
-    // TextChanged handler is called after every character is changed in text. Required for cases not handled in the LosingFocus handler
-    targetAppTextBox.TextChanged([initializeAppSpecificBuffer, targetAppTextBox](Windows::Foundation::IInspectable const& sender, Windows::UI::Xaml::Controls::TextChangedEventArgs const& e) {
-        // This should be called only when the textbox isn't in focus
-        if (targetAppTextBox.FocusState() == FocusState::Unfocused)
-        {
-            initializeAppSpecificBuffer();
-        }
-    });
-    
     targetAppTextBox.Text(targetAppName);
+
+    // LostFocus handler will be called whenever text is updated by a user and then they click something else or tab to another control. Does not get called if Text is updated while the TextBox isn't in focus (i.e. from code)
+    targetAppTextBox.LostFocus([&keyboardRemapControlObjects, parent, targetAppTextBox](auto const& sender, auto const& e) {
+        // Get index of targetAppTextBox button
+        UIElementCollection children = parent.Children();
+        uint32_t index;
+        children.IndexOf(targetAppTextBox, index);
+        uint32_t lastIndexInRow = index + ((KeyboardManagerConstants::ShortcutTableColCount - 1) - KeyboardManagerConstants::ShortcutTableTargetAppColIndex);
+        // Calculate row index in the buffer from the grid child index (first set of children are header elements and then three children in each row)
+        int rowIndex = (lastIndexInRow - KeyboardManagerConstants::ShortcutTableHeaderCount) / KeyboardManagerConstants::ShortcutTableColCount;
+
+        // Validate both set of drop downs
+        KeyDropDownControl::ValidateShortcutFromDropDownList(parent, keyboardRemapControlObjects[rowIndex][0]->getShortcutControl(), keyboardRemapControlObjects[rowIndex][0]->shortcutDropDownStackPanel, 0, ShortcutControl::shortcutRemapBuffer, keyboardRemapControlObjects[rowIndex][0]->keyDropDownControlObjects, targetAppTextBox);
+        KeyDropDownControl::ValidateShortcutFromDropDownList(parent, keyboardRemapControlObjects[rowIndex][1]->getShortcutControl(), keyboardRemapControlObjects[rowIndex][1]->shortcutDropDownStackPanel, 1, ShortcutControl::shortcutRemapBuffer, keyboardRemapControlObjects[rowIndex][1]->keyDropDownControlObjects, targetAppTextBox);
+
+        // Reset the buffer based on the selected drop down items
+        shortcutRemapBuffer[rowIndex].first[0].SetKeyCodes(KeyDropDownControl::GetKeysFromStackPanel(keyboardRemapControlObjects[rowIndex][0]->shortcutDropDownStackPanel));
+        shortcutRemapBuffer[rowIndex].first[1].SetKeyCodes(KeyDropDownControl::GetKeysFromStackPanel(keyboardRemapControlObjects[rowIndex][1]->shortcutDropDownStackPanel));
+        shortcutRemapBuffer[rowIndex].second = targetAppTextBox.Text().c_str();
+    });
 
     parent.SetColumn(targetAppTextBox, KeyboardManagerConstants::ShortcutTableTargetAppColIndex);
     parent.SetRow(targetAppTextBox, parent.RowDefinitions().Size() - 1);
@@ -97,7 +98,7 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
             parent.Children().RemoveAt(lastIndexInRow - i);
         }
 
-        // Calculate row index in the buffer from the grid child index (first two children are header elements and then three children in each row)
+        // Calculate row index in the buffer from the grid child index (first set of children are header elements and then three children in each row)
         int bufferIndex = (lastIndexInRow - KeyboardManagerConstants::ShortcutTableHeaderCount) / KeyboardManagerConstants::ShortcutTableColCount;
         // Delete the row definition
         parent.RowDefinitions().RemoveAt(bufferIndex + 1);
@@ -115,7 +116,7 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     if (originalKeys.IsValidShortcut() && newKeys.IsValidShortcut())
     {
         // change to load app name
-        shortcutRemapBuffer.push_back(std::make_pair<std::vector<Shortcut>, std::wstring>(std::vector<Shortcut>{ Shortcut(), Shortcut()}, std::wstring(targetAppName)));
+        shortcutRemapBuffer.push_back(std::make_pair<std::vector<Shortcut>, std::wstring>(std::vector<Shortcut>{ Shortcut(), Shortcut() }, std::wstring(targetAppName)));
         keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->AddShortcutToControl(originalKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutDropDownStackPanel, *keyboardManagerState, 0, targetAppTextBox);
         keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->AddShortcutToControl(newKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->shortcutDropDownStackPanel, *keyboardManagerState, 1, targetAppTextBox);
     }

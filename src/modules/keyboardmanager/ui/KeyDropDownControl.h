@@ -56,6 +56,24 @@ public:
     // Function to check if a modifier has been repeated in the previous drop downs
     static bool CheckRepeatedModifier(StackPanel parent, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList);
 
+    // Function for validating the selection of shortcuts for all the associated drop downs
+    static void ValidateShortcutFromDropDownList(Grid table, StackPanel shortcutControl, StackPanel parent, int colIndex, std::vector<std::pair<std::vector<Shortcut>, std::wstring>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox targetApp)
+    {
+        // Iterate over all drop downs from left to right in that row/col and validate if there is an error in any of the drop downs. After this the state should be error-free (if it is a valid shortcut)
+        for (int i = 0; i < keyDropDownControlObjects.size(); i++)
+        {
+            // Check for errors only if the current selection is a valid shortcut
+            Shortcut tempComputedShortcut;
+            tempComputedShortcut.SetKeyCodes(keyDropDownControlObjects[i]->GetKeysFromStackPanel(parent));
+
+            // If the shortcut is valid and that drop down is not empty
+            if (tempComputedShortcut.IsValidShortcut() && keyDropDownControlObjects[i]->GetComboBox().SelectedIndex() != -1)
+            {
+                keyDropDownControlObjects[i]->ValidateShortcutSelection(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp);
+            }
+        }
+    }
+
     // Function to set the warning message
     void SetDropDownError(ComboBox currentDropDown, hstring message);
 };
