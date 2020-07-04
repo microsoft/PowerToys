@@ -19,6 +19,7 @@ namespace FancyZonesEditor.Models
         {
             lastWorkAreaWidth = workAreaWidth;
             lastWorkAreaHeight = workAreaHeight;
+            IsScaled = false;
 
             if (ShouldScaleLayout())
             {
@@ -33,6 +34,7 @@ namespace FancyZonesEditor.Models
         public CanvasLayoutModel(string name, LayoutType type)
         : base(name, type)
         {
+            IsScaled = false;
         }
 
         // Zones - the list of all zones in this layout, described as independent rectangles
@@ -41,6 +43,8 @@ namespace FancyZonesEditor.Models
         private int lastWorkAreaWidth = (int)Settings.WorkArea.Width;
 
         private int lastWorkAreaHeight = (int)Settings.WorkArea.Height;
+
+        public bool IsScaled { get; private set; }
 
         // RemoveZoneAt
         //  Removes the specified index from the Zones list, and fires a property changed notification for the Zones property
@@ -107,6 +111,7 @@ namespace FancyZonesEditor.Models
 
             lastWorkAreaHeight = (int)Settings.WorkArea.Height;
             lastWorkAreaWidth = (int)Settings.WorkArea.Width;
+            IsScaled = true;
         }
 
         private struct Zone
