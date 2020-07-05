@@ -8,6 +8,7 @@
   <?define KeyboardManagerProjectName="KeyboardManager"?>
   <?define PowerRenameProjectName="PowerRename"?>
   <?define ShortcutGuideProjectName="ShortcutGuide"?>
+  <?define ColorPickerProjectName="ColorPicker"?>
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
@@ -241,6 +242,9 @@
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
             <Directory Id="KeyboardManagerInstallFolder" Name="$(var.KeyboardManagerProjectName)" />
+            <Directory Id="ColorPickerInstallFolder" Name="$(var.ColorPickerProjectName)">
+              <Directory Id="ColorPickerResourcesFolder" Name="Resources"/>
+            </Directory>
             <Directory Id="LauncherInstallFolder" Name="launcher">
               <Directory Id="AssetsFolder" Name="Assets" />
               <Directory Id="LauncherImagesFolder" Name="Images" />               
@@ -583,6 +587,22 @@
       </Component>
     </DirectoryRef>
 
+    <DirectoryRef Id="ColorPickerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)">
+      <Component Id="Module_ColorPicker" Guid="8A52A69E-37B2-4BEA-9D73-77763066052F" Win64="yes">
+        <?foreach File in ColorPicker.dll;ColorPicker.exe;Microsoft.Bcl.AsyncInterfaces.dll;Microsoft.Expression.Interactions.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToysInterop.dll;System.Buffers.dll;System.Memory.dll;System.Numerics.Vectors.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;System.Threading.Tasks.Extensions.dll;System.ValueTuple.dll;System.Windows.Interactivity.dll;Telemetry.dll?>
+        <File Id="ColorPickerFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.File)" />
+        <?endforeach?>
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="ColorPickerResourcesFolder" FileSource="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\Resources">
+      <Component Id="Module_ColorPicker_Resources" Guid="7544BD0F-1DB6-4C53-89D3-ADAD472FDCC1">
+        <?foreach File in colorPicker.cur;icon.ico?>
+        <File Id="ColorPickerFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\Resources\$(var.File)" />
+        <?endforeach?>
+      </Component>
+    </DirectoryRef>
+
     <DirectoryRef Id="FileExplorerPreviewInstallFolder" FileSource="$(var.RepoDir)\modules\FileExplorerPreview\">
       <Component Id="Module_PowerPreview" Guid="FF1700D5-1B07-4E07-9A62-4D206645EEA9" Win64="yes">
         <!-- Component to include PowerPreview Module Source dll's -->
@@ -741,6 +761,8 @@
       <ComponentRef Id="Module_PowerPreview" />
       <ComponentRef Id="Module_PowerPreview_PerUserRegistry" />
       <ComponentRef Id="Module_KeyboardManager" />
+      <ComponentRef Id="Module_ColorPicker" />
+      <ComponentRef Id="Module_ColorPicker_Resources"/>
       <ComponentRef Id="SettingsV2" />
       <ComponentRef Id="SettingsV2Assets" />
       <ComponentRef Id="SettingsV2Controls" />

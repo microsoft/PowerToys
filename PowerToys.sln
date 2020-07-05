@@ -255,6 +255,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerTest", "src\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagedCommon", "src\common\ManagedCommon\ManagedCommon.csproj", "{4AED67B6-55FD-486F-B917-E543DEE2CB3C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "colorPicker", "colorPicker", "{2EB61196-0692-467C-BBF7-91135B20ECF7}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ColorPicker", "src\modules\colorPicker\ColorPicker\ColorPicker.vcxproj", "{655C9AF2-18D3-4DA6-80E4-85504A7722BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColorPickerUI", "src\modules\colorPicker\ColorPickerUI\ColorPickerUI.csproj", "{BA58206B-1493-4C75-BFEA-A85768A1E156}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -501,6 +507,14 @@ Global
 		{4AED67B6-55FD-486F-B917-E543DEE2CB3C}.Debug|x64.Build.0 = Debug|x64
 		{4AED67B6-55FD-486F-B917-E543DEE2CB3C}.Release|x64.ActiveCfg = Release|x64
 		{4AED67B6-55FD-486F-B917-E543DEE2CB3C}.Release|x64.Build.0 = Release|x64
+		{655C9AF2-18D3-4DA6-80E4-85504A7722BA}.Debug|x64.ActiveCfg = Debug|x64
+		{655C9AF2-18D3-4DA6-80E4-85504A7722BA}.Debug|x64.Build.0 = Debug|x64
+		{655C9AF2-18D3-4DA6-80E4-85504A7722BA}.Release|x64.ActiveCfg = Release|x64
+		{655C9AF2-18D3-4DA6-80E4-85504A7722BA}.Release|x64.Build.0 = Release|x64
+		{BA58206B-1493-4C75-BFEA-A85768A1E156}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BA58206B-1493-4C75-BFEA-A85768A1E156}.Debug|x64.Build.0 = Debug|Any CPU
+		{BA58206B-1493-4C75-BFEA-A85768A1E156}.Release|x64.ActiveCfg = Release|Any CPU
+		{BA58206B-1493-4C75-BFEA-A85768A1E156}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

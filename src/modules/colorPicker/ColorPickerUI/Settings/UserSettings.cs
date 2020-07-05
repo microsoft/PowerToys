@@ -1,0 +1,78 @@
+﻿using System.IO;
+using System.ComponentModel.Composition;
+using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using ColorPicker.Helpers;
+using System.Threading.Tasks;
+using System.Threading;
+
+namespace ColorPicker.Settings
+{
+    [Export(typeof(IUserSettings))]
+    public class UserSettings : IUserSettings
+    {
+        private const string ColorPickerModuleName = "ColorPicker";
+        private const string DefaultActivationShortcut = "Ctrl + Break";
+        private const int MaxNumberOfRetry = 5;
+        private FileSystemWatcher _watcher;
+
+        private object _loadingSettingsLock = new object();
+
+        [ImportingConstructor]
+        public UserSettings()
+        {
+            ChangeCursor = new SettingItem<bool>(true);
+            ActivationShortcut = new SettingItem<string>(DefaultActivationShortcut);
+            CopiedColorRepresentation = new SettingItem<ColorRepresentationType>(ColorRepresentationType.HEX);
+
+            _watcher = Helper.GetFileWatcher(ColorPickerModuleName, "settings.json", LoadSettingsFromJson);
+
+            LoadSettingsFromJson();
+        }
+
+        public SettingItem<string> ActivationShortcut { get; private set; }
+
+        public SettingItem<bool> ChangeCursor { get; private set; }
+
+        public SettingItem<ColorRepresentationType> CopiedColorRepresentation { get; set; }
+
+        private void LoadSettingsFromJson()
+        {
+            // TODO this IO call should by Async, update GetFileWatcher helper to support async
+            lock (_loadingSettingsLock)
+            {
+                {
+                    var retry = true;
+                    var retryCount = 0;
+
+                    while (retry)
+                    {
+                        try
+                        {
+                            retryCount++;
+
+                            var settings = SettingsUtils.GetSettings<ColorPickerSettings>(ColorPickerModuleName);
+                            if (settings != null)
+                            {
+                                ChangeCursor.Value = settings.properties.ChangeCursor;
+                                ActivationShortcut.Value = settings.properties.ActivationShortcut.ToString();
+                                CopiedColorRepresentation.Value = settings.properties.CopiedColorRepresentation;
+                            }
+
+                            retry = false;
+                        }
+                        catch (IOException ex)
+                        {
+                            if (retryCount > MaxNumberOfRetry)
+                            {
+                                retry = false;
+                            }
+                            Logger.LogError("Failed to read changed settings", ex);
+                            Thread.Sleep(500);
+                        }
+                    }
+                };
+            }
+        }
+    }
+}
