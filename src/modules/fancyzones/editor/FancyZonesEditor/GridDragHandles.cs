@@ -284,9 +284,169 @@ namespace FancyZonesEditor
             }
         }
 
+        public void UpdateAfterDragSplit(GridResizer resizer, double delta)
+        {
+            Action differentOrientationResizersUpdate = () =>
+            {
+                foreach (GridResizer r in _resizers)
+                {
+                    if (r.Orientation != resizer.Orientation)
+                    {
+                        if (resizer.Orientation == Orientation.Vertical)
+                        {
+                            if (delta > 0)
+                            {
+                                bool isInside = r.StartRow >= resizer.StartRow && r.EndRow < resizer.EndRow;
+
+                                if (r.StartCol > resizer.StartCol || (r.StartCol == resizer.StartCol && isInside))
+                                {
+                                    r.StartCol++;
+                                }
+
+                                if (r.EndCol > resizer.StartCol || (r.EndCol == resizer.StartCol && isInside))
+                                {
+                                    r.EndCol++;
+                                }
+                            }
+                            else
+                            {
+                                bool isOutside = r.StartRow >= resizer.EndRow || r.EndRow <= resizer.StartRow;
+
+                                if (r.StartCol > resizer.StartCol || (r.StartCol == resizer.StartCol && isOutside))
+                                {
+                                    r.StartCol++;
+                                }
+
+                                if (r.EndCol > resizer.EndCol || (r.EndCol == resizer.EndCol && isOutside))
+                                {
+                                    r.EndCol++;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (delta > 0)
+                            {
+                                bool isInside = r.StartCol >= resizer.StartCol && r.EndCol < resizer.EndCol;
+
+                                if (r.StartRow > resizer.StartRow || (r.StartRow == resizer.StartRow && isInside))
+                                {
+                                    r.StartRow++;
+                                }
+
+                                if (r.EndRow > resizer.StartRow || (r.EndRow == resizer.StartRow && isInside))
+                                {
+                                    r.EndRow++;
+                                }
+                            }
+                            else
+                            {
+                                bool isOutside = r.StartCol >= resizer.EndCol || r.EndCol <= resizer.StartCol;
+
+                                if (r.StartRow > resizer.StartRow || (r.StartRow == resizer.StartRow && isOutside))
+                                {
+                                    r.StartRow++;
+                                }
+
+                                if (r.EndRow > resizer.EndRow || (r.EndRow == resizer.EndRow && isOutside))
+                                {
+                                    r.EndRow++;
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            Action sameOrientationResizersUpdate = () =>
+            {
+                foreach (GridResizer r in _resizers)
+                {
+                    bool notEqual = r.StartRow != resizer.StartRow || r.EndRow != resizer.EndRow || r.StartCol != resizer.StartCol || r.EndCol != resizer.EndCol;
+                    if (r.Orientation == resizer.Orientation)
+                    {
+                        if (resizer.Orientation == Orientation.Horizontal)
+                        {
+                            if (r.StartRow > resizer.StartRow)
+                            {
+                                r.StartRow++;
+                            }
+
+                            if (r.EndRow > resizer.StartRow && notEqual)
+                            {
+                                r.EndRow++;
+                            }
+                        }
+                        else
+                        {
+                            if (r.StartCol > resizer.StartCol)
+                            {
+                                r.StartCol++;
+                            }
+
+                            if (r.EndCol > resizer.StartCol && notEqual)
+                            {
+                                r.EndCol++;
+                            }
+                        }
+                    }
+                }
+            };
+
+            sameOrientationResizersUpdate();
+
+            if (delta > 0)
+            {
+                IncreaseResizerValues(resizer, resizer.Orientation);
+            }
+
+            differentOrientationResizersUpdate();
+        }
+
         public void RemoveDragHandles()
         {
             _resizers.Clear();
+        }
+
+        public bool HasSnappedNonAdjascentResizers(GridResizer resizer)
+        {
+            /**
+             * Resizers between zones 0,1 and 4,5 are snapped to each other and not adjascent.
+             * ------------------------------
+             * |      0      |      1       |
+             * ------------------------------
+             * |          2         |   3   |
+             * ------------------------------
+             * |      4      |      5       |
+             * ------------------------------
+             * 
+             * Resizers between zones 0,1 and 2,3 are snapped to each other and adjascent.
+             * ------------------------------
+             * |      0      |      1       |
+             * ------------------------------
+             * |      2      |      3       |
+             * ------------------------------
+             * |          4         |   5   |
+             * ------------------------------
+             *
+             * Vertical resizers should have same StartColumn and different StartRow.
+             * Horizontal resizers should have same StartRow and different StartColumn.
+             * Difference between rows or colums should be more than 1.
+             */
+            foreach (GridResizer r in _resizers)
+            {
+                if (r.Orientation == resizer.Orientation)
+                {
+                    bool isHorizontalSnapped = resizer.Orientation == Orientation.Horizontal && r.StartRow == resizer.StartRow && (Math.Abs(resizer.StartCol - r.StartCol) > 1);
+                    bool isVerticalSnapped = resizer.Orientation == Orientation.Vertical && r.StartCol == resizer.StartCol && (Math.Abs(resizer.StartRow - r.StartRow) > 1);
+                    if (isHorizontalSnapped || isVerticalSnapped)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private static void IncreaseResizerValues(GridResizer resizer, Orientation orientation)

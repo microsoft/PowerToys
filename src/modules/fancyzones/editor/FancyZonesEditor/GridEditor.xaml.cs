@@ -385,16 +385,31 @@ namespace FancyZonesEditor
             GridData.ResizeInfo resizeInfo = _data.CalculateResizeInfo(resizer, delta);
             if (resizeInfo.IsResizeAllowed)
             {
-                _data.DragResizer(resizer, resizeInfo);
-                if (_data.SwapNegativePercents(resizer.Orientation, resizer.StartRow, resizer.EndRow, resizer.StartCol, resizer.EndCol))
+                if (_dragHandles.HasSnappedNonAdjascentResizers(resizer))
                 {
-                    _dragHandles.UpdateAfterNegativeSwap(resizer, delta);
-                }
+                    double spacing = 0;
+                    Settings settings = ((App)Application.Current).ZoneSettings;
+                    if (settings.ShowSpacing)
+                    {
+                        spacing = settings.Spacing;
+                    }
 
-                Size actualSize = new Size(ActualWidth, ActualHeight);
-                ArrangeGridRects(actualSize);
-                AdornerLayer.UpdateLayout();
+                    _data.SplitOnDrag(resizer, delta, spacing, ActualWidth, ActualHeight);
+                    _dragHandles.UpdateAfterDragSplit(resizer, delta);
+                }
+                else
+                {
+                    _data.DragResizer(resizer, resizeInfo);
+                    if (_data.SwapNegativePercents(resizer.Orientation, resizer.StartRow, resizer.EndRow, resizer.StartCol, resizer.EndCol))
+                    {
+                        _dragHandles.UpdateAfterNegativeSwap(resizer, delta);
+                    }
+                }
             }
+
+            Size actualSize = new Size(ActualWidth, ActualHeight);
+            ArrangeGridRects(actualSize);
+            AdornerLayer.UpdateLayout();
         }
 
         private void Resizer_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
