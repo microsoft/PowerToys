@@ -33,7 +33,7 @@
 
     <system:String x:Key="wox_plugin_program_plugin_name">Programy</system:String>
     <system:String x:Key="wox_plugin_program_plugin_description">Szukaj i uruchamiaj programy z poziomu Woxa</system:String>
-    <system:String x:Key="wox_plugin_program_open_in_console">Open in console (Ctrl+Shift+C)</system:String>
+    <system:String x:Key="wox_plugin_program_open_in_console">Open path in console (Ctrl+Shift+C)</system:String>
 
     <!--Application subtitle-->
     <system:String x:Key="powertoys_run_plugin_program_win32_application">Application</system:String>
