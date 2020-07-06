@@ -614,24 +614,22 @@ namespace KeyboardEventHandlers
             std::transform(process_name.begin(), process_name.end(), process_name.begin(), towlower);
 
             std::unique_lock<std::mutex> lock(keyboardManagerState.appSpecificShortcutReMap_mutex);
+            std::wstring query_string = process_name;
+            auto it = keyboardManagerState.appSpecificShortcutReMap.find(query_string);
 
-            // Check if any of the app names in the shortcut remap set is a substring of the current process name - this allows users to add edge rather than msedge.exe
-            auto it = std::find_if(keyboardManagerState.appSpecificShortcutReMap.begin(), keyboardManagerState.appSpecificShortcutReMap.end(), [&process_name](const std::pair<std::wstring, std::map<Shortcut, RemapShortcut>> appSpecificMap) {
-                // check if the key is a substring of the process name
-                if (process_name.find(appSpecificMap.first) != std::wstring::npos)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            });
+            // If no entry is found, search for the process name without it's file extension
+            if (it == keyboardManagerState.appSpecificShortcutReMap.end())
+            {
+                // Find index of the file extension
+                size_t extensionIndex = process_name.find_last_of(L".");
+                query_string = process_name.substr(0, extensionIndex);
+                it = keyboardManagerState.appSpecificShortcutReMap.find(query_string);
+            }
 
             if (it != keyboardManagerState.appSpecificShortcutReMap.end())
             {
                 lock.unlock();
-                bool result = HandleShortcutRemapEvent(ii, data, it->second, keyboardManagerState.appSpecificShortcutReMap_mutex);
+                bool result = HandleShortcutRemapEvent(ii, data, keyboardManagerState.appSpecificShortcutReMap[query_string], keyboardManagerState.appSpecificShortcutReMap_mutex);
                 return result;
             }
         }
