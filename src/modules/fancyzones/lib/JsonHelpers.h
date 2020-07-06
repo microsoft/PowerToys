@@ -258,7 +258,6 @@ namespace JSONHelpers
         json::JsonArray SerializeDeviceInfos() const;
         bool ParseCustomZoneSets(const json::JsonObject& fancyZonesDataJSON);
         json::JsonArray SerializeCustomZoneSets() const;
-        void CustomZoneSetsToJsonFile(std::wstring_view filePath) const;
 
         void LoadFancyZonesData();
         void SaveFancyZonesData() const;

@@ -371,17 +371,7 @@ public:
         }
 
         // Handle an os-level shortcut remapping
-        intptr_t OSLevelShortcutRemapResult = KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(inputHandler, data, keyboardManagerState);
-
-        // If any of the supported types of remappings took place, then suppress the key event
-        if ((SingleKeyRemapResult + OSLevelShortcutRemapResult + AppSpecificShortcutRemapResult) > 0)
-        {
-            return 1;
-        }
-        else
-        {
-            return 0;
-        }
+        return KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(inputHandler, data, keyboardManagerState);
     }
 };
 
