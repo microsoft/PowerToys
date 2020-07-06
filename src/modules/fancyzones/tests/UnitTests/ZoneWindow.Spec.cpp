@@ -86,11 +86,11 @@ namespace FancyZonesUnitTests
 
             Assert::IsFalse(ZoneWindowUtils::GetActiveZoneSetTmpPath().empty());
             Assert::IsFalse(ZoneWindowUtils::GetAppliedZoneSetTmpPath().empty());
-            Assert::IsFalse(ZoneWindowUtils::GetCustomZoneSetsTmpPath().empty());
+            Assert::IsFalse(ZoneWindowUtils::GetDeletedCustomZoneSetsTmpPath().empty());
 
             Assert::IsFalse(std::filesystem::exists(ZoneWindowUtils::GetActiveZoneSetTmpPath()));
             Assert::IsFalse(std::filesystem::exists(ZoneWindowUtils::GetAppliedZoneSetTmpPath()));
-            Assert::IsFalse(std::filesystem::exists(ZoneWindowUtils::GetCustomZoneSetsTmpPath()));
+            Assert::IsFalse(std::filesystem::exists(ZoneWindowUtils::GetDeletedCustomZoneSetsTmpPath()));
 
             m_fancyZonesData.SetSettingsModulePath(L"FancyZonesUnitTests");
             m_fancyZonesData.clear_data();
@@ -101,7 +101,7 @@ namespace FancyZonesUnitTests
             //cleanup temp files if were created
             std::filesystem::remove(ZoneWindowUtils::GetActiveZoneSetTmpPath());
             std::filesystem::remove(ZoneWindowUtils::GetAppliedZoneSetTmpPath());
-            std::filesystem::remove(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
+            std::filesystem::remove(ZoneWindowUtils::GetDeletedCustomZoneSetsTmpPath());
 
             m_zoneWindow = nullptr;
         }
@@ -295,7 +295,7 @@ namespace FancyZonesUnitTests
             //save required data
             const auto activeZoneSetTempPath = ZoneWindowUtils::GetActiveZoneSetTmpPath();
             const auto appliedZoneSetTempPath = ZoneWindowUtils::GetAppliedZoneSetTmpPath();
-            const auto deletedZonesTempPath = ZoneWindowUtils::GetCustomZoneSetsTmpPath();
+            const auto deletedZonesTempPath = ZoneWindowUtils::GetDeletedCustomZoneSetsTmpPath();
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::Custom;
             const auto customSetGuid = Helpers::CreateGuidString();
@@ -341,7 +341,7 @@ namespace FancyZonesUnitTests
             //save required data
             const auto activeZoneSetTempPath = ZoneWindowUtils::GetActiveZoneSetTmpPath();
             const auto appliedZoneSetTempPath = ZoneWindowUtils::GetAppliedZoneSetTmpPath();
-            const auto deletedZonesTempPath = ZoneWindowUtils::GetCustomZoneSetsTmpPath();
+            const auto deletedZonesTempPath = ZoneWindowUtils::GetDeletedCustomZoneSetsTmpPath();
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::Custom;
             const auto customSetGuid = Helpers::CreateGuidString();

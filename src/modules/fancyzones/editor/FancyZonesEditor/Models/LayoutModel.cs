@@ -154,7 +154,7 @@ namespace FancyZonesEditor.Models
             try
             {
                 string jsonString = JsonSerializer.Serialize(deletedLayouts, options);
-                File.WriteAllText(Settings.CustomZoneSetsTmpFile, jsonString);
+                File.WriteAllText(Settings.DeletedCustomZoneSetsTmpFile, jsonString);
             }
             catch (Exception ex)
             {
@@ -169,7 +169,7 @@ namespace FancyZonesEditor.Models
 
             try
             {
-                FileStream inputStream = File.Open(Settings.CustomZoneSetsTmpFile, FileMode.Open);
+                FileStream inputStream = File.Open(Settings.FancyZonesSettingsFile, FileMode.Open);
                 JsonDocument jsonObject = JsonDocument.Parse(inputStream, options: default);
                 JsonElement.ArrayEnumerator customZoneSetsEnumerator = jsonObject.RootElement.GetProperty("custom-zone-sets").EnumerateArray();
 
