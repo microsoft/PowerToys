@@ -225,11 +225,12 @@ namespace Wox.Test.Plugins
         {
             // Arrange
             var mockapi = new Mock<IPublicAPI>();
+            var pluginInitContext = new PluginInitContext() { API = mockapi.Object };
             mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path")).Returns("copy path");
-            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_admin")).Returns("run as admin");
+            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_administrator")).Returns("run as admin");
             mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder")).Returns("open folder");
 
-            ContextMenuLoader _contextMenuLoader = new ContextMenuLoader(mockapi.Object);
+            ContextMenuLoader _contextMenuLoader = new ContextMenuLoader(pluginInitContext);
 
             // Act
             Result result = new Result
@@ -252,11 +253,12 @@ namespace Wox.Test.Plugins
         {
             // Arrange
             var mockapi = new Mock<IPublicAPI>();
+            var pluginInitContext = new PluginInitContext() { API = mockapi.Object };
             mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path")).Returns("copy path");
-            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_admin")).Returns("run as admin");
+            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_administrator")).Returns("run as admin");
             mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder")).Returns("open folder");
 
-            ContextMenuLoader _contextMenuLoader = new ContextMenuLoader(mockapi.Object);
+            ContextMenuLoader _contextMenuLoader = new ContextMenuLoader(pluginInitContext);
 
             // Act
             Result result = new Result
@@ -278,11 +280,12 @@ namespace Wox.Test.Plugins
         {
             // Arrange
             var mockapi = new Mock<IPublicAPI>();
+            var pluginInitContext = new PluginInitContext() { API = mockapi.Object };
             mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path")).Returns("copy path");
-            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_admin")).Returns("run as admin");
+            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_administrator")).Returns("run as admin");
             mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder")).Returns("open folder");
 
-            ContextMenuLoader _contextMenuLoader = new ContextMenuLoader(mockapi.Object);
+            ContextMenuLoader _contextMenuLoader = new ContextMenuLoader(pluginInitContext);
 
             // Act
             Result result = new Result
