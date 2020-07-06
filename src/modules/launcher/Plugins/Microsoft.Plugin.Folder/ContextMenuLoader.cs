@@ -75,7 +75,7 @@ namespace Microsoft.Plugin.Folder
                     {
                         try
                         {
-                            if (fileOrFolder == "file")
+                            if (record.Type == ResultType.File)
                             {
                                 Helper.OpenInConsole(Path.GetDirectoryName(record.FullPath));
                             }

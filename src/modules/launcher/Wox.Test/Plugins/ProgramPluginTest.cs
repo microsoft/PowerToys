@@ -26,7 +26,7 @@ namespace Wox.Test.Plugins
             AppType = 2
         };
 
-        Win32 notepad_users = new Win32
+        static Win32 notepad_users = new Win32
         {
             Name = "Notepad",
             ExecutableName = "notepad.exe",
@@ -35,7 +35,7 @@ namespace Wox.Test.Plugins
             AppType = 2
         };
 
-        Win32 azure_command_prompt = new Win32
+        static Win32 azure_command_prompt = new Win32
         {
             Name = "Microsoft Azure Command Prompt - v2.9",
             ExecutableName = "cmd.exe",
@@ -44,7 +44,7 @@ namespace Wox.Test.Plugins
             AppType = 2
         };
 
-        Win32 visual_studio_command_prompt = new Win32
+        static Win32 visual_studio_command_prompt = new Win32
         {
             Name = "x64 Native Tools Command Prompt for VS 2019",
             ExecutableName = "cmd.exe",
@@ -53,7 +53,7 @@ namespace Wox.Test.Plugins
             AppType = 2
         };
 
-        Win32 command_prompt = new Win32
+        static Win32 command_prompt = new Win32
         {
             Name = "Command Prompt",
             ExecutableName = "cmd.exe",
@@ -62,7 +62,7 @@ namespace Wox.Test.Plugins
             AppType = 2
         };
 
-        Win32 file_explorer = new Win32
+        static Win32 file_explorer = new Win32
         {
             Name = "File Explorer",
             ExecutableName = "File Explorer.lnk",
@@ -71,7 +71,7 @@ namespace Wox.Test.Plugins
             AppType = 2
         };
 
-        Win32 wordpad = new Win32
+        static Win32 wordpad = new Win32
         {
             Name = "Wordpad",
             ExecutableName = "wordpad.exe",
@@ -80,7 +80,7 @@ namespace Wox.Test.Plugins
             AppType = 2
         };
 
-        Win32 wordpad_duplicate = new Win32
+        static Win32 wordpad_duplicate = new Win32
         {
             Name = "WORDPAD",
             ExecutableName = "WORDPAD.EXE",
@@ -89,7 +89,7 @@ namespace Wox.Test.Plugins
             AppType = 2
         };
 
-        Win32 twitter_pwa = new Win32
+        static Win32 twitter_pwa = new Win32
         {
             Name = "Twitter",
             FullPath = "c:\\program files (x86)\\google\\chrome\\application\\chrome_proxy.exe",
@@ -98,7 +98,7 @@ namespace Wox.Test.Plugins
             AppType = 0
         };
 
-        Win32 pinned_webpage = new Win32
+        static Win32 pinned_webpage = new Win32
         {
             Name = "Web page",
             FullPath = "c:\\program files (x86)\\microsoft\\edge\\application\\msedge_proxy.exe",
@@ -107,7 +107,7 @@ namespace Wox.Test.Plugins
             AppType = 0
         };
 
-        Win32 edge_named_pinned_webpage = new Win32
+        static Win32 edge_named_pinned_webpage = new Win32
         {
             Name = "edge - Bing",
             FullPath = "c:\\program files (x86)\\microsoft\\edge\\application\\msedge_proxy.exe",
@@ -116,7 +116,7 @@ namespace Wox.Test.Plugins
             AppType = 0
         };
 
-        Win32 msedge = new Win32
+        static Win32 msedge = new Win32
         {
             Name = "Microsoft Edge",
             ExecutableName = "msedge.exe",
@@ -125,7 +125,7 @@ namespace Wox.Test.Plugins
             AppType = 2
         };
 
-        Win32 chrome = new Win32
+        static Win32 chrome = new Win32
         {
             Name = "Google Chrome",
             ExecutableName = "chrome.exe",
@@ -134,7 +134,7 @@ namespace Wox.Test.Plugins
             AppType = 2
         };
 
-        Win32 dummy_proxy_app = new Win32
+        static Win32 dummy_proxy_app = new Win32
         {
             Name = "Proxy App",
             ExecutableName = "test_proxy.exe",
@@ -143,7 +143,7 @@ namespace Wox.Test.Plugins
             AppType = 2
         };
 
-        Win32 cmd_run_command = new Win32
+        static Win32 cmd_run_command = new Win32
         {
             Name = "cmd",
             ExecutableName = "cmd.exe",
@@ -152,7 +152,7 @@ namespace Wox.Test.Plugins
             AppType = 3 // Run command
         };
 
-        Win32 cmder_run_command = new Win32
+        static Win32 cmder_run_command = new Win32
         {
             Name = "Cmder",
             ExecutableName = "Cmder.exe",
@@ -161,7 +161,7 @@ namespace Wox.Test.Plugins
             AppType = 3 // Run command
         };
 
-        Win32 dummy_internetShortcut_app = new Win32
+        static Win32 dummy_internetShortcut_app = new Win32
         {
             Name = "Shop Titans",
             ExecutableName = "Shop Titans.url",           
@@ -171,7 +171,7 @@ namespace Wox.Test.Plugins
             AppType = 1
         };
 
-        Win32 dummy_internetShortcut_app_duplicate = new Win32
+        static Win32 dummy_internetShortcut_app_duplicate = new Win32
         {
             Name = "Shop Titans",
             ExecutableName = "Shop Titans.url",

@@ -370,7 +370,7 @@ namespace Microsoft.Plugin.Program.Programs
                         }
                         catch (Exception e)
                         {
-                            Log.Exception(e.Message, e);
+                            Log.Exception($"|Microsoft.Plugin.Program.UWP.ContextMenu| Failed to open {Name} in console, {e.Message}", e);
                             return false;
                         }
                     }

@@ -80,7 +80,7 @@ namespace Microsoft.Plugin.Indexer
                     {
                         try
                         {
-                            if (fileOrFolder == "file")
+                            if (type == ResultType.File)
                             {
                                 Helper.OpenInConsole(Path.GetDirectoryName(record.Path));
                             }
