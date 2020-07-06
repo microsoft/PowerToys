@@ -252,6 +252,9 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
             Shortcut tempShortcut;
             tempShortcut.SetKeyCodes(GetKeysFromStackPanel(parent));
             std::wstring appName = targetApp.Text().c_str();
+            // Convert app name to lower case
+            std::transform(appName.begin(), appName.end(), appName.begin(), towlower);
+
             // Check if the value being set is the same as the other column
             if (shortcutRemapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)] == tempShortcut && shortcutRemapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)].IsValidShortcut() && tempShortcut.IsValidShortcut())
             {
@@ -263,7 +266,10 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
                 // Check if the key is already remapped to something else for the same target app
                 for (int i = 0; i < shortcutRemapBuffer.size(); i++)
                 {
-                    if (i != rowIndex && shortcutRemapBuffer[i].second == targetApp.Text().c_str())
+                    std::wstring currAppName = shortcutRemapBuffer[i].second;
+                    std::transform(currAppName.begin(), currAppName.end(), currAppName.begin(), towlower);
+
+                    if (i != rowIndex && currAppName == appName)
                     {
                         KeyboardManagerHelper::ErrorType result = Shortcut::DoKeysOverlap(shortcutRemapBuffer[i].first[colIndex], tempShortcut);
                         if (result != KeyboardManagerHelper::ErrorType::NoError)
