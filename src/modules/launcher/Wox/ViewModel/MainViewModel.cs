@@ -709,6 +709,40 @@ namespace Wox.ViewModel
             }
         }
 
+        public static string GetAutoCompleteText(int index, string input, String query)
+        {
+            if (!string.IsNullOrEmpty(input) && !string.IsNullOrEmpty(query))
+            {
+                if (index == 0)
+                {
+                    if (input.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) == 0)
+                    {
+                        // Use the same case as the input query for the matched portion of the string
+                        return query + input.Substring(query.Length);
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
+
+        public static string GetSearchText(int index, String input, string query)
+        {
+            if (!string.IsNullOrEmpty(input))
+            {
+                if (index == 0 && !string.IsNullOrEmpty(query))
+                {
+                    if (input.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) == 0)
+                    {
+                        return query + input.Substring(query.Length);
+                    }
+                }
+                return input;
+            }
+
+            return string.Empty;
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)

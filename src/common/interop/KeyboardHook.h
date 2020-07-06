@@ -33,16 +33,12 @@ public
 
     private:
         delegate LRESULT HookProcDelegate(int nCode, WPARAM wParam, LPARAM lParam);
-        Thread ^ kbEventDispatch;
-        Queue<KeyboardEvent ^> ^ queue;
         KeyboardEventCallback ^ keyboardEventCallback;
         IsActiveCallback ^ isActiveCallback;
         FilterKeyboardEvent ^ filterKeyboardEvent;
-        bool quit;
         HHOOK hookHandle;
         HookProcDelegate ^ hookProc;
 
-        void DispatchProc();
         LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);
     };
 

@@ -15,8 +15,6 @@ KeyboardHook::KeyboardHook(
     IsActiveCallback ^ isActiveCallback,
     FilterKeyboardEvent ^ filterKeyboardEvent)
 {
-    kbEventDispatch = gcnew Thread(gcnew ThreadStart(this, &KeyboardHook::DispatchProc));
-    queue = gcnew Queue<KeyboardEvent ^>();
     this->keyboardEventCallback = keyboardEventCallback;
     this->isActiveCallback = isActiveCallback;
     this->filterKeyboardEvent = filterKeyboardEvent;
@@ -24,42 +22,8 @@ KeyboardHook::KeyboardHook(
 
 KeyboardHook::~KeyboardHook()
 {
-    quit = true;
-
-    // Notify the DispatchProc thread so that it isn't stuck at the Wait step
-    Monitor::Enter(queue);
-    Monitor::Pulse(queue);
-    Monitor::Exit(queue);
-
-    kbEventDispatch->Join();
-
     // Unregister low level hook procedure
     UnhookWindowsHookEx(hookHandle);
-}
-
-void KeyboardHook::DispatchProc()
-{
-    Monitor::Enter(queue);
-    quit = false;
-    while (!quit)
-    {
-        if (queue->Count == 0)
-        {
-            Monitor::Wait(queue);
-            continue;
-        }
-        auto nextEv = queue->Dequeue();
-
-        // Release lock while callback is being invoked
-        Monitor::Exit(queue);
-
-        keyboardEventCallback->Invoke(nextEv);
-
-        // Re-aquire lock
-        Monitor::Enter(queue);
-    }
-
-    Monitor::Exit(queue);
 }
 
 void KeyboardHook::Start()
@@ -85,8 +49,6 @@ void KeyboardHook::Start()
             throw std::exception("SetWindowsHookEx failed.");
         }
     }
-
-    kbEventDispatch->Start();
 }
 
 LRESULT CALLBACK KeyboardHook::HookProc(int nCode, WPARAM wParam, LPARAM lParam)
@@ -101,10 +63,7 @@ LRESULT CALLBACK KeyboardHook::HookProc(int nCode, WPARAM wParam, LPARAM lParam)
             return CallNextHookEx(hookHandle, nCode, wParam, lParam);
         }
 
-        Monitor::Enter(queue);
-        queue->Enqueue(ev);
-        Monitor::Pulse(queue);
-        Monitor::Exit(queue);
+        keyboardEventCallback->Invoke(ev);
         return 1;
     }
     return CallNextHookEx(hookHandle, nCode, wParam, lParam);
