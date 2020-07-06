@@ -88,5 +88,5 @@ namespace KeyboardManagerConstants
     inline const DWORD DUMMY_KEY = 0xFF;
 
     // String constant for the default app name in Remap shortcuts
-    inline const std::wstring DefaultAppName = L"Global";
+    inline const std::wstring DefaultAppName = L"All Apps";
 }

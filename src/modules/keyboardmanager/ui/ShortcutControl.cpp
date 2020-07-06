@@ -45,6 +45,7 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     targetAppTextBox.Width(100);
     targetAppTextBox.VerticalAlignment(VerticalAlignment::Center);
     targetAppTextBox.HorizontalAlignment(HorizontalAlignment::Left);
+    targetAppTextBox.PlaceholderText(KeyboardManagerConstants::DefaultAppName);
     targetAppTextBox.Text(targetAppName);
 
     // LostFocus handler will be called whenever text is updated by a user and then they click something else or tab to another control. Does not get called if Text is updated while the TextBox isn't in focus (i.e. from code)

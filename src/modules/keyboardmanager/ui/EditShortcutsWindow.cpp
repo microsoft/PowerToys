@@ -290,7 +290,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
             if (originalShortcut.IsValidShortcut() && newShortcut.IsValidShortcut())
             {
-                if (ShortcutControl::shortcutRemapBuffer[i].second == KeyboardManagerConstants::DefaultAppName)
+                if (ShortcutControl::shortcutRemapBuffer[i].second == L"")
                 {
                     bool result = keyboardManagerState.AddOSLevelShortcut(originalShortcut, newShortcut);
                     if (!result)

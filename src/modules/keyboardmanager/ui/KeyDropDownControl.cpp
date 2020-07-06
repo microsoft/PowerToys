@@ -311,19 +311,8 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
             // If an error occurred
             if (validationResult.first != KeyboardManagerHelper::ErrorType::NoError)
             {
-                // Iterate over all drop downs from left to right in that row/col and validate if there is an error in any of the drop downs. After this the state should be error-free (if it is a valid shortcut)
-                for (int i = 0; i < keyDropDownControlObjects.size(); i++)
-                {
-                    // Check for errors only if the current selection is a valid shortcut
-                    Shortcut tempComputedShortcut;
-                    tempComputedShortcut.SetKeyCodes(keyDropDownControlObjects[i]->GetKeysFromStackPanel(parent));
-
-                    // If the shortcut is valid and that drop down is not empty
-                    if (tempComputedShortcut.IsValidShortcut() && keyDropDownControlObjects[i]->GetComboBox().SelectedIndex() != -1)
-                    {
-                        keyDropDownControlObjects[i]->ValidateShortcutSelection(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp);
-                    }
-                }
+                // Validate all the drop downs
+                ValidateShortcutFromDropDownList(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp);
             }
 
             // Reset the buffer based on the new selected drop down items
@@ -435,6 +424,24 @@ bool KeyDropDownControl::CheckRepeatedModifier(StackPanel parent, int selectedKe
     }
 
     return matchPreviousModifier;
+}
+
+// Function for validating the selection of shortcuts for all the associated drop downs
+void KeyDropDownControl::ValidateShortcutFromDropDownList(Grid table, StackPanel shortcutControl, StackPanel parent, int colIndex, std::vector<std::pair<std::vector<Shortcut>, std::wstring>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox targetApp)
+{
+    // Iterate over all drop downs from left to right in that row/col and validate if there is an error in any of the drop downs. After this the state should be error-free (if it is a valid shortcut)
+    for (int i = 0; i < keyDropDownControlObjects.size(); i++)
+    {
+        // Check for errors only if the current selection is a valid shortcut
+        Shortcut tempComputedShortcut;
+        tempComputedShortcut.SetKeyCodes(keyDropDownControlObjects[i]->GetKeysFromStackPanel(parent));
+
+        // If the shortcut is valid and that drop down is not empty
+        if (tempComputedShortcut.IsValidShortcut() && keyDropDownControlObjects[i]->GetComboBox().SelectedIndex() != -1)
+        {
+            keyDropDownControlObjects[i]->ValidateShortcutSelection(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp);
+        }
+    }
 }
 
 // Function to set the warning message
