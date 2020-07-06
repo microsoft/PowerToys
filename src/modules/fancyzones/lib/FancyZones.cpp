@@ -638,8 +638,8 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
     {
         if (wparam == SPI_SETWORKAREA)
         {
-            // Changes in taskbar position resulted with different size of work area.
-            // Ivalidate cached work areas so they can be recreated with latest information.
+            // Changes in taskbar position resulted in different size of work area.
+            // Invalidate cached work-areas so they can be recreated with latest information.
             m_workAreaHandler.Clear();
             OnDisplayChange(DisplayChangeType::WorkArea);
         }
@@ -648,7 +648,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
 
     case WM_DISPLAYCHANGE:
     {
-        // Display resolution changed. Invalidate cached work areas so they can be recreated with latest information.
+        // Display resolution changed. Invalidate cached work-areas so they can be recreated with latest information.
         m_workAreaHandler.Clear();
         OnDisplayChange(DisplayChangeType::DisplayChange);
     }
