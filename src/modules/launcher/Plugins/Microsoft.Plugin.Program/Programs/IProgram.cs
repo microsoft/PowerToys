@@ -11,6 +11,5 @@ namespace Microsoft.Plugin.Program.Programs
         string Name { get; }
         string Description { get; set; }
         string Location { get; }
-        string SetSubtitle(IPublicAPI api);
     }
 }
