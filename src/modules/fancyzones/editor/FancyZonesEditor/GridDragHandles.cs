@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using FancyZonesEditor.Models;
@@ -188,34 +188,6 @@ namespace FancyZonesEditor
 
         public void UpdateAfterNegativeSwap(GridResizer resizer, double delta)
         {
-            Action<GridResizer> incValues = r =>
-            {
-                if (resizer.Orientation == Orientation.Vertical)
-                {
-                    r.StartCol++;
-                    r.EndCol++;
-                }
-                else
-                {
-                    r.StartRow++;
-                    r.EndRow++;
-                }
-            };
-
-            Action<GridResizer> decValues = r =>
-            {
-                if (resizer.Orientation == Orientation.Vertical)
-                {
-                    r.StartCol--;
-                    r.EndCol--;
-                }
-                else
-                {
-                    r.StartRow--;
-                    r.EndRow--;
-                }
-            };
-
             Action<GridResizer> horizontalResizersRowsUpd = r =>
             {
                 if (r.StartCol == resizer.StartCol)
@@ -286,11 +258,11 @@ namespace FancyZonesEditor
                     {
                         if (isDeltaNegative)
                         {
-                            incValues(r);
+                            IncreaseResizerValues(r, resizer.Orientation);
                         }
                         else
                         {
-                            decValues(r);
+                            DecreaseResizerValues(r, resizer.Orientation);
                         }
 
                         break;
@@ -301,12 +273,12 @@ namespace FancyZonesEditor
             if (delta < 0)
             {
                 differentOrientationResizersUpdate();
-                decValues(resizer);
+                DecreaseResizerValues(resizer, resizer.Orientation);
                 sameOrientationResizersUpdate(delta < 0);
             }
             else
             {
-                incValues(resizer);
+                IncreaseResizerValues(resizer, resizer.Orientation);
                 differentOrientationResizersUpdate();
                 sameOrientationResizersUpdate(delta < 0);
             }
@@ -315,6 +287,34 @@ namespace FancyZonesEditor
         public void RemoveDragHandles()
         {
             _resizers.Clear();
+        }
+
+        private static void IncreaseResizerValues(GridResizer resizer, Orientation orientation)
+        {
+            if (orientation == Orientation.Vertical)
+            {
+                resizer.StartCol++;
+                resizer.EndCol++;
+            }
+            else
+            {
+                resizer.StartRow++;
+                resizer.EndRow++;
+            }
+        }
+
+        private static void DecreaseResizerValues(GridResizer resizer, Orientation orientation)
+        {
+            if (orientation == Orientation.Vertical)
+            {
+                resizer.StartCol--;
+                resizer.EndCol--;
+            }
+            else
+            {
+                resizer.StartRow--;
+                resizer.EndRow--;
+            }
         }
 
         private bool UpdateDragHanlderForExistingSplit(Orientation orientation, Func<GridResizer, bool> cmpr, Func<GridResizer, bool> endCmpr, Func<GridResizer, bool> startCmpr)

@@ -391,7 +391,7 @@ namespace FancyZonesEditor
                 if (delta > 0)
                 {
                     int sourcRow = 0;
-                    for (int row = 0; row < rows; row++) 
+                    for (int row = 0; row < rows; row++)
                     {
                         for (int col = 0; col < cols; col++)
                         {
