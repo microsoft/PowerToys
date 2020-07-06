@@ -614,11 +614,24 @@ namespace KeyboardEventHandlers
             std::transform(process_name.begin(), process_name.end(), process_name.begin(), towlower);
 
             std::unique_lock<std::mutex> lock(keyboardManagerState.appSpecificShortcutReMap_mutex);
-            auto it = keyboardManagerState.appSpecificShortcutReMap.find(process_name);
+
+            // Check if any of the app names in the shortcut remap set is a substring of the current process name - this allows users to add edge rather than msedge.exe
+            auto it = std::find_if(keyboardManagerState.appSpecificShortcutReMap.begin(), keyboardManagerState.appSpecificShortcutReMap.end(), [&process_name](const std::pair<std::wstring, std::map<Shortcut, RemapShortcut>> appSpecificMap) {
+                // check if the key is a substring of the process name
+                if (process_name.find(appSpecificMap.first) != std::wstring::npos)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            });
+
             if (it != keyboardManagerState.appSpecificShortcutReMap.end())
             {
                 lock.unlock();
-                bool result = HandleShortcutRemapEvent(ii, data, keyboardManagerState.appSpecificShortcutReMap[process_name], keyboardManagerState.appSpecificShortcutReMap_mutex);
+                bool result = HandleShortcutRemapEvent(ii, data, it->second, keyboardManagerState.appSpecificShortcutReMap_mutex);
                 return result;
             }
         }
