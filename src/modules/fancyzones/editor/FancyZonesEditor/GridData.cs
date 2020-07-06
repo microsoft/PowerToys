@@ -418,14 +418,6 @@ namespace FancyZonesEditor
 
                     _model.RowPercents[draggedResizerStartRow + 1] = split[0].Percent;
                     _model.RowPercents.Insert(draggedResizerStartRow + 2, split[1].Percent);
-
-                    for (int row = 0; row < rows; row++)
-                    {
-                        if (row != draggedResizerStartRow + 1 && row != draggedResizerStartRow + 2)
-                        {
-                            _rowInfo[row].RecalculatePercent(newTotalExtent);
-                        }
-                    }
                 }
                 else
                 {
@@ -463,14 +455,6 @@ namespace FancyZonesEditor
 
                     _model.RowPercents[draggedResizerStartRow] = split[0].Percent;
                     _model.RowPercents.Insert(draggedResizerStartRow, split[1].Percent);
-
-                    for (int row = 0; row < rows; row++)
-                    {
-                        if (row != draggedResizerStartRow)
-                        {
-                            _rowInfo[row].RecalculatePercent(newTotalExtent);
-                        }
-                    }
                 }
 
                 FixAccuracyError(_rowInfo, _model.RowPercents);
@@ -1040,8 +1024,14 @@ namespace FancyZonesEditor
 
                 for (int i = 0; i < percents.Count - 1 && perLineDiff != 0; i++)
                 {
-                    info[i].Percent -= perLineDiff;
-                    percents[i] -= perLineDiff;
+                    int percent = percents[i] - perLineDiff;
+                    if (percent < 0)
+                    {
+                        percent = 0;
+                    }
+
+                    percents[i] = percent;
+                    info[i].Percent = percent;
                 }
 
                 info[percents.Count - 1].Percent -= lastLineDiff;
