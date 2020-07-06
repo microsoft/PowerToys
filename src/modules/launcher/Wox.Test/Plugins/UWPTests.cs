@@ -16,6 +16,8 @@ namespace Wox.Test.Plugins
         // Mock UWP.Application class to test the Result Properties
         public class mockUWP : UWP.Application
         {
+            public mockUWP(AppxPackageHelper.IAppxManifestApplication manifestApp, UWP package) : base(manifestApp, package) { }
+
             protected override int Score(string query)
             {
                 // To prevent the result from being filtered, the score must be a positive integer
@@ -41,7 +43,7 @@ namespace Wox.Test.Plugins
             mockAPI.Setup(m => m.GetTranslation(It.IsAny<string>())).Returns(subtitle);
 
             // Create an object of the mock packaged App Class and set the name and description
-            mockUWP item = new mockUWP
+            mockUWP item = new mockUWP(null, null)
             {
                 DisplayName = Name,
                 Description = Description

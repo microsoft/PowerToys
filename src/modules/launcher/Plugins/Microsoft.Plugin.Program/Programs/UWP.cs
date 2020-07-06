@@ -382,11 +382,13 @@ namespace Microsoft.Plugin.Program.Programs
                 });
             }
 
-            // Empty constructor, called by the derived class when testing mocked packaged applications
-            protected Application() { }
-
             public Application(AppxPackageHelper.IAppxManifestApplication manifestApp, UWP package)
             {
+                if(manifestApp == null || package == null)
+                {
+                    return;
+                }
+
                 // This is done because we cannot use the keyword 'out' along with a property
                 string tmpUserModelId;
                 string tmpUniqueIdentifier;
