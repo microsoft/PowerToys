@@ -26,6 +26,7 @@ namespace Wox.Test.Plugins
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 2);
+            mock.Verify(x => x.GetTranslation("Microsoft_plugin_folder_copy_path"), Times.Once());
             mock.Verify(x => x.GetTranslation("Microsoft_plugin_folder_open_in_console"), Times.Once());
         }
 
@@ -45,6 +46,8 @@ namespace Wox.Test.Plugins
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 3);
+            mock.Verify(x => x.GetTranslation("Microsoft_plugin_folder_open_containing_folder"), Times.Once());
+            mock.Verify(x => x.GetTranslation("Microsoft_plugin_folder_copy_path"), Times.Once());
             mock.Verify(x => x.GetTranslation("Microsoft_plugin_folder_open_in_console"), Times.Once());
         }
     }

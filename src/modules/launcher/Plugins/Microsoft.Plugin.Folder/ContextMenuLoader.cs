@@ -103,7 +103,7 @@ namespace Microsoft.Plugin.Folder
             return new ContextMenuResult
             {
                 PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                Title = "Open containing folder",
+                Title = _context.API.GetTranslation("Microsoft_plugin_folder_open_containing_folder"),
                 Glyph = "\xE838",
                 FontFamily = "Segoe MDL2 Assets",
                 AcceleratorKey = Key.E,

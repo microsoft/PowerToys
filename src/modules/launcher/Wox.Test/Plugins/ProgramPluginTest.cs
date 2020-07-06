@@ -365,6 +365,8 @@ namespace Wox.Test.Plugins
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 3);
+            mock.Verify(x => x.GetTranslation("wox_plugin_program_run_as_administrator"), Times.Once());
+            mock.Verify(x => x.GetTranslation("wox_plugin_program_open_containing_folder"), Times.Once());
             mock.Verify(x => x.GetTranslation("wox_plugin_program_open_in_console"), Times.Once());
         }
 
@@ -380,6 +382,7 @@ namespace Wox.Test.Plugins
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 2);
+            mock.Verify(x => x.GetTranslation("wox_plugin_program_open_containing_folder"), Times.Once());
             mock.Verify(x => x.GetTranslation("wox_plugin_program_open_in_console"), Times.Once());
         }
 
@@ -395,6 +398,8 @@ namespace Wox.Test.Plugins
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 3);
+            mock.Verify(x => x.GetTranslation("wox_plugin_program_run_as_administrator"), Times.Once());
+            mock.Verify(x => x.GetTranslation("wox_plugin_program_open_containing_folder"), Times.Once());
             mock.Verify(x => x.GetTranslation("wox_plugin_program_open_in_console"), Times.Once());
         }
 
@@ -410,6 +415,8 @@ namespace Wox.Test.Plugins
 
             // Assert
             Assert.AreEqual(contextMenuResults.Count, 3);
+            mock.Verify(x => x.GetTranslation("wox_plugin_program_run_as_administrator"), Times.Once());
+            mock.Verify(x => x.GetTranslation("wox_plugin_program_open_containing_folder"), Times.Once());
             mock.Verify(x => x.GetTranslation("wox_plugin_program_open_in_console"), Times.Once());
         }
     }
