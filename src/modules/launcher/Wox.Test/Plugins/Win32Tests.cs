@@ -138,6 +138,7 @@ namespace Wox.Test.Plugins
         Win32 cmder_run_command = new Win32
         {
             Name = "Cmder",
+            Description = "Cmder: Lovely Console Emulator",
             ExecutableName = "Cmder.exe",
             FullPath = "c:\\tools\\cmder\\cmder.exe",
             LnkResolvedPath = null,
@@ -334,47 +335,20 @@ namespace Wox.Test.Plugins
             Assert.IsTrue(cmd_run_command.QueryEqualsNameForRunCommands(query));
         }
 
-        // Mock Win32 class to test the Result properties
-        public class mockWin32 : Win32
-        {
-            protected override int Score(string query)
-            {
-                // To prevent the result from being filtered, the score must be a positive integer
-                const int scoreGreateThanZero = 1;
-                return scoreGreateThanZero;
-            }
-
-            // Stubbing out the StringMatcher.Fuzzysearch() functionality
-            protected override List<int> GetMatchingData(string query)
-            {
-                return null;
-            }
-        }
-
-        [TestCase("Name", "NamePrefixInDescription")]
-        [TestCase("ignoreName", "ignoreDescription")]
-        public void Win32Apps_ShouldSetNameAsTitle_WhileCreatingResult(string Name, string Description)
+        [Test]
+        public void Win32Apps_ShouldSetNameAsTitle_WhileCreatingResult()
         {
             // Arrange
-            // Mocking the GetTranslation function called by SetSubtitle
-            string subtitle = "subtitle";
-            Mock<IPublicAPI> mockAPI = new Mock<IPublicAPI>();
-            mockAPI.Setup(m => m.GetTranslation(It.IsAny<string>())).Returns(subtitle);
-
-            // Create an object of the mock Win32 Class and set the name and description
-            mockWin32 item = new mockWin32
-            {
-                Name = Name,
-                Description = Description
-            };
+            var mock = new Mock<IPublicAPI>();
+            mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
+            StringMatcher.Instance = new StringMatcher();
 
             // Act
-            // The query string value not matter
-            string query = "ignore";
-            Result res = item.Result(query, mockAPI.Object);
+            var result = cmder_run_command.Result("cmder", mock.Object);
 
             // Assert
-            Assert.IsTrue(res.Title.Equals(Name));
+            Assert.IsTrue(result.Title.Equals(cmder_run_command.Name));
+            Assert.IsFalse(result.Title.Equals(cmder_run_command.Description));
         }
     }
 }

@@ -53,7 +53,7 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         // Function to calculate the score of a result
-        protected virtual int Score(string query)
+        private int Score(string query)
         {
             var nameMatch = StringMatcher.FuzzySearch(query, Name);
             var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
@@ -139,12 +139,6 @@ namespace Microsoft.Plugin.Program.Programs
             return true;
         }
 
-        // Function to get matching indices
-        protected virtual List<int> GetMatchingData(string query)
-        {
-            return StringMatcher.FuzzySearch(query, Name).MatchData;
-        }
-
         public Result Result(string query, IPublicAPI api)
         {
             var score = Score(query);
@@ -196,7 +190,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             // To set the title for the result to always be the name of the application            
             result.Title = Name;
-            result.TitleHighlightData = GetMatchingData(query);
+            result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
 
             return result;
         }
