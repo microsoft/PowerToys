@@ -96,7 +96,7 @@
 
                 <winui:NavigationViewItem x:Uid="Shell_ColorPicker" helpers:NavHelper.NavigateTo="views:ColorPickerPage">
                     <winui:NavigationViewItem.Icon>
-                        <PathIcon Data="M 3.3333333 7.7083333 7.75 3.4583333 Z M 15.375 19.541667 19.5 15.458333 Z M 1.1666667 1.1666667 3.3333333 7.7083333 19.125 23.5 23.625 19.166667 7.75 3.4583333 Z"/>
+                        <FontIcon Glyph="&#xEF3C;"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 
