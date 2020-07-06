@@ -497,6 +497,7 @@ namespace FancyZonesEditor
                 return;
             }
 
+            int zoneNumber = 1;
             double left, top;
             for (int row = 0; row < rows; row++)
             {
@@ -512,7 +513,7 @@ namespace FancyZonesEditor
                         top = _rowInfo[row].Start;
                         Canvas.SetLeft(zone, left);
                         Canvas.SetTop(zone, top);
-                        zone.LabelID.Content = i + 1;
+                        zone.LabelID.Content = zoneNumber++;
 
                         int maxRow = row;
                         while (((maxRow + 1) < rows) && (_model.CellChildMap[maxRow + 1, col] == i))
