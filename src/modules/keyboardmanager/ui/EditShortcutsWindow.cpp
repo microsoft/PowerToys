@@ -36,12 +36,15 @@ static IAsyncAction OnClickAccept(
     // Create per app shortcut buffer
     for (int i = 0; i < ShortcutControl::shortcutRemapBuffer.size(); i++)
     {
-        if (appSpecificBuffer.find(ShortcutControl::shortcutRemapBuffer[i].second) == appSpecificBuffer.end())
+        std::wstring currAppName = ShortcutControl::shortcutRemapBuffer[i].second;
+        std::transform(currAppName.begin(), currAppName.end(), currAppName.begin(), towlower);
+
+        if (appSpecificBuffer.find(currAppName) == appSpecificBuffer.end())
         {
-            appSpecificBuffer[ShortcutControl::shortcutRemapBuffer[i].second] = std::vector<std::vector<Shortcut>>();
+            appSpecificBuffer[currAppName] = std::vector<std::vector<Shortcut>>();
         }
 
-        appSpecificBuffer[ShortcutControl::shortcutRemapBuffer[i].second].push_back(ShortcutControl::shortcutRemapBuffer[i].first);
+        appSpecificBuffer[currAppName].push_back(ShortcutControl::shortcutRemapBuffer[i].first);
     }
 
     for (auto it : appSpecificBuffer)
