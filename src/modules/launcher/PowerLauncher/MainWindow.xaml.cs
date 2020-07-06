@@ -110,22 +110,31 @@ namespace PowerLauncher
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (Visibility == System.Windows.Visibility.Visible)
+            if(e.PropertyName == nameof(MainViewModel.MainWindowVisibility)) 
             {
-                // Not called on first launch
-                // Additionally called when deactivated by clicking on screen  
-                UpdatePosition();
-                BringProcessToForeground();
-
-                if (!_viewModel.LastQuerySelected)
+                if (Visibility == System.Windows.Visibility.Visible)
                 {
-                    _viewModel.LastQuerySelected = true;
+                    // Not called on first launch
+                    // Additionally called when deactivated by clicking on screen  
+                    UpdatePosition();
+                    BringProcessToForeground();
+
+                    if (!_viewModel.LastQuerySelected)
+                    {
+                        _viewModel.LastQuerySelected = true;
+                    }
                 }
-            }
+            }          
             else if (e.PropertyName == nameof(MainViewModel.SystemQueryText))
             {
                 this._isTextSetProgrammatically = true;
-                SearchBox.QueryTextBox.Text = _viewModel.SystemQueryText;
+                if (_viewModel.Results != null)
+                {
+                    SearchBox.QueryTextBox.Text = MainViewModel.GetSearchText(
+                        _viewModel.Results.SelectedIndex,
+                        _viewModel.SystemQueryText,
+                        _viewModel.QueryText);
+                }
             }
         }
 
@@ -261,32 +270,20 @@ namespace PowerLauncher
             }
 
             // To populate the AutoCompleteTextBox as soon as the selection is changed or set.
-            // Setting it here instead of when the text is changed as there is a delay in executing the query and populating the result
-            SearchBox.AutoCompleteTextBlock.Text = ListView_FirstItem(_viewModel.QueryText);
+            // Setting it here instead of when the text is changed as there is a delay in executing the query and populating the result        
+            if (_viewModel.Results != null)
+            {
+                SearchBox.AutoCompleteTextBlock.Text = MainViewModel.GetAutoCompleteText(
+                    _viewModel.Results.SelectedIndex,
+                    _viewModel.Results.SelectedItem?.ToString(),
+                    _viewModel.QueryText);
+            }          
         }
 
         private const int millisecondsToWait = 100;
         private static DateTime s_lastTimeOfTyping;
         private bool disposedValue = false;
 
-        private string ListView_FirstItem(String input)
-        {
-            if (!string.IsNullOrEmpty(input))
-            {
-                string selectedItem = _viewModel.Results?.SelectedItem?.ToString();
-                int selectedIndex = _viewModel.Results.SelectedIndex;
-                if (selectedItem != null && selectedIndex == 0)
-                {
-                    if (selectedItem.IndexOf(input, StringComparison.InvariantCultureIgnoreCase) == 0)
-                    {
-                        // Use the same case as the input query for the matched portion of the string
-                        return input + selectedItem.Substring(input.Length);
-                    }
-                }
-            }
-
-            return string.Empty;
-        }
         private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {          
             if (_isTextSetProgrammatically)

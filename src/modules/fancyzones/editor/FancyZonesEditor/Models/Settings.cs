@@ -329,9 +329,9 @@ namespace FancyZonesEditor
             }
 
             int index = ZoneCount - 1;
-            for (int row = rows - 1; row >= 0; row--)
+            for (int col = cols - 1; col >= 0; col--)
             {
-                for (int col = cols - 1; col >= 0; col--)
+                for (int row = rows - 1; row >= 0; row--)
                 {
                     _gridModel.CellChildMap[row, col] = index--;
                     if (index < 0)

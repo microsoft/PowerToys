@@ -163,6 +163,7 @@ namespace ZoneWindowDrawUtils
             isHighlighted[x] = true;
         }
 
+        // First draw the inactive zones
         for (auto iter = zones.begin(); iter != zones.end(); iter++)
         {
             int zoneId = static_cast<int>(iter - zones.begin());
@@ -188,7 +189,19 @@ namespace ZoneWindowDrawUtils
                     DrawZone(hdc, colorViewer, zone, zones, flashMode);
                 }
             }
-            else
+        }
+
+        // Draw the active zones on top of the inactive zones
+        for (auto iter = zones.begin(); iter != zones.end(); iter++)
+        {
+            int zoneId = static_cast<int>(iter - zones.begin());
+            winrt::com_ptr<IZone> zone = iter->try_as<IZone>();
+            if (!zone)
+            {
+                continue;
+            }
+
+            if (isHighlighted[zoneId])
             {
                 colorHighlight.fill = highlightColor;
                 colorHighlight.border = zoneBorderColor;

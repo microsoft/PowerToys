@@ -459,15 +459,15 @@ namespace KeyboardEventHandlers
                                 i++;
                             }
 
-                            // key down for original shortcut action key
+                            // key down for original shortcut action key with shortcut flag so that we don't invoke the same shortcut remap again
                             if (isActionKeyPressed)
                             {
                                 KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.first.GetActionKey(), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                                 i++;
                             }
 
-                            // Send current key pressed
-                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            // Send current key pressed without shortcut flag so that it can be reprocessed in case the physical keys pressed are a different remapped shortcut
+                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, 0, 0);
                             i++;
 
                             // Send dummy key since the current key pressed could be a modifier
@@ -541,15 +541,15 @@ namespace KeyboardEventHandlers
                                 i++;
                             }
 
-                            // key down for original shortcut action key
+                            // key down for original shortcut action key with shortcut flag so that we don't invoke the same shortcut remap again
                             if (isActionKeyPressed)
                             {
                                 KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.first.GetActionKey(), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                                 i++;
                             }
 
-                            // Send current key pressed
-                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            // Send current key pressed without shortcut flag so that it can be reprocessed in case the physical keys pressed are a different remapped shortcut
+                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, 0, 0);
                             i++;
 
                             // Send dummy key

@@ -42,7 +42,7 @@ namespace Microsoft.Plugin.Indexer
                 contextMenus.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                    Title = "Copy path",
+                    Title = _context.API.GetTranslation("Microsoft_plugin_indexer_copy_path"),
                     Glyph = "\xE8C8",
                     FontFamily = "Segoe MDL2 Assets",
                     SubTitle = $"Copy the current {fileOrFolder} path to clipboard",
@@ -75,7 +75,7 @@ namespace Microsoft.Plugin.Indexer
             return new ContextMenuResult
             {
                 PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                Title = "Open containing folder",
+                Title = _context.API.GetTranslation("Microsoft_plugin_indexer_open_containing_folder"),
                 Glyph = "\xE838",
                 FontFamily = "Segoe MDL2 Assets",
                 AcceleratorKey = Key.E,
