@@ -37,6 +37,11 @@ namespace FancyZonesEditor.Models
             IsScaled = false;
         }
 
+        public CanvasLayoutModel(string name)
+        : base(name)
+        {
+        }
+
         // Zones - the list of all zones in this layout, described as independent rectangles
         public IList<Int32Rect> Zones { get; private set; } = new List<Int32Rect>();
 
@@ -67,7 +72,7 @@ namespace FancyZonesEditor.Models
         //  Clones the data from this CanvasLayoutModel to a new CanvasLayoutModel
         public override LayoutModel Clone()
         {
-            CanvasLayoutModel layout = new CanvasLayoutModel(Name, Type);
+            CanvasLayoutModel layout = new CanvasLayoutModel(Name);
 
             foreach (Int32Rect zone in Zones)
             {
