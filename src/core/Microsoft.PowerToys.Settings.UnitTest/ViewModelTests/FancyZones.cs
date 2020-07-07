@@ -194,6 +194,23 @@ namespace ViewModelTests
             viewModel.AppLastZoneMoveWindows = true;
         }
 
+        public void OpenWindowOnActiveMonitor_ShouldSetValue2True_WhenSuccessful()
+        {
+            // arrange
+            FancyZonesViewModel viewModel = new FancyZonesViewModel();
+            Assert.IsFalse(viewModel.OpenWindowOnActiveMonitor); // check if value was initialized to false.
+
+            // Assert
+            ShellPage.DefaultSndMSGCallback = msg =>
+            {
+                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
+                Assert.IsTrue(snd.Powertoys.FancyZones.Properties.FancyzonesOpenWindowOnActiveMonitor.Value);
+            };
+
+            // act
+            viewModel.OpenWindowOnActiveMonitor = true;
+        }
+
         [TestMethod]
         public void RestoreSize_ShouldSetValue2True_WhenSuccessful()
         {
@@ -210,23 +227,6 @@ namespace ViewModelTests
 
             // act
             viewModel.RestoreSize = true;
-        }
-
-        public void OpenWindowOnActiveMonitor_ShouldSetValue2True_WhenSuccessful()
-        {
-            // arrange
-            FancyZonesViewModel viewModel = new FancyZonesViewModel();
-            Assert.IsFalse(viewModel.OpenWindowOnActiveMonitor); // check if value was initialized to false.
-
-            // Assert
-            ShellPage.DefaultSndMSGCallback = msg =>
-            {
-                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
-                Assert.IsTrue(snd.Powertoys.FancyZones.Properties.FancyzonesOpenWindowOnActiveMonitor.Value);
-            };
-
-            // act
-            viewModel.OpenWindowOnActiveMonitor = true;
         }
 
         [TestMethod]
