@@ -39,5 +39,7 @@
     <system:String x:Key="powertoys_run_plugin_program_internet_shortcut_application">Weblink-Anwendung</system:String>
     <system:String x:Key="powertoys_run_plugin_program_web_application">Web-Anwendung</system:String>
     <system:String x:Key="powertoys_run_plugin_program_run_command">Run command</system:String>
+    <system:String x:Key="powertoys_run_plugin_program_file_name">Name</system:String>
+    <system:String x:Key="powertoys_run_plugin_program_file_path">Path</system:String>
 
 </ResourceDictionary>

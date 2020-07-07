@@ -140,17 +140,6 @@ public:
         }
     }
 
-    // This function is used to add the hardcoded mappings
-    void init_map()
-    {
-        ////App-specific shortcut remappings
-        //keyboardManagerState.appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x43 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+C to Ctrl+V
-        //keyboardManagerState.appSpecificShortcutReMap[L"msedge.exe"][std::vector<DWORD>({ VK_LMENU, 0x44 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x46 }), false); // Alt+D to Ctrl+F
-        //keyboardManagerState.appSpecificShortcutReMap[L"OUTLOOK.EXE"][std::vector<DWORD>({ VK_LCONTROL, 0x46 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x45 }), false); // Ctrl+F to Ctrl+E
-        //keyboardManagerState.appSpecificShortcutReMap[L"MicrosoftEdge.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x58 })] = std::make_pair(std::vector<WORD>({ VK_LCONTROL, 0x56 }), false); // Ctrl+X to Ctrl+V
-        //keyboardManagerState.appSpecificShortcutReMap[L"Calculator.exe"][std::vector<DWORD>({ VK_LCONTROL, 0x47 })] = std::make_pair(std::vector<WORD>({ VK_LSHIFT, 0x32 }), false); // Ctrl+G to Shift+2
-    }
-
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
@@ -372,27 +361,17 @@ public:
         //// Remap a key to behave like a modifier instead of a toggle
         //intptr_t SingleKeyToggleToModResult = KeyboardEventHandlers::HandleSingleKeyToggleToModEvent(inputHandler, data, keyboardManagerState);
 
-        //// Handle an app-specific shortcut remapping
-        //intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(inputHandler, data, keyboardManagerState);
+        // Handle an app-specific shortcut remapping
+        intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(inputHandler, data, keyboardManagerState);
 
-        //// If an app-specific shortcut is remapped then the os-level shortcut remapping should be suppressed.
-        //if (AppSpecificShortcutRemapResult == 1)
-        //{
-        //    return 1;
-        //}
-
-        // Handle an os-level shortcut remapping
-        intptr_t OSLevelShortcutRemapResult = KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(inputHandler, data, keyboardManagerState);
-
-        // If any of the supported types of remappings took place, then suppress the key event
-        if ((SingleKeyRemapResult + OSLevelShortcutRemapResult) > 0)
+        // If an app-specific shortcut is remapped then the os-level shortcut remapping should be suppressed.
+        if (AppSpecificShortcutRemapResult == 1)
         {
             return 1;
         }
-        else
-        {
-            return 0;
-        }
+
+        // Handle an os-level shortcut remapping
+        return KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(inputHandler, data, keyboardManagerState);
     }
 };
 

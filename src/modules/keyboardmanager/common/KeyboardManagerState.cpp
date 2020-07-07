@@ -110,6 +110,13 @@ void KeyboardManagerState::ClearSingleKeyRemaps()
     singleKeyReMap.clear();
 }
 
+// Function to clear the App specific shortcut remapping table
+void KeyboardManagerState::ClearAppSpecificShortcuts()
+{
+    std::lock_guard<std::mutex> lock(appSpecificShortcutReMap_mutex);
+    appSpecificShortcutReMap.clear();
+}
+
 // Function to add a new OS level shortcut remapping
 bool KeyboardManagerState::AddOSLevelShortcut(const Shortcut& originalSC, const Shortcut& newSC)
 {
@@ -139,6 +146,32 @@ bool KeyboardManagerState::AddSingleKeyRemap(const DWORD& originalKey, const DWO
     }
 
     singleKeyReMap[originalKey] = newRemapKey;
+    return true;
+}
+
+// Function to add a new App specific shortcut remapping
+bool KeyboardManagerState::AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const Shortcut& newSC)
+{
+    std::lock_guard<std::mutex> lock(appSpecificShortcutReMap_mutex);
+
+    // Check if there are any app specific shortcuts for this app
+    auto appIt = appSpecificShortcutReMap.find(app);
+    if (appIt != appSpecificShortcutReMap.end())
+    {
+        // Check if the shortcut is already remapped
+        auto shortcutIt = appSpecificShortcutReMap[app].find(originalSC);
+        if (shortcutIt != appSpecificShortcutReMap[app].end())
+        {
+            return false;
+        }
+    }
+
+    // Convert app name to lower case
+    std::wstring process_name;
+    process_name.resize(app.length());
+    std::transform(app.begin(), app.end(), process_name.begin(), towlower);
+
+    appSpecificShortcutReMap[process_name][originalSC] = RemapShortcut(newSC);
     return true;
 }
 

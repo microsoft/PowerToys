@@ -42,4 +42,8 @@
     <SolidColorBrush x:Key="ScrollBarLineButtonBackground" Color="Transparent"/>
     <Color x:Key="ScrollBarLineButtonBackgroundPointerOver">#FF000000</Color>
     <Color x:Key="ScrollBarLineButtonBackgroundPointerPressed">#FF000000</Color>
+
+    <SolidColorBrush x:Key="ToolTipBorderBrushKey" Color="#FF000000" />
+    <SolidColorBrush x:Key="ToolTipForegroundBrushKey" Color="#FF000000" />
+    <SolidColorBrush x:Key="ToolTipBackgroundBrushKey" Color="#FFF2F2F2" />
 </ResourceDictionary>
