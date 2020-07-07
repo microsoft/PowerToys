@@ -286,7 +286,6 @@ namespace FancyZonesEditor
                 int[,] cellChildMap = _model.CellChildMap;
                 int[,] newCellChildMap = new int[rows, cols];
 
-                double newTotalExtent = actualWidth - (space * (cols + 1));
                 int draggedResizerStartCol = resizer.StartCol;
 
                 if (delta > 0)
@@ -319,14 +318,6 @@ namespace FancyZonesEditor
 
                     _model.ColumnPercents[draggedResizerStartCol + 1] = split[0].Percent;
                     _model.ColumnPercents.Insert(draggedResizerStartCol + 2, split[1].Percent);
-
-                    for (int col = 0; col < cols; col++)
-                    {
-                        if (col != draggedResizerStartCol + 1 && col != draggedResizerStartCol + 2)
-                        {
-                            _colInfo[col].RecalculatePercent(newTotalExtent);
-                        }
-                    }
                 }
                 else
                 {
@@ -364,14 +355,6 @@ namespace FancyZonesEditor
 
                     _model.ColumnPercents[draggedResizerStartCol] = split[0].Percent;
                     _model.ColumnPercents.Insert(draggedResizerStartCol, split[1].Percent);
-
-                    for (int col = 0; col < cols; col++)
-                    {
-                        if (col != draggedResizerStartCol)
-                        {
-                            _colInfo[col].RecalculatePercent(newTotalExtent);
-                        }
-                    }
                 }
 
                 FixAccuracyError(_colInfo, _model.ColumnPercents);
@@ -385,7 +368,6 @@ namespace FancyZonesEditor
                 int[,] cellChildMap = _model.CellChildMap;
                 int[,] newCellChildMap = new int[rows, cols];
 
-                double newTotalExtent = actualWidth - (space * (rows + 1));
                 int draggedResizerStartRow = resizer.StartRow;
 
                 if (delta > 0)
@@ -422,7 +404,7 @@ namespace FancyZonesEditor
                 else
                 {
                     int sourceRow = 0;
-                    for (int row = 0; row < rows; row++) 
+                    for (int row = 0; row < rows; row++)
                     {
                         for (int col = 0; col < cols; col++)
                         {
