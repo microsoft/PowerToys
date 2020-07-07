@@ -421,7 +421,6 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnd(HWND window, POINT const& ptScreen) noexc
         POINT ptClient = ptScreen;
         MapWindowPoints(nullptr, m_window.get(), &ptClient, 1);
         m_activeZoneSet->MoveWindowIntoZoneByIndexSet(window, m_window.get(), m_highlightZone);
-        // m_activeZoneSet->MoveWindowIntoZoneByPoint(window, m_window.get(), ptClient);
 
         SaveWindowProcessToZoneIndex(window);
     }
