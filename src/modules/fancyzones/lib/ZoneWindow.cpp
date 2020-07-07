@@ -388,7 +388,42 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
         {
             std::vector<int> newHighlightZone;
             std::set_union(begin(highlightZone), end(highlightZone), begin(m_highlightZone), end(m_highlightZone), std::back_inserter(newHighlightZone));
-            highlightZone = std::move(newHighlightZone);
+            
+            RECT boundingRect;
+            bool boundingRectEmpty = true;
+            auto zones = m_activeZoneSet->GetZones();
+
+            for (int zoneId : newHighlightZone)
+            {
+                RECT rect = zones[zoneId]->GetZoneRect();
+                if (boundingRectEmpty)
+                {
+                    boundingRect = rect;
+                    boundingRectEmpty = false;
+                }
+                else
+                {
+                    boundingRect.left = min(boundingRect.left, rect.left);
+                    boundingRect.top = min(boundingRect.top, rect.top);
+                    boundingRect.right = max(boundingRect.right, rect.right);
+                    boundingRect.bottom = max(boundingRect.bottom, rect.bottom);
+                }
+            }
+
+            highlightZone.clear();
+            
+            if (!boundingRectEmpty)
+            {
+                for (size_t zoneId = 0; zoneId < zones.size(); zoneId++)
+                {
+                    RECT rect = zones[zoneId]->GetZoneRect();
+                    if (boundingRect.left <= rect.left && rect.right <= boundingRect.right &&
+                        boundingRect.top <= rect.top && rect.bottom <= boundingRect.bottom)
+                    {
+                        highlightZone.push_back(static_cast<int>(zoneId));
+                    }
+                }
+            }
         }
 
         redraw = (highlightZone != m_highlightZone);
