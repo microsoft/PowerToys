@@ -47,7 +47,7 @@ namespace KeyboardManagerConstants
     // Default window sizes
     inline const int DefaultEditKeyboardWindowWidth = 800;
     inline const int DefaultEditKeyboardWindowHeight = 600;
-    inline const int DefaultEditShortcutsWindowWidth = 1000;
+    inline const int DefaultEditShortcutsWindowWidth = 1050;
     inline const int DefaultEditShortcutsWindowHeight = 600;
 
     // Key Remap table constants
@@ -75,6 +75,7 @@ namespace KeyboardManagerConstants
     inline const DWORD64 TableArrowColWidth = 20;
     inline const DWORD64 TableRemoveColWidth = 20;
     inline const DWORD64 TableWarningColWidth = 20;
+    inline const DWORD64 TableTargetAppColWidth = ShortcutTableDropDownWidth + 50;
 
     // Shared style constants for both Remap Table and Shortcut Table
     inline const DWORD64 HeaderButtonWidth = 100;

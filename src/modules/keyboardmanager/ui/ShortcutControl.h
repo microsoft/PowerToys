@@ -28,7 +28,7 @@ public:
 
     ShortcutControl(Grid table, const int colIndex, TextBox targetApp)
     {
-        shortcutDropDownStackPanel.Spacing(10);
+        shortcutDropDownStackPanel.Spacing(KeyboardManagerConstants::ShortcutTableDropDownSpacing);
         shortcutDropDownStackPanel.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
 
         typeShortcut.Content(winrt::box_value(L"Type Shortcut"));

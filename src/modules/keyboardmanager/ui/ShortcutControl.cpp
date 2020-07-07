@@ -42,9 +42,10 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     // ShortcutControl for the new shortcut
     parent.Children().Append(keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->getShortcutControl());
 
-    targetAppTextBox.Width(100);
-    targetAppTextBox.VerticalAlignment(VerticalAlignment::Center);
-    targetAppTextBox.HorizontalAlignment(HorizontalAlignment::Left);
+    targetAppTextBox.Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
+    targetAppTextBox.Margin({ 0, 0, 0, KeyboardManagerConstants::ShortcutTableDropDownSpacing });
+    targetAppTextBox.VerticalAlignment(VerticalAlignment::Bottom);
+    targetAppTextBox.HorizontalAlignment(HorizontalAlignment::Center);
     targetAppTextBox.PlaceholderText(KeyboardManagerConstants::DefaultAppName);
     targetAppTextBox.Text(targetAppName);
 

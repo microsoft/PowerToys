@@ -193,8 +193,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     newColumn.MinWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
     newColumn.MaxWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
     ColumnDefinition targetAppColumn;
-    targetAppColumn.MinWidth(KeyboardManagerConstants::ShortcutTableDropDownWidth);
-    targetAppColumn.MaxWidth(KeyboardManagerConstants::ShortcutTableDropDownWidth);
+    targetAppColumn.MinWidth(KeyboardManagerConstants::TableTargetAppColWidth);
     ColumnDefinition removeColumn;
     removeColumn.MinWidth(KeyboardManagerConstants::TableRemoveColWidth);
     shortcutTable.Margin({ 10, 10, 10, 20 });
@@ -221,8 +220,10 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Third header textblock in the header row of the shortcut table
     TextBlock targetAppHeader;
     targetAppHeader.Text(L"Target App:");
+    targetAppHeader.Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
     targetAppHeader.FontWeight(Text::FontWeights::Bold());
     targetAppHeader.Margin({ 0, 0, 0, 10 });
+    targetAppHeader.HorizontalAlignment(HorizontalAlignment::Center);
 
     shortcutTable.SetColumn(originalShortcutHeader, KeyboardManagerConstants::ShortcutTableOriginalColIndex);
     shortcutTable.SetRow(originalShortcutHeader, 0);
