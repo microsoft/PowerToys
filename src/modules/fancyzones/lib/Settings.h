@@ -16,8 +16,8 @@ struct Settings
     bool overrideSnapHotkeys = false;
     bool moveWindowAcrossMonitors = false;
     bool appLastZone_moveWindows = false;
-    bool restoreSize = false;
     bool openWindowOnActiveMonitor = false;
+    bool restoreSize = false;
     bool use_cursorpos_editor_startupscreen = true;
     bool showZonesOnAllMonitors = false;
     bool makeDraggedWindowTransparent = true;
