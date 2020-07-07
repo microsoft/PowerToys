@@ -238,6 +238,8 @@ public:
     HideZoneWindow() noexcept;
     IFACEMETHODIMP_(void)
     UpdateActiveZoneSet() noexcept;
+    IFACEMETHODIMP_(void)
+    ClearSelectedZones() noexcept;
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
@@ -552,6 +554,16 @@ IFACEMETHODIMP_(void)
 ZoneWindow::UpdateActiveZoneSet() noexcept
 {
     CalculateZoneSet();
+}
+
+IFACEMETHODIMP_(void)
+ZoneWindow::ClearSelectedZones() noexcept
+{
+    if (m_highlightZone.size())
+    {
+        m_highlightZone.clear();
+        InvalidateRect(m_window.get(), nullptr, true);
+    }
 }
 
 #pragma region private

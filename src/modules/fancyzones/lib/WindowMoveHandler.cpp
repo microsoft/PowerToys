@@ -266,6 +266,7 @@ void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptS
                 {
                     // The drag has moved to a different monitor.
                     m_zoneWindowMoveSize->RestoreOriginalTransparency();
+                    m_zoneWindowMoveSize->ClearSelectedZones();
 
                     if (!m_settings->GetSettings()->showZonesOnAllMonitors)
                     {
