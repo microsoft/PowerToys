@@ -15,7 +15,7 @@ using Windows.ApplicationModel;
 namespace Wox.Test.Plugins
 {
     [TestFixture]
-    public class ProgramPluginTest
+    public class Win32Tests
     {
         static Win32 notepad_appdata = new Win32
         {
@@ -155,6 +155,7 @@ namespace Wox.Test.Plugins
         static Win32 cmder_run_command = new Win32
         {
             Name = "Cmder",
+            Description = "Cmder: Lovely Console Emulator",
             ExecutableName = "Cmder.exe",
             FullPath = "c:\\tools\\cmder\\cmder.exe",
             LnkResolvedPath = null,
@@ -418,6 +419,21 @@ namespace Wox.Test.Plugins
             mock.Verify(x => x.GetTranslation("wox_plugin_program_run_as_administrator"), Times.Once());
             mock.Verify(x => x.GetTranslation("wox_plugin_program_open_containing_folder"), Times.Once());
             mock.Verify(x => x.GetTranslation("wox_plugin_program_open_in_console"), Times.Once());
+        }
+
+        [Test]
+        public void Win32Apps_ShouldSetNameAsTitle_WhileCreatingResult()
+        {
+            var mock = new Mock<IPublicAPI>();
+            mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
+            StringMatcher.Instance = new StringMatcher();
+
+            // Act
+            var result = cmder_run_command.Result("cmder", mock.Object);
+
+            // Assert
+            Assert.IsTrue(result.Title.Equals(cmder_run_command.Name));
+            Assert.IsFalse(result.Title.Equals(cmder_run_command.Description));
         }
     }
 }

@@ -763,15 +763,6 @@ namespace JSONHelpers
         return customZoneSetsJSON;
     }
 
-    void FancyZonesData::CustomZoneSetsToJsonFile(std::wstring_view filePath) const
-    {
-        std::scoped_lock lock{ dataLock };
-        const auto& customZoneSetsJson = SerializeCustomZoneSets();
-        json::JsonObject root{};
-        root.SetNamedValue(L"custom-zone-sets", customZoneSetsJson);
-        json::to_file(filePath, root);
-    }
-
     void FancyZonesData::LoadFancyZonesData()
     {
         std::scoped_lock lock{ dataLock };

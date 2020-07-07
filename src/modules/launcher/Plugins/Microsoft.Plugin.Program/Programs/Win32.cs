@@ -53,6 +53,7 @@ namespace Microsoft.Plugin.Program.Programs
             RUN_COMMAND = 3
         }
 
+        // Function to calculate the score of a result
         private int Score(string query)
         {
             var nameMatch = StringMatcher.FuzzySearch(query, Name);
@@ -104,7 +105,7 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         // Function to set the subtitle based on the Type of application
-        public string SetSubtitle(uint AppType, IPublicAPI api)
+        private string SetSubtitle(IPublicAPI api)
         {
             if(AppType == (uint)ApplicationTypes.WIN32_APPLICATION)
             {
@@ -169,7 +170,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             var result = new Result
             {
-                SubTitle = SetSubtitle(AppType, api),
+                SubTitle = SetSubtitle(api),
                 IcoPath = IcoPath,
                 Score = score,
                 ContextData = this,
@@ -188,17 +189,13 @@ namespace Microsoft.Plugin.Program.Programs
                 }
             };
 
-            if (Description.Length >= Name.Length &&
-                Description.Substring(0, Name.Length) == Name)
-            {
-                result.Title = Description;
-                result.TitleHighlightData = StringMatcher.FuzzySearch(query, Description).MatchData;
-            }
-            else
-            {
-                result.Title = Name;
-                result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
-            }
+            // To set the title for the result to always be the name of the application            
+            result.Title = Name;
+            result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
+
+            var toolTipTitle = string.Format("{0} : {1}", api.GetTranslation("powertoys_run_plugin_program_file_name"), result.Title);
+            var toolTipText = string.Format("{0} : {1}", api.GetTranslation("powertoys_run_plugin_program_file_path"), FullPath);
+            result.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
 
             return result;
         }
