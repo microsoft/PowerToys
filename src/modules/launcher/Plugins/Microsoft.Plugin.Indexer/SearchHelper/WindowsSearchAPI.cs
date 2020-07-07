@@ -112,5 +112,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                 return ExecuteQuery(queryHelper, keyword);
             }
         }
+
+       
     }
 }
