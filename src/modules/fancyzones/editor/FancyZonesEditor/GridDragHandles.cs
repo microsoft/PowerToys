@@ -1,4 +1,9 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
+using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using FancyZonesEditor.Models;
@@ -188,99 +193,196 @@ namespace FancyZonesEditor
 
         public void UpdateAfterNegativeSwap(GridResizer resizer, double delta)
         {
-            Action<GridResizer> horizontalResizersRowsUpd = r =>
+            bool isHorizontal = resizer.Orientation == Orientation.Horizontal;
+            if (delta < 0)
             {
-                if (r.StartCol == resizer.StartCol)
+                DecreaseResizerValues(resizer, resizer.Orientation);
+                List<GridResizer> swappedResizers = new List<GridResizer>();
+
+                foreach (GridResizer r in _resizers)
                 {
-                    r.StartCol++;
-                }
-                else if (r.StartCol == resizer.EndCol)
-                {
-                    r.StartCol--;
+                    if (r.Orientation == resizer.Orientation)
+                    {
+                        if ((isHorizontal && r.StartRow == resizer.StartRow && r.StartCol != resizer.StartCol) ||
+                            (!isHorizontal && r.StartCol == resizer.StartCol && r.StartRow != resizer.StartRow))
+                        {
+                            IncreaseResizerValues(r, resizer.Orientation);
+                            swappedResizers.Add(r);
+                        }
+                    }
                 }
 
-                if (r.EndCol == resizer.StartCol)
-                {
-                    r.EndCol++;
-                }
-                else if (r.EndCol == resizer.EndCol)
-                {
-                    r.EndCol--;
-                }
-            };
-
-            Action<GridResizer> verticalResizersColumnsUpd = r =>
-            {
-                if (r.StartRow == resizer.StartRow)
-                {
-                    r.StartRow++;
-                }
-                else if (r.StartRow == resizer.EndRow)
-                {
-                    r.StartRow--;
-                }
-
-                if (r.EndRow == resizer.StartRow)
-                {
-                    r.EndRow++;
-                }
-                else if (r.EndRow == resizer.EndRow)
-                {
-                    r.EndRow--;
-                }
-            };
-
-            Action differentOrientationResizersUpdate = () =>
-            {
                 foreach (GridResizer r in _resizers)
                 {
                     if (r.Orientation != resizer.Orientation)
                     {
-                        if (resizer.Orientation == Orientation.Vertical)
+                        if (isHorizontal)
                         {
-                            horizontalResizersRowsUpd(r);
+                            // vertical resizers corresponfding to dragged resizer
+                            if (r.StartCol >= resizer.StartCol && r.EndCol < resizer.EndCol)
+                            {
+                                if (r.StartRow == resizer.StartRow + 2)
+                                {
+                                    r.StartRow--;
+                                }
+
+                                if (r.EndRow == resizer.EndRow + 1)
+                                {
+                                    r.EndRow--;
+                                }
+                            }
+                            else
+                            {
+                                // vertical resizers corresponfding to swapped resizers
+                                foreach (GridResizer sr in swappedResizers)
+                                {
+                                    if (r.StartCol >= sr.StartCol && r.EndCol <= sr.EndCol)
+                                    {
+                                        if (r.StartRow == resizer.StartRow + 1)
+                                        {
+                                            r.StartRow++;
+                                        }
+
+                                        if (r.EndRow == resizer.EndRow)
+                                        {
+                                            r.EndRow++;
+                                        }
+                                    }
+                                }
+                            }
                         }
                         else
                         {
-                            verticalResizersColumnsUpd(r);
+                            // horizontal resizers corresponfding to dragged resizer
+                            if (r.StartRow >= resizer.StartRow && r.EndRow < resizer.EndRow)
+                            {
+                                if (r.StartCol == resizer.StartCol + 2)
+                                {
+                                    r.StartCol--;
+                                }
+
+                                if (r.EndCol == resizer.EndCol + 1)
+                                {
+                                    r.EndCol--;
+                                }
+                            }
+                            else
+                            {
+                                // horizontal resizers corresponfding to swapped resizers
+                                foreach (GridResizer sr in swappedResizers)
+                                {
+                                    if (r.StartRow >= sr.StartRow && r.EndRow <= sr.EndRow)
+                                    {
+                                        if (r.StartCol == resizer.StartCol + 1)
+                                        {
+                                            r.StartCol++;
+                                        }
+
+                                        if (r.EndCol == resizer.EndCol)
+                                        {
+                                            r.EndCol++;
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-            };
-
-            Action<bool> sameOrientationResizersUpdate = isDeltaNegative =>
-            {
-                foreach (GridResizer r in _resizers)
-                {
-                    bool isSameCol = resizer.StartRow != r.StartRow && resizer.StartCol == r.StartCol && resizer.Orientation == Orientation.Vertical;
-                    bool isSameRow = resizer.StartRow == r.StartRow && resizer.StartCol != r.StartCol && resizer.Orientation == Orientation.Horizontal;
-                    if (r.Orientation == resizer.Orientation && (isSameCol || isSameRow))
-                    {
-                        if (isDeltaNegative)
-                        {
-                            IncreaseResizerValues(r, resizer.Orientation);
-                        }
-                        else
-                        {
-                            DecreaseResizerValues(r, resizer.Orientation);
-                        }
-
-                        break;
-                    }
-                }
-            };
-
-            if (delta < 0)
-            {
-                differentOrientationResizersUpdate();
-                DecreaseResizerValues(resizer, resizer.Orientation);
-                sameOrientationResizersUpdate(delta < 0);
             }
             else
             {
                 IncreaseResizerValues(resizer, resizer.Orientation);
-                differentOrientationResizersUpdate();
-                sameOrientationResizersUpdate(delta < 0);
+                List<GridResizer> swappedResizers = new List<GridResizer>();
+
+                foreach (GridResizer r in _resizers)
+                {
+                    if (r.Orientation == resizer.Orientation)
+                    {
+                        if ((isHorizontal && r.StartRow == resizer.StartRow && r.StartCol != resizer.StartCol) ||
+                            (!isHorizontal && r.StartCol == resizer.StartCol && r.StartRow != resizer.StartRow))
+                        {
+                            DecreaseResizerValues(r, resizer.Orientation);
+                            swappedResizers.Add(r);
+                        }
+                    }
+                }
+
+                foreach (GridResizer r in _resizers)
+                {
+                    if (r.Orientation != resizer.Orientation)
+                    {
+                        if (isHorizontal)
+                        {
+                            // vertical resizers corresponfding to dragged resizer
+                            if (r.StartCol >= resizer.StartCol && r.EndCol < resizer.EndCol)
+                            {
+                                if (r.StartRow == resizer.StartRow)
+                                {
+                                    r.StartRow++;
+                                }
+
+                                if (r.EndRow == resizer.EndRow - 1)
+                                {
+                                    r.EndRow++;
+                                }
+                            }
+                            else
+                            {
+                                // vertical resizers corresponfding to swapped resizers
+                                foreach (GridResizer sr in swappedResizers)
+                                {
+                                    if (r.StartCol >= sr.StartCol && r.EndCol <= sr.EndCol)
+                                    {
+                                        if (r.StartRow == resizer.StartRow + 1)
+                                        {
+                                            r.StartRow--;
+                                        }
+
+                                        if (r.EndRow == resizer.EndRow)
+                                        {
+                                            r.EndRow--;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // horizontal resizers corresponfding to dragged resizer
+                            if (r.StartRow >= resizer.StartRow && r.EndRow < resizer.EndRow)
+                            {
+                                if (r.StartCol == resizer.StartCol)
+                                {
+                                    r.StartCol++;
+                                }
+
+                                if (r.EndCol == resizer.EndCol - 1)
+                                {
+                                    r.EndCol++;
+                                }
+                            }
+                            else
+                            {
+                                // horizontal resizers corresponfding to swapped resizers
+                                foreach (GridResizer sr in swappedResizers)
+                                {
+                                    if (r.StartRow >= sr.StartRow && r.EndRow <= sr.EndRow)
+                                    {
+                                        if (r.StartCol == resizer.StartCol + 1)
+                                        {
+                                            r.StartCol--;
+                                        }
+
+                                        if (r.EndCol == resizer.EndCol)
+                                        {
+                                            r.EndCol--;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -419,7 +521,7 @@ namespace FancyZonesEditor
              * ------------------------------
              * |      4      |      5       |
              * ------------------------------
-             * 
+             *
              * Resizers between zones 0,1 and 2,3 are snapped to each other and adjascent.
              * ------------------------------
              * |      0      |      1       |
