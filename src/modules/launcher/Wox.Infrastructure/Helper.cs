@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Diagnostics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -73,6 +74,19 @@ namespace Wox.Infrastructure
                new StringEnumConverter()
            );
             return formatted;
+        }
+
+        public static ProcessStartInfo RunAsAdmin(string path)
+        {
+            var info = new ProcessStartInfo
+            {
+                FileName = path,
+                WorkingDirectory = Path.GetDirectoryName(path),
+                Verb = "runas",
+                UseShellExecute = true
+            };
+
+            return info;
         }
     }
 }

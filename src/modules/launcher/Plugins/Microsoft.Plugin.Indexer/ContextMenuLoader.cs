@@ -10,6 +10,7 @@ using System.Windows.Input;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Linq;
+using Wox.Infrastructure;
 
 namespace Microsoft.Plugin.Indexer
 {
@@ -94,17 +95,17 @@ namespace Microsoft.Plugin.Indexer
                 AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
                 Action = _ =>
                 {
-                    var info = new ProcessStartInfo
+                    try
                     {
-                        FileName = record.Path,
-                        WorkingDirectory = Path.GetDirectoryName(record.Path),
-                        Verb = "runas",
-                        UseShellExecute = true
-                    };
+                        Task.Run(() => StartProcess(Process.Start, Helper.RunAsAdmin(record.Path)));
+                        return true;
+                    }
+                    catch(Exception e)
+                    {
+                        Log.Exception($"|Microsoft.Plugin.Indexer.ContextMenu| Failed to obtain process info for {record.Path}, {e.Message}", e);
+                        return false;
+                    }
 
-                    Task.Run(() => StartProcess(Process.Start, info));
-
-                    return true;
                 }
             };
         }
@@ -116,10 +117,11 @@ namespace Microsoft.Plugin.Indexer
             {
                 runProcess(info);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 var name = "Plugin: Indexer";
                 var message = $"Unable to start: {info.FileName}";
+                Log.Exception($"|Microsoft.Plugin.Indexer.StartProcess| Failed to start process {info.FileName} in console, {e.Message}", e);
                 _context.API.ShowMsg(name, message, string.Empty);
             }
         }
