@@ -85,7 +85,7 @@ namespace Microsoft.Plugin.Folder
                         }
                         catch (Exception e)
                         {
-                            Log.Exception(e.Message, e);
+                            Log.Exception($"|Microsoft.Plugin.Folder.ContextMenuLoader.LoadContextMenus| Failed to open {record.FullPath} in console, {e.Message}", e);
                             return false;
                         }
                     }

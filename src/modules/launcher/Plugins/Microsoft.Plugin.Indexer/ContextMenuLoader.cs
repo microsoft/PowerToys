@@ -90,7 +90,7 @@ namespace Microsoft.Plugin.Indexer
                         }
                         catch (Exception e)
                         {
-                            Log.Exception(e.Message, e);
+                            Log.Exception($"|Microsoft.Plugin.Indexer.ContextMenuLoader.LoadContextMenus| Failed to open {record.Path} in console, {e.Message}", e);
                             return false;
                         }
                     }
