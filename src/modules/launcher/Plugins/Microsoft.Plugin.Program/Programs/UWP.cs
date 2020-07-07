@@ -263,7 +263,7 @@ namespace Microsoft.Plugin.Program.Programs
             public UWP Package { get; set; }
 
             // Function to calculate the score of a result
-            protected virtual int Score(string query)
+            private int Score(string query)
             {
                 var displayNameMatch = StringMatcher.FuzzySearch(query, DisplayName);
                 var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
@@ -275,12 +275,6 @@ namespace Microsoft.Plugin.Program.Programs
             private string SetSubtitle(IPublicAPI api)
             {
                 return api.GetTranslation("powertoys_run_plugin_program_packaged_application");
-            }
-
-            // Function to get matching indices
-            protected virtual List<int> GetMatchingData(string query)
-            {
-                return StringMatcher.FuzzySearch(query, Name).MatchData;
             }
 
             public Result Result(string query, IPublicAPI api)
@@ -306,8 +300,8 @@ namespace Microsoft.Plugin.Program.Programs
 
                 // To set the title to always be the displayname of the packaged application
                 result.Title = DisplayName;
-                result.TitleHighlightData = GetMatchingData(query);
-                
+                result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
+
                 return result;
             }
 
@@ -384,11 +378,6 @@ namespace Microsoft.Plugin.Program.Programs
 
             public Application(AppxPackageHelper.IAppxManifestApplication manifestApp, UWP package)
             {
-                if(manifestApp == null || package == null)
-                {
-                    return;
-                }
-
                 // This is done because we cannot use the keyword 'out' along with a property
                 string tmpUserModelId;
                 string tmpUniqueIdentifier;
