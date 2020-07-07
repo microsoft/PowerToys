@@ -13,7 +13,7 @@ using System.Linq;
 
 namespace Microsoft.Plugin.Indexer
 {
-    public class ContextMenuLoader : IContextMenu
+    internal class ContextMenuLoader : IContextMenu
     {
         private readonly PluginInitContext _context;
 

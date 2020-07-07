@@ -226,9 +226,6 @@ namespace Wox.Test.Plugins
             // Arrange
             var mockapi = new Mock<IPublicAPI>();
             var pluginInitContext = new PluginInitContext() { API = mockapi.Object };
-            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path")).Returns("copy path");
-            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_administrator")).Returns("run as admin");
-            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder")).Returns("open folder");
 
             ContextMenuLoader _contextMenuLoader = new ContextMenuLoader(pluginInitContext);
 
@@ -241,9 +238,10 @@ namespace Wox.Test.Plugins
             List<ContextMenuResult> contextMenuItems = _contextMenuLoader.LoadContextMenus(result);
 
             // Assert
-            Assert.IsTrue(contextMenuItems.Any(c => c.Title.Equals("copy path")));
-            Assert.IsTrue(contextMenuItems.Any(c => c.Title.Equals("run as admin")));
-            Assert.IsTrue(contextMenuItems.Any(c => c.Title.Equals("open folder")));
+            Assert.AreEqual(contextMenuItems.Count, 3);
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path"), Times.Once());
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_administrator"), Times.Once());
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder"), Times.Once());
         }
 
         [TestCase("item.pdf")]
@@ -254,9 +252,6 @@ namespace Wox.Test.Plugins
             // Arrange
             var mockapi = new Mock<IPublicAPI>();
             var pluginInitContext = new PluginInitContext() { API = mockapi.Object };
-            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path")).Returns("copy path");
-            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_administrator")).Returns("run as admin");
-            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder")).Returns("open folder");
 
             ContextMenuLoader _contextMenuLoader = new ContextMenuLoader(pluginInitContext);
 
@@ -269,9 +264,10 @@ namespace Wox.Test.Plugins
             List<ContextMenuResult> contextMenuItems = _contextMenuLoader.LoadContextMenus(result);
 
             // Assert
-            Assert.IsTrue(contextMenuItems.Any(c => c.Title.Equals("copy path")));
-            Assert.IsFalse(contextMenuItems.Any(c => c.Title.Equals("run as admin")));
-            Assert.IsTrue(contextMenuItems.Any(c => c.Title.Equals("open folder")));
+            Assert.AreEqual(contextMenuItems.Count, 2);
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path"), Times.Once());
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_administrator"), Times.Never());
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder"), Times.Once());
         }
 
         [TestCase("C:/PowerToys")]
@@ -281,9 +277,6 @@ namespace Wox.Test.Plugins
             // Arrange
             var mockapi = new Mock<IPublicAPI>();
             var pluginInitContext = new PluginInitContext() { API = mockapi.Object };
-            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path")).Returns("copy path");
-            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_administrator")).Returns("run as admin");
-            mockapi.Setup(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder")).Returns("open folder");
 
             ContextMenuLoader _contextMenuLoader = new ContextMenuLoader(pluginInitContext);
 
@@ -296,9 +289,10 @@ namespace Wox.Test.Plugins
             List<ContextMenuResult> contextMenuItems = _contextMenuLoader.LoadContextMenus(result);
 
             // Assert
-            Assert.IsTrue(contextMenuItems.Any(c => c.Title.Equals("copy path")));
-            Assert.IsFalse(contextMenuItems.Any(c => c.Title.Equals("run as admin")));
-            Assert.IsFalse(contextMenuItems.Any(c => c.Title.Equals("open folder")));
+            Assert.AreEqual(contextMenuItems.Count, 1);
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path"), Times.Once());
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_administrator"), Times.Never());
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder"), Times.Never());
         }
     }
 }
