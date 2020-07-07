@@ -34,14 +34,12 @@ namespace Microsoft.Plugin.Folder
                 }
 
                 var icoPath = (record.Type == ResultType.File) ? Main.FileImagePath : Main.FolderImagePath;
-                var fileOrFolder = (record.Type == ResultType.File) ? "file" : "folder";
                 contextMenus.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = _context.API.GetTranslation("Microsoft_plugin_folder_copy_path"),
                     Glyph = "\xE8C8",
                     FontFamily = "Segoe MDL2 Assets",
-                    SubTitle = $"Copy the current {fileOrFolder} path to clipboard",
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control,
                     Action = (context) =>
@@ -67,7 +65,6 @@ namespace Microsoft.Plugin.Folder
                     Title = _context.API.GetTranslation("Microsoft_plugin_folder_open_in_console"),
                     Glyph = "\xE756",
                     FontFamily = "Segoe MDL2 Assets",
-                    SubTitle = $"Open current {fileOrFolder} path in console",
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
 
