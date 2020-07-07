@@ -75,9 +75,46 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         ShellPage.DefaultSndMSGCallback(snd.ToString());
 
                         _powerRenameEnabled = value;
-                        OnPropertyChanged("IsEnabled");
-                        RaisePropertyChanged("GlobalAndMruEnabled");
+                        OnPropertyChanged(nameof(IsEnabled));
+                        OnPropertyChanged(nameof(TextColor));
+                        RaisePropertyChanged(nameof(GlobalAndMruEnabled));
                     }
+                }
+            }
+        }
+
+        public string TextColor
+        {
+            get
+            {
+                if (this.IsEnabled)
+                {
+                    GeneralSettings generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+
+                    var defaultTheme = new Windows.UI.ViewManagement.UISettings();
+
+                    var uiTheme = defaultTheme.GetColorValue(Windows.UI.ViewManagement.UIColorType.Background).ToString();
+
+                    if (generalSettings.Theme.ToLower() == "dark")
+                    {
+                        return "#FFFFFFFF";
+                    }
+                    else if (generalSettings.Theme.ToLower() == "light")
+                    {
+                        return "#FF000000";
+                    }
+                    else if (generalSettings.Theme.ToLower() == "system" && uiTheme == "#FF000000")
+                    {
+                        return "#FFFFFFFF";
+                    }
+                    else
+                    {
+                        return "#FF000000";
+                    }
+                }
+                else
+                {
+                    return "#FF7A7A7A";
                 }
             }
         }

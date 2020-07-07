@@ -5,9 +5,14 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
+    <Page.Resources>
+        <viewModel:PowerRenameViewModel x:Key="eventViewModel"/>
+    </Page.Resources>
+    
     <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
@@ -49,49 +54,54 @@
 
             <ToggleSwitch x:Uid="PowerRename_Toggle_Enable"
                           Margin="{StaticResource MediumTopMargin}" 
-                          IsOn="{Binding Mode=TwoWay, Path=IsEnabled}"                          
+                          IsOn="{Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource eventViewModel}}"                          
                            />
 
             <TextBlock  x:Uid="PowerRename_ShellIntegration"
-                        Style="{StaticResource SettingsGroupTitleStyle}"/>
+                        Style="{StaticResource SettingsGroupTitleStyle}"
+                        Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource eventViewModel}}"/>
 
             <ToggleSwitch x:Uid="PowerRename_Toggle_EnableOnContextMenu"
                           Margin="{StaticResource SmallTopMargin}" 
-                          IsOn="{Binding Mode=TwoWay, Path=EnabledOnContextMenu}"
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                          IsOn="{Binding Mode=TwoWay, Path=EnabledOnContextMenu, Source={StaticResource eventViewModel}}"
+                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource eventViewModel}}"
                            />
 
             <ToggleSwitch x:Uid="PowerRename_Toggle_EnableOnExtendedContextMenu"
                           Margin="{StaticResource SmallTopMargin}"
-                          IsOn="{Binding Mode=TwoWay, Path=EnabledOnContextExtendedMenu}"
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                          IsOn="{Binding Mode=TwoWay, Path=EnabledOnContextExtendedMenu, Source={StaticResource eventViewModel}}"
+                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource eventViewModel}}"
                            />
 
             <TextBlock x:Uid="PowerRename_AutoCompleteHeader" 
-                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource eventViewModel}}"/>
 
 
             <ToggleSwitch x:Uid="PowerRename_Toggle_AutoComplete"
                           Margin="{StaticResource SmallTopMargin}" 
-                          IsOn="{Binding Mode=TwoWay, Path=MRUEnabled}"
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                          IsOn="{Binding Mode=TwoWay, Path=MRUEnabled, Source={StaticResource eventViewModel}}"
+                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource eventViewModel}}"
                            />
 
-            <muxc:NumberBox x:Uid="PowerRename_Toggle_MaxDispListNum"
-                            SpinButtonPlacementMode="Compact"
+            <TextBlock x:Uid="PowerRename_Toggle_MaxDispListNum"
+                       Margin="{StaticResource SmallTopMargin}"
+                       Style="{StaticResource BodyTextBlockStyle}"
+                       Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource eventViewModel}}"/>
+            <muxc:NumberBox SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
-                            Margin="{StaticResource SmallTopMargin}" 
-                            Value="{Binding Mode=TwoWay, Path=MaxDispListNum}"
+                            Margin="{StaticResource HeaderTextTopMargin}"
+                            Value="{Binding Mode=TwoWay, Path=MaxDispListNum, Source={StaticResource eventViewModel}}"
                             Minimum="0"
                             Width="240"
                             Maximum="20"
-                            IsEnabled="{ Binding Mode=TwoWay, Path=GlobalAndMruEnabled}"
+                            IsEnabled="{ Binding Mode=TwoWay, Path=GlobalAndMruEnabled, Source={StaticResource eventViewModel}}"
                             />
 
             <ToggleSwitch x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch"
                           Margin="0, 17, 0, 0" 
-                          IsOn="{Binding Mode=TwoWay, Path=RestoreFlagsOnLaunch}"
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                          IsOn="{Binding Mode=TwoWay, Path=RestoreFlagsOnLaunch, Source={StaticResource eventViewModel}}"
+                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource eventViewModel}}"
                            />
         </StackPanel>
 
@@ -104,7 +114,8 @@
 
             <TextBlock x:Uid="About_PowerRename"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Margin="{StaticResource XSmallBottomMargin}"/>
+                       Margin="{StaticResource XSmallBottomMargin}"
+                       Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource eventViewModel}}"/>
 
             <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_PowerRename">
                 <TextBlock x:Uid="Module_overview" />
@@ -117,7 +128,8 @@
 
             <TextBlock 
                 x:Uid="AttributionTitle"
-                Style="{StaticResource SettingsGroupTitleStyle}" />
+                Style="{StaticResource SettingsGroupTitleStyle}"
+                Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource eventViewModel}}"/>
 
             <HyperlinkButton 
                 NavigateUri="https://github.com/chrdavis/SmartRename">

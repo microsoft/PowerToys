@@ -17,7 +17,7 @@
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
     </Page.Resources>
 
-    <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
+    <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}" x:Name="MainView">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
                 <VisualState x:Name="WideLayout">
@@ -61,7 +61,7 @@
 
             <Button Margin="{StaticResource MediumTopMargin}"
                     Style="{StaticResource AccentButtonStyle}"
-                    Command = "{Binding LaunchEditorEventHandler, Source={StaticResource eventViewModel}}"
+                    Command = "{Binding LaunchEditorEventHandler}"
                     IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}">
                 <StackPanel Orientation="Horizontal">
                     <Viewbox Height="12" Width="12">
@@ -73,15 +73,18 @@
 
             <TextBlock x:Uid="FancyZones_ZoneBehavior_GroupSettings"
                        Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{ Binding Mode=TwoWay, Path=TextColor}"
                        />
 
             <StackPanel Orientation="Horizontal" Margin="{StaticResource SmallTopMargin}">
                 <TextBlock x:Uid="FancyZones_HotkeyEditorControl"
-                           Text="Editor Hotkeys"/>
+                           Text="Editor Hotkeys"
+                           Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
                 <Viewbox Height="14" Width="14" Margin="5,2,0,0" >
                     <PathIcon
                         x:Uid="FancyZones_HotkeyEditorControl_Icon"
                         VerticalAlignment="Center"
+                        Foreground="{ Binding Mode=TwoWay, Path=TextColor}"
                         Data="M960 1920q-133 0-255-34t-230-96-194-150-150-195-97-229T0 960q0-133 34-255t96-230 150-194 195-150 229-97T960 0q133 0 255 34t230 96 194 150 150 195 97 229 34 256q0 133-34 255t-96 230-150 194-195 150-229 97-256 34zm0-1792q-115 0-221 30t-198 84-169 130-130 168-84 199-30 221q0 114 30 220t84 199 130 169 168 130 199 84 221 30q114 0 220-30t199-84 169-130 130-168 84-199 30-221q0-114-30-220t-84-199-130-169-168-130-199-84-221-30zm-64 640h128v640H896V768zm0-256h128v128H896V512z"/>
                 </Viewbox>
             </StackPanel>
@@ -90,7 +93,7 @@
                 x:Uid="FancyZones_HotkeyEditorControl_TextBox"
                 Width="240"
                 HorizontalAlignment="Left"
-                Margin="0,5,0,0"
+                Margin="{StaticResource HeaderTextTopMargin}"
                 HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}"
                 IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
                 />
@@ -155,7 +158,8 @@
 
 
             <TextBlock x:Uid="Appearance_GroupSettings"
-                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
 
             <StackPanel Orientation="Horizontal" Margin="{StaticResource SmallTopMargin}" Spacing="12">
             <Slider x:Uid="FancyZones_HighlightOpacity"
@@ -169,12 +173,14 @@
                 <TextBlock Text="{ Binding Mode=OneWay, Path=HighlightOpacity, Converter={StaticResource StringFormatConverter}, ConverterParameter=' {0}%' }" 
                            VerticalAlignment="Center"
                            FontSize="16"
-                           Margin="0,21,0,0"/>
+                           Margin="0,21,0,0"
+                           Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
             </StackPanel>
             
             <TextBlock x:Uid="FancyZones_ZoneHighlightColor" 
                        Style="{StaticResource BodyTextBlockStyle}"
-                       Margin="{StaticResource SmallTopMargin}" />
+                       Margin="{StaticResource SmallTopMargin}" 
+                       Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
 
             <muxc:DropDownButton Margin="0,4,0,0" IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" Padding="4,4,8,4">
                 <Border Width="48" CornerRadius="2" Height="24">
@@ -203,7 +209,8 @@
 
             <TextBlock x:Uid="FancyZones_InActiveColor" 
                        Style="{StaticResource BodyTextBlockStyle}"
-                       Margin="{StaticResource SmallTopMargin}" />
+                       Margin="{StaticResource SmallTopMargin}" 
+                       Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
 
             <muxc:DropDownButton Margin="0,4,0,0" IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" Padding="4,4,8,4">
                 <Border Width="48" CornerRadius="2" Height="24">
@@ -230,7 +237,8 @@
             
             <TextBlock x:Uid="FancyZones_BorderColor" 
                        Style="{StaticResource BodyTextBlockStyle}"
-                       Margin="{StaticResource SmallTopMargin}" />
+                       Margin="{StaticResource SmallTopMargin}" 
+                       Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
 
 
             <muxc:DropDownButton Margin="0,4,0,0" IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" Padding="4,4,8,4">
@@ -257,7 +265,8 @@
             </muxc:DropDownButton>
 
             <TextBlock x:Uid="FancyZones_ExcludeApps"
-                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
 
             <TextBox x:Uid="FancyZones_ExcludeApps_TextBoxControl"
                      Margin="{StaticResource SmallTopMargin}"
@@ -267,10 +276,13 @@
                      Height="160"
                      HorizontalAlignment="Left"
                      TextWrapping="Wrap"
-                     AcceptsReturn="True"/>
+                     AcceptsReturn="True"
+                     Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
 
         </StackPanel>
 
+
+        
         <StackPanel x:Name="SidePanel"
                     Orientation="Vertical"
                     HorizontalAlignment="Left"
@@ -279,7 +291,9 @@
 
             <TextBlock x:Uid="About_FancyZones"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Margin="{StaticResource XSmallBottomMargin}"/>
+                       Margin="{StaticResource XSmallBottomMargin}"
+                       Text="About Fancy Zones"
+                       Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
 
             <Image MaxWidth="240" Source="https://aka.ms/powerToysFancyZoneSettingImage" />
 

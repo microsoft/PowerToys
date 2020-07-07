@@ -82,7 +82,44 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     generalSettings.Enabled.ShortcutGuide = value;
                     OutGoingGeneralSettings snd = new OutGoingGeneralSettings(generalSettings);
                     ShellPage.DefaultSndMSGCallback(snd.ToString());
-                    OnPropertyChanged("IsEnabled");
+                    OnPropertyChanged(nameof(IsEnabled));
+                    OnPropertyChanged(nameof(TextColor));
+                }
+            }
+        }
+
+        public string TextColor
+        {
+            get
+            {
+                if (this.IsEnabled)
+                {
+                    GeneralSettings generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+
+                    var defaultTheme = new Windows.UI.ViewManagement.UISettings();
+
+                    var uiTheme = defaultTheme.GetColorValue(Windows.UI.ViewManagement.UIColorType.Background).ToString();
+
+                    if (generalSettings.Theme.ToLower() == "dark")
+                    {
+                        return "#FFFFFFFF";
+                    }
+                    else if (generalSettings.Theme.ToLower() == "light")
+                    {
+                        return "#FF000000";
+                    }
+                    else if (generalSettings.Theme.ToLower() == "system" && uiTheme == "#FF000000")
+                    {
+                        return "#FFFFFFFF";
+                    }
+                    else
+                    {
+                        return "#FF000000";
+                    }
+                }
+                else
+                {
+                    return "#FF7A7A7A";
                 }
             }
         }

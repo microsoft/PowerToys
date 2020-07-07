@@ -9,13 +9,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 {
     public sealed partial class ShortcutGuidePage : Page
     {
-        public ShortcutGuideViewModel ViewModel { get; set; }
-
         public ShortcutGuidePage()
         {
             InitializeComponent();
-            ViewModel = new ShortcutGuideViewModel();
-            this.ShortCutGuideView.DataContext = ViewModel;
         }
     }
 }
