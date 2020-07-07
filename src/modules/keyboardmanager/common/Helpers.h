@@ -73,8 +73,8 @@ namespace KeyboardManagerHelper
     // Function to set the value of a key event based on the arguments
     void SetKeyEvent(LPINPUT keyEventArray, int index, DWORD inputType, WORD keyCode, DWORD flags, ULONG_PTR extraInfo);
 
-    // Function to return the window in focus
-    HWND GetFocusWindowHandle();
+    // Function to return window handle for a full screen UWP app
+    HWND GetFullscreenUWPWindowHandle();
 
     // Function to return the executable name of the application in focus
     std::wstring GetCurrentApplication(bool keepPath);

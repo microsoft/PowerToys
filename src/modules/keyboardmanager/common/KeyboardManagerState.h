@@ -59,7 +59,7 @@ private:
     StackPanel currentShortcutUI1;
     StackPanel currentShortcutUI2;
     std::mutex currentShortcutUI_mutex;
-    
+
     // Stores the current configuration name.
     std::wstring currentConfig = KeyboardManagerConstants::DefaultConfiguration;
     std::mutex currentConfig_mutex;
@@ -120,11 +120,17 @@ public:
     // Function to clear the Keys remapping table
     void ClearSingleKeyRemaps();
 
+    // Function to clear the App specific shortcut remapping table
+    void ClearAppSpecificShortcuts();
+
     // Function to add a new single key remapping
     bool AddSingleKeyRemap(const DWORD& originalKey, const DWORD& newRemapKey);
 
     // Function to add a new OS level shortcut remapping
     bool AddOSLevelShortcut(const Shortcut& originalSC, const Shortcut& newSC);
+
+    // Function to add a new App specific level shortcut remapping
+    bool AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const Shortcut& newSC);
 
     // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
     void ConfigureDetectShortcutUI(const StackPanel& textBlock1, const StackPanel& textBlock2);
