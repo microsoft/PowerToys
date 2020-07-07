@@ -262,12 +262,19 @@ namespace Microsoft.Plugin.Program.Programs
             public string LogoPath { get; set; }
             public UWP Package { get; set; }
 
+            // Function to calculate the score of a result
             private int Score(string query)
             {
                 var displayNameMatch = StringMatcher.FuzzySearch(query, DisplayName);
                 var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
                 var score = new[] { displayNameMatch.Score, descriptionMatch.Score/2 }.Max();
                 return score;
+            }
+
+            // Function to set the subtitle based on the Type of application
+            private string SetSubtitle(IPublicAPI api)
+            {
+                return api.GetTranslation("powertoys_run_plugin_program_packaged_application");
             }
 
             public Result Result(string query, IPublicAPI api)
@@ -280,7 +287,7 @@ namespace Microsoft.Plugin.Program.Programs
 
                 var result = new Result
                 {
-                    SubTitle = "Packaged application",
+                    SubTitle = SetSubtitle(api),
                     Icon = Logo,
                     Score = score,
                     ContextData = this,
@@ -291,17 +298,10 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                 };
 
-                if (Description.Length >= DisplayName.Length &&
-                    Description.Substring(0, DisplayName.Length) == DisplayName)
-                {
-                    result.Title = Description;
-                    result.TitleHighlightData = StringMatcher.FuzzySearch(query, Description).MatchData;
-                }
-                else
-                {
-                    result.Title = DisplayName;
-                    result.TitleHighlightData = StringMatcher.FuzzySearch(query, DisplayName).MatchData;
-                }
+                // To set the title to always be the displayname of the packaged application
+                result.Title = DisplayName;
+                result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
+
 
                 var toolTipTitle = string.Format("{0} : {1}", api.GetTranslation("powertoys_run_plugin_program_file_name"), result.Title);
                 var toolTipText = string.Format("{0} : {1}", api.GetTranslation("powertoys_run_plugin_program_file_path"), Package.Location);

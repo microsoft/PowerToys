@@ -12,7 +12,7 @@ using System.IO;
 namespace Wox.Test.Plugins
 {
     [TestFixture]
-    public class ProgramPluginTest
+    public class Win32Tests
     {
         Win32 notepad_appdata = new Win32
         {
@@ -138,6 +138,7 @@ namespace Wox.Test.Plugins
         Win32 cmder_run_command = new Win32
         {
             Name = "Cmder",
+            Description = "Cmder: Lovely Console Emulator",
             ExecutableName = "Cmder.exe",
             FullPath = "c:\\tools\\cmder\\cmder.exe",
             LnkResolvedPath = null,
@@ -332,6 +333,22 @@ namespace Wox.Test.Plugins
 
             // the query matches the name (cmd) and is therefore not filtered (case-insensitive)
             Assert.IsTrue(cmd_run_command.QueryEqualsNameForRunCommands(query));
+        }
+
+        [Test]
+        public void Win32Apps_ShouldSetNameAsTitle_WhileCreatingResult()
+        {
+            // Arrange
+            var mock = new Mock<IPublicAPI>();
+            mock.Setup(x => x.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
+            StringMatcher.Instance = new StringMatcher();
+
+            // Act
+            var result = cmder_run_command.Result("cmder", mock.Object);
+
+            // Assert
+            Assert.IsTrue(result.Title.Equals(cmder_run_command.Name));
+            Assert.IsFalse(result.Title.Equals(cmder_run_command.Description));
         }
     }
 }
