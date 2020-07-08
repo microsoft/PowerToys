@@ -156,4 +156,4 @@ This module has a setting to serve as an example for each of the currently imple
 - ColorPicker property
 - CustomAction property
 
-![Image of the Options](/doc/images/example_powertoy/settings.png)
+![Image of the Options](/doc/images/settings/example_settings.png)
