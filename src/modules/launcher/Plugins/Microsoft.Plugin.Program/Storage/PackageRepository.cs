@@ -16,9 +16,12 @@ namespace Microsoft.Plugin.Program.Storage
     /// </summary>
     internal class PackageRepository : ListRepository<UWP.Application>, IRepository<UWP.Application>, IProgramRepository
     {
-        IPackageCatalog _packageCatalog;
-        public PackageRepository(IPackageCatalog packageCatalog, IStorage<IList<UWP.Application>> storage) : base(storage)
+        private IStorage<IList<UWP.Application>> _storage;
+
+        private IPackageCatalog _packageCatalog;
+        public PackageRepository(IPackageCatalog packageCatalog, IStorage<IList<UWP.Application>> storage)
         {
+            _storage = storage ?? throw new ArgumentNullException("storage", "StorageRepository requires an initialized storage interface");
             _packageCatalog = packageCatalog ?? throw new ArgumentNullException("packageCatalog", "PackageRepository expects an interface to be able to subscribe to package events");
             _packageCatalog.PackageInstalling += OnPackageInstalling;
             _packageCatalog.PackageUninstalling += OnPackageUninstalling;
@@ -55,7 +58,7 @@ namespace Microsoft.Plugin.Program.Storage
             {
                 //find apps associated with this package. 
                 var uwp = new UWP(args.Package);
-                var apps = _items.Where(a => a.Package.Equals(uwp)).ToArray();
+                var apps = Items.Where(a => a.Package.Equals(uwp)).ToArray();
                 foreach (var app in apps)
                 {
                     Remove(app);
@@ -74,7 +77,7 @@ namespace Microsoft.Plugin.Program.Storage
 
         public void Save()
         {
-            _storage.Save(_items);
+            _storage.Save(Items);
         }
 
         public void Load()
