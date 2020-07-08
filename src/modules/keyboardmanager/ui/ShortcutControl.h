@@ -7,9 +7,6 @@
 class ShortcutControl
 {
 private:
-    // Textblock to display the selected shortcut
-    TextBlock shortcutText;
-
     // Stack panel for the drop downs to display the selected shortcut
     StackPanel shortcutDropDownStackPanel;
 
@@ -25,21 +22,21 @@ public:
     // Pointer to the keyboard manager state
     static KeyboardManagerState* keyboardManagerState;
     // Stores the current list of remappings
-    static std::vector<std::vector<Shortcut>> shortcutRemapBuffer;
+    static std::vector<std::pair<std::vector<Shortcut>, std::wstring>> shortcutRemapBuffer;
     // Vector to store dynamically allocated KeyDropDownControl objects to avoid early destruction
     std::vector<std::unique_ptr<KeyDropDownControl>> keyDropDownControlObjects;
 
-    ShortcutControl(Grid table, const int colIndex)
+    ShortcutControl(Grid table, const int colIndex, TextBox targetApp)
     {
-        shortcutDropDownStackPanel.Spacing(10);
+        shortcutDropDownStackPanel.Spacing(KeyboardManagerConstants::ShortcutTableDropDownSpacing);
         shortcutDropDownStackPanel.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
 
         typeShortcut.Content(winrt::box_value(L"Type Shortcut"));
         typeShortcut.Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
-        typeShortcut.Click([&, table, colIndex](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+        typeShortcut.Click([&, table, colIndex, targetApp](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
             keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectShortcutWindowActivated, EditShortcutsWindowHandle);
             // Using the XamlRoot of the typeShortcut to get the root of the XAML host
-            createDetectShortcutWindow(sender, sender.as<Button>().XamlRoot(), shortcutRemapBuffer, *keyboardManagerState, colIndex, table);
+            createDetectShortcutWindow(sender, sender.as<Button>().XamlRoot(), shortcutRemapBuffer, *keyboardManagerState, colIndex, table, targetApp);
         });
 
         shortcutControlLayout.Margin({ 0, 0, 0, 10 });
@@ -47,19 +44,19 @@ public:
 
         shortcutControlLayout.Children().Append(typeShortcut);
         shortcutControlLayout.Children().Append(shortcutDropDownStackPanel);
-        KeyDropDownControl::AddDropDown(table, shortcutControlLayout, shortcutDropDownStackPanel, colIndex, shortcutRemapBuffer, keyDropDownControlObjects);
+        KeyDropDownControl::AddDropDown(table, shortcutControlLayout, shortcutDropDownStackPanel, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp);
         shortcutControlLayout.UpdateLayout();
     }
 
     // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
-    static void AddNewShortcutControlRow(Grid& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, Shortcut originalKeys = Shortcut(), Shortcut newKeys = Shortcut());
+    static void AddNewShortcutControlRow(Grid& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, Shortcut originalKeys = Shortcut(), Shortcut newKeys = Shortcut(), std::wstring targetAppName = L"");
 
     // Function to add a shortcut to the shortcut control as combo boxes
-    void AddShortcutToControl(Shortcut& shortcut, Grid table, StackPanel parent, KeyboardManagerState& keyboardManagerState, const int colIndex);
+    void AddShortcutToControl(Shortcut& shortcut, Grid table, StackPanel parent, KeyboardManagerState& keyboardManagerState, const int colIndex, TextBox targetApp);
 
     // Function to return the stack panel element of the ShortcutControl. This is the externally visible UI element which can be used to add it to other layouts
     StackPanel getShortcutControl();
 
     // Function to create the detect shortcut UI window
-    void createDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, KeyboardManagerState& keyboardManagerState, const int colIndex, Grid table);
+    void createDetectShortcutWindow(winrt::Windows::Foundation::IInspectable const& sender, XamlRoot xamlRoot, std::vector<std::pair<std::vector<Shortcut>, std::wstring>>& shortcutRemapBuffer, KeyboardManagerState& keyboardManagerState, const int colIndex, Grid table, TextBox targetApp);
 };
