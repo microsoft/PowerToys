@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -73,6 +74,17 @@ namespace Wox.Infrastructure
                new StringEnumConverter()
            );
             return formatted;
+        }
+
+        public static Process OpenInConsole(string path)
+        {
+            var processStartInfo = new ProcessStartInfo
+            {
+                WorkingDirectory = path,
+                FileName = "cmd.exe"
+            };
+
+            return Process.Start(processStartInfo);
         }
     }
 }

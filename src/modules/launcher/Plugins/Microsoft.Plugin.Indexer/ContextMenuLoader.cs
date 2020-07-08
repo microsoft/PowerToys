@@ -8,6 +8,7 @@ using Wox.Plugin;
 using Microsoft.Plugin.Indexer.SearchHelper;
 using System.Windows.Input;
 using System.Reflection;
+using Wox.Infrastructure;
 
 namespace Microsoft.Plugin.Indexer
 {
@@ -38,14 +39,12 @@ namespace Microsoft.Plugin.Indexer
                     contextMenus.Add(CreateOpenContainingFolderResult(record));
                 }
 
-                var fileOrFolder = (type == ResultType.File) ? "file" : "folder";
                 contextMenus.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = _context.API.GetTranslation("Microsoft_plugin_indexer_copy_path"),
                     Glyph = "\xE8C8",
                     FontFamily = "Segoe MDL2 Assets",
-                    SubTitle = $"Copy the current {fileOrFolder} path to clipboard",
                     AcceleratorKey = Key.C, 
                     AcceleratorModifiers = ModifierKeys.Control,
 
@@ -61,6 +60,37 @@ namespace Microsoft.Plugin.Indexer
                             var message = "Fail to set text in clipboard";
                             LogException(message, e);
                             _context.API.ShowMsg(message);
+                            return false;
+                        }
+                    }
+                });
+                contextMenus.Add(new ContextMenuResult
+                {
+                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                    Title = _context.API.GetTranslation("Microsoft_plugin_indexer_open_in_console"),
+                    Glyph = "\xE756",
+                    FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = Key.C,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+
+                    Action = (context) =>
+                    {
+                        try
+                        {
+                            if (type == ResultType.File)
+                            {
+                                Helper.OpenInConsole(Path.GetDirectoryName(record.Path));
+                            }
+                            else
+                            {
+                                Helper.OpenInConsole(record.Path);
+                            }
+
+                            return true;
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Exception($"|Microsoft.Plugin.Indexer.ContextMenuLoader.LoadContextMenus| Failed to open {record.Path} in console, {e.Message}", e);
                             return false;
                         }
                     }

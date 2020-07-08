@@ -293,8 +293,6 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
     }
     else
     {
-        ::RemoveProp(window, MULTI_ZONE_STAMP);
-
         if (m_settings->GetSettings()->restoreSize)
         {
             if (WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
@@ -325,6 +323,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
                 }
             }
         }
+        ::RemoveProp(window, MULTI_ZONE_STAMP);
     }
 
     // Also, hide all windows (regardless of settings)
