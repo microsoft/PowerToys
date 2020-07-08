@@ -1,13 +1,13 @@
 #pragma once
 #include "Helpers.h"
-#include "../common/keyboard_layout.h"
 #include "Shortcut.h"
 #include "RemapShortcut.h"
 #include "KeyDelay.h"
-#include "KeyboardManagerConstants.h"
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <mutex>
-#include <../common/settings_helpers.h>
+#include "KeyboardManagerConstants.h"
+
+class LayoutMap;
 
 namespace winrt::Windows::UI::Xaml::Controls
 {
