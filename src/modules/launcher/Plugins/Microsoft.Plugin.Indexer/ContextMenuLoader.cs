@@ -24,7 +24,7 @@ namespace Microsoft.Plugin.Indexer
             File
         }
 
-        // Extensions for applications
+        // Extensions for adding run as admin context menu item for applications
         private readonly string[]  appExtensions = { ".exe", ".bat", ".appref-ms", ".lnk" };
 
         public ContextMenuLoader(PluginInitContext context)
