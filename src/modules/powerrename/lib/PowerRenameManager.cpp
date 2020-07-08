@@ -832,23 +832,30 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
 
                                 bool isDateAttributeUsed = false;
                                 wchar_t datedName[MAX_PATH] = { 0 };
-                                PWSTR patterns[] = { L"$YYYY", L"$SSS", L"$MMM", L"$mmm", L"$FFF", L"$fff", 
+                                std::wstring patterns[] = { L"$YYYY", L"$SSS", L"$MMM", L"$mmm", L"$FFF", L"$fff", 
                                     L"$MM", L"$DD", L"$hh", L"$mm", L"$ss" };
                                 size_t patternsLength = ARRAYSIZE(patterns);
-                                for (size_t i = 0; !isDateAttributeUsed && i < patternsLength; i++)
-                                {
-                                    if (std::wstring(newNameToUse).find(std::wstring(patterns[i])) != std::string::npos)
-                                    {
-                                        isDateAttributeUsed = true;
-                                    }
-                                }
                                 SYSTEMTIME LocalTime;
-                                if (newNameToUse != nullptr && isDateAttributeUsed)
+
+                                if (newNameToUse != nullptr)
                                 {
-                                    spItem->get_date(&LocalTime);
-                                    if (SUCCEEDED(GetDatedFileName(datedName, ARRAYSIZE(datedName), newNameToUse, LocalTime)))
+                                    for (size_t i = 0; !isDateAttributeUsed && i < patternsLength; i++)
                                     {
-                                        newNameToUse = datedName;
+                                        std::wstring source(newNameToUse);
+                                        if (source.find(patterns[i]) != std::string::npos)
+                                        {
+                                            isDateAttributeUsed = true;
+                                        }
+                                    }
+                                    if (isDateAttributeUsed)
+                                    {
+                                        if (SUCCEEDED(spItem->get_date(&LocalTime)))
+                                        {
+                                            if (SUCCEEDED(GetDatedFileName(datedName, ARRAYSIZE(datedName), newNameToUse, LocalTime)))
+                                            {
+                                                newNameToUse = datedName;
+                                            }
+                                        }
                                     }
                                 }
 
