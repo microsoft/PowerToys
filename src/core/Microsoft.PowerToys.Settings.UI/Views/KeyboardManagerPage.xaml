@@ -292,6 +292,9 @@
                       SelectionMode="None"
                       IsSwipeEnabled="False"
                       Visibility="{x:Bind Path=ViewModel.RemapShortcuts, Mode=OneWay, Converter={StaticResource visibleIfNotEmptyConverter}}"
+                      ScrollViewer.HorizontalScrollMode="Enabled"
+                      ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                      ScrollViewer.IsHorizontalRailEnabled="True"
                       />
 
             <!--<AppBarButton x:Uid="KeyboardManager_RemapShortcutsButton"
