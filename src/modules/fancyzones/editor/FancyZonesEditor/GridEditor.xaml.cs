@@ -395,14 +395,14 @@ namespace FancyZonesEditor
                     }
 
                     _data.SplitOnDrag(resizer, delta, spacing, ActualWidth, ActualHeight);
-                    _dragHandles.UpdateAfterDragSplit(resizer, delta);
+                    _dragHandles.UpdateAfterDetach(resizer, delta);
                 }
                 else
                 {
                     _data.DragResizer(resizer, resizeInfo);
                     if (_data.SwapNegativePercents(resizer.Orientation, resizer.StartRow, resizer.EndRow, resizer.StartCol, resizer.EndCol))
                     {
-                        _dragHandles.UpdateAfterNegativeSwap(resizer, delta);
+                        _dragHandles.UpdateAfterSwap(resizer, delta);
                     }
                 }
             }

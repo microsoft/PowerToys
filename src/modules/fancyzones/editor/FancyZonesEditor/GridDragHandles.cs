@@ -191,192 +191,154 @@ namespace FancyZonesEditor
             }
         }
 
-        public void UpdateAfterNegativeSwap(GridResizer resizer, double delta)
+        public void UpdateAfterSwap(GridResizer resizer, double delta)
         {
-            bool isHorizontal = resizer.Orientation == Orientation.Horizontal;
-            if (delta < 0)
+            Orientation orientation = resizer.Orientation;
+            bool isHorizontal = orientation == Orientation.Horizontal;
+            bool isDeltaNegative = delta < 0;
+            List<GridResizer> swappedResizers = new List<GridResizer>();
+
+            if (isDeltaNegative)
             {
-                DecreaseResizerValues(resizer, resizer.Orientation);
-                List<GridResizer> swappedResizers = new List<GridResizer>();
-
-                foreach (GridResizer r in _resizers)
-                {
-                    if (r.Orientation == resizer.Orientation)
-                    {
-                        if ((isHorizontal && r.StartRow == resizer.StartRow && r.StartCol != resizer.StartCol) ||
-                            (!isHorizontal && r.StartCol == resizer.StartCol && r.StartRow != resizer.StartRow))
-                        {
-                            IncreaseResizerValues(r, resizer.Orientation);
-                            swappedResizers.Add(r);
-                        }
-                    }
-                }
-
-                foreach (GridResizer r in _resizers)
-                {
-                    if (r.Orientation != resizer.Orientation)
-                    {
-                        if (isHorizontal)
-                        {
-                            // vertical resizers corresponfding to dragged resizer
-                            if (r.StartCol >= resizer.StartCol && r.EndCol < resizer.EndCol)
-                            {
-                                if (r.StartRow == resizer.StartRow + 2)
-                                {
-                                    r.StartRow--;
-                                }
-
-                                if (r.EndRow == resizer.EndRow + 1)
-                                {
-                                    r.EndRow--;
-                                }
-                            }
-                            else
-                            {
-                                // vertical resizers corresponfding to swapped resizers
-                                foreach (GridResizer sr in swappedResizers)
-                                {
-                                    if (r.StartCol >= sr.StartCol && r.EndCol <= sr.EndCol)
-                                    {
-                                        if (r.StartRow == resizer.StartRow + 1)
-                                        {
-                                            r.StartRow++;
-                                        }
-
-                                        if (r.EndRow == resizer.EndRow)
-                                        {
-                                            r.EndRow++;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // horizontal resizers corresponfding to dragged resizer
-                            if (r.StartRow >= resizer.StartRow && r.EndRow < resizer.EndRow)
-                            {
-                                if (r.StartCol == resizer.StartCol + 2)
-                                {
-                                    r.StartCol--;
-                                }
-
-                                if (r.EndCol == resizer.EndCol + 1)
-                                {
-                                    r.EndCol--;
-                                }
-                            }
-                            else
-                            {
-                                // horizontal resizers corresponfding to swapped resizers
-                                foreach (GridResizer sr in swappedResizers)
-                                {
-                                    if (r.StartRow >= sr.StartRow && r.EndRow <= sr.EndRow)
-                                    {
-                                        if (r.StartCol == resizer.StartCol + 1)
-                                        {
-                                            r.StartCol++;
-                                        }
-
-                                        if (r.EndCol == resizer.EndCol)
-                                        {
-                                            r.EndCol++;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                DecreaseResizerValues(resizer, orientation);
             }
             else
             {
-                IncreaseResizerValues(resizer, resizer.Orientation);
-                List<GridResizer> swappedResizers = new List<GridResizer>();
+                IncreaseResizerValues(resizer, orientation);
+            }
 
-                foreach (GridResizer r in _resizers)
+            // same orientation resizers update
+            foreach (GridResizer r in _resizers)
+            {
+                if (r.Orientation == orientation)
                 {
-                    if (r.Orientation == resizer.Orientation)
+                    if ((isHorizontal && r.StartRow == resizer.StartRow && r.StartCol != resizer.StartCol) ||
+                        (!isHorizontal && r.StartCol == resizer.StartCol && r.StartRow != resizer.StartRow))
                     {
-                        if ((isHorizontal && r.StartRow == resizer.StartRow && r.StartCol != resizer.StartCol) ||
-                            (!isHorizontal && r.StartCol == resizer.StartCol && r.StartRow != resizer.StartRow))
+                        if (isDeltaNegative)
                         {
-                            DecreaseResizerValues(r, resizer.Orientation);
-                            swappedResizers.Add(r);
+                            IncreaseResizerValues(r, orientation);
                         }
+                        else
+                        {
+                            DecreaseResizerValues(r, orientation);
+                        }
+
+                        swappedResizers.Add(r);
                     }
                 }
+            }
 
-                foreach (GridResizer r in _resizers)
+            // different orientation resizers update
+            foreach (GridResizer r in _resizers)
+            {
+                if (r.Orientation != resizer.Orientation)
                 {
-                    if (r.Orientation != resizer.Orientation)
+                    if (isHorizontal)
                     {
-                        if (isHorizontal)
+                        // vertical resizers corresponding to dragged resizer
+                        if (r.StartCol >= resizer.StartCol && r.EndCol < resizer.EndCol)
                         {
-                            // vertical resizers corresponfding to dragged resizer
-                            if (r.StartCol >= resizer.StartCol && r.EndCol < resizer.EndCol)
+                            if (r.StartRow == resizer.StartRow + 2 && isDeltaNegative)
                             {
-                                if (r.StartRow == resizer.StartRow)
-                                {
-                                    r.StartRow++;
-                                }
-
-                                if (r.EndRow == resizer.EndRow - 1)
-                                {
-                                    r.EndRow++;
-                                }
+                                r.StartRow--;
                             }
-                            else
-                            {
-                                // vertical resizers corresponfding to swapped resizers
-                                foreach (GridResizer sr in swappedResizers)
-                                {
-                                    if (r.StartCol >= sr.StartCol && r.EndCol <= sr.EndCol)
-                                    {
-                                        if (r.StartRow == resizer.StartRow + 1)
-                                        {
-                                            r.StartRow--;
-                                        }
 
-                                        if (r.EndRow == resizer.EndRow)
-                                        {
-                                            r.EndRow--;
-                                        }
-                                    }
-                                }
+                            if (r.EndRow == resizer.EndRow + 1 && isDeltaNegative)
+                            {
+                                r.EndRow--;
+                            }
+
+                            if (r.StartRow == resizer.StartRow && !isDeltaNegative)
+                            {
+                                r.StartRow++;
+                            }
+
+                            if (r.EndRow == resizer.EndRow - 1 && !isDeltaNegative)
+                            {
+                                r.EndRow++;
                             }
                         }
                         else
                         {
-                            // horizontal resizers corresponfding to dragged resizer
-                            if (r.StartRow >= resizer.StartRow && r.EndRow < resizer.EndRow)
+                            // vertical resizers corresponding to swapped resizers
+                            foreach (GridResizer sr in swappedResizers)
                             {
-                                if (r.StartCol == resizer.StartCol)
+                                if (r.StartCol >= sr.StartCol && r.EndCol <= sr.EndCol)
                                 {
-                                    r.StartCol++;
-                                }
+                                    if (r.StartRow == resizer.StartRow + 1 && isDeltaNegative)
+                                    {
+                                        r.StartRow++;
+                                    }
 
-                                if (r.EndCol == resizer.EndCol - 1)
-                                {
-                                    r.EndCol++;
+                                    if (r.EndRow == resizer.EndRow && isDeltaNegative)
+                                    {
+                                        r.EndRow++;
+                                    }
+
+                                    if (r.StartRow == resizer.StartRow + 1 && !isDeltaNegative)
+                                    {
+                                        r.StartRow--;
+                                    }
+
+                                    if (r.EndRow == resizer.EndRow && !isDeltaNegative)
+                                    {
+                                        r.EndRow--;
+                                    }
                                 }
                             }
-                            else
+                        }
+                    }
+                    else
+                    {
+                        // horizontal resizers corresponding to dragged resizer
+                        if (r.StartRow >= resizer.StartRow && r.EndRow < resizer.EndRow)
+                        {
+                            if (r.StartCol == resizer.StartCol + 3 && isDeltaNegative)
                             {
-                                // horizontal resizers corresponfding to swapped resizers
-                                foreach (GridResizer sr in swappedResizers)
-                                {
-                                    if (r.StartRow >= sr.StartRow && r.EndRow <= sr.EndRow)
-                                    {
-                                        if (r.StartCol == resizer.StartCol + 1)
-                                        {
-                                            r.StartCol--;
-                                        }
+                                r.StartCol--;
+                            }
 
-                                        if (r.EndCol == resizer.EndCol)
-                                        {
-                                            r.EndCol--;
-                                        }
+                            if (r.EndCol == resizer.EndCol + 1 && isDeltaNegative)
+                            {
+                                r.EndCol--;
+                            }
+
+                            if (r.StartCol == resizer.StartCol && !isDeltaNegative)
+                            {
+                                r.StartCol++;
+                            }
+
+                            if (r.EndCol == resizer.EndCol - 1 && !isDeltaNegative)
+                            {
+                                r.EndCol++;
+                            }
+                        }
+                        else
+                        {
+                            // horizontal resizers corresponding to swapped resizers
+                            foreach (GridResizer sr in swappedResizers)
+                            {
+                                if (r.StartRow >= sr.StartRow && r.EndRow <= sr.EndRow)
+                                {
+                                    if (r.StartCol == resizer.StartCol + 1 && isDeltaNegative)
+                                    {
+                                        r.StartCol++;
+                                    }
+
+                                    if (r.EndCol == resizer.EndCol && isDeltaNegative)
+                                    {
+                                        r.EndCol++;
+                                    }
+
+                                    if (r.StartCol == resizer.StartCol + 1 && !isDeltaNegative)
+                                    {
+                                        r.StartCol--;
+                                    }
+
+                                    if (r.EndCol == resizer.EndCol && !isDeltaNegative)
+                                    {
+                                        r.EndCol--;
                                     }
                                 }
                             }
@@ -386,123 +348,112 @@ namespace FancyZonesEditor
             }
         }
 
-        public void UpdateAfterDragSplit(GridResizer resizer, double delta)
+        public void UpdateAfterDetach(GridResizer resizer, double delta)
         {
-            Action differentOrientationResizersUpdate = () =>
+            bool isDeltaNegative = delta < 0;
+            Orientation orientation = resizer.Orientation;
+
+            foreach (GridResizer r in _resizers)
             {
-                foreach (GridResizer r in _resizers)
+                bool notEqual = r.StartRow != resizer.StartRow || r.EndRow != resizer.EndRow || r.StartCol != resizer.StartCol || r.EndCol != resizer.EndCol;
+                if (r.Orientation == orientation && notEqual)
                 {
-                    if (r.Orientation != resizer.Orientation)
+                    if (orientation == Orientation.Horizontal)
                     {
-                        if (resizer.Orientation == Orientation.Vertical)
+                        if (r.StartRow > resizer.StartRow || (r.StartRow == resizer.StartRow && isDeltaNegative))
                         {
-                            if (delta > 0)
+                            r.StartRow++;
+                        }
+
+                        if (r.EndRow > resizer.EndRow || (r.EndRow == resizer.EndRow && isDeltaNegative))
+                        {
+                            r.EndRow++;
+                        }
+                    }
+                    else
+                    {
+                        if (r.StartCol > resizer.StartCol || (r.StartCol == resizer.StartCol && isDeltaNegative))
+                        {
+                            r.StartCol++;
+                        }
+
+                        if (r.EndCol > resizer.EndCol || (r.EndCol == resizer.EndCol && isDeltaNegative))
+                        {
+                            r.EndCol++;
+                        }
+                    }
+                }
+            }
+
+            if (!isDeltaNegative)
+            {
+                IncreaseResizerValues(resizer, orientation);
+            }
+
+            foreach (GridResizer r in _resizers)
+            {
+                if (r.Orientation != orientation)
+                {
+                    if (orientation == Orientation.Vertical)
+                    {
+                        if (isDeltaNegative)
+                        {
+                            bool isRowNonAdjacent = r.EndRow < resizer.StartRow || r.StartRow > resizer.EndRow;
+
+                            if (r.StartCol > resizer.StartCol + 1 || (r.StartCol == resizer.StartCol + 1 && isRowNonAdjacent))
                             {
-                                bool isInside = r.StartRow >= resizer.StartRow && r.EndRow < resizer.EndRow;
-
-                                if (r.StartCol > resizer.StartCol || (r.StartCol == resizer.StartCol && isInside))
-                                {
-                                    r.StartCol++;
-                                }
-
-                                if (r.EndCol > resizer.StartCol || (r.EndCol == resizer.StartCol && isInside))
-                                {
-                                    r.EndCol++;
-                                }
+                                r.StartCol++;
                             }
-                            else
+
+                            if (r.EndCol > resizer.EndCol || (r.EndCol == resizer.EndCol && isRowNonAdjacent))
                             {
-                                bool isOutside = r.StartRow >= resizer.EndRow || r.EndRow <= resizer.StartRow;
-
-                                if (r.StartCol > resizer.StartCol || (r.StartCol == resizer.StartCol && isOutside))
-                                {
-                                    r.StartCol++;
-                                }
-
-                                if (r.EndCol > resizer.EndCol || (r.EndCol == resizer.EndCol && isOutside))
-                                {
-                                    r.EndCol++;
-                                }
+                                r.EndCol++;
                             }
                         }
                         else
                         {
-                            if (delta > 0)
+                            if (r.StartCol > resizer.StartCol || (r.StartCol == resizer.StartCol && r.StartRow >= resizer.StartRow && r.EndRow <= resizer.EndRow))
                             {
-                                bool isInside = r.StartCol >= resizer.StartCol && r.EndCol < resizer.EndCol;
-
-                                if (r.StartRow > resizer.StartRow || (r.StartRow == resizer.StartRow && isInside))
-                                {
-                                    r.StartRow++;
-                                }
-
-                                if (r.EndRow > resizer.StartRow || (r.EndRow == resizer.StartRow && isInside))
-                                {
-                                    r.EndRow++;
-                                }
+                                r.StartCol++;
                             }
-                            else
+
+                            if (r.EndCol > resizer.EndCol - 1 || (r.EndCol == resizer.EndCol - 1 && r.StartRow >= resizer.StartRow && r.EndRow <= resizer.EndRow))
                             {
-                                bool isOutside = r.StartCol >= resizer.EndCol || r.EndCol <= resizer.StartCol;
-
-                                if (r.StartRow > resizer.StartRow || (r.StartRow == resizer.StartRow && isOutside))
-                                {
-                                    r.StartRow++;
-                                }
-
-                                if (r.EndRow > resizer.EndRow || (r.EndRow == resizer.EndRow && isOutside))
-                                {
-                                    r.EndRow++;
-                                }
+                                r.EndCol++;
                             }
                         }
                     }
-                }
-            };
-
-            Action sameOrientationResizersUpdate = () =>
-            {
-                foreach (GridResizer r in _resizers)
-                {
-                    bool notEqual = r.StartRow != resizer.StartRow || r.EndRow != resizer.EndRow || r.StartCol != resizer.StartCol || r.EndCol != resizer.EndCol;
-                    if (r.Orientation == resizer.Orientation)
+                    else
                     {
-                        if (resizer.Orientation == Orientation.Horizontal)
+                        if (isDeltaNegative)
                         {
-                            if (r.StartRow > resizer.StartRow)
+                            bool isColNonAdjacent = r.EndCol < resizer.StartCol || r.StartCol > resizer.EndCol;
+
+                            if (r.StartRow > resizer.StartRow + 1 || (r.StartRow == resizer.StartRow + 1 && isColNonAdjacent))
                             {
                                 r.StartRow++;
                             }
 
-                            if (r.EndRow > resizer.StartRow && notEqual)
+                            if (r.EndRow > resizer.EndRow || (r.EndRow == resizer.EndRow && isColNonAdjacent))
                             {
                                 r.EndRow++;
                             }
                         }
                         else
                         {
-                            if (r.StartCol > resizer.StartCol)
+                            if (r.StartRow > resizer.StartRow || (r.StartRow == resizer.StartRow && r.StartCol >= resizer.StartCol && r.EndCol <= resizer.EndCol))
                             {
-                                r.StartCol++;
+                                r.StartRow++;
                             }
 
-                            if (r.EndCol > resizer.StartCol && notEqual)
+                            if (r.EndRow > resizer.EndRow - 1 || (r.EndRow == resizer.EndRow - 1 && r.StartCol >= resizer.StartCol && r.EndCol <= resizer.EndCol))
                             {
-                                r.EndCol++;
+                                r.EndRow++;
                             }
                         }
                     }
                 }
-            };
-
-            sameOrientationResizersUpdate();
-
-            if (delta > 0)
-            {
-                IncreaseResizerValues(resizer, resizer.Orientation);
             }
-
-            differentOrientationResizersUpdate();
         }
 
         public void RemoveDragHandles()
