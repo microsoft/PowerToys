@@ -2,6 +2,7 @@
 #include "JsonHelpers.h"
 #include "ZoneSet.h"
 #include "trace.h"
+#include "Settings.h"
 
 #include <common/common.h>
 
@@ -464,10 +465,12 @@ namespace JSONHelpers
                             data->processIdToHandleMap.erase(processId);
                         }
 
-                        // if there is another instance placed don't erase history
+                        // if there is another instance of same application placed in the same zone don't erase history
+                        size_t windowZoneStamp = reinterpret_cast<size_t>(::GetProp(window, MULTI_ZONE_STAMP));
                         for (auto placedWindow : data->processIdToHandleMap)
                         {
-                            if (IsWindow(placedWindow.second))
+                            size_t placedWindowZoneStamp = reinterpret_cast<size_t>(::GetProp(placedWindow.second, MULTI_ZONE_STAMP));
+                            if (IsWindow(placedWindow.second) && (windowZoneStamp == placedWindowZoneStamp))
                             {
                                 return false;
                             }
@@ -518,14 +521,7 @@ namespace JSONHelpers
             {
                 if (data.deviceId == deviceId)
                 {
-                    for (auto placedWindow : data.processIdToHandleMap)
-                    {
-                        if (IsWindow(placedWindow.second) && processId != placedWindow.first)
-                        {
-                            return false;
-                        }
-                    }
-                    // application already has history on this desktop, but zone (or zone layout) has changed
+                    // application already has history on this work area, update it with new window position
                     data.processIdToHandleMap[processId] = window;
                     data.zoneSetUuid = zoneSetId;
                     data.zoneIndexSet = zoneIndexSet;
@@ -535,7 +531,7 @@ namespace JSONHelpers
             }
         }
 
-        std::map<DWORD, HWND> processIdToHandleMap{};
+        std::unordered_map<DWORD, HWND> processIdToHandleMap{};
         processIdToHandleMap[processId] = window;
         AppZoneHistoryData data{ .processIdToHandleMap = processIdToHandleMap,
                                  .zoneSetUuid = zoneSetId,
