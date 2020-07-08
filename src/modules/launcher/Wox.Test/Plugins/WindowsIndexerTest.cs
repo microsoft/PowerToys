@@ -2,8 +2,11 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Search.Interop;
+using Microsoft.Plugin.Indexer.SearchHelper;
+using Microsoft.Plugin.Indexer.Interface;
 using Microsoft.Plugin.Indexer;
 using Moq;
+using Wox.Plugin;
 using System.Linq;
 
 namespace Wox.Test.Plugins
@@ -217,7 +220,35 @@ namespace Wox.Test.Plugins
         [TestCase("item.bat")]
         [TestCase("item.appref-ms")]
         [TestCase("item.lnk")]
-        public void LoadContextMenus_MustLoadRunAsAdmin_WhenFileIsAnApp(string path)
+        public void LoadContextMenus_MustLoadAllItems_WhenFileIsAnApp(string path)
+        {
+            // Arrange
+            var mockapi = new Mock<IPublicAPI>();
+            var pluginInitContext = new PluginInitContext() { API = mockapi.Object };
+
+            ContextMenuLoader _contextMenuLoader = new ContextMenuLoader(pluginInitContext);
+
+            // Act
+            Result result = new Result
+            {
+                ContextData = new SearchResult { Path = path }
+            };
+
+            List<ContextMenuResult> contextMenuItems = _contextMenuLoader.LoadContextMenus(result);
+
+            // Assert
+            Assert.AreEqual(contextMenuItems.Count, 4);
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path"), Times.Once());
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_administrator"), Times.Once());
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder"), Times.Once());
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_in_console"), Times.Once());
+        }
+
+        [TestCase("item.pdf")]
+        [TestCase("item.xls")]
+        [TestCase("item.ppt")]
+        [TestCase("C:/DummyFile.cs")]
+        public void LoadContextMenus_MustNotLoadRunAsAdmin_WhenFileIsAnNotApp(string path)
         {
             // Arrange
             var mockapi = new Mock<IPublicAPI>();
@@ -236,14 +267,14 @@ namespace Wox.Test.Plugins
             // Assert
             Assert.AreEqual(contextMenuItems.Count, 3);
             mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path"), Times.Once());
-            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_administrator"), Times.Once());
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_administrator"), Times.Never());
             mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder"), Times.Once());
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_in_console"), Times.Once());
         }
 
-        [TestCase("item.pdf")]
-        [TestCase("item.xls")]
-        [TestCase("item.ppt")]
-        public void LoadContextMenus_MustNotLoadRunAsAdmin_WhenFileIsAnNotApp(string path)
+        [TestCase("C:/DummyFolder")]
+        [TestCase("TestFolder")]
+        public void LoadContextMenus_MustNotLoadRunAsAdminAndOpenContainingFolder_ForFolder(string path)
         {
             // Arrange
             var mockapi = new Mock<IPublicAPI>();
@@ -263,72 +294,8 @@ namespace Wox.Test.Plugins
             Assert.AreEqual(contextMenuItems.Count, 2);
             mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path"), Times.Once());
             mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_administrator"), Times.Never());
-            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder"), Times.Once());
-        }
-
-        [TestCase("C:/PowerToys")]
-        [TestCase("TestFolder")]
-        public void LoadContextMenus_MustNotLoadRunAsAdmin_ForFolder(string path)
-        {
-            // Arrange
-            var mockapi = new Mock<IPublicAPI>();
-            var pluginInitContext = new PluginInitContext() { API = mockapi.Object };
-
-            ContextMenuLoader _contextMenuLoader = new ContextMenuLoader(pluginInitContext);
-
-            // Act
-            Result result = new Result
-            {
-                ContextData = new SearchResult { Path = path }
-            };
-
-            List<ContextMenuResult> contextMenuItems = _contextMenuLoader.LoadContextMenus(result);
-
-            // Assert
-            Assert.AreEqual(contextMenuItems.Count, 1);
-            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path"), Times.Once());
-            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_administrator"), Times.Never());
             mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder"), Times.Never());
-
-        [Test]
-        public void ContextMenuLoader_ReturnContextMenuForFolderWithOpenInConsole_WhenLoadContextMenusIsCalled()
-        {
-            // Arrange 
-            var mock = new Mock<IPublicAPI>();
-            mock.Setup(api => api.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
-            var pluginInitContext = new PluginInitContext() { API = mock.Object };
-            var contextMenuLoader = new ContextMenuLoader(pluginInitContext);
-            var searchResult = new SearchResult() { Path = "C:/DummyFolder", Title = "DummyFolder" };
-            var result = new Result() { ContextData = searchResult };
-
-            // Act
-            List<ContextMenuResult> contextMenuResults = contextMenuLoader.LoadContextMenus(result);
-
-            // Assert
-            Assert.AreEqual(contextMenuResults.Count, 2);
-            mock.Verify(x => x.GetTranslation("Microsoft_plugin_indexer_copy_path"), Times.Once());
-            mock.Verify(x => x.GetTranslation("Microsoft_plugin_indexer_open_in_console"), Times.Once());
-        }
-
-        [Test]
-        public void ContextMenuLoader_ReturnContextMenuForFileWithOpenInConsole_WhenLoadContextMenusIsCalled()
-        {
-            // Arrange 
-            var mock = new Mock<IPublicAPI>();
-            mock.Setup(api => api.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
-            var pluginInitContext = new PluginInitContext() { API = mock.Object };
-            var contextMenuLoader = new ContextMenuLoader(pluginInitContext);
-            var searchResult = new SearchResult() { Path = "C:/DummyFile.cs", Title = "DummyFile.cs" };
-            var result = new Result() { ContextData = searchResult };
-
-            // Act
-            List<ContextMenuResult> contextMenuResults = contextMenuLoader.LoadContextMenus(result);
-
-            // Assert
-            Assert.AreEqual(contextMenuResults.Count, 3);
-            mock.Verify(x => x.GetTranslation("Microsoft_plugin_indexer_copy_path"), Times.Once());
-            mock.Verify(x => x.GetTranslation("Microsoft_plugin_indexer_open_containing_folder"), Times.Once());
-            mock.Verify(x => x.GetTranslation("Microsoft_plugin_indexer_open_in_console"), Times.Once());
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_in_console"), Times.Once());
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Diagnostics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Wox.Infrastructure.Logger;
@@ -89,7 +88,14 @@ namespace Wox.Infrastructure
                 UseShellExecute = true
             };
 
-            Process.Start(info);
+            try
+            {
+                Process.Start(info);
+            }
+            catch(System.Exception ex)
+            {
+                Log.Exception($"Wox.Infrastructure.Helper| Unable to Run {path} as admin : {ex.Message}", ex);
+            }
         }
         public static Process OpenInConsole(string path)
         {

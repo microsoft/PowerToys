@@ -7,13 +7,8 @@ using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 using Microsoft.Plugin.Indexer.SearchHelper;
 using System.Windows.Input;
-<<<<<<< HEAD
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Linq;
-=======
-using System.Reflection;
->>>>>>> 638cd1dd48243034baf42d85ecf189cf01d9c65f
 using Wox.Infrastructure;
 
 namespace Microsoft.Plugin.Indexer
@@ -48,7 +43,6 @@ namespace Microsoft.Plugin.Indexer
                     contextMenus.Add(CreateOpenContainingFolderResult(record));
                 }
 
-<<<<<<< HEAD
                 // Test to check if File can be Run as admin, if yes, we add a 'run as admin' context menu item
                 if(CanFileBeRunAsAdmin(record.Path))
                 {
@@ -56,8 +50,7 @@ namespace Microsoft.Plugin.Indexer
                 }
 
                 var fileOrFolder = (type == ResultType.File) ? "file" : "folder";
-=======
->>>>>>> 638cd1dd48243034baf42d85ecf189cf01d9c65f
+
                 contextMenus.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
