@@ -133,6 +133,11 @@
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
+            <CheckBox x:Uid="FancyZones_OpenWindowOnActiveMonitor"
+                      IsChecked="{ Binding Mode=TwoWay, Path=OpenWindowOnActiveMonitor}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+
             <CheckBox x:Uid="FancyZones_RestoreSize"
                       IsChecked="{ Binding Mode=TwoWay, Path=RestoreSize}"
                       Margin="{StaticResource SmallTopMargin}"

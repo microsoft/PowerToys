@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Diagnostics;
 using Newtonsoft.Json;
@@ -77,6 +78,7 @@ namespace Wox.Infrastructure
             return formatted;
         }
 
+        // Function to run as admin for context menu items
         public static void RunAsAdmin(string path)
         {
             var info = new ProcessStartInfo
@@ -89,6 +91,15 @@ namespace Wox.Infrastructure
 
             Process.Start(info);
         }
+        public static Process OpenInConsole(string path)
+        {
+            var processStartInfo = new ProcessStartInfo
+            {
+                WorkingDirectory = path,
+                FileName = "cmd.exe"
+            };
 
+            return Process.Start(processStartInfo);
+        }
     }
 }
