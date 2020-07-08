@@ -4,6 +4,7 @@
     
     <system:String x:Key="Microsoft_plugin_indexer_copy_path">Copy path (Ctrl+C)</system:String>
     <system:String x:Key="Microsoft_plugin_indexer_open_containing_folder">Open containing folder (Ctrl+Shift+E)</system:String>
+    <system:String x:Key="Microsoft_plugin_indexer_run_as_administrator">Run As Administrator (Ctrl+Shift+Enter)</system:String>
     <system:String x:Key="Microsoft_plugin_indexer_open_in_console">Open path in console (Ctrl+Shift+C)</system:String>    
     <system:String x:Key="Microsoft_plugin_indexer_name">Name</system:String>
     <system:String x:Key="Microsoft_plugin_indexer_path">Path</system:String>
