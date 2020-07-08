@@ -2,6 +2,7 @@
 #include "JsonHelpers.h"
 #include "ZoneSet.h"
 #include "trace.h"
+#include "Settings.h"
 
 #include <common/common.h>
 
@@ -464,10 +465,12 @@ namespace JSONHelpers
                             data->processIdToHandleMap.erase(processId);
                         }
 
-                        // if there is another instance placed don't erase history
+                        // if there is another instance of same application placed in the same zone don't erase history
+                        size_t windowZoneStamp = reinterpret_cast<size_t>(::GetProp(window, MULTI_ZONE_STAMP));
                         for (auto placedWindow : data->processIdToHandleMap)
                         {
-                            if (IsWindow(placedWindow.second))
+                            size_t placedWindowZoneStamp = reinterpret_cast<size_t>(::GetProp(placedWindow.second, MULTI_ZONE_STAMP));
+                            if (IsWindow(placedWindow.second) && (windowZoneStamp == placedWindowZoneStamp))
                             {
                                 return false;
                             }
