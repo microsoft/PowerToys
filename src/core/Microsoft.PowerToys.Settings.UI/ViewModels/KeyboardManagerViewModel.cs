@@ -74,7 +74,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 PowerToyName,
                 settings.Properties.ActiveConfiguration.Value + JsonFileType,
                 OnConfigFileUpdate);
-
         }
 
         public bool Enabled
@@ -113,17 +112,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public List<KeysDataModel> RemapShortcuts
+        public List<AppSpecificKeysDataModel> RemapShortcuts
         {
             get
             {
                 if (profile != null)
                 {
-                    return profile.RemapShortcuts.GlobalRemapShortcuts;
+                    return profile.RemapShortcuts.GlobalRemapShortcuts.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, TargetApp = "All Apps" }).Concat(profile.RemapShortcuts.AppSpecificRemapShortcuts).ToList();
                 }
                 else
                 {
-                    return new List<KeysDataModel>();
+                    return new List<AppSpecificKeysDataModel>();
                 }
             }
         }
