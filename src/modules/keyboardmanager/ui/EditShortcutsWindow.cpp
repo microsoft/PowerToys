@@ -10,6 +10,7 @@
 #include "Styles.h"
 #include "Dialog.h"
 #include <keyboardmanager/dll/resource.h>
+#include <keyboardmanager/common/KeyboardManagerState.h>
 
 using namespace winrt::Windows::Foundation;
 

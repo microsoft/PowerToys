@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "KeyboardManagerState.h"
 #include <../common/settings_helpers.h>
-#include "../common/keyboard_layout.h"
 
 // Constructor
 KeyboardManagerState::KeyboardManagerState() :

@@ -1,9 +1,8 @@
 #pragma once
 #include "Helpers.h"
-#include "../common/keyboard_layout.h"
-#include "../common/shared_constants.h"
-#include <interface/lowlevel_keyboard_event_data.h>
 #include "InputInterface.h"
+
+class LayoutMap;
 
 // Enum type to store different states of the win key
 enum class ModifierKey

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "KeyDropDownControl.h"
 #include "keyboardmanager/common/Helpers.h"
+#include <keyboardmanager/common/KeyboardManagerState.h>
 
 // Initialized to null
 KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;
@@ -8,28 +9,32 @@ KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;
 // Function to set properties apart from the SelectionChanged event handler
 void KeyDropDownControl::SetDefaultProperties(bool isShortcut)
 {
+    dropDown = ComboBox();
+    warningFlyout = Flyout();
+    warningMessage = TextBlock();
+
     if (!isShortcut)
     {
-        dropDown.Width(KeyboardManagerConstants::RemapTableDropDownWidth);
+        dropDown.as<ComboBox>().Width(KeyboardManagerConstants::RemapTableDropDownWidth);
     }
     else
     {
-        dropDown.Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
+        dropDown.as<ComboBox>().Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
     }
-    dropDown.MaxDropDownHeight(KeyboardManagerConstants::TableDropDownHeight);
+    dropDown.as<ComboBox>().MaxDropDownHeight(KeyboardManagerConstants::TableDropDownHeight);
     // Initialise layout attribute
     previousLayout = GetKeyboardLayout(0);
     keyCodeList = keyboardManagerState->keyboardMap.GetKeyCodeList(isShortcut);
-    dropDown.ItemsSource(KeyboardManagerHelper::ToBoxValue(keyboardManagerState->keyboardMap.GetKeyNameList(isShortcut)));
+    dropDown.as<ComboBox>().ItemsSource(KeyboardManagerHelper::ToBoxValue(keyboardManagerState->keyboardMap.GetKeyNameList(isShortcut)));
     // drop down open handler - to reload the items with the latest layout
-    dropDown.DropDownOpened([&, isShortcut](winrt::Windows::Foundation::IInspectable const& sender, auto args) {
+    dropDown.as<ComboBox>().DropDownOpened([&, isShortcut](winrt::Windows::Foundation::IInspectable const& sender, auto args) {
         ComboBox currentDropDown = sender.as<ComboBox>();
         CheckAndUpdateKeyboardLayout(currentDropDown, isShortcut);
     });
 
     // Attach flyout to the drop down
-    warningFlyout.Content(warningMessage);
-    dropDown.ContextFlyout().SetAttachedFlyout((FrameworkElement)dropDown, warningFlyout);
+    warningFlyout.as<Flyout>().Content(warningMessage.as<TextBlock>());
+    dropDown.as<ComboBox>().ContextFlyout().SetAttachedFlyout((FrameworkElement)dropDown.as<ComboBox>(), warningFlyout.as<Flyout>());
 }
 
 // Function to check if the layout has changed and accordingly update the drop down list
@@ -48,7 +53,7 @@ void KeyDropDownControl::CheckAndUpdateKeyboardLayout(ComboBox currentDropDown, 
 }
 
 // Function to set selection handler for single key remap drop down. Needs to be called after the constructor since the singleKeyControl StackPanel is null if called in the constructor
-void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyControl, int colIndex, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer)
+void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel singleKeyControl, int colIndex, std::vector<std::vector<DWORD>>& singleKeyRemapBuffer)
 {
     // drop down selection handler
     auto onSelectionChange = [&, table, singleKeyControl, colIndex](winrt::Windows::Foundation::IInspectable const& sender) {
@@ -111,12 +116,12 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyC
     };
 
     // Rather than on every selection change (which gets triggered on searching as well) we set the handler only when the drop down is closed
-    dropDown.DropDownClosed([onSelectionChange](winrt::Windows::Foundation::IInspectable const& sender, auto const& args) {
+    dropDown.as<ComboBox>().DropDownClosed([onSelectionChange](winrt::Windows::Foundation::IInspectable const& sender, auto const& args) {
         onSelectionChange(sender);
     });
 
     // We check if the selection changed was triggered while the drop down was closed. This is required to handle Type key, initial loading of remaps and if the user just types in the combo box without opening it
-    dropDown.SelectionChanged([onSelectionChange](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args) {
+    dropDown.as<ComboBox>().SelectionChanged([onSelectionChange](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args) {
         ComboBox currentDropDown = sender.as<ComboBox>();
         if (!currentDropDown.IsDropDownOpen())
         {
@@ -127,7 +132,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& singleKeyC
 
 std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateShortcutSelection(Grid table, StackPanel shortcutControl, StackPanel parent, int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects)
 {
-    ComboBox currentDropDown = dropDown;
+    ComboBox currentDropDown = dropDown.as<ComboBox>();
     int selectedKeyIndex = currentDropDown.SelectedIndex();
     uint32_t dropDownIndex = -1;
     bool dropDownFound = parent.Children().IndexOf(currentDropDown, dropDownIndex);
@@ -299,7 +304,7 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
 }
 
 // Function to set selection handler for shortcut drop down. Needs to be called after the constructor since the shortcutControl StackPanel is null if called in the constructor
-void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutControl, StackPanel parent, int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects)
+void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel shortcutControl, StackPanel parent, int colIndex, std::vector<std::vector<Shortcut>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects)
 {
     auto onSelectionChange = [&, table, shortcutControl, colIndex, parent](winrt::Windows::Foundation::IInspectable const& sender) {
         std::pair<KeyboardManagerHelper::ErrorType, int> validationResult = ValidateShortcutSelection(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects);
@@ -343,12 +348,12 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
     };
 
     // Rather than on every selection change (which gets triggered on searching as well) we set the handler only when the drop down is closed
-    dropDown.DropDownClosed([onSelectionChange](winrt::Windows::Foundation::IInspectable const& sender, auto const& args) {
+    dropDown.as<ComboBox>().DropDownClosed([onSelectionChange](winrt::Windows::Foundation::IInspectable const& sender, auto const& args) {
         onSelectionChange(sender);
     });
 
     // We check if the selection changed was triggered while the drop down was closed. This is required to handle Type key, initial loading of remaps and if the user just types in the combo box without opening it
-    dropDown.SelectionChanged([onSelectionChange](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args) {
+    dropDown.as<ComboBox>().SelectionChanged([onSelectionChange](winrt::Windows::Foundation::IInspectable const& sender, SelectionChangedEventArgs const& args) {
         ComboBox currentDropDown = sender.as<ComboBox>();
         if (!currentDropDown.IsDropDownOpen())
         {
@@ -360,13 +365,13 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel& shortcutCo
 // Function to set the selected index of the drop down
 void KeyDropDownControl::SetSelectedIndex(int32_t index)
 {
-    dropDown.SelectedIndex(index);
+    dropDown.as<ComboBox>().SelectedIndex(index);
 }
 
 // Function to return the combo box element of the drop down
 ComboBox KeyDropDownControl::GetComboBox()
 {
-    return dropDown;
+    return dropDown.as<ComboBox>();
 }
 
 // Function to add a drop down to the shortcut stack panel
@@ -439,6 +444,6 @@ bool KeyDropDownControl::CheckRepeatedModifier(StackPanel parent, int selectedKe
 void KeyDropDownControl::SetDropDownError(ComboBox currentDropDown, hstring message)
 {
     currentDropDown.SelectedIndex(-1);
-    warningMessage.Text(message);
-    currentDropDown.ContextFlyout().ShowAttachedFlyout((FrameworkElement)dropDown);
+    warningMessage.as<TextBlock>().Text(message);
+    currentDropDown.ContextFlyout().ShowAttachedFlyout((FrameworkElement)dropDown.as<ComboBox>());
 }

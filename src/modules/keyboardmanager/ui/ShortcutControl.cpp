@@ -1,12 +1,39 @@
 #include "pch.h"
 #include "ShortcutControl.h"
 #include "KeyDropDownControl.h"
+#include "keyboardmanager/common/KeyboardManagerState.h"
 
 //Both static members are initialized to null
 HWND ShortcutControl::EditShortcutsWindowHandle = nullptr;
 KeyboardManagerState* ShortcutControl::keyboardManagerState = nullptr;
 // Initialized as new vector
 std::vector<std::vector<Shortcut>> ShortcutControl::shortcutRemapBuffer;
+
+ShortcutControl::ShortcutControl(Grid table, const int colIndex)
+{
+    shortcutDropDownStackPanel = StackPanel();
+    typeShortcut = Button();
+    shortcutControlLayout = StackPanel();
+
+    shortcutDropDownStackPanel.as<StackPanel>().Spacing(10);
+    shortcutDropDownStackPanel.as<StackPanel>().Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+
+    typeShortcut.as<Button>().Content(winrt::box_value(L"Type Shortcut"));
+    typeShortcut.as<Button>().Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
+    typeShortcut.as<Button>().Click([&, table, colIndex](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+        keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectShortcutWindowActivated, EditShortcutsWindowHandle);
+        // Using the XamlRoot of the typeShortcut to get the root of the XAML host
+        createDetectShortcutWindow(sender, sender.as<Button>().XamlRoot(), shortcutRemapBuffer, *keyboardManagerState, colIndex, table);
+    });
+
+    shortcutControlLayout.as<StackPanel>().Margin({ 0, 0, 0, 10 });
+    shortcutControlLayout.as<StackPanel>().Spacing(KeyboardManagerConstants::ShortcutTableDropDownSpacing);
+
+    shortcutControlLayout.as<StackPanel>().Children().Append(typeShortcut.as<Button>());
+    shortcutControlLayout.as<StackPanel>().Children().Append(shortcutDropDownStackPanel.as<StackPanel>());
+    KeyDropDownControl::AddDropDown(table, shortcutControlLayout.as<StackPanel>(), shortcutDropDownStackPanel.as<StackPanel>(), colIndex, shortcutRemapBuffer, keyDropDownControlObjects);
+    shortcutControlLayout.as<StackPanel>().UpdateLayout();
+}
 
 // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
 void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, Shortcut originalKeys, Shortcut newKeys)
@@ -84,8 +111,8 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     if (originalKeys.IsValidShortcut() && newKeys.IsValidShortcut())
     {
         shortcutRemapBuffer.push_back(std::vector<Shortcut>{ Shortcut(), Shortcut() });
-        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->AddShortcutToControl(originalKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutDropDownStackPanel, *keyboardManagerState, 0);
-        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->AddShortcutToControl(newKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->shortcutDropDownStackPanel, *keyboardManagerState, 1);
+        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->AddShortcutToControl(originalKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutDropDownStackPanel.as<StackPanel>(), *keyboardManagerState, 0);
+        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->AddShortcutToControl(newKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->shortcutDropDownStackPanel.as<StackPanel>(), *keyboardManagerState, 1);
     }
     else
     {
@@ -106,7 +133,7 @@ void ShortcutControl::AddShortcutToControl(Shortcut& shortcut, Grid table, Stack
     std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyCodeList(true);
     if (shortcutKeyCodes.size() != 0)
     {
-        KeyDropDownControl::AddDropDown(table, shortcutControlLayout, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects);
+        KeyDropDownControl::AddDropDown(table, shortcutControlLayout.as<StackPanel>(), parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects);
         for (int i = 0; i < shortcutKeyCodes.size(); i++)
         {
             // New drop down gets added automatically when the SelectedIndex is set
@@ -127,7 +154,7 @@ void ShortcutControl::AddShortcutToControl(Shortcut& shortcut, Grid table, Stack
 // Function to return the stack panel element of the ShortcutControl. This is the externally visible UI element which can be used to add it to other layouts
 StackPanel ShortcutControl::getShortcutControl()
 {
-    return shortcutControlLayout;
+    return shortcutControlLayout.as<StackPanel>();
 }
 
 // Function to create the detect shortcut UI window

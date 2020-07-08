@@ -6,8 +6,7 @@
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <mutex>
 #include "KeyboardManagerConstants.h"
-
-class LayoutMap;
+#include "../common/keyboard_layout.h"
 
 namespace winrt::Windows::UI::Xaml::Controls
 {

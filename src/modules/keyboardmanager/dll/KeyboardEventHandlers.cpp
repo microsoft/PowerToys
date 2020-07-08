@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "KeyboardEventHandlers.h"
+#include "../common/shared_constants.h"
 
 namespace KeyboardEventHandlers
 {

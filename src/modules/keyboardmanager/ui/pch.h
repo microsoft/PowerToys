@@ -16,6 +16,8 @@
 #include "winrt/Windows.UI.Xaml.Controls.Primitives.h"
 #include "winrt/Windows.UI.Text.h"
 #include "winrt/Windows.UI.Core.h"
+#include <winrt/Windows.UI.Xaml.Interop.h>
+#include <mutex>
 
 using namespace winrt;
 using namespace Windows::UI;

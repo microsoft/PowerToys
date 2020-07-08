@@ -1,5 +1,8 @@
 #include "pch.h"
 #include "Shortcut.h"
+#include "../common/keyboard_layout.h"
+#include "../common/shared_constants.h"
+#include <interface/lowlevel_keyboard_event_data.h>
 
 // Function to return the number of keys in the shortcut
 int Shortcut::Size() const
