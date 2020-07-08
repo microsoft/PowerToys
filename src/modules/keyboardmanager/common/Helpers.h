@@ -1,6 +1,4 @@
 #pragma once
-#include <vector>
-
 namespace winrt
 {
     struct hstring;

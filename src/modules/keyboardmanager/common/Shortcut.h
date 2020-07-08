@@ -1,8 +1,11 @@
 #pragma once
-#include "Helpers.h"
-#include "InputInterface.h"
 
+class InputInterface;
 class LayoutMap;
+namespace KeyboardManagerHelper
+{
+    enum class ErrorType;
+}
 
 // Enum type to store different states of the win key
 enum class ModifierKey
@@ -30,16 +33,7 @@ public:
     }
 
     // Constructor to initialize Shortcut from it's virtual key code string representation.
-    Shortcut(const std::wstring& shortcutVK) :
-        winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
-    {
-        auto keys = KeyboardManagerHelper::splitwstring(shortcutVK, ';');
-        for (auto it : keys)
-        {
-            auto vkKeyCode = std::stoul(it);
-            SetKey(vkKeyCode);
-        }
-    }
+    Shortcut(const std::wstring& shortcutVK);
 
     // == operator
     inline bool operator==(const Shortcut& sc) const

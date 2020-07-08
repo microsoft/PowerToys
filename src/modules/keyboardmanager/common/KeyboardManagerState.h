@@ -2,11 +2,13 @@
 #include "Helpers.h"
 #include "Shortcut.h"
 #include "RemapShortcut.h"
-#include "KeyDelay.h"
-#include <interface/lowlevel_keyboard_event_data.h>
 #include <mutex>
 #include "KeyboardManagerConstants.h"
 #include "../common/keyboard_layout.h"
+#include <functional>
+#include <interface/lowlevel_keyboard_event_data.h>
+
+class KeyDelay;
 
 namespace winrt::Windows::UI::Xaml::Controls
 {
