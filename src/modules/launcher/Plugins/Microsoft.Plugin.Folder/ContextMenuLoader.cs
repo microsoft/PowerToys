@@ -10,6 +10,7 @@ using Wox.Plugin.SharedCommands;
 using Wox.Plugin;
 using System.Reflection;
 using System.Windows.Input;
+using Wox.Infrastructure;
 
 namespace Microsoft.Plugin.Folder
 {
@@ -33,14 +34,12 @@ namespace Microsoft.Plugin.Folder
                 }
 
                 var icoPath = (record.Type == ResultType.File) ? Main.FileImagePath : Main.FolderImagePath;
-                var fileOrFolder = (record.Type == ResultType.File) ? "file" : "folder";
                 contextMenus.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = _context.API.GetTranslation("Microsoft_plugin_folder_copy_path"),
                     Glyph = "\xE8C8",
                     FontFamily = "Segoe MDL2 Assets",
-                    SubTitle = $"Copy the current {fileOrFolder} path to clipboard",
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control,
                     Action = (context) =>
@@ -59,6 +58,38 @@ namespace Microsoft.Plugin.Folder
                         }
                     }
                 });
+
+                contextMenus.Add(new ContextMenuResult
+                {
+                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                    Title = _context.API.GetTranslation("Microsoft_plugin_folder_open_in_console"),
+                    Glyph = "\xE756",
+                    FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = Key.C,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+
+                    Action = (context) =>
+                    {
+                        try
+                        {
+                            if (record.Type == ResultType.File)
+                            {
+                                Helper.OpenInConsole(Path.GetDirectoryName(record.FullPath));
+                            }
+                            else
+                            {
+                                Helper.OpenInConsole(record.FullPath);
+                            }
+
+                            return true;
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Exception($"|Microsoft.Plugin.Folder.ContextMenuLoader.LoadContextMenus| Failed to open {record.FullPath} in console, {e.Message}", e);
+                            return false;
+                        }
+                    }
+                });
             }
 
             return contextMenus;
@@ -69,7 +100,7 @@ namespace Microsoft.Plugin.Folder
             return new ContextMenuResult
             {
                 PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                Title = "Open containing folder",
+                Title = _context.API.GetTranslation("Microsoft_plugin_folder_open_containing_folder"),
                 Glyph = "\xE838",
                 FontFamily = "Segoe MDL2 Assets",
                 AcceleratorKey = Key.E,
