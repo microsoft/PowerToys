@@ -45,8 +45,31 @@ IFACEMETHODIMP CPowerRenameItem::get_path(_Outptr_ PWSTR* path)
 IFACEMETHODIMP CPowerRenameItem::get_date(_Outptr_ SYSTEMTIME* date)
 {
     CSRWSharedAutoLock lock(&m_lock);
+    HRESULT hr = m_isDateParsed ? S_OK : E_FAIL ;
+    if (!m_isDateParsed)
+    {
+        HANDLE hFile = CreateFileW(m_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+        if (hFile != INVALID_HANDLE_VALUE)
+        {
+            FILETIME CreationTime;
+            if (GetFileTime(hFile, &CreationTime, NULL, NULL))
+            {
+                SYSTEMTIME SystemTime, LocalTime;
+                if (FileTimeToSystemTime(&CreationTime, &SystemTime))
+                {
+                    if (SystemTimeToTzSpecificLocalTime(NULL, &SystemTime, &LocalTime))
+                    {
+                        m_date = LocalTime;
+                        m_isDateParsed = true;
+                        hr = S_OK;
+                    }
+                }
+            }
+        }
+        CloseHandle(hFile);
+    }
     *date = m_date;
-    return S_OK;
+    return hr;
 }
 
 IFACEMETHODIMP CPowerRenameItem::get_shellItem(_Outptr_ IShellItem** ppsi)
@@ -220,25 +243,6 @@ HRESULT CPowerRenameItem::_Init(_In_ IShellItem* psi)
             {
                 // Some items can be both folders and streams (ex: zip folders).
                 m_isFolder = (att & SFGAO_FOLDER) && !(att & SFGAO_STREAM);
-                
-                hr = E_FAIL;
-                HANDLE hFile = CreateFileW(m_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
-                if (hFile != INVALID_HANDLE_VALUE)
-                {
-                    FILETIME CreationTime ;
-                    if (GetFileTime(hFile, &CreationTime, NULL, NULL))
-                    {
-                        SYSTEMTIME SystemTime, LocalTime;
-                        if (FileTimeToSystemTime(&CreationTime, &SystemTime))
-                        {
-                            if (SystemTimeToTzSpecificLocalTime(NULL, &SystemTime, &LocalTime))
-                            {
-                                m_date = LocalTime;
-                                hr = S_OK;
-                            } 
-                        }
-                    }
-                }
             }
         }
     }

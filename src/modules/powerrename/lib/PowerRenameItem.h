@@ -49,6 +49,7 @@ protected:
 
     bool        m_selected = true;
     bool        m_isFolder = false;
+    bool        m_isDateParsed = false;
     int         m_id = -1;
     int         m_iconIndex = -1;
     UINT        m_depth = 0;
