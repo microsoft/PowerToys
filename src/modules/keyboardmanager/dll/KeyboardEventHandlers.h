@@ -1,7 +1,12 @@
 #pragma once
-#include <keyboardmanager/common/KeyboardManagerState.h>
-#include <keyboardmanager/common/KeyboardManagerConstants.h>
-#include <keyboardmanager/common/InputInterface.h>
+#include <interface/lowlevel_keyboard_event_data.h>
+#include <map>
+#include <mutex>
+
+class InputInterface;
+class KeyboardManagerState;
+class Shortcut;
+class RemapShortcut;
 
 namespace KeyboardEventHandlers
 {
