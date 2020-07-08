@@ -44,6 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             this._displayChangemoveWindows = Settings.Properties.FancyzonesDisplayChangeMoveWindows.Value;
             this._zoneSetChangeMoveWindows = Settings.Properties.FancyzonesZoneSetChangeMoveWindows.Value;
             this._appLastZoneMoveWindows = Settings.Properties.FancyzonesAppLastZoneMoveWindows.Value;
+            this._openWindowOnActiveMonitor = Settings.Properties.FancyzonesOpenWindowOnActiveMonitor.Value;
             this._restoreSize = Settings.Properties.FancyzonesRestoreSize.Value;
             this._useCursorPosEditorStartupScreen = Settings.Properties.UseCursorposEditorStartupscreen.Value;
             this._showOnAllMonitors = Settings.Properties.FancyzonesShowOnAllMonitors.Value;
@@ -83,6 +84,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _displayChangemoveWindows;
         private bool _zoneSetChangeMoveWindows;
         private bool _appLastZoneMoveWindows;
+        private bool _openWindowOnActiveMonitor;
         private bool _restoreSize;
         private bool _useCursorPosEditorStartupScreen;
         private bool _showOnAllMonitors;
@@ -238,6 +240,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _appLastZoneMoveWindows = value;
                     Settings.Properties.FancyzonesAppLastZoneMoveWindows.Value = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool OpenWindowOnActiveMonitor
+        {
+            get
+            {
+                return _openWindowOnActiveMonitor;
+            }
+
+            set
+            {
+                if (value != _openWindowOnActiveMonitor)
+                {
+                    _openWindowOnActiveMonitor = value;
+                    Settings.Properties.FancyzonesOpenWindowOnActiveMonitor.Value = value;
                     RaisePropertyChanged();
                 }
             }
