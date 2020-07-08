@@ -48,7 +48,7 @@ IFACEMETHODIMP CPowerRenameItem::get_date(_Outptr_ SYSTEMTIME* date)
     HRESULT hr = m_isDateParsed ? S_OK : E_FAIL ;
     if (!m_isDateParsed)
     {
-        HANDLE hFile = CreateFileW(m_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+        HANDLE hFile = CreateFileW(m_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
         if (hFile != INVALID_HANDLE_VALUE)
         {
             FILETIME CreationTime;
