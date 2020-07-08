@@ -49,8 +49,6 @@ namespace Microsoft.Plugin.Indexer
                     contextMenus.Add(CreateRunAsAdminContextMenu(record));
                 }
 
-                var fileOrFolder = (type == ResultType.File) ? "file" : "folder";
-
                 contextMenus.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
