@@ -3,6 +3,7 @@ using System.IO;
 using System.Diagnostics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Wox.Infrastructure.Logger;
 
 namespace Wox.Infrastructure
 {
@@ -76,7 +77,7 @@ namespace Wox.Infrastructure
             return formatted;
         }
 
-        public static ProcessStartInfo RunAsAdmin(string path)
+        public static void RunAsAdmin(string path)
         {
             var info = new ProcessStartInfo
             {
@@ -86,7 +87,8 @@ namespace Wox.Infrastructure
                 UseShellExecute = true
             };
 
-            return info;
+            Process.Start(info);
         }
+
     }
 }

@@ -97,33 +97,17 @@ namespace Microsoft.Plugin.Indexer
                 {
                     try
                     {
-                        Task.Run(() => StartProcess(Process.Start, Helper.RunAsAdmin(record.Path)));
+                        Task.Run(() => Helper.RunAsAdmin(record.Path));
                         return true;
                     }
                     catch(Exception e)
                     {
-                        Log.Exception($"|Microsoft.Plugin.Indexer.ContextMenu| Failed to obtain process info for {record.Path}, {e.Message}", e);
+                        Log.Exception($"|Microsoft.Plugin.Indexer.ContextMenu| Failed to run {record.Path} as admin, {e.Message}", e);
                         return false;
                     }
 
                 }
             };
-        }
-
-        // Function to start and process and log errors if the process doesn't start as expected
-        private void StartProcess(Func<ProcessStartInfo, Process> runProcess, ProcessStartInfo info)
-        {
-            try
-            {
-                runProcess(info);
-            }
-            catch (Exception e)
-            {
-                var name = "Plugin: Indexer";
-                var message = $"Unable to start: {info.FileName}";
-                Log.Exception($"|Microsoft.Plugin.Indexer.StartProcess| Failed to start process {info.FileName} in console, {e.Message}", e);
-                _context.API.ShowMsg(name, message, string.Empty);
-            }
         }
 
         // Function to test if the file can be run as admin
