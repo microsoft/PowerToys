@@ -180,6 +180,26 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%d"),LocalTime.wYear);
         res = regex_replace(std::wstring(res), pattern, replaceTerm);
 
+        pattern = L"\\$SSS";
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%03d"), LocalTime.wMilliseconds);
+        res = regex_replace(std::wstring(res), pattern, replaceTerm);
+
+        pattern = L"\\$MMM";
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%03d"), LocalTime.wMilliseconds);
+        res = regex_replace(std::wstring(res), pattern, replaceTerm);
+
+        pattern = L"\\$mmm";
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%03d"), LocalTime.wMilliseconds);
+        res = regex_replace(std::wstring(res), pattern, replaceTerm);
+
+        pattern = L"\\$fff";
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%03d"), LocalTime.wMilliseconds);
+        res = regex_replace(std::wstring(res), pattern, replaceTerm);
+
+        pattern = L"\\$FFF";
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%03d"), LocalTime.wMilliseconds);
+        res = regex_replace(std::wstring(res), pattern, replaceTerm);
+
         pattern = L"\\$MM" ;
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%02d"), LocalTime.wMonth);
         res = regex_replace(std::wstring(res), pattern, replaceTerm);
@@ -198,10 +218,6 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
 
         pattern = L"\\$ss";
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%02d"), LocalTime.wSecond);
-        res = regex_replace(std::wstring(res), pattern, replaceTerm);
-
-        pattern = L"\\$SSS";
-        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%03d"), LocalTime.wMilliseconds);
         res = regex_replace(std::wstring(res), pattern, replaceTerm);
 
         hr = StringCchCopy(result, cchMax, res.c_str());

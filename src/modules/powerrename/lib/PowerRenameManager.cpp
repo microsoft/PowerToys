@@ -829,12 +829,21 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                 {
                                     newNameToUse = nullptr;
                                 }
-                                
 
+                                bool isDateAttributeUsed = false;
                                 wchar_t datedName[MAX_PATH] = { 0 };
-                                wchar_t date[MAX_PATH] = { 0 };
+                                PWSTR patterns[] = { L"$YYYY", L"$SSS", L"$MMM", L"$mmm", L"$FFF", L"$fff", 
+                                    L"$MM", L"$DD", L"$hh", L"$mm", L"$ss" };
+                                size_t patternsLength = ARRAYSIZE(patterns);
+                                for (size_t i = 0; !isDateAttributeUsed && i < patternsLength; i++)
+                                {
+                                    if (std::wstring(newNameToUse).find(std::wstring(patterns[i])) != std::string::npos)
+                                    {
+                                        isDateAttributeUsed = true;
+                                    }
+                                }
                                 SYSTEMTIME LocalTime;
-                                if (newNameToUse != nullptr)
+                                if (newNameToUse != nullptr && isDateAttributeUsed)
                                 {
                                     spItem->get_date(&LocalTime);
                                     if (SUCCEEDED(GetDatedFileName(datedName, ARRAYSIZE(datedName), newNameToUse, LocalTime)))
