@@ -137,13 +137,13 @@ namespace RemappingLogicTests
         // Test if the key states get cleared if foreground app changes after app-specific shortcut is invoked and then released
         TEST_METHOD (AppSpecificShortcut_ShouldClearKeyStates_WhenForegroundAppChangesAfterShortcutIsPressedOnRelease)
         {
-            // Remap Ctrl+A to Alt+V
+            // Remap Ctrl+A to Alt+Tab
             Shortcut src;
             src.SetKey(VK_CONTROL);
             src.SetKey(0x41);
             Shortcut dest;
             dest.SetKey(VK_MENU);
-            dest.SetKey(0x56);
+            dest.SetKey(VK_TAB);
             testState.AddAppSpecificShortcut(testApp1, src, dest);
 
             // Set the testApp as the foreground process
@@ -173,11 +173,11 @@ namespace RemappingLogicTests
             mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
 
-            // Ctrl, A, Alt and V should all be false
+            // Ctrl, A, Alt and Tab should all be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), false);
-            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_TAB), false);
         }
     };
 }
