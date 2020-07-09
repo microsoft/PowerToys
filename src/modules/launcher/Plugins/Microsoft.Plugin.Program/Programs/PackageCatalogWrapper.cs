@@ -38,7 +38,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         //
         // Summary:
-        //     Indicates that an app package is uninstalling.
+        //     Indicates that an app package is installing.
         public event TypedEventHandler<PackageCatalog, PackageUninstallingEventArgs> PackageUninstalling
         {
             add
@@ -55,7 +55,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         //
         // Summary:
-        //     Indicates that an app package is updating.
+        //     Indicates that an app package is installing.
         public event TypedEventHandler<PackageCatalog, PackageUpdatingEventArgs> PackageUpdating
         {
             add
