@@ -3,12 +3,11 @@ using Microsoft.Plugin.Program.Programs;
 using Moq;
 using NUnit.Framework;
 using System.Collections.Generic;
-using static Microsoft.Plugin.Program.Settings;
 
 namespace Microsoft.Plugin.Program.UnitTests.Programs
 {
     [TestFixture]
-    class UWPTest
+    class UWPTests
     {
         static readonly PackageWrapper developmentModeApp = new PackageWrapper(
             "Packaged App1",
