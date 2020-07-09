@@ -76,5 +76,10 @@ namespace Wox.Infrastructure.Storage
         {
             return _items.GetEnumerator();
         }
+
+        public int Count()
+        {
+            return _items.Count;
+        }
     }
 }
