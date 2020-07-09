@@ -62,12 +62,22 @@ namespace Microsoft.Plugin.Program.Storage
 
         private void OnAppDeleted(object sender, FileSystemEventArgs e)
         {
-            return;
+            string path = e.FullPath;
+            Programs.Win32 app = Programs.Win32.GetAppFromPath(path);
+            if(app != null)
+            {
+                Remove(app);
+            }
         }
 
         private void OnAppCreated(object sender, FileSystemEventArgs e)
         {
-            return;
+            string path = e.FullPath;
+            Programs.Win32 app = Programs.Win32.GetAppFromPath(path);
+            if (app != null)
+            {
+                Add(app);
+            }
         }
 
         public void IndexPrograms()

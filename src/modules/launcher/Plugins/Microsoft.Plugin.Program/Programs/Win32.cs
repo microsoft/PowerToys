@@ -448,13 +448,53 @@ namespace Microsoft.Plugin.Program.Programs
 
                 return program;
             }
-            catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
+            catch (Exception e)
             {
                 ProgramLogger.LogException($"|Win32|ExeProgram|{path}" +
                                             $"|Permission denied when trying to load the program from {path}", e);
 
                 return new Win32() { Valid = false, Enabled = false };
             }
+        }
+
+        // Function to get the Win32 application, given the path to the application
+        public static Win32 GetAppFromPath(string path)
+        {
+            Win32 app = null;
+            const string exeExtension = ".exe";
+            const string lnkExtension = ".lnk";
+            const string urlExtenion = ".url";
+            const string apprefExtension = ".appref-ms";
+
+            string extension = Path.GetExtension(path);
+
+            if(extension.Equals(exeExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                app = ExeProgram(path);
+            }
+            else if(extension.Equals(lnkExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                app = LnkProgram(path);
+            }
+            else if(extension.Equals(apprefExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                app = Win32Program(path);
+            }
+            else if(extension.Equals(urlExtenion, StringComparison.OrdinalIgnoreCase))
+            {
+                app = InternetShortcutProgram(path);
+            }
+            
+            // if the app is valid, only then return the application, else return null
+            if(app?.Valid ?? false)
+            {
+                return app;
+            }
+            else
+            {
+                return null;
+            }
+
         }
 
         private static IEnumerable<string> ProgramPaths(string directory, string[] suffixes, bool recursiveSearch = true)
@@ -710,6 +750,13 @@ namespace Microsoft.Plugin.Program.Programs
             entry.ExecutableName = Path.GetFileName(path);
 
             return entry;
+        }
+
+        // Overriding the object.GetHashCode() function to aid in removing duplicates while adding and removing apps from the concurrent dictionary storage
+        public override int GetHashCode()
+        {
+            removeDuplicatesComparer _removeDuplicatesHelper = new removeDuplicatesComparer();
+            return _removeDuplicatesHelper.GetHashCode(this);
         }
 
         public class removeDuplicatesComparer : IEqualityComparer<Win32>
