@@ -14,7 +14,7 @@ namespace Microsoft.Plugin.Program.Storage
     /// A repository for storing packaged applications such as UWP apps or appx packaged desktop apps.
     /// This repository will also monitor for changes to the PackageCatelog and update the repository accordingly
     /// </summary>
-    internal class PackageRepository : ListRepository<UWP.Application>, IProgramRepository
+    internal class PackageRepository : ListRepository<UWP.Application>, IRepository<UWP.Application>, IProgramRepository
     {
         private IStorage<IList<UWP.Application>> _storage;
 
