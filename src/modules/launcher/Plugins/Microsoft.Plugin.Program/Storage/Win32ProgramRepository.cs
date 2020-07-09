@@ -15,6 +15,8 @@ namespace Microsoft.Plugin.Program.Storage
         private List<IFileSystemWatcherWrapper> _fileSystemWatcherHelpers;
         private string[] _pathsToWatch;
         private int _numberOfPathsToWatch;
+        private string[] extensionsToWatch = { "*.exe", "*.lnk", "*.appref-ms", "*.url" };
+
 
 
         public Win32ProgramRepository(List<IFileSystemWatcherWrapper> fileSystemWatcherHelpers, IStorage<IList<Programs.Win32>> storage, Settings settings, string[] pathsToWatch)
@@ -35,10 +37,13 @@ namespace Microsoft.Plugin.Program.Storage
                 _fileSystemWatcherHelpers[index].Path = _pathsToWatch[index];
 
                 // to be notified when there is a change to a file/directory
-                _fileSystemWatcherHelpers[index].NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.LastAccess ;
+                _fileSystemWatcherHelpers[index].NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName ;
 
                 // filtering the app types that we want to monitor
-                //_fileSystemWatcherHelpers[index].Filters = new Collection<String>{ "*.exe", "*.appref-ms", "*.lnk", "*.url"};
+                foreach (string extension in extensionsToWatch)
+                {
+                    _fileSystemWatcherHelpers[index].Filters.Add(extension);
+                }
 
                 // Registering the event handlers
                 _fileSystemWatcherHelpers[index].Created += OnAppCreated;
@@ -52,17 +57,17 @@ namespace Microsoft.Plugin.Program.Storage
 
         private void OnAppRenamed(object sender, RenamedEventArgs e)
         {
-            throw new NotImplementedException();
+            return;
         }
 
         private void OnAppDeleted(object sender, FileSystemEventArgs e)
         {
-            throw new NotImplementedException();
+            return;
         }
 
         private void OnAppCreated(object sender, FileSystemEventArgs e)
         {
-            throw new NotImplementedException();
+            return;
         }
 
         public void IndexPrograms()
