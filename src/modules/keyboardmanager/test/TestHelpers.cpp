@@ -12,5 +12,12 @@ namespace TestHelpers
         input.SetForegroundProcess(L"");
         state.ClearSingleKeyRemaps();
         state.ClearOSLevelShortcuts();
+        state.ClearAppSpecificShortcuts();
+
+        // Allocate memory for the keyboardManagerState activatedApp member to avoid CRT assert errors
+        std::wstring maxLengthString;
+        maxLengthString.resize(MAX_PATH);
+        state.SetActivatedApp(maxLengthString);
+        state.SetActivatedApp(L"");
     }
 }
