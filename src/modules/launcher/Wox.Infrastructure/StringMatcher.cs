@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using static Wox.Infrastructure.StringMatcher;
 
+[assembly: InternalsVisibleToAttribute("Microsoft.Plugin.Program.UnitTests")]
 namespace Wox.Infrastructure
 {
     public class StringMatcher

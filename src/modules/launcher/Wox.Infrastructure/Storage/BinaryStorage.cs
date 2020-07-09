@@ -12,7 +12,7 @@ namespace Wox.Infrastructure.Storage
     /// Storage object using binary data
     /// Normally, it has better performance, but not readable
     /// </summary>
-    public class BinaryStorage<T>
+    public class BinaryStorage<T> : IStorage<T>
     {
         // This storage helper returns whether or not to delete the binary storage items
         private static readonly int BINARY_STORAGE = 0;

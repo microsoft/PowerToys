@@ -40,24 +40,17 @@ namespace Microsoft.Plugin.Program.Programs
 
         public UWP(Package package)
         {
-            Location = package.InstalledLocation.Path;
+            
             Name = package.Id.Name;
             FullName = package.Id.FullName;
             FamilyName = package.Id.FamilyName;
-            InitializeAppInfo();
-            Apps = Apps.Where(a =>
-            {
-                var valid =
-                    !string.IsNullOrEmpty(a.UserModelId) &&
-                    !string.IsNullOrEmpty(a.DisplayName);
-                return valid;
-            }).ToArray();
         }
 
-        private void InitializeAppInfo()
+        public void InitializeAppInfo(string installedLocation)
         {
+            Location = installedLocation;
             AppxPackageHelper _helper = new AppxPackageHelper();
-            var path = Path.Combine(Location, "AppxManifest.xml");
+            var path = Path.Combine(installedLocation, "AppxManifest.xml");
 
             var namespaces = XmlNamespaces(path);
             InitPackageVersion(namespaces);
@@ -77,8 +70,16 @@ namespace Microsoft.Plugin.Program.Programs
                     var app = new Application(_app, this);
                     apps.Add(app);
                 }
-                
-                Apps = apps.Where(a => a.AppListEntry != "none").ToArray();
+
+                Apps = apps.Where(a =>
+                {
+                    var valid =
+                    !string.IsNullOrEmpty(a.UserModelId) &&
+                    !string.IsNullOrEmpty(a.DisplayName) &&
+                    a.AppListEntry != "none";
+
+                    return valid;
+                }).ToArray();
             }
             else
             {
@@ -154,21 +155,14 @@ namespace Microsoft.Plugin.Program.Programs
                     try
                     {
                         u = new UWP(p);
+                        u.InitializeAppInfo(p.InstalledLocation.Path);
                     }
-#if !DEBUG
                     catch (Exception e)
                     {
                         ProgramLogger.LogException($"|UWP|All|{p.InstalledLocation}|An unexpected error occurred and "
                                                         + $"unable to convert Package to UWP for {p.Id.FullName}", e);
                         return new Application[] { };
                     }
-#endif
-#if DEBUG //make developer aware and implement handling
-                    catch
-                    {
-                        throw;
-                    }
-#endif
                     return u.Apps;
                 }).ToArray();
 
