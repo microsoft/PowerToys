@@ -32,6 +32,7 @@ namespace Microsoft.Plugin.Program
         private PackageRepository _packageRepository = new PackageRepository(new PackageCatalogWrapper(), new BinaryStorage<IList<UWP.Application>>("UWP"));
         private Win32ProgramRepository _win32ProgramRepository;
         private readonly string[] _pathsToWatch;
+        private List<FileSystemWatcherWrapper> _fileSystemWatchers;
 
         public Main()
         {
@@ -40,7 +41,8 @@ namespace Microsoft.Plugin.Program
 
             // Initialize the Win32ProgramRepository with the settings object
             _pathsToWatch = GetPathsToWatch();
-            _win32ProgramRepository = new Win32ProgramRepository(CreateFileSystemWatchers(), new BinaryStorage<IList<Programs.Win32>>("Win32"), _settings, _pathsToWatch);
+            SetFileSystemWatchers();
+            _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList(), new BinaryStorage<IList<Programs.Win32>>("Win32"), _settings, _pathsToWatch);
 
             Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Preload programs cost", () =>
             {
@@ -79,14 +81,13 @@ namespace Microsoft.Plugin.Program
             return paths;
         }
 
-        private List<IFileSystemWatcherWrapper> CreateFileSystemWatchers()
+        private void SetFileSystemWatchers()
         {
-            List<FileSystemWatcherWrapper> fileSystemWatchers = new List<FileSystemWatcherWrapper>();
+            _fileSystemWatchers = new List<FileSystemWatcherWrapper>();
             for(int index = 0; index < _pathsToWatch.Count(); index++)
             {
-                fileSystemWatchers.Add(new FileSystemWatcherWrapper(new FileSystemWatcher()));
+                _fileSystemWatchers.Add(new FileSystemWatcherWrapper(new FileSystemWatcher()));
             }
-            return fileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList();
         }
 
         public void Save()

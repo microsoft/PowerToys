@@ -19,7 +19,7 @@ namespace Microsoft.Plugin.Program.Storage
 
         public Win32ProgramRepository(List<IFileSystemWatcherWrapper> fileSystemWatcherHelpers, IStorage<IList<Programs.Win32>> storage, Settings settings, string[] pathsToWatch)
         {
-            this._fileSystemWatcherHelpers = new List<IFileSystemWatcherWrapper>(fileSystemWatcherHelpers);
+            this._fileSystemWatcherHelpers = fileSystemWatcherHelpers);
             this._storage = storage ?? throw new ArgumentNullException("storage", "Win32ProgramRepository requires an initialized storage interface");
             this._settings = settings ?? throw new ArgumentNullException("settings", "Win32ProgramRepository requires an initialized settings object");
             this._pathsToWatch = pathsToWatch;
@@ -35,10 +35,10 @@ namespace Microsoft.Plugin.Program.Storage
                 _fileSystemWatcherHelpers[index].Path = _pathsToWatch[index];
 
                 // to be notified when there is a change to a file/directory
-                _fileSystemWatcherHelpers[index].NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName;
+                _fileSystemWatcherHelpers[index].NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.LastAccess ;
 
                 // filtering the app types that we want to monitor
-                _fileSystemWatcherHelpers[index].Filters = new Collection<String>{ "*.exe", "*.appref-ms", "*.lnk", "*.url"};
+                //_fileSystemWatcherHelpers[index].Filters = new Collection<String>{ "*.exe", "*.appref-ms", "*.lnk", "*.url"};
 
                 // Registering the event handlers
                 _fileSystemWatcherHelpers[index].Created += OnAppCreated;
