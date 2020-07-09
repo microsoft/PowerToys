@@ -17,6 +17,38 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
     {
         public string Header { get; set; }
 
+        public static readonly DependencyProperty IsActiveProperty =
+            DependencyProperty.Register(
+                "Enabled",
+                typeof(string),
+                typeof(HotkeySettingsControl),
+                null);
+
+        private string _enabled = "False";
+
+        public string Enabled
+        {
+            get
+            {
+                return _enabled;
+            }
+
+            set
+            {
+                SetValue(IsActiveProperty, value);
+                _enabled = value;
+
+                if (value.ToString().ToLower() == "true")
+                {
+                    HotkeyTextBox.IsEnabled = true;
+                }
+                else
+                {
+                    HotkeyTextBox.IsEnabled = false;
+                }
+            }
+        }
+
         public static readonly DependencyProperty HotkeySettingsProperty =
             DependencyProperty.Register(
                 "HotkeySettings",
