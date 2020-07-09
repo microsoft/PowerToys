@@ -185,15 +185,13 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
 
     m_windowMoveSize = window;
 
-    // Optional?
-    m_ctrlHook->enable();
-
     if (m_settings->GetSettings()->mouseSwitch)
     {
         m_mouseHook->enable();
     }
 
     m_shiftHook->enable();
+    m_ctrlHook->enable();
 
     // This updates m_dragEnabled depending on if the shift key is being held down.
     UpdateDragState(window);
