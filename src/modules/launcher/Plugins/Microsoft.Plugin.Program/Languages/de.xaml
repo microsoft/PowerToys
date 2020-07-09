@@ -30,6 +30,7 @@
 
     <system:String x:Key="wox_plugin_program_run_as_administrator">Als Administrator ausführen (Ctrl+Shift+Enter)</system:String>
     <system:String x:Key="wox_plugin_program_open_containing_folder">Enthaltenden Ordner öffnen (Ctrl+Shift+E)</system:String>
+    <system:String x:Key="wox_plugin_program_open_in_console">Open path in console (Ctrl+Shift+C)</system:String>
 
     <system:String x:Key="wox_plugin_program_plugin_name">Programm</system:String>
     <system:String x:Key="wox_plugin_program_plugin_description">Suche Programme mit Wox</system:String>
@@ -39,5 +40,8 @@
     <system:String x:Key="powertoys_run_plugin_program_internet_shortcut_application">Weblink-Anwendung</system:String>
     <system:String x:Key="powertoys_run_plugin_program_web_application">Web-Anwendung</system:String>
     <system:String x:Key="powertoys_run_plugin_program_run_command">Run command</system:String>
+    <system:String x:Key="powertoys_run_plugin_program_packaged_application">Packaged application</system:String>
+    <system:String x:Key="powertoys_run_plugin_program_file_name">Name</system:String>
+    <system:String x:Key="powertoys_run_plugin_program_file_path">Path</system:String>
 
 </ResourceDictionary>

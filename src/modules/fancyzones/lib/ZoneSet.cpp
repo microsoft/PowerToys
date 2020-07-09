@@ -420,8 +420,8 @@ bool ZoneSet::CalculateFocusLayout(Rect workArea, int zoneCount) noexcept
 
     long left{ long(workArea.width() * 0.1) };
     long top{ long(workArea.height() * 0.1) };
-    long right{ long(workArea.width() * 0.6) };
-    long bottom{ long(workArea.height() * 0.6) };
+    long right{ left + long(workArea.width() * 0.6) };
+    long bottom{ top + long(workArea.height() * 0.6) };
 
     RECT focusZoneRect{ left, top, right, bottom };
 

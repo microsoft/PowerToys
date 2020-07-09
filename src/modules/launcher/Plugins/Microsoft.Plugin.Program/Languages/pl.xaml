@@ -33,11 +33,16 @@
 
     <system:String x:Key="wox_plugin_program_plugin_name">Programy</system:String>
     <system:String x:Key="wox_plugin_program_plugin_description">Szukaj i uruchamiaj programy z poziomu Woxa</system:String>
+    <system:String x:Key="wox_plugin_program_open_in_console">Open path in console (Ctrl+Shift+C)</system:String>
 
     <!--Application subtitle-->
     <system:String x:Key="powertoys_run_plugin_program_win32_application">Application</system:String>
     <system:String x:Key="powertoys_run_plugin_program_internet_shortcut_application">Internet shortcut application</system:String>
     <system:String x:Key="powertoys_run_plugin_program_web_application">Web application</system:String>
     <system:String x:Key="powertoys_run_plugin_program_run_command">Run command</system:String>
+    <system:String x:Key="powertoys_run_plugin_program_packaged_application">Packaged application</system:String>
+    <system:String x:Key="powertoys_run_plugin_program_file_name">Name</system:String>
+    <system:String x:Key="powertoys_run_plugin_program_file_path">Path</system:String>
+
 
 </ResourceDictionary>

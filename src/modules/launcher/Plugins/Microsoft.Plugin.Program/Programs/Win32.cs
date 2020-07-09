@@ -14,6 +14,7 @@ using Wox.Plugin;
 using System.Windows.Input;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Wox.Infrastructure.Logger;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -52,6 +53,7 @@ namespace Microsoft.Plugin.Program.Programs
             RUN_COMMAND = 3
         }
 
+        // Function to calculate the score of a result
         private int Score(string query)
         {
             var nameMatch = StringMatcher.FuzzySearch(query, Name);
@@ -103,7 +105,7 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         // Function to set the subtitle based on the Type of application
-        public string SetSubtitle(uint AppType, IPublicAPI api)
+        private string SetSubtitle(IPublicAPI api)
         {
             if(AppType == (uint)ApplicationTypes.WIN32_APPLICATION)
             {
@@ -168,7 +170,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             var result = new Result
             {
-                SubTitle = SetSubtitle(AppType, api),
+                SubTitle = SetSubtitle(api),
                 IcoPath = IcoPath,
                 Score = score,
                 ContextData = this,
@@ -187,17 +189,13 @@ namespace Microsoft.Plugin.Program.Programs
                 }
             };
 
-            if (Description.Length >= Name.Length &&
-                Description.Substring(0, Name.Length) == Name)
-            {
-                result.Title = Description;
-                result.TitleHighlightData = StringMatcher.FuzzySearch(query, Description).MatchData;
-            }
-            else
-            {
-                result.Title = Name;
-                result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
-            }
+            // To set the title for the result to always be the name of the application            
+            result.Title = Name;
+            result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
+
+            var toolTipTitle = string.Format("{0} : {1}", api.GetTranslation("powertoys_run_plugin_program_file_name"), result.Title);
+            var toolTipText = string.Format("{0} : {1}", api.GetTranslation("powertoys_run_plugin_program_file_path"), FullPath);
+            result.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
 
             return result;
         }
@@ -205,32 +203,11 @@ namespace Microsoft.Plugin.Program.Programs
 
         public List<ContextMenuResult> ContextMenus(IPublicAPI api)
         {
-            // To add a context menu only to open file location as Internet shortcut applications do not have the functionality to run as admin
-            if(AppType == (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION)
-            {
-                var contextMenuItems = new List<ContextMenuResult>
-                {
-                    new ContextMenuResult
-                    {
-                        PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                        Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
-                        Glyph = "\xE838",
-                        FontFamily = "Segoe MDL2 Assets",
-                        AcceleratorKey = Key.E,
-                        AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
-                        Action = _ =>
-                        {
-                            Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", ParentDirectory));
-                            return true;
-                        }
-                    }
-                };
-                return contextMenuItems;
-            }
+            var contextMenus = new List<ContextMenuResult>();
 
-            var contextMenus = new List<ContextMenuResult>
+            if (AppType != (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION)
             {
-                new ContextMenuResult
+                contextMenus.Add(new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = api.GetTranslation("wox_plugin_program_run_as_administrator"),
@@ -252,7 +229,10 @@ namespace Microsoft.Plugin.Program.Programs
 
                         return true;
                     }
-                },
+                });
+            }
+
+            contextMenus.Add(
                 new ContextMenuResult
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
@@ -266,8 +246,32 @@ namespace Microsoft.Plugin.Program.Programs
                         Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", ParentDirectory));
                         return true;
                     }
-                }
-            };
+                });
+
+            contextMenus.Add(
+                new ContextMenuResult
+                {
+                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                    Title = api.GetTranslation("wox_plugin_program_open_in_console"),
+                    Glyph = "\xE756",
+                    FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = Key.C,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                    Action = (context) =>
+                    {
+                        try
+                        {
+                            Helper.OpenInConsole(ParentDirectory);
+                            return true;
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Exception($"|Microsoft.Plugin.Program.Win32.ContextMenu| Failed to open {Name} in console, {e.Message}", e);
+                            return false;
+                        }
+                    }
+                });
+
             return contextMenus;
         }
 

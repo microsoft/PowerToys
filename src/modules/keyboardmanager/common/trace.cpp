@@ -50,3 +50,14 @@ void Trace::OSLevelShortcutRemapCount(const DWORD count) noexcept
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingValue(count, "OSLevelShortcutRemapCount"));
 }
+
+// Log number of app specific shortcut remaps when the user uses Edit Shortcuts and saves settings
+void Trace::AppSpecificShortcutRemapCount(const DWORD count) noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "KeyboardManager_AppSpecificShortcutRemapCount",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingValue(count, "AppSpecificShortcutRemapCount"));
+}
