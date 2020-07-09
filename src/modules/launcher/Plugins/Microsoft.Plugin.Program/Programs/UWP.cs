@@ -70,16 +70,8 @@ namespace Microsoft.Plugin.Program.Programs
                     var app = new Application(_app, this);
                     apps.Add(app);
                 }
-
-                Apps = apps.Where(a =>
-                {
-                    var valid =
-                    !string.IsNullOrEmpty(a.UserModelId) &&
-                    !string.IsNullOrEmpty(a.DisplayName) &&
-                    a.AppListEntry != "none";
-
-                    return valid;
-                }).ToArray();
+                
+                Apps = apps.Where(a => a.AppListEntry != "none").ToArray();
             }
             else
             {
