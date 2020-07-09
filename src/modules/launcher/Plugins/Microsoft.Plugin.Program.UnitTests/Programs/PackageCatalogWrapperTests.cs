@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.Plugin.Program.UnitTests.Storage
+namespace Microsoft.Plugin.Program.UnitTests.Programs
 {
-    class PackageRepositoryTest
+    class PackageCatalogWrapperTests
     {
     }
 }
