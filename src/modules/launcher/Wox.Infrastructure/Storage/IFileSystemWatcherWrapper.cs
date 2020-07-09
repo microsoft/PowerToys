@@ -11,7 +11,7 @@ namespace Wox.Infrastructure.Storage
         event RenamedEventHandler Renamed;
 
         // Properties of File System watcher
-        Collection<string> Filters { get; }
+        Collection<string> Filters { get; set; }
         bool EnableRaisingEvents { get; set; }
         NotifyFilters NotifyFilter { get; set; }
         string Path { get; set; }

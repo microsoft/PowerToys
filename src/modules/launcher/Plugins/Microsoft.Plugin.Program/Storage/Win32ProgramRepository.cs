@@ -15,7 +15,7 @@ namespace Microsoft.Plugin.Program.Storage
         private List<IFileSystemWatcherWrapper> _fileSystemWatcherHelpers;
         private string[] _pathsToWatch;
         private int _numberOfPathsToWatch;
-        private string[] extensionsToWatch = { "*.exe", "*.lnk", "*.appref-ms", "*.url" };
+        private Collection<string> extensionsToWatch = new Collection<string>{ "*.exe", "*.lnk", "*.appref-ms", "*.url" };
 
 
 
@@ -40,10 +40,11 @@ namespace Microsoft.Plugin.Program.Storage
                 _fileSystemWatcherHelpers[index].NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName ;
 
                 // filtering the app types that we want to monitor
-                foreach (string extension in extensionsToWatch)
+                /*foreach (string extension in extensionsToWatch)
                 {
                     _fileSystemWatcherHelpers[index].Filters.Add(extension);
-                }
+                }*/
+                _fileSystemWatcherHelpers[index].Filters = extensionsToWatch;
 
                 // Registering the event handlers
                 _fileSystemWatcherHelpers[index].Created += OnAppCreated;
