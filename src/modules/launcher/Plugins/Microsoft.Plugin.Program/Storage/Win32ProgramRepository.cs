@@ -19,7 +19,7 @@ namespace Microsoft.Plugin.Program.Storage
 
         public Win32ProgramRepository(List<IFileSystemWatcherWrapper> fileSystemWatcherHelpers, IStorage<IList<Programs.Win32>> storage, Settings settings, string[] pathsToWatch)
         {
-            this._fileSystemWatcherHelpers = fileSystemWatcherHelpers);
+            this._fileSystemWatcherHelpers = fileSystemWatcherHelpers;
             this._storage = storage ?? throw new ArgumentNullException("storage", "Win32ProgramRepository requires an initialized storage interface");
             this._settings = settings ?? throw new ArgumentNullException("settings", "Win32ProgramRepository requires an initialized settings object");
             this._pathsToWatch = pathsToWatch;

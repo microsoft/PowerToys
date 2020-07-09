@@ -86,7 +86,7 @@ namespace Microsoft.Plugin.Program
             _fileSystemWatchers = new List<FileSystemWatcherWrapper>();
             for(int index = 0; index < _pathsToWatch.Count(); index++)
             {
-                _fileSystemWatchers.Add(new FileSystemWatcherWrapper(new FileSystemWatcher()));
+                _fileSystemWatchers.Add(new FileSystemWatcherWrapper());
             }
         }
 
