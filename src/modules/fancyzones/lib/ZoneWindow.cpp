@@ -265,6 +265,7 @@ private:
     bool m_flashMode{};
     winrt::com_ptr<IZoneSet> m_activeZoneSet;
     std::vector<winrt::com_ptr<IZoneSet>> m_zoneSets;
+    std::vector<int> m_initialHighlightZone;
     std::vector<int> m_highlightZone;
     WPARAM m_keyLast{};
     size_t m_keyCycle{};
@@ -370,6 +371,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnter(HWND window) noexcept
     m_windowMoveSize = window;
     m_drawHints = true;
     m_highlightZone = {};
+    m_initialHighlightZone = {};
     ShowZoneWindow();
     return S_OK;
 }
@@ -386,44 +388,56 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
 
         if (holdZones)
         {
-            std::vector<int> newHighlightZone;
-            std::set_union(begin(highlightZone), end(highlightZone), begin(m_highlightZone), end(m_highlightZone), std::back_inserter(newHighlightZone));
-            
-            RECT boundingRect;
-            bool boundingRectEmpty = true;
-            auto zones = m_activeZoneSet->GetZones();
-
-            for (int zoneId : newHighlightZone)
+            if (m_initialHighlightZone.empty())
             {
-                RECT rect = zones[zoneId]->GetZoneRect();
-                if (boundingRectEmpty)
-                {
-                    boundingRect = rect;
-                    boundingRectEmpty = false;
-                }
-                else
-                {
-                    boundingRect.left = min(boundingRect.left, rect.left);
-                    boundingRect.top = min(boundingRect.top, rect.top);
-                    boundingRect.right = max(boundingRect.right, rect.right);
-                    boundingRect.bottom = max(boundingRect.bottom, rect.bottom);
-                }
+                // first time
+                m_initialHighlightZone = highlightZone;
             }
-
-            highlightZone.clear();
-            
-            if (!boundingRectEmpty)
+            else
             {
-                for (size_t zoneId = 0; zoneId < zones.size(); zoneId++)
+                std::vector<int> newHighlightZone;
+                std::set_union(begin(highlightZone), end(highlightZone), begin(m_initialHighlightZone), end(m_initialHighlightZone), std::back_inserter(newHighlightZone));
+
+                RECT boundingRect;
+                bool boundingRectEmpty = true;
+                auto zones = m_activeZoneSet->GetZones();
+
+                for (int zoneId : newHighlightZone)
                 {
                     RECT rect = zones[zoneId]->GetZoneRect();
-                    if (boundingRect.left <= rect.left && rect.right <= boundingRect.right &&
-                        boundingRect.top <= rect.top && rect.bottom <= boundingRect.bottom)
+                    if (boundingRectEmpty)
                     {
-                        highlightZone.push_back(static_cast<int>(zoneId));
+                        boundingRect = rect;
+                        boundingRectEmpty = false;
+                    }
+                    else
+                    {
+                        boundingRect.left = min(boundingRect.left, rect.left);
+                        boundingRect.top = min(boundingRect.top, rect.top);
+                        boundingRect.right = max(boundingRect.right, rect.right);
+                        boundingRect.bottom = max(boundingRect.bottom, rect.bottom);
+                    }
+                }
+
+                highlightZone.clear();
+
+                if (!boundingRectEmpty)
+                {
+                    for (size_t zoneId = 0; zoneId < zones.size(); zoneId++)
+                    {
+                        RECT rect = zones[zoneId]->GetZoneRect();
+                        if (boundingRect.left <= rect.left && rect.right <= boundingRect.right &&
+                            boundingRect.top <= rect.top && rect.bottom <= boundingRect.bottom)
+                        {
+                            highlightZone.push_back(static_cast<int>(zoneId));
+                        }
                     }
                 }
             }
+        }
+        else
+        {
+            m_initialHighlightZone = {};
         }
 
         redraw = (highlightZone != m_highlightZone);
