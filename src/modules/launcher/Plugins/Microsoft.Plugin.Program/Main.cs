@@ -11,7 +11,6 @@ using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using Microsoft.Plugin.Program.Views;
-
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 using Windows.ApplicationModel;
 using Microsoft.Plugin.Program.Storage;
@@ -32,6 +31,7 @@ namespace Microsoft.Plugin.Program
         private bool _disposed = false;
         private PackageRepository _packageRepository = new PackageRepository(new PackageCatalogWrapper(), new BinaryStorage<IList<UWP.Application>>("UWP"));
         private Win32ProgramRepository _win32ProgramRepository;
+        private readonly string[] _pathsToWatch;
 
         public Main()
         {
@@ -39,7 +39,8 @@ namespace Microsoft.Plugin.Program
             _settings = _settingsStorage.Load();
 
             // Initialize the Win32ProgramRepository with the settings object
-            _win32ProgramRepository = new Win32ProgramRepository(new BinaryStorage<IList<Programs.Win32>>("Win32"), _settings);
+            _pathsToWatch = GetPathsToWatch();
+            _win32ProgramRepository = new Win32ProgramRepository(CreateFileSystemWatchers(), new BinaryStorage<IList<Programs.Win32>>("Win32"), _settings, _pathsToWatch);
 
             Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Preload programs cost", () =>
             {
@@ -64,6 +65,28 @@ namespace Microsoft.Plugin.Program
             Task.WaitAll(a, b);
 
             _settings.LastIndexTime = DateTime.Today;
+        }
+
+        // Returns an array of paths to be watched
+        private string[] GetPathsToWatch()
+        {
+            string[] paths = new string[]
+                            {
+                               Environment.GetFolderPath(Environment.SpecialFolder.Programs),
+                               Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms),
+                               Environment.GetFolderPath(Environment.SpecialFolder.Desktop)
+                            };
+            return paths;
+        }
+
+        private List<IFileSystemWatcherWrapper> CreateFileSystemWatchers()
+        {
+            List<FileSystemWatcherWrapper> fileSystemWatchers = new List<FileSystemWatcherWrapper>();
+            for(int index = 0; index < _pathsToWatch.Count(); index++)
+            {
+                fileSystemWatchers.Add(new FileSystemWatcherWrapper(new FileSystemWatcher()));
+            }
+            return fileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList();
         }
 
         public void Save()
@@ -179,6 +202,5 @@ namespace Microsoft.Plugin.Program
                 }
             }
         }
-
     }
 }
