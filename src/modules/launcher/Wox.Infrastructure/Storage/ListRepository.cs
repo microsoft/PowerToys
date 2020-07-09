@@ -1,14 +1,11 @@
 ﻿using NLog.Filters;
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Controls.Primitives;
 using Wox.Infrastructure;
-using Wox.Infrastructure.Logger;
 
 namespace Wox.Infrastructure.Storage
 {
@@ -19,19 +16,18 @@ namespace Wox.Infrastructure.Storage
     /// <typeparam name="T"></typeparam>
     public class ListRepository<T> : IRepository<T>, IEnumerable<T>
     {
-        public IList<T> Items { get { return _items.Values.ToList(); } }
+        protected  IList<T> _items = new List<T>();
+        protected  IStorage<IList<T>> _storage;
 
-        private ConcurrentDictionary<int, T> _items = new ConcurrentDictionary<int, T>();
-
-        public ListRepository()
+        public ListRepository(IStorage<IList<T>> storage)
         {
-           
+            _storage = storage ?? throw new ArgumentNullException("storage", "StorageRepository requires an initialized storage interface");
         }
 
         public void Set(IList<T> items)
         {
             //enforce that internal representation
-            _items = new ConcurrentDictionary<int, T>(items.ToDictionary( i => i.GetHashCode()));
+            _items = items.ToList<T>();
         }
 
         public bool Any()
@@ -41,35 +37,27 @@ namespace Wox.Infrastructure.Storage
 
         public void Add(T insertedItem)
         {
-            if (!_items.TryAdd(insertedItem.GetHashCode(), insertedItem))
-            {
-                Log.Error($"|ListRepository.Add| Item Already Exists <{insertedItem}>");
-            }
-     
+            _items.Add(insertedItem);
         }
 
         public void Remove(T removedItem)
         {
-
-            if (!_items.TryRemove(removedItem.GetHashCode(), out _))
-            {
-                Log.Error($"|ListRepository.Remove| Item Not Found <{removedItem}>");
-            }
+            _items.Remove(removedItem);
         }
 
         public ParallelQuery<T> AsParallel()
         {
-            return _items.Values.AsParallel();
+            return _items.AsParallel();
         }
 
         public bool Contains(T item)
         {
-            return _items.ContainsKey(item.GetHashCode());
+            return _items.Contains(item);
         }
 
         public IEnumerator<T> GetEnumerator()
         {
-            return _items.Values.GetEnumerator();
+            return _items.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
