@@ -38,6 +38,8 @@ namespace Microsoft.Plugin.Program.Programs
 
         public PackageVersion Version { get; set; }
 
+        public static IPackageManager PackageManagerWrapper { get; set; } = new PackageManagerWrapper();
+
         public UWP(IPackage package)
         {        
             Name = package.Name;
@@ -180,8 +182,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         private static IEnumerable<IPackage> CurrentUserPackages()
         {
-            var x = new PackageManagerWrapper();
-            var ps = x.FindPackagesForCurrentUser();
+            var ps = PackageManagerWrapper.FindPackagesForCurrentUser();
             ps = ps.Where(p =>
             {
                 bool valid;

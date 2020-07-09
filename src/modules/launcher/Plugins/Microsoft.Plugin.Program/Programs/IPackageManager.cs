@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Microsoft.Plugin.Program.Programs
 {
-    interface IPackageManager
+    public interface IPackageManager
     {
         IEnumerable<IPackage> FindPackagesForCurrentUser();
     }

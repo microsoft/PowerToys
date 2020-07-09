@@ -28,12 +28,7 @@ namespace Microsoft.Plugin.Program.Programs
                 var m = this.packageManager.FindPackagesForUser(id);
                 foreach (Package p in m)
                 {
-                    packages.Add(new PackageWrapper(
-                        p.Id.Name,
-                        p.Id.FullName, 
-                        p.Id.FamilyName,
-                        p.InstalledLocation.Path,
-                        p.IsFramework));
+                    packages.Add(PackageWrapper.GetWrapperFromPackage(p));
                 }
             }
 

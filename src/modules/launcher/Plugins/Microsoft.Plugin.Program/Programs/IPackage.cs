@@ -14,6 +14,8 @@ namespace Microsoft.Plugin.Program.Programs
 
         bool IsFramework { get; }
 
+        bool IsDevelopmentMode { get; }
+
         string InstalledLocation { get; }
     }
 }
