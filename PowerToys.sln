@@ -255,6 +255,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerTest", "src\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagedCommon", "src\common\ManagedCommon\ManagedCommon.csproj", "{4AED67B6-55FD-486F-B917-E543DEE2CB3C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Plugin.Program.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.Program.UnitTests\Microsoft.Plugin.Program.UnitTests.csproj", "{42851751-CBC8-45A6-97F5-7A0753F7B4D1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -501,6 +503,10 @@ Global
 		{4AED67B6-55FD-486F-B917-E543DEE2CB3C}.Debug|x64.Build.0 = Debug|x64
 		{4AED67B6-55FD-486F-B917-E543DEE2CB3C}.Release|x64.ActiveCfg = Release|x64
 		{4AED67B6-55FD-486F-B917-E543DEE2CB3C}.Release|x64.Build.0 = Release|x64
+		{42851751-CBC8-45A6-97F5-7A0753F7B4D1}.Debug|x64.ActiveCfg = Debug|x64
+		{42851751-CBC8-45A6-97F5-7A0753F7B4D1}.Debug|x64.Build.0 = Debug|x64
+		{42851751-CBC8-45A6-97F5-7A0753F7B4D1}.Release|x64.ActiveCfg = Release|x64
+		{42851751-CBC8-45A6-97F5-7A0753F7B4D1}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -571,6 +577,7 @@ Global
 		{E6410BFC-B341-498C-8C67-312C20CDD8D5} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{62173D9A-6724-4C00-A1C8-FB646480A9EC} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
 		{4AED67B6-55FD-486F-B917-E543DEE2CB3C} = {1AFB6476-670D-4E80-A464-657E01DFF482}
+		{42851751-CBC8-45A6-97F5-7A0753F7B4D1} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
