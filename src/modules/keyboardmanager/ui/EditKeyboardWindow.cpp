@@ -110,7 +110,7 @@ static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, Xa
 }
 
 // Function to combine remappings if the L and R version of the modifier is mapped to the same key
-void CombineRemappings(std::unordered_map<DWORD, DWORD>& table, DWORD leftKey, DWORD rightKey, DWORD combinedKey)
+void CombineRemappings(std::unordered_map<DWORD, std::variant<DWORD, Shortcut>>& table, DWORD leftKey, DWORD rightKey, DWORD combinedKey)
 {
     if (table.find(leftKey) != table.end() && table.find(rightKey) != table.end())
     {
@@ -125,7 +125,7 @@ void CombineRemappings(std::unordered_map<DWORD, DWORD>& table, DWORD leftKey, D
 }
 
 // Function to pre process the remap table before loading it into the UI
-void PreProcessRemapTable(std::unordered_map<DWORD, DWORD>& table)
+void PreProcessRemapTable(std::unordered_map<DWORD, std::variant<DWORD, Shortcut>>& table)
 {
     // Pre process the table to combine L and R versions of Ctrl/Alt/Shift/Win that are mapped to the same key
     CombineRemappings(table, VK_LCONTROL, VK_RCONTROL, VK_CONTROL);
@@ -298,13 +298,16 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // Load existing remaps into UI
     std::unique_lock<std::mutex> lock(keyboardManagerState.singleKeyReMap_mutex);
-    std::unordered_map<DWORD, DWORD> singleKeyRemapCopy = keyboardManagerState.singleKeyReMap;
+    std::unordered_map<DWORD, std::variant<DWORD, Shortcut>> singleKeyRemapCopy = keyboardManagerState.singleKeyReMap;
     lock.unlock();
     PreProcessRemapTable(singleKeyRemapCopy);
 
     for (const auto& it : singleKeyRemapCopy)
     {
-        SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects, it.first, it.second);
+        if (it.second.index() == 0)
+        {
+            SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects, it.first, std::get<DWORD>(it.second));
+        }
     }
 
     // Main Header Apply button

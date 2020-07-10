@@ -1,5 +1,8 @@
 #include "pch.h"
 #include "KeyboardEventHandlers.h"
+#include "keyboardmanager/common/Shortcut.h"
+#include "keyboardmanager/common/RemapKey.h"
+#include "keyboardmanager/common/RemapShortcut.h"
 
 namespace KeyboardEventHandlers
 {
@@ -14,18 +17,41 @@ namespace KeyboardEventHandlers
             auto it = keyboardManagerState.singleKeyReMap.find(data->lParam->vkCode);
             if (it != keyboardManagerState.singleKeyReMap.end())
             {
+                // Check if the remap is to a key or a shortcut
+                bool remapToKey = (it->second.index() == 0);
+
                 // If mapped to 0x0 then the key is disabled
-                if (it->second == 0x0)
+                if (remapToKey)
                 {
-                    return 1;
+                    if (std::get<DWORD>(it->second) == 0x0)
+                    {
+                        return 1;
+                    }
                 }
 
-                int key_count = 1;
+                int key_count;
+                if (remapToKey)
+                {
+                    key_count = 1;
+                }
+                else
+                {
+                    key_count = std::get<Shortcut>(it->second).Size() + 1;
+                }
                 LPINPUT keyEventList = new INPUT[size_t(key_count)]();
                 memset(keyEventList, 0, sizeof(keyEventList));
 
                 // Handle remaps to VK_WIN_BOTH
-                DWORD target = it->second;
+                DWORD target;
+                if (remapToKey)
+                {
+                    target = std::get<DWORD>(it->second);
+                }
+                else
+                {
+                    target = std::get<Shortcut>(it->second).GetActionKey();
+                }
+
                 // If a key is remapped to VK_WIN_BOTH, we send VK_LWIN instead
                 if (target == CommonSharedConstants::VK_WIN_BOTH)
                 {
@@ -38,13 +64,75 @@ namespace KeyboardEventHandlers
                     ResetIfModifierKeyForLowerLevelKeyHandlers(ii, it->first);
                 }
 
-                if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
+                if (remapToKey)
                 {
-                    KeyboardManagerHelper::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)target, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                    if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
+                    {
+                        KeyboardManagerHelper::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)target, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                    }
+                    else
+                    {
+                        KeyboardManagerHelper::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)target, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                    }
                 }
                 else
                 {
-                    KeyboardManagerHelper::SetKeyEvent(keyEventList, 0, INPUT_KEYBOARD, (WORD)target, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                    int i = 0;
+                    Shortcut targetShortcut = std::get<Shortcut>(it->second);
+                    if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
+                    {
+                        KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)targetShortcut.GetActionKey(), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        i++;
+                        if (targetShortcut.GetShiftKey() != NULL)
+                        {
+                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)targetShortcut.GetShiftKey(), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                            i++;
+                        }
+                        if (targetShortcut.GetAltKey() != NULL)
+                        {
+                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)targetShortcut.GetAltKey(), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                            i++;
+                        }
+                        if (targetShortcut.GetCtrlKey() != NULL)
+                        {
+                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)targetShortcut.GetCtrlKey(), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                            i++;
+                        }
+                        if (targetShortcut.GetWinKey(ModifierKey::Disabled) != NULL)
+                        {
+                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)targetShortcut.GetWinKey(ModifierKey::Disabled), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                            i++;
+                        }
+                        KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)KeyboardManagerConstants::DUMMY_KEY, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        i++;
+                    }
+                    else
+                    {
+                        KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)KeyboardManagerConstants::DUMMY_KEY, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        i++;
+                        if (targetShortcut.GetWinKey(ModifierKey::Disabled) != NULL)
+                        {
+                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)targetShortcut.GetWinKey(ModifierKey::Disabled), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                            i++;
+                        }
+                        if (targetShortcut.GetCtrlKey() != NULL)
+                        {
+                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)targetShortcut.GetCtrlKey(), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                            i++;
+                        }
+                        if (targetShortcut.GetAltKey() != NULL)
+                        {
+                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)targetShortcut.GetAltKey(), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                            i++;
+                        }
+                        if (targetShortcut.GetShiftKey() != NULL)
+                        {
+                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)targetShortcut.GetShiftKey(), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                            i++;
+                        }
+                        KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)targetShortcut.GetActionKey(), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        i++;
+                    }
                 }
 
                 lock.unlock();

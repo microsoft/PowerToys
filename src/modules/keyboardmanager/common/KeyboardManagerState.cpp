@@ -1,5 +1,8 @@
 #include "pch.h"
 #include "KeyboardManagerState.h"
+#include "Shortcut.h"
+#include "RemapKey.h"
+#include "RemapShortcut.h"
 
 // Constructor
 KeyboardManagerState::KeyboardManagerState() :
@@ -133,7 +136,7 @@ bool KeyboardManagerState::AddOSLevelShortcut(const Shortcut& originalSC, const 
     return true;
 }
 
-// Function to add a new OS level shortcut remapping
+// Function to add a new single key to key remapping
 bool KeyboardManagerState::AddSingleKeyRemap(const DWORD& originalKey, const DWORD& newRemapKey)
 {
     std::lock_guard<std::mutex> lock(singleKeyReMap_mutex);
@@ -146,6 +149,22 @@ bool KeyboardManagerState::AddSingleKeyRemap(const DWORD& originalKey, const DWO
     }
 
     singleKeyReMap[originalKey] = newRemapKey;
+    return true;
+}
+
+// Function to add a new single key to shortcut remapping
+bool KeyboardManagerState::AddSingleKeyRemap(const DWORD& originalKey, const Shortcut& newRemapShortcut)
+{
+    std::lock_guard<std::mutex> lock(singleKeyReMap_mutex);
+
+    // Check if the key is already remapped
+    auto it = singleKeyReMap.find(originalKey);
+    if (it != singleKeyReMap.end())
+    {
+        return false;
+    }
+
+    singleKeyReMap[originalKey] = newRemapShortcut;
     return true;
 }
 
@@ -450,7 +469,18 @@ bool KeyboardManagerState::SaveConfigToFile()
     {
         json::JsonObject keys;
         keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(winrt::to_hstring((unsigned int)it.first)));
-        keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(winrt::to_hstring((unsigned int)it.second)));
+
+        // For key to key remapping
+        if (it.second.index() == 0)
+        {
+            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(winrt::to_hstring((unsigned int)std::get<DWORD>(it.second))));
+        }
+
+        // For key to shortcut remapping
+        else
+        {
+            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(std::get<Shortcut>(it.second).ToHstringVK()));
+        }
 
         inProcessRemapKeysArray.Append(keys);
     }

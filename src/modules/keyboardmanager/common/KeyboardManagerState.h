@@ -9,8 +9,11 @@
 #include <mutex>
 #include <winrt/Windows.UI.Xaml.Controls.h>
 #include <../common/settings_helpers.h>
+#include <variant>
 
 using namespace winrt::Windows::UI::Xaml::Controls;
+class RemapKey;
+class RemapShortcut;
 
 // Enum type to store different states of the UI
 enum class KeyboardManagerUIState
@@ -78,7 +81,7 @@ public:
     // The map members and their mutexes are left as public since the maps are used extensively in dllmain.cpp.
     // Maps which store the remappings for each of the features. The bool fields should be initialized to false. They are used to check the current state of the shortcut (i.e is that particular shortcut currently pressed down or not).
     // Stores single key remappings
-    std::unordered_map<DWORD, DWORD> singleKeyReMap;
+    std::unordered_map<DWORD, std::variant<DWORD, Shortcut>> singleKeyReMap;
     std::mutex singleKeyReMap_mutex;
 
     // Stores keys which need to be changed from toggle behavior to modifier behavior. Eg. Caps Lock
@@ -123,8 +126,11 @@ public:
     // Function to clear the App specific shortcut remapping table
     void ClearAppSpecificShortcuts();
 
-    // Function to add a new single key remapping
+    // Function to add a new single key to key remapping
     bool AddSingleKeyRemap(const DWORD& originalKey, const DWORD& newRemapKey);
+
+    // Function to add a new single key to shortcut remapping
+    bool AddSingleKeyRemap(const DWORD& originalKey, const Shortcut& newRemapShortcut);
 
     // Function to add a new OS level shortcut remapping
     bool AddOSLevelShortcut(const Shortcut& originalSC, const Shortcut& newSC);
