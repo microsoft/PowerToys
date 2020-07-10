@@ -1,5 +1,7 @@
 #pragma once
 
+#include "JsonHelpers.h"
+
 #include <common/settings_helpers.h>
 #include <common/json.h>
 #include <mutex>
@@ -19,6 +21,12 @@ namespace FancyZonesDataTypes
     struct AppZoneHistoryData;
 }
 
+#if defined(UNIT_TESTS)
+namespace FancyZonesUnitTests
+{
+    class FancyZonesDataUnitTests;
+}
+#endif
 namespace FancyZonesDataNS
 {
 
@@ -38,8 +46,6 @@ namespace FancyZonesDataNS
         {
             return appZoneHistoryFilePath;
         }
-
-        json::JsonObject GetPersistFancyZonesJSON();
 
         std::optional<FancyZonesDataTypes::DeviceInfoData> FindDeviceInfo(const std::wstring& zoneWindowId) const;
 
@@ -105,17 +111,20 @@ namespace FancyZonesDataNS
         bool ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath);
         bool ParseDeletedCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath);
 
-        bool ParseAppZoneHistory(const json::JsonObject& fancyZonesDataJSON);
-        json::JsonArray SerializeAppZoneHistory() const;
-        bool ParseDeviceInfos(const json::JsonObject& fancyZonesDataJSON);
-        json::JsonArray SerializeDeviceInfos() const;
-        bool ParseCustomZoneSets(const json::JsonObject& fancyZonesDataJSON);
-        json::JsonArray SerializeCustomZoneSets() const;
-
         void LoadFancyZonesData();
         void SaveFancyZonesData() const;
 
     private:
+#if defined(UNIT_TESTS)
+        friend class FancyZonesUnitTests::FancyZonesDataUnitTests;
+
+        inline bool ParseDeviceInfos(const json::JsonObject& fancyZonesDataJSON)
+        {
+            deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
+            return !deviceInfoMap.empty();
+        }
+#endif
+
         void MigrateCustomZoneSetsFromRegistry();
         void RemoveDesktopAppZoneHistory(const std::wstring& desktopId);
 

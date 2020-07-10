@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "FancyZonesData.h"
 #include "FancyZonesDataTypes.h"
+#include "JsonHelpers.h"
 #include "ZoneSet.h"
 #include "trace.h"
 #include "Settings.h"
@@ -43,35 +44,6 @@ namespace FancyZonesDataNS
         std::wstring result = PTSettingsHelper::get_module_save_folder_location(L"FancyZones");
         zonesSettingsFilePath = result + L"\\" + std::wstring(FANCY_ZONES_DATA_FILE);
         appZoneHistoryFilePath = result + L"\\" + std::wstring(FANCY_ZONES_APP_ZONE_HISTORY_FILE);
-    }
-
-    json::JsonObject FancyZonesData::GetPersistFancyZonesJSON()
-    {
-        std::scoped_lock lock{ dataLock };
-
-        std::wstring save_file_path = GetPersistFancyZonesJSONPath();
-
-        auto result = json::from_file(save_file_path);
-        if (result)
-        {
-            if (!result->HasKey(L"app-zone-history"))
-            {
-                auto appZoneHistory = json::from_file(appZoneHistoryFilePath);
-                if (appZoneHistory)
-                {
-                    result->SetNamedValue(L"app-zone-history", appZoneHistory->GetNamedArray(L"app-zone-history"));
-                }
-                else
-                {
-                    result->SetNamedValue(L"app-zone-history", json::JsonArray());
-                }
-            }
-            return *result;
-        }
-        else
-        {
-            return json::JsonObject();
-        }
     }
 
     std::optional<FancyZonesDataTypes::DeviceInfoData> FancyZonesData::FindDeviceInfo(const std::wstring& zoneWindowId) const
@@ -463,129 +435,8 @@ namespace FancyZonesDataNS
         return res;
     }
 
-    bool FancyZonesData::ParseAppZoneHistory(const json::JsonObject& fancyZonesDataJSON)
-    {
-        std::scoped_lock lock{ dataLock };
-        try
-        {
-            auto appLastZones = fancyZonesDataJSON.GetNamedArray(L"app-zone-history");
-
-            for (uint32_t i = 0; i < appLastZones.Size(); ++i)
-            {
-                json::JsonObject appLastZone = appLastZones.GetObjectAt(i);
-                if (auto appZoneHistory = FancyZonesDataTypes::AppZoneHistoryJSON::FromJson(appLastZone); appZoneHistory.has_value())
-                {
-                    appZoneHistoryMap[appZoneHistory->appPath] = std::move(appZoneHistory->data);
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-        catch (const winrt::hresult_error&)
-        {
-            return false;
-        }
-    }
-
-    json::JsonArray FancyZonesData::SerializeAppZoneHistory() const
-    {
-        std::scoped_lock lock{ dataLock };
-        json::JsonArray appHistoryArray;
-
-        for (const auto& [appPath, appZoneHistoryData] : appZoneHistoryMap)
-        {
-            appHistoryArray.Append(FancyZonesDataTypes::AppZoneHistoryJSON::ToJson(FancyZonesDataTypes::AppZoneHistoryJSON{ appPath, appZoneHistoryData }));
-        }
-
-        return appHistoryArray;
-    }
-
-    bool FancyZonesData::ParseDeviceInfos(const json::JsonObject& fancyZonesDataJSON)
-    {
-        std::scoped_lock lock{ dataLock };
-        try
-        {
-            auto devices = fancyZonesDataJSON.GetNamedArray(L"devices");
-
-            for (uint32_t i = 0; i < devices.Size(); ++i)
-            {
-                if (auto device = FancyZonesDataTypes::DeviceInfoJSON::DeviceInfoJSON::FromJson(devices.GetObjectAt(i)); device.has_value())
-                {
-                    deviceInfoMap[device->deviceId] = std::move(device->data);
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-        catch (const winrt::hresult_error&)
-        {
-            return false;
-        }
-    }
-
-    json::JsonArray FancyZonesData::SerializeDeviceInfos() const
-    {
-        std::scoped_lock lock{ dataLock };
-        json::JsonArray DeviceInfosJSON{};
-
-        for (const auto& [deviceID, deviceData] : deviceInfoMap)
-        {
-            if (deviceData.activeZoneSet.type != FancyZonesDataTypes::ZoneSetLayoutType::Blank)
-            {
-                DeviceInfosJSON.Append(FancyZonesDataTypes::DeviceInfoJSON::DeviceInfoJSON::ToJson(FancyZonesDataTypes::DeviceInfoJSON{ deviceID, deviceData }));
-            }
-        }
-
-        return DeviceInfosJSON;
-    }
-
-    bool FancyZonesData::ParseCustomZoneSets(const json::JsonObject& fancyZonesDataJSON)
-    {
-        std::scoped_lock lock{ dataLock };
-        try
-        {
-            auto customZoneSets = fancyZonesDataJSON.GetNamedArray(L"custom-zone-sets");
-
-            for (uint32_t i = 0; i < customZoneSets.Size(); ++i)
-            {
-                if (auto zoneSet = FancyZonesDataTypes::CustomZoneSetJSON::FromJson(customZoneSets.GetObjectAt(i)); zoneSet.has_value())
-                {
-                    customZoneSetsMap[zoneSet->uuid] = std::move(zoneSet->data);
-                }
-            }
-
-            return true;
-        }
-        catch (const winrt::hresult_error&)
-        {
-            return false;
-        }
-    }
-
-    json::JsonArray FancyZonesData::SerializeCustomZoneSets() const
-    {
-        std::scoped_lock lock{ dataLock };
-        json::JsonArray customZoneSetsJSON{};
-
-        for (const auto& [zoneSetId, zoneSetData] : customZoneSetsMap)
-        {
-            customZoneSetsJSON.Append(FancyZonesDataTypes::CustomZoneSetJSON::ToJson(FancyZonesDataTypes::CustomZoneSetJSON{ zoneSetId, zoneSetData }));
-        }
-
-        return customZoneSetsJSON;
-    }
-
     void FancyZonesData::LoadFancyZonesData()
     {
-        std::scoped_lock lock{ dataLock };
         std::wstring jsonFilePath = GetPersistFancyZonesJSONPath();
 
         if (!std::filesystem::exists(jsonFilePath))
@@ -596,11 +447,11 @@ namespace FancyZonesDataNS
         }
         else
         {
-            json::JsonObject fancyZonesDataJSON = GetPersistFancyZonesJSON();
+            json::JsonObject fancyZonesDataJSON = JSONHelpers::GetPersistFancyZonesJSON(zonesSettingsFilePath, appZoneHistoryFilePath);
 
-            ParseAppZoneHistory(fancyZonesDataJSON);
-            ParseDeviceInfos(fancyZonesDataJSON);
-            ParseCustomZoneSets(fancyZonesDataJSON);
+            appZoneHistoryMap = JSONHelpers::ParseAppZoneHistory(fancyZonesDataJSON);
+            deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
+            customZoneSetsMap = JSONHelpers::ParseCustomZoneSets(fancyZonesDataJSON);
         }
     }
 
@@ -610,9 +461,9 @@ namespace FancyZonesDataNS
         json::JsonObject root{};
         json::JsonObject appZoneHistoryRoot{};
 
-        appZoneHistoryRoot.SetNamedValue(L"app-zone-history", SerializeAppZoneHistory());
-        root.SetNamedValue(L"devices", SerializeDeviceInfos());
-        root.SetNamedValue(L"custom-zone-sets", SerializeCustomZoneSets());
+        appZoneHistoryRoot.SetNamedValue(L"app-zone-history", JSONHelpers::SerializeAppZoneHistory(appZoneHistoryMap));
+        root.SetNamedValue(L"devices", JSONHelpers::SerializeDeviceInfos(deviceInfoMap));
+        root.SetNamedValue(L"custom-zone-sets", JSONHelpers::SerializeCustomZoneSets(customZoneSetsMap));
 
         auto before = json::from_file(zonesSettingsFilePath);
         if (!before.has_value() || before.value().Stringify() != root.Stringify())
