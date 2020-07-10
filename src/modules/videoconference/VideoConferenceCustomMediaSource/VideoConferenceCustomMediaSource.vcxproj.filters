@@ -18,6 +18,7 @@
     <None Include="module.def">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SimpleMediaSource.cpp">
