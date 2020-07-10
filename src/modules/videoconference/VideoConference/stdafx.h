@@ -4,8 +4,9 @@
 //
 
 #pragma once
+#ifndef UNICODE
 #define UNICODE
-
+#endif
 // Windows Header Files:
 #include <windows.h>
 #include <propvarutil.h>
@@ -33,6 +34,8 @@
 #include <Dbt.h>
 #include <shlwapi.h>
 
+#include <string_view>
+
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
 
@@ -43,45 +46,43 @@ interface DECLSPEC_UUID("28F54685-06FD-11D2-B27A-00A0C9223196") IKsControl;
 #define INTERFACE IKsControl
 DECLARE_INTERFACE_(IKsControl, IUnknown)
 {
-    STDMETHOD(KsProperty)(
+    STDMETHOD(KsProperty)
+    (
         THIS_
-        IN PKSPROPERTY Property,
+            IN PKSPROPERTY Property,
         IN ULONG PropertyLength,
         IN OUT LPVOID PropertyData,
         IN ULONG DataLength,
-        OUT ULONG* BytesReturned
-        ) PURE;
-    STDMETHOD(KsMethod)(
+        OUT ULONG * BytesReturned) PURE;
+    STDMETHOD(KsMethod)
+    (
         THIS_
-        IN PKSMETHOD Method,
+            IN PKSMETHOD Method,
         IN ULONG MethodLength,
         IN OUT LPVOID MethodData,
         IN ULONG DataLength,
-        OUT ULONG* BytesReturned
-        ) PURE;
-    STDMETHOD(KsEvent)(
+        OUT ULONG * BytesReturned) PURE;
+    STDMETHOD(KsEvent)
+    (
         THIS_
-        IN PKSEVENT Event OPTIONAL,
+            IN PKSEVENT Event OPTIONAL,
         IN ULONG EventLength,
         IN OUT LPVOID EventData,
         IN ULONG DataLength,
-        OUT ULONG* BytesReturned
-        ) PURE;
+        OUT ULONG * BytesReturned) PURE;
 };
-#endif  // _IKsControl_
+#endif // _IKsControl_
 
 #include "SimpleMediaStream.h"
 #include "SimpleMediaSource.h"
 
-
 // Basic macros to handle HRESULT checks.
 // Recommend adding implementation specific logging within the failure case.
 #ifndef RETURN_IF_FAILED
-#define RETURN_IF_FAILED( val )                                                     \
-    hr = (val);                                                                     \
-    if ( FAILED( hr ) )                                                             \
-    {                                                                               \
-        return hr;                                                                  \
+#define RETURN_IF_FAILED(val) \
+    hr = (val);               \
+    if (FAILED(hr))           \
+    {                         \
+        return hr;            \
     }
 #endif
-
