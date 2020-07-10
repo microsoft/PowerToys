@@ -23,5 +23,10 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         {
             return base.GetNewRemapKeys();
         }
+
+        public bool Compare(AppSpecificKeysDataModel arg)
+        {
+            return OriginalKeys.Equals(arg.OriginalKeys) && NewRemapKeys.Equals(arg.NewRemapKeys) && TargetApp.Equals(arg.TargetApp);
+        }
     }
 }
