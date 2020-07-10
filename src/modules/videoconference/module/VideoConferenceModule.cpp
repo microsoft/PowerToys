@@ -6,7 +6,8 @@
 
 #include <gdiplus.h>
 
-#include "common/common.h"
+#include <common/common.h>
+#include <common/debug_control.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -312,14 +313,20 @@ void VideoConferenceModule::enable()
 {
     if (!_enabled)
     {
-        hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
-
         overlay.setMicrophoneMute(getMicrophoneMuteState());
         overlay.setCameraMute(getVirtualCameraMuteState());
 
         overlay.showOverlay(overlayPositionString, overlayMonitorString);
 
         _enabled = true;
+
+#if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
+        if (IsDebuggerPresent())
+        {
+            return;
+        }
+#endif
+        hook_handle = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), NULL);
     }
 }
 
