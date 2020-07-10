@@ -3,11 +3,13 @@
 #include <fstream>
 
 #include <lib/FancyZonesData.h>
+#include <lib/FancyZonesDataTypes.h>
 #include "util.h"
 
 #include <CppUnitTestLogger.h>
 
 using namespace FancyZonesDataNS;
+using namespace FancyZonesDataTypes;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace FancyZonesUnitTests
@@ -156,7 +158,7 @@ namespace FancyZonesUnitTests
 
             for (const auto& expected : expectedMap)
             {
-                auto actual = FancyZonesDataNS::TypeToString(static_cast<ZoneSetLayoutType>(expected.first));
+                auto actual = FancyZonesDataTypes::TypeToString(static_cast<ZoneSetLayoutType>(expected.first));
                 Assert::AreEqual(expected.second, actual);
             }
         }
@@ -174,7 +176,7 @@ namespace FancyZonesUnitTests
 
             for (const auto& expected : expectedMap)
             {
-                auto actual = FancyZonesDataNS::TypeFromString(expected.second);
+                auto actual = FancyZonesDataTypes::TypeFromString(expected.second);
                 Assert::AreEqual(static_cast<int>(expected.first), static_cast<int>(actual));
             }
         }
@@ -195,7 +197,7 @@ namespace FancyZonesUnitTests
 
             for (const auto& expected : expectedMap)
             {
-                auto actual = FancyZonesDataNS::TypeFromLayoutId(expected.second);
+                auto actual = FancyZonesDataTypes::TypeFromLayoutId(expected.second);
                 Assert::AreEqual(static_cast<int>(expected.first), static_cast<int>(actual));
             }
         }
@@ -1442,7 +1444,7 @@ namespace FancyZonesUnitTests
             TEST_METHOD (CustomZoneSetsParseSingle)
             {
                 const std::wstring zoneUuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}";
-                GridLayoutInfo grid(GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
+                GridLayoutInfo grid(GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
                     .rows = 1,
                     .columns = 3,
                     .rowsPercents = { 10000 },
@@ -1476,7 +1478,7 @@ namespace FancyZonesUnitTests
             {
                 json::JsonObject json;
                 json::JsonArray array;
-                const GridLayoutInfo grid(GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
+                const GridLayoutInfo grid(GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
                     .rows = 1,
                     .columns = 3,
                     .rowsPercents = { 10000 },
@@ -1548,7 +1550,7 @@ namespace FancyZonesUnitTests
             TEST_METHOD (CustomZoneSetsSerializeSingle)
             {
                 json::JsonArray expected;
-                const GridLayoutInfo grid(GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
+                const GridLayoutInfo grid(GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
                     .rows = 1,
                     .columns = 3,
                     .rowsPercents = { 10000 },
@@ -1570,7 +1572,7 @@ namespace FancyZonesUnitTests
             {
                 json::JsonObject json;
                 json::JsonArray expected;
-                const GridLayoutInfo grid(GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
+                const GridLayoutInfo grid(GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
                     .rows = 1,
                     .columns = 3,
                     .rowsPercents = { 10000 },
@@ -1620,7 +1622,7 @@ namespace FancyZonesUnitTests
                 }
 
                 const std::wstring uuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}";
-                const GridLayoutInfo grid(GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
+                const GridLayoutInfo grid(GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
                     .rows = 1,
                     .columns = 3,
                     .rowsPercents = { 10000 },
@@ -1675,7 +1677,7 @@ namespace FancyZonesUnitTests
                 json.SetNamedValue(L"devices", devices);
                 data.ParseDeviceInfos(json);
 
-                FancyZonesDataNS::ZoneSetData expectedZoneSetData{
+                FancyZonesDataTypes::ZoneSetData expectedZoneSetData{
                     .uuid = L"{33A2B101-06E0-437B-A61E-CDBECF502906}",
                     .type = ZoneSetLayoutType::Focus
                 };
@@ -1700,7 +1702,7 @@ namespace FancyZonesUnitTests
                 json.SetNamedValue(L"devices", devices);
                 data.ParseDeviceInfos(json);
 
-                FancyZonesDataNS::ZoneSetData expectedZoneSetData{
+                FancyZonesDataTypes::ZoneSetData expectedZoneSetData{
                     .uuid = L"",
                     .type = ZoneSetLayoutType::Focus
                 };
@@ -1727,7 +1729,7 @@ namespace FancyZonesUnitTests
                 bool parseRes = data.ParseDeviceInfos(json);
                 Assert::IsTrue(parseRes);
 
-                FancyZonesDataNS::ZoneSetData zoneSetData{
+                FancyZonesDataTypes::ZoneSetData zoneSetData{
                     .uuid = L"new_uuid",
                     .type = ZoneSetLayoutType::Focus
                 };
@@ -1752,7 +1754,7 @@ namespace FancyZonesUnitTests
                     std::filesystem::remove(jsonPath);
                 }
 
-                const GridLayoutInfo grid(GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
+                const GridLayoutInfo grid(GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
                     .rows = 1,
                     .columns = 3,
                     .rowsPercents = { 10000 },

@@ -3,6 +3,7 @@
 #include "lib/ZoneSet.h"
 #include "lib/Settings.h"
 #include "lib/FancyZonesData.h"
+#include "lib/FancyZonesDataTypes.h"
 
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,
@@ -82,15 +83,15 @@ void Trace::FancyZones::DataChanged() noexcept
         return;
     }
 
-    auto getCustomZoneCount = [&data](const std::variant<FancyZonesDataNS::CanvasLayoutInfo, FancyZonesDataNS::GridLayoutInfo>& layoutInfo) -> int {
-        if (std::holds_alternative<FancyZonesDataNS::GridLayoutInfo>(layoutInfo))
+    auto getCustomZoneCount = [&data](const std::variant<FancyZonesDataTypes::CanvasLayoutInfo, FancyZonesDataTypes::GridLayoutInfo>& layoutInfo) -> int {
+        if (std::holds_alternative<FancyZonesDataTypes::GridLayoutInfo>(layoutInfo))
         {
-            const auto& info = std::get<FancyZonesDataNS::GridLayoutInfo>(layoutInfo);
+            const auto& info = std::get<FancyZonesDataTypes::GridLayoutInfo>(layoutInfo);
             return (info.rows() * info.columns());
         }
-        else if (std::holds_alternative<FancyZonesDataNS::CanvasLayoutInfo>(layoutInfo))
+        else if (std::holds_alternative<FancyZonesDataTypes::CanvasLayoutInfo>(layoutInfo))
         {
-            const auto& info = std::get<FancyZonesDataNS::CanvasLayoutInfo>(layoutInfo);
+            const auto& info = std::get<FancyZonesDataTypes::CanvasLayoutInfo>(layoutInfo);
             return static_cast<int>(info.zones.size());
         }
         return 0;
@@ -108,15 +109,15 @@ void Trace::FancyZones::DataChanged() noexcept
     std::wstring activeZoneSetInfo;
     for (const auto& [id, device] : devices)
     {
-        const FancyZonesDataNS::ZoneSetLayoutType type = device.activeZoneSet.type;
+        const FancyZonesDataTypes::ZoneSetLayoutType type = device.activeZoneSet.type;
         if (!activeZoneSetInfo.empty())
         {
             activeZoneSetInfo += L"; ";
         }
-        activeZoneSetInfo += L"type: " + FancyZonesDataNS::TypeToString(type);
+        activeZoneSetInfo += L"type: " + FancyZonesDataTypes::TypeToString(type);
 
         int zoneCount = -1;
-        if (type == FancyZonesDataNS::ZoneSetLayoutType::Custom)
+        if (type == FancyZonesDataTypes::ZoneSetLayoutType::Custom)
         {
             const auto& activeCustomZone = customZones.find(device.activeZoneSet.uuid);
             if (activeCustomZone != customZones.end())

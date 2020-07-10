@@ -1,7 +1,11 @@
 #pragma once
 
 #include "Zone.h"
-#include "FancyZonesData.h"
+
+namespace FancyZonesDataTypes
+{
+    enum class ZoneSetLayoutType;
+}
 
 /**
  * Class representing single zone layout. ZoneSet is responsible for actual calculation of rectangle coordinates
@@ -16,7 +20,8 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
     /**
      * @returns Type of the zone layout. Layout type can be focus, columns, rows, grid, priority grid or custom.
      */
-    IFACEMETHOD_(FancyZonesDataNS::ZoneSetLayoutType, LayoutType)() = 0;
+    IFACEMETHOD_(FancyZonesDataTypes::ZoneSetLayoutType, LayoutType)
+    () = 0;
     /**
      * Add zone to the zone layout.
      *
@@ -110,7 +115,7 @@ struct ZoneSetPersistedData
     DWORD Version{VERSION_PERSISTEDDATA};
     WORD LayoutId{};
     DWORD ZoneCount{};
-    FancyZonesDataNS::ZoneSetLayoutType Layout{};
+    FancyZonesDataTypes::ZoneSetLayoutType Layout{};
     RECT Zones[MAX_ZONES]{};
 };
 
@@ -118,7 +123,7 @@ struct ZoneSetConfig
 {
     ZoneSetConfig(
         GUID id,
-        FancyZonesDataNS::ZoneSetLayoutType layoutType,
+        FancyZonesDataTypes::ZoneSetLayoutType layoutType,
         HMONITOR monitor,
         PCWSTR resolutionKey) noexcept :
             Id(id),
@@ -129,7 +134,7 @@ struct ZoneSetConfig
     }
 
     GUID Id{};
-    FancyZonesDataNS::ZoneSetLayoutType LayoutType{};
+    FancyZonesDataTypes::ZoneSetLayoutType LayoutType{};
     HMONITOR Monitor{};
     PCWSTR ResolutionKey{};
 };

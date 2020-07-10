@@ -2,6 +2,8 @@
 
 #include <common/common.h>
 
+#include "FancyZonesData.h"
+#include "FancyZonesDataTypes.h"
 #include "ZoneWindow.h"
 #include "trace.h"
 #include "util.h"
@@ -639,7 +641,7 @@ void ZoneWindow::CalculateZoneSet() noexcept
 
     const auto& activeZoneSet = deviceInfoData->activeZoneSet;
 
-    if (activeZoneSet.uuid.empty() || activeZoneSet.type == FancyZonesDataNS::ZoneSetLayoutType::Blank)
+    if (activeZoneSet.uuid.empty() || activeZoneSet.type == FancyZonesDataTypes::ZoneSetLayoutType::Blank)
     {
         return;
     }
@@ -674,7 +676,7 @@ void ZoneWindow::UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept
         wil::unique_cotaskmem_string zoneSetId;
         if (SUCCEEDED_LOG(StringFromCLSID(m_activeZoneSet->Id(), &zoneSetId)))
         {
-            FancyZonesDataNS::ZoneSetData data{
+            FancyZonesDataTypes::ZoneSetData data{
                 .uuid = zoneSetId.get(),
                 .type = m_activeZoneSet->LayoutType()
             };

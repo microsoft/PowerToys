@@ -3,12 +3,17 @@
 #include "util.h"
 #include "lib/ZoneSet.h"
 #include "Settings.h"
+#include "FancyZonesData.h"
+#include "FancyZonesDataTypes.h"
 
 #include <common/dpi_aware.h>
+
+#include <utility>
 
 namespace
 {
     constexpr int C_MULTIPLIER = 10000;
+    constexpr int MAX_ZONE_COUNT = 50;
 
     /*
       struct GridLayoutInfo {
@@ -20,81 +25,81 @@ namespace
       };
     */
 
-    auto l = FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Minimal{ .rows = 1, .columns = 1 });
+    auto l = FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Minimal{ .rows = 1, .columns = 1 });
     // PriorityGrid layout is unique for zoneCount <= 11. For zoneCount > 11 PriorityGrid is same as Grid
-    FancyZonesDataNS::GridLayoutInfo predefinedPriorityGridLayouts[11] = {
+    FancyZonesDataTypes::GridLayoutInfo predefinedPriorityGridLayouts[11] = {
         /* 1 */
-        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 1,
             .columns = 1,
             .rowsPercents = { 10000 },
             .columnsPercents = { 10000 },
             .cellChildMap = { { 0 } } }),
         /* 2 */
-        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 1,
             .columns = 2,
             .rowsPercents = { 10000 },
             .columnsPercents = { 6667, 3333 },
             .cellChildMap = { { 0, 1 } } }),
         /* 3 */
-        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 1,
             .columns = 3,
             .rowsPercents = { 10000 },
             .columnsPercents = { 2500, 5000, 2500 },
             .cellChildMap = { { 0, 1, 2 } } }),
         /* 4 */
-        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 2,
             .columns = 3,
             .rowsPercents = { 5000, 5000 },
             .columnsPercents = { 2500, 5000, 2500 },
             .cellChildMap = { { 0, 1, 2 }, { 0, 1, 3 } } }),
         /* 5 */
-        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 2,
             .columns = 3,
             .rowsPercents = { 5000, 5000 },
             .columnsPercents = { 2500, 5000, 2500 },
             .cellChildMap = { { 0, 1, 2 }, { 3, 1, 4 } } }),
         /* 6 */
-        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 3,
             .rowsPercents = { 3333, 3334, 3333 },
             .columnsPercents = { 2500, 5000, 2500 },
             .cellChildMap = { { 0, 1, 2 }, { 0, 1, 3 }, { 4, 1, 5 } } }),
         /* 7 */
-        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 3,
             .rowsPercents = { 3333, 3334, 3333 },
             .columnsPercents = { 2500, 5000, 2500 },
             .cellChildMap = { { 0, 1, 2 }, { 3, 1, 4 }, { 5, 1, 6 } } }),
         /* 8 */
-        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 4,
             .rowsPercents = { 3333, 3334, 3333 },
             .columnsPercents = { 2500, 2500, 2500, 2500 },
             .cellChildMap = { { 0, 1, 2, 3 }, { 4, 1, 2, 5 }, { 6, 1, 2, 7 } } }),
         /* 9 */
-        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 4,
             .rowsPercents = { 3333, 3334, 3333 },
             .columnsPercents = { 2500, 2500, 2500, 2500 },
             .cellChildMap = { { 0, 1, 2, 3 }, { 4, 1, 2, 5 }, { 6, 1, 7, 8 } } }),
         /* 10 */
-        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 4,
             .rowsPercents = { 3333, 3334, 3333 },
             .columnsPercents = { 2500, 2500, 2500, 2500 },
             .cellChildMap = { { 0, 1, 2, 3 }, { 4, 1, 5, 6 }, { 7, 1, 8, 9 } } }),
         /* 11 */
-        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
+        FancyZonesDataTypes::GridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 4,
             .rowsPercents = { 3333, 3334, 3333 },
@@ -119,7 +124,7 @@ public:
 
     IFACEMETHODIMP_(GUID)
     Id() noexcept { return m_config.Id; }
-    IFACEMETHODIMP_(FancyZonesDataNS::ZoneSetLayoutType)
+    IFACEMETHODIMP_(FancyZonesDataTypes::ZoneSetLayoutType)
     LayoutType() noexcept { return m_config.LayoutType; }
     IFACEMETHODIMP AddZone(winrt::com_ptr<IZone> zone) noexcept;
     IFACEMETHODIMP_(std::vector<int>)
@@ -143,11 +148,11 @@ public:
 
 private:
     bool CalculateFocusLayout(Rect workArea, int zoneCount) noexcept;
-    bool CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataNS::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept;
-    bool CalculateGridLayout(Rect workArea, FancyZonesDataNS::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept;
+    bool CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataTypes::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept;
+    bool CalculateGridLayout(Rect workArea, FancyZonesDataTypes::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept;
     bool CalculateUniquePriorityGridLayout(Rect workArea, int zoneCount, int spacing) noexcept;
     bool CalculateCustomLayout(Rect workArea, int spacing) noexcept;
-    bool CalculateGridZones(Rect workArea, FancyZonesDataNS::GridLayoutInfo gridLayoutInfo, int spacing);
+    bool CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutInfo gridLayoutInfo, int spacing);
     void StampWindow(HWND window, size_t bitmask) noexcept;
 
     std::vector<winrt::com_ptr<IZone>> m_zones;
@@ -374,7 +379,7 @@ ZoneSet::CalculateZones(MONITORINFO monitorInfo, int zoneCount, int spacing) noe
     }
 
     //invalid zoneCount, may cause division by zero
-    if (zoneCount <= 0 && m_config.LayoutType != FancyZonesDataNS::ZoneSetLayoutType::Custom)
+    if (zoneCount <= 0 && m_config.LayoutType != FancyZonesDataTypes::ZoneSetLayoutType::Custom)
     {
         return false;
     }
@@ -382,18 +387,18 @@ ZoneSet::CalculateZones(MONITORINFO monitorInfo, int zoneCount, int spacing) noe
     bool success = true;
     switch (m_config.LayoutType)
     {
-    case FancyZonesDataNS::ZoneSetLayoutType::Focus:
+    case FancyZonesDataTypes::ZoneSetLayoutType::Focus:
         success = CalculateFocusLayout(workArea, zoneCount);
         break;
-    case FancyZonesDataNS::ZoneSetLayoutType::Columns:
-    case FancyZonesDataNS::ZoneSetLayoutType::Rows:
+    case FancyZonesDataTypes::ZoneSetLayoutType::Columns:
+    case FancyZonesDataTypes::ZoneSetLayoutType::Rows:
         success = CalculateColumnsAndRowsLayout(workArea, m_config.LayoutType, zoneCount, spacing);
         break;
-    case FancyZonesDataNS::ZoneSetLayoutType::Grid:
-    case FancyZonesDataNS::ZoneSetLayoutType::PriorityGrid:
+    case FancyZonesDataTypes::ZoneSetLayoutType::Grid:
+    case FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid:
         success = CalculateGridLayout(workArea, m_config.LayoutType, zoneCount, spacing);
         break;
-    case FancyZonesDataNS::ZoneSetLayoutType::Custom:
+    case FancyZonesDataTypes::ZoneSetLayoutType::Custom:
         success = CalculateCustomLayout(workArea, spacing);
         break;
     }
@@ -445,14 +450,14 @@ bool ZoneSet::CalculateFocusLayout(Rect workArea, int zoneCount) noexcept
     return success;
 }
 
-bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataNS::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept
+bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataTypes::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept
 {
     bool success = true;
 
     long totalWidth;
     long totalHeight;
 
-    if (type == FancyZonesDataNS::ZoneSetLayoutType::Columns)
+    if (type == FancyZonesDataTypes::ZoneSetLayoutType::Columns)
     {
         totalWidth = workArea.width() - (spacing * (zoneCount + 1));
         totalHeight = workArea.height() - (spacing * 2);
@@ -472,7 +477,7 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataNS::Zon
     // like this to make the sum of all zones' sizes exactly total{Width|Height}.
     for (int zone = 0; zone < zoneCount; zone++)
     {
-        if (type == FancyZonesDataNS::ZoneSetLayoutType::Columns)
+        if (type == FancyZonesDataTypes::ZoneSetLayoutType::Columns)
         {
             right = left + (zone + 1) * totalWidth / zoneCount - zone * totalWidth / zoneCount;
             bottom = totalHeight + spacing;
@@ -491,7 +496,7 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataNS::Zon
         RECT focusZoneRect{ left, top, right, bottom };
         AddZone(MakeZone(focusZoneRect));
 
-        if (type == FancyZonesDataNS::ZoneSetLayoutType::Columns)
+        if (type == FancyZonesDataTypes::ZoneSetLayoutType::Columns)
         {
             left = right + spacing;
         }
@@ -504,10 +509,10 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataNS::Zon
     return success;
 }
 
-bool ZoneSet::CalculateGridLayout(Rect workArea, FancyZonesDataNS::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept
+bool ZoneSet::CalculateGridLayout(Rect workArea, FancyZonesDataTypes::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept
 {
-    const auto count = sizeof(predefinedPriorityGridLayouts) / sizeof(FancyZonesDataNS::GridLayoutInfo);
-    if (type == FancyZonesDataNS::ZoneSetLayoutType::PriorityGrid && zoneCount < count)
+    const auto count = sizeof(predefinedPriorityGridLayouts) / sizeof(FancyZonesDataTypes::GridLayoutInfo);
+    if (type == FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid && zoneCount < count)
     {
         return CalculateUniquePriorityGridLayout(workArea, zoneCount, spacing);
     }
@@ -528,7 +533,7 @@ bool ZoneSet::CalculateGridLayout(Rect workArea, FancyZonesDataNS::ZoneSetLayout
         columns++;
     }
 
-    FancyZonesDataNS::GridLayoutInfo gridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Minimal{ .rows = rows, .columns = columns });
+    FancyZonesDataTypes::GridLayoutInfo gridLayoutInfo(FancyZonesDataTypes::GridLayoutInfo::Minimal{ .rows = rows, .columns = columns });
 
     // Note: The expressions below are NOT equal to C_MULTIPLIER / {rows|columns} and are done
     // like this to make the sum of all percents exactly C_MULTIPLIER
@@ -586,9 +591,9 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
         }
 
         const auto& zoneSet = *zoneSetSearchResult;
-        if (zoneSet.type == FancyZonesDataNS::CustomLayoutType::Canvas && std::holds_alternative<FancyZonesDataNS::CanvasLayoutInfo>(zoneSet.info))
+        if (zoneSet.type == FancyZonesDataTypes::CustomLayoutType::Canvas && std::holds_alternative<FancyZonesDataTypes::CanvasLayoutInfo>(zoneSet.info))
         {
-            const auto& zoneSetInfo = std::get<FancyZonesDataNS::CanvasLayoutInfo>(zoneSet.info);
+            const auto& zoneSetInfo = std::get<FancyZonesDataTypes::CanvasLayoutInfo>(zoneSet.info);
             for (const auto& zone : zoneSetInfo.zones)
             {
                 int x = zone.x;
@@ -609,9 +614,9 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
 
             return true;
         }
-        else if (zoneSet.type == FancyZonesDataNS::CustomLayoutType::Grid && std::holds_alternative<FancyZonesDataNS::GridLayoutInfo>(zoneSet.info))
+        else if (zoneSet.type == FancyZonesDataTypes::CustomLayoutType::Grid && std::holds_alternative<FancyZonesDataTypes::GridLayoutInfo>(zoneSet.info))
         {
-            const auto& info = std::get<FancyZonesDataNS::GridLayoutInfo>(zoneSet.info);
+            const auto& info = std::get<FancyZonesDataTypes::GridLayoutInfo>(zoneSet.info);
             return CalculateGridZones(workArea, info, spacing);
         }
     }
@@ -619,7 +624,7 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
     return false;
 }
 
-bool ZoneSet::CalculateGridZones(Rect workArea, FancyZonesDataNS::GridLayoutInfo gridLayoutInfo, int spacing)
+bool ZoneSet::CalculateGridZones(Rect workArea, FancyZonesDataTypes::GridLayoutInfo gridLayoutInfo, int spacing)
 {
     bool success = true;
 

@@ -11,6 +11,7 @@
 #include <lib/trace.h>
 #include <lib/Settings.h>
 #include <lib/FancyZones.h>
+#include <lib/FancyZonesData.h>
 #include <lib/FancyZonesWinHookEventIDs.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
