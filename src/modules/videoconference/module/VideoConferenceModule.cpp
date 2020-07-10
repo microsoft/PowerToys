@@ -262,7 +262,7 @@ void VideoConferenceModule::set_config(const wchar_t* config)
                 selectedCamera = val.value();
             }
 
-            overlay.hideOverlay(overlayPositionString, overlayMonitorString);
+            overlay.showOverlay(overlayPositionString, overlayMonitorString);
         }
     }
     catch (...)
@@ -317,7 +317,7 @@ void VideoConferenceModule::enable()
         overlay.setMicrophoneMute(getMicrophoneMuteState());
         overlay.setCameraMute(getVirtualCameraMuteState());
 
-        overlay.hideOverlay(overlayPositionString, overlayMonitorString);
+        overlay.showOverlay(overlayPositionString, overlayMonitorString);
 
         _enabled = true;
     }

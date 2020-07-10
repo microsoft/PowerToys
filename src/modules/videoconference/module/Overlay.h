@@ -10,7 +10,7 @@ class Overlay
 public:
     Overlay();
 
-    static void hideOverlay(std::wstring position, std::wstring monitorString);
+    static void showOverlay(std::wstring position, std::wstring monitorString);
     static void hideOverlay();
 
     bool static getCameraMute();
