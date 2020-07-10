@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             InitializeComponent();
             ViewModel = new PowerLauncherViewModel();
-            MainView.DataContext = ViewModel;
+            DataContext = ViewModel;
 
             var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
 

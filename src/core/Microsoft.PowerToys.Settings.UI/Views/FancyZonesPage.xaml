@@ -64,7 +64,7 @@
 
             <Button Margin="{StaticResource MediumTopMargin}"
                     Style="{StaticResource AccentButtonStyle}"
-                    Command = "{Binding LaunchEditorEventHandler, Source={StaticResource eventViewModel}}"
+                    Command = "{x:Bind ViewModel.LaunchEditorEventHandler}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                 <StackPanel Orientation="Horizontal">
                     <Viewbox Height="12" Width="12">
@@ -119,54 +119,54 @@
                       />
 
             <CheckBox x:Uid="FancyZones_MouseDragCheckBoxControl_Header"
-                      IsChecked="{ Binding Mode=TwoWay, Path=MouseSwitch}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MouseSwitch}"
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       />
 
             <CheckBox x:Uid="FancyZones_OverrideSnapHotkeysCheckBoxControl"
-                      IsChecked="{ Binding Mode=TwoWay, Path=OverrideSnapHotkeys}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideSnapHotkeys}"
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
             <CheckBox x:Uid="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl"
-                      IsChecked="{ Binding Mode=TwoWay, Path=MoveWindowsAcrossMonitors}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsAcrossMonitors}"
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
             <CheckBox x:Uid="FancyZones_DisplayChangeMoveWindowsCheckBoxControl"
-                      IsChecked="{ Binding Mode=TwoWay, Path=DisplayChangeMoveWindows}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisplayChangeMoveWindows}"
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       />
 
             <CheckBox x:Uid="FancyZones_ZoneSetChangeMoveWindows"
-                      IsChecked="{ Binding Mode=TwoWay, Path=ZoneSetChangeMoveWindows}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ZoneSetChangeMoveWindows}"
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
             <CheckBox x:Uid="FancyZones_AppLastZoneMoveWindows"
-                      IsChecked="{ Binding Mode=TwoWay, Path=AppLastZoneMoveWindows}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.AppLastZoneMoveWindows}"
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
             <CheckBox x:Uid="FancyZones_RestoreSize"
-                      IsChecked="{ Binding Mode=TwoWay, Path=RestoreSize}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreSize}"
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
             <CheckBox x:Uid="FancyZones_UseCursorPosEditorStartupScreen"
-                      IsChecked="{ Binding Mode=TwoWay, Path=UseCursorPosEditorStartupScreen}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.UseCursorPosEditorStartupScreen}"
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
             <CheckBox x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl"
-                      IsChecked="{ Binding Mode=TwoWay, Path=ShowOnAllMonitors}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ShowOnAllMonitors}"
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
             <CheckBox x:Uid="FancyZones_MakeDraggedWindowTransparentCheckBoxControl"
-                      IsChecked="{ Binding Mode=TwoWay, Path=MakeDraggedWindowsTransparent}"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MakeDraggedWindowsTransparent}"
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
@@ -180,7 +180,7 @@
                     Maximum="100"
                     Width="240"
                     IsThumbToolTipEnabled="False"
-                    Value="{ Binding Mode=TwoWay, Path=HighlightOpacity}"
+                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.HighlightOpacity}"
                     HorizontalAlignment="Left"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
                 <CustomControls:BodyTextBlock
@@ -195,10 +195,10 @@
                 x:Uid="FancyZones_ZoneHighlightColor"
                 IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
-            <muxc:DropDownButton Margin="0,4,0,0" IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" Padding="4,4,8,4">
+            <muxc:DropDownButton Margin="0,4,0,0" IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}" Padding="4,4,8,4">
                 <Border Width="48" CornerRadius="2" Height="24">
                     <Border.Background>
-                        <SolidColorBrush Color="{Binding Path=ZoneHighlightColor, Mode=TwoWay}"/>
+                        <SolidColorBrush Color="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=TwoWay}"/>
                     </Border.Background>
                 </Border>
                 <muxc:DropDownButton.Flyout>
@@ -212,7 +212,7 @@
                               IsAlphaEnabled="False"
                               IsAlphaSliderVisible="False"
                               IsAlphaTextInputVisible="False"
-                              Color="{Binding Path=ZoneHighlightColor, Mode=TwoWay}"
+                              Color="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=TwoWay}"
                               />
                     </Flyout>
                 </muxc:DropDownButton.Flyout>
@@ -223,10 +223,10 @@
                 x:Uid="FancyZones_InActiveColor"
                 IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
-            <muxc:DropDownButton Margin="0,4,0,0" IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" Padding="4,4,8,4">
+            <muxc:DropDownButton Margin="0,4,0,0" IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}" Padding="4,4,8,4">
                 <Border Width="48" CornerRadius="2" Height="24">
                     <Border.Background>
-                        <SolidColorBrush Color="{Binding Path=ZoneInActiveColor, Mode=TwoWay}"/>
+                        <SolidColorBrush Color="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}"/>
                     </Border.Background>
                 </Border>
                 <muxc:DropDownButton.Flyout>
@@ -240,7 +240,7 @@
                               IsAlphaEnabled="False"
                               IsAlphaSliderVisible="False"
                               IsAlphaTextInputVisible="False"
-                              Color="{Binding Path=ZoneInActiveColor, Mode=TwoWay}"/>
+                              Color="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}"/>
                     </Flyout>
                 </muxc:DropDownButton.Flyout>
             </muxc:DropDownButton>
@@ -249,10 +249,10 @@
                 x:Uid="FancyZones_BorderColor"
                 IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}" />
 
-            <muxc:DropDownButton Margin="0,4,0,0" IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" Padding="4,4,8,4">
+            <muxc:DropDownButton Margin="0,4,0,0" IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}" Padding="4,4,8,4">
                 <Border Width="48" CornerRadius="2" Height="24">
                     <Border.Background>
-                        <SolidColorBrush Color="{Binding Path=ZoneBorderColor, Mode=TwoWay}"/>
+                        <SolidColorBrush Color="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=TwoWay}"/>
                     </Border.Background>
                 </Border>
                 <muxc:DropDownButton.Flyout>
@@ -266,8 +266,8 @@
                               IsAlphaEnabled="False"
                               IsAlphaSliderVisible="False"
                               IsAlphaTextInputVisible="False"
-                              Color="{Binding Path=ZoneBorderColor, Mode=TwoWay}"
-                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+                              Color="{x:Bind  Path=ViewModel.ZoneBorderColor, Mode=TwoWay}"
+                              IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"/>
                     </Flyout>
                 </muxc:DropDownButton.Flyout>
             </muxc:DropDownButton>
@@ -279,7 +279,7 @@
             
             <TextBox x:Uid="FancyZones_ExcludeApps_TextBoxControl"
                      Margin="{StaticResource SmallTopMargin}"
-                     Text="{ Binding Mode=TwoWay, Path=ExcludedApps}"
+                     Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps}"
                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                      Width="380"
                      Height="160"
