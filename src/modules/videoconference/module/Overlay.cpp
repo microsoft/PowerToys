@@ -101,7 +101,7 @@ LRESULT Overlay::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
     nTimerId = SetTimer(hwnd, 101, REFRESH_RATE, NULL);
 }
 
-void Overlay::hideOverlay(std::wstring position, std::wstring monitorString)
+void Overlay::showOverlay(std::wstring position, std::wstring monitorString)
 {
     valueChanged = false;
     for (auto& hwnd : hwnds)
