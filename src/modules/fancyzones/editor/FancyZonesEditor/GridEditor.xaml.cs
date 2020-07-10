@@ -221,6 +221,7 @@ namespace FancyZonesEditor
 
                     if (foundExistingSplit)
                     {
+                        _data.ReplaceIndicesToMaintainOrder(Preview.Children.Count);
                         _dragHandles.UpdateForExistingVerticalSplit(model, foundRow, splitCol);
                         OnGridDimensionsChanged();
                         return;
@@ -269,6 +270,7 @@ namespace FancyZonesEditor
 
                     if (foundExistingSplit)
                     {
+                        _data.ReplaceIndicesToMaintainOrder(Preview.Children.Count);
                         _dragHandles.UpdateForExistingHorizontalSplit(model, splitRow, foundCol);
                         OnGridDimensionsChanged();
                         return;

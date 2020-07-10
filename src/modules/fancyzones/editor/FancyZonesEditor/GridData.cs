@@ -472,22 +472,22 @@ namespace FancyZonesEditor
         {
             int rows = _model.Rows;
             int cols = _model.Columns;
+            int[,] cells = _model.CellChildMap;
 
-            if (_model.CellChildMap.Length < rows * cols)
+            if (cells.Length < rows * cols)
             {
                 // Merge was not finished yet, rows and cols values are invalid
                 return;
             }
 
-            int zoneNumber = 1;
             double left, top;
             for (int row = 0; row < rows; row++)
             {
                 for (int col = 0; col < cols; col++)
                 {
-                    int i = _model.CellChildMap[row, col];
-                    if (((row == 0) || (_model.CellChildMap[row - 1, col] != i)) &&
-                        ((col == 0) || (_model.CellChildMap[row, col - 1] != i)))
+                    int i = cells[row, col];
+                    if (((row == 0) || (cells[row - 1, col] != i)) &&
+                        ((col == 0) || (cells[row, col - 1] != i)))
                     {
                         // this is not a continuation of a span
                         GridZone zone = (GridZone)zones[i];
@@ -495,10 +495,10 @@ namespace FancyZonesEditor
                         top = _rowInfo[row].Start;
                         Canvas.SetLeft(zone, left);
                         Canvas.SetTop(zone, top);
-                        zone.LabelID.Content = zoneNumber++;
+                        zone.LabelID.Content = i + 1;
 
                         int maxRow = row;
-                        while (((maxRow + 1) < rows) && (_model.CellChildMap[maxRow + 1, col] == i))
+                        while (((maxRow + 1) < rows) && (cells[maxRow + 1, col] == i))
                         {
                             maxRow++;
                         }
@@ -515,7 +515,7 @@ namespace FancyZonesEditor
                         }
 
                         int maxCol = col;
-                        while (((maxCol + 1) < cols) && (_model.CellChildMap[row, maxCol + 1] == i))
+                        while (((maxCol + 1) < cols) && (cells[row, maxCol + 1] == i))
                         {
                             maxCol++;
                         }
@@ -860,6 +860,46 @@ namespace FancyZonesEditor
                 indexReplacement[zoneIndices[i]] = i;
             }
 
+            ReplaceIndicesToMaintainOrder(indexReplacement);
+            CollapseIndices();
+            FixAccuracyError(_rowInfo, _model.RowPercents);
+            FixAccuracyError(_colInfo, _model.ColumnPercents);
+        }
+
+        public void ReplaceIndicesToMaintainOrder(int zoneCount)
+        {
+            int[,] cells = _model.CellChildMap;
+            Dictionary<int, int> indexReplacement = new Dictionary<int, int>();
+            List<int> zoneIndices = new List<int>(zoneCount);
+            HashSet<int> zoneIndexSet = new HashSet<int>(zoneCount);
+
+            for (int i = 0; i < zoneCount; i++)
+            {
+                zoneIndices.Add(i);
+            }
+
+            for (int row = 0; row < _model.Rows; row++)
+            {
+                for (int col = 0; col < _model.Columns; col++)
+                {
+                    zoneIndexSet.Add(cells[row, col]);
+                }
+            }
+
+            int j = 0;
+            foreach (int index in zoneIndexSet)
+            {
+                indexReplacement[index] = zoneIndices[j];
+                j++;
+            }
+
+            ReplaceIndicesToMaintainOrder(indexReplacement);
+        }
+
+        private void ReplaceIndicesToMaintainOrder(Dictionary<int, int> indexReplacement)
+        {
+            int[,] cells = _model.CellChildMap;
+
             for (int row = 0; row < _model.Rows; row++)
             {
                 for (int col = 0; col < _model.Columns; col++)
@@ -867,13 +907,9 @@ namespace FancyZonesEditor
                     cells[row, col] = indexReplacement[cells[row, col]];
                 }
             }
-
-            CollapseIndices();
-            FixAccuracyError(_rowInfo, _model.RowPercents);
-            FixAccuracyError(_colInfo, _model.ColumnPercents);
         }
 
-        public void CollapseIndices()
+        private void CollapseIndices()
         {
             List<int> rowsToRemove = new List<int>(), colsToRemove = new List<int>();
             int[,] cellChildMap = _model.CellChildMap;
@@ -991,7 +1027,7 @@ namespace FancyZonesEditor
             _model.Columns = cols;
         }
 
-        public void FixAccuracyError(List<RowColInfo> info, List<int> percents)
+        private void FixAccuracyError(List<RowColInfo> info, List<int> percents)
         {
             int total = 0;
             for (int i = 0; i < info.Count; i++)
