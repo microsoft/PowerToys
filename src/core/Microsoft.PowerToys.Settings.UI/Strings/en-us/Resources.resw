@@ -614,4 +614,7 @@
   <data name="ImageResizer_UseOriginalDate.Content" xml:space="preserve">
     <value>Use original date modified</value>
   </data>
+  <data name="Encoding.Text" xml:space="preserve">
+    <value>Encoding</value>
+  </data>
 </root>

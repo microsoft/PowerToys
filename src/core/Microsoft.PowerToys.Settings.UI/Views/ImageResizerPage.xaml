@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"    
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.Lib"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -55,17 +56,17 @@
 
             <ToggleSwitch x:Uid="ImageResizer_EnableToggle"
                           Margin="{StaticResource MediumTopMargin}"
-                          IsOn="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"/>
+                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"/>
 
-            <TextBlock x:Uid="ImageResizer_CustomSizes"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource ViewModel}}"/>
+            <CustomControls:GroupTitleTextBlock 
+                x:Uid="ImageResizer_CustomSizes"
+                IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
 
             <ListView x:Name="ImagesSizesListView" 
                       ItemsSource="{Binding Sizes, Mode=TwoWay, Source={StaticResource ViewModel}}"
                       Padding="0"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       Margin="0"
                       SelectionMode="None">
 
@@ -173,22 +174,22 @@
                               x:Name="AddSizeButton"
                               Width="560"
                               Style="{StaticResource AddItemAppBarButtonStyle}"
-                              IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}" 
+                              IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}" 
                               x:Uid="ImageResizer_AddSizeButton"
                               Margin="{StaticResource AddItemButtonMargin}"
                               Command = "{Binding AddImageSizeEventHandler, Source={StaticResource ViewModel}}"
                           />
             </StackPanel>
 
-            <TextBlock Text="Encoding" 
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource ViewModel}}"/>
+            <CustomControls:GroupTitleTextBlock 
+                x:Uid="Encoding"
+                IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
             <ComboBox x:Uid="ImageResizer_FallBackEncoderText"
                           SelectedIndex="{Binding Path=Encoder, Mode=TwoWay, Source={StaticResource ViewModel}}"
                           Width="240"
                           Margin="{StaticResource SmallTopMargin}"
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}">
+                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_PNG" />
                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_BMP" />
                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_JPEG" />
@@ -197,10 +198,7 @@
                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_GIF" />
             </ComboBox>
 
-            <TextBlock x:Uid="ImageResizer_Encoding"
-                       Margin="{StaticResource SmallTopMargin}"
-                       Style="{StaticResource BodyTextBlockStyle}"
-                       Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource ViewModel}}"/>
+            <CustomControls:BodyTextBlock x:Uid="ImageResizer_Encoding" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
             <muxc:NumberBox Minimum="0"
                             Maximum="100"
                             Value="{ Binding Mode=TwoWay, Path=JPEGQualityLevel, Source={StaticResource ViewModel}}"
@@ -208,14 +206,14 @@
                             Margin="{StaticResource HeaderTextTopMargin}"
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
-                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"
+                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                             />
 
             <ComboBox x:Uid="ImageResizer_PNGInterlacing"
                           SelectedIndex="{ Binding Mode=TwoWay, Path=PngInterlaceOption, Source={StaticResource ViewModel}}"
                           Width="240"
                           Margin="{StaticResource SmallTopMargin}"
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}">
+                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                 <ComboBoxItem x:Uid="Default"/>
                 <ComboBoxItem x:Uid="On"/>
                 <ComboBoxItem x:Uid="Off"/>
@@ -225,7 +223,7 @@
                           SelectedIndex="{ Binding Mode=TwoWay, Path=TiffCompressOption, Source={StaticResource ViewModel}}"
                           Width="240"
                           Margin="{StaticResource SmallTopMargin}"
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}">
+                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}">
                 <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Default"/>
                 <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_None"/>
                 <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_CCITT3"/>
@@ -235,58 +233,49 @@
                 <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Zip"/>
             </ComboBox>
 
-            <TextBlock x:Uid="File"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource ViewModel}}"
-                       />
+            <CustomControls:GroupTitleTextBlock x:Uid="File" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
-            <TextBlock x:Uid="ImageResizer_FileFormatDescription"
-                       Margin="{StaticResource SmallTopBottomMargin}"
-                       Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource ViewModel}}"
-                       />
+            <CustomControls:BodyTextBlock x:Uid="ImageResizer_FileFormatDescription"
+                                          IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                                          Margin="{StaticResource SmallTopBottomMargin}"/>
 
-            <TextBlock FontSize="12"
-                       Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource ViewModel}}">
-                <Run FontWeight="Bold">%1</Run>
-                <Run>  -  Original filename</Run>
-            </TextBlock>
-            <TextBlock FontSize="12"
-                       Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource ViewModel}}">
-                <Run FontWeight="Bold">%2</Run>
-                <Run>  -  Size name</Run>
-            </TextBlock>
-            <TextBlock FontSize="12"
-                       Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource ViewModel}}">
-                <Run FontWeight="Bold">%3</Run>
-                <Run>  -  Selected width</Run>
-            </TextBlock>
-            <TextBlock FontSize="12"
-                       Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource ViewModel}}">
-                <Run FontWeight="Bold">%4</Run>
-                <Run>  -  Selected height</Run>
-            </TextBlock>
-            <TextBlock FontSize="12"
-                       Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource ViewModel}}">
-                <Run FontWeight="Bold">%5</Run>
-                <Run>  -  Actual height</Run>
-            </TextBlock>
-            <TextBlock FontSize="12"
-                       Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource ViewModel}}">
-                <Run FontWeight="Bold">%6</Run>
-                <Run>  -  Actual width</Run>
-            </TextBlock>
+            <StackPanel Orientation="Horizontal">
+                <CustomControls:BodyTextBlock FontSize="12" FontWeight="Bold" Text="%1" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+                <CustomControls:BodyTextBlock FontSize="12" Text=" - Original filename" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <CustomControls:BodyTextBlock FontSize="12" FontWeight="Bold" Text="%2" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+                <CustomControls:BodyTextBlock FontSize="12" Text=" - Size name" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <CustomControls:BodyTextBlock FontSize="12" FontWeight="Bold" Text="%3" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+                <CustomControls:BodyTextBlock FontSize="12" Text=" - Selected width" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <CustomControls:BodyTextBlock FontSize="12" FontWeight="Bold" Text="%4" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+                <CustomControls:BodyTextBlock FontSize="12" Text=" - Selected height" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <CustomControls:BodyTextBlock FontSize="12" FontWeight="Bold" Text="%5" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+                <CustomControls:BodyTextBlock FontSize="12" Text=" - Actual height" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <CustomControls:BodyTextBlock FontSize="12" FontWeight="Bold" Text="%6" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+                <CustomControls:BodyTextBlock FontSize="12" Text=" - Actual width" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            </StackPanel>
+
 
             <TextBox  x:Uid="ImageResizer_FilenameFormatHeader"
                       Text="{ Binding Mode=TwoWay, Path=FileName, Source={StaticResource ViewModel}}"
                       HorizontalAlignment="Left"
                       MinWidth="240"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       Margin="{StaticResource SmallTopMargin}"
-                      Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource ViewModel}}"
+                      
                       />
 
             <CheckBox x:Uid="ImageResizer_UseOriginalDate"
-                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                       Margin="{StaticResource SmallTopMargin}"
                       IsChecked="{Binding Mode=TwoWay, Path=KeepDateModified, Source={StaticResource ViewModel}}"/>
         </StackPanel>
@@ -301,8 +290,7 @@
             <TextBlock 
                 x:Uid="About_ImageResizer"
                 Style="{StaticResource SettingsGroupTitleStyle}"
-                Margin="{StaticResource XSmallBottomMargin}"
-                Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource ViewModel}}"/>
+                Margin="{StaticResource XSmallBottomMargin}"/>
 
             <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ImageResizer">
                 <TextBlock x:Uid="Module_overview" />
@@ -314,8 +302,7 @@
 
             <TextBlock 
                 x:Uid="AttributionTitle"
-                Style="{StaticResource SettingsGroupTitleStyle}"
-                Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource ViewModel}}"/>
+                Style="{StaticResource SettingsGroupTitleStyle}"/>
             
             <HyperlinkButton 
                 NavigateUri="https://github.com/bricelam/ImageResizer/">
