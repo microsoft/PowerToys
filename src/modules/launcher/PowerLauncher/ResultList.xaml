@@ -120,6 +120,27 @@
                     </Trigger>
                 </Style.Triggers>
             </Style>
+
+            <Style TargetType="{x:Type ToolTip}" >
+                <Setter Property="OverridesDefaultStyle" Value="true" />
+                <Setter Property="HasDropShadow" Value="True" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="Placement" Value="Bottom" />
+                <Setter Property="VerticalOffset" Value="0" />
+                <Setter Property="Padding" Value="8" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ToolTip}" >
+                            <StackPanel Margin="8,2" >
+                                <Border CornerRadius="4" Background="{DynamicResource ToolTipBackgroundBrushKey}" BorderBrush="{DynamicResource ToolTipBorderBrushKey}" BorderThickness="1">
+                                    <ContentPresenter Margin="4" HorizontalAlignment="Center" VerticalAlignment="Top" />
+                                </Border>
+                            </StackPanel>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -169,21 +190,18 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         <Grid.ToolTip>
-                            <ToolTip 
-                                Visibility="{Binding Result.ToolTipVisibility}"
-                                BorderThickness="1"
-                                BorderBrush="{DynamicResource ToolTipBorderBrushKey}"
-                                Background="{DynamicResource ToolTipBackgroundBrushKey}">
-                                <StackPanel>
+                            <ToolTip Visibility="{Binding Result.ToolTipVisibility}">
+                                <StackPanel Margin="8,6">
                                     <TextBlock 
                                         Style="{DynamicResource CollapsableTextblock}"
+                                        Foreground="{DynamicResource ToolTipForegroundBrushKey}" FontWeight="Bold" FontSize="12"
                                         Text="{Binding Result.ToolTipData.Title}"
-                                        Foreground="{DynamicResource ToolTipForegroundBrushKey}"
                                         TextWrapping="Wrap" />
                                     <TextBlock 
                                         Style="{DynamicResource CollapsableTextblock}"
+                                        Foreground="{DynamicResource ToolTipForegroundBrushKey}" FontSize="12"
                                         Text="{Binding Result.ToolTipData.Text}"
-                                        Foreground="{DynamicResource ToolTipForegroundBrushKey}"
+                                   
                                         TextWrapping="Wrap" />
                                 </StackPanel>
                             </ToolTip>
@@ -217,7 +235,9 @@
                                 <DataTemplate>
                                     <Button Style="{StaticResource IconButtonStyle}" Command="{Binding Command}" VerticalAlignment="Center" Height="42" Width="42" BorderThickness="1" >
                                         <ToolTipService.ToolTip>
-                                            <TextBlock Text="{Binding Title}"/>
+                                            <ToolTip >
+                                                <TextBlock Text="{Binding Title}" Foreground="{DynamicResource ToolTipForegroundBrushKey}" Margin="8,5" FontSize="12"/>
+                                            </ToolTip>
                                         </ToolTipService.ToolTip>
                                         <Button.Content>
                                             <TextBlock FontFamily="{Binding FontFamily}" FontSize="16" Text="{Binding Glyph}"/>
