@@ -6,6 +6,8 @@
     <IsPackable>false</IsPackable>
 
     <Platforms>x64</Platforms>
+
+    <ApplicationManifest>AppxManifests\developmentApp\AppxManifest.xml</ApplicationManifest>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -21,6 +23,18 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Plugin.Program\Microsoft.Plugin.Program.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="AppxManifests\DevelopmentApp\AppxManifest.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AppxManifests\FrameworkApp\AppxManifest.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AppxManifests\PackagedApp\AppxManifest.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

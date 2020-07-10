@@ -38,12 +38,13 @@ namespace Microsoft.Plugin.Program.Programs
 
         public PackageVersion Version { get; set; }
 
-        public UWP(Package package)
-        {
-            
-            Name = package.Id.Name;
-            FullName = package.Id.FullName;
-            FamilyName = package.Id.FamilyName;
+        public static IPackageManager PackageManagerWrapper { get; set; } = new PackageManagerWrapper();
+
+        public UWP(IPackage package)
+        {        
+            Name = package.Name;
+            FullName = package.FullName;
+            FamilyName = package.FamilyName;
         }
 
         public void InitializeAppInfo(string installedLocation)
@@ -155,12 +156,12 @@ namespace Microsoft.Plugin.Program.Programs
                     try
                     {
                         u = new UWP(p);
-                        u.InitializeAppInfo(p.InstalledLocation.Path);
+                        u.InitializeAppInfo(p.InstalledLocation);
                     }
                     catch (Exception e)
                     {
                         ProgramLogger.LogException($"|UWP|All|{p.InstalledLocation}|An unexpected error occurred and "
-                                                        + $"unable to convert Package to UWP for {p.Id.FullName}", e);
+                                                        + $"unable to convert Package to UWP for {p.FullName}", e);
                         return new Application[] { };
                     }
                     return u.Apps;
@@ -179,40 +180,30 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-        private static IEnumerable<Package> CurrentUserPackages()
+        private static IEnumerable<IPackage> CurrentUserPackages()
         {
-            var u = WindowsIdentity.GetCurrent().User;
-
-            if (u != null)
+            var ps = PackageManagerWrapper.FindPackagesForCurrentUser();
+            ps = ps.Where(p =>
             {
-                var id = u.Value;
-                var m = new PackageManager();
-                var ps = m.FindPackagesForUser(id);
-                ps = ps.Where(p =>
+                bool valid;
+                try
                 {
-                    bool valid;
-                    try
-                    {
-                        var f = p.IsFramework;
-                        var path = p.InstalledLocation.Path;
-                        valid = !f && !string.IsNullOrEmpty(path);
-                    }
-                    catch (Exception e)
-                    {
-                        ProgramLogger.LogException("UWP" ,"CurrentUserPackages", $"id","An unexpected error occurred and "
-                                                   + $"unable to verify if package is valid", e);
-                        return false;
-                    }
+                    var f = p.IsFramework;
+                    var path = p.InstalledLocation;
+                    valid = !f && !string.IsNullOrEmpty(path);
+                }
+                catch (Exception e)
+                {
+                    ProgramLogger.LogException("UWP" ,"CurrentUserPackages", $"id","An unexpected error occurred and "
+                                                + $"unable to verify if package is valid", e);
+                    return false;
+                }
                     
                     
-                    return valid;
-                });
-                return ps;
-            }
-            else
-            {
-                return new Package[] { };
-            }
+                return valid;
+            });
+
+            return ps;
         }
 
         public override string ToString()
