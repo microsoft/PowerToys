@@ -16,7 +16,6 @@ namespace FancyZonesDataTypes
 {
     struct ZoneSetData;
     struct DeviceInfoData;
-    struct DeviceInfoJSON;
     struct CustomZoneSetData;
     struct AppZoneHistoryData;
 }
@@ -25,15 +24,18 @@ namespace FancyZonesDataTypes
 namespace FancyZonesUnitTests
 {
     class FancyZonesDataUnitTests;
+    class ZoneSetCalculateZonesUnitTests;
+    class ZoneWindowUnitTests;
 }
 #endif
 namespace FancyZonesDataNS
 {
+    const std::wstring& GetActiveZoneSetTmpPath();
+    const std::wstring& GetAppliedZoneSetTmpPath();
+    const std::wstring& GetDeletedCustomZoneSetsTmpPath();
 
     class FancyZonesData
     {
-        mutable std::recursive_mutex dataLock;
-
     public:
         FancyZonesData();
 
@@ -69,8 +71,6 @@ namespace FancyZonesDataNS
             return appZoneHistoryMap;
         }
 
-        // TODO(stefan): This was inside ifdef!
-        void SetDeviceInfo(const std::wstring& deviceId, FancyZonesDataTypes::DeviceInfoData data);
 #if defined(UNIT_TESTS)
         inline void clear_data()
         {
@@ -87,11 +87,6 @@ namespace FancyZonesDataNS
         }
 #endif
 
-        inline bool DeleteTmpFile(std::wstring_view tmpFilePath) const
-        {
-            return DeleteFileW(tmpFilePath.data());
-        }
-
         void AddDevice(const std::wstring& deviceId);
         void CloneDeviceInfo(const std::wstring& source, const std::wstring& destination);
         void UpdatePrimaryDesktopData(const std::wstring& desktopId);
@@ -105,11 +100,7 @@ namespace FancyZonesDataNS
 
         void SetActiveZoneSet(const std::wstring& deviceId, const FancyZonesDataTypes::ZoneSetData& zoneSet);
 
-        void SerializeDeviceInfoToTmpFile(const FancyZonesDataTypes::DeviceInfoJSON& deviceInfo, std::wstring_view tmpFilePath) const;
-
-        void ParseDeviceInfoFromTmpFile(std::wstring_view tmpFilePath);
-        bool ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath);
-        bool ParseDeletedCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath);
+		void ParseDataFromTmpFiles();
 
         void LoadFancyZonesData();
         void SaveFancyZonesData() const;
@@ -117,6 +108,13 @@ namespace FancyZonesDataNS
     private:
 #if defined(UNIT_TESTS)
         friend class FancyZonesUnitTests::FancyZonesDataUnitTests;
+        friend class FancyZonesUnitTests::ZoneWindowUnitTests;
+        friend class FancyZonesUnitTests::ZoneSetCalculateZonesUnitTests;
+
+		inline void SetDeviceInfo(const std::wstring& deviceId, FancyZonesDataTypes::DeviceInfoData data)
+        {
+            deviceInfoMap[deviceId] = data;
+        }
 
         inline bool ParseDeviceInfos(const json::JsonObject& fancyZonesDataJSON)
         {
@@ -124,6 +122,9 @@ namespace FancyZonesDataNS
             return !deviceInfoMap.empty();
         }
 #endif
+        void ParseDeviceInfoFromTmpFile(std::wstring_view tmpFilePath);
+        void ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath);
+        void ParseDeletedCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath);
 
         void MigrateCustomZoneSetsFromRegistry();
         void RemoveDesktopAppZoneHistory(const std::wstring& desktopId);
@@ -134,6 +135,8 @@ namespace FancyZonesDataNS
 
         std::wstring zonesSettingsFilePath;
         std::wstring appZoneHistoryFilePath;
+
+        mutable std::recursive_mutex dataLock;
     };
 
     FancyZonesData& FancyZonesDataInstance();

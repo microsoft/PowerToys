@@ -8,7 +8,7 @@
 #include "lib/Settings.h"
 #include "lib/ZoneWindow.h"
 #include "lib/FancyZonesData.h"
-#include "lib/FancyZonesDataTypes.h"
+#include "lib/JsonHelpers.h"
 #include "lib/ZoneSet.h"
 #include "lib/WindowMoveHandler.h"
 #include "lib/FancyZonesWinHookEventIDs.h"
@@ -652,8 +652,8 @@ void FancyZones::ToggleEditor() noexcept
         return;
     }
 
-    FancyZonesDataTypes::DeviceInfoJSON deviceInfoJson{ zoneWindow->UniqueId(), *deviceInfo };
-    fancyZonesData.SerializeDeviceInfoToTmpFile(deviceInfoJson, ZoneWindowUtils::GetActiveZoneSetTmpPath());
+    JSONHelpers::DeviceInfoJSON deviceInfoJson{ zoneWindow->UniqueId(), *deviceInfo };
+    JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfoJson, FancyZonesDataNS::GetActiveZoneSetTmpPath());
 
     const std::wstring params =
         /*1*/ editorLocation + L" " +
@@ -1078,10 +1078,7 @@ bool FancyZones::IsSplashScreen(HWND window)
 void FancyZones::OnEditorExitEvent() noexcept
 {
     // Collect information about changes in zone layout after editor exited.
-    FancyZonesDataNS::FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(ZoneWindowUtils::GetActiveZoneSetTmpPath());
-    FancyZonesDataNS::FancyZonesDataInstance().ParseDeletedCustomZoneSetsFromTmpFile(ZoneWindowUtils::GetDeletedCustomZoneSetsTmpPath());
-    FancyZonesDataNS::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(ZoneWindowUtils::GetAppliedZoneSetTmpPath());
-    FancyZonesDataNS::FancyZonesDataInstance().SaveFancyZonesData();
+    FancyZonesDataNS::FancyZonesDataInstance().ParseDataFromTmpFiles();
 
     for (auto workArea : m_workAreaHandler.GetAllWorkAreas())
     {

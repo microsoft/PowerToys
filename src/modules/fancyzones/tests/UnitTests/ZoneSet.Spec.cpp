@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "lib\FancyZonesData.h"
 #include "lib\FancyZonesDataTypes.h"
+#include "lib\JsonHelpers.h"
 #include "lib\ZoneSet.h"
 
 #include <filesystem>
@@ -992,8 +993,8 @@ namespace FancyZonesUnitTests
                 {
                     const std::wstring uuid = L"uuid";
                     const CanvasLayoutInfo info{ -1, 100, { CanvasLayoutInfo::Rect{ -10, -10, 100, 100 }, CanvasLayoutInfo::Rect{ 50, 50, 150, 150 } } };
-                    CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info } };
-                    json::to_file(m_path, CustomZoneSetJSON::ToJson(expected));
+                    JSONHelpers::CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info } };
+                    json::to_file(m_path, JSONHelpers::CustomZoneSetJSON::ToJson(expected));
                     Assert::IsTrue(std::filesystem::exists(m_path));
 
                     const int spacing = 10;
@@ -1018,8 +1019,8 @@ namespace FancyZonesUnitTests
                         .rowsPercents = { -100 }, //rows percents are negative
                         .columnsPercents = { 2500, 2500 }, //column percents count is invalid
                         .cellChildMap = { { 0, 1, 2 } } }));
-                    CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
-                    json::to_file(m_path, CustomZoneSetJSON::ToJson(expected));
+                    JSONHelpers::CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
+                    json::to_file(m_path, JSONHelpers::CustomZoneSetJSON::ToJson(expected));
                     Assert::IsTrue(std::filesystem::exists(m_path));
 
                     const int spacing = 0;
@@ -1040,9 +1041,9 @@ namespace FancyZonesUnitTests
                     //prepare device data
                     {
                         const std::wstring zoneUuid = L"default_device_id";
-                        DeviceInfoJSON deviceInfo{ zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
+                        JSONHelpers::DeviceInfoJSON deviceInfo{ zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
                         const std::wstring deviceInfoPath = FancyZonesDataNS::FancyZonesDataInstance().GetPersistFancyZonesJSONPath() + L".device_info_tmp";
-                        FancyZonesDataNS::FancyZonesDataInstance().SerializeDeviceInfoToTmpFile(deviceInfo, deviceInfoPath);
+                        JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfo, deviceInfoPath);
 
                         FancyZonesDataNS::FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(deviceInfoPath);
                         std::filesystem::remove(deviceInfoPath);
@@ -1052,8 +1053,8 @@ namespace FancyZonesUnitTests
                     wil::unique_cotaskmem_string uuid;
                     Assert::AreEqual(S_OK, StringFromCLSID(m_id, &uuid));
                     const CanvasLayoutInfo info{ 123, 321, { CanvasLayoutInfo::Rect{ 0, 0, 100, 100 }, CanvasLayoutInfo::Rect{ 50, 50, 150, 150 } } };
-                    CustomZoneSetJSON expected{ uuid.get(), CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info } };
-                    json::to_file(m_path, CustomZoneSetJSON::ToJson(expected));
+                    JSONHelpers::CustomZoneSetJSON expected{ uuid.get(), CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info } };
+                    json::to_file(m_path, JSONHelpers::CustomZoneSetJSON::ToJson(expected));
                     Assert::IsTrue(std::filesystem::exists(m_path));
                     FancyZonesDataNS::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(m_path);
 
@@ -1075,9 +1076,9 @@ namespace FancyZonesUnitTests
                     //prepare device data
                     {
                         const std::wstring zoneUuid = L"default_device_id";
-                        DeviceInfoJSON deviceInfo{ zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
+                        JSONHelpers::DeviceInfoJSON deviceInfo{ zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
                         const std::wstring deviceInfoPath = FancyZonesDataNS::FancyZonesDataInstance().GetPersistFancyZonesJSONPath() + L".device_info_tmp";
-                        FancyZonesDataNS::FancyZonesDataInstance().SerializeDeviceInfoToTmpFile(deviceInfo, deviceInfoPath);
+                        JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfo, deviceInfoPath);
 
                         FancyZonesDataNS::FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(deviceInfoPath);
                         std::filesystem::remove(deviceInfoPath);
@@ -1092,8 +1093,8 @@ namespace FancyZonesUnitTests
                         .rowsPercents = { 10000 },
                         .columnsPercents = { 2500, 5000, 2500 },
                         .cellChildMap = { { 0, 1, 2 } } }));
-                    CustomZoneSetJSON expected{ uuid.get(), CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
-                    json::to_file(m_path, CustomZoneSetJSON::ToJson(expected));
+                    JSONHelpers::CustomZoneSetJSON expected{ uuid.get(), CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
+                    json::to_file(m_path, JSONHelpers::CustomZoneSetJSON::ToJson(expected));
                     Assert::IsTrue(std::filesystem::exists(m_path));
                     FancyZonesDataNS::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(m_path);
 
@@ -1117,8 +1118,8 @@ namespace FancyZonesUnitTests
                     const GridLayoutInfo grid(GridLayoutInfo(GridLayoutInfo::Minimal{
                         .rows = 1,
                         .columns = 3 }));
-                    CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
-                    json::to_file(m_path, CustomZoneSetJSON::ToJson(expected));
+                    JSONHelpers::CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
+                    json::to_file(m_path, JSONHelpers::CustomZoneSetJSON::ToJson(expected));
                     Assert::IsTrue(std::filesystem::exists(m_path));
 
                     const int spacing = 0;

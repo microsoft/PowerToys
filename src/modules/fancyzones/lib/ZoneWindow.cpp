@@ -16,48 +16,6 @@
 
 namespace ZoneWindowUtils
 {
-    const wchar_t ActiveZoneSetsTmpFileName[] = L"FancyZonesActiveZoneSets.json";
-    const wchar_t AppliedZoneSetsTmpFileName[] = L"FancyZonesAppliedZoneSets.json";
-    const wchar_t DeletedCustomZoneSetsTmpFileName[] = L"FancyZonesDeletedCustomZoneSets.json";
-
-    const std::wstring& GetTempDirPath()
-    {
-        static std::wstring tmpDirPath;
-        static std::once_flag flag;
-
-        std::call_once(flag, []() {
-            wchar_t buffer[MAX_PATH];
-
-            auto charsWritten = GetTempPath(MAX_PATH, buffer);
-            if (charsWritten > MAX_PATH || (charsWritten == 0))
-            {
-                abort();            
-            }
-
-            tmpDirPath = std::wstring{ buffer };
-        });
-
-        return tmpDirPath;
-    }
-
-    const std::wstring& GetActiveZoneSetTmpPath()
-    {
-        static std::wstring activeZoneSetTmpFileName = GetTempDirPath() + ActiveZoneSetsTmpFileName;
-        return activeZoneSetTmpFileName;
-    }
-
-    const std::wstring& GetAppliedZoneSetTmpPath()
-    {
-        static std::wstring appliedZoneSetTmpFileName = GetTempDirPath() + AppliedZoneSetsTmpFileName;
-        return appliedZoneSetTmpFileName;
-    }
-
-    const std::wstring& GetDeletedCustomZoneSetsTmpPath()
-    {
-        static std::wstring deletedCustomZoneSetsTmpFileName = GetTempDirPath() + DeletedCustomZoneSetsTmpFileName;
-        return deletedCustomZoneSetsTmpFileName;
-    }
-
     std::wstring GenerateUniqueId(HMONITOR monitor, PCWSTR deviceId, PCWSTR virtualDesktopId)
     {
         wchar_t uniqueId[256]{}; // Parsed deviceId + resolution + virtualDesktopId

@@ -12,10 +12,6 @@
 
 namespace FancyZonesDataTypes
 {
-    bool IsValidGuid(const std::wstring& str);
-    bool IsValidDeviceId(const std::wstring& str);
-
-
     enum class ZoneSetLayoutType : int
     {
         Blank = -1,
@@ -49,14 +45,10 @@ namespace FancyZonesDataTypes
             int height;
         };
         std::vector<CanvasLayoutInfo::Rect> zones;
-
-        static json::JsonObject ToJson(const CanvasLayoutInfo& canvasInfo);
-        static std::optional<CanvasLayoutInfo> FromJson(const json::JsonObject& infoJson);
     };
 
-    class GridLayoutInfo
+    struct GridLayoutInfo
     {
-    public:
         struct Minimal
         {
             int rows;
@@ -76,9 +68,6 @@ namespace FancyZonesDataTypes
         GridLayoutInfo(const Full& info);
         ~GridLayoutInfo() = default;
 
-        static json::JsonObject ToJson(const GridLayoutInfo& gridInfo);
-        static std::optional<GridLayoutInfo> FromJson(const json::JsonObject& infoJson);
-
         inline std::vector<int>& rowsPercents() { return m_rowsPercents; };
         inline std::vector<int>& columnsPercents() { return m_columnsPercents; };
         inline std::vector<std::vector<int>>& cellChildMap() { return m_cellChildMap; };
@@ -90,7 +79,6 @@ namespace FancyZonesDataTypes
         inline const std::vector<int>& columnsPercents() const { return m_columnsPercents; };
         inline const std::vector<std::vector<int>>& cellChildMap() const { return m_cellChildMap; };
 
-    private:
         int m_rows;
         int m_columns;
         std::vector<int> m_rowsPercents;
@@ -105,23 +93,10 @@ namespace FancyZonesDataTypes
         std::variant<CanvasLayoutInfo, GridLayoutInfo> info;
     };
 
-    struct CustomZoneSetJSON
-    {
-        std::wstring uuid;
-        CustomZoneSetData data;
-
-        static json::JsonObject ToJson(const CustomZoneSetJSON& device);
-        static std::optional<CustomZoneSetJSON> FromJson(const json::JsonObject& customZoneSet);
-    };
-
-
     struct ZoneSetData
     {
         std::wstring uuid;
         ZoneSetLayoutType type;
-
-        static json::JsonObject ToJson(const ZoneSetData& zoneSet);
-        static std::optional<ZoneSetData> FromJson(const json::JsonObject& zoneSet);
     };
 
     struct AppZoneHistoryData
@@ -133,15 +108,6 @@ namespace FancyZonesDataTypes
         std::vector<int> zoneIndexSet;
     };
 
-    struct AppZoneHistoryJSON
-    {
-        std::wstring appPath;
-        std::vector<AppZoneHistoryData> data;
-
-        static json::JsonObject ToJson(const AppZoneHistoryJSON& appZoneHistory);
-        static std::optional<AppZoneHistoryJSON> FromJson(const json::JsonObject& zoneSet);
-    };
-
     struct DeviceInfoData
     {
         ZoneSetData activeZoneSet;
@@ -149,14 +115,4 @@ namespace FancyZonesDataTypes
         int spacing;
         int zoneCount;
     };
-
-    struct DeviceInfoJSON
-    {
-        std::wstring deviceId;
-        DeviceInfoData data;
-
-        static json::JsonObject ToJson(const DeviceInfoJSON& device);
-        static std::optional<DeviceInfoJSON> FromJson(const json::JsonObject& device);
-    };
-
 }

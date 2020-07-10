@@ -11,6 +11,7 @@
 #include <shlwapi.h>
 #include <filesystem>
 #include <fstream>
+#include <optional>
 #include <regex>
 #include <sstream>
 #include <unordered_set>
@@ -22,17 +23,39 @@ namespace
     const wchar_t* DEFAULT_GUID = L"{00000000-0000-0000-0000-000000000000}";
     const wchar_t* REG_SETTINGS = L"Software\\SuperFancyZones";
 
+    const wchar_t ActiveZoneSetsTmpFileName[] = L"FancyZonesActiveZoneSets.json";
+    const wchar_t AppliedZoneSetsTmpFileName[] = L"FancyZonesAppliedZoneSets.json";
+    const wchar_t DeletedCustomZoneSetsTmpFileName[] = L"FancyZonesDeletedCustomZoneSets.json";
+
     std::wstring ExtractVirtualDesktopId(const std::wstring& deviceId)
     {
         // Format: <device-id>_<resolution>_<virtual-desktop-id>
         return deviceId.substr(deviceId.rfind('_') + 1);
     }
+
+    const std::wstring& GetTempDirPath()
+    {
+        static std::wstring tmpDirPath;
+        static std::once_flag flag;
+
+        std::call_once(flag, []() {
+            wchar_t buffer[MAX_PATH];
+
+            auto charsWritten = GetTempPath(MAX_PATH, buffer);
+            if (charsWritten > MAX_PATH || (charsWritten == 0))
+            {
+                abort();
+            }
+
+            tmpDirPath = std::wstring{ buffer };
+        });
+
+        return tmpDirPath;
+    }
 }
 
 namespace FancyZonesDataNS
 {
-
-
     FancyZonesData& FancyZonesDataInstance()
     {
         static FancyZonesData instance;
@@ -58,11 +81,6 @@ namespace FancyZonesDataNS
         std::scoped_lock lock{ dataLock };
         auto it = customZoneSetsMap.find(guid);
         return it != end(customZoneSetsMap) ? std::optional{ it->second } : std::nullopt;
-    }
-
-    void FancyZonesData::SetDeviceInfo(const std::wstring& deviceId, FancyZonesDataTypes::DeviceInfoData data)
-    {
-        deviceInfoMap[deviceId] = data;
     }
 
     void FancyZonesData::AddDevice(const std::wstring& deviceId)
@@ -330,9 +348,9 @@ namespace FancyZonesDataNS
         std::unordered_map<DWORD, HWND> processIdToHandleMap{};
         processIdToHandleMap[processId] = window;
         FancyZonesDataTypes::AppZoneHistoryData data{ .processIdToHandleMap = processIdToHandleMap,
-                                 .zoneSetUuid = zoneSetId,
-                                 .deviceId = deviceId,
-                                 .zoneIndexSet = zoneIndexSet };
+                                                      .zoneSetUuid = zoneSetId,
+                                                      .deviceId = deviceId,
+                                                      .zoneIndexSet = zoneIndexSet };
 
         if (appZoneHistoryMap.contains(processPath))
         {
@@ -359,87 +377,49 @@ namespace FancyZonesDataNS
         }
     }
 
-    void FancyZonesData::SerializeDeviceInfoToTmpFile(const FancyZonesDataTypes::DeviceInfoJSON& deviceInfo, std::wstring_view tmpFilePath) const
+    void FancyZonesData::ParseDataFromTmpFiles()
     {
-        std::scoped_lock lock{ dataLock };
-        json::JsonObject deviceInfoJson = FancyZonesDataTypes::DeviceInfoJSON::ToJson(deviceInfo);
-        json::to_file(tmpFilePath, deviceInfoJson);
-    }
+        ParseDeviceInfoFromTmpFile(GetActiveZoneSetTmpPath());
+        ParseDeletedCustomZoneSetsFromTmpFile(GetDeletedCustomZoneSetsTmpPath());
+        ParseCustomZoneSetFromTmpFile(GetAppliedZoneSetTmpPath());
+        SaveFancyZonesData();
+	}
 
     void FancyZonesData::ParseDeviceInfoFromTmpFile(std::wstring_view tmpFilePath)
     {
         std::scoped_lock lock{ dataLock };
-        if (std::filesystem::exists(tmpFilePath))
+        const auto& deviceInfo = JSONHelpers::ParseDeviceInfoFromTmpFile(tmpFilePath);
+
+        if (deviceInfo)
         {
-            if (auto zoneSetJson = json::from_file(tmpFilePath); zoneSetJson.has_value())
-            {
-                if (auto deviceInfo = FancyZonesDataTypes::DeviceInfoJSON::FromJson(zoneSetJson.value()); deviceInfo.has_value())
-                {
-                    deviceInfoMap[deviceInfo->deviceId] = std::move(deviceInfo->data);
-                    DeleteTmpFile(tmpFilePath);
-                }
-            }
+            deviceInfoMap[deviceInfo->deviceId] = std::move(deviceInfo->data);
         }
     }
 
-    bool FancyZonesData::ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath)
+    void FancyZonesData::ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath)
     {
         std::scoped_lock lock{ dataLock };
-        bool res = true;
-        if (std::filesystem::exists(tmpFilePath))
-        {
-            try
-            {
-                if (auto customZoneSetJson = json::from_file(tmpFilePath); customZoneSetJson.has_value())
-                {
-                    if (auto customZoneSet = FancyZonesDataTypes::CustomZoneSetJSON::FromJson(customZoneSetJson.value()); customZoneSet.has_value())
-                    {
-                        customZoneSetsMap[customZoneSet->uuid] = std::move(customZoneSet->data);
-                    }
-                }
-            }
-            catch (const winrt::hresult_error&)
-            {
-                res = false;
-            }
+        const auto& customZoneSet = JSONHelpers::ParseCustomZoneSetFromTmpFile(tmpFilePath);
 
-            DeleteTmpFile(tmpFilePath);
+        if (customZoneSet)
+        {
+            customZoneSetsMap[customZoneSet->uuid] = std::move(customZoneSet->data);
         }
-        return res;
     }
 
-    bool FancyZonesData::ParseDeletedCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath)
+    void FancyZonesData::ParseDeletedCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath)
     {
         std::scoped_lock lock{ dataLock };
-        bool res = true;
-        if (std::filesystem::exists(tmpFilePath))
+        const auto& deletedCustomZoneSets = JSONHelpers::ParseDeletedCustomZoneSetsFromTmpFile(tmpFilePath);
+        for (const auto& zoneSet : deletedCustomZoneSets)
         {
-            auto deletedZoneSetsJson = json::from_file(tmpFilePath);
-            try
-            {
-                auto deletedCustomZoneSets = deletedZoneSetsJson->GetNamedArray(L"deleted-custom-zone-sets");
-                for (auto zoneSet : deletedCustomZoneSets)
-                {
-                    std::wstring uuid = L"{" + std::wstring{ zoneSet.GetString() } + L"}";
-                    customZoneSetsMap.erase(std::wstring{ uuid });
-                }
-            }
-            catch (const winrt::hresult_error&)
-            {
-                res = false;
-            }
-
-            DeleteTmpFile(tmpFilePath);
+            customZoneSetsMap.erase(zoneSet);
         }
-
-        return res;
     }
 
     void FancyZonesData::LoadFancyZonesData()
     {
-        std::wstring jsonFilePath = GetPersistFancyZonesJSONPath();
-
-        if (!std::filesystem::exists(jsonFilePath))
+        if (!std::filesystem::exists(zonesSettingsFilePath))
         {
             MigrateCustomZoneSetsFromRegistry();
 
@@ -602,4 +582,23 @@ namespace FancyZonesDataNS
             }
         }
     }
+
+    const std::wstring& GetActiveZoneSetTmpPath()
+    {
+        static std::wstring activeZoneSetTmpFileName = GetTempDirPath() + ActiveZoneSetsTmpFileName;
+        return activeZoneSetTmpFileName;
+    }
+
+    const std::wstring& GetAppliedZoneSetTmpPath()
+    {
+        static std::wstring appliedZoneSetTmpFileName = GetTempDirPath() + AppliedZoneSetsTmpFileName;
+        return appliedZoneSetTmpFileName;
+    }
+
+    const std::wstring& GetDeletedCustomZoneSetsTmpPath()
+    {
+        static std::wstring deletedCustomZoneSetsTmpFileName = GetTempDirPath() + DeletedCustomZoneSetsTmpFileName;
+        return deletedCustomZoneSetsTmpFileName;
+    }
+
 }

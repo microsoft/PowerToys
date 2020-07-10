@@ -9,6 +9,8 @@
 #include <lib/FancyZones.h>
 #include <lib/FancyZonesData.h>
 #include <lib/FancyZonesDataTypes.h>
+#include <lib/JsonHelpers.h>
+#include <lib/JsonHelpers.h>
 #include "Util.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -86,13 +88,13 @@ namespace FancyZonesUnitTests
             m_parentUniqueId << L"DELA026#5&10a58c63&0&UID16777488_" << m_monitorInfo.rcMonitor.right << "_" << m_monitorInfo.rcMonitor.bottom << "_{61FA9FC0-26A6-4B37-A834-491C148DFC57}";
             m_uniqueId << L"DELA026#5&10a58c63&0&UID16777488_" << m_monitorInfo.rcMonitor.right << "_" << m_monitorInfo.rcMonitor.bottom << "_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
 
-            Assert::IsFalse(ZoneWindowUtils::GetActiveZoneSetTmpPath().empty());
-            Assert::IsFalse(ZoneWindowUtils::GetAppliedZoneSetTmpPath().empty());
-            Assert::IsFalse(ZoneWindowUtils::GetDeletedCustomZoneSetsTmpPath().empty());
+            Assert::IsFalse(FancyZonesDataNS::GetActiveZoneSetTmpPath().empty());
+            Assert::IsFalse(FancyZonesDataNS::GetAppliedZoneSetTmpPath().empty());
+            Assert::IsFalse(FancyZonesDataNS::GetDeletedCustomZoneSetsTmpPath().empty());
 
-            Assert::IsFalse(std::filesystem::exists(ZoneWindowUtils::GetActiveZoneSetTmpPath()));
-            Assert::IsFalse(std::filesystem::exists(ZoneWindowUtils::GetAppliedZoneSetTmpPath()));
-            Assert::IsFalse(std::filesystem::exists(ZoneWindowUtils::GetDeletedCustomZoneSetsTmpPath()));
+            Assert::IsFalse(std::filesystem::exists(FancyZonesDataNS::GetActiveZoneSetTmpPath()));
+            Assert::IsFalse(std::filesystem::exists(FancyZonesDataNS::GetAppliedZoneSetTmpPath()));
+            Assert::IsFalse(std::filesystem::exists(FancyZonesDataNS::GetDeletedCustomZoneSetsTmpPath()));
 
             m_fancyZonesData.SetSettingsModulePath(L"FancyZonesUnitTests");
             m_fancyZonesData.clear_data();
@@ -101,23 +103,23 @@ namespace FancyZonesUnitTests
         TEST_METHOD_CLEANUP(Cleanup)
         {
             //cleanup temp files if were created
-            std::filesystem::remove(ZoneWindowUtils::GetActiveZoneSetTmpPath());
-            std::filesystem::remove(ZoneWindowUtils::GetAppliedZoneSetTmpPath());
-            std::filesystem::remove(ZoneWindowUtils::GetDeletedCustomZoneSetsTmpPath());
+            std::filesystem::remove(FancyZonesDataNS::GetActiveZoneSetTmpPath());
+            std::filesystem::remove(FancyZonesDataNS::GetAppliedZoneSetTmpPath());
+            std::filesystem::remove(FancyZonesDataNS::GetDeletedCustomZoneSetsTmpPath());
 
             m_zoneWindow = nullptr;
         }
 
         winrt::com_ptr<IZoneWindow> InitZoneWindowWithActiveZoneSet()
         {
-            const auto activeZoneSetTempPath = ZoneWindowUtils::GetActiveZoneSetTmpPath();
+            const auto activeZoneSetTempPath = FancyZonesDataNS::GetActiveZoneSetTmpPath();
             Assert::IsFalse(std::filesystem::exists(activeZoneSetTempPath));
 
             const auto type = FancyZonesDataTypes::ZoneSetLayoutType::Columns;
             const auto expectedZoneSet = FancyZonesDataTypes::ZoneSetData{ Helpers::CreateGuidString(), type };
             const auto data = FancyZonesDataTypes::DeviceInfoData{ expectedZoneSet, true, 16, 3 };
-            const auto deviceInfo = FancyZonesDataTypes::DeviceInfoJSON{ m_uniqueId.str(), data };
-            const auto json = FancyZonesDataTypes::DeviceInfoJSON::ToJson(deviceInfo);
+            const auto deviceInfo = JSONHelpers::DeviceInfoJSON{ m_uniqueId.str(), data };
+            const auto json = JSONHelpers::DeviceInfoJSON::ToJson(deviceInfo);
             json::to_file(activeZoneSetTempPath, json);
             Assert::IsTrue(std::filesystem::exists(activeZoneSetTempPath));
 
@@ -207,14 +209,14 @@ namespace FancyZonesUnitTests
         {
             using namespace FancyZonesDataTypes;
 
-            const auto activeZoneSetTempPath = ZoneWindowUtils::GetActiveZoneSetTmpPath();
+            const auto activeZoneSetTempPath = FancyZonesDataNS::GetActiveZoneSetTmpPath();
 
             for (int type = static_cast<int>(ZoneSetLayoutType::Focus); type < static_cast<int>(ZoneSetLayoutType::Custom); type++)
             {
                 const auto expectedZoneSet = ZoneSetData{ Helpers::CreateGuidString(), static_cast<ZoneSetLayoutType>(type) };
                 const auto data = DeviceInfoData{ expectedZoneSet, true, 16, 3 };
-                const auto deviceInfo = DeviceInfoJSON{ m_uniqueId.str(), data };
-                const auto json = DeviceInfoJSON::ToJson(deviceInfo);
+                const auto deviceInfo = JSONHelpers::DeviceInfoJSON{ m_uniqueId.str(), data };
+                const auto json = JSONHelpers::DeviceInfoJSON::ToJson(deviceInfo);
                 json::to_file(activeZoneSetTempPath, json);
 
                 m_fancyZonesData.ParseDeviceInfoFromTmpFile(activeZoneSetTempPath);
@@ -232,13 +234,13 @@ namespace FancyZonesUnitTests
         {
             using namespace FancyZonesDataTypes;
 
-            const auto activeZoneSetTempPath = ZoneWindowUtils::GetActiveZoneSetTmpPath();
+            const auto activeZoneSetTempPath = FancyZonesDataNS::GetActiveZoneSetTmpPath();
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::Custom;
             const auto expectedZoneSet = ZoneSetData{ Helpers::CreateGuidString(), type };
             const auto data = DeviceInfoData{ expectedZoneSet, true, 16, 3 };
-            const auto deviceInfo = DeviceInfoJSON{ m_uniqueId.str(), data };
-            const auto json = DeviceInfoJSON::ToJson(deviceInfo);
+            const auto deviceInfo = JSONHelpers::DeviceInfoJSON{ m_uniqueId.str(), data };
+            const auto json = JSONHelpers::DeviceInfoJSON::ToJson(deviceInfo);
             json::to_file(activeZoneSetTempPath, json);
 
             m_fancyZonesData.ParseDeviceInfoFromTmpFile(activeZoneSetTempPath);
@@ -259,22 +261,22 @@ namespace FancyZonesUnitTests
             using namespace FancyZonesDataTypes;
 
             //save required data
-            const auto activeZoneSetTempPath = ZoneWindowUtils::GetActiveZoneSetTmpPath();
-            const auto appliedZoneSetTempPath = ZoneWindowUtils::GetAppliedZoneSetTmpPath();
+            const auto activeZoneSetTempPath = FancyZonesDataNS::GetActiveZoneSetTmpPath();
+            const auto appliedZoneSetTempPath = FancyZonesDataNS::GetAppliedZoneSetTmpPath();
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::Custom;
             const auto customSetGuid = Helpers::CreateGuidString();
             const auto expectedZoneSet = ZoneSetData{ customSetGuid, type };
             const auto data = DeviceInfoData{ expectedZoneSet, true, 16, 3 };
-            const auto deviceInfo = DeviceInfoJSON{ m_uniqueId.str(), data };
-            const auto json = DeviceInfoJSON::ToJson(deviceInfo);
+            const auto deviceInfo = JSONHelpers::DeviceInfoJSON{ m_uniqueId.str(), data };
+            const auto json = JSONHelpers::DeviceInfoJSON::ToJson(deviceInfo);
             json::to_file(activeZoneSetTempPath, json);
 
             const auto info = CanvasLayoutInfo{
                 100, 100, std::vector{ CanvasLayoutInfo::Rect{ 0, 0, 100, 100 } }
             };
             const auto customZoneData = CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info };
-            auto customZoneJson = CustomZoneSetJSON::ToJson(CustomZoneSetJSON{ customSetGuid, customZoneData });
+            auto customZoneJson = JSONHelpers::CustomZoneSetJSON::ToJson(JSONHelpers::CustomZoneSetJSON{ customSetGuid, customZoneData });
             json::to_file(appliedZoneSetTempPath, customZoneJson);
             m_fancyZonesData.ParseDeviceInfoFromTmpFile(activeZoneSetTempPath);
             m_fancyZonesData.ParseCustomZoneSetFromTmpFile(appliedZoneSetTempPath);
@@ -295,24 +297,24 @@ namespace FancyZonesUnitTests
             using namespace FancyZonesDataTypes;
 
             //save required data
-            const auto activeZoneSetTempPath = ZoneWindowUtils::GetActiveZoneSetTmpPath();
-            const auto appliedZoneSetTempPath = ZoneWindowUtils::GetAppliedZoneSetTmpPath();
-            const auto deletedZonesTempPath = ZoneWindowUtils::GetDeletedCustomZoneSetsTmpPath();
+            const auto activeZoneSetTempPath = FancyZonesDataNS::GetActiveZoneSetTmpPath();
+            const auto appliedZoneSetTempPath = FancyZonesDataNS::GetAppliedZoneSetTmpPath();
+            const auto deletedZonesTempPath = FancyZonesDataNS::GetDeletedCustomZoneSetsTmpPath();
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::Custom;
             const auto customSetGuid = Helpers::CreateGuidString();
             const auto expectedZoneSet = ZoneSetData{ customSetGuid, type };
             const auto data = DeviceInfoData{ expectedZoneSet, true, 16, 3 };
-            const auto deviceInfo = DeviceInfoJSON{ m_uniqueId.str(), data };
-            const auto json = DeviceInfoJSON::ToJson(deviceInfo);
+            const auto deviceInfo = JSONHelpers::DeviceInfoJSON{ m_uniqueId.str(), data };
+            const auto json = JSONHelpers::DeviceInfoJSON::ToJson(deviceInfo);
             json::to_file(activeZoneSetTempPath, json);
 
             const auto info = CanvasLayoutInfo{
                 100, 100, std::vector{ CanvasLayoutInfo::Rect{ 0, 0, 100, 100 } }
             };
             const auto customZoneData = CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info };
-            const auto customZoneSet = CustomZoneSetJSON{ customSetGuid, customZoneData };
-            auto customZoneJson = CustomZoneSetJSON::ToJson(customZoneSet);
+            const auto customZoneSet = JSONHelpers::CustomZoneSetJSON{ customSetGuid, customZoneData };
+            auto customZoneJson = JSONHelpers::CustomZoneSetJSON::ToJson(customZoneSet);
             json::to_file(appliedZoneSetTempPath, customZoneJson);
 
             //save same zone as deleted
@@ -341,24 +343,24 @@ namespace FancyZonesUnitTests
             using namespace FancyZonesDataTypes;
 
             //save required data
-            const auto activeZoneSetTempPath = ZoneWindowUtils::GetActiveZoneSetTmpPath();
-            const auto appliedZoneSetTempPath = ZoneWindowUtils::GetAppliedZoneSetTmpPath();
-            const auto deletedZonesTempPath = ZoneWindowUtils::GetDeletedCustomZoneSetsTmpPath();
+            const auto activeZoneSetTempPath = FancyZonesDataNS::GetActiveZoneSetTmpPath();
+            const auto appliedZoneSetTempPath = FancyZonesDataNS::GetAppliedZoneSetTmpPath();
+            const auto deletedZonesTempPath = FancyZonesDataNS::GetDeletedCustomZoneSetsTmpPath();
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::Custom;
             const auto customSetGuid = Helpers::CreateGuidString();
             const auto expectedZoneSet = ZoneSetData{ customSetGuid, type };
             const auto data = DeviceInfoData{ expectedZoneSet, true, 16, 3 };
-            const auto deviceInfo = DeviceInfoJSON{ m_uniqueId.str(), data };
-            const auto json = DeviceInfoJSON::ToJson(deviceInfo);
+            const auto deviceInfo = JSONHelpers::DeviceInfoJSON{ m_uniqueId.str(), data };
+            const auto json = JSONHelpers::DeviceInfoJSON::ToJson(deviceInfo);
             json::to_file(activeZoneSetTempPath, json);
 
             const auto info = CanvasLayoutInfo{
                 100, 100, std::vector{ CanvasLayoutInfo::Rect{ 0, 0, 100, 100 } }
             };
             const auto customZoneData = CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info };
-            const auto customZoneSet = CustomZoneSetJSON{ customSetGuid, customZoneData };
-            auto customZoneJson = CustomZoneSetJSON::ToJson(customZoneSet);
+            const auto customZoneSet = JSONHelpers::CustomZoneSetJSON{ customSetGuid, customZoneData };
+            auto customZoneJson = JSONHelpers::CustomZoneSetJSON::ToJson(customZoneSet);
             json::to_file(appliedZoneSetTempPath, customZoneJson);
 
             //save different zone as deleted
