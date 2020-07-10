@@ -86,7 +86,6 @@ private:
     ComPtr<IMFAttributes> _spAttributes;
 
     bool _wasStreamPreviouslySelected; // maybe makes more sense as a property of the stream
-    const DWORD NUM_STREAMS = 1;
     ComPtr<SimpleMediaStream> _stream;
 };
 

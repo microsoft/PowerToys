@@ -8,6 +8,8 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
     mc:Ignorable="d"
+    xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"  
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
@@ -82,10 +84,26 @@
                 HorizontalAlignment="Left"
                 Margin="{StaticResource MediumTopMargin}"
                 SelectedIndex="{Binding Path=SelectedCameraIndex, Mode=TwoWay}"
-                ItemsSource="{Binding SelectedCameraList, Mode=OneTime}"
+                ItemsSource="{Binding CameraNames, Mode=OneTime}"
                 IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
-            <ComboBox x:Uid="VideoConference_OverlayPosition" 
+            <TextBlock
+              x:Uid="VideoConference_CameraOverlayImagePathHeader"
+              Margin="0,24,0,-20"
+            />
+          
+            <Button
+                Width="320"
+                Height="30"
+                Style="{StaticResource AccentButtonStyle}"
+                Content="{Binding Mode=OneWay, Path=CameraImageOverlayPath}"
+                Command="{Binding Mode=OneWay, Path=SelectOverlayImage}"
+                HorizontalAlignment="Left"
+                Margin="{StaticResource MediumTopMargin}" />
+
+
+
+      <ComboBox x:Uid="VideoConference_OverlayPosition" 
                       MinWidth="240"
                       Margin="{StaticResource SmallTopMargin}"
                       SelectedIndex="{ Binding Mode=TwoWay, Path=OverlayPostionIndex}"

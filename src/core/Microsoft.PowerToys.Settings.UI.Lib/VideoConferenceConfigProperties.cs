@@ -42,10 +42,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 Key = "O",
                 Code = 79,
             });
-
-            this.OverlayPosition = new StringProperty("Center");
-            this.OverlayMonitor = new StringProperty("Main monitor");
-            this.SelectedCamera = new StringProperty("None");
         }
 
         [JsonPropertyName("mute_camera_and_microphone_hotkey")]
@@ -61,10 +57,13 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public StringProperty SelectedCamera { get; set; }
 
         [JsonPropertyName("overlay_position")]
-        public StringProperty OverlayPosition { get; set; }
+        public StringProperty OverlayPosition { get; set; } = "Center";
 
         [JsonPropertyName("overlay_monitor")]
-        public StringProperty OverlayMonitor { get; set; }
+        public StringProperty OverlayMonitor { get; set; } = "Main monitor";
+
+        [JsonPropertyName("camera_overlay_image_path")]
+        public StringProperty CameraOverlayImagePath { get; set; }
 
         // converts the current to a json string.
         public string ToJsonString()

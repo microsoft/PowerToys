@@ -5,28 +5,32 @@
 #include <vector>
 #include <algorithm>
 
+#include "SimpleMediaSource.h"
+#include "SimpleMediaStream.h"
+#include <common\user.h>
+
 HRESULT CopyAttribute(IMFAttributes* pSrc, IMFAttributes* pDest, const GUID& key);
 
-template<class T>
-void SafeRelease(T** ppT)
-{
-    if (*ppT)
-    {
-        (*ppT)->Release();
-        *ppT = nullptr;
-    }
-}
+const static std::wstring_view MODULE_NAME = L"Video Conference";
+const static std::wstring_view VIRTUAL_CAMERA_NAME = L"PowerToys VideoConference";
 
 void DeviceList::Clear()
 {
     for (UINT32 i = 0; i < m_numberDevices; i++)
     {
         CoTaskMemFree(m_deviceFriendlyNames[i]);
-        SafeRelease(&m_ppDevices[i]);
+        if (m_ppDevices[i])
+        {
+            m_ppDevices[i]->Release();
+        }
     }
     CoTaskMemFree(m_ppDevices);
     m_ppDevices = nullptr;
-    delete[] m_deviceFriendlyNames;
+    if (m_deviceFriendlyNames)
+    {
+        delete[] m_deviceFriendlyNames;
+    }
+
     m_deviceFriendlyNames = nullptr;
     m_numberDevices = 0;
 }
@@ -34,8 +38,7 @@ void DeviceList::Clear()
 HRESULT DeviceList::EnumerateDevices()
 {
     HRESULT hr = S_OK;
-    IMFAttributes* pAttributes = nullptr;
-
+    ComPtr<IMFAttributes> pAttributes;
     Clear();
 
     // Initialize an attribute store. We will use this to
@@ -54,7 +57,12 @@ HRESULT DeviceList::EnumerateDevices()
     // Enumerate devices.
     if (SUCCEEDED(hr))
     {
-        hr = MFEnumDeviceSources(pAttributes, &m_ppDevices, &m_numberDevices);
+        hr = MFEnumDeviceSources(pAttributes.Get(), &m_ppDevices, &m_numberDevices);
+    }
+
+    if (FAILED(hr))
+    {
+        return hr;
     }
 
     m_deviceFriendlyNames = new (std::nothrow) wchar_t*[m_numberDevices];
@@ -63,8 +71,6 @@ HRESULT DeviceList::EnumerateDevices()
         UINT32 nameLength = 0;
         m_ppDevices[i]->GetAllocatedString(MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, &m_deviceFriendlyNames[i], &nameLength);
     }
-
-    SafeRelease(&pAttributes);
 
     return hr;
 }
@@ -115,110 +121,23 @@ HRESULT CopyAttribute(IMFAttributes* pSrc, IMFAttributes* pDest, const GUID& key
     return hr;
 }
 
-HRESULT ConfigureSourceReader(IMFSourceReader* pReader)
-{
-    // The list of acceptable types.
-    GUID subtypes[] = {
-        MFVideoFormat_NV12, MFVideoFormat_YUY2, MFVideoFormat_UYVY, MFVideoFormat_RGB32, MFVideoFormat_RGB24, MFVideoFormat_IYUV
-    };
-
-    HRESULT hr = S_OK;
-    BOOL bUseNativeType = FALSE;
-
-    GUID subtype = { 0 };
-
-    IMFMediaType* pType = nullptr;
-
-    // If the source's native format matches any of the formats in
-    // the list, prefer the native format.
-
-    // Note: The camera might support multiple output formats,
-    // including a range of frame dimensions. The application could
-    // provide a list to the user and have the user select the
-    // camera's output format. That is outside the scope of this
-    // sample, however.
-
-    hr = pReader->GetNativeMediaType(
-        (DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM,
-        0, // Type index
-        &pType);
-
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    hr = pType->GetGUID(MF_MT_SUBTYPE, &subtype);
-
-    if (FAILED(hr))
-    {
-        goto done;
-    }
-
-    for (UINT32 i = 0; i < ARRAYSIZE(subtypes); i++)
-    {
-        if (subtype == subtypes[i])
-        {
-            hr = pReader->SetCurrentMediaType(
-                (DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM,
-                nullptr,
-                pType);
-
-            bUseNativeType = TRUE;
-            break;
-        }
-    }
-
-    if (!bUseNativeType)
-    {
-        // None of the native types worked. The camera might offer
-        // output a compressed type such as MJPEG or DV.
-
-        // Try adding a decoder.
-
-        for (UINT32 i = 0; i < ARRAYSIZE(subtypes); i++)
-        {
-            hr = pType->SetGUID(MF_MT_SUBTYPE, subtypes[i]);
-
-            if (FAILED(hr))
-            {
-                goto done;
-            }
-
-            hr = pReader->SetCurrentMediaType(
-                (DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM,
-                nullptr,
-                pType);
-
-            if (SUCCEEDED(hr))
-            {
-                break;
-            }
-        }
-    }
-
-done:
-    SafeRelease(&pType);
-    return hr;
-}
-
 ComPtr<IMFMediaType> SelectBestMediaType(IMFSourceReader* reader)
 {
-    std::vector<ComPtr<IMFMediaType>> supported_mtypes;
+    std::vector<ComPtr<IMFMediaType>> supportedMTypes;
 
-    auto type_framerate = [](IMFMediaType* type) {
+    auto typeFramerate = [](IMFMediaType* type) {
         UINT32 framerateNum = 0, framerateDenum = 1;
         MFGetAttributeRatio(type, MF_MT_FRAME_RATE, &framerateNum, &framerateDenum);
         const float framerate = static_cast<float>(framerateNum) / framerateDenum;
         return framerate;
     };
 
-    UINT64 max_resolution = 0;
+    UINT64 maxResolution = 0;
     for (DWORD tyIdx = 0;; ++tyIdx)
     {
-        IMFMediaType* next_type = nullptr;
-        HRESULT hr = reader->GetNativeMediaType((DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM, tyIdx, &next_type);
-        if (!next_type)
+        IMFMediaType* nextType = nullptr;
+        HRESULT hr = reader->GetNativeMediaType((DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM, tyIdx, &nextType);
+        if (!nextType)
         {
             break;
         }
@@ -228,20 +147,20 @@ ComPtr<IMFMediaType> SelectBestMediaType(IMFSourceReader* reader)
     if(memcmp(&subtype, &MFVideoFormat_YUY2, sizeof GUID))
       continue;
 #endif
-        constexpr float minimal_acceptable_framerate = 15.f;
+        constexpr float minimalAcceptableFramerate = 15.f;
         // Skip low frame types
-        if (type_framerate(next_type) < minimal_acceptable_framerate)
+        if (typeFramerate(nextType) < minimalAcceptableFramerate)
         {
             continue;
         }
 
         UINT32 w = 0, h = 0;
-        MFGetAttributeSize(next_type, MF_MT_FRAME_SIZE, &w, &h);
-        const UINT64 cur_resolution_mult = static_cast<UINT64>(w) * h;
-        if (cur_resolution_mult >= max_resolution)
+        MFGetAttributeSize(nextType, MF_MT_FRAME_SIZE, &w, &h);
+        const UINT64 curResolutionMult = static_cast<UINT64>(w) * h;
+        if (curResolutionMult >= maxResolution)
         {
-            supported_mtypes.emplace_back(next_type);
-            max_resolution = cur_resolution_mult;
+            supportedMTypes.emplace_back(nextType);
+            maxResolution = curResolutionMult;
         }
 
         if (hr == MF_E_NO_MORE_TYPES || FAILED(hr))
@@ -251,79 +170,39 @@ ComPtr<IMFMediaType> SelectBestMediaType(IMFSourceReader* reader)
     }
 
     // Remove all types with non-optimal resolution
-    supported_mtypes.erase(std::remove_if(begin(supported_mtypes), end(supported_mtypes), [max_resolution](ComPtr<IMFMediaType>& ptr) {
-                               UINT32 w = 0, h = 0;
-                               MFGetAttributeSize(ptr.Get(), MF_MT_FRAME_SIZE, &w, &h);
-                               const UINT64 cur_resolution_mult = static_cast<UINT64>(w) * h;
-                               return cur_resolution_mult != max_resolution;
-                           }),
-                           end(supported_mtypes));
+    supportedMTypes.erase(std::remove_if(begin(supportedMTypes), end(supportedMTypes), [maxResolution](ComPtr<IMFMediaType>& ptr) {
+                              UINT32 w = 0, h = 0;
+                              MFGetAttributeSize(ptr.Get(), MF_MT_FRAME_SIZE, &w, &h);
+                              const UINT64 curResolutionMult = static_cast<UINT64>(w) * h;
+                              return curResolutionMult != maxResolution;
+                          }),
+                          end(supportedMTypes));
 
     // Desc-sort by frame_rate
-    std::sort(begin(supported_mtypes), end(supported_mtypes), [type_framerate](ComPtr<IMFMediaType>& lhs, ComPtr<IMFMediaType>& rhs) {
-        return type_framerate(lhs.Get()) > type_framerate(rhs.Get());
+    std::sort(begin(supportedMTypes), end(supportedMTypes), [typeFramerate](ComPtr<IMFMediaType>& lhs, ComPtr<IMFMediaType>& rhs) {
+        return typeFramerate(lhs.Get()) > typeFramerate(rhs.Get());
     });
 
-    return std::move(supported_mtypes[0]);
+    return std::move(supportedMTypes[0]);
 }
 
 HRESULT
 SimpleMediaStream::RuntimeClassInitialize(
     _In_ SimpleMediaSource* pSource)
 {
-    HRESULT hr = S_OK;
-    ComPtr<IMFMediaTypeHandler> spTypeHandler;
-    ComPtr<IMFAttributes> attrs;
-
     if (nullptr == pSource)
     {
         return E_INVALIDARG;
     }
     RETURN_IF_FAILED(pSource->QueryInterface(IID_PPV_ARGS(&_parent)));
 
-    _devices.Clear();
-    _devices.EnumerateDevices();
-
-    // TODO: choose the device from the settings
-    _devices.GetDevice((UINT32)0, &_activate);
-
-    IMFMediaSource* realSource = nullptr;
-
-    hr = _activate->ActivateObject(
-        __uuidof(IMFMediaSource),
-        (void**)&realSource);
-
-    if (SUCCEEDED(hr))
+    SyncCurrentSettings();
+    // We couldn't connect to the PT, so choose a default webcam
+    if (!_settingsUpdateChannel)
     {
-        IMFAttributes* pAttributes = nullptr;
-
-        hr = MFCreateAttributes(&pAttributes, 2);
-
-        if (SUCCEEDED(hr))
-        {
-            hr = MFCreateSourceReaderFromMediaSource(
-                realSource,
-                pAttributes,
-                &m_pReader);
-            _spMediaType = SelectBestMediaType(m_pReader);
-            RETURN_IF_FAILED(MFCreateAttributes(&_spAttributes, 10));
-            RETURN_IF_FAILED(this->_SetStreamAttributes(_spAttributes.Get()));
-            RETURN_IF_FAILED(MFCreateEventQueue(&_spEventQueue));
-
-            // Initialize stream descriptors
-            RETURN_IF_FAILED(MFCreateStreamDescriptor(0, 1, _spMediaType.GetAddressOf(), &_spStreamDesc));
-
-            RETURN_IF_FAILED(_spStreamDesc->GetMediaTypeHandler(&spTypeHandler));
-            RETURN_IF_FAILED(spTypeHandler->SetCurrentMediaType(_spMediaType.Get()));
-            RETURN_IF_FAILED(this->_SetStreamDescriptorAttributes(_spStreamDesc.Get()));
-            m_pReader->SetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM, nullptr, _spMediaType.Get());
-        }
-
-        SafeRelease(&pAttributes);
-        SafeRelease(&realSource);
+        UpdateSourceCamera(L"");
     }
-
-    return hr;
+    return S_OK;
 }
 
 // IMFMediaEventGenerator
@@ -455,14 +334,14 @@ SimpleMediaStream::RequestSample(
     HRESULT hr{};
     RETURN_IF_FAILED(_CheckShutdownRequiresLock());
 
-    const auto nDevices = _devices.Count();
+    const bool disableWebcam = SyncCurrentSettings();
 
     // Request the first video frame.
 
     ComPtr<IMFSample> sample;
     DWORD streamFlags = 0;
 
-    hr = m_pReader->ReadSample(
+    hr = _sourceCamera->ReadSample(
         (DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM,
         0,
         nullptr,
@@ -474,45 +353,7 @@ SimpleMediaStream::RequestSample(
         return hr;
     }
 
-    const wchar_t shmemEndpoint[] = L"Global\\PowerToysWebcamMuteSwitch";
-
-    const auto noiseToggle = [=]() -> const uint8_t* {
-        SECURITY_DESCRIPTOR sd;
-
-        InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
-
-        SetSecurityDescriptorDacl(&sd, true, nullptr, false);
-
-        SECURITY_ATTRIBUTES sa;
-        sa.nLength = sizeof(sa);
-        sa.lpSecurityDescriptor = &sd;
-        sa.bInheritHandle = false;
-
-        auto hMapFile{ CreateFileMappingW(
-            INVALID_HANDLE_VALUE, // use paging file
-            &sa, // default security
-            PAGE_READWRITE, // read/write access
-            0, // maximum object size (high-order DWORD)
-            1, // maximum object size (low-order DWORD)
-            shmemEndpoint) }; // name of mapping object
-        if (!hMapFile)
-        {
-            return nullptr;
-        }
-        auto shmem = (const uint8_t*)MapViewOfFile(hMapFile, // handle to map object
-                                                   FILE_MAP_READ, // read/write permission
-                                                   0,
-                                                   0,
-                                                   1);
-        return shmem;
-    }();
-
-    const bool disableWebcam = noiseToggle && *noiseToggle;
-
-    // TODO: get the image from the settings
-    static auto imageSample = LoadImageAsSample(LR"(P:\wecam_test_1920.jpg)", _spMediaType.Get());
-
-    IMFSample* outputSample = disableWebcam ? imageSample.Get() : sample.Get();
+    IMFSample* outputSample = disableWebcam ? _overlayImage.Get() : sample.Get();
     const bool noSampleAvailable = !outputSample;
 
     if (noSampleAvailable)
@@ -582,7 +423,6 @@ SimpleMediaStream::GetStreamState(
 {
     HRESULT hr = S_OK;
     auto lock = _critSec.Lock();
-    BOOLEAN pauseState = false;
 
     RETURN_IF_FAILED(_CheckShutdownRequiresLock());
 
@@ -613,11 +453,155 @@ SimpleMediaStream::Shutdown()
     _spMediaType.Reset();
     _spStreamDesc.Reset();
 
-    m_pReader->Release();
+    _sourceCamera.Reset();
+    _currentSourceCameraName.reset();
+    _settingsUpdateChannel.reset();
+    _overlayImage.Reset();
 
     _isSelected = false;
 
     return hr;
+}
+
+HRESULT SimpleMediaStream::UpdateSourceCamera(std::wstring_view newCameraName)
+{
+    _cameraList.Clear();
+    RETURN_IF_FAILED(_cameraList.EnumerateDevices());
+
+    bool webcamIsChosen = false;
+    ComPtr<IMFActivate> webcamSourceActivator;
+    for (UINT32 i = 0; i < _cameraList.Count(); ++i)
+    {
+        if (_cameraList.GetDeviceName(i) == newCameraName)
+        {
+            _cameraList.GetDevice(i, &webcamSourceActivator);
+            webcamIsChosen = true;
+            _currentSourceCameraName.emplace(newCameraName);
+            break;
+        }
+    }
+
+    // Try selecting the first camera which isn't us, since at this point we can only guess the user's preferrence
+    if (!webcamIsChosen)
+    {
+        for (UINT32 i = 0; i < _cameraList.Count(); ++i)
+        {
+            const auto camName = _cameraList.GetDeviceName(i);
+            const bool differentCamera = _currentSourceCameraName.has_value() && camName != *_currentSourceCameraName;
+            if (camName != VIRTUAL_CAMERA_NAME && (differentCamera || !_currentSourceCameraName.has_value()))
+            {
+                RETURN_IF_FAILED(_cameraList.GetDevice(i, &webcamSourceActivator));
+                webcamIsChosen = true;
+                _currentSourceCameraName.emplace(camName);
+                break;
+            }
+        }
+    }
+    if (!webcamIsChosen)
+    {
+        return E_ABORT;
+    }
+    ComPtr<IMFMediaSource> realSource;
+
+    RETURN_IF_FAILED(webcamSourceActivator->ActivateObject(
+        __uuidof(IMFMediaSource),
+        (void**)realSource.GetAddressOf()));
+
+    ComPtr<IMFAttributes> pAttributes;
+
+    HRESULT hr = MFCreateAttributes(&pAttributes, 2);
+
+    if (SUCCEEDED(hr))
+    {
+        ComPtr<IMFMediaTypeHandler> spTypeHandler;
+
+        hr = MFCreateSourceReaderFromMediaSource(
+            realSource.Get(),
+            pAttributes.Get(),
+            &_sourceCamera);
+        _spAttributes.Reset();
+        _spMediaType = SelectBestMediaType(_sourceCamera.Get());
+        RETURN_IF_FAILED(MFCreateAttributes(&_spAttributes, 10));
+        RETURN_IF_FAILED(_SetStreamAttributes(_spAttributes.Get()));
+        if (_spEventQueue)
+        {
+            _spEventQueue->Shutdown();
+            _spEventQueue.Reset();
+        }
+        RETURN_IF_FAILED(MFCreateEventQueue(&_spEventQueue));
+        _spStreamDesc.Reset();
+        // Initialize stream descriptors
+        RETURN_IF_FAILED(MFCreateStreamDescriptor(0, 1, _spMediaType.GetAddressOf(), &_spStreamDesc));
+
+        RETURN_IF_FAILED(_spStreamDesc->GetMediaTypeHandler(&spTypeHandler));
+        RETURN_IF_FAILED(spTypeHandler->SetCurrentMediaType(_spMediaType.Get()));
+        RETURN_IF_FAILED(_SetStreamDescriptorAttributes(_spStreamDesc.Get()));
+        _sourceCamera->SetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM, nullptr, _spMediaType.Get());
+    }
+
+    return hr;
+}
+
+bool SimpleMediaStream::SyncCurrentSettings()
+{
+    bool webcamDisabled = false;
+    if (!_settingsUpdateChannel.has_value())
+    {
+        _settingsUpdateChannel = SerializedSharedMemory::open(CameraSettingsUpdateChannel::endpoint(), sizeof(CameraSettingsUpdateChannel), false);
+    }
+    if (!_settingsUpdateChannel)
+    {
+        return webcamDisabled;
+    }
+
+    _settingsUpdateChannel->access([this, &webcamDisabled](auto settingsMemory) {
+        auto settings = reinterpret_cast<CameraSettingsUpdateChannel*>(settingsMemory.data());
+        bool cameraNameUpdated = false;
+        std::wstring_view newCameraName;
+        webcamDisabled = settings->useOverlayImage;
+        if (settings->sourceCameraName.has_value())
+        {
+            std::wstring_view newCameraNameView{ settings->sourceCameraName->data() };
+            if (!_currentSourceCameraName.has_value() || *_currentSourceCameraName != newCameraNameView)
+            {
+                cameraNameUpdated = true;
+                newCameraName = newCameraNameView;
+            }
+        }
+        bool cameraUpdated = false;
+        if (cameraNameUpdated)
+        {
+            cameraUpdated = SUCCEEDED(UpdateSourceCamera(std::move(newCameraName)));
+        }
+
+        if (!settings->overlayImageSize.has_value())
+        {
+            return;
+        }
+
+        if (settings->newOverlayImagePosted || !_overlayImage || cameraUpdated)
+        {
+            auto imageChannel =
+                SerializedSharedMemory::open(CameraOverlayImageChannel::endpoint(), *settings->overlayImageSize, true);
+            if (!imageChannel)
+            {
+                return;
+            }
+            imageChannel->access([this, settings](auto imageMemory) {
+                ComPtr<IStream> imageStream = SHCreateMemStream(imageMemory.data(), static_cast<UINT>(imageMemory.size()));
+                if (!imageStream)
+                {
+                    return;
+                }
+                if (auto imageSample = LoadImageAsSample(imageStream, _spMediaType.Get()))
+                {
+                    _overlayImage = imageSample;
+                    settings->newOverlayImagePosted = false;
+                }
+            });
+        }
+    });
+    return webcamDisabled;
 }
 
 HRESULT
@@ -647,7 +631,7 @@ SimpleMediaStream::_SetStreamAttributes(
     }
 
     RETURN_IF_FAILED(pAttributeStore->SetGUID(MF_DEVICESTREAM_STREAM_CATEGORY, PINNAME_VIDEO_CAPTURE));
-    RETURN_IF_FAILED(pAttributeStore->SetUINT32(MF_DEVICESTREAM_STREAM_ID, STREAMINDEX));
+    RETURN_IF_FAILED(pAttributeStore->SetUINT32(MF_DEVICESTREAM_STREAM_ID, 0));
     RETURN_IF_FAILED(pAttributeStore->SetUINT32(MF_DEVICESTREAM_FRAMESERVER_SHARED, 1));
     RETURN_IF_FAILED(pAttributeStore->SetUINT32(MF_DEVICESTREAM_ATTRIBUTE_FRAMESOURCE_TYPES, _MFFrameSourceTypes::MFFrameSourceTypes_Color));
 
@@ -666,7 +650,7 @@ SimpleMediaStream::_SetStreamDescriptorAttributes(
     }
 
     RETURN_IF_FAILED(pAttributeStore->SetGUID(MF_DEVICESTREAM_STREAM_CATEGORY, PINNAME_VIDEO_CAPTURE));
-    RETURN_IF_FAILED(pAttributeStore->SetUINT32(MF_DEVICESTREAM_STREAM_ID, STREAMINDEX));
+    RETURN_IF_FAILED(pAttributeStore->SetUINT32(MF_DEVICESTREAM_STREAM_ID, 0));
     RETURN_IF_FAILED(pAttributeStore->SetUINT32(MF_DEVICESTREAM_FRAMESERVER_SHARED, 1));
     RETURN_IF_FAILED(pAttributeStore->SetUINT32(MF_DEVICESTREAM_ATTRIBUTE_FRAMESOURCE_TYPES, _MFFrameSourceTypes::MFFrameSourceTypes_Color));
 
