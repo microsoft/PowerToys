@@ -76,7 +76,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                         _powerRenameEnabled = value;
                         OnPropertyChanged("IsEnabled");
-                        RaisePropertyChanged(nameof(GlobalAndMruEnabled));
+                        RaisePropertyChanged("GlobalAndMruEnabled");
                     }
                 }
             }
