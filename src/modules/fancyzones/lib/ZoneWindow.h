@@ -29,11 +29,16 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      * A window has changed location, shape, or size. Track down window position and give zone layout
      * hints if dragging functionality is enabled.
      *
-     * @param   ptScreen    Cursor coordinates.
-     * @param   dragEnabled Boolean indicating is giving hints about active zone layout enabled.
-     *                      Hints are given while dragging window while holding SHIFT key.
+     * @param   ptScreen        Cursor coordinates.
+     * @param   dragEnabled     Boolean indicating is giving hints about active zone layout enabled.
+     *                          Hints are given while dragging window while holding SHIFT key.
+     * @param   selectManyZones When this parameter is true, the set of highlighted zones is computed
+                                by finding the minimum bounding rectangle of the zone(s) from which the
+                                user started dragging and the zone(s) above which the user is hovering
+                                at the moment this function is called. Otherwise, highlight only the zone(s)
+                                above which the user is currently hovering.
      */
-    IFACEMETHOD(MoveSizeUpdate)(POINT const& ptScreen, bool dragEnabled) = 0;
+    IFACEMETHOD(MoveSizeUpdate)(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) = 0;
     /**
      * The movement or resizing of a window has finished. Assign window to the zone of it
      * is dropped within zone borders.
@@ -102,6 +107,10 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      * Update currently active zone layout for this work area.
      */
     IFACEMETHOD_(void, UpdateActiveZoneSet)() = 0;
+    /**
+     * Clear the selected zones when this ZoneWindow loses focus.
+     */
+    IFACEMETHOD_(void, ClearSelectedZones)() = 0;
 };
 
 winrt::com_ptr<IZoneWindow> MakeZoneWindow(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor,
