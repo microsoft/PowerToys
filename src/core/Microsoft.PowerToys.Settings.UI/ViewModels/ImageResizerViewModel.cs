@@ -90,7 +90,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     generalSettings.Enabled.ImageResizer = value;
                     OutGoingGeneralSettings snd = new OutGoingGeneralSettings(generalSettings);
                     ShellPage.DefaultSndMSGCallback(snd.ToString());
-                    OnPropertyChanged(nameof(IsEnabled));
+                    OnPropertyChanged("IsEnabled");
                 }
             }
         }

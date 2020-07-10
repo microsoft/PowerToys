@@ -112,7 +112,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OutGoingGeneralSettings snd = new OutGoingGeneralSettings(generalSettings);
 
                     ShellPage.DefaultSndMSGCallback(snd.ToString());
-                    OnPropertyChanged(nameof(IsEnabled));
+                    OnPropertyChanged("IsEnabled");
                 }
             }
         }

@@ -89,7 +89,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (generalSettings.Enabled.KeyboardManager != value)
                 {
                     generalSettings.Enabled.KeyboardManager = value;
-                    OnPropertyChanged(nameof(Enabled));
+                    OnPropertyChanged("Enabled");
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettings);
 
                     ShellPage.DefaultSndMSGCallback(outgoing.ToString());
