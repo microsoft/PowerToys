@@ -19,6 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private VideoConferenceSettings Settings { get; set; }
 
         private const string ModuleName = "Video Conference";
+        private const string ProxyCameraName = "PowerToys VideoConference";
 
         public VideoConferenceViewModel()
         {
@@ -81,12 +82,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     break;
             }
 
-            DeviceInformationCollection deviceInformationCollection = Task.Run(() => GetAllCameras()).Result;
+            var devicesInformation = Task.Run(() => GetAllCameras()).Result;
 
             _selectedCameraList = new List<string> { };
 
             int i = 0;
-            foreach (DeviceInformation deviceInformation in deviceInformationCollection)
+            foreach (DeviceInformation deviceInformation in devicesInformation)
             {
                 if (deviceInformation.Name == Settings.Properties.SelectedCamera.Value)
                 {
@@ -99,9 +100,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private static async Task<DeviceInformationCollection> GetAllCameras()
+        private static async Task<List<DeviceInformation>> GetAllCameras()
         {
-            return await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture);
+            var allCameras = await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture);
+            return allCameras.Where(cameraInfo => cameraInfo.Name != ProxyCameraName).ToList();
         }
 
         private bool _isEnabled = false;
