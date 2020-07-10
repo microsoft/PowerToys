@@ -30,6 +30,8 @@
 #endif
 #include <common/notifications/fancyzones_notifications.h>
 
+#include <gdiplus.h>
+
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 // Window Explorer process name should not be localized.
@@ -129,7 +131,7 @@ int runner(bool isProcessElevated)
         chdir_current_executable();
         // Load Powertoys DLLs
 
-        const std::array<std::wstring_view, 7> knownModules = {
+        const std::array<std::wstring_view, 8> knownModules = {
             L"modules/FancyZones/fancyzones.dll",
             L"modules/FileExplorerPreview/powerpreview.dll",
             L"modules/ImageResizer/ImageResizerExt.dll",
@@ -137,6 +139,7 @@ int runner(bool isProcessElevated)
             L"modules/Launcher/Microsoft.Launcher.dll",
             L"modules/PowerRename/PowerRenameExt.dll",
             L"modules/ShortcutGuide/ShortcutGuide.dll",
+            L"modules/VideoConference/VideoConferenceModule.dll",
         };
 
         for (const auto & moduleSubdir : knownModules)
@@ -271,6 +274,10 @@ void RequestExplorerRestart()
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+    Gdiplus::GdiplusStartupInput gpStartupInput;
+    ULONG_PTR gpToken;
+    GdiplusStartup(&gpToken, &gpStartupInput, NULL);
+
     winrt::init_apartment();
 
     if (launch_pending_update())
@@ -424,5 +431,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         }
     }
     stop_tray_icon();
+
+    Gdiplus::GdiplusShutdown(gpToken);
+
     return result;
 }
