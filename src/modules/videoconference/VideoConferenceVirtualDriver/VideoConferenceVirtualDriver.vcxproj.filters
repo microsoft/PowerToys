@@ -47,7 +47,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Inf Include="VideoConferenceDriver.inf">
+    <Inf Include="VideoConferenceVirtualDriver.inf">
       <Filter>Driver Files</Filter>
     </Inf>
   </ItemGroup>
