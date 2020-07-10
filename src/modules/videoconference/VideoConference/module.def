@@ -1,0 +1,6 @@
+LIBRARY
+
+EXPORTS
+    DllGetActivationFactory PRIVATE
+    DllGetClassObject       PRIVATE
+    DllCanUnloadNow         PRIVATE
