@@ -17,8 +17,6 @@ namespace Microsoft.Plugin.Program.Storage
         private int _numberOfPathsToWatch;
         private Collection<string> extensionsToWatch = new Collection<string>{ "*.exe", "*.lnk", "*.appref-ms", "*.url" };
 
-
-
         public Win32ProgramRepository(List<IFileSystemWatcherWrapper> fileSystemWatcherHelpers, IStorage<IList<Programs.Win32>> storage, Settings settings, string[] pathsToWatch)
         {
             this._fileSystemWatcherHelpers = fileSystemWatcherHelpers;
@@ -36,8 +34,8 @@ namespace Microsoft.Plugin.Program.Storage
                 // To set the paths to monitor
                 _fileSystemWatcherHelpers[index].Path = _pathsToWatch[index];
 
-                // to be notified when there is a change to a file/directory
-                _fileSystemWatcherHelpers[index].NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName ;
+                // to be notified when there is a change to a file
+                _fileSystemWatcherHelpers[index].NotifyFilter = NotifyFilters.FileName;
 
                 // filtering the app types that we want to monitor
                 _fileSystemWatcherHelpers[index].Filters = extensionsToWatch;
