@@ -6,62 +6,65 @@ class SimpleMediaSource;
 
 class DeviceList
 {
-  UINT32 m_cDevices;
-  IMFActivate ** m_ppDevices;
+    UINT32 m_numberDevices;
+    IMFActivate** m_ppDevices;
+    wchar_t** m_deviceFriendlyNames;
 
 public:
-  DeviceList() :
-    m_ppDevices(NULL), m_cDevices(0)
-  {
-  }
-  ~DeviceList()
-  {
-    Clear();
-  }
+    DeviceList() :
+        m_ppDevices(NULL), m_numberDevices(0)
+    {
+    }
+    ~DeviceList()
+    {
+        Clear();
+    }
 
-  UINT32 Count() const { return m_cDevices; }
+    UINT32 Count() const { return m_numberDevices; }
 
-  void Clear();
-  HRESULT EnumerateDevices();
-  HRESULT GetDevice(UINT32 index, IMFActivate ** ppActivate);
-  HRESULT GetDeviceName(UINT32 index, WCHAR ** ppszName);
+    void Clear();
+    HRESULT EnumerateDevices();
+    HRESULT GetDevice(UINT32 index, IMFActivate** ppActivate);
+    std::wstring_view GetDeviceName(UINT32 index);
 };
 
-
-class SimpleMediaStream : public RuntimeClass<
-    RuntimeClassFlags<ClassicCom>,
-    IMFMediaEventGenerator,
-    IMFMediaStream,
-    IMFMediaStream2>
+class SimpleMediaStream : public RuntimeClass<RuntimeClassFlags<ClassicCom>, IMFMediaEventGenerator, IMFMediaStream, IMFMediaStream2>
 {
     friend class SimpleMediaSource;
 
 public:
     // IMFMediaEventGenerator
-    IFACEMETHOD(BeginGetEvent)(IMFAsyncCallback *pCallback, IUnknown *punkState);
-    IFACEMETHOD(EndGetEvent)(IMFAsyncResult *pResult, IMFMediaEvent **ppEvent);
-    IFACEMETHOD(GetEvent)(DWORD dwFlags, IMFMediaEvent **ppEvent);
-    IFACEMETHOD(QueueEvent)(MediaEventType met, REFGUID guidExtendedType, HRESULT hrStatus, const PROPVARIANT *pvValue);
+    IFACEMETHOD(BeginGetEvent)
+    (IMFAsyncCallback* pCallback, IUnknown* punkState);
+    IFACEMETHOD(EndGetEvent)
+    (IMFAsyncResult* pResult, IMFMediaEvent** ppEvent);
+    IFACEMETHOD(GetEvent)
+    (DWORD dwFlags, IMFMediaEvent** ppEvent);
+    IFACEMETHOD(QueueEvent)
+    (MediaEventType met, REFGUID guidExtendedType, HRESULT hrStatus, const PROPVARIANT* pvValue);
 
     // IMFMediaStream
-    IFACEMETHOD(GetMediaSource)(IMFMediaSource **ppMediaSource);
-    IFACEMETHOD(GetStreamDescriptor)(IMFStreamDescriptor **ppStreamDescriptor);
-    IFACEMETHOD(RequestSample)(IUnknown *pToken);
+    IFACEMETHOD(GetMediaSource)
+    (IMFMediaSource** ppMediaSource);
+    IFACEMETHOD(GetStreamDescriptor)
+    (IMFStreamDescriptor** ppStreamDescriptor);
+    IFACEMETHOD(RequestSample)
+    (IUnknown* pToken);
 
     // IMFMediaStream2
-    IFACEMETHOD(SetStreamState)(MF_STREAM_STATE state);
-    IFACEMETHOD(GetStreamState)(_Out_ MF_STREAM_STATE *pState);
+    IFACEMETHOD(SetStreamState)
+    (MF_STREAM_STATE state);
+    IFACEMETHOD(GetStreamState)
+    (_Out_ MF_STREAM_STATE* pState);
 
     // Non-interface methods.
     HRESULT RuntimeClassInitialize(_In_ SimpleMediaSource* pSource);
     HRESULT Shutdown();
 
-
 protected:
     HRESULT _CheckShutdownRequiresLock();
     HRESULT _SetStreamAttributes(IMFAttributes* pAttributeStore);
     HRESULT _SetStreamDescriptorAttributes(IMFAttributes* pAttributeStore);
-
 
     CriticalSection _critSec;
 
@@ -74,10 +77,10 @@ protected:
     bool _isSelected = false;
 
     const DWORD STREAMINDEX = 0; // since there is only one stream
-    
+
     DeviceList _devices;
-    IMFActivate * _activate = nullptr;
-    IMFSourceReader * m_pReader = nullptr;
+    IMFActivate* _activate = nullptr;
+    IMFSourceReader* m_pReader = nullptr;
 };
 
 const UINT WM_APP_PREVIEW_ERROR = WM_APP + 1; // wparam = HRESULT
