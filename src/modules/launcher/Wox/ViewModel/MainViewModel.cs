@@ -476,6 +476,7 @@ namespace Wox.ViewModel
             }
             else
             {
+                _updateSource?.Cancel();
                 _lastQuery = _emptyQuery;
                 Results.SelectedItem = null;
                 Results.Clear();                
