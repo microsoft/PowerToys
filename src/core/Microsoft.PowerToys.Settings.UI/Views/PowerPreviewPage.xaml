@@ -53,7 +53,7 @@
             <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD"
                           Margin="{StaticResource SmallTopMargin}"
                           IsOn="{Binding Mode=TwoWay, Path=MDRenderIsEnabled}" />
-            
+
         </StackPanel>
         <StackPanel x:Name="SidePanel"
                     Orientation="Vertical"
