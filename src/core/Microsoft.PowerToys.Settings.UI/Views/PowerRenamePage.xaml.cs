@@ -14,9 +14,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 {
     public sealed partial class PowerRenamePage : Page
     {
+        private PowerRenameViewModel ViewModel { get; set; }
+
         public PowerRenamePage()
         {
             this.InitializeComponent();
+            ViewModel = new PowerRenameViewModel();
+
+            DataContext = ViewModel;
         }
     }
 }

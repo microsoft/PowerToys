@@ -18,7 +18,7 @@
             Margin="{StaticResource MediumTopMargin}">
         <Interactivity:Interaction.Behaviors>
             <Core:DataTriggerBehavior Binding="{Binding Tag, ElementName=CustomTextBlock}" Value="False">
-                <Core:ChangePropertyAction TargetObject="{Binding ElementName=CustomTextBlock}" PropertyName="Foreground" Value="{ThemeResource SystemChromeDisabledLowColor}" />
+                <Core:ChangePropertyAction TargetObject="{Binding ElementName=CustomTextBlock}" PropertyName="Foreground" Value="{ThemeResource SystemColorGrayTextBrush}" />
             </Core:DataTriggerBehavior>
             <Core:DataTriggerBehavior Binding="{Binding Tag, ElementName=CustomTextBlock}" Value="True">
                 <Core:ChangePropertyAction TargetObject="{Binding ElementName=CustomTextBlock}" PropertyName="Foreground" Value="{ThemeResource SystemBaseHighColor}" />

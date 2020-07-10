@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:extensions="using:Microsoft.Toolkit.Uwp.UI.Extensions"
+    xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:Lib="using:Microsoft.PowerToys.Settings.UI.Lib"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -138,14 +139,12 @@
                 <ComboBoxItem Content="Config-3"/>
             </ComboBox>-->
 
-            <TextBlock x:Uid="KeyboardManager_RemapKeyboardHeader"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{Binding Mode=TwoWay, Path=TextColor}"/>
+            <CustomControls:GroupTitleTextBlock x:Uid="KeyboardManager_RemapKeyboardHeader"
+                                                IsActive="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>
 
-            <TextBlock Text="Click below to remap a single key to another key"
-                       Margin="{StaticResource SmallTopMargin}"
-                       Foreground="{Binding Mode=TwoWay, Path=TextColor}"
-                       TextWrapping="Wrap"/>
+            <CustomControls:BodyTextBlock Text="Click below to remap a single key to another key" 
+                                          IsActive="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"
+                                          Margin="{StaticResource SmallTopMargin}"/>
 
             <Button x:Uid="KeyboardManager_RemapKeyboardButton"
                     Margin="{StaticResource SmallTopMargin}"
@@ -167,6 +166,7 @@
                       SelectionMode="None"
                       IsSwipeEnabled="False"
                       Visibility="{x:Bind Path=ViewModel.RemapKeys, Mode=OneWay, Converter={StaticResource visibleIfNotEmptyConverter}}"
+                      IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"
                       />
 
             <!--<AppBarButton x:Uid="KeyboardManager_RemapKeyboardButton"
@@ -178,13 +178,11 @@
                     HorizontalAlignment="Left"
                     IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>-->
 
-            <TextBlock x:Uid="KeyboardManager_RemapShortcutsHeader"
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{Binding Mode=TwoWay, Path=TextColor}"/>
+            <CustomControls:GroupTitleTextBlock x:Uid="KeyboardManager_RemapShortcutsHeader"
+                                                IsActive="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>
 
-            <TextBlock Text="Click below to remap a shortcut (hotkey) to another shortcut"
-                       TextWrapping="Wrap" Margin="{StaticResource SmallTopMargin}"
-                       Foreground="{Binding Mode=TwoWay, Path=TextColor}"/>
+            <CustomControls:BodyTextBlock Text="Click below to remap a shortcut (hotkey) to another shortcut"
+                                          IsActive="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>
 
             <Button x:Uid="KeyboardManager_RemapShortcutsButton"
                     Margin="{StaticResource SmallTopMargin}"
@@ -207,6 +205,7 @@
                       SelectionMode="None"
                       IsSwipeEnabled="False"
                       Visibility="{x:Bind Path=ViewModel.RemapShortcuts, Mode=OneWay, Converter={StaticResource visibleIfNotEmptyConverter}}"
+                      IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"
                       />
 
             <!--<AppBarButton x:Uid="KeyboardManager_RemapShortcutsButton"
