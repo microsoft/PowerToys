@@ -277,8 +277,6 @@ private:
     COLORREF draggedWindowCrKey = RGB(0, 0, 0);
     DWORD draggedWindowDwFlags = 0;
     BYTE draggedWindowInitialAlpha = 0;
-
-    ULONG_PTR gdiplusToken;
 };
 
 ZoneWindow::ZoneWindow(HINSTANCE hinstance)
@@ -290,14 +288,10 @@ ZoneWindow::ZoneWindow(HINSTANCE hinstance)
     wcex.lpszClassName = L"SuperFancyZones_ZoneWindow";
     wcex.hCursor = LoadCursorW(nullptr, IDC_ARROW);
     RegisterClassExW(&wcex);
-
-    Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-    Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 }
 
 ZoneWindow::~ZoneWindow()
 {
-    Gdiplus::GdiplusShutdown(gdiplusToken);
 }
 
 bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, bool flashZones)

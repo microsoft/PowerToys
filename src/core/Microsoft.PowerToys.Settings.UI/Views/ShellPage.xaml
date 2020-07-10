@@ -99,6 +99,12 @@
                         <FontIcon Glyph="&#xEF3C;"/>
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
+               <winui:NavigationViewItem x:Uid="Shell_VideoConference" helpers:NavHelper.NavigateTo="views:VideoConferencePage">
+                    <winui:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xEDA7;"/>
+                    </winui:NavigationViewItem.Icon>
+                </winui:NavigationViewItem>
+
 
             </winui:NavigationView.MenuItems>
             <i:Interaction.Behaviors>

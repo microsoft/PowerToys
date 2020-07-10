@@ -8,6 +8,7 @@
   <?define KeyboardManagerProjectName="KeyboardManager"?>
   <?define PowerRenameProjectName="PowerRename"?>
   <?define ShortcutGuideProjectName="ShortcutGuide"?>
+  <?define VideoConferenceProjectName="VideoConference"?>
   <?define ColorPickerProjectName="ColorPicker"?>
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
@@ -86,8 +87,20 @@
       <Custom Action="RegisterPowerToysSchTask" After="InstallFiles">
         NOT Installed and CREATESCHEDULEDTASK = 1
       </Custom>
+      <Custom Action="SetCertifyVirtualCameraDriverParam" After="RegisterPowerToysSchTask" />
+      <Custom Action="CertifyVirtualCameraDriver" After="SetCertifyVirtualCameraDriverParam" >
+        NOT Installed
+      </Custom>
+      <Custom Action="SetInstallVirtualCameraDriverParam" After="CertifyVirtualCameraDriver" />
+      <Custom Action="InstallVirtualCameraDriver" After="SetInstallVirtualCameraDriverParam" >
+        NOT Installed
+      </Custom>
       <Custom Action="WixCloseApplications" Before="RemoveFiles" />
       <Custom Action="RemovePowerToysSchTasks" After="RemoveFiles" />
+      <Custom Action="SetUninstallVirtualCameraDriverParam" Before="UninstallVirtualCameraDriver" />
+      <Custom Action="UninstallVirtualCameraDriver" Before="RemoveFiles">
+        Installed
+      </Custom>
       <Custom Action="TelemetryLogInstallSuccess" After="InstallFinalize">
         NOT Installed
       </Custom>
@@ -202,6 +215,42 @@
                   BinaryKey="PTCustomActions"
                   DllEntry="DetectPrevInstallPathCA"
                   />
+    
+    <CustomAction Id="SetCertifyVirtualCameraDriverParam"
+              Property="CertifyVirtualCameraDriver"
+              Value="[#VideoConferenceDriver.cer]" />
+    
+    <CustomAction Id="CertifyVirtualCameraDriver"
+                  Return="ignore"
+                  Impersonate="no"
+                  Execute="deferred"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="CertifyVirtualCameraDriverCA"
+                   />
+
+    <CustomAction Id="SetInstallVirtualCameraDriverParam"
+              Property="InstallVirtualCameraDriver"
+              Value="[#VideoConferenceDriver.inf]" />
+    
+    <CustomAction Id="InstallVirtualCameraDriver"
+                  Return="ignore"
+                  Impersonate="no"
+                  Execute="deferred"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="InstallVirtualCameraDriverCA"
+                   />
+
+    <CustomAction Id="SetUninstallVirtualCameraDriverParam"
+                  Property="UninstallVirtualCameraDriver"
+                  Value="[#VideoConferenceDriver.inf]" />
+    
+    <CustomAction Id="UninstallVirtualCameraDriver"
+                  Return="ignore"
+                  Impersonate="no"
+                  Execute="deferred"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="UninstallVirtualCameraDriverCA"
+                   />
 
     <!-- Close 'PowerToys.exe' before uninstall-->
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="Disable" />
@@ -239,6 +288,7 @@
             </Directory>
             <Directory Id="PowerRenameInstallFolder" Name="$(var.PowerRenameProjectName)"/>
             <Directory Id="ShortcutGuideInstallFolder" Name="$(var.ShortcutGuideProjectName)"/>
+            <Directory Id="VideoConferenceInstallFolder" Name="$(var.VideoConferenceProjectName)"/>
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
             <Directory Id="KeyboardManagerInstallFolder" Name="$(var.KeyboardManagerProjectName)" />
@@ -581,6 +631,21 @@
       </Component>
     </DirectoryRef>
 
+    <DirectoryRef Id="VideoConferenceInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\">
+      <Component Id="Module_VideoConference" Guid="5996527a-40fc-432e-b3ac-abc0b4bd3887" Win64="yes">
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceModule.dll" KeyPath="yes" /> 
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\CamOnMicOn.png" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\CamOffMicOn.png" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\CamOnMicOff.png" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\CamOffMicOff.png" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceDriver\videoconferencedriver.cat" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceDriver\VideoConference.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceDriver\VideoConferenceDriver.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceDriver\VideoConferenceDriver.inf" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceDriver.cer" />
+      </Component>
+    </DirectoryRef>
+
     <DirectoryRef Id="KeyboardManagerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\">
       <Component Id="Module_KeyboardManager" Guid="9279BD82-786F-4F0B-8E49-DB484EE34C9B" Win64="yes">
         <File Source="$(var.BinX64Dir)modules\$(var.KeyboardManagerProjectName)\KeyboardManager.dll" />
@@ -753,6 +818,7 @@
       <ComponentRef Id="vcredist_dlls" />
       <ComponentRef Id="PowerToysSvgs" />
       <ComponentRef Id="Module_ShortcutGuide" />
+      <ComponentRef Id="Module_VideoConference" />
       <ComponentRef Id="Module_FancyZones" />
       <ComponentRef Id="DesktopShortcut" />
       <ComponentRef Id="Module_PowerRename" />
