@@ -10,27 +10,27 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
     class UWPTests
     {
         static readonly PackageWrapper developmentModeApp = new PackageWrapper(
-            "Packaged App1",
-            "Packaged App1",
-            "Packaged App1",
+            "DevelopmentApp",
+            "DevelopmentApp",
+            "DevelopmentApp",
             false,
             true,
             "AppxManifests/DevelopmentApp"
         );
 
         static readonly PackageWrapper frameworkApp = new PackageWrapper(
-            "Packaged App2",
-            "Packaged App2",
-            "Packaged App2",
+            "FrameworkApp",
+            "FrameworkApp",
+            "FrameworkApp",
             true,
             false,
             "AppxManifests/FrameworkApp"
         );
 
         static readonly PackageWrapper packagedApp = new PackageWrapper(
-            "Packaged App3",
-            "Packaged App3",
-            "Packaged App3",
+            "PackagedApp",
+            "PackagedApp",
+            "PackagedApp",
             false,
             false,
             "AppxManifests/PackagedApp"
@@ -51,8 +51,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
 
             // Assert
             Assert.AreEqual(applications.Length, 2);
-            Assert.IsTrue(applications.FindAll(x => x.Name == "App1").Length > 0);
-            Assert.IsTrue(applications.FindAll(x => x.Name == "App3").Length > 0);
+            Assert.IsTrue(applications.FindAll(x => x.Name == "DevelopmentApp").Length > 0);
+            Assert.IsTrue(applications.FindAll(x => x.Name == "PackagedApp").Length > 0);
         }
 
         [Test]
@@ -70,7 +70,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
 
             // Assert
             Assert.AreEqual(applications.Length, 1);
-            Assert.IsTrue(applications.FindAll(x => x.Name == "App3").Length > 0);
+            Assert.IsTrue(applications.FindAll(x => x.Name == "PackagedApp").Length > 0);
         }
     }
 }

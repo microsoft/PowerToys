@@ -3,7 +3,7 @@
   <Identity Name="3b548ab3-3034-4edf-a625-4691c73b43a9" Publisher="CN=divyan" Version="1.0.0.0" ProcessorArchitecture="x86" />
   <mp:PhoneIdentity PhoneProductId="3b548ab3-3034-4edf-a625-4691c73b43a9" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
-    <DisplayName>App1</DisplayName>
+    <DisplayName>DevelopmentApp</DisplayName>
     <PublisherDisplayName>divyan</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -17,8 +17,8 @@
     <Resource Language="EN-US" />
   </Resources>
   <Applications>
-    <Application Id="App" Executable="App1.exe" EntryPoint="App1.App">
-      <uap:VisualElements DisplayName="App1" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="App1" BackgroundColor="transparent">
+    <Application Id="App" Executable="DevelopmentApp.exe" EntryPoint="DevelopmentApp.App">
+      <uap:VisualElements DisplayName="DevelopmentApp" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="DevelopmentApp" BackgroundColor="transparent">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
@@ -30,7 +30,7 @@
   <Extensions>
     <Extension Category="windows.activatableClass.inProcessServer">
       <InProcessServer>
-        <Path>App1.exe</Path>
+        <Path>DevelopmentApp.exe</Path>
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Markup.ReflectionXamlMetadataProvider" ThreadingModel="both" />
       </InProcessServer>
     </Extension>
