@@ -6,13 +6,13 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls" xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
-        <viewModel:ShortcutGuideViewModel x:Key="ViewModel"/>
     </Page.Resources>
     
     <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
@@ -51,59 +51,53 @@
         <StackPanel Orientation="Vertical" x:Name="ShortCutGuideView">
             <TextBlock x:Uid="ShortcutGuide_Description"
                        TextWrapping="Wrap"
-                       Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource ViewModel}}"/>
+                       />
 
             <ToggleSwitch x:Uid="ShortcutGuide_Enable"
-                          IsOn="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"
+                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
                           Margin="{StaticResource MediumTopMargin}"/>
 
-            <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior" 
-                       Style="{StaticResource SettingsGroupTitleStyle}"
-                       Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource ViewModel}}"/>
+            <CustomControls:GroupTitleTextBlock x:Uid="ShortcutGuide_Appearance_Behavior" 
+                                                IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
-            <TextBlock x:Uid="ShortcutGuide_PressTime"
-                       Margin="{StaticResource SmallTopMargin}"
-                       Style="{StaticResource BodyTextBlockStyle}"
-                       Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource ViewModel}}"/>
+            <CustomControls:BodyTextBlock x:Uid="ShortcutGuide_PressTime"
+                                          Margin="{StaticResource SmallTopMargin}"
+                                          IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
             <muxc:NumberBox Minimum="100"
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource HeaderTextTopMargin}"
                             Width="240"
-                            Value="{ Binding Mode=TwoWay, Path=PressTime, Source={StaticResource ViewModel}}"
-                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}" SmallChange="50" LargeChange="100"/>
+                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.PressTime}"
+                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}" 
+                            SmallChange="50" 
+                            LargeChange="100"/>
 
             <StackPanel Orientation="Horizontal" Margin="{StaticResource MediumTopMargin}" Spacing="12">
                 <Slider x:Uid="ShortcutGuide_OverlayOpacity"
                     Minimum="0"
                     Maximum="100"
                     Width="240"
-                    Value="{ Binding Mode=TwoWay, Path=OverlayOpacity, Source={StaticResource ViewModel}}"
+                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.OverlayOpacity}"
                     IsThumbToolTipEnabled="False"
                     HorizontalAlignment="Left"
-                    IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"/>
-                <TextBlock Text="{ Binding Mode=OneWay, Path=OverlayOpacity, Converter={StaticResource StringFormatConverter}, ConverterParameter=' {0}%' , Source={StaticResource ViewModel}}" 
-                           VerticalAlignment="Center"
-                           FontSize="16"
-                           Margin="0,21,0,0"
-                           Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource ViewModel}}"/>
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+                <CustomControls:BodyTextBlock Text="{x:Bind Mode=OneWay, Path=ViewModel.OverlayOpacity, Converter={StaticResource StringFormatConverter}, ConverterParameter=' {0}%' }"
+                                              VerticalAlignment="Center"
+                                              FontSize="16"
+                                              Margin="0,21,0,0"
+                                              IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
             </StackPanel>
 
-            <TextBlock x:Uid="ShortcutGuide_Theme"
-                       Margin="{StaticResource SmallTopMargin}"
-                       Style="{StaticResource BodyTextBlockStyle}"
-                       Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource ViewModel}}"/>
-            <muxc:RadioButtons IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled, Source={StaticResource ViewModel}}"
-                               SelectedIndex="{ Binding Mode=TwoWay, Path=ThemeIndex, Source={StaticResource ViewModel}}"
+            <CustomControls:BodyTextBlock x:Uid="ShortcutGuide_Theme"
+                                          Margin="{StaticResource SmallTopMargin}"
+                                          IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            <muxc:RadioButtons IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                               SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}"
                                Margin="{StaticResource HeaderTextTopMargin}">
-                <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark"
-                             IsChecked="{ Binding Mode=TwoWay, Path=IsDarkThemeRadioButtonChecked, Source={StaticResource ViewModel}}"/>
-
-                <RadioButton x:Uid="GeneralPage_Radio_Theme_Light" 
-                             IsChecked="{ Binding Mode=TwoWay, Path=IsLightThemeRadioButtonChecked, Source={StaticResource ViewModel}}"/>
-
-                <RadioButton x:Uid="GeneralPage_Radio_Theme_Default"
-                             IsChecked="{ Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked, Source={StaticResource ViewModel}}"/>
+                <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark"/>
+                <RadioButton x:Uid="GeneralPage_Radio_Theme_Light" />
+                <RadioButton x:Uid="GeneralPage_Radio_Theme_Default"/>
             </muxc:RadioButtons>
         </StackPanel>
 
@@ -118,7 +112,7 @@
                 x:Uid="About_ShortcutGuide"
                 Style="{StaticResource SettingsGroupTitleStyle}"
                 Margin="{StaticResource XSmallBottomMargin}"
-                Foreground="{ Binding Mode=TwoWay, Path=TextColor, Source={StaticResource ViewModel}}"/>
+                />
 
             <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ShortcutGuide">
                 <TextBlock x:Uid="Module_overview"/>
