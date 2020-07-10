@@ -11,7 +11,9 @@
     <ClCompile Include="VideoConferenceModule.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CVolumeNotification.cpp" />
+    <ClCompile Include="CVolumeNotification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -24,7 +26,9 @@
     <ClInclude Include="VideoConferenceModule.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CVolumeNotification.h" />
+    <ClInclude Include="CVolumeNotification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -33,14 +37,6 @@
     <Filter Include="Header Files">
       <UniqueIdentifier>{fc4156a6-5a50-4c1b-a6a6-bc6c38dde579}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Camera.bmp" />
-    <Image Include="Microphone.bmp" />
-    <Image Include="MicrophoneMuted.bmp" />
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="CameraMuted.bmp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

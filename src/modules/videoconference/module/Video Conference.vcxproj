@@ -128,17 +128,6 @@ xcopy /y  "$(ProjectDir)CamOnMicOn.png" "$(OutDir)"</Command>
     <ClCompile Include="VideoConferenceModule.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Camera.bmp">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
-    </Image>
-    <CustomBuild Include="CameraMuted.bmp">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
-      <FileType>MHT</FileType>
-    </CustomBuild>
-    <Image Include="Microphone.bmp" />
-    <Image Include="MicrophoneMuted.bmp" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\..\common\common.vcxproj">
       <Project>{74485049-c722-400f-abe5-86ac52d929b3}</Project>
     </ProjectReference>
