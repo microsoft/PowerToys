@@ -12,5 +12,6 @@
     <system:String x:Key="wox_plugin_folder_plugin_name">Klasör</system:String>
     <system:String x:Key="wox_plugin_folder_plugin_description">Favori klasörünüzü doğrudan Wox'tan açın</system:String>
     <system:String x:Key="Microsoft_plugin_folder_copy_path">Copy path (Ctrl+C)</system:String>
-
+    <system:String x:Key="Microsoft_plugin_folder_open_in_console">Open path in console (Ctrl+Shift+C)</system:String>
+    <system:String x:Key="Microsoft_plugin_folder_open_containing_folder">Open containing folder (Ctrl+Shift+E)</system:String>
 </ResourceDictionary>

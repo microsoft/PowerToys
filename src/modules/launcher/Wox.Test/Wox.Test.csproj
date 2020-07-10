@@ -39,6 +39,7 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\Plugins\Microsoft.Plugin.Folder\Microsoft.Plugin.Folder.csproj" />
     <ProjectReference Include="..\Plugins\Microsoft.Plugin.Indexer\Microsoft.Plugin.Indexer.csproj" />
     <ProjectReference Include="..\Plugins\Microsoft.Plugin.Program\Microsoft.Plugin.Program.csproj" />
     <ProjectReference Include="..\Wox.Core\Wox.Core.csproj" />

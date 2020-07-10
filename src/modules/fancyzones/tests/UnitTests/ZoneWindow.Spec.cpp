@@ -467,7 +467,7 @@ namespace FancyZonesUnitTests
             m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
             const auto expected = S_OK;
-            const auto actual = m_zoneWindow->MoveSizeUpdate(POINT{ 0, 0 }, true);
+            const auto actual = m_zoneWindow->MoveSizeUpdate(POINT{ 0, 0 }, true, false);
 
             Assert::AreEqual(expected, actual);
         }
@@ -477,7 +477,7 @@ namespace FancyZonesUnitTests
             m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
             const auto expected = S_OK;
-            const auto actual = m_zoneWindow->MoveSizeUpdate(POINT{ -10, -10 }, true);
+            const auto actual = m_zoneWindow->MoveSizeUpdate(POINT{ -10, -10 }, true, false);
 
             Assert::AreEqual(expected, actual);
         }
@@ -487,7 +487,7 @@ namespace FancyZonesUnitTests
             m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
             const auto expected = S_OK;
-            const auto actual = m_zoneWindow->MoveSizeUpdate(POINT{ m_monitorInfo.rcMonitor.right + 1, m_monitorInfo.rcMonitor.bottom + 1 }, true);
+            const auto actual = m_zoneWindow->MoveSizeUpdate(POINT{ m_monitorInfo.rcMonitor.right + 1, m_monitorInfo.rcMonitor.bottom + 1 }, true, false);
 
             Assert::AreEqual(expected, actual);
         }

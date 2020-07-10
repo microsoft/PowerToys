@@ -22,6 +22,7 @@ using System.Runtime.InteropServices.ComTypes;
 using Wox.Plugin.SharedCommands;
 using System.Reflection;
 using Wox.Infrastructure.Image;
+using Wox.Infrastructure.Logger;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -39,24 +40,17 @@ namespace Microsoft.Plugin.Program.Programs
 
         public UWP(Package package)
         {
-            Location = package.InstalledLocation.Path;
+            
             Name = package.Id.Name;
             FullName = package.Id.FullName;
             FamilyName = package.Id.FamilyName;
-            InitializeAppInfo();
-            Apps = Apps.Where(a =>
-            {
-                var valid =
-                    !string.IsNullOrEmpty(a.UserModelId) &&
-                    !string.IsNullOrEmpty(a.DisplayName);
-                return valid;
-            }).ToArray();
         }
 
-        private void InitializeAppInfo()
+        public void InitializeAppInfo(string installedLocation)
         {
+            Location = installedLocation;
             AppxPackageHelper _helper = new AppxPackageHelper();
-            var path = Path.Combine(Location, "AppxManifest.xml");
+            var path = Path.Combine(installedLocation, "AppxManifest.xml");
 
             var namespaces = XmlNamespaces(path);
             InitPackageVersion(namespaces);
@@ -76,8 +70,16 @@ namespace Microsoft.Plugin.Program.Programs
                     var app = new Application(_app, this);
                     apps.Add(app);
                 }
-                
-                Apps = apps.Where(a => a.AppListEntry != "none").ToArray();
+
+                Apps = apps.Where(a =>
+                {
+                    var valid =
+                    !string.IsNullOrEmpty(a.UserModelId) &&
+                    !string.IsNullOrEmpty(a.DisplayName) &&
+                    a.AppListEntry != "none";
+
+                    return valid;
+                }).ToArray();
             }
             else
             {
@@ -153,21 +155,14 @@ namespace Microsoft.Plugin.Program.Programs
                     try
                     {
                         u = new UWP(p);
+                        u.InitializeAppInfo(p.InstalledLocation.Path);
                     }
-#if !DEBUG
                     catch (Exception e)
                     {
                         ProgramLogger.LogException($"|UWP|All|{p.InstalledLocation}|An unexpected error occurred and "
                                                         + $"unable to convert Package to UWP for {p.Id.FullName}", e);
                         return new Application[] { };
                     }
-#endif
-#if DEBUG //make developer aware and implement handling
-                    catch
-                    {
-                        throw;
-                    }
-#endif
                     return u.Apps;
                 }).ToArray();
 
@@ -262,12 +257,19 @@ namespace Microsoft.Plugin.Program.Programs
             public string LogoPath { get; set; }
             public UWP Package { get; set; }
 
+            // Function to calculate the score of a result
             private int Score(string query)
             {
                 var displayNameMatch = StringMatcher.FuzzySearch(query, DisplayName);
                 var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
                 var score = new[] { displayNameMatch.Score, descriptionMatch.Score/2 }.Max();
                 return score;
+            }
+
+            // Function to set the subtitle based on the Type of application
+            private string SetSubtitle(IPublicAPI api)
+            {
+                return api.GetTranslation("powertoys_run_plugin_program_packaged_application");
             }
 
             public Result Result(string query, IPublicAPI api)
@@ -280,7 +282,7 @@ namespace Microsoft.Plugin.Program.Programs
 
                 var result = new Result
                 {
-                    SubTitle = "Packaged application",
+                    SubTitle = SetSubtitle(api),
                     Icon = Logo,
                     Score = score,
                     ContextData = this,
@@ -291,17 +293,10 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                 };
 
-                if (Description.Length >= DisplayName.Length &&
-                    Description.Substring(0, DisplayName.Length) == DisplayName)
-                {
-                    result.Title = Description;
-                    result.TitleHighlightData = StringMatcher.FuzzySearch(query, Description).MatchData;
-                }
-                else
-                {
-                    result.Title = DisplayName;
-                    result.TitleHighlightData = StringMatcher.FuzzySearch(query, DisplayName).MatchData;
-                }
+                // To set the title to always be the displayname of the packaged application
+                result.Title = DisplayName;
+                result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
+
 
                 var toolTipTitle = string.Format("{0}: {1}", api.GetTranslation("powertoys_run_plugin_program_file_name"), result.Title);
                 var toolTipText = string.Format("{0}: {1}", api.GetTranslation("powertoys_run_plugin_program_file_path"), Package.Location);
@@ -356,7 +351,30 @@ namespace Microsoft.Plugin.Program.Programs
                            return true;
                        }
                    });
-                
+
+                contextMenus.Add(new ContextMenuResult
+                {
+                    PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                    Title = api.GetTranslation("wox_plugin_program_open_in_console"),
+                    Glyph = "\xE756",
+                    FontFamily = "Segoe MDL2 Assets",
+                    AcceleratorKey = Key.C,
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                    Action = (context) =>
+                    {
+                        try
+                        {
+                            Helper.OpenInConsole(Package.Location);
+                            return true;
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Exception($"|Microsoft.Plugin.Program.UWP.ContextMenu| Failed to open {Name} in console, {e.Message}", e);
+                            return false;
+                        }
+                    }
+                });
+
                 return contextMenus;
             }
 

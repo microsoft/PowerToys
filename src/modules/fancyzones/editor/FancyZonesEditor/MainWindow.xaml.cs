@@ -149,13 +149,14 @@ namespace FancyZonesEditor
 
             if (mainEditor.DataContext is LayoutModel model)
             {
-                if (model is GridLayoutModel)
+                // If custom canvas layout has been scaled, persisting is needed
+                if (model is CanvasLayoutModel && (model as CanvasLayoutModel).IsScaled)
                 {
-                    model.Apply();
+                    model.Persist();
                 }
                 else
                 {
-                    model.Persist();
+                    model.Apply();
                 }
 
                 Close();
