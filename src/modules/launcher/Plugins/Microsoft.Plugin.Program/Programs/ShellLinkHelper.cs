@@ -6,6 +6,7 @@ using System.IO;
 using Accessibility;
 using System.Runtime.InteropServices.ComTypes;
 using System.Security.Policy;
+using Microsoft.Plugin.Program.Logger;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -111,7 +112,17 @@ namespace Microsoft.Plugin.Program.Programs
         {
             var link = new ShellLink();
             const int STGM_READ = 0;
-            ((IPersistFile)link).Load(path, STGM_READ);
+
+            try
+            {
+                ((IPersistFile)link).Load(path, STGM_READ);
+            }
+            catch(System.IO.FileNotFoundException ex)
+            {
+                ProgramLogger.LogException($"|Win32| ShellLinkHelper.retrieveTargetPath | {path} | Path could not be retrieved", ex);
+                return String.Empty;
+            }
+
             var hwnd = new _RemotableHandle();
             ((IShellLinkW)link).Resolve(ref hwnd, 0);
 

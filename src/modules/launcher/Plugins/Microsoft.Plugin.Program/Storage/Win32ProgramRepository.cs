@@ -40,10 +40,6 @@ namespace Microsoft.Plugin.Program.Storage
                 _fileSystemWatcherHelpers[index].NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName ;
 
                 // filtering the app types that we want to monitor
-                /*foreach (string extension in extensionsToWatch)
-                {
-                    _fileSystemWatcherHelpers[index].Filters.Add(extension);
-                }*/
                 _fileSystemWatcherHelpers[index].Filters = extensionsToWatch;
 
                 // Registering the event handlers
@@ -58,7 +54,21 @@ namespace Microsoft.Plugin.Program.Storage
 
         private void OnAppRenamed(object sender, RenamedEventArgs e)
         {
-            return;
+            string oldPath = e.OldFullPath;
+            string newPath = e.FullPath;
+
+            Programs.Win32 oldApp = Programs.Win32.GetAppFromPath(oldPath);
+            Programs.Win32 newApp = Programs.Win32.GetAppFromPath(newPath);
+
+            if(oldApp != null)
+            {
+                Remove(oldApp);
+            }
+
+            if(newApp != null)
+            {
+                Add(newApp);
+            }
         }
 
         private void OnAppDeleted(object sender, FileSystemEventArgs e)
