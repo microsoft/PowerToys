@@ -31,7 +31,14 @@ namespace Wox.Infrastructure.Storage
         public void Set(IList<T> items)
         {
             //enforce that internal representation
-            _items = new ConcurrentDictionary<int, T>(items.ToDictionary( i => i.GetHashCode()));
+            try
+            {
+                _items = new ConcurrentDictionary<int, T>(items.ToDictionary(i => i.GetHashCode()));
+            }
+            catch(ArgumentException e)
+            {
+                Log.Info($"|LisRepository.Set| Trying to insert a duplicate item", e.Message);
+            }
         }
 
         public bool Any()
