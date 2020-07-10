@@ -11,6 +11,8 @@
 #include "Overlay.h"
 #include "CVolumeNotification.h"
 
+#include <SerializedSharedMemory.h>
+
 extern class VideoConferenceModule* instance;
 
 class VideoConferenceModule : public PowertoyModuleIface
@@ -35,6 +37,9 @@ public:
 
     virtual void destroy() override;
 
+    void sendSourceCameraNameUpdate();
+    void sendOverlayImageUpdate();
+
 private:
     void init_settings();
 
@@ -50,6 +55,9 @@ private:
     HHOOK hook_handle;
     bool _enabled = false;
 
+    std::optional<SerializedSharedMemory> _imageOverlayChannel;
+    std::optional<SerializedSharedMemory> _settingsUpdateChannel;
+
     static Overlay overlay;
 
     static CVolumeNotification* volumeNotification;
@@ -62,6 +70,7 @@ private:
     static std::wstring overlayMonitorString;
 
     static std::wstring selectedCamera;
+    static std::wstring imageOverlayPath;
 
     static std::mutex keyboardInputMutex;
 };

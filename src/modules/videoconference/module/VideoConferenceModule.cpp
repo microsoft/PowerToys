@@ -9,6 +9,8 @@
 #include <common/common.h>
 #include <common/debug_control.h>
 
+#include <CameraStateUpdateChannels.h>
+
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 VideoConferenceModule* instance = nullptr;
@@ -25,6 +27,7 @@ std::wstring VideoConferenceModule::overlayPositionString;
 std::wstring VideoConferenceModule::overlayMonitorString;
 
 std::wstring VideoConferenceModule::selectedCamera;
+std::wstring VideoConferenceModule::imageOverlayPath;
 
 std::mutex VideoConferenceModule::keyboardInputMutex;
 
@@ -115,59 +118,28 @@ bool VideoConferenceModule::getMicrophoneMuteState()
 
 void VideoConferenceModule::reverseVirtualCameraMuteState()
 {
-    const wchar_t shmemEndpoint[] = L"Global\\PowerToysWebcamMuteSwitch";
-
-    auto hMapFile = OpenFileMappingW(
-        FILE_MAP_ALL_ACCESS, // read/write access
-        FALSE, // do not inherit the name
-        shmemEndpoint); // name of mapping object
-    if (!hMapFile)
+    if (!instance->_settingsUpdateChannel.has_value())
     {
         return;
     }
-    auto pBuf = (uint8_t*)MapViewOfFile(hMapFile, // handle to map object
-                                        FILE_MAP_ALL_ACCESS, // read/write permission
-                                        0,
-                                        0,
-                                        1);
-
-    if (!pBuf)
-    {
-        return;
-    }
-
-    *pBuf = ~(*pBuf);
-    overlay.setCameraMute(*pBuf);
-
-    FlushViewOfFile(pBuf, 1);
+    instance->_settingsUpdateChannel->access([](auto settingsMemory) {
+        auto settings = reinterpret_cast<CameraSettingsUpdateChannel*>(settingsMemory.data());
+        settings->useOverlayImage = !settings->useOverlayImage;
+    });
 }
 
 bool VideoConferenceModule::getVirtualCameraMuteState()
 {
-    const wchar_t shmemEndpoint[] = L"Global\\PowerToysWebcamMuteSwitch";
-
-    auto hMapFile = OpenFileMappingW(
-        FILE_MAP_ALL_ACCESS, // read/write access
-        FALSE, // do not inherit the name
-        shmemEndpoint); // name of mapping object
-    if (!hMapFile)
+    bool disabled = false;
+    if (!instance->_settingsUpdateChannel.has_value())
     {
-        return false;
+        return disabled;
     }
-    auto pBuf = (uint8_t*)MapViewOfFile(hMapFile, // handle to map object
-                                        FILE_MAP_ALL_ACCESS, // read/write permission
-                                        0,
-                                        0,
-                                        1);
-
-    if (!pBuf)
-    {
-        return false;
-    }
-
-    return *pBuf;
-
-    FlushViewOfFile(pBuf, 1);
+    instance->_settingsUpdateChannel->access([&disabled](auto settingsMemory) {
+        auto settings = reinterpret_cast<CameraSettingsUpdateChannel*>(settingsMemory.data());
+        disabled = settings->useOverlayImage;
+    });
+    return disabled;
 }
 
 LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
@@ -206,6 +178,16 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
 VideoConferenceModule::VideoConferenceModule()
 {
     init_settings();
+    _settingsUpdateChannel =
+        SerializedSharedMemory::create(CameraSettingsUpdateChannel::endpoint(), sizeof(CameraSettingsUpdateChannel), false);
+    if (_settingsUpdateChannel)
+    {
+        _settingsUpdateChannel->access([](auto memory) {
+            auto updatesChannel = new (memory.data()) CameraSettingsUpdateChannel{};
+        });
+    }
+    sendSourceCameraNameUpdate();
+    sendOverlayImageUpdate();
 }
 
 inline VideoConferenceModule::~VideoConferenceModule()
@@ -258,11 +240,16 @@ void VideoConferenceModule::set_config(const wchar_t* config)
             {
                 overlayMonitorString = val.value();
             }
-            if (const auto val = values.get_string_value(L"selected_camera"))
+            if (const auto val = values.get_string_value(L"selected_camera"); val && val != selectedCamera)
             {
                 selectedCamera = val.value();
+                sendSourceCameraNameUpdate();
             }
-
+            if (const auto val = values.get_string_value(L"camera_overlay_image_path"); val && val != imageOverlayPath)
+            {
+                imageOverlayPath = val.value();
+                sendOverlayImageUpdate();
+            }
             overlay.showOverlay(overlayPositionString, overlayMonitorString);
         }
     }
@@ -301,6 +288,10 @@ void VideoConferenceModule::init_settings()
         if (const auto val = settings.get_string_value(L"selected_camera"))
         {
             selectedCamera = val.value();
+        }
+        if (const auto val = settings.get_string_value(L"camera_overlay_image_path"))
+        {
+            imageOverlayPath = val.value();
         }
     }
     catch (std::exception&)
@@ -363,4 +354,38 @@ void VideoConferenceModule::destroy()
 {
     delete this;
     instance = nullptr;
+}
+
+void VideoConferenceModule::sendSourceCameraNameUpdate()
+{
+    if (!_settingsUpdateChannel.has_value() || selectedCamera.empty())
+    {
+        return;
+    }
+    _settingsUpdateChannel->access([](auto memory) {
+        auto updatesChannel = new (memory.data()) CameraSettingsUpdateChannel{};
+        updatesChannel->sourceCameraName.emplace();
+        std::copy(begin(selectedCamera), end(selectedCamera), begin(*updatesChannel->sourceCameraName));
+    });
+}
+
+void VideoConferenceModule::sendOverlayImageUpdate()
+{
+    if (!_settingsUpdateChannel.has_value())
+    {
+        return;
+    }
+    _imageOverlayChannel.reset();
+
+    _imageOverlayChannel = SerializedSharedMemory::create_readonly(CameraOverlayImageChannel::endpoint(), imageOverlayPath);
+    if (!_imageOverlayChannel)
+    {
+        return;
+    }
+    const size_t imageSize = _imageOverlayChannel->size();
+    _settingsUpdateChannel->access([imageSize](auto memory) {
+        auto updatesChannel = reinterpret_cast<CameraSettingsUpdateChannel*>(memory.data());
+        updatesChannel->overlayImageSize.emplace(imageSize);
+        updatesChannel->newOverlayImagePosted = true;
+    });
 }

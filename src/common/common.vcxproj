@@ -82,13 +82,14 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>shlwapi.lib;shcore.lib</AdditionalDependencies>
+      <AdditionalDependencies>shlwapi.lib;shcore.lib;wtsapi32.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(CIBuild)'!='true'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ConformanceMode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ConformanceMode>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -103,6 +104,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalIncludeDirectories>inc;telemetry;..\..\deps\cpprestsdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -111,7 +113,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>shlwapi.lib;shcore.lib</AdditionalDependencies>
+      <AdditionalDependencies>shlwapi.lib;shcore.lib;wtsapi32.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -125,12 +127,14 @@
     <ClInclude Include="com_object_factory.h" />
     <ClInclude Include="keyboard_layout.h" />
     <ClInclude Include="keyboard_layout_impl.h" />
+    <ClInclude Include="naming.h" />
     <ClInclude Include="notifications.h" />
     <ClInclude Include="os-detection\os-detect.h" />
     <ClInclude Include="RestartManagement.h" />
     <ClInclude Include="shared_constants.h" />
     <ClInclude Include="timeutil.h" />
     <ClInclude Include="two_way_pipe_message_ipc.h" />
+    <ClInclude Include="user.h" />
     <ClInclude Include="VersionHelper.h" />
     <ClInclude Include="window_helpers.h" />
     <ClInclude Include="icon_helpers.h" />
@@ -159,6 +163,7 @@
     <ClCompile Include="json.cpp" />
     <ClCompile Include="keyboard_layout.cpp" />
     <ClCompile Include="monitors.cpp" />
+    <ClCompile Include="naming.cpp" />
     <ClCompile Include="notifications.cpp" />
     <ClCompile Include="on_thread_executor.cpp" />
     <ClCompile Include="os-detection\os-detect.cpp" />
@@ -172,6 +177,7 @@
     <ClCompile Include="start_visible.cpp" />
     <ClCompile Include="tasklist_positions.cpp" />
     <ClCompile Include="common.cpp" />
+    <ClCompile Include="user.cpp" />
     <ClCompile Include="version.cpp" />
     <ClCompile Include="two_way_pipe_message_ipc.cpp" />
     <ClCompile Include="VersionHelper.cpp" />

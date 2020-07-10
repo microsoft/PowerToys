@@ -1,5 +1,19 @@
 #include "stdafx.h"
 
+#include "SimpleMediaSource.h"
+#include "SimpleMediaStream.h"
+
+// Basic macros to handle HRESULT checks.
+// Recommend adding implementation specific logging within the failure case.
+#ifndef RETURN_IF_FAILED
+#define RETURN_IF_FAILED(val) \
+    hr = (val);               \
+    if (FAILED(hr))           \
+    {                         \
+        return hr;            \
+    }
+#endif
+
 HRESULT
 SimpleMediaSource::RuntimeClassInitialize()
 {
@@ -10,7 +24,7 @@ SimpleMediaSource::RuntimeClassInitialize()
     RETURN_IF_FAILED(MakeAndInitialize<SimpleMediaStream>(&_stream, this));
     {
         ComPtr<IMFStreamDescriptor> streamDescriptor(_stream.Get()->_spStreamDesc.Get());
-        RETURN_IF_FAILED(MFCreatePresentationDescriptor(NUM_STREAMS, streamDescriptor.GetAddressOf(), &_spPresentationDescriptor));
+        RETURN_IF_FAILED(MFCreatePresentationDescriptor(1, streamDescriptor.GetAddressOf(), &_spPresentationDescriptor));
     }
 
     _wasStreamPreviouslySelected = false;
@@ -216,7 +230,7 @@ SimpleMediaSource::Start(
                                                                          &selected,
                                                                          &streamDesc));
     RETURN_IF_FAILED(streamDesc->GetStreamIdentifier(&streamIndex));
-    if (streamIndex >= NUM_STREAMS)
+    if (streamIndex >= 1)
     {
         return MF_E_INVALIDSTREAMNUMBER;
     }
@@ -286,7 +300,6 @@ IFACEMETHODIMP
 SimpleMediaSource::GetSourceAttributes(
     _COM_Outptr_ IMFAttributes** sourceAttributes)
 {
-    HRESULT hr = S_OK;
     auto lock = _critSec.Lock();
 
     if (nullptr == sourceAttributes)
@@ -346,7 +359,7 @@ SimpleMediaSource::GetStreamAttributes(
     *ppAttributes = nullptr;
 
     RETURN_IF_FAILED(_CheckShutdownRequiresLock());
-    if (dwStreamIdentifier >= NUM_STREAMS)
+    if (dwStreamIdentifier >= 1)
     {
         return MF_E_INVALIDSTREAMNUMBER;
     }
@@ -375,11 +388,10 @@ SimpleMediaSource::SetD3DManager(
 _Use_decl_annotations_
     IFACEMETHODIMP
     SimpleMediaSource::GetService(
-        _In_ REFGUID guidService,
-        _In_ REFIID riid,
+        _In_ REFGUID,
+        _In_ REFIID,
         _Out_ LPVOID* ppvObject)
 {
-    HRESULT hr = S_OK;
     auto lock = _critSec.Lock();
 
     RETURN_IF_FAILED(_CheckShutdownRequiresLock());
@@ -400,11 +412,11 @@ _Use_decl_annotations_
 _Use_decl_annotations_
     IFACEMETHODIMP
     SimpleMediaSource::KsProperty(
-        _In_reads_bytes_(ulPropertyLength) PKSPROPERTY pProperty,
-        _In_ ULONG ulPropertyLength,
-        _Inout_updates_to_(ulDataLength, *pBytesReturned) LPVOID pPropertyData,
-        _In_ ULONG ulDataLength,
-        _Out_ ULONG* pBytesReturned)
+        _In_reads_bytes_(ulPropertyLength) PKSPROPERTY,
+        _In_ ULONG,
+        _Inout_updates_to_(ulDataLength, *pBytesReturned) LPVOID,
+        _In_ ULONG,
+        _Out_ ULONG*)
 {
     // ERROR_SET_NOT_FOUND is the standard error code returned
     // by the AV Stream driver framework when a miniport
@@ -417,11 +429,11 @@ _Use_decl_annotations_
 _Use_decl_annotations_
     IFACEMETHODIMP
     SimpleMediaSource::KsMethod(
-        _In_reads_bytes_(ulMethodLength) PKSMETHOD pMethod,
-        _In_ ULONG ulMethodLength,
-        _Inout_updates_to_(ulDataLength, *pBytesReturned) LPVOID pMethodData,
-        _In_ ULONG ulDataLength,
-        _Out_ ULONG* pBytesReturned)
+        _In_reads_bytes_(ulMethodLength) PKSMETHOD,
+        _In_ ULONG,
+        _Inout_updates_to_(ulDataLength, *pBytesReturned) LPVOID,
+        _In_ ULONG,
+        _Out_ ULONG*)
 {
     return HRESULT_FROM_WIN32(ERROR_SET_NOT_FOUND);
 }
@@ -429,11 +441,11 @@ _Use_decl_annotations_
 _Use_decl_annotations_
     IFACEMETHODIMP
     SimpleMediaSource::KsEvent(
-        _In_reads_bytes_opt_(ulEventLength) PKSEVENT pEvent,
-        _In_ ULONG ulEventLength,
-        _Inout_updates_to_(ulDataLength, *pBytesReturned) LPVOID pEventData,
-        _In_ ULONG ulDataLength,
-        _Out_opt_ ULONG* pBytesReturned)
+        _In_reads_bytes_opt_(ulEventLength) PKSEVENT,
+        _In_ ULONG,
+        _Inout_updates_to_(ulDataLength, *pBytesReturned) LPVOID,
+        _In_ ULONG,
+        _Out_opt_ ULONG*)
 {
     return HRESULT_FROM_WIN32(ERROR_SET_NOT_FOUND);
 }
@@ -470,7 +482,7 @@ SimpleMediaSource::_ValidatePresentationDescriptor(
 
     // The caller's PD must have the same number of streams as ours.
     RETURN_IF_FAILED(pPD->GetStreamDescriptorCount(&cStreams));
-    if (SUCCEEDED(hr) && (cStreams != NUM_STREAMS))
+    if (SUCCEEDED(hr) && (cStreams != 1))
     {
         return E_INVALIDARG;
     }
@@ -487,7 +499,7 @@ SimpleMediaSource::_ValidatePresentationDescriptor(
         anySelected |= !!fSelected;
 
         RETURN_IF_FAILED(spSD->GetStreamIdentifier(&dwId));
-        if (dwId >= NUM_STREAMS)
+        if (dwId >= 1)
         {
             return E_INVALIDARG;
         }

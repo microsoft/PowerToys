@@ -2,13 +2,16 @@
 
 #include "stdafx.h"
 
+#include <SerializedSharedMemory.h>
+#include <CameraStateUpdateChannels.h>
+
 class SimpleMediaSource;
 
 class DeviceList
 {
     UINT32 m_numberDevices;
-    IMFActivate** m_ppDevices;
-    wchar_t** m_deviceFriendlyNames;
+    IMFActivate** m_ppDevices = nullptr;
+    wchar_t** m_deviceFriendlyNames = nullptr;
 
 public:
     DeviceList() :
@@ -62,6 +65,9 @@ public:
     HRESULT Shutdown();
 
 protected:
+    HRESULT UpdateSourceCamera(std::wstring_view newCameraName);
+    bool SyncCurrentSettings();
+
     HRESULT _CheckShutdownRequiresLock();
     HRESULT _SetStreamAttributes(IMFAttributes* pAttributeStore);
     HRESULT _SetStreamDescriptorAttributes(IMFAttributes* pAttributeStore);
@@ -76,11 +82,10 @@ protected:
     bool _isShutdown = false;
     bool _isSelected = false;
 
-    const DWORD STREAMINDEX = 0; // since there is only one stream
+    DeviceList _cameraList;
+    ComPtr<IMFSourceReader> _sourceCamera;
+    ComPtr<IMFSample> _overlayImage;
 
-    DeviceList _devices;
-    IMFActivate* _activate = nullptr;
-    IMFSourceReader* m_pReader = nullptr;
+    std::optional<SerializedSharedMemory> _settingsUpdateChannel;
+    std::optional<std::wstring> _currentSourceCameraName;
 };
-
-const UINT WM_APP_PREVIEW_ERROR = WM_APP + 1; // wparam = HRESULT

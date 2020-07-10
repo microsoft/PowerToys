@@ -462,6 +462,9 @@
   <data name="VideoConference_SelectedCamera.Header" xml:space="preserve">
     <value>Selected camera</value>
   </data>
+  <data name="VideoConference_CameraOverlayImagePathHeader.Text" xml:space="preserve">
+    <value>Camera overlay image</value>
+  </data>  
   <data name="VideoConference_OverlayPosition.Header" xml:space="preserve">
     <value>Overlay postion</value>
   </data>

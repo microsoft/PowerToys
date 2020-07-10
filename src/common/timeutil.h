@@ -26,6 +26,13 @@ namespace timeutil
             return std::nullopt;
         }
     }
+    inline time_t from_filetime(const FILETIME& ft)
+    {
+        ULARGE_INTEGER ull;
+        ull.LowPart = ft.dwLowDateTime;
+        ull.HighPart = ft.dwHighDateTime;
+        return ull.QuadPart / 10000000ULL - 11644473600ULL;
+    }
 
     inline std::time_t now()
     {
