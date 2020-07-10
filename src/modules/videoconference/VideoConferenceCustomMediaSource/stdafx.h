@@ -35,6 +35,7 @@
 #include <shlwapi.h>
 
 #include <string_view>
+#include <optional>
 
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
@@ -72,17 +73,3 @@ DECLARE_INTERFACE_(IKsControl, IUnknown)
         OUT ULONG * BytesReturned) PURE;
 };
 #endif // _IKsControl_
-
-#include "SimpleMediaStream.h"
-#include "SimpleMediaSource.h"
-
-// Basic macros to handle HRESULT checks.
-// Recommend adding implementation specific logging within the failure case.
-#ifndef RETURN_IF_FAILED
-#define RETURN_IF_FAILED(val) \
-    hr = (val);               \
-    if (FAILED(hr))           \
-    {                         \
-        return hr;            \
-    }
-#endif

@@ -50,7 +50,7 @@ IWICImagingFactory* _GetWIC()
 
 using Microsoft::WRL::ComPtr;
 
-ComPtr<IMFSample> LoadImageAsSample(std::wstring_view fileName, IMFMediaType* sampleMediaType)
+ComPtr<IMFSample> LoadImageAsSample(ComPtr<IStream> imageStream, IMFMediaType* sampleMediaType)
 {
     // Get target sample frame dimensions
     UINT targetWidth = 0;
@@ -65,7 +65,7 @@ ComPtr<IMFSample> LoadImageAsSample(std::wstring_view fileName, IMFMediaType* sa
 
     // Initialize image bitmap decoder from filename and get the image frame
     ComPtr<IWICBitmapDecoder> bitmapDecoder;
-    RETURN_IF_FAILED(pWIC->CreateDecoderFromFilename(fileName.data(), 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &bitmapDecoder));
+    RETURN_IF_FAILED(pWIC->CreateDecoderFromStream(imageStream.Get(), nullptr, WICDecodeMetadataCacheOnLoad, &bitmapDecoder));
 
     ComPtr<IWICBitmapFrameDecode> decodedFrame;
     RETURN_IF_FAILED(bitmapDecoder->GetFrame(0, &decodedFrame));

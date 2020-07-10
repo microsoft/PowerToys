@@ -6,14 +6,26 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Windows.Devices.Enumeration;
+using Windows.Storage.Pickers;
+using Windows.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
+    [ComImport]
+    [Guid("3E68D4BD-7135-4D10-8018-9FB6D9F33FA1")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    public interface IInitializeWithWindow
+    {
+        void Initialize(IntPtr hwnd);
+    }
+
     public class VideoConferenceViewModel : Observable
     {
         private VideoConferenceSettings Settings { get; set; }
@@ -23,14 +35,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public VideoConferenceViewModel()
         {
-            try
+            Settings = SettingsUtils.GetOrCreateSettings<VideoConferenceSettings>(ModuleName);
+
+            CameraNames = Task.Run(() => GetAllCameras()).Result.Select(di => di.Name).ToList();
+            if (Settings.Properties.SelectedCamera.Value == string.Empty && CameraNames.Count != 0)
             {
-                Settings = SettingsUtils.GetSettings<VideoConferenceSettings>(ModuleName);
-            }
-            catch
-            {
-                Settings = new VideoConferenceSettings();
+                _selectedCameraIndex = 0;
+                Settings.Properties.SelectedCamera.Value = CameraNames[0];
                 SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+            }
+            else
+            {
+                _selectedCameraIndex = CameraNames.FindIndex(name => name == Settings.Properties.SelectedCamera.Value);
             }
 
             GeneralSettings generalSettings;
@@ -48,6 +64,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             this._cameraAndMicrophoneMuteHotkey = Settings.Properties.MuteCameraAndMicrophoneHotkey.Value;
             this._mirophoneMuteHotkey = Settings.Properties.MuteMicrophoneHotkey.Value;
             this._cameraMuteHotkey = Settings.Properties.MuteCameraHotkey.Value;
+            this.CameraImageOverlayPath = Settings.Properties.CameraOverlayImagePath.Value;
+            this.SelectOverlayImage = new ButtonClickCommand(SelectOverlayImageAction);
 
             string overlayPosition = Settings.Properties.OverlayPosition.Value;
 
@@ -81,23 +99,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _overlayMonitorIndex = 1;
                     break;
             }
-
-            var devicesInformation = Task.Run(() => GetAllCameras()).Result;
-
-            _selectedCameraList = new List<string> { };
-
-            int i = 0;
-            foreach (DeviceInformation deviceInformation in devicesInformation)
-            {
-                if (deviceInformation.Name == Settings.Properties.SelectedCamera.Value)
-                {
-                    _selectedCameraIndex = i;
-                }
-
-                _selectedCameraList.Add(deviceInformation.Name);
-
-                i++;
-            }
         }
 
         private static async Task<List<DeviceInformation>> GetAllCameras()
@@ -106,22 +107,45 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return allCameras.Where(cameraInfo => cameraInfo.Name != ProxyCameraName).ToList();
         }
 
+        private async void SelectOverlayImageAction()
+        {
+            try
+            {
+                FileOpenPicker openPicker = new FileOpenPicker
+                {
+                    ViewMode = PickerViewMode.Thumbnail,
+                    SuggestedStartLocation = PickerLocationId.ComputerFolder,
+                };
+
+                openPicker.FileTypeFilter.Add(".jpg");
+                openPicker.FileTypeFilter.Add(".jpeg");
+                openPicker.FileTypeFilter.Add(".png");
+                ((IInitializeWithWindow)(object)openPicker).Initialize(System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle);
+                var pickedImage = await openPicker.PickSingleFileAsync();
+
+                if (pickedImage != null)
+                {
+                    CameraImageOverlayPath = pickedImage.Path;
+                    Settings.Properties.CameraOverlayImagePath = pickedImage.Path;
+                    RaisePropertyChanged("CameraImageOverlayPath");
+                }
+            }
+            catch
+            {
+            }
+        }
+
         private bool _isEnabled = false;
         private int _overlayPositionIndex;
         private int _overlayMonitorIndex;
         private HotkeySettings _cameraAndMicrophoneMuteHotkey;
         private HotkeySettings _mirophoneMuteHotkey;
         private HotkeySettings _cameraMuteHotkey;
-        private List<string> _selectedCameraList;
-        private int _selectedCameraIndex = 0;
+        private int _selectedCameraIndex = -1;
 
-        public List<string> SelectedCameraList
-        {
-            get
-            {
-                return _selectedCameraList;
-            }
-        }
+        public List<string> CameraNames { get; }
+
+        public string CameraImageOverlayPath { get; set; }
 
         public int SelectedCameraIndex
         {
@@ -135,9 +159,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_selectedCameraIndex != value)
                 {
                     _selectedCameraIndex = value;
-                    if (_selectedCameraIndex >= 0 && _selectedCameraIndex < _selectedCameraList.Count())
+                    if (_selectedCameraIndex >= 0 && _selectedCameraIndex < CameraNames.Count())
                     {
-                        Settings.Properties.SelectedCamera.Value = _selectedCameraList[_selectedCameraIndex];
+                        Settings.Properties.SelectedCamera.Value = CameraNames[_selectedCameraIndex];
                         RaisePropertyChanged();
                     }
                 }
@@ -233,34 +257,32 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _overlayPositionIndex = value;
                     switch (_overlayPositionIndex)
                     {
-                        case 0:
+                    case 0:
                             Settings.Properties.OverlayPosition.Value = "Center";
                             RaisePropertyChanged();
                             break;
 
-                        case 1:
+                    case 1:
                             Settings.Properties.OverlayPosition.Value = "Top left corner";
                             RaisePropertyChanged();
                             break;
 
-                        case 2:
+                    case 2:
                             Settings.Properties.OverlayPosition.Value = "Top right corner";
                             RaisePropertyChanged();
                             break;
 
-                        case 3:
+                    case 3:
                             Settings.Properties.OverlayPosition.Value = "Bottom left corner";
                             RaisePropertyChanged();
                             break;
 
-                        case 4:
+                    case 4:
                             Settings.Properties.OverlayPosition.Value = "Bottom right corner";
                             RaisePropertyChanged();
                             break;
-
                     }
                 }
-
             }
         }
 
@@ -278,20 +300,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _overlayMonitorIndex = value;
                     switch (_overlayMonitorIndex)
                     {
-                        case 0:
+                    case 0:
                             Settings.Properties.OverlayMonitor.Value = "Main monitor";
                             RaisePropertyChanged();
                             break;
 
-                        case 1:
+                    case 1:
                             Settings.Properties.OverlayMonitor.Value = "All monitors";
                             RaisePropertyChanged();
                             break;
                     }
                 }
-
             }
         }
+
+        public ButtonClickCommand SelectOverlayImage { get; set; }
 
         public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
