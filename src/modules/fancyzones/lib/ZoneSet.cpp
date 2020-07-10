@@ -20,81 +20,81 @@ namespace
       };
     */
 
-    auto l = JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Minimal{ .rows = 1, .columns = 1 });
+    auto l = FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Minimal{ .rows = 1, .columns = 1 });
     // PriorityGrid layout is unique for zoneCount <= 11. For zoneCount > 11 PriorityGrid is same as Grid
-    JSONHelpers::GridLayoutInfo predefinedPriorityGridLayouts[11] = {
+    FancyZonesDataNS::GridLayoutInfo predefinedPriorityGridLayouts[11] = {
         /* 1 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
             .rows = 1,
             .columns = 1,
             .rowsPercents = { 10000 },
             .columnsPercents = { 10000 },
             .cellChildMap = { { 0 } } }),
         /* 2 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
             .rows = 1,
             .columns = 2,
             .rowsPercents = { 10000 },
             .columnsPercents = { 6667, 3333 },
             .cellChildMap = { { 0, 1 } } }),
         /* 3 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
             .rows = 1,
             .columns = 3,
             .rowsPercents = { 10000 },
             .columnsPercents = { 2500, 5000, 2500 },
             .cellChildMap = { { 0, 1, 2 } } }),
         /* 4 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
             .rows = 2,
             .columns = 3,
             .rowsPercents = { 5000, 5000 },
             .columnsPercents = { 2500, 5000, 2500 },
             .cellChildMap = { { 0, 1, 2 }, { 0, 1, 3 } } }),
         /* 5 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
             .rows = 2,
             .columns = 3,
             .rowsPercents = { 5000, 5000 },
             .columnsPercents = { 2500, 5000, 2500 },
             .cellChildMap = { { 0, 1, 2 }, { 3, 1, 4 } } }),
         /* 6 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 3,
             .rowsPercents = { 3333, 3334, 3333 },
             .columnsPercents = { 2500, 5000, 2500 },
             .cellChildMap = { { 0, 1, 2 }, { 0, 1, 3 }, { 4, 1, 5 } } }),
         /* 7 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 3,
             .rowsPercents = { 3333, 3334, 3333 },
             .columnsPercents = { 2500, 5000, 2500 },
             .cellChildMap = { { 0, 1, 2 }, { 3, 1, 4 }, { 5, 1, 6 } } }),
         /* 8 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 4,
             .rowsPercents = { 3333, 3334, 3333 },
             .columnsPercents = { 2500, 2500, 2500, 2500 },
             .cellChildMap = { { 0, 1, 2, 3 }, { 4, 1, 2, 5 }, { 6, 1, 2, 7 } } }),
         /* 9 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 4,
             .rowsPercents = { 3333, 3334, 3333 },
             .columnsPercents = { 2500, 2500, 2500, 2500 },
             .cellChildMap = { { 0, 1, 2, 3 }, { 4, 1, 2, 5 }, { 6, 1, 7, 8 } } }),
         /* 10 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 4,
             .rowsPercents = { 3333, 3334, 3333 },
             .columnsPercents = { 2500, 2500, 2500, 2500 },
             .cellChildMap = { { 0, 1, 2, 3 }, { 4, 1, 5, 6 }, { 7, 1, 8, 9 } } }),
         /* 11 */
-        JSONHelpers::GridLayoutInfo(JSONHelpers::GridLayoutInfo::Full{
+        FancyZonesDataNS::GridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Full{
             .rows = 3,
             .columns = 4,
             .rowsPercents = { 3333, 3334, 3333 },
@@ -119,7 +119,7 @@ public:
 
     IFACEMETHODIMP_(GUID)
     Id() noexcept { return m_config.Id; }
-    IFACEMETHODIMP_(JSONHelpers::ZoneSetLayoutType)
+    IFACEMETHODIMP_(FancyZonesDataNS::ZoneSetLayoutType)
     LayoutType() noexcept { return m_config.LayoutType; }
     IFACEMETHODIMP AddZone(winrt::com_ptr<IZone> zone) noexcept;
     IFACEMETHODIMP_(std::vector<int>)
@@ -143,11 +143,11 @@ public:
 
 private:
     bool CalculateFocusLayout(Rect workArea, int zoneCount) noexcept;
-    bool CalculateColumnsAndRowsLayout(Rect workArea, JSONHelpers::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept;
-    bool CalculateGridLayout(Rect workArea, JSONHelpers::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept;
+    bool CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataNS::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept;
+    bool CalculateGridLayout(Rect workArea, FancyZonesDataNS::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept;
     bool CalculateUniquePriorityGridLayout(Rect workArea, int zoneCount, int spacing) noexcept;
     bool CalculateCustomLayout(Rect workArea, int spacing) noexcept;
-    bool CalculateGridZones(Rect workArea, JSONHelpers::GridLayoutInfo gridLayoutInfo, int spacing);
+    bool CalculateGridZones(Rect workArea, FancyZonesDataNS::GridLayoutInfo gridLayoutInfo, int spacing);
     void StampWindow(HWND window, size_t bitmask) noexcept;
 
     std::vector<winrt::com_ptr<IZone>> m_zones;
@@ -374,7 +374,7 @@ ZoneSet::CalculateZones(MONITORINFO monitorInfo, int zoneCount, int spacing) noe
     }
 
     //invalid zoneCount, may cause division by zero
-    if (zoneCount <= 0 && m_config.LayoutType != JSONHelpers::ZoneSetLayoutType::Custom)
+    if (zoneCount <= 0 && m_config.LayoutType != FancyZonesDataNS::ZoneSetLayoutType::Custom)
     {
         return false;
     }
@@ -382,18 +382,18 @@ ZoneSet::CalculateZones(MONITORINFO monitorInfo, int zoneCount, int spacing) noe
     bool success = true;
     switch (m_config.LayoutType)
     {
-    case JSONHelpers::ZoneSetLayoutType::Focus:
+    case FancyZonesDataNS::ZoneSetLayoutType::Focus:
         success = CalculateFocusLayout(workArea, zoneCount);
         break;
-    case JSONHelpers::ZoneSetLayoutType::Columns:
-    case JSONHelpers::ZoneSetLayoutType::Rows:
+    case FancyZonesDataNS::ZoneSetLayoutType::Columns:
+    case FancyZonesDataNS::ZoneSetLayoutType::Rows:
         success = CalculateColumnsAndRowsLayout(workArea, m_config.LayoutType, zoneCount, spacing);
         break;
-    case JSONHelpers::ZoneSetLayoutType::Grid:
-    case JSONHelpers::ZoneSetLayoutType::PriorityGrid:
+    case FancyZonesDataNS::ZoneSetLayoutType::Grid:
+    case FancyZonesDataNS::ZoneSetLayoutType::PriorityGrid:
         success = CalculateGridLayout(workArea, m_config.LayoutType, zoneCount, spacing);
         break;
-    case JSONHelpers::ZoneSetLayoutType::Custom:
+    case FancyZonesDataNS::ZoneSetLayoutType::Custom:
         success = CalculateCustomLayout(workArea, spacing);
         break;
     }
@@ -445,14 +445,14 @@ bool ZoneSet::CalculateFocusLayout(Rect workArea, int zoneCount) noexcept
     return success;
 }
 
-bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, JSONHelpers::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept
+bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, FancyZonesDataNS::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept
 {
     bool success = true;
 
     long totalWidth;
     long totalHeight;
 
-    if (type == JSONHelpers::ZoneSetLayoutType::Columns)
+    if (type == FancyZonesDataNS::ZoneSetLayoutType::Columns)
     {
         totalWidth = workArea.width() - (spacing * (zoneCount + 1));
         totalHeight = workArea.height() - (spacing * 2);
@@ -472,7 +472,7 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, JSONHelpers::ZoneSetL
     // like this to make the sum of all zones' sizes exactly total{Width|Height}.
     for (int zone = 0; zone < zoneCount; zone++)
     {
-        if (type == JSONHelpers::ZoneSetLayoutType::Columns)
+        if (type == FancyZonesDataNS::ZoneSetLayoutType::Columns)
         {
             right = left + (zone + 1) * totalWidth / zoneCount - zone * totalWidth / zoneCount;
             bottom = totalHeight + spacing;
@@ -491,7 +491,7 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, JSONHelpers::ZoneSetL
         RECT focusZoneRect{ left, top, right, bottom };
         AddZone(MakeZone(focusZoneRect));
 
-        if (type == JSONHelpers::ZoneSetLayoutType::Columns)
+        if (type == FancyZonesDataNS::ZoneSetLayoutType::Columns)
         {
             left = right + spacing;
         }
@@ -504,10 +504,10 @@ bool ZoneSet::CalculateColumnsAndRowsLayout(Rect workArea, JSONHelpers::ZoneSetL
     return success;
 }
 
-bool ZoneSet::CalculateGridLayout(Rect workArea, JSONHelpers::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept
+bool ZoneSet::CalculateGridLayout(Rect workArea, FancyZonesDataNS::ZoneSetLayoutType type, int zoneCount, int spacing) noexcept
 {
-    const auto count = sizeof(predefinedPriorityGridLayouts) / sizeof(JSONHelpers::GridLayoutInfo);
-    if (type == JSONHelpers::ZoneSetLayoutType::PriorityGrid && zoneCount < count)
+    const auto count = sizeof(predefinedPriorityGridLayouts) / sizeof(FancyZonesDataNS::GridLayoutInfo);
+    if (type == FancyZonesDataNS::ZoneSetLayoutType::PriorityGrid && zoneCount < count)
     {
         return CalculateUniquePriorityGridLayout(workArea, zoneCount, spacing);
     }
@@ -528,7 +528,7 @@ bool ZoneSet::CalculateGridLayout(Rect workArea, JSONHelpers::ZoneSetLayoutType 
         columns++;
     }
 
-    JSONHelpers::GridLayoutInfo gridLayoutInfo(JSONHelpers::GridLayoutInfo::Minimal{ .rows = rows, .columns = columns });
+    FancyZonesDataNS::GridLayoutInfo gridLayoutInfo(FancyZonesDataNS::GridLayoutInfo::Minimal{ .rows = rows, .columns = columns });
 
     // Note: The expressions below are NOT equal to C_MULTIPLIER / {rows|columns} and are done
     // like this to make the sum of all percents exactly C_MULTIPLIER
@@ -578,7 +578,7 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
     {
         const std::wstring guid = guidStr.get();
 
-        const auto zoneSetSearchResult = JSONHelpers::FancyZonesDataInstance().FindCustomZoneSet(guid);
+        const auto zoneSetSearchResult = FancyZonesDataNS::FancyZonesDataInstance().FindCustomZoneSet(guid);
 
         if (!zoneSetSearchResult.has_value())
         {
@@ -586,9 +586,9 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
         }
 
         const auto& zoneSet = *zoneSetSearchResult;
-        if (zoneSet.type == JSONHelpers::CustomLayoutType::Canvas && std::holds_alternative<JSONHelpers::CanvasLayoutInfo>(zoneSet.info))
+        if (zoneSet.type == FancyZonesDataNS::CustomLayoutType::Canvas && std::holds_alternative<FancyZonesDataNS::CanvasLayoutInfo>(zoneSet.info))
         {
-            const auto& zoneSetInfo = std::get<JSONHelpers::CanvasLayoutInfo>(zoneSet.info);
+            const auto& zoneSetInfo = std::get<FancyZonesDataNS::CanvasLayoutInfo>(zoneSet.info);
             for (const auto& zone : zoneSetInfo.zones)
             {
                 int x = zone.x;
@@ -609,9 +609,9 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
 
             return true;
         }
-        else if (zoneSet.type == JSONHelpers::CustomLayoutType::Grid && std::holds_alternative<JSONHelpers::GridLayoutInfo>(zoneSet.info))
+        else if (zoneSet.type == FancyZonesDataNS::CustomLayoutType::Grid && std::holds_alternative<FancyZonesDataNS::GridLayoutInfo>(zoneSet.info))
         {
-            const auto& info = std::get<JSONHelpers::GridLayoutInfo>(zoneSet.info);
+            const auto& info = std::get<FancyZonesDataNS::GridLayoutInfo>(zoneSet.info);
             return CalculateGridZones(workArea, info, spacing);
         }
     }
@@ -619,7 +619,7 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
     return false;
 }
 
-bool ZoneSet::CalculateGridZones(Rect workArea, JSONHelpers::GridLayoutInfo gridLayoutInfo, int spacing)
+bool ZoneSet::CalculateGridZones(Rect workArea, FancyZonesDataNS::GridLayoutInfo gridLayoutInfo, int spacing)
 {
     bool success = true;
 

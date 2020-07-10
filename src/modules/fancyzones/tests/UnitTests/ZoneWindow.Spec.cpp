@@ -71,7 +71,7 @@ namespace FancyZonesUnitTests
 
         winrt::com_ptr<IZoneWindow> m_zoneWindow;
 
-        JSONHelpers::FancyZonesData& m_fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+        FancyZonesDataNS::FancyZonesData& m_fancyZonesData = FancyZonesDataNS::FancyZonesDataInstance();
 
         TEST_METHOD_INITIALIZE(Init)
         {
@@ -111,11 +111,11 @@ namespace FancyZonesUnitTests
             const auto activeZoneSetTempPath = ZoneWindowUtils::GetActiveZoneSetTmpPath();
             Assert::IsFalse(std::filesystem::exists(activeZoneSetTempPath));
 
-            const auto type = JSONHelpers::ZoneSetLayoutType::Columns;
-            const auto expectedZoneSet = JSONHelpers::ZoneSetData{ Helpers::CreateGuidString(), type };
-            const auto data = JSONHelpers::DeviceInfoData{ expectedZoneSet, true, 16, 3 };
-            const auto deviceInfo = JSONHelpers::DeviceInfoJSON{ m_uniqueId.str(), data };
-            const auto json = JSONHelpers::DeviceInfoJSON::ToJson(deviceInfo);
+            const auto type = FancyZonesDataNS::ZoneSetLayoutType::Columns;
+            const auto expectedZoneSet = FancyZonesDataNS::ZoneSetData{ Helpers::CreateGuidString(), type };
+            const auto data = FancyZonesDataNS::DeviceInfoData{ expectedZoneSet, true, 16, 3 };
+            const auto deviceInfo = FancyZonesDataNS::DeviceInfoJSON{ m_uniqueId.str(), data };
+            const auto json = FancyZonesDataNS::DeviceInfoJSON::ToJson(deviceInfo);
             json::to_file(activeZoneSetTempPath, json);
             Assert::IsTrue(std::filesystem::exists(activeZoneSetTempPath));
 
@@ -203,7 +203,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(CreateZoneWindowWithActiveZoneTmpFile)
         {
-            using namespace JSONHelpers;
+            using namespace FancyZonesDataNS;
 
             const auto activeZoneSetTempPath = ZoneWindowUtils::GetActiveZoneSetTmpPath();
 
@@ -228,7 +228,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(CreateZoneWindowWithActiveCustomZoneTmpFile)
         {
-            using namespace JSONHelpers;
+            using namespace FancyZonesDataNS;
 
             const auto activeZoneSetTempPath = ZoneWindowUtils::GetActiveZoneSetTmpPath();
 
@@ -254,7 +254,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(CreateZoneWindowWithActiveCustomZoneAppliedTmpFile)
         {
-            using namespace JSONHelpers;
+            using namespace FancyZonesDataNS;
 
             //save required data
             const auto activeZoneSetTempPath = ZoneWindowUtils::GetActiveZoneSetTmpPath();
@@ -290,7 +290,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(CreateZoneWindowWithActiveCustomZoneAppliedTmpFileWithDeletedCustomZones)
         {
-            using namespace JSONHelpers;
+            using namespace FancyZonesDataNS;
 
             //save required data
             const auto activeZoneSetTempPath = ZoneWindowUtils::GetActiveZoneSetTmpPath();
@@ -336,7 +336,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD(CreateZoneWindowWithActiveCustomZoneAppliedTmpFileWithUnusedDeletedCustomZones)
         {
-            using namespace JSONHelpers;
+            using namespace FancyZonesDataNS;
 
             //save required data
             const auto activeZoneSetTempPath = ZoneWindowUtils::GetActiveZoneSetTmpPath();
@@ -383,7 +383,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (CreateZoneWindowClonedFromParent)
         {
-            using namespace JSONHelpers;
+            using namespace FancyZonesDataNS;
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::PriorityGrid;
             const int spacing = 10;
@@ -412,7 +412,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (CreateZoneWindowNotClonedFromParent)
         {
-            using namespace JSONHelpers;
+            using namespace FancyZonesDataNS;
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::PriorityGrid;
             const int spacing = 10;

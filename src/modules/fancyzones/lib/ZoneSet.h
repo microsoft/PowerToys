@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Zone.h"
-#include "JsonHelpers.h"
+#include "FancyZonesData.h"
 
 /**
  * Class representing single zone layout. ZoneSet is responsible for actual calculation of rectangle coordinates
@@ -16,7 +16,7 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
     /**
      * @returns Type of the zone layout. Layout type can be focus, columns, rows, grid, priority grid or custom.
      */
-    IFACEMETHOD_(JSONHelpers::ZoneSetLayoutType, LayoutType)() = 0;
+    IFACEMETHOD_(FancyZonesDataNS::ZoneSetLayoutType, LayoutType)() = 0;
     /**
      * Add zone to the zone layout.
      *
@@ -110,7 +110,7 @@ struct ZoneSetPersistedData
     DWORD Version{VERSION_PERSISTEDDATA};
     WORD LayoutId{};
     DWORD ZoneCount{};
-    JSONHelpers::ZoneSetLayoutType Layout{};
+    FancyZonesDataNS::ZoneSetLayoutType Layout{};
     RECT Zones[MAX_ZONES]{};
 };
 
@@ -118,7 +118,7 @@ struct ZoneSetConfig
 {
     ZoneSetConfig(
         GUID id,
-        JSONHelpers::ZoneSetLayoutType layoutType,
+        FancyZonesDataNS::ZoneSetLayoutType layoutType,
         HMONITOR monitor,
         PCWSTR resolutionKey) noexcept :
             Id(id),
@@ -129,7 +129,7 @@ struct ZoneSetConfig
     }
 
     GUID Id{};
-    JSONHelpers::ZoneSetLayoutType LayoutType{};
+    FancyZonesDataNS::ZoneSetLayoutType LayoutType{};
     HMONITOR Monitor{};
     PCWSTR ResolutionKey{};
 };

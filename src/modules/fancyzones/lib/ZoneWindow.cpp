@@ -546,7 +546,7 @@ ZoneWindow::SaveWindowProcessToZoneIndex(HWND window) noexcept
             OLECHAR* guidString;
             if (StringFromCLSID(m_activeZoneSet->Id(), &guidString) == S_OK)
             {
-                JSONHelpers::FancyZonesDataInstance().SetAppLastZones(window, m_uniqueId, guidString, zoneIndexSet);
+                FancyZonesDataNS::FancyZonesDataInstance().SetAppLastZones(window, m_uniqueId, guidString, zoneIndexSet);
             }
 
             CoTaskMemFree(guidString);
@@ -619,17 +619,17 @@ ZoneWindow::ClearSelectedZones() noexcept
 void ZoneWindow::InitializeZoneSets(const std::wstring& parentUniqueId) noexcept
 {
     // If there is not defined zone layout for this work area, created default entry.
-    JSONHelpers::FancyZonesDataInstance().AddDevice(m_uniqueId);
+    FancyZonesDataNS::FancyZonesDataInstance().AddDevice(m_uniqueId);
     if (!parentUniqueId.empty())
     {
-        JSONHelpers::FancyZonesDataInstance().CloneDeviceInfo(parentUniqueId, m_uniqueId);
+        FancyZonesDataNS::FancyZonesDataInstance().CloneDeviceInfo(parentUniqueId, m_uniqueId);
     }
     CalculateZoneSet();
 }
 
 void ZoneWindow::CalculateZoneSet() noexcept
 {
-    const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+    const auto& fancyZonesData = FancyZonesDataNS::FancyZonesDataInstance();
     const auto deviceInfoData = fancyZonesData.FindDeviceInfo(m_uniqueId);
 
     if (!deviceInfoData.has_value())
@@ -639,7 +639,7 @@ void ZoneWindow::CalculateZoneSet() noexcept
 
     const auto& activeZoneSet = deviceInfoData->activeZoneSet;
 
-    if (activeZoneSet.uuid.empty() || activeZoneSet.type == JSONHelpers::ZoneSetLayoutType::Blank)
+    if (activeZoneSet.uuid.empty() || activeZoneSet.type == FancyZonesDataNS::ZoneSetLayoutType::Blank)
     {
         return;
     }
@@ -674,11 +674,11 @@ void ZoneWindow::UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept
         wil::unique_cotaskmem_string zoneSetId;
         if (SUCCEEDED_LOG(StringFromCLSID(m_activeZoneSet->Id(), &zoneSetId)))
         {
-            JSONHelpers::ZoneSetData data{
+            FancyZonesDataNS::ZoneSetData data{
                 .uuid = zoneSetId.get(),
                 .type = m_activeZoneSet->LayoutType()
             };
-            JSONHelpers::FancyZonesDataInstance().SetActiveZoneSet(m_uniqueId, data);
+            FancyZonesDataNS::FancyZonesDataInstance().SetActiveZoneSet(m_uniqueId, data);
         }
     }
 }
