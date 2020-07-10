@@ -218,7 +218,7 @@
     
     <CustomAction Id="SetCertifyVirtualCameraDriverParam"
               Property="CertifyVirtualCameraDriver"
-              Value="[#VideoConferenceDriver.cer]" />
+              Value="[#VideoConferenceVirtualDriver.cer]" />
     
     <CustomAction Id="CertifyVirtualCameraDriver"
                   Return="ignore"
@@ -230,7 +230,7 @@
 
     <CustomAction Id="SetInstallVirtualCameraDriverParam"
               Property="InstallVirtualCameraDriver"
-              Value="[#VideoConferenceDriver.inf]" />
+              Value="[#VideoConferenceVirtualDriver.inf]" />
     
     <CustomAction Id="InstallVirtualCameraDriver"
                   Return="ignore"
@@ -242,7 +242,7 @@
 
     <CustomAction Id="SetUninstallVirtualCameraDriverParam"
                   Property="UninstallVirtualCameraDriver"
-                  Value="[#VideoConferenceDriver.inf]" />
+                  Value="[#VideoConferenceVirtualDriver.inf]" />
     
     <CustomAction Id="UninstallVirtualCameraDriver"
                   Return="ignore"
@@ -638,11 +638,11 @@
         <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\CamOffMicOn.png" />
         <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\CamOnMicOff.png" />
         <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\CamOffMicOff.png" />
-        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceDriver\videoconferencedriver.cat" />
-        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceDriver\VideoConference.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceDriver\VideoConferenceDriver.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceDriver\VideoConferenceDriver.inf" />
-        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceDriver.cer" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceVirtualDriver\videoconferencevirtualdriver.cat" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceVirtualDriver\VideoConferenceCustomMediaSource.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceVirtualDriver\VideoConferenceVirtualDriver.dll" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceVirtualDriver\VideoConferenceVirtualDriver.inf" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceVirtualDriver.cer" />
       </Component>
     </DirectoryRef>
 
