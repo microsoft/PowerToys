@@ -62,85 +62,85 @@ namespace FancyZonesUnitTests
         TEST_METHOD (GuidValid)
         {
             const auto guidStr = Helpers::CreateGuidString();
-            Assert::IsTrue(isValidGuid(guidStr));
+            Assert::IsTrue(IsValidGuid(guidStr));
         }
 
         TEST_METHOD (GuidInvalidForm)
         {
             const auto guidStr = L"33A2B101-06E0-437B-A61E-CDBECF502906";
-            Assert::IsFalse(isValidGuid(guidStr));
+            Assert::IsFalse(IsValidGuid(guidStr));
         }
 
         TEST_METHOD (GuidInvalidSymbols)
         {
             const auto guidStr = L"{33A2B101-06E0-437B-A61E-CDBECF50290*}";
-            Assert::IsFalse(isValidGuid(guidStr));
+            Assert::IsFalse(IsValidGuid(guidStr));
         }
 
         TEST_METHOD (GuidInvalid)
         {
             const auto guidStr = L"guid";
-            Assert::IsFalse(isValidGuid(guidStr));
+            Assert::IsFalse(IsValidGuid(guidStr));
         }
 
         TEST_METHOD (DeviceId)
         {
             const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
-            Assert::IsTrue(isValidDeviceId(deviceId));
+            Assert::IsTrue(IsValidDeviceId(deviceId));
         }
 
         TEST_METHOD (DeviceIdWithoutHashInName)
         {
             const auto deviceId = L"LOCALDISPLAY_5120_1440_{00000000-0000-0000-0000-000000000000}";
-            Assert::IsTrue(isValidDeviceId(deviceId));
+            Assert::IsTrue(IsValidDeviceId(deviceId));
         }
 
         TEST_METHOD (DeviceIdWithoutHashInNameButWithUnderscores)
         {
             const auto deviceId = L"LOCAL_DISPLAY_5120_1440_{00000000-0000-0000-0000-000000000000}";
-            Assert::IsFalse(isValidDeviceId(deviceId));
+            Assert::IsFalse(IsValidDeviceId(deviceId));
         }
 
         TEST_METHOD (DeviceIdWithUnderscoresInName)
         {
             const auto deviceId = L"Default_Monitor#1&1f0c3c2f&0&UID256_5120_1440_{00000000-0000-0000-0000-000000000000}";
-            Assert::IsTrue(isValidDeviceId(deviceId));
+            Assert::IsTrue(IsValidDeviceId(deviceId));
         }
 
         TEST_METHOD (DeviceIdInvalidFormat)
         {
             const auto deviceId = L"_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
-            Assert::IsFalse(isValidDeviceId(deviceId));
+            Assert::IsFalse(IsValidDeviceId(deviceId));
         }
 
         TEST_METHOD (DeviceIdInvalidFormat2)
         {
             const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_19201200_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
-            Assert::IsFalse(isValidDeviceId(deviceId));
+            Assert::IsFalse(IsValidDeviceId(deviceId));
         }
 
         TEST_METHOD (DeviceIdInvalidDecimals)
         {
             const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_aaaa_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
-            Assert::IsFalse(isValidDeviceId(deviceId));
+            Assert::IsFalse(IsValidDeviceId(deviceId));
         }
 
         TEST_METHOD (DeviceIdInvalidDecimals2)
         {
             const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_19a0_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
-            Assert::IsFalse(isValidDeviceId(deviceId));
+            Assert::IsFalse(IsValidDeviceId(deviceId));
         }
 
         TEST_METHOD (DeviceIdInvalidDecimals3)
         {
             const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_1900_120000000000000_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
-            Assert::IsFalse(isValidDeviceId(deviceId));
+            Assert::IsFalse(IsValidDeviceId(deviceId));
         }
 
         TEST_METHOD (DeviceIdInvalidGuid)
         {
             const auto deviceId = L"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-4B5D-8851-4791D66B1539}";
-            Assert::IsFalse(isValidDeviceId(deviceId));
+            Assert::IsFalse(IsValidDeviceId(deviceId));
         }
     };
     TEST_CLASS (ZoneSetLayoutTypeUnitTest)
@@ -180,27 +180,6 @@ namespace FancyZonesUnitTests
             for (const auto& expected : expectedMap)
             {
                 auto actual = FancyZonesDataTypes::TypeFromString(expected.second);
-                Assert::AreEqual(static_cast<int>(expected.first), static_cast<int>(actual));
-            }
-        }
-
-        TEST_METHOD (ZoneSetLayoutTypeFromLayoutId)
-        {
-            std::map<ZoneSetLayoutType, int> expectedMap = {
-                std::make_pair(ZoneSetLayoutType::Focus, 0xFFFF),
-                std::make_pair(ZoneSetLayoutType::Columns, 0xFFFD),
-                std::make_pair(ZoneSetLayoutType::Rows, 0xFFFE),
-                std::make_pair(ZoneSetLayoutType::Grid, 0xFFFC),
-                std::make_pair(ZoneSetLayoutType::PriorityGrid, 0xFFFB),
-                std::make_pair(ZoneSetLayoutType::Blank, 0xFFFA),
-                std::make_pair(ZoneSetLayoutType::Custom, 0),
-                std::make_pair(ZoneSetLayoutType::Custom, 1),
-                std::make_pair(ZoneSetLayoutType::Custom, -1),
-            };
-
-            for (const auto& expected : expectedMap)
-            {
-                auto actual = FancyZonesDataTypes::TypeFromLayoutId(expected.second);
                 Assert::AreEqual(static_cast<int>(expected.first), static_cast<int>(actual));
             }
         }
@@ -1827,24 +1806,9 @@ namespace FancyZonesUnitTests
                 FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
                 const auto jsonPath = data.GetPersistFancyZonesJSONPath();
-                auto savedJson = json::from_file(jsonPath);
-
-                if (std::filesystem::exists(jsonPath))
-                {
-                    std::filesystem::remove(jsonPath);
-                }
 
                 data.SaveFancyZonesData();
                 bool actual = std::filesystem::exists(jsonPath);
-
-                if (savedJson)
-                {
-                    json::to_file(jsonPath, *savedJson);
-                }
-                else
-                {
-                    std::filesystem::remove(jsonPath);
-                }
 
                 Assert::IsTrue(actual);
             }

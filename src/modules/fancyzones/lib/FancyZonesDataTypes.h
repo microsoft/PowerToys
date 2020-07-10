@@ -12,10 +12,9 @@
 
 namespace FancyZonesDataTypes
 {
-#if defined(UNIT_TESTS)
-    bool isValidGuid(const std::wstring& str);
-    bool isValidDeviceId(const std::wstring& str);
-#endif
+    bool IsValidGuid(const std::wstring& str);
+    bool IsValidDeviceId(const std::wstring& str);
+
 
     enum class ZoneSetLayoutType : int
     {
@@ -28,16 +27,14 @@ namespace FancyZonesDataTypes
         Custom
     };
 
+    std::wstring TypeToString(ZoneSetLayoutType type);
+    ZoneSetLayoutType TypeFromString(const std::wstring& typeStr);
+
     enum class CustomLayoutType : int
     {
         Grid = 0,
         Canvas
     };
-
-    ZoneSetLayoutType TypeFromLayoutId(int layoutID);
-
-    std::wstring TypeToString(ZoneSetLayoutType type);
-    ZoneSetLayoutType TypeFromString(const std::wstring& typeStr);
 
     struct CanvasLayoutInfo
     {
@@ -117,7 +114,7 @@ namespace FancyZonesDataTypes
         static std::optional<CustomZoneSetJSON> FromJson(const json::JsonObject& customZoneSet);
     };
 
-    // TODO(stefan): This needs to be moved to ZoneSet.h (probably)
+
     struct ZoneSetData
     {
         std::wstring uuid;

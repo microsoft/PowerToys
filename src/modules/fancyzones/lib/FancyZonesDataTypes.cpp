@@ -40,13 +40,13 @@ namespace
 
 namespace FancyZonesDataTypes
 {
-    bool isValidGuid(const std::wstring& str)
+    bool IsValidGuid(const std::wstring& str)
     {
         GUID id;
         return SUCCEEDED(CLSIDFromString(str.c_str(), &id));
     }
 
-    bool isValidDeviceId(const std::wstring& str)
+    bool IsValidDeviceId(const std::wstring& str)
     {
         std::wstring monitorName;
         std::wstring temp;
@@ -110,33 +110,12 @@ namespace FancyZonesDataTypes
             return false;
         }
 
-        if (!isValidGuid(parts[3]) || parts[0].empty())
+        if (!IsValidGuid(parts[3]) || parts[0].empty())
         {
             return false;
         }
 
         return true;
-    }
-
-    ZoneSetLayoutType TypeFromLayoutId(int layoutID)
-    {
-        switch (layoutID)
-        {
-        case c_focusModelId:
-            return ZoneSetLayoutType::Focus;
-        case c_columnsModelId:
-            return ZoneSetLayoutType::Columns;
-        case c_rowsModelId:
-            return ZoneSetLayoutType::Rows;
-        case c_gridModelId:
-            return ZoneSetLayoutType::Grid;
-        case c_priorityGridModelId:
-            return ZoneSetLayoutType::PriorityGrid;
-        case c_blankCustomModelId:
-            return ZoneSetLayoutType::Blank;
-        default:
-            return ZoneSetLayoutType::Custom;
-        }
     }
 
     std::wstring TypeToString(ZoneSetLayoutType type)
@@ -367,7 +346,7 @@ namespace FancyZonesDataTypes
             CustomZoneSetJSON result;
 
             result.uuid = customZoneSet.GetNamedString(L"uuid");
-            if (!isValidGuid(result.uuid))
+            if (!IsValidGuid(result.uuid))
             {
                 return std::nullopt;
             }
@@ -431,7 +410,7 @@ namespace FancyZonesDataTypes
             zoneSetData.uuid = zoneSet.GetNamedString(L"uuid");
             zoneSetData.type = TypeFromString(std::wstring{ zoneSet.GetNamedString(L"type") });
 
-            if (!isValidGuid(zoneSetData.uuid))
+            if (!IsValidGuid(zoneSetData.uuid))
             {
                 return std::nullopt;
             }
@@ -491,7 +470,7 @@ namespace FancyZonesDataTypes
         data.deviceId = json.GetNamedString(L"device-id");
         data.zoneSetUuid = json.GetNamedString(L"zoneset-uuid");
 
-        if (!isValidGuid(data.zoneSetUuid) || !isValidDeviceId(data.deviceId))
+        if (!IsValidGuid(data.zoneSetUuid) || !IsValidDeviceId(data.deviceId))
         {
             return std::nullopt;
         }
@@ -560,7 +539,7 @@ namespace FancyZonesDataTypes
             DeviceInfoJSON result;
 
             result.deviceId = device.GetNamedString(L"device-id");
-            if (!isValidDeviceId(result.deviceId))
+            if (!IsValidDeviceId(result.deviceId))
             {
                 return std::nullopt;
             }
