@@ -259,6 +259,12 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
             std::wstring appName = targetApp.Text().c_str();
             // Convert app name to lower case
             std::transform(appName.begin(), appName.end(), appName.begin(), towlower);
+            std::wstring lowercaseDefAppName = KeyboardManagerConstants::DefaultAppName;
+            std::transform(lowercaseDefAppName.begin(), lowercaseDefAppName.end(), lowercaseDefAppName.begin(), towlower);
+            if (appName == lowercaseDefAppName)
+            {
+                appName = L"";
+            }
 
             // Check if the value being set is the same as the other column
             if (shortcutRemapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)] == tempShortcut && shortcutRemapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)].IsValidShortcut() && tempShortcut.IsValidShortcut())
@@ -328,7 +334,18 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel shortcutCon
 
             // Reset the buffer based on the new selected drop down items
             shortcutRemapBuffer[validationResult.second].first[colIndex].SetKeyCodes(GetKeysFromStackPanel(parent));
-            shortcutRemapBuffer[validationResult.second].second = targetApp.Text().c_str();
+            std::wstring newText = targetApp.Text().c_str();
+            std::wstring lowercaseDefAppName = KeyboardManagerConstants::DefaultAppName;
+            std::transform(newText.begin(), newText.end(), newText.begin(), towlower);
+            std::transform(lowercaseDefAppName.begin(), lowercaseDefAppName.end(), lowercaseDefAppName.begin(), towlower);
+            if (newText == lowercaseDefAppName)
+            {
+                shortcutRemapBuffer[validationResult.second].second = L"";
+            }
+            else
+            {
+                shortcutRemapBuffer[validationResult.second].second = targetApp.Text().c_str();
+            }
         }
 
         // If the user searches for a key the selection handler gets invoked however if they click away it reverts back to the previous state. This can result in dangling references to added drop downs which were then reset.

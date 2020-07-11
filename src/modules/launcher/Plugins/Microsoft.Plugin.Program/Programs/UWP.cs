@@ -38,26 +38,20 @@ namespace Microsoft.Plugin.Program.Programs
 
         public PackageVersion Version { get; set; }
 
-        public UWP(Package package)
-        {
-            Location = package.InstalledLocation.Path;
-            Name = package.Id.Name;
-            FullName = package.Id.FullName;
-            FamilyName = package.Id.FamilyName;
-            InitializeAppInfo();
-            Apps = Apps.Where(a =>
-            {
-                var valid =
-                    !string.IsNullOrEmpty(a.UserModelId) &&
-                    !string.IsNullOrEmpty(a.DisplayName);
-                return valid;
-            }).ToArray();
+        public static IPackageManager PackageManagerWrapper { get; set; } = new PackageManagerWrapper();
+
+        public UWP(IPackage package)
+        {        
+            Name = package.Name;
+            FullName = package.FullName;
+            FamilyName = package.FamilyName;
         }
 
-        private void InitializeAppInfo()
+        public void InitializeAppInfo(string installedLocation)
         {
+            Location = installedLocation;
             AppxPackageHelper _helper = new AppxPackageHelper();
-            var path = Path.Combine(Location, "AppxManifest.xml");
+            var path = Path.Combine(installedLocation, "AppxManifest.xml");
 
             var namespaces = XmlNamespaces(path);
             InitPackageVersion(namespaces);
@@ -77,8 +71,16 @@ namespace Microsoft.Plugin.Program.Programs
                     var app = new Application(_app, this);
                     apps.Add(app);
                 }
-                
-                Apps = apps.Where(a => a.AppListEntry != "none").ToArray();
+
+                Apps = apps.Where(a =>
+                {
+                    var valid =
+                    !string.IsNullOrEmpty(a.UserModelId) &&
+                    !string.IsNullOrEmpty(a.DisplayName) &&
+                    a.AppListEntry != "none";
+
+                    return valid;
+                }).ToArray();
             }
             else
             {
@@ -154,21 +156,14 @@ namespace Microsoft.Plugin.Program.Programs
                     try
                     {
                         u = new UWP(p);
+                        u.InitializeAppInfo(p.InstalledLocation);
                     }
-#if !DEBUG
                     catch (Exception e)
                     {
                         ProgramLogger.LogException($"|UWP|All|{p.InstalledLocation}|An unexpected error occurred and "
-                                                        + $"unable to convert Package to UWP for {p.Id.FullName}", e);
+                                                        + $"unable to convert Package to UWP for {p.FullName}", e);
                         return new Application[] { };
                     }
-#endif
-#if DEBUG //make developer aware and implement handling
-                    catch
-                    {
-                        throw;
-                    }
-#endif
                     return u.Apps;
                 }).ToArray();
 
@@ -185,40 +180,30 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-        private static IEnumerable<Package> CurrentUserPackages()
+        private static IEnumerable<IPackage> CurrentUserPackages()
         {
-            var u = WindowsIdentity.GetCurrent().User;
-
-            if (u != null)
+            var ps = PackageManagerWrapper.FindPackagesForCurrentUser();
+            ps = ps.Where(p =>
             {
-                var id = u.Value;
-                var m = new PackageManager();
-                var ps = m.FindPackagesForUser(id);
-                ps = ps.Where(p =>
+                bool valid;
+                try
                 {
-                    bool valid;
-                    try
-                    {
-                        var f = p.IsFramework;
-                        var path = p.InstalledLocation.Path;
-                        valid = !f && !string.IsNullOrEmpty(path);
-                    }
-                    catch (Exception e)
-                    {
-                        ProgramLogger.LogException("UWP" ,"CurrentUserPackages", $"id","An unexpected error occurred and "
-                                                   + $"unable to verify if package is valid", e);
-                        return false;
-                    }
+                    var f = p.IsFramework;
+                    var path = p.InstalledLocation;
+                    valid = !f && !string.IsNullOrEmpty(path);
+                }
+                catch (Exception e)
+                {
+                    ProgramLogger.LogException("UWP" ,"CurrentUserPackages", $"id","An unexpected error occurred and "
+                                                + $"unable to verify if package is valid", e);
+                    return false;
+                }
                     
                     
-                    return valid;
-                });
-                return ps;
-            }
-            else
-            {
-                return new Package[] { };
-            }
+                return valid;
+            });
+
+            return ps;
         }
 
         public override string ToString()
@@ -304,8 +289,8 @@ namespace Microsoft.Plugin.Program.Programs
                 result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
 
 
-                var toolTipTitle = string.Format("{0} : {1}", api.GetTranslation("powertoys_run_plugin_program_file_name"), result.Title);
-                var toolTipText = string.Format("{0} : {1}", api.GetTranslation("powertoys_run_plugin_program_file_path"), Package.Location);
+                var toolTipTitle = string.Format("{0}: {1}", api.GetTranslation("powertoys_run_plugin_program_file_name"), result.Title);
+                var toolTipText = string.Format("{0}: {1}", api.GetTranslation("powertoys_run_plugin_program_file_path"), Package.Location);
                 result.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
 
                 return result;
