@@ -649,8 +649,11 @@ namespace Microsoft.Plugin.Program.Programs
             var programs1 = paths.AsParallel().Where(p => Extension(p).Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(LnkProgram);
             var programs2 = paths.AsParallel().Where(p => Extension(p).Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase)).Select(Win32Program);
             var programs3 = paths.AsParallel().Where(p => Extension(p).Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(InternetShortcutProgram);
+            var programs4 = paths.AsParallel().Where(p => Extension(p).Equals(ExeExtension, StringComparison.OrdinalIgnoreCase)).Select(ExeProgram);
 
-            return programs1.Concat(programs2).Where(p => p.Valid).Concat(programs3).Where(p => p.Valid);
+            return programs1.Concat(programs2).Where(p => p.Valid)
+                .Concat(programs3).Where(p => p.Valid)
+                .Concat(programs4).Where(p => p.Valid);
         }
 
         private static ParallelQuery<Win32> StartMenuPrograms(string[] suffixes)
