@@ -34,7 +34,8 @@ namespace Microsoft.Plugin.Program.Storage
 
                 try
                 {
-                    var uwp = new UWP(args.Package);
+                    var packageWrapper = PackageWrapper.GetWrapperFromPackage(args.Package);
+                    var uwp = new UWP(packageWrapper);
                     uwp.InitializeAppInfo(args.Package.InstalledLocation.Path);
                     foreach (var app in uwp.Apps)
                     {
@@ -57,7 +58,8 @@ namespace Microsoft.Plugin.Program.Storage
             if (args.Progress == 0)
             {
                 //find apps associated with this package. 
-                var uwp = new UWP(args.Package);
+                var packageWrapper = PackageWrapper.GetWrapperFromPackage(args.Package);
+                var uwp = new UWP(packageWrapper);
                 var apps = Items.Where(a => a.Package.Equals(uwp)).ToArray();
                 foreach (var app in apps)
                 {
