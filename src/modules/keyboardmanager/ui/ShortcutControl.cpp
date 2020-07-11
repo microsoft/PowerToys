@@ -66,7 +66,18 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
         // Reset the buffer based on the selected drop down items
         shortcutRemapBuffer[rowIndex].first[0].SetKeyCodes(KeyDropDownControl::GetKeysFromStackPanel(keyboardRemapControlObjects[rowIndex][0]->shortcutDropDownStackPanel));
         shortcutRemapBuffer[rowIndex].first[1].SetKeyCodes(KeyDropDownControl::GetKeysFromStackPanel(keyboardRemapControlObjects[rowIndex][1]->shortcutDropDownStackPanel));
-        shortcutRemapBuffer[rowIndex].second = targetAppTextBox.Text().c_str();
+        std::wstring newText = targetAppTextBox.Text().c_str();
+        std::wstring lowercaseDefAppName = KeyboardManagerConstants::DefaultAppName;
+        std::transform(newText.begin(), newText.end(), newText.begin(), towlower);
+        std::transform(lowercaseDefAppName.begin(), lowercaseDefAppName.end(), lowercaseDefAppName.begin(), towlower);
+        if (newText == lowercaseDefAppName)
+        {
+            shortcutRemapBuffer[rowIndex].second = L"";
+        }
+        else
+        {
+            shortcutRemapBuffer[rowIndex].second = targetAppTextBox.Text().c_str();
+        }
     });
 
     parent.SetColumn(targetAppTextBox, KeyboardManagerConstants::ShortcutTableTargetAppColIndex);
