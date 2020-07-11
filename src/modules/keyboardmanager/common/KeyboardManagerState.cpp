@@ -110,6 +110,13 @@ void KeyboardManagerState::ClearSingleKeyRemaps()
     singleKeyReMap.clear();
 }
 
+// Function to clear the App specific shortcut remapping table
+void KeyboardManagerState::ClearAppSpecificShortcuts()
+{
+    std::lock_guard<std::mutex> lock(appSpecificShortcutReMap_mutex);
+    appSpecificShortcutReMap.clear();
+}
+
 // Function to add a new OS level shortcut remapping
 bool KeyboardManagerState::AddOSLevelShortcut(const Shortcut& originalSC, const Shortcut& newSC)
 {
@@ -139,6 +146,32 @@ bool KeyboardManagerState::AddSingleKeyRemap(const DWORD& originalKey, const DWO
     }
 
     singleKeyReMap[originalKey] = newRemapKey;
+    return true;
+}
+
+// Function to add a new App specific shortcut remapping
+bool KeyboardManagerState::AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const Shortcut& newSC)
+{
+    std::lock_guard<std::mutex> lock(appSpecificShortcutReMap_mutex);
+
+    // Check if there are any app specific shortcuts for this app
+    auto appIt = appSpecificShortcutReMap.find(app);
+    if (appIt != appSpecificShortcutReMap.end())
+    {
+        // Check if the shortcut is already remapped
+        auto shortcutIt = appSpecificShortcutReMap[app].find(originalSC);
+        if (shortcutIt != appSpecificShortcutReMap[app].end())
+        {
+            return false;
+        }
+    }
+
+    // Convert app name to lower case
+    std::wstring process_name;
+    process_name.resize(app.length());
+    std::transform(app.begin(), app.end(), process_name.begin(), towlower);
+
+    appSpecificShortcutReMap[process_name][originalSC] = RemapShortcut(newSC);
     return true;
 }
 
@@ -411,6 +444,7 @@ bool KeyboardManagerState::SaveConfigToFile()
     json::JsonObject remapShortcuts;
     json::JsonObject remapKeys;
     json::JsonArray inProcessRemapKeysArray;
+    json::JsonArray appSpecificRemapShortcutsArray;
     json::JsonArray globalRemapShortcutsArray;
     std::unique_lock<std::mutex> lockSingleKeyReMap(singleKeyReMap_mutex);
     for (const auto& it : singleKeyReMap)
@@ -433,8 +467,26 @@ bool KeyboardManagerState::SaveConfigToFile()
         globalRemapShortcutsArray.Append(keys);
     }
     lockOsLevelShortcutReMap.unlock();
+    
+    std::unique_lock<std::mutex> lockAppSpecificShortcutReMap(appSpecificShortcutReMap_mutex);
+    for (const auto& itApp : appSpecificShortcutReMap)
+    {
+        // Iterate over apps
+        for (const auto& itKeys : itApp.second)
+        {
+            json::JsonObject keys;
+            keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(itKeys.first.ToHstringVK()));
+            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(itKeys.second.targetShortcut.ToHstringVK()));
+            keys.SetNamedValue(KeyboardManagerConstants::TargetAppSettingName, json::value(itApp.first));
+
+            appSpecificRemapShortcutsArray.Append(keys);        
+        }
+
+    }
+    lockAppSpecificShortcutReMap.unlock();
 
     remapShortcuts.SetNamedValue(KeyboardManagerConstants::GlobalRemapShortcutsSettingName, globalRemapShortcutsArray);
+    remapShortcuts.SetNamedValue(KeyboardManagerConstants::AppSpecificRemapShortcutsSettingName, appSpecificRemapShortcutsArray);
     remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, inProcessRemapKeysArray);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeys);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsSettingName, remapShortcuts);
@@ -476,4 +528,16 @@ std::wstring KeyboardManagerState::GetCurrentConfigName()
 {
     std::lock_guard<std::mutex> lock(currentConfig_mutex);
     return currentConfig;
+}
+
+// Sets the activated target application in app-specfic shortcut
+void KeyboardManagerState::SetActivatedApp(const std::wstring& appName)
+{
+    activatedAppSpecificShortcutTarget = appName;
+}
+
+// Gets the activated target application in app-specfic shortcut
+std::wstring KeyboardManagerState::GetActivatedApp()
+{
+    return activatedAppSpecificShortcutTarget;
 }

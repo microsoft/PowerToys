@@ -303,6 +303,7 @@ ZoneSet::MoveWindowIntoZoneByIndexSet(HWND window, HWND windowZone, const std::v
 
     if (!sizeEmpty)
     {
+        SaveWindowSizeAndOrigin(window);
         SizeWindowToRect(window, size);
         StampWindow(window, bitmask);
     }
@@ -419,8 +420,8 @@ bool ZoneSet::CalculateFocusLayout(Rect workArea, int zoneCount) noexcept
 
     long left{ long(workArea.width() * 0.1) };
     long top{ long(workArea.height() * 0.1) };
-    long right{ long(workArea.width() * 0.6) };
-    long bottom{ long(workArea.height() * 0.6) };
+    long right{ left + long(workArea.width() * 0.6) };
+    long bottom{ top + long(workArea.height() * 0.6) };
 
     RECT focusZoneRect{ left, top, right, bottom };
 
@@ -700,3 +701,4 @@ winrt::com_ptr<IZoneSet> MakeZoneSet(ZoneSetConfig const& config) noexcept
 {
     return winrt::make_self<ZoneSet>(config);
 }
+

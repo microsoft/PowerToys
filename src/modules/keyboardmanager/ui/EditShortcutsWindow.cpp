@@ -30,11 +30,37 @@ static IAsyncAction OnClickAccept(
     XamlRoot root,
     std::function<void()> ApplyRemappings)
 {
-    KeyboardManagerHelper::ErrorType isSuccess = Dialog::CheckIfRemappingsAreValid<Shortcut>(
-        ShortcutControl::shortcutRemapBuffer,
-        [](Shortcut shortcut) {
-            return shortcut.IsValidShortcut();
-        });
+    KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
+    std::map<std::wstring, std::vector<std::vector<Shortcut>>> appSpecificBuffer;
+
+    // Create per app shortcut buffer
+    for (int i = 0; i < ShortcutControl::shortcutRemapBuffer.size(); i++)
+    {
+        std::wstring currAppName = ShortcutControl::shortcutRemapBuffer[i].second;
+        std::transform(currAppName.begin(), currAppName.end(), currAppName.begin(), towlower);
+
+        if (appSpecificBuffer.find(currAppName) == appSpecificBuffer.end())
+        {
+            appSpecificBuffer[currAppName] = std::vector<std::vector<Shortcut>>();
+        }
+
+        appSpecificBuffer[currAppName].push_back(ShortcutControl::shortcutRemapBuffer[i].first);
+    }
+
+    for (auto it : appSpecificBuffer)
+    {
+        KeyboardManagerHelper::ErrorType currentSuccess = Dialog::CheckIfRemappingsAreValid<Shortcut>(
+            it.second,
+            [](Shortcut shortcut) {
+                return shortcut.IsValidShortcut();
+            });
+        if (currentSuccess != KeyboardManagerHelper::ErrorType::NoError)
+        {
+            isSuccess = currentSuccess;
+            break;
+        }
+    }
+
     if (isSuccess != KeyboardManagerHelper::ErrorType::NoError)
     {
         if (!co_await Dialog::PartialRemappingConfirmationDialog(root, L"Some of the shortcuts could not be remapped. Do you want to continue anyway?"))
@@ -166,6 +192,8 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     ColumnDefinition newColumn;
     newColumn.MinWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
     newColumn.MaxWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
+    ColumnDefinition targetAppColumn;
+    targetAppColumn.MinWidth(KeyboardManagerConstants::TableTargetAppColWidth);
     ColumnDefinition removeColumn;
     removeColumn.MinWidth(KeyboardManagerConstants::TableRemoveColWidth);
     shortcutTable.Margin({ 10, 10, 10, 20 });
@@ -173,6 +201,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     shortcutTable.ColumnDefinitions().Append(originalColumn);
     shortcutTable.ColumnDefinitions().Append(arrowColumn);
     shortcutTable.ColumnDefinitions().Append(newColumn);
+    shortcutTable.ColumnDefinitions().Append(targetAppColumn);
     shortcutTable.ColumnDefinitions().Append(removeColumn);
     shortcutTable.RowDefinitions().Append(RowDefinition());
 
@@ -188,13 +217,24 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     newShortcutHeader.FontWeight(Text::FontWeights::Bold());
     newShortcutHeader.Margin({ 0, 0, 0, 10 });
 
+    // Third header textblock in the header row of the shortcut table
+    TextBlock targetAppHeader;
+    targetAppHeader.Text(L"Target App:");
+    targetAppHeader.Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
+    targetAppHeader.FontWeight(Text::FontWeights::Bold());
+    targetAppHeader.Margin({ 0, 0, 0, 10 });
+    targetAppHeader.HorizontalAlignment(HorizontalAlignment::Center);
+
     shortcutTable.SetColumn(originalShortcutHeader, KeyboardManagerConstants::ShortcutTableOriginalColIndex);
     shortcutTable.SetRow(originalShortcutHeader, 0);
     shortcutTable.SetColumn(newShortcutHeader, KeyboardManagerConstants::ShortcutTableNewColIndex);
     shortcutTable.SetRow(newShortcutHeader, 0);
+    shortcutTable.SetColumn(targetAppHeader, KeyboardManagerConstants::ShortcutTableTargetAppColIndex);
+    shortcutTable.SetRow(targetAppHeader, 0);
 
     shortcutTable.Children().Append(originalShortcutHeader);
     shortcutTable.Children().Append(newShortcutHeader);
+    shortcutTable.Children().Append(targetAppHeader);
 
     // Store handle of edit shortcuts window
     ShortcutControl::EditShortcutsWindowHandle = _hWndEditShortcutsWindow;
@@ -209,13 +249,26 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     // Set keyboard manager UI state so that shortcut remaps are not applied while on this window
     keyboardManagerState.SetUIState(KeyboardManagerUIState::EditShortcutsWindowActivated, _hWndEditShortcutsWindow);
 
-    // Load existing shortcuts into UI
-    std::unique_lock<std::mutex> lock(keyboardManagerState.osLevelShortcutReMap_mutex);
+    // Load existing os level shortcuts into UI
+    std::unique_lock<std::mutex> lockOSLevel(keyboardManagerState.osLevelShortcutReMap_mutex);
     for (const auto& it : keyboardManagerState.osLevelShortcutReMap)
     {
         ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects, it.first, it.second.targetShortcut);
     }
-    lock.unlock();
+    lockOSLevel.unlock();
+
+    // Load existing app-specific shortcuts into UI
+    std::unique_lock<std::mutex> lockAppSpecific(keyboardManagerState.appSpecificShortcutReMap_mutex);
+    // Iterate through all the apps
+    for (const auto& itApp : keyboardManagerState.appSpecificShortcutReMap)
+    {
+        // Iterate through shortcuts for each app
+        for (const auto& itShortcut : itApp.second)
+        {
+            ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects, itShortcut.first, itShortcut.second.targetShortcut, itApp.first);
+        }
+    }
+    lockAppSpecific.unlock();
 
     // Apply button
     Button applyButton;
@@ -230,24 +283,40 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
         // Clear existing shortcuts
         keyboardManagerState.ClearOSLevelShortcuts();
-        DWORD successfulRemapCount = 0;
+        keyboardManagerState.ClearAppSpecificShortcuts();
+        DWORD successfulOSLevelRemapCount = 0;
+        DWORD successfulAppSpecificRemapCount = 0;
         // Save the shortcuts that are valid and report if any of them were invalid
         for (int i = 0; i < ShortcutControl::shortcutRemapBuffer.size(); i++)
         {
-            Shortcut originalShortcut = ShortcutControl::shortcutRemapBuffer[i][0];
-            Shortcut newShortcut = ShortcutControl::shortcutRemapBuffer[i][1];
+            Shortcut originalShortcut = ShortcutControl::shortcutRemapBuffer[i].first[0];
+            Shortcut newShortcut = ShortcutControl::shortcutRemapBuffer[i].first[1];
 
             if (originalShortcut.IsValidShortcut() && newShortcut.IsValidShortcut())
             {
-                bool result = keyboardManagerState.AddOSLevelShortcut(originalShortcut, newShortcut);
-                if (!result)
+                if (ShortcutControl::shortcutRemapBuffer[i].second == L"")
                 {
-                    isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
-                    // Tooltip is already shown for this row
+                    bool result = keyboardManagerState.AddOSLevelShortcut(originalShortcut, newShortcut);
+                    if (!result)
+                    {
+                        isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
+                    }
+                    else
+                    {
+                        successfulOSLevelRemapCount += 1;
+                    }
                 }
                 else
                 {
-                    successfulRemapCount += 1;
+                    bool result = keyboardManagerState.AddAppSpecificShortcut(ShortcutControl::shortcutRemapBuffer[i].second, originalShortcut, newShortcut);
+                    if (!result)
+                    {
+                        isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
+                    }
+                    else
+                    {
+                        successfulAppSpecificRemapCount += 1;
+                    }
                 }
             }
             else
@@ -256,7 +325,10 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
             }
         }
 
-        Trace::OSLevelShortcutRemapCount(successfulRemapCount);
+        // Telemetry events
+        Trace::OSLevelShortcutRemapCount(successfulOSLevelRemapCount);
+        Trace::AppSpecificShortcutRemapCount(successfulAppSpecificRemapCount);
+
         // Save the updated key remaps to file.
         bool saveResult = keyboardManagerState.SaveConfigToFile();
         if (!saveResult)

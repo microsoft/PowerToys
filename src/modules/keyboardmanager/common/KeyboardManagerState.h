@@ -59,7 +59,7 @@ private:
     StackPanel currentShortcutUI1;
     StackPanel currentShortcutUI2;
     std::mutex currentShortcutUI_mutex;
-    
+
     // Stores the current configuration name.
     std::wstring currentConfig = KeyboardManagerConstants::DefaultConfiguration;
     std::mutex currentConfig_mutex;
@@ -70,6 +70,9 @@ private:
     // Registered KeyDelay objects, used to notify delayed key events.
     std::map<DWORD, std::unique_ptr<KeyDelay>> keyDelays;
     std::mutex keyDelays_mutex;
+
+    // Stores the activated target application in app-specfic shortcut
+    std::wstring activatedAppSpecificShortcutTarget;
 
     // Display a key by appending a border Control as a child of the panel.
     void AddKeyToLayout(const StackPanel& panel, const winrt::hstring& key);
@@ -120,11 +123,17 @@ public:
     // Function to clear the Keys remapping table
     void ClearSingleKeyRemaps();
 
+    // Function to clear the App specific shortcut remapping table
+    void ClearAppSpecificShortcuts();
+
     // Function to add a new single key remapping
     bool AddSingleKeyRemap(const DWORD& originalKey, const DWORD& newRemapKey);
 
     // Function to add a new OS level shortcut remapping
     bool AddOSLevelShortcut(const Shortcut& originalSC, const Shortcut& newSC);
+
+    // Function to add a new App specific level shortcut remapping
+    bool AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const Shortcut& newSC);
 
     // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
     void ConfigureDetectShortcutUI(const StackPanel& textBlock1, const StackPanel& textBlock2);
@@ -184,4 +193,10 @@ public:
 
     // Gets the Current Active Configuration Name.
     std::wstring GetCurrentConfigName();
+
+    // Sets the activated target application in app-specfic shortcut
+    void SetActivatedApp(const std::wstring& appName);
+
+    // Gets the activated target application in app-specfic shortcut
+    std::wstring GetActivatedApp();
 };

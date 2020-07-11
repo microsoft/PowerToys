@@ -133,7 +133,7 @@ namespace JSONHelpers
 
     struct AppZoneHistoryData
     {
-        std::map<DWORD, HWND> processIdToHandleMap; // Maps process id(DWORD) of application to zoned window handle(HWND)
+        std::unordered_map<DWORD, HWND> processIdToHandleMap; // Maps process id(DWORD) of application to zoned window handle(HWND)
 
         std::wstring zoneSetUuid;
         std::wstring deviceId;
@@ -258,7 +258,6 @@ namespace JSONHelpers
         json::JsonArray SerializeDeviceInfos() const;
         bool ParseCustomZoneSets(const json::JsonObject& fancyZonesDataJSON);
         json::JsonArray SerializeCustomZoneSets() const;
-        void CustomZoneSetsToJsonFile(std::wstring_view filePath) const;
 
         void LoadFancyZonesData();
         void SaveFancyZonesData() const;

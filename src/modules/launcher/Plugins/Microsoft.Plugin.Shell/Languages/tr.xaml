@@ -8,5 +8,5 @@
     <system:String x:Key="wox_plugin_cmd_plugin_description">Wox üzerinden komut istemini kullanmanızı sağlar. Komutlar > işareti ile başlamalıdır.</system:String>
     <system:String x:Key="wox_plugin_cmd_cmd_has_been_executed_times">Bu komut {0} kez çalıştırıldı</system:String>
     <system:String x:Key="wox_plugin_cmd_execute_through_shell">Komut isteminde çalıştır</system:String>
-    <system:String x:Key="wox_plugin_cmd_run_as_administrator">Yönetici Olarak Çalıştır</system:String>
+    <system:String x:Key="wox_plugin_cmd_run_as_administrator">Yönetici Olarak Çalıştır (Ctrl+Shift+Enter)</system:String>
 </ResourceDictionary>

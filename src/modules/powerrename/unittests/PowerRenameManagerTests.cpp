@@ -229,5 +229,57 @@ namespace PowerRenameManagerTests
 
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", DEFAULT_FLAGS | ExcludeSubfolders);
         }
+
+        TEST_METHOD (VerifyUppercaseTransform)
+        {
+            rename_pairs renamePairs[] = {
+                { L"foo", L"BAR", true, true, 0 },
+                { L"foo.test", L"BAR.TEST", true, true, 0 },
+                { L"TEST", L"TEST_norename", true, false, 0 }
+            };
+
+            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", DEFAULT_FLAGS | Uppercase);
+        }
+
+        TEST_METHOD (VerifyLowercaseTransform)
+        {
+            rename_pairs renamePairs[] = {
+                { L"Foo", L"bar", false, true, 0 },
+                { L"Foo.teST", L"bar.test", false, true, 0 },
+                { L"test", L"test_norename", false, false, 0 }
+            };
+
+            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", DEFAULT_FLAGS | Lowercase);
+        }
+
+        TEST_METHOD (VerifyTitlecaseTransform)
+        {
+            rename_pairs renamePairs[] = {
+                { L"foo and the to", L"Bar and the To", false, true, 0 },
+                { L"Test", L"Test_norename", false, false, 0 }
+            };
+
+            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", DEFAULT_FLAGS | Titlecase);
+        }
+
+        TEST_METHOD (VerifyNameOnlyTransform)
+        {
+            rename_pairs renamePairs[] = {
+                { L"foo.txt", L"BAR.txt", false, true, 0 },
+                { L"TEST", L"TEST_norename", false, false, 1 }
+            };
+
+            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", DEFAULT_FLAGS | Uppercase | NameOnly);
+        }
+
+        TEST_METHOD (VerifyExtensionOnlyTransform)
+        {
+            rename_pairs renamePairs[] = {
+                { L"foo.FOO", L"foo.bar", false, true, 0 },
+                { L"foo.bar", L"foo.bar_rename", false, false, 0 }
+            };
+
+            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", DEFAULT_FLAGS | Lowercase | ExtensionOnly);
+        }
     };
 }

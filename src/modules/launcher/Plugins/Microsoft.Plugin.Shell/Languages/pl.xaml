@@ -8,5 +8,5 @@
     <system:String x:Key="wox_plugin_cmd_plugin_description">Pozwala wykonywać komend wiersza polecania z Woxa. Polecania zaczynają się od ></system:String>
     <system:String x:Key="wox_plugin_cmd_cmd_has_been_executed_times">to polecenie zostało wykonane {0} razy</system:String>
     <system:String x:Key="wox_plugin_cmd_execute_through_shell">wykonaj to polecenie w wierszu poleceń</system:String>
-    <system:String x:Key="wox_plugin_cmd_run_as_administrator">Uruchom jako administrator</system:String>
+    <system:String x:Key="wox_plugin_cmd_run_as_administrator">Uruchom jako administrator (Ctrl+Shift+Enter)</system:String>
 </ResourceDictionary>

@@ -4,13 +4,14 @@
 #include <common/notifications.h>
 #include <common/notifications/fancyzones_notifications.h>
 #include <common/window_helpers.h>
+#include <common/dpi_aware.h>
 
 #include "lib/Settings.h"
 #include "lib/ZoneWindow.h"
 #include "lib/util.h"
 #include "VirtualDesktopUtils.h"
 #include "lib/SecondaryMouseButtonsHook.h"
-#include <lib/ShiftKeyHook.h>
+#include "lib/GenericKeyHook.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -47,10 +48,13 @@ namespace WindowMoveHandlerUtils
 class WindowMoveHandlerPrivate
 {
 public:
-    WindowMoveHandlerPrivate(const winrt::com_ptr<IFancyZonesSettings>& settings, SecondaryMouseButtonsHook* mouseHook, ShiftKeyHook* shiftHook) :
+    WindowMoveHandlerPrivate(const winrt::com_ptr<IFancyZonesSettings>& settings, SecondaryMouseButtonsHook* mouseHook, ShiftKeyHook* shiftHook, CtrlKeyHook* ctrlHook) :
         m_settings(settings),
         m_mouseHook(mouseHook),
-        m_shiftHook(shiftHook){};
+        m_shiftHook(shiftHook),
+        m_ctrlHook(ctrlHook)
+    {
+    }
 
     bool IsDragEnabled() const noexcept
     {
@@ -64,6 +68,7 @@ public:
 
     void OnMouseDown() noexcept;
     void OnShiftChangeState(bool state) noexcept;
+    void OnCtrlChangeState(bool state) noexcept;
 
     void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept;
@@ -79,6 +84,7 @@ private:
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
     SecondaryMouseButtonsHook* m_mouseHook{};
     ShiftKeyHook* m_shiftHook{};
+    CtrlKeyHook* m_ctrlHook{};
 
     HWND m_windowMoveSize{}; // The window that is being moved/sized
     bool m_inMoveSize{}; // Whether or not a move/size operation is currently active
@@ -86,10 +92,11 @@ private:
     bool m_dragEnabled{}; // True if we should be showing zone hints while dragging
     bool m_secondaryMouseButtonState{}; // True when secondary mouse button was clicked after window was moved
     bool m_shiftKeyState{}; // True when shift key was pressed after window was moved
+    bool m_ctrlKeyState{}; // True when ctrl key was pressed after window was moved
 };
 
-WindowMoveHandler::WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& settings, SecondaryMouseButtonsHook* mouseHook, ShiftKeyHook* shiftHook) :
-    pimpl(new WindowMoveHandlerPrivate(settings, mouseHook, shiftHook)) {}
+WindowMoveHandler::WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& settings, SecondaryMouseButtonsHook* mouseHook, ShiftKeyHook* shiftHook, CtrlKeyHook* ctrlHook) :
+    pimpl(new WindowMoveHandlerPrivate(settings, mouseHook, shiftHook, ctrlHook)) {}
 
 WindowMoveHandler::~WindowMoveHandler()
 {
@@ -114,6 +121,11 @@ void WindowMoveHandler::OnMouseDown() noexcept
 void WindowMoveHandler::OnShiftChangeState(bool state) noexcept
 {
     pimpl->OnShiftChangeState(state);
+}
+
+void WindowMoveHandler::OnCtrlChangeState(bool state) noexcept
+{
+    pimpl->OnCtrlChangeState(state);
 }
 
 void WindowMoveHandler::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
@@ -151,6 +163,11 @@ void WindowMoveHandlerPrivate::OnShiftChangeState(bool state) noexcept
     m_shiftKeyState = state;
 }
 
+void WindowMoveHandlerPrivate::OnCtrlChangeState(bool state) noexcept
+{
+    m_ctrlKeyState = state;
+}
+
 void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen, const std::unordered_map<HMONITOR, winrt::com_ptr<IZoneWindow>>& zoneWindowMap) noexcept
 {
     if (!IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray) || WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
@@ -173,10 +190,8 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
         m_mouseHook->enable();
     }
 
-    if (m_settings->GetSettings()->shiftDrag)
-    {
-        m_shiftHook->enable();
-    }
+    m_shiftHook->enable();
+    m_ctrlHook->enable();
 
     // This updates m_dragEnabled depending on if the shift key is being held down.
     UpdateDragState(window);
@@ -249,6 +264,7 @@ void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptS
                 {
                     // The drag has moved to a different monitor.
                     m_zoneWindowMoveSize->RestoreOriginalTransparency();
+                    m_zoneWindowMoveSize->ClearSelectedZones();
 
                     if (!m_settings->GetSettings()->showZonesOnAllMonitors)
                     {
@@ -260,7 +276,7 @@ void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptS
 
                 for (auto [keyMonitor, zoneWindow] : zoneWindowMap)
                 {
-                    zoneWindow->MoveSizeUpdate(ptScreen, m_dragEnabled);
+                    zoneWindow->MoveSizeUpdate(ptScreen, m_dragEnabled, m_ctrlKeyState);
                 }
             }
         }
@@ -283,6 +299,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
 
     m_mouseHook->disable();
     m_shiftHook->disable();
+    m_ctrlHook->disable();
 
     m_inMoveSize = false;
     m_dragEnabled = false;
@@ -295,7 +312,17 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
     }
     else
     {
-        ::RemoveProp(window, MULTI_ZONE_STAMP);
+        if (m_settings->GetSettings()->restoreSize)
+        {
+            if (WindowMoveHandlerUtils::IsCursorTypeIndicatingSizeEvent())
+            {
+                ::RemoveProp(window, RESTORE_SIZE_STAMP);
+            }
+            else
+            {
+                RestoreWindowSize(window);
+            }
+        }
 
         auto monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
         if (monitor)
@@ -315,6 +342,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
                 }
             }
         }
+        ::RemoveProp(window, MULTI_ZONE_STAMP);
     }
 
     // Also, hide all windows (regardless of settings)

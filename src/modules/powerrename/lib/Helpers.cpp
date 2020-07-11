@@ -1,6 +1,172 @@
 #include "pch.h"
 #include "Helpers.h"
 #include <ShlGuid.h>
+#include <cstring>
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
+HRESULT GetTrimmedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source)
+{
+    HRESULT hr = (source && wcslen(source) > 0) ? S_OK : E_INVALIDARG;     
+    if (SUCCEEDED(hr))
+    {
+        PWSTR newName = nullptr;
+        hr = SHStrDup(source, &newName);
+        if (SUCCEEDED(hr))
+        {
+            size_t firstValidIndex = 0, lastValidIndex = wcslen(newName) - 1;
+            while (firstValidIndex <= lastValidIndex && iswspace(newName[firstValidIndex]))
+            {
+                firstValidIndex++;
+            }
+            while (firstValidIndex <= lastValidIndex && (iswspace(newName[lastValidIndex]) || newName[lastValidIndex] == L'.'))
+            {
+                lastValidIndex--;
+            }
+            newName[lastValidIndex + 1] = '\0';
+
+            hr = StringCchCopy(result, cchMax, newName + firstValidIndex);
+        }
+        CoTaskMemFree(newName);
+    }
+
+    return hr;
+}
+
+HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, DWORD flags)
+{
+    std::locale::global(std::locale(""));
+    HRESULT hr = (source && wcslen(source) > 0 && flags) ? S_OK : E_INVALIDARG;
+    if (SUCCEEDED(hr))
+    {
+        if (flags & Uppercase)
+        {
+            if (flags & NameOnly)
+            {
+                std::wstring stem = fs::path(source).stem().wstring();
+                std::transform(stem.begin(), stem.end(), stem.begin(), ::towupper);
+                hr = StringCchPrintf(result, cchMax, L"%s%s", stem.c_str(), fs::path(source).extension().c_str());
+            }
+            else if (flags & ExtensionOnly)
+            {
+                std::wstring extension = fs::path(source).extension().wstring();
+                if (!extension.empty())
+                {
+                    std::transform(extension.begin(), extension.end(), extension.begin(), ::towupper);
+                    hr = StringCchPrintf(result, cchMax, L"%s%s", fs::path(source).stem().c_str(), extension.c_str());
+                }
+                else
+                {
+                    hr = StringCchCopy(result, cchMax, source);
+                    if (SUCCEEDED(hr))
+                    {
+                        std::transform(result, result + wcslen(result), result, ::towupper);
+                    }
+                }
+            }
+            else
+            {
+                hr = StringCchCopy(result, cchMax, source);
+                if (SUCCEEDED(hr))
+                {
+                    std::transform(result, result + wcslen(result), result, ::towupper);
+                }
+            }
+        }
+        else if (flags & Lowercase)
+        {
+            if (flags & NameOnly)
+            {
+                std::wstring stem = fs::path(source).stem().wstring();
+                std::transform(stem.begin(), stem.end(), stem.begin(), ::towlower);
+                hr = StringCchPrintf(result, cchMax, L"%s%s", stem.c_str(), fs::path(source).extension().c_str());
+            }
+            else if (flags & ExtensionOnly)
+            {
+                std::wstring extension = fs::path(source).extension().wstring();
+                if (!extension.empty())
+                {
+                    std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
+                    hr = StringCchPrintf(result, cchMax, L"%s%s", fs::path(source).stem().c_str(), extension.c_str());
+                }
+                else
+                {
+                    hr = StringCchCopy(result, cchMax, source);
+                    if (SUCCEEDED(hr))
+                    {
+                        std::transform(result, result + wcslen(result), result, ::towlower);
+                    }
+                }
+            }
+            else
+            {
+                hr = StringCchCopy(result, cchMax, source);
+                if (SUCCEEDED(hr))
+                {
+                    std::transform(result, result + wcslen(result), result, ::towlower);
+                }
+            }
+        }
+        else if (flags & Titlecase)
+        {
+            if (!(flags & ExtensionOnly))
+            {
+                std::vector<std::wstring> exceptions = { L"a", L"an", L"to", L"the", L"at", L"by", L"for", L"in", L"of", L"on", L"up", L"and", L"as", L"but", L"or", L"nor" };
+                std::wstring stem = fs::path(source).stem().wstring();
+                std::wstring extension = fs::path(source).extension().wstring();
+
+                size_t stemLength = stem.length();
+                bool isFirstWord = true;
+
+                while (stemLength > 0 && (iswspace(stem[stemLength - 1]) || iswpunct(stem[stemLength - 1])))
+                {
+                    stemLength--;
+                }
+
+                for (size_t i = 0; i < stemLength; i++)
+                {
+                    if (!i || iswspace(stem[i - 1]) || iswpunct(stem[i - 1]))
+                    {
+                        if (iswspace(stem[i]) || iswpunct(stem[i]))
+                        {
+                            continue;
+                        }
+                        size_t wordLength = 0;
+                        while (i + wordLength < stemLength && !iswspace(stem[i + wordLength]) && !iswpunct(stem[i + wordLength]))
+                        {
+                            wordLength++;
+                        }
+                        if (isFirstWord || i + wordLength == stemLength || std::find(exceptions.begin(), exceptions.end(), stem.substr(i, wordLength)) == exceptions.end())
+                        {
+                            stem[i] = towupper(stem[i]);
+                            isFirstWord = false;
+                        }
+                        else
+                        {
+                            stem[i] = towlower(stem[i]);
+                        }
+                    }
+                    else
+                    {
+                        stem[i] = towlower(stem[i]);
+                    }
+                }
+                hr = StringCchPrintf(result, cchMax, L"%s%s", stem.c_str(), extension.c_str());
+            }
+            else
+            {
+                hr = StringCchCopy(result, cchMax, source);
+            }
+        }
+        else
+        {
+            hr = StringCchCopy(result, cchMax, source);
+        }
+    }
+
+    return hr;
+}
 
 HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* psrm, _In_ int depth = 0)
 {

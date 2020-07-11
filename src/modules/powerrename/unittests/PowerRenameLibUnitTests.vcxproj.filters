@@ -21,9 +21,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{d3bb184f-a1c9-40f6-a6e5-0b4c879fe4a3}</UniqueIdentifier>
     </Filter>
@@ -35,5 +32,8 @@
     <ResourceCompile Include="PowerRenameUnitTests.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

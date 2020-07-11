@@ -51,7 +51,6 @@ namespace Microsoft.Plugin.Program.Views
             Task.Run(() =>
             {
                 Dispatcher.Invoke(() => { indexingPanel.Visibility = Visibility.Visible; });
-                Main.IndexPrograms();
                 Dispatcher.Invoke(() => { indexingPanel.Visibility = Visibility.Hidden; });
             });
         }
