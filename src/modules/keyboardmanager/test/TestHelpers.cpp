@@ -18,6 +18,6 @@ namespace TestHelpers
         std::wstring maxLengthString;
         maxLengthString.resize(MAX_PATH);
         state.SetActivatedApp(maxLengthString);
-        state.SetActivatedApp(L"");
+        state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
     }
 }

@@ -132,7 +132,7 @@ namespace RemappingLogicTests
             mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
             // Activated app should be empty string
-            Assert::AreEqual(std::wstring(L""), testState.GetActivatedApp());
+            Assert::AreEqual(std::wstring(KeyboardManagerConstants::NoActivatedApp), testState.GetActivatedApp());
         }
         // Test if the key states get cleared if foreground app changes after app-specific shortcut is invoked and then released
         TEST_METHOD (AppSpecificShortcut_ShouldClearKeyStates_WhenForegroundAppChangesAfterShortcutIsPressedOnRelease)

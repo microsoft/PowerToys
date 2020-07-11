@@ -12,7 +12,7 @@ namespace KeyboardEventHandlers
     __declspec(dllexport) intptr_t HandleSingleKeyToggleToModEvent(InputInterface& ii, LowlevelKeyboardEvent* data, KeyboardManagerState& keyboardManagerState) noexcept;
 
     // Function to a handle a shortcut remap
-    __declspec(dllexport) intptr_t HandleShortcutRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, std::map<Shortcut, RemapShortcut>& reMap, std::mutex& map_mutex, KeyboardManagerState& keyboardManagerState, const std::wstring& activatedApp = L"") noexcept;
+    __declspec(dllexport) intptr_t HandleShortcutRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, std::map<Shortcut, RemapShortcut>& reMap, std::mutex& map_mutex, KeyboardManagerState& keyboardManagerState, const std::wstring& activatedApp = KeyboardManagerConstants::NoActivatedApp) noexcept;
 
     // Function to a handle an os-level shortcut remap
     __declspec(dllexport) intptr_t HandleOSLevelShortcutRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, KeyboardManagerState& keyboardManagerState) noexcept;

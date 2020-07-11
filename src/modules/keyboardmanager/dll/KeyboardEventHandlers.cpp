@@ -261,7 +261,7 @@ namespace KeyboardEventHandlers
 
                     it.second.isShortcutInvoked = true;
                     // If app specific shortcut is invoked, store the target application
-                    if (activatedApp != L"")
+                    if (activatedApp != KeyboardManagerConstants::NoActivatedApp)
                     {
                         keyboardManagerState.SetActivatedApp(activatedApp);
                     }
@@ -365,9 +365,9 @@ namespace KeyboardEventHandlers
                     it.second.isShortcutInvoked = false;
                     it.second.winKeyInvoked = ModifierKey::Disabled;
                     // If app specific shortcut has finished invoking, reset the target application
-                    if (activatedApp != L"")
+                    if (activatedApp != KeyboardManagerConstants::NoActivatedApp)
                     {
-                        keyboardManagerState.SetActivatedApp(L"");
+                        keyboardManagerState.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
                     }
                     lock.unlock();
 
@@ -570,9 +570,9 @@ namespace KeyboardEventHandlers
                         it.second.isShortcutInvoked = false;
                         it.second.winKeyInvoked = ModifierKey::Disabled;
                         // If app specific shortcut has finished invoking, reset the target application
-                        if (activatedApp != L"")
+                        if (activatedApp != KeyboardManagerConstants::NoActivatedApp)
                         {
-                            keyboardManagerState.SetActivatedApp(L"");
+                            keyboardManagerState.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
                         }
                         lock.unlock();
                         UINT res = ii.SendVirtualInput((UINT)key_count, keyEventList, sizeof(INPUT));
@@ -587,9 +587,9 @@ namespace KeyboardEventHandlers
                 it.second.isShortcutInvoked = false;
                 it.second.winKeyInvoked = ModifierKey::Disabled;
                 // If app specific shortcut has finished invoking, reset the target application
-                if (activatedApp != L"")
+                if (activatedApp != KeyboardManagerConstants::NoActivatedApp)
                 {
-                    keyboardManagerState.SetActivatedApp(L"");
+                    keyboardManagerState.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
                 }
             }
         }
@@ -638,7 +638,7 @@ namespace KeyboardEventHandlers
 
             std::map<std::wstring, std::map<Shortcut, RemapShortcut>>::iterator it;
             // Check if an app-specific shortcut is already activated
-            if (keyboardManagerState.GetActivatedApp() == L"")
+            if (keyboardManagerState.GetActivatedApp() == KeyboardManagerConstants::NoActivatedApp)
             {
                 query_string = process_name;
                 it = keyboardManagerState.appSpecificShortcutReMap.find(query_string);
