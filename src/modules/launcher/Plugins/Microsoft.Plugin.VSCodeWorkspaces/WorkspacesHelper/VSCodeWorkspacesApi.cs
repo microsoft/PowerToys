@@ -90,36 +90,41 @@ namespace Microsoft.Plugin.VSCodeWorkspaces.WorkspacesHelper
                 {
                     var fileContent = File.ReadAllText(vscode_storage);
 
-                    VSCodeStorageFile vscodeStorageFile = JsonConvert.DeserializeObject<VSCodeStorageFile>(fileContent);
-
-                    if (vscodeStorageFile != null)
+                    try
                     {
-                        foreach (var workspaceUri in vscodeStorageFile.openedPathsList.workspaces3)
+                        VSCodeStorageFile vscodeStorageFile = JsonConvert.DeserializeObject<VSCodeStorageFile>(fileContent);
+
+                        if (vscodeStorageFile != null)
                         {
-                            if (workspaceUri != null)
+                            foreach (var workspaceUri in vscodeStorageFile.openedPathsList.workspaces3)
                             {
-                                string unescapeUri = Uri.UnescapeDataString(workspaceUri);
-                                var typeWorkspace = ParseVSCodeUri.GetTypeWorkspace(unescapeUri);
-                                if (typeWorkspace.TypeWorkspace.HasValue)
+                                if (workspaceUri != null && workspaceUri is String)
                                 {
-                                    var folderName = Path.GetFileName(unescapeUri);
-                                    if (folderName.ToLower().Contains(query.ToLower()))
+                                    string unescapeUri = Uri.UnescapeDataString(workspaceUri);
+                                    var typeWorkspace = ParseVSCodeUri.GetTypeWorkspace(unescapeUri);
+                                    if (typeWorkspace.TypeWorkspace.HasValue)
                                     {
-                                        results.Add(new VSCodeWorkspace()
+                                        var folderName = Path.GetFileName(unescapeUri);
+                                        if (folderName.ToLower().Contains(query.ToLower()))
                                         {
-                                            Path = workspaceUri,
-                                            RelativePath = typeWorkspace.Path,
-                                            FolderName = folderName,
-                                            ExtraInfo = typeWorkspace.MachineName,
-                                            TypeWorkspace = typeWorkspace.TypeWorkspace.Value,
-                                            VSCodeVersion = vscodeInstance.VSCodeVersion,
-                                            VSCodeExecutable = vscodeInstance.ExecutablePath
-                                        });
+                                            results.Add(new VSCodeWorkspace()
+                                            {
+                                                Path = workspaceUri,
+                                                RelativePath = typeWorkspace.Path,
+                                                FolderName = folderName,
+                                                ExtraInfo = typeWorkspace.MachineName,
+                                                TypeWorkspace = typeWorkspace.TypeWorkspace.Value,
+                                                VSCodeVersion = vscodeInstance.VSCodeVersion,
+                                                VSCodeExecutable = vscodeInstance.ExecutablePath
+                                            });
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+                    catch (Exception ex){}
+
                 }
 
             }

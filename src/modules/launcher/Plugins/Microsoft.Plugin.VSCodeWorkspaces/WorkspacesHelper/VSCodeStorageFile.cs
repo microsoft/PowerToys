@@ -11,6 +11,6 @@ namespace Microsoft.Plugin.VSCodeWorkspaces.WorkspacesHelper
 
     public class openedPathsList
     {
-        public List<String> workspaces3 { get; set; }
+        public List<dynamic> workspaces3 { get; set; }
     }
 }
