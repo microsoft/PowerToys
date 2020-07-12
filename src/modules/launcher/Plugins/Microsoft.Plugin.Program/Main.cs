@@ -30,19 +30,19 @@ namespace Microsoft.Plugin.Program
         private readonly PluginJsonStorage<Settings> _settingsStorage;
         private bool _disposed = false;
         private PackageRepository _packageRepository = new PackageRepository(new PackageCatalogWrapper(), new BinaryStorage<IList<UWP.Application>>("UWP"));
+        private Win32ProgramRepositoryHelper _win32ProgramRepositoryHelper;
         private Win32ProgramRepository _win32ProgramRepository;
-        private readonly string[] _pathsToWatch;
-        private List<FileSystemWatcherWrapper> _fileSystemWatchers;
 
         public Main()
         {
             _settingsStorage = new PluginJsonStorage<Settings>();
             _settings = _settingsStorage.Load();
 
+            // This helper class initializes the file system watchers based on the locations to watch
+            _win32ProgramRepositoryHelper = new Win32ProgramRepositoryHelper();
+
             // Initialize the Win32ProgramRepository with the settings object
-            _pathsToWatch = GetPathsToWatch();
-            SetFileSystemWatchers();
-            _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList(), new BinaryStorage<IList<Programs.Win32>>("Win32"), _settings, _pathsToWatch);
+            _win32ProgramRepository = new Win32ProgramRepository(_win32ProgramRepositoryHelper._fileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList(), new BinaryStorage<IList<Programs.Win32>>("Win32"), _settings, _win32ProgramRepositoryHelper._pathsToWatch);
 
             Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Preload programs cost", () =>
             {
@@ -67,27 +67,6 @@ namespace Microsoft.Plugin.Program
             Task.WaitAll(a, b);
 
             _settings.LastIndexTime = DateTime.Today;
-        }
-
-        // Returns an array of paths to be watched
-        private string[] GetPathsToWatch()
-        {
-            string[] paths = new string[]
-                            {
-                               Environment.GetFolderPath(Environment.SpecialFolder.Programs),
-                               Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms),
-                               Environment.GetFolderPath(Environment.SpecialFolder.Desktop)
-                            };
-            return paths;
-        }
-
-        private void SetFileSystemWatchers()
-        {
-            _fileSystemWatchers = new List<FileSystemWatcherWrapper>();
-            for(int index = 0; index < _pathsToWatch.Count(); index++)
-            {
-                _fileSystemWatchers.Add(new FileSystemWatcherWrapper());
-            }
         }
 
         public void Save()
