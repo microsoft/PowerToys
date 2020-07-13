@@ -26,6 +26,7 @@ namespace FancyZonesEditor
         {
             InitializeComponent();
             Loaded += GridEditor_Loaded;
+            Unloaded += GridEditor_Unloaded;
             ((App)Application.Current).ZoneSettings.PropertyChanged += ZoneSettings_PropertyChanged;
             gridEditorUniqueId = ++gridEditorUniqueIdCounter;
         }
@@ -54,6 +55,11 @@ namespace FancyZonesEditor
 
             Model.PropertyChanged += OnGridDimensionsChanged;
             _dragHandles.InitDragHandles(model);
+        }
+
+        private void GridEditor_Unloaded(object sender, RoutedEventArgs e)
+        {
+            gridEditorUniqueId = -1;
         }
 
         private void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
