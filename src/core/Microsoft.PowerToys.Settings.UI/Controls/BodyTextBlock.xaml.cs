@@ -66,6 +66,22 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
         }
 
+        private Windows.UI.Text.FontWeight _fontWeight;
+
+        public Windows.UI.Text.FontWeight FontWeight
+        {
+            get
+            {
+                return _fontWeight;
+            }
+
+            set
+            {
+                _fontWeight = value;
+                CustomTextBlock.FontWeight = value;
+            }
+        }
+
         public BodyTextBlock()
         {
             this.InitializeComponent();

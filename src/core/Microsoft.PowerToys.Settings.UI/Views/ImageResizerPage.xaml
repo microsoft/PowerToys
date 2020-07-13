@@ -239,34 +239,34 @@
                                           IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                                           Margin="{StaticResource SmallTopBottomMargin}"/>
 
-            <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Margin="0,-5,0,-5">
                 <CustomControls:BodyTextBlock FontSize="12" FontWeight="Bold" Text="%1" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
                 <CustomControls:BodyTextBlock FontSize="12" Text=" - Original filename" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Margin="0,-5,0,-5">
                 <CustomControls:BodyTextBlock FontSize="12" FontWeight="Bold" Text="%2" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
                 <CustomControls:BodyTextBlock FontSize="12" Text=" - Size name" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Margin="0,-5,0,-5">
                 <CustomControls:BodyTextBlock FontSize="12" FontWeight="Bold" Text="%3" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
                 <CustomControls:BodyTextBlock FontSize="12" Text=" - Selected width" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Margin="0,-5,0,-5">
                 <CustomControls:BodyTextBlock FontSize="12" FontWeight="Bold" Text="%4" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
                 <CustomControls:BodyTextBlock FontSize="12" Text=" - Selected height" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Margin="0,-5,0,-5">
                 <CustomControls:BodyTextBlock FontSize="12" FontWeight="Bold" Text="%5" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
                 <CustomControls:BodyTextBlock FontSize="12" Text=" - Actual height" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Margin="0,-5,0,-5">
                 <CustomControls:BodyTextBlock FontSize="12" FontWeight="Bold" Text="%6" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
                 <CustomControls:BodyTextBlock FontSize="12" Text=" - Actual width" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
             </StackPanel>
 
-
+            
             <TextBox  x:Uid="ImageResizer_FilenameFormatHeader"
-                      Text="{ Binding Mode=TwoWay, Path=FileName, Source={StaticResource ViewModel}}"
+                      Text="{x:Bind Mode=TwoWay, Path=ViewModel.FileName}"
                       HorizontalAlignment="Left"
                       MinWidth="240"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
