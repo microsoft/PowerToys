@@ -530,3 +530,15 @@ std::wstring KeyboardManagerState::GetCurrentConfigName()
     std::lock_guard<std::mutex> lock(currentConfig_mutex);
     return currentConfig;
 }
+
+// Sets the activated target application in app-specfic shortcut
+void KeyboardManagerState::SetActivatedApp(const std::wstring& appName)
+{
+    activatedAppSpecificShortcutTarget = appName;
+}
+
+// Gets the activated target application in app-specfic shortcut
+std::wstring KeyboardManagerState::GetActivatedApp()
+{
+    return activatedAppSpecificShortcutTarget;
+}

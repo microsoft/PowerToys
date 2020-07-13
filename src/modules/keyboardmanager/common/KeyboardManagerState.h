@@ -74,6 +74,9 @@ private:
     std::map<DWORD, std::unique_ptr<KeyDelay>> keyDelays;
     std::mutex keyDelays_mutex;
 
+    // Stores the activated target application in app-specfic shortcut
+    std::wstring activatedAppSpecificShortcutTarget;
+
     // Display a key by appending a border Control as a child of the panel.
     void AddKeyToLayout(const winrt::Windows::UI::Xaml::Controls::StackPanel& panel, const winrt::hstring& key);
 
@@ -193,4 +196,10 @@ public:
 
     // Gets the Current Active Configuration Name.
     std::wstring GetCurrentConfigName();
+
+    // Sets the activated target application in app-specfic shortcut
+    void SetActivatedApp(const std::wstring& appName);
+
+    // Gets the activated target application in app-specfic shortcut
+    std::wstring GetActivatedApp();
 };
