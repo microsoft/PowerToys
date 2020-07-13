@@ -822,13 +822,6 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                         newNameToUse = transformedName;
                                     }
                                 }
-                                
-                                // No change from originalName so set newName to
-                                // null so we clear it from our UI as well.
-                                if (lstrcmp(originalName, newNameToUse) == 0)
-                                {
-                                    newNameToUse = nullptr;
-                                }
 
                                 bool isDateAttributeUsed = false;
                                 wchar_t datedName[MAX_PATH] = { 0 };
@@ -857,6 +850,13 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                             }
                                         }
                                     }
+                                }
+
+                                // No change from originalName so set newName to
+                                // null so we clear it from our UI as well.
+                                if (lstrcmp(originalName, newNameToUse) == 0)
+                                {
+                                    newNameToUse = nullptr;
                                 }
 
                                 wchar_t uniqueName[MAX_PATH] = { 0 };
