@@ -106,7 +106,17 @@ public:
                                 {
                                     auto originalKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
                                     auto newRemapKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
-                                    keyboardManagerState.AddSingleKeyRemap(std::stoul(originalKey.c_str()), std::stoul(newRemapKey.c_str()));
+
+                                    // If remapped to a shortcut
+                                    if (std::wstring(newRemapKey).find(L";") != std::string::npos)
+                                    {
+                                        keyboardManagerState.AddSingleKeyRemap(std::stoul(originalKey.c_str()), Shortcut(newRemapKey.c_str()));
+                                    }
+                                    // If remapped to a key
+                                    else
+                                    {
+                                        keyboardManagerState.AddSingleKeyRemap(std::stoul(originalKey.c_str()), std::stoul(newRemapKey.c_str()));
+                                    }
                                 }
                                 catch (...)
                                 {
