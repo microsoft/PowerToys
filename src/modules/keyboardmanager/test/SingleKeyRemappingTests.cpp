@@ -157,5 +157,37 @@ namespace RemappingLogicTests
             // SendVirtualInput should be called exactly once with the above condition
             Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
         }
+
+        // Test if correct keyboard states are set for a single key to shortcut remap
+        TEST_METHOD (RemappedKeyToShortcut_ShouldSetTargetKeyState_OnKeyEvent)
+        {
+            // Remap A to Ctrl+V
+            Shortcut dest;
+            dest.SetKey(VK_CONTROL);
+            dest.SetKey(0x56);
+            testState.AddSingleKeyRemap(0x41, dest);
+            const int nInputs = 1;
+
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = 0x41;
+
+            // Send A keydown
+            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+
+            // A key state should be unchanged, and Ctrl, V key state should be true
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), true);
+            input[0].ki.dwFlags = KEYEVENTF_KEYUP;
+
+            // Send A keyup
+            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+
+            // A key state should be unchanged, and Ctrl, V key state should be false
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), false);
+        }
     };
 }

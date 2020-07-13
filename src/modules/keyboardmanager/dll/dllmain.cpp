@@ -68,13 +68,6 @@ public:
         // Load the initial configuration.
         load_config();
 
-        Shortcut dest;
-        dest.SetKey(VK_CONTROL);
-        dest.SetKey(0x56);
-        keyboardManagerState.AddSingleKeyRemap(VK_TAB, dest);
-        dest.SetKey(0x41);
-        keyboardManagerState.AddSingleKeyRemap(VK_SPACE, dest);
-
         // Set the static pointer to the newest object of the class
         keyboardmanager_object_ptr = this;
     };
