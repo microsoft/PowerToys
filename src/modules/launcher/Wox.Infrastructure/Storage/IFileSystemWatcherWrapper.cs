@@ -15,6 +15,6 @@ namespace Wox.Infrastructure.Storage
         bool EnableRaisingEvents { get; set; }
         NotifyFilters NotifyFilter { get; set; }
         string Path { get; set; }
-        bool IncludeSubDirectories { get; set; }
+        bool IncludeSubdirectories { get; set; }
     }
 }

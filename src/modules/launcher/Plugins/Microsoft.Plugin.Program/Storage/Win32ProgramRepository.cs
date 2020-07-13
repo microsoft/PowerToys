@@ -51,7 +51,7 @@ namespace Microsoft.Plugin.Program.Storage
                 _fileSystemWatcherHelpers[index].EnableRaisingEvents = true;
 
                 // Enable it to search in sub folders as well
-                _fileSystemWatcherHelpers[index].IncludeSubDirectories = true;
+                _fileSystemWatcherHelpers[index].IncludeSubdirectories = true;
             }
         }
 

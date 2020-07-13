@@ -443,7 +443,7 @@ namespace Microsoft.Plugin.Program.Programs
                 var program = Win32Program(path);
                 var info = fileVersionInfoWrapper.GetVersionInfo(path);
 
-                if (!string.IsNullOrEmpty(info.FileDescription))
+                if (!string.IsNullOrEmpty(info?.FileDescription))
                 {
                     program.Description = info.FileDescription;
                 }
