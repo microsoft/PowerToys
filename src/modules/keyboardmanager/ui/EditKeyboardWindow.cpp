@@ -11,6 +11,8 @@
 #include "Styles.h"
 #include "Dialog.h"
 #include <keyboardmanager/dll/resource.h>
+#include "../common/shared_constants.h"
+#include "keyboardmanager/common/KeyboardManagerState.h"
 
 using namespace winrt::Windows::Foundation;
 
@@ -397,7 +399,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     // Add remap key button
     Windows::UI::Xaml::Controls::Button addRemapKey;
     FontIcon plusSymbol;
-    plusSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
+    plusSymbol.FontFamily(Media::FontFamily(L"Segoe MDL2 Assets"));
     plusSymbol.Glyph(L"\xE109");
     addRemapKey.Content(plusSymbol);
     addRemapKey.Margin({ 10, 0, 0, 25 });

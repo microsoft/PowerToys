@@ -1,7 +1,5 @@
 #pragma once
-#include "keyboardmanager/common/KeyboardManagerState.h"
-#include "keyboardmanager/common/Shortcut.h"
-#include "keyboardmanager/common/Helpers.h"
+class KeyboardManagerState;
 
 // Function to create the Edit Shortcuts Window
 void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardManagerState);
