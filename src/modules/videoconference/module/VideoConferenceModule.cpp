@@ -159,6 +159,7 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
                 if (overlay.getCameraMute() != overlay.getMicrophoneMute())
                 {
                     reverseVirtualCameraMuteState();
+                    overlay.setCameraMute(getVirtualCameraMuteState());
                 }
             }
             else if (isHotkeyPressed(kbd->vkCode, microphoneMuteHotkey))
@@ -168,6 +169,7 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
             else if (isHotkeyPressed(kbd->vkCode, cameraMuteHotkey))
             {
                 reverseVirtualCameraMuteState();
+                overlay.setCameraMute(getVirtualCameraMuteState());
             }
         }
     }
