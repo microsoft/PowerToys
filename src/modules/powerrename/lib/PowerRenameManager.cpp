@@ -813,16 +813,6 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                     newNameToUse = trimmedName;
                                 }
                                 
-
-                                wchar_t transformedName[MAX_PATH] = { 0 };
-                                if (newNameToUse != nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase))
-                                {
-                                    if (SUCCEEDED(GetTransformedFileName(transformedName, ARRAYSIZE(transformedName), newNameToUse, flags)))
-                                    {
-                                        newNameToUse = transformedName;
-                                    }
-                                }
-
                                 bool isDateAttributeUsed = false;
                                 wchar_t datedName[MAX_PATH] = { 0 };
                                 std::wstring patterns[] = { L"$YYYY", L"$SSS", L"$MMM", L"$mmm", L"$FFF", L"$fff", 
@@ -849,6 +839,15 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                                 newNameToUse = datedName;
                                             }
                                         }
+                                    }
+                                }
+                                                                
+                                wchar_t transformedName[MAX_PATH] = { 0 };
+                                if (newNameToUse != nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase))
+                                {
+                                    if (SUCCEEDED(GetTransformedFileName(transformedName, ARRAYSIZE(transformedName), newNameToUse, flags)))
+                                    {
+                                        newNameToUse = transformedName;
                                     }
                                 }
 
