@@ -1,7 +1,17 @@
 #pragma once
-#include <vector>
-#include <winrt/Windows.System.h>
-#include <winrt/Windows.Foundation.h>
+namespace winrt
+{
+    struct hstring;
+    namespace Windows::Foundation
+    {
+        struct IInspectable;
+        namespace Collections
+        {
+            template<typename T>
+            struct IVector;
+        }
+    }
+}
 
 namespace KeyboardManagerHelper
 {

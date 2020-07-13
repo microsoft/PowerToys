@@ -1,6 +1,4 @@
 #pragma once
-#include "windows.h"
-#include <string>
 
 // Interface used to wrap keyboard input library methods
 class InputInterface

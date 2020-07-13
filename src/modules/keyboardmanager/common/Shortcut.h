@@ -1,10 +1,11 @@
 #pragma once
-#include "Helpers.h"
-#include "../common/keyboard_layout.h"
-#include "../common/shared_constants.h"
-#include <interface/lowlevel_keyboard_event_data.h>
-#include "InputInterface.h"
 #include "ModifierKey.h"
+class InputInterface;
+class LayoutMap;
+namespace KeyboardManagerHelper
+{
+    enum class ErrorType;
+}
 
 class Shortcut
 {
@@ -23,16 +24,7 @@ public:
     }
 
     // Constructor to initialize Shortcut from it's virtual key code string representation.
-    Shortcut(const std::wstring& shortcutVK) :
-        winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
-    {
-        auto keys = KeyboardManagerHelper::splitwstring(shortcutVK, ';');
-        for (auto it : keys)
-        {
-            auto vkKeyCode = std::stoul(it);
-            SetKey(vkKeyCode);
-        }
-    }
+    Shortcut(const std::wstring& shortcutVK);
 
     // == operator
     inline bool operator==(const Shortcut& sc) const

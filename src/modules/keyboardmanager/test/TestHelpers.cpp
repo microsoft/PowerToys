@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "TestHelpers.h"
+#include "MockedInput.h"
+#include "keyboardmanager/common/KeyboardManagerState.h"
 
 namespace TestHelpers
 {

@@ -14,6 +14,7 @@
 #include <common/settings_helpers.h>
 #include <common/debug_control.h>
 #include <keyboardmanager/common/trace.h>
+#include <keyboardmanager/common/Helpers.h>
 #include "KeyboardEventHandlers.h"
 #include "Input.h"
 

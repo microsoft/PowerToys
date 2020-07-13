@@ -3,6 +3,10 @@
 #include "keyboardmanager/common/Shortcut.h"
 #include "keyboardmanager/common/RemapKey.h"
 #include "keyboardmanager/common/RemapShortcut.h"
+#include "../common/shared_constants.h"
+#include <keyboardmanager/common/KeyboardManagerState.h>
+#include <keyboardmanager/common/InputInterface.h>
+#include <keyboardmanager/common/Helpers.h>
 
 namespace KeyboardEventHandlers
 {
