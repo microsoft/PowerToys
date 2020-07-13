@@ -48,7 +48,6 @@ namespace Wox.Infrastructure.Storage
 
         public void Add(T insertedItem)
         {
-            var hashcode = insertedItem.GetHashCode();
             if (!_items.TryAdd(insertedItem.GetHashCode(), insertedItem))
             {
                 Log.Error($"|ListRepository.Add| Item Already Exists <{insertedItem}>");
@@ -58,7 +57,6 @@ namespace Wox.Infrastructure.Storage
 
         public void Remove(T removedItem)
         {
-            var hashcode = removedItem.GetHashCode();
             if (!_items.TryRemove(removedItem.GetHashCode(), out _))
             {
                 Log.Error($"|ListRepository.Remove| Item Not Found <{removedItem}>");
