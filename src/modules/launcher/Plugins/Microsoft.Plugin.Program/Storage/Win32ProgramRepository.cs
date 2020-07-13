@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.Plugin.Program.Programs;
+using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using System.IO;
 using System.Linq;
@@ -62,20 +63,28 @@ namespace Microsoft.Plugin.Program.Storage
 
             string extension = Path.GetExtension(newPath);
             Programs.Win32 newApp = Programs.Win32.GetAppFromPath(newPath);
-            Programs.Win32 oldApp;
+            Programs.Win32 oldApp = null;
 
             // Once the shortcut application is renamed, the old app does not exist and therefore when we try to get the FullPath we get the lnk path instead of the exe path
             // This changes the hashCode() of the old application.
             // Therefore, instead of retrieving the old app using the GetAppFromPath(), we construct the application ourself
             // This situation is not encountered for other application types because the fullPath is the path itself, instead of being computed by using the path to the app.
-            if (extension.Equals(lnkExtension, StringComparison.OrdinalIgnoreCase))
+            try
             {
-                oldApp = new Programs.Win32() { Name = GetNameOfLnkApp(e.OldName), ExecutableName = newApp.ExecutableName, FullPath = newApp.FullPath };
+                if (extension.Equals(lnkExtension, StringComparison.OrdinalIgnoreCase))
+                {
+                    oldApp = new Programs.Win32() { Name = GetNameOfLnkApp(e.OldName), ExecutableName = newApp.ExecutableName, FullPath = newApp.FullPath };
+                }
+                else
+                {
+                    oldApp = Programs.Win32.GetAppFromPath(oldPath);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                oldApp = Programs.Win32.GetAppFromPath(oldPath);
+                Log.Info($"|Win32ProgramRepository|{extension}Program|{oldPath}|Unable to create program from {oldPath}| {ex.Message}");
             }
+
 
             // To remove the old app which has been renamed and to add the new application.
             if (oldApp != null)
@@ -101,16 +110,23 @@ namespace Microsoft.Plugin.Program.Storage
         {
             string path = e.FullPath;
             string extension = Path.GetExtension(path);
-            Programs.Win32 app;
+            Programs.Win32 app = null;
 
-            // To mitigate the issue of not having a FullPath for a shortcut app, we iterate through the items and find the app with the same hashcode.
-            if (extension.Equals(lnkExtension, StringComparison.OrdinalIgnoreCase))
+            try
             {
-                app = GetAppWithSameLnkResolvedPath(path);
+                // To mitigate the issue of not having a FullPath for a shortcut app, we iterate through the items and find the app with the same hashcode.
+                if (extension.Equals(lnkExtension, StringComparison.OrdinalIgnoreCase))
+                {
+                    app = GetAppWithSameLnkResolvedPath(path);
+                }
+                else
+                {
+                    app = Programs.Win32.GetAppFromPath(path);
+                }
             }
-            else
+            catch(Exception ex)
             {
-                app = Programs.Win32.GetAppFromPath(path);
+                Log.Info($"|Win32ProgramRepository|{extension}Program|{path}|Unable to create program from {path}| {ex.Message}");
             }
 
             if (app != null)
