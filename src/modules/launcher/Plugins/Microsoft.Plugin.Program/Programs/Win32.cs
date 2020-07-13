@@ -767,6 +767,12 @@ namespace Microsoft.Plugin.Program.Programs
             return _removeDuplicatesHelper.GetHashCode(this);
         }
 
+        public override bool Equals(object obj)
+        {
+            removeDuplicatesComparer _removeDuplicatesHelper = new removeDuplicatesComparer();
+            return obj is Win32 win && _removeDuplicatesHelper.Equals(this, win);
+        }
+
         public class removeDuplicatesComparer : IEqualityComparer<Win32>
         {
             public bool Equals(Win32 app1, Win32 app2)
