@@ -54,7 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public KeyBoardKeysProperty MuteCameraHotkey { get; set; }
 
         [JsonPropertyName("selected_camera")]
-        public StringProperty SelectedCamera { get; set; }
+        public StringProperty SelectedCamera { get; set; } = string.Empty;
 
         [JsonPropertyName("overlay_position")]
         public StringProperty OverlayPosition { get; set; } = "Center";
@@ -63,7 +63,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public StringProperty OverlayMonitor { get; set; } = "Main monitor";
 
         [JsonPropertyName("camera_overlay_image_path")]
-        public StringProperty CameraOverlayImagePath { get; set; }
+        public StringProperty CameraOverlayImagePath { get; set; } = string.Empty;
 
         // converts the current to a json string.
         public string ToJsonString()
