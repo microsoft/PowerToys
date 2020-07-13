@@ -107,7 +107,7 @@ namespace RemappingLogicTests
         }
 
         // Test if SendVirtualInput is sent exactly once with the suppress flag when Caps Lock is remapped to Ctrl
-        TEST_METHOD (HandleSingleKeyRemapEvent_ShouldSendVirutalInputWithSuppressFlagExactlyOnce_WhenCapsLockIsMappedToCtrlAltShift)
+        TEST_METHOD (HandleSingleKeyRemapEvent_ShouldSendVirtualInputWithSuppressFlagExactlyOnce_WhenCapsLockIsMappedToCtrlAltShift)
         {
             // Set sendvirtualinput call count condition to return true if the key event was sent with the suppress flag
             mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* data) {
@@ -133,7 +133,7 @@ namespace RemappingLogicTests
         }
 
         // Test if SendVirtualInput is sent exactly once with the suppress flag when Ctrl is remapped to Caps Lock
-        TEST_METHOD (HandleSingleKeyRemapEvent_ShouldSendVirutalInputWithSuppressFlagExactlyOnce_WhenCtrlAltShiftIsMappedToCapsLock)
+        TEST_METHOD (HandleSingleKeyRemapEvent_ShouldSendVirtualInputWithSuppressFlagExactlyOnce_WhenCtrlAltShiftIsMappedToCapsLock)
         {
             // Set sendvirtualinput call count condition to return true if the key event was sent with the suppress flag
             mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* data) {
@@ -158,8 +158,67 @@ namespace RemappingLogicTests
             Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
         }
 
-        // Test if correct keyboard states are set for a single key to shortcut remap
-        TEST_METHOD (RemappedKeyToShortcut_ShouldSetTargetKeyState_OnKeyEvent)
+        // Test if SendVirtualInput is sent exactly twice with the suppress flag when Caps Lock is remapped to shortcut with Ctrl and Shift
+        TEST_METHOD (HandleSingleKeyRemapEvent_ShouldSendVirtualInputWithSuppressFlagExactlyTwice_WhenCapsLockIsMappedToShortcutWithCtrlAltShift)
+        {
+            // Set sendvirtualinput call count condition to return true if the key event was sent with the suppress flag
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* data) {
+                if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+                    return true;
+                else
+                    return false;
+            });
+
+            // Remap Caps Lock to Ctrl+Shift+V
+            Shortcut dest;
+            dest.SetKey(VK_CONTROL);
+            dest.SetKey(VK_SHIFT);
+            dest.SetKey(0x56);
+            testState.AddSingleKeyRemap(VK_CAPITAL, dest);
+            const int nInputs = 1;
+
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CAPITAL;
+
+            // Send Caps Lock keydown
+            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+
+            // SendVirtualInput should be called exactly twice with the above condition
+            Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount());
+        }
+
+        // Test if SendVirtualInput is sent exactly once with the suppress flag when Ctrl is remapped to a shortcut with Caps Lock
+        TEST_METHOD (HandleSingleKeyRemapEvent_ShouldSendVirtualInputWithSuppressFlagExactlyOnce_WhenCtrlAltShiftIsMappedToShortcutWithCapsLock)
+        {
+            // Set sendvirtualinput call count condition to return true if the key event was sent with the suppress flag
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* data) {
+                if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+                    return true;
+                else
+                    return false;
+            });
+
+            // Remap Ctrl to Ctrl+Caps Lock
+            Shortcut dest;
+            dest.SetKey(VK_CONTROL);
+            dest.SetKey(VK_CAPITAL);
+            testState.AddSingleKeyRemap(VK_CONTROL, dest);
+            const int nInputs = 1;
+
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+
+            // Send Ctrl keydown
+            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+
+            // SendVirtualInput should be called exactly once with the above condition
+            Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
+        }
+
+        // Test if correct keyboard states are set for a single key to two key shortcut remap
+        TEST_METHOD (RemappedKeyTwoKeyShortcut_ShouldSetTargetKeyState_OnKeyEvent)
         {
             // Remap A to Ctrl+V
             Shortcut dest;
@@ -187,6 +246,41 @@ namespace RemappingLogicTests
             // A key state should be unchanged, and Ctrl, V key state should be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), false);
+        }
+
+        // Test if correct keyboard states are set for a single key to three key shortcut remap
+        TEST_METHOD (RemappedKeyThreeKeyShortcut_ShouldSetTargetKeyState_OnKeyEvent)
+        {
+            // Remap A to Ctrl+Shift+V
+            Shortcut dest;
+            dest.SetKey(VK_CONTROL);
+            dest.SetKey(VK_SHIFT);
+            dest.SetKey(0x56);
+            testState.AddSingleKeyRemap(0x41, dest);
+            const int nInputs = 1;
+
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = 0x41;
+
+            // Send A keydown
+            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+
+            // A key state should be unchanged, and Ctrl, Shift, V key state should be true
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_SHIFT), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), true);
+            input[0].ki.dwFlags = KEYEVENTF_KEYUP;
+
+            // Send A keyup
+            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+
+            // A key state should be unchanged, and Ctrl, Shift, V key state should be false
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_SHIFT), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), false);
         }
     };

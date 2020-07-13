@@ -142,7 +142,18 @@ namespace KeyboardEventHandlers
                 // If Caps Lock is being remapped to Ctrl/Alt/Shift, then reset the modifier key state to fix issues in certain IME keyboards where the IME shortcut gets invoked since it detects that the modifier and Caps Lock is pressed even though it is suppressed by the hook - More information at the GitHub issue https://github.com/microsoft/PowerToys/issues/3397
                 if (it->first == VK_CAPITAL && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
                 {
-                    ResetIfModifierKeyForLowerLevelKeyHandlers(ii, target);
+                    if (remapToKey)
+                    {
+                        ResetIfModifierKeyForLowerLevelKeyHandlers(ii, target);
+                    }
+                    else
+                    {
+                        std::vector<DWORD> shortcutKeys = std::get<Shortcut>(it->second).GetKeyCodes();
+                        for (auto& it : shortcutKeys)
+                        {
+                            ResetIfModifierKeyForLowerLevelKeyHandlers(ii, it);
+                        }
+                    }
                 }
 
                 return 1;
