@@ -19,6 +19,7 @@ namespace Microsoft.Plugin.Program.Storage
         private int _numberOfPathsToWatch;
         private Collection<string> extensionsToWatch = new Collection<string>{ "*.exe", "*.lnk", "*.appref-ms", "*.url" };
         private readonly string lnkExtension = ".lnk";
+        private readonly string urlExtension = ".url";
 
         public Win32ProgramRepository(List<IFileSystemWatcherWrapper> fileSystemWatcherHelpers, IStorage<IList<Win32>> storage, Settings settings, string[] pathsToWatch)
         {
@@ -73,16 +74,20 @@ namespace Microsoft.Plugin.Program.Storage
             {
                 if (extension.Equals(lnkExtension, StringComparison.OrdinalIgnoreCase))
                 {
-                    oldApp = new Programs.Win32() { Name = GetNameOfLnkApp(e.OldName), ExecutableName = newApp.ExecutableName, FullPath = newApp.FullPath };
+                    oldApp = new Win32() { Name = GetNameOfLnkApp(e.OldName), ExecutableName = newApp.ExecutableName, FullPath = newApp.FullPath };
+                }
+                else if(extension.Equals(urlExtension, StringComparison.OrdinalIgnoreCase))
+                {
+                    oldApp = new Win32() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = Path.GetFileName(e.OldName), FullPath = newApp.FullPath };
                 }
                 else
                 {
-                    oldApp = Programs.Win32.GetAppFromPath(oldPath);
+                    oldApp = Win32.GetAppFromPath(oldPath);
                 }
             }
             catch (Exception ex)
             {
-                Log.Info($"|Win32ProgramRepository|{extension}Program|{oldPath}|Unable to create program from {oldPath}| {ex.Message}");
+                Log.Info($"|Win32ProgramRepository|OnAppRenamed-{extension}Program|{oldPath}|Unable to create program from {oldPath}| {ex.Message}");
             }
 
 
@@ -119,6 +124,10 @@ namespace Microsoft.Plugin.Program.Storage
                 {
                     app = GetAppWithSameLnkResolvedPath(path);
                 }
+                else if (extension.Equals(urlExtension, StringComparison.OrdinalIgnoreCase))
+                {
+                    app = GetAppWithSameNameAndExecutable(Path.GetFileNameWithoutExtension(path), Path.GetFileName(path));
+                }
                 else
                 {
                     app = Programs.Win32.GetAppFromPath(path);
@@ -126,13 +135,26 @@ namespace Microsoft.Plugin.Program.Storage
             }
             catch(Exception ex)
             {
-                Log.Info($"|Win32ProgramRepository|{extension}Program|{path}|Unable to create program from {path}| {ex.Message}");
+                Log.Info($"|Win32ProgramRepository|OnAppDeleted-{extension}Program|{path}|Unable to create program from {path}| {ex.Message}");
             }
 
             if (app != null)
             {
                 Remove(app);
             }
+        }
+
+        // When a URL application is deleted, we can no longer get the HashCode directly from the path because the FullPath a Url app is the URL obtained from reading the file
+        private Win32 GetAppWithSameNameAndExecutable(string name, string executableName)
+        {
+            foreach (Win32 app in Items)
+            {
+                if (name.Equals(app.Name, StringComparison.OrdinalIgnoreCase) && executableName.Equals(app.ExecutableName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return app;
+                }
+            }
+            return null;
         }
 
         // To mitigate the issue faced (as stated above) when a shortcut application is renamed, the Exe FullPath and executable name must be obtained.

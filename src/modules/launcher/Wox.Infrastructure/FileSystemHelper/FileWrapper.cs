@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using Wox.Infrastructure.Logger;
 
 namespace Wox.Infrastructure.FileSystemHelper
 {
@@ -11,7 +12,15 @@ namespace Wox.Infrastructure.FileSystemHelper
 
         public string[] ReadAllLines(string path)
         {
-            return File.ReadAllLines(path);
+            try
+            {
+                return File.ReadAllLines(path);
+            }
+            catch(IOException ex)
+            {
+                Log.Info($"File {path} is being accessed by another process| {ex.Message}");
+                return new string[] { String.Empty };
+            }
         }
 
     }
