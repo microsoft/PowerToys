@@ -8,6 +8,8 @@ using Wox.Plugin;
 using Microsoft.Plugin.Program.Programs;
 using Microsoft.Plugin.Program.Storage;
 using System.IO;
+using Wox.Infrastructure.FileSystemHelper;
+using System.Diagnostics;
 
 namespace Microsoft.Plugin.Program.UnitTests.Storage
 {
@@ -69,18 +71,56 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [TestCase("path.appref-ms")]
-        [TestCase("path.exe")]
         public void Win32ProgramRepository_MustCallOnAppCreated_WhenCreatedEventIsRaised(string path)
         {
             // Arrange
             Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32>>("Win32"), _settings, _pathsToWatch);
+            FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Created, "directory", path);
 
-            FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Created,"directory", path);
+            // Act
             _fileSystemMocks[0].Raise(m => m.Created += null, e);
 
             // Assert
             Assert.AreEqual(_win32ProgramRepository.Count(), 1);
             Assert.AreEqual(_win32ProgramRepository.ElementAt(0).AppType, 2);
+        }
+
+        [Test]
+        public void Win32ProgramRepository_MustCallOnAppDeleted_WhenDeletedEventIsRaised()
+        {
+            // Arrange
+            Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32>>("Win32"), _settings, _pathsToWatch);
+            FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Deleted, "directory", "path.appref-ms");
+
+            Win32 item = Win32.GetAppFromPath("directory\\path.appref-ms");
+            _win32ProgramRepository.Add(item);
+
+            // Act
+            _fileSystemMocks[0].Raise(m => m.Deleted += null, e);
+
+            // Assert
+            Assert.AreEqual(_win32ProgramRepository.Count(), 0);
+        }
+
+        [Test]
+        public void Win32ProgramRepository_MustCallOnAppRenamed_WhenRenamedEventIsRaised()
+        {
+            // Arrange
+            Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32>>("Win32"), _settings, _pathsToWatch);
+            RenamedEventArgs e = new RenamedEventArgs(WatcherChangeTypes.Renamed, "directory", "newpath.appref-ms", "oldpath.appref-ms");
+
+            Win32 olditem = Win32.GetAppFromPath("directory\\oldpath.appref-ms");
+            Win32 newitem = Win32.GetAppFromPath("directory\\newpath.appref-ms");
+            _win32ProgramRepository.Add(olditem);
+
+            // Act
+            _fileSystemMocks[0].Raise(m => m.Renamed += null, e);
+
+            // Assert
+            Assert.AreEqual(_win32ProgramRepository.Count(), 1);
+            Assert.IsTrue(_win32ProgramRepository.Contains(newitem));
+            Assert.IsFalse(_win32ProgramRepository.Contains(olditem));
+            
         }
     }
 }

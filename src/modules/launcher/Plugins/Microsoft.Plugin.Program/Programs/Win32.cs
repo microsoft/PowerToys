@@ -15,6 +15,7 @@ using System.Windows.Input;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Wox.Infrastructure.Logger;
+using Wox.Infrastructure.FileSystemHelper;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -36,6 +37,7 @@ namespace Microsoft.Plugin.Program.Programs
         public string Arguments { get; set; } = String.Empty;
         public string Location => ParentDirectory;
         public uint AppType { get; set; }
+        public static IFileVersionInfoWrapper fileVersionInfoWrapper = new FileVersionInfoWrapper();
 
         private const string ShortcutExtension = "lnk";
         private const string ApplicationReferenceExtension = "appref-ms";
@@ -403,8 +405,8 @@ namespace Microsoft.Plugin.Program.Programs
                         }
                         else
                         {
-                            var info = FileVersionInfo.GetVersionInfo(target);
-                            if (!string.IsNullOrEmpty(info.FileDescription))
+                            var info = fileVersionInfoWrapper.GetVersionInfo(target);
+                            if (!string.IsNullOrEmpty(info?.FileDescription))
                             {
                                 program.Description = info.FileDescription;
                             }
@@ -439,7 +441,7 @@ namespace Microsoft.Plugin.Program.Programs
             try
             {
                 var program = Win32Program(path);
-                var info = FileVersionInfo.GetVersionInfo(path);
+                var info = fileVersionInfoWrapper.GetVersionInfo(path);
 
                 if (!string.IsNullOrEmpty(info.FileDescription))
                 {
