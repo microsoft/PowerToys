@@ -37,6 +37,11 @@ namespace Microsoft.Plugin.Program
         {
             _settingsStorage = new PluginJsonStorage<Settings>();
             _settings = _settingsStorage.Load();
+            // This helper class initializes the file system watchers based on the locations to watch
+            _win32ProgramRepositoryHelper = new Win32ProgramRepositoryHelper();
+
+            // Initialize the Win32ProgramRepository with the settings object
+            _win32ProgramRepository = new Win32ProgramRepository(_win32ProgramRepositoryHelper._fileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList(), new BinaryStorage<IList<Programs.Win32>>("Win32"), _settings, _win32ProgramRepositoryHelper._pathsToWatch);
 
             Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Preload programs cost", () =>
             {
@@ -61,13 +66,7 @@ namespace Microsoft.Plugin.Program
             Task.WaitAll(a, b);
 
             _settings.LastIndexTime = DateTime.Today;
-
-            // This helper class initializes the file system watchers based on the locations to watch
-            _win32ProgramRepositoryHelper = new Win32ProgramRepositoryHelper();
-
-            // Initialize the Win32ProgramRepository with the settings object
-            _win32ProgramRepository = new Win32ProgramRepository(_win32ProgramRepositoryHelper._fileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList(), new BinaryStorage<IList<Programs.Win32>>("Win32"), _settings, _win32ProgramRepositoryHelper._pathsToWatch);
-
+            
         }
 
         public void Save()

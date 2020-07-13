@@ -302,7 +302,14 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Win32._helper = mockShellLink.Object;
 
             string fullPath = directory + "\\" + path;
-            Win32 item = Win32.GetAppFromPath(fullPath);
+            Win32 item = new Win32
+            {
+                Name = "path",
+                ExecutableName = "path.exe",
+                ParentDirectory = "directory",
+                FullPath = "directory\\path.exe",
+                LnkResolvedPath = "directory\\path.lnk" // This must be equal for lnk applications
+            };
             _win32ProgramRepository.Add(item);
 
             // Act
@@ -312,23 +319,36 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.AreEqual(_win32ProgramRepository.Count(), 0);
         }
 
-        [TestCase("directory", "oldpath.lnk", "newpath.lnk")]
-        public void Win32ProgramRepository_MustCallOnAppRenamedForLnkApps_WhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
+        [TestCase("directory", "oldpath.lnk", "path.lnk")]
+        public void Win32ProgramRepository_MustCallOnAppRenamedForLnkApps_WhenRenamedEventIsRaised(string directory, string oldpath, string path)
         {
             // Arrange
             Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32>>("Win32"), _settings, _pathsToWatch);
-            RenamedEventArgs e = new RenamedEventArgs(WatcherChangeTypes.Renamed, directory, newpath, oldpath);
+            RenamedEventArgs e = new RenamedEventArgs(WatcherChangeTypes.Renamed, directory, path, oldpath);
 
             string oldFullPath = directory + "\\" + oldpath;
-            string newFullPath = directory + "\\" + newpath;
+            string FullPath = directory + "\\" + path;
             
             // ShellLinkHelper must be mocked for lnk applications
             var mockShellLink = new Mock<IShellLinkHelper>();
             mockShellLink.Setup(m => m.retrieveTargetPath(It.IsAny<string>())).Returns(String.Empty);
             Win32._helper = mockShellLink.Object;
 
-            Win32 olditem = Win32.GetAppFromPath(oldFullPath);
-            Win32 newitem = Win32.GetAppFromPath(newFullPath);
+            // old item and new item are the actual items when they are in existence
+            Win32 olditem = new Win32
+            {
+                Name = "oldpath",
+                ExecutableName = path,
+                FullPath = FullPath,
+            };
+
+            Win32 newitem = new Win32
+            {
+                Name = "path",
+                ExecutableName = path,
+                FullPath = FullPath,
+            };
+
             _win32ProgramRepository.Add(olditem);
 
             // Act
