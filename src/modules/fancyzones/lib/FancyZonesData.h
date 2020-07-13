@@ -24,6 +24,7 @@ namespace FancyZonesDataTypes
 namespace FancyZonesUnitTests
 {
     class FancyZonesDataUnitTests;
+    class FancyZonesIFancyZonesCallbackUnitTests;
     class ZoneSetCalculateZonesUnitTests;
     class ZoneWindowUnitTests;
 }
@@ -71,22 +72,6 @@ namespace FancyZonesDataNS
             return appZoneHistoryMap;
         }
 
-#if defined(UNIT_TESTS)
-        inline void clear_data()
-        {
-            appZoneHistoryMap.clear();
-            deviceInfoMap.clear();
-            customZoneSetsMap.clear();
-        }
-
-        inline void SetSettingsModulePath(std::wstring_view moduleName)
-        {
-            std::wstring result = PTSettingsHelper::get_module_save_folder_location(moduleName);
-            zonesSettingsFilePath = result + L"\\" + std::wstring(L"zones-settings.json");
-            appZoneHistoryFilePath = result + L"\\" + std::wstring(L"app-zone-history.json");
-        }
-#endif
-
         void AddDevice(const std::wstring& deviceId);
         void CloneDeviceInfo(const std::wstring& source, const std::wstring& destination);
         void UpdatePrimaryDesktopData(const std::wstring& desktopId);
@@ -102,12 +87,15 @@ namespace FancyZonesDataNS
 
 		void ParseDataFromTmpFiles();
 
+	    json::JsonObject GetPersistFancyZonesJSON();
+
         void LoadFancyZonesData();
         void SaveFancyZonesData() const;
 
     private:
 #if defined(UNIT_TESTS)
         friend class FancyZonesUnitTests::FancyZonesDataUnitTests;
+        friend class FancyZonesUnitTests::FancyZonesIFancyZonesCallbackUnitTests;
         friend class FancyZonesUnitTests::ZoneWindowUnitTests;
         friend class FancyZonesUnitTests::ZoneSetCalculateZonesUnitTests;
 
@@ -120,6 +108,20 @@ namespace FancyZonesDataNS
         {
             deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
             return !deviceInfoMap.empty();
+        }
+
+        inline void clear_data()
+        {
+            appZoneHistoryMap.clear();
+            deviceInfoMap.clear();
+            customZoneSetsMap.clear();
+        }
+
+        inline void SetSettingsModulePath(std::wstring_view moduleName)
+        {
+            std::wstring result = PTSettingsHelper::get_module_save_folder_location(moduleName);
+            zonesSettingsFilePath = result + L"\\" + std::wstring(L"zones-settings.json");
+            appZoneHistoryFilePath = result + L"\\" + std::wstring(L"app-zone-history.json");
         }
 #endif
         void ParseDeviceInfoFromTmpFile(std::wstring_view tmpFilePath);

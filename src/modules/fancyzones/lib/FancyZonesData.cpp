@@ -7,6 +7,7 @@
 #include "Settings.h"
 
 #include <common/common.h>
+#include <common/json.h>
 
 #include <shlwapi.h>
 #include <filesystem>
@@ -383,7 +384,7 @@ namespace FancyZonesDataNS
         ParseDeletedCustomZoneSetsFromTmpFile(GetDeletedCustomZoneSetsTmpPath());
         ParseCustomZoneSetFromTmpFile(GetAppliedZoneSetTmpPath());
         SaveFancyZonesData();
-	}
+    }
 
     void FancyZonesData::ParseDeviceInfoFromTmpFile(std::wstring_view tmpFilePath)
     {
@@ -417,7 +418,12 @@ namespace FancyZonesDataNS
         }
     }
 
-    void FancyZonesData::LoadFancyZonesData()
+    json::JsonObject FancyZonesData::GetPersistFancyZonesJSON()
+    {
+        return JSONHelpers::GetPersistFancyZonesJSON(zonesSettingsFilePath, appZoneHistoryFilePath);
+    }
+
+	void FancyZonesData::LoadFancyZonesData()
     {
         if (!std::filesystem::exists(zonesSettingsFilePath))
         {
@@ -427,7 +433,7 @@ namespace FancyZonesDataNS
         }
         else
         {
-            json::JsonObject fancyZonesDataJSON = JSONHelpers::GetPersistFancyZonesJSON(zonesSettingsFilePath, appZoneHistoryFilePath);
+            json::JsonObject fancyZonesDataJSON = GetPersistFancyZonesJSON();
 
             appZoneHistoryMap = JSONHelpers::ParseAppZoneHistory(fancyZonesDataJSON);
             deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);

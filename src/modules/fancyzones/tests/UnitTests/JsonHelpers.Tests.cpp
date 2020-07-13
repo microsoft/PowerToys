@@ -968,7 +968,7 @@ namespace FancyZonesUnitTests
                 data.SetSettingsModulePath(m_moduleName);
 
                 json::JsonObject expected;
-                auto actual = GetPersistFancyZonesJSON(data.GetPersistFancyZonesJSONPath(), data.GetPersistAppZoneHistoryFilePath());
+                auto actual = data.GetPersistFancyZonesJSON();
 
                 Assert::AreEqual(expected.Stringify().c_str(), actual.Stringify().c_str());
             }
@@ -983,7 +983,7 @@ namespace FancyZonesUnitTests
                 json::JsonObject expected = json::JsonObject::Parse(L"{\"fancy-zones\":{\"custom-zonesets \":[{\"uuid\":\"uuid1\",\"name\":\"Custom1\",\"type\":\"custom\" }] }, \"app-zone-history\":[] }");
                 json::to_file(jsonPath, expected);
 
-                auto actual = GetPersistFancyZonesJSON(jsonPath, appZoneHistoryPath);
+                auto actual = data.GetPersistFancyZonesJSON();
                 Assert::AreEqual(expected.Stringify().c_str(), actual.Stringify().c_str());
             }
 
