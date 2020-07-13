@@ -402,7 +402,7 @@ namespace FancyZonesEditor
                         spacing = settings.Spacing;
                     }
 
-                    _data.SplitOnDrag(resizer, delta, spacing, ActualWidth, ActualHeight);
+                    _data.SplitOnDrag(resizer, delta, spacing);
                     _dragHandles.UpdateAfterDetach(resizer, delta);
                 }
                 else

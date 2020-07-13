@@ -277,7 +277,7 @@ namespace FancyZonesEditor
             _model.Rows++;
         }
 
-        public void SplitOnDrag(GridResizer resizer, double delta, double space, double actualWidth, double actualHeight)
+        public void SplitOnDrag(GridResizer resizer, double delta, double space)
         {
             if (resizer.Orientation == Orientation.Vertical)
             {
@@ -342,19 +342,14 @@ namespace FancyZonesEditor
                         }
                     }
 
-                    double end = 0;
-                    if (draggedResizerStartCol > 0)
-                    {
-                        end = _colInfo[draggedResizerStartCol - 1].End;
-                    }
+                    double offset = _colInfo[draggedResizerStartCol].End - _colInfo[draggedResizerStartCol].Start + delta;
+                    RowColInfo[] split = _colInfo[draggedResizerStartCol].Split(offset - space, space);
 
-                    RowColInfo[] split = _colInfo[draggedResizerStartCol].Split(end - delta, space);
+                    _colInfo[draggedResizerStartCol] = split[1];
+                    _colInfo.Insert(draggedResizerStartCol + 1, split[0]);
 
-                    _colInfo[draggedResizerStartCol] = split[0];
-                    _colInfo.Insert(draggedResizerStartCol, split[1]);
-
-                    _model.ColumnPercents[draggedResizerStartCol] = split[0].Percent;
-                    _model.ColumnPercents.Insert(draggedResizerStartCol, split[1].Percent);
+                    _model.ColumnPercents[draggedResizerStartCol] = split[1].Percent;
+                    _model.ColumnPercents.Insert(draggedResizerStartCol + 1, split[0].Percent);
                 }
 
                 FixAccuracyError(_colInfo, _model.ColumnPercents);
@@ -424,19 +419,14 @@ namespace FancyZonesEditor
                         }
                     }
 
-                    double end = 0;
-                    if (draggedResizerStartRow > 0)
-                    {
-                        end = _rowInfo[draggedResizerStartRow - 1].End;
-                    }
-
-                    RowColInfo[] split = _rowInfo[draggedResizerStartRow].Split(end - delta, space);
+                    double offset = _rowInfo[draggedResizerStartRow].End - _rowInfo[draggedResizerStartRow].Start + delta;
+                    RowColInfo[] split = _rowInfo[draggedResizerStartRow].Split(offset - space, space);
 
                     _rowInfo[draggedResizerStartRow] = split[0];
-                    _rowInfo.Insert(draggedResizerStartRow, split[1]);
+                    _rowInfo.Insert(draggedResizerStartRow + 1, split[1]);
 
                     _model.RowPercents[draggedResizerStartRow] = split[0].Percent;
-                    _model.RowPercents.Insert(draggedResizerStartRow, split[1].Percent);
+                    _model.RowPercents.Insert(draggedResizerStartRow + 1, split[1].Percent);
                 }
 
                 FixAccuracyError(_rowInfo, _model.RowPercents);
