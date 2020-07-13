@@ -10,7 +10,7 @@ using Microsoft.Plugin.Program.Logger;
 
 namespace Microsoft.Plugin.Program.Programs
 {
-    class ShellLinkHelper
+    public class ShellLinkHelper : IShellLinkHelper
     {
         [Flags()]
         public enum SLGP_FLAGS
@@ -100,12 +100,12 @@ namespace Microsoft.Plugin.Program.Programs
         {
         }
 
-        // To initialize the app description
-        public String description = String.Empty;
+        // Contains the description of the app
+        public string description { get; set; } = String.Empty;
 
-        // Sets to true if the program takes in arguments
-        public String Arguments = String.Empty;
-        public bool hasArguments = false;
+        // Contains the arguments to the app
+        public string Arguments { get; set; } = String.Empty;
+        public bool hasArguments { get; set; } = false;
 
         // Retrieve the target path using Shell Link
         public string retrieveTargetPath(string path)

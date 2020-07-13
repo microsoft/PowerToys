@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Wox.Infrastructure.FileSystemHelper
 {
-    interface IFileWrapper
+    public interface IFileWrapper
     {
         string[] ReadAllLines(string path);
     }

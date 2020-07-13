@@ -37,7 +37,10 @@ namespace Microsoft.Plugin.Program.Programs
         public string Arguments { get; set; } = String.Empty;
         public string Location => ParentDirectory;
         public uint AppType { get; set; }
+        // Wrappers for File Operations
         public static IFileVersionInfoWrapper fileVersionInfoWrapper = new FileVersionInfoWrapper();
+        public static IFileWrapper fileWrapper = new FileWrapper();
+        public static IShellLinkHelper _helper = new ShellLinkHelper();
 
         private const string ShortcutExtension = "lnk";
         private const string ApplicationReferenceExtension = "appref-ms";
@@ -315,7 +318,7 @@ namespace Microsoft.Plugin.Program.Programs
         // This function filters Internet Shortcut programs
         private static Win32 InternetShortcutProgram(string path)
         {
-            string[] lines = System.IO.File.ReadAllLines(path);
+            string[] lines = fileWrapper.ReadAllLines(path);
             string appName = string.Empty;
             string iconPath = string.Empty;
             string urlPath = string.Empty;
@@ -384,7 +387,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 const int MAX_PATH = 260;
                 StringBuilder buffer = new StringBuilder(MAX_PATH);
-                ShellLinkHelper _helper = new ShellLinkHelper();
+                
                 string target = _helper.retrieveTargetPath(path);
 
                 if (!string.IsNullOrEmpty(target))
