@@ -272,10 +272,10 @@ bool IsValidDeviceId(const std::wstring& str)
     std::wstringstream wss(str);
 
     /* 
-         Important fix for device info that contains a '_' in the name:
-         1. first search for '#'
-         2. Then split the remaining string by '_' 
-        */
+        Important fix for device info that contains a '_' in the name:
+        1. first search for '#'
+        2. Then split the remaining string by '_'
+    */
 
     // Step 1: parse the name until the #, then to the '_'
     if (str.find(L'#') != std::string::npos)
@@ -305,12 +305,12 @@ bool IsValidDeviceId(const std::wstring& str)
     }
 
     /*
-         Refer to ZoneWindowUtils::GenerateUniqueId parts contain:
-         1. monitor id [string]
-         2. width of device [int]
-         3. height of device [int]
-         4. virtual desktop id (GUID) [string]
-        */
+        Refer to ZoneWindowUtils::GenerateUniqueId parts contain:
+        1. monitor id [string]
+        2. width of device [int]
+        3. height of device [int]
+        4. virtual desktop id (GUID) [string]
+    */
     try
     {
         //check if resolution contain only digits

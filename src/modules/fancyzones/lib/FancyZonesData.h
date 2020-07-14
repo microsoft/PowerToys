@@ -85,9 +85,9 @@ namespace FancyZonesDataNS
 
         void SetActiveZoneSet(const std::wstring& deviceId, const FancyZonesDataTypes::ZoneSetData& zoneSet);
 
-		void ParseDataFromTmpFiles();
+        void ParseDataFromTmpFiles();
 
-	    json::JsonObject GetPersistFancyZonesJSON();
+        json::JsonObject GetPersistFancyZonesJSON();
 
         void LoadFancyZonesData();
         void SaveFancyZonesData() const;
@@ -99,7 +99,7 @@ namespace FancyZonesDataNS
         friend class FancyZonesUnitTests::ZoneWindowUnitTests;
         friend class FancyZonesUnitTests::ZoneSetCalculateZonesUnitTests;
 
-		inline void SetDeviceInfo(const std::wstring& deviceId, FancyZonesDataTypes::DeviceInfoData data)
+        inline void SetDeviceInfo(const std::wstring& deviceId, FancyZonesDataTypes::DeviceInfoData data)
         {
             deviceInfoMap[deviceId] = data;
         }
