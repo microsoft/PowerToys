@@ -589,7 +589,7 @@
 
     <DirectoryRef Id="ColorPickerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)">
       <Component Id="Module_ColorPicker" Guid="8A52A69E-37B2-4BEA-9D73-77763066052F" Win64="yes">
-        <?foreach File in ColorPicker.dll;ColorPicker.exe;Microsoft.Bcl.AsyncInterfaces.dll;Microsoft.Expression.Interactions.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToysInterop.dll;System.Buffers.dll;System.Memory.dll;System.Numerics.Vectors.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;System.Threading.Tasks.Extensions.dll;System.ValueTuple.dll;System.Windows.Interactivity.dll;Telemetry.dll?>
+        <?foreach File in ColorPicker.dll;ColorPicker.exe;Microsoft.Bcl.AsyncInterfaces.dll;Microsoft.Expression.Interactions.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToysInterop.dll;System.Buffers.dll;System.Memory.dll;System.Numerics.Vectors.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;System.Threading.Tasks.Extensions.dll;System.ValueTuple.dll;System.Windows.Interactivity.dll;Telemetry.dll;ManagedCommon.dll?>
         <File Id="ColorPickerFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.File)" />
         <?endforeach?>
       </Component>

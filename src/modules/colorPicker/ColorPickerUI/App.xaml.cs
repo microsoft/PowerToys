@@ -3,6 +3,7 @@ using System.Threading;
 using System.Windows;
 using ColorPicker.Helpers;
 using ColorPicker.Mouse;
+using ManagedCommon;
 
 namespace ColorPickerUI
 {
@@ -12,10 +13,13 @@ namespace ColorPickerUI
     public partial class App : Application
     {
         private Mutex _instanceMutex = null;
+        private static string[] _args;
+        private int _powerToysPid;
 
         [STAThread]
-        public static void Main()
+        public static void Main(string[] args)
         {
+            _args = args;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             try
             {
@@ -34,13 +38,22 @@ namespace ColorPickerUI
         {
             // allow only one instance of color picker
             bool createdNew;
-            _instanceMutex = new Mutex(true, @"Global\ControlPanel", out createdNew);
+            _instanceMutex = new Mutex(true, @"Global\ColorPicker", out createdNew);
             if (!createdNew)
             {
                 _instanceMutex = null;
                 Application.Current.Shutdown();
                 return;
             }
+
+            if(_args.Length > 0)
+            {
+                _ = int.TryParse(_args[0], out _powerToysPid);
+            }
+
+            RunnerHelper.WaitForPowerToysRunner(_powerToysPid, () => {
+                Environment.Exit(0);
+            });
 
             base.OnStartup(e);
         }
@@ -49,6 +62,8 @@ namespace ColorPickerUI
         {
             if (_instanceMutex != null)
                 _instanceMutex.ReleaseMutex();
+
+            CursorManager.RestoreOriginalCursors();
             base.OnExit(e);
         }
 

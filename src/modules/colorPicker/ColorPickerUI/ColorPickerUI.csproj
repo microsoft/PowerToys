@@ -170,6 +170,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj">
+      <Project>{4aed67b6-55fd-486f-b917-e543dee2cb3c}</Project>
+      <Name>ManagedCommon</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\core\Microsoft.PowerToys.Settings.UI.Lib\Microsoft.PowerToys.Settings.UI.Lib.csproj">
       <Project>{b1bcc8c6-46b5-4bfa-8f22-20f32d99ec6a}</Project>
       <Name>Microsoft.PowerToys.Settings.UI.Lib</Name>
