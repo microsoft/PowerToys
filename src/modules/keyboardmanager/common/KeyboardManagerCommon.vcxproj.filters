@@ -36,9 +36,6 @@
     <ClCompile Include="Trace.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RemapKey.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="KeyboardManagerState.h">
@@ -66,9 +63,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="InputInterface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RemapKey.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ModifierKey.h">

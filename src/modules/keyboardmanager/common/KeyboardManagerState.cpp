@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "KeyboardManagerState.h"
 #include "Shortcut.h"
-#include "RemapKey.h"
 #include "RemapShortcut.h"
 #include <../common/settings_helpers.h>
 #include "KeyDelay.h"

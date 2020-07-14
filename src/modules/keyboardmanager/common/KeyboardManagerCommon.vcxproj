@@ -116,7 +116,6 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="RemapKey.cpp" />
     <ClCompile Include="RemapShortcut.cpp" />
     <ClCompile Include="Shortcut.cpp" />
     <ClCompile Include="trace.cpp" />
@@ -129,7 +128,6 @@
     <ClInclude Include="KeyboardManagerState.h" />
     <ClInclude Include="KeyDelay.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="RemapKey.h" />
     <ClInclude Include="RemapShortcut.h" />
     <ClInclude Include="Shortcut.h" />
     <ClInclude Include="trace.h" />

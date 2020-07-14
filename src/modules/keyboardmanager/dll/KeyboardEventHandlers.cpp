@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "KeyboardEventHandlers.h"
 #include "keyboardmanager/common/Shortcut.h"
-#include "keyboardmanager/common/RemapKey.h"
 #include "keyboardmanager/common/RemapShortcut.h"
 #include "../common/shared_constants.h"
 #include <keyboardmanager/common/KeyboardManagerState.h>

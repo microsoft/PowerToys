@@ -6,7 +6,6 @@
 #include <interface/lowlevel_keyboard_event_data.h>
 #include <variant>
 #include "Shortcut.h"
-#include "RemapKey.h"
 #include "RemapShortcut.h"
 
 class KeyDelay;
