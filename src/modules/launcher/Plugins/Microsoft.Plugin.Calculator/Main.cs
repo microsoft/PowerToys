@@ -128,11 +128,11 @@ namespace Microsoft.Plugin.Calculator
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
             {
-                IconPath = "Images/calculator_light.png";
+                IconPath = "Images/calculator.light.png";
             }
             else
             {
-                IconPath = "Images/calculator_dark.png";
+                IconPath = "Images/calculator.dark.png";
             }
         }
 

@@ -113,6 +113,34 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+            <Style x:Key="CollapsableTextblock" TargetType="TextBlock">
+                <Style.Triggers>
+                    <Trigger Property="Text" Value="">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style TargetType="{x:Type ToolTip}" >
+                <Setter Property="OverridesDefaultStyle" Value="true" />
+                <Setter Property="HasDropShadow" Value="True" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="Placement" Value="Bottom" />
+                <Setter Property="VerticalOffset" Value="0" />
+                <Setter Property="Padding" Value="8" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ToolTip}" >
+                            <StackPanel Margin="8,2" >
+                                <Border CornerRadius="4" Background="{DynamicResource ToolTipBackgroundBrushKey}" BorderBrush="{DynamicResource ToolTipBorderBrushKey}" BorderThickness="1">
+                                    <ContentPresenter Margin="4" HorizontalAlignment="Center" VerticalAlignment="Top" />
+                                </Border>
+                            </StackPanel>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -137,7 +165,13 @@
             <!--Style="{StaticResource ListViewNoAnimations}"-->
             <ListView.ItemTemplate>
                 <DataTemplate >
-                    <Grid Height="72" Width="642" Background="Transparent" >
+                    <Grid 
+                        Height="72" 
+                        Width="642" 
+                        Background="Transparent"
+                        ToolTipService.BetweenShowDelay="0"
+                        ToolTipService.InitialShowDelay="1000"
+                        >
                         <Behaviors:Interaction.Triggers>
                             <Behaviors:EventTrigger EventName="MouseEnter">
                                 <Behaviors:InvokeCommandAction Command="{Binding ActivateContextButtonsHoverCommand}"/>
@@ -155,6 +189,23 @@
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
+                        <Grid.ToolTip>
+                            <ToolTip Visibility="{Binding Result.ToolTipVisibility}">
+                                <StackPanel Margin="8,6">
+                                    <TextBlock 
+                                        Style="{DynamicResource CollapsableTextblock}"
+                                        Foreground="{DynamicResource ToolTipForegroundBrushKey}" FontWeight="Bold" FontSize="12"
+                                        Text="{Binding Result.ToolTipData.Title}"
+                                        TextWrapping="Wrap" />
+                                    <TextBlock 
+                                        Style="{DynamicResource CollapsableTextblock}"
+                                        Foreground="{DynamicResource ToolTipForegroundBrushKey}" FontSize="12"
+                                        Text="{Binding Result.ToolTipData.Text}"
+                                   
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+                            </ToolTip>
+                        </Grid.ToolTip>
                         <Image x:Name="AppIcon" Height="36" MaxWidth="56" Grid.RowSpan="2" Margin="-6,-2,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />
                         <TextBlock x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" Margin="0,0,0,-2" VerticalAlignment="Bottom"/>
                         <TextBlock x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Foreground="{DynamicResource SecondaryTextForeground}" Margin="0,2,0,0" VerticalAlignment="Top"/>
@@ -184,7 +235,9 @@
                                 <DataTemplate>
                                     <Button Style="{StaticResource IconButtonStyle}" Command="{Binding Command}" VerticalAlignment="Center" Height="42" Width="42" BorderThickness="1" >
                                         <ToolTipService.ToolTip>
-                                            <TextBlock Text="{Binding Title}"/>
+                                            <ToolTip >
+                                                <TextBlock Text="{Binding Title}" Foreground="{DynamicResource ToolTipForegroundBrushKey}" Margin="8,5" FontSize="12"/>
+                                            </ToolTip>
                                         </ToolTipService.ToolTip>
                                         <Button.Content>
                                             <TextBlock FontFamily="{Binding FontFamily}" FontSize="16" Text="{Binding Glyph}"/>

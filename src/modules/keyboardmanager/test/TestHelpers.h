@@ -1,6 +1,6 @@
 #pragma once
-#include "MockedInput.h"
-#include <keyboardmanager/common/KeyboardManagerState.h>
+class MockedInput;
+class KeyboardManagerState;
 
 namespace TestHelpers
 {

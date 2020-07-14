@@ -208,8 +208,8 @@ ZoneSet::ZonesFromPoint(POINT pt) noexcept
         {
             auto rectI = m_zones[capturedZones[i]]->GetZoneRect();
             auto rectJ = m_zones[capturedZones[j]]->GetZoneRect();
-            if (max(rectI.top, rectJ.top) < min(rectI.bottom, rectJ.bottom) &&
-                max(rectI.left, rectJ.left) < min(rectI.right, rectJ.right))
+            if (max(rectI.top, rectJ.top) + SENSITIVITY_RADIUS < min(rectI.bottom, rectJ.bottom) &&
+                max(rectI.left, rectJ.left) + SENSITIVITY_RADIUS < min(rectI.right, rectJ.right))
             {
                 overlap = true;
                 i = capturedZones.size() - 1;
@@ -420,8 +420,8 @@ bool ZoneSet::CalculateFocusLayout(Rect workArea, int zoneCount) noexcept
 
     long left{ long(workArea.width() * 0.1) };
     long top{ long(workArea.height() * 0.1) };
-    long right{ long(workArea.width() * 0.6) };
-    long bottom{ long(workArea.height() * 0.6) };
+    long right{ left + long(workArea.width() * 0.6) };
+    long bottom{ top + long(workArea.height() * 0.6) };
 
     RECT focusZoneRect{ left, top, right, bottom };
 

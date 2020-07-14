@@ -31,6 +31,13 @@ void HotkeyManager::KeyboardEventProc(KeyboardEvent ^ ev)
     if (hotkeys->ContainsKey(pressedKeysHandle))
     {
         hotkeys[pressedKeysHandle]->Invoke();
+
+        // After invoking the hotkey send a dummy key to prevent Start Menu from activating
+        INPUT dummyEvent[1] = {};
+        dummyEvent[0].type = INPUT_KEYBOARD;
+        dummyEvent[0].ki.wVk = 0xFF;
+        dummyEvent[0].ki.dwFlags = KEYEVENTF_KEYUP;
+        SendInput(1, dummyEvent, sizeof(INPUT));
     }
 }
 

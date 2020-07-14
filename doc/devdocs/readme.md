@@ -30,7 +30,7 @@ General project organization:
 
 Documentation for the project.
 
-### The [`Wiki`](/wiki)
+### The [`Wiki`](https://github.com/microsoft/PowerToys/wiki)
 
 The Wiki contains the current specs for the project.
 
@@ -156,4 +156,4 @@ This module has a setting to serve as an example for each of the currently imple
 - ColorPicker property
 - CustomAction property
 
-![Image of the Options](/doc/images/example_powertoy/settings.png)
+![Image of the Options](/doc/images/settings/example_settings.png)

@@ -1,5 +1,8 @@
 #include "pch.h"
 #include "KeyboardEventHandlers.h"
+#include "../common/shared_constants.h"
+#include <keyboardmanager/common/KeyboardManagerState.h>
+#include <keyboardmanager/common/InputInterface.h>
 
 namespace KeyboardEventHandlers
 {
@@ -114,7 +117,7 @@ namespace KeyboardEventHandlers
     }
 
     // Function to a handle a shortcut remap
-    __declspec(dllexport) intptr_t HandleShortcutRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, std::map<Shortcut, RemapShortcut>& reMap, std::mutex& map_mutex) noexcept
+    __declspec(dllexport) intptr_t HandleShortcutRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, std::map<Shortcut, RemapShortcut>& reMap, std::mutex& map_mutex, KeyboardManagerState& keyboardManagerState, const std::wstring& activatedApp) noexcept
     {
         // The mutex should be unlocked before SendInput is called to avoid re-entry into the same mutex. More details can be found at https://github.com/microsoft/PowerToys/pull/1789#issuecomment-607555837
         std::unique_lock<std::mutex> lock(map_mutex);
@@ -260,6 +263,11 @@ namespace KeyboardEventHandlers
                     }
 
                     it.second.isShortcutInvoked = true;
+                    // If app specific shortcut is invoked, store the target application
+                    if (activatedApp != KeyboardManagerConstants::NoActivatedApp)
+                    {
+                        keyboardManagerState.SetActivatedApp(activatedApp);
+                    }
                     lock.unlock();
                     UINT res = ii.SendVirtualInput((UINT)key_count, keyEventList, sizeof(INPUT));
                     delete[] keyEventList;
@@ -359,6 +367,11 @@ namespace KeyboardEventHandlers
 
                     it.second.isShortcutInvoked = false;
                     it.second.winKeyInvoked = ModifierKey::Disabled;
+                    // If app specific shortcut has finished invoking, reset the target application
+                    if (activatedApp != KeyboardManagerConstants::NoActivatedApp)
+                    {
+                        keyboardManagerState.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
+                    }
                     lock.unlock();
 
                     // key count can be 0 if both shortcuts have same modifiers and the action key is not held down. delete will throw an error if keyEventList is empty
@@ -459,15 +472,15 @@ namespace KeyboardEventHandlers
                                 i++;
                             }
 
-                            // key down for original shortcut action key
+                            // key down for original shortcut action key with shortcut flag so that we don't invoke the same shortcut remap again
                             if (isActionKeyPressed)
                             {
                                 KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.first.GetActionKey(), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                                 i++;
                             }
 
-                            // Send current key pressed
-                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            // Send current key pressed without shortcut flag so that it can be reprocessed in case the physical keys pressed are a different remapped shortcut
+                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, 0, 0);
                             i++;
 
                             // Send dummy key since the current key pressed could be a modifier
@@ -541,15 +554,15 @@ namespace KeyboardEventHandlers
                                 i++;
                             }
 
-                            // key down for original shortcut action key
+                            // key down for original shortcut action key with shortcut flag so that we don't invoke the same shortcut remap again
                             if (isActionKeyPressed)
                             {
                                 KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)it.first.GetActionKey(), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                                 i++;
                             }
 
-                            // Send current key pressed
-                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            // Send current key pressed without shortcut flag so that it can be reprocessed in case the physical keys pressed are a different remapped shortcut
+                            KeyboardManagerHelper::SetKeyEvent(keyEventList, i, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, 0, 0);
                             i++;
 
                             // Send dummy key
@@ -559,6 +572,11 @@ namespace KeyboardEventHandlers
 
                         it.second.isShortcutInvoked = false;
                         it.second.winKeyInvoked = ModifierKey::Disabled;
+                        // If app specific shortcut has finished invoking, reset the target application
+                        if (activatedApp != KeyboardManagerConstants::NoActivatedApp)
+                        {
+                            keyboardManagerState.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
+                        }
                         lock.unlock();
                         UINT res = ii.SendVirtualInput((UINT)key_count, keyEventList, sizeof(INPUT));
                         delete[] keyEventList;
@@ -571,6 +589,11 @@ namespace KeyboardEventHandlers
                 // If it was in isShortcutInvoked state and none of the above cases occur, then reset the flags
                 it.second.isShortcutInvoked = false;
                 it.second.winKeyInvoked = ModifierKey::Disabled;
+                // If app specific shortcut has finished invoking, reset the target application
+                if (activatedApp != KeyboardManagerConstants::NoActivatedApp)
+                {
+                    keyboardManagerState.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
+                }
             }
         }
 
@@ -583,7 +606,7 @@ namespace KeyboardEventHandlers
         // Check if the key event was generated by KeyboardManager to avoid remapping events generated by us.
         if (data->lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG)
         {
-            bool result = HandleShortcutRemapEvent(ii, data, keyboardManagerState.osLevelShortcutReMap, keyboardManagerState.osLevelShortcutReMap_mutex);
+            bool result = HandleShortcutRemapEvent(ii, data, keyboardManagerState.osLevelShortcutReMap, keyboardManagerState.osLevelShortcutReMap_mutex, keyboardManagerState);
             return result;
         }
 
@@ -596,18 +619,52 @@ namespace KeyboardEventHandlers
         // Check if the key event was generated by KeyboardManager to avoid remapping events generated by us.
         if (data->lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG)
         {
-            std::wstring process_name = KeyboardManagerHelper::GetCurrentApplication(false);
+            std::wstring process_name;
+
+            // Allocate MAX_PATH amount of memory
+            process_name.resize(MAX_PATH);
+            ii.GetForegroundProcess(process_name);
+
+            // Remove elements after null character
+            process_name.erase(std::find(process_name.begin(), process_name.end(), L'\0'), process_name.end());
+
             if (process_name.empty())
             {
                 return 0;
             }
 
+            // Convert process name to lower case
+            std::transform(process_name.begin(), process_name.end(), process_name.begin(), towlower);
+
             std::unique_lock<std::mutex> lock(keyboardManagerState.appSpecificShortcutReMap_mutex);
-            auto it = keyboardManagerState.appSpecificShortcutReMap.find(process_name);
+            std::wstring query_string;
+
+            std::map<std::wstring, std::map<Shortcut, RemapShortcut>>::iterator it;
+            // Check if an app-specific shortcut is already activated
+            if (keyboardManagerState.GetActivatedApp() == KeyboardManagerConstants::NoActivatedApp)
+            {
+                query_string = process_name;
+                it = keyboardManagerState.appSpecificShortcutReMap.find(query_string);
+
+                // If no entry is found, search for the process name without it's file extension
+                if (it == keyboardManagerState.appSpecificShortcutReMap.end())
+                {
+                    // Find index of the file extension
+                    size_t extensionIndex = process_name.find_last_of(L".");
+                    query_string = process_name.substr(0, extensionIndex);
+                    it = keyboardManagerState.appSpecificShortcutReMap.find(query_string);
+                }
+            }
+            else
+            {
+                query_string = keyboardManagerState.GetActivatedApp();
+                it = keyboardManagerState.appSpecificShortcutReMap.find(query_string);
+            }
+
             if (it != keyboardManagerState.appSpecificShortcutReMap.end())
             {
                 lock.unlock();
-                bool result = HandleShortcutRemapEvent(ii, data, keyboardManagerState.appSpecificShortcutReMap[process_name], keyboardManagerState.appSpecificShortcutReMap_mutex);
+                bool result = HandleShortcutRemapEvent(ii, data, keyboardManagerState.appSpecificShortcutReMap[query_string], keyboardManagerState.appSpecificShortcutReMap_mutex, keyboardManagerState, query_string);
                 return result;
             }
         }

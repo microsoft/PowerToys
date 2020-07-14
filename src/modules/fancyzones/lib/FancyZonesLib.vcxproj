@@ -100,13 +100,13 @@
   <ItemGroup>
     <ClInclude Include="FancyZones.h" />
     <ClInclude Include="FancyZonesWinHookEventIDs.h" />
+    <ClInclude Include="GenericKeyHook.h" />
     <ClInclude Include="JsonHelpers.h" />
     <ClInclude Include="MonitorWorkAreaHandler.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SecondaryMouseButtonsHook.h" />
     <ClInclude Include="Settings.h" />
-    <ClInclude Include="ShiftKeyHook.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="VirtualDesktopUtils.h" />
@@ -118,6 +118,7 @@
   <ItemGroup>
     <ClCompile Include="FancyZones.cpp" />
     <ClCompile Include="FancyZonesWinHookEventIDs.cpp" />
+    <ClCompile Include="GenericKeyHook.cpp" />
     <ClCompile Include="JsonHelpers.cpp" />
     <ClCompile Include="MonitorWorkAreaHandler.cpp" />
     <ClCompile Include="pch.cpp">
@@ -125,7 +126,6 @@
     </ClCompile>
     <ClCompile Include="SecondaryMouseButtonsHook.cpp" />
     <ClCompile Include="Settings.cpp" />
-    <ClCompile Include="ShiftKeyHook.cpp" />
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="VirtualDesktopUtils.cpp" />

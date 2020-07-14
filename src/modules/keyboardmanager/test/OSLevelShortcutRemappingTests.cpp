@@ -4,6 +4,7 @@
 #include <keyboardmanager/common/KeyboardManagerState.h>
 #include <keyboardmanager/dll/KeyboardEventHandlers.h>
 #include "TestHelpers.h"
+#include "../common/shared_constants.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -1008,6 +1009,101 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), true);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_TAB), false);
+        }
+
+        // Test if invoking two remapped shortcuts (with different modifiers between original and new shortcut) that share modifiers in succession sets the correct keyboard states
+        TEST_METHOD (TwoRemappedShortcutsWithDifferentModifiersThatShareModifiers_ShouldSetRemappedKeyStates_OnPressingSecondShortcutActionKeyAfterInvokingFirstShortcutRemap)
+        {
+            // Remap Alt+A to Ctrl+C
+            Shortcut src;
+            src.SetKey(VK_MENU);
+            src.SetKey(0x41);
+            Shortcut dest;
+            dest.SetKey(VK_CONTROL);
+            dest.SetKey(0x43);
+            testState.AddOSLevelShortcut(src, dest);
+
+            // Remap Alt+V to Ctrl+X
+            Shortcut src1;
+            src1.SetKey(VK_MENU);
+            src1.SetKey(0x56);
+            Shortcut dest1;
+            dest1.SetKey(VK_CONTROL);
+            dest1.SetKey(0x58);
+            testState.AddOSLevelShortcut(src1, dest1);
+
+            const int nInputs = 4;
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_MENU;
+            input[0].ki.dwFlags = 0;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = 0x41;
+            input[1].ki.dwFlags = 0;
+            input[2].type = INPUT_KEYBOARD;
+            input[2].ki.wVk = 0x41;
+            input[2].ki.dwFlags = KEYEVENTF_KEYUP;
+            input[3].type = INPUT_KEYBOARD;
+            input[3].ki.wVk = 0x56;
+            input[3].ki.dwFlags = 0;
+
+            // Send Alt+A, release A, press V
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // Alt, A, C, V key states should be unchanged, Ctrl, X should be true
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x43), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x58), true);
+        }
+
+        // Test if invoking two remapped shortcuts (with same modifiers between original and new shortcut) that share modifiers in succession sets the correct keyboard states
+        TEST_METHOD (TwoRemappedShortcutsWithSameModifiersThatShareModifiers_ShouldSetRemappedKeyStates_OnPressingSecondShortcutActionKeyAfterInvokingFirstShortcutRemap)
+        {
+            // Remap Ctrl+A to Ctrl+C
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey(0x41);
+            Shortcut dest;
+            dest.SetKey(VK_CONTROL);
+            dest.SetKey(0x43);
+            testState.AddOSLevelShortcut(src, dest);
+
+            // Remap Ctrl+V to Ctrl+X
+            Shortcut src1;
+            src1.SetKey(VK_CONTROL);
+            src1.SetKey(0x56);
+            Shortcut dest1;
+            dest1.SetKey(VK_CONTROL);
+            dest1.SetKey(0x58);
+            testState.AddOSLevelShortcut(src1, dest1);
+
+            const int nInputs = 4;
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[0].ki.dwFlags = 0;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = 0x41;
+            input[1].ki.dwFlags = 0;
+            input[2].type = INPUT_KEYBOARD;
+            input[2].ki.wVk = 0x41;
+            input[2].ki.dwFlags = KEYEVENTF_KEYUP;
+            input[3].type = INPUT_KEYBOARD;
+            input[3].ki.wVk = 0x56;
+            input[3].ki.dwFlags = 0;
+
+            // Send Ctrl+A, release A, press V
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // A, C, V key states should be unchanged, Ctrl, X should be true
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x43), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x58), true);
         }
     };
 }

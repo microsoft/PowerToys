@@ -8,60 +8,52 @@
 
 #include <ShellScalingApi.h>
 #include <mutex>
+#include <fileapi.h>
 
 #include <gdiplus.h>
 
 namespace ZoneWindowUtils
 {
-    const std::wstring& GetActiveZoneSetTmpPath()
+    const wchar_t ActiveZoneSetsTmpFileName[] = L"FancyZonesActiveZoneSets.json";
+    const wchar_t AppliedZoneSetsTmpFileName[] = L"FancyZonesAppliedZoneSets.json";
+    const wchar_t DeletedCustomZoneSetsTmpFileName[] = L"FancyZonesDeletedCustomZoneSets.json";
+
+    const std::wstring& GetTempDirPath()
     {
-        static std::wstring activeZoneSetTmpFileName;
+        static std::wstring tmpDirPath;
         static std::once_flag flag;
 
         std::call_once(flag, []() {
-            wchar_t fileName[L_tmpnam_s];
+            wchar_t buffer[MAX_PATH];
 
-            if (_wtmpnam_s(fileName, L_tmpnam_s) != 0)
-                abort();
+            auto charsWritten = GetTempPath(MAX_PATH, buffer);
+            if (charsWritten > MAX_PATH || (charsWritten == 0))
+            {
+                abort();            
+            }
 
-            activeZoneSetTmpFileName = std::wstring{ fileName };
+            tmpDirPath = std::wstring{ buffer };
         });
 
+        return tmpDirPath;
+    }
+
+    const std::wstring& GetActiveZoneSetTmpPath()
+    {
+        static std::wstring activeZoneSetTmpFileName = GetTempDirPath() + ActiveZoneSetsTmpFileName;
         return activeZoneSetTmpFileName;
     }
 
     const std::wstring& GetAppliedZoneSetTmpPath()
     {
-        static std::wstring appliedZoneSetTmpFileName;
-        static std::once_flag flag;
-
-        std::call_once(flag, []() {
-            wchar_t fileName[L_tmpnam_s];
-
-            if (_wtmpnam_s(fileName, L_tmpnam_s) != 0)
-                abort();
-
-            appliedZoneSetTmpFileName = std::wstring{ fileName };
-        });
-
+        static std::wstring appliedZoneSetTmpFileName = GetTempDirPath() + AppliedZoneSetsTmpFileName;
         return appliedZoneSetTmpFileName;
     }
 
-    const std::wstring& GetCustomZoneSetsTmpPath()
+    const std::wstring& GetDeletedCustomZoneSetsTmpPath()
     {
-        static std::wstring customZoneSetsTmpFileName;
-        static std::once_flag flag;
-
-        std::call_once(flag, []() {
-            wchar_t fileName[L_tmpnam_s];
-
-            if (_wtmpnam_s(fileName, L_tmpnam_s) != 0)
-                abort();
-
-            customZoneSetsTmpFileName = std::wstring{ fileName };
-        });
-
-        return customZoneSetsTmpFileName;
+        static std::wstring deletedCustomZoneSetsTmpFileName = GetTempDirPath() + DeletedCustomZoneSetsTmpFileName;
+        return deletedCustomZoneSetsTmpFileName;
     }
 
     std::wstring GenerateUniqueId(HMONITOR monitor, PCWSTR deviceId, PCWSTR virtualDesktopId)
@@ -220,7 +212,7 @@ public:
     bool Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monitor, const std::wstring& uniqueId, const std::wstring& parentUniqueId, bool flashZones);
 
     IFACEMETHODIMP MoveSizeEnter(HWND window) noexcept;
-    IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled) noexcept;
+    IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) noexcept;
     IFACEMETHODIMP MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
     IFACEMETHODIMP_(void)
     RestoreOriginalTransparency() noexcept;
@@ -246,6 +238,8 @@ public:
     HideZoneWindow() noexcept;
     IFACEMETHODIMP_(void)
     UpdateActiveZoneSet() noexcept;
+    IFACEMETHODIMP_(void)
+    ClearSelectedZones() noexcept;
 
 protected:
     static LRESULT CALLBACK s_WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept;
@@ -271,6 +265,7 @@ private:
     bool m_flashMode{};
     winrt::com_ptr<IZoneSet> m_activeZoneSet;
     std::vector<winrt::com_ptr<IZoneSet>> m_zoneSets;
+    std::vector<int> m_initialHighlightZone;
     std::vector<int> m_highlightZone;
     WPARAM m_keyLast{};
     size_t m_keyCycle{};
@@ -376,11 +371,12 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnter(HWND window) noexcept
     m_windowMoveSize = window;
     m_drawHints = true;
     m_highlightZone = {};
+    m_initialHighlightZone = {};
     ShowZoneWindow();
     return S_OK;
 }
 
-IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled) noexcept
+IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) noexcept
 {
     bool redraw = false;
     POINT ptClient = ptScreen;
@@ -389,6 +385,61 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
     if (dragEnabled)
     {
         auto highlightZone = ZonesFromPoint(ptClient);
+
+        if (selectManyZones)
+        {
+            if (m_initialHighlightZone.empty())
+            {
+                // first time
+                m_initialHighlightZone = highlightZone;
+            }
+            else
+            {
+                std::vector<int> newHighlightZone;
+                std::set_union(begin(highlightZone), end(highlightZone), begin(m_initialHighlightZone), end(m_initialHighlightZone), std::back_inserter(newHighlightZone));
+
+                RECT boundingRect;
+                bool boundingRectEmpty = true;
+                auto zones = m_activeZoneSet->GetZones();
+
+                for (int zoneId : newHighlightZone)
+                {
+                    RECT rect = zones[zoneId]->GetZoneRect();
+                    if (boundingRectEmpty)
+                    {
+                        boundingRect = rect;
+                        boundingRectEmpty = false;
+                    }
+                    else
+                    {
+                        boundingRect.left = min(boundingRect.left, rect.left);
+                        boundingRect.top = min(boundingRect.top, rect.top);
+                        boundingRect.right = max(boundingRect.right, rect.right);
+                        boundingRect.bottom = max(boundingRect.bottom, rect.bottom);
+                    }
+                }
+
+                highlightZone.clear();
+
+                if (!boundingRectEmpty)
+                {
+                    for (size_t zoneId = 0; zoneId < zones.size(); zoneId++)
+                    {
+                        RECT rect = zones[zoneId]->GetZoneRect();
+                        if (boundingRect.left <= rect.left && rect.right <= boundingRect.right &&
+                            boundingRect.top <= rect.top && rect.bottom <= boundingRect.bottom)
+                        {
+                            highlightZone.push_back(static_cast<int>(zoneId));
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            m_initialHighlightZone = {};
+        }
+
         redraw = (highlightZone != m_highlightZone);
         m_highlightZone = std::move(highlightZone);
     }
@@ -418,7 +469,7 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnd(HWND window, POINT const& ptScreen) noexc
     {
         POINT ptClient = ptScreen;
         MapWindowPoints(nullptr, m_window.get(), &ptClient, 1);
-        m_activeZoneSet->MoveWindowIntoZoneByPoint(window, m_window.get(), ptClient);
+        m_activeZoneSet->MoveWindowIntoZoneByIndexSet(window, m_window.get(), m_highlightZone);
 
         SaveWindowProcessToZoneIndex(window);
     }
@@ -551,6 +602,16 @@ IFACEMETHODIMP_(void)
 ZoneWindow::UpdateActiveZoneSet() noexcept
 {
     CalculateZoneSet();
+}
+
+IFACEMETHODIMP_(void)
+ZoneWindow::ClearSelectedZones() noexcept
+{
+    if (m_highlightZone.size())
+    {
+        m_highlightZone.clear();
+        InvalidateRect(m_window.get(), nullptr, true);
+    }
 }
 
 #pragma region private

@@ -7,9 +7,8 @@ namespace Wox.Plugin
     public class ContextMenuResult
     {
         public string PluginName { get; set; }
-        public string Title { get; set; }
 
-        public string SubTitle { get; set; }
+        public string Title { get; set; }
 
         public string Glyph { get; set; }
 
@@ -26,7 +25,7 @@ namespace Wox.Plugin
 
         public override string ToString()
         {
-            return Title + SubTitle;
+            return Title;
         }
     }
 }
