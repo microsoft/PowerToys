@@ -27,6 +27,9 @@
     <ClInclude Include="http_client.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="dotnet_installation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -39,6 +42,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="http_client.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dotnet_installation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

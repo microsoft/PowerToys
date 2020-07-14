@@ -27,6 +27,7 @@ namespace
     const wchar_t MSIX_PACKAGE_PUBLISHER[] = L"CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US";
 
     const size_t MAX_DOWNLOAD_ATTEMPTS = 3;
+    const wchar_t TOAST_TITLE[] = L"PowerToys";
 }
 
 namespace localized_strings
@@ -88,7 +89,7 @@ namespace updating
         {
             try
             {
-                ::notifications::show_toast(*system_message);
+                ::notifications::show_toast(*system_message, TOAST_TITLE);
             }
             catch (...)
             {
@@ -202,7 +203,7 @@ namespace updating
         {
             co_return;
         }
-        
+
         if (download_updates_automatically && !could_be_costly_connection())
         {
             auto installer_download_dst = create_download_path() / new_version->installer_filename;
@@ -260,8 +261,8 @@ namespace updating
 
         try
         {
-            auto progressUpdateHandle = [](float progress) {
-                updating::notifications::update_download_progress(progress);
+            auto progressUpdateHandle = [&](float progress) {
+                updating::notifications::update_download_progress(new_version.value(), progress);
             };
 
             http::HttpClient client;

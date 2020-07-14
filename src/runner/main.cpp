@@ -15,6 +15,7 @@
 #include <common/notifications.h>
 #include <common/updating/updating.h>
 #include <common/RestartManagement.h>
+#include <common/appMutex.h>
 
 #include "update_state.h"
 #include "update_utils.h"
@@ -39,16 +40,13 @@ namespace localized_strings
 {
     const wchar_t MSI_VERSION_IS_ALREADY_RUNNING[] = L"An older version of PowerToys is already running.";
     const wchar_t OLDER_MSIX_UNINSTALLED[] = L"An older MSIX version of PowerToys was uninstalled.";
-    const wchar_t PT_UPDATE_MESSAGE_BOX_TITLE[] = L"PowerToys";
     const wchar_t PT_UPDATE_MESSAGE_BOX_TEXT[] = L"PowerToys was updated and some components require Windows Explorer to restart. Do you want to restart Windows Explorer now?";
-
 }
 
 namespace
 {
-    const wchar_t MSI_VERSION_MUTEX_NAME[] = L"Local\\PowerToyRunMutex";
-    const wchar_t MSIX_VERSION_MUTEX_NAME[] = L"Local\\PowerToyMSIXRunMutex";
     const wchar_t PT_URI_PROTOCOL_SCHEME[] = L"powertoys://";
+    const wchar_t APPLICATION_ID[] = L"Microsoft.PowerToysWin32";
 }
 
 void chdir_current_executable()
@@ -63,30 +61,20 @@ void chdir_current_executable()
     }
 }
 
-wil::unique_mutex_nothrow create_runner_mutex(const bool msix_version)
+inline wil::unique_mutex_nothrow create_msi_mutex()
 {
-    wchar_t username[UNLEN + 1];
-    DWORD username_length = UNLEN + 1;
-    GetUserNameW(username, &username_length);
-    wil::unique_mutex_nothrow result{ CreateMutexW(nullptr, TRUE, (std::wstring(msix_version ? MSIX_VERSION_MUTEX_NAME : MSI_VERSION_MUTEX_NAME) + username).c_str()) };
-
-    return GetLastError() == ERROR_ALREADY_EXISTS ? wil::unique_mutex_nothrow{} : std::move(result);
+    return createAppMutex(POWERTOYS_MSI_MUTEX_NAME);
 }
 
-wil::unique_mutex_nothrow create_msi_mutex()
+inline wil::unique_mutex_nothrow create_msix_mutex()
 {
-    return create_runner_mutex(false);
-}
-
-wil::unique_mutex_nothrow create_msix_mutex()
-{
-    return create_runner_mutex(true);
+    return createAppMutex(POWERTOYS_MSIX_MUTEX_NAME);
 }
 
 void open_menu_from_another_instance()
 {
-    HWND hwnd_main = FindWindow(L"PToyTrayIconWindow", NULL);
-    PostMessage(hwnd_main, WM_COMMAND, ID_SETTINGS_MENU_COMMAND, NULL);
+    const HWND hwnd_main = FindWindowW(L"PToyTrayIconWindow", nullptr);
+    PostMessageW(hwnd_main, WM_COMMAND, ID_SETTINGS_MENU_COMMAND, 0);
 }
 
 int runner(bool isProcessElevated)
@@ -119,11 +107,12 @@ int runner(bool isProcessElevated)
             std::thread{ [] {
                 if (updating::uninstall_previous_msix_version_async().get())
                 {
-                    notifications::show_toast(localized_strings::OLDER_MSIX_UNINSTALLED);
+                    notifications::show_toast(localized_strings::OLDER_MSIX_UNINSTALLED, L"PowerToys");
                 }
             } }.detach();
         }
 
+        notifications::initialize_application_id(APPLICATION_ID);
         notifications::register_background_toast_handler();
 
         chdir_current_executable();
@@ -140,7 +129,7 @@ int runner(bool isProcessElevated)
             L"modules/ColorPicker/ColorPicker.dll",
         };
 
-        for (const auto & moduleSubdir : knownModules)
+        for (const auto& moduleSubdir : knownModules)
         {
             try
             {
@@ -211,7 +200,6 @@ enum class toast_notification_handler_result
     exit_error
 };
 
-
 toast_notification_handler_result toast_notification_handler(const std::wstring_view param)
 {
     const std::wstring_view cant_drag_elevated_disable = L"cant_drag_elevated_disable/";
@@ -245,7 +233,7 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     else if (param.starts_with(download_and_install_update))
     {
         std::wstring installer_filename = updating::download_update().get();
-     
+
         std::wstring args{ UPDATE_NOW_LAUNCH_STAGE1_CMDARG };
         args += L' ';
         args += installer_filename;
@@ -261,10 +249,10 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
 
 void RequestExplorerRestart()
 {
-    if (MessageBox(nullptr,
-                   localized_strings::PT_UPDATE_MESSAGE_BOX_TEXT,
-                   localized_strings::PT_UPDATE_MESSAGE_BOX_TITLE,
-                   MB_ICONINFORMATION | MB_YESNO | MB_DEFBUTTON1) == IDYES)
+    if (MessageBoxW(nullptr,
+                    localized_strings::PT_UPDATE_MESSAGE_BOX_TEXT,
+                    L"PowerToys",
+                    MB_ICONINFORMATION | MB_YESNO | MB_DEFBUTTON1) == IDYES)
     {
         RestartProcess(EXPLORER_PROCESS_NAME);
     }
