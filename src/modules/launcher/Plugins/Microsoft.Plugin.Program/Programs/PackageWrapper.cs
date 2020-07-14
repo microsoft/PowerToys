@@ -38,7 +38,7 @@ namespace Microsoft.Plugin.Program.Programs
                         package.Id.Name,
                         package.Id.FullName,
                         package.Id.FamilyName,
-                        package.IsFramework,
+                        package.IsFramework, 
                         package.IsDevelopmentMode,
                         package.InstalledLocation.Path
                         );

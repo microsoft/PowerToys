@@ -3,8 +3,6 @@ using Microsoft.Plugin.Program.Programs;
 using Moq;
 using NUnit.Framework;
 using System.Collections.Generic;
-using System.IO.Packaging;
-using Windows.Storage;
 
 namespace Microsoft.Plugin.Program.UnitTests.Programs
 {
