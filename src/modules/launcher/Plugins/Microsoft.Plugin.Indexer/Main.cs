@@ -14,6 +14,7 @@ using Microsoft.PowerToys.Settings.UI.Lib;
 using System.Windows.Controls;
 using Wox.Infrastructure.Logger;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace Microsoft.Plugin.Indexer
 {
@@ -57,7 +58,7 @@ namespace Microsoft.Plugin.Indexer
 
                 var regexMatch = Regex.Match(searchQuery, ReservedStringPattern);
 
-                if (!regexMatch.Success)
+                if (!regexMatch.Success && false)
                 {
                     try
                     {
@@ -118,9 +119,34 @@ namespace Microsoft.Plugin.Indexer
                     {
                         Log.Info(ex.ToString());
                     }
-                }               
+                }
+                else
+                {
+                    results.Add(new Result
+                    {
+                        // TODO: Localize the string
+                        Title = "Indexing may be turned off, affecting results. Click here to open Indexing Options and enable it.",
+                        IcoPath = "Images\\WindowsIndexerImg.bmp",
+                        Action = e =>
+                        {
+                            try
+                            {
+                                Process.Start(GetExecutablePath());
+                            }
+                            catch (Exception)
+                            {
+                                //Add a warning that Indexing options is not being launcher
+                                results.Add(new Result
+                                {
+                                    Title = "Report this error! Unable to launch Indexing Options.",
+                                    IcoPath = "Images\\WindowsIndexerImg.bmp"
+                                });
+                            }
+                            return true;
+                        }
+                    });
+                }
             }
-
             return results;
         }
 
@@ -158,6 +184,29 @@ namespace Microsoft.Plugin.Indexer
         public Control CreateSettingPanel()
         {
             throw new NotImplementedException();
+        }
+
+        public ProcessStartInfo GetExecutablePath()
+        {
+            /* ProcessStartInfo executablePath = new ProcessStartInfo();
+             string applicationName = "Microsoft.IndexingOptions";
+             const string CONTROL = @"%SystemRoot%\System32\control.exe";
+
+             //CPL Files 
+             //executablePath.FileName = Environment.ExpandEnvironmentVariables(CONTROL);
+             //executablePath.Arguments = "-name " + applicationName;
+             //executablePath.Arguments = "userpasswords"; 
+
+             executablePath.FileName = "ms-settings:cortana-windowssearch";*/
+
+            var ps = new ProcessStartInfo("ms-settings:cortana-windowssearch")
+            {
+                UseShellExecute = true,
+                Verb = "open"
+            };
+            //Process.Start(ps);
+
+            return ps;
         }
 
     }
