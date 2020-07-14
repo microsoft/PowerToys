@@ -13,10 +13,12 @@
 - C++ v14.24 ATL for v142 build tools with Spectre Mitigations (x86 & x64)
 - C++ MFC ATL for v142 build tools with Spectre Mitigations (x86 & x64)
 - Windows 10 SDK(10.0.19441.0 and 10.17134.0)
-- Windows Driver Kit
-- WiX Toolset v3 Schemas for Visual Studio
+
+- WDK 1903(install with vs extension) https://docs.microsoft.com/en-us/windows-hardware/drivers/other-wdk-downloads
+- WiX Toolset v3 Schemas for Visual Studio 
 - WiX Toolset v4 Schemas for Visual Studio
-- WiX Toolset Visual Studio 2019 extension
+- WiX Toolset Visual Studio 2019 extension https://wixtoolset.org/releases/
+
 
 ## Building 
 - Build PowerToys.sln release
