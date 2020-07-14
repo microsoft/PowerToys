@@ -155,7 +155,7 @@ namespace PowerLauncher
         {
 	        if (_settings.ClearInputOnLaunch)
 	        {
-		        SearchBox.QueryTextBox.Text = string.Empty;
+		        _viewModel.ClearQueryCommand.Execute(null);
 	        }
 
             if (_settings.HideWhenDeactivated)

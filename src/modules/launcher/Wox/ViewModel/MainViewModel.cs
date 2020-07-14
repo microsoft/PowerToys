@@ -234,6 +234,12 @@ namespace Wox.ViewModel
                     SelectedResults = Results;
                 }
             });
+
+            ClearQueryCommand = new RelayCommand(_ =>
+            {
+	            ChangeQueryText(string.Empty,true);
+	            OnPropertyChanged(nameof(SystemQueryText));
+            });
         }
 
         #endregion
@@ -342,6 +348,8 @@ namespace Wox.ViewModel
         public ICommand LoadContextMenuCommand { get; set; }
         public ICommand LoadHistoryCommand { get; set; }
         public ICommand OpenResultCommand { get; set; }
+        public ICommand ClearQueryCommand { get; set; }
+
 
         #endregion
 
