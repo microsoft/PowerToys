@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "KeyboardManagerState.h"
+#include <../common/settings_helpers.h>
+#include "KeyDelay.h"
 
 // Constructor
 KeyboardManagerState::KeyboardManagerState() :
@@ -179,15 +181,15 @@ bool KeyboardManagerState::AddAppSpecificShortcut(const std::wstring& app, const
 void KeyboardManagerState::ConfigureDetectShortcutUI(const StackPanel& textBlock1, const StackPanel& textBlock2)
 {
     std::lock_guard<std::mutex> lock(currentShortcutUI_mutex);
-    currentShortcutUI1 = textBlock1;
-    currentShortcutUI2 = textBlock2;
+    currentShortcutUI1 = textBlock1.as<winrt::Windows::Foundation::IInspectable>();
+    currentShortcutUI2 = textBlock2.as<winrt::Windows::Foundation::IInspectable>();
 }
 
 // Function to set the textblock of the detect remap key UI so that it can be accessed by the hook
 void KeyboardManagerState::ConfigureDetectSingleKeyRemapUI(const StackPanel& textBlock)
 {
     std::lock_guard<std::mutex> lock(currentSingleKeyUI_mutex);
-    currentSingleKeyUI = textBlock;
+    currentSingleKeyUI = textBlock.as<winrt::Windows::Foundation::IInspectable>();
 }
 
 void KeyboardManagerState::AddKeyToLayout(const StackPanel& panel, const hstring& key)
@@ -226,34 +228,34 @@ void KeyboardManagerState::UpdateDetectShortcutUI()
     detectedShortcut_lock.unlock();
 
     // Since this function is invoked from the back-end thread, in order to update the UI the dispatcher must be used.
-    currentShortcutUI1.Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [this, detectedShortcutCopy]() {
+    currentShortcutUI1.as<StackPanel>().Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [this, detectedShortcutCopy]() {
         std::vector<hstring> shortcut = detectedShortcutCopy.GetKeyVector(keyboardMap);
-        currentShortcutUI1.Children().Clear();
-        currentShortcutUI2.Children().Clear();
+        currentShortcutUI1.as<StackPanel>().Children().Clear();
+        currentShortcutUI2.as<StackPanel>().Children().Clear();
 
         // The second row should be hidden if there are 3 keys or lesser to avoid an extra margin
         if (shortcut.size() > 3)
         {
-            currentShortcutUI2.Visibility(Visibility::Visible);
+            currentShortcutUI2.as<StackPanel>().Visibility(Visibility::Visible);
         }
         else
         {
-            currentShortcutUI2.Visibility(Visibility::Collapsed);
+            currentShortcutUI2.as<StackPanel>().Visibility(Visibility::Collapsed);
         }
 
         for (int i = 0; i < shortcut.size(); i++)
         {
             if (i < 3)
             {
-                AddKeyToLayout(currentShortcutUI1, shortcut[i]);
+                AddKeyToLayout(currentShortcutUI1.as<StackPanel>(), shortcut[i]);
             }
             else
             {
-                AddKeyToLayout(currentShortcutUI2, shortcut[i]);
+                AddKeyToLayout(currentShortcutUI2.as<StackPanel>(), shortcut[i]);
             }
         }
-        currentShortcutUI1.UpdateLayout();
-        currentShortcutUI2.UpdateLayout();
+        currentShortcutUI1.as<StackPanel>().UpdateLayout();
+        currentShortcutUI2.as<StackPanel>().UpdateLayout();
     });
 }
 
@@ -265,13 +267,12 @@ void KeyboardManagerState::UpdateDetectSingleKeyRemapUI()
     {
         return;
     }
-
     // Since this function is invoked from the back-end thread, in order to update the UI the dispatcher must be used.
-    currentSingleKeyUI.Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [this]() {
-        currentSingleKeyUI.Children().Clear();
+    currentSingleKeyUI.as<StackPanel>().Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, [this]() {
+        currentSingleKeyUI.as<StackPanel>().Children().Clear();
         hstring key = winrt::to_hstring(keyboardMap.GetKeyName(detectedRemapKey).c_str());
-        AddKeyToLayout(currentSingleKeyUI, key);
-        currentSingleKeyUI.UpdateLayout();
+        AddKeyToLayout(currentSingleKeyUI.as<StackPanel>(), key);
+        currentSingleKeyUI.as<StackPanel>().UpdateLayout();
     });
 }
 
@@ -444,6 +445,7 @@ bool KeyboardManagerState::SaveConfigToFile()
     json::JsonObject remapShortcuts;
     json::JsonObject remapKeys;
     json::JsonArray inProcessRemapKeysArray;
+    json::JsonArray appSpecificRemapShortcutsArray;
     json::JsonArray globalRemapShortcutsArray;
     std::unique_lock<std::mutex> lockSingleKeyReMap(singleKeyReMap_mutex);
     for (const auto& it : singleKeyReMap)
@@ -466,8 +468,26 @@ bool KeyboardManagerState::SaveConfigToFile()
         globalRemapShortcutsArray.Append(keys);
     }
     lockOsLevelShortcutReMap.unlock();
+    
+    std::unique_lock<std::mutex> lockAppSpecificShortcutReMap(appSpecificShortcutReMap_mutex);
+    for (const auto& itApp : appSpecificShortcutReMap)
+    {
+        // Iterate over apps
+        for (const auto& itKeys : itApp.second)
+        {
+            json::JsonObject keys;
+            keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(itKeys.first.ToHstringVK()));
+            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(itKeys.second.targetShortcut.ToHstringVK()));
+            keys.SetNamedValue(KeyboardManagerConstants::TargetAppSettingName, json::value(itApp.first));
+
+            appSpecificRemapShortcutsArray.Append(keys);        
+        }
+
+    }
+    lockAppSpecificShortcutReMap.unlock();
 
     remapShortcuts.SetNamedValue(KeyboardManagerConstants::GlobalRemapShortcutsSettingName, globalRemapShortcutsArray);
+    remapShortcuts.SetNamedValue(KeyboardManagerConstants::AppSpecificRemapShortcutsSettingName, appSpecificRemapShortcutsArray);
     remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, inProcessRemapKeysArray);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeys);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsSettingName, remapShortcuts);
@@ -509,4 +529,16 @@ std::wstring KeyboardManagerState::GetCurrentConfigName()
 {
     std::lock_guard<std::mutex> lock(currentConfig_mutex);
     return currentConfig;
+}
+
+// Sets the activated target application in app-specfic shortcut
+void KeyboardManagerState::SetActivatedApp(const std::wstring& appName)
+{
+    activatedAppSpecificShortcutTarget = appName;
+}
+
+// Gets the activated target application in app-specfic shortcut
+std::wstring KeyboardManagerState::GetActivatedApp()
+{
+    return activatedAppSpecificShortcutTarget;
 }

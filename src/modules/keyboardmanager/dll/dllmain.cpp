@@ -89,47 +89,99 @@ public:
                 if (configFile)
                 {
                     auto jsonData = *configFile;
-                    auto remapKeysData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName);
-                    auto remapShortcutsData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapShortcutsSettingName);
-                    keyboardManagerState.ClearSingleKeyRemaps();
 
-                    if (remapKeysData)
+                    // Load single key remaps
+                    try
                     {
-                        auto inProcessRemapKeys = remapKeysData.GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName);
-                        for (const auto& it : inProcessRemapKeys)
+                        auto remapKeysData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName);
+                        keyboardManagerState.ClearSingleKeyRemaps();
+
+                        if (remapKeysData)
                         {
-                            try
+                            auto inProcessRemapKeys = remapKeysData.GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName);
+                            for (const auto& it : inProcessRemapKeys)
                             {
-                                auto originalKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
-                                auto newRemapKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
-                                keyboardManagerState.AddSingleKeyRemap(std::stoul(originalKey.c_str()), std::stoul(newRemapKey.c_str()));
-                            }
-                            catch (...)
-                            {
-                                // Improper Key Data JSON. Try the next remap.
+                                try
+                                {
+                                    auto originalKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
+                                    auto newRemapKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
+                                    keyboardManagerState.AddSingleKeyRemap(std::stoul(originalKey.c_str()), std::stoul(newRemapKey.c_str()));
+                                }
+                                catch (...)
+                                {
+                                    // Improper Key Data JSON. Try the next remap.
+                                }
                             }
                         }
                     }
-
-                    keyboardManagerState.ClearOSLevelShortcuts();
-                    if (remapShortcutsData)
+                    catch (...)
                     {
-                        auto globalRemapShortcuts = remapShortcutsData.GetNamedArray(KeyboardManagerConstants::GlobalRemapShortcutsSettingName);
-                        for (const auto& it : globalRemapShortcuts)
+                        // Improper JSON format for single key remaps. Skip to next remap type
+                    }
+
+                    // Load shortcut remaps
+                    try
+                    {
+                        auto remapShortcutsData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapShortcutsSettingName);
+                        keyboardManagerState.ClearOSLevelShortcuts();
+                        keyboardManagerState.ClearAppSpecificShortcuts();
+                        if (remapShortcutsData)
                         {
+                            // Load os level shortcut remaps
                             try
                             {
-                                auto originalKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
-                                auto newRemapKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
-                                Shortcut originalSC(originalKeys.c_str());
-                                Shortcut newRemapSC(newRemapKeys.c_str());
-                                keyboardManagerState.AddOSLevelShortcut(originalSC, newRemapSC);
+                                auto globalRemapShortcuts = remapShortcutsData.GetNamedArray(KeyboardManagerConstants::GlobalRemapShortcutsSettingName);
+                                for (const auto& it : globalRemapShortcuts)
+                                {
+                                    try
+                                    {
+                                        auto originalKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
+                                        auto newRemapKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
+                                        Shortcut originalSC(originalKeys.c_str());
+                                        Shortcut newRemapSC(newRemapKeys.c_str());
+                                        keyboardManagerState.AddOSLevelShortcut(originalSC, newRemapSC);
+                                    }
+                                    catch (...)
+                                    {
+                                        // Improper Key Data JSON. Try the next shortcut.
+                                    }
+                                }
                             }
                             catch (...)
                             {
-                                // Improper Key Data JSON. Try the next shortcut.
+                                // Improper JSON format for os level shortcut remaps. Skip to next remap type
+                            }
+
+                            // Load app specific shortcut remaps
+                            try
+                            {
+                                auto appSpecificRemapShortcuts = remapShortcutsData.GetNamedArray(KeyboardManagerConstants::AppSpecificRemapShortcutsSettingName);
+                                for (const auto& it : appSpecificRemapShortcuts)
+                                {
+                                    try
+                                    {
+                                        auto originalKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
+                                        auto newRemapKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
+                                        auto targetApp = it.GetObjectW().GetNamedString(KeyboardManagerConstants::TargetAppSettingName);
+                                        Shortcut originalSC(originalKeys.c_str());
+                                        Shortcut newRemapSC(newRemapKeys.c_str());
+                                        keyboardManagerState.AddAppSpecificShortcut(targetApp.c_str(), originalSC, newRemapSC);
+                                    }
+                                    catch (...)
+                                    {
+                                        // Improper Key Data JSON. Try the next shortcut.
+                                    }
+                                }
+                            }
+                            catch (...)
+                            {
+                                // Improper JSON format for os level shortcut remaps. Skip to next remap type
                             }
                         }
+                    }
+                    catch (...)
+                    {
+                        // Improper JSON format for shortcut remaps. Skip to next remap type
                     }
                 }
             }

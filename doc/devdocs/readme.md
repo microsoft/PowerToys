@@ -30,7 +30,7 @@ General project organization:
 
 Documentation for the project.
 
-### The [`Wiki`](/wiki)
+### The [`Wiki`](https://github.com/microsoft/PowerToys/wiki)
 
 The Wiki contains the current specs for the project.
 
