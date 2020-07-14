@@ -11,4 +11,7 @@ public:
 
     // Function to get the state of a particular key
     bool GetVirtualKeyState(int key);
+
+    // Function to get the foreground process name
+    void GetForegroundProcess(_Out_ std::wstring& foregroundProcess);
 };

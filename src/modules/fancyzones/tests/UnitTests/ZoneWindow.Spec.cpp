@@ -86,11 +86,11 @@ namespace FancyZonesUnitTests
 
             Assert::IsFalse(ZoneWindowUtils::GetActiveZoneSetTmpPath().empty());
             Assert::IsFalse(ZoneWindowUtils::GetAppliedZoneSetTmpPath().empty());
-            Assert::IsFalse(ZoneWindowUtils::GetCustomZoneSetsTmpPath().empty());
+            Assert::IsFalse(ZoneWindowUtils::GetDeletedCustomZoneSetsTmpPath().empty());
 
             Assert::IsFalse(std::filesystem::exists(ZoneWindowUtils::GetActiveZoneSetTmpPath()));
             Assert::IsFalse(std::filesystem::exists(ZoneWindowUtils::GetAppliedZoneSetTmpPath()));
-            Assert::IsFalse(std::filesystem::exists(ZoneWindowUtils::GetCustomZoneSetsTmpPath()));
+            Assert::IsFalse(std::filesystem::exists(ZoneWindowUtils::GetDeletedCustomZoneSetsTmpPath()));
 
             m_fancyZonesData.SetSettingsModulePath(L"FancyZonesUnitTests");
             m_fancyZonesData.clear_data();
@@ -101,7 +101,7 @@ namespace FancyZonesUnitTests
             //cleanup temp files if were created
             std::filesystem::remove(ZoneWindowUtils::GetActiveZoneSetTmpPath());
             std::filesystem::remove(ZoneWindowUtils::GetAppliedZoneSetTmpPath());
-            std::filesystem::remove(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
+            std::filesystem::remove(ZoneWindowUtils::GetDeletedCustomZoneSetsTmpPath());
 
             m_zoneWindow = nullptr;
         }
@@ -295,7 +295,7 @@ namespace FancyZonesUnitTests
             //save required data
             const auto activeZoneSetTempPath = ZoneWindowUtils::GetActiveZoneSetTmpPath();
             const auto appliedZoneSetTempPath = ZoneWindowUtils::GetAppliedZoneSetTmpPath();
-            const auto deletedZonesTempPath = ZoneWindowUtils::GetCustomZoneSetsTmpPath();
+            const auto deletedZonesTempPath = ZoneWindowUtils::GetDeletedCustomZoneSetsTmpPath();
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::Custom;
             const auto customSetGuid = Helpers::CreateGuidString();
@@ -341,7 +341,7 @@ namespace FancyZonesUnitTests
             //save required data
             const auto activeZoneSetTempPath = ZoneWindowUtils::GetActiveZoneSetTmpPath();
             const auto appliedZoneSetTempPath = ZoneWindowUtils::GetAppliedZoneSetTmpPath();
-            const auto deletedZonesTempPath = ZoneWindowUtils::GetCustomZoneSetsTmpPath();
+            const auto deletedZonesTempPath = ZoneWindowUtils::GetDeletedCustomZoneSetsTmpPath();
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::Custom;
             const auto customSetGuid = Helpers::CreateGuidString();
@@ -467,7 +467,7 @@ namespace FancyZonesUnitTests
             m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
             const auto expected = S_OK;
-            const auto actual = m_zoneWindow->MoveSizeUpdate(POINT{ 0, 0 }, true);
+            const auto actual = m_zoneWindow->MoveSizeUpdate(POINT{ 0, 0 }, true, false);
 
             Assert::AreEqual(expected, actual);
         }
@@ -477,7 +477,7 @@ namespace FancyZonesUnitTests
             m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
             const auto expected = S_OK;
-            const auto actual = m_zoneWindow->MoveSizeUpdate(POINT{ -10, -10 }, true);
+            const auto actual = m_zoneWindow->MoveSizeUpdate(POINT{ -10, -10 }, true, false);
 
             Assert::AreEqual(expected, actual);
         }
@@ -487,7 +487,7 @@ namespace FancyZonesUnitTests
             m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
             const auto expected = S_OK;
-            const auto actual = m_zoneWindow->MoveSizeUpdate(POINT{ m_monitorInfo.rcMonitor.right + 1, m_monitorInfo.rcMonitor.bottom + 1 }, true);
+            const auto actual = m_zoneWindow->MoveSizeUpdate(POINT{ m_monitorInfo.rcMonitor.right + 1, m_monitorInfo.rcMonitor.bottom + 1 }, true, false);
 
             Assert::AreEqual(expected, actual);
         }

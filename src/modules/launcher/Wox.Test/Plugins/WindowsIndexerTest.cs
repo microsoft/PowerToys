@@ -1,11 +1,12 @@
 ﻿using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using System.Data.OleDb;
 using Microsoft.Search.Interop;
 using Microsoft.Plugin.Indexer.SearchHelper;
 using Microsoft.Plugin.Indexer.Interface;
+using Microsoft.Plugin.Indexer;
 using Moq;
+using Wox.Plugin;
 using System.Linq;
 
 namespace Wox.Test.Plugins
@@ -213,6 +214,88 @@ namespace Wox.Test.Plugins
             Assert.IsTrue(windowsSearchAPIResults.Count() == 1);
             Assert.IsFalse(windowsSearchAPIResults.Any(x => x.Title == "file1.txt"));
             Assert.IsTrue(windowsSearchAPIResults.Any(x => x.Title == "file2.txt"));
+        }
+
+        [TestCase("item.exe")]
+        [TestCase("item.bat")]
+        [TestCase("item.appref-ms")]
+        [TestCase("item.lnk")]
+        public void LoadContextMenus_MustLoadAllItems_WhenFileIsAnApp(string path)
+        {
+            // Arrange
+            var mockapi = new Mock<IPublicAPI>();
+            var pluginInitContext = new PluginInitContext() { API = mockapi.Object };
+
+            ContextMenuLoader _contextMenuLoader = new ContextMenuLoader(pluginInitContext);
+
+            // Act
+            Result result = new Result
+            {
+                ContextData = new SearchResult { Path = path }
+            };
+
+            List<ContextMenuResult> contextMenuItems = _contextMenuLoader.LoadContextMenus(result);
+
+            // Assert
+            Assert.AreEqual(contextMenuItems.Count, 4);
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path"), Times.Once());
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_administrator"), Times.Once());
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder"), Times.Once());
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_in_console"), Times.Once());
+        }
+
+        [TestCase("item.pdf")]
+        [TestCase("item.xls")]
+        [TestCase("item.ppt")]
+        [TestCase("C:/DummyFile.cs")]
+        public void LoadContextMenus_MustNotLoadRunAsAdmin_WhenFileIsAnNotApp(string path)
+        {
+            // Arrange
+            var mockapi = new Mock<IPublicAPI>();
+            var pluginInitContext = new PluginInitContext() { API = mockapi.Object };
+
+            ContextMenuLoader _contextMenuLoader = new ContextMenuLoader(pluginInitContext);
+
+            // Act
+            Result result = new Result
+            {
+                ContextData = new SearchResult { Path = path }
+            };
+
+            List<ContextMenuResult> contextMenuItems = _contextMenuLoader.LoadContextMenus(result);
+
+            // Assert
+            Assert.AreEqual(contextMenuItems.Count, 3);
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path"), Times.Once());
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_administrator"), Times.Never());
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder"), Times.Once());
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_in_console"), Times.Once());
+        }
+
+        [TestCase("C:/DummyFolder")]
+        [TestCase("TestFolder")]
+        public void LoadContextMenus_MustNotLoadRunAsAdminAndOpenContainingFolder_ForFolder(string path)
+        {
+            // Arrange
+            var mockapi = new Mock<IPublicAPI>();
+            var pluginInitContext = new PluginInitContext() { API = mockapi.Object };
+
+            ContextMenuLoader _contextMenuLoader = new ContextMenuLoader(pluginInitContext);
+
+            // Act
+            Result result = new Result
+            {
+                ContextData = new SearchResult { Path = path }
+            };
+
+            List<ContextMenuResult> contextMenuItems = _contextMenuLoader.LoadContextMenus(result);
+
+            // Assert
+            Assert.AreEqual(contextMenuItems.Count, 2);
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_copy_path"), Times.Once());
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_run_as_administrator"), Times.Never());
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder"), Times.Never());
+            mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_in_console"), Times.Once());
         }
     }
 }

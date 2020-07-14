@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Media;
+using System.Windows;
 
 namespace Wox.Plugin
 {
@@ -9,14 +10,37 @@ namespace Wox.Plugin
     public class Result
     {
 
+        private string _title;
+        private ToolTipData _toolTipData;
         private string _pluginDirectory;
         private string _icoPath;
-        public string Title { get; set; }
+        public string Title { 
+            get { return _title; } 
+            set
+            {
+                _title = value.Replace("\n", " ");
+            }
+        }
         public string SubTitle { get; set; }
 
         public string Glyph { get; set; }
 
         public string FontFamily { get; set; }
+
+        public Visibility ToolTipVisibility { get; set; } = Visibility.Collapsed;
+
+        public ToolTipData ToolTipData
+        {
+            get
+            {
+                return _toolTipData;
+            }
+            set
+            {
+                _toolTipData = value;
+                ToolTipVisibility = Visibility.Visible;
+            }
+        }
 
         /// <summary>
         /// The text that will get displayed in the Search text box, when this item is selected in the result list.

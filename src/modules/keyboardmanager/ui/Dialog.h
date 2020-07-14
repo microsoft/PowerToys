@@ -3,9 +3,19 @@
 #include <functional>
 #include <keyboardmanager/common/Helpers.h>
 #include <set>
-#include <winrt/Windows.UI.Xaml.h>
 
-using namespace winrt::Windows::Foundation;
+namespace winrt::Windows::UI::Xaml
+{
+    namespace Foundation
+    {
+        template<typename T>
+        struct IAsyncOperation;
+    }
+    namespace UI::Xaml
+    {
+        struct XamlRoot;
+    }
+}
 
 namespace Dialog
 {
@@ -37,5 +47,5 @@ namespace Dialog
         return isSuccess;
     }
 
-    IAsyncOperation<bool> PartialRemappingConfirmationDialog(winrt::Windows::UI::Xaml::XamlRoot root, std::wstring dialogTitle);
+    winrt::Windows::Foundation::IAsyncOperation<bool> PartialRemappingConfirmationDialog(winrt::Windows::UI::Xaml::XamlRoot root, std::wstring dialogTitle);
 };

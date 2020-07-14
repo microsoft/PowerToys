@@ -19,6 +19,8 @@ private:
     int sendVirtualInputCallCount = 0;
     std::function<bool(LowlevelKeyboardEvent*)> sendVirtualInputCallCondition;
 
+    std::wstring currentProcess;
+
 public:
     MockedInput()
     {
@@ -45,4 +47,10 @@ public:
 
     // Function to get SendVirtualInput call count
     int GetSendVirtualInputCallCount();
+
+    // Function to get the foreground process name
+    void SetForegroundProcess(std::wstring process);
+
+    // Function to get the foreground process name
+    void GetForegroundProcess(_Out_ std::wstring& foregroundProcess);
 };

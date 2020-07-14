@@ -1,12 +1,38 @@
 #include "pch.h"
 #include "SingleKeyRemapControl.h"
 #include "keyboardmanager/common/Helpers.h"
+#include "keyboardmanager/common/KeyboardManagerConstants.h"
+#include "keyboardmanager/common/KeyboardManagerState.h"
+
 
 //Both static members are initialized to null
 HWND SingleKeyRemapControl::EditKeyboardWindowHandle = nullptr;
 KeyboardManagerState* SingleKeyRemapControl::keyboardManagerState = nullptr;
 // Initialized as new vector
 std::vector<std::vector<DWORD>> SingleKeyRemapControl::singleKeyRemapBuffer;
+
+SingleKeyRemapControl::SingleKeyRemapControl(Grid table, const int colIndex) :
+    singleKeyRemapDropDown(false)
+{
+    typeKey = Button();
+    typeKey.as<Button>().Content(winrt::box_value(L"Type Key"));
+    typeKey.as<Button>().Width(KeyboardManagerConstants::RemapTableDropDownWidth);
+    typeKey.as<Button>().Click([&](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+        keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectSingleKeyRemapWindowActivated, EditKeyboardWindowHandle);
+        // Using the XamlRoot of the typeKey to get the root of the XAML host
+        createDetectKeyWindow(sender, sender.as<Button>().XamlRoot(), singleKeyRemapBuffer, *keyboardManagerState);
+    });
+
+    singleKeyRemapControlLayout = StackPanel();
+    singleKeyRemapControlLayout.as<StackPanel>().Margin({ 0, 0, 0, 10 });
+    singleKeyRemapControlLayout.as<StackPanel>().Spacing(10);
+
+    singleKeyRemapControlLayout.as<StackPanel>().Children().Append(typeKey.as<Button>());
+    singleKeyRemapControlLayout.as<StackPanel>().Children().Append(singleKeyRemapDropDown.GetComboBox());
+    // Set selection handler for the drop down
+    singleKeyRemapDropDown.SetSelectionHandler(table, singleKeyRemapControlLayout.as<StackPanel>(), colIndex, singleKeyRemapBuffer);
+    singleKeyRemapControlLayout.as<StackPanel>().UpdateLayout();
+}
 
 // Function to add a new row to the remap keys table. If the originalKey and newKey args are provided, then the displayed remap keys are set to those values.
 void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<std::vector<std::unique_ptr<SingleKeyRemapControl>>>& keyboardRemapControlObjects, const DWORD originalKey, const DWORD newKey)
@@ -28,7 +54,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
 
     // Arrow icon
     FontIcon arrowIcon;
-    arrowIcon.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
+    arrowIcon.FontFamily(Media::FontFamily(L"Segoe MDL2 Assets"));
     arrowIcon.Glyph(L"\xE72A");
     arrowIcon.VerticalAlignment(VerticalAlignment::Center);
     arrowIcon.HorizontalAlignment(HorizontalAlignment::Center);
@@ -64,7 +90,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
     // Delete row button
     Windows::UI::Xaml::Controls::Button deleteRemapKeys;
     FontIcon deleteSymbol;
-    deleteSymbol.FontFamily(Xaml::Media::FontFamily(L"Segoe MDL2 Assets"));
+    deleteSymbol.FontFamily(Media::FontFamily(L"Segoe MDL2 Assets"));
     deleteSymbol.Glyph(L"\xE74D");
     deleteRemapKeys.Content(deleteSymbol);
     deleteRemapKeys.Background(Media::SolidColorBrush(Colors::Transparent()));
@@ -106,7 +132,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
 // Function to return the stack panel element of the SingleKeyRemapControl. This is the externally visible UI element which can be used to add it to other layouts
 StackPanel SingleKeyRemapControl::getSingleKeyRemapControl()
 {
-    return singleKeyRemapControlLayout;
+    return singleKeyRemapControlLayout.as<StackPanel>();
 }
 
 // Function to create the detect remap key UI window

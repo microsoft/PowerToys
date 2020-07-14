@@ -18,7 +18,7 @@
 
 #include <interface/win_hook_event_data.h>
 #include <lib/SecondaryMouseButtonsHook.h>
-#include <lib/ShiftKeyHook.h>
+#include <lib/GenericKeyHook.h>
 
 enum class DisplayChangeType
 {
@@ -28,6 +28,11 @@ enum class DisplayChangeType
     Initialization
 };
 
+namespace
+{
+    constexpr int CUSTOM_POSITIONING_LEFT_TOP_PADDING = 16;
+}
+
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback, IZoneWindowHost>
 {
 public:
@@ -36,7 +41,8 @@ public:
         m_settings(settings),
         m_mouseHook(std::bind(&FancyZones::OnMouseDown, this)),
         m_shiftHook(std::bind(&FancyZones::OnShiftChangeState, this, std::placeholders::_1)),
-        m_windowMoveHandler(settings, &m_mouseHook, &m_shiftHook)
+        m_ctrlHook(std::bind(&FancyZones::OnCtrlChangeState, this, std::placeholders::_1)),
+        m_windowMoveHandler(settings, &m_mouseHook, &m_shiftHook, &m_ctrlHook)
     {
         m_settings->SetCallback(this);
     }
@@ -57,6 +63,13 @@ public:
     void OnShiftChangeState(bool state) noexcept
     {
         m_windowMoveHandler.OnShiftChangeState(state);
+
+        PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
+    }
+
+    void OnCtrlChangeState(bool state) noexcept
+    {
+        m_windowMoveHandler.OnCtrlChangeState(state);
 
         PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
     }
@@ -239,6 +252,7 @@ private:
     MonitorWorkAreaHandler m_workAreaHandler;
     SecondaryMouseButtonsHook m_mouseHook;
     ShiftKeyHook m_shiftHook;
+    CtrlKeyHook m_ctrlHook;
 
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
     GUID m_previousDesktopId{}; // UUID of previously active virtual desktop.
@@ -413,12 +427,81 @@ void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zon
     }
 }
 
+inline int RectWidth(const RECT& rect)
+{
+    return rect.right - rect.left;
+}
+
+inline int RectHeight(const RECT& rect)
+{
+    return rect.bottom - rect.top;
+}
+
+RECT FitOnScreen(const RECT& windowRect, const RECT& originMonitorRect, const RECT& destMonitorRect)
+{
+    // New window position on active monitor. If window fits the screen, this will be final position.
+    int left = destMonitorRect.left + (windowRect.left - originMonitorRect.left);
+    int top = destMonitorRect.top + (windowRect.top - originMonitorRect.top);
+    int W = RectWidth(windowRect);
+    int H = RectHeight(windowRect);
+
+    if ((left < destMonitorRect.left) || (left + W > destMonitorRect.right))
+    {
+        // Set left window border to left border of screen (add padding). Resize window width if needed.
+        left = destMonitorRect.left + CUSTOM_POSITIONING_LEFT_TOP_PADDING;
+        W = min(W, RectWidth(destMonitorRect) - CUSTOM_POSITIONING_LEFT_TOP_PADDING);
+    }
+    if ((top < destMonitorRect.top) || (top + H > destMonitorRect.bottom))
+    {
+        // Set top window border to top border of screen (add padding). Resize window height if needed.
+        top = destMonitorRect.top + CUSTOM_POSITIONING_LEFT_TOP_PADDING;
+        H = min(H, RectHeight(destMonitorRect) - CUSTOM_POSITIONING_LEFT_TOP_PADDING);
+    }
+
+    return { .left   = left,
+             .top    = top,
+             .right  = left + W,
+             .bottom = top + H };
+}
+
+void OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept
+{
+    // By default Windows opens new window on primary monitor.
+    // Try to preserve window width and height, adjust top-left corner if needed.
+    HMONITOR origin = MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY);
+    if (origin == monitor)
+    {
+        // Certain applications by design open in last known position, regardless of FancyZones.
+        // If that position is on currently active monitor, skip custom positioning.
+        return;
+    }
+
+    WINDOWPLACEMENT placement{};
+    if (GetWindowPlacement(window, &placement))
+    {
+        MONITORINFOEX originMi;
+        originMi.cbSize = sizeof(originMi);
+        if (GetMonitorInfo(origin, &originMi))
+        {
+            MONITORINFOEX destMi;
+            destMi.cbSize = sizeof(destMi);
+            if (GetMonitorInfo(monitor, &destMi))
+            {
+                RECT newPosition = FitOnScreen(placement.rcNormalPosition, originMi.rcWork, destMi.rcWork);
+                SizeWindowToRect(window, newPosition);
+            }
+        }
+    }
+}
+
 // IFancyZonesCallback
 IFACEMETHODIMP_(void)
 FancyZones::WindowCreated(HWND window) noexcept
 {
     std::shared_lock readLock(m_lock);
-    if (m_settings->GetSettings()->appLastZone_moveWindows && ShouldProcessNewWindow(window))
+    const bool moveToAppLastZone   = m_settings->GetSettings()->appLastZone_moveWindows;
+    const bool openOnActiveMonitor = m_settings->GetSettings()->openWindowOnActiveMonitor;
+    if ((moveToAppLastZone || openOnActiveMonitor) && ShouldProcessNewWindow(window))
     {
         HMONITOR primary = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
         HMONITOR active = primary;
@@ -429,11 +512,20 @@ FancyZones::WindowCreated(HWND window) noexcept
             active = MonitorFromPoint(cursorPosition, MONITOR_DEFAULTTOPRIMARY);
         }
 
-        const bool primaryActive = (primary == active);
-        std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> appZoneHistoryInfo = GetAppZoneHistoryInfo(window, active, primaryActive);
-        if (!appZoneHistoryInfo.second.empty())
+        bool windowZoned{ false };
+        if (moveToAppLastZone)
         {
-            MoveWindowIntoZone(window, appZoneHistoryInfo.first, appZoneHistoryInfo.second);
+            const bool primaryActive = (primary == active);
+            std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> appZoneHistoryInfo = GetAppZoneHistoryInfo(window, active, primaryActive);
+            if (!appZoneHistoryInfo.second.empty())
+            {
+                MoveWindowIntoZone(window, appZoneHistoryInfo.first, appZoneHistoryInfo.second);
+                windowZoned = true;
+            }
+        }
+        if (!windowZoned && openOnActiveMonitor)
+        {
+            m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] { OpenWindowOnActiveMonitor(window, active); } }).wait();
         }
     }
 }
@@ -552,7 +644,6 @@ void FancyZones::ToggleEditor() noexcept
         std::to_wstring(height);
 
     const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
-    fancyZonesData.CustomZoneSetsToJsonFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
 
     const auto deviceInfo = fancyZonesData.FindDeviceInfo(zoneWindow->UniqueId());
     if (!deviceInfo.has_value())
@@ -565,10 +656,7 @@ void FancyZones::ToggleEditor() noexcept
 
     const std::wstring params =
         /*1*/ editorLocation + L" " +
-        /*2*/ L"\"" + ZoneWindowUtils::GetActiveZoneSetTmpPath() + L"\" " +
-        /*3*/ L"\"" + ZoneWindowUtils::GetAppliedZoneSetTmpPath() + L"\" " +
-        /*4*/ L"\"" + ZoneWindowUtils::GetCustomZoneSetsTmpPath() + L"\" " +
-        /*5*/ L"\"" + std::to_wstring(GetCurrentProcessId()) + L"\"";
+        /*2*/ L"\"" + std::to_wstring(GetCurrentProcessId()) + L"\"";
 
     SHELLEXECUTEINFO sei{ sizeof(sei) };
     sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
@@ -638,6 +726,9 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
     {
         if (wparam == SPI_SETWORKAREA)
         {
+            // Changes in taskbar position resulted in different size of work area.
+            // Invalidate cached work-areas so they can be recreated with latest information.
+            m_workAreaHandler.Clear();
             OnDisplayChange(DisplayChangeType::WorkArea);
         }
     }
@@ -645,6 +736,8 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
 
     case WM_DISPLAYCHANGE:
     {
+        // Display resolution changed. Invalidate cached work-areas so they can be recreated with latest information.
+        m_workAreaHandler.Clear();
         OnDisplayChange(DisplayChangeType::DisplayChange);
     }
     break;
@@ -985,7 +1078,7 @@ void FancyZones::OnEditorExitEvent() noexcept
 {
     // Collect information about changes in zone layout after editor exited.
     JSONHelpers::FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(ZoneWindowUtils::GetActiveZoneSetTmpPath());
-    JSONHelpers::FancyZonesDataInstance().ParseDeletedCustomZoneSetsFromTmpFile(ZoneWindowUtils::GetCustomZoneSetsTmpPath());
+    JSONHelpers::FancyZonesDataInstance().ParseDeletedCustomZoneSetsFromTmpFile(ZoneWindowUtils::GetDeletedCustomZoneSetsTmpPath());
     JSONHelpers::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(ZoneWindowUtils::GetAppliedZoneSetTmpPath());
     JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
 

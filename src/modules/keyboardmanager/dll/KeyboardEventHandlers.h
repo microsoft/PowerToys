@@ -1,7 +1,13 @@
 #pragma once
-#include <keyboardmanager/common/KeyboardManagerState.h>
-#include <keyboardmanager/common/KeyboardManagerConstants.h>
-#include <keyboardmanager/common/InputInterface.h>
+#include <interface/lowlevel_keyboard_event_data.h>
+#include <map>
+#include <mutex>
+#include "keyboardmanager/common/KeyboardManagerConstants.h"
+
+class InputInterface;
+class KeyboardManagerState;
+class Shortcut;
+class RemapShortcut;
 
 namespace KeyboardEventHandlers
 {
@@ -12,7 +18,7 @@ namespace KeyboardEventHandlers
     __declspec(dllexport) intptr_t HandleSingleKeyToggleToModEvent(InputInterface& ii, LowlevelKeyboardEvent* data, KeyboardManagerState& keyboardManagerState) noexcept;
 
     // Function to a handle a shortcut remap
-    __declspec(dllexport) intptr_t HandleShortcutRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, std::map<Shortcut, RemapShortcut>& reMap, std::mutex& map_mutex) noexcept;
+    __declspec(dllexport) intptr_t HandleShortcutRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, std::map<Shortcut, RemapShortcut>& reMap, std::mutex& map_mutex, KeyboardManagerState& keyboardManagerState, const std::wstring& activatedApp = KeyboardManagerConstants::NoActivatedApp) noexcept;
 
     // Function to a handle an os-level shortcut remap
     __declspec(dllexport) intptr_t HandleOSLevelShortcutRemapEvent(InputInterface& ii, LowlevelKeyboardEvent* data, KeyboardManagerState& keyboardManagerState) noexcept;
