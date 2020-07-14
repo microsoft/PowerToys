@@ -153,6 +153,11 @@ namespace PowerLauncher
 
         private void OnDeactivated(object sender, EventArgs e)
         {
+	        if (_settings.ClearInputOnLaunch)
+	        {
+		        SearchBox.QueryTextBox.Text = string.Empty;
+	        }
+
             if (_settings.HideWhenDeactivated)
             {
                 //(this.FindResource("OutroStoryboard") as Storyboard).Begin();

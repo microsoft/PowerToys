@@ -129,6 +129,8 @@ namespace Wox.Infrastructure.UserSettings
         }
         public bool LeaveCmdOpen { get; set; }
         public bool HideWhenDeactivated { get; set; } = true;
+        public bool ClearInputOnLaunch { get; set; } = false;
+
         public bool RememberLastLaunchLocation { get; set; }
         public bool IgnoreHotkeysOnFullscreen { get; set; }
 
