@@ -24,7 +24,7 @@ namespace Microsoft.Plugin.Shell
 {
     public class Main : IPlugin, ISettingProvider, IPluginI18n, IContextMenu, ISavable
     {
-        private const string Image = "Images/shell.png";
+        private string IconPath { get; set; }
         private PluginInitContext _context;
         private bool _winRStroked;
         private readonly KeyboardSimulator _keyboardSimulator = new KeyboardSimulator(new InputSimulator());
@@ -87,7 +87,7 @@ namespace Microsoft.Plugin.Shell
                         results.AddRange(autocomplete.ConvertAll(m => new Result
                         {
                             Title = m,
-                            IcoPath = Image,
+                            IcoPath = IconPath,
                             Action = c =>
                             {
                                 Execute(Process.Start, PrepareProcessStartInfo(m));
@@ -120,7 +120,7 @@ namespace Microsoft.Plugin.Shell
                     {
                         Title = m.Key,
                         SubTitle = "Shell: " + string.Format(_context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
-                        IcoPath = Image,
+                        IcoPath = IconPath,
                         Action = c =>
                         {
                             Execute(Process.Start, PrepareProcessStartInfo(m.Key));
@@ -139,7 +139,7 @@ namespace Microsoft.Plugin.Shell
                 Title = cmd,
                 Score = 5000,
                 SubTitle = "Shell: " + _context.API.GetTranslation("wox_plugin_cmd_execute_through_shell"),
-                IcoPath = Image,
+                IcoPath = IconPath,
                 Action = c =>
                 {
                     Execute(Process.Start, PrepareProcessStartInfo(cmd));
@@ -157,7 +157,7 @@ namespace Microsoft.Plugin.Shell
                 {
                     Title = m.Key,
                     SubTitle = "Shell: " + string.Format(_context.API.GetTranslation("wox_plugin_cmd_cmd_has_been_executed_times"), m.Value),
-                    IcoPath = Image,
+                    IcoPath = IconPath,
                     Action = c =>
                     {
                         Execute(Process.Start, PrepareProcessStartInfo(m.Key));
@@ -288,6 +288,26 @@ namespace Microsoft.Plugin.Shell
         public void Init(PluginInitContext context)
         {
             this._context = context;
+            _context.API.ThemeChanged += OnThemeChanged;
+            UpdateIconPath(_context.API.GetCurrentTheme());
+        }
+
+        // Todo : Update with theme based IconPath
+        private void UpdateIconPath(Theme theme)
+        {
+            if (theme == Theme.Light || theme == Theme.HighContrastWhite)
+            {
+                IconPath = "Images/shell.light.png";
+            }
+            else
+            {
+                IconPath = "Images/shell.dark.png";
+            }
+        }
+
+        private void OnThemeChanged(Theme _, Theme newTheme)
+        {
+            UpdateIconPath(newTheme);
         }
 
         bool API_GlobalKeyboardEvent(int keyevent, int vkcode, SpecialKeyState state)

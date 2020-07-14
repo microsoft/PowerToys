@@ -8,5 +8,5 @@
     "Language":"csharp",
     "Website":"http://www.wox.one/plugin",
     "ExecuteFileName":"Microsoft.Plugin.Program.dll",
-    "IcoPath":"Images\\program.png"
+    "IcoPath":"Images\\app.dark.png"
 }
