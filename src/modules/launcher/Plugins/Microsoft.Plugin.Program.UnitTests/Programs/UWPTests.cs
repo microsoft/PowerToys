@@ -3,6 +3,8 @@ using Microsoft.Plugin.Program.Programs;
 using Moq;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.IO.Packaging;
+using Windows.Storage;
 
 namespace Microsoft.Plugin.Program.UnitTests.Programs
 {
@@ -71,6 +73,24 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             // Assert
             Assert.AreEqual(applications.Length, 1);
             Assert.IsTrue(applications.FindAll(x => x.Name == "PackagedApp").Length > 0);
+        }
+
+        [Test]
+        public void PowerToysRun_ShouldNotAddInvalidApp_WhenIndexingUWPApplications()
+        {
+            // Arrange
+            PackageWrapper invalidPackagedApp = new PackageWrapper();
+            Main._settings = new Settings();
+            List<IPackage> packages = new List<IPackage>() {invalidPackagedApp };
+            var mock = new Mock<IPackageManager>();
+            mock.Setup(x => x.FindPackagesForCurrentUser()).Returns(packages);
+            UWP.PackageManagerWrapper = mock.Object;
+
+            // Act
+            var applications = UWP.All();
+
+            // Assert
+            Assert.AreEqual(applications.Length, 0);
         }
     }
 }
