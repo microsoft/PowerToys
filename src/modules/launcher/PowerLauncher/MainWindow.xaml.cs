@@ -151,14 +151,17 @@ namespace PowerLauncher
             _settings.WindowLeft = Left;
         }
 
-        private void OnDeactivated(object sender, EventArgs e)
+        private void OnActivated(object sender, EventArgs e)
         {
 	        if (_settings.ClearInputOnLaunch)
 	        {
 		        _viewModel.ClearQueryCommand.Execute(null);
 	        }
+        }
 
-            if (_settings.HideWhenDeactivated)
+        private void OnDeactivated(object sender, EventArgs e)
+        {
+	        if (_settings.HideWhenDeactivated)
             {
                 //(this.FindResource("OutroStoryboard") as Storyboard).Begin();
                 Hide();
