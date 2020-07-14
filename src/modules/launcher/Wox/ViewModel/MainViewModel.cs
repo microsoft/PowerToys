@@ -237,8 +237,12 @@ namespace Wox.ViewModel
 
             ClearQueryCommand = new RelayCommand(_ =>
             {
-	            ChangeQueryText(string.Empty,true);
-	            OnPropertyChanged(nameof(SystemQueryText));
+                if(!string.IsNullOrEmpty(QueryText))
+                {
+	                ChangeQueryText(string.Empty,true);
+	                //Push Event to UI SystemQuery has changed
+	                OnPropertyChanged(nameof(SystemQueryText));
+				}
             });
         }
 
