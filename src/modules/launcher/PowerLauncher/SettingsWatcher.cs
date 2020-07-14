@@ -65,6 +65,13 @@ namespace PowerLauncher
                     {
                         _settings.IgnoreHotkeysOnFullscreen = overloadSettings.properties.ignore_hotkeys_in_fullscreen;
                     }
+
+                    var indexer = PluginManager.AllPlugins.Find(p => p.Metadata.Name.Equals("Windows Indexer", StringComparison.OrdinalIgnoreCase));
+                    if(indexer != null)
+                    {
+                        var indexerSettings = indexer.Plugin as ISettingProvider;
+                        indexerSettings.UpdateSettings(overloadSettings);
+                    }
                 }
                 // the settings application can hold a lock on the settings.json file which will result in a IOException.  
                 // This should be changed to properly synch with the settings app instead of retrying.
