@@ -65,6 +65,11 @@ namespace PowerLauncher
                     {
                         _settings.IgnoreHotkeysOnFullscreen = overloadSettings.properties.ignore_hotkeys_in_fullscreen;
                     }
+
+                    if (_settings.ClearInputOnLaunch != overloadSettings.properties.clear_input_on_launch)
+                    {
+	                    _settings.ClearInputOnLaunch = overloadSettings.properties.clear_input_on_launch;
+                    }
                 }
                 // the settings application can hold a lock on the settings.json file which will result in a IOException.  
                 // This should be changed to properly synch with the settings app instead of retrying.

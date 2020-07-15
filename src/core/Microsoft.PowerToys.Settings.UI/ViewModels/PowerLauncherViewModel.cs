@@ -252,5 +252,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
         }
+
+        public bool ClearInputOnLaunch
+        {
+	        get
+	        {
+		        return settings.properties.clear_input_on_launch;
+	        }
+
+	        set
+	        {
+		        if (settings.properties.clear_input_on_launch != value)
+		        {
+			        settings.properties.clear_input_on_launch = value;
+			        UpdateSettings();
+		        }
+	        }
+        }
     }
 }
