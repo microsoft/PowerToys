@@ -45,17 +45,6 @@ namespace Wox
             _mainVM.ChangeQueryText(query, requery);
         }
 
-        public void ChangeQueryText(string query, bool selectAll = false)
-        {
-            _mainVM.ChangeQueryText(query, false);
-        }
-
-        [Obsolete("This function is obsolete and will be removed in a future version.")]
-        public void CloseApp()
-        {
-            Application.Current.MainWindow.Close();
-        }
-
         public void RestartApp()
         {
             _mainVM.MainWindowVisibility = Visibility.Hidden;
@@ -88,30 +77,8 @@ namespace Wox
             PluginManager.ReloadData();
         }
 
-        [Obsolete("This function is obsolete and will be removed in a future version.")]
-        public void HideApp()
-        {
-            _mainVM.MainWindowVisibility = Visibility.Hidden;
-        }
-
-        [Obsolete("This function is obsolete and will be removed in a future version.")]
-        public void ShowApp()
-        {
-            _mainVM.MainWindowVisibility = Visibility.Visible;
-        }
-
         public void ShowMsg(string title, string subTitle = "", string iconPath = "", bool useMainWindowAsOwner = true)
         {           
-        }
-
-        public void StartLoadingBar()
-        {
-            _mainVM.ProgressBarVisibility = Visibility.Visible;
-        }
-
-        public void StopLoadingBar()
-        {
-            _mainVM.ProgressBarVisibility = Visibility.Collapsed;
         }
 
         public void InstallPlugin(string path)
@@ -127,26 +94,6 @@ namespace Wox
         public List<PluginPair> GetAllPlugins()
         {
             return PluginManager.AllPlugins.ToList();
-        }
-
-
-        [Obsolete("This will be removed in Wox 1.3")]
-        public void PushResults(Query query, PluginMetadata plugin, List<Result> results)
-        {
-            if(results == null)
-            {
-                throw new ArgumentNullException(nameof(results));
-            }
-            results.ForEach(o =>
-            {
-                o.PluginDirectory = plugin.PluginDirectory;
-                o.PluginID = plugin.ID;
-                o.OriginQuery = query;
-            });
-            Task.Run(() =>
-            {
-                _mainVM.UpdateResultView(results, plugin, query);
-            });
         }
 
         public Theme GetCurrentTheme()
