@@ -9,16 +9,17 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
-using Wox.Helper;
+using PowerLauncher.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Microsoft.PowerLauncher.Telemetry;
-using Wox.Storage;
+using PowerLauncher.Storage;
 using Microsoft.PowerToys.Telemetry;
 using interop;
+using System.Globalization;
 
 namespace PowerLauncher.ViewModel
 {
@@ -58,7 +59,7 @@ namespace PowerLauncher.ViewModel
             _lastQuery = new Query();
             _disposed = false;
 
-            _settings = settings;
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
 
             _historyItemsStorage = new WoxJsonStorage<History>();
             _userSelectedRecordStorage = new WoxJsonStorage<UserSelectedRecord>();
@@ -81,12 +82,12 @@ namespace PowerLauncher.ViewModel
                 {
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        if (_settings.PreviousHotkey != "")
+                        if (!string.IsNullOrEmpty(_settings.PreviousHotkey))
                         {
                             _hotkeyManager.UnregisterHotkey(_hotkeyHandle);
                         }
 
-                        if (_settings.Hotkey != "")
+                        if (!string.IsNullOrEmpty(_settings.Hotkey))
                         {
                             SetHotkey(_settings.Hotkey, OnHotkey);
                         }
@@ -173,7 +174,7 @@ namespace PowerLauncher.ViewModel
 
                 if (index != null)
                 {
-                    results.SelectedIndex = int.Parse(index.ToString());
+                    results.SelectedIndex = int.Parse(index.ToString(), CultureInfo.InvariantCulture);
                 }
 
                 if(results.SelectedItem != null)
@@ -372,7 +373,9 @@ namespace PowerLauncher.ViewModel
         private void QueryHistory()
         {
             const string id = "Query History ID";
-            var query = QueryText.ToLower().Trim();
+#pragma warning disable CA1308 // Normalize strings to uppercase
+            var query = QueryText.ToLower(CultureInfo.InvariantCulture).Trim();
+#pragma warning restore CA1308 // Normalize strings to uppercase
             History.Clear();
 
             var results = new List<Result>();
@@ -382,8 +385,8 @@ namespace PowerLauncher.ViewModel
                 var time = _translator.GetTranslation("lastExecuteTime");
                 var result = new Result
                 {
-                    Title = string.Format(title, h.Query),
-                    SubTitle = string.Format(time, h.ExecutedDateTime),
+                    Title = string.Format(CultureInfo.InvariantCulture, title, h.Query),
+                    SubTitle = string.Format(CultureInfo.InvariantCulture, time, h.ExecutedDateTime),
                     IcoPath = "Images\\history.png",
                     OriginQuery = new Query { RawQuery = h.Query },
                     Action = _ =>
@@ -558,10 +561,11 @@ namespace PowerLauncher.ViewModel
 
                 _hotkeyHandle = _hotkeyManager.RegisterHotkey(hotkey, action);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
-                string errorMsg =
-                    string.Format(InternationalizationManager.Instance.GetTranslation("registerHotkeyFailed"), hotkeyStr);
+                string errorMsg = string.Format(CultureInfo.InvariantCulture, InternationalizationManager.Instance.GetTranslation("registerHotkeyFailed"), hotkeyStr);
                 MessageBox.Show(errorMsg);
             }
         }
@@ -656,6 +660,11 @@ namespace PowerLauncher.ViewModel
         /// </summary>
         public void UpdateResultView(List<Result> list, PluginMetadata metadata, Query originQuery)
         {
+            if(list == null || metadata == null || originQuery == null)
+            {
+                return;
+            }
+
             foreach (var result in list)
             {
                 if (_topMostRecord.IsTopMost(result))

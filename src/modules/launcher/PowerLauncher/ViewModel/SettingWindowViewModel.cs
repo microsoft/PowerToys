@@ -1,3 +1,4 @@
+using System.Globalization;
 using Wox.Core.Resource;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.UserSettings;
@@ -37,7 +38,7 @@ namespace PowerLauncher.ViewModel
 
         #region about
 
-        public string ActivatedTimes => string.Format(_translater.GetTranslation("about_activate_times"), Settings.ActivateTimes);
+        public string ActivatedTimes => string.Format(CultureInfo.InvariantCulture, _translater.GetTranslation("about_activate_times"), Settings.ActivateTimes);
         
         #endregion
     }

@@ -6,7 +6,7 @@ using System.Text;
 using System.Linq;
 using System.Windows;
 using System.Windows.Documents;
-using Wox.Helper;
+using PowerLauncher.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
 

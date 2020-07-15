@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 using System.Windows;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
-using Wox.Helper;
+using PowerLauncher.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
-using Wox.ViewModel;
+using PowerLauncher.ViewModel;
 
 namespace Wox
 {
@@ -28,10 +28,10 @@ namespace Wox
 
         public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, Alphabet alphabet, ThemeManager themeManager)
         {
-            _settingsVM = settingsVM;
-            _mainVM = mainVM;
-            _alphabet = alphabet;
-            _themeManager = themeManager;
+            _settingsVM = settingsVM ?? throw new ArgumentNullException(nameof(settingsVM));
+            _mainVM = mainVM ?? throw new ArgumentNullException(nameof(mainVM));
+            _alphabet = alphabet ?? throw new ArgumentNullException(nameof(alphabet));
+            _themeManager = themeManager ?? throw new ArgumentNullException(nameof(themeManager));
             _themeManager.ThemeChanged += OnThemeChanged;
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
         }
@@ -50,7 +50,7 @@ namespace Wox
             _mainVM.ChangeQueryText(query, false);
         }
 
-        [Obsolete]
+        [Obsolete("This function is obsolete and will be removed in a future version.")]
         public void CloseApp()
         {
             Application.Current.MainWindow.Close();
@@ -88,13 +88,13 @@ namespace Wox
             PluginManager.ReloadData();
         }
 
-        [Obsolete]
+        [Obsolete("This function is obsolete and will be removed in a future version.")]
         public void HideApp()
         {
             _mainVM.MainWindowVisibility = Visibility.Hidden;
         }
 
-        [Obsolete]
+        [Obsolete("This function is obsolete and will be removed in a future version.")]
         public void ShowApp()
         {
             _mainVM.MainWindowVisibility = Visibility.Visible;
@@ -133,6 +133,10 @@ namespace Wox
         [Obsolete("This will be removed in Wox 1.3")]
         public void PushResults(Query query, PluginMetadata plugin, List<Result> results)
         {
+            if(results == null)
+            {
+                throw new ArgumentNullException(nameof(results));
+            }
             results.ForEach(o =>
             {
                 o.PluginDirectory = plugin.PluginDirectory;

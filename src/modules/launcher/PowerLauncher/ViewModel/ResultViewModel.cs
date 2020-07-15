@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Runtime.CompilerServices;
-using System.Windows.Controls.Ribbon;
 using System.Windows.Input;
 using System.Windows.Media;
 using Wox.Core.Plugin;
-using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
-using Wox.Helper;
+using PowerLauncher.Helper;
 
 namespace PowerLauncher.ViewModel
 {
@@ -22,7 +18,7 @@ namespace PowerLauncher.ViewModel
             Hover
         };
 
-        public ObservableCollection<ContextMenuItemViewModel> ContextMenuItems { get; set; } = new ObservableCollection<ContextMenuItemViewModel>();
+        public ObservableCollection<ContextMenuItemViewModel> ContextMenuItems { get; } = new ObservableCollection<ContextMenuItemViewModel>();
 
         public ICommand ActivateContextButtonsHoverCommand { get; set; }
         public ICommand ActivateContextButtonsSelectionCommand { get; set; }
@@ -181,7 +177,9 @@ namespace PowerLauncher.ViewModel
                     {
                         return Result.Icon();
                     }
+#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         Log.Exception($"|ResultViewModel.Image|IcoPath is empty and exception when calling Icon() for result <{Result.Title}> of plugin <{Result.PluginDirectory}>", e);
                         imagePath = ImageLoader.ErrorIconPath;

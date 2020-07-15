@@ -3,9 +3,9 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
-using Wox.Helper;
+using PowerLauncher.Helper;
 using Wox.Infrastructure.UserSettings;
-using Wox.ViewModel;
+using PowerLauncher.ViewModel;
 
 using Screen = System.Windows.Forms.Screen;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
