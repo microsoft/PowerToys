@@ -18,6 +18,7 @@ unsigned __int64 Overlay::lastTimeCamOrMicMuted;
 
 const int REFRESH_RATE = 100;
 const int OVERLAY_SHOW_TIME = 500;
+const int BORDER_OFFSET = 16;
 
 Overlay::Overlay()
 {
@@ -146,23 +147,23 @@ void Overlay::showOverlay(std::wstring position, std::wstring monitorString)
 
         if (position == L"Top left corner")
         {
-            positionX = monitorInfo.left();
-            positionY = monitorInfo.top();
+            positionX = monitorInfo.left() + BORDER_OFFSET;
+            positionY = monitorInfo.top() + BORDER_OFFSET;
         }
         else if (position == L"Top right corner")
         {
-            positionX = monitorInfo.right() - overlayWidth;
-            positionY = monitorInfo.top();
+            positionX = monitorInfo.right() - overlayWidth - BORDER_OFFSET;
+            positionY = monitorInfo.top() + BORDER_OFFSET;
         }
         else if (position == L"Bottom left corner")
         {
-            positionX = monitorInfo.left();
-            positionY = monitorInfo.bottom() - overlayHeight;
+            positionX = monitorInfo.left() + BORDER_OFFSET;
+            positionY = monitorInfo.bottom() - overlayHeight - BORDER_OFFSET;
         }
         else if (position == L"Bottom right corner")
         {
-            positionX = monitorInfo.right() - overlayWidth;
-            positionY = monitorInfo.bottom() - overlayHeight;
+            positionX = monitorInfo.right() - overlayWidth - BORDER_OFFSET;
+            positionY = monitorInfo.bottom() - overlayHeight - BORDER_OFFSET;
         }
         else //"Center" or non-present
         {
