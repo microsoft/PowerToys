@@ -10,7 +10,7 @@ using Wox.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
 
-namespace Wox
+namespace PowerLauncher
 {
     internal partial class ReportWindow
     {

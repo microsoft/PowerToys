@@ -5,7 +5,7 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using Wox.Plugin;
 
-namespace Wox.ViewModel
+namespace PowerLauncher.ViewModel
 {
     public class ContextMenuItemViewModel : BaseModel
     {

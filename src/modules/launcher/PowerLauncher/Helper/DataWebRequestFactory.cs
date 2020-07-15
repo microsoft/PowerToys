@@ -2,7 +2,7 @@
 using System.IO;
 using System.Net;
 
-namespace Wox.Helper
+namespace PowerLauncher.Helper
 {
     public class DataWebRequestFactory : IWebRequestCreate
     {

@@ -12,7 +12,7 @@ using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 using Wox.Helper;
 
-namespace Wox.ViewModel
+namespace PowerLauncher.ViewModel
 {
     public class ResultViewModel : BaseModel
     {

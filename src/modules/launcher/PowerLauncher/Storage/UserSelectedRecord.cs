@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 
-namespace Wox.Storage
+namespace PowerLauncher.Storage
 {
     public class UserSelectedRecord
     {

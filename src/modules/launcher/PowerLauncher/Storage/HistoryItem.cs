@@ -1,6 +1,6 @@
 using System;
 
-namespace Wox.Storage
+namespace PowerLauncher.Storage
 {
     public class HistoryItem
     {

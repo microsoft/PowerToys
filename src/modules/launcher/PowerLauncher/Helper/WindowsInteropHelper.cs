@@ -8,7 +8,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using Point = System.Windows.Point;
 
-namespace Wox.Helper
+namespace PowerLauncher.Helper
 {
     public class WindowsInteropHelper
     {

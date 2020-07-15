@@ -4,7 +4,7 @@ using NLog;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Exception;
 
-namespace Wox.Helper
+namespace PowerLauncher.Helper
 {
     public static class ErrorReporting
     {

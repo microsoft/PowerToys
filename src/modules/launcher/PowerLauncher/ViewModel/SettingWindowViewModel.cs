@@ -3,7 +3,7 @@ using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 
-namespace Wox.ViewModel
+namespace PowerLauncher.ViewModel
 {
     public class SettingWindowViewModel : BaseModel
     {

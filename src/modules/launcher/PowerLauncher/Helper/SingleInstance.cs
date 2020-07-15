@@ -15,7 +15,7 @@ using System.Windows.Threading;
 
 // http://blogs.microsoft.co.il/arik/2010/05/28/wpf-single-instance-application/
 // modified to allow single instance restart
-namespace Wox.Helper 
+namespace PowerLauncher.Helper 
 {
     internal enum WM
     {

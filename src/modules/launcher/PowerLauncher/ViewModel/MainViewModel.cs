@@ -20,7 +20,7 @@ using Wox.Storage;
 using Microsoft.PowerToys.Telemetry;
 using interop;
 
-namespace Wox.ViewModel
+namespace PowerLauncher.ViewModel
 {
     public class MainViewModel : BaseModel, ISavable, IDisposable
     {

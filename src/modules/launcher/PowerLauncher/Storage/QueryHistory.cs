@@ -4,7 +4,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Wox.Plugin;
 
-namespace Wox.Storage
+namespace PowerLauncher.Storage
 {
     public class History
     {
