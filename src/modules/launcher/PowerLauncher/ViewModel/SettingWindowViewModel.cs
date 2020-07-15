@@ -32,7 +32,7 @@ namespace PowerLauncher.ViewModel
 
         #region general      
 
-        private Internationalization _translater => InternationalizationManager.Instance;
+        private static Internationalization _translater => InternationalizationManager.Instance;
 
         #endregion
 

@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using static PowerLauncher.Helper.WindowsInteropHelper;
 
 // http://blogs.microsoft.co.il/arik/2010/05/28/wpf-single-instance-application/
 // modified to allow single instance restart
@@ -147,8 +148,34 @@ namespace PowerLauncher.Helper
 
 
         [DllImport("kernel32.dll", EntryPoint = "LocalFree", SetLastError = true)]
-        private static extern IntPtr _LocalFree(IntPtr hMem);
+        internal static extern IntPtr _LocalFree(IntPtr hMem);
 
+        [DllImport("user32.dll")]
+        internal static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll")]
+        internal static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+        [DllImport("user32.dll")]
+        internal static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
+        internal static extern IntPtr GetDesktopWindow();
+
+        [DllImport("user32.dll")]
+        internal static extern IntPtr GetShellWindow();
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern int GetWindowRect(IntPtr hwnd, out RECT rc);
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        internal static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+        [DllImport("user32.DLL", CharSet = CharSet.Unicode)]
+        internal static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
 
         public static string[] CommandLineToArgvW(string cmdLine)
         {
@@ -311,7 +338,7 @@ namespace PowerLauncher.Helper
 
             if (args == null)
             {
-                args = new string[] { };
+                args = Array.Empty<string>();
             }
 
             return new List<string>(args);
@@ -329,7 +356,7 @@ namespace PowerLauncher.Helper
                 while(true)
                 {
                     // Wait for connection to the pipe
-                    await pipeServer.WaitForConnectionAsync();
+                    await pipeServer.WaitForConnectionAsync().ConfigureAwait(false);
                     if (Application.Current != null)
                     {
                         // Do an asynchronous call to ActivateFirstInstance function
@@ -354,7 +381,7 @@ namespace PowerLauncher.Helper
             using (NamedPipeClientStream pipeClient = new NamedPipeClientStream(".", channelName, PipeDirection.Out))
             {
                 // Connect to the available pipe
-                await pipeClient.ConnectAsync(0);
+                await pipeClient.ConnectAsync(0).ConfigureAwait(false);
             }
         }
 
@@ -363,7 +390,7 @@ namespace PowerLauncher.Helper
         /// </summary>
         /// <param name="arg">Callback argument.</param>
         /// <returns>Always null.</returns>
-        private static object ActivateFirstInstanceCallback(object o)
+        private static object ActivateFirstInstanceCallback(object _)
         {
             ActivateFirstInstance();
             return null;
@@ -382,28 +409,6 @@ namespace PowerLauncher.Helper
             }
 
             ((TApplication)Application.Current).OnSecondAppStarted();
-        }
-
-        #endregion
-
-        #region Private Classes
-
-        /// <summary>
-        /// Remoting service class which is exposed by the server i.e the first instance and called by the second instance
-        /// to pass on the command line arguments to the first instance and cause it to activate itself.
-        /// </summary>
-        private class IPCRemoteService : MarshalByRefObject
-        {
-
-            /// <summary>
-            /// Remoting Object's ease expires after every 5 minutes by default. We need to override the InitializeLifetimeService class
-            /// to ensure that lease never expires.
-            /// </summary>
-            /// <returns>Always null.</returns>
-            public override object InitializeLifetimeService()
-            {
-                return null;
-            }
         }
 
         #endregion

@@ -30,7 +30,7 @@ namespace PowerLauncher.Helper
             {
                 string uriString = uri.AbsoluteUri;
 
-                int commaIndex = uriString.IndexOf(',');
+                int commaIndex = uriString.IndexOf(',', StringComparison.InvariantCultureIgnoreCase);
                 var headers = uriString.Substring(0, commaIndex).Split(';');
                 m_contentType = headers[0];
                 string dataString = uriString.Substring(commaIndex + 1);

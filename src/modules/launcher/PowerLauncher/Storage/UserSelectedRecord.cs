@@ -12,21 +12,24 @@ namespace PowerLauncher.Storage
 
         public void Add(Result result)
         {
-            var key = result.ToString();
-            if (records.TryGetValue(key, out int value))
+            if(result != null)
             {
-                records[key] = value + 1;
-            }
-            else
-            {
-                records.Add(key, 1);
+                var key = result.ToString();
+                if (records.TryGetValue(key, out int value))
+                {
+                    records[key] = value + 1;
+                }
+                else
+                {
+                    records.Add(key, 1);
 
-            }
+                }
+            }         
         }
 
         public int GetSelectedCount(Result result)
         {
-            if (records.TryGetValue(result.ToString(), out int value))
+            if (result != null && records.TryGetValue(result.ToString(), out int value))
             {
                 return value;
             }

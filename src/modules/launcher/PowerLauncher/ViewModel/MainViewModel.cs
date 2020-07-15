@@ -27,23 +27,22 @@ namespace PowerLauncher.ViewModel
     {
         #region Private Fields
 
-        private bool _isQueryRunning;
         private Query _lastQuery;
         private static bool _disposed;
         private string _queryTextBeforeLeaveResults;
 
-        private readonly WoxJsonStorage<History> _historyItemsStorage;
+        private readonly WoxJsonStorage<QueryHistory> _historyItemsStorage;
         private readonly WoxJsonStorage<UserSelectedRecord> _userSelectedRecordStorage;
         private readonly WoxJsonStorage<TopMostRecord> _topMostRecordStorage;
         private readonly Settings _settings;
-        private readonly History _history;
+        private readonly QueryHistory _history;
         private readonly UserSelectedRecord _userSelectedRecord;
         private readonly TopMostRecord _topMostRecord;
 
-        private CancellationTokenSource _updateSource;
+        private CancellationTokenSource _updateSource { get; set; }
         private CancellationToken _updateToken;
         private bool _saved;
-        private HotkeyManager _hotkeyManager;
+        private HotkeyManager _hotkeyManager { get; set; }
         private ushort _hotkeyHandle;
         private readonly Internationalization _translator = InternationalizationManager.Instance;
 
@@ -61,7 +60,7 @@ namespace PowerLauncher.ViewModel
 
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
 
-            _historyItemsStorage = new WoxJsonStorage<History>();
+            _historyItemsStorage = new WoxJsonStorage<QueryHistory>();
             _userSelectedRecordStorage = new WoxJsonStorage<UserSelectedRecord>();
             _topMostRecordStorage = new WoxJsonStorage<TopMostRecord>();
             _history = _historyItemsStorage.Load();
@@ -427,7 +426,6 @@ namespace PowerLauncher.ViewModel
                 _updateToken = currentCancellationToken;
 
                 ProgressBarVisibility = Visibility.Hidden;
-                _isQueryRunning = true;
                 var query = QueryBuilder.Build(QueryText.Trim(), PluginManager.NonGlobalPlugins);
                 if (query != null)
                 {
@@ -470,7 +468,6 @@ namespace PowerLauncher.ViewModel
 
                         // this should happen once after all queries are done so progress bar should continue
                         // until the end of all querying
-                        _isQueryRunning = false;
                         if (currentUpdateSource == _updateSource)
                         { // update to hidden if this is still the current query
                             ProgressBarVisibility = Visibility.Hidden;
@@ -775,6 +772,7 @@ namespace PowerLauncher.ViewModel
                         _hotkeyManager.UnregisterHotkey(_hotkeyHandle);
                     }
                     _hotkeyManager.Dispose();
+                    _updateSource.Dispose();
                     _disposed = true;
                 }   
             }         

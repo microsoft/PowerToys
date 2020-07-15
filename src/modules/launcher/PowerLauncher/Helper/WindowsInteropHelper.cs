@@ -10,7 +10,7 @@ using Point = System.Windows.Point;
 
 namespace PowerLauncher.Helper
 {
-    public class WindowsInteropHelper
+    public static class WindowsInteropHelper
     {
         private const int GWL_STYLE = -16; //WPF's Message code for Title Bar's Style 
         private const int WS_SYSMENU = 0x80000; //WPF's Message code for System Menu
@@ -23,22 +23,20 @@ namespace PowerLauncher.Helper
         {
             get
             {
-                return _hwnd_shell != IntPtr.Zero ? _hwnd_shell : _hwnd_shell = GetShellWindow();
+                return _hwnd_shell != IntPtr.Zero ? _hwnd_shell : _hwnd_shell = NativeMethods.GetShellWindow();
             }
         }
+
         private static IntPtr HWND_DESKTOP
         {
             get
             {
-                return _hwnd_desktop != IntPtr.Zero ? _hwnd_desktop : _hwnd_desktop = GetDesktopWindow();
+                return _hwnd_desktop != IntPtr.Zero ? _hwnd_desktop : _hwnd_desktop = NativeMethods.GetDesktopWindow();
             }
         }
 
-        [DllImport("user32.dll")]
-        public static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
-
         [StructLayout(LayoutKind.Sequential)]
-        public struct INPUT
+        internal struct INPUT
         {
             public INPUTTYPE type;
             public InputUnion data;
@@ -50,7 +48,7 @@ namespace PowerLauncher.Helper
         }
 
         [StructLayout(LayoutKind.Explicit)]
-        public struct InputUnion
+        internal struct InputUnion
         {
             [FieldOffset(0)]
             internal MOUSEINPUT mi;
@@ -89,37 +87,12 @@ namespace PowerLauncher.Helper
             internal short wParamH;
         }
 
-        public enum INPUTTYPE : uint
+        internal enum INPUTTYPE : uint
         {
-            INPUT_MOUSE = 0,
-            INPUT_KEYBOARD = 1,
-            INPUT_HARDWARE = 2,
+            INPUTMOUSE = 0,
+            INPUTKEYBOARD = 1,
+            INPUTHARDWARE = 2,
         }
-
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-
-        [DllImport("user32.dll")]
-        private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetForegroundWindow();
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetDesktopWindow();
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetShellWindow();
-
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern int GetWindowRect(IntPtr hwnd, out RECT rc);
-
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        private static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
-
-        [DllImport("user32.DLL")]
-        public static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
-
 
         const string WINDOW_CLASS_CONSOLE = "ConsoleWindowClass";
         const string WINDOW_CLASS_WINTAB = "Flip3D";
@@ -129,7 +102,7 @@ namespace PowerLauncher.Helper
         public static bool IsWindowFullscreen()
         {
             //get current active window
-            IntPtr hWnd = GetForegroundWindow();
+            IntPtr hWnd = NativeMethods.GetForegroundWindow();
 
             if (hWnd != null && !hWnd.Equals(IntPtr.Zero))
             {
@@ -137,7 +110,7 @@ namespace PowerLauncher.Helper
                 if (!(hWnd.Equals(HWND_DESKTOP) || hWnd.Equals(HWND_SHELL)))
                 {
                     StringBuilder sb = new StringBuilder(256);
-                    GetClassName(hWnd, sb, sb.Capacity);
+                    _ = NativeMethods.GetClassName(hWnd, sb, sb.Capacity);
                     string windowClass = sb.ToString();
 
                     //for Win+Tab (Flip3D)
@@ -147,7 +120,7 @@ namespace PowerLauncher.Helper
                     }
 
                     RECT appBounds;
-                    GetWindowRect(hWnd, out appBounds);
+                    _ = NativeMethods.GetWindowRect(hWnd, out appBounds);
 
                     //for console (ConsoleWindowClass), we have to check for negative dimensions
                     if (windowClass == WINDOW_CLASS_CONSOLE)
@@ -158,8 +131,8 @@ namespace PowerLauncher.Helper
                     //for desktop (Progman or WorkerW, depends on the system), we have to check 
                     if (windowClass == WINDOW_CLASS_PROGMAN || windowClass == WINDOW_CLASS_WORKERW)
                     {
-                        IntPtr hWndDesktop = FindWindowEx(hWnd, IntPtr.Zero, "SHELLDLL_DefView", null);
-                        hWndDesktop = FindWindowEx(hWndDesktop, IntPtr.Zero, "SysListView32", "FolderView");
+                        IntPtr hWndDesktop = NativeMethods.FindWindowEx(hWnd, IntPtr.Zero, "SHELLDLL_DefView", null);
+                        hWndDesktop = NativeMethods.FindWindowEx(hWndDesktop, IntPtr.Zero, "SysListView32", "FolderView");
                         if (hWndDesktop != null && !hWndDesktop.Equals(IntPtr.Zero))
                         {
                             return false;
@@ -184,7 +157,7 @@ namespace PowerLauncher.Helper
         public static void DisableControlBox(Window win)
         {
             var hwnd = new WindowInteropHelper(win).Handle;
-            SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_SYSMENU);
+            _ = NativeMethods.SetWindowLong(hwnd, GWL_STYLE, NativeMethods.GetWindowLong(hwnd, GWL_STYLE) & ~WS_SYSMENU);
         }
 
         /// <summary>
@@ -214,7 +187,7 @@ namespace PowerLauncher.Helper
 
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct RECT
+        internal struct RECT
         {
             public int Left;
             public int Top;

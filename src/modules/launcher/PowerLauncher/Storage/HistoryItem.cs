@@ -12,7 +12,7 @@ namespace PowerLauncher.Storage
             return DateTimeAgo(ExecutedDateTime);
         }
 
-        private string DateTimeAgo(DateTime dt)
+        private static string DateTimeAgo(DateTime dt)
         {
             var span = DateTime.Now - dt;
             if (span.Days > 365)
