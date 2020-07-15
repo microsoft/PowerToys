@@ -100,5 +100,14 @@
     <PackageReference Include="Mages" Version="1.6.0" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <None Update="Images\calculator.dark.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Images\calculator.light.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
 </Project>
