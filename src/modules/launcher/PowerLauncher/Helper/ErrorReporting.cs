@@ -10,7 +10,7 @@ namespace PowerLauncher.Helper
     {
         private static void Report(Exception e)
         {
-            if( e!= null)
+            if( e != null)
             {
                 var logger = LogManager.GetLogger("UnHandledException");
                 logger.Fatal(ExceptionFormatter.FormatException(e));
