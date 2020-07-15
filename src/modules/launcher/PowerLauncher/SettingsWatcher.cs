@@ -67,10 +67,15 @@ namespace PowerLauncher
                     }
 
                     var indexer = PluginManager.AllPlugins.Find(p => p.Metadata.Name.Equals("Windows Indexer Plugin", StringComparison.OrdinalIgnoreCase));
-                    if(indexer != null)
+                    if (indexer != null)
                     {
                         var indexerSettings = indexer.Plugin as ISettingProvider;
                         indexerSettings.UpdateSettings(overloadSettings);
+                    }
+
+                    if (_settings.ClearInputOnLaunch != overloadSettings.properties.clear_input_on_launch)
+                    {
+	                    _settings.ClearInputOnLaunch = overloadSettings.properties.clear_input_on_launch;
                     }
                 }
                 // the settings application can hold a lock on the settings.json file which will result in a IOException.  
