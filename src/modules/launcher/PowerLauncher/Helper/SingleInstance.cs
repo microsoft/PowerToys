@@ -260,7 +260,7 @@ namespace PowerLauncher.Helper
         /// If not, activates the first instance.
         /// </summary>
         /// <returns>True if this is the first instance of the application.</returns>
-        public static bool InitializeAsFirstInstance( string uniqueName )
+        internal static bool InitializeAsFirstInstance( string uniqueName )
         {
             // Build unique application Id and the IPC channel name.
             string applicationIdentifier = uniqueName + Environment.UserName;
@@ -285,7 +285,7 @@ namespace PowerLauncher.Helper
         /// <summary>
         /// Cleans up single-instance code, clearing shared resources, mutexes, etc.
         /// </summary>
-        public static void Cleanup()
+        internal static void Cleanup()
         {
             singleInstanceMutex?.ReleaseMutex();
         }
