@@ -11,7 +11,6 @@ namespace Microsoft.Plugin.Indexer
         public List<ContextMenu> ContextMenus = new List<ContextMenu>();
         public int MaxSearchCount { get; set; } = 100;
         public bool UseLocationAsWorkingDir { get; set; } = false;
-        public bool DisableDriveDetectionWarning { get; set; } = false;
     }
 
     public class ContextMenu

@@ -52,8 +52,7 @@ namespace Microsoft.Plugin.Indexer
         {
             var results = new List<Result>();
 
-            // To show the drive detection warning when enhanced mode is turned off and the disable warning checkbox is unchecked in Settings
-            if (_settings.DisableDriveDetectionWarning || _driveDetectionHelper.IsEnhancedModeEnabled)
+            if (_driveDetectionHelper.DisplayResults())
             {
                 if (!string.IsNullOrEmpty(query.Search))
                 {
@@ -185,7 +184,7 @@ namespace Microsoft.Plugin.Indexer
         public void UpdateSettings(PowerLauncherSettings settings)
         {
             _settings.MaxSearchCount = settings.properties.maximum_number_of_results;
-            _settings.DisableDriveDetectionWarning = settings.properties.disable_drive_detection_warning;
+            _driveDetectionHelper.IsDriveDetectionWarningCheckBoxSelected = settings.properties.disable_drive_detection_warning;
         }
         public Control CreateSettingPanel()
         {

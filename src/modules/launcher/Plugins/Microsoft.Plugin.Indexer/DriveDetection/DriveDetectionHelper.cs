@@ -8,13 +8,20 @@ namespace Microsoft.Plugin.Indexer.DriveDetection
 {
     public class DriveDetectionHelper
     {
-        public bool IsEnhancedModeEnabled { get; set; } = false;
+        private bool IsEnhancedModeEnabled { get; set; } = false;
         private IRegistryWrapper _registryHelper;
+        public bool IsDriveDetectionWarningCheckBoxSelected { get; set; } = false;
 
         public DriveDetectionHelper(IRegistryWrapper registryHelper)
         {
             _registryHelper = registryHelper;
             GetEnhancedModeStatus();
+        }
+
+        // To display the results if either enhanced mode is on or if the disable drive detection checkbox is checked
+        public bool DisplayResults()
+        {
+            return IsDriveDetectionWarningCheckBoxSelected || IsEnhancedModeEnabled;
         }
 
         // To look up the registry entry for 

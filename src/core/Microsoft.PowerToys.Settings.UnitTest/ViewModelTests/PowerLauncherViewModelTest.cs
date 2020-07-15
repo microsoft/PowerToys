@@ -125,7 +125,6 @@ namespace ViewModelTests
             viewModel.OverrideWinRKey = true;
             viewModel.OverrideWinSKey = false;
 
-
             Assert.AreEqual(1, sendCallbackMock.TimesSent);
 
             Assert.IsTrue(mockSettings.properties.override_win_r_key);
