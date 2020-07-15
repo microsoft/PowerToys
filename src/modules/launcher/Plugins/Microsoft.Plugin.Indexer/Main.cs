@@ -132,8 +132,8 @@ namespace Microsoft.Plugin.Indexer
             {
                 results.Add(new Result
                 {
-                    Title = "All drives may not be indexed, click to open Search Settings.",
-                    SubTitle = "Disable this warning in the PowerToys Run Settings Page.",
+                    Title = _context.API.GetTranslation("Microsoft_plugin_indexer_drivedetectionwarning"),
+                    SubTitle = _context.API.GetTranslation("Microsoft_plugin_indexer_disable_warning_in_settings"),
                     IcoPath = "Images\\WindowsIndexerImg.bmp",
                     Action = e =>
                     {
