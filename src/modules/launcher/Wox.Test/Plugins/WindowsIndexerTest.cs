@@ -309,7 +309,7 @@ namespace Wox.Test.Plugins
             var mockRegistry = new Mock<IRegistryWrapper>();
             mockRegistry.Setup(r => r.GetHKLMRegistryValue(It.IsAny<string>(), It.IsAny<string>())).Returns(enhancedModeStatus); // Enhanced mode is disabled
 
-            DriveDetectionHelper _driveDetection = new DriveDetectionHelper(mockRegistry.Object);
+            IndexerDriveDetection _driveDetection = new IndexerDriveDetection(mockRegistry.Object);
             _driveDetection.IsDriveDetectionWarningCheckBoxSelected = disableWarningCheckBoxStatus;
 
             // Act & Assert

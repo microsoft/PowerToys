@@ -6,13 +6,13 @@ using Microsoft.Plugin.Indexer.Interface;
 
 namespace Microsoft.Plugin.Indexer.DriveDetection
 {
-    public class DriveDetectionHelper
+    public class IndexerDriveDetection
     {
         private bool IsEnhancedModeEnabled { get; set; } = false;
         private IRegistryWrapper _registryHelper;
         public bool IsDriveDetectionWarningCheckBoxSelected { get; set; } = false;
 
-        public DriveDetectionHelper(IRegistryWrapper registryHelper)
+        public IndexerDriveDetection(IRegistryWrapper registryHelper)
         {
             _registryHelper = registryHelper;
             GetEnhancedModeStatus();

@@ -34,7 +34,7 @@ namespace Microsoft.Plugin.Indexer
         private readonly WindowsSearchAPI _api = new WindowsSearchAPI(new OleDBSearch());
 
         // To obtain information regarding the drives that are indexed
-        private readonly DriveDetectionHelper _driveDetectionHelper = new DriveDetectionHelper(new RegistryWrapper());
+        private readonly IndexerDriveDetection _driveDetection = new IndexerDriveDetection(new RegistryWrapper());
 
         // Reserved keywords in oleDB
         private string ReservedStringPattern = @"^[\/\\\$\%]+$";
@@ -52,7 +52,7 @@ namespace Microsoft.Plugin.Indexer
         {
             var results = new List<Result>();
 
-            if (_driveDetectionHelper.DisplayResults())
+            if (_driveDetection.DisplayResults())
             {
                 if (!string.IsNullOrEmpty(query.Search))
                 {
@@ -132,7 +132,6 @@ namespace Microsoft.Plugin.Indexer
             {
                 results.Add(new Result
                 {
-                    // TODO: Localize the string
                     Title = "All drives may not be indexed, click to open Search Settings.",
                     SubTitle = "Disable this warning in the PowerToys Run Settings Page.",
                     IcoPath = "Images\\WindowsIndexerImg.bmp",
@@ -184,7 +183,7 @@ namespace Microsoft.Plugin.Indexer
         public void UpdateSettings(PowerLauncherSettings settings)
         {
             _settings.MaxSearchCount = settings.properties.maximum_number_of_results;
-            _driveDetectionHelper.IsDriveDetectionWarningCheckBoxSelected = settings.properties.disable_drive_detection_warning;
+            _driveDetection.IsDriveDetectionWarningCheckBoxSelected = settings.properties.disable_drive_detection_warning;
         }
         public Control CreateSettingPanel()
         {
