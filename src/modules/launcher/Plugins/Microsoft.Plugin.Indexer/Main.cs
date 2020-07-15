@@ -14,6 +14,7 @@ using Microsoft.PowerToys.Settings.UI.Lib;
 using System.Windows.Controls;
 using Wox.Infrastructure.Logger;
 using System.Text.RegularExpressions;
+using Microsoft.Plugin.Indexer.DriveDetection;
 
 namespace Microsoft.Plugin.Indexer
 {
@@ -32,6 +33,9 @@ namespace Microsoft.Plugin.Indexer
         // To access Windows Search functionalities
         private readonly WindowsSearchAPI _api = new WindowsSearchAPI(new OleDBSearch());
 
+        // To obtain information regarding the drives that are indexed
+        private readonly DriveDetectionHelper _driveDetectionHelper = new DriveDetectionHelper(new RegistryWrapper());
+
         // Reserved keywords in oleDB
         private string ReservedStringPattern = @"^[\/\\\$\%]+$";
 
@@ -48,8 +52,8 @@ namespace Microsoft.Plugin.Indexer
         {
             var results = new List<Result>();
 
-            // If the Drive detection warning is enabled, we do not show any results, but only the drive detection warning
-            if (_settings.DisableDriveDetectionWarning)
+            // To show the drive detection warning when enhanced mode is turned off and the disable warning checkbox is unchecked in Settings
+            if (_settings.DisableDriveDetectionWarning || _driveDetectionHelper.IsEnhancedModeEnabled)
             {
                 if (!string.IsNullOrEmpty(query.Search))
                 {
