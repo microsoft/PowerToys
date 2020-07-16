@@ -136,7 +136,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             // FileVersionInfo must be mocked for exe applications
             var mockFileVersionInfo = new Mock<IFileVersionInfoWrapper>();
             mockFileVersionInfo.Setup(m => m.GetVersionInfo(It.IsAny<string>())).Returns((FileVersionInfo)null);
-            Win32.fileVersionInfoWrapper = mockFileVersionInfo.Object;
+            Win32._fileVersionInfoWrapper = mockFileVersionInfo.Object;
             
             // Act
             _fileSystemMocks[0].Raise(m => m.Created += null, e);
@@ -156,7 +156,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             // FileVersionInfo must be mocked for exe applications
             var mockFileVersionInfo = new Mock<IFileVersionInfoWrapper>();
             mockFileVersionInfo.Setup(m => m.GetVersionInfo(It.IsAny<string>())).Returns((FileVersionInfo)null);
-            Win32.fileVersionInfoWrapper = mockFileVersionInfo.Object;
+            Win32._fileVersionInfoWrapper = mockFileVersionInfo.Object;
 
             string fullPath = directory + "\\" + path;
             Win32 item = Win32.GetAppFromPath(fullPath);
@@ -182,7 +182,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             // FileVersionInfo must be mocked for exe applications
             var mockFileVersionInfo = new Mock<IFileVersionInfoWrapper>();
             mockFileVersionInfo.Setup(m => m.GetVersionInfo(It.IsAny<string>())).Returns((FileVersionInfo)null);
-            Win32.fileVersionInfoWrapper = mockFileVersionInfo.Object;
+            Win32._fileVersionInfoWrapper = mockFileVersionInfo.Object;
 
             Win32 olditem = Win32.GetAppFromPath(oldFullPath);
             Win32 newitem = Win32.GetAppFromPath(newFullPath);
@@ -207,7 +207,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             // File.ReadAllLines must be mocked for url applications
             var mockFile = new Mock<IFileWrapper>();
             mockFile.Setup(m => m.ReadAllLines(It.IsAny<string>())).Returns(new string[] { "URL=steam://rungameid/1258080" , "IconFile=iconFile"});
-            Win32.fileWrapper = mockFile.Object;
+            Win32._fileWrapper = mockFile.Object;
 
             // Act
             _fileSystemMocks[0].Raise(m => m.Created += null, e);
@@ -227,7 +227,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             // File.ReadAllLines must be mocked for url applications
             var mockFile = new Mock<IFileWrapper>();
             mockFile.Setup(m => m.ReadAllLines(It.IsAny<string>())).Returns(new string[] { "URL=steam://rungameid/1258080", "IconFile=iconFile" });
-            Win32.fileWrapper = mockFile.Object;
+            Win32._fileWrapper = mockFile.Object;
 
             string fullPath = directory + "\\" + path;
             Win32 item = Win32.GetAppFromPath(fullPath);
@@ -250,7 +250,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             // File.ReadAllLines must be mocked for url applications
             var mockFile = new Mock<IFileWrapper>();
             mockFile.Setup(m => m.ReadAllLines(It.IsAny<string>())).Returns(new string[] { "URL=steam://rungameid/1258080", "IconFile=iconFile" });
-            Win32.fileWrapper = mockFile.Object;
+            Win32._fileWrapper = mockFile.Object;
 
             string oldFullPath = directory + "\\" + oldpath;
             string newFullPath = directory + "\\" + newpath;
