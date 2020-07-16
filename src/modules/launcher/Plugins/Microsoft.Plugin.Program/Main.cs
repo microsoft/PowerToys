@@ -178,6 +178,7 @@ namespace Microsoft.Plugin.Program
                 if (disposing)
                 {
                     _context.API.ThemeChanged -= OnThemeChanged;
+                    _win32ProgramRepositoryHelper.Dispose();
                     _disposed = true;
                 }
             }

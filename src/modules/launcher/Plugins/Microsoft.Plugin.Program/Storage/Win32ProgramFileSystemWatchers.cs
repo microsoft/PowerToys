@@ -4,11 +4,12 @@ using Wox.Infrastructure.Storage;
 
 namespace Microsoft.Plugin.Program.Storage
 {
-    internal class Win32ProgramFileSystemWatchers
+    internal class Win32ProgramFileSystemWatchers : IDisposable
     {
 
         public readonly string[] _pathsToWatch;
         public List<FileSystemWatcherWrapper> _fileSystemWatchers;
+        private bool _disposed = false;
 
         // This class contains the list of directories to watch and initializes the File System Watchers
         public Win32ProgramFileSystemWatchers()
@@ -36,6 +37,27 @@ namespace Microsoft.Plugin.Program.Storage
             for (int index = 0; index < _pathsToWatch.Length; index++)
             {
                 _fileSystemWatchers.Add(new FileSystemWatcherWrapper());
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    for(int index = 0; index < _pathsToWatch.Length; index++)
+                    {
+                        _fileSystemWatchers[index].Dispose();
+                    }
+                    _disposed = true;
+                }
             }
         }
 
