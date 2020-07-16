@@ -1042,7 +1042,7 @@ namespace FancyZonesUnitTests
                     {
                         const std::wstring zoneUuid = L"default_device_id";
                         JSONHelpers::DeviceInfoJSON deviceInfo{ zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
-                        const std::wstring deviceInfoPath = FancyZonesDataNS::FancyZonesDataInstance().GetPersistFancyZonesJSONPath() + L".device_info_tmp";
+                        const std::wstring deviceInfoPath = FancyZonesDataNS::FancyZonesDataInstance().zonesSettingsFileName + L".device_info_tmp";
                         JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfo, deviceInfoPath);
 
                         FancyZonesDataNS::FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(deviceInfoPath);
@@ -1077,7 +1077,7 @@ namespace FancyZonesUnitTests
                     {
                         const std::wstring zoneUuid = L"default_device_id";
                         JSONHelpers::DeviceInfoJSON deviceInfo{ zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
-                        const std::wstring deviceInfoPath = FancyZonesDataNS::FancyZonesDataInstance().GetPersistFancyZonesJSONPath() + L".device_info_tmp";
+                        const std::wstring deviceInfoPath = FancyZonesDataNS::FancyZonesDataInstance().zonesSettingsFileName + L".device_info_tmp";
                         JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfo, deviceInfoPath);
 
                         FancyZonesDataNS::FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(deviceInfoPath);

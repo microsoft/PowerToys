@@ -8,7 +8,6 @@
 #include "lib/Settings.h"
 #include "lib/ZoneWindow.h"
 #include "lib/FancyZonesData.h"
-#include "lib/JsonHelpers.h"
 #include "lib/ZoneSet.h"
 #include "lib/WindowMoveHandler.h"
 #include "lib/FancyZonesWinHookEventIDs.h"
@@ -646,14 +645,10 @@ void FancyZones::ToggleEditor() noexcept
 
     const auto& fancyZonesData = FancyZonesDataNS::FancyZonesDataInstance();
 
-    const auto deviceInfo = fancyZonesData.FindDeviceInfo(zoneWindow->UniqueId());
-    if (!deviceInfo.has_value())
+    if (!fancyZonesData.SerializeDeviceInfoToTmpFile(zoneWindow->UniqueId()))
     {
         return;
     }
-
-    JSONHelpers::DeviceInfoJSON deviceInfoJson{ zoneWindow->UniqueId(), *deviceInfo };
-    JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfoJson, FancyZonesDataNS::GetActiveZoneSetTmpPath());
 
     const std::wstring params =
         /*1*/ editorLocation + L" " +

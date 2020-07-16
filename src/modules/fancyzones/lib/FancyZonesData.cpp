@@ -66,8 +66,12 @@ namespace FancyZonesDataNS
     FancyZonesData::FancyZonesData()
     {
         std::wstring result = PTSettingsHelper::get_module_save_folder_location(L"FancyZones");
-        zonesSettingsFilePath = result + L"\\" + std::wstring(FANCY_ZONES_DATA_FILE);
-        appZoneHistoryFilePath = result + L"\\" + std::wstring(FANCY_ZONES_APP_ZONE_HISTORY_FILE);
+        zonesSettingsFileName = result + L"\\" + std::wstring(FANCY_ZONES_DATA_FILE);
+        appZoneHistoryFileName = result + L"\\" + std::wstring(FANCY_ZONES_APP_ZONE_HISTORY_FILE);
+
+        activeZoneSetTmpFileName = GetTempDirPath() + ActiveZoneSetsTmpFileName;
+        appliedZoneSetTmpFileName = GetTempDirPath() + AppliedZoneSetsTmpFileName;
+        deletedCustomZoneSetsTmpFileName = GetTempDirPath() + DeletedCustomZoneSetsTmpFileName;
     }
 
     std::optional<FancyZonesDataTypes::DeviceInfoData> FancyZonesData::FindDeviceInfo(const std::wstring& zoneWindowId) const
@@ -378,11 +382,25 @@ namespace FancyZonesDataNS
         }
     }
 
+    bool FancyZonesData::SerializeDeviceInfoToTmpFile(const std::wstring& uniqueId) const
+    {
+        const auto deviceInfo = FindDeviceInfo(uniqueId);
+        if (!deviceInfo.has_value())
+        {
+            return false;
+        }
+
+        JSONHelpers::DeviceInfoJSON deviceInfoJson{ uniqueId, *deviceInfo };
+        JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfoJson, activeZoneSetTmpFileName);
+
+        return true;
+    }
+
     void FancyZonesData::ParseDataFromTmpFiles()
     {
-        ParseDeviceInfoFromTmpFile(GetActiveZoneSetTmpPath());
-        ParseDeletedCustomZoneSetsFromTmpFile(GetDeletedCustomZoneSetsTmpPath());
-        ParseCustomZoneSetFromTmpFile(GetAppliedZoneSetTmpPath());
+        ParseDeviceInfoFromTmpFile(activeZoneSetTmpFileName);
+        ParseDeletedCustomZoneSetsFromTmpFile(deletedCustomZoneSetsTmpFileName);
+        ParseCustomZoneSetFromTmpFile(appliedZoneSetTmpFileName);
         SaveFancyZonesData();
     }
 
@@ -420,12 +438,12 @@ namespace FancyZonesDataNS
 
     json::JsonObject FancyZonesData::GetPersistFancyZonesJSON()
     {
-        return JSONHelpers::GetPersistFancyZonesJSON(zonesSettingsFilePath, appZoneHistoryFilePath);
+        return JSONHelpers::GetPersistFancyZonesJSON(zonesSettingsFileName, appZoneHistoryFileName);
     }
 
-	void FancyZonesData::LoadFancyZonesData()
+    void FancyZonesData::LoadFancyZonesData()
     {
-        if (!std::filesystem::exists(zonesSettingsFilePath))
+        if (!std::filesystem::exists(zonesSettingsFileName))
         {
             MigrateCustomZoneSetsFromRegistry();
 
@@ -451,14 +469,14 @@ namespace FancyZonesDataNS
         root.SetNamedValue(L"devices", JSONHelpers::SerializeDeviceInfos(deviceInfoMap));
         root.SetNamedValue(L"custom-zone-sets", JSONHelpers::SerializeCustomZoneSets(customZoneSetsMap));
 
-        auto before = json::from_file(zonesSettingsFilePath);
+        auto before = json::from_file(zonesSettingsFileName);
         if (!before.has_value() || before.value().Stringify() != root.Stringify())
         {
             Trace::FancyZones::DataChanged();
         }
 
-        json::to_file(zonesSettingsFilePath, root);
-        json::to_file(appZoneHistoryFilePath, appZoneHistoryRoot);
+        json::to_file(zonesSettingsFileName, root);
+        json::to_file(appZoneHistoryFileName, appZoneHistoryRoot);
     }
 
     void FancyZonesData::MigrateCustomZoneSetsFromRegistry()
@@ -588,23 +606,4 @@ namespace FancyZonesDataNS
             }
         }
     }
-
-    const std::wstring& GetActiveZoneSetTmpPath()
-    {
-        static std::wstring activeZoneSetTmpFileName = GetTempDirPath() + ActiveZoneSetsTmpFileName;
-        return activeZoneSetTmpFileName;
-    }
-
-    const std::wstring& GetAppliedZoneSetTmpPath()
-    {
-        static std::wstring appliedZoneSetTmpFileName = GetTempDirPath() + AppliedZoneSetsTmpFileName;
-        return appliedZoneSetTmpFileName;
-    }
-
-    const std::wstring& GetDeletedCustomZoneSetsTmpPath()
-    {
-        static std::wstring deletedCustomZoneSetsTmpFileName = GetTempDirPath() + DeletedCustomZoneSetsTmpFileName;
-        return deletedCustomZoneSetsTmpFileName;
-    }
-
 }

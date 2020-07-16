@@ -959,7 +959,7 @@ namespace FancyZonesUnitTests
             {
                 FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
-                Assert::IsFalse(data.GetPersistFancyZonesJSONPath().empty());
+                Assert::IsFalse(data.zonesSettingsFileName.empty());
             }
 
             TEST_METHOD (FancyZonesDataJsonEmpty)
@@ -977,8 +977,7 @@ namespace FancyZonesUnitTests
             {
                 FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
-                const auto jsonPath = data.GetPersistFancyZonesJSONPath();
-                const auto appZoneHistoryPath = data.GetPersistAppZoneHistoryFilePath();
+                const auto& jsonPath = data.zonesSettingsFileName;
 
                 json::JsonObject expected = json::JsonObject::Parse(L"{\"fancy-zones\":{\"custom-zonesets \":[{\"uuid\":\"uuid1\",\"name\":\"Custom1\",\"type\":\"custom\" }] }, \"app-zone-history\":[] }");
                 json::to_file(jsonPath, expected);
@@ -1084,7 +1083,7 @@ namespace FancyZonesUnitTests
                 data.SetSettingsModulePath(m_moduleName);
                 DeviceInfoJSON deviceInfo{ L"default_device_id", DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
 
-                const std::wstring path = data.GetPersistFancyZonesJSONPath() + L".test_tmp";
+                const std::wstring path = data.zonesSettingsFileName + L".test_tmp";
                 JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfo, path);
 
                 bool actualFileExists = std::filesystem::exists(path);
@@ -1104,7 +1103,7 @@ namespace FancyZonesUnitTests
                 data.SetSettingsModulePath(m_moduleName);
                 const std::wstring deviceId = m_defaultDeviceId;
                 DeviceInfoJSON expected{ deviceId, DeviceInfoData{ ZoneSetData{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Custom }, true, 16, 3 } };
-                const std::wstring path = data.GetPersistFancyZonesJSONPath() + L".test_tmp";
+                const std::wstring path = data.zonesSettingsFileName + L".test_tmp";
                 JSONHelpers::SerializeDeviceInfoToTmpFile(expected, path);
 
                 data.ParseDeviceInfoFromTmpFile(path);
@@ -1131,7 +1130,7 @@ namespace FancyZonesUnitTests
             {
                 FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
-                const std::wstring path = data.GetPersistFancyZonesJSONPath() + L".test_tmp";
+                const std::wstring path = data.zonesSettingsFileName + L".test_tmp";
                 data.ParseDeviceInfoFromTmpFile(path);
 
                 auto devices = data.GetDeviceInfoMap();
@@ -1510,7 +1509,7 @@ namespace FancyZonesUnitTests
 
                 {
                     DeviceInfoJSON deviceInfo{ deviceId, DeviceInfoData{ ZoneSetData{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Custom }, true, 16, 3 } };
-                    const std::wstring deviceInfoPath = m_fzData.GetPersistFancyZonesJSONPath() + L".device_info_tmp";
+                    const std::wstring deviceInfoPath = m_fzData.zonesSettingsFileName + L".device_info_tmp";
                     JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfo, deviceInfoPath);
 
                     m_fzData.ParseDeviceInfoFromTmpFile(deviceInfoPath);
@@ -1528,7 +1527,7 @@ namespace FancyZonesUnitTests
 
                 FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
-                const std::wstring path = data.GetPersistFancyZonesJSONPath() + L".test_tmp";
+                const std::wstring path = data.zonesSettingsFileName + L".test_tmp";
                 json::to_file(path, CustomZoneSetJSON::ToJson(expected));
                 m_fzData.ParseCustomZoneSetFromTmpFile(path);
 
@@ -1553,7 +1552,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (CustomZoneSetsReadTempNonexistent)
             {
-                const std::wstring path = m_fzData.GetPersistFancyZonesJSONPath() + L".test_tmp";
+                const std::wstring path = m_fzData.zonesSettingsFileName + L".test_tmp";
                 const std::wstring deviceId = L"default_device_id";
 
                 m_fzData.ParseCustomZoneSetFromTmpFile(path);
@@ -1642,7 +1641,7 @@ namespace FancyZonesUnitTests
             {
                 FancyZonesData fancyZonesData;
                 fancyZonesData.SetSettingsModulePath(m_moduleName);
-                const auto jsonPath = fancyZonesData.GetPersistFancyZonesJSONPath();
+                const auto& jsonPath = fancyZonesData.zonesSettingsFileName;
                 auto savedJson = json::from_file(jsonPath);
 
                 if (std::filesystem::exists(jsonPath))
@@ -1692,27 +1691,11 @@ namespace FancyZonesUnitTests
             {
                 FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
-
-                const auto jsonPath = data.GetPersistFancyZonesJSONPath();
-                auto savedJson = json::from_file(jsonPath);
-
-                if (std::filesystem::exists(jsonPath))
-                {
-                    std::filesystem::remove(jsonPath);
-                }
+                const auto& jsonPath = data.zonesSettingsFileName;
 
                 std::wofstream{ jsonPath.data(), std::ios::binary } << L"{ \"app-zone-history\": [], \"devices\": [{\"device-id\": \"";
 
                 data.LoadFancyZonesData();
-
-                if (savedJson)
-                {
-                    json::to_file(jsonPath, *savedJson);
-                }
-                else
-                {
-                    std::filesystem::remove(jsonPath);
-                }
 
                 Assert::IsTrue(data.GetCustomZoneSetsMap().empty());
                 Assert::IsTrue(data.GetAppZoneHistoryMap().empty());
@@ -1723,25 +1706,10 @@ namespace FancyZonesUnitTests
             {
                 FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
-                const auto jsonPath = data.GetPersistFancyZonesJSONPath();
-                auto savedJson = json::from_file(jsonPath);
-
-                if (std::filesystem::exists(jsonPath))
-                {
-                    std::filesystem::remove(jsonPath);
-                }
+                const auto& jsonPath = data.zonesSettingsFileName;
 
                 std::wofstream{ jsonPath.data(), std::ios::binary } << L"{ \"app-zone-history\": [], \"devices\": [{\"device-id\": \"кириллица\"}], \"custom-zone-sets\": []}";
                 data.LoadFancyZonesData();
-
-                if (savedJson)
-                {
-                    json::to_file(jsonPath, *savedJson);
-                }
-                else
-                {
-                    std::filesystem::remove(jsonPath);
-                }
 
                 Assert::IsTrue(data.GetCustomZoneSetsMap().empty());
                 Assert::IsTrue(data.GetAppZoneHistoryMap().empty());
@@ -1752,25 +1720,10 @@ namespace FancyZonesUnitTests
             {
                 FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
-                const auto jsonPath = data.GetPersistFancyZonesJSONPath();
-                auto savedJson = json::from_file(jsonPath);
-
-                if (std::filesystem::exists(jsonPath))
-                {
-                    std::filesystem::remove(jsonPath);
-                }
+                const auto& jsonPath = data.zonesSettingsFileName;
 
                 std::wofstream{ jsonPath.data(), std::ios::binary } << L"{ \"app-zone-history\": null, \"devices\": [{\"device-id\":\"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}\",\"active-zoneset\":{\"uuid\":\"{568EBC3A-C09C-483E-A64D-6F1F2AF4E48D}\",\"type\":\"columns\"},\"editor-show-spacing\":true,\"editor-spacing\":16,\"editor-zone-count\":3}], \"custom-zone-sets\": []}";
                 data.LoadFancyZonesData();
-
-                if (savedJson)
-                {
-                    json::to_file(jsonPath, *savedJson);
-                }
-                else
-                {
-                    std::filesystem::remove(jsonPath);
-                }
 
                 Assert::IsTrue(data.GetCustomZoneSetsMap().empty());
                 Assert::IsTrue(data.GetAppZoneHistoryMap().empty());
@@ -1781,24 +1734,10 @@ namespace FancyZonesUnitTests
             {
                 FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
-                const auto jsonPath = data.GetPersistFancyZonesJSONPath();
-                auto savedJson = json::from_file(jsonPath);
-
-                if (std::filesystem::exists(jsonPath))
-                {
-                    std::filesystem::remove(jsonPath);
-                }
+                const auto& jsonPath = data.zonesSettingsFileName;
 
                 data.LoadFancyZonesData();
                 bool actual = std::filesystem::exists(jsonPath);
-                if (savedJson)
-                {
-                    json::to_file(jsonPath, *savedJson);
-                }
-                else
-                {
-                    std::filesystem::remove(jsonPath);
-                }
 
                 Assert::IsTrue(actual);
             }
@@ -1807,7 +1746,7 @@ namespace FancyZonesUnitTests
             {
                 FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
-                const auto jsonPath = data.GetPersistFancyZonesJSONPath();
+                const auto& jsonPath = data.zonesSettingsFileName;
 
                 data.SaveFancyZonesData();
                 bool actual = std::filesystem::exists(jsonPath);

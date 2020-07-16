@@ -88,13 +88,13 @@ namespace FancyZonesUnitTests
             m_parentUniqueId << L"DELA026#5&10a58c63&0&UID16777488_" << m_monitorInfo.rcMonitor.right << "_" << m_monitorInfo.rcMonitor.bottom << "_{61FA9FC0-26A6-4B37-A834-491C148DFC57}";
             m_uniqueId << L"DELA026#5&10a58c63&0&UID16777488_" << m_monitorInfo.rcMonitor.right << "_" << m_monitorInfo.rcMonitor.bottom << "_{39B25DD2-130D-4B5D-8851-4791D66B1539}";
 
-            Assert::IsFalse(FancyZonesDataNS::GetActiveZoneSetTmpPath().empty());
-            Assert::IsFalse(FancyZonesDataNS::GetAppliedZoneSetTmpPath().empty());
-            Assert::IsFalse(FancyZonesDataNS::GetDeletedCustomZoneSetsTmpPath().empty());
+            Assert::IsFalse(m_fancyZonesData.activeZoneSetTmpFileName.empty());
+            Assert::IsFalse(m_fancyZonesData.appliedZoneSetTmpFileName.empty());
+            Assert::IsFalse(m_fancyZonesData.deletedCustomZoneSetsTmpFileName.empty());
 
-            Assert::IsFalse(std::filesystem::exists(FancyZonesDataNS::GetActiveZoneSetTmpPath()));
-            Assert::IsFalse(std::filesystem::exists(FancyZonesDataNS::GetAppliedZoneSetTmpPath()));
-            Assert::IsFalse(std::filesystem::exists(FancyZonesDataNS::GetDeletedCustomZoneSetsTmpPath()));
+            Assert::IsFalse(std::filesystem::exists(m_fancyZonesData.activeZoneSetTmpFileName));
+            Assert::IsFalse(std::filesystem::exists(m_fancyZonesData.appliedZoneSetTmpFileName));
+            Assert::IsFalse(std::filesystem::exists(m_fancyZonesData.deletedCustomZoneSetsTmpFileName));
 
             m_fancyZonesData.SetSettingsModulePath(L"FancyZonesUnitTests");
             m_fancyZonesData.clear_data();
@@ -103,16 +103,16 @@ namespace FancyZonesUnitTests
         TEST_METHOD_CLEANUP(Cleanup)
         {
             //cleanup temp files if were created
-            std::filesystem::remove(FancyZonesDataNS::GetActiveZoneSetTmpPath());
-            std::filesystem::remove(FancyZonesDataNS::GetAppliedZoneSetTmpPath());
-            std::filesystem::remove(FancyZonesDataNS::GetDeletedCustomZoneSetsTmpPath());
+            std::filesystem::remove(m_fancyZonesData.activeZoneSetTmpFileName);
+            std::filesystem::remove(m_fancyZonesData.appliedZoneSetTmpFileName);
+            std::filesystem::remove(m_fancyZonesData.deletedCustomZoneSetsTmpFileName);
 
             m_zoneWindow = nullptr;
         }
 
         winrt::com_ptr<IZoneWindow> InitZoneWindowWithActiveZoneSet()
         {
-            const auto activeZoneSetTempPath = FancyZonesDataNS::GetActiveZoneSetTmpPath();
+            const auto activeZoneSetTempPath = m_fancyZonesData.activeZoneSetTmpFileName;
             Assert::IsFalse(std::filesystem::exists(activeZoneSetTempPath));
 
             const auto type = FancyZonesDataTypes::ZoneSetLayoutType::Columns;
@@ -209,7 +209,7 @@ namespace FancyZonesUnitTests
         {
             using namespace FancyZonesDataTypes;
 
-            const auto activeZoneSetTempPath = FancyZonesDataNS::GetActiveZoneSetTmpPath();
+            const auto activeZoneSetTempPath = m_fancyZonesData.activeZoneSetTmpFileName;
 
             for (int type = static_cast<int>(ZoneSetLayoutType::Focus); type < static_cast<int>(ZoneSetLayoutType::Custom); type++)
             {
@@ -234,7 +234,7 @@ namespace FancyZonesUnitTests
         {
             using namespace FancyZonesDataTypes;
 
-            const auto activeZoneSetTempPath = FancyZonesDataNS::GetActiveZoneSetTmpPath();
+            const auto activeZoneSetTempPath = m_fancyZonesData.activeZoneSetTmpFileName;
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::Custom;
             const auto expectedZoneSet = ZoneSetData{ Helpers::CreateGuidString(), type };
@@ -261,8 +261,8 @@ namespace FancyZonesUnitTests
             using namespace FancyZonesDataTypes;
 
             //save required data
-            const auto activeZoneSetTempPath = FancyZonesDataNS::GetActiveZoneSetTmpPath();
-            const auto appliedZoneSetTempPath = FancyZonesDataNS::GetAppliedZoneSetTmpPath();
+            const auto activeZoneSetTempPath = m_fancyZonesData.activeZoneSetTmpFileName;
+            const auto appliedZoneSetTempPath = m_fancyZonesData.appliedZoneSetTmpFileName;
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::Custom;
             const auto customSetGuid = Helpers::CreateGuidString();
@@ -297,9 +297,9 @@ namespace FancyZonesUnitTests
             using namespace FancyZonesDataTypes;
 
             //save required data
-            const auto activeZoneSetTempPath = FancyZonesDataNS::GetActiveZoneSetTmpPath();
-            const auto appliedZoneSetTempPath = FancyZonesDataNS::GetAppliedZoneSetTmpPath();
-            const auto deletedZonesTempPath = FancyZonesDataNS::GetDeletedCustomZoneSetsTmpPath();
+            const auto activeZoneSetTempPath = m_fancyZonesData.activeZoneSetTmpFileName;
+            const auto appliedZoneSetTempPath = m_fancyZonesData.appliedZoneSetTmpFileName;
+            const auto deletedZonesTempPath = m_fancyZonesData.deletedCustomZoneSetsTmpFileName;
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::Custom;
             const auto customSetGuid = Helpers::CreateGuidString();
@@ -343,9 +343,9 @@ namespace FancyZonesUnitTests
             using namespace FancyZonesDataTypes;
 
             //save required data
-            const auto activeZoneSetTempPath = FancyZonesDataNS::GetActiveZoneSetTmpPath();
-            const auto appliedZoneSetTempPath = FancyZonesDataNS::GetAppliedZoneSetTmpPath();
-            const auto deletedZonesTempPath = FancyZonesDataNS::GetDeletedCustomZoneSetsTmpPath();
+            const auto activeZoneSetTempPath = m_fancyZonesData.activeZoneSetTmpFileName;
+            const auto appliedZoneSetTempPath = m_fancyZonesData.appliedZoneSetTmpFileName;
+            const auto deletedZonesTempPath = m_fancyZonesData.deletedCustomZoneSetsTmpFileName;
 
             const ZoneSetLayoutType type = ZoneSetLayoutType::Custom;
             const auto customSetGuid = Helpers::CreateGuidString();

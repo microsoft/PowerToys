@@ -31,24 +31,10 @@ namespace FancyZonesUnitTests
 #endif
 namespace FancyZonesDataNS
 {
-    const std::wstring& GetActiveZoneSetTmpPath();
-    const std::wstring& GetAppliedZoneSetTmpPath();
-    const std::wstring& GetDeletedCustomZoneSetsTmpPath();
-
     class FancyZonesData
     {
     public:
         FancyZonesData();
-
-        inline const std::wstring& GetPersistFancyZonesJSONPath() const
-        {
-            return zonesSettingsFilePath;
-        }
-
-        inline const std::wstring& GetPersistAppZoneHistoryFilePath() const
-        {
-            return appZoneHistoryFilePath;
-        }
 
         std::optional<FancyZonesDataTypes::DeviceInfoData> FindDeviceInfo(const std::wstring& zoneWindowId) const;
 
@@ -85,6 +71,7 @@ namespace FancyZonesDataNS
 
         void SetActiveZoneSet(const std::wstring& deviceId, const FancyZonesDataTypes::ZoneSetData& zoneSet);
 
+        bool SerializeDeviceInfoToTmpFile(const std::wstring& uniqueId) const;
         void ParseDataFromTmpFiles();
 
         json::JsonObject GetPersistFancyZonesJSON();
@@ -120,8 +107,8 @@ namespace FancyZonesDataNS
         inline void SetSettingsModulePath(std::wstring_view moduleName)
         {
             std::wstring result = PTSettingsHelper::get_module_save_folder_location(moduleName);
-            zonesSettingsFilePath = result + L"\\" + std::wstring(L"zones-settings.json");
-            appZoneHistoryFilePath = result + L"\\" + std::wstring(L"app-zone-history.json");
+            zonesSettingsFileName = result + L"\\" + std::wstring(L"zones-settings.json");
+            appZoneHistoryFileName = result + L"\\" + std::wstring(L"app-zone-history.json");
         }
 #endif
         void ParseDeviceInfoFromTmpFile(std::wstring_view tmpFilePath);
@@ -135,8 +122,13 @@ namespace FancyZonesDataNS
         std::unordered_map<std::wstring, FancyZonesDataTypes::DeviceInfoData> deviceInfoMap{};
         std::unordered_map<std::wstring, FancyZonesDataTypes::CustomZoneSetData> customZoneSetsMap{};
 
-        std::wstring zonesSettingsFilePath;
-        std::wstring appZoneHistoryFilePath;
+        std::wstring zonesSettingsFileName;
+        std::wstring appZoneHistoryFileName;
+
+        std::wstring activeZoneSetTmpFileName;
+        std::wstring appliedZoneSetTmpFileName;
+        std::wstring deletedCustomZoneSetsTmpFileName;
+
 
         mutable std::recursive_mutex dataLock;
     };
