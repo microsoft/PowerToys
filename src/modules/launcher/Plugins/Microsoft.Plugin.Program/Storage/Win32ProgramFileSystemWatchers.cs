@@ -4,14 +4,14 @@ using Wox.Infrastructure.Storage;
 
 namespace Microsoft.Plugin.Program.Storage
 {
-    internal class Win32ProgramRepositoryHelper
+    internal class Win32ProgramFileSystemWatchers
     {
 
         public readonly string[] _pathsToWatch;
         public List<FileSystemWatcherWrapper> _fileSystemWatchers;
 
         // This class contains the list of directories to watch and initializes the File System Watchers
-        public Win32ProgramRepositoryHelper()
+        public Win32ProgramFileSystemWatchers()
         {
             _pathsToWatch = GetPathsToWatch();
             SetFileSystemWatchers();

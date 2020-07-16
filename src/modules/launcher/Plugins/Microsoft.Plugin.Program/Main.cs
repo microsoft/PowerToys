@@ -30,7 +30,7 @@ namespace Microsoft.Plugin.Program
         private readonly PluginJsonStorage<Settings> _settingsStorage;
         private bool _disposed = false;
         private PackageRepository _packageRepository = new PackageRepository(new PackageCatalogWrapper(), new BinaryStorage<IList<UWP.Application>>("UWP"));
-        private Win32ProgramRepositoryHelper _win32ProgramRepositoryHelper;
+        private Win32ProgramFileSystemWatchers _win32ProgramRepositoryHelper;
         private Win32ProgramRepository _win32ProgramRepository;
 
         public Main()
@@ -38,7 +38,7 @@ namespace Microsoft.Plugin.Program
             _settingsStorage = new PluginJsonStorage<Settings>();
             _settings = _settingsStorage.Load();
             // This helper class initializes the file system watchers based on the locations to watch
-            _win32ProgramRepositoryHelper = new Win32ProgramRepositoryHelper();
+            _win32ProgramRepositoryHelper = new Win32ProgramFileSystemWatchers();
 
             // Initialize the Win32ProgramRepository with the settings object
             _win32ProgramRepository = new Win32ProgramRepository(_win32ProgramRepositoryHelper._fileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList(), new BinaryStorage<IList<Programs.Win32>>("Win32"), _settings, _win32ProgramRepositoryHelper._pathsToWatch);
