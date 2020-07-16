@@ -135,10 +135,7 @@ public:
     void ClearAppSpecificShortcuts();
 
     // Function to add a new single key to key remapping
-    bool AddSingleKeyRemap(const DWORD& originalKey, const DWORD& newRemapKey);
-
-    // Function to add a new single key to shortcut remapping
-    bool AddSingleKeyRemap(const DWORD& originalKey, const Shortcut& newRemapShortcut);
+    bool AddSingleKeyRemap(const DWORD& originalKey, const std::variant<DWORD, Shortcut>& newRemapKey);
 
     // Function to add a new OS level shortcut remapping
     bool AddOSLevelShortcut(const Shortcut& originalSC, const Shortcut& newSC);
@@ -168,7 +165,7 @@ public:
     KeyboardManagerHelper::KeyboardHookDecision DetectSingleRemapKeyUIBackend(LowlevelKeyboardEvent* data);
 
     // Function which can be used in HandleKeyboardHookEvent before the os level shortcut remap event to use the UI and suppress events while the remap window is active.
-    KeyboardManagerHelper::KeyboardHookDecision DetectShortcutUIBackend(LowlevelKeyboardEvent* data);
+    KeyboardManagerHelper::KeyboardHookDecision DetectShortcutUIBackend(LowlevelKeyboardEvent* data, bool isRemapKey = false);
 
     // Add a KeyDelay object to get delayed key presses events for a given virtual key
     // NOTE: this will throw an exception if a virtual key is registered twice.

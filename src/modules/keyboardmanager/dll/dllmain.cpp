@@ -401,6 +401,18 @@ public:
             return 0;
         }
 
+        // If the Detect Shortcut Window from Remap Keys is currently activated, then suppress the keyboard event
+        KeyboardManagerHelper::KeyboardHookDecision remapKeyShortcutUIDetected = keyboardManagerState.DetectShortcutUIBackend(data, true);
+        if (remapKeyShortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::Suppress)
+        {
+            return 1;
+        }
+        else if (remapKeyShortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::SkipHook)
+        {
+            return 0;
+        }
+
+
         // Remap a key
         intptr_t SingleKeyRemapResult = KeyboardEventHandlers::HandleSingleKeyRemapEvent(inputHandler, data, keyboardManagerState);
 

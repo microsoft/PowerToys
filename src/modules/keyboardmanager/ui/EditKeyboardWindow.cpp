@@ -35,12 +35,15 @@ static std::vector<DWORD> GetOrphanedKeys()
 
     for (int i = 0; i < SingleKeyRemapControl::singleKeyRemapBuffer.size(); i++)
     {
-        DWORD ogKey = SingleKeyRemapControl::singleKeyRemapBuffer[i][0];
-        DWORD newKey = SingleKeyRemapControl::singleKeyRemapBuffer[i][1];
-        if (ogKey != 0 && newKey != 0)
+        if (SingleKeyRemapControl::singleKeyRemapBuffer[i].first[1].index() == 0)
         {
-            ogKeys.insert(ogKey);
-            newKeys.insert(newKey);
+            DWORD ogKey = std::get<DWORD>(SingleKeyRemapControl::singleKeyRemapBuffer[i].first[0]);
+            DWORD newKey = std::get<DWORD>(SingleKeyRemapControl::singleKeyRemapBuffer[i].first[1]);
+            if (ogKey != 0 && newKey != 0)
+            {
+                ogKeys.insert(ogKey);
+                newKeys.insert(newKey);
+            }
         }
     }
 
@@ -86,18 +89,18 @@ static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
 
 static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, XamlRoot root, std::function<void()> ApplyRemappings)
 {
-    KeyboardManagerHelper::ErrorType isSuccess = Dialog::CheckIfRemappingsAreValid<DWORD>(
-        SingleKeyRemapControl::singleKeyRemapBuffer,
-        [](DWORD key) {
-            return key != 0;
-        });
-    if (isSuccess != KeyboardManagerHelper::ErrorType::NoError)
-    {
-        if (!co_await Dialog::PartialRemappingConfirmationDialog(root, L"Some of the keys could not be remapped. Do you want to continue anyway?"))
-        {
-            co_return;
-        }
-    }
+    //KeyboardManagerHelper::ErrorType isSuccess = Dialog::CheckIfRemappingsAreValid<DWORD>(
+    //    SingleKeyRemapControl::singleKeyRemapBuffer,
+    //    [](DWORD key) {
+    //        return key != 0;
+    //    });
+    //if (isSuccess != KeyboardManagerHelper::ErrorType::NoError)
+    //{
+    //    if (!co_await Dialog::PartialRemappingConfirmationDialog(root, L"Some of the keys could not be remapped. Do you want to continue anyway?"))
+    //    {
+    //        co_return;
+    //    }
+    //}
     // Check for orphaned keys
     // Draw content Dialog
     std::vector<DWORD> orphanedKeys = GetOrphanedKeys();
@@ -254,7 +257,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     arrowColumn.MinWidth(KeyboardManagerConstants::TableArrowColWidth);
     ColumnDefinition newColumn;
     newColumn.MinWidth(KeyboardManagerConstants::RemapTableDropDownWidth);
-    newColumn.MaxWidth(KeyboardManagerConstants::RemapTableDropDownWidth);
+    //newColumn.MaxWidth(KeyboardManagerConstants::RemapTableDropDownWidth);
     ColumnDefinition removeColumn;
     removeColumn.MinWidth(KeyboardManagerConstants::TableRemoveColWidth);
     keyRemapTable.Margin({ 10, 10, 10, 20 });
@@ -306,10 +309,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     for (const auto& it : singleKeyRemapCopy)
     {
-        if (it.second.index() == 0)
-        {
-            SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects, it.first, std::get<DWORD>(it.second));
-        }
+        SingleKeyRemapControl::AddNewControlKeyRemapRow(keyRemapTable, keyboardRemapControlObjects, it.first, it.second);
     }
 
     // Main Header Apply button
@@ -328,10 +328,10 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         DWORD successfulRemapCount = 0;
         for (int i = 0; i < SingleKeyRemapControl::singleKeyRemapBuffer.size(); i++)
         {
-            DWORD originalKey = SingleKeyRemapControl::singleKeyRemapBuffer[i][0];
-            DWORD newKey = SingleKeyRemapControl::singleKeyRemapBuffer[i][1];
+            DWORD originalKey = std::get<DWORD>(SingleKeyRemapControl::singleKeyRemapBuffer[i].first[0]);
+            std::variant<DWORD, Shortcut> newKey = SingleKeyRemapControl::singleKeyRemapBuffer[i].first[1];
 
-            if (originalKey != NULL && newKey != NULL)
+            if (originalKey != NULL && !(newKey.index() == 0 && std::get<DWORD>(newKey) == NULL) && !(newKey.index() == 1 && !std::get<Shortcut>(newKey).IsValidShortcut()))
             {
                 // If Ctrl/Alt/Shift are added, add their L and R versions instead to the same key
                 bool result = false;

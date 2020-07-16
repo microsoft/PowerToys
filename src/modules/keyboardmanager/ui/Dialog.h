@@ -3,6 +3,7 @@
 #include <functional>
 #include <keyboardmanager/common/Helpers.h>
 #include <set>
+#include <variant>
 
 namespace winrt::Windows::UI::Xaml
 {
@@ -21,15 +22,15 @@ namespace Dialog
 {
     template<typename T>
     KeyboardManagerHelper::ErrorType CheckIfRemappingsAreValid(
-        const std::vector<std::vector<T>>& remappings,
+        const std::vector<std::vector<std::variant<DWORD, Shortcut>>>& remappings,
         std::function<bool(T)> isValid)
     {
         KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
         std::set<T> ogKeys;
         for (int i = 0; i < remappings.size(); i++)
         {
-            T ogKey = remappings[i][0];
-            T newKey = remappings[i][1];
+            T ogKey = std::get<T>(remappings[i][0]);
+            T newKey = std::get<T>(remappings[i][1]);
 
             if (isValid(ogKey) && isValid(newKey) && ogKeys.find(ogKey) == ogKeys.end())
             {

@@ -32,7 +32,7 @@ static IAsyncAction OnClickAccept(
     std::function<void()> ApplyRemappings)
 {
     KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
-    std::map<std::wstring, std::vector<std::vector<Shortcut>>> appSpecificBuffer;
+    std::map<std::wstring, std::vector<std::vector<std::variant<DWORD, Shortcut>>>> appSpecificBuffer;
 
     // Create per app shortcut buffer
     for (int i = 0; i < ShortcutControl::shortcutRemapBuffer.size(); i++)
@@ -42,7 +42,7 @@ static IAsyncAction OnClickAccept(
 
         if (appSpecificBuffer.find(currAppName) == appSpecificBuffer.end())
         {
-            appSpecificBuffer[currAppName] = std::vector<std::vector<Shortcut>>();
+            appSpecificBuffer[currAppName] = std::vector<std::vector<std::variant<DWORD, Shortcut>>>();
         }
 
         appSpecificBuffer[currAppName].push_back(ShortcutControl::shortcutRemapBuffer[i].first);
@@ -290,8 +290,8 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         // Save the shortcuts that are valid and report if any of them were invalid
         for (int i = 0; i < ShortcutControl::shortcutRemapBuffer.size(); i++)
         {
-            Shortcut originalShortcut = ShortcutControl::shortcutRemapBuffer[i].first[0];
-            Shortcut newShortcut = ShortcutControl::shortcutRemapBuffer[i].first[1];
+            Shortcut originalShortcut = std::get<Shortcut>(ShortcutControl::shortcutRemapBuffer[i].first[0]);
+            Shortcut newShortcut = std::get<Shortcut>(ShortcutControl::shortcutRemapBuffer[i].first[1]);
 
             if (originalShortcut.IsValidShortcut() && newShortcut.IsValidShortcut())
             {
