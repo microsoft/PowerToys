@@ -453,7 +453,7 @@ namespace Microsoft.Plugin.Program.Programs
 
                 return program;
             }
-            catch (Exception e)
+            catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
             {
                 ProgramLogger.LogException($"|Win32|ExeProgram|{path}" +
                                             $"|Permission denied when trying to load the program from {path}", e);
