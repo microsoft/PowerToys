@@ -6,7 +6,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:Behaviors="http://schemas.microsoft.com/xaml/behaviors"
     mc:Ignorable="d"
-    Focusable="False"
     d:DesignHeight="300"
     d:DesignWidth="720">
 
@@ -31,7 +30,6 @@
                 <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
                 <Setter Property="Foreground" Value="{DynamicResource ControlTextBrushKey}"/>
                 <Setter Property="BorderThickness" Value="1"/>
-
                 <Setter Property="Focusable" Value="False"/>
                 <Setter Property="HorizontalContentAlignment" Value="Center"/>
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -116,7 +114,6 @@
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
-                <Setter Property="Focusable" Value="False" />
             </Style>
             <Style x:Key="CollapsableTextblock" TargetType="TextBlock">
                 <Style.Triggers>
@@ -124,7 +121,6 @@
                         <Setter Property="Visibility" Value="Collapsed"/>
                     </Trigger>
                 </Style.Triggers>
-                <Setter Property="Focusable" Value="False" />
             </Style>
 
             <Style TargetType="{x:Type ToolTip}" >
@@ -146,12 +142,11 @@
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
-                <Setter Property="Focusable" Value="False" />
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid VerticalAlignment="Top" Focusable="False">
+    <Grid VerticalAlignment="Top">
         <ListView
             x:Name="SuggestionsList"
             x:FieldModifier="public"
@@ -164,7 +159,6 @@
             ScrollViewer.HorizontalScrollBarVisibility="Disabled"       
             ScrollViewer.VerticalScrollBarVisibility="Auto"       
             SelectionMode="Single"
-            Focusable="False"
             SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
             ItemContainerStyle="{StaticResource ResultsListViewItemContainerStyle}">
             
@@ -177,7 +171,6 @@
                         Height="72" 
                         Width="642" 
                         Background="Transparent"
-                        Focusable="False"
                         ToolTipService.BetweenShowDelay="0"
                         ToolTipService.InitialShowDelay="1000"
                         >
@@ -190,13 +183,13 @@
                             </Behaviors:EventTrigger>
                         </Behaviors:Interaction.Triggers>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Focusable="False" Width="64" />
-                            <ColumnDefinition Focusable="False" Width="*" />
-                            <ColumnDefinition Focusable="False" Width="Auto" />
+                            <ColumnDefinition Width="64" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions >
-                            <RowDefinition Focusable="False" Height="*"/>
-                            <RowDefinition Focusable="False" Height="*"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         <Grid.ToolTip>
                             <ToolTip Visibility="{Binding Result.ToolTipVisibility}">
@@ -214,9 +207,9 @@
                                 </StackPanel>
                             </ToolTip>
                         </Grid.ToolTip>
-                        <Image x:Name="AppIcon" Focusable="False" Height="36" MaxWidth="56" Grid.RowSpan="2" Margin="-6,-2,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />
-                        <TextBlock Focusable="False" x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" Margin="0,0,0,-2" VerticalAlignment="Bottom"/>
-                        <TextBlock Focusable="False" x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Foreground="{DynamicResource SecondaryTextForeground}" Margin="0,2,0,0" VerticalAlignment="Top"/>
+                        <Image x:Name="AppIcon" Height="36" MaxWidth="56" Grid.RowSpan="2" Margin="-6,-2,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />
+                        <TextBlock x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" Margin="0,0,0,-2" VerticalAlignment="Bottom"/>
+                        <TextBlock x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Foreground="{DynamicResource SecondaryTextForeground}" Margin="0,2,0,0" VerticalAlignment="Top"/>
                         <ListView                                  
                             HorizontalAlignment="Right" 
                             VerticalAlignment="Center"                                  
@@ -241,7 +234,7 @@
                             </ItemsControl.ItemsPanel>
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <Button Focusable="False" Style="{StaticResource IconButtonStyle}" Command="{Binding Command}" VerticalAlignment="Center" Height="42" Width="42" BorderThickness="1" >
+                                    <Button Style="{StaticResource IconButtonStyle}" Command="{Binding Command}" VerticalAlignment="Center" Height="42" Width="42" BorderThickness="1" >
                                         <ToolTipService.ToolTip>
                                             <ToolTip >
                                                 <TextBlock Text="{Binding Title}" Foreground="{DynamicResource ToolTipForegroundBrushKey}" Margin="8,5" FontSize="12"/>
