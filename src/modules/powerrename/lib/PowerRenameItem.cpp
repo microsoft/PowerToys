@@ -42,6 +42,36 @@ IFACEMETHODIMP CPowerRenameItem::get_path(_Outptr_ PWSTR* path)
     return hr;
 }
 
+IFACEMETHODIMP CPowerRenameItem::get_date(_Outptr_ SYSTEMTIME* date)
+{
+    CSRWSharedAutoLock lock(&m_lock);
+    HRESULT hr = m_isDateParsed ? S_OK : E_FAIL ;
+    if (!m_isDateParsed)
+    {
+        HANDLE hFile = CreateFileW(m_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+        if (hFile != INVALID_HANDLE_VALUE)
+        {
+            FILETIME CreationTime;
+            if (GetFileTime(hFile, &CreationTime, NULL, NULL))
+            {
+                SYSTEMTIME SystemTime, LocalTime;
+                if (FileTimeToSystemTime(&CreationTime, &SystemTime))
+                {
+                    if (SystemTimeToTzSpecificLocalTime(NULL, &SystemTime, &LocalTime))
+                    {
+                        m_date = LocalTime;
+                        m_isDateParsed = true;
+                        hr = S_OK;
+                    }
+                }
+            }
+        }
+        CloseHandle(hFile);
+    }
+    *date = m_date;
+    return hr;
+}
+
 IFACEMETHODIMP CPowerRenameItem::get_shellItem(_Outptr_ IShellItem** ppsi)
 {
     return SHCreateItemFromParsingName(m_path, nullptr, IID_PPV_ARGS(ppsi));

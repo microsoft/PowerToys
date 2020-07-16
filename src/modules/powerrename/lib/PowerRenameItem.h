@@ -15,6 +15,7 @@ public:
 
     // IPowerRenameItem
     IFACEMETHODIMP get_path(_Outptr_ PWSTR* path);
+    IFACEMETHODIMP get_date(_Outptr_ SYSTEMTIME* date);
     IFACEMETHODIMP get_shellItem(_Outptr_ IShellItem** ppsi);
     IFACEMETHODIMP get_originalName(_Outptr_ PWSTR* originalName);
     IFACEMETHODIMP put_newName(_In_opt_ PCWSTR newName);
@@ -46,15 +47,17 @@ protected:
 
     HRESULT _Init(_In_ IShellItem* psi);
 
-    bool     m_selected = true;
-    bool     m_isFolder = false;
-    int      m_id = -1;
-    int      m_iconIndex = -1;
-    UINT     m_depth = 0;
-    HRESULT  m_error = S_OK;
-    PWSTR    m_path = nullptr;
-    PWSTR    m_originalName = nullptr;
-    PWSTR    m_newName = nullptr;
-    CSRWLock m_lock;
-    long     m_refCount = 0;
+    bool        m_selected = true;
+    bool        m_isFolder = false;
+    bool        m_isDateParsed = false;
+    int         m_id = -1;
+    int         m_iconIndex = -1;
+    UINT        m_depth = 0;
+    HRESULT     m_error = S_OK;
+    PWSTR       m_path = nullptr;
+    PWSTR       m_originalName = nullptr;
+    PWSTR       m_newName = nullptr;
+    SYSTEMTIME  m_date;
+    CSRWLock    m_lock;
+    long        m_refCount = 0;
 };
