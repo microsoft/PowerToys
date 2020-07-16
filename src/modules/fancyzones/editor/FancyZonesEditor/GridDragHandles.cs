@@ -124,7 +124,7 @@ namespace FancyZonesEditor
                 return resizer.StartRow == foundRow + 1;
             };
 
-            if (!UpdateDragHanlderForExistingSplit(Orientation.Vertical, cmpr, endCmpr, startCmpr))
+            if (!UpdateDragHandlerForExistingSplit(Orientation.Vertical, cmpr, endCmpr, startCmpr))
             {
                 AddDragHandle(Orientation.Vertical, foundRow, splitCol, model);
             }
@@ -147,7 +147,7 @@ namespace FancyZonesEditor
                 return resizer.StartCol == foundCol + 1;
             };
 
-            if (!UpdateDragHanlderForExistingSplit(Orientation.Horizontal, cmpr, endCmpr, startCmpr))
+            if (!UpdateDragHandlerForExistingSplit(Orientation.Horizontal, cmpr, endCmpr, startCmpr))
             {
                 AddDragHandle(Orientation.Horizontal, splitRow, foundCol, model);
             }
@@ -530,7 +530,7 @@ namespace FancyZonesEditor
             }
         }
 
-        private bool UpdateDragHanlderForExistingSplit(Orientation orientation, Func<GridResizer, bool> cmpr, Func<GridResizer, bool> endCmpr, Func<GridResizer, bool> startCmpr)
+        private bool UpdateDragHandlerForExistingSplit(Orientation orientation, Func<GridResizer, bool> cmpr, Func<GridResizer, bool> endCmpr, Func<GridResizer, bool> startCmpr)
         {
             bool updCurrentResizers = false;
             GridResizer leftNeighbour = null;
