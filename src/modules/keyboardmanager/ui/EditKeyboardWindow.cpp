@@ -35,14 +35,17 @@ static std::vector<DWORD> GetOrphanedKeys()
 
     for (int i = 0; i < SingleKeyRemapControl::singleKeyRemapBuffer.size(); i++)
     {
-        if (SingleKeyRemapControl::singleKeyRemapBuffer[i].first[1].index() == 0)
+        DWORD ogKey = std::get<DWORD>(SingleKeyRemapControl::singleKeyRemapBuffer[i].first[0]);
+        std::variant<DWORD, Shortcut> newKey = SingleKeyRemapControl::singleKeyRemapBuffer[i].first[1];
+
+        if (ogKey != NULL && ((newKey.index() == 0 && std::get<DWORD>(newKey) != 0) || (newKey.index() == 1 && std::get<Shortcut>(newKey).IsValidShortcut())))
         {
-            DWORD ogKey = std::get<DWORD>(SingleKeyRemapControl::singleKeyRemapBuffer[i].first[0]);
-            DWORD newKey = std::get<DWORD>(SingleKeyRemapControl::singleKeyRemapBuffer[i].first[1]);
-            if (ogKey != 0 && newKey != 0)
+            ogKeys.insert(ogKey);
+
+            // newKey should be added only if the target is a key
+            if (SingleKeyRemapControl::singleKeyRemapBuffer[i].first[1].index() == 0)
             {
-                ogKeys.insert(ogKey);
-                newKeys.insert(newKey);
+                newKeys.insert(std::get<DWORD>(newKey));
             }
         }
     }
@@ -89,18 +92,16 @@ static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
 
 static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, XamlRoot root, std::function<void()> ApplyRemappings)
 {
-    //KeyboardManagerHelper::ErrorType isSuccess = Dialog::CheckIfRemappingsAreValid<DWORD>(
-    //    SingleKeyRemapControl::singleKeyRemapBuffer,
-    //    [](DWORD key) {
-    //        return key != 0;
-    //    });
-    //if (isSuccess != KeyboardManagerHelper::ErrorType::NoError)
-    //{
-    //    if (!co_await Dialog::PartialRemappingConfirmationDialog(root, L"Some of the keys could not be remapped. Do you want to continue anyway?"))
-    //    {
-    //        co_return;
-    //    }
-    //}
+    KeyboardManagerHelper::ErrorType isSuccess = Dialog::CheckIfRemappingsAreValid(SingleKeyRemapControl::singleKeyRemapBuffer);
+
+    if (isSuccess != KeyboardManagerHelper::ErrorType::NoError)
+    {
+        if (!co_await Dialog::PartialRemappingConfirmationDialog(root, L"Some of the keys could not be remapped. Do you want to continue anyway?"))
+        {
+            co_return;
+        }
+    }
+
     // Check for orphaned keys
     // Draw content Dialog
     std::vector<DWORD> orphanedKeys = GetOrphanedKeys();

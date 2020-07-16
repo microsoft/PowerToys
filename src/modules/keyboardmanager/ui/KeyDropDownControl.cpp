@@ -77,10 +77,8 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel singleKeyCo
                         errorType = KeyboardManagerHelper::ErrorType::MapToSameKey;
                     }
                 }
-                else
-                {
-                    // check key to shortcut error
-                }
+
+                // If one column is shortcut and other is key no warning required
 
                 if (errorType == KeyboardManagerHelper::ErrorType::NoError && colIndex == 0)
                 {
@@ -331,11 +329,8 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
                         errorType = KeyboardManagerHelper::ErrorType::MapToSameShortcut;
                     }
                 }
-                // one column is shortcut and other is key
-                else
-                {
-                    // Check for key to shortcut matching condition
-                }
+
+                // If one column is shortcut and other is key no warning required
             }
             else
             {
@@ -347,11 +342,8 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
                         errorType = KeyboardManagerHelper::ErrorType::MapToSameKey;
                     }
                 }
-                // one column is shortcut and other is key
-                else
-                {
-                    // Check for key to shortcut matching condition
-                }
+
+                // If one column is shortcut and other is key no warning required
             }
 
             if (errorType == KeyboardManagerHelper::ErrorType::NoError && colIndex == 0)
@@ -387,11 +379,11 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
                             }
                             else if (tempShortcut.index() == 1 && shortcutRemapBuffer[i].first[colIndex].index() == 0)
                             {
-                                // Check key and shortcut for overlap
+                                // avoid this scenario
                             }
                             else
                             {
-                                // Check key and shortcut for overlap
+                                // avoid this scenario
                             }
                         }
                         if (result != KeyboardManagerHelper::ErrorType::NoError)

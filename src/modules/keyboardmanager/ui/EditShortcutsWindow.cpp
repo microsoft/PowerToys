@@ -31,36 +31,7 @@ static IAsyncAction OnClickAccept(
     XamlRoot root,
     std::function<void()> ApplyRemappings)
 {
-    KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
-    std::map<std::wstring, std::vector<std::vector<std::variant<DWORD, Shortcut>>>> appSpecificBuffer;
-
-    // Create per app shortcut buffer
-    for (int i = 0; i < ShortcutControl::shortcutRemapBuffer.size(); i++)
-    {
-        std::wstring currAppName = ShortcutControl::shortcutRemapBuffer[i].second;
-        std::transform(currAppName.begin(), currAppName.end(), currAppName.begin(), towlower);
-
-        if (appSpecificBuffer.find(currAppName) == appSpecificBuffer.end())
-        {
-            appSpecificBuffer[currAppName] = std::vector<std::vector<std::variant<DWORD, Shortcut>>>();
-        }
-
-        appSpecificBuffer[currAppName].push_back(ShortcutControl::shortcutRemapBuffer[i].first);
-    }
-
-    for (auto it : appSpecificBuffer)
-    {
-        KeyboardManagerHelper::ErrorType currentSuccess = Dialog::CheckIfRemappingsAreValid<Shortcut>(
-            it.second,
-            [](Shortcut shortcut) {
-                return shortcut.IsValidShortcut();
-            });
-        if (currentSuccess != KeyboardManagerHelper::ErrorType::NoError)
-        {
-            isSuccess = currentSuccess;
-            break;
-        }
-    }
+    KeyboardManagerHelper::ErrorType isSuccess = Dialog::CheckIfRemappingsAreValid(ShortcutControl::shortcutRemapBuffer);
 
     if (isSuccess != KeyboardManagerHelper::ErrorType::NoError)
     {
