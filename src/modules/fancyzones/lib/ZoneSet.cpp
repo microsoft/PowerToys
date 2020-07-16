@@ -208,8 +208,8 @@ ZoneSet::ZonesFromPoint(POINT pt) noexcept
         {
             auto rectI = m_zones[capturedZones[i]]->GetZoneRect();
             auto rectJ = m_zones[capturedZones[j]]->GetZoneRect();
-            if (max(rectI.top, rectJ.top) < min(rectI.bottom, rectJ.bottom) &&
-                max(rectI.left, rectJ.left) < min(rectI.right, rectJ.right))
+            if (max(rectI.top, rectJ.top) + SENSITIVITY_RADIUS < min(rectI.bottom, rectJ.bottom) &&
+                max(rectI.left, rectJ.left) + SENSITIVITY_RADIUS < min(rectI.right, rectJ.right))
             {
                 overlap = true;
                 i = capturedZones.size() - 1;

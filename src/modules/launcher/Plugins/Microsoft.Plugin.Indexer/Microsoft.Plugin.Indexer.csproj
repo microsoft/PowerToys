@@ -50,7 +50,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Images\WindowsIndexerImg.bmp">
+    <None Update="Images\indexer.dark.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Images\indexer.light.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="plugin.json">

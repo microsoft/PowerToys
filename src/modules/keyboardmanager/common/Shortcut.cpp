@@ -1,5 +1,22 @@
 #include "pch.h"
 #include "Shortcut.h"
+#include "../common/keyboard_layout.h"
+#include "../common/shared_constants.h"
+#include <interface/lowlevel_keyboard_event_data.h>
+#include "Helpers.h"
+#include "InputInterface.h"
+
+// Constructor to initialize Shortcut from it's virtual key code string representation.
+Shortcut::Shortcut(const std::wstring& shortcutVK) :
+    winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
+{
+    auto keys = KeyboardManagerHelper::splitwstring(shortcutVK, ';');
+    for (auto it : keys)
+    {
+        auto vkKeyCode = std::stoul(it);
+        SetKey(vkKeyCode);
+    }
+}
 
 // Function to return the number of keys in the shortcut
 int Shortcut::Size() const

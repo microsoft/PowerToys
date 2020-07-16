@@ -108,7 +108,7 @@
       <Project>{AF2349B8-E5B6-4004-9502-687C1C7730B1}</Project>
       <Name>PreviewHandlerCommon</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MarkDownPreviewHandler\MarkdownPreviewHandler.csproj">
+    <ProjectReference Include="..\MarkdownPreviewHandler\MarkdownPreviewHandler.csproj">
       <Project>{6a71162e-fc4c-4a2c-b90f-3cf94f59a9bb}</Project>
       <Name>MarkdownPreviewHandler</Name>
     </ProjectReference>

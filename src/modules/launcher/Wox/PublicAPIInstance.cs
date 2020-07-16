@@ -65,7 +65,8 @@ namespace Wox
             // which will cause ungraceful exit
             SaveAppAllSettings();
 
-            Squirrel.UpdateManager.RestartApp();
+            // Todo : Implement logic to restart this app.
+            Environment.Exit(0);
         }
 
         public void CheckForNewUpdate()

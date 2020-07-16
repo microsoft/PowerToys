@@ -22,11 +22,17 @@ namespace KeyboardManagerConstants
     // Name of the property use to store global shortcut remaps array.
     inline const std::wstring GlobalRemapShortcutsSettingName = L"global";
 
+    // Name of the property use to store app specific shortcut remaps array.
+    inline const std::wstring AppSpecificRemapShortcutsSettingName = L"appSpecific";
+
     // Name of the property use to store original keys.
     inline const std::wstring OriginalKeysSettingName = L"originalKeys";
 
     // Name of the property use to store new remap keys.
     inline const std::wstring NewRemapKeysSettingName = L"newRemapKeys";
+
+    // Name of the property use to store the target application.
+    inline const std::wstring TargetAppSettingName = L"targetApp";
 
     // Name of the default configuration.
     inline const std::wstring DefaultConfiguration = L"default";
@@ -90,4 +96,7 @@ namespace KeyboardManagerConstants
 
     // String constant for the default app name in Remap shortcuts
     inline const std::wstring DefaultAppName = L"All Apps";
+    
+    // String constant to represent no activated application in app-specific shortcuts
+    inline const std::wstring NoActivatedApp = L"";
 }

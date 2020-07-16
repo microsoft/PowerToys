@@ -1,16 +1,19 @@
 #pragma once
 #include "Helpers.h"
-#include "../common/keyboard_layout.h"
 #include "Shortcut.h"
 #include "RemapShortcut.h"
-#include "KeyDelay.h"
-#include "KeyboardManagerConstants.h"
-#include <interface/lowlevel_keyboard_event_data.h>
 #include <mutex>
-#include <winrt/Windows.UI.Xaml.Controls.h>
-#include <../common/settings_helpers.h>
+#include "KeyboardManagerConstants.h"
+#include "../common/keyboard_layout.h"
+#include <functional>
+#include <interface/lowlevel_keyboard_event_data.h>
 
-using namespace winrt::Windows::UI::Xaml::Controls;
+class KeyDelay;
+
+namespace winrt::Windows::UI::Xaml::Controls
+{
+    struct StackPanel;
+}
 
 // Enum type to store different states of the UI
 enum class KeyboardManagerUIState
@@ -52,12 +55,12 @@ private:
     std::mutex detectedRemapKey_mutex;
 
     // Stores the UI element which is to be updated based on the remap key entered.
-    StackPanel currentSingleKeyUI;
+    winrt::Windows::Foundation::IInspectable currentSingleKeyUI;
     std::mutex currentSingleKeyUI_mutex;
 
     // Stores the UI element which is to be updated based on the shortcut entered (each stackpanel represents a row of keys)
-    StackPanel currentShortcutUI1;
-    StackPanel currentShortcutUI2;
+    winrt::Windows::Foundation::IInspectable currentShortcutUI1;
+    winrt::Windows::Foundation::IInspectable currentShortcutUI2;
     std::mutex currentShortcutUI_mutex;
 
     // Stores the current configuration name.
@@ -71,8 +74,11 @@ private:
     std::map<DWORD, std::unique_ptr<KeyDelay>> keyDelays;
     std::mutex keyDelays_mutex;
 
+    // Stores the activated target application in app-specfic shortcut
+    std::wstring activatedAppSpecificShortcutTarget;
+
     // Display a key by appending a border Control as a child of the panel.
-    void AddKeyToLayout(const StackPanel& panel, const winrt::hstring& key);
+    void AddKeyToLayout(const winrt::Windows::UI::Xaml::Controls::StackPanel& panel, const winrt::hstring& key);
 
 public:
     // The map members and their mutexes are left as public since the maps are used extensively in dllmain.cpp.
@@ -133,10 +139,10 @@ public:
     bool AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const Shortcut& newSC);
 
     // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
-    void ConfigureDetectShortcutUI(const StackPanel& textBlock1, const StackPanel& textBlock2);
+    void ConfigureDetectShortcutUI(const winrt::Windows::UI::Xaml::Controls::StackPanel& textBlock1, const winrt::Windows::UI::Xaml::Controls::StackPanel& textBlock2);
 
     // Function to set the textblock of the detect remap key UI so that it can be accessed by the hook
-    void ConfigureDetectSingleKeyRemapUI(const StackPanel& textBlock);
+    void ConfigureDetectSingleKeyRemapUI(const winrt::Windows::UI::Xaml::Controls::StackPanel& textBlock);
 
     // Function to update the detect shortcut UI based on the entered keys
     void UpdateDetectShortcutUI();
@@ -190,4 +196,10 @@ public:
 
     // Gets the Current Active Configuration Name.
     std::wstring GetCurrentConfigName();
+
+    // Sets the activated target application in app-specfic shortcut
+    void SetActivatedApp(const std::wstring& appName);
+
+    // Gets the activated target application in app-specfic shortcut
+    std::wstring GetActivatedApp();
 };

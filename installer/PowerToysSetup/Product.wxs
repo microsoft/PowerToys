@@ -791,7 +791,7 @@
         <?endforeach?>
       </Component>  
       <Component Id="launcherImagesComponent" Directory="LauncherImagesFolder" Guid="D254220C-1DD9-4C74-8810-1AAB2F940DE8">
-        <?foreach File in app.png;app_error.png;Browser.png;calculator.png;cancel.png;close.png;cmd.png;color.png;copy.png;down.png;EXE.png;file.png;find.png;folder.png;history.png;image.png;Link.png;lock.png;logoff.png;ok.png;open.png;plugin.png;recyclebin.png;restart.png;search.png;settings.png;shutdown.png;sleep.png;up.png;update.png;warning.png?>
+        <?foreach File in app.dark.png;app.light.png;app_error.dark.png;app_error.light.png;Browser.png;calculator.png;cancel.png;close.png;cmd.png;color.png;copy.png;down.png;EXE.png;file.png;find.png;folder.png;history.png;image.png;Link.png;lock.png;logoff.png;ok.png;open.png;plugin.png;recyclebin.png;restart.png;search.png;settings.png;shutdown.png;sleep.png;up.png;update.png;warning.png?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Images\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinX64Dir)modules\launcher\Images\New Message.png" />
@@ -809,8 +809,8 @@
         <?endforeach?>
       </Component>
       <Component Id="calculatorImagesComponent" Directory="CalculatorImagesFolder" Guid="07EC9232-CF9A-4CDB-8D8E-E79DC75096C0">
-        <File Id="calculatorPluginImg_calculator_light" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Images\calculator_light.png" />
-        <File Id="calculatorPluginImg_calculator_dark" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Images\calculator_dark.png" />
+        <File Id="calculatorPluginImg_calculator_light" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Images\calculator.light.png" />
+        <File Id="calculatorPluginImg_calculator_dark" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Calculator\Images\calculator.dark.png" />
       </Component>
        <Component Id="calculatorLanguagesComponent" Directory="CalculatorLanguagesFolder" Guid="2D8019E7-664F-4529-9FAA-83C8DACF0732">
         <?foreach LanguageFile in de.xaml;en.xaml;pl.xaml;tr.xaml;zh-cn.xaml;zh-tw.xaml?>
@@ -839,7 +839,7 @@
         <?endforeach?>
       </Component>
       <Component Id="FolderImagesComponent" Directory="FolderPluginImagesFolder" Guid="6C5226EB-E312-4768-B4D1-B1D3ACFCCBDF">
-        <?foreach File in copy.png;deletefilefolder.png;file.png;folder.png;user.png?>
+        <?foreach File in copy.dark.png;copy.light.png;delete.dark.png;delete.light.png;file.dark.png;file.light.png;folder.dark.png;folder.light.png;user.dark.png;user.light.png?>
           <File Id="FolderPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Folder\Images\$(var.File)" />
         <?endforeach?>
       </Component>
@@ -870,7 +870,7 @@
         <?endforeach?>
       </Component>
       <Component Id="ProgramImagesComponent" Directory="ProgramImagesFolder" Guid="30D357F5-406F-47D1-BEFE-6022746469B4">
-        <?foreach File in cmd.png;disable.png;folder.png;program.png;user.png?>
+        <?foreach File in app.dark.png;app.light.png;disable.light.png;disable.dark.png;folder.light.png;folder.dark.png;shell.light.png;shell.dark.png;user.light.png;user.dark.png?>
           <File Id="Program_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Program\Images\$(var.File)" />
         <?endforeach?>
       </Component>
@@ -901,8 +901,9 @@
         <?endforeach?>
       </Component>
       <Component Id="ShellImagesComponent" Directory="ShellImagesFolder" Guid="15B5DBAE-E7C1-4BF7-A29E-6CE76242F8F4">
-        <File Id="ShellPluginImg" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Shell\Images\shell.png" />
-        <File Id="ShellPluginUserImg" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Shell\Images\user.png" />
+       <?foreach File in shell.light.png;shell.dark.png;user.light.png;user.dark.png?>
+          <File Id="Shell_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Shell\Images\$(var.File)" />
+        <?endforeach?>
       </Component>
        <Component Id="ShellLanguagesComponent" Directory="ShellLanguagesFolder" Guid="4190F789-8A66-46AA-B920-C76CB29277D7">
         <?foreach LanguageFile in de.xaml;en.xaml;pl.xaml;tr.xaml;zh-cn.xaml;zh-tw.xaml?>
@@ -931,7 +932,9 @@
         <?endforeach?>
       </Component>
       <Component Id="IndexerImagesComponent" Directory="IndexerImagesFolder" Guid="DB2E8D49-D104-425B-9616-952AC8CAB676">
-        <File Id="IndexerPluginImg" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\Images\WindowsIndexerImg.bmp" />
+        <?foreach File in indexer.dark.png;indexer.light.png?>
+          <File Id="Indexer_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\Images\$(var.File)" />
+        <?endforeach?>
       </Component>
       <Component Id="IndexerpinyindbComponent" Directory="IndexerpinyindbFolder" Guid="48DE333A-80F8-400A-87F4-244DF0A2DB05">
         <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
@@ -946,7 +949,8 @@
         <?endforeach?>
       </Component>
       <Component Id="WindowWalkerImagesComponent" Directory="WindowWalkerImagesFolder" Guid="3944A7F5-77F4-4979-9911-EDE709B2F509">
-          <File Id="WindowWalkerIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Images\windowwalker.png" />
+          <File Id="WindowWalkerDarkIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Images\windowwalker.dark.png" />
+          <File Id="WindowWalkerLightIcon" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Images\windowwalker.light.png" />
       </Component>
       <Component Id="WindowWalkerLanguagesComponent" Directory="WindowWalkerLanguagesFolder" Guid="7D9471D9-5C0A-4BD1-9A01-BAB65DD58834">
         <File Id="WindowWalkerLanguage" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Languages\en.xaml" />

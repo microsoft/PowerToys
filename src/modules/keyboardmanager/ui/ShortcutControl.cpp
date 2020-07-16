@@ -1,12 +1,39 @@
 #include "pch.h"
 #include "ShortcutControl.h"
 #include "KeyDropDownControl.h"
+#include "keyboardmanager/common/KeyboardManagerState.h"
 
 //Both static members are initialized to null
 HWND ShortcutControl::EditShortcutsWindowHandle = nullptr;
 KeyboardManagerState* ShortcutControl::keyboardManagerState = nullptr;
 // Initialized as new vector
 std::vector<std::pair<std::vector<Shortcut>, std::wstring>> ShortcutControl::shortcutRemapBuffer;
+
+ShortcutControl::ShortcutControl(Grid table, const int colIndex, TextBox targetApp)
+{
+    shortcutDropDownStackPanel = StackPanel();
+    typeShortcut = Button();
+    shortcutControlLayout = StackPanel();
+
+    shortcutDropDownStackPanel.as<StackPanel>().Spacing(KeyboardManagerConstants::ShortcutTableDropDownSpacing);
+    shortcutDropDownStackPanel.as<StackPanel>().Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
+
+    typeShortcut.as<Button>().Content(winrt::box_value(L"Type Shortcut"));
+    typeShortcut.as<Button>().Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
+    typeShortcut.as<Button>().Click([&, table, colIndex, targetApp](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
+        keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectShortcutWindowActivated, EditShortcutsWindowHandle);
+        // Using the XamlRoot of the typeShortcut to get the root of the XAML host
+        createDetectShortcutWindow(sender, sender.as<Button>().XamlRoot(), shortcutRemapBuffer, *keyboardManagerState, colIndex, table, targetApp);
+    });
+
+    shortcutControlLayout.as<StackPanel>().Margin({ 0, 0, 0, 10 });
+    shortcutControlLayout.as<StackPanel>().Spacing(KeyboardManagerConstants::ShortcutTableDropDownSpacing);
+
+    shortcutControlLayout.as<StackPanel>().Children().Append(typeShortcut.as<Button>());
+    shortcutControlLayout.as<StackPanel>().Children().Append(shortcutDropDownStackPanel.as<StackPanel>());
+    KeyDropDownControl::AddDropDown(table, shortcutControlLayout.as<StackPanel>(), shortcutDropDownStackPanel.as<StackPanel>(), colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp);
+    shortcutControlLayout.as<StackPanel>().UpdateLayout();
+}
 
 // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
 void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, Shortcut originalKeys, Shortcut newKeys, std::wstring targetAppName)
@@ -60,13 +87,24 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
         int rowIndex = (lastIndexInRow - KeyboardManagerConstants::ShortcutTableHeaderCount) / KeyboardManagerConstants::ShortcutTableColCount;
 
         // Validate both set of drop downs
-        KeyDropDownControl::ValidateShortcutFromDropDownList(parent, keyboardRemapControlObjects[rowIndex][0]->getShortcutControl(), keyboardRemapControlObjects[rowIndex][0]->shortcutDropDownStackPanel, 0, ShortcutControl::shortcutRemapBuffer, keyboardRemapControlObjects[rowIndex][0]->keyDropDownControlObjects, targetAppTextBox);
-        KeyDropDownControl::ValidateShortcutFromDropDownList(parent, keyboardRemapControlObjects[rowIndex][1]->getShortcutControl(), keyboardRemapControlObjects[rowIndex][1]->shortcutDropDownStackPanel, 1, ShortcutControl::shortcutRemapBuffer, keyboardRemapControlObjects[rowIndex][1]->keyDropDownControlObjects, targetAppTextBox);
+        KeyDropDownControl::ValidateShortcutFromDropDownList(parent, keyboardRemapControlObjects[rowIndex][0]->getShortcutControl(), keyboardRemapControlObjects[rowIndex][0]->shortcutDropDownStackPanel.as<StackPanel>(), 0, ShortcutControl::shortcutRemapBuffer, keyboardRemapControlObjects[rowIndex][0]->keyDropDownControlObjects, targetAppTextBox);
+        KeyDropDownControl::ValidateShortcutFromDropDownList(parent, keyboardRemapControlObjects[rowIndex][1]->getShortcutControl(), keyboardRemapControlObjects[rowIndex][1]->shortcutDropDownStackPanel.as<StackPanel>(), 1, ShortcutControl::shortcutRemapBuffer, keyboardRemapControlObjects[rowIndex][1]->keyDropDownControlObjects, targetAppTextBox);
 
         // Reset the buffer based on the selected drop down items
-        shortcutRemapBuffer[rowIndex].first[0].SetKeyCodes(KeyDropDownControl::GetKeysFromStackPanel(keyboardRemapControlObjects[rowIndex][0]->shortcutDropDownStackPanel));
-        shortcutRemapBuffer[rowIndex].first[1].SetKeyCodes(KeyDropDownControl::GetKeysFromStackPanel(keyboardRemapControlObjects[rowIndex][1]->shortcutDropDownStackPanel));
-        shortcutRemapBuffer[rowIndex].second = targetAppTextBox.Text().c_str();
+        shortcutRemapBuffer[rowIndex].first[0].SetKeyCodes(KeyDropDownControl::GetKeysFromStackPanel(keyboardRemapControlObjects[rowIndex][0]->shortcutDropDownStackPanel.as<StackPanel>()));
+        shortcutRemapBuffer[rowIndex].first[1].SetKeyCodes(KeyDropDownControl::GetKeysFromStackPanel(keyboardRemapControlObjects[rowIndex][1]->shortcutDropDownStackPanel.as<StackPanel>()));
+        std::wstring newText = targetAppTextBox.Text().c_str();
+        std::wstring lowercaseDefAppName = KeyboardManagerConstants::DefaultAppName;
+        std::transform(newText.begin(), newText.end(), newText.begin(), towlower);
+        std::transform(lowercaseDefAppName.begin(), lowercaseDefAppName.end(), lowercaseDefAppName.begin(), towlower);
+        if (newText == lowercaseDefAppName)
+        {
+            shortcutRemapBuffer[rowIndex].second = L"";
+        }
+        else
+        {
+            shortcutRemapBuffer[rowIndex].second = targetAppTextBox.Text().c_str();
+        }
     });
 
     parent.SetColumn(targetAppTextBox, KeyboardManagerConstants::ShortcutTableTargetAppColIndex);
@@ -119,8 +157,8 @@ void ShortcutControl::AddNewShortcutControlRow(Grid& parent, std::vector<std::ve
     {
         // change to load app name
         shortcutRemapBuffer.push_back(std::make_pair<std::vector<Shortcut>, std::wstring>(std::vector<Shortcut>{ Shortcut(), Shortcut() }, std::wstring(targetAppName)));
-        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->AddShortcutToControl(originalKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutDropDownStackPanel, *keyboardManagerState, 0, targetAppTextBox);
-        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->AddShortcutToControl(newKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->shortcutDropDownStackPanel, *keyboardManagerState, 1, targetAppTextBox);
+        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->AddShortcutToControl(originalKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutDropDownStackPanel.as<StackPanel>(), *keyboardManagerState, 0, targetAppTextBox);
+        keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->AddShortcutToControl(newKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->shortcutDropDownStackPanel.as<StackPanel>(), *keyboardManagerState, 1, targetAppTextBox);
     }
     else
     {
@@ -141,7 +179,7 @@ void ShortcutControl::AddShortcutToControl(Shortcut& shortcut, Grid table, Stack
     std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyCodeList(true);
     if (shortcutKeyCodes.size() != 0)
     {
-        KeyDropDownControl::AddDropDown(table, shortcutControlLayout, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp);
+        KeyDropDownControl::AddDropDown(table, shortcutControlLayout.as<StackPanel>(), parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp);
         for (int i = 0; i < shortcutKeyCodes.size(); i++)
         {
             // New drop down gets added automatically when the SelectedIndex is set
@@ -162,7 +200,7 @@ void ShortcutControl::AddShortcutToControl(Shortcut& shortcut, Grid table, Stack
 // Function to return the stack panel element of the ShortcutControl. This is the externally visible UI element which can be used to add it to other layouts
 StackPanel ShortcutControl::getShortcutControl()
 {
-    return shortcutControlLayout;
+    return shortcutControlLayout.as<StackPanel>();
 }
 
 // Function to create the detect shortcut UI window

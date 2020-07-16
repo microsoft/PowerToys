@@ -1,20 +1,30 @@
 #pragma once
-#include <keyboardmanager/common/KeyboardManagerState.h>
-#include <keyboardManager/common/Helpers.h>
-#include <keyboardmanager/common/Shortcut.h>
-#include "KeyDropDownControl.h"
+#include "keyboardmanager/common/Shortcut.h"
+
+class KeyboardManagerState;
+class KeyDropDownControl;
+namespace winrt::Windows::UI::Xaml
+{
+    struct XamlRoot;
+    namespace Controls
+    {
+        struct StackPanel;
+        struct Grid;
+        struct TextBox;
+    }
+}
 
 class ShortcutControl
 {
 private:
     // Stack panel for the drop downs to display the selected shortcut
-    StackPanel shortcutDropDownStackPanel;
+    winrt::Windows::Foundation::IInspectable shortcutDropDownStackPanel;
 
     // Button to type the shortcut
-    Button typeShortcut;
+    winrt::Windows::Foundation::IInspectable typeShortcut;
 
     // StackPanel to parent the above controls
-    StackPanel shortcutControlLayout;
+    winrt::Windows::Foundation::IInspectable shortcutControlLayout;
 
 public:
     // Handle to the current Edit Shortcuts Window
@@ -26,27 +36,8 @@ public:
     // Vector to store dynamically allocated KeyDropDownControl objects to avoid early destruction
     std::vector<std::unique_ptr<KeyDropDownControl>> keyDropDownControlObjects;
 
-    ShortcutControl(Grid table, const int colIndex, TextBox targetApp)
-    {
-        shortcutDropDownStackPanel.Spacing(KeyboardManagerConstants::ShortcutTableDropDownSpacing);
-        shortcutDropDownStackPanel.Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
-
-        typeShortcut.Content(winrt::box_value(L"Type Shortcut"));
-        typeShortcut.Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
-        typeShortcut.Click([&, table, colIndex, targetApp](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
-            keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectShortcutWindowActivated, EditShortcutsWindowHandle);
-            // Using the XamlRoot of the typeShortcut to get the root of the XAML host
-            createDetectShortcutWindow(sender, sender.as<Button>().XamlRoot(), shortcutRemapBuffer, *keyboardManagerState, colIndex, table, targetApp);
-        });
-
-        shortcutControlLayout.Margin({ 0, 0, 0, 10 });
-        shortcutControlLayout.Spacing(KeyboardManagerConstants::ShortcutTableDropDownSpacing);
-
-        shortcutControlLayout.Children().Append(typeShortcut);
-        shortcutControlLayout.Children().Append(shortcutDropDownStackPanel);
-        KeyDropDownControl::AddDropDown(table, shortcutControlLayout, shortcutDropDownStackPanel, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp);
-        shortcutControlLayout.UpdateLayout();
-    }
+    // constructor
+    ShortcutControl(Grid table, const int colIndex, TextBox targetApp);
 
     // Function to add a new row to the shortcut table. If the originalKeys and newKeys args are provided, then the displayed shortcuts are set to those values.
     static void AddNewShortcutControlRow(Grid& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, Shortcut originalKeys = Shortcut(), Shortcut newKeys = Shortcut(), std::wstring targetAppName = L"");
