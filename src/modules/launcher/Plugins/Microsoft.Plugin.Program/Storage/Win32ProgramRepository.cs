@@ -74,7 +74,7 @@ namespace Microsoft.Plugin.Program.Storage
             {
                 if (extension.Equals(lnkExtension, StringComparison.OrdinalIgnoreCase))
                 {
-                    oldApp = new Win32() { Name = GetNameOfLnkApp(e.OldName), ExecutableName = newApp.ExecutableName, FullPath = newApp.FullPath };
+                    oldApp = new Win32() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = newApp.ExecutableName, FullPath = newApp.FullPath };
                 }
                 else if(extension.Equals(urlExtension, StringComparison.OrdinalIgnoreCase))
                 {
@@ -101,14 +101,6 @@ namespace Microsoft.Plugin.Program.Storage
             {
                 Add(newApp);
             }
-        }
-
-        // Remove Extension to return the Name of the app
-        // Eg: Notepad.lnk must return NotePad.
-        private string GetNameOfLnkApp(string oldName)
-        {
-            int length = oldName.Length;
-            return oldName.Substring(0, oldName.Length - lnkExtension.Length);
         }
 
         private void OnAppDeleted(object sender, FileSystemEventArgs e)
