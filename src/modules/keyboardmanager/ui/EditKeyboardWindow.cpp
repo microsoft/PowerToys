@@ -257,8 +257,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     ColumnDefinition arrowColumn;
     arrowColumn.MinWidth(KeyboardManagerConstants::TableArrowColWidth);
     ColumnDefinition newColumn;
-    newColumn.MinWidth(KeyboardManagerConstants::RemapTableDropDownWidth);
-    //newColumn.MaxWidth(KeyboardManagerConstants::RemapTableDropDownWidth);
+    newColumn.MinWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
+    newColumn.MaxWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
     ColumnDefinition removeColumn;
     removeColumn.MinWidth(KeyboardManagerConstants::TableRemoveColWidth);
     keyRemapTable.Margin({ 10, 10, 10, 20 });
