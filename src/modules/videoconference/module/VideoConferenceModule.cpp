@@ -31,6 +31,8 @@ std::wstring VideoConferenceModule::imageOverlayPath;
 
 std::mutex VideoConferenceModule::keyboardInputMutex;
 
+HHOOK VideoConferenceModule::hook_handle;
+
 IAudioEndpointVolume* endpointVolume = NULL;
 
 bool VideoConferenceModule::isKeyPressed(unsigned int keyCode)
@@ -144,7 +146,6 @@ bool VideoConferenceModule::getVirtualCameraMuteState()
 
 LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
-    std::lock_guard lock{ keyboardInputMutex };
 
     if (nCode == HC_ACTION)
     {
@@ -174,7 +175,7 @@ LRESULT CALLBACK VideoConferenceModule::LowLevelKeyboardProc(int nCode, WPARAM w
         }
     }
 
-    return CallNextHookEx(NULL, nCode, wParam, lParam);
+    return CallNextHookEx(hook_handle, nCode, wParam, lParam);
 }
 
 VideoConferenceModule::VideoConferenceModule()

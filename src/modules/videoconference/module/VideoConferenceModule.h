@@ -52,7 +52,7 @@ private:
     static void reverseVirtualCameraMuteState();
     static bool getVirtualCameraMuteState();
 
-    HHOOK hook_handle;
+    static HHOOK hook_handle;
     bool _enabled = false;
 
     std::optional<SerializedSharedMemory> _imageOverlayChannel;
