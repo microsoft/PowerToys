@@ -388,7 +388,7 @@ namespace Microsoft.Plugin.Program.Programs
                 const int MAX_PATH = 260;
                 StringBuilder buffer = new StringBuilder(MAX_PATH);
                 
-                string target = _helper.retrieveTargetPath(path);
+                string target = _helper.RetrieveTargetPath(path);
 
                 if (!string.IsNullOrEmpty(target))
                 {

@@ -108,7 +108,7 @@ namespace Microsoft.Plugin.Program.Programs
         public bool hasArguments { get; set; } = false;
 
         // Retrieve the target path using Shell Link
-        public string retrieveTargetPath(string path)
+        public string RetrieveTargetPath(string path)
         {
             var link = new ShellLink();
             const int STGM_READ = 0;
