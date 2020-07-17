@@ -2,80 +2,40 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
-using System.Windows.Forms;
-using Common;
-using Common.ComInterlop;
-using Common.Utilities;
-using Microsoft.PowerToys.Telemetry;
-using PreviewHandlerCommon;
-
 namespace SvgThumbnailProvider
 {
+    using System;
+    using System.Drawing;
+    using System.Drawing.Drawing2D;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Linq;
+    using System.Runtime.InteropServices;
+    using System.Runtime.InteropServices.ComTypes;
+    using System.Windows.Forms;
+    using Common;
+    using Common.ComInterlop;
+    using Common.Utilities;
+    using Microsoft.PowerToys.Telemetry;
+    using PreviewHandlerCommon;
+
     /// <summary>
-    /// SVG Thumbnail Provider
+    /// SVG Thumbnail Provider.
     /// </summary>
     [Guid("36B27788-A8BB-4698-A756-DF9F11F64F84")]
     [ClassInterface(ClassInterfaceType.None)]
     [ComVisible(true)]
-    public class SvgThumbnailProviderImpl : IInitializeWithStream, IThumbnailProvider
+    public class SvgThumbnailProvider : IInitializeWithStream, IThumbnailProvider
     {
         /// <summary>
         /// Gets the stream object to access file.
         /// </summary>
         public IStream Stream { get; private set; }
 
-
         /// <summary>
         ///  The maxium dimension (width or height) thumbnail we will generate.
         /// </summary>
-        private const uint max_thumbnail_size = 10000;
-
-
-        /// <inheritdoc/>
-        public void Initialize(IStream pstream, uint grfMode)
-        {
-            // Ignore the grfMode always use read mode to access the file.
-            this.Stream = pstream;
-        }
-
-        /// <inheritdoc/>
-        public void GetThumbnail(uint cx, out IntPtr phbmp, out WTS_ALPHATYPE pdwAlpha)
-        {
-            phbmp = IntPtr.Zero;
-            pdwAlpha = WTS_ALPHATYPE.WTSAT_UNKNOWN;
-
-            if (cx == 0 || cx > max_thumbnail_size)
-            {
-                return;
-            }
-
-            string svgData = null;
-            using (var stream = new StreamWrapper(this.Stream as IStream))
-            {
-                using (var reader = new StreamReader(stream))
-                {
-                    svgData = reader.ReadToEnd();
-                }
-            }
-
-            if (svgData != null)
-            {
-                Bitmap thumbnail = GetThumbnail(svgData, cx);
-                if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
-                {
-                    phbmp = thumbnail.GetHbitmap();
-                    pdwAlpha = WTS_ALPHATYPE.WTSAT_RGB;
-                }
-            }
-        }
+        private const uint MaxThumbnailSize = 10000;
 
         /// <summary>
         /// Captures an image representation of browser contents.
@@ -83,6 +43,7 @@ namespace SvgThumbnailProvider
         /// <param name="browser">The WebBrowser instance rendring the SVG.</param>
         /// <param name="rectangle">The client rectangle to capture from.</param>
         /// <param name="backgroundColor">The default background color to apply.</param>
+        /// <returns>A Bitmap representing the browser contents.</returns>
         public static Bitmap GetBrowserContentImage(WebBrowser browser, Rectangle rectangle, Color backgroundColor)
         {
             Bitmap image = new Bitmap(rectangle.Width, rectangle.Height);
@@ -129,7 +90,7 @@ namespace SvgThumbnailProvider
         /// <returns>A thumbnail of the rendered content.</returns>
         public static Bitmap GetThumbnail(string content, uint cx)
         {
-            if (cx > max_thumbnail_size)
+            if (cx > MaxThumbnailSize)
             {
                 return null;
             }
@@ -218,7 +179,7 @@ namespace SvgThumbnailProvider
         public static Bitmap ResizeImage(Image image, int width, int height)
         {
             if (width <= 0 || height <= 0 ||
-                width > max_thumbnail_size || height > max_thumbnail_size)
+                width > MaxThumbnailSize || height > MaxThumbnailSize)
             {
                 return null;
             }
@@ -240,6 +201,44 @@ namespace SvgThumbnailProvider
             }
 
             return destImage;
+        }
+
+        /// <inheritdoc/>
+        public void Initialize(IStream pstream, uint grfMode)
+        {
+            // Ignore the grfMode always use read mode to access the file.
+            this.Stream = pstream;
+        }
+
+        /// <inheritdoc/>
+        public void GetThumbnail(uint cx, out IntPtr phbmp, out WTS_ALPHATYPE pdwAlpha)
+        {
+            phbmp = IntPtr.Zero;
+            pdwAlpha = WTS_ALPHATYPE.WTSAT_UNKNOWN;
+
+            if (cx == 0 || cx > MaxThumbnailSize)
+            {
+                return;
+            }
+
+            string svgData = null;
+            using (var stream = new StreamWrapper(this.Stream as IStream))
+            {
+                using (var reader = new StreamReader(stream))
+                {
+                    svgData = reader.ReadToEnd();
+                }
+            }
+
+            if (svgData != null)
+            {
+                Bitmap thumbnail = GetThumbnail(svgData, cx);
+                if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
+                {
+                    phbmp = thumbnail.GetHbitmap();
+                    pdwAlpha = WTS_ALPHATYPE.WTSAT_RGB;
+                }
+            }
         }
     }
 }
