@@ -60,10 +60,10 @@ namespace FancyZonesEditor.Models
         public int[,] CellChildMap { get; set; }
 
         // RowPercents - represents the %age height of each row in the grid
-        public int[] RowPercents { get; set; }
+        public List<int> RowPercents { get; set; }
 
         // ColumnPercents - represents the %age width of each column in the grid
-        public int[] ColumnPercents { get; set; }
+        public List<int> ColumnPercents { get; set; }
 
         // FreeZones (not persisted) - used to keep track of child indices that are no longer in use in the CellChildMap,
         //  making them candidates for re-use when it's needed to add another child
@@ -85,7 +85,7 @@ namespace FancyZonesEditor.Models
         {
         }
 
-        public GridLayoutModel(string uuid, string name, LayoutType type, int rows, int cols, int[] rowPercents, int[] colsPercents, int[,] cellChildMap)
+        public GridLayoutModel(string uuid, string name, LayoutType type, int rows, int cols, List<int> rowPercents, List<int> colsPercents, int[,] cellChildMap)
             : base(uuid, name, type)
         {
             _rows = rows;
@@ -103,16 +103,16 @@ namespace FancyZonesEditor.Models
             Rows = data[i++];
             Columns = data[i++];
 
-            RowPercents = new int[Rows];
+            RowPercents = new List<int>(Rows);
             for (int row = 0; row < Rows; row++)
             {
-                RowPercents[row] = (data[i++] * 256) + data[i++];
+                RowPercents.Add((data[i++] * 256) + data[i++]);
             }
 
-            ColumnPercents = new int[Columns];
+            ColumnPercents = new List<int>(Columns);
             for (int col = 0; col < Columns; col++)
             {
-                ColumnPercents[col] = (data[i++] * 256) + data[i++];
+                ColumnPercents.Add((data[i++] * 256) + data[i++]);
             }
 
             CellChildMap = new int[Rows, Columns];
@@ -154,18 +154,18 @@ namespace FancyZonesEditor.Models
 
             layout.CellChildMap = cellChildMap;
 
-            int[] rowPercents = new int[rows];
+            List<int> rowPercents = new List<int>(rows);
             for (int row = 0; row < rows; row++)
             {
-                rowPercents[row] = RowPercents[row];
+                rowPercents.Add(RowPercents[row]);
             }
 
             layout.RowPercents = rowPercents;
 
-            int[] colPercents = new int[cols];
+            List<int> colPercents = new List<int>(cols);
             for (int col = 0; col < cols; col++)
             {
-                colPercents[col] = ColumnPercents[col];
+                colPercents.Add(ColumnPercents[col]);
             }
 
             layout.ColumnPercents = colPercents;
@@ -177,9 +177,9 @@ namespace FancyZonesEditor.Models
 
             public int Columns { get; set; }
 
-            public int[] RowsPercentage { get; set; }
+            public List<int> RowsPercentage { get; set; }
 
-            public int[] ColumnsPercentage { get; set; }
+            public List<int> ColumnsPercentage { get; set; }
 
             public int[][] CellChildMap { get; set; }
         }
