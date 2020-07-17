@@ -183,6 +183,18 @@ namespace Wox.ViewModel
             }
         }
 
+        internal void SelectNextContextMenuItem()
+        {
+            if(SelectedItem != null)
+            {
+                bool hasContextMenuItemsOnRight = SelectedItem.SelectNextContextButton();
+                if(hasContextMenuItemsOnRight == false)
+                {
+                    SelectedItem.SelectFirstContextButton();
+                }
+            }
+        }
+
         /// <summary>
         /// To avoid deadlock, this method should not called from main thread
         /// </summary>

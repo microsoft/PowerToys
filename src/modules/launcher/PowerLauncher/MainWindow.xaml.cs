@@ -239,6 +239,14 @@ namespace PowerLauncher
                 UpdateTextBoxToSelectedItem();
                 e.Handled = true;
             }
+            else if (e.Key == Key.Right)
+            {
+                if(SearchBox.QueryTextBox.CaretIndex == SearchBox.QueryTextBox.Text.Length)
+                {
+                    _viewModel.SelectNextContextMenuItemCommand.Execute(null);
+                    e.Handled = true;
+                }
+            }
             else if (e.Key == Key.PageDown)
             {
                 _viewModel.SelectNextPageCommand.Execute(null);

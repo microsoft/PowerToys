@@ -151,6 +151,11 @@ namespace Wox.ViewModel
                 SelectedResults.SelectPrevTabItem();
             });
 
+            SelectNextContextMenuItemCommand = new RelayCommand(_ =>
+            {
+                SelectedResults.SelectNextContextMenuItem();
+            });
+
             SelectNextPageCommand = new RelayCommand(_ =>
             {
                 SelectedResults.SelectNextPage();
@@ -342,6 +347,7 @@ namespace Wox.ViewModel
         public ICommand EscCommand { get; set; }
         public ICommand SelectNextItemCommand { get; set; }
         public ICommand SelectPrevItemCommand { get; set; }
+        public ICommand SelectNextContextMenuItemCommand { get; set; }
 
         public ICommand SelectNextTabItemCommand { get; set; }
         public ICommand SelectPrevTabItemCommand { get; set; }
