@@ -277,7 +277,7 @@ namespace KeyboardEventHandlers
                         i++;
 
                         // Release original shortcut state (release in reverse order of shortcut to be accurate)
-                        KeyboardManagerHelper::SetModifierKeyEvents(it.first, it.second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it.second.targetShortcut));
+                        KeyboardManagerHelper::SetModifierKeyEvents(it.first, it.second.winKeyInvoked, keyEventList, i, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
                         // Check Caps Lock bug
 
                         // Set target key down state
@@ -463,8 +463,11 @@ namespace KeyboardEventHandlers
                     // Case 4: If a modifier key in the original shortcut is pressed then suppress that key event since the original shortcut is already held down physically - This case can occur only if a user has a duplicated modifier key (possibly by remapping) or if user presses both L/R versions of a modifier remapped with "Both"
                     if ((it.first.CheckWinKey(data->lParam->vkCode) || it.first.CheckCtrlKey(data->lParam->vkCode) || it.first.CheckAltKey(data->lParam->vkCode) || it.first.CheckShiftKey(data->lParam->vkCode)) && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
                     {
-                        it.second.isShortcutInvoked = true;
-                        return 1;
+                        if (remapToShortcut)
+                        {
+                            it.second.isShortcutInvoked = true;
+                            return 1;
+                        }
                     }
 
                     // Case 5: If any key apart from the action key or a modifier key in the original shortcut is pressed then revert the keyboard state to just the original modifiers being held down along with the current key press
@@ -570,7 +573,12 @@ namespace KeyboardEventHandlers
                             delete[] keyEventList;
                             return 1;
                         }
-                        // For remap to key, nothing should be done since the shortcut should only get released on releasing any of the original shortcut keys.
+                    }
+
+                    // For remap to key, nothing should be done since the shortcut should only get released on releasing any of the original shortcut keys.
+                    if (!remapToShortcut)
+                    {
+                        return 0;
                     }
                     // Case 6: If any key apart from original modifier or original action key is released - This can't happen since the key down would have to happen first, which is handled above
                 }
