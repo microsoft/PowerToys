@@ -183,7 +183,7 @@ namespace Wox.ViewModel
             }
         }
 
-        internal void SelectNextContextMenuItem()
+        public void SelectNextContextMenuItem()
         {
             if(SelectedItem != null)
             {
@@ -194,11 +194,23 @@ namespace Wox.ViewModel
             }
         }
 
-        internal void SelectPreviousContextMenuItem()
+        public void SelectPreviousContextMenuItem()
         {
             if (SelectedItem != null)
             {
                 SelectedItem.SelectPrevContextButton();
+            }
+        }
+
+        public bool IsContextMenuItemSelected()
+        {
+            if (SelectedItem != null && SelectedItem.ContextMenuSelectedIndex != ResultViewModel.NoSelectionIndex)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 

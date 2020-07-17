@@ -38,7 +38,7 @@ namespace Wox.ViewModel
 
         public int ContextMenuSelectedIndex { get; set; }
 
-        const int NoSelectionIndex = -1;
+        public const int NoSelectionIndex = -1;
 
         public ResultViewModel(Result result)
         {
@@ -87,7 +87,6 @@ namespace Wox.ViewModel
                 IsHovered = true;
             }
         }
-
 
         private void DeactivateContextButtonsHoverAction(object sender)
         {
