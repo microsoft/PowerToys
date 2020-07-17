@@ -82,6 +82,7 @@ namespace PowerLauncher
             SearchBox.QueryTextBox.DataContext = _viewModel;
             SearchBox.QueryTextBox.PreviewKeyDown += _launcher_KeyDown;
             SearchBox.QueryTextBox.TextChanged += QueryTextBox_TextChanged;
+            //SearchBox.QueryTextBox.SelectionChanged += QueryTextBox_SelectionChanged;
             SearchBox.QueryTextBox.Focus();
 
             ListBox.DataContext = _viewModel;
@@ -91,6 +92,18 @@ namespace PowerLauncher
 
             BringProcessToForeground();
         }
+
+        //private void QueryTextBox_SelectionChanged(object sender, RoutedEventArgs e)
+        //{
+        //    if(SearchBox.QueryTextBox.CaretIndex == SearchBox.QueryTextBox.Text.Length)
+        //    {
+        //        // clean context menu suggestion
+        //        if (_viewModel.Results.SelectedItem != null)
+        //        {
+        //            _viewModel.Results.SelectedItem.ContextMenuSelectedIndex = -1;
+        //        }
+        //    }           
+        //}
 
         private void SuggestionsList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
@@ -244,6 +257,18 @@ namespace PowerLauncher
                 if(SearchBox.QueryTextBox.CaretIndex == SearchBox.QueryTextBox.Text.Length)
                 {
                     _viewModel.SelectNextContextMenuItemCommand.Execute(null);
+                    e.Handled = true;
+                }
+            }
+            else if (e.Key == Key.Left)
+            {
+                if (_viewModel.Results.SelectedItem.ContextMenuSelectedIndex == -1)
+                {
+                    _viewModel.SelectPreviousContextMenuItemCommand.Execute(null);
+                }
+                else
+                {
+                    _viewModel.SelectPreviousContextMenuItemCommand.Execute(null);
                     e.Handled = true;
                 }
             }

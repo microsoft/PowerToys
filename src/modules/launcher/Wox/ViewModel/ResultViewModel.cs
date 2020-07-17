@@ -223,14 +223,6 @@ namespace Wox.ViewModel
             ContextMenuSelectedIndex = ContextMenuItems.Count - 1;
         }
 
-        public void SelectFirstContextButton()
-        {
-            if(ContextMenuItems.Count > 0)
-            {
-                ContextMenuSelectedIndex = 0;
-            }
-        }
-
         public bool HasSelectedContextButton()
         {
             var isContextSelected = (ContextMenuSelectedIndex != NoSelectionIndex);

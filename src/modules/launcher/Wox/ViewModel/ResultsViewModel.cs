@@ -187,11 +187,18 @@ namespace Wox.ViewModel
         {
             if(SelectedItem != null)
             {
-                bool hasContextMenuItemsOnRight = SelectedItem.SelectNextContextButton();
-                if(hasContextMenuItemsOnRight == false)
+                if(!SelectedItem.SelectNextContextButton())
                 {
-                    SelectedItem.SelectFirstContextButton();
+                    SelectedItem.SelectLastContextButton();
                 }
+            }
+        }
+
+        internal void SelectPreviousContextMenuItem()
+        {
+            if (SelectedItem != null)
+            {
+                SelectedItem.SelectPrevContextButton();
             }
         }
 
