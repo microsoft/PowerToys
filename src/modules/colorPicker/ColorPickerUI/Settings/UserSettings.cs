@@ -5,6 +5,7 @@ using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using ColorPicker.Helpers;
 using System.Threading.Tasks;
 using System.Threading;
+using System;
 
 namespace ColorPicker.Settings
 {
@@ -24,10 +25,9 @@ namespace ColorPicker.Settings
             ChangeCursor = new SettingItem<bool>(true);
             ActivationShortcut = new SettingItem<string>(DefaultActivationShortcut);
             CopiedColorRepresentation = new SettingItem<ColorRepresentationType>(ColorRepresentationType.HEX);
-
-            _watcher = Helper.GetFileWatcher(ColorPickerModuleName, "settings.json", LoadSettingsFromJson);
-
+            
             LoadSettingsFromJson();
+            _watcher = Helper.GetFileWatcher(ColorPickerModuleName, "settings.json", LoadSettingsFromJson);
         }
 
         public SettingItem<string> ActivationShortcut { get; private set; }
@@ -75,6 +75,10 @@ namespace ColorPicker.Settings
                             }
                             Logger.LogError("Failed to read changed settings", ex);
                             Thread.Sleep(500);
+                        }
+                        catch(Exception ex)
+                        {
+                            Logger.LogError("Failed to read changed settings", ex);
                         }
                     }
                 };
