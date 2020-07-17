@@ -29,8 +29,6 @@ std::wstring VideoConferenceModule::overlayMonitorString;
 std::wstring VideoConferenceModule::selectedCamera;
 std::wstring VideoConferenceModule::imageOverlayPath;
 
-std::mutex VideoConferenceModule::keyboardInputMutex;
-
 HHOOK VideoConferenceModule::hook_handle;
 
 IAudioEndpointVolume* endpointVolume = NULL;

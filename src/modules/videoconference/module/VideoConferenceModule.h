@@ -71,6 +71,4 @@ private:
 
     static std::wstring selectedCamera;
     static std::wstring imageOverlayPath;
-
-    static std::mutex keyboardInputMutex;
 };
