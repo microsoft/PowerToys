@@ -937,7 +937,7 @@
         <?endforeach?>
       </Component>
       <Component Id="IndexerLanguagesComponent" Directory="IndexerLanguagesFolder" Guid="4B5ED306-7DD5-4EA6-9DBB-CF054929182C">
-        <?foreach LanguageFile in de.xaml;en.xaml;pl.xaml;tr.xaml;zh-cn.xaml;zh-tw.xaml?>
+        <?foreach LanguageFile in de.xaml;en.xaml;ja.xaml;pl.xaml;tr.xaml;zh-cn.xaml;zh-tw.xaml?>
           <!--NB: Ids can't contain hyphens-->
           <?if $(var.LanguageFile) = zh-cn.xaml?>
             <?define IdSafeLanguage = zh_cn.xaml?>
