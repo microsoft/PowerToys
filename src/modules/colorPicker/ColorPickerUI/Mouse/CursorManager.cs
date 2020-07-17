@@ -38,8 +38,15 @@ namespace ColorPicker.Mouse
         {
             try
             {
-                Registry.SetValue(CursorsRegistryPath, cursorRegistryName, curFile);
-                Win32Apis.SystemParametersInfo(SPI_SETCURSORS, 0, new IntPtr(0), SPIF_SENDCHANGE);
+                if(curFile != null)
+                {
+                    Registry.SetValue(CursorsRegistryPath, cursorRegistryName, curFile);
+                    Win32Apis.SystemParametersInfo(SPI_SETCURSORS, 0, new IntPtr(0), SPIF_SENDCHANGE);
+                }
+                else
+                {
+                    Logger.LogInfo("Cursor file path was null");
+                }
             }
             catch (Exception ex)
             {
