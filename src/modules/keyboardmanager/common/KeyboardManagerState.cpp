@@ -106,6 +106,7 @@ void KeyboardManagerState::ClearOSLevelShortcuts()
 {
     std::lock_guard<std::mutex> lock(osLevelShortcutReMap_mutex);
     osLevelShortcutReMap.clear();
+    osLevelShortcutReMapSortedKeys.clear();
 }
 
 // Function to clear the Keys remapping table.
@@ -120,6 +121,7 @@ void KeyboardManagerState::ClearAppSpecificShortcuts()
 {
     std::lock_guard<std::mutex> lock(appSpecificShortcutReMap_mutex);
     appSpecificShortcutReMap.clear();
+    appSpecificShortcutReMapSortedKeys.clear();
 }
 
 // Function to add a new OS level shortcut remapping
@@ -135,6 +137,9 @@ bool KeyboardManagerState::AddOSLevelShortcut(const Shortcut& originalSC, const 
     }
 
     osLevelShortcutReMap[originalSC] = RemapShortcut(newSC);
+    osLevelShortcutReMapSortedKeys.push_back(originalSC);
+    KeyboardManagerHelper::SortShortcutVectorBasedOnSize(osLevelShortcutReMapSortedKeys);
+
     return true;
 }
 
@@ -159,24 +164,30 @@ bool KeyboardManagerState::AddAppSpecificShortcut(const std::wstring& app, const
 {
     std::lock_guard<std::mutex> lock(appSpecificShortcutReMap_mutex);
 
-    // Check if there are any app specific shortcuts for this app
-    auto appIt = appSpecificShortcutReMap.find(app);
-    if (appIt != appSpecificShortcutReMap.end())
-    {
-        // Check if the shortcut is already remapped
-        auto shortcutIt = appSpecificShortcutReMap[app].find(originalSC);
-        if (shortcutIt != appSpecificShortcutReMap[app].end())
-        {
-            return false;
-        }
-    }
-
     // Convert app name to lower case
     std::wstring process_name;
     process_name.resize(app.length());
     std::transform(app.begin(), app.end(), process_name.begin(), towlower);
 
+    // Check if there are any app specific shortcuts for this app
+    auto appIt = appSpecificShortcutReMap.find(process_name);
+    if (appIt != appSpecificShortcutReMap.end())
+    {
+        // Check if the shortcut is already remapped
+        auto shortcutIt = appSpecificShortcutReMap[process_name].find(originalSC);
+        if (shortcutIt != appSpecificShortcutReMap[process_name].end())
+        {
+            return false;
+        }
+    }
+    else
+    {
+        appSpecificShortcutReMapSortedKeys[process_name] = std::vector<Shortcut>();
+    }
+
     appSpecificShortcutReMap[process_name][originalSC] = RemapShortcut(newSC);
+    appSpecificShortcutReMapSortedKeys[process_name].push_back(originalSC);
+    KeyboardManagerHelper::SortShortcutVectorBasedOnSize(appSpecificShortcutReMapSortedKeys[process_name]);
     return true;
 }
 

@@ -100,10 +100,12 @@ public:
 
     // Stores the os level shortcut remappings
     std::map<Shortcut, RemapShortcut> osLevelShortcutReMap;
+    std::vector<Shortcut> osLevelShortcutReMapSortedKeys;
     std::mutex osLevelShortcutReMap_mutex;
 
     // Stores the app-specific shortcut remappings. Maps application name to the shortcut map
     std::map<std::wstring, std::map<Shortcut, RemapShortcut>> appSpecificShortcutReMap;
+    std::map<std::wstring, std::vector<Shortcut>> appSpecificShortcutReMapSortedKeys;
     std::mutex appSpecificShortcutReMap_mutex;
 
     // Stores the keyboard layout

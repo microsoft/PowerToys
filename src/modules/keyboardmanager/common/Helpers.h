@@ -96,4 +96,7 @@ namespace KeyboardManagerHelper
 
     // Function to filter the key codes for artificial key codes
     DWORD FilterArtificialKeys(const DWORD& key);
+
+    // Function to sort a vector of shortcuts based on it's size
+    void SortShortcutVectorBasedOnSize(std::vector<Shortcut>& shortcutVector);
 }

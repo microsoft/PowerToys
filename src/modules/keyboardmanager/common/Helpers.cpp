@@ -317,4 +317,12 @@ namespace KeyboardManagerHelper
 
         return key;
     }
+
+    // Function to sort a vector of shortcuts based on it's size
+    void SortShortcutVectorBasedOnSize(std::vector<Shortcut>& shortcutVector)
+    {
+        std::sort(shortcutVector.begin(), shortcutVector.end(), [](Shortcut first, Shortcut second) {
+            return first.Size() > second.Size();
+        });
+    }
 }
