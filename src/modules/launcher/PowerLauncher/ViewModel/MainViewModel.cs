@@ -660,9 +660,19 @@ namespace PowerLauncher.ViewModel
         /// </summary>
         public void UpdateResultView(List<Result> list, PluginMetadata metadata, Query originQuery)
         {
-            if(list == null || metadata == null || originQuery == null)
+            if(list == null)
             {
-                return;
+                throw new ArgumentNullException(nameof(list));
+            }
+
+            if (metadata == null)
+            {
+                throw new ArgumentNullException(nameof(metadata));
+            }
+
+            if (originQuery == null)
+            {
+                throw new ArgumentNullException(nameof(originQuery));
             }
 
             foreach (var result in list)

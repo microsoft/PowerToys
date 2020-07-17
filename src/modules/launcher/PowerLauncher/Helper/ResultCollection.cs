@@ -27,42 +27,44 @@ namespace PowerLauncher.Helper
         /// <param name="newItems"></param>
         public void Update(List<ResultViewModel> newItems)
         {
-            if(newItems != null)
+            if(newItems == null)
             {
-                int newCount = newItems.Count;
-                int oldCount = Items.Count;
-                int location = newCount > oldCount ? oldCount : newCount;
+                throw new ArgumentNullException(nameof(newItems));
+            }
+            
+            int newCount = newItems.Count;
+            int oldCount = Items.Count;
+            int location = newCount > oldCount ? oldCount : newCount;
 
-                for (int i = 0; i < location; i++)
-                {
-                    ResultViewModel oldResult = this[i];
-                    ResultViewModel newResult = newItems[i];
-                    if (!oldResult.Equals(newResult))
-                    { // result is not the same update it in the current index
-                        this[i] = newResult;
-                    }
-                    else if (oldResult.Result.Score != newResult.Result.Score)
-                    {
-                        this[i].Result.Score = newResult.Result.Score;
-                    }
+            for (int i = 0; i < location; i++)
+            {
+                ResultViewModel oldResult = this[i];
+                ResultViewModel newResult = newItems[i];
+                if (!oldResult.Equals(newResult))
+                { // result is not the same update it in the current index
+                    this[i] = newResult;
                 }
+                else if (oldResult.Result.Score != newResult.Result.Score)
+                {
+                    this[i].Result.Score = newResult.Result.Score;
+                }
+            }
 
 
-                if (newCount >= oldCount)
+            if (newCount >= oldCount)
+            {
+                for (int i = oldCount; i < newCount; i++)
                 {
-                    for (int i = oldCount; i < newCount; i++)
-                    {
-                        Add(newItems[i]);
-                    }
+                    Add(newItems[i]);
                 }
-                else
+            }
+            else
+            {
+                for (int i = oldCount - 1; i >= newCount; i--)
                 {
-                    for (int i = oldCount - 1; i >= newCount; i--)
-                    {
-                        RemoveAt(i);
-                    }
+                    RemoveAt(i);
                 }
-            }        
+            }
         }
     }
 }
