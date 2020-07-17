@@ -65,9 +65,9 @@ namespace FancyZonesData
 
     FancyZonesData::FancyZonesData()
     {
-        std::wstring result = PTSettingsHelper::get_module_save_folder_location(L"FancyZones");
-        zonesSettingsFileName = result + L"\\" + std::wstring(FANCY_ZONES_DATA_FILE);
-        appZoneHistoryFileName = result + L"\\" + std::wstring(FANCY_ZONES_APP_ZONE_HISTORY_FILE);
+        std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(L"FancyZones");
+        zonesSettingsFileName = saveFolderPath + L"\\" + std::wstring(FANCY_ZONES_DATA_FILE);
+        appZoneHistoryFileName = saveFolderPath + L"\\" + std::wstring(FANCY_ZONES_APP_ZONE_HISTORY_FILE);
 
         activeZoneSetTmpFileName = GetTempDirPath() + ActiveZoneSetsTmpFileName;
         appliedZoneSetTmpFileName = GetTempDirPath() + AppliedZoneSetsTmpFileName;
