@@ -35,11 +35,14 @@ namespace Microsoft.Plugin.Program.Storage
                 try
                 {
                     var packageWrapper = PackageWrapper.GetWrapperFromPackage(args.Package);
-                    var uwp = new UWP(packageWrapper);
-                    uwp.InitializeAppInfo(args.Package.InstalledLocation.Path);
-                    foreach (var app in uwp.Apps)
+                    if(!string.IsNullOrEmpty(packageWrapper.InstalledLocation))
                     {
-                        Add(app);
+                        var uwp = new UWP(packageWrapper);
+                        uwp.InitializeAppInfo(packageWrapper.InstalledLocation);
+                        foreach (var app in uwp.Apps)
+                        {
+                            Add(app);
+                        }
                     }
                 }
                 //InitializeAppInfo will throw if there is no AppxManifest.xml for the package. 

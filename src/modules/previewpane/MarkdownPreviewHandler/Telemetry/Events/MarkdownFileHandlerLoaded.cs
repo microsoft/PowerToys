@@ -6,13 +6,13 @@ using System.Diagnostics.Tracing;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.PowerToys.Telemetry.Events;
 
-namespace SvgPreviewHandler.Telemetry.Events
+namespace MarkdownPreviewHandler.Telemetry.Events
 {
     /// <summary>
-    /// A telemetry event to be raised when a svg file has been viewed in the preview pane.
+    /// A telemetry event that is triggered when a markdown file is viewed in the preview pane.
     /// </summary>
     [EventData]
-    public class SvgFileHandlerLoaded : EventBase, IEvent
+    public class MarkdownFileHandlerLoaded : EventBase, IEvent
     {
         /// <summary>
         /// Gets The version string. TODO: This should be replaced by a P/Invoke call to get_product_version.

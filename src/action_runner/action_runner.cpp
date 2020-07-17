@@ -111,11 +111,17 @@ bool install_new_version_stage_2(std::wstring installer_path, std::wstring_view 
     {
         // If it's not .msi, then it's our .exe installer
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
-        sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC };
+        sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE};
         sei.lpFile = installer_path.c_str();
         sei.nShow = SW_SHOWNORMAL;
 
         success = ShellExecuteExW(&sei) == TRUE;
+        // Wait for the install completion
+        if (success)
+        {
+            WaitForSingleObject(sei.hProcess, INFINITE);
+            CloseHandle(sei.hProcess);
+        }
     }
 
     std::error_code _;

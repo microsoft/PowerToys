@@ -131,5 +131,7 @@ namespace ViewModelTests
             Assert.IsTrue(mockSettings.properties.override_win_r_key);
             Assert.IsFalse(mockSettings.properties.override_win_s_key);
         }
+
+
     }
 }
