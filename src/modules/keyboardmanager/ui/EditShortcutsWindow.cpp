@@ -225,7 +225,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     std::unique_lock<std::mutex> lockOSLevel(keyboardManagerState.osLevelShortcutReMap_mutex);
     for (const auto& it : keyboardManagerState.osLevelShortcutReMap)
     {
-        ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects, it.first, it.second.targetShortcut);
+        ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects, it.first, std::get<Shortcut>(it.second.targetShortcut));
     }
     lockOSLevel.unlock();
 
@@ -237,7 +237,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         // Iterate through shortcuts for each app
         for (const auto& itShortcut : itApp.second)
         {
-            ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects, itShortcut.first, itShortcut.second.targetShortcut, itApp.first);
+            ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects, itShortcut.first, std::get<Shortcut>(itShortcut.second.targetShortcut), itApp.first);
         }
     }
     lockAppSpecific.unlock();

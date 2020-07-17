@@ -27,6 +27,8 @@ enum class KeyboardManagerUIState
     Deactivated,
     // If set to this value then the detect key window is currently active and it requires a hook
     DetectSingleKeyRemapWindowActivated,
+    // If set to this value then the detect shortcut window in edit keyboard window is currently active and it requires a hook
+    DetectShortcutWindowInEditKeyboardWindowActivated,
     // If set to this value then the edit keyboard window is currently active and remaps should not be applied
     EditKeyboardWindowActivated,
     // If set to this value then the detect shortcut window is currently active and it requires a hook
@@ -138,10 +140,10 @@ public:
     bool AddSingleKeyRemap(const DWORD& originalKey, const std::variant<DWORD, Shortcut>& newRemapKey);
 
     // Function to add a new OS level shortcut remapping
-    bool AddOSLevelShortcut(const Shortcut& originalSC, const Shortcut& newSC);
+    bool AddOSLevelShortcut(const Shortcut& originalSC, const std::variant<DWORD, Shortcut>& newSC);
 
     // Function to add a new App specific level shortcut remapping
-    bool AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const Shortcut& newSC);
+    bool AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const std::variant<DWORD, Shortcut>& newSC);
 
     // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
     void ConfigureDetectShortcutUI(const winrt::Windows::UI::Xaml::Controls::StackPanel& textBlock1, const winrt::Windows::UI::Xaml::Controls::StackPanel& textBlock2);
@@ -165,7 +167,7 @@ public:
     KeyboardManagerHelper::KeyboardHookDecision DetectSingleRemapKeyUIBackend(LowlevelKeyboardEvent* data);
 
     // Function which can be used in HandleKeyboardHookEvent before the os level shortcut remap event to use the UI and suppress events while the remap window is active.
-    KeyboardManagerHelper::KeyboardHookDecision DetectShortcutUIBackend(LowlevelKeyboardEvent* data, bool isRemapKey = false);
+    KeyboardManagerHelper::KeyboardHookDecision DetectShortcutUIBackend(LowlevelKeyboardEvent* data, bool isRemapKey);
 
     // Add a KeyDelay object to get delayed key presses events for a given virtual key
     // NOTE: this will throw an exception if a virtual key is registered twice.

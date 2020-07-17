@@ -112,6 +112,7 @@ public:
                                     {
                                         keyboardManagerState.AddSingleKeyRemap(std::stoul(originalKey.c_str()), Shortcut(newRemapKey.c_str()));
                                     }
+
                                     // If remapped to a key
                                     else
                                     {
@@ -148,9 +149,18 @@ public:
                                     {
                                         auto originalKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
                                         auto newRemapKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
-                                        Shortcut originalSC(originalKeys.c_str());
-                                        Shortcut newRemapSC(newRemapKeys.c_str());
-                                        keyboardManagerState.AddOSLevelShortcut(originalSC, newRemapSC);
+
+                                        // If remapped to a shortcut
+                                        if (std::wstring(newRemapKeys).find(L";") != std::string::npos)
+                                        {
+                                            keyboardManagerState.AddOSLevelShortcut(Shortcut(originalKeys.c_str()), Shortcut(newRemapKeys.c_str()));
+                                        }
+
+                                        // If remapped to a key
+                                        else
+                                        {
+                                            keyboardManagerState.AddOSLevelShortcut(Shortcut(originalKeys.c_str()), std::stoul(newRemapKeys.c_str()));
+                                        }
                                     }
                                     catch (...)
                                     {
@@ -174,9 +184,18 @@ public:
                                         auto originalKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
                                         auto newRemapKeys = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
                                         auto targetApp = it.GetObjectW().GetNamedString(KeyboardManagerConstants::TargetAppSettingName);
-                                        Shortcut originalSC(originalKeys.c_str());
-                                        Shortcut newRemapSC(newRemapKeys.c_str());
-                                        keyboardManagerState.AddAppSpecificShortcut(targetApp.c_str(), originalSC, newRemapSC);
+
+                                        // If remapped to a shortcut
+                                        if (std::wstring(newRemapKeys).find(L";") != std::string::npos)
+                                        {
+                                            keyboardManagerState.AddAppSpecificShortcut(targetApp.c_str(), Shortcut(originalKeys.c_str()), Shortcut(newRemapKeys.c_str()));
+                                        }
+
+                                        // If remapped to a key
+                                        else
+                                        {
+                                            keyboardManagerState.AddAppSpecificShortcut(targetApp.c_str(), Shortcut(originalKeys.c_str()), std::stoul(newRemapKeys.c_str()));
+                                        }
                                     }
                                     catch (...)
                                     {
@@ -412,7 +431,6 @@ public:
             return 0;
         }
 
-
         // Remap a key
         intptr_t SingleKeyRemapResult = KeyboardEventHandlers::HandleSingleKeyRemapEvent(inputHandler, data, keyboardManagerState);
 
@@ -423,7 +441,7 @@ public:
         }
 
         // If the Detect Shortcut Window is currently activated, then suppress the keyboard event
-        KeyboardManagerHelper::KeyboardHookDecision shortcutUIDetected = keyboardManagerState.DetectShortcutUIBackend(data);
+        KeyboardManagerHelper::KeyboardHookDecision shortcutUIDetected = keyboardManagerState.DetectShortcutUIBackend(data, false);
         if (shortcutUIDetected == KeyboardManagerHelper::KeyboardHookDecision::Suppress)
         {
             return 1;

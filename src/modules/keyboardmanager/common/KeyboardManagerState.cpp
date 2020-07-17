@@ -123,7 +123,7 @@ void KeyboardManagerState::ClearAppSpecificShortcuts()
 }
 
 // Function to add a new OS level shortcut remapping
-bool KeyboardManagerState::AddOSLevelShortcut(const Shortcut& originalSC, const Shortcut& newSC)
+bool KeyboardManagerState::AddOSLevelShortcut(const Shortcut& originalSC, const std::variant<DWORD, Shortcut>& newSC)
 {
     std::lock_guard<std::mutex> lock(osLevelShortcutReMap_mutex);
 
@@ -155,7 +155,7 @@ bool KeyboardManagerState::AddSingleKeyRemap(const DWORD& originalKey, const std
 }
 
 // Function to add a new App specific shortcut remapping
-bool KeyboardManagerState::AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const Shortcut& newSC)
+bool KeyboardManagerState::AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const std::variant<DWORD, Shortcut>& newSC)
 {
     std::lock_guard<std::mutex> lock(appSpecificShortcutReMap_mutex);
 
@@ -355,7 +355,7 @@ KeyboardManagerHelper::KeyboardHookDecision KeyboardManagerState::DetectSingleRe
 KeyboardManagerHelper::KeyboardHookDecision KeyboardManagerState::DetectShortcutUIBackend(LowlevelKeyboardEvent* data, bool isRemapKey)
 {
     // Check if the detect shortcut UI window has been activated
-    if (CheckUIState(KeyboardManagerUIState::DetectShortcutWindowActivated) || (isRemapKey && CheckUIState(KeyboardManagerUIState::DetectSingleKeyRemapWindowActivated)))
+    if ((!isRemapKey && CheckUIState(KeyboardManagerUIState::DetectShortcutWindowActivated)) || (isRemapKey && CheckUIState(KeyboardManagerUIState::DetectShortcutWindowInEditKeyboardWindowActivated)))
     {
         if (HandleKeyDelayEvent(data))
         {
@@ -378,7 +378,7 @@ KeyboardManagerHelper::KeyboardHookDecision KeyboardManagerState::DetectShortcut
     }
 
     // If the detect shortcut UI window is not activated, then clear the shortcut buffer if it isn't empty
-    else
+    else if (!CheckUIState(KeyboardManagerUIState::DetectShortcutWindowActivated) && !CheckUIState(KeyboardManagerUIState::DetectShortcutWindowInEditKeyboardWindowActivated))
     {
         std::lock_guard<std::mutex> lock(detectedShortcut_mutex);
         if (!detectedShortcut.IsEmpty())
@@ -388,7 +388,7 @@ KeyboardManagerHelper::KeyboardHookDecision KeyboardManagerState::DetectShortcut
     }
 
     // If the settings window is up, shortcut remappings should not be applied, but we should not suppress events in the hook
-    if (CheckUIState(KeyboardManagerUIState::EditShortcutsWindowActivated))
+    if (!isRemapKey && (CheckUIState(KeyboardManagerUIState::EditShortcutsWindowActivated)) || (isRemapKey && uiState == KeyboardManagerUIState::DetectShortcutWindowInEditKeyboardWindowActivated))
     {
         return KeyboardManagerHelper::KeyboardHookDecision::SkipHook;
     }
@@ -477,7 +477,18 @@ bool KeyboardManagerState::SaveConfigToFile()
     {
         json::JsonObject keys;
         keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(it.first.ToHstringVK()));
-        keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(it.second.targetShortcut.ToHstringVK()));
+
+        // For shortcut to key remapping
+        if (it.second.targetShortcut.index() == 0)
+        {
+            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(winrt::to_hstring((unsigned int)std::get<DWORD>(it.second.targetShortcut))));
+        }
+
+        // For shortcut to shortcut remapping
+        else
+        {
+            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(std::get<Shortcut>(it.second.targetShortcut).ToHstringVK()));
+        }
 
         globalRemapShortcutsArray.Append(keys);
     }
@@ -491,7 +502,19 @@ bool KeyboardManagerState::SaveConfigToFile()
         {
             json::JsonObject keys;
             keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(itKeys.first.ToHstringVK()));
-            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(itKeys.second.targetShortcut.ToHstringVK()));
+
+            // For shortcut to key remapping
+            if (itKeys.second.targetShortcut.index() == 0)
+            {
+                keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(winrt::to_hstring((unsigned int)std::get<DWORD>(itKeys.second.targetShortcut))));
+            }
+
+            // For shortcut to shortcut remapping
+            else
+            {
+                keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(std::get<Shortcut>(itKeys.second.targetShortcut).ToHstringVK()));
+            }
+
             keys.SetNamedValue(KeyboardManagerConstants::TargetAppSettingName, json::value(itApp.first));
 
             appSpecificRemapShortcutsArray.Append(keys);

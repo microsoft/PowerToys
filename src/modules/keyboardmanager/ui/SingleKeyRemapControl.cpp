@@ -52,7 +52,7 @@ SingleKeyRemapControl::SingleKeyRemapControl(Grid table, const int colIndex)
         }
         else
         {
-            keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectShortcutWindowActivated, EditKeyboardWindowHandle);
+            keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectShortcutWindowInEditKeyboardWindowActivated, EditKeyboardWindowHandle);
             ShortcutControl::createDetectShortcutWindow(sender, sender.as<Button>().XamlRoot(), *keyboardManagerState, colIndex, table, keyDropDownControlObjects, controlStackPanel, nullptr, true, EditKeyboardWindowHandle, singleKeyRemapBuffer);
         }
     });

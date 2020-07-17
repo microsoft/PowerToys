@@ -256,22 +256,22 @@ namespace KeyboardManagerHelper
         if (isKeyDown)
         {
             // If shortcutToCompare is non-empty, then the key event is sent only if both shortcut's don't have the same modifier key. If keyToBeReleased is non-NULL, then the key event is sent if either the shortcuts don't have the same modfifier or if the shortcutToBeSent's modifier matches the keyToBeReleased
-            if (shortcutToBeSent.GetWinKey(winKeyInvoked) != NULL && (shortcutToCompare.IsEmpty() || (shortcutToBeSent.GetWinKey(winKeyInvoked) != shortcutToCompare.GetWinKey(winKeyInvoked) && !shortcutToBeSent.CheckWinKey(keyToBeReleased))))
+            if (shortcutToBeSent.GetWinKey(winKeyInvoked) != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetWinKey(winKeyInvoked) != shortcutToCompare.GetWinKey(winKeyInvoked)) && (keyToBeReleased == NULL || !shortcutToBeSent.CheckWinKey(keyToBeReleased)))
             {
                 KeyboardManagerHelper::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetWinKey(winKeyInvoked), 0, extraInfoFlag);
                 index++;
             }
-            if (shortcutToBeSent.GetCtrlKey() != NULL && (shortcutToCompare.IsEmpty() || (shortcutToBeSent.GetCtrlKey() != shortcutToCompare.GetCtrlKey() && !shortcutToBeSent.CheckCtrlKey(keyToBeReleased))))
+            if (shortcutToBeSent.GetCtrlKey() != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetCtrlKey() != shortcutToCompare.GetCtrlKey()) && (keyToBeReleased == NULL || !shortcutToBeSent.CheckCtrlKey(keyToBeReleased)))
             {
                 KeyboardManagerHelper::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetCtrlKey(), 0, extraInfoFlag);
                 index++;
             }
-            if (shortcutToBeSent.GetAltKey() != NULL && (shortcutToCompare.IsEmpty() || (shortcutToBeSent.GetAltKey() != shortcutToCompare.GetAltKey() && !shortcutToBeSent.CheckAltKey(keyToBeReleased))))
+            if (shortcutToBeSent.GetAltKey() != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetAltKey() != shortcutToCompare.GetAltKey()) && (keyToBeReleased == NULL || !shortcutToBeSent.CheckAltKey(keyToBeReleased)))
             {
                 KeyboardManagerHelper::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetAltKey(), 0, extraInfoFlag);
                 index++;
             }
-            if (shortcutToBeSent.GetShiftKey() != NULL && (shortcutToCompare.IsEmpty() || (shortcutToBeSent.GetShiftKey() != shortcutToCompare.GetShiftKey() && !shortcutToBeSent.CheckShiftKey(keyToBeReleased))))
+            if (shortcutToBeSent.GetShiftKey() != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetShiftKey() != shortcutToCompare.GetShiftKey()) && (keyToBeReleased == NULL || !shortcutToBeSent.CheckShiftKey(keyToBeReleased)))
             {
                 KeyboardManagerHelper::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetShiftKey(), 0, extraInfoFlag);
                 index++;
@@ -303,5 +303,18 @@ namespace KeyboardManagerHelper
                 index++;
             }
         }
+    }
+
+    // Function to filter the key codes for artificial key codes
+    DWORD FilterArtificialKeys(const DWORD& key)
+    {
+        switch (key)
+        {
+        // If a key is remapped to VK_WIN_BOTH, we send VK_LWIN instead
+        case CommonSharedConstants::VK_WIN_BOTH:
+            return VK_LWIN;
+        }
+
+        return key;
     }
 }
