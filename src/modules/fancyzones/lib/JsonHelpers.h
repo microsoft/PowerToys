@@ -56,11 +56,16 @@ namespace JSONHelpers
         static std::optional<DeviceInfoJSON> FromJson(const json::JsonObject& device);
     };
 
-	json::JsonObject GetPersistFancyZonesJSON(const std::wstring& zonesSettingsFilePath, const std::wstring& appZoneHistoryFilePath);
-
     using TAppZoneHistoryMap = std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>;
     using TDeviceInfoMap = std::unordered_map<std::wstring, FancyZonesDataTypes::DeviceInfoData>;
     using TCustomZoneSetsMap = std::unordered_map<std::wstring, FancyZonesDataTypes::CustomZoneSetData>;
+
+    json::JsonObject GetPersistFancyZonesJSON(const std::wstring& zonesSettingsFileName, const std::wstring& appZoneHistoryFileName);
+    void SaveFancyZonesData(const std::wstring& zonesSettingsFileName,
+							const std::wstring& appZoneHistoryFileName,
+							const TDeviceInfoMap& deviceInfoMap,
+							const TCustomZoneSetsMap& customZoneSetsMap,
+							const TAppZoneHistoryMap& appZoneHistoryMap);
 
     TAppZoneHistoryMap ParseAppZoneHistory(const json::JsonObject& fancyZonesDataJSON);
     json::JsonArray SerializeAppZoneHistory(const TAppZoneHistoryMap& appZoneHistoryMap);

@@ -10,7 +10,6 @@
 #include <lib/FancyZonesData.h>
 #include <lib/FancyZonesDataTypes.h>
 #include <lib/JsonHelpers.h>
-#include <lib/JsonHelpers.h>
 #include "Util.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;

@@ -20,8 +20,7 @@ interface __declspec(uuid("{E4839EB7-669D-49CF-84A9-71A2DFD851A3}")) IZoneSet : 
     /**
      * @returns Type of the zone layout. Layout type can be focus, columns, rows, grid, priority grid or custom.
      */
-    IFACEMETHOD_(FancyZonesDataTypes::ZoneSetLayoutType, LayoutType)
-    () = 0;
+    IFACEMETHOD_(FancyZonesDataTypes::ZoneSetLayoutType, LayoutType)() = 0;
     /**
      * Add zone to the zone layout.
      *

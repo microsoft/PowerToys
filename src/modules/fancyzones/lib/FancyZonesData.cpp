@@ -3,7 +3,6 @@
 #include "FancyZonesDataTypes.h"
 #include "JsonHelpers.h"
 #include "ZoneSet.h"
-#include "trace.h"
 #include "Settings.h"
 
 #include <common/common.h>
@@ -16,6 +15,14 @@
 #include <regex>
 #include <sstream>
 #include <unordered_set>
+
+// Non-localizable strings
+namespace NonLocalizable
+{
+    const wchar_t FancyZonesStr[] = L"FancyZones";
+    const wchar_t LayoutsStr[] = L"Layouts";
+    const wchar_t NullStr[] = L"null";
+}
 
 namespace
 {
@@ -65,7 +72,7 @@ namespace FancyZonesData
 
     FancyZonesData::FancyZonesData()
     {
-        std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(L"FancyZones");
+        std::wstring saveFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::FancyZonesStr);
         zonesSettingsFileName = saveFolderPath + L"\\" + std::wstring(FANCY_ZONES_DATA_FILE);
         appZoneHistoryFileName = saveFolderPath + L"\\" + std::wstring(FANCY_ZONES_APP_ZONE_HISTORY_FILE);
 
@@ -94,7 +101,7 @@ namespace FancyZonesData
         if (!deviceInfoMap.contains(deviceId))
         {
             // Creates default entry in map when ZoneWindow is created
-            deviceInfoMap[deviceId] = FancyZonesDataTypes::DeviceInfoData{ FancyZonesDataTypes::ZoneSetData{ L"null", FancyZonesDataTypes::ZoneSetLayoutType::Blank } };
+            deviceInfoMap[deviceId] = FancyZonesDataTypes::DeviceInfoData{ FancyZonesDataTypes::ZoneSetData{ NonLocalizable::NullStr, FancyZonesDataTypes::ZoneSetLayoutType::Blank } };
         }
     }
 
@@ -446,7 +453,6 @@ namespace FancyZonesData
         if (!std::filesystem::exists(zonesSettingsFileName))
         {
             MigrateCustomZoneSetsFromRegistry();
-
             SaveFancyZonesData();
         }
         else
@@ -462,28 +468,18 @@ namespace FancyZonesData
     void FancyZonesData::SaveFancyZonesData() const
     {
         std::scoped_lock lock{ dataLock };
-        json::JsonObject root{};
-        json::JsonObject appZoneHistoryRoot{};
-
-        appZoneHistoryRoot.SetNamedValue(L"app-zone-history", JSONHelpers::SerializeAppZoneHistory(appZoneHistoryMap));
-        root.SetNamedValue(L"devices", JSONHelpers::SerializeDeviceInfos(deviceInfoMap));
-        root.SetNamedValue(L"custom-zone-sets", JSONHelpers::SerializeCustomZoneSets(customZoneSetsMap));
-
-        auto before = json::from_file(zonesSettingsFileName);
-        if (!before.has_value() || before.value().Stringify() != root.Stringify())
-        {
-            Trace::FancyZones::DataChanged();
-        }
-
-        json::to_file(zonesSettingsFileName, root);
-        json::to_file(appZoneHistoryFileName, appZoneHistoryRoot);
-    }
+        JSONHelpers::SaveFancyZonesData(zonesSettingsFileName,
+										appZoneHistoryFileName,
+										deviceInfoMap,
+										customZoneSetsMap,
+										appZoneHistoryMap);
+	}
 
     void FancyZonesData::MigrateCustomZoneSetsFromRegistry()
     {
         std::scoped_lock lock{ dataLock };
         wchar_t key[256];
-        StringCchPrintf(key, ARRAYSIZE(key), L"%s\\%s", REG_SETTINGS, L"Layouts");
+        StringCchPrintf(key, ARRAYSIZE(key), L"%s\\%s", REG_SETTINGS, NonLocalizable::LayoutsStr);
         HKEY hkey;
         if (RegOpenKeyExW(HKEY_CURRENT_USER, key, 0, KEY_ALL_ACCESS, &hkey) == ERROR_SUCCESS)
         {
@@ -497,7 +493,6 @@ namespace FancyZonesData
                 FancyZonesDataTypes::CustomZoneSetData zoneSetData;
                 zoneSetData.name = std::wstring{ value };
                 zoneSetData.type = static_cast<FancyZonesDataTypes::CustomLayoutType>(data[2]);
-                // int version =  data[0] * 256 + data[1]; - Not used anymore
 
                 GUID guid;
                 auto result = CoCreateGuid(&guid);
@@ -506,7 +501,7 @@ namespace FancyZonesData
                     continue;
                 }
                 wil::unique_cotaskmem_string guidString;
-                if (!SUCCEEDED_LOG(StringFromCLSID(guid, &guidString)))
+                if (!SUCCEEDED(StringFromCLSID(guid, &guidString)))
                 {
                     continue;
                 }
