@@ -269,7 +269,7 @@ namespace FancyZonesEditor
 
             for (int i = 0; i < ZoneCount; i++)
             {
-                _focusModel.AddZone(focusZoneRect);
+                _focusModel.Zones.Add(focusZoneRect);
                 focusZoneRect.X += focusRectXIncrement;
                 focusZoneRect.Y += focusRectYIncrement;
             }
