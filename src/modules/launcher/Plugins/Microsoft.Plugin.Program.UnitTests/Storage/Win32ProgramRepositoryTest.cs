@@ -278,7 +278,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             // ShellLinkHelper must be mocked for lnk applications
             var mockShellLink = new Mock<IShellLinkHelper>();
-            mockShellLink.Setup(m => m.retrieveTargetPath(It.IsAny<string>())).Returns(String.Empty);
+            mockShellLink.Setup(m => m.RetrieveTargetPath(It.IsAny<string>())).Returns(String.Empty);
             Win32._helper = mockShellLink.Object;
 
             // Act
@@ -298,7 +298,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             // ShellLinkHelper must be mocked for lnk applications
             var mockShellLink = new Mock<IShellLinkHelper>();
-            mockShellLink.Setup(m => m.retrieveTargetPath(It.IsAny<string>())).Returns(String.Empty);
+            mockShellLink.Setup(m => m.RetrieveTargetPath(It.IsAny<string>())).Returns(String.Empty);
             Win32._helper = mockShellLink.Object;
 
             string fullPath = directory + "\\" + path;
@@ -331,7 +331,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             
             // ShellLinkHelper must be mocked for lnk applications
             var mockShellLink = new Mock<IShellLinkHelper>();
-            mockShellLink.Setup(m => m.retrieveTargetPath(It.IsAny<string>())).Returns(String.Empty);
+            mockShellLink.Setup(m => m.RetrieveTargetPath(It.IsAny<string>())).Returns(String.Empty);
             Win32._helper = mockShellLink.Object;
 
             // old item and new item are the actual items when they are in existence
