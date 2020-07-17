@@ -88,6 +88,7 @@ namespace ColorPicker.ViewModels
             RgbColor = ColorToRGB(color);
             ColorBrush = new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B));
         }
+
         private void MouseInfoProvider_OnMouseDown(object sender, System.Drawing.Point p)
         {
             string colorRepresentationToCopy = string.Empty;

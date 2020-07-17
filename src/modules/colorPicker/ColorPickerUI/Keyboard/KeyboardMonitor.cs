@@ -59,11 +59,11 @@ namespace ColorPicker.Keyboard
             var name = Helper.GetKeyName((uint)virtualCode);
 
             // we got modifier with additional info such as "Ctrl (left)" - get rid of parenthesess
-            if(name.IndexOf("(", StringComparison.OrdinalIgnoreCase) > 0 && name.Length >1 )
+            if (name.IndexOf("(", StringComparison.OrdinalIgnoreCase) > 0 && name.Length > 1)
             {
                 name = name.Substring(0, name.IndexOf("(", StringComparison.OrdinalIgnoreCase)).Trim();
             }
-            
+
             if (e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown || e.KeyboardState == GlobalKeyboardHook.KeyboardState.SysKeyDown)
             {
                 if (!_currentlyPressedKeys.Contains(name))
@@ -84,6 +84,7 @@ namespace ColorPicker.Keyboard
             if (ArraysAreSame(_currentlyPressedKeys, _activationKeys))
             {
                 _appStateHandler.ShowColorPicker();
+                _currentlyPressedKeys.Clear();
             }
         }
 

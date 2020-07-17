@@ -51,6 +51,11 @@ namespace ColorPicker.Settings
                         {
                             retryCount++;
 
+                            if (!SettingsUtils.SettingsExists(ColorPickerModuleName))
+                            {
+                                var defaultColorPickerSettings = new ColorPickerSettings();
+                                defaultColorPickerSettings.Save();
+                            }
                             var settings = SettingsUtils.GetSettings<ColorPickerSettings>(ColorPickerModuleName);
                             if (settings != null)
                             {
