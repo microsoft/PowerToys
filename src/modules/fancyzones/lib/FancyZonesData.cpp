@@ -512,6 +512,8 @@ namespace FancyZonesData
                 {
                 case FancyZonesDataTypes::CustomLayoutType::Grid:
                 {
+                    // Visit https://github.com/microsoft/PowerToys/blob/v0.14.0/src/modules/fancyzones/editor/FancyZonesEditor/Models/GridLayoutModel.cs#L183
+                    // To see how custom Grid layout was packed in registry
                     int j = 5;
                     FancyZonesDataTypes::GridLayoutInfo zoneSetInfo(FancyZonesDataTypes::GridLayoutInfo::Minimal{ .rows = data[j++], .columns = data[j++] });
 
@@ -537,9 +539,10 @@ namespace FancyZonesData
                 }
                 case FancyZonesDataTypes::CustomLayoutType::Canvas:
                 {
-                    FancyZonesDataTypes::CanvasLayoutInfo info;
-
+                    // Visit https://github.com/microsoft/PowerToys/blob/v0.14.0/src/modules/fancyzones/editor/FancyZonesEditor/Models/CanvasLayoutModel.cs#L128
+                    // To see how custom Canvas layout was packed in registry
                     int j = 5;
+                    FancyZonesDataTypes::CanvasLayoutInfo info;
                     info.lastWorkAreaWidth = data[j] * 256 + data[j + 1];
                     j += 2;
                     info.lastWorkAreaHeight = data[j] * 256 + data[j + 1];
