@@ -69,18 +69,6 @@ public:
         // Load the initial configuration.
         load_config();
 
-        Shortcut src;
-        src.SetKey(VK_CONTROL);
-        src.SetKey(VK_TAB);
-        Shortcut src1;
-        src1.SetKey(VK_CONTROL);
-        src1.SetKey(0x55);
-        Shortcut dest;
-        dest.SetKey(VK_CONTROL);
-        dest.SetKey(0x56);
-        keyboardManagerState.AddOSLevelShortcut(src, 0x48);
-        keyboardManagerState.AddOSLevelShortcut(src1, dest);
-
         // Set the static pointer to the newest object of the class
         keyboardmanager_object_ptr = this;
     };

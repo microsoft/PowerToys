@@ -38,7 +38,7 @@ SingleKeyRemapControl::SingleKeyRemapControl(Grid table, const int colIndex)
         hybridDropDownStackPanel = StackPanel();
         hybridDropDownStackPanel.as<StackPanel>().Spacing(KeyboardManagerConstants::ShortcutTableDropDownSpacing);
         hybridDropDownStackPanel.as<StackPanel>().Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
-        KeyDropDownControl::AddDropDown(table, singleKeyRemapControlLayout.as<StackPanel>(), hybridDropDownStackPanel.as<StackPanel>(), colIndex, singleKeyRemapBuffer, keyDropDownControlObjects, nullptr, true);
+        KeyDropDownControl::AddDropDown(table, singleKeyRemapControlLayout.as<StackPanel>(), hybridDropDownStackPanel.as<StackPanel>(), colIndex, singleKeyRemapBuffer, keyDropDownControlObjects, nullptr, true, true);
         singleKeyRemapControlLayout.as<StackPanel>().Children().Append(hybridDropDownStackPanel.as<StackPanel>());
     }
 
@@ -53,7 +53,7 @@ SingleKeyRemapControl::SingleKeyRemapControl(Grid table, const int colIndex)
         else
         {
             keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectShortcutWindowInEditKeyboardWindowActivated, EditKeyboardWindowHandle);
-            ShortcutControl::createDetectShortcutWindow(sender, sender.as<Button>().XamlRoot(), *keyboardManagerState, colIndex, table, keyDropDownControlObjects, controlStackPanel, nullptr, true, EditKeyboardWindowHandle, singleKeyRemapBuffer);
+            ShortcutControl::createDetectShortcutWindow(sender, sender.as<Button>().XamlRoot(), *keyboardManagerState, colIndex, table, keyDropDownControlObjects, controlStackPanel, nullptr, true, true, EditKeyboardWindowHandle, singleKeyRemapBuffer);
         }
     });
 
@@ -112,7 +112,7 @@ void SingleKeyRemapControl::AddNewControlKeyRemapRow(Grid& parent, std::vector<s
         }
         else
         {
-            KeyDropDownControl::AddShortcutToControl(std::get<Shortcut>(newKey), parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->hybridDropDownStackPanel.as<StackPanel>(), *keyboardManagerState, 1, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->keyDropDownControlObjects, singleKeyRemapBuffer, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->singleKeyRemapControlLayout.as<StackPanel>(), true);
+            KeyDropDownControl::AddShortcutToControl(std::get<Shortcut>(newKey), parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->hybridDropDownStackPanel.as<StackPanel>(), *keyboardManagerState, 1, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->keyDropDownControlObjects, singleKeyRemapBuffer, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][1]->singleKeyRemapControlLayout.as<StackPanel>(), nullptr, true, true);
         }
     }
     else

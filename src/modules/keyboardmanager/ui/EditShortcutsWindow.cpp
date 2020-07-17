@@ -225,7 +225,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     std::unique_lock<std::mutex> lockOSLevel(keyboardManagerState.osLevelShortcutReMap_mutex);
     for (const auto& it : keyboardManagerState.osLevelShortcutReMap)
     {
-        ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects, it.first, std::get<Shortcut>(it.second.targetShortcut));
+        ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects, it.first, it.second.targetShortcut);
     }
     lockOSLevel.unlock();
 
@@ -237,7 +237,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         // Iterate through shortcuts for each app
         for (const auto& itShortcut : itApp.second)
         {
-            ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects, itShortcut.first, std::get<Shortcut>(itShortcut.second.targetShortcut), itApp.first);
+            ShortcutControl::AddNewShortcutControlRow(shortcutTable, keyboardRemapControlObjects, itShortcut.first, itShortcut.second.targetShortcut, itApp.first);
         }
     }
     lockAppSpecific.unlock();
@@ -262,9 +262,9 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         for (int i = 0; i < ShortcutControl::shortcutRemapBuffer.size(); i++)
         {
             Shortcut originalShortcut = std::get<Shortcut>(ShortcutControl::shortcutRemapBuffer[i].first[0]);
-            Shortcut newShortcut = std::get<Shortcut>(ShortcutControl::shortcutRemapBuffer[i].first[1]);
+            std::variant<DWORD, Shortcut> newShortcut = ShortcutControl::shortcutRemapBuffer[i].first[1];
 
-            if (originalShortcut.IsValidShortcut() && newShortcut.IsValidShortcut())
+            if (originalShortcut.IsValidShortcut() && ((newShortcut.index() == 0 && std::get<DWORD>(newShortcut) != NULL) || (newShortcut.index() == 1 && std::get<Shortcut>(newShortcut).IsValidShortcut())))
             {
                 if (ShortcutControl::shortcutRemapBuffer[i].second == L"")
                 {

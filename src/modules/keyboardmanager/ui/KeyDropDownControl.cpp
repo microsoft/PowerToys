@@ -142,7 +142,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel singleKeyCo
     });
 }
 
-std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateShortcutSelection(Grid table, StackPanel shortcutControl, StackPanel parent, int colIndex, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox targetApp, bool isHybridControl)
+std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateShortcutSelection(Grid table, StackPanel shortcutControl, StackPanel parent, int colIndex, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow)
 {
     ComboBox currentDropDown = dropDown.as<ComboBox>();
     int selectedKeyIndex = currentDropDown.SelectedIndex();
@@ -157,7 +157,7 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
 
     if (controlIindexFound)
     {
-        if (isHybridControl)
+        if (isSingleKeyWindow)
         {
             rowIndex = (controlIndex - KeyboardManagerConstants::RemapTableHeaderCount) / KeyboardManagerConstants::RemapTableColCount;
         }
@@ -188,7 +188,7 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
                     // If not, add a new drop down
                     else
                     {
-                        AddDropDown(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl);
+                        AddDropDown(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
                     }
                 }
                 // If last drop down and a modifier is selected but there are already max drop downs: warn the user
@@ -377,14 +377,7 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
                                     result = Shortcut::DoKeysOverlap(std::get<Shortcut>(shortcutRemapBuffer[i].first[colIndex]), std::get<Shortcut>(tempShortcut));
                                 }
                             }
-                            else if (tempShortcut.index() == 1 && shortcutRemapBuffer[i].first[colIndex].index() == 0)
-                            {
-                                // avoid this scenario
-                            }
-                            else
-                            {
-                                // avoid this scenario
-                            }
+                            // Other scenarios not possible since key to shortcut is with key to key, and shortcut to key is with shortcut to shortcut
                         }
                         if (result != KeyboardManagerHelper::ErrorType::NoError)
                         {
@@ -420,10 +413,10 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
 }
 
 // Function to set selection handler for shortcut drop down. Needs to be called after the constructor since the shortcutControl StackPanel is null if called in the constructor
-void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel shortcutControl, StackPanel parent, int colIndex, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox& targetApp, bool isHybridControl)
+void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel shortcutControl, StackPanel parent, int colIndex, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox& targetApp, bool isHybridControl, bool isSingleKeyWindow)
 {
-    auto onSelectionChange = [&, table, shortcutControl, colIndex, parent, targetApp, isHybridControl](winrt::Windows::Foundation::IInspectable const& sender) {
-        std::pair<KeyboardManagerHelper::ErrorType, int> validationResult = ValidateShortcutSelection(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl);
+    auto onSelectionChange = [&, table, shortcutControl, colIndex, parent, targetApp, isHybridControl, isSingleKeyWindow](winrt::Windows::Foundation::IInspectable const& sender) {
+        std::pair<KeyboardManagerHelper::ErrorType, int> validationResult = ValidateShortcutSelection(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
 
         // Check if the drop down row index was identified from the return value of validateSelection
         if (validationResult.second != -1)
@@ -432,7 +425,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel shortcutCon
             if (validationResult.first != KeyboardManagerHelper::ErrorType::NoError)
             {
                 // Validate all the drop downs
-                ValidateShortcutFromDropDownList(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl);
+                ValidateShortcutFromDropDownList(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
             }
 
             // Reset the buffer based on the new selected drop down items
@@ -443,7 +436,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel shortcutCon
             }
             else
             {
-                // If exactly one key is selected consisder it to be a key remap
+                // If exactly one key is selected consider it to be a key remap
                 if (selectedKeyCodes.size() == 1)
                 {
                     shortcutRemapBuffer[validationResult.second].first[colIndex] = selectedKeyCodes[0];
@@ -514,11 +507,11 @@ ComboBox KeyDropDownControl::GetComboBox()
 }
 
 // Function to add a drop down to the shortcut stack panel
-void KeyDropDownControl::AddDropDown(Grid table, StackPanel shortcutControl, StackPanel parent, const int colIndex, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox targetApp, bool isHybridControl)
+void KeyDropDownControl::AddDropDown(Grid table, StackPanel shortcutControl, StackPanel parent, const int colIndex, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow)
 {
     keyDropDownControlObjects.push_back(std::move(std::unique_ptr<KeyDropDownControl>(new KeyDropDownControl(true))));
     parent.Children().Append(keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->GetComboBox());
-    keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->SetSelectionHandler(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl);
+    keyDropDownControlObjects[keyDropDownControlObjects.size() - 1]->SetSelectionHandler(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
     parent.UpdateLayout();
 }
 
@@ -580,19 +573,29 @@ bool KeyDropDownControl::CheckRepeatedModifier(StackPanel parent, int selectedKe
 }
 
 // Function for validating the selection of shortcuts for all the associated drop downs
-void KeyDropDownControl::ValidateShortcutFromDropDownList(Grid table, StackPanel shortcutControl, StackPanel parent, int colIndex, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox targetApp, bool isHybridControl)
+void KeyDropDownControl::ValidateShortcutFromDropDownList(Grid table, StackPanel shortcutControl, StackPanel parent, int colIndex, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow)
 {
     // Iterate over all drop downs from left to right in that row/col and validate if there is an error in any of the drop downs. After this the state should be error-free (if it is a valid shortcut)
     for (int i = 0; i < keyDropDownControlObjects.size(); i++)
     {
         // Check for errors only if the current selection is a valid shortcut
-        Shortcut tempComputedShortcut;
-        tempComputedShortcut.SetKeyCodes(keyDropDownControlObjects[i]->GetKeysFromStackPanel(parent));
-
-        // If the shortcut is valid and that drop down is not empty
-        if (tempComputedShortcut.IsValidShortcut() && keyDropDownControlObjects[i]->GetComboBox().SelectedIndex() != -1)
+        std::vector<DWORD> selectedKeyCodes = keyDropDownControlObjects[i]->GetKeysFromStackPanel(parent);
+        std::variant<DWORD, Shortcut> currentShortcut;
+        if (selectedKeyCodes.size() == 1 && isHybridControl)
         {
-            keyDropDownControlObjects[i]->ValidateShortcutSelection(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl);
+            currentShortcut = selectedKeyCodes[0];
+        }
+        else
+        {
+            Shortcut temp;
+            temp.SetKeyCodes(selectedKeyCodes);
+            currentShortcut = temp;
+        }
+
+        // If the key/shortcut is valid and that drop down is not empty
+        if (((currentShortcut.index() == 0 && std::get<DWORD>(currentShortcut) != NULL) || (currentShortcut.index() == 1 && std::get<Shortcut>(currentShortcut).IsValidShortcut())) && keyDropDownControlObjects[i]->GetComboBox().SelectedIndex() != -1)
+        {
+            keyDropDownControlObjects[i]->ValidateShortcutSelection(table, shortcutControl, parent, colIndex, shortcutRemapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
         }
     }
 }
@@ -606,7 +609,7 @@ void KeyDropDownControl::SetDropDownError(ComboBox currentDropDown, hstring mess
 }
 
 // Function to add a shortcut to the UI control as combo boxes
-void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, Grid table, StackPanel parent, KeyboardManagerState& keyboardManagerState, const int colIndex, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& remapBuffer, StackPanel controlLayout, bool isHybridControl, TextBox targetApp)
+void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, Grid table, StackPanel parent, KeyboardManagerState& keyboardManagerState, const int colIndex, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& remapBuffer, StackPanel controlLayout, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow)
 {
     // Delete the existing drop down menus
     parent.Children().Clear();
@@ -617,7 +620,7 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, Grid table, Sta
     std::vector<DWORD> keyCodeList = keyboardManagerState.keyboardMap.GetKeyCodeList(true);
     if (shortcutKeyCodes.size() != 0)
     {
-        KeyDropDownControl::AddDropDown(table, controlLayout, parent, colIndex, remapBuffer, keyDropDownControlObjects, targetApp, isHybridControl);
+        KeyDropDownControl::AddDropDown(table, controlLayout, parent, colIndex, remapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow);
         for (int i = 0; i < shortcutKeyCodes.size(); i++)
         {
             // New drop down gets added automatically when the SelectedIndex is set
