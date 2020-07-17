@@ -1042,10 +1042,10 @@ namespace FancyZonesUnitTests
                     {
                         const std::wstring zoneUuid = L"default_device_id";
                         JSONHelpers::DeviceInfoJSON deviceInfo{ zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
-                        const std::wstring deviceInfoPath = FancyZonesDataNS::FancyZonesDataInstance().zonesSettingsFileName + L".device_info_tmp";
+                        const std::wstring deviceInfoPath = FancyZonesData::FancyZonesDataInstance().zonesSettingsFileName + L".device_info_tmp";
                         JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfo, deviceInfoPath);
 
-                        FancyZonesDataNS::FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(deviceInfoPath);
+                        FancyZonesData::FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(deviceInfoPath);
                         std::filesystem::remove(deviceInfoPath);
                     }
 
@@ -1056,7 +1056,7 @@ namespace FancyZonesUnitTests
                     JSONHelpers::CustomZoneSetJSON expected{ uuid.get(), CustomZoneSetData{ L"name", CustomLayoutType::Canvas, info } };
                     json::to_file(m_path, JSONHelpers::CustomZoneSetJSON::ToJson(expected));
                     Assert::IsTrue(std::filesystem::exists(m_path));
-                    FancyZonesDataNS::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(m_path);
+                    FancyZonesData::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(m_path);
 
                     //test
                     const int spacing = 10;
@@ -1077,10 +1077,10 @@ namespace FancyZonesUnitTests
                     {
                         const std::wstring zoneUuid = L"default_device_id";
                         JSONHelpers::DeviceInfoJSON deviceInfo{ zoneUuid, DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
-                        const std::wstring deviceInfoPath = FancyZonesDataNS::FancyZonesDataInstance().zonesSettingsFileName + L".device_info_tmp";
+                        const std::wstring deviceInfoPath = FancyZonesData::FancyZonesDataInstance().zonesSettingsFileName + L".device_info_tmp";
                         JSONHelpers::SerializeDeviceInfoToTmpFile(deviceInfo, deviceInfoPath);
 
-                        FancyZonesDataNS::FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(deviceInfoPath);
+                        FancyZonesData::FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(deviceInfoPath);
                         std::filesystem::remove(deviceInfoPath);
                     }
 
@@ -1096,7 +1096,7 @@ namespace FancyZonesUnitTests
                     JSONHelpers::CustomZoneSetJSON expected{ uuid.get(), CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
                     json::to_file(m_path, JSONHelpers::CustomZoneSetJSON::ToJson(expected));
                     Assert::IsTrue(std::filesystem::exists(m_path));
-                    FancyZonesDataNS::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(m_path);
+                    FancyZonesData::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(m_path);
 
                     const int spacing = 10;
                     const int zoneCount = grid.rows() * grid.columns();

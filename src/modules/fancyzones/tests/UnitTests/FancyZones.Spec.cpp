@@ -274,7 +274,7 @@ namespace FancyZonesUnitTests
         winrt::com_ptr<IFancyZonesSettings> m_settings = nullptr;
         winrt::com_ptr<IFancyZonesCallback> m_fzCallback = nullptr;
 
-        FancyZonesDataNS::FancyZonesData& m_fancyZonesData = FancyZonesDataNS::FancyZonesDataInstance();
+        FancyZonesData::FancyZonesData& m_fancyZonesData = FancyZonesData::FancyZonesDataInstance();
 
         std::wstring serializedPowerToySettings(const Settings& settings)
         {

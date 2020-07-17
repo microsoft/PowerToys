@@ -29,7 +29,7 @@ namespace FancyZonesUnitTests
     class ZoneWindowUnitTests;
 }
 #endif
-namespace FancyZonesDataNS
+namespace FancyZonesData
 {
     class FancyZonesData
     {

@@ -55,7 +55,7 @@ namespace
     }
 }
 
-namespace FancyZonesDataNS
+namespace FancyZonesData
 {
     FancyZonesData& FancyZonesDataInstance()
     {
