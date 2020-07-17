@@ -253,6 +253,9 @@
   <data name="PowerLauncher_IgnoreHotkeysInFullScreen.Content" xml:space="preserve">
     <value>Ignore hotkeys in fullscreen mode</value>
   </data>
+  <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
+    <value>Clear the previous query on launch</value>
+  </data>
   <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
     <value>To:</value>
     <comment>Keyboard Manager mapping keys view right header</comment>

@@ -133,14 +133,14 @@ namespace FancyZonesEditor
             _columnsModel = new GridLayoutModel("Columns", LayoutType.Columns)
             {
                 Rows = 1,
-                RowPercents = new int[1] { _multiplier },
+                RowPercents = new List<int>(1) { _multiplier },
             };
             DefaultModels.Add(_columnsModel);
 
             _rowsModel = new GridLayoutModel("Rows", LayoutType.Rows)
             {
                 Columns = 1,
-                ColumnPercents = new int[1] { _multiplier },
+                ColumnPercents = new List<int>(1) { _multiplier },
             };
             DefaultModels.Add(_rowsModel);
 
@@ -308,7 +308,7 @@ namespace FancyZonesEditor
             _rowsModel.CellChildMap = new int[ZoneCount, 1];
             _columnsModel.CellChildMap = new int[1, ZoneCount];
             _rowsModel.Rows = _columnsModel.Columns = ZoneCount;
-            _rowsModel.RowPercents = _columnsModel.ColumnPercents = new int[ZoneCount];
+            _rowsModel.RowPercents = _columnsModel.ColumnPercents = new List<int>(ZoneCount);
 
             for (int i = 0; i < ZoneCount; i++)
             {
@@ -318,7 +318,7 @@ namespace FancyZonesEditor
                 // Note: This is NOT equal to _multiplier / ZoneCount and is done like this to make
                 // the sum of all RowPercents exactly (_multiplier).
                 // _columnsModel is sharing the same array
-                _rowsModel.RowPercents[i] = ((_multiplier * (i + 1)) / ZoneCount) - ((_multiplier * i) / ZoneCount);
+                _rowsModel.RowPercents.Add(((_multiplier * (i + 1)) / ZoneCount) - ((_multiplier * i) / ZoneCount));
             }
 
             // Update the "Grid" Default Layout
@@ -341,20 +341,20 @@ namespace FancyZonesEditor
 
             _gridModel.Rows = rows;
             _gridModel.Columns = cols;
-            _gridModel.RowPercents = new int[rows];
-            _gridModel.ColumnPercents = new int[cols];
+            _gridModel.RowPercents = new List<int>(rows);
+            _gridModel.ColumnPercents = new List<int>(cols);
             _gridModel.CellChildMap = new int[rows, cols];
 
             // Note: The following are NOT equal to _multiplier divided by rows or columns and is
             // done like this to make the sum of all RowPercents exactly (_multiplier).
             for (int row = 0; row < rows; row++)
             {
-                _gridModel.RowPercents[row] = ((_multiplier * (row + 1)) / rows) - ((_multiplier * row) / rows);
+                _gridModel.RowPercents.Add(((_multiplier * (row + 1)) / rows) - ((_multiplier * row) / rows));
             }
 
             for (int col = 0; col < cols; col++)
             {
-                _gridModel.ColumnPercents[col] = ((_multiplier * (col + 1)) / cols) - ((_multiplier * col) / cols);
+                _gridModel.ColumnPercents.Add(((_multiplier * (col + 1)) / cols) - ((_multiplier * col) / cols));
             }
 
             int index = ZoneCount - 1;
