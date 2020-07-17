@@ -38,7 +38,7 @@ namespace Microsoft.Plugin.Indexer
 
         // Reserved keywords in oleDB
         private string ReservedStringPattern = @"^[\/\\\$\%]+$";
-
+        private string WarningIconPath { get; set; }
         private IContextMenu _contextMenuLoader;
 
         // To save the configurations of plugins
@@ -134,7 +134,7 @@ namespace Microsoft.Plugin.Indexer
                 {
                     Title = _context.API.GetTranslation("Microsoft_plugin_indexer_drivedetectionwarning"),
                     SubTitle = _context.API.GetTranslation("Microsoft_plugin_indexer_disable_warning_in_settings"),
-                    IcoPath = "Images\\WindowsIndexerImg.bmp",
+                    IcoPath = WarningIconPath,
                     Action = e =>
                     {
                         try
@@ -160,6 +160,26 @@ namespace Microsoft.Plugin.Indexer
             _contextMenuLoader = new ContextMenuLoader(context);
             _storage = new PluginJsonStorage<Settings>();
             _settings = _storage.Load();
+            _context.API.ThemeChanged += OnThemeChanged;
+            UpdateIconPath(_context.API.GetCurrentTheme());
+        }
+
+        // Todo : Update with theme based IconPath
+        private void UpdateIconPath(Theme theme)
+        {
+            if (theme == Theme.Light || theme == Theme.HighContrastWhite)
+            {
+                WarningIconPath = "Images/Warning.light.png";
+            }
+            else
+            {
+                WarningIconPath = "Images/Warning.dark.png";
+            }
+        }
+
+        private void OnThemeChanged(Theme _, Theme newTheme)
+        {
+            UpdateIconPath(newTheme);
         }
 
         // TODO: Localize the strings
