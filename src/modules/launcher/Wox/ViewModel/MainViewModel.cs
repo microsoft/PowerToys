@@ -28,6 +28,7 @@ namespace Wox.ViewModel
 
         private bool _isQueryRunning;
         private Query _lastQuery;
+        private static Query _emptyQuery = new Query();
         private static bool _disposed;
         private string _queryTextBeforeLeaveResults;
 
@@ -55,7 +56,7 @@ namespace Wox.ViewModel
             _hotkeyManager = new HotkeyManager();
             _saved = false;
             _queryTextBeforeLeaveResults = "";
-            _lastQuery = new Query();
+            _lastQuery = _emptyQuery;
             _disposed = false;
 
             _settings = settings;
@@ -487,6 +488,8 @@ namespace Wox.ViewModel
             }
             else
             {
+                _updateSource?.Cancel();
+                _lastQuery = _emptyQuery;
                 Results.SelectedItem = null;
                 Results.Clear();                
                 Results.Visibility = Visibility.Collapsed;

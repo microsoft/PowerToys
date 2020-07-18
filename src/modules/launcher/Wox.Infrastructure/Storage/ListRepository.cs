@@ -31,7 +31,14 @@ namespace Wox.Infrastructure.Storage
         public void Set(IList<T> items)
         {
             //enforce that internal representation
-            _items = new ConcurrentDictionary<int, T>(items.ToDictionary( i => i.GetHashCode()));
+            try
+            {
+                _items = new ConcurrentDictionary<int, T>(items.ToDictionary(i => i.GetHashCode()));
+            }
+            catch(ArgumentException e)
+            {
+                Log.Info($"|LisRepository.Set| Trying to insert a duplicate item", e.Message);
+            }
         }
 
         public bool Any()
@@ -50,7 +57,6 @@ namespace Wox.Infrastructure.Storage
 
         public void Remove(T removedItem)
         {
-
             if (!_items.TryRemove(removedItem.GetHashCode(), out _))
             {
                 Log.Error($"|ListRepository.Remove| Item Not Found <{removedItem}>");
@@ -75,6 +81,11 @@ namespace Wox.Infrastructure.Storage
         IEnumerator IEnumerable.GetEnumerator()
         {
             return _items.GetEnumerator();
+        }
+
+        public int Count()
+        {
+            return _items.Count;
         }
     }
 }

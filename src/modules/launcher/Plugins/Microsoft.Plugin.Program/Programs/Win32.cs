@@ -15,6 +15,7 @@ using System.Windows.Input;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Wox.Infrastructure.Logger;
+using Wox.Infrastructure.FileSystemHelper;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -36,6 +37,10 @@ namespace Microsoft.Plugin.Program.Programs
         public string Arguments { get; set; } = String.Empty;
         public string Location => ParentDirectory;
         public uint AppType { get; set; }
+        // Wrappers for File Operations
+        public static IFileVersionInfoWrapper _fileVersionInfoWrapper = new FileVersionInfoWrapper();
+        public static IFileWrapper _fileWrapper = new FileWrapper();
+        public static IShellLinkHelper _helper = new ShellLinkHelper();
 
         private const string ShortcutExtension = "lnk";
         private const string ApplicationReferenceExtension = "appref-ms";
@@ -313,7 +318,7 @@ namespace Microsoft.Plugin.Program.Programs
         // This function filters Internet Shortcut programs
         private static Win32 InternetShortcutProgram(string path)
         {
-            string[] lines = System.IO.File.ReadAllLines(path);
+            string[] lines = _fileWrapper.ReadAllLines(path);
             string appName = string.Empty;
             string iconPath = string.Empty;
             string urlPath = string.Empty;
@@ -382,8 +387,8 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 const int MAX_PATH = 260;
                 StringBuilder buffer = new StringBuilder(MAX_PATH);
-                ShellLinkHelper _helper = new ShellLinkHelper();
-                string target = _helper.retrieveTargetPath(path);
+                
+                string target = _helper.RetrieveTargetPath(path);
 
                 if (!string.IsNullOrEmpty(target))
                 {
@@ -403,8 +408,8 @@ namespace Microsoft.Plugin.Program.Programs
                         }
                         else
                         {
-                            var info = FileVersionInfo.GetVersionInfo(target);
-                            if (!string.IsNullOrEmpty(info.FileDescription))
+                            var info = _fileVersionInfoWrapper.GetVersionInfo(target);
+                            if (!string.IsNullOrEmpty(info?.FileDescription))
                             {
                                 program.Description = info.FileDescription;
                             }
@@ -439,9 +444,9 @@ namespace Microsoft.Plugin.Program.Programs
             try
             {
                 var program = Win32Program(path);
-                var info = FileVersionInfo.GetVersionInfo(path);
+                var info = _fileVersionInfoWrapper.GetVersionInfo(path);
 
-                if (!string.IsNullOrEmpty(info.FileDescription))
+                if (!string.IsNullOrEmpty(info?.FileDescription))
                 {
                     program.Description = info.FileDescription;
                 }
@@ -455,6 +460,46 @@ namespace Microsoft.Plugin.Program.Programs
 
                 return new Win32() { Valid = false, Enabled = false };
             }
+        }
+
+        // Function to get the Win32 application, given the path to the application
+        public static Win32 GetAppFromPath(string path)
+        {
+            Win32 app = null;
+            const string exeExtension = ".exe";
+            const string lnkExtension = ".lnk";
+            const string urlExtenion = ".url";
+            const string apprefExtension = ".appref-ms";
+
+            string extension = Path.GetExtension(path);
+
+            if(extension.Equals(exeExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                app = ExeProgram(path);
+            }
+            else if(extension.Equals(lnkExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                app = LnkProgram(path);
+            }
+            else if(extension.Equals(apprefExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                app = Win32Program(path);
+            }
+            else if(extension.Equals(urlExtenion, StringComparison.OrdinalIgnoreCase))
+            {
+                app = InternetShortcutProgram(path);
+            }
+            
+            // if the app is valid, only then return the application, else return null
+            if(app?.Valid ?? false)
+            {
+                return app;
+            }
+            else
+            {
+                return null;
+            }
+
         }
 
         private static IEnumerable<string> ProgramPaths(string directory, string[] suffixes, bool recursiveSearch = true)
@@ -609,8 +654,11 @@ namespace Microsoft.Plugin.Program.Programs
             var programs1 = paths.AsParallel().Where(p => Extension(p).Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(LnkProgram);
             var programs2 = paths.AsParallel().Where(p => Extension(p).Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase)).Select(Win32Program);
             var programs3 = paths.AsParallel().Where(p => Extension(p).Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(InternetShortcutProgram);
+            var programs4 = paths.AsParallel().Where(p => Extension(p).Equals(ExeExtension, StringComparison.OrdinalIgnoreCase)).Select(ExeProgram);
 
-            return programs1.Concat(programs2).Where(p => p.Valid).Concat(programs3).Where(p => p.Valid);
+            return programs1.Concat(programs2).Where(p => p.Valid)
+                .Concat(programs3).Where(p => p.Valid)
+                .Concat(programs4).Where(p => p.Valid);
         }
 
         private static ParallelQuery<Win32> StartMenuPrograms(string[] suffixes)
@@ -710,6 +758,19 @@ namespace Microsoft.Plugin.Program.Programs
             entry.ExecutableName = Path.GetFileName(path);
 
             return entry;
+        }
+
+        // Overriding the object.GetHashCode() function to aid in removing duplicates while adding and removing apps from the concurrent dictionary storage
+        public override int GetHashCode()
+        {
+            removeDuplicatesComparer _removeDuplicatesHelper = new removeDuplicatesComparer();
+            return _removeDuplicatesHelper.GetHashCode(this);
+        }
+
+        public override bool Equals(object obj)
+        {
+            removeDuplicatesComparer _removeDuplicatesHelper = new removeDuplicatesComparer();
+            return obj is Win32 win && _removeDuplicatesHelper.Equals(this, win);
         }
 
         public class removeDuplicatesComparer : IEqualityComparer<Win32>
