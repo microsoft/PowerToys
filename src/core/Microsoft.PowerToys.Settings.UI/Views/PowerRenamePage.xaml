@@ -135,8 +135,7 @@
                 Style="{StaticResource SettingsGroupTitleStyle}" 
                 Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
 
-                <HyperlinkButton 
-                NavigateUri="https://github.com/chrdavis/SmartRename">
+                <HyperlinkButton NavigateUri="https://github.com/chrdavis/SmartRename" Margin="0,-3,0,0">
                     <TextBlock Text="Chris Davis's SmartRenamer" TextWrapping="Wrap" />
                 </HyperlinkButton>
 

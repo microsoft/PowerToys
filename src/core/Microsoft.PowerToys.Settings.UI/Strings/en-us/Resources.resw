@@ -630,7 +630,7 @@
   <data name="ImageResizer_FileFormatDescription.Text" xml:space="preserve">
     <value>The following parameters can be used:</value>
   </data>
-  <data name="ImageResizer_FilenameFormatHeader.Header" xml:space="preserve">
+  <data name="ImageResizer_FilenameFormatHeader.Text" xml:space="preserve">
     <value>Filename format</value>
   </data>
   <data name="ImageResizer_UseOriginalDate.Content" xml:space="preserve">

@@ -85,7 +85,7 @@
             <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-            <muxc:RadioButtons x:Uid="RadioButtons_Name_Theme" Margin="{StaticResource SmallTopMargin}">
+            <muxc:RadioButtons x:Uid="RadioButtons_Name_Theme">
                 <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark"
                              Content="Dark"
                              IsChecked="{ Binding Mode=TwoWay, Path=IsDarkThemeRadioButtonChecked, Source={StaticResource eventViewModel}}"/>

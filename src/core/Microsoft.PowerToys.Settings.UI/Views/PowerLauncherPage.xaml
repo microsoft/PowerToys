@@ -181,7 +181,7 @@
                 Style="{StaticResource SettingsGroupTitleStyle}" 
                 Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
 
-                <HyperlinkButton NavigateUri="https://github.com/Wox-launcher/Wox/">
+                <HyperlinkButton Margin="0,-3,0,0" NavigateUri="https://github.com/Wox-launcher/Wox/">
                     <TextBlock Text="Wox"/>
                 </HyperlinkButton>
 

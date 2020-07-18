@@ -98,7 +98,7 @@
                 x:Uid="AttributionTitle"
                 Style="{StaticResource SettingsGroupTitleStyle}" />
 
-            <HyperlinkButton 
+            <HyperlinkButton Margin="0,-3,0,0"
                 NavigateUri="https://github.com/martinchrzan/ColorPicker/">
                 <TextBlock Text="Martin Chrzan's Color Picker" TextWrapping="Wrap" />
             </HyperlinkButton>

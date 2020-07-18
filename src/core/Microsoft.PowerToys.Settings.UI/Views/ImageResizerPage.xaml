@@ -236,44 +236,57 @@
 
             <CustomControls:GroupTitleTextBlock x:Uid="File" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
-            <CustomControls:BodyTextBlock x:Uid="ImageResizer_FileFormatDescription"
-                                          IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                                          Margin="{StaticResource SmallTopBottomMargin}"/>
-
-            <StackPanel Orientation="Horizontal" Margin="0,-5,0,-5">
-                <CustomControls:BodyTextBlock FontSize="12" FontWeight="Bold" Text="%1" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-                <CustomControls:BodyTextBlock FontSize="12" Text=" - Original filename" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0,-5,0,-5">
-                <CustomControls:BodyTextBlock FontSize="12" FontWeight="Bold" Text="%2" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-                <CustomControls:BodyTextBlock FontSize="12" Text=" - Size name" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0,-5,0,-5">
-                <CustomControls:BodyTextBlock FontSize="12" FontWeight="Bold" Text="%3" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-                <CustomControls:BodyTextBlock FontSize="12" Text=" - Selected width" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0,-5,0,-5">
-                <CustomControls:BodyTextBlock FontSize="12" FontWeight="Bold" Text="%4" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-                <CustomControls:BodyTextBlock FontSize="12" Text=" - Selected height" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0,-5,0,-5">
-                <CustomControls:BodyTextBlock FontSize="12" FontWeight="Bold" Text="%5" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-                <CustomControls:BodyTextBlock FontSize="12" Text=" - Actual height" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0,-5,0,-5">
-                <CustomControls:BodyTextBlock FontSize="12" FontWeight="Bold" Text="%6" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-                <CustomControls:BodyTextBlock FontSize="12" Text=" - Actual width" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-            </StackPanel>
-
-            
-            <TextBox  x:Uid="ImageResizer_FilenameFormatHeader"
-                      Text="{x:Bind Mode=TwoWay, Path=ViewModel.FileName}"
+            <TextBox Text="{x:Bind Mode=TwoWay, Path=ViewModel.FileName}"
                       HorizontalAlignment="Left"
                       MinWidth="240"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                      Margin="{StaticResource SmallTopMargin}"
-                      
-                      />
+                      Margin="{StaticResource SmallTopMargin}">
+                <TextBox.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <CustomControls:BodyTextBlock
+                            Margin="0,-12,0,0"
+                            x:Uid="ImageResizer_FilenameFormatHeader"
+                            IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+                        <TextBlock Text="&#xE946;"
+                           FontFamily="Segoe MDL2 Assets"
+                           Margin="5,4,0,0"/>
+                    </StackPanel>
+                </TextBox.Header>
+                <ToolTipService.ToolTip>
+                    <StackPanel>
+                        <TextBlock x:Uid="ImageResizer_FileFormatDescription"/>
+                        <TextBlock Margin="{StaticResource SmallTopMargin}">
+                            <Run Text="%1" FontWeight="Bold" />
+                            <Run Text=" - Original filename" />
+                        </TextBlock>
+
+                        <TextBlock>
+                            <Run Text="%2" FontWeight="Bold" />
+                            <Run Text=" - Size name"/>
+                        </TextBlock>
+
+                        <TextBlock>
+                            <Run Text="%3" FontWeight="Bold" />
+                            <Run Text=" - Selected width"/>
+                        </TextBlock>
+
+                        <TextBlock>
+                            <Run Text="%4" FontWeight="Bold" />
+                            <Run Text=" - Selected height"/>
+                        </TextBlock>
+
+                        <TextBlock>
+                            <Run Text="%5" FontWeight="Bold" />
+                            <Run Text=" - Actual height"/>
+                        </TextBlock>
+
+                        <TextBlock>
+                            <Run Text="%6" FontWeight="Bold" />
+                            <Run Text=" - Actual width"/>
+                        </TextBlock>
+                    </StackPanel>
+                </ToolTipService.ToolTip>
+            </TextBox>
 
             <CheckBox x:Uid="ImageResizer_UseOriginalDate"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
@@ -316,7 +329,7 @@
                 x:Uid="AttributionTitle"
                 Style="{StaticResource SettingsGroupTitleStyle}"/>
 
-                <HyperlinkButton 
+                <HyperlinkButton Margin="0,-3,0,0"
                 NavigateUri="https://github.com/bricelam/ImageResizer/">
                     <TextBlock Text="Brice Lambson's ImageResizer" TextWrapping="Wrap" />
                 </HyperlinkButton>
