@@ -25,7 +25,16 @@ namespace RemappingLogicTests
 
             // Set HandleOSLevelShortcutRemapEvent as the hook procedure
             std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
-            mockedInputHandler.SetHookProc(currentHookProc);
+            mockedInputHandler.SetHookProc([currentHookProc](LowlevelKeyboardEvent* data) {
+                if (data->lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+                {
+                    return currentHookProc(data);
+                }
+                else
+                {
+                    return (intptr_t)1;
+                }
+            });
         }
 
         // Test if correct keyboard states are set for a 2 key shortcut remap wih different modifiers key down
@@ -1819,6 +1828,147 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x43), true);
+        }
+
+        // Test if SendVirtualInput is sent exactly once with the suppress flag when Win+CapsLock is remapped to shortcut containing Ctrl
+        TEST_METHOD (HandleShortcutRemapEvent_ShouldSendVirtualInputWithSuppressFlagExactlyOnce_WhenWinCapsLockIsMappedToShortcutContainingCtrl)
+        {
+            // Set sendvirtualinput call count condition to return true if the key event was sent with the suppress flag
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* data) {
+                if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+                    return true;
+                else
+                    return false;
+            });
+
+            // Remap Win+CapsLock to Ctrl+A
+            Shortcut src;
+            src.SetKey(CommonSharedConstants::VK_WIN_BOTH);
+            src.SetKey(VK_CAPITAL);
+            Shortcut dest;
+            dest.SetKey(VK_CONTROL);
+            dest.SetKey(0x41);
+            testState.AddOSLevelShortcut(src, dest);
+
+            const int nInputs = 2;
+
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_LWIN;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = VK_CAPITAL;
+
+            // Send LWin+CapsLock keydown
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // SendVirtualInput should be called exactly once with the above condition
+            Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
+        }
+
+        // Test if SendVirtualInput is sent exactly once with the suppress flag when Win+CapsLock is remapped to Ctrl
+        TEST_METHOD (HandleShortcutRemapEvent_ShouldSendVirtualInputWithSuppressFlagExactlyOnce_WhenWinCapsLockIsMappedToCtrl)
+        {
+            // Set sendvirtualinput call count condition to return true if the key event was sent with the suppress flag
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* data) {
+                if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+                    return true;
+                else
+                    return false;
+            });
+
+            // Remap Win+CapsLock to Ctrl+A
+            Shortcut src;
+            src.SetKey(CommonSharedConstants::VK_WIN_BOTH);
+            src.SetKey(VK_CAPITAL);
+            testState.AddOSLevelShortcut(src, VK_CONTROL);
+
+            const int nInputs = 2;
+
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_LWIN;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = VK_CAPITAL;
+
+            // Send LWin+CapsLock keydown
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // SendVirtualInput should be called exactly once with the above condition
+            Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
+        }
+        
+        // Test if SendVirtualInput is sent exactly once with the suppress flag when shortcut containing Ctrl is remapped to shortcut Win+CapsLock and Ctrl is pressed again while shortcut remap is invoked
+        TEST_METHOD (HandleShortcutRemapEvent_ShouldSendVirtualInputWithSuppressFlagExactlyOnce_WhenShortcutContainingCtrlIsMappedToWinCapsLockAndCtrlIsPressedWhileInvoked)
+        {
+            // Set sendvirtualinput call count condition to return true if the key event was sent with the suppress flag
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* data) {
+                if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+                    return true;
+                else
+                    return false;
+            });
+
+            // Remap Ctrl+A to Win+CapsLock
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey(0x41);
+            Shortcut dest;
+            dest.SetKey(CommonSharedConstants::VK_WIN_BOTH);
+            dest.SetKey(VK_CAPITAL);
+            testState.AddOSLevelShortcut(src, dest);
+
+            const int nInputs = 3;
+
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = 0x41;
+            input[2].type = INPUT_KEYBOARD;
+            input[2].ki.wVk = VK_CONTROL;
+
+            // Send LWin+CapsLock keydown followed by Ctrl
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // SendVirtualInput should be called exactly once with the above condition
+            Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
+        }
+
+        // Test if SendVirtualInput is sent exactly once with the suppress flag when shortcut containing Ctrl is remapped to shortcut Win+CapsLock and Shift is pressed again while shortcut remap is invoked
+        TEST_METHOD (HandleShortcutRemapEvent_ShouldSendVirtualInputWithSuppressFlagExactlyOnce_WhenShortcutContainingCtrlIsMappedToWinCapsLockAndShiftIsPressedWhileInvoked)
+        {
+            // Set sendvirtualinput call count condition to return true if the key event was sent with the suppress flag
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* data) {
+                if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+                    return true;
+                else
+                    return false;
+            });
+
+            // Remap Ctrl+A to Win+CapsLock
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey(0x41);
+            Shortcut dest;
+            dest.SetKey(CommonSharedConstants::VK_WIN_BOTH);
+            dest.SetKey(VK_CAPITAL);
+            testState.AddOSLevelShortcut(src, dest);
+
+            const int nInputs = 3;
+
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = 0x41;
+            input[2].type = INPUT_KEYBOARD;
+            input[2].ki.wVk = VK_SHIFT;
+
+            // Send LWin+CapsLock keydown followed by Ctrl
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // SendVirtualInput should be called exactly once with the above condition
+            Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
         }
     };
 }

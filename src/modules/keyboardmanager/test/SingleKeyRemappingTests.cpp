@@ -40,7 +40,7 @@ namespace RemappingLogicTests
             input[0].ki.wVk = 0x41;
 
             // Send A keydown
-            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
             // A key state should be unchanged, and B key state should be true
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
@@ -48,7 +48,7 @@ namespace RemappingLogicTests
             input[0].ki.dwFlags = KEYEVENTF_KEYUP;
 
             // Send A keyup
-            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
             // A key state should be unchanged, and B key state should be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
@@ -67,14 +67,14 @@ namespace RemappingLogicTests
             input[0].ki.wVk = 0x41;
 
             // Send A keydown
-            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
             // A key state should be unchanged
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             input[0].ki.dwFlags = KEYEVENTF_KEYUP;
 
             // Send A keyup
-            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
             // A key state should be unchanged
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
@@ -92,7 +92,7 @@ namespace RemappingLogicTests
             input[0].ki.wVk = 0x41;
 
             // Send A keydown
-            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
             // A key state should be unchanged, and common Win key state should be true
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
@@ -100,7 +100,7 @@ namespace RemappingLogicTests
             input[0].ki.dwFlags = KEYEVENTF_KEYUP;
 
             // Send A keyup
-            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
             // A key state should be unchanged, and common Win key state should be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
@@ -127,7 +127,7 @@ namespace RemappingLogicTests
             input[0].ki.wVk = VK_CAPITAL;
 
             // Send Caps Lock keydown
-            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
             // SendVirtualInput should be called exactly once with the above condition
             Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
@@ -153,7 +153,7 @@ namespace RemappingLogicTests
             input[0].ki.wVk = VK_CONTROL;
 
             // Send Ctrl keydown
-            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
             // SendVirtualInput should be called exactly once with the above condition
             Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
@@ -183,7 +183,7 @@ namespace RemappingLogicTests
             input[0].ki.wVk = VK_CAPITAL;
 
             // Send Caps Lock keydown
-            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
             // SendVirtualInput should be called exactly twice with the above condition
             Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount());
@@ -212,7 +212,7 @@ namespace RemappingLogicTests
             input[0].ki.wVk = VK_CONTROL;
 
             // Send Ctrl keydown
-            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
             // SendVirtualInput should be called exactly once with the above condition
             Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
@@ -233,7 +233,7 @@ namespace RemappingLogicTests
             input[0].ki.wVk = 0x41;
 
             // Send A keydown
-            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
             // A key state should be unchanged, and Ctrl, V key state should be true
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
@@ -242,7 +242,7 @@ namespace RemappingLogicTests
             input[0].ki.dwFlags = KEYEVENTF_KEYUP;
 
             // Send A keyup
-            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
             // A key state should be unchanged, and Ctrl, V key state should be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
@@ -266,7 +266,7 @@ namespace RemappingLogicTests
             input[0].ki.wVk = 0x41;
 
             // Send A keydown
-            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
             // A key state should be unchanged, and Ctrl, Shift, V key state should be true
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
@@ -276,7 +276,7 @@ namespace RemappingLogicTests
             input[0].ki.dwFlags = KEYEVENTF_KEYUP;
 
             // Send A keyup
-            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
             // A key state should be unchanged, and Ctrl, Shift, V key state should be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
@@ -300,7 +300,7 @@ namespace RemappingLogicTests
             input[0].ki.wVk = VK_LCONTROL;
 
             // Send LCtrl keydown
-            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
             // LCtrl, V key state should be true
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LCONTROL), true);
@@ -308,7 +308,7 @@ namespace RemappingLogicTests
             input[0].ki.dwFlags = KEYEVENTF_KEYUP;
 
             // Send LCtrl keyup
-            mockedInputHandler.SendVirtualInput(1, input, sizeof(INPUT));
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
             // LCtrl, V key state should be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_LCONTROL), false);
