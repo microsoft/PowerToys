@@ -8,7 +8,28 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
-    <TextBox x:Name="HotkeyTextBox" 
-             IsReadOnly="True"
-             Header="{x:Bind Header, Mode=OneTime}"/>
+    <StackPanel Orientation="Vertical">
+        <ToolTipService.ToolTip>
+            <ToolTip>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock x:Uid="ShortcutWarningLabel"/>
+                    <TextBlock Text="Win, Ctrl, Alt, Shift" FontWeight="SemiBold"/>
+                </StackPanel>
+            </ToolTip>
+        </ToolTipService.ToolTip>
+
+        <StackPanel Orientation="Horizontal">
+            <local:BodyTextBlock
+                        Margin="0,-12,0,0"
+                        Text="{x:Bind Header, Mode=OneTime}"
+                        IsActive="{x:Bind Mode=OneWay, Path=IsEnabled}"/>
+            <TextBlock Text="&#xE946;"
+                       FontFamily="Segoe MDL2 Assets"
+                       Margin="5,4,0,0"/>
+        
+        </StackPanel>
+        <TextBox x:Name="HotkeyTextBox"
+                 Margin="0,5,0,0"
+                 IsReadOnly="True"/>
+    </StackPanel>
 </UserControl>

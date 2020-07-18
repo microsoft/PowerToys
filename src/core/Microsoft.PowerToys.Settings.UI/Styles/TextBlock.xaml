@@ -21,6 +21,6 @@
 
     <Style x:Key="SettingsGroupTitleStyle" TargetType="TextBlock" BasedOn="{StaticResource SubtitleTextBlockStyle}">
         <Setter Property="Margin" Value="0,34,0,8" />
+        <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
-
 </ResourceDictionary>

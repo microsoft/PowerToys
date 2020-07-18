@@ -19,9 +19,11 @@
                         <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="1" />
-                        <Setter Target="SidePanel.(Grid.Row)" Value="0" />
-                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}" />
+                        <Setter Target="SidePanel.(Grid.Column)" Value="1"/>
+                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}"/>
+                        <Setter Target="PowerToysRunView.(Grid.Row)" Value="0" />
+                        <Setter Target="LinksPanel.(RelativePanel.Below)" Value="AboutImage"/>
+                        <Setter Target="AboutTitle.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
@@ -29,9 +31,13 @@
                         <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
-                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
-                        <Setter Target="SidePanel.Width" Value="Auto" />
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
+                        <Setter Target="SidePanel.Width" Value="500"/>
+                        <Setter Target="PowerToysRunView.(Grid.Row)" Value="1" />
+                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
+                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
+                        <Setter Target="LinksPanel.Margin" Value="12,1,0,0"/>
+                        <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -45,46 +51,9 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Vertical">
-            <TextBlock x:Uid="PowerLauncher_Description"
-                       TextWrapping="Wrap"/>
-
+        <StackPanel Orientation="Vertical" x:Name="PowerToysRunView">
             <ToggleSwitch x:Uid="PowerLauncher_EnablePowerLauncher" 
-                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnablePowerLauncher}"
-                          Margin="{StaticResource MediumTopMargin}"/>
-
-            <CustomControls:GroupTitleTextBlock x:Uid="PowerLauncher_SearchResults"
-                                        IsActive="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
-
-            <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
-                      MinWidth="320"
-                      Margin="{StaticResource SmallTopMargin}"
-                      ItemsSource="{Binding searchResultPreferencesOptions}"
-                      SelectedItem="{Binding Mode=TwoWay, Path=SelectedSearchResultPreference}"
-                      SelectedValuePath="Item2"
-                      DisplayMemberPath="Item1"
-                      IsEnabled="False"
-                      />
-
-            <ComboBox x:Uid="PowerLauncher_SearchTypePreference"
-                      MinWidth="320"
-                      Margin="{StaticResource SmallTopMargin}"
-                      ItemsSource="{Binding searchTypePreferencesOptions}"
-                      SelectedItem="{Binding Mode=TwoWay, Path=SelectedSearchTypePreference}"
-                      SelectedValuePath="Item2"
-                      DisplayMemberPath="Item1"
-                      IsEnabled="False"
-                      />-->
-
-            <CustomControls:BodyTextBlock x:Uid="PowerLauncher_MaximumNumberOfResults"
-                                  Margin="{StaticResource SmallTopMargin}"
-                                  IsActive="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
-            <muxc:NumberBox Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}"
-                            Width="240"
-                            SpinButtonPlacementMode="Compact"
-                            HorizontalAlignment="Left"
-                            Minimum="1"
-                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
+                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnablePowerLauncher}"/>
 
             <CustomControls:GroupTitleTextBlock x:Uid="PowerLauncher_Shortcuts"
                        HorizontalAlignment="Left"
@@ -136,45 +105,91 @@
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
                       />
 
+            <CustomControls:GroupTitleTextBlock x:Uid="PowerLauncher_SearchResults"
+                                        IsActive="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
+
+            <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
+                      MinWidth="320"
+                      Margin="{StaticResource SmallTopMargin}"
+                      ItemsSource="{Binding searchResultPreferencesOptions}"
+                      SelectedItem="{Binding Mode=TwoWay, Path=SelectedSearchResultPreference}"
+                      SelectedValuePath="Item2"
+                      DisplayMemberPath="Item1"
+                      IsEnabled="False"
+                      />
+
+            <ComboBox x:Uid="PowerLauncher_SearchTypePreference"
+                      MinWidth="320"
+                      Margin="{StaticResource SmallTopMargin}"
+                      ItemsSource="{Binding searchTypePreferencesOptions}"
+                      SelectedItem="{Binding Mode=TwoWay, Path=SelectedSearchTypePreference}"
+                      SelectedValuePath="Item2"
+                      DisplayMemberPath="Item1"
+                      IsEnabled="False"
+                      />-->
+
+            <CustomControls:BodyTextBlock x:Uid="PowerLauncher_MaximumNumberOfResults"
+                                  IsActive="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
+            <muxc:NumberBox Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}"
+                            Width="240"
+                            SpinButtonPlacementMode="Compact"
+                            HorizontalAlignment="Left"
+                            Minimum="1"
+                            Margin="{StaticResource HeaderTextTopMargin}"
+                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
+
             <CheckBox x:Uid="PowerLauncher_ClearInputOnLaunch"
                       Margin="{StaticResource SmallTopMargin}"
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ClearInputOnLaunch}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
             />
         </StackPanel>
-        <StackPanel
-            x:Name="SidePanel"
-            Orientation="Vertical"
-            HorizontalAlignment="Left"
-            Width="{StaticResource SidePanelWidth}"
-            Grid.Column="1">
 
-            <TextBlock 
-                x:Uid="About_PowerLauncher"
-                Style="{StaticResource SettingsGroupTitleStyle}"
-                Margin="{StaticResource XSmallBottomMargin}"
-                Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
+        <RelativePanel x:Name="SidePanel" 
+                    HorizontalAlignment="Left"
+                    Width="{StaticResource SidePanelWidth}"
+                    Grid.Column="1">
+            <StackPanel x:Name="DescriptionPanel">
+                <TextBlock x:Uid="About_PowerLauncher" x:Name="AboutTitle" Grid.ColumnSpan="2"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Margin="{StaticResource XSmallBottomMargin}"/>
+                <TextBlock x:Uid="PowerLauncher_Description"
+                           TextWrapping="Wrap"
+                           Grid.Row="1" />
+            </StackPanel>
 
-            <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_PowerToysRun">
-                <TextBlock x:Uid="Module_overview" />
-            </HyperlinkButton>
+            <Image x:Name="AboutImage"
+                   RelativePanel.Below="DescriptionPanel"
+                   Margin="{StaticResource SmallTopBottomMargin}"
+                   Grid.Row="2"
+                   MaxWidth="240"
+                   HorizontalAlignment="Left"
+                   Source="https://aka.ms/powerToysFancyZoneSettingImage" />
 
-            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
-                <TextBlock x:Uid="Give_Feedback" />
-            </HyperlinkButton>
+            <StackPanel x:Name="LinksPanel"
+                        RelativePanel.Below="AboutImage"
+                        Orientation="Vertical" >
+                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_PowerToysRun">
+                    <TextBlock x:Uid="Module_overview" />
+                </HyperlinkButton>
+                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                    <TextBlock x:Uid="Give_Feedback" />
+                </HyperlinkButton>
 
-            <TextBlock 
+                <TextBlock 
                 x:Uid="AttributionTitle"
                 Style="{StaticResource SettingsGroupTitleStyle}" 
                 Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
 
-            <HyperlinkButton NavigateUri="https://github.com/Wox-launcher/Wox/">
-                <TextBlock Text="Wox"/>
-            </HyperlinkButton>
+                <HyperlinkButton NavigateUri="https://github.com/Wox-launcher/Wox/">
+                    <TextBlock Text="Wox"/>
+                </HyperlinkButton>
 
-            <HyperlinkButton NavigateUri="https://github.com/betsegaw/windowwalker/">
-                <TextBlock Text="Beta Tadele's Window Walker" />
-            </HyperlinkButton>
-        </StackPanel>
+                <HyperlinkButton NavigateUri="https://github.com/betsegaw/windowwalker/">
+                    <TextBlock Text="Beta Tadele's Window Walker" />
+                </HyperlinkButton>
+
+            </StackPanel>
+        </RelativePanel>
     </Grid>
 </Page>

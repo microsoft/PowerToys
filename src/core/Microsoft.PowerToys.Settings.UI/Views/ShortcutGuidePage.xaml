@@ -23,9 +23,11 @@
                         <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="1" />
-                        <Setter Target="SidePanel.(Grid.Row)" Value="0" />
-                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}" />
+                        <Setter Target="SidePanel.(Grid.Column)" Value="1"/>
+                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}"/>
+                        <Setter Target="ShortCutGuideView.(Grid.Row)" Value="0" />
+                        <Setter Target="LinksPanel.(RelativePanel.Below)" Value="AboutImage"/>
+                        <Setter Target="AboutTitle.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
@@ -33,9 +35,13 @@
                         <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
-                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
-                        <Setter Target="SidePanel.Width" Value="Auto" />
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
+                        <Setter Target="SidePanel.Width" Value="500"/>
+                        <Setter Target="ShortCutGuideView.(Grid.Row)" Value="1" />
+                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
+                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
+                        <Setter Target="LinksPanel.Margin" Value="12,1,0,0"/>
+                        <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -49,13 +55,8 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <StackPanel Orientation="Vertical" x:Name="ShortCutGuideView">
-            <TextBlock x:Uid="ShortcutGuide_Description"
-                       TextWrapping="Wrap"
-                       />
-
             <ToggleSwitch x:Uid="ShortcutGuide_Enable"
-                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
-                          Margin="{StaticResource MediumTopMargin}"/>
+                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"/>
 
             <CustomControls:GroupTitleTextBlock x:Uid="ShortcutGuide_Appearance_Behavior" 
                                                 IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
@@ -85,7 +86,8 @@
                 <CustomControls:BodyTextBlock Text="{x:Bind Mode=OneWay, Path=ViewModel.OverlayOpacity, Converter={StaticResource StringFormatConverter}, ConverterParameter=' {0}%' }"
                                               VerticalAlignment="Center"
                                               FontSize="16"
-                                              Margin="0,21,0,0"
+                                              FontWeight="SemiBold"
+                                              Margin="0,12,0,0"
                                               IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
             </StackPanel>
 
@@ -101,26 +103,37 @@
             </muxc:RadioButtons>
         </StackPanel>
 
-        <StackPanel 
-            x:Name="SidePanel"
-            Orientation="Vertical"
-            HorizontalAlignment="Left"
-            Width="{StaticResource SidePanelWidth}"
-            Grid.Column="1">
+        <RelativePanel x:Name="SidePanel" 
+                    HorizontalAlignment="Left"
+                    Width="{StaticResource SidePanelWidth}"
+                    Grid.Column="1">
+            <StackPanel x:Name="DescriptionPanel">
+                <TextBlock x:Uid="About_ShortcutGuide" x:Name="AboutTitle" Grid.ColumnSpan="2"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Margin="{StaticResource XSmallBottomMargin}"/>
+                <TextBlock x:Uid="ShortcutGuide_Description"
+                           TextWrapping="Wrap"
+                           Grid.Row="1" />
+            </StackPanel>
 
-            <TextBlock 
-                x:Uid="About_ShortcutGuide"
-                Style="{StaticResource SettingsGroupTitleStyle}"
-                Margin="{StaticResource XSmallBottomMargin}"
-                />
+            <Image x:Name="AboutImage"
+                   RelativePanel.Below="DescriptionPanel"
+                   Margin="{StaticResource SmallTopBottomMargin}"
+                   Grid.Row="2"
+                   MaxWidth="240"
+                   HorizontalAlignment="Left"
+                   Source="https://aka.ms/powerToysFancyZoneSettingImage" />
 
-            <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ShortcutGuide">
-                <TextBlock x:Uid="Module_overview"/>
-            </HyperlinkButton>
-
-            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
-                <TextBlock x:Uid="Give_Feedback" />
-            </HyperlinkButton>
-        </StackPanel>
+            <StackPanel x:Name="LinksPanel"
+                        RelativePanel.Below="AboutImage"
+                        Orientation="Vertical" >
+                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ShortcutGuide">
+                    <TextBlock x:Uid="Module_overview" />
+                </HyperlinkButton>
+                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                    <TextBlock x:Uid="Give_Feedback" />
+                </HyperlinkButton>
+            </StackPanel>
+        </RelativePanel>
     </Grid>
 </Page>
