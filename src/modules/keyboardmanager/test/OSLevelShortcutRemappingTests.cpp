@@ -1896,7 +1896,7 @@ namespace RemappingLogicTests
             // SendVirtualInput should be called exactly once with the above condition
             Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
         }
-        
+
         // Test if SendVirtualInput is sent exactly once with the suppress flag when shortcut containing Ctrl is remapped to shortcut Win+CapsLock and Ctrl is pressed again while shortcut remap is invoked
         TEST_METHOD (HandleShortcutRemapEvent_ShouldSendVirtualInputWithSuppressFlagExactlyOnce_WhenShortcutContainingCtrlIsMappedToWinCapsLockAndCtrlIsPressedWhileInvoked)
         {
