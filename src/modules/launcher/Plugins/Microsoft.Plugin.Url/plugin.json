@@ -1,0 +1,12 @@
+{
+  "ID": "03276A39D4E9417C8FFD200B0EE5E871",
+  "ActionKeyword": "*",
+  "Name": "Windows Url Handler",
+  "Description": "Search for files and folders",
+  "Author": "Microsoft",
+  "Version": "1.0.0",
+  "Language": "csharp",
+  "Website": "http://aka.ms/PowerToys",
+  "ExecuteFileName": "Microsoft.Plugin.Url.dll",
+  "IcoPath": "Images\\shell.dark.png"
+}
