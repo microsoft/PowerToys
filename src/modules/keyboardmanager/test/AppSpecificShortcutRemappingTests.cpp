@@ -7,7 +7,6 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-
 namespace RemappingLogicTests
 {
     TEST_CLASS (AppSpecificShortcutRemappingTests)
@@ -40,7 +39,7 @@ namespace RemappingLogicTests
             dest.SetKey(VK_MENU);
             dest.SetKey(0x56);
             testState.AddAppSpecificShortcut(testApp1, src, dest);
-            
+
             // Set the testApp as the foreground process
             mockedInputHandler.SetForegroundProcess(testApp1);
 
@@ -171,7 +170,6 @@ namespace RemappingLogicTests
 
             // Release A then Ctrl
             mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
-
 
             // Ctrl, A, Alt and Tab should all be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
