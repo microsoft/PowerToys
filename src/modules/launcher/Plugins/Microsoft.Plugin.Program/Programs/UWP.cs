@@ -58,7 +58,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             IStream stream;
             const uint noAttribute = 0x80;
-            const Stgm exclusiveRead = Stgm.Read | Stgm.DenyWrite;
+            const Stgm exclusiveRead = Stgm.Read | Stgm.DenyNone;
             var hResult = SHCreateStreamOnFileEx(path, exclusiveRead, noAttribute, false, null, out stream);
 
             if (hResult == Hresult.Ok)
@@ -676,7 +676,7 @@ namespace Microsoft.Plugin.Program.Programs
         private enum Stgm : uint
         {
             Read = 0x0,
-            DenyWrite = 0x20,
+            DenyNone = 0x40,
         }
 
         private enum Hresult : uint
