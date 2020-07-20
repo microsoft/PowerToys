@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 
-namespace Wox.Storage
+namespace PowerLauncher.Storage
 {
     public class UserSelectedRecord
     {
@@ -12,6 +13,11 @@ namespace Wox.Storage
 
         public void Add(Result result)
         {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
             var key = result.ToString();
             if (records.TryGetValue(key, out int value))
             {
@@ -20,13 +26,17 @@ namespace Wox.Storage
             else
             {
                 records.Add(key, 1);
-
             }
         }
 
         public int GetSelectedCount(Result result)
         {
-            if (records.TryGetValue(result.ToString(), out int value))
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            if (result != null && records.TryGetValue(result.ToString(), out int value))
             {
                 return value;
             }

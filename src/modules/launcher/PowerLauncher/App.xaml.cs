@@ -11,14 +11,14 @@ using Wox;
 using Wox.Core;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
-using Wox.Helper;
+using PowerLauncher.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
-using Wox.ViewModel;
+using PowerLauncher.ViewModel;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace PowerLauncher

@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 using System.Windows;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
-using Wox.Helper;
+using PowerLauncher.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
-using Wox.ViewModel;
+using PowerLauncher.ViewModel;
 
 namespace Wox
 {
@@ -28,10 +28,10 @@ namespace Wox
 
         public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, Alphabet alphabet, ThemeManager themeManager)
         {
-            _settingsVM = settingsVM;
-            _mainVM = mainVM;
-            _alphabet = alphabet;
-            _themeManager = themeManager;
+            _settingsVM = settingsVM ?? throw new ArgumentNullException(nameof(settingsVM));
+            _mainVM = mainVM ?? throw new ArgumentNullException(nameof(mainVM));
+            _alphabet = alphabet ?? throw new ArgumentNullException(nameof(alphabet));
+            _themeManager = themeManager ?? throw new ArgumentNullException(nameof(themeManager));
             _themeManager.ThemeChanged += OnThemeChanged;
             WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
         }
@@ -43,17 +43,6 @@ namespace Wox
         public void ChangeQuery(string query, bool requery = false)
         {
             _mainVM.ChangeQueryText(query, requery);
-        }
-
-        public void ChangeQueryText(string query, bool selectAll = false)
-        {
-            _mainVM.ChangeQueryText(query, false);
-        }
-
-        [Obsolete]
-        public void CloseApp()
-        {
-            Application.Current.MainWindow.Close();
         }
 
         public void RestartApp()
@@ -88,30 +77,8 @@ namespace Wox
             PluginManager.ReloadData();
         }
 
-        [Obsolete]
-        public void HideApp()
-        {
-            _mainVM.MainWindowVisibility = Visibility.Hidden;
-        }
-
-        [Obsolete]
-        public void ShowApp()
-        {
-            _mainVM.MainWindowVisibility = Visibility.Visible;
-        }
-
         public void ShowMsg(string title, string subTitle = "", string iconPath = "", bool useMainWindowAsOwner = true)
         {           
-        }
-
-        public void StartLoadingBar()
-        {
-            _mainVM.ProgressBarVisibility = Visibility.Visible;
-        }
-
-        public void StopLoadingBar()
-        {
-            _mainVM.ProgressBarVisibility = Visibility.Collapsed;
         }
 
         public void InstallPlugin(string path)
@@ -127,22 +94,6 @@ namespace Wox
         public List<PluginPair> GetAllPlugins()
         {
             return PluginManager.AllPlugins.ToList();
-        }
-
-
-        [Obsolete("This will be removed in Wox 1.3")]
-        public void PushResults(Query query, PluginMetadata plugin, List<Result> results)
-        {
-            results.ForEach(o =>
-            {
-                o.PluginDirectory = plugin.PluginDirectory;
-                o.PluginID = plugin.ID;
-                o.OriginQuery = query;
-            });
-            Task.Run(() =>
-            {
-                _mainVM.UpdateResultView(results, plugin, query);
-            });
         }
 
         public Theme GetCurrentTheme()
