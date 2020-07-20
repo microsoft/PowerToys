@@ -3,6 +3,19 @@
 
 #include "FancyZonesDataTypes.h"
 
+// Non-Localizable strings
+namespace NonLocalizable
+{
+    const wchar_t BlankStr[] = L"blank";
+    const wchar_t ColumnsStr[] = L"columns";
+    const wchar_t CustomStr[] = L"custom";
+    const wchar_t FocusStr[] = L"focus";
+    const wchar_t GridStr[] = L"grid";
+    const wchar_t PriorityGridStr[] = L"priority-grid";
+    const wchar_t RowsStr[] = L"rows";
+    const wchar_t TypeToStringErrorStr[] = L"TypeToString_ERROR";
+}
+
 namespace
 {
     // From Settings.cs
@@ -21,47 +34,47 @@ namespace FancyZonesDataTypes
         switch (type)
         {
         case ZoneSetLayoutType::Blank:
-            return L"blank";
+            return NonLocalizable::BlankStr;
         case ZoneSetLayoutType::Focus:
-            return L"focus";
+            return NonLocalizable::FocusStr;
         case ZoneSetLayoutType::Columns:
-            return L"columns";
+            return NonLocalizable::ColumnsStr;
         case ZoneSetLayoutType::Rows:
-            return L"rows";
+            return NonLocalizable::RowsStr;
         case ZoneSetLayoutType::Grid:
-            return L"grid";
+            return NonLocalizable::GridStr;
         case ZoneSetLayoutType::PriorityGrid:
-            return L"priority-grid";
+            return NonLocalizable::PriorityGridStr;
         case ZoneSetLayoutType::Custom:
-            return L"custom";
+            return NonLocalizable::CustomStr;
         default:
-            return L"TypeToString_ERROR";
+            return NonLocalizable::TypeToStringErrorStr;
         }
     }
 
     ZoneSetLayoutType TypeFromString(const std::wstring& typeStr)
     {
-        if (typeStr == L"focus")
+        if (typeStr == NonLocalizable::FocusStr)
         {
             return ZoneSetLayoutType::Focus;
         }
-        else if (typeStr == L"columns")
+        else if (typeStr == NonLocalizable::ColumnsStr)
         {
             return ZoneSetLayoutType::Columns;
         }
-        else if (typeStr == L"rows")
+        else if (typeStr == NonLocalizable::RowsStr)
         {
             return ZoneSetLayoutType::Rows;
         }
-        else if (typeStr == L"grid")
+        else if (typeStr == NonLocalizable::GridStr)
         {
             return ZoneSetLayoutType::Grid;
         }
-        else if (typeStr == L"priority-grid")
+        else if (typeStr == NonLocalizable::PriorityGridStr)
         {
             return ZoneSetLayoutType::PriorityGrid;
         }
-        else if (typeStr == L"custom")
+        else if (typeStr == NonLocalizable::CustomStr)
         {
             return ZoneSetLayoutType::Custom;
         }
