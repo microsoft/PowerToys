@@ -5,6 +5,8 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls" xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -48,51 +50,54 @@
         </Grid.RowDefinitions>
         <StackPanel Orientation="Vertical" x:Name="ShortCutGuideView">
             <TextBlock x:Uid="ShortcutGuide_Description"
-                       TextWrapping="Wrap"/>
+                       TextWrapping="Wrap"
+                       />
 
             <ToggleSwitch x:Uid="ShortcutGuide_Enable"
-                          IsOn="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
                           Margin="{StaticResource MediumTopMargin}"/>
 
-            <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior" 
-                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+            <CustomControls:GroupTitleTextBlock x:Uid="ShortcutGuide_Appearance_Behavior" 
+                                                IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
-            <muxc:NumberBox x:Uid="ShortcutGuide_PressTime"
-                            Minimum="100"
+            <CustomControls:BodyTextBlock x:Uid="ShortcutGuide_PressTime"
+                                          Margin="{StaticResource SmallTopMargin}"
+                                          IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            <muxc:NumberBox Minimum="100"
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
-                            Margin="{StaticResource SmallTopMargin}"
+                            Margin="{StaticResource HeaderTextTopMargin}"
                             Width="240"
-                            Value="{ Binding Mode=TwoWay, Path=PressTime}"
-                            IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}" SmallChange="50" LargeChange="100"/>
+                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.PressTime}"
+                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}" 
+                            SmallChange="50" 
+                            LargeChange="100"/>
 
             <StackPanel Orientation="Horizontal" Margin="{StaticResource MediumTopMargin}" Spacing="12">
                 <Slider x:Uid="ShortcutGuide_OverlayOpacity"
                     Minimum="0"
                     Maximum="100"
                     Width="240"
-                    Value="{ Binding Mode=TwoWay, Path=OverlayOpacity}"
+                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.OverlayOpacity}"
                     IsThumbToolTipEnabled="False"
                     HorizontalAlignment="Left"
-                    IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
-                <TextBlock Text="{ Binding Mode=OneWay, Path=OverlayOpacity, Converter={StaticResource StringFormatConverter}, ConverterParameter=' {0}%' }" 
-                           VerticalAlignment="Center"
-                           FontSize="16"
-                           Margin="0,21,0,0"/>
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+                <CustomControls:BodyTextBlock Text="{x:Bind Mode=OneWay, Path=ViewModel.OverlayOpacity, Converter={StaticResource StringFormatConverter}, ConverterParameter=' {0}%' }"
+                                              VerticalAlignment="Center"
+                                              FontSize="16"
+                                              Margin="0,21,0,0"
+                                              IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
             </StackPanel>
-            
-            <muxc:RadioButtons x:Uid="ShortcutGuide_Theme"
-                               Margin="{StaticResource SmallTopMargin}"
-                               IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                               SelectedIndex="{ Binding Mode=TwoWay, Path=ThemeIndex}">
-                <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark"
-                             IsChecked="{ Binding Mode=TwoWay, Path=IsDarkThemeRadioButtonChecked}"/>
 
-                <RadioButton x:Uid="GeneralPage_Radio_Theme_Light" 
-                             IsChecked="{ Binding Mode=TwoWay, Path=IsLightThemeRadioButtonChecked}"/>
-
-                <RadioButton x:Uid="GeneralPage_Radio_Theme_Default"
-                             IsChecked="{ Binding Mode=TwoWay, Path=IsSystemThemeRadioButtonChecked}"/>
+            <CustomControls:BodyTextBlock x:Uid="ShortcutGuide_Theme"
+                                          Margin="{StaticResource SmallTopMargin}"
+                                          IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            <muxc:RadioButtons IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                               SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}"
+                               Margin="{StaticResource HeaderTextTopMargin}">
+                <RadioButton x:Uid="GeneralPage_Radio_Theme_Dark"/>
+                <RadioButton x:Uid="GeneralPage_Radio_Theme_Light" />
+                <RadioButton x:Uid="GeneralPage_Radio_Theme_Default"/>
             </muxc:RadioButtons>
         </StackPanel>
 
@@ -106,9 +111,8 @@
             <TextBlock 
                 x:Uid="About_ShortcutGuide"
                 Style="{StaticResource SettingsGroupTitleStyle}"
-                Margin="{StaticResource XSmallBottomMargin}"/>
-
-            <Image MaxWidth="240" Source="https://aka.ms/powerToysShortcutGuideSettingImage" />
+                Margin="{StaticResource XSmallBottomMargin}"
+                />
 
             <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ShortcutGuide">
                 <TextBlock x:Uid="Module_overview"/>

@@ -159,6 +159,7 @@
     <Compile Include="Generated Files\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ViewModelTests\ColorPicker.cs" />
     <Compile Include="ViewModelTests\FancyZones.cs" />
     <Compile Include="ViewModelTests\General.cs" />
     <Compile Include="ModelsTests\HelperTest.cs" />

@@ -80,7 +80,6 @@ namespace ViewModelTests
 
             viewModel.OpenPowerLauncher = openPowerLauncher;
             viewModel.OpenFileLocation = openFileLocation;
-            viewModel.OpenConsole = openConsole;
             viewModel.CopyPathLocation = copyFileLocation;
 
             Assert.AreEqual(4, sendCallbackMock.TimesSent);
@@ -131,5 +130,7 @@ namespace ViewModelTests
             Assert.IsTrue(mockSettings.properties.override_win_r_key);
             Assert.IsFalse(mockSettings.properties.override_win_s_key);
         }
+
+
     }
 }

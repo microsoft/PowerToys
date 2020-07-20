@@ -813,7 +813,35 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                     newNameToUse = trimmedName;
                                 }
                                 
+                                bool isDateAttributeUsed = false;
+                                wchar_t datedName[MAX_PATH] = { 0 };
+                                std::wstring patterns[] = { L"$YYYY", L"$SSS", L"$MMM", L"$mmm", L"$FFF", L"$fff", 
+                                    L"$MM", L"$DD", L"$hh", L"$mm", L"$ss" };
+                                size_t patternsLength = ARRAYSIZE(patterns);
+                                SYSTEMTIME LocalTime;
 
+                                if (newNameToUse != nullptr)
+                                {
+                                    for (size_t i = 0; !isDateAttributeUsed && i < patternsLength; i++)
+                                    {
+                                        std::wstring source(newNameToUse);
+                                        if (source.find(patterns[i]) != std::string::npos)
+                                        {
+                                            isDateAttributeUsed = true;
+                                        }
+                                    }
+                                    if (isDateAttributeUsed)
+                                    {
+                                        if (SUCCEEDED(spItem->get_date(&LocalTime)))
+                                        {
+                                            if (SUCCEEDED(GetDatedFileName(datedName, ARRAYSIZE(datedName), newNameToUse, LocalTime)))
+                                            {
+                                                newNameToUse = datedName;
+                                            }
+                                        }
+                                    }
+                                }
+                                                                
                                 wchar_t transformedName[MAX_PATH] = { 0 };
                                 if (newNameToUse != nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase))
                                 {
@@ -822,7 +850,7 @@ DWORD WINAPI CPowerRenameManager::s_regexWorkerThread(_In_ void* pv)
                                         newNameToUse = transformedName;
                                     }
                                 }
-                                
+
                                 // No change from originalName so set newName to
                                 // null so we clear it from our UI as well.
                                 if (lstrcmp(originalName, newNameToUse) == 0)

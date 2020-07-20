@@ -48,7 +48,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
 
         internal static void LoadAllApplications(this List<ProgramSource> list)
         {
-            Main._win32s
+            /*Main._win32s
                 .Where(t1 => !ProgramSetting.ProgramSettingDisplayList.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier))
                 .ToList()
                 .ForEach(t1 => ProgramSetting.ProgramSettingDisplayList
@@ -60,7 +60,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
                                                         UniqueIdentifier = t1.UniqueIdentifier,
                                                         Enabled = t1.Enabled
                                                     }
-                                             ));
+                                             ));*/
         }
 
         internal static void SetProgramSourcesStatus(this List<ProgramSource> list, List<ProgramSource> selectedProgramSourcesToDisable, bool status)
@@ -70,10 +70,10 @@ namespace Microsoft.Plugin.Program.Views.Commands
                 .ToList()
                 .ForEach(t1 => t1.Enabled = status);
 
-            Main._win32s
+            /*Main._win32s
                 .Where(t1 => selectedProgramSourcesToDisable.Any(x => x.UniqueIdentifier == t1.UniqueIdentifier && t1.Enabled != status))
                 .ToList()
-                .ForEach(t1 => t1.Enabled = status);
+                .ForEach(t1 => t1.Enabled = status);*/
         }
 
         internal static void StoreDisabledInSettings(this List<ProgramSource> list)
@@ -114,8 +114,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
 
         internal static bool IsReindexRequired(this List<ProgramSource> selectedItems)
         {
-            if (selectedItems.Where(t1 => t1.Enabled).Count() > 0
-                && selectedItems.Where(t1 => t1.Enabled && !Main._win32s.Any(x => t1.UniqueIdentifier == x.UniqueIdentifier)).Count() > 0)
+            if (selectedItems.Where(t1 => t1.Enabled).Count() > 0)
                 return true;
 
             // ProgramSources holds list of user added directories, 
