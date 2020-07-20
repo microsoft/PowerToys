@@ -638,6 +638,7 @@
         <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\CamOffMicOn.png" />
         <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\CamOnMicOff.png" />
         <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\CamOffMicOff.png" />
+        <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\black.bmp" />
         <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceVirtualDriver\videoconferencevirtualdriver.cat" />
         <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceVirtualDriver\VideoConferenceCustomMediaSource.dll" />
         <File Source="$(var.BinX64Dir)modules\$(var.VideoConferenceProjectName)\VideoConferenceVirtualDriver\VideoConferenceVirtualDriver.dll" />
