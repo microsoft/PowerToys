@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
@@ -31,35 +32,67 @@ namespace Microsoft.Plugin.Url
 			var results = new List<Result>();
 			if (IsUrl(query.Search))
 			{
+				results.Add(new Result()
 				{
-					results.Add(new Result()
+					Title = query.Search,
+					IcoPath = IconPath,
+					Action = c =>
 					{
-						Title = query.Search,
-						IcoPath = IconPath,
-						Action = c =>
+						Process.Start(new ProcessStartInfo(CreateNavigatableUrl(query.Search))
 						{
-							Process.Start(new ProcessStartInfo(CreateNavigatableUrl(query.Search))
-							{
-								UseShellExecute = true
-							});
-							return true;
-						}
-					});
-
-				}
+							UseShellExecute = true
+						});
+						return true;
+					}
+				});
 			}
 
 			return results;
 		}
 
+		private readonly Regex protocolRegex = new Regex(@"://", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
 		private string CreateNavigatableUrl(string querySearch)
 		{
-			throw new NotImplementedException();
+			return protocolRegex.IsMatch(querySearch)
+				? querySearch
+				: "https://" + querySearch;
 		}
 
+		private readonly Regex ipRegex = new Regex(@"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 		private bool IsUrl(string query)
 		{
-			return query.Length > 3;
+			return query.Length > 3 &&
+				(IsIP(query) || IsHostName(query));
+		}
+
+
+		private bool IsIP(string query)
+		{
+			return ipRegex.IsMatch(query);
+		}
+
+		private readonly Regex hostNameRegex = new Regex(@"[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+		private bool IsHostName(string query)
+		{
+			var match = hostNameRegex.Match(query);
+
+			if (!match.Success)
+			{
+				return false;
+			}
+			
+			try
+			{
+				/System.Net.Dns.GetHostEntry(match.Value);
+				return true;
+			}
+			catch
+			{
+				//Ignore
+			}
+
+			return false;
 		}
 
 		public void Init(PluginInitContext context)
@@ -78,11 +111,11 @@ namespace Microsoft.Plugin.Url
 		{
 			if (theme == Theme.Light || theme == Theme.HighContrastWhite)
 			{
-				IconPath = "Images/shell.light.png";
+				IconPath = "Images/url.light.png";
 			}
 			else
 			{
-				IconPath = "Images/shell.dark.png";
+				IconPath = "Images/url.dark.png";
 			}
 		}
 
