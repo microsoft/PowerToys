@@ -62,7 +62,6 @@
                                                 IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
             <CustomControls:BodyTextBlock x:Uid="ShortcutGuide_PressTime"
-                                          Margin="{StaticResource SmallTopMargin}"
                                           IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
             <muxc:NumberBox Minimum="100"
                             SpinButtonPlacementMode="Compact"

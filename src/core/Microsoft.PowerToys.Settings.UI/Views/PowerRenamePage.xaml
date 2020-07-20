@@ -75,9 +75,9 @@
             <CustomControls:GroupTitleTextBlock x:Uid="PowerRename_AutoCompleteHeader"
                                                 IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
             
-            <ToggleSwitch x:Uid="PowerRename_Toggle_AutoComplete"
+            <CheckBox x:Uid="PowerRename_Toggle_AutoComplete"
                           Margin="{StaticResource SmallTopMargin}" 
-                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MRUEnabled}"
+                          IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MRUEnabled}"
                           IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                            />
 
@@ -92,9 +92,9 @@
                             Maximum="20"
                             IsEnabled="{ x:Bind Mode=OneWay, Path=ViewModel.GlobalAndMruEnabled}"/>
 
-            <ToggleSwitch x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch"
+            <CheckBox x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch"
                           Margin="0, 17, 0, 0" 
-                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreFlagsOnLaunch}"
+                          IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreFlagsOnLaunch}"
                           IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
         </StackPanel>
 

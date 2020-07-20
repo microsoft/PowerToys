@@ -54,7 +54,7 @@
 
         <StackPanel Orientation="Vertical" 
                     x:Name="GeneralSettingsView">
-            <TextBlock x:Uid="Admin_Mode"
+            <TextBlock x:Uid="Admin_Mode" FontWeight="SemiBold"
                        Style="{StaticResource SubtitleTextBlockStyle}"/>
 
             <TextBlock Text="{Binding Mode=TwoWay, Path=RunningAsText, Source={StaticResource eventViewModel}}"

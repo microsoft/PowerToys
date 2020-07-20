@@ -82,6 +82,22 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
         }
 
+        private FontFamily _fontFamily;
+
+        public FontFamily FontFamily
+        {
+            get
+            {
+                return _fontFamily;
+            }
+
+            set
+            {
+                _fontFamily = value;
+                CustomTextBlock.FontFamily = value;
+            }
+
+        }
         public BodyTextBlock()
         {
             this.InitializeComponent();

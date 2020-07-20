@@ -41,10 +41,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 if (value.ToString().ToLower() == "true")
                 {
                     HotkeyTextBox.IsEnabled = true;
+                    TitleText.IsActive = "True";
+                    TitleGlyph.IsActive = "True";
                 }
                 else
                 {
                     HotkeyTextBox.IsEnabled = false;
+                    TitleText.IsActive = "False";
+                    TitleGlyph.IsActive = "False";
                 }
             }
         }

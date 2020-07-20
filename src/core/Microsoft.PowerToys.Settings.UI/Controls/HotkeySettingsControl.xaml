@@ -19,13 +19,12 @@
         </ToolTipService.ToolTip>
 
         <StackPanel Orientation="Horizontal">
-            <local:BodyTextBlock
+            <local:BodyTextBlock x:Name="TitleText"
                         Margin="0,-12,0,0"
-                        Text="{x:Bind Header, Mode=OneTime}"
-                        IsActive="{x:Bind Mode=OneWay, Path=IsEnabled}"/>
-            <TextBlock Text="&#xE946;"
+                        Text="{x:Bind Header, Mode=OneTime}"/>
+            <local:BodyTextBlock x:Name="TitleGlyph" Text="&#xE946;"
                        FontFamily="Segoe MDL2 Assets"
-                       Margin="5,4,0,0"/>
+                       Margin="5,-8,0,0"/>
         
         </StackPanel>
         <TextBox x:Name="HotkeyTextBox"
