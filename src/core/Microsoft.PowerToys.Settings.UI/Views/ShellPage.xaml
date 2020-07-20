@@ -94,6 +94,12 @@
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
 
+                <winui:NavigationViewItem x:Uid="Shell_ColorPicker" helpers:NavHelper.NavigateTo="views:ColorPickerPage">
+                    <winui:NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xEF3C;"/>
+                    </winui:NavigationViewItem.Icon>
+                </winui:NavigationViewItem>
+
             </winui:NavigationView.MenuItems>
             <i:Interaction.Behaviors>
                 <behaviors:NavigationViewHeaderBehavior

@@ -4,10 +4,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
+    
     <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
@@ -49,50 +50,51 @@
 
             <ToggleSwitch x:Uid="PowerRename_Toggle_Enable"
                           Margin="{StaticResource MediumTopMargin}" 
-                          IsOn="{Binding Mode=TwoWay, Path=IsEnabled}"                          
+                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"                          
                            />
 
-            <TextBlock  x:Uid="PowerRename_ShellIntegration"
-                        Style="{StaticResource SettingsGroupTitleStyle}"/>
+            <CustomControls:GroupTitleTextBlock 
+                        x:Uid="PowerRename_ShellIntegration"
+                        IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
+                        />
 
             <ToggleSwitch x:Uid="PowerRename_Toggle_EnableOnContextMenu"
                           Margin="{StaticResource SmallTopMargin}" 
-                          IsOn="{Binding Mode=TwoWay, Path=EnabledOnContextMenu}"
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnabledOnContextMenu}"
+                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                            />
 
             <ToggleSwitch x:Uid="PowerRename_Toggle_EnableOnExtendedContextMenu"
                           Margin="{StaticResource SmallTopMargin}"
-                          IsOn="{Binding Mode=TwoWay, Path=EnabledOnContextExtendedMenu}"
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnabledOnContextExtendedMenu}"
+                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                            />
 
-            <TextBlock x:Uid="PowerRename_AutoCompleteHeader" 
-                       Style="{StaticResource SettingsGroupTitleStyle}"/>
-
-
+            <CustomControls:GroupTitleTextBlock x:Uid="PowerRename_AutoCompleteHeader"
+                                                IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            
             <ToggleSwitch x:Uid="PowerRename_Toggle_AutoComplete"
                           Margin="{StaticResource SmallTopMargin}" 
-                          IsOn="{Binding Mode=TwoWay, Path=MRUEnabled}"
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MRUEnabled}"
+                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                            />
 
-            <muxc:NumberBox x:Uid="PowerRename_Toggle_MaxDispListNum"
-                            SpinButtonPlacementMode="Compact"
+            <CustomControls:BodyTextBlock x:Uid="PowerRename_Toggle_MaxDispListNum"
+                                          Margin="{StaticResource SmallTopMargin}"
+                                          IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            <muxc:NumberBox SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
-                            Margin="{StaticResource SmallTopMargin}" 
-                            Value="{Binding Mode=TwoWay, Path=MaxDispListNum}"
+                            Margin="{StaticResource HeaderTextTopMargin}"
+                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.MaxDispListNum}"
                             Minimum="0"
                             Width="240"
                             Maximum="20"
-                            IsEnabled="{ Binding Mode=TwoWay, Path=GlobalAndMruEnabled}"
-                            />
+                            IsEnabled="{ x:Bind Mode=OneWay, Path=ViewModel.GlobalAndMruEnabled}"/>
 
             <ToggleSwitch x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch"
                           Margin="0, 17, 0, 0" 
-                          IsOn="{Binding Mode=TwoWay, Path=RestoreFlagsOnLaunch}"
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
-                           />
+                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreFlagsOnLaunch}"
+                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
         </StackPanel>
 
 
@@ -104,7 +106,8 @@
 
             <TextBlock x:Uid="About_PowerRename"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Margin="{StaticResource XSmallBottomMargin}"/>
+                       Margin="{StaticResource XSmallBottomMargin}"
+                       />
 
             <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_PowerRename">
                 <TextBlock x:Uid="Module_overview" />
@@ -117,7 +120,8 @@
 
             <TextBlock 
                 x:Uid="AttributionTitle"
-                Style="{StaticResource SettingsGroupTitleStyle}" />
+                Style="{StaticResource SettingsGroupTitleStyle}"
+                />
 
             <HyperlinkButton 
                 NavigateUri="https://github.com/chrdavis/SmartRename">

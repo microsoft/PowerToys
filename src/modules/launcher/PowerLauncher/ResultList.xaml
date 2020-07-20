@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:Behaviors="http://schemas.microsoft.com/xaml/behaviors"
-    mc:Ignorable="d"    
+    mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="720">
 
@@ -30,6 +30,7 @@
                 <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
                 <Setter Property="Foreground" Value="{DynamicResource ControlTextBrushKey}"/>
                 <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Focusable" Value="False"/>
                 <Setter Property="HorizontalContentAlignment" Value="Center"/>
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
                 <Setter Property="Padding" Value="1"/>
@@ -88,6 +89,7 @@
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
+                <Setter Property="Focusable" Value="False" />
             </Style>
 
             <Style x:Key="CommandButtonListViewItemContainerStyle"  TargetType="ListViewItem">
@@ -200,8 +202,7 @@
                                     <TextBlock 
                                         Style="{DynamicResource CollapsableTextblock}"
                                         Foreground="{DynamicResource ToolTipForegroundBrushKey}" FontSize="12"
-                                        Text="{Binding Result.ToolTipData.Text}"
-                                   
+                                        Text="{Binding Result.ToolTipData.Text}"                               
                                         TextWrapping="Wrap" />
                                 </StackPanel>
                             </ToolTip>
