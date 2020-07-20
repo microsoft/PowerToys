@@ -646,7 +646,16 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 if (File.Exists(path))
                 {
-                    var image = new BitmapImage(new Uri(path));
+                    MemoryStream memoryStream = new MemoryStream();
+
+                    byte[] fileBytes = File.ReadAllBytes(path);
+                    memoryStream.Write(fileBytes, 0, fileBytes.Length);
+                    memoryStream.Position = 0;
+
+                    var image = new BitmapImage();
+                    image.BeginInit();
+                    image.StreamSource = memoryStream;
+                    image.EndInit();
                     return image;
                 }
                 else

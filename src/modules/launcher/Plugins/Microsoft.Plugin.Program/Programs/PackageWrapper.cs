@@ -38,7 +38,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                  path = package.InstalledLocation.Path;
             }
-            catch (Exception e) when(e is ArgumentException || e is FileNotFoundException)
+            catch (Exception e) when (e is ArgumentException || e is FileNotFoundException)
             {
                 ProgramLogger.LogException($"PackageWrapper", "GetWrapperFromPackage", "package.InstalledLocation.Path", $"Exception {package.Id.Name}", e);
                 return new PackageWrapper();
