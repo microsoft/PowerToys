@@ -44,4 +44,8 @@ Image Resizer is from Brice.
 
 ### [@chrdavis](https://github.com/chrdavis/) - Chris Davis
 
-PowerRename is from Chris's SmartRename.
+PowerRename is from Chris's SmartRename and icon rendering for SVGs in File Explorer
+
+### [@martinchrzan](https://github.com/martinchrzan/) - Martin Chrzan
+
+Color Picker is from Martin.
