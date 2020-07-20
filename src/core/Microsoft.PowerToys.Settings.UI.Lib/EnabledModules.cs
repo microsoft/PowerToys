@@ -96,6 +96,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         }
 
         private bool keyboardManager = true;
+
         [JsonPropertyName("Keyboard Manager")]
         public bool KeyboardManager
         {
@@ -112,7 +113,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         private bool powerLauncher = true;
 
-     	[JsonPropertyName("PowerToys Run")]
+        [JsonPropertyName("PowerToys Run")]
         public bool PowerLauncher
         {
             get => this.powerLauncher;
@@ -124,7 +125,23 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                     this.powerLauncher = value;
                 }
             }
-}
+        }
+
+        private bool colorPicker = true;
+
+        [JsonPropertyName("ColorPicker")]
+        public bool ColorPicker
+        {
+            get => this.colorPicker;
+            set
+            {
+                if (this.colorPicker != value)
+                {
+                    LogTelemetryEvent(value);
+                    this.colorPicker = value;
+                }
+            }
+        }
 
         public string ToJsonString()
         {

@@ -80,7 +80,6 @@ namespace ViewModelTests
 
             viewModel.OpenPowerLauncher = openPowerLauncher;
             viewModel.OpenFileLocation = openFileLocation;
-            viewModel.OpenConsole = openConsole;
             viewModel.CopyPathLocation = copyFileLocation;
 
             Assert.AreEqual(4, sendCallbackMock.TimesSent);

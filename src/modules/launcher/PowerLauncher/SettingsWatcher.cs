@@ -26,7 +26,7 @@ namespace PowerLauncher
         {
             _settings = settings;
             // Set up watcher
-             _watcher = Helper.GetFileWatcher(PowerLauncherSettings.POWERTOYNAME, "settings.json", OverloadSettings);
+             _watcher = Microsoft.PowerToys.Settings.UI.Lib.Utilities.Helper.GetFileWatcher(PowerLauncherSettings.POWERTOYNAME, "settings.json", OverloadSettings);
 
             // Load initial settings file
             OverloadSettings();

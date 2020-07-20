@@ -184,24 +184,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
         }
-
-        public HotkeySettings OpenConsole
-        {
-            get
-            {
-                return settings.properties.open_console;
-            }
-
-            set
-            {
-                if (settings.properties.open_console != value)
-                {
-                    settings.properties.open_console = value;
-                    UpdateSettings();
-                }
-            }
-        }
-
+        
         public bool OverrideWinRKey
         {
             get
