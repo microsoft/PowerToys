@@ -457,7 +457,7 @@ namespace FancyZonesUnitTests
         {
             m_zoneWindow = MakeZoneWindow(m_hostPtr, m_hInst, m_monitor, m_uniqueId.str(), {}, false);
 
-            const auto expected = E_INVALIDARG;
+            const auto expected = S_OK;
 
             m_zoneWindow->MoveSizeEnter(Mocks::Window());
             const auto actual = m_zoneWindow->MoveSizeEnter(Mocks::Window());

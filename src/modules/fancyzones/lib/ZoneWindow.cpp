@@ -309,11 +309,6 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
 
 IFACEMETHODIMP ZoneWindow::MoveSizeEnter(HWND window) noexcept
 {
-    if (m_windowMoveSize)
-    {
-        return E_INVALIDARG;
-    }
-
     if (m_host->isMakeDraggedWindowTransparentActive())
     {
         draggedWindowExstyle = GetWindowLong(window, GWL_EXSTYLE);
