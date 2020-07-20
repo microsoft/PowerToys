@@ -66,6 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             this._cameraMuteHotkey = Settings.Properties.MuteCameraHotkey.Value;
             this.CameraImageOverlayPath = Settings.Properties.CameraOverlayImagePath.Value;
             this.SelectOverlayImage = new ButtonClickCommand(SelectOverlayImageAction);
+            this.ClearOverlayImage = new ButtonClickCommand(ClearOverlayImageAction);
 
             string overlayPosition = Settings.Properties.OverlayPosition.Value;
 
@@ -107,6 +108,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return allCameras.Where(cameraInfo => cameraInfo.Name != ProxyCameraName).ToList();
         }
 
+        private bool _isEnabled = false;
+        private int _overlayPositionIndex;
+        private int _overlayMonitorIndex;
+        private HotkeySettings _cameraAndMicrophoneMuteHotkey;
+        private HotkeySettings _mirophoneMuteHotkey;
+        private HotkeySettings _cameraMuteHotkey;
+        private int _selectedCameraIndex = -1;
+
+        public List<string> CameraNames { get; }
+
+        public string CameraImageOverlayPath { get; set; }
+
+        public ButtonClickCommand SelectOverlayImage { get; set; }
+
+        public ButtonClickCommand ClearOverlayImage { get; set; }
+
+        private void ClearOverlayImageAction()
+        {
+            CameraImageOverlayPath = string.Empty;
+            Settings.Properties.CameraOverlayImagePath = string.Empty;
+            RaisePropertyChanged("CameraImageOverlayPath");
+        }
+
         private async void SelectOverlayImageAction()
         {
             try
@@ -135,17 +159,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private bool _isEnabled = false;
-        private int _overlayPositionIndex;
-        private int _overlayMonitorIndex;
-        private HotkeySettings _cameraAndMicrophoneMuteHotkey;
-        private HotkeySettings _mirophoneMuteHotkey;
-        private HotkeySettings _cameraMuteHotkey;
-        private int _selectedCameraIndex = -1;
-
-        public List<string> CameraNames { get; }
-
-        public string CameraImageOverlayPath { get; set; }
 
         public int SelectedCameraIndex
         {
@@ -313,8 +326,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
         }
-
-        public ButtonClickCommand SelectOverlayImage { get; set; }
 
         public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {

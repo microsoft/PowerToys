@@ -83,7 +83,8 @@
       <Command>xcopy /y  "$(ProjectDir)CamOffMicOff.png" "$(OutDir)"
 xcopy /y  "$(ProjectDir)CamOffMicOn.png" "$(OutDir)"
 xcopy /y  "$(ProjectDir)CamOnMicOff.png" "$(OutDir)"
-xcopy /y  "$(ProjectDir)CamOnMicOn.png" "$(OutDir)"</Command>
+xcopy /y  "$(ProjectDir)CamOnMicOn.png" "$(OutDir)"
+xcopy /y  "$(ProjectDir)black.bmp" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -108,7 +109,8 @@ xcopy /y  "$(ProjectDir)CamOnMicOn.png" "$(OutDir)"</Command>
       <Command>xcopy /y  "$(ProjectDir)CamOffMicOff.png" "$(OutDir)"
 xcopy /y  "$(ProjectDir)CamOffMicOn.png" "$(OutDir)"
 xcopy /y  "$(ProjectDir)CamOnMicOff.png" "$(OutDir)"
-xcopy /y  "$(ProjectDir)CamOnMicOn.png" "$(OutDir)"</Command>
+xcopy /y  "$(ProjectDir)CamOnMicOn.png" "$(OutDir)"
+xcopy /y  "$(ProjectDir)black.bmp" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

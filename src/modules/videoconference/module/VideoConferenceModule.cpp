@@ -378,11 +378,17 @@ void VideoConferenceModule::sendOverlayImageUpdate()
     }
     _imageOverlayChannel.reset();
 
-    _imageOverlayChannel = SerializedSharedMemory::create_readonly(CameraOverlayImageChannel::endpoint(), imageOverlayPath);
-    if (!_imageOverlayChannel)
-    {
-        return;
-    }
+    TCHAR* dest = new TCHAR[255];
+
+    DWORD length = GetModuleFileName(NULL, dest, 255);
+    PathRemoveFileSpec(dest);
+
+    std::wstring str(dest);
+    str += L"\\modules\\VideoConference\\black.bmp";
+
+    _imageOverlayChannel = SerializedSharedMemory::create_readonly(CameraOverlayImageChannel::endpoint(),
+                                                                   imageOverlayPath != L"" ? imageOverlayPath : str);
+
     const size_t imageSize = _imageOverlayChannel->size();
     _settingsUpdateChannel->access([imageSize](auto memory) {
         auto updatesChannel = reinterpret_cast<CameraSettingsUpdateChannel*>(memory.data());

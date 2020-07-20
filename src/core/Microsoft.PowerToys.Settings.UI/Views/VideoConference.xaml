@@ -78,32 +78,36 @@
                                           IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
                                           />
 
-            <ComboBox
-                x:Uid="VideoConference_SelectedCamera"
-                Width="320"
-                HorizontalAlignment="Left"
-                Margin="{StaticResource MediumTopMargin}"
-                SelectedIndex="{Binding Path=SelectedCameraIndex, Mode=TwoWay}"
-                ItemsSource="{Binding CameraNames, Mode=OneTime}"
-                IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
+            <ComboBox x:Uid="VideoConference_SelectedCamera"
+                      Width="320"
+                      HorizontalAlignment="Left"
+                      Margin="{StaticResource MediumTopMargin}"
+                      SelectedIndex="{Binding Path=SelectedCameraIndex, Mode=TwoWay}"
+                      ItemsSource="{Binding CameraNames, Mode=OneTime}"
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"/>
 
-            <TextBlock
-              x:Uid="VideoConference_CameraOverlayImagePathHeader"
-              Margin="0,24,0,-20"
-            />
-          
-            <Button
-                Width="320"
-                Height="30"
-                Style="{StaticResource AccentButtonStyle}"
-                Content="{Binding Mode=OneWay, Path=CameraImageOverlayPath}"
-                Command="{Binding Mode=OneWay, Path=SelectOverlayImage}"
-                HorizontalAlignment="Left"
-                Margin="{StaticResource MediumTopMargin}" />
+            <TextBlock x:Uid="VideoConference_CameraOverlayImagePathHeader"
+                       Margin="{StaticResource MediumTopMargin}"/>
 
+            <StackPanel Orientation="Horizontal" Padding="0" Spacing="4">
+                <Button Width="320"
+                        Height="32"
+                        IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                        Content="{Binding Mode=TwoWay, Path=CameraImageOverlayPath}"
+                        Command="{Binding Mode=OneWay, Path=SelectOverlayImage}"
+                        HorizontalAlignment="Left"
+                        Margin="{StaticResource MediumTopMargin}" />
 
+                <Button IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}"
+                        Height="32"
+                        Content="Clear"
+                        Command="{Binding Mode=OneWay, Path=ClearOverlayImage}"
+                        HorizontalAlignment="Left"
+                        Margin="{StaticResource MediumTopMargin}" />
+            </StackPanel>
+            
 
-      <ComboBox x:Uid="VideoConference_OverlayPosition" 
+            <ComboBox x:Uid="VideoConference_OverlayPosition" 
                       MinWidth="240"
                       Margin="{StaticResource SmallTopMargin}"
                       SelectedIndex="{ Binding Mode=TwoWay, Path=OverlayPostionIndex}"
@@ -116,15 +120,14 @@
             </ComboBox>
 
             <ComboBox x:Uid="VideoConference_OverlayMonitor" 
-                          MinWidth="240"
-                          Margin="{StaticResource SmallTopMargin}"
+                      MinWidth="240"
+                      Margin="{StaticResource SmallTopMargin}"
                       SelectedIndex="{ Binding Mode=TwoWay, Path=OverlayMonitorIndex}"
-                          IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}">
+                      IsEnabled="{ Binding Mode=TwoWay, Path=IsEnabled}">
                 <ComboBoxItem x:Uid="VideoConference_OverlayMonitor_Main"/>
                 <ComboBoxItem x:Uid="VideoConference_OverlayMonitor_All"/>
             </ComboBox>
         </StackPanel>
-
         <StackPanel 
             x:Name="SidePanel"
             Orientation="Vertical"
