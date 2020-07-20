@@ -251,7 +251,7 @@ namespace PowerLauncher
             {
                 if (SearchBox.QueryTextBox.CaretIndex == SearchBox.QueryTextBox.Text.Length)
                 {
-                    if(_viewModel.Results.IsContextMenuItemSelected())
+                    if(_viewModel.Results != null && _viewModel.Results.IsContextMenuItemSelected())
                     {
                         _viewModel.SelectPreviousContextMenuItemCommand.Execute(null);
                         e.Handled = true;
