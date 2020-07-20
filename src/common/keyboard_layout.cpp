@@ -130,7 +130,7 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
     keyboardLayoutMap[VK_HELP] = L"Help";
     keyboardLayoutMap[VK_LWIN] = L"Win (Left)";
     keyboardLayoutMap[VK_RWIN] = L"Win (Right)";
-    keyboardLayoutMap[VK_APPS] = L"Menu";
+    keyboardLayoutMap[VK_APPS] = L"Apps/Menu";
     keyboardLayoutMap[VK_SLEEP] = L"Sleep";
     keyboardLayoutMap[VK_NUMPAD0] = L"NumPad 0";
     keyboardLayoutMap[VK_NUMPAD1] = L"NumPad 1";
@@ -204,7 +204,17 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
     keyboardLayoutMap[VK_OEM_CLEAR] = L"Clear";
     keyboardLayoutMap[0xFF] = L"Undefined";
     keyboardLayoutMap[CommonSharedConstants::VK_WIN_BOTH] = L"Win";
-    // To do: Add IME key names
+    keyboardLayoutMap[VK_KANA] = L"IME Kana";
+    keyboardLayoutMap[VK_HANGEUL] = L"IME Hangeul";
+    keyboardLayoutMap[VK_HANGUL] = L"IME Hangul";
+    keyboardLayoutMap[VK_JUNJA] = L"IME Junja";
+    keyboardLayoutMap[VK_FINAL] = L"IME Final";
+    keyboardLayoutMap[VK_HANJA] = L"IME Hanja";
+    keyboardLayoutMap[VK_KANJI] = L"IME Kanji";
+    keyboardLayoutMap[VK_CONVERT] = L"IME Convert";
+    keyboardLayoutMap[VK_NONCONVERT] = L"IME Non-Convert";
+    keyboardLayoutMap[VK_ACCEPT] = L"IME Kana";
+    keyboardLayoutMap[VK_MODECHANGE] = L"IME Mode Change";
 }
 
 // Function to return the list of key codes in the order for the drop down. It creates it if it doesn't exist
