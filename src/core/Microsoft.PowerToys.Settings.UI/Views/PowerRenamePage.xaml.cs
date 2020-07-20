@@ -14,14 +14,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 {
     public sealed partial class PowerRenamePage : Page
     {
-        public PowerRenameViewModel ViewModel { get; set; }
+        private PowerRenameViewModel ViewModel { get; set; }
 
         public PowerRenamePage()
         {
             this.InitializeComponent();
-
             ViewModel = new PowerRenameViewModel();
-            this.PowerRenameSettingsView.DataContext = ViewModel;
+
+            DataContext = ViewModel;
         }
     }
 }
