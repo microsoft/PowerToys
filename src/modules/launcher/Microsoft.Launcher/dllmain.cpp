@@ -6,7 +6,7 @@
 #include <common/common.h>
 #include "trace.h"
 #include "resource.h"
-#include <common/os-detection/os-detect.h>
+#include <common/os-detect.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
