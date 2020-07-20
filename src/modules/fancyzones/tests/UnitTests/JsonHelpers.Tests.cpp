@@ -930,7 +930,7 @@ namespace FancyZonesUnitTests
         const json::JsonObject m_defaultCustomDeviceObj = json::JsonObject::Parse(m_defaultCustomDeviceStr);
 
         HINSTANCE m_hInst{};
-        FancyZonesData::FancyZonesData& m_fzData = FancyZonesData::FancyZonesDataInstance();
+        FancyZonesData& m_fzData = FancyZonesDataInstance();
 
         void compareJsonArrays(const json::JsonArray& expected, const json::JsonArray& actual)
         {
@@ -956,14 +956,14 @@ namespace FancyZonesUnitTests
         public:
             TEST_METHOD (FancyZonesDataPath)
             {
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
                 Assert::IsFalse(data.zonesSettingsFileName.empty());
             }
 
             TEST_METHOD (FancyZonesDataJsonEmpty)
             {
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
 
                 json::JsonObject expected;
@@ -974,7 +974,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (FancyZonesDataJson)
             {
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
                 const auto& jsonPath = data.zonesSettingsFileName;
 
@@ -1078,7 +1078,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (DeviceInfoSaveTemp)
             {
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
                 DeviceInfoJSON deviceInfo{ L"default_device_id", DeviceInfoData{ ZoneSetData{ L"uuid", ZoneSetLayoutType::Custom }, true, 16, 3 } };
 
@@ -1098,7 +1098,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (DeviceInfoReadTemp)
             {
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
                 const std::wstring deviceId = m_defaultDeviceId;
                 DeviceInfoJSON expected{ deviceId, DeviceInfoData{ ZoneSetData{ L"{33A2B101-06E0-437B-A61E-CDBECF502906}", ZoneSetLayoutType::Custom }, true, 16, 3 } };
@@ -1127,7 +1127,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (DeviceInfoReadTempNonexistent)
             {
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
                 const std::wstring path = data.zonesSettingsFileName + L".test_tmp";
                 data.ParseDeviceInfoFromTmpFile(path);
@@ -1524,7 +1524,7 @@ namespace FancyZonesUnitTests
                     .cellChildMap = { { 0, 1, 2 } } }));
                 CustomZoneSetJSON expected{ uuid, CustomZoneSetData{ L"name", CustomLayoutType::Grid, grid } };
 
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
                 const std::wstring path = data.zonesSettingsFileName + L".test_tmp";
                 json::to_file(path, CustomZoneSetJSON::ToJson(expected));
@@ -1561,7 +1561,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SetActiveZoneSet)
             {
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
                 const std::wstring uniqueId = m_defaultDeviceId;
 
@@ -1585,7 +1585,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SetActiveZoneSetUuidEmpty)
             {
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
                 const std::wstring expected = L"{39B25DD2-130D-4B5D-8851-4791D66B1539}";
                 const std::wstring uniqueId = m_defaultDeviceId;
@@ -1610,7 +1610,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SetActiveZoneSetUniqueIdInvalid)
             {
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
 
                 const std::wstring expected = L"{33A2B101-06E0-437B-A61E-CDBECF502906}";
@@ -1638,7 +1638,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (LoadFancyZonesDataFromJson)
             {
-                FancyZonesData::FancyZonesData fancyZonesData;
+                FancyZonesData fancyZonesData;
                 fancyZonesData.SetSettingsModulePath(m_moduleName);
                 const auto& jsonPath = fancyZonesData.zonesSettingsFileName;
                 auto savedJson = json::from_file(jsonPath);
@@ -1688,7 +1688,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (LoadFancyZonesDataFromCroppedJson)
             {
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
                 const auto& jsonPath = data.zonesSettingsFileName;
 
@@ -1703,7 +1703,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (LoadFancyZonesDataFromJsonWithCyrillicSymbols)
             {
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
                 const auto& jsonPath = data.zonesSettingsFileName;
 
@@ -1717,7 +1717,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (LoadFancyZonesDataFromJsonWithInvalidTypes)
             {
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
                 const auto& jsonPath = data.zonesSettingsFileName;
 
@@ -1731,7 +1731,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (LoadFancyZonesDataFromRegistry)
             {
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
                 const auto& jsonPath = data.zonesSettingsFileName;
 
@@ -1743,7 +1743,7 @@ namespace FancyZonesUnitTests
 
             TEST_METHOD (SaveFancyZonesData)
             {
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
                 const auto& jsonPath = data.zonesSettingsFileName;
 
@@ -1758,7 +1758,7 @@ namespace FancyZonesUnitTests
                 const std::wstring deviceId = L"device-id";
                 const std::wstring zoneSetId = L"zoneset-uuid";
                 const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
 
                 Assert::AreEqual({}, data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
@@ -1773,7 +1773,7 @@ namespace FancyZonesUnitTests
                 const std::wstring zoneSetId = L"zoneset-uuid";
                 const std::wstring deviceId = L"device-id";
                 const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
 
                 const int expectedZoneIndex = 0;
@@ -1786,7 +1786,7 @@ namespace FancyZonesUnitTests
                 const std::wstring zoneSetId = L"zoneset-uuid";
                 const std::wstring deviceId = L"device-id";
                 const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
 
                 const int expectedZoneIndex = -1;
@@ -1799,7 +1799,7 @@ namespace FancyZonesUnitTests
                 const std::wstring zoneSetId = L"zoneset-uuid";
                 const std::wstring deviceId = L"device-id";
                 const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
 
                 const long expectedZoneIndex = LONG_MAX;
@@ -1812,7 +1812,7 @@ namespace FancyZonesUnitTests
                 const std::wstring zoneSetId = L"zoneset-uuid";
                 const std::wstring deviceId = L"device-id";
                 const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
 
                 const int expectedZoneIndex = 3;
@@ -1827,7 +1827,7 @@ namespace FancyZonesUnitTests
                 const std::wstring zoneSetId = L"zoneset-uuid";
                 const std::wstring deviceId = L"device-id";
                 const auto window = Mocks::Window();
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
 
                 Assert::AreEqual({}, data.GetAppLastZoneIndexSet(window, deviceId, zoneSetId));
@@ -1840,7 +1840,7 @@ namespace FancyZonesUnitTests
             {
                 const std::wstring zoneSetId = L"zoneset-uuid";
                 const auto window = nullptr;
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
 
                 const int expectedZoneIndex = 1;
@@ -1853,7 +1853,7 @@ namespace FancyZonesUnitTests
                 const std::wstring deviceId1 = L"device-id-1";
                 const std::wstring deviceId2 = L"device-id-2";
                 const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
 
                 const int expectedZoneIndex = 10;
@@ -1868,7 +1868,7 @@ namespace FancyZonesUnitTests
                 const std::wstring zoneSetId2 = L"zoneset-uuid-2";
                 const std::wstring deviceId = L"device-id";
                 const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
 
                 const int expectedZoneIndex = 10;
@@ -1882,7 +1882,7 @@ namespace FancyZonesUnitTests
                 const std::wstring zoneSetId = L"zoneset-uuid";
                 const std::wstring deviceId = L"device-id";
                 const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
 
                 Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetId, { 1 }));
@@ -1895,7 +1895,7 @@ namespace FancyZonesUnitTests
                 const std::wstring zoneSetId = L"zoneset-uuid";
                 const std::wstring deviceId = L"device-id";
                 const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
 
                 Assert::IsFalse(data.RemoveAppLastZone(window, deviceId, zoneSetId));
@@ -1908,7 +1908,7 @@ namespace FancyZonesUnitTests
                 const std::wstring zoneSetIdToRemove = L"zoneset-uuid-to-remove";
                 const std::wstring deviceId = L"device-id";
                 const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
 
                 Assert::IsTrue(data.SetAppLastZones(window, deviceId, zoneSetIdToInsert, { 1 }));
@@ -1922,7 +1922,7 @@ namespace FancyZonesUnitTests
                 const std::wstring deviceIdToInsert = L"device-id-insert";
                 const std::wstring deviceIdToRemove = L"device-id-remove";
                 const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
 
                 Assert::IsTrue(data.SetAppLastZones(window, deviceIdToInsert, zoneSetId, { 1 }));
@@ -1935,7 +1935,7 @@ namespace FancyZonesUnitTests
                 const std::wstring zoneSetId = L"zoneset-uuid";
                 const std::wstring deviceId = L"device-id";
                 const auto window = Mocks::WindowCreate(m_hInst);
-                FancyZonesData::FancyZonesData data;
+                FancyZonesData data;
                 data.SetSettingsModulePath(m_moduleName);
 
                 Assert::IsFalse(data.RemoveAppLastZone(nullptr, deviceId, zoneSetId));

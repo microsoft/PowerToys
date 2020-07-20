@@ -29,109 +29,106 @@ namespace FancyZonesUnitTests
     class ZoneWindowUnitTests;
 }
 #endif
-namespace FancyZonesData
+
+class FancyZonesData
 {
-    class FancyZonesData
+public:
+    FancyZonesData();
+
+    std::optional<FancyZonesDataTypes::DeviceInfoData> FindDeviceInfo(const std::wstring& zoneWindowId) const;
+
+    std::optional<FancyZonesDataTypes::CustomZoneSetData> FindCustomZoneSet(const std::wstring& guid) const;
+
+    inline const std::unordered_map<std::wstring, FancyZonesDataTypes::DeviceInfoData>& GetDeviceInfoMap() const
     {
-    public:
-        FancyZonesData();
+        std::scoped_lock lock{ dataLock };
+        return deviceInfoMap;
+    }
 
-        std::optional<FancyZonesDataTypes::DeviceInfoData> FindDeviceInfo(const std::wstring& zoneWindowId) const;
+    inline const std::unordered_map<std::wstring, FancyZonesDataTypes::CustomZoneSetData>& GetCustomZoneSetsMap() const
+    {
+        std::scoped_lock lock{ dataLock };
+        return customZoneSetsMap;
+    }
 
-        std::optional<FancyZonesDataTypes::CustomZoneSetData> FindCustomZoneSet(const std::wstring& guid) const;
+    inline const std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>& GetAppZoneHistoryMap() const
+    {
+        std::scoped_lock lock{ dataLock };
+        return appZoneHistoryMap;
+    }
 
-        inline const std::unordered_map<std::wstring, FancyZonesDataTypes::DeviceInfoData>& GetDeviceInfoMap() const
-        {
-            std::scoped_lock lock{ dataLock };
-            return deviceInfoMap;
-        }
+    void AddDevice(const std::wstring& deviceId);
+    void CloneDeviceInfo(const std::wstring& source, const std::wstring& destination);
+    void UpdatePrimaryDesktopData(const std::wstring& desktopId);
+    void RemoveDeletedDesktops(const std::vector<std::wstring>& activeDesktops);
 
-        inline const std::unordered_map<std::wstring, FancyZonesDataTypes::CustomZoneSetData>& GetCustomZoneSetsMap() const
-        {
-            std::scoped_lock lock{ dataLock };
-            return customZoneSetsMap;
-        }
+    bool IsAnotherWindowOfApplicationInstanceZoned(HWND window, const std::wstring_view& deviceId) const;
+    void UpdateProcessIdToHandleMap(HWND window, const std::wstring_view& deviceId);
+    std::vector<int> GetAppLastZoneIndexSet(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const;
+    bool RemoveAppLastZone(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId);
+    bool SetAppLastZones(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, const std::vector<int>& zoneIndexSet);
 
-        inline const std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>>& GetAppZoneHistoryMap() const
-        {
-            std::scoped_lock lock{ dataLock };
-            return appZoneHistoryMap;
-        }
+    void SetActiveZoneSet(const std::wstring& deviceId, const FancyZonesDataTypes::ZoneSetData& zoneSet);
 
-        void AddDevice(const std::wstring& deviceId);
-        void CloneDeviceInfo(const std::wstring& source, const std::wstring& destination);
-        void UpdatePrimaryDesktopData(const std::wstring& desktopId);
-        void RemoveDeletedDesktops(const std::vector<std::wstring>& activeDesktops);
+    bool SerializeDeviceInfoToTmpFile(const std::wstring& uniqueId) const;
+    void ParseDataFromTmpFiles();
 
-        bool IsAnotherWindowOfApplicationInstanceZoned(HWND window, const std::wstring_view& deviceId) const;
-        void UpdateProcessIdToHandleMap(HWND window, const std::wstring_view& deviceId);
-        std::vector<int> GetAppLastZoneIndexSet(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId) const;
-        bool RemoveAppLastZone(HWND window, const std::wstring_view& deviceId, const std::wstring_view& zoneSetId);
-        bool SetAppLastZones(HWND window, const std::wstring& deviceId, const std::wstring& zoneSetId, const std::vector<int>& zoneIndexSet);
+    json::JsonObject GetPersistFancyZonesJSON();
 
-        void SetActiveZoneSet(const std::wstring& deviceId, const FancyZonesDataTypes::ZoneSetData& zoneSet);
+    void LoadFancyZonesData();
+    void SaveFancyZonesData() const;
 
-        bool SerializeDeviceInfoToTmpFile(const std::wstring& uniqueId) const;
-        void ParseDataFromTmpFiles();
-
-        json::JsonObject GetPersistFancyZonesJSON();
-
-        void LoadFancyZonesData();
-        void SaveFancyZonesData() const;
-
-    private:
+private:
 #if defined(UNIT_TESTS)
-        friend class FancyZonesUnitTests::FancyZonesDataUnitTests;
-        friend class FancyZonesUnitTests::FancyZonesIFancyZonesCallbackUnitTests;
-        friend class FancyZonesUnitTests::ZoneWindowUnitTests;
-        friend class FancyZonesUnitTests::ZoneSetCalculateZonesUnitTests;
+    friend class FancyZonesUnitTests::FancyZonesDataUnitTests;
+    friend class FancyZonesUnitTests::FancyZonesIFancyZonesCallbackUnitTests;
+    friend class FancyZonesUnitTests::ZoneWindowUnitTests;
+    friend class FancyZonesUnitTests::ZoneSetCalculateZonesUnitTests;
 
-        inline void SetDeviceInfo(const std::wstring& deviceId, FancyZonesDataTypes::DeviceInfoData data)
-        {
-            deviceInfoMap[deviceId] = data;
-        }
+    inline void SetDeviceInfo(const std::wstring& deviceId, FancyZonesDataTypes::DeviceInfoData data)
+    {
+        deviceInfoMap[deviceId] = data;
+    }
 
-        inline bool ParseDeviceInfos(const json::JsonObject& fancyZonesDataJSON)
-        {
-            deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
-            return !deviceInfoMap.empty();
-        }
+    inline bool ParseDeviceInfos(const json::JsonObject& fancyZonesDataJSON)
+    {
+        deviceInfoMap = JSONHelpers::ParseDeviceInfos(fancyZonesDataJSON);
+        return !deviceInfoMap.empty();
+    }
 
-        inline void clear_data()
-        {
-            appZoneHistoryMap.clear();
-            deviceInfoMap.clear();
-            customZoneSetsMap.clear();
-        }
+    inline void clear_data()
+    {
+        appZoneHistoryMap.clear();
+        deviceInfoMap.clear();
+        customZoneSetsMap.clear();
+    }
 
-        inline void SetSettingsModulePath(std::wstring_view moduleName)
-        {
-            std::wstring result = PTSettingsHelper::get_module_save_folder_location(moduleName);
-            zonesSettingsFileName = result + L"\\" + std::wstring(L"zones-settings.json");
-            appZoneHistoryFileName = result + L"\\" + std::wstring(L"app-zone-history.json");
-        }
+    inline void SetSettingsModulePath(std::wstring_view moduleName)
+    {
+        std::wstring result = PTSettingsHelper::get_module_save_folder_location(moduleName);
+        zonesSettingsFileName = result + L"\\" + std::wstring(L"zones-settings.json");
+        appZoneHistoryFileName = result + L"\\" + std::wstring(L"app-zone-history.json");
+    }
 #endif
-        void ParseDeviceInfoFromTmpFile(std::wstring_view tmpFilePath);
-        void ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath);
-        void ParseDeletedCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath);
+    void ParseDeviceInfoFromTmpFile(std::wstring_view tmpFilePath);
+    void ParseCustomZoneSetFromTmpFile(std::wstring_view tmpFilePath);
+    void ParseDeletedCustomZoneSetsFromTmpFile(std::wstring_view tmpFilePath);
 
-        void MigrateCustomZoneSetsFromRegistry();
-        void RemoveDesktopAppZoneHistory(const std::wstring& desktopId);
+    void MigrateCustomZoneSetsFromRegistry();
+    void RemoveDesktopAppZoneHistory(const std::wstring& desktopId);
 
-        std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>> appZoneHistoryMap{};
-        std::unordered_map<std::wstring, FancyZonesDataTypes::DeviceInfoData> deviceInfoMap{};
-        std::unordered_map<std::wstring, FancyZonesDataTypes::CustomZoneSetData> customZoneSetsMap{};
+    std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>> appZoneHistoryMap{};
+    std::unordered_map<std::wstring, FancyZonesDataTypes::DeviceInfoData> deviceInfoMap{};
+    std::unordered_map<std::wstring, FancyZonesDataTypes::CustomZoneSetData> customZoneSetsMap{};
 
-        std::wstring zonesSettingsFileName;
-        std::wstring appZoneHistoryFileName;
+    std::wstring zonesSettingsFileName;
+    std::wstring appZoneHistoryFileName;
 
-        std::wstring activeZoneSetTmpFileName;
-        std::wstring appliedZoneSetTmpFileName;
-        std::wstring deletedCustomZoneSetsTmpFileName;
+    std::wstring activeZoneSetTmpFileName;
+    std::wstring appliedZoneSetTmpFileName;
+    std::wstring deletedCustomZoneSetsTmpFileName;
 
+    mutable std::recursive_mutex dataLock;
+};
 
-        mutable std::recursive_mutex dataLock;
-    };
-
-    FancyZonesData& FancyZonesDataInstance();
-}
+FancyZonesData& FancyZonesDataInstance();

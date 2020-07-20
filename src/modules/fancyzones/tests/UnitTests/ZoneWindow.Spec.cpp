@@ -74,7 +74,7 @@ namespace FancyZonesUnitTests
 
         winrt::com_ptr<IZoneWindow> m_zoneWindow;
 
-        FancyZonesData::FancyZonesData& m_fancyZonesData = FancyZonesData::FancyZonesDataInstance();
+        FancyZonesData& m_fancyZonesData = FancyZonesDataInstance();
 
         TEST_METHOD_INITIALIZE(Init)
         {

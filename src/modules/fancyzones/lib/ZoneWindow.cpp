@@ -506,7 +506,7 @@ ZoneWindow::SaveWindowProcessToZoneIndex(HWND window) noexcept
             OLECHAR* guidString;
             if (StringFromCLSID(m_activeZoneSet->Id(), &guidString) == S_OK)
             {
-                FancyZonesData::FancyZonesDataInstance().SetAppLastZones(window, m_uniqueId, guidString, zoneIndexSet);
+                FancyZonesDataInstance().SetAppLastZones(window, m_uniqueId, guidString, zoneIndexSet);
             }
 
             CoTaskMemFree(guidString);
@@ -579,17 +579,17 @@ ZoneWindow::ClearSelectedZones() noexcept
 void ZoneWindow::InitializeZoneSets(const std::wstring& parentUniqueId) noexcept
 {
     // If there is not defined zone layout for this work area, created default entry.
-    FancyZonesData::FancyZonesDataInstance().AddDevice(m_uniqueId);
+    FancyZonesDataInstance().AddDevice(m_uniqueId);
     if (!parentUniqueId.empty())
     {
-        FancyZonesData::FancyZonesDataInstance().CloneDeviceInfo(parentUniqueId, m_uniqueId);
+        FancyZonesDataInstance().CloneDeviceInfo(parentUniqueId, m_uniqueId);
     }
     CalculateZoneSet();
 }
 
 void ZoneWindow::CalculateZoneSet() noexcept
 {
-    const auto& fancyZonesData = FancyZonesData::FancyZonesDataInstance();
+    const auto& fancyZonesData = FancyZonesDataInstance();
     const auto deviceInfoData = fancyZonesData.FindDeviceInfo(m_uniqueId);
 
     if (!deviceInfoData.has_value())
@@ -638,7 +638,7 @@ void ZoneWindow::UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept
                 .uuid = zoneSetId.get(),
                 .type = m_activeZoneSet->LayoutType()
             };
-            FancyZonesData::FancyZonesDataInstance().SetActiveZoneSet(m_uniqueId, data);
+            FancyZonesDataInstance().SetActiveZoneSet(m_uniqueId, data);
         }
     }
 }

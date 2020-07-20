@@ -338,7 +338,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
                     wil::unique_cotaskmem_string guidString;
                     if (SUCCEEDED_LOG(StringFromCLSID(activeZoneSet->Id(), &guidString)))
                     {
-                        FancyZonesData::FancyZonesDataInstance().RemoveAppLastZone(window, zoneWindowPtr->UniqueId(), guidString.get());
+                        FancyZonesDataInstance().RemoveAppLastZone(window, zoneWindowPtr->UniqueId(), guidString.get());
                     }
                 }
             }

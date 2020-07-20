@@ -583,7 +583,7 @@ bool ZoneSet::CalculateCustomLayout(Rect workArea, int spacing) noexcept
     {
         const std::wstring guid = guidStr.get();
 
-        const auto zoneSetSearchResult = FancyZonesData::FancyZonesDataInstance().FindCustomZoneSet(guid);
+        const auto zoneSetSearchResult = FancyZonesDataInstance().FindCustomZoneSet(guid);
 
         if (!zoneSetSearchResult.has_value())
         {

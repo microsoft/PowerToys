@@ -72,7 +72,7 @@ void Trace::FancyZones::OnKeyDown(DWORD vkCode, bool win, bool control, bool inM
 
 void Trace::FancyZones::DataChanged() noexcept
 {
-    const FancyZonesData::FancyZonesData& data = FancyZonesData::FancyZonesDataInstance();
+    const FancyZonesData& data = FancyZonesDataInstance();
     int appsHistorySize = static_cast<int>(data.GetAppZoneHistoryMap().size());
     const auto& customZones = data.GetCustomZoneSetsMap();
     const auto& devices = data.GetDeviceInfoMap();
