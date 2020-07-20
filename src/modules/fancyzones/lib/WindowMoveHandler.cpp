@@ -79,7 +79,8 @@ public:
     bool MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow);
 
 private:
-    void UpdateDragState(HWND window) noexcept;
+    void ElevatedDragCheck(HWND window) noexcept;
+    void UpdateDragState() noexcept;
 
 private:
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
@@ -194,8 +195,8 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
     m_shiftHook->enable();
     m_ctrlHook->enable();
 
-    // This updates m_dragEnabled depending on if the shift key is being held down.
-    UpdateDragState(window);
+    UpdateDragState(); // This updates m_dragEnabled depending on if the shift key is being held down    
+    ElevatedDragCheck(window); // Notifies user if unable to drag elevated window
 
     if (m_dragEnabled)
     {
@@ -237,7 +238,7 @@ void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptS
     }
 
     // This updates m_dragEnabled depending on if the shift key is being held down.
-    UpdateDragState(m_windowMoveSize);
+    UpdateDragState();
 
     if (m_zoneWindowMoveSize)
     {
@@ -369,17 +370,8 @@ bool WindowMoveHandlerPrivate::MoveWindowIntoZoneByDirection(HWND window, DWORD 
     return zoneWindow && zoneWindow->MoveWindowIntoZoneByDirection(window, vkCode, cycle);
 }
 
-void WindowMoveHandlerPrivate::UpdateDragState(HWND window) noexcept
+void WindowMoveHandlerPrivate::ElevatedDragCheck(HWND window) noexcept
 {
-    if (m_settings->GetSettings()->shiftDrag)
-    {
-        m_dragEnabled = (m_shiftKeyState ^ m_secondaryMouseButtonState);
-    }
-    else
-    {
-        m_dragEnabled = !(m_shiftKeyState ^ m_secondaryMouseButtonState);
-    }
-
     static bool warning_shown = false;
     if (!is_process_elevated() && IsProcessOfWindowElevated(window))
     {
@@ -393,5 +385,17 @@ void WindowMoveHandlerPrivate::UpdateDragState(HWND window) noexcept
             notifications::show_toast_with_activations(GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED), {}, std::move(actions));
             warning_shown = true;
         }
+    }
+}
+
+void WindowMoveHandlerPrivate::UpdateDragState() noexcept
+{
+    if (m_settings->GetSettings()->shiftDrag)
+    {
+        m_dragEnabled = (m_shiftKeyState ^ m_secondaryMouseButtonState);
+    }
+    else
+    {
+        m_dragEnabled = !(m_shiftKeyState ^ m_secondaryMouseButtonState);
     }
 }
