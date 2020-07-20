@@ -35,6 +35,11 @@
       </PackageRelativeDirectory>
     </FilesToPackage>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\VideoConferenceCustomMediaSource\VideoConferenceCustomMediaSource.vcxproj">
+      <Project>{43ad9bf7-e765-48fe-9826-71a8f2cb12dd}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3098C6BF-E96E-4793-A70E-FB09B741580A}</ProjectGuid>
     <TemplateGuid>{32909489-7be5-497b-aafa-db6669d9b44b}</TemplateGuid>
