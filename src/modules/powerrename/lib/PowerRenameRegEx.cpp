@@ -201,6 +201,9 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result)
             std::wstring searchTerm(m_searchTerm);
             std::wstring replaceTerm(m_replaceTerm ? wstring(m_replaceTerm) : wstring(L""));
 
+            replaceTerm = regex_replace(replaceTerm, std::wregex(L"\\$[0]+"), L"$");
+            replaceTerm = regex_replace(replaceTerm, std::wregex(L"\\$[0]*[1-9]{2,}"), L"");
+
             if (m_flags & UseRegularExpressions)
             {
                 std::wregex pattern(m_searchTerm, (!(m_flags & CaseSensitive)) ? regex_constants::icase | regex_constants::ECMAScript : regex_constants::ECMAScript);
