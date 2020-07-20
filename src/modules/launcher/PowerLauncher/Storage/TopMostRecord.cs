@@ -3,7 +3,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Wox.Plugin;
 
-namespace Wox.Storage
+namespace PowerLauncher.Storage
 {
     // todo this class is not thread safe.... but used from multiple threads.
     public class TopMostRecord

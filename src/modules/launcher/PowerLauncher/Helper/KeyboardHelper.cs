@@ -4,7 +4,7 @@ using System.Text;
 using System.Windows.Input;
 using Wox.Plugin;
 
-namespace Wox.Helper
+namespace PowerLauncher.Helper
 {
     class KeyboardHelper
     {

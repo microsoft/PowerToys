@@ -3,9 +3,9 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
-using Wox.Helper;
+using PowerLauncher.Helper;
 using Wox.Infrastructure.UserSettings;
-using Wox.ViewModel;
+using PowerLauncher.ViewModel;
 
 using Screen = System.Windows.Forms.Screen;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
@@ -66,11 +66,11 @@ namespace PowerLauncher
         private void BringProcessToForeground()
         {
             // Use SendInput hack to allow Activate to work - required to resolve focus issue https://github.com/microsoft/PowerToys/issues/4270
-            WindowsInteropHelper.INPUT input = new WindowsInteropHelper.INPUT { type = WindowsInteropHelper.INPUTTYPE.INPUT_MOUSE, data = { } };
+            WindowsInteropHelper.INPUT input = new WindowsInteropHelper.INPUT { type = WindowsInteropHelper.INPUTTYPE.INPUTMOUSE, data = { } };
             WindowsInteropHelper.INPUT[] inputs = new WindowsInteropHelper.INPUT[] { input };
 
             // Send empty mouse event. This makes this thread the last to send input, and hence allows it to pass foreground permission checks
-            _ = WindowsInteropHelper.SendInput(1, inputs, WindowsInteropHelper.INPUT.Size);
+            _ = NativeMethods.SendInput(1, inputs, WindowsInteropHelper.INPUT.Size);
             Activate();
         }
 

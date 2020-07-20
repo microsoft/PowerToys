@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace Wox.ViewModel
+namespace PowerLauncher.ViewModel
 {
     public class RelayCommand : ICommand
     {
@@ -17,7 +17,11 @@ namespace Wox.ViewModel
             return true;
         }
 
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler CanExecuteChanged
+        {
+            add { }
+            remove { }
+        }
 
         public virtual void Execute(object parameter)
         {

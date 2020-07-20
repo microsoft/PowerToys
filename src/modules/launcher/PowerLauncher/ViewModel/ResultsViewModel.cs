@@ -1,16 +1,15 @@
-﻿using System;
+﻿using PowerLauncher.Helper;
+using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Input;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 
-namespace Wox.ViewModel
+namespace PowerLauncher.ViewModel
 {
     public class ResultsViewModel : BaseModel
     {
@@ -30,7 +29,7 @@ namespace Wox.ViewModel
         }
         public ResultsViewModel(Settings settings) : this()
         {
-            _settings = settings;
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _settings.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(_settings.MaxResultsToShow))
@@ -89,7 +88,7 @@ namespace Wox.ViewModel
 
         #region Private Methods
 
-        private int InsertIndexOf(int newScore, IList<ResultViewModel> list)
+        private static int InsertIndexOf(int newScore, IList<ResultViewModel> list)
         {
             int index = 0;
             for (; index < list.Count; index++)
@@ -296,12 +295,15 @@ namespace Wox.ViewModel
 
         public static void SetFormattedText(DependencyObject textBlock, IList<int> value)
         {
-            textBlock.SetValue(FormattedTextProperty, value);
+            if (textBlock != null)
+            {
+                textBlock.SetValue(FormattedTextProperty, value);
+            }
         }
 
         public static Inline GetFormattedText(DependencyObject textBlock)
         {
-            return (Inline)textBlock.GetValue(FormattedTextProperty);
+            return (Inline)textBlock?.GetValue(FormattedTextProperty);
         }
 
         private static void FormattedTextPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -318,62 +320,6 @@ namespace Wox.ViewModel
         }
         #endregion
 
-        public class ResultCollection : ObservableCollection<ResultViewModel>
-        {
-
-            public void RemoveAll(Predicate<ResultViewModel> predicate)
-            {
-                CheckReentrancy();
-
-                for (int i = Count - 1; i >= 0; i--)
-                {
-                    if (predicate(this[i]))
-                    {
-                        RemoveAt(i);
-                    }
-                }
-            }
-
-            /// <summary>
-            /// Update the results collection with new results, try to keep identical results
-            /// </summary>
-            /// <param name="newItems"></param>
-            public void Update(List<ResultViewModel> newItems)
-            {
-                int newCount = newItems.Count;
-                int oldCount = Items.Count;
-                int location = newCount > oldCount ? oldCount : newCount;
-
-                for (int i = 0; i < location; i++)
-                {
-                    ResultViewModel oldResult = this[i];
-                    ResultViewModel newResult = newItems[i];
-                    if (!oldResult.Equals(newResult))
-                    { // result is not the same update it in the current index
-                        this[i] = newResult;
-                    }
-                    else if (oldResult.Result.Score != newResult.Result.Score)
-                    {
-                        this[i].Result.Score = newResult.Result.Score;
-                    }
-                }
-
-
-                if (newCount >= oldCount)
-                {
-                    for (int i = oldCount; i < newCount; i++)
-                    {
-                        Add(newItems[i]);
-                    }
-                }
-                else
-                {
-                    for (int i = oldCount - 1; i >= newCount; i--)
-                    {
-                        RemoveAt(i);
-                    }
-                }
-            }
-        }
+        
     }
 }

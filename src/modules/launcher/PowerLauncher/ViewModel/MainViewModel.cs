@@ -9,41 +9,41 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
-using Wox.Helper;
+using PowerLauncher.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Microsoft.PowerLauncher.Telemetry;
-using Wox.Storage;
+using PowerLauncher.Storage;
 using Microsoft.PowerToys.Telemetry;
 using interop;
+using System.Globalization;
 
-namespace Wox.ViewModel
+namespace PowerLauncher.ViewModel
 {
     public class MainViewModel : BaseModel, ISavable, IDisposable
     {
         #region Private Fields
 
-        private bool _isQueryRunning;
         private Query _lastQuery;
         private static Query _emptyQuery = new Query();
         private static bool _disposed;
         private string _queryTextBeforeLeaveResults;
 
-        private readonly WoxJsonStorage<History> _historyItemsStorage;
+        private readonly WoxJsonStorage<QueryHistory> _historyItemsStorage;
         private readonly WoxJsonStorage<UserSelectedRecord> _userSelectedRecordStorage;
         private readonly WoxJsonStorage<TopMostRecord> _topMostRecordStorage;
         private readonly Settings _settings;
-        private readonly History _history;
+        private readonly QueryHistory _history;
         private readonly UserSelectedRecord _userSelectedRecord;
         private readonly TopMostRecord _topMostRecord;
 
-        private CancellationTokenSource _updateSource;
+        private CancellationTokenSource _updateSource { get; set; }
         private CancellationToken _updateToken;
         private bool _saved;
-        private HotkeyManager _hotkeyManager;
+        private HotkeyManager _hotkeyManager { get; set; }
         private ushort _hotkeyHandle;
         private readonly Internationalization _translator = InternationalizationManager.Instance;
 
@@ -59,9 +59,9 @@ namespace Wox.ViewModel
             _lastQuery = _emptyQuery;
             _disposed = false;
 
-            _settings = settings;
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
 
-            _historyItemsStorage = new WoxJsonStorage<History>();
+            _historyItemsStorage = new WoxJsonStorage<QueryHistory>();
             _userSelectedRecordStorage = new WoxJsonStorage<UserSelectedRecord>();
             _topMostRecordStorage = new WoxJsonStorage<TopMostRecord>();
             _history = _historyItemsStorage.Load();
@@ -82,12 +82,12 @@ namespace Wox.ViewModel
                 {
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        if (_settings.PreviousHotkey != "")
+                        if (!string.IsNullOrEmpty(_settings.PreviousHotkey))
                         {
                             _hotkeyManager.UnregisterHotkey(_hotkeyHandle);
                         }
 
-                        if (_settings.Hotkey != "")
+                        if (!string.IsNullOrEmpty(_settings.Hotkey))
                         {
                             SetHotkey(_settings.Hotkey, OnHotkey);
                         }
@@ -184,7 +184,7 @@ namespace Wox.ViewModel
 
                 if (index != null)
                 {
-                    results.SelectedIndex = int.Parse(index.ToString());
+                    results.SelectedIndex = int.Parse(index.ToString(), CultureInfo.InvariantCulture);
                 }
 
                 if(results.SelectedItem != null)
@@ -385,7 +385,9 @@ namespace Wox.ViewModel
         private void QueryHistory()
         {
             const string id = "Query History ID";
-            var query = QueryText.ToLower().Trim();
+#pragma warning disable CA1308 // Normalize strings to uppercase
+            var query = QueryText.ToLower(CultureInfo.InvariantCulture).Trim();
+#pragma warning restore CA1308 // Normalize strings to uppercase
             History.Clear();
 
             var results = new List<Result>();
@@ -395,8 +397,8 @@ namespace Wox.ViewModel
                 var time = _translator.GetTranslation("lastExecuteTime");
                 var result = new Result
                 {
-                    Title = string.Format(title, h.Query),
-                    SubTitle = string.Format(time, h.ExecutedDateTime),
+                    Title = string.Format(CultureInfo.InvariantCulture, title, h.Query),
+                    SubTitle = string.Format(CultureInfo.InvariantCulture, time, h.ExecutedDateTime),
                     IcoPath = "Images\\history.png",
                     OriginQuery = new Query { RawQuery = h.Query },
                     Action = _ =>
@@ -437,7 +439,6 @@ namespace Wox.ViewModel
                 _updateToken = currentCancellationToken;
 
                 ProgressBarVisibility = Visibility.Hidden;
-                _isQueryRunning = true;
                 var query = QueryBuilder.Build(QueryText.Trim(), PluginManager.NonGlobalPlugins);
                 if (query != null)
                 {
@@ -480,7 +481,6 @@ namespace Wox.ViewModel
 
                         // this should happen once after all queries are done so progress bar should continue
                         // until the end of all querying
-                        _isQueryRunning = false;
                         if (currentUpdateSource == _updateSource)
                         { // update to hidden if this is still the current query
                             ProgressBarVisibility = Visibility.Hidden;
@@ -573,10 +573,11 @@ namespace Wox.ViewModel
 
                 _hotkeyHandle = _hotkeyManager.RegisterHotkey(hotkey, action);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
-                string errorMsg =
-                    string.Format(InternationalizationManager.Instance.GetTranslation("registerHotkeyFailed"), hotkeyStr);
+                string errorMsg = string.Format(CultureInfo.InvariantCulture, InternationalizationManager.Instance.GetTranslation("registerHotkeyFailed"), hotkeyStr);
                 MessageBox.Show(errorMsg);
             }
         }
@@ -671,6 +672,21 @@ namespace Wox.ViewModel
         /// </summary>
         public void UpdateResultView(List<Result> list, PluginMetadata metadata, Query originQuery)
         {
+            if(list == null)
+            {
+                throw new ArgumentNullException(nameof(list));
+            }
+
+            if (metadata == null)
+            {
+                throw new ArgumentNullException(nameof(metadata));
+            }
+
+            if (originQuery == null)
+            {
+                throw new ArgumentNullException(nameof(originQuery));
+            }
+
             foreach (var result in list)
             {
                 if (_topMostRecord.IsTopMost(result))
@@ -781,6 +797,7 @@ namespace Wox.ViewModel
                         _hotkeyManager.UnregisterHotkey(_hotkeyHandle);
                     }
                     _hotkeyManager.Dispose();
+                    _updateSource.Dispose();
                     _disposed = true;
                 }   
             }         
