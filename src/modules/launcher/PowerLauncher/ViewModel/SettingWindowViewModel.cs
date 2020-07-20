@@ -1,9 +1,10 @@
+using System.Globalization;
 using Wox.Core.Resource;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 
-namespace Wox.ViewModel
+namespace PowerLauncher.ViewModel
 {
     public class SettingWindowViewModel : BaseModel
     {
@@ -31,13 +32,13 @@ namespace Wox.ViewModel
 
         #region general      
 
-        private Internationalization _translater => InternationalizationManager.Instance;
+        private static Internationalization _translater => InternationalizationManager.Instance;
 
         #endregion
 
         #region about
 
-        public string ActivatedTimes => string.Format(_translater.GetTranslation("about_activate_times"), Settings.ActivateTimes);
+        public string ActivatedTimes => string.Format(CultureInfo.InvariantCulture, _translater.GetTranslation("about_activate_times"), Settings.ActivateTimes);
         
         #endregion
     }

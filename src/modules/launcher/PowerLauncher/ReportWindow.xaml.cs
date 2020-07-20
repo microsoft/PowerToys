@@ -6,11 +6,11 @@ using System.Text;
 using System.Linq;
 using System.Windows;
 using System.Windows.Documents;
-using Wox.Helper;
+using PowerLauncher.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
 
-namespace Wox
+namespace PowerLauncher
 {
     internal partial class ReportWindow
     {
@@ -42,7 +42,7 @@ namespace Wox
             ErrorTextbox.Document.Blocks.Add(paragraph);
         }
 
-        private Paragraph Hyperlink(string textBeforeUrl, string url)
+        private static Paragraph Hyperlink(string textBeforeUrl, string url)
         {
             var paragraph = new Paragraph();
             paragraph.Margin = new Thickness(0);

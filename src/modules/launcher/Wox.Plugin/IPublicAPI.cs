@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Wox.Plugin
 {
@@ -8,15 +7,6 @@ namespace Wox.Plugin
     /// </summary>
     public interface IPublicAPI
     {
-        /// <summary>
-        /// Push result to query box
-        /// </summary>
-        /// <param name="query"></param>
-        /// <param name="plugin"></param>
-        /// <param name="results"></param>
-        [Obsolete("This method will be removed in Wox 1.3")]
-        void PushResults(Query query, PluginMetadata plugin, List<Result> results);
-
         /// <summary>
         /// Change Wox query
         /// </summary>
@@ -28,34 +18,9 @@ namespace Wox.Plugin
         void ChangeQuery(string query, bool requery = false);
 
         /// <summary>
-        /// Just change the query text, this won't raise search
-        /// </summary>
-        /// <param name="query"></param>
-        [Obsolete]
-        void ChangeQueryText(string query, bool selectAll = false);
-
-        /// <summary>
-        /// Close Wox
-        /// </summary>
-        [Obsolete]
-        void CloseApp();
-
-        /// <summary>
         /// Restart Wox
         /// </summary>
         void RestartApp();
-
-        /// <summary>
-        /// Hide Wox
-        /// </summary>
-        [Obsolete]
-        void HideApp();
-
-        /// <summary>
-        /// Show Wox
-        /// </summary>
-        [Obsolete]
-        void ShowApp();
 
         /// <summary>
         /// Get current theme
@@ -92,18 +57,6 @@ namespace Wox.Plugin
         /// <param name="subTitle">Message subtitle</param>
         /// <param name="iconPath">Message icon path (relative path to your plugin folder)</param>
         void ShowMsg(string title, string subTitle = "", string iconPath = "", bool useMainWindowAsOwner = true);
-
-        /// <summary>
-        /// Show loading animation
-        /// </summary>
-        [Obsolete("automatically start")]
-        void StartLoadingBar();
-
-        /// <summary>
-        /// Stop loading animation
-        /// </summary>
-        [Obsolete("automatically stop")]
-        void StopLoadingBar();
 
         /// <summary>
         /// Install Wox plugin
