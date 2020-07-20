@@ -117,8 +117,11 @@ private:
     void MigrateCustomZoneSetsFromRegistry();
     void RemoveDesktopAppZoneHistory(const std::wstring& desktopId);
 
+    // Maps app path to app's zone history data
     std::unordered_map<std::wstring, std::vector<FancyZonesDataTypes::AppZoneHistoryData>> appZoneHistoryMap{};
+    // Maps device unique ID to device data
     std::unordered_map<std::wstring, FancyZonesDataTypes::DeviceInfoData> deviceInfoMap{};
+    // Maps custom zoneset UUID to it's data
     std::unordered_map<std::wstring, FancyZonesDataTypes::CustomZoneSetData> customZoneSetsMap{};
 
     std::wstring zonesSettingsFileName;
