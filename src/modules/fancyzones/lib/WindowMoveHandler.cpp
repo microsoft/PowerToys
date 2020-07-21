@@ -263,12 +263,12 @@ void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptS
         {
             // Drag got disabled, tell it to cancel and hide all windows
             m_zoneWindowMoveSize = nullptr;
+            ResetWindowTransparency();
 
             for (auto [keyMonitor, zoneWindow] : zoneWindowMap)
             {
                 if (zoneWindow)
                 {
-                    ResetWindowTransparency();
                     zoneWindow->HideZoneWindow();
                 }
             }
