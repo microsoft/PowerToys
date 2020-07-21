@@ -1,6 +1,6 @@
 # Specs
 
-All approved specs are inside the [Wiki](https://github.com/microsoft/PowerToys/wiki)
+All approved specs are inside the [Wiki](https://github.com/microsoft/PowerToys/wiki/Specs)
 
 ## Spec process
 
