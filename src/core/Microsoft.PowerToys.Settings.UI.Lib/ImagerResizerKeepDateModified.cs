@@ -6,14 +6,14 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class ImageResizerFallbackEncoder
+    public class ImagerResizerKeepDateModified
     {
         [JsonPropertyName("value")]
-        public string Value { get; set; }
+        public bool Value { get; set; }
 
-        public ImageResizerFallbackEncoder()
+        public ImagerResizerKeepDateModified()
         {
-            Value = string.Empty;
+            Value = false;
         }
     }
 }
