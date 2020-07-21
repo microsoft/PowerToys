@@ -41,6 +41,7 @@ steps:
     configuration: '$(BuildConfiguration)'
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
+      **\*.dll       
       !**\*PowerToysTests.dll
       !**\obj\**
 #      **\PreviewPaneUnitTests.dll
