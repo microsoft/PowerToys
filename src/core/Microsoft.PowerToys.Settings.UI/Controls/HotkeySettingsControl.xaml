@@ -13,7 +13,7 @@
             <ToolTip>
                 <StackPanel Orientation="Vertical">
                     <TextBlock x:Uid="ShortcutWarningLabel"/>
-                    <TextBlock Text="Win, Ctrl, Alt, Shift" FontWeight="SemiBold"/>
+                    <TextBlock Text="{x:Bind Keys, Mode=OneTime}" FontWeight="SemiBold"/>
                 </StackPanel>
             </ToolTip>
         </ToolTipService.ToolTip>

@@ -89,6 +89,7 @@
                 HorizontalAlignment="Left"
                 Margin="{StaticResource SmallTopMargin}"
                 HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}"
+                Keys="Win, Ctrl, Alt, Shift"
                 Enabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                 />
 
