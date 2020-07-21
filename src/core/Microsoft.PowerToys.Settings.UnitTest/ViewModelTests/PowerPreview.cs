@@ -25,7 +25,7 @@ namespace ViewModelTests
             PowerPreviewSettings powerpreview = new PowerPreviewSettings();
 
             SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            SettingsUtils.SaveSettings(powerpreview.ToJsonString(), powerpreview.name);
+            SettingsUtils.SaveSettings(powerpreview.ToJsonString(), powerpreview.Name);
         }
 
         [TestCleanup]
