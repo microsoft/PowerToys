@@ -38,12 +38,12 @@ steps:
   inputs:
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-    testSelector: 'testAssemblies'
-    testAssemblyVer2: |
-      **\PreviewPaneUnitTests.dll
-      **\UnitTests-SvgPreviewHandler.dll
-      **\UnitTests-PreviewHandlerCommon.dll
-      **\powerpreviewTest.dll
-      **\UnitTests-CommonLib.dll
-      !**\*TestAdapter.dll
-      !**\obj\**
+#    testSelector: 'testAssemblies'
+#    testAssemblyVer2: |
+#      **\PreviewPaneUnitTests.dll
+#      **\UnitTests-SvgPreviewHandler.dll
+#      **\UnitTests-PreviewHandlerCommon.dll
+#      **\powerpreviewTest.dll
+#      **\UnitTests-CommonLib.dll
+#      !**\*TestAdapter.dll
+#      !**\obj\**
