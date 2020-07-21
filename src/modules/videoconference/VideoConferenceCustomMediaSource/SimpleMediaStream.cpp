@@ -206,11 +206,13 @@ SimpleMediaStream::RuntimeClassInitialize(
 {
     LogToFile(__FUNCTION__);
 
+    HRESULT hr = S_OK;
+
     if (nullptr == pSource)
     {
         return E_INVALIDARG;
     }
-    RETURN_IF_FAILED(pSource->QueryInterface(IID_PPV_ARGS(&_parent)));
+    RETURN_IF_FAILED_WITH_LOGGING(pSource->QueryInterface(IID_PPV_ARGS(&_parent)));
 
     SyncCurrentSettings();
     // We couldn't connect to the PT, so choose a default webcam
@@ -231,8 +233,8 @@ SimpleMediaStream::BeginGetEvent(
     HRESULT hr = S_OK;
     auto lock = _critSec.Lock();
 
-    RETURN_IF_FAILED(_CheckShutdownRequiresLock());
-    RETURN_IF_FAILED(_spEventQueue->BeginGetEvent(pCallback, punkState));
+    RETURN_IF_FAILED_WITH_LOGGING(_CheckShutdownRequiresLock());
+    RETURN_IF_FAILED_WITH_LOGGING(_spEventQueue->BeginGetEvent(pCallback, punkState));
 
     return hr;
 }
@@ -245,8 +247,8 @@ SimpleMediaStream::EndGetEvent(
     HRESULT hr = S_OK;
     auto lock = _critSec.Lock();
 
-    RETURN_IF_FAILED(_CheckShutdownRequiresLock());
-    RETURN_IF_FAILED(_spEventQueue->EndGetEvent(pResult, ppEvent));
+    RETURN_IF_FAILED_WITH_LOGGING(_CheckShutdownRequiresLock());
+    RETURN_IF_FAILED_WITH_LOGGING(_spEventQueue->EndGetEvent(pResult, ppEvent));
 
     return hr;
 }
@@ -269,12 +271,12 @@ SimpleMediaStream::GetEvent(
     {
         auto lock = _critSec.Lock();
 
-        RETURN_IF_FAILED(_CheckShutdownRequiresLock());
+        RETURN_IF_FAILED_WITH_LOGGING(_CheckShutdownRequiresLock());
         spQueue = _spEventQueue;
     }
 
     // Now get the event.
-    RETURN_IF_FAILED(_spEventQueue->GetEvent(dwFlags, ppEvent));
+    RETURN_IF_FAILED_WITH_LOGGING(_spEventQueue->GetEvent(dwFlags, ppEvent));
 
     return hr;
 }
@@ -291,8 +293,8 @@ SimpleMediaStream::QueueEvent(
     HRESULT hr = S_OK;
     auto lock = _critSec.Lock();
 
-    RETURN_IF_FAILED(_CheckShutdownRequiresLock());
-    RETURN_IF_FAILED(_spEventQueue->QueueEventParamVar(eventType, guidExtendedType, hrStatus, pvValue));
+    RETURN_IF_FAILED_WITH_LOGGING(_CheckShutdownRequiresLock());
+    RETURN_IF_FAILED_WITH_LOGGING(_spEventQueue->QueueEventParamVar(eventType, guidExtendedType, hrStatus, pvValue));
 
     return hr;
 }
@@ -313,7 +315,7 @@ SimpleMediaStream::GetMediaSource(
     }
     *ppMediaSource = nullptr;
 
-    RETURN_IF_FAILED(_CheckShutdownRequiresLock());
+    RETURN_IF_FAILED_WITH_LOGGING(_CheckShutdownRequiresLock());
 
     *ppMediaSource = _parent.Get();
     (*ppMediaSource)->AddRef();
@@ -336,7 +338,7 @@ SimpleMediaStream::GetStreamDescriptor(
     }
     *ppStreamDescriptor = nullptr;
 
-    RETURN_IF_FAILED(_CheckShutdownRequiresLock());
+    RETURN_IF_FAILED_WITH_LOGGING(_CheckShutdownRequiresLock());
 
     if (_spStreamDesc != nullptr)
     {
@@ -359,7 +361,7 @@ SimpleMediaStream::RequestSample(
 
     auto lock = _critSec.Lock();
     HRESULT hr{};
-    RETURN_IF_FAILED(_CheckShutdownRequiresLock());
+    RETURN_IF_FAILED_WITH_LOGGING(_CheckShutdownRequiresLock());
 
     const bool disableWebcam = SyncCurrentSettings();
 
@@ -368,17 +370,13 @@ SimpleMediaStream::RequestSample(
     ComPtr<IMFSample> sample;
     DWORD streamFlags = 0;
 
-    hr = _sourceCamera->ReadSample(
+    RETURN_IF_FAILED_WITH_LOGGING(_sourceCamera->ReadSample(
         (DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM,
         0,
         nullptr,
         &streamFlags,
         nullptr,
-        &sample);
-    if (FAILED(hr))
-    {
-        return hr;
-    }
+        &sample));
 
     IMFSample* outputSample = disableWebcam ? _overlayImage.Get() : sample.Get();
     const bool noSampleAvailable = !outputSample;
@@ -386,27 +384,27 @@ SimpleMediaStream::RequestSample(
     if (noSampleAvailable)
     {
         // Create an empty sample
-        RETURN_IF_FAILED(MFCreateSample(&outputSample));
+        RETURN_IF_FAILED_WITH_LOGGING(MFCreateSample(&outputSample));
     }
-    RETURN_IF_FAILED(outputSample->SetSampleTime(MFGetSystemTime()));
-    RETURN_IF_FAILED(outputSample->SetSampleDuration(333333));
+    RETURN_IF_FAILED_WITH_LOGGING(outputSample->SetSampleTime(MFGetSystemTime()));
+    RETURN_IF_FAILED_WITH_LOGGING(outputSample->SetSampleDuration(333333));
     if (pToken != nullptr)
     {
-        RETURN_IF_FAILED(outputSample->SetUnknown(MFSampleExtension_Token, pToken));
+        RETURN_IF_FAILED_WITH_LOGGING(outputSample->SetUnknown(MFSampleExtension_Token, pToken));
     }
 
     if (noSampleAvailable)
     {
-        RETURN_IF_FAILED(_spEventQueue->QueueEventParamUnk(MEStreamTick,
-                                                           GUID_NULL,
-                                                           S_OK,
-                                                           nullptr));
+        RETURN_IF_FAILED_WITH_LOGGING(_spEventQueue->QueueEventParamUnk(MEStreamTick,
+                                                                        GUID_NULL,
+                                                                        S_OK,
+                                                                        nullptr));
     }
 
-    RETURN_IF_FAILED(_spEventQueue->QueueEventParamUnk(MEMediaSample,
-                                                       GUID_NULL,
-                                                       S_OK,
-                                                       outputSample));
+    RETURN_IF_FAILED_WITH_LOGGING(_spEventQueue->QueueEventParamUnk(MEMediaSample,
+                                                                    GUID_NULL,
+                                                                    S_OK,
+                                                                    outputSample));
 
     return S_OK;
 }
@@ -460,12 +458,9 @@ SimpleMediaStream::GetStreamState(
     HRESULT hr = S_OK;
     auto lock = _critSec.Lock();
 
-    RETURN_IF_FAILED(_CheckShutdownRequiresLock());
+    RETURN_IF_FAILED_WITH_LOGGING(_CheckShutdownRequiresLock());
 
-    if (SUCCEEDED(hr))
-    {
-        *pState = (_isSelected ? MF_STREAM_STATE_RUNNING : MF_STREAM_STATE_STOPPED);
-    }
+    *pState = (_isSelected ? MF_STREAM_STATE_RUNNING : MF_STREAM_STATE_STOPPED);
 
     return hr;
 }
@@ -505,8 +500,10 @@ HRESULT SimpleMediaStream::UpdateSourceCamera(std::wstring_view newCameraName)
 {
     LogToFile(__FUNCTION__);
 
+    HRESULT hr = S_OK;
+
     _cameraList.Clear();
-    RETURN_IF_FAILED(_cameraList.EnumerateDevices());
+    RETURN_IF_FAILED_WITH_LOGGING(_cameraList.EnumerateDevices());
 
     bool webcamIsChosen = false;
     ComPtr<IMFActivate> webcamSourceActivator;
@@ -530,7 +527,7 @@ HRESULT SimpleMediaStream::UpdateSourceCamera(std::wstring_view newCameraName)
             const bool differentCamera = _currentSourceCameraName.has_value() && camName != *_currentSourceCameraName;
             if (camName != VIRTUAL_CAMERA_NAME && (differentCamera || !_currentSourceCameraName.has_value()))
             {
-                RETURN_IF_FAILED(_cameraList.GetDevice(i, &webcamSourceActivator));
+                RETURN_IF_FAILED_WITH_LOGGING(_cameraList.GetDevice(i, &webcamSourceActivator));
                 webcamIsChosen = true;
                 _currentSourceCameraName.emplace(camName);
                 break;
@@ -543,13 +540,13 @@ HRESULT SimpleMediaStream::UpdateSourceCamera(std::wstring_view newCameraName)
     }
     ComPtr<IMFMediaSource> realSource;
 
-    RETURN_IF_FAILED(webcamSourceActivator->ActivateObject(
+    RETURN_IF_FAILED_WITH_LOGGING(webcamSourceActivator->ActivateObject(
         __uuidof(IMFMediaSource),
         (void**)realSource.GetAddressOf()));
 
     ComPtr<IMFAttributes> pAttributes;
 
-    HRESULT hr = MFCreateAttributes(&pAttributes, 2);
+    hr = MFCreateAttributes(&pAttributes, 2);
 
     if (SUCCEEDED(hr))
     {
@@ -561,22 +558,22 @@ HRESULT SimpleMediaStream::UpdateSourceCamera(std::wstring_view newCameraName)
             &_sourceCamera);
         _spAttributes.Reset();
         _spMediaType = SelectBestMediaType(_sourceCamera.Get());
-        RETURN_IF_FAILED(MFCreateAttributes(&_spAttributes, 10));
-        RETURN_IF_FAILED(_SetStreamAttributes(_spAttributes.Get()));
+        RETURN_IF_FAILED_WITH_LOGGING(MFCreateAttributes(&_spAttributes, 10));
+        RETURN_IF_FAILED_WITH_LOGGING(_SetStreamAttributes(_spAttributes.Get()));
         if (_spEventQueue)
         {
             _spEventQueue->Shutdown();
             _spEventQueue.Reset();
         }
-        RETURN_IF_FAILED(MFCreateEventQueue(&_spEventQueue));
+        RETURN_IF_FAILED_WITH_LOGGING(MFCreateEventQueue(&_spEventQueue));
         _spStreamDesc.Reset();
         // Initialize stream descriptors
-        RETURN_IF_FAILED(MFCreateStreamDescriptor(0, 1, _spMediaType.GetAddressOf(), &_spStreamDesc));
+        RETURN_IF_FAILED_WITH_LOGGING(MFCreateStreamDescriptor(0, 1, _spMediaType.GetAddressOf(), &_spStreamDesc));
 
-        RETURN_IF_FAILED(_spStreamDesc->GetMediaTypeHandler(&spTypeHandler));
-        RETURN_IF_FAILED(spTypeHandler->SetCurrentMediaType(_spMediaType.Get()));
-        RETURN_IF_FAILED(_SetStreamDescriptorAttributes(_spStreamDesc.Get()));
-        _sourceCamera->SetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM, nullptr, _spMediaType.Get());
+        RETURN_IF_FAILED_WITH_LOGGING(_spStreamDesc->GetMediaTypeHandler(&spTypeHandler));
+        RETURN_IF_FAILED_WITH_LOGGING(spTypeHandler->SetCurrentMediaType(_spMediaType.Get()));
+        RETURN_IF_FAILED_WITH_LOGGING(_SetStreamDescriptorAttributes(_spStreamDesc.Get()));
+        RETURN_IF_FAILED_WITH_LOGGING(_sourceCamera->SetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM, nullptr, _spMediaType.Get()));
     }
 
     return hr;
@@ -672,10 +669,10 @@ SimpleMediaStream::_SetStreamAttributes(
         return E_INVALIDARG;
     }
 
-    RETURN_IF_FAILED(pAttributeStore->SetGUID(MF_DEVICESTREAM_STREAM_CATEGORY, PINNAME_VIDEO_CAPTURE));
-    RETURN_IF_FAILED(pAttributeStore->SetUINT32(MF_DEVICESTREAM_STREAM_ID, 0));
-    RETURN_IF_FAILED(pAttributeStore->SetUINT32(MF_DEVICESTREAM_FRAMESERVER_SHARED, 1));
-    RETURN_IF_FAILED(pAttributeStore->SetUINT32(MF_DEVICESTREAM_ATTRIBUTE_FRAMESOURCE_TYPES, _MFFrameSourceTypes::MFFrameSourceTypes_Color));
+    RETURN_IF_FAILED_WITH_LOGGING(pAttributeStore->SetGUID(MF_DEVICESTREAM_STREAM_CATEGORY, PINNAME_VIDEO_CAPTURE));
+    RETURN_IF_FAILED_WITH_LOGGING(pAttributeStore->SetUINT32(MF_DEVICESTREAM_STREAM_ID, 0));
+    RETURN_IF_FAILED_WITH_LOGGING(pAttributeStore->SetUINT32(MF_DEVICESTREAM_FRAMESERVER_SHARED, 1));
+    RETURN_IF_FAILED_WITH_LOGGING(pAttributeStore->SetUINT32(MF_DEVICESTREAM_ATTRIBUTE_FRAMESOURCE_TYPES, _MFFrameSourceTypes::MFFrameSourceTypes_Color));
 
     return hr;
 }
@@ -693,10 +690,10 @@ SimpleMediaStream::_SetStreamDescriptorAttributes(
         return E_INVALIDARG;
     }
 
-    RETURN_IF_FAILED(pAttributeStore->SetGUID(MF_DEVICESTREAM_STREAM_CATEGORY, PINNAME_VIDEO_CAPTURE));
-    RETURN_IF_FAILED(pAttributeStore->SetUINT32(MF_DEVICESTREAM_STREAM_ID, 0));
-    RETURN_IF_FAILED(pAttributeStore->SetUINT32(MF_DEVICESTREAM_FRAMESERVER_SHARED, 1));
-    RETURN_IF_FAILED(pAttributeStore->SetUINT32(MF_DEVICESTREAM_ATTRIBUTE_FRAMESOURCE_TYPES, _MFFrameSourceTypes::MFFrameSourceTypes_Color));
+    RETURN_IF_FAILED_WITH_LOGGING(pAttributeStore->SetGUID(MF_DEVICESTREAM_STREAM_CATEGORY, PINNAME_VIDEO_CAPTURE));
+    RETURN_IF_FAILED_WITH_LOGGING(pAttributeStore->SetUINT32(MF_DEVICESTREAM_STREAM_ID, 0));
+    RETURN_IF_FAILED_WITH_LOGGING(pAttributeStore->SetUINT32(MF_DEVICESTREAM_FRAMESERVER_SHARED, 1));
+    RETURN_IF_FAILED_WITH_LOGGING(pAttributeStore->SetUINT32(MF_DEVICESTREAM_ATTRIBUTE_FRAMESOURCE_TYPES, _MFFrameSourceTypes::MFFrameSourceTypes_Color));
 
     return hr;
 }

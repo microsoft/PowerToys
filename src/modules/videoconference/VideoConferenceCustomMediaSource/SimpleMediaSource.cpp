@@ -5,18 +5,6 @@
 
 #include "Logging.h"
 
-// Basic macros to handle HRESULT checks.
-// Recommend adding implementation specific logging within the failure case.
-#ifndef RETURN_IF_FAILED
-#define RETURN_IF_FAILED(val) \
-    hr = (val);               \
-    if (FAILED(hr))           \
-    {                         \
-        return hr;            \
-    }
-#endif
-
-#include <iostream>
 HRESULT
 SimpleMediaSource::RuntimeClassInitialize()
 {
@@ -24,12 +12,12 @@ SimpleMediaSource::RuntimeClassInitialize()
 
     HRESULT hr = S_OK;
 
-    RETURN_IF_FAILED(MFCreateAttributes(&_spAttributes, 10));
-    RETURN_IF_FAILED(MFCreateEventQueue(&_spEventQueue));
-    RETURN_IF_FAILED(MakeAndInitialize<SimpleMediaStream>(&_stream, this));
+    RETURN_IF_FAILED_WITH_LOGGING(MFCreateAttributes(&_spAttributes, 10));
+    RETURN_IF_FAILED_WITH_LOGGING(MFCreateEventQueue(&_spEventQueue));
+    RETURN_IF_FAILED_WITH_LOGGING(MakeAndInitialize<SimpleMediaStream>(&_stream, this));
     {
         ComPtr<IMFStreamDescriptor> streamDescriptor(_stream.Get()->_spStreamDesc.Get());
-        RETURN_IF_FAILED(MFCreatePresentationDescriptor(1, streamDescriptor.GetAddressOf(), &_spPresentationDescriptor));
+        RETURN_IF_FAILED_WITH_LOGGING(MFCreatePresentationDescriptor(1, streamDescriptor.GetAddressOf(), &_spPresentationDescriptor));
     }
 
     _wasStreamPreviouslySelected = false;
@@ -47,8 +35,8 @@ SimpleMediaSource::BeginGetEvent(
     HRESULT hr = S_OK;
     auto lock = _critSec.Lock();
 
-    RETURN_IF_FAILED(_CheckShutdownRequiresLock());
-    RETURN_IF_FAILED(_spEventQueue->BeginGetEvent(pCallback, punkState));
+    RETURN_IF_FAILED_WITH_LOGGING(_CheckShutdownRequiresLock());
+    RETURN_IF_FAILED_WITH_LOGGING(_spEventQueue->BeginGetEvent(pCallback, punkState));
 
     return hr;
 }
@@ -61,8 +49,8 @@ SimpleMediaSource::EndGetEvent(
     HRESULT hr = S_OK;
     auto lock = _critSec.Lock();
 
-    RETURN_IF_FAILED(_CheckShutdownRequiresLock());
-    RETURN_IF_FAILED(_spEventQueue->EndGetEvent(pResult, ppEvent));
+    RETURN_IF_FAILED_WITH_LOGGING(_CheckShutdownRequiresLock());
+    RETURN_IF_FAILED_WITH_LOGGING(_spEventQueue->EndGetEvent(pResult, ppEvent));
 
     return hr;
 }
@@ -85,12 +73,12 @@ SimpleMediaSource::GetEvent(
     {
         auto lock = _critSec.Lock();
 
-        RETURN_IF_FAILED(_CheckShutdownRequiresLock());
+        RETURN_IF_FAILED_WITH_LOGGING(_CheckShutdownRequiresLock());
         spQueue = _spEventQueue;
     }
 
     // Now get the event.
-    RETURN_IF_FAILED(_spEventQueue->GetEvent(dwFlags, ppEvent));
+    RETURN_IF_FAILED_WITH_LOGGING(_spEventQueue->GetEvent(dwFlags, ppEvent));
 
     return hr;
 }
@@ -107,8 +95,8 @@ SimpleMediaSource::QueueEvent(
     HRESULT hr = S_OK;
     auto lock = _critSec.Lock();
 
-    RETURN_IF_FAILED(_CheckShutdownRequiresLock());
-    RETURN_IF_FAILED(_spEventQueue->QueueEventParamVar(eventType, guidExtendedType, hrStatus, pvValue));
+    RETURN_IF_FAILED_WITH_LOGGING(_CheckShutdownRequiresLock());
+    RETURN_IF_FAILED_WITH_LOGGING(_spEventQueue->QueueEventParamVar(eventType, guidExtendedType, hrStatus, pvValue));
 
     return hr;
 }
@@ -129,8 +117,8 @@ SimpleMediaSource::CreatePresentationDescriptor(
     }
     *ppPresentationDescriptor = nullptr;
 
-    RETURN_IF_FAILED(_CheckShutdownRequiresLock());
-    RETURN_IF_FAILED(_spPresentationDescriptor->Clone(ppPresentationDescriptor));
+    RETURN_IF_FAILED_WITH_LOGGING(_CheckShutdownRequiresLock());
+    RETURN_IF_FAILED_WITH_LOGGING(_spPresentationDescriptor->Clone(ppPresentationDescriptor));
 
     return hr;
 }
@@ -150,7 +138,7 @@ SimpleMediaSource::GetCharacteristics(
     }
     *pdwCharacteristics = 0;
 
-    RETURN_IF_FAILED(_CheckShutdownRequiresLock());
+    RETURN_IF_FAILED_WITH_LOGGING(_CheckShutdownRequiresLock());
     *pdwCharacteristics = MFMEDIASOURCE_IS_LIVE;
 
     return hr;
@@ -217,7 +205,7 @@ SimpleMediaSource::Start(
         return MF_E_UNSUPPORTED_TIME_FORMAT;
     }
 
-    RETURN_IF_FAILED(_CheckShutdownRequiresLock());
+    RETURN_IF_FAILED_WITH_LOGGING(_CheckShutdownRequiresLock());
 
     if (!(_sourceState != SourceState::Stopped || _sourceState != SourceState::Shutdown))
     {
@@ -228,15 +216,15 @@ SimpleMediaSource::Start(
 
     // This checks the passed in PresentationDescriptor matches the member of streams we
     // have defined internally and that at least one stream is selected
-    RETURN_IF_FAILED(_ValidatePresentationDescriptor(pPresentationDescriptor));
-    RETURN_IF_FAILED(pPresentationDescriptor->GetStreamDescriptorCount(&count));
-    RETURN_IF_FAILED(InitPropVariantFromInt64(MFGetSystemTime(), &startTime));
+    RETURN_IF_FAILED_WITH_LOGGING(_ValidatePresentationDescriptor(pPresentationDescriptor));
+    RETURN_IF_FAILED_WITH_LOGGING(pPresentationDescriptor->GetStreamDescriptorCount(&count));
+    RETURN_IF_FAILED_WITH_LOGGING(InitPropVariantFromInt64(MFGetSystemTime(), &startTime));
 
     // Send event that the source started. Include error code in case it failed.
-    RETURN_IF_FAILED(_spEventQueue->QueueEventParamVar(MESourceStarted,
-                                                       GUID_NULL,
-                                                       hr,
-                                                       &startTime));
+    RETURN_IF_FAILED_WITH_LOGGING(_spEventQueue->QueueEventParamVar(MESourceStarted,
+                                                                    GUID_NULL,
+                                                                    hr,
+                                                                    &startTime));
 
     // We're hardcoding this to the first descriptor
     // since this sample is a single stream sample.  For
@@ -244,10 +232,10 @@ SimpleMediaSource::Start(
     // and for each selected stream, send the MEUpdatedStream
     // or MENewStream event along with the MEStreamStarted
     // event.
-    RETURN_IF_FAILED(pPresentationDescriptor->GetStreamDescriptorByIndex(0,
-                                                                         &selected,
-                                                                         &streamDesc));
-    RETURN_IF_FAILED(streamDesc->GetStreamIdentifier(&streamIndex));
+    RETURN_IF_FAILED_WITH_LOGGING(pPresentationDescriptor->GetStreamDescriptorByIndex(0,
+                                                                                      &selected,
+                                                                                      &streamDesc));
+    RETURN_IF_FAILED_WITH_LOGGING(streamDesc->GetStreamIdentifier(&streamIndex));
     if (streamIndex >= 1)
     {
         return MF_E_INVALIDSTREAMNUMBER;
@@ -259,23 +247,23 @@ SimpleMediaSource::Start(
         MediaEventType met = (_wasStreamPreviouslySelected ? MEUpdatedStream : MENewStream);
 
         // Update our internal PresentationDescriptor
-        RETURN_IF_FAILED(_spPresentationDescriptor->SelectStream(streamIndex));
-        RETURN_IF_FAILED(_stream.Get()->SetStreamState(MF_STREAM_STATE_RUNNING));
-        RETURN_IF_FAILED(_stream.As(&spunkStream));
+        RETURN_IF_FAILED_WITH_LOGGING(_spPresentationDescriptor->SelectStream(streamIndex));
+        RETURN_IF_FAILED_WITH_LOGGING(_stream.Get()->SetStreamState(MF_STREAM_STATE_RUNNING));
+        RETURN_IF_FAILED_WITH_LOGGING(_stream.As(&spunkStream));
 
         // Send the MEUpdatedStream/MENewStream to our source event
         // queue.
-        RETURN_IF_FAILED(_spEventQueue->QueueEventParamUnk(met,
-                                                           GUID_NULL,
-                                                           S_OK,
-                                                           spunkStream.Get()));
+        RETURN_IF_FAILED_WITH_LOGGING(_spEventQueue->QueueEventParamUnk(met,
+                                                                        GUID_NULL,
+                                                                        S_OK,
+                                                                        spunkStream.Get()));
 
         // But for our stream started (MEStreamStarted), we post to our
         // stream event queue.
-        RETURN_IF_FAILED(_stream.Get()->QueueEvent(MEStreamStarted,
-                                                   GUID_NULL,
-                                                   S_OK,
-                                                   &startTime));
+        RETURN_IF_FAILED_WITH_LOGGING(_stream.Get()->QueueEvent(MEStreamStarted,
+                                                                GUID_NULL,
+                                                                S_OK,
+                                                                &startTime));
     }
     _wasStreamPreviouslySelected = selected;
 
@@ -300,17 +288,17 @@ SimpleMediaSource::Stop()
 
     _sourceState = SourceState::Stopped;
 
-    RETURN_IF_FAILED(_CheckShutdownRequiresLock());
-    RETURN_IF_FAILED(InitPropVariantFromInt64(MFGetSystemTime(), &stopTime));
-    RETURN_IF_FAILED(_spPresentationDescriptor->GetStreamDescriptorCount(&count));
+    RETURN_IF_FAILED_WITH_LOGGING(_CheckShutdownRequiresLock());
+    RETURN_IF_FAILED_WITH_LOGGING(InitPropVariantFromInt64(MFGetSystemTime(), &stopTime));
+    RETURN_IF_FAILED_WITH_LOGGING(_spPresentationDescriptor->GetStreamDescriptorCount(&count));
 
     // Deselect the streams and send the stream stopped events.
-    RETURN_IF_FAILED(_stream.Get()->GetStreamState(&state));
+    RETURN_IF_FAILED_WITH_LOGGING(_stream.Get()->GetStreamState(&state));
     _wasStreamPreviouslySelected = (state == MF_STREAM_STATE_RUNNING);
-    RETURN_IF_FAILED(_stream.Get()->SetStreamState(MF_STREAM_STATE_STOPPED));
+    RETURN_IF_FAILED_WITH_LOGGING(_stream.Get()->SetStreamState(MF_STREAM_STATE_STOPPED));
     _spPresentationDescriptor->DeselectStream(0);
-    RETURN_IF_FAILED(_stream.Get()->QueueEvent(MEStreamStopped, GUID_NULL, hr, &stopTime));
-    RETURN_IF_FAILED(_spEventQueue->QueueEventParamVar(MESourceStopped, GUID_NULL, hr, &stopTime));
+    RETURN_IF_FAILED_WITH_LOGGING(_stream.Get()->QueueEvent(MEStreamStopped, GUID_NULL, hr, &stopTime));
+    RETURN_IF_FAILED_WITH_LOGGING(_spEventQueue->QueueEventParamVar(MESourceStopped, GUID_NULL, hr, &stopTime));
 
     return hr;
 }
@@ -322,6 +310,8 @@ SimpleMediaSource::GetSourceAttributes(
 {
     LogToFile(__FUNCTION__);
 
+    HRESULT hr = S_OK;
+
     auto lock = _critSec.Lock();
 
     if (nullptr == sourceAttributes)
@@ -329,7 +319,7 @@ SimpleMediaSource::GetSourceAttributes(
         return E_POINTER;
     }
 
-    RETURN_IF_FAILED(_CheckShutdownRequiresLock());
+    RETURN_IF_FAILED_WITH_LOGGING(_CheckShutdownRequiresLock());
 
     *sourceAttributes = nullptr;
     if (_spAttributes.Get() == nullptr)
@@ -338,10 +328,10 @@ SimpleMediaSource::GetSourceAttributes(
         ComPtr<IMFSensorProfile> profile;
 
         // Create our source attribute store.
-        RETURN_IF_FAILED(MFCreateAttributes(_spAttributes.GetAddressOf(), 1));
+        RETURN_IF_FAILED_WITH_LOGGING(MFCreateAttributes(_spAttributes.GetAddressOf(), 1));
 
         // Create an empty profile collection...
-        RETURN_IF_FAILED(MFCreateSensorProfileCollection(&profileCollection));
+        RETURN_IF_FAILED_WITH_LOGGING(MFCreateSensorProfileCollection(&profileCollection));
 
         // In this example since we have just one stream, we only have one
         // pin to add:  Pin0.
@@ -349,18 +339,18 @@ SimpleMediaSource::GetSourceAttributes(
         // Legacy profile is mandatory.  This is to ensure non-profile
         // aware applications can still function, but with degraded
         // feature sets.
-        RETURN_IF_FAILED(MFCreateSensorProfile(KSCAMERAPROFILE_Legacy, 0, nullptr, profile.ReleaseAndGetAddressOf()));
-        RETURN_IF_FAILED(profile->AddProfileFilter(0, L"((RES==;FRT<=30,1;SUT==))"));
-        RETURN_IF_FAILED(profileCollection->AddProfile(profile.Get()));
+        RETURN_IF_FAILED_WITH_LOGGING(MFCreateSensorProfile(KSCAMERAPROFILE_Legacy, 0, nullptr, profile.ReleaseAndGetAddressOf()));
+        RETURN_IF_FAILED_WITH_LOGGING(profile->AddProfileFilter(0, L"((RES==;FRT<=30,1;SUT==))"));
+        RETURN_IF_FAILED_WITH_LOGGING(profileCollection->AddProfile(profile.Get()));
 
         // High Frame Rate profile will only allow >=60fps.
-        RETURN_IF_FAILED(MFCreateSensorProfile(KSCAMERAPROFILE_HighFrameRate, 0, nullptr, profile.ReleaseAndGetAddressOf()));
-        RETURN_IF_FAILED(profile->AddProfileFilter(0, L"((RES==;FRT>=60,1;SUT==))"));
-        RETURN_IF_FAILED(profileCollection->AddProfile(profile.Get()));
+        RETURN_IF_FAILED_WITH_LOGGING(MFCreateSensorProfile(KSCAMERAPROFILE_HighFrameRate, 0, nullptr, profile.ReleaseAndGetAddressOf()));
+        RETURN_IF_FAILED_WITH_LOGGING(profile->AddProfileFilter(0, L"((RES==;FRT>=60,1;SUT==))"));
+        RETURN_IF_FAILED_WITH_LOGGING(profileCollection->AddProfile(profile.Get()));
 
         // Se the profile collection to the attribute store of the IMFTransform.
-        RETURN_IF_FAILED(_spAttributes->SetUnknown(MF_DEVICEMFT_SENSORPROFILE_COLLECTION,
-                                                   profileCollection.Get()));
+        RETURN_IF_FAILED_WITH_LOGGING(_spAttributes->SetUnknown(MF_DEVICEMFT_SENSORPROFILE_COLLECTION,
+                                                                profileCollection.Get()));
     }
 
     return _spAttributes.CopyTo(sourceAttributes);
@@ -382,7 +372,7 @@ SimpleMediaSource::GetStreamAttributes(
     }
     *ppAttributes = nullptr;
 
-    RETURN_IF_FAILED(_CheckShutdownRequiresLock());
+    RETURN_IF_FAILED_WITH_LOGGING(_CheckShutdownRequiresLock());
     if (dwStreamIdentifier >= 1)
     {
         return MF_E_INVALIDSTREAMNUMBER;
@@ -420,9 +410,11 @@ _Use_decl_annotations_
 {
     LogToFile(__FUNCTION__);
 
+    HRESULT hr = S_OK;
+
     auto lock = _critSec.Lock();
 
-    RETURN_IF_FAILED(_CheckShutdownRequiresLock());
+    RETURN_IF_FAILED_WITH_LOGGING(_CheckShutdownRequiresLock());
 
     if (!ppvObject)
     {
@@ -518,7 +510,7 @@ SimpleMediaSource::_ValidatePresentationDescriptor(
     }
 
     // The caller's PD must have the same number of streams as ours.
-    RETURN_IF_FAILED(pPD->GetStreamDescriptorCount(&cStreams));
+    RETURN_IF_FAILED_WITH_LOGGING(pPD->GetStreamDescriptorCount(&cStreams));
     if (SUCCEEDED(hr) && (cStreams != 1))
     {
         return E_INVALIDARG;
@@ -531,11 +523,11 @@ SimpleMediaSource::_ValidatePresentationDescriptor(
         BOOL fSelected = FALSE;
         DWORD dwId = 0;
 
-        RETURN_IF_FAILED(pPD->GetStreamDescriptorByIndex(i, &fSelected, &spSD));
+        RETURN_IF_FAILED_WITH_LOGGING(pPD->GetStreamDescriptorByIndex(i, &fSelected, &spSD));
 
         anySelected |= !!fSelected;
 
-        RETURN_IF_FAILED(spSD->GetStreamIdentifier(&dwId));
+        RETURN_IF_FAILED_WITH_LOGGING(spSD->GetStreamIdentifier(&dwId));
         if (dwId >= 1)
         {
             return E_INVALIDARG;
