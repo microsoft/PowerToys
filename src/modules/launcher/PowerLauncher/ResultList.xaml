@@ -33,6 +33,7 @@
                 <Setter Property="Focusable" Value="False"/>
                 <Setter Property="HorizontalContentAlignment" Value="Center"/>
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="Padding" Value="1"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type Button}">
@@ -80,7 +81,7 @@
                                     <Setter Property="Background" TargetName="HighlightBorder" Value="{DynamicResource ListViewItemBackgroundPointerOver}"/>
                                 </Trigger>
                                 <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Opacity" TargetName="HighlightBorder" Value="0.4" />
+                                    <Setter Property="Opacity" TargetName="HighlightBorder" Value="1" />
                                     <Setter Property="Background" TargetName="HighlightBorder" Value="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}"/>
                                     <!-- Accent color brush -->
                                 </Trigger>
@@ -93,7 +94,8 @@
 
             <Style x:Key="CommandButtonListViewItemContainerStyle"  TargetType="ListViewItem">
                 <Setter Property="Background" Value="Transparent" />
-                <Setter Property="Margin" Value="1" />
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="Margin" Value="1"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ListViewItem}">
@@ -133,11 +135,10 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ToolTip}" >
-                            <StackPanel Margin="8,2" >
-                                <Border CornerRadius="4" Background="{DynamicResource ToolTipBackgroundBrushKey}" BorderBrush="{DynamicResource ToolTipBorderBrushKey}" BorderThickness="1">
-                                    <ContentPresenter Margin="4" HorizontalAlignment="Center" VerticalAlignment="Top" />
-                                </Border>
-                            </StackPanel>
+                            <Grid Margin="8,2" >
+                                <Rectangle Fill="{DynamicResource ToolTipBackgroundBrushKey}" RadiusX="4" RadiusY="4" Stroke="{DynamicResource ToolTipBorderBrushKey}" StrokeThickness="1"/>
+                                <ContentPresenter Margin="4" HorizontalAlignment="Center" VerticalAlignment="Top" />
+                            </Grid>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
@@ -195,13 +196,15 @@
                                 <StackPanel Margin="8,6">
                                     <TextBlock 
                                         Style="{DynamicResource CollapsableTextblock}"
-                                        Foreground="{DynamicResource ToolTipForegroundBrushKey}" FontWeight="Bold" FontSize="12"
+                                        Foreground="{DynamicResource ToolTipForegroundBrushKey}" FontWeight="Bold" FontSize="13"
                                         Text="{Binding Result.ToolTipData.Title}"
+                                        RenderOptions.ClearTypeHint="Enabled"
                                         TextWrapping="Wrap" />
                                     <TextBlock 
                                         Style="{DynamicResource CollapsableTextblock}"
                                         Foreground="{DynamicResource ToolTipForegroundBrushKey}" FontSize="12"
-                                        Text="{Binding Result.ToolTipData.Text}"                               
+                                        Text="{Binding Result.ToolTipData.Text}"
+                                        RenderOptions.ClearTypeHint="Enabled"
                                         TextWrapping="Wrap" />
                                 </StackPanel>
                             </ToolTip>
@@ -214,7 +217,7 @@
                             VerticalAlignment="Center"                                  
                             Background="Transparent"
                             BorderThickness="0"
-                            Grid.RowSpan="2" 
+                            Grid.RowSpan="2"
                             Grid.Column="2"
                             ScrollViewer.VerticalScrollBarVisibility="Disabled"
                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
