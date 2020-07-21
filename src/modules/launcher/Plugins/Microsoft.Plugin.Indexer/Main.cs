@@ -202,8 +202,8 @@ namespace Microsoft.Plugin.Indexer
         }
         public void UpdateSettings(PowerLauncherSettings settings)
         {
-            _settings.MaxSearchCount = settings.properties.maximum_number_of_results;
-            _driveDetection.IsDriveDetectionWarningCheckBoxSelected = settings.properties.disable_drive_detection_warning;
+            _settings.MaxSearchCount = settings.Properties.maximum_number_of_results;
+            _driveDetection.IsDriveDetectionWarningCheckBoxSelected = settings.Properties.disable_drive_detection_warning;
         }
         public Control CreateSettingPanel()
         {
