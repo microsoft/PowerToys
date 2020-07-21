@@ -197,29 +197,6 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.IsFalse(_win32ProgramRepository.Contains(olditem));
         }
 
-        [TestCase("directory", "path.url")]
-        public void Win32ProgramRepository_MustCallOnAppDeletedForUrlApps_WhenDeletedEventIsRaised(string directory, string path)
-        {
-            // Arrange
-            Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32>>("Win32"), _settings, _pathsToWatch);
-            FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Deleted, directory, path);
-
-            // File.ReadAllLines must be mocked for url applications
-            var mockFile = new Mock<IFileWrapper>();
-            mockFile.Setup(m => m.ReadAllLines(It.IsAny<string>())).Returns(new string[] { "URL=steam://rungameid/1258080", "IconFile=iconFile" });
-            Win32._fileWrapper = mockFile.Object;
-
-            string fullPath = directory + "\\" + path;
-            Win32 item = Win32.GetAppFromPath(fullPath);
-            _win32ProgramRepository.Add(item);
-
-            // Act
-            _fileSystemMocks[0].Raise(m => m.Deleted += null, e);
-
-            // Assert
-            Assert.AreEqual(_win32ProgramRepository.Count(), 0);
-        }
-
         [TestCase("path.url")]
         public void Win32ProgramRepository_MustCallOnAppChangedForUrlApps_WhenChangedEventIsRaised(string path)
         {
@@ -284,6 +261,29 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             // Act
             _fileSystemMocks[0].Raise(m => m.Changed += null, e);
+
+            // Assert
+            Assert.AreEqual(_win32ProgramRepository.Count(), 0);
+        }
+
+        [TestCase("directory", "path.url")]
+        public void Win32ProgramRepository_MustCallOnAppDeletedForUrlApps_WhenDeletedEventIsRaised(string directory, string path)
+        {
+            // Arrange
+            Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32>>("Win32"), _settings, _pathsToWatch);
+            FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Deleted, directory, path);
+
+            // File.ReadAllLines must be mocked for url applications
+            var mockFile = new Mock<IFileWrapper>();
+            mockFile.Setup(m => m.ReadAllLines(It.IsAny<string>())).Returns(new string[] { "URL=steam://rungameid/1258080", "IconFile=iconFile" });
+            Win32._fileWrapper = mockFile.Object;
+
+            string fullPath = directory + "\\" + path;
+            Win32 item = Win32.GetAppFromPath(fullPath);
+            _win32ProgramRepository.Add(item);
+
+            // Act
+            _fileSystemMocks[0].Raise(m => m.Deleted += null, e);
 
             // Assert
             Assert.AreEqual(_win32ProgramRepository.Count(), 0);
