@@ -26,6 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public bool ignore_hotkeys_in_fullscreen { get; set; }
 
+        public bool disable_drive_detection_warning { get; set; }
         public bool clear_input_on_launch { get; set; }
 
         public PowerLauncherProperties()
@@ -37,6 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             search_result_preference = "most_recently_used";
             search_type_preference = "application_name";
             ignore_hotkeys_in_fullscreen = false;
+            disable_drive_detection_warning = false;
             clear_input_on_launch = false;
         }
     }
