@@ -29,6 +29,11 @@ namespace Microsoft.Plugin.Calculator
 
         public List<Result> Query(Query query)
         {
+            if(query == null)
+            {
+                throw new ArgumentNullException(paramName: nameof(query));
+            }
+
             if (query.Search.Length <= 2          // don't affect when user only input "e" or "i" keyword
                 || !RegValidExpressChar.IsMatch(query.Search)
                 || !IsBracketComplete(query.Search)) return new List<Result>();
@@ -113,6 +118,11 @@ namespace Microsoft.Plugin.Calculator
 
         public void Init(PluginInitContext context)
         {
+            if(context == null)
+            {
+                throw new ArgumentNullException(paramName: nameof(context));
+            }
+
             Context = context;
             Context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(Context.API.GetCurrentTheme());
