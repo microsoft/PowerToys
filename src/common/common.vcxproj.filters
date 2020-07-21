@@ -111,7 +111,7 @@
     <ClInclude Include="two_way_pipe_message_ipc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="os-detection\os-detect.h">
+    <ClInclude Include="os-detect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RestartManagement.h">
@@ -189,7 +189,7 @@
     <ClCompile Include="two_way_pipe_message_ipc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="os-detection\os-detect.cpp">
+    <ClCompile Include="os-detect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RestartManagement.cpp">

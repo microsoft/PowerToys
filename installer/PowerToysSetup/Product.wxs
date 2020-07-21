@@ -359,9 +359,6 @@
       <Component Id="powertoysinterop_dll" Guid="B7DD2DF4-C8F2-46FA-9571-D6EF1588ADF3" Win64="yes">
         <File Id="PowerToysInterop.dll" KeyPath="yes" Checksum="yes" />
       </Component>
-      <Component Id="osDetection_dll" Guid="AA370C25-4AC8-447B-A2FF-C99365C6BE67" Win64="yes">
-        <File Source="$(var.BinX64Dir)os-detection.dll" KeyPath="yes" Checksum="yes" />
-      </Component>
       <Component Id="vcredist_dlls" Guid="CBE26CB0-3AD0-4336-A7D6-503046BADEBC" Win64="yes">
         <!-- VCRuntime -->
         <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
@@ -488,7 +485,8 @@
           <netfx:NativeImage Id="Interactivity" Platform="all" Priority="0"/>
         </File>
         <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\Newtonsoft.Json.dll" />
-        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizerExt.dll" KeyPath="yes" />
+        <File Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\ImageResizerExt.dll" KeyPath="yes" />		  
+        <File Id="ImageResizer_interop" Source="$(var.BinX64Dir)modules\$(var.ImageResizerProjectName)\PowerToysInterop.dll" />
 
         <!-- VCRuntime -->
         <?foreach File in vcruntime140.dll;vcruntime140_1.dll;concrt140.dll;msvcp140.dll;msvcp140_1.dll;msvcp140_2.dll;msvcp140_codecvt_ids.dll;vccorlib140.dll?>
@@ -749,7 +747,6 @@
       <ComponentRef Id="License_rtf" />
       <ComponentRef Id="Notice_md" />
       <ComponentRef Id="powertoysinterop_dll" />
-      <ComponentRef Id="osDetection_dll" />
       <ComponentRef Id="vcredist_dlls" />
       <ComponentRef Id="PowerToysSvgs" />
       <ComponentRef Id="Module_ShortcutGuide" />
@@ -954,7 +951,7 @@
         <?endforeach?>
       </Component>
       <Component Id="IndexerImagesComponent" Directory="IndexerImagesFolder" Guid="DB2E8D49-D104-425B-9616-952AC8CAB676">
-        <?foreach File in indexer.dark.png;indexer.light.png?>
+        <?foreach File in indexer.dark.png;indexer.light.png;Warning.light.png;Warning.dark.png?>
           <File Id="Indexer_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\Images\$(var.File)" />
         <?endforeach?>
       </Component>

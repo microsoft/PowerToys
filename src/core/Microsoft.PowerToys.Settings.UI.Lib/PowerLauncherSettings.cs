@@ -3,20 +3,22 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class PowerLauncherSettings : BasePTModuleSettings
     {
-        public const string POWERTOYNAME = "PowerToys Run";
+        public const string ModuleName = "PowerToys Run";
 
-        public PowerLauncherProperties properties { get; set; }
+        [JsonPropertyName("properties")]
+        public PowerLauncherProperties Properties { get; set; }
 
         public PowerLauncherSettings()
         {
-            properties = new PowerLauncherProperties();
-            version = "1";
-            name = POWERTOYNAME;
+            Properties = new PowerLauncherProperties();
+            Version = "1";
+            Name = ModuleName;
         }
 
         public virtual void Save()
@@ -27,7 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
                 WriteIndented = true,
             };
 
-            SettingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), POWERTOYNAME);
+            SettingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), ModuleName);
         }
     }
 }
