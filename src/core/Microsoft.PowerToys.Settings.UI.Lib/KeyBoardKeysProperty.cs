@@ -2,23 +2,20 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-    public class KeyBoardKeysProperty
+    public class KeyboardKeysProperty
     {
-        public KeyBoardKeysProperty()
+        public KeyboardKeysProperty()
         {
-            this.Value = new HotkeySettings();
+            Value = new HotkeySettings();
         }
 
-        public KeyBoardKeysProperty(HotkeySettings hkSettings)
+        public KeyboardKeysProperty(HotkeySettings hkSettings)
         {
-            this.Value = hkSettings;
+            Value = hkSettings;
         }
 
         [JsonPropertyName("value")]
