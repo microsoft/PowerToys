@@ -131,6 +131,15 @@ namespace ViewModelTests
             Assert.IsFalse(mockSettings.properties.override_win_s_key);
         }
 
+        [TestMethod]
+        public void DriveDetectionViewModel_WhenSet_MustUpdateOverrides()
+        {
+            // Act
+            viewModel.DisableDriveDetectionWarning = true;
 
+            // Assert
+            Assert.AreEqual(1, sendCallbackMock.TimesSent);
+            Assert.IsTrue(mockSettings.properties.disable_drive_detection_warning);
+        }
     }
 }
