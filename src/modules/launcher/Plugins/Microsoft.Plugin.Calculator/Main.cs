@@ -89,7 +89,10 @@ namespace Microsoft.Plugin.Calculator
                     };
                 }
             }
+//We want to keep the process alive if any the mages library throws any exceptions.
+#pragma warning disable CA1031 // Do not catch general exception types
             catch
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 // ignored
             }
