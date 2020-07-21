@@ -257,7 +257,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagedCommon", "src\common
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Program.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.Program.UnitTests\Microsoft.Plugin.Program.UnitTests.csproj", "{42851751-CBC8-45A6-97F5-7A0753F7B4D1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Url", "src\modules\launcher\Plugins\Microsoft.Plugin.Url\Microsoft.Plugin.Url.csproj", "{AF69FCB0-5C42-41DA-A53A-F25A0278AE5A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Uri", "src\modules\launcher\Plugins\Microsoft.Plugin.Url\Microsoft.Plugin.Uri.csproj", "{03276A39-D4E9-417C-8FFD-200B0EE5E871}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -509,10 +509,10 @@ Global
 		{42851751-CBC8-45A6-97F5-7A0753F7B4D1}.Debug|x64.Build.0 = Debug|x64
 		{42851751-CBC8-45A6-97F5-7A0753F7B4D1}.Release|x64.ActiveCfg = Release|x64
 		{42851751-CBC8-45A6-97F5-7A0753F7B4D1}.Release|x64.Build.0 = Release|x64
-		{AF69FCB0-5C42-41DA-A53A-F25A0278AE5A}.Debug|x64.ActiveCfg = Debug|x64
-		{AF69FCB0-5C42-41DA-A53A-F25A0278AE5A}.Debug|x64.Build.0 = Debug|x64
-		{AF69FCB0-5C42-41DA-A53A-F25A0278AE5A}.Release|x64.ActiveCfg = Release|x64
-		{AF69FCB0-5C42-41DA-A53A-F25A0278AE5A}.Release|x64.Build.0 = Release|x64
+		{03276A39-D4E9-417C-8FFD-200B0EE5E871}.Debug|x64.ActiveCfg = Debug|x64
+		{03276A39-D4E9-417C-8FFD-200B0EE5E871}.Debug|x64.Build.0 = Debug|x64
+		{03276A39-D4E9-417C-8FFD-200B0EE5E871}.Release|x64.ActiveCfg = Release|x64
+		{03276A39-D4E9-417C-8FFD-200B0EE5E871}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -584,7 +584,7 @@ Global
 		{62173D9A-6724-4C00-A1C8-FB646480A9EC} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
 		{4AED67B6-55FD-486F-B917-E543DEE2CB3C} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{42851751-CBC8-45A6-97F5-7A0753F7B4D1} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
-		{AF69FCB0-5C42-41DA-A53A-F25A0278AE5A} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
+		{03276A39-D4E9-417C-8FFD-200B0EE5E871} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

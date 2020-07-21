@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Plugin.Url
+﻿namespace Microsoft.Plugin.Uri
 {
 	public class Settings
 	{

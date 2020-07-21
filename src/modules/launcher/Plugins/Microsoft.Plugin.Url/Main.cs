@@ -1,24 +1,29 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Microsoft.Plugin.Uri.UriHelper;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using Control = System.Windows.Controls.Control;
 
-namespace Microsoft.Plugin.Url
+namespace Microsoft.Plugin.Uri
 {
 	public class Main : IPlugin, ISettingProvider, IPluginI18n, IContextMenu, ISavable
 	{
 		private PluginJsonStorage<Settings> _storage;
 		private Settings _settings;
 		private PluginInitContext _context;
+		private ExtendedUriParser _uriParser;
+		private UriResolver _uriResolver;
 
 		public Main()
 		{
 			_storage = new PluginJsonStorage<Settings>();
 			_settings = _storage.Load();
+			_uriParser = new ExtendedUriParser();
+			_uriResolver = new UriResolver();
 		}
 
 		public void Save()
@@ -26,19 +31,22 @@ namespace Microsoft.Plugin.Url
 			_storage.Save();
 		}
 
-
 		public List<Result> Query(Query query)
 		{
 			var results = new List<Result>();
-			if (IsUrl(query.Search))
+
+			if (_uriParser.TryParse(query.Search, out var uriResult)
+				&& _uriResolver.IsValidHostAsync(uriResult).GetAwaiter().GetResult())
 			{
+				var uriResultString = uriResult.ToString();
+
 				results.Add(new Result()
 				{
-					Title = query.Search,
+					Title = uriResultString,
 					IcoPath = IconPath,
-					Action = c =>
+					Action = action =>
 					{
-						Process.Start(new ProcessStartInfo(CreateNavigatableUrl(query.Search))
+						Process.Start(new ProcessStartInfo(uriResultString)
 						{
 							UseShellExecute = true
 						});
@@ -48,51 +56,6 @@ namespace Microsoft.Plugin.Url
 			}
 
 			return results;
-		}
-
-		private readonly Regex protocolRegex = new Regex(@"://", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-		private string CreateNavigatableUrl(string querySearch)
-		{
-			return protocolRegex.IsMatch(querySearch)
-				? querySearch
-				: "https://" + querySearch;
-		}
-
-		private readonly Regex ipRegex = new Regex(@"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-		private bool IsUrl(string query)
-		{
-			return query.Length > 3 &&
-				(IsIP(query) || IsHostName(query));
-		}
-
-
-		private bool IsIP(string query)
-		{
-			return ipRegex.IsMatch(query);
-		}
-
-		private readonly Regex hostNameRegex = new Regex(@"[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-		private bool IsHostName(string query)
-		{
-			var match = hostNameRegex.Match(query);
-
-			if (!match.Success)
-			{
-				return false;
-			}
-			
-			try
-			{
-				/System.Net.Dns.GetHostEntry(match.Value);
-				return true;
-			}
-			catch
-			{
-				//Ignore
-			}
-
-			return false;
 		}
 
 		public void Init(PluginInitContext context)
@@ -111,11 +74,11 @@ namespace Microsoft.Plugin.Url
 		{
 			if (theme == Theme.Light || theme == Theme.HighContrastWhite)
 			{
-				IconPath = "Images/url.light.png";
+				IconPath = "Images/uri.light.png";
 			}
 			else
 			{
-				IconPath = "Images/url.dark.png";
+				IconPath = "Images/uri.dark.png";
 			}
 		}
 
