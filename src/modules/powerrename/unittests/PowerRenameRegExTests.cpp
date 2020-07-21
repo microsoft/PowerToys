@@ -331,6 +331,30 @@ TEST_METHOD(VerifyReplaceFirstWildNoFlags)
     VerifyReplaceFirstWildcard(sreTable, ARRAYSIZE(sreTable), 0);
 }
 
+TEST_METHOD(VerifyHandleCapturingGroups)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+    DWORD flags = MatchAllOccurences | UseRegularExpressions | CaseSensitive;
+    Assert::IsTrue(renameRegEx->put_flags(flags) == S_OK);
+
+    SearchReplaceExpected sreTable[] = {
+        //search, replace, test, result
+        { L"(foo)(bar)", L"$1_$002_$223_$001021_$00001", L"foobar", L"foo_bar___foo" },
+        { L"(foo)(bar)", L"_$1$2_$123$040", L"foobar", L"_foobar_" },
+    };
+
+    for (int i = 0; i < ARRAYSIZE(sreTable); i++)
+    {
+        PWSTR result = nullptr;
+        Assert::IsTrue(renameRegEx->put_searchTerm(sreTable[i].search) == S_OK);
+        Assert::IsTrue(renameRegEx->put_replaceTerm(sreTable[i].replace) == S_OK);
+        Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result) == S_OK);
+        Assert::IsTrue(wcscmp(result, sreTable[i].expected) == 0);
+        CoTaskMemFree(result);
+    }
+}
+
 TEST_METHOD(VerifyEventsFire)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
