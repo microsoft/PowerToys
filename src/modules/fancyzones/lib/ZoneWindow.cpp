@@ -175,8 +175,6 @@ public:
     IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) noexcept;
     IFACEMETHODIMP MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
     IFACEMETHODIMP_(void)
-    RestoreOriginalTransparency() noexcept;
-    IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByIndex(HWND window, int index) noexcept;
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& indexSet) noexcept;
@@ -231,13 +229,7 @@ private:
     size_t m_keyCycle{};
     static const UINT m_showAnimationDuration = 200; // ms
     static const UINT m_flashDuration = 700; // ms
-
-    HWND draggedWindow = nullptr;
-    long draggedWindowExstyle = 0;
-    COLORREF draggedWindowCrKey = RGB(0, 0, 0);
-    DWORD draggedWindowDwFlags = 0;
-    BYTE draggedWindowInitialAlpha = 0;
-
+    
     ULONG_PTR gdiplusToken;
 };
 
@@ -309,20 +301,6 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
 
 IFACEMETHODIMP ZoneWindow::MoveSizeEnter(HWND window) noexcept
 {
-    if (m_host->isMakeDraggedWindowTransparentActive())
-    {
-        draggedWindowExstyle = GetWindowLong(window, GWL_EXSTYLE);
-
-        draggedWindow = window;
-        SetWindowLong(window,
-                      GWL_EXSTYLE,
-                      draggedWindowExstyle | WS_EX_LAYERED);
-
-        GetLayeredWindowAttributes(window, &draggedWindowCrKey, &draggedWindowInitialAlpha, &draggedWindowDwFlags);
-
-        SetLayeredWindowAttributes(window, 0, (255 * 50) / 100, LWA_ALPHA);
-    }
-
     m_windowMoveSize = window;
     m_drawHints = true;
     m_highlightZone = {};
@@ -413,8 +391,6 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
 
 IFACEMETHODIMP ZoneWindow::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
 {
-    RestoreOriginalTransparency();
-
     if (m_windowMoveSize != window)
     {
         return E_INVALIDARG;
@@ -433,17 +409,6 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnd(HWND window, POINT const& ptScreen) noexc
     HideZoneWindow();
     m_windowMoveSize = nullptr;
     return S_OK;
-}
-
-IFACEMETHODIMP_(void)
-ZoneWindow::RestoreOriginalTransparency() noexcept
-{
-    if (m_host->isMakeDraggedWindowTransparentActive() && draggedWindow != nullptr)
-    {
-        SetLayeredWindowAttributes(draggedWindow, draggedWindowCrKey, draggedWindowInitialAlpha, draggedWindowDwFlags);
-        SetWindowLong(draggedWindow, GWL_EXSTYLE, draggedWindowExstyle);
-        draggedWindow = nullptr;
-    }
 }
 
 IFACEMETHODIMP_(void)

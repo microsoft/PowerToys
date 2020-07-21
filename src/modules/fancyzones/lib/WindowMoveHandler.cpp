@@ -82,6 +82,9 @@ private:
     void ElevatedDragCheck(HWND window) noexcept;
     void UpdateDragState() noexcept;
 
+    void SetWindowTransparency(HWND window) noexcept;
+    void ResetWindowTransparency() noexcept;
+
 private:
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
     SecondaryMouseButtonsHook* m_mouseHook{};
@@ -95,6 +98,15 @@ private:
     bool m_secondaryMouseButtonState{}; // True when secondary mouse button was clicked after window was moved
     bool m_shiftKeyState{}; // True when shift key was pressed after window was moved
     bool m_ctrlKeyState{}; // True when ctrl key was pressed after window was moved
+
+    struct WindowTransparencyProperties
+    {
+        HWND draggedWindow = nullptr;
+        long draggedWindowExstyle = 0;
+        COLORREF draggedWindowCrKey = RGB(0, 0, 0);
+        DWORD draggedWindowDwFlags = 0;
+        BYTE draggedWindowInitialAlpha = 0;
+    } m_windowTransparencyProperties;
 };
 
 WindowMoveHandler::WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& settings, SecondaryMouseButtonsHook* mouseHook, ShiftKeyHook* shiftHook, CtrlKeyHook* ctrlHook) :
@@ -201,7 +213,8 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
     if (m_dragEnabled)
     {
         m_zoneWindowMoveSize = iter->second;
-        m_zoneWindowMoveSize->MoveSizeEnter(window);
+        SetWindowTransparency(m_windowMoveSize);
+        m_zoneWindowMoveSize->MoveSizeEnter(m_windowMoveSize);
         if (m_settings->GetSettings()->showZonesOnAllMonitors)
         {
             for (auto [keyMonitor, zoneWindow] : zoneWindowMap)
@@ -218,7 +231,7 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
     }
     else if (m_zoneWindowMoveSize)
     {
-        m_zoneWindowMoveSize->RestoreOriginalTransparency();
+        ResetWindowTransparency();
         m_zoneWindowMoveSize = nullptr;
         for (auto [keyMonitor, zoneWindow] : zoneWindowMap)
         {
@@ -252,7 +265,7 @@ void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptS
             {
                 if (zoneWindow)
                 {
-                    zoneWindow->RestoreOriginalTransparency();
+                    ResetWindowTransparency();
                     zoneWindow->HideZoneWindow();
                 }
             }
@@ -265,13 +278,13 @@ void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptS
                 if (iter->second != m_zoneWindowMoveSize)
                 {
                     // The drag has moved to a different monitor.
-                    m_zoneWindowMoveSize->RestoreOriginalTransparency();
                     m_zoneWindowMoveSize->ClearSelectedZones();
-
                     if (!m_settings->GetSettings()->showZonesOnAllMonitors)
                     {
+                        ResetWindowTransparency(); 
                         m_zoneWindowMoveSize->HideZoneWindow();
                     }
+
                     m_zoneWindowMoveSize = iter->second;
                     m_zoneWindowMoveSize->MoveSizeEnter(m_windowMoveSize);
                 }
@@ -303,14 +316,11 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
     m_shiftHook->disable();
     m_ctrlHook->disable();
 
-    m_inMoveSize = false;
-    m_dragEnabled = false;
-    m_secondaryMouseButtonState = false;
-    m_windowMoveSize = nullptr;
     if (m_zoneWindowMoveSize)
     {
         auto zoneWindow = std::move(m_zoneWindowMoveSize);
-        zoneWindow->MoveSizeEnd(window, ptScreen);
+        ResetWindowTransparency();
+        zoneWindow->MoveSizeEnd(m_windowMoveSize, ptScreen);
     }
     else
     {
@@ -346,6 +356,11 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
         }
         ::RemoveProp(window, MULTI_ZONE_STAMP);
     }
+    
+    m_inMoveSize = false;
+    m_dragEnabled = false;
+    m_secondaryMouseButtonState = false;
+    m_windowMoveSize = nullptr;
 
     // Also, hide all windows (regardless of settings)
     for (auto [keyMonitor, zoneWindow] : zoneWindowMap)
@@ -397,5 +412,32 @@ void WindowMoveHandlerPrivate::UpdateDragState() noexcept
     else
     {
         m_dragEnabled = !(m_shiftKeyState ^ m_secondaryMouseButtonState);
+    }
+}
+
+void WindowMoveHandlerPrivate::SetWindowTransparency(HWND window) noexcept
+{
+    if (m_settings->GetSettings()->makeDraggedWindowTransparent)
+    {
+        m_windowTransparencyProperties.draggedWindowExstyle = GetWindowLong(window, GWL_EXSTYLE);
+
+        m_windowTransparencyProperties.draggedWindow = window;
+        SetWindowLong(window,
+                      GWL_EXSTYLE,
+                      m_windowTransparencyProperties.draggedWindowExstyle | WS_EX_LAYERED);
+
+        GetLayeredWindowAttributes(window, &m_windowTransparencyProperties.draggedWindowCrKey, &m_windowTransparencyProperties.draggedWindowInitialAlpha, &m_windowTransparencyProperties.draggedWindowDwFlags);
+
+        SetLayeredWindowAttributes(window, 0, (255 * 50) / 100, LWA_ALPHA);
+    }
+}
+
+void WindowMoveHandlerPrivate::ResetWindowTransparency() noexcept
+{
+    if (m_settings->GetSettings()->makeDraggedWindowTransparent && m_windowTransparencyProperties.draggedWindow != nullptr)
+    {
+        SetLayeredWindowAttributes(m_windowTransparencyProperties.draggedWindow, m_windowTransparencyProperties.draggedWindowCrKey, m_windowTransparencyProperties.draggedWindowInitialAlpha, m_windowTransparencyProperties.draggedWindowDwFlags);
+        SetWindowLong(m_windowTransparencyProperties.draggedWindow, GWL_EXSTYLE, m_windowTransparencyProperties.draggedWindowExstyle);
+        m_windowTransparencyProperties.draggedWindow = nullptr;
     }
 }
