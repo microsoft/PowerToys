@@ -34,13 +34,13 @@ steps:
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
+# directly not doing WinAppDriver testing
 - task: VSTest@2
   inputs:
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
-#    testSelector: 'testAssemblies'
+    testSelector: 'testAssemblies'
     testAssemblyVer2: |
-# directly not doing WinUI testing
       !**\*PowerToysTests.dll
       !**\obj\**
 #      **\PreviewPaneUnitTests.dll
