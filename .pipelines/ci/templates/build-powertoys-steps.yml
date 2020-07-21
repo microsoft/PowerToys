@@ -39,11 +39,13 @@ steps:
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
 #    testSelector: 'testAssemblies'
-#    testAssemblyVer2: |
+    testAssemblyVer2: |
+# directly not doing WinUI testing
+      !**\*PowerToysTests.dll
+      !**\obj\**
 #      **\PreviewPaneUnitTests.dll
 #      **\UnitTests-SvgPreviewHandler.dll
 #      **\UnitTests-PreviewHandlerCommon.dll
 #      **\powerpreviewTest.dll
 #      **\UnitTests-CommonLib.dll
 #      !**\*TestAdapter.dll
-#      !**\obj\**
