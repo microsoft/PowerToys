@@ -202,7 +202,7 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result)
             std::wstring replaceTerm(m_replaceTerm ? wstring(m_replaceTerm) : wstring(L""));
 
             replaceTerm = regex_replace(replaceTerm, std::wregex(L"\\$[0]+"), L"$");
-            replaceTerm = regex_replace(replaceTerm, std::wregex(L"\\$[0]*[1-9]{2,}"), L"");
+            replaceTerm = regex_replace(replaceTerm, std::wregex(L"\\$[0]*[1-9][0-9]+"), L"");
 
             if (m_flags & UseRegularExpressions)
             {
