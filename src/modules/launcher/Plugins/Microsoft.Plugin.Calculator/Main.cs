@@ -22,15 +22,10 @@ namespace Microsoft.Plugin.Calculator
                         @"[ei]|[0-9]|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
                         @")+$", RegexOptions.Compiled);
         private static readonly Regex RegBrackets = new Regex(@"[\(\)\[\]]", RegexOptions.Compiled);
-        private static readonly Engine MagesEngine;
+        private static readonly Engine MagesEngine = new Engine();
         private PluginInitContext Context { get; set; }
         private string IconPath { get; set; }
         private bool _disposed = false;
-
-        static Main()
-        {
-            MagesEngine = new Engine();
-        }
 
         public List<Result> Query(Query query)
         {
