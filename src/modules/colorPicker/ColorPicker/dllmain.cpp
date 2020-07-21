@@ -4,7 +4,7 @@
 #include <interface/powertoy_module_interface.h>
 #include "trace.h"
 #include <common\settings_objects.h>
-#include <common\os-detection\os-detect.h>
+#include <common\os-detect.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
