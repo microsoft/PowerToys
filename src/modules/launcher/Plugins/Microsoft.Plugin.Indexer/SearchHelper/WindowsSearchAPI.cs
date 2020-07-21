@@ -103,7 +103,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             queryHelper.QuerySorting = "System.DateModified DESC";
         }
 
-        public IEnumerable<SearchResult> Search(string keyword, string pattern = "*", int maxCount = 100)
+        public IEnumerable<SearchResult> Search(string keyword, string pattern = "*", int maxCount = 30)
         {
             lock(_lock){
                 ISearchQueryHelper queryHelper;

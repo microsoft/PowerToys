@@ -66,6 +66,13 @@ namespace PowerLauncher
                         _settings.IgnoreHotkeysOnFullscreen = overloadSettings.properties.ignore_hotkeys_in_fullscreen;
                     }
 
+                    var indexer = PluginManager.AllPlugins.Find(p => p.Metadata.Name.Equals("Windows Indexer Plugin", StringComparison.OrdinalIgnoreCase));
+                    if (indexer != null)
+                    {
+                        var indexerSettings = indexer.Plugin as ISettingProvider;
+                        indexerSettings.UpdateSettings(overloadSettings);
+                    }
+
                     if (_settings.ClearInputOnLaunch != overloadSettings.properties.clear_input_on_launch)
                     {
 	                    _settings.ClearInputOnLaunch = overloadSettings.properties.clear_input_on_launch;
