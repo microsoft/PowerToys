@@ -1970,5 +1970,39 @@ namespace RemappingLogicTests
             // SendVirtualInput should be called exactly once with the above condition
             Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
         }
+
+        // Test that the shortcut remap state is not reset when an unrelated key up message is sent - required to handle programs sending dummy key up messages
+        TEST_METHOD (ShortcutRemap_ShouldNotGetReset_OnSendingKeyUpForAKeyNotPresentInTheShortcutAfterInvokingTheShortcut)
+        {
+            // Remap Ctrl+A to Ctrl+V
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey(0x41);
+            Shortcut dest;
+            dest.SetKey(VK_CONTROL);
+            dest.SetKey(0x56);
+            testState.AddOSLevelShortcut(src, dest);
+
+            const int nInputs = 3;
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = 0x41;
+            input[2].type = INPUT_KEYBOARD;
+            input[2].ki.wVk = 0x42;
+            input[2].ki.dwFlags = KEYEVENTF_KEYUP;
+
+            // Send Ctrl+A keydown, then B key up
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // A key state should be unchanged, Ctrl, V should be true
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), true);
+
+            // Shortcut invoked state should be true
+            Assert::AreEqual(true, testState.osLevelShortcutReMap[src].isShortcutInvoked);
+        }
     };
 }
