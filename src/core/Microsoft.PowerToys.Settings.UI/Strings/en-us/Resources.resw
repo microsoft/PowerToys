@@ -264,13 +264,13 @@
     <value>Open console</value>
   </data>
   <data name="PowerLauncher_OverrideWinRKey.Content" xml:space="preserve">
-    <value>Override Win+R key</value>
+    <value>Override Win+R shortcut</value>
   </data>
   <data name="PowerLauncher_OverrideWinSKey.Content" xml:space="preserve">
-    <value>Override Win+S key</value>
+    <value>Override Win+S shortcut</value>
   </data>
   <data name="PowerLauncher_IgnoreHotkeysInFullScreen.Content" xml:space="preserve">
-    <value>Ignore hotkeys in fullscreen mode</value>
+    <value>Ignore shortcuts in fullscreen mode</value>
   </data>
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
@@ -319,10 +319,7 @@
     <value>Move windows between zones across all monitors when snapping with (Win + Arrow)</value>
   </data>
   <data name="FancyZones_OverrideSnapHotkeysCheckBoxControl.Content" xml:space="preserve">
-    <value>Override Windows Snap hotkeys (Win + Arrow) to move windows between zones</value>
-  </data>
-  <data name="FancyZones_SaveZoneHighlightColor.Content" xml:space="preserve">
-    <value>Save Zone Highlight Color Choice</value>
+    <value>Override Windows Snap shortcut (Win + Arrow) to move windows between zones</value>
   </data>
   <data name="FancyZones_ShiftDragCheckBoxControl_Header.Content" xml:space="preserve">
     <value>Hold Shift key to activate zones while dragging</value>
@@ -434,12 +431,6 @@
   </data>
   <data name="FancyZones_InActiveColor.Text" xml:space="preserve">
     <value>Zone inactive color (Default: #F5FCFF)</value>
-  </data>
-  <data name="FancyZones_SaveBorderColor.Content" xml:space="preserve">
-    <value>Save Zone Border Color Choice</value>
-  </data>
-  <data name="FancyZones_SaveZoneInActiveColor.Content" xml:space="preserve">
-    <value>Save Zone Inactive Color Choice</value>
   </data>
   <data name="ShortcutGuide_Description.Text" xml:space="preserve">
     <value>Shows a help overlay with Windows shortcuts when the Windows key is pressed.</value>
@@ -637,9 +628,9 @@
     <value>Encoding</value>
   </data>
   <data name="KeyboardManager_RemapKeyboardSubtitle.Text" xml:space="preserve">
-    <value>Click below to remap a single key to another key</value>
+    <value>Remap a single key to another key.</value>
   </data>
   <data name="KeyboardManager_RemapShortcutsSubtitle.Text" xml:space="preserve">
-    <value>Click below to remap a shortcut (hotkey) to another shortcut</value>
+    <value>Remap a shortcut to another shortcut.</value>
   </data>
 </root>
