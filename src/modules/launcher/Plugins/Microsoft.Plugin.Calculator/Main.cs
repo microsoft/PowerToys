@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using Mages.Core;
+using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 
 namespace Microsoft.Plugin.Calculator
@@ -91,10 +92,10 @@ namespace Microsoft.Plugin.Calculator
             }
 //We want to keep the process alive if any the mages library throws any exceptions.
 #pragma warning disable CA1031 // Do not catch general exception types
-            catch
+            catch(Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                // ignored
+                Log.Exception($"|Microsoft.Plugin.Calculator.Main.Query|Exception when query for <{query}>", e);
             }
 
             return new List<Result>();
