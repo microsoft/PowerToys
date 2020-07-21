@@ -58,7 +58,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             IStream stream;
             const uint noAttribute = 0x80;
-            const Stgm exclusiveRead = Stgm.Read | Stgm.DenyWrite;
+            const Stgm exclusiveRead = Stgm.Read;
             var hResult = SHCreateStreamOnFileEx(path, exclusiveRead, noAttribute, false, null, out stream);
 
             if (hResult == Hresult.Ok)
@@ -646,7 +646,16 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 if (File.Exists(path))
                 {
-                    var image = new BitmapImage(new Uri(path));
+                    MemoryStream memoryStream = new MemoryStream();
+
+                    byte[] fileBytes = File.ReadAllBytes(path);
+                    memoryStream.Write(fileBytes, 0, fileBytes.Length);
+                    memoryStream.Position = 0;
+
+                    var image = new BitmapImage();
+                    image.BeginInit();
+                    image.StreamSource = memoryStream;
+                    image.EndInit();
                     return image;
                 }
                 else
@@ -676,7 +685,6 @@ namespace Microsoft.Plugin.Program.Programs
         private enum Stgm : uint
         {
             Read = 0x0,
-            DenyWrite = 0x20,
         }
 
         private enum Hresult : uint
