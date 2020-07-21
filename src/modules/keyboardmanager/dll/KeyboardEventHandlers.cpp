@@ -603,23 +603,8 @@ namespace KeyboardEventHandlers
                             return 1;
                         }
                     }
-
                     // For remap to key, nothing should be done since the shortcut should only get released on releasing any of the original shortcut keys.
-                    if (!remapToShortcut)
-                    {
-                        return 0;
-                    }
-                    // Case 6: If any key apart from original modifier or original action key is released - This can't happen since the key down would have to happen first, which is handled above
-                }
-
-                // Code added for safety: Should not generally occur unless some weird keyboard interaction occurs
-                // If it was in isShortcutInvoked state and none of the above cases occur, then reset the flags
-                it->second.isShortcutInvoked = false;
-                it->second.winKeyInvoked = ModifierKey::Disabled;
-                // If app specific shortcut has finished invoking, reset the target application
-                if (activatedApp != KeyboardManagerConstants::NoActivatedApp)
-                {
-                    keyboardManagerState.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
+                    // Case 6: If any key apart from original modifier or original action key is released - This can't happen since the key down would have to happen first, which is handled above. If a key up message is generated for some other key (maybe by code) do not suppress it
                 }
             }
         }
