@@ -25,7 +25,7 @@ namespace ViewModelTests
             PowerPreviewSettings powerpreview = new PowerPreviewSettings();
 
             SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            SettingsUtils.SaveSettings(powerpreview.ToJsonString(), powerpreview.name);
+            SettingsUtils.SaveSettings(powerpreview.ToJsonString(), powerpreview.Name);
         }
 
         [TestCleanup]
@@ -59,7 +59,7 @@ namespace ViewModelTests
             ShellPage.DefaultSndMSGCallback = msg =>
             {
                 SndModuleSettings<SndPowerPreviewSettings> snd = JsonSerializer.Deserialize<SndModuleSettings<SndPowerPreviewSettings>>(msg);
-                Assert.IsTrue(snd.powertoys.FileExplorerPreviewSettings.properties.EnableSvg);
+                Assert.IsTrue(snd.powertoys.FileExplorerPreviewSettings.Properties.EnableSvg);
             };
 
             // act
@@ -76,7 +76,7 @@ namespace ViewModelTests
             ShellPage.DefaultSndMSGCallback = msg =>
             {
                 SndModuleSettings<SndPowerPreviewSettings> snd = JsonSerializer.Deserialize<SndModuleSettings<SndPowerPreviewSettings>>(msg);
-                Assert.IsTrue(snd.powertoys.FileExplorerPreviewSettings.properties.EnableMd);
+                Assert.IsTrue(snd.powertoys.FileExplorerPreviewSettings.Properties.EnableMd);
             };
 
             // act

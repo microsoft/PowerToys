@@ -43,7 +43,7 @@ namespace PowerLauncher
                 {
                     var overloadSettings = SettingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.POWERTOYNAME);
 
-                    var openPowerlauncher = ConvertHotkey(overloadSettings.properties.open_powerlauncher);
+                    var openPowerlauncher = ConvertHotkey(overloadSettings.Properties.open_powerlauncher);
                     if (_settings.Hotkey != openPowerlauncher)
                     {
                         _settings.Hotkey = openPowerlauncher;
@@ -56,14 +56,14 @@ namespace PowerLauncher
                         shellSettings.UpdateSettings(overloadSettings);
                     }
 
-                    if (_settings.MaxResultsToShow != overloadSettings.properties.maximum_number_of_results)
+                    if (_settings.MaxResultsToShow != overloadSettings.Properties.maximum_number_of_results)
                     {
-                        _settings.MaxResultsToShow = overloadSettings.properties.maximum_number_of_results;
+                        _settings.MaxResultsToShow = overloadSettings.Properties.maximum_number_of_results;
                     }
 
-                    if (_settings.IgnoreHotkeysOnFullscreen != overloadSettings.properties.ignore_hotkeys_in_fullscreen)
+                    if (_settings.IgnoreHotkeysOnFullscreen != overloadSettings.Properties.ignore_hotkeys_in_fullscreen)
                     {
-                        _settings.IgnoreHotkeysOnFullscreen = overloadSettings.properties.ignore_hotkeys_in_fullscreen;
+                        _settings.IgnoreHotkeysOnFullscreen = overloadSettings.Properties.ignore_hotkeys_in_fullscreen;
                     }
                 }
                 // the settings application can hold a lock on the settings.json file which will result in a IOException.  

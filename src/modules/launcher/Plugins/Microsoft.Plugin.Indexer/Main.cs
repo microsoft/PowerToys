@@ -151,7 +151,7 @@ namespace Microsoft.Plugin.Indexer
         }
         public void UpdateSettings(PowerLauncherSettings settings)
         {
-            _settings.MaxSearchCount = settings.properties.maximum_number_of_results;
+            _settings.MaxSearchCount = settings.Properties.maximum_number_of_results;
         }
         public Control CreateSettingPanel()
         {

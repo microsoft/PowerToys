@@ -6,17 +6,17 @@ using System.Text.Json.Serialization;
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
 
-    public class ImageresizerCustomSizeProperty
+    public class ImageResizerCustomSizeProperty
     {
         [JsonPropertyName("value")]
         public ImageSize Value { get; set; }
 
-        public ImageresizerCustomSizeProperty()
+        public ImageResizerCustomSizeProperty()
         {
             this.Value = new ImageSize();
         }
 
-        public ImageresizerCustomSizeProperty(ImageSize value)
+        public ImageResizerCustomSizeProperty(ImageSize value)
         {
             Value = value;
         }

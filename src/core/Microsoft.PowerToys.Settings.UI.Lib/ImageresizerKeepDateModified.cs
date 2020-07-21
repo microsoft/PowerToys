@@ -6,12 +6,12 @@ using System.Text.Json.Serialization;
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
 
-    public class ImageresizerKeepDateModified
+    public class ImageResizerKeepDateModified
     {
         [JsonPropertyName("value")]
         public bool Value { get; set; }
 
-        public ImageresizerKeepDateModified()
+        public ImageResizerKeepDateModified()
         {
             this.Value = false;
         }
