@@ -81,7 +81,7 @@
                                     <Setter Property="Background" TargetName="HighlightBorder" Value="{DynamicResource ListViewItemBackgroundPointerOver}"/>
                                 </Trigger>
                                 <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Opacity" TargetName="HighlightBorder" Value="1" />
+                                    <Setter Property="Opacity" TargetName="HighlightBorder" Value="0.4" />
                                     <Setter Property="Background" TargetName="HighlightBorder" Value="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}"/>
                                     <!-- Accent color brush -->
                                 </Trigger>
