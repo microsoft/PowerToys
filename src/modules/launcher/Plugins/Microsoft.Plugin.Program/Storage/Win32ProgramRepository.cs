@@ -58,19 +58,6 @@ namespace Microsoft.Plugin.Program.Storage
             }
         }
 
-        private void OnAppChanged(object sender, FileSystemEventArgs e)
-        {
-            string path = e.FullPath;
-            if (Path.GetExtension(path).Equals(urlExtension))
-            {
-                Programs.Win32 app = Programs.Win32.GetAppFromPath(path);
-                if (app != null)
-                {
-                    Add(app);
-                }
-            }
-        }
-
         private void OnAppRenamed(object sender, RenamedEventArgs e)
         {
             string oldPath = e.OldFullPath;
@@ -180,10 +167,26 @@ namespace Microsoft.Plugin.Program.Storage
         private void OnAppCreated(object sender, FileSystemEventArgs e)
         {
             string path = e.FullPath;
-            Programs.Win32 app = Programs.Win32.GetAppFromPath(path);
-            if (app != null)
+            if(!Path.GetExtension(path).Equals(urlExtension))
             {
-                Add(app);
+                Programs.Win32 app = Programs.Win32.GetAppFromPath(path);
+                if (app != null)
+                {
+                    Add(app);
+                }
+            }
+        }
+
+        private void OnAppChanged(object sender, FileSystemEventArgs e)
+        {
+            string path = e.FullPath;
+            if (Path.GetExtension(path).Equals(urlExtension))
+            {
+                Programs.Win32 app = Programs.Win32.GetAppFromPath(path);
+                if (app != null)
+                {
+                    Add(app);
+                }
             }
         }
 
