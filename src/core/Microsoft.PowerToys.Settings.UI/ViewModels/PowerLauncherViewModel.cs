@@ -252,5 +252,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 		        }
 	        }
         }
+
+        public bool DisableDriveDetectionWarning
+        {
+            get
+            {
+                return settings.properties.disable_drive_detection_warning;
+            }
+
+            set
+            {
+                if (settings.properties.disable_drive_detection_warning != value)
+                {
+                    settings.properties.disable_drive_detection_warning = value;
+                    UpdateSettings();
+                }
+            }
+        }
     }
 }

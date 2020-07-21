@@ -8,6 +8,7 @@ using Microsoft.Plugin.Indexer;
 using Moq;
 using Wox.Plugin;
 using System.Linq;
+using Microsoft.Plugin.Indexer.DriveDetection;
 
 namespace Wox.Test.Plugins
 {
@@ -297,5 +298,23 @@ namespace Wox.Test.Plugins
             mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_containing_folder"), Times.Never());
             mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_in_console"), Times.Once());
         }
+
+        [TestCase(0, false, ExpectedResult = false)]
+        [TestCase(0, true, ExpectedResult = true)]
+        [TestCase(1, false, ExpectedResult = true)]
+        [TestCase(1, true, ExpectedResult = true)]
+        public bool DriveDetection_MustDisplayResults_WhenEnhancedModeIsOnOrWhenWarningIsDisabled(int enhancedModeStatus, bool disableWarningCheckBoxStatus) 
+        {
+            // Arrange
+            var mockRegistry = new Mock<IRegistryWrapper>();
+            mockRegistry.Setup(r => r.GetHKLMRegistryValue(It.IsAny<string>(), It.IsAny<string>())).Returns(enhancedModeStatus); // Enhanced mode is disabled
+
+            IndexerDriveDetection _driveDetection = new IndexerDriveDetection(mockRegistry.Object);
+            _driveDetection.IsDriveDetectionWarningCheckBoxSelected = disableWarningCheckBoxStatus;
+
+            // Act & Assert
+            return _driveDetection.DisplayResults();
+        }
+
     }
 }
