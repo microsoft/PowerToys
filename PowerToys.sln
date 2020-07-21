@@ -257,7 +257,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagedCommon", "src\common
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Program.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.Program.UnitTests\Microsoft.Plugin.Program.UnitTests.csproj", "{42851751-CBC8-45A6-97F5-7A0753F7B4D1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Uri", "src\modules\launcher\Plugins\Microsoft.Plugin.Url\Microsoft.Plugin.Uri.csproj", "{03276A39-D4E9-417C-8FFD-200B0EE5E871}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Uri", "src\modules\launcher\Plugins\Microsoft.Plugin.Uri\Microsoft.Plugin.Uri.csproj", "{03276A39-D4E9-417C-8FFD-200B0EE5E871}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
