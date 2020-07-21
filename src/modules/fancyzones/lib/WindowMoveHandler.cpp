@@ -79,7 +79,7 @@ public:
     bool MoveWindowIntoZoneByDirection(HWND window, DWORD vkCode, bool cycle, winrt::com_ptr<IZoneWindow> zoneWindow);
 
 private:
-    void ElevatedDragCheck(HWND window) noexcept;
+    void WarnIfElevationIsRequired(HWND window) noexcept;
     void UpdateDragState() noexcept;
 
     void SetWindowTransparency(HWND window) noexcept;
@@ -207,8 +207,11 @@ void WindowMoveHandlerPrivate::MoveSizeStart(HWND window, HMONITOR monitor, POIN
     m_shiftHook->enable();
     m_ctrlHook->enable();
 
-    UpdateDragState(); // This updates m_dragEnabled depending on if the shift key is being held down    
-    ElevatedDragCheck(window); // Notifies user if unable to drag elevated window
+    // This updates m_dragEnabled depending on if the shift key is being held down
+    UpdateDragState();
+
+    // Notifies user if unable to drag elevated window
+    WarnIfElevationIsRequired(window);
 
     if (m_dragEnabled)
     {
@@ -385,7 +388,7 @@ bool WindowMoveHandlerPrivate::MoveWindowIntoZoneByDirection(HWND window, DWORD 
     return zoneWindow && zoneWindow->MoveWindowIntoZoneByDirection(window, vkCode, cycle);
 }
 
-void WindowMoveHandlerPrivate::ElevatedDragCheck(HWND window) noexcept
+void WindowMoveHandlerPrivate::WarnIfElevationIsRequired(HWND window) noexcept
 {
     static bool warning_shown = false;
     if (!is_process_elevated() && IsProcessOfWindowElevated(window))
