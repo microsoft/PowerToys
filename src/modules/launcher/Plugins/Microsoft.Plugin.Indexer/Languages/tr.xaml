@@ -9,6 +9,6 @@
     <system:String x:Key="Microsoft_plugin_indexer_name">Name</system:String>
     <system:String x:Key="Microsoft_plugin_indexer_path">Path</system:String>
     <system:String x:Key="Microsoft_plugin_indexer_drivedetectionwarning">Warning: Detected that not all drives are indexed.</system:String>
-    <system:String x:Key="Microsoft_plugin_indexer_disable_warning_in_settings">Go to Windows Search settings to fix.</system:String>
+    <system:String x:Key="Microsoft_plugin_indexer_disable_warning_in_settings">GClick to go to Windows Search settings to fix.</system:String>
     
 </ResourceDictionary>
