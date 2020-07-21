@@ -1,7 +1,7 @@
 ﻿using System.Windows.Input;
 using NUnit.Framework;
 using Wox.Plugin;
-using Wox.ViewModel;
+using PowerLauncher.ViewModel;
 using System.Runtime.CompilerServices;
 
 namespace Wox.Test

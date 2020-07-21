@@ -8,6 +8,7 @@
   <?define KeyboardManagerProjectName="KeyboardManager"?>
   <?define PowerRenameProjectName="PowerRename"?>
   <?define ShortcutGuideProjectName="ShortcutGuide"?>
+  <?define ColorPickerProjectName="ColorPicker"?>
 
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?define BinX64Dir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
@@ -241,6 +242,9 @@
             <Directory Id="FileExplorerPreviewInstallFolder" Name="FileExplorerPreview" />
             <Directory Id="FancyZonesInstallFolder" Name="$(var.FancyZonesProjectName)" />
             <Directory Id="KeyboardManagerInstallFolder" Name="$(var.KeyboardManagerProjectName)" />
+            <Directory Id="ColorPickerInstallFolder" Name="$(var.ColorPickerProjectName)">
+              <Directory Id="ColorPickerResourcesFolder" Name="Resources"/>
+            </Directory>
             <Directory Id="LauncherInstallFolder" Name="launcher">
               <Directory Id="AssetsFolder" Name="Assets" />
               <Directory Id="LauncherImagesFolder" Name="Images" />               
@@ -583,6 +587,22 @@
       </Component>
     </DirectoryRef>
 
+    <DirectoryRef Id="ColorPickerInstallFolder" FileSource="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)">
+      <Component Id="Module_ColorPicker" Guid="8A52A69E-37B2-4BEA-9D73-77763066052F" Win64="yes">
+        <?foreach File in ColorPicker.dll;ColorPicker.exe;ColorPicker.exe.config;Microsoft.Bcl.AsyncInterfaces.dll;Microsoft.Expression.Interactions.dll;Microsoft.PowerToys.Settings.UI.Lib.dll;PowerToysInterop.dll;System.Buffers.dll;System.Memory.dll;System.Numerics.Vectors.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;System.Threading.Tasks.Extensions.dll;System.ValueTuple.dll;System.Windows.Interactivity.dll;Telemetry.dll;ManagedCommon.dll;System.Runtime.CompilerServices.Unsafe.dll?>
+        <File Id="ColorPickerFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\$(var.File)" />
+        <?endforeach?>
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="ColorPickerResourcesFolder" FileSource="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\Resources">
+      <Component Id="Module_ColorPicker_Resources" Guid="7544BD0F-1DB6-4C53-89D3-ADAD472FDCC1">
+        <?foreach File in colorPicker.cur;icon.ico?>
+        <File Id="ColorPickerFile_$(var.File)" Source="$(var.BinX64Dir)modules\$(var.ColorPickerProjectName)\Resources\$(var.File)" />
+        <?endforeach?>
+      </Component>
+    </DirectoryRef>
+
     <DirectoryRef Id="FileExplorerPreviewInstallFolder" FileSource="$(var.RepoDir)\modules\FileExplorerPreview\">
       <Component Id="Module_PowerPreview" Guid="FF1700D5-1B07-4E07-9A62-4D206645EEA9" Win64="yes">
         <!-- Component to include PowerPreview Module Source dll's -->
@@ -741,6 +761,8 @@
       <ComponentRef Id="Module_PowerPreview" />
       <ComponentRef Id="Module_PowerPreview_PerUserRegistry" />
       <ComponentRef Id="Module_KeyboardManager" />
+      <ComponentRef Id="Module_ColorPicker" />
+      <ComponentRef Id="Module_ColorPicker_Resources"/>
       <ComponentRef Id="SettingsV2" />
       <ComponentRef Id="SettingsV2Assets" />
       <ComponentRef Id="SettingsV2Controls" />
@@ -781,7 +803,7 @@
     <ComponentGroup Id="LauncherComponents">
       <Component Id="launcherInstallComponent" Directory="LauncherInstallFolder" Guid="5E688DB4-C522-4268-BA54-ED1CDFFE9DB6">
         <File Source="$(var.BinX64Dir)modules\Launcher\Microsoft.Launcher.dll" />
-        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;EntityFramework.SqlServer.dll;EntityFramework.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;Pinyin4Net.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;sni.dll;System.Data.SQLite.EF6.dll;PowerLauncher.runtimeconfig.json;SQLite.Interop.dll;System.Data.OleDb.dll;System.Data.SqlClient.dll;System.Data.SQLite.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;WindowsInput.dll;Wox.Core.dll;Wox.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;Telemetry.dll;PowerLauncher.Telemetry.dll;PropertyChanged.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;MahApps.Metro.dll;ManagedCommon.dll?>
+        <?foreach File in concrt140_app.dll;ICSharpCode.SharpZipLib.dll;JetBrains.Annotations.dll;Mages.Core.dll;Microsoft.Search.Interop.dll;EntityFramework.SqlServer.dll;EntityFramework.dll;Mono.Cecil.dll;Mono.Cecil.Mdb.dll;Mono.Cecil.Pdb.dll;Mono.Cecil.Rocks.dll;msvcp140_1_app.dll;msvcp140_2_app.dll;msvcp140_app.dll;Newtonsoft.Json.dll;NLog.dll;NLog.Extensions.Logging.dll;Pinyin4Net.dll;PowerLauncher.deps.json;PowerLauncher.dll;PowerLauncher.exe;Microsoft.Xaml.Behaviors.dll;System.Text.Json.dll;sni.dll;System.Data.SQLite.EF6.dll;PowerLauncher.runtimeconfig.json;SQLite.Interop.dll;System.Data.OleDb.dll;System.Data.SqlClient.dll;System.Data.SQLite.dll;vcamp140_app.dll;vccorlib140_app.dll;vcomp140_app.dll;vcruntime140_1_app.dll;vcruntime140_app.dll;WindowsInput.dll;Wox.Core.dll;Wox.Infrastructure.dll;Wox.Plugin.dll;PowerToysInterop.dll;Telemetry.dll;PowerLauncher.Telemetry.dll;PropertyChanged.dll;Microsoft.Extensions.Configuration.Abstractions.dll;Microsoft.Extensions.Configuration.Binder.dll;Microsoft.Extensions.Configuration.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll;ControlzEx.dll;MahApps.Metro.dll;ManagedCommon.dll?>
           <File Id="File_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\$(var.File)" />
         <?endforeach?>
         <File Source="$(var.BinX64Dir)SettingsUIRunner\Microsoft.PowerToys.Settings.UI.Lib.dll" />
@@ -932,7 +954,7 @@
         <?endforeach?>
       </Component>
       <Component Id="IndexerImagesComponent" Directory="IndexerImagesFolder" Guid="DB2E8D49-D104-425B-9616-952AC8CAB676">
-        <?foreach File in indexer.dark.png;indexer.light.png?>
+        <?foreach File in indexer.dark.png;indexer.light.png;Warning.light.png;Warning.dark.png?>
           <File Id="Indexer_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\Images\$(var.File)" />
         <?endforeach?>
       </Component>

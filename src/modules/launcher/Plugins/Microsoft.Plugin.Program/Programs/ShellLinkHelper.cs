@@ -6,10 +6,11 @@ using System.IO;
 using Accessibility;
 using System.Runtime.InteropServices.ComTypes;
 using System.Security.Policy;
+using Microsoft.Plugin.Program.Logger;
 
 namespace Microsoft.Plugin.Program.Programs
 {
-    class ShellLinkHelper
+    public class ShellLinkHelper : IShellLinkHelper
     {
         [Flags()]
         public enum SLGP_FLAGS
@@ -99,19 +100,29 @@ namespace Microsoft.Plugin.Program.Programs
         {
         }
 
-        // To initialize the app description
-        public String description = String.Empty;
+        // Contains the description of the app
+        public string description { get; set; } = String.Empty;
 
-        // Sets to true if the program takes in arguments
-        public String Arguments = String.Empty;
-        public bool hasArguments = false;
+        // Contains the arguments to the app
+        public string Arguments { get; set; } = String.Empty;
+        public bool hasArguments { get; set; } = false;
 
         // Retrieve the target path using Shell Link
-        public string retrieveTargetPath(string path)
+        public string RetrieveTargetPath(string path)
         {
             var link = new ShellLink();
             const int STGM_READ = 0;
-            ((IPersistFile)link).Load(path, STGM_READ);
+
+            try
+            {
+                ((IPersistFile)link).Load(path, STGM_READ);
+            }
+            catch(System.IO.FileNotFoundException ex)
+            {
+                ProgramLogger.LogException($"|Win32| ShellLinkHelper.retrieveTargetPath | {path} | Path could not be retrieved", ex);
+                return String.Empty;
+            }
+
             var hwnd = new _RemotableHandle();
             ((IShellLinkW)link).Resolve(ref hwnd, 0);
 
