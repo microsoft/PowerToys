@@ -1,12 +1,12 @@
 # Specs
 
-All approved specs are inside the [Wiki](https://github.com/microsoft/PowerToys/wiki)
+All approved specs are inside the [Wiki spec section](https://github.com/microsoft/PowerToys/wiki/Specs)
 
 ## Spec process
 
 1. A proposed item is either new or requesting additional design 
 2. Spec is written inside the Specs folder and a PR happens with feedback.
-3. Once spec is signed off, we move it into the [Wiki](https://github.com/microsoft/PowerToys/wiki).
+3. Once spec is signed off, we move it into the [Wiki spec section](https://github.com/microsoft/PowerToys/wiki/Specs).
 
 ## Thought process behind this
 

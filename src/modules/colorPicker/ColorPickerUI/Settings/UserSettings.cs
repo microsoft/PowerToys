@@ -60,9 +60,9 @@ namespace ColorPicker.Settings
                             var settings = SettingsUtils.GetSettings<ColorPickerSettings>(ColorPickerModuleName);
                             if (settings != null)
                             {
-                                ChangeCursor.Value = settings.properties.ChangeCursor;
-                                ActivationShortcut.Value = settings.properties.ActivationShortcut.ToString();
-                                CopiedColorRepresentation.Value = settings.properties.CopiedColorRepresentation;
+                                ChangeCursor.Value = settings.Properties.ChangeCursor;
+                                ActivationShortcut.Value = settings.Properties.ActivationShortcut.ToString();
+                                CopiedColorRepresentation.Value = settings.Properties.CopiedColorRepresentation;
                             }
 
                             retry = false;

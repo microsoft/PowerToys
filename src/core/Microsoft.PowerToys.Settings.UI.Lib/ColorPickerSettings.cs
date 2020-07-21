@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
@@ -10,18 +11,14 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
     {
         public const string ModuleName = "ColorPicker";
 
-        public ColorPickerProperties properties { get; set; }
+        [JsonPropertyName("properties")]
+        public ColorPickerProperties Properties { get; set; }
 
         public ColorPickerSettings()
         {
-            properties = new ColorPickerProperties();
-            version = "1";
-            name = ModuleName;
-        }
-
-        public override string ToJsonString()
-        {
-            return JsonSerializer.Serialize(this);
+            Properties = new ColorPickerProperties();
+            Version = "1";
+            Name = ModuleName;
         }
 
         public virtual void Save()

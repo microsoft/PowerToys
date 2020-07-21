@@ -19,7 +19,7 @@ namespace ViewModelTests
             var colorPickerSettings = new ColorPickerSettings();
 
             SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            SettingsUtils.SaveSettings(colorPickerSettings.ToJsonString(), colorPickerSettings.name, ModuleName + ".json");
+            SettingsUtils.SaveSettings(colorPickerSettings.ToJsonString(), colorPickerSettings.Name, ModuleName + ".json");
         }
 
         [TestCleanup]

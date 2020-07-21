@@ -26,7 +26,7 @@ namespace ViewModelTests
             PowerRenameSettings powerRename = new PowerRenameSettings();
 
             SettingsUtils.SaveSettings(generalSettings.ToJsonString());
-            SettingsUtils.SaveSettings(powerRename.ToJsonString(), powerRename.name, "power-rename-settings.json");
+            SettingsUtils.SaveSettings(powerRename.ToJsonString(), powerRename.Name, "power-rename-settings.json");
         }
 
         [TestCleanup]
@@ -73,7 +73,7 @@ namespace ViewModelTests
             ShellPage.DefaultSndMSGCallback = msg =>
             {
                 PowerRenameSettingsIPCMessage snd = JsonSerializer.Deserialize<PowerRenameSettingsIPCMessage>(msg);
-                Assert.IsTrue(snd.Powertoys.PowerRename.properties.MRUEnabled.Value);
+                Assert.IsTrue(snd.Powertoys.PowerRename.Properties.MRUEnabled.Value);
             };
 
             // act
@@ -139,7 +139,7 @@ namespace ViewModelTests
             ShellPage.DefaultSndMSGCallback = msg =>
             {
                 PowerRenameSettingsIPCMessage snd = JsonSerializer.Deserialize<PowerRenameSettingsIPCMessage>(msg);
-                Assert.IsTrue(snd.Powertoys.PowerRename.properties.ShowIcon.Value);
+                Assert.IsTrue(snd.Powertoys.PowerRename.Properties.ShowIcon.Value);
             };
 
             // act
@@ -156,7 +156,7 @@ namespace ViewModelTests
             ShellPage.DefaultSndMSGCallback = msg =>
             {
                 PowerRenameSettingsIPCMessage snd = JsonSerializer.Deserialize<PowerRenameSettingsIPCMessage>(msg);
-                Assert.IsTrue(snd.Powertoys.PowerRename.properties.ShowIcon.Value);
+                Assert.IsTrue(snd.Powertoys.PowerRename.Properties.ShowIcon.Value);
             };
 
             // act
@@ -173,7 +173,7 @@ namespace ViewModelTests
             ShellPage.DefaultSndMSGCallback = msg =>
             {
                 PowerRenameSettingsIPCMessage snd = JsonSerializer.Deserialize<PowerRenameSettingsIPCMessage>(msg);
-                Assert.IsTrue(snd.Powertoys.PowerRename.properties.PersistState.Value);
+                Assert.IsTrue(snd.Powertoys.PowerRename.Properties.PersistState.Value);
             };
 
             // act
@@ -190,7 +190,7 @@ namespace ViewModelTests
             ShellPage.DefaultSndMSGCallback = msg =>
             {
                 PowerRenameSettingsIPCMessage snd = JsonSerializer.Deserialize<PowerRenameSettingsIPCMessage>(msg);
-                Assert.AreEqual(20, snd.Powertoys.PowerRename.properties.MaxMRUSize.Value);
+                Assert.AreEqual(20, snd.Powertoys.PowerRename.Properties.MaxMRUSize.Value);
             };
 
             // act
