@@ -26,7 +26,7 @@ namespace PowerLauncher
         {
             _settings = settings;
             // Set up watcher
-             _watcher = Helper.GetFileWatcher(PowerLauncherSettings.POWERTOYNAME, "settings.json", OverloadSettings);
+             _watcher = Microsoft.PowerToys.Settings.UI.Lib.Utilities.Helper.GetFileWatcher(PowerLauncherSettings.POWERTOYNAME, "settings.json", OverloadSettings);
 
             // Load initial settings file
             OverloadSettings();
@@ -64,6 +64,13 @@ namespace PowerLauncher
                     if (_settings.IgnoreHotkeysOnFullscreen != overloadSettings.properties.ignore_hotkeys_in_fullscreen)
                     {
                         _settings.IgnoreHotkeysOnFullscreen = overloadSettings.properties.ignore_hotkeys_in_fullscreen;
+                    }
+
+                    var indexer = PluginManager.AllPlugins.Find(p => p.Metadata.Name.Equals("Windows Indexer Plugin", StringComparison.OrdinalIgnoreCase));
+                    if (indexer != null)
+                    {
+                        var indexerSettings = indexer.Plugin as ISettingProvider;
+                        indexerSettings.UpdateSettings(overloadSettings);
                     }
 
                     if (_settings.ClearInputOnLaunch != overloadSettings.properties.clear_input_on_launch)
