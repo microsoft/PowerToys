@@ -636,4 +636,7 @@
   <data name="KeyboardManager_RemapShortcutsSubtitle.Text" xml:space="preserve">
     <value>Remap a shortcut to another shortcut.</value>
   </data>
+  <data name="About_PowerToys.Text" xml:space="preserve">
+    <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity</value>
+  </data>
 </root>

@@ -198,7 +198,7 @@
                         <Setter Target="KeyboardManagerView.(Grid.Row)" Value="1" />
                         <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
                         <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
-                        <Setter Target="LinksPanel.Margin" Value="12,1,0,0"/>
+                        <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
                         <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
@@ -337,7 +337,7 @@
                    Grid.Row="2"
                    MaxWidth="240"
                    HorizontalAlignment="Left"
-                   Source="https://aka.ms/powerToysFancyZoneSettingImage" />
+                   Source="https://aka.ms/powerToysKBMSettingImage" />
 
             <StackPanel x:Name="LinksPanel"
                         RelativePanel.Below="AboutImage"

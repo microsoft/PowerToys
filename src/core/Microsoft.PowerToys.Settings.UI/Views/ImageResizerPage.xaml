@@ -40,7 +40,7 @@
                         <Setter Target="ImageResizerView.(Grid.Row)" Value="1" />
                         <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
                         <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
-                        <Setter Target="LinksPanel.Margin" Value="12,1,0,0"/>
+                        <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
                         <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
@@ -315,7 +315,7 @@
                    Grid.Row="2"
                    MaxWidth="240"
                    HorizontalAlignment="Left"
-                   Source="https://raw.githubusercontent.com/microsoft/PowerToys/master/doc/images/overview/ImageResizer_small.png" />
+                   Source="https://aka.ms/powerToysImageResizerSettingImage" />
 
             <StackPanel x:Name="LinksPanel"
                         RelativePanel.Below="AboutImage"
