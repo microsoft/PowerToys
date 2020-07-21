@@ -313,7 +313,7 @@
                    Grid.Row="2"
                    MaxWidth="240"
                    HorizontalAlignment="Left"
-                   Source="https://aka.ms/powerToysFancyZoneSettingImage" />
+                   Source="https://raw.githubusercontent.com/microsoft/PowerToys/master/doc/images/overview/ImageResizer_small.png" />
 
             <StackPanel x:Name="LinksPanel"
                         RelativePanel.Below="AboutImage"

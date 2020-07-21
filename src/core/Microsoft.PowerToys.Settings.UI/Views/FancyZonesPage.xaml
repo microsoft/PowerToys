@@ -19,7 +19,9 @@
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
     </Page.Resources>
 
-    <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}" x:Name="MainView">
+    <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}"
+          RowSpacing="{StaticResource DefaultRowSpacing}"
+          x:Name="MainView">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
                 <VisualState x:Name="WideLayout">
@@ -71,7 +73,8 @@
                     <Viewbox Height="12" Width="12">
                         <PathIcon Data="M896 0v896H0V0h896zM768 768V128H128v640h640zM0 1920v-896h1920v896H0zm128-768v640h1664v-640H128zM1024 0h896v896h-896V0zm768 768V128h-640v640h640z"/>
                     </Viewbox>
-                    <TextBlock Margin="12,0,0,0" x:Uid="FancyZones_LaunchEditorButtonControl"/>
+                    <TextBlock Margin="12,0,0,0"
+                               x:Uid="FancyZones_LaunchEditorButtonControl"/>
                 </StackPanel>
             </Button>
 
@@ -165,6 +168,7 @@
                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.HighlightOpacity}"
                     HorizontalAlignment="Left"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+                
                 <CustomControls:BodyTextBlock
                     Text="{x:Bind Mode=OneWay, Path=ViewModel.HighlightOpacity, Converter={StaticResource StringFormatConverter}, ConverterParameter=' {0}%' }"
                     IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
@@ -178,8 +182,12 @@
                 x:Uid="FancyZones_ZoneHighlightColor"
                 IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
-            <muxc:DropDownButton Margin="0,4,0,0" IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}" Padding="4,4,8,4">
-                <Border Width="48" CornerRadius="2" Height="24">
+            <muxc:DropDownButton Margin="0,4,0,0"
+                                 IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
+                                 Padding="4,4,8,4">
+                <Border Width="48"
+                        CornerRadius="2"
+                        Height="24">
                     <Border.Background>
                         <SolidColorBrush Color="{x:Bind Path=ViewModel.ZoneHighlightColor, Mode=TwoWay}"/>
                     </Border.Background>
@@ -206,7 +214,9 @@
                 x:Uid="FancyZones_InActiveColor"
                 IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
-            <muxc:DropDownButton Margin="0,4,0,0" IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}" Padding="4,4,8,4">
+            <muxc:DropDownButton Margin="0,4,0,0"
+                                 IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
+                                 Padding="4,4,8,4">
                 <Border Width="48" CornerRadius="2" Height="24">
                     <Border.Background>
                         <SolidColorBrush Color="{x:Bind Path=ViewModel.ZoneInActiveColor, Mode=TwoWay}"/>
@@ -232,7 +242,9 @@
                 x:Uid="FancyZones_BorderColor"
                 IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}" />
 
-            <muxc:DropDownButton Margin="0,4,0,0" IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}" Padding="4,4,8,4">
+            <muxc:DropDownButton Margin="0,4,0,0"
+                                 IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
+                                 Padding="4,4,8,4">
                 <Border Width="48" CornerRadius="2" Height="24">
                     <Border.Background>
                         <SolidColorBrush Color="{x:Bind Path=ViewModel.ZoneBorderColor, Mode=TwoWay}"/>
@@ -259,7 +271,7 @@
                 x:Uid="FancyZones_ExcludeApps"
                 IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                 />
-            
+
             <TextBox x:Uid="FancyZones_ExcludeApps_TextBoxControl"
                      Margin="{StaticResource SmallTopMargin}"
                      Text="{x:Bind Mode=TwoWay, Path=ViewModel.ExcludedApps}"
@@ -269,7 +281,6 @@
                      HorizontalAlignment="Left"
                      TextWrapping="Wrap"
                      AcceptsReturn="True"/>
-
         </StackPanel>
 
         <RelativePanel x:Name="SidePanel" 
@@ -277,12 +288,12 @@
                     Width="{StaticResource SidePanelWidth}"
                     Grid.Column="1">
             <StackPanel x:Name="DescriptionPanel">
-                <TextBlock x:Uid="About_FancyZones" x:Name="AboutTitle" Grid.ColumnSpan="2"
+                <TextBlock x:Uid="About_FancyZones"
+                           x:Name="AboutTitle" Grid.ColumnSpan="2"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Margin="{StaticResource XSmallBottomMargin}"/>
                 <TextBlock x:Uid="FancyZones_Description"
-                           TextWrapping="Wrap"
-                           Grid.Row="1" />
+                           TextWrapping="Wrap"/>
             </StackPanel>
 
             <Image x:Name="AboutImage"
