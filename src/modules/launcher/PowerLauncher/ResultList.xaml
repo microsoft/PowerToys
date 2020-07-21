@@ -33,7 +33,6 @@
                 <Setter Property="Focusable" Value="False"/>
                 <Setter Property="HorizontalContentAlignment" Value="Center"/>
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
-                <Setter Property="Padding" Value="1"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type Button}">
@@ -71,7 +70,7 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ListViewItem}">
                             <Grid Background="Transparent">
-                                <Border x:Name="HighlightBorder" BorderThickness="0" Background="Transparent" BorderBrush="Transparent" SnapsToDevicePixels="true"/>
+                                <Border x:Name="HighlightBorder" BorderThickness="0" Background="{DynamicResource SystemChromeLow}" BorderBrush="Transparent" SnapsToDevicePixels="true"/>
                                 <ContentPresenter x:Name="contentPresenter" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                             </Grid>
                             <ControlTemplate.Triggers>
@@ -94,7 +93,7 @@
 
             <Style x:Key="CommandButtonListViewItemContainerStyle"  TargetType="ListViewItem">
                 <Setter Property="Background" Value="Transparent" />
-                <Setter Property="Padding" Value="0" />
+                <Setter Property="Margin" Value="1" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ListViewItem}">
@@ -208,8 +207,8 @@
                             </ToolTip>
                         </Grid.ToolTip>
                         <Image x:Name="AppIcon" Height="36" MaxWidth="56" Grid.RowSpan="2" Margin="-6,-2,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />
-                        <TextBlock x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" Margin="0,0,0,-2" VerticalAlignment="Bottom"/>
-                        <TextBlock x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Foreground="{DynamicResource SecondaryTextForeground}" Margin="0,2,0,0" VerticalAlignment="Top"/>
+                        <TextBlock x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" Margin="0,0,0,-2" RenderOptions.ClearTypeHint="Enabled" VerticalAlignment="Bottom"/>
+                        <TextBlock x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Foreground="{DynamicResource SecondaryTextForeground}" Margin="0,2,0,0" RenderOptions.ClearTypeHint="Enabled" VerticalAlignment="Top"/>
                         <ListView                                  
                             HorizontalAlignment="Right" 
                             VerticalAlignment="Center"                                  
