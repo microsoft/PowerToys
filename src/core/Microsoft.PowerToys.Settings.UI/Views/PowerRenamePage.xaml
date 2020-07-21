@@ -55,10 +55,9 @@
                           IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"                          
                            />
 
-            <CustomControls:GroupTitleTextBlock 
-                        x:Uid="PowerRename_ShellIntegration"
-                        IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                        />
+            <TextBlock x:Uid="PowerRename_ShellIntegration"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <ToggleSwitch x:Uid="PowerRename_Toggle_EnableOnContextMenu"
                           Margin="{StaticResource SmallTopMargin}" 
@@ -72,17 +71,20 @@
                           IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                            />
 
-            <CustomControls:GroupTitleTextBlock x:Uid="PowerRename_AutoCompleteHeader"
-                                                IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-            
+            <TextBlock x:Uid="PowerRename_AutoCompleteHeader"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+
             <CheckBox x:Uid="PowerRename_Toggle_AutoComplete"
                           Margin="{StaticResource SmallTopMargin}" 
                           IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MRUEnabled}"
                           IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                            />
 
-            <CustomControls:BodyTextBlock x:Uid="PowerRename_Toggle_MaxDispListNum"
-                                          IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            <TextBlock x:Uid="PowerRename_Toggle_MaxDispListNum"
+                Margin="{StaticResource SmallTopMargin}"
+                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+            
             <muxc:NumberBox SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource HeaderTextTopMargin}"

@@ -59,16 +59,14 @@
             <ToggleSwitch x:Uid="ImageResizer_EnableToggle"
                           IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"/>
 
-            <CustomControls:GroupTitleTextBlock 
-                x:Uid="ImageResizer_CustomSizes"
-                IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-
+            <TextBlock x:Uid="ImageResizer_CustomSizes"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <ListView x:Name="ImagesSizesListView" 
                       ItemsSource="{Binding Sizes, Mode=TwoWay, Source={StaticResource ViewModel}}"
                       Padding="0"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                      Margin="{StaticResource SmallTopMargin}"
                       SelectionMode="None">
 
                 <ListView.ItemContainerStyle>
@@ -182,9 +180,9 @@
                           />
             </StackPanel>
 
-            <CustomControls:GroupTitleTextBlock 
-                x:Uid="Encoding"
-                IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            <TextBlock x:Uid="Encoding"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <ComboBox x:Uid="ImageResizer_FallBackEncoderText"
                           SelectedIndex="{Binding Path=Encoder, Mode=TwoWay, Source={StaticResource ViewModel}}"
@@ -199,7 +197,10 @@
                 <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_GIF" />
             </ComboBox>
 
-            <CustomControls:BodyTextBlock x:Uid="ImageResizer_Encoding" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            <TextBlock x:Uid="ImageResizer_Encoding"
+                Margin="{StaticResource SmallTopMargin}"
+                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+            
             <muxc:NumberBox Minimum="0"
                             Maximum="100"
                             Value="{ Binding Mode=TwoWay, Path=JPEGQualityLevel, Source={StaticResource ViewModel}}"
@@ -234,7 +235,9 @@
                 <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Zip"/>
             </ComboBox>
 
-            <CustomControls:GroupTitleTextBlock x:Uid="File" IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            <TextBlock x:Uid="File"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <TextBox Text="{x:Bind Mode=TwoWay, Path=ViewModel.FileName}"
                       HorizontalAlignment="Left"
@@ -243,13 +246,12 @@
                       Margin="{StaticResource SmallTopMargin}">
                 <TextBox.Header>
                     <StackPanel Orientation="Horizontal">
-                        <CustomControls:BodyTextBlock
-                            Margin="0,-12,0,0"
-                            x:Uid="ImageResizer_FilenameFormatHeader"
-                            IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+                        <TextBlock x:Uid="ImageResizer_FilenameFormatHeader"
+                            Margin="0,0,0,0"
+                            Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
                         <TextBlock Text="&#xE946;"
                            FontFamily="Segoe MDL2 Assets"
-                           Margin="5,4,0,0"/>
+                           Margin="4,4,0,0"/>
                     </StackPanel>
                 </TextBox.Header>
                 <ToolTipService.ToolTip>

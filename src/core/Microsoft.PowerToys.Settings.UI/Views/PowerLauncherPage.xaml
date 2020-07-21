@@ -55,9 +55,9 @@
             <ToggleSwitch x:Uid="PowerLauncher_EnablePowerLauncher" 
                           IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnablePowerLauncher}"/>
 
-            <CustomControls:GroupTitleTextBlock x:Uid="PowerLauncher_Shortcuts"
-                       HorizontalAlignment="Left"
-                       IsActive="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
+            <TextBlock x:Uid="PowerLauncher_Shortcuts"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <CustomControls:HotkeySettingsControl x:Uid="PowerLauncher_OpenPowerLauncher"
                                                   Width="240"
@@ -108,8 +108,9 @@
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
                       />
 
-            <CustomControls:GroupTitleTextBlock x:Uid="PowerLauncher_SearchResults"
-                                        IsActive="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
+            <TextBlock x:Uid="PowerLauncher_SearchResults"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
                       MinWidth="320"
@@ -131,8 +132,10 @@
                       IsEnabled="False"
                       />-->
 
-            <CustomControls:BodyTextBlock x:Uid="PowerLauncher_MaximumNumberOfResults"
-                                  IsActive="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
+            <TextBlock x:Uid="PowerLauncher_MaximumNumberOfResults"
+                Margin="{StaticResource SmallTopMargin}"
+                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+            
             <muxc:NumberBox Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}"
                             Width="240"
                             SpinButtonPlacementMode="Compact"
@@ -179,10 +182,9 @@
                     <TextBlock x:Uid="Give_Feedback" />
                 </HyperlinkButton>
 
-                <TextBlock 
-                x:Uid="AttributionTitle"
-                Style="{StaticResource SettingsGroupTitleStyle}" 
-                Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
+                <TextBlock x:Uid="AttributionTitle"
+                           Style="{StaticResource SettingsGroupTitleStyle}"
+                           Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
 
                 <HyperlinkButton Margin="0,-3,0,0" NavigateUri="https://github.com/Wox-launcher/Wox/">
                     <TextBlock Text="Wox"/>

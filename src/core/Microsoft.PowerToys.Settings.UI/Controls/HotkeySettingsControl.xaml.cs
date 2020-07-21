@@ -19,13 +19,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public static readonly DependencyProperty IsActiveProperty =
             DependencyProperty.Register(
                 "Enabled",
-                typeof(string),
+                typeof(bool),
                 typeof(HotkeySettingsControl),
                 null);
 
-        private string _enabled = "False";
+        private bool _enabled = false;
 
-        public string Enabled
+        public bool Enabled
         {
             get
             {
@@ -37,17 +37,17 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 SetValue(IsActiveProperty, value);
                 _enabled = value;
 
-                if (value.ToString().ToLower() == "true")
+                if (value)
                 {
                     HotkeyTextBox.IsEnabled = true;
-                    TitleText.IsActive = "True";
-                    TitleGlyph.IsActive = "True";
+                    //TitleText.IsActive = "True";
+                    //TitleGlyph.IsActive = "True";
                 }
                 else
                 {
                     HotkeyTextBox.IsEnabled = false;
-                    TitleText.IsActive = "False";
-                    TitleGlyph.IsActive = "False";
+                    //TitleText.IsActive = "False";
+                    //TitleGlyph.IsActive = "False";
                 }
             }
         }

@@ -78,10 +78,9 @@
                 </StackPanel>
             </Button>
 
-            <CustomControls:GroupTitleTextBlock 
-                x:Uid="FancyZones_ZoneBehavior_GroupSettings"
-                IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                />
+            <TextBlock x:Uid="FancyZones_ZoneBehavior_GroupSettings"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <CustomControls:HotkeySettingsControl 
                 Width="240"
@@ -156,9 +155,9 @@
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
-            <CustomControls:GroupTitleTextBlock x:Uid="Appearance_GroupSettings"
-                       IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                       />
+            <TextBlock x:Uid="Appearance_GroupSettings"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <StackPanel Orientation="Horizontal" Margin="{StaticResource SmallTopMargin}" Spacing="12">
                 <Slider x:Uid="FancyZones_HighlightOpacity"
@@ -169,19 +168,20 @@
                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.HighlightOpacity}"
                     HorizontalAlignment="Left"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+
+                <TextBlock
+                       Text="{x:Bind Mode=OneWay, Path=ViewModel.HighlightOpacity, Converter={StaticResource StringFormatConverter}, ConverterParameter=' {0}%' }"
+                       VerticalAlignment="Center"
+                       FontWeight="SemiBold"
+                       FontSize="16"
+                       Margin="0,16,0,0"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
                 
-                <CustomControls:BodyTextBlock
-                    Text="{x:Bind Mode=OneWay, Path=ViewModel.HighlightOpacity, Converter={StaticResource StringFormatConverter}, ConverterParameter=' {0}%' }"
-                    IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                    VerticalAlignment="Center"
-                    FontWeight="SemiBold"
-                    FontSize="16"
-                    Margin="0,12,0,0"/>
             </StackPanel>
 
-            <CustomControls:BodyTextBlock
-                x:Uid="FancyZones_ZoneHighlightColor"
-                IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            <TextBlock x:Uid="FancyZones_ZoneHighlightColor"
+                Margin="{StaticResource SmallTopMargin}"
+                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <muxc:DropDownButton Margin="0,4,0,0"
                                  IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
@@ -211,9 +211,9 @@
 
             </muxc:DropDownButton>
 
-            <CustomControls:BodyTextBlock
-                x:Uid="FancyZones_InActiveColor"
-                IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            <TextBlock x:Uid="FancyZones_InActiveColor"
+                Margin="{StaticResource SmallTopMargin}"
+                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <muxc:DropDownButton Margin="0,4,0,0"
                                  IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
@@ -239,9 +239,9 @@
                 </muxc:DropDownButton.Flyout>
             </muxc:DropDownButton>
 
-            <CustomControls:BodyTextBlock
-                x:Uid="FancyZones_BorderColor"
-                IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}" />
+            <TextBlock x:Uid="FancyZones_BorderColor"
+                Margin="{StaticResource SmallTopMargin}"
+                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <muxc:DropDownButton Margin="0,4,0,0"
                                  IsEnabled="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
@@ -268,10 +268,9 @@
                 </muxc:DropDownButton.Flyout>
             </muxc:DropDownButton>
 
-            <CustomControls:GroupTitleTextBlock 
-                x:Uid="FancyZones_ExcludeApps"
-                IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                />
+            <TextBlock x:Uid="FancyZones_ExcludeApps"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <TextBox x:Uid="FancyZones_ExcludeApps_TextBoxControl"
                      Margin="{StaticResource SmallTopMargin}"

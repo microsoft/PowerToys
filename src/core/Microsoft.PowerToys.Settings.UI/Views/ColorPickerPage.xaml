@@ -58,14 +58,15 @@
             <Custom:HotkeySettingsControl x:Uid="ColorPicker_ActivationShortcut"
                                           Width="240"
                                           HorizontalAlignment="Left"
-                                          Margin="{StaticResource SmallTopMargin}"
+                                          Margin="{StaticResource MediumTopMargin}"
                                           HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}"
                                           Keys="Win, Ctrl, Alt, Shift"
                                           Enabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                                           />
 
-            <Custom:GroupTitleTextBlock x:Uid="ShortcutGuide_Appearance_Behavior" 
-                                                IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
         
             <ComboBox x:Uid="ColorPicker_CopiedColorRepresentation"
                           SelectedIndex="{Binding CopiedColorRepresentationIndex, Mode=TwoWay}"

@@ -636,4 +636,10 @@
   <data name="Encoding.Text" xml:space="preserve">
     <value>Encoding</value>
   </data>
+  <data name="KeyboardManager_RemapKeyboardSubtitle.Text" xml:space="preserve">
+    <value>Click below to remap a single key to another key</value>
+  </data>
+  <data name="KeyboardManager_RemapShortcutsSubtitle.Text" xml:space="preserve">
+    <value>Click below to remap a shortcut (hotkey) to another shortcut</value>
+  </data>
 </root>

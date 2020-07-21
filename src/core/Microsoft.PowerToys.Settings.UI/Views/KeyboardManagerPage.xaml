@@ -230,11 +230,13 @@
                 <ComboBoxItem Content="Config-3"/>
             </ComboBox>-->
 
-            <CustomControls:GroupTitleTextBlock x:Uid="KeyboardManager_RemapKeyboardHeader"
-                                                IsActive="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>
+            <TextBlock x:Uid="KeyboardManager_RemapKeyboardHeader"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.Enabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <CustomControls:BodyTextBlock Text="Click below to remap a single key to another key" 
-                                          IsActive="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>
+            <TextBlock x:Uid="KeyboardManager_RemapKeyboardSubtitle"
+                       Margin="{StaticResource SmallTopMargin}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.Enabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <Button x:Uid="KeyboardManager_RemapKeyboardButton"
                     Margin="{StaticResource SmallTopMargin}"
@@ -268,11 +270,13 @@
                     HorizontalAlignment="Left"
                     IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>-->
 
-            <CustomControls:GroupTitleTextBlock x:Uid="KeyboardManager_RemapShortcutsHeader"
-                                                IsActive="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>
+            <TextBlock x:Uid="KeyboardManager_RemapShortcutsHeader"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.Enabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <CustomControls:BodyTextBlock Text="Click below to remap a shortcut (hotkey) to another shortcut"
-                                          IsActive="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>
+            <TextBlock x:Uid="KeyboardManager_RemapShortcutsSubtitle"
+                       Margin="{StaticResource SmallTopMargin}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.Enabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <Button x:Uid="KeyboardManager_RemapShortcutsButton"
                     Margin="{StaticResource SmallTopMargin}"
