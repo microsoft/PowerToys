@@ -49,7 +49,7 @@ steps:
       **\Microsoft.Plugin.Program.UnitTests.dll
       # unsure if we can unittest these since it is an actual EXE being run
       # **\Settings
-      #**\PowerRenameUnitTests.dll
+      **\PowerRenameUnitTests.dll
       #**\UnitTests-CommonLib.dll
       #**\UnitTests-FancyZones.dll
       #**\PreviewPaneUnitTests.dll
