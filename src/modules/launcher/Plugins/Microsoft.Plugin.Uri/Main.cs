@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Microsoft.Plugin.Uri.UriHelper;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Wox.Infrastructure.Storage;
@@ -36,7 +35,7 @@ namespace Microsoft.Plugin.Uri
 			var results = new List<Result>();
 
 			if (_uriParser.TryParse(query.Search, out var uriResult)
-				&& _uriResolver.IsValidHostAsync(uriResult).GetAwaiter().GetResult())
+				&& _uriResolver.IsValidHost(uriResult))
 			{
 				var uriResultString = uriResult.ToString();
 
@@ -68,8 +67,6 @@ namespace Microsoft.Plugin.Uri
 			UpdateIconPath(_context.API.GetCurrentTheme());
 		}
 
-
-		// Todo : Update with theme based IconPath
 		private void UpdateIconPath(Theme theme)
 		{
 			if (theme == Theme.Light || theme == Theme.HighContrastWhite)

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Microsoft.Plugin.Uri.Interface
+﻿namespace Microsoft.Plugin.Uri.Interface
 {
 	public interface IUriParser
 	{
