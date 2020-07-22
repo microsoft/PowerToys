@@ -29,7 +29,7 @@ IWICImagingFactory* _GetWIC()
 {
     HRESULT hr = S_OK;
 
-    LogToFile(std::string("_GetWIC() failed with code: " + hr));
+    LogToFile(__FUNCTION__);
     static IWICImagingFactory* s_Factory = nullptr;
 
     if (s_Factory)
