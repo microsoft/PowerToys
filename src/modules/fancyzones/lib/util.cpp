@@ -5,6 +5,8 @@
 #include <common/common.h>
 #include <common/dpi_aware.h>
 
+#include <sstream>
+
 namespace
 {
     const wchar_t POWER_TOYS_APP_POWER_LAUCHER[] = L"POWERLAUNCHER.EXE";
@@ -254,4 +256,82 @@ void RestoreWindowOrigin(HWND window) noexcept
 
         ::RemoveProp(window, RESTORE_ORIGIN_STAMP);
     }
+}
+
+bool IsValidGuid(const std::wstring& str)
+{
+    GUID id;
+    return SUCCEEDED(CLSIDFromString(str.c_str(), &id));
+}
+
+bool IsValidDeviceId(const std::wstring& str)
+{
+    std::wstring monitorName;
+    std::wstring temp;
+    std::vector<std::wstring> parts;
+    std::wstringstream wss(str);
+
+    /* 
+        Important fix for device info that contains a '_' in the name:
+        1. first search for '#'
+        2. Then split the remaining string by '_'
+    */
+
+    // Step 1: parse the name until the #, then to the '_'
+    if (str.find(L'#') != std::string::npos)
+    {
+        std::getline(wss, temp, L'#');
+
+        monitorName = temp;
+
+        if (!std::getline(wss, temp, L'_'))
+        {
+            return false;
+        }
+
+        monitorName += L"#" + temp;
+        parts.push_back(monitorName);
+    }
+
+    // Step 2: parse the rest of the id
+    while (std::getline(wss, temp, L'_'))
+    {
+        parts.push_back(temp);
+    }
+
+    if (parts.size() != 4)
+    {
+        return false;
+    }
+
+    /*
+        Refer to ZoneWindowUtils::GenerateUniqueId parts contain:
+        1. monitor id [string]
+        2. width of device [int]
+        3. height of device [int]
+        4. virtual desktop id (GUID) [string]
+    */
+    try
+    {
+        //check if resolution contain only digits
+        for (const auto& c : parts[1])
+        {
+            std::stoi(std::wstring(&c));
+        }
+        for (const auto& c : parts[2])
+        {
+            std::stoi(std::wstring(&c));
+        }
+    }
+    catch (const std::exception&)
+    {
+        return false;
+    }
+
+    if (!IsValidGuid(parts[3]) || parts[0].empty())
+    {
+        return false;
+    }
+
+    return true;
 }
