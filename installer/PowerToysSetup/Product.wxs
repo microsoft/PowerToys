@@ -983,6 +983,20 @@
           <File Id="Indexer_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\Images\$(var.File)" />
         <?endforeach?>
       </Component>
+      <Component Id="IndexerLanguagesComponent" Directory="IndexerLanguagesFolder" Guid="4B5ED306-7DD5-4EA6-9DBB-CF054929182C">
+        <?foreach LanguageFile in de.xaml;en.xaml;ja.xaml;pl.xaml;tr.xaml;zh-cn.xaml;zh-tw.xaml?>
+          <!--NB: Ids can't contain hyphens-->
+          <?if $(var.LanguageFile) = zh-cn.xaml?>
+            <?define IdSafeLanguage = zh_cn.xaml?>
+          <?elseif $(var.LanguageFile) = zh-tw.xaml?>
+            <?define IdSafeLanguage = zh_tw.xaml?>
+          <?else?>
+            <?define IdSafeLanguage = $(var.LanguageFile)?>
+          <?endif?>
+          <File Id="Indexer_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\Languages\$(var.LanguageFile)" />
+          <?undef IdSafeLanguage?>
+        <?endforeach?>
+      </Component>
       <Component Id="IndexerpinyindbComponent" Directory="IndexerpinyindbFolder" Guid="48DE333A-80F8-400A-87F4-244DF0A2DB05">
         <?foreach File in pinyin_gwoyeu_mapping.xml;pinyin_mapping.xml;unicode_to_hanyu_pinyin.txt?>
           <File Id="IndexerPlugin_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\pinyindb\$(var.File)" />
