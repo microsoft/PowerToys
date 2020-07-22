@@ -340,8 +340,8 @@ TEST_METHOD(VerifyHandleCapturingGroups)
 
     SearchReplaceExpected sreTable[] = {
         //search, replace, test, result
-        { L"(foo)(bar)", L"$1_$002_$223_$001021_$00001", L"foobar", L"foo_bar___foo" },
-        { L"(foo)(bar)", L"_$1$2_$123$040", L"foobar", L"_foobar_" },
+        { L"(foo)(bar)", L"$1_$002_$223_$001021_$00001", L"foobar", L"foo_$002_bar23_$001021_$00001" },
+        { L"(foo)(bar)", L"_$1$2_$123$040", L"foobar", L"_foobar_foo23$040" },
     };
 
     for (int i = 0; i < ARRAYSIZE(sreTable); i++)
