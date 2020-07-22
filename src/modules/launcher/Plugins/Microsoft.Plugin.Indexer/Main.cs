@@ -25,10 +25,10 @@ namespace Microsoft.Plugin.Indexer
         private PluginInitContext _context;
 
         // This variable contains information about the context menus
-        private Settings _settings;
+        private IndexerSettings _settings;
 
         // Contains information about the plugin stored in json format
-        private PluginJsonStorage<Settings> _storage;
+        private PluginJsonStorage<IndexerSettings> _storage;
 
         // To access Windows Search functionalities
         private readonly WindowsSearchAPI _api = new WindowsSearchAPI(new OleDBSearch());
@@ -158,7 +158,7 @@ namespace Microsoft.Plugin.Indexer
             // initialize the context of the plugin
             _context = context;
             _contextMenuLoader = new ContextMenuLoader(context);
-            _storage = new PluginJsonStorage<Settings>();
+            _storage = new PluginJsonStorage<IndexerSettings>();
             _settings = _storage.Load();
             _context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(_context.API.GetCurrentTheme());

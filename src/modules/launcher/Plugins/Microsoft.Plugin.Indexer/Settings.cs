@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Plugin.Indexer
 {
-    public class Settings
+    public class IndexerSettings
     {
-        public List<ContextMenu> ContextMenus = new List<ContextMenu>();
+        public List<ContextMenu> ContextMenus { get; } = new List<ContextMenu>();
         public int MaxSearchCount { get; set; } = 100;
         public bool UseLocationAsWorkingDir { get; set; } = false;
     }
