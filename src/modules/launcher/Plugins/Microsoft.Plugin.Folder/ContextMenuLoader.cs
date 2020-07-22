@@ -111,7 +111,7 @@ namespace Microsoft.Plugin.Folder
                     {
                         Process.Start("explorer.exe", $" /select,\"{record.FullPath}\"");
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         var message = $"Fail to open file at {record.FullPath}";
                         LogException(message, e);
@@ -159,7 +159,7 @@ namespace Microsoft.Plugin.Folder
 
         private bool CanRunAsDifferentUser(string path)
         {
-            switch(Path.GetExtension(path))
+            switch (Path.GetExtension(path))
             {
                 case ".exe":
                 case ".bat":

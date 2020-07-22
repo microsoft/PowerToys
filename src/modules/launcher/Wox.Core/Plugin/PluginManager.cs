@@ -53,7 +53,7 @@ namespace Wox.Core.Plugin
 
         public static void ReloadData()
         {
-            foreach(var plugin in AllPlugins)
+            foreach (var plugin in AllPlugins)
             {
                 var reloadablePlugin = plugin.Plugin as IReloadable;
                 reloadablePlugin?.ReloadData();
@@ -104,7 +104,7 @@ namespace Wox.Core.Plugin
                 catch (Exception e)
                 {
                     Log.Exception(nameof(PluginManager), $"Fail to Init plugin: {pair.Metadata.Name}", e);
-                    pair.Metadata.Disabled = true; 
+                    pair.Metadata.Disabled = true;
                     failedPlugins.Enqueue(pair);
                 }
             });
@@ -271,10 +271,10 @@ namespace Wox.Core.Plugin
             {
                 GlobalPlugins.Remove(plugin);
             }
-            
-            if(oldActionkeyword != Query.GlobalPluginWildcardSign)
+
+            if (oldActionkeyword != Query.GlobalPluginWildcardSign)
                 NonGlobalPlugins.Remove(oldActionkeyword);
-            
+
 
             plugin.Metadata.ActionKeywords.Remove(oldActionkeyword);
         }

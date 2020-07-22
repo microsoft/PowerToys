@@ -21,7 +21,7 @@ namespace UnitTests_PreviewHandlerCommon
         public void FormHandlerControl_ShouldCreateHandle_OnInitialization()
         {
             // Arrange and act
-            using (var testFormHandlerControl = new TestFormControl()) 
+            using (var testFormHandlerControl = new TestFormControl())
             {
                 // Assert
                 Assert.IsTrue(testFormHandlerControl.IsHandleCreated);
@@ -111,7 +111,7 @@ namespace UnitTests_PreviewHandlerCommon
                 Assert.AreEqual(bounds, testFormHandlerControl.Bounds);
             }
         }
-        
+
         [TestMethod]
         public void FormHandlerControl_ShouldSetTextColor_WhenSetTextColorCalled()
         {

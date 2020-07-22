@@ -14,8 +14,9 @@ namespace Wox.Plugin
         private ToolTipData _toolTipData;
         private string _pluginDirectory;
         private string _icoPath;
-        public string Title { 
-            get { return _title; } 
+        public string Title
+        {
+            get { return _title; }
             set
             {
                 _title = value.Replace("\n", " ");

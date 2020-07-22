@@ -103,7 +103,7 @@ namespace Wox.Infrastructure.Hotkey
                 {
                     try
                     {
-                        CharKey = (Key) Enum.Parse(typeof (Key), charKey);
+                        CharKey = (Key)Enum.Parse(typeof(Key), charKey);
                     }
                     catch (ArgumentException)
                     {

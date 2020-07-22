@@ -26,7 +26,7 @@ namespace PowerLauncher
         {
             _settings = settings;
             // Set up watcher
-             _watcher = Microsoft.PowerToys.Settings.UI.Lib.Utilities.Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", OverloadSettings);
+            _watcher = Microsoft.PowerToys.Settings.UI.Lib.Utilities.Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", OverloadSettings);
 
             // Load initial settings file
             OverloadSettings();
@@ -75,7 +75,7 @@ namespace PowerLauncher
 
                     if (_settings.ClearInputOnLaunch != overloadSettings.Properties.clear_input_on_launch)
                     {
-	                    _settings.ClearInputOnLaunch = overloadSettings.Properties.clear_input_on_launch;
+                        _settings.ClearInputOnLaunch = overloadSettings.Properties.clear_input_on_launch;
                     }
                 }
                 // the settings application can hold a lock on the settings.json file which will result in a IOException.  

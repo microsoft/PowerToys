@@ -2,7 +2,7 @@
 
 namespace Wox.Infrastructure.Storage
 {
-    public class PluginJsonStorage<T> :JsonStorage<T> where T : new()
+    public class PluginJsonStorage<T> : JsonStorage<T> where T : new()
     {
         public PluginJsonStorage()
         {

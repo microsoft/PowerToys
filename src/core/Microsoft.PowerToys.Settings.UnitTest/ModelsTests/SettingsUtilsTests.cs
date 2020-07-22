@@ -59,7 +59,7 @@ namespace CommonLibTest
             BasePTSettingsTest expected_json = JsonSerializer.Deserialize<BasePTSettingsTest>(file_contents_correct_json_content);
 
             // Act
-            if(SettingsUtils.SettingsFolderExists(file_name))
+            if (SettingsUtils.SettingsFolderExists(file_name))
             {
                 DeleteFolder(file_name);
             }
@@ -75,7 +75,7 @@ namespace CommonLibTest
         public void SettingsFolderExists_ShouldReturnFalse_WhenFilePathIsNotFound()
         {
             // Arrange
-            string file_name_random = "test\\"+ RandomString();
+            string file_name_random = "test\\" + RandomString();
             string file_name_exists = "test\\exists";
             string file_contents_correct_json_content = "{\"name\":\"powertoy module name\",\"version\":\"powertoy version\"}";
 

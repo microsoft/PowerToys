@@ -42,9 +42,9 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             // Arrange
             Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32>>("Win32"), _settings, _pathsToWatch);
 
-            Win32 item1 = new Win32 
-            { 
-                Name = name, 
+            Win32 item1 = new Win32
+            {
+                Name = name,
                 ExecutableName = exename,
                 FullPath = fullPath,
                 Description = description1
@@ -108,7 +108,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         {
             // Arrange
             Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32>>("Win32"), _settings, _pathsToWatch);
-            RenamedEventArgs e = new RenamedEventArgs(WatcherChangeTypes.Renamed, directory , newpath, oldpath);
+            RenamedEventArgs e = new RenamedEventArgs(WatcherChangeTypes.Renamed, directory, newpath, oldpath);
 
             string oldFullPath = directory + "\\" + oldpath;
             string newFullPath = directory + "\\" + newpath;
@@ -132,12 +132,12 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             // Arrange
             Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32>>("Win32"), _settings, _pathsToWatch);
             FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Created, "directory", path);
-            
+
             // FileVersionInfo must be mocked for exe applications
             var mockFileVersionInfo = new Mock<IFileVersionInfoWrapper>();
             mockFileVersionInfo.Setup(m => m.GetVersionInfo(It.IsAny<string>())).Returns((FileVersionInfo)null);
             Win32._fileVersionInfoWrapper = mockFileVersionInfo.Object;
-            
+
             // Act
             _fileSystemMocks[0].Raise(m => m.Created += null, e);
 
@@ -377,7 +377,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             string oldFullPath = directory + "\\" + oldpath;
             string FullPath = directory + "\\" + path;
-            
+
             // ShellLinkHelper must be mocked for lnk applications
             var mockShellLink = new Mock<IShellLinkHelper>();
             mockShellLink.Setup(m => m.RetrieveTargetPath(It.IsAny<string>())).Returns(String.Empty);

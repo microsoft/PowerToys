@@ -303,7 +303,7 @@ namespace Wox.Test.Plugins
         [TestCase(0, true, ExpectedResult = true)]
         [TestCase(1, false, ExpectedResult = true)]
         [TestCase(1, true, ExpectedResult = true)]
-        public bool DriveDetection_MustDisplayResults_WhenEnhancedModeIsOnOrWhenWarningIsDisabled(int enhancedModeStatus, bool disableWarningCheckBoxStatus) 
+        public bool DriveDetection_MustDisplayResults_WhenEnhancedModeIsOnOrWhenWarningIsDisabled(int enhancedModeStatus, bool disableWarningCheckBoxStatus)
         {
             // Arrange
             var mockRegistry = new Mock<IRegistryWrapper>();

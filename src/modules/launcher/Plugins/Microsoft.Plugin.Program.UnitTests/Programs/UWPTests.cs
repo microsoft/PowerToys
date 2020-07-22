@@ -79,7 +79,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             // Arrange
             PackageWrapper invalidPackagedApp = new PackageWrapper();
             Main._settings = new Settings();
-            List<IPackage> packages = new List<IPackage>() {invalidPackagedApp };
+            List<IPackage> packages = new List<IPackage>() { invalidPackagedApp };
             var mock = new Mock<IPackageManager>();
             mock.Setup(x => x.FindPackagesForCurrentUser()).Returns(packages);
             UWP.PackageManagerWrapper = mock.Object;

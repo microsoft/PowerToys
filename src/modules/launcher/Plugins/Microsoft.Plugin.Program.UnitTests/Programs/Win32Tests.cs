@@ -56,7 +56,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             Name = "Command Prompt",
             ExecutableName = "cmd.exe",
             FullPath = "c:\\windows\\system32\\cmd.exe",
-            LnkResolvedPath ="c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\system tools\\command prompt.lnk",
+            LnkResolvedPath = "c:\\users\\powertoys\\appdata\\roaming\\microsoft\\windows\\start menu\\programs\\system tools\\command prompt.lnk",
             AppType = 2
         };
 
