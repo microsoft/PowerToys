@@ -80,7 +80,7 @@
             x:FieldModifier="public"
             Opacity="0.6"            
             Canvas.ZIndex="0"
-            Margin="24, 0, 0, 0"
+            Margin="24, 0, 14, 0"
             VerticalAlignment="Center"
             FontSize="24"
             Foreground="{DynamicResource TextControlPlaceholderForeground}"

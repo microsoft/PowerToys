@@ -84,8 +84,7 @@ namespace PowerLauncher
             SearchBox.QueryTextBox.TextChanged += QueryTextBox_TextChanged;
 
             // Set initial language flow direction
-            SearchBox.QueryTextBox.FlowDirection = MainViewModel.GetLanguageFlowDirection();
-            SearchBox.AutoCompleteTextBlock.FlowDirection = MainViewModel.GetLanguageFlowDirection();
+            SearchBox_UpdateFlowDirection();
 
             // Register language changed event
             InputLanguageManager.Current.InputLanguageChanged += SearchBox_InputLanguageChanged;
@@ -391,10 +390,15 @@ namespace PowerLauncher
             Hide();
         }
 
-        private void SearchBox_InputLanguageChanged(object sender, InputLanguageEventArgs e) 
+        private void SearchBox_UpdateFlowDirection()
         {
             SearchBox.QueryTextBox.FlowDirection = MainViewModel.GetLanguageFlowDirection();
             SearchBox.AutoCompleteTextBlock.FlowDirection = MainViewModel.GetLanguageFlowDirection();
+        }
+
+        private void SearchBox_InputLanguageChanged(object sender, InputLanguageEventArgs e) 
+        {
+            SearchBox_UpdateFlowDirection();
         }
 
         protected virtual void Dispose(bool disposing)
