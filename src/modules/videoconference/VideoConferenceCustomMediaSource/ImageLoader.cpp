@@ -27,13 +27,15 @@
 
 IWICImagingFactory* _GetWIC()
 {
+    HRESULT hr = S_OK;
+
     LogToFile(std::string("_GetWIC() failed with code: " + hr));
     static IWICImagingFactory* s_Factory = nullptr;
 
     if (s_Factory)
         return s_Factory;
 
-    HRESULT hr = CoCreateInstance(
+    hr = CoCreateInstance(
         CLSID_WICImagingFactory,
         nullptr,
         CLSCTX_INPROC_SERVER,
