@@ -23,7 +23,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 ### File Explorer Add-ons (Preview Panes)
 
-[<img align="left" src="./doc/images/overview/PowerPreview_small.PNG" />](https://aka.ms/PowerToysOverview_FileExplorerAddOns) [File Explorer](https://aka.ms/PowerToysOverview_FileExplorerAddOns) add-ons right now are just limited to Preview Pane additions for File Explorer. Preview Pane is an existing feature in the File Explorer.  To enable it, you just click the View tab in the ribbon and then click "Preview Pane".
+[<img align="left" src="./doc/images/overview/PowerPreview_small.png" />](https://aka.ms/PowerToysOverview_FileExplorerAddOns) [File Explorer](https://aka.ms/PowerToysOverview_FileExplorerAddOns) add-ons right now are just limited to Preview Pane additions for File Explorer. Preview Pane is an existing feature in the File Explorer.  To enable it, you just click the View tab in the ribbon and then click "Preview Pane".
 
 PowerToys will now enable two types of files to be previewed: Markdown (.md) & SVG (.svg)
 <br>
