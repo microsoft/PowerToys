@@ -239,6 +239,25 @@ namespace PowerLauncher
                 UpdateTextBoxToSelectedItem();
                 e.Handled = true;
             }
+            else if (e.Key == Key.Right)
+            {
+                if(SearchBox.QueryTextBox.CaretIndex == SearchBox.QueryTextBox.Text.Length)
+                {
+                    _viewModel.SelectNextContextMenuItemCommand.Execute(null);
+                    e.Handled = true;
+                }
+            }
+            else if (e.Key == Key.Left)
+            {
+                if (SearchBox.QueryTextBox.CaretIndex == SearchBox.QueryTextBox.Text.Length)
+                {
+                    if(_viewModel.Results != null && _viewModel.Results.IsContextMenuItemSelected())
+                    {
+                        _viewModel.SelectPreviousContextMenuItemCommand.Execute(null);
+                        e.Handled = true;
+                    }
+                }
+            }
             else if (e.Key == Key.PageDown)
             {
                 _viewModel.SelectNextPageCommand.Execute(null);

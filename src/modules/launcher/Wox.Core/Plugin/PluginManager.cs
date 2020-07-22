@@ -17,7 +17,7 @@ namespace Wox.Core.Plugin
     /// </summary>
     public static class PluginManager
     {
-        private static IEnumerable<PluginPair> _contextMenuPlugins;
+        private static IEnumerable<PluginPair> _contextMenuPlugins = new List<PluginPair>();
 
         /// <summary>
         /// Directories that will hold Wox plugin directory

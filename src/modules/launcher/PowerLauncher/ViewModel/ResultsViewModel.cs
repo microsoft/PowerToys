@@ -182,6 +182,37 @@ namespace PowerLauncher.ViewModel
             }
         }
 
+        public void SelectNextContextMenuItem()
+        {
+            if(SelectedItem != null)
+            {
+                if(!SelectedItem.SelectNextContextButton())
+                {
+                    SelectedItem.SelectLastContextButton();
+                }
+            }
+        }
+
+        public void SelectPreviousContextMenuItem()
+        {
+            if (SelectedItem != null)
+            {
+                SelectedItem.SelectPrevContextButton();
+            }
+        }
+
+        public bool IsContextMenuItemSelected()
+        {
+            if (SelectedItem != null && SelectedItem.ContextMenuSelectedIndex != ResultViewModel.NoSelectionIndex)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// To avoid deadlock, this method should not called from main thread
         /// </summary>

@@ -151,6 +151,16 @@ namespace PowerLauncher.ViewModel
                 SelectedResults.SelectPrevTabItem();
             });
 
+            SelectNextContextMenuItemCommand = new RelayCommand(_ =>
+            {
+                SelectedResults.SelectNextContextMenuItem();
+            });
+
+            SelectPreviousContextMenuItemCommand = new RelayCommand(_ =>
+            {
+                SelectedResults.SelectPreviousContextMenuItem();
+            });
+
             SelectNextPageCommand = new RelayCommand(_ =>
             {
                 SelectedResults.SelectNextPage();
@@ -342,6 +352,8 @@ namespace PowerLauncher.ViewModel
         public ICommand EscCommand { get; set; }
         public ICommand SelectNextItemCommand { get; set; }
         public ICommand SelectPrevItemCommand { get; set; }
+        public ICommand SelectNextContextMenuItemCommand { get; set; }
+        public ICommand SelectPreviousContextMenuItemCommand { get; set; }
 
         public ICommand SelectNextTabItemCommand { get; set; }
         public ICommand SelectPrevTabItemCommand { get; set; }
