@@ -52,9 +52,9 @@ steps:
       **\PowerRenameUnitTests.dll
       **\UnitTests-CommonLib.dll
       #**\UnitTests-FancyZones.dll
-      #**\PreviewPaneUnitTests.dll
-      #**\UnitTests-PreviewHandlerCommon.dll
-      #**\UnitTests-SvgPreviewHandler.dll
+      **\PreviewPaneUnitTests.dll
+      **\UnitTests-PreviewHandlerCommon.dll
+      **\UnitTests-SvgPreviewHandler.dll
       **\Wox.Test.dll
       #**\interop-tests.dll
       **\powerpreviewTest.dll
