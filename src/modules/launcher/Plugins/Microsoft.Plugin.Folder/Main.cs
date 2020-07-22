@@ -25,13 +25,13 @@ namespace Microsoft.Plugin.Folder
         private static List<string> _driverNames;
         private PluginInitContext _context;
 
-        private readonly Settings _settings;
-        private readonly PluginJsonStorage<Settings> _storage;
+        private readonly FolderSettings _settings;
+        private readonly PluginJsonStorage<FolderSettings> _storage;
         private IContextMenu _contextMenuLoader;
 
         public Main()
         {
-            _storage = new PluginJsonStorage<Settings>();
+            _storage = new PluginJsonStorage<FolderSettings>();
             _settings = _storage.Load();
         }
 
