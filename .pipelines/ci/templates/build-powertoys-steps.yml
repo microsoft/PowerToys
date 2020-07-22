@@ -47,14 +47,15 @@ steps:
       **\ImageResizer.Test.dll
       **\KeyboardManagerTest.dll
       **\Microsoft.Plugin.Program.UnitTests.dll
-      # unsure if we can unittest these since it is an actual EXE being run
-      # **\Settings
       **\PowerRenameUnitTests.dll
       **\UnitTests-CommonLib.dll
-      **\UnitTests-FancyZones.dll
       **\PreviewPaneUnitTests.dll
       **\UnitTests-PreviewHandlerCommon.dll
       **\UnitTests-SvgPreviewHandler.dll
       **\Wox.Test.dll
-      #**\interop-tests.dll # crashes CI
       **\powerpreviewTest.dll
+      #Unknown
+      #  settings
+      #crashes CI
+      #**\interop-tests.dll 
+      #**\UnitTests-FancyZones.dll
