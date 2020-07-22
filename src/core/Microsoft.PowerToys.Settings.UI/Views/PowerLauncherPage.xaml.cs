@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 {
     public sealed partial class PowerLauncherPage : Page
     {
-        public PowerLauncherViewModel ViewModel { get; } = new PowerLauncherViewModel();
+        public PowerLauncherViewModel ViewModel { get; set; }
 
         private readonly ObservableCollection<Tuple<string, string>> searchResultPreferencesOptions;
         private readonly ObservableCollection<Tuple<string, string>> searchTypePreferencesOptions;
@@ -19,6 +19,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public PowerLauncherPage()
         {
             InitializeComponent();
+            ViewModel = new PowerLauncherViewModel();
+            DataContext = ViewModel;
 
             var loader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
 
@@ -33,6 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ExecutableName"), "executable_name"));
         }
 
+        /*
         public Tuple<string, string> SelectedSearchResultPreference
         {
             get
@@ -64,5 +67,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
             }
         }
+        */
     }
 }

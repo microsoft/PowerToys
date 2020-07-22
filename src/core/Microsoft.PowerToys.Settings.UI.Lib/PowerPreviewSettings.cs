@@ -17,15 +17,15 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public PowerPreviewSettings()
         {
             properties = new PowerPreviewProperties();
-            version = "1";
-            name = "File Explorer";
+            Version = "1";
+            Name = "File Explorer";
         }
 
         public PowerPreviewSettings(string ptName)
         {
             properties = new PowerPreviewProperties();
-            version = "1";
-            name = ptName;
+            Version = "1";
+            Name = ptName;
         }
 
         public override string ToJsonString()

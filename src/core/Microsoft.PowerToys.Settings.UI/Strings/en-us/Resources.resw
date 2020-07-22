@@ -157,6 +157,10 @@
     <value>Image Resizer</value>
     <comment>Navigation view item name for Image Resizer</comment>
   </data>
+  <data name="Shell_ColorPicker.Content" xml:space="preserve">
+    <value>Color Picker</value>
+    <comment>Navigation view item name for Color Picker</comment>
+  </data>
   <data name="Shell_KeyboardManager.Content" xml:space="preserve">
     <value>Keyboard Manager</value>
     <comment>Navigation view item name for Keyboard Manager</comment>
@@ -193,6 +197,21 @@
     <value>Remap shortcuts</value>
     <comment>Keyboard Manager remap shortcuts header</comment>
   </data>
+  <data name="ColorPicker_Description.Text" xml:space="preserve">
+    <value>Quick and simple system-wide color picker</value>
+  </data>
+  <data name="ColorPicker_EnableColorPicker.Header" xml:space="preserve">
+    <value>Enable Color Picker</value>
+  </data>
+  <data name="ColorPicker_ChangeCursor.Header" xml:space="preserve">
+    <value>Change cursor when picking a color</value>
+  </data>
+  <data name="ColorPicker_CopiedColorRepresentation.Header" xml:space="preserve">
+    <value>Copied color representation</value>
+  </data>
+  <data name="ColorPicker_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
   <data name="PowerLauncher_Description.Text" xml:space="preserve">
     <value>A quick launcher that has additional capabilities without sacrificing performance.</value>
   </data>
@@ -226,7 +245,7 @@
   <data name="PowerLauncher_SearchTypePreference_ExecutableName" xml:space="preserve">
     <value>Executable name</value>
   </data>
-  <data name="PowerLauncher_MaximumNumberOfResults.Header" xml:space="preserve">
+  <data name="PowerLauncher_MaximumNumberOfResults.Text" xml:space="preserve">
     <value>Maximum number of results</value>
   </data>
   <data name="PowerLauncher_Shortcuts.Text" xml:space="preserve">
@@ -252,6 +271,9 @@
   </data>
   <data name="PowerLauncher_IgnoreHotkeysInFullScreen.Content" xml:space="preserve">
     <value>Ignore hotkeys in fullscreen mode</value>
+  </data>
+  <data name="PowerLauncher_DisableDriveDetectionWarning.Content" xml:space="preserve">
+    <value>Disable drive detection warning for the indexer plugin</value>
   </data>
   <data name="PowerLauncher_ClearInputOnLaunch.Content" xml:space="preserve">
     <value>Clear the previous query on launch</value>
@@ -315,7 +337,7 @@
     <value>Move newly created windows to their last known zone</value>
   </data>
   <data name="FancyZones_OpenWindowOnActiveMonitor.Content" xml:space="preserve">
-    <value>Move newly created windows to the current active monitor</value>
+    <value>Move newly created windows to the current active monitor [EXPERIMENTAL]</value>
   </data>
   <data name="FancyZones_UseCursorPosEditorStartupScreen.Content" xml:space="preserve">
     <value>Follow mouse cursor instead of focus when launching editor in a multi screen environment</value>
@@ -389,7 +411,7 @@
   <data name="PowerRename_Toggle_EnableOnExtendedContextMenu.Header" xml:space="preserve">
     <value>Appear only in extended context menu (Shift + Right-click)</value>
   </data>
-  <data name="PowerRename_Toggle_MaxDispListNum.Header" xml:space="preserve">
+  <data name="PowerRename_Toggle_MaxDispListNum.Text" xml:space="preserve">
     <value>Maximum number of items</value>
   </data>
   <data name="PowerRename_Toggle_RestoreFlagsOnLaunch.Header" xml:space="preserve">
@@ -400,6 +422,9 @@
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_SVG.Header" xml:space="preserve">
     <value>Enable SVG (.svg) preview</value>
+  </data>
+    <data name="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail.Header" xml:space="preserve">
+    <value>Enable SVG (.svg) thumbnails</value>
   </data>
   <data name="FileExplorerPreview_Description.Text" xml:space="preserve">
     <value>These settings allow you to manage your Windows File Explorer custom preview handlers.</value>
@@ -428,7 +453,7 @@
   <data name="ShortcutGuide_Description.Text" xml:space="preserve">
     <value>Shows a help overlay with Windows shortcuts when the Windows key is pressed.</value>
   </data>
-  <data name="ShortcutGuide_PressTime.Header" xml:space="preserve">
+  <data name="ShortcutGuide_PressTime.Text" xml:space="preserve">
     <value>Press duration before showing (ms)</value>
   </data>
   <data name="ShortcutGuide_Appearance_Behavior.Text" xml:space="preserve">
@@ -440,7 +465,7 @@
   <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
     <value>Opacity of background</value>
   </data>
-  <data name="ShortcutGuide_Theme.Header" xml:space="preserve">
+  <data name="ShortcutGuide_Theme.Text" xml:space="preserve">
     <value>Choose Shortcut Guide overlay color</value>
   </data>
   <data name="ImageResizer_CustomSizes.Text" xml:space="preserve">
@@ -569,6 +594,9 @@
   <data name="About_KeyboardManager.Text" xml:space="preserve">
     <value>About Keyboard Manager</value>
   </data>
+  <data name="About_ColorPicker.Text" xml:space="preserve">
+    <value>About Color Picker</value>
+  </data>
   <data name="About_PowerLauncher.Text" xml:space="preserve">
     <value>About PowerToys Run</value>
   </data>
@@ -607,5 +635,20 @@
   </data>
   <data name="FancyZones_RestoreSize.Content" xml:space="preserve">
     <value>Restore the original size of windows when unsnapping</value>
+  </data>
+  <data name="ImageResizer_FallBackEncoderText.Header" xml:space="preserve">
+    <value>Fallback encoder</value>
+  </data>
+  <data name="ImageResizer_FileFormatDescription.Text" xml:space="preserve">
+    <value>The following parameters can be used:</value>
+  </data>
+  <data name="ImageResizer_FilenameFormatHeader.Header" xml:space="preserve">
+    <value>Filename format</value>
+  </data>
+  <data name="ImageResizer_UseOriginalDate.Content" xml:space="preserve">
+    <value>Use original date modified</value>
+  </data>
+  <data name="Encoding.Text" xml:space="preserve">
+    <value>Encoding</value>
   </data>
 </root>

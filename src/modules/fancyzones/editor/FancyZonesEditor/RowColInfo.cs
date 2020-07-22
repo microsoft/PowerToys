@@ -21,6 +21,14 @@ namespace FancyZonesEditor
             Percent = percent;
         }
 
+        public RowColInfo(RowColInfo other)
+        {
+            Percent = other.Percent;
+            Extent = other.Extent;
+            Start = other.Start;
+            End = other.End;
+        }
+
         public RowColInfo(int index, int count)
         {
             Percent = (_multiplier / count) + ((index == 0) ? (_multiplier % count) : 0);

@@ -44,5 +44,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="..\UnitTests-CommonLib\packages.config" />
   </ItemGroup>
 </Project>

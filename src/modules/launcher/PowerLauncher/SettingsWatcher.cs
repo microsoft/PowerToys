@@ -26,7 +26,7 @@ namespace PowerLauncher
         {
             _settings = settings;
             // Set up watcher
-             _watcher = Helper.GetFileWatcher(PowerLauncherSettings.POWERTOYNAME, "settings.json", OverloadSettings);
+             _watcher = Microsoft.PowerToys.Settings.UI.Lib.Utilities.Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", OverloadSettings);
 
             // Load initial settings file
             OverloadSettings();
@@ -41,9 +41,9 @@ namespace PowerLauncher
                 retry = false;
                 try
                 {
-                    var overloadSettings = SettingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.POWERTOYNAME);
+                    var overloadSettings = SettingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
 
-                    var openPowerlauncher = ConvertHotkey(overloadSettings.properties.open_powerlauncher);
+                    var openPowerlauncher = ConvertHotkey(overloadSettings.Properties.open_powerlauncher);
                     if (_settings.Hotkey != openPowerlauncher)
                     {
                         _settings.Hotkey = openPowerlauncher;
@@ -56,19 +56,26 @@ namespace PowerLauncher
                         shellSettings.UpdateSettings(overloadSettings);
                     }
 
-                    if (_settings.MaxResultsToShow != overloadSettings.properties.maximum_number_of_results)
+                    if (_settings.MaxResultsToShow != overloadSettings.Properties.maximum_number_of_results)
                     {
-                        _settings.MaxResultsToShow = overloadSettings.properties.maximum_number_of_results;
+                        _settings.MaxResultsToShow = overloadSettings.Properties.maximum_number_of_results;
                     }
 
-                    if (_settings.IgnoreHotkeysOnFullscreen != overloadSettings.properties.ignore_hotkeys_in_fullscreen)
+                    if (_settings.IgnoreHotkeysOnFullscreen != overloadSettings.Properties.ignore_hotkeys_in_fullscreen)
                     {
-                        _settings.IgnoreHotkeysOnFullscreen = overloadSettings.properties.ignore_hotkeys_in_fullscreen;
+                        _settings.IgnoreHotkeysOnFullscreen = overloadSettings.Properties.ignore_hotkeys_in_fullscreen;
                     }
 
-                    if (_settings.ClearInputOnLaunch != overloadSettings.properties.clear_input_on_launch)
+                    var indexer = PluginManager.AllPlugins.Find(p => p.Metadata.Name.Equals("Windows Indexer Plugin", StringComparison.OrdinalIgnoreCase));
+                    if (indexer != null)
                     {
-	                    _settings.ClearInputOnLaunch = overloadSettings.properties.clear_input_on_launch;
+                        var indexerSettings = indexer.Plugin as ISettingProvider;
+                        indexerSettings.UpdateSettings(overloadSettings);
+                    }
+
+                    if (_settings.ClearInputOnLaunch != overloadSettings.Properties.clear_input_on_launch)
+                    {
+	                    _settings.ClearInputOnLaunch = overloadSettings.Properties.clear_input_on_launch;
                     }
                 }
                 // the settings application can hold a lock on the settings.json file which will result in a IOException.  

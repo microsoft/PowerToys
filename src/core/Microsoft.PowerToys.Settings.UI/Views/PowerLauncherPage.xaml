@@ -1,12 +1,13 @@
-﻿<Page
+<Page
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:Custom="using:Microsoft.PowerToys.Settings.UI.Controls"
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerLauncherPage"
+    xmlns:viewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -52,14 +53,14 @@
                           IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnablePowerLauncher}"
                           Margin="{StaticResource MediumTopMargin}"/>
 
-            <TextBlock x:Uid="PowerLauncher_SearchResults"
-                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+            <CustomControls:GroupTitleTextBlock x:Uid="PowerLauncher_SearchResults"
+                                        IsActive="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
 
             <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
                       MinWidth="320"
                       Margin="{StaticResource SmallTopMargin}"
-                      ItemsSource="{x:Bind searchResultPreferencesOptions}"
-                      SelectedItem="{x:Bind Mode=TwoWay, Path=SelectedSearchResultPreference}"
+                      ItemsSource="{Binding searchResultPreferencesOptions}"
+                      SelectedItem="{Binding Mode=TwoWay, Path=SelectedSearchResultPreference}"
                       SelectedValuePath="Item2"
                       DisplayMemberPath="Item1"
                       IsEnabled="False"
@@ -68,52 +69,52 @@
             <ComboBox x:Uid="PowerLauncher_SearchTypePreference"
                       MinWidth="320"
                       Margin="{StaticResource SmallTopMargin}"
-                      ItemsSource="{x:Bind searchTypePreferencesOptions}"
-                      SelectedItem="{x:Bind Mode=TwoWay, Path=SelectedSearchTypePreference}"
+                      ItemsSource="{Binding searchTypePreferencesOptions}"
+                      SelectedItem="{Binding Mode=TwoWay, Path=SelectedSearchTypePreference}"
                       SelectedValuePath="Item2"
                       DisplayMemberPath="Item1"
                       IsEnabled="False"
                       />-->
 
-            <muxc:NumberBox x:Uid="PowerLauncher_MaximumNumberOfResults" 
-                            Value="{x:Bind Mode=TwoWay, Path=ViewModel.MaximumNumberOfResults}"
+            <CustomControls:BodyTextBlock x:Uid="PowerLauncher_MaximumNumberOfResults"
+                                  Margin="{StaticResource SmallTopMargin}"
+                                  IsActive="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
+            <muxc:NumberBox Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}"
                             Width="240"
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
-                            Margin="{StaticResource SmallTopMargin}"
                             Minimum="1"
                             IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
 
-            <TextBlock x:Uid="PowerLauncher_Shortcuts"
+            <CustomControls:GroupTitleTextBlock x:Uid="PowerLauncher_Shortcuts"
                        HorizontalAlignment="Left"
-                       Style="{StaticResource SettingsGroupTitleStyle}"/>
+                       IsActive="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
 
-            <Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenPowerLauncher"
-                                          Width="240"
-                                          HorizontalAlignment="Left"
-                                          Margin="{StaticResource SmallTopMargin}"
-                                          HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}"
-                                          IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
-                                        />
+            <CustomControls:HotkeySettingsControl x:Uid="PowerLauncher_OpenPowerLauncher"
+                                                  Width="240"
+                                                  HorizontalAlignment="Left"
+                                                  Margin="{StaticResource SmallTopMargin}"
+                                                  HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}"
+                                                  Enabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
             <!--<Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenFileLocation"
                                           Width="320"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
-                                          HotkeySettings="{x:Bind Path=ViewModel.OpenFileLocation, Mode=TwoWay}"
+                                          HotkeySettings="{Binding Path=ViewModel.OpenFileLocation, Mode=TwoWay}"
                                           IsEnabled="False"
                                         />
             <Custom:HotkeySettingsControl x:Uid="PowerLauncher_CopyPathLocation"
                                           Width="320"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
-                                          HotkeySettings="{x:Bind Path=ViewModel.CopyPathLocation, Mode=TwoWay}"
+                                          HotkeySettings="{Binding Path=ViewModel.CopyPathLocation, Mode=TwoWay}"
                                           IsEnabled="False"
                                         />
             <Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenConsole"
                                           Width="320"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
-                                          HotkeySettings="{x:Bind Path=ViewModel.OpenConsole, Mode=TwoWay}"
+                                          HotkeySettings="{Binding Path=ViewModel.OpenConsole, Mode=TwoWay}"
                                           IsEnabled="False"
                                         />-->
 
@@ -125,7 +126,7 @@
 
             <!--<CheckBox x:Uid="PowerLauncher_OverrideWinSKey"
                       Margin="{StaticResource SmallTopMargin}"
-                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.OverrideWinSKey}"
+                      IsChecked="{Binding Mode=TwoWay, Path=ViewModel.OverrideWinSKey}"
                       IsEnabled="False"
                       />-->
 
@@ -140,6 +141,13 @@
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ClearInputOnLaunch}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
             />
+
+            <CheckBox x:Uid="PowerLauncher_DisableDriveDetectionWarning"
+	                Margin="{StaticResource SmallTopMargin}"
+	                IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisableDriveDetectionWarning}"
+	                IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
+	                />
+
         </StackPanel>
         <StackPanel
             x:Name="SidePanel"
@@ -151,7 +159,8 @@
             <TextBlock 
                 x:Uid="About_PowerLauncher"
                 Style="{StaticResource SettingsGroupTitleStyle}"
-                Margin="{StaticResource XSmallBottomMargin}"/>
+                Margin="{StaticResource XSmallBottomMargin}"
+                Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
 
             <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_PowerToysRun">
                 <TextBlock x:Uid="Module_overview" />
@@ -163,7 +172,8 @@
 
             <TextBlock 
                 x:Uid="AttributionTitle"
-                Style="{StaticResource SettingsGroupTitleStyle}" />
+                Style="{StaticResource SettingsGroupTitleStyle}" 
+                Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
 
             <HyperlinkButton NavigateUri="https://github.com/Wox-launcher/Wox/">
                 <TextBlock Text="Wox"/>

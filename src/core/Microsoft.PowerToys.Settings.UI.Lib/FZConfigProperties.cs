@@ -23,7 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             this.FancyzonesShowOnAllMonitors = new BoolProperty();
             this.FancyzonesZoneHighlightColor = new StringProperty(ConfigDefaults.DefaultFancyZonesZoneHighlightColor);
             this.FancyzonesHighlightOpacity = new IntProperty(50);
-            this.FancyzonesEditorHotkey = new KeyBoardKeysProperty(
+            this.FancyzonesEditorHotkey = new KeyboardKeysProperty(
                 new HotkeySettings()
                 {
                     Win = true,
@@ -82,7 +82,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public IntProperty FancyzonesHighlightOpacity { get; set; }
 
         [JsonPropertyName("fancyzones_editor_hotkey")]
-        public KeyBoardKeysProperty FancyzonesEditorHotkey { get; set; }
+        public KeyboardKeysProperty FancyzonesEditorHotkey { get; set; }
 
         [JsonPropertyName("fancyzones_excluded_apps")]
         public StringProperty FancyzonesExcludedApps { get; set; }

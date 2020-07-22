@@ -499,6 +499,13 @@ IFACEMETHODIMP_(void)
 FancyZones::WindowCreated(HWND window) noexcept
 {
     std::shared_lock readLock(m_lock);
+    GUID desktopId{};
+    if (VirtualDesktopUtils::GetWindowDesktopId(window, &desktopId) && desktopId != m_currentDesktopId)
+    {
+        // Switch between virtual desktops results with posting same windows messages that also indicate
+        // creation of new window. We need to check if window being processed is on currently active desktop.
+        return;
+    }
     const bool moveToAppLastZone   = m_settings->GetSettings()->appLastZone_moveWindows;
     const bool openOnActiveMonitor = m_settings->GetSettings()->openWindowOnActiveMonitor;
     if ((moveToAppLastZone || openOnActiveMonitor) && ShouldProcessNewWindow(window))
