@@ -100,6 +100,8 @@ LRESULT Overlay::WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wparam, LPARA
     }
 
     nTimerId = SetTimer(hwnd, 101, REFRESH_RATE, NULL);
+
+    return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
 void Overlay::showOverlay(std::wstring position, std::wstring monitorString)
