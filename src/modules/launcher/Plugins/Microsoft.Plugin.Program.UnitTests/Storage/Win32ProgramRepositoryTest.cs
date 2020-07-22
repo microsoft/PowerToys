@@ -198,23 +198,72 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         }
 
         [TestCase("path.url")]
-        public void Win32ProgramRepository_MustCallOnAppCreatedForUrlApps_WhenCreatedEventIsRaised(string path)
+        public void Win32ProgramRepository_MustCallOnAppChangedForUrlApps_WhenChangedEventIsRaised(string path)
         {
+            // Arrange
+            Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32>>("Win32"), _settings, _pathsToWatch);
+            FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Changed, "directory", path);
+
+            // File.ReadAllLines must be mocked for url applications
+            var mockFile = new Mock<IFileWrapper>();
+            mockFile.Setup(m => m.ReadAllLines(It.IsAny<string>())).Returns(new string[] { "URL=steam://rungameid/1258080", "IconFile=iconFile" });
+            Win32._fileWrapper = mockFile.Object;
+
+            // Act
+            _fileSystemMocks[0].Raise(m => m.Changed += null, e);
+
+            // Assert
+            Assert.AreEqual(_win32ProgramRepository.Count(), 1);
+            Assert.AreEqual(_win32ProgramRepository.ElementAt(0).AppType, 1); // Internet Shortcut Application
+        }
+
+        [TestCase("path.url")]
+        public void Win32ProgramRepository_MustNotCreateUrlApp_WhenCreatedEventIsRaised(string path)
+        {
+            // We are handing internet shortcut apps using the Changed event instead
+
             // Arrange
             Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32>>("Win32"), _settings, _pathsToWatch);
             FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Created, "directory", path);
 
             // File.ReadAllLines must be mocked for url applications
             var mockFile = new Mock<IFileWrapper>();
-            mockFile.Setup(m => m.ReadAllLines(It.IsAny<string>())).Returns(new string[] { "URL=steam://rungameid/1258080" , "IconFile=iconFile"});
+            mockFile.Setup(m => m.ReadAllLines(It.IsAny<string>())).Returns(new string[] { "URL=steam://rungameid/1258080", "IconFile=iconFile" });
             Win32._fileWrapper = mockFile.Object;
 
             // Act
             _fileSystemMocks[0].Raise(m => m.Created += null, e);
 
             // Assert
-            Assert.AreEqual(_win32ProgramRepository.Count(), 1);
-            Assert.AreEqual(_win32ProgramRepository.ElementAt(0).AppType, 1); // Internet Shortcut Application
+            Assert.AreEqual(_win32ProgramRepository.Count(), 0);
+        }
+
+        [TestCase("path.exe")]
+        [TestCase("path.lnk")]
+        [TestCase("path.appref-ms")]
+        public void Win32ProgramRepository_MustNotCreateAnyAppOtherThanUrlApp_WhenChangedEventIsRaised(string path)
+        {
+            // We are handing internet shortcut apps using the Changed event instead
+
+            // Arrange
+            Win32ProgramRepository _win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, new BinaryStorage<IList<Win32>>("Win32"), _settings, _pathsToWatch);
+            FileSystemEventArgs e = new FileSystemEventArgs(WatcherChangeTypes.Changed, "directory", path);
+
+            // FileVersionInfo must be mocked for exe applications
+            var mockFileVersionInfo = new Mock<IFileVersionInfoWrapper>();
+            mockFileVersionInfo.Setup(m => m.GetVersionInfo(It.IsAny<string>())).Returns((FileVersionInfo)null);
+            Win32._fileVersionInfoWrapper = mockFileVersionInfo.Object;
+
+            // ShellLinkHelper must be mocked for lnk applications
+            var mockShellLink = new Mock<IShellLinkHelper>();
+            mockShellLink.Setup(m => m.RetrieveTargetPath(It.IsAny<string>())).Returns(String.Empty);
+            Win32._helper = mockShellLink.Object;
+
+            // Act
+            _fileSystemMocks[0].Raise(m => m.Changed += null, e);
+
+            // Assert
+            Assert.AreEqual(_win32ProgramRepository.Count(), 0);
         }
 
         [TestCase("directory", "path.url")]

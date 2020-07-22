@@ -39,7 +39,7 @@ namespace Microsoft.Plugin.Program.Storage
                 _fileSystemWatcherHelpers[index].Path = _pathsToWatch[index];
 
                 // to be notified when there is a change to a file
-                _fileSystemWatcherHelpers[index].NotifyFilter = NotifyFilters.FileName;
+                _fileSystemWatcherHelpers[index].NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite;
 
                 // filtering the app types that we want to monitor
                 _fileSystemWatcherHelpers[index].Filters = extensionsToWatch;
@@ -48,6 +48,7 @@ namespace Microsoft.Plugin.Program.Storage
                 _fileSystemWatcherHelpers[index].Created += OnAppCreated;
                 _fileSystemWatcherHelpers[index].Deleted += OnAppDeleted;
                 _fileSystemWatcherHelpers[index].Renamed += OnAppRenamed;
+                _fileSystemWatcherHelpers[index].Changed += OnAppChanged;
 
                 // Enable the file system watcher
                 _fileSystemWatcherHelpers[index].EnableRaisingEvents = true;
@@ -166,10 +167,26 @@ namespace Microsoft.Plugin.Program.Storage
         private void OnAppCreated(object sender, FileSystemEventArgs e)
         {
             string path = e.FullPath;
-            Programs.Win32 app = Programs.Win32.GetAppFromPath(path);
-            if (app != null)
+            if(!Path.GetExtension(path).Equals(urlExtension))
             {
-                Add(app);
+                Programs.Win32 app = Programs.Win32.GetAppFromPath(path);
+                if (app != null)
+                {
+                    Add(app);
+                }
+            }
+        }
+
+        private void OnAppChanged(object sender, FileSystemEventArgs e)
+        {
+            string path = e.FullPath;
+            if (Path.GetExtension(path).Equals(urlExtension))
+            {
+                Programs.Win32 app = Programs.Win32.GetAppFromPath(path);
+                if (app != null)
+                {
+                    Add(app);
+                }
             }
         }
 
