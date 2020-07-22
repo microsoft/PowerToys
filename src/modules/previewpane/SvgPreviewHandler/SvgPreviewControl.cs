@@ -17,6 +17,7 @@ using Common.Utilities;
 using Microsoft.PowerToys.Telemetry;
 using PreviewHandlerCommon;
 using SvgPreviewHandler.Telemetry.Events;
+using SvgPreviewHandler.Utilities;
 
 namespace SvgPreviewHandler
 {

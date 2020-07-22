@@ -112,6 +112,7 @@
     <Compile Include="Telemetry\Events\SvgFileHandlerLoaded.cs" />
     <Compile Include="Telemetry\Events\SvgFilePreviewed.cs" />
     <Compile Include="Telemetry\Events\SvgFilePreviewError.cs" />
+    <Compile Include="Utilities\SvgPreviewHandlerHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\Telemetry.csproj">

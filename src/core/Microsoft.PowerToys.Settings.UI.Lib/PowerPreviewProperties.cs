@@ -12,53 +12,36 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class PowerPreviewProperties
     {
-        private bool enableSvgPreview = true;
+        private bool enableSvg = true;
 
         [JsonPropertyName("svg-previewer-toggle-setting")]
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
-        public bool EnableSvgPreview
+        public bool EnableSvg
         {
-            get => this.enableSvgPreview;
+            get => this.enableSvg;
             set
             {
-                if (value != this.enableSvgPreview)
+                if (value != this.enableSvg)
                 {
                     LogTelemetryEvent(value);
-                    this.enableSvgPreview = value;
+                    this.enableSvg = value;
                 }
             }
         }
 
-        private bool enableSvgThumbnail = true;
-
-        [JsonPropertyName("svg-thumbnail-toggle-setting")]
-        [JsonConverter(typeof(BoolPropertyJsonConverter))]
-        public bool EnableSvgThumbnail
-        {
-            get => this.enableSvgThumbnail;
-            set
-            {
-                if (value != this.enableSvgThumbnail)
-                {
-                    LogTelemetryEvent(value);
-                    this.enableSvgThumbnail = value;
-                }
-            }
-        }
-
-        private bool enableMdPreview = true;
+        private bool enableMd = true;
 
         [JsonPropertyName("md-previewer-toggle-setting")]
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
-        public bool EnableMdPreview
+        public bool EnableMd
         {
-            get => this.enableMdPreview;
+            get => this.enableMd;
             set
             {
-                if (value != this.enableMdPreview)
+                if (value != this.enableMd)
                 {
                     LogTelemetryEvent(value);
-                    this.enableMdPreview = value;
+                    this.enableMd = value;
                 }
             }
         }
