@@ -11,6 +11,7 @@
 #include <lib/trace.h>
 #include <lib/Settings.h>
 #include <lib/FancyZones.h>
+#include <lib/FancyZonesData.h>
 #include <lib/FancyZonesWinHookEventIDs.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -153,7 +154,7 @@ public:
     {
         app_name = GET_RESOURCE_STRING(IDS_FANCYZONES);
         m_settings = MakeFancyZonesSettings(reinterpret_cast<HINSTANCE>(&__ImageBase), FancyZonesModule::get_name());
-        JSONHelpers::FancyZonesDataInstance().LoadFancyZonesData();
+        FancyZonesDataInstance().LoadFancyZonesData();
         s_instance = this;
     }
 

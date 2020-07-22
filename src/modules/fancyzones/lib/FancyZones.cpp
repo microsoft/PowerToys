@@ -7,7 +7,7 @@
 #include "FancyZones.h"
 #include "lib/Settings.h"
 #include "lib/ZoneWindow.h"
-#include "lib/JsonHelpers.h"
+#include "lib/FancyZonesData.h"
 #include "lib/ZoneSet.h"
 #include "lib/WindowMoveHandler.h"
 #include "lib/FancyZonesWinHookEventIDs.h"
@@ -373,7 +373,7 @@ std::vector<int> FancyZones::GetZoneIndexSetFromWorkAreaHistory(
         wil::unique_cotaskmem_string zoneSetId;
         if (SUCCEEDED(StringFromCLSID(activeZoneSet->Id(), &zoneSetId)))
         {
-            return JSONHelpers::FancyZonesDataInstance().GetAppLastZoneIndexSet(window, workArea->UniqueId(), zoneSetId.get());
+            return FancyZonesDataInstance().GetAppLastZoneIndexSet(window, workArea->UniqueId(), zoneSetId.get());
         }
     }
     return {};
@@ -419,7 +419,7 @@ std::pair<winrt::com_ptr<IZoneWindow>, std::vector<int>> FancyZones::GetAppZoneH
 
 void FancyZones::MoveWindowIntoZone(HWND window, winrt::com_ptr<IZoneWindow> zoneWindow, const std::vector<int>& zoneIndexSet) noexcept
 {
-    auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+    auto& fancyZonesData = FancyZonesDataInstance();
     if (!fancyZonesData.IsAnotherWindowOfApplicationInstanceZoned(window, zoneWindow->UniqueId()))
     {
         m_windowMoveHandler.MoveWindowIntoZoneByIndexSet(window, zoneIndexSet, zoneWindow);
@@ -499,6 +499,13 @@ IFACEMETHODIMP_(void)
 FancyZones::WindowCreated(HWND window) noexcept
 {
     std::shared_lock readLock(m_lock);
+    GUID desktopId{};
+    if (VirtualDesktopUtils::GetWindowDesktopId(window, &desktopId) && desktopId != m_currentDesktopId)
+    {
+        // Switch between virtual desktops results with posting same windows messages that also indicate
+        // creation of new window. We need to check if window being processed is on currently active desktop.
+        return;
+    }
     const bool moveToAppLastZone   = m_settings->GetSettings()->appLastZone_moveWindows;
     const bool openOnActiveMonitor = m_settings->GetSettings()->openWindowOnActiveMonitor;
     if ((moveToAppLastZone || openOnActiveMonitor) && ShouldProcessNewWindow(window))
@@ -643,16 +650,12 @@ void FancyZones::ToggleEditor() noexcept
         std::to_wstring(width) + L"_" +
         std::to_wstring(height);
 
-    const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+    const auto& fancyZonesData = FancyZonesDataInstance();
 
-    const auto deviceInfo = fancyZonesData.FindDeviceInfo(zoneWindow->UniqueId());
-    if (!deviceInfo.has_value())
+    if (!fancyZonesData.SerializeDeviceInfoToTmpFile(zoneWindow->UniqueId()))
     {
         return;
     }
-
-    JSONHelpers::DeviceInfoJSON deviceInfoJson{ zoneWindow->UniqueId(), *deviceInfo };
-    fancyZonesData.SerializeDeviceInfoToTmpFile(deviceInfoJson, ZoneWindowUtils::GetActiveZoneSetTmpPath());
 
     const std::wstring params =
         /*1*/ editorLocation + L" " +
@@ -835,8 +838,8 @@ void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
             std::vector<std::wstring> ids{};
             if (VirtualDesktopUtils::GetVirtualDesktopIds(ids) && !ids.empty())
             {
-                JSONHelpers::FancyZonesDataInstance().UpdatePrimaryDesktopData(ids[0]);
-                JSONHelpers::FancyZonesDataInstance().RemoveDeletedDesktops(ids);
+                FancyZonesDataInstance().UpdatePrimaryDesktopData(ids[0]);
+                FancyZonesDataInstance().RemoveDeletedDesktops(ids);
             }
         }
     }
@@ -877,7 +880,7 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
             if (workArea)
             {
                 m_workAreaHandler.AddWorkArea(m_currentDesktopId, monitor, workArea);
-                JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
+                FancyZonesDataInstance().SaveFancyZonesData();
             }
         }
     }
@@ -1058,7 +1061,7 @@ void FancyZones::RegisterVirtualDesktopUpdates(std::vector<GUID>& ids) noexcept
     std::vector<std::wstring> active{};
     if (VirtualDesktopUtils::GetVirtualDesktopIds(active))
     {
-        JSONHelpers::FancyZonesDataInstance().RemoveDeletedDesktops(active);
+        FancyZonesDataInstance().RemoveDeletedDesktops(active);
     }
 }
 
@@ -1077,10 +1080,7 @@ bool FancyZones::IsSplashScreen(HWND window)
 void FancyZones::OnEditorExitEvent() noexcept
 {
     // Collect information about changes in zone layout after editor exited.
-    JSONHelpers::FancyZonesDataInstance().ParseDeviceInfoFromTmpFile(ZoneWindowUtils::GetActiveZoneSetTmpPath());
-    JSONHelpers::FancyZonesDataInstance().ParseDeletedCustomZoneSetsFromTmpFile(ZoneWindowUtils::GetDeletedCustomZoneSetsTmpPath());
-    JSONHelpers::FancyZonesDataInstance().ParseCustomZoneSetFromTmpFile(ZoneWindowUtils::GetAppliedZoneSetTmpPath());
-    JSONHelpers::FancyZonesDataInstance().SaveFancyZonesData();
+    FancyZonesDataInstance().ParseDataFromTmpFiles();
 
     for (auto workArea : m_workAreaHandler.GetAllWorkAreas())
     {

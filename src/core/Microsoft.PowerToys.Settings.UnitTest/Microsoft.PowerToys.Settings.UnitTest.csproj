@@ -159,6 +159,7 @@
     <Compile Include="Generated Files\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ViewModelTests\ColorPicker.cs" />
     <Compile Include="ViewModelTests\FancyZones.cs" />
     <Compile Include="ViewModelTests\General.cs" />
     <Compile Include="ModelsTests\HelperTest.cs" />
@@ -204,6 +205,9 @@
     </PackageReference>
     <PackageReference Include="MSTest.TestFramework">
       <Version>2.1.2</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk">
+      <Version>16.6.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

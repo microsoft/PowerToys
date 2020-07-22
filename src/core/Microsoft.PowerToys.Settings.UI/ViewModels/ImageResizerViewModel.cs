@@ -106,7 +106,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 SettingsUtils.SaveSettings(Settings.Properties.ImageresizerSizes.ToJsonString(), ModuleName, "sizes.json");
                 _advancedSizes = value;
-                Settings.Properties.ImageresizerSizes = new ImageresizerSizes(value);
+                Settings.Properties.ImageresizerSizes = new ImageResizerSizes(value);
                 SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
                 OnPropertyChanged("Sizes");
             }

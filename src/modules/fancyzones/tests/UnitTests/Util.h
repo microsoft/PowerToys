@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lib/JsonHelpers.h"
+#include "lib/FancyZonesDataTypes.h"
 
 namespace CustomAssert
 {
@@ -15,7 +15,7 @@ namespace CustomAssert
         Microsoft::VisualStudio::CppUnitTestFramework::Assert::IsTrue(g1 == g2);
     }
 
-    static void AreEqual(JSONHelpers::ZoneSetLayoutType t1, JSONHelpers::ZoneSetLayoutType t2)
+    static void AreEqual(FancyZonesDataTypes::ZoneSetLayoutType t1, FancyZonesDataTypes::ZoneSetLayoutType t2)
     {
         Microsoft::VisualStudio::CppUnitTestFramework::Assert::IsTrue(t1 == t2);
     }
