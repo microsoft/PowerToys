@@ -33,7 +33,7 @@ namespace SvgThumbnailProviderUnitTests
         }
 
         [TestMethod]
-        public void CheckBlockedElements_ShouldReturnNullBitmap_IfBlockedElementsIsPresentInNestedLevel()
+        public void CheckBlockedElements_ShouldReturnNonNullBitmap_IfBlockedElementsIsPresentInNestedLevel()
         {
             var svgBuilder = new StringBuilder();
             svgBuilder.AppendLine("<svg viewBox=\"0 0 100 100\" xmlns=\"http://www.w3.org/2000/svg\">");
@@ -43,7 +43,7 @@ namespace SvgThumbnailProviderUnitTests
             svgBuilder.AppendLine("</svg>");
 
             Bitmap thumbnail = SvgThumbnailProvider.SvgThumbnailProvider.GetThumbnail(svgBuilder.ToString(), 256);
-            Assert.IsTrue(thumbnail == null);
+            Assert.IsTrue(thumbnail != null);
         }
 
         [TestMethod]
