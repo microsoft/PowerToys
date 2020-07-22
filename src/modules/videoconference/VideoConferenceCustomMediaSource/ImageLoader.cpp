@@ -16,6 +16,8 @@
 
 #include "ImageLoader.h"
 
+#include "Logging.h"
+
 #define RETURN_NULLPTR_IF_FAILED_WITH_LOGGING(val) \
                                                    \
     if (FAILED(val))                               \
