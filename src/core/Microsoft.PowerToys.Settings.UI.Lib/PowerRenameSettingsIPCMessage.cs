@@ -13,7 +13,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public PowerRenameSettingsIPCMessage()
         {
-
         }
 
         public PowerRenameSettingsIPCMessage(SndPowerRenameSettings settings)

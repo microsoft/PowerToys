@@ -10,7 +10,6 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-
     public class SndImageResizerSettings
     {
         [JsonPropertyName("Image Resizer")]
