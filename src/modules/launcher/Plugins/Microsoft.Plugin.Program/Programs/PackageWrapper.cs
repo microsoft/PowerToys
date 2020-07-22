@@ -1,4 +1,5 @@
 ﻿using Microsoft.Plugin.Program.Logger;
+using System;
 using System.IO;
 using Package = Windows.ApplicationModel.Package;
 
@@ -32,22 +33,26 @@ namespace Microsoft.Plugin.Program.Programs
 
         public static PackageWrapper GetWrapperFromPackage(Package package)
         {
+            string path;
             try
             {
-                return new PackageWrapper(
-                        package.Id.Name,
-                        package.Id.FullName,
-                        package.Id.FamilyName,
-                        package.IsFramework, 
-                        package.IsDevelopmentMode,
-                        package.InstalledLocation.Path
-                        );
+                 path = package.InstalledLocation.Path;
             }
-            catch(FileNotFoundException ex)
+            catch (Exception e) when (e is ArgumentException || e is FileNotFoundException)
             {
-                ProgramLogger.LogException($"PackageWrapper", "GetWrapperFromPackage","package.InstalledLocation.Path",$"File Not Found for package {package.Id.Name}", ex);
+                ProgramLogger.LogException($"PackageWrapper", "GetWrapperFromPackage", "package.InstalledLocation.Path", $"Exception {package.Id.Name}", e);
                 return new PackageWrapper();
             }
+
+            return new PackageWrapper(
+                    package.Id.Name,
+                    package.Id.FullName,
+                    package.Id.FamilyName,
+                    package.IsFramework, 
+                    package.IsDevelopmentMode,
+                    path
+                    );
+            
         }
     }
 }
