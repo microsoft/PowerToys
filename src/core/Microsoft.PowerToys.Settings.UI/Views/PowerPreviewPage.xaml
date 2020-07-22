@@ -50,6 +50,10 @@
                           Margin="{StaticResource MediumTopMargin}"
                           IsOn="{Binding Mode=TwoWay, Path=SVGRenderIsEnabled}" />
 
+            <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_SVG_Thumbnail"
+                          Margin="{StaticResource SmallTopMargin}"
+                          IsOn="{Binding Mode=TwoWay, Path=SVGThumbnailIsEnabled}" />
+
             <ToggleSwitch x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD"
                           Margin="{StaticResource SmallTopMargin}"
                           IsOn="{Binding Mode=TwoWay, Path=MDRenderIsEnabled}" />

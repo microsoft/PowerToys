@@ -29,6 +29,7 @@
 #define IDS_EXPLR_SVG_SETTINGS_DESCRIPTION                      214
 #define IDS_PREVPANE_SVG_SETTINGS_DISPLAYNAME                   215
 #define IDS_PREVPANE_MD_SETTINGS_DISPLAYNAME                    216
+#define IDS_SVG_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION         217
 
 // Next default values for new objects
 //
