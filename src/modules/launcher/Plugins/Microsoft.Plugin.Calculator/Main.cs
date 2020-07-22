@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using Mages.Core;
+using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 
 namespace Microsoft.Plugin.Calculator
@@ -22,18 +23,18 @@ namespace Microsoft.Plugin.Calculator
                         @"[ei]|[0-9]|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
                         @")+$", RegexOptions.Compiled);
         private static readonly Regex RegBrackets = new Regex(@"[\(\)\[\]]", RegexOptions.Compiled);
-        private static readonly Engine MagesEngine;
+        private static readonly Engine MagesEngine = new Engine();
         private PluginInitContext Context { get; set; }
         private string IconPath { get; set; }
         private bool _disposed = false;
 
-        static Main()
-        {
-            MagesEngine = new Engine();
-        }
-
         public List<Result> Query(Query query)
         {
+            if(query == null)
+            {
+                throw new ArgumentNullException(paramName: nameof(query));
+            }
+
             if (query.Search.Length <= 2          // don't affect when user only input "e" or "i" keyword
                 || !RegValidExpressChar.IsMatch(query.Search)
                 || !IsBracketComplete(query.Search)) return new List<Result>();
@@ -89,9 +90,12 @@ namespace Microsoft.Plugin.Calculator
                     };
                 }
             }
-            catch
+//We want to keep the process alive if any the mages library throws any exceptions.
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch(Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
-                // ignored
+                Log.Exception($"|Microsoft.Plugin.Calculator.Main.Query|Exception when query for <{query}>", e);
             }
 
             return new List<Result>();
@@ -118,6 +122,11 @@ namespace Microsoft.Plugin.Calculator
 
         public void Init(PluginInitContext context)
         {
+            if(context == null)
+            {
+                throw new ArgumentNullException(paramName: nameof(context));
+            }
+
             Context = context;
             Context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(Context.API.GetCurrentTheme());

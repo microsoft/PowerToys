@@ -36,6 +36,16 @@ namespace Microsoft.Plugin.Calculator
         /// <returns></returns>
         public static NumberTranslator Create(CultureInfo sourceCulture, CultureInfo targetCulture)
         {
+            if (sourceCulture == null)
+            {
+                throw new ArgumentNullException(paramName:nameof(sourceCulture));
+            }
+
+            if (targetCulture == null)
+            {
+                throw new ArgumentNullException(paramName: nameof(sourceCulture));
+            }
+
             bool conversionRequired = sourceCulture.NumberFormat.NumberDecimalSeparator != targetCulture.NumberFormat.NumberDecimalSeparator
                                       || sourceCulture.NumberFormat.PercentGroupSeparator != targetCulture.NumberFormat.PercentGroupSeparator
                                       || sourceCulture.NumberFormat.NumberGroupSizes != targetCulture.NumberFormat.NumberGroupSizes;
@@ -51,7 +61,7 @@ namespace Microsoft.Plugin.Calculator
         /// <returns></returns>
         public string Translate(string input)
         {
-            return this.Translate(input, this.sourceCulture, this.targetCulture, this.splitRegexForSource);
+            return Translate(input, this.sourceCulture, this.targetCulture, this.splitRegexForSource);
         }
         
         /// <summary>
@@ -61,10 +71,10 @@ namespace Microsoft.Plugin.Calculator
         /// <returns></returns>
         public string TranslateBack(string input)
         {
-            return this.Translate(input, this.targetCulture, this.sourceCulture, this.splitRegexForTarget);
+            return Translate(input, this.targetCulture, this.sourceCulture, this.splitRegexForTarget);
         }
 
-        private string Translate(string input, CultureInfo cultureFrom, CultureInfo cultureTo, Regex splitRegex)
+        private static string Translate(string input, CultureInfo cultureFrom, CultureInfo cultureTo, Regex splitRegex)
         {
             var outputBuilder = new StringBuilder();
 
