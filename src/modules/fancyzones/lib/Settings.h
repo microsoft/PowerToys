@@ -20,6 +20,7 @@ struct Settings
     bool restoreSize = false;
     bool use_cursorpos_editor_startupscreen = true;
     bool showZonesOnAllMonitors = false;
+    bool multiMonitorMode = false;
     bool makeDraggedWindowTransparent = true;
     std::wstring zoneColor = L"#F5FCFF";
     std::wstring zoneBorderColor = L"#FFFFFF";

@@ -24,6 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             FancyzonesRestoreSize = new BoolProperty();
             UseCursorposEditorStartupscreen = new BoolProperty(ConfigDefaults.DefaultUseCursorposEditorStartupscreen);
             FancyzonesShowOnAllMonitors = new BoolProperty();
+            FancyzonesMultiMonitorMode = new BoolProperty();
             FancyzonesZoneHighlightColor = new StringProperty(ConfigDefaults.DefaultFancyZonesZoneHighlightColor);
             FancyzonesHighlightOpacity = new IntProperty(50);
             FancyzonesEditorHotkey = new KeyboardKeysProperty(DefaultHotkeyValue);
@@ -65,6 +66,9 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         [JsonPropertyName("fancyzones_show_on_all_monitors")]
         public BoolProperty FancyzonesShowOnAllMonitors { get; set; }
+
+        [JsonPropertyName("fancyzones_multi_monitor_mode")]
+        public BoolProperty FancyzonesMultiMonitorMode { get; set; }
 
         [JsonPropertyName("fancyzones_makeDraggedWindowTransparent")]
         public BoolProperty FancyzonesMakeDraggedWindowTransparent { get; set; }

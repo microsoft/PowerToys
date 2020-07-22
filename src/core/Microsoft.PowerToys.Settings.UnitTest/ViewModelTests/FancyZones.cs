@@ -267,6 +267,24 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void MultiMonitorMode_ShouldSetValue2True_WhenSuccessful()
+        {
+            // arrange
+            FancyZonesViewModel viewModel = new FancyZonesViewModel();
+            Assert.IsFalse(viewModel.MultiMonitorMode); // check if value was initialized to false.
+
+            // Assert
+            ShellPage.DefaultSndMSGCallback = msg =>
+            {
+                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
+                Assert.IsTrue(snd.Powertoys.FancyZones.Properties.FancyzonesMultiMonitorMode.Value);
+            };
+
+            // act
+            viewModel.MultiMonitorMode = true;
+        }
+
+        [TestMethod]
         public void ZoneHighlightColor_ShouldSetColorValue2White_WhenSuccessful()
         {
             // arrange

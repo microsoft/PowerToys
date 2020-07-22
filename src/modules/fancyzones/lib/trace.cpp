@@ -189,6 +189,7 @@ void Trace::SettingsChanged(const Settings& settings) noexcept
         TraceLoggingBoolean(settings.restoreSize, "RestoreSize"),
         TraceLoggingBoolean(settings.use_cursorpos_editor_startupscreen, "UseCursorPosOnEditorStartup"),
         TraceLoggingBoolean(settings.showZonesOnAllMonitors, "ShowZonesOnAllMonitors"),
+        TraceLoggingBoolean(settings.multiMonitorMode, "MultiMonitorMode"),
         TraceLoggingBoolean(settings.makeDraggedWindowTransparent, "MakeDraggedWindowTransparent"),
         TraceLoggingWideString(settings.zoneColor.c_str(), "ZoneColor"),
         TraceLoggingWideString(settings.zoneBorderColor.c_str(), "ZoneBorderColor"),
