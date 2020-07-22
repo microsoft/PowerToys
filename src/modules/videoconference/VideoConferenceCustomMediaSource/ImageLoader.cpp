@@ -18,11 +18,12 @@
 
 #include "Logging.h"
 
-#define RETURN_NULLPTR_IF_FAILED_WITH_LOGGING(val) \
-                                                   \
-    if (FAILED(val))                               \
-    {                                              \
-        return nullptr;                            \
+#define RETURN_NULLPTR_IF_FAILED_WITH_LOGGING(val)                                       \
+    hr = val;                                                                    \
+    if (FAILED(hr))                                                                      \
+    {                                                                                    \
+        LogToFile(std::string(#val) + " Failed with error code: " + std::to_string(hr)); \
+        return nullptr;                                                                  \
     }
 
 IWICImagingFactory* _GetWIC()
@@ -54,6 +55,7 @@ using Microsoft::WRL::ComPtr;
 
 ComPtr<IMFSample> LoadImageAsSample(ComPtr<IStream> imageStream, IMFMediaType* sampleMediaType)
 {
+    HRESULT hr = S_OK;
     LogToFile(__FUNCTION__);
 
     // Get target sample frame dimensions
@@ -64,6 +66,7 @@ ComPtr<IMFSample> LoadImageAsSample(ComPtr<IStream> imageStream, IMFMediaType* s
     IWICImagingFactory* pWIC = _GetWIC();
     if (!pWIC)
     {
+        LogToFile("!pWIC");
         return nullptr;
     }
 
@@ -81,6 +84,7 @@ ComPtr<IMFSample> LoadImageAsSample(ComPtr<IStream> imageStream, IMFMediaType* s
     ComPtr<IWICBitmapSource> sourceImageFrame;
     if (targetWidth != imageWidth || targetHeight != imageHeight)
     {
+        LogToFile("targetWidth != imageWidth || targetHeight != imageHeight");
         ComPtr<IWICBitmapScaler> scaler;
         RETURN_NULLPTR_IF_FAILED_WITH_LOGGING(pWIC->CreateBitmapScaler(&scaler));
         RETURN_NULLPTR_IF_FAILED_WITH_LOGGING(scaler->Initialize(decodedFrame.Get(), targetWidth, targetHeight, WICBitmapInterpolationModeHighQualityCubic));
@@ -88,6 +92,7 @@ ComPtr<IMFSample> LoadImageAsSample(ComPtr<IStream> imageStream, IMFMediaType* s
     }
     else
     {
+        LogToFile("!(targetWidth != imageWidth || targetHeight != imageHeight)");
         sourceImageFrame.Attach(decodedFrame.Detach());
     }
 
@@ -134,6 +139,7 @@ ComPtr<IMFSample> LoadImageAsSample(ComPtr<IStream> imageStream, IMFMediaType* s
     RETURN_NULLPTR_IF_FAILED_WITH_LOGGING(inputMediaBuffer->Lock(&inputBuf, &max_length, &current_length));
     if (max_length < jpgStreamSize)
     {
+        LogToFile("max_length < jpgStreamSize");
         return nullptr;
     }
     std::copy(jpgStreamMemory, jpgStreamMemory + jpgStreamSize, inputBuf);
@@ -150,6 +156,7 @@ ComPtr<IMFSample> LoadImageAsSample(ComPtr<IStream> imageStream, IMFMediaType* s
     // But if no conversion is needed, just return the input sample
     if (!memcmp(&inputFilter.guidSubtype, &outputFilter.guidSubtype, sizeof(GUID)))
     {
+        LogToFile("!memcmp(&inputFilter.guidSubtype, &outputFilter.guidSubtype, sizeof(GUID))");
         return inputSample;
     }
 
@@ -174,6 +181,7 @@ ComPtr<IMFSample> LoadImageAsSample(ComPtr<IStream> imageStream, IMFMediaType* s
     }
     if (!videoDecoderActivated)
     {
+        LogToFile("!videoDecoderActivated");
         return nullptr;
     }
     auto shutdownVideoDecoder = wil::scope_exit([&videoDecoder] { MFShutdownObject(videoDecoder.Get()); });
