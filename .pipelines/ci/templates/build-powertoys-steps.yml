@@ -44,19 +44,18 @@ steps:
       !**\*PowerToysTests.dll
       !**\*TestAdapter.dll
       !**\obj\**
-      **\Microsoft.PowerToys.Settings.UnitTest.exe
-      #**\ImageResizer.Test.dll
-      #**\KeyboardManagerTest.dll
-      #**\Microsoft.Plugin.Program.UnitTests.dll
-      #**\PowerRenameUnitTests.dll
-      #**\UnitTests-CommonLib.dll
-      #**\PreviewPaneUnitTests.dll
-      #**\UnitTests-PreviewHandlerCommon.dll
-      #**\UnitTests-SvgPreviewHandler.dll
-      #**\Wox.Test.dll
-      #**\powerpreviewTest.dll
-      #Unknown
-      #  settings
-      #crashes CI
+      **\ImageResizer.Test.dll
+      **\KeyboardManagerTest.dll
+      **\Microsoft.Plugin.Program.UnitTests.dll
+      **\PowerRenameUnitTests.dll
+      **\UnitTests-CommonLib.dll
+      **\PreviewPaneUnitTests.dll #this is the markdown tests
+      **\UnitTests-PreviewHandlerCommon.dll
+      **\UnitTests-SvgPreviewHandler.dll
+      **\Wox.Test.dll
+      **\powerpreviewTest.dll
+      # Can't get working, says no tests
+      #   #**\Microsoft.PowerToys.Settings.UnitTest.exe
+      # crashes CI
       #**\interop-tests.dll 
       #**\UnitTests-FancyZones.dll
