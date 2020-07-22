@@ -20,6 +20,7 @@
 #include <shared_mutex>
 #include <functional>
 #include <unordered_set>
+#include <ShObjIdl.h>
 
 #pragma comment(lib, "windowsapp")
 
