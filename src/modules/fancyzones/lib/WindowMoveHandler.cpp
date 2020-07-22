@@ -12,6 +12,7 @@
 #include "VirtualDesktopUtils.h"
 #include "lib/SecondaryMouseButtonsHook.h"
 #include "lib/GenericKeyHook.h"
+#include "lib/FancyZonesData.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -337,7 +338,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
                     wil::unique_cotaskmem_string guidString;
                     if (SUCCEEDED_LOG(StringFromCLSID(activeZoneSet->Id(), &guidString)))
                     {
-                        JSONHelpers::FancyZonesDataInstance().RemoveAppLastZone(window, zoneWindowPtr->UniqueId(), guidString.get());
+                        FancyZonesDataInstance().RemoveAppLastZone(window, zoneWindowPtr->UniqueId(), guidString.get());
                     }
                 }
             }
