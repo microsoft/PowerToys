@@ -57,4 +57,4 @@ steps:
       #**\UnitTests-SvgPreviewHandler.dll
       **\Wox.Test.dll
       #**\interop-tests.dll
-      #**\powerpreviewTest.dll
+      **\powerpreviewTest.dll
