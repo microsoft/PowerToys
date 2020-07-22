@@ -1,0 +1,107 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.ColorPickerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:Custom="using:Microsoft.PowerToys.Settings.UI.Controls"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400" 
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LayoutVisualStates">
+                <VisualState x:Name="WideLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="1" />
+                        <Setter Target="SidePanel.(Grid.Row)" Value="0" />
+                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="SmallLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
+                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
+                        <Setter Target="SidePanel.Width" Value="Auto" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Vertical">
+            <TextBlock x:Uid="ColorPicker_Description"
+                       TextWrapping="Wrap"/>
+
+            <ToggleSwitch x:Uid="ColorPicker_EnableColorPicker" 
+                          IsOn="{Binding IsEnabled, Mode=TwoWay}" 
+                          Margin="{StaticResource MediumTopMargin}"/>
+
+            <Custom:HotkeySettingsControl x:Uid="ColorPicker_ActivationShortcut"
+                                          Width="240"
+                                          HorizontalAlignment="Left"
+                                          Margin="{StaticResource SmallTopMargin}"
+                                          HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}"
+                                          IsEnabled="{Binding IsEnabled}"/>
+
+            <ComboBox x:Uid="ColorPicker_CopiedColorRepresentation"
+                          SelectedIndex="{Binding CopiedColorRepresentationIndex, Mode=TwoWay}"
+                          Width="240"
+                          Margin="{StaticResource SmallTopMargin}"
+                          IsEnabled="{Binding IsEnabled}">
+                <ComboBoxItem Content="HEX - #FFAA00"/>
+                <ComboBoxItem Content="RGB - RGB(100, 50, 75)"/>
+            </ComboBox>
+
+            <ToggleSwitch x:Uid="ColorPicker_ChangeCursor" 
+                          IsOn="{Binding ChangeCursor, Mode=TwoWay}"
+                          Margin="{StaticResource MediumTopMargin}"
+                          IsEnabled="{Binding IsEnabled}"/>
+        </StackPanel>
+        <StackPanel 
+            x:Name="SidePanel"
+            Orientation="Vertical"
+            HorizontalAlignment="Left"
+            Width="{StaticResource SidePanelWidth}"
+            Grid.Column="1">
+
+            <TextBlock
+                x:Uid="About_ColorPicker"
+                Style="{StaticResource SettingsGroupTitleStyle}"
+                Margin="{StaticResource XSmallBottomMargin}"/>
+
+            <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ColorPicker">
+                <TextBlock x:Uid="Module_overview" />
+            </HyperlinkButton>
+
+            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <TextBlock x:Uid="Give_Feedback" />
+            </HyperlinkButton>
+
+            <TextBlock 
+                x:Uid="AttributionTitle"
+                Style="{StaticResource SettingsGroupTitleStyle}" />
+
+            <HyperlinkButton 
+                NavigateUri="https://github.com/martinchrzan/ColorPicker/">
+                <TextBlock Text="Martin Chrzan's Color Picker" TextWrapping="Wrap" />
+            </HyperlinkButton>
+        </StackPanel>
+    </Grid>
+</Page>

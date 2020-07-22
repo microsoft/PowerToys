@@ -22,13 +22,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 {
     public sealed partial class FancyZonesPage : Page
     {
-        public FancyZonesViewModel ViewModel { get; set; }
+        private FancyZonesViewModel ViewModel { get; set; }
 
         public FancyZonesPage()
         {
             this.InitializeComponent();
             ViewModel = new FancyZonesViewModel();
-            this.FZSettingsView.DataContext = ViewModel;
+            MainView.DataContext = ViewModel;
         }
     }
 }

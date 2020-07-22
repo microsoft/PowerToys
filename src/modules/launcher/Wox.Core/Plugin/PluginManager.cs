@@ -292,7 +292,7 @@ namespace Wox.Core.Plugin
         {
             foreach (var plugin in AllPlugins)
             {
-                var disposablePlugin = plugin as IDisposable;
+                var disposablePlugin = plugin.Plugin as IDisposable;
                 disposablePlugin?.Dispose();
             }
         }

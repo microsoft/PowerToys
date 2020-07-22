@@ -11,7 +11,6 @@ using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using Microsoft.Plugin.Program.Views;
-
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 using Windows.ApplicationModel;
 using Microsoft.Plugin.Program.Storage;
@@ -22,36 +21,39 @@ namespace Microsoft.Plugin.Program
     public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable, IReloadable, IDisposable
     {
         private static readonly object IndexLock = new object();
-        internal static Programs.Win32[] _win32s { get; set; }
         internal static Settings _settings { get; set; }
 
         private static bool IsStartupIndexProgramsRequired => _settings.LastIndexTime.AddDays(3) < DateTime.Today;
 
         private static PluginInitContext _context;
 
-        private static BinaryStorage<Programs.Win32[]> _win32Storage;
         private readonly PluginJsonStorage<Settings> _settingsStorage;
         private bool _disposed = false;
         private PackageRepository _packageRepository = new PackageRepository(new PackageCatalogWrapper(), new BinaryStorage<IList<UWP.Application>>("UWP"));
+        private static Win32ProgramFileSystemWatchers _win32ProgramRepositoryHelper;
+        private static Win32ProgramRepository _win32ProgramRepository;
 
         public Main()
         {
             _settingsStorage = new PluginJsonStorage<Settings>();
             _settings = _settingsStorage.Load();
+            // This helper class initializes the file system watchers based on the locations to watch
+            _win32ProgramRepositoryHelper = new Win32ProgramFileSystemWatchers();
+
+            // Initialize the Win32ProgramRepository with the settings object
+            _win32ProgramRepository = new Win32ProgramRepository(_win32ProgramRepositoryHelper._fileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList(), new BinaryStorage<IList<Programs.Win32>>("Win32"), _settings, _win32ProgramRepositoryHelper._pathsToWatch);
 
             Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Preload programs cost", () =>
             {
-                _win32Storage = new BinaryStorage<Programs.Win32[]>("Win32");
-                _win32s = _win32Storage.TryLoad(new Programs.Win32[] { });
-
+                _win32ProgramRepository.Load();
                 _packageRepository.Load();
             });
-            Log.Info($"|Microsoft.Plugin.Program.Main|Number of preload win32 programs <{_win32s.Length}>");
+            Log.Info($"|Microsoft.Plugin.Program.Main|Number of preload win32 programs <{_win32ProgramRepository.Count()}>");
 
             var a = Task.Run(() =>
             {
-                if (IsStartupIndexProgramsRequired || !_win32s.Any())
-                    Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Win32Program index cost", IndexWin32Programs);
+                if (IsStartupIndexProgramsRequired || !_win32ProgramRepository.Any())
+                    Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Win32Program index cost", _win32ProgramRepository.IndexPrograms);
             });
 
             var b = Task.Run(() =>
@@ -64,26 +66,19 @@ namespace Microsoft.Plugin.Program
             Task.WaitAll(a, b);
 
             _settings.LastIndexTime = DateTime.Today;
+            
         }
 
         public void Save()
         {
             _settingsStorage.Save();
-            _win32Storage.Save(_win32s);
+            _win32ProgramRepository.Save();
             _packageRepository.Save();
         }
 
         public List<Result> Query(Query query)
         {
-            Programs.Win32[] win32;
-
-            lock (IndexLock)
-            {
-                // just take the reference inside the lock to eliminate query time issues.
-                win32 = _win32s;
-            }
-
-            var results1 = win32.AsParallel()
+            var results1 = _win32ProgramRepository.AsParallel()
                 .Where(p => p.Enabled)
                 .Select(p => p.Result(query.Search, _context.API));
 
@@ -115,20 +110,9 @@ namespace Microsoft.Plugin.Program
             }
         }
 
-        public static void IndexWin32Programs()
-        {
-            var win32S = Programs.Win32.All(_settings);
-            lock (IndexLock)
-            {
-                _win32s = win32S;
-            }
-        }
-
-
-
         public void IndexPrograms()
         {
-            var t1 = Task.Run(() => IndexWin32Programs());
+            var t1 = Task.Run(() => _win32ProgramRepository.IndexPrograms());
             var t2 = Task.Run(() => _packageRepository.IndexPrograms());
 
             Task.WaitAll(t1, t2);
@@ -194,10 +178,10 @@ namespace Microsoft.Plugin.Program
                 if (disposing)
                 {
                     _context.API.ThemeChanged -= OnThemeChanged;
+                    _win32ProgramRepositoryHelper.Dispose();
                     _disposed = true;
                 }
             }
         }
-
     }
 }
