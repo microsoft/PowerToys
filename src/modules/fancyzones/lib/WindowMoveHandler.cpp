@@ -284,7 +284,6 @@ void WindowMoveHandlerPrivate::MoveSizeUpdate(HMONITOR monitor, POINT const& ptS
                     m_zoneWindowMoveSize->ClearSelectedZones();
                     if (!m_settings->GetSettings()->showZonesOnAllMonitors)
                     {
-                        ResetWindowTransparency(); 
                         m_zoneWindowMoveSize->HideZoneWindow();
                     }
 
