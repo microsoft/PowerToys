@@ -25,6 +25,7 @@
 
 IWICImagingFactory* _GetWIC()
 {
+    LogToFile(std::string("_GetWIC() failed with code: " + hr));
     static IWICImagingFactory* s_Factory = nullptr;
 
     if (s_Factory)
@@ -39,6 +40,7 @@ IWICImagingFactory* _GetWIC()
 
     if (FAILED(hr))
     {
+        LogToFile(std::string("_GetWIC() failed with code: " + hr));
         s_Factory = nullptr;
         return nullptr;
     }
