@@ -44,16 +44,17 @@ steps:
       !**\*PowerToysTests.dll
       !**\*TestAdapter.dll
       !**\obj\**
-      **\ImageResizer.Test.dll
-      **\KeyboardManagerTest.dll
-      **\Microsoft.Plugin.Program.UnitTests.dll
-      **\PowerRenameUnitTests.dll
-      **\UnitTests-CommonLib.dll
-      **\PreviewPaneUnitTests.dll
-      **\UnitTests-PreviewHandlerCommon.dll
-      **\UnitTests-SvgPreviewHandler.dll
-      **\Wox.Test.dll
-      **\powerpreviewTest.dll
+      **\Microsoft.PowerToys.Settings.UnitTest.exe
+      #**\ImageResizer.Test.dll
+      #**\KeyboardManagerTest.dll
+      #**\Microsoft.Plugin.Program.UnitTests.dll
+      #**\PowerRenameUnitTests.dll
+      #**\UnitTests-CommonLib.dll
+      #**\PreviewPaneUnitTests.dll
+      #**\UnitTests-PreviewHandlerCommon.dll
+      #**\UnitTests-SvgPreviewHandler.dll
+      #**\Wox.Test.dll
+      #**\powerpreviewTest.dll
       #Unknown
       #  settings
       #crashes CI
