@@ -50,11 +50,11 @@ steps:
       # unsure if we can unittest these since it is an actual EXE being run
       # **\Settings
       **\PowerRenameUnitTests.dll
-      #**\UnitTests-CommonLib.dll
+      **\UnitTests-CommonLib.dll
       #**\UnitTests-FancyZones.dll
       #**\PreviewPaneUnitTests.dll
       #**\UnitTests-PreviewHandlerCommon.dll
       #**\UnitTests-SvgPreviewHandler.dll
-      #**\Wox.Test.dll
+      **\Wox.Test.dll
       #**\interop-tests.dll
       #**\powerpreviewTest.dll
