@@ -12,7 +12,7 @@ namespace Wox.Test
     class ResultsViewModelTest
     {
         [Test]
-        public void ResultsViewModel_HasNoContextMenuSelected_WhenInitialized()
+        public void ContextMenuSelectedIndex_ShouldEqualNoSelectionIndex_WhenInitialized()
         {
             // Arrange
             ResultsViewModel rvm = new ResultsViewModel();
@@ -29,7 +29,7 @@ namespace Wox.Test
         }
 
         [Test]
-        public void ResultsViewModel_SelectsNextContextMenu_WhenSelectNextContextMenuItemIsCalled()
+        public void SelectNextContextMenuItem_IncrementsContextMenuSelectedIndex_WhenCalled()
         {
             // Arrange
             ResultsViewModel rvm = new ResultsViewModel();
@@ -50,7 +50,7 @@ namespace Wox.Test
         }
 
         [Test]
-        public void ResultsViewModel_SelectsLastContextMenu_WhenSelectNextContextMenuItemIsCalledOnLastItem()
+        public void SelectNextContextMenuItem_DoesnNotIncrementContextMenuSelectedIndex_WhenCalledOnLastItem()
         {
             // Arrange
             ResultsViewModel rvm = new ResultsViewModel();
@@ -71,7 +71,7 @@ namespace Wox.Test
         }
 
         [Test]
-        public void ResultsViewModel_SelectsPreviousContextMenu_WhenSelectPreviousContextMenuItemIsCalled()
+        public void SelectPreviousContextMenuItem_DecrementsContextMenuSelectedIndex_WhenCalled()
         {
             // Arrange
             ResultsViewModel rvm = new ResultsViewModel();
@@ -103,7 +103,7 @@ namespace Wox.Test
         }
 
         [Test]
-        public void ResultsViewModel_UnSelectAllContextMenuItems_WhenSelectPreviousContextMenuItemIsCalledOnFirstItem()
+        public void SelectPreviousContextMenuItem_ResetsContextMenuSelectedIndex_WhenCalledOnFirstItem()
         {
             // Arrange
             ResultsViewModel rvm = new ResultsViewModel();
@@ -125,7 +125,7 @@ namespace Wox.Test
         }
 
         [Test]
-        public void ResultsViewModel_ReturnsTrueIfContextMenuItemIsSelected_WhenIsContextMenuItemSelectedIsCalled()
+        public void IsContextMenuItemSelected_ReturnsTrue_WhenContextMenuItemIsSelected()
         {
             // Arrange
             ResultsViewModel rvm = new ResultsViewModel();
@@ -140,13 +140,14 @@ namespace Wox.Test
 
             // Act
             rvm.SelectNextContextMenuItem();
+            bool isContextMenuItemSelected = rvm.IsContextMenuItemSelected();
 
             // Assert
-            Assert.IsTrue(rvm.IsContextMenuItemSelected());
+            Assert.IsTrue(isContextMenuItemSelected);
         }
 
         [Test]
-        public void ResultsViewModel_ReturnsFalseIfNoContextMenuItemIsSelected_WhenIsContextMenuItemSelectedIsCalled()
+        public void IsContextMenuItemSelected_ReturnsFalse_WhenContextMenuItemIsNotSelected()
         {
             // Arrange
             ResultsViewModel rvm = new ResultsViewModel();
@@ -162,9 +163,10 @@ namespace Wox.Test
             // Act
             rvm.SelectNextContextMenuItem();
             rvm.SelectPreviousContextMenuItem();
+            bool isContextMenuItemSelected = rvm.IsContextMenuItemSelected();
 
             // Assert
-            Assert.IsFalse(rvm.IsContextMenuItemSelected());
+            Assert.IsFalse(isContextMenuItemSelected);
         }
     }
 }
