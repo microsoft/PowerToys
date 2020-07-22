@@ -177,7 +177,7 @@ IFACEMETHODIMP CPowerRenameItem::ShouldRenameItem(_In_ DWORD flags, _Out_ bool* 
     bool excludeBecauseFolder = (m_isFolder && (flags & PowerRenameFlags::ExcludeFolders));
     bool excludeBecauseFile = (!m_isFolder && (flags & PowerRenameFlags::ExcludeFiles));
     bool excludeBecauseSubFolderContent = (m_depth > 0 && (flags & PowerRenameFlags::ExcludeSubfolders));
-    *shouldRename = (m_selected && hasChanged && !excludeBecauseFile &&
+    *shouldRename = (m_selected && m_canRename && hasChanged && !excludeBecauseFile &&
                      !excludeBecauseFolder && !excludeBecauseSubFolderContent);
 
     return S_OK;
@@ -237,12 +237,16 @@ HRESULT CPowerRenameItem::_Init(_In_ IShellItem* psi)
         if (SUCCEEDED(hr))
         {
             // Check if we are a folder now so we can check this attribute quickly later
+            // Also check if the shell allows us to rename the item.
             SFGAOF att = 0;
-            hr = psi->GetAttributes(SFGAO_STREAM | SFGAO_FOLDER, &att);
+            hr = psi->GetAttributes(SFGAO_STREAM | SFGAO_FOLDER | SFGAO_CANRENAME, &att);
             if (SUCCEEDED(hr))
             {
                 // Some items can be both folders and streams (ex: zip folders).
                 m_isFolder = (att & SFGAO_FOLDER) && !(att & SFGAO_STREAM);
+                // The shell lets us know if an item should not be renamed
+                // (ex: user profile director, windows dir, etc).
+                m_canRename = (att & SFGAO_CANRENAME);
             }
         }
     }
