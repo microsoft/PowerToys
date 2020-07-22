@@ -96,10 +96,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CameraStateUpdateChannels.cpp" />
+    <ClCompile Include="Logging.cpp" />
     <ClCompile Include="SerializedSharedMemory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraStateUpdateChannels.h" />
+    <ClInclude Include="Logging.h" />
     <ClInclude Include="SerializedSharedMemory.h" />
   </ItemGroup>
   <ItemGroup>

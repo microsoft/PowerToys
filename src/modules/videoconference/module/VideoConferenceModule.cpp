@@ -11,6 +11,8 @@
 
 #include <CameraStateUpdateChannels.h>
 
+#include "logging.h"
+
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 VideoConferenceModule* instance = nullptr;
@@ -374,20 +376,24 @@ void VideoConferenceModule::sendOverlayImageUpdate()
 {
     if (!_settingsUpdateChannel.has_value())
     {
+        LogToFile("!_settingsUpdateChannel.has_value()");
         return;
     }
     _imageOverlayChannel.reset();
 
-    TCHAR* dest = new TCHAR[255];
+    TCHAR* powertoysDirectory = new TCHAR[255];
 
-    DWORD length = GetModuleFileName(NULL, dest, 255);
-    PathRemoveFileSpec(dest);
+    DWORD length = GetModuleFileName(NULL, powertoysDirectory, 255);
+    PathRemoveFileSpec(powertoysDirectory);
 
-    std::wstring str(dest);
-    str += L"\\modules\\VideoConference\\black.bmp";
+    std::wstring blankImagePath(powertoysDirectory);
+    blankImagePath += L"\\modules\\VideoConference\\black.bmp";
+
+    LogToFile(std::string(blankImagePath.begin(), blankImagePath.end()) + " - blankImagePath");
+    LogToFile(std::string(imageOverlayPath.begin(), imageOverlayPath.end()) + " - imageOverlayPath");
 
     _imageOverlayChannel = SerializedSharedMemory::create_readonly(CameraOverlayImageChannel::endpoint(),
-                                                                   imageOverlayPath != L"" ? imageOverlayPath : str);
+                                                                   imageOverlayPath != L"" ? imageOverlayPath : blankImagePath);
 
     const size_t imageSize = _imageOverlayChannel->size();
     _settingsUpdateChannel->access([imageSize](auto memory) {

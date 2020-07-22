@@ -107,14 +107,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllMain.cpp" />
-    <ClCompile Include="Logging.cpp" />
     <ClCompile Include="SimpleMediaSource.cpp" />
     <ClCompile Include="SimpleMediaStream.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="ImageLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Logging.h" />
     <ClInclude Include="SimpleMediaSource.h" />
     <ClInclude Include="SimpleMediaStream.h" />
     <ClInclude Include="stdafx.h" />

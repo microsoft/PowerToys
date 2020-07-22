@@ -584,14 +584,18 @@ bool SimpleMediaStream::SyncCurrentSettings()
     bool webcamDisabled = false;
     if (!_settingsUpdateChannel.has_value())
     {
+        LogToFile("!_settingsUpdateChannel.has_value()");
         _settingsUpdateChannel = SerializedSharedMemory::open(CameraSettingsUpdateChannel::endpoint(), sizeof(CameraSettingsUpdateChannel), false);
     }
     if (!_settingsUpdateChannel)
     {
+        LogToFile("!_settingsUpdateChannel");
         return webcamDisabled;
     }
 
     _settingsUpdateChannel->access([this, &webcamDisabled](auto settingsMemory) {
+        LogToFile("_settingsUpdateChannel->access lambda");
+
         auto settings = reinterpret_cast<CameraSettingsUpdateChannel*>(settingsMemory.data());
         bool cameraNameUpdated = false;
         std::wstring_view newCameraName;
@@ -613,25 +617,31 @@ bool SimpleMediaStream::SyncCurrentSettings()
 
         if (!settings->overlayImageSize.has_value())
         {
+            LogToFile("!settings->overlayImageSize.has_value()");
             return;
         }
 
         if (settings->newOverlayImagePosted || !_overlayImage || cameraUpdated)
         {
+            LogToFile("settings->newOverlayImagePosted || !_overlayImage || cameraUpdated");
             auto imageChannel =
                 SerializedSharedMemory::open(CameraOverlayImageChannel::endpoint(), *settings->overlayImageSize, true);
             if (!imageChannel)
             {
+                LogToFile("!imageChannel");
                 return;
             }
             imageChannel->access([this, settings](auto imageMemory) {
+                LogToFile("imageChannel->access([this, settings](auto imageMemory)");
                 ComPtr<IStream> imageStream = SHCreateMemStream(imageMemory.data(), static_cast<UINT>(imageMemory.size()));
                 if (!imageStream)
                 {
+                    LogToFile("!imageStream");
                     return;
                 }
                 if (auto imageSample = LoadImageAsSample(imageStream, _spMediaType.Get()))
                 {
+                    LogToFile("auto imageSample = LoadImageAsSample(imageStream, _spMediaType.Get())");
                     _overlayImage = imageSample;
                     settings->newOverlayImagePosted = false;
                 }
