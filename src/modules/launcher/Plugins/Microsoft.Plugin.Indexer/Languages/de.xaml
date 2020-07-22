@@ -8,7 +8,7 @@
     <system:String x:Key="Microsoft_plugin_indexer_open_in_console">Open path in console (Ctrl+Shift+C)</system:String>    
     <system:String x:Key="Microsoft_plugin_indexer_name">Name</system:String>
     <system:String x:Key="Microsoft_plugin_indexer_path">Path</system:String>
-    <system:String x:Key="Microsoft_plugin_indexer_drivedetectionwarning">Warning: Detected that not all drives are indexed.</system:String>
+    <system:String x:Key="Microsoft_plugin_indexer_drivedetectionwarning">Warning: Not all drives are indexed.</system:String>
     <system:String x:Key="Microsoft_plugin_indexer_disable_warning_in_settings">Click to go to Windows Search settings to fix.</system:String>
     
 </ResourceDictionary>
