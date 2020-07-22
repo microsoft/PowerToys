@@ -27,15 +27,13 @@
 
 IWICImagingFactory* _GetWIC()
 {
-    HRESULT hr = S_OK;
-
     LogToFile(__FUNCTION__);
     static IWICImagingFactory* s_Factory = nullptr;
 
     if (s_Factory)
         return s_Factory;
 
-    hr = CoCreateInstance(
+    HRESULT hr = CoCreateInstance(
         CLSID_WICImagingFactory,
         nullptr,
         CLSCTX_INPROC_SERVER,
@@ -56,6 +54,8 @@ using Microsoft::WRL::ComPtr;
 
 ComPtr<IMFSample> LoadImageAsSample(ComPtr<IStream> imageStream, IMFMediaType* sampleMediaType)
 {
+    LogToFile(__FUNCTION__);
+
     // Get target sample frame dimensions
     UINT targetWidth = 0;
     UINT targetHeight = 0;
