@@ -88,12 +88,7 @@ namespace PowerLauncher
             SearchBox.AutoCompleteTextBlock.FlowDirection = MainViewModel.GetLanguageFlowDirection();
 
             // Register language changed event
-            System.Windows.Input.InputLanguageManager.Current.InputLanguageChanged +=
-               new InputLanguageEventHandler((s, e) =>
-               {
-                   SearchBox.QueryTextBox.FlowDirection = MainViewModel.GetLanguageFlowDirection();
-                   SearchBox.AutoCompleteTextBlock.FlowDirection = MainViewModel.GetLanguageFlowDirection();
-               });
+            InputLanguageManager.Current.InputLanguageChanged += SearchBox_InputLanguageChanged;
 
             SearchBox.QueryTextBox.Focus();
 
@@ -375,6 +370,12 @@ namespace PowerLauncher
         private void OutroStoryboard_Completed(object sender, EventArgs e)
         {
             Hide();
+        }
+
+        private void SearchBox_InputLanguageChanged(object sender, InputLanguageEventArgs e) 
+        {
+            SearchBox.QueryTextBox.FlowDirection = MainViewModel.GetLanguageFlowDirection();
+            SearchBox.AutoCompleteTextBlock.FlowDirection = MainViewModel.GetLanguageFlowDirection();
         }
 
         protected virtual void Dispose(bool disposing)
