@@ -82,6 +82,19 @@ namespace PowerLauncher
             SearchBox.QueryTextBox.DataContext = _viewModel;
             SearchBox.QueryTextBox.PreviewKeyDown += _launcher_KeyDown;
             SearchBox.QueryTextBox.TextChanged += QueryTextBox_TextChanged;
+
+            // Set initial language flow direction
+            SearchBox.QueryTextBox.FlowDirection = MainViewModel.GetLanguageFlowDirection();
+            SearchBox.AutoCompleteTextBlock.FlowDirection = MainViewModel.GetLanguageFlowDirection();
+
+            // Register language changed event
+            System.Windows.Input.InputLanguageManager.Current.InputLanguageChanged +=
+               new InputLanguageEventHandler((s, e) =>
+               {
+                   SearchBox.QueryTextBox.FlowDirection = MainViewModel.GetLanguageFlowDirection();
+                   SearchBox.AutoCompleteTextBlock.FlowDirection = MainViewModel.GetLanguageFlowDirection();
+               });
+
             SearchBox.QueryTextBox.Focus();
 
             ListBox.DataContext = _viewModel;

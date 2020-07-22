@@ -261,7 +261,6 @@ namespace PowerLauncher.ViewModel
         public string SystemQueryText { get; set; } = String.Empty;
 
         public string QueryText { get; set; } = String.Empty;
-      
 
         /// <summary>
         /// we need move cursor to end when we manually changed query
@@ -772,6 +771,20 @@ namespace PowerLauncher.ViewModel
             }
 
             return string.Empty;
+        }
+
+        public static FlowDirection GetLanguageFlowDirection()
+        {
+            bool isCurrentLanguageRightToLeft = System.Windows.Input.InputLanguageManager.Current.CurrentInputLanguage.TextInfo.IsRightToLeft;
+
+            if (isCurrentLanguageRightToLeft)
+            {
+                return FlowDirection.RightToLeft;
+            }
+            else
+            {
+                return FlowDirection.LeftToRight;
+            }
         }
 
         protected virtual void Dispose(bool disposing)
