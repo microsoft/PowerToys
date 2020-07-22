@@ -124,3 +124,6 @@ bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& excludedA
 void SaveWindowSizeAndOrigin(HWND window) noexcept;
 void RestoreWindowSize(HWND window) noexcept;
 void RestoreWindowOrigin(HWND window) noexcept;
+
+bool IsValidGuid(const std::wstring& str);
+bool IsValidDeviceId(const std::wstring& str);

@@ -197,7 +197,7 @@ namespace Microsoft.Plugin.Folder
                 {
                     if ((fileSystemInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
 
-                    if(fileSystemInfo is DirectoryInfo)
+                    if (fileSystemInfo is DirectoryInfo)
                     {
                         var folderSubtitleString = fileSystemInfo.FullName;
 
@@ -246,7 +246,7 @@ namespace Microsoft.Plugin.Folder
 
                     return true;
                 },
-                ContextData = new SearchResult { Type = ResultType.File, FullPath = filePath}
+                ContextData = new SearchResult { Type = ResultType.File, FullPath = filePath }
             };
             return result;
         }

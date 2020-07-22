@@ -2,6 +2,8 @@
 
 #include <common/common.h>
 
+#include "FancyZonesData.h"
+#include "FancyZonesDataTypes.h"
 #include "ZoneWindow.h"
 #include "trace.h"
 #include "util.h"
@@ -14,48 +16,6 @@
 
 namespace ZoneWindowUtils
 {
-    const wchar_t ActiveZoneSetsTmpFileName[] = L"FancyZonesActiveZoneSets.json";
-    const wchar_t AppliedZoneSetsTmpFileName[] = L"FancyZonesAppliedZoneSets.json";
-    const wchar_t DeletedCustomZoneSetsTmpFileName[] = L"FancyZonesDeletedCustomZoneSets.json";
-
-    const std::wstring& GetTempDirPath()
-    {
-        static std::wstring tmpDirPath;
-        static std::once_flag flag;
-
-        std::call_once(flag, []() {
-            wchar_t buffer[MAX_PATH];
-
-            auto charsWritten = GetTempPath(MAX_PATH, buffer);
-            if (charsWritten > MAX_PATH || (charsWritten == 0))
-            {
-                abort();            
-            }
-
-            tmpDirPath = std::wstring{ buffer };
-        });
-
-        return tmpDirPath;
-    }
-
-    const std::wstring& GetActiveZoneSetTmpPath()
-    {
-        static std::wstring activeZoneSetTmpFileName = GetTempDirPath() + ActiveZoneSetsTmpFileName;
-        return activeZoneSetTmpFileName;
-    }
-
-    const std::wstring& GetAppliedZoneSetTmpPath()
-    {
-        static std::wstring appliedZoneSetTmpFileName = GetTempDirPath() + AppliedZoneSetsTmpFileName;
-        return appliedZoneSetTmpFileName;
-    }
-
-    const std::wstring& GetDeletedCustomZoneSetsTmpPath()
-    {
-        static std::wstring deletedCustomZoneSetsTmpFileName = GetTempDirPath() + DeletedCustomZoneSetsTmpFileName;
-        return deletedCustomZoneSetsTmpFileName;
-    }
-
     std::wstring GenerateUniqueId(HMONITOR monitor, PCWSTR deviceId, PCWSTR virtualDesktopId)
     {
         wchar_t uniqueId[256]{}; // Parsed deviceId + resolution + virtualDesktopId
@@ -215,8 +175,6 @@ public:
     IFACEMETHODIMP MoveSizeUpdate(POINT const& ptScreen, bool dragEnabled, bool selectManyZones) noexcept;
     IFACEMETHODIMP MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept;
     IFACEMETHODIMP_(void)
-    RestoreOriginalTransparency() noexcept;
-    IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByIndex(HWND window, int index) noexcept;
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByIndexSet(HWND window, const std::vector<int>& indexSet) noexcept;
@@ -271,13 +229,7 @@ private:
     size_t m_keyCycle{};
     static const UINT m_showAnimationDuration = 200; // ms
     static const UINT m_flashDuration = 700; // ms
-
-    HWND draggedWindow = nullptr;
-    long draggedWindowExstyle = 0;
-    COLORREF draggedWindowCrKey = RGB(0, 0, 0);
-    DWORD draggedWindowDwFlags = 0;
-    BYTE draggedWindowInitialAlpha = 0;
-
+    
     ULONG_PTR gdiplusToken;
 };
 
@@ -349,25 +301,6 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
 
 IFACEMETHODIMP ZoneWindow::MoveSizeEnter(HWND window) noexcept
 {
-    if (m_windowMoveSize)
-    {
-        return E_INVALIDARG;
-    }
-
-    if (m_host->isMakeDraggedWindowTransparentActive())
-    {
-        draggedWindowExstyle = GetWindowLong(window, GWL_EXSTYLE);
-
-        draggedWindow = window;
-        SetWindowLong(window,
-                      GWL_EXSTYLE,
-                      draggedWindowExstyle | WS_EX_LAYERED);
-
-        GetLayeredWindowAttributes(window, &draggedWindowCrKey, &draggedWindowInitialAlpha, &draggedWindowDwFlags);
-
-        SetLayeredWindowAttributes(window, 0, (255 * 50) / 100, LWA_ALPHA);
-    }
-
     m_windowMoveSize = window;
     m_drawHints = true;
     m_highlightZone = {};
@@ -458,8 +391,6 @@ IFACEMETHODIMP ZoneWindow::MoveSizeUpdate(POINT const& ptScreen, bool dragEnable
 
 IFACEMETHODIMP ZoneWindow::MoveSizeEnd(HWND window, POINT const& ptScreen) noexcept
 {
-    RestoreOriginalTransparency();
-
     if (m_windowMoveSize != window)
     {
         return E_INVALIDARG;
@@ -478,17 +409,6 @@ IFACEMETHODIMP ZoneWindow::MoveSizeEnd(HWND window, POINT const& ptScreen) noexc
     HideZoneWindow();
     m_windowMoveSize = nullptr;
     return S_OK;
-}
-
-IFACEMETHODIMP_(void)
-ZoneWindow::RestoreOriginalTransparency() noexcept
-{
-    if (m_host->isMakeDraggedWindowTransparentActive() && draggedWindow != nullptr)
-    {
-        SetLayeredWindowAttributes(draggedWindow, draggedWindowCrKey, draggedWindowInitialAlpha, draggedWindowDwFlags);
-        SetWindowLong(draggedWindow, GWL_EXSTYLE, draggedWindowExstyle);
-        draggedWindow = nullptr;
-    }
 }
 
 IFACEMETHODIMP_(void)
@@ -546,7 +466,7 @@ ZoneWindow::SaveWindowProcessToZoneIndex(HWND window) noexcept
             OLECHAR* guidString;
             if (StringFromCLSID(m_activeZoneSet->Id(), &guidString) == S_OK)
             {
-                JSONHelpers::FancyZonesDataInstance().SetAppLastZones(window, m_uniqueId, guidString, zoneIndexSet);
+                FancyZonesDataInstance().SetAppLastZones(window, m_uniqueId, guidString, zoneIndexSet);
             }
 
             CoTaskMemFree(guidString);
@@ -619,17 +539,17 @@ ZoneWindow::ClearSelectedZones() noexcept
 void ZoneWindow::InitializeZoneSets(const std::wstring& parentUniqueId) noexcept
 {
     // If there is not defined zone layout for this work area, created default entry.
-    JSONHelpers::FancyZonesDataInstance().AddDevice(m_uniqueId);
+    FancyZonesDataInstance().AddDevice(m_uniqueId);
     if (!parentUniqueId.empty())
     {
-        JSONHelpers::FancyZonesDataInstance().CloneDeviceInfo(parentUniqueId, m_uniqueId);
+        FancyZonesDataInstance().CloneDeviceInfo(parentUniqueId, m_uniqueId);
     }
     CalculateZoneSet();
 }
 
 void ZoneWindow::CalculateZoneSet() noexcept
 {
-    const auto& fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+    const auto& fancyZonesData = FancyZonesDataInstance();
     const auto deviceInfoData = fancyZonesData.FindDeviceInfo(m_uniqueId);
 
     if (!deviceInfoData.has_value())
@@ -639,7 +559,7 @@ void ZoneWindow::CalculateZoneSet() noexcept
 
     const auto& activeZoneSet = deviceInfoData->activeZoneSet;
 
-    if (activeZoneSet.uuid.empty() || activeZoneSet.type == JSONHelpers::ZoneSetLayoutType::Blank)
+    if (activeZoneSet.uuid.empty() || activeZoneSet.type == FancyZonesDataTypes::ZoneSetLayoutType::Blank)
     {
         return;
     }
@@ -674,11 +594,11 @@ void ZoneWindow::UpdateActiveZoneSet(_In_opt_ IZoneSet* zoneSet) noexcept
         wil::unique_cotaskmem_string zoneSetId;
         if (SUCCEEDED_LOG(StringFromCLSID(m_activeZoneSet->Id(), &zoneSetId)))
         {
-            JSONHelpers::ZoneSetData data{
+            FancyZonesDataTypes::ZoneSetData data{
                 .uuid = zoneSetId.get(),
                 .type = m_activeZoneSet->LayoutType()
             };
-            JSONHelpers::FancyZonesDataInstance().SetActiveZoneSet(m_uniqueId, data);
+            FancyZonesDataInstance().SetActiveZoneSet(m_uniqueId, data);
         }
     }
 }

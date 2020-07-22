@@ -49,10 +49,10 @@ namespace ViewModelTests
         {
             // Arrange
             GeneralViewModel viewModel = new GeneralViewModel();
-                        
+
             Assert.AreEqual(viewModel.RunningAsUserDefaultText, viewModel.RunningAsText);
             Assert.IsFalse(viewModel.IsElevated);
-            
+
             // Act
             viewModel.IsElevated = true;
 

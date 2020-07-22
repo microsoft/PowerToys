@@ -8,6 +8,7 @@ namespace Wox.Infrastructure.Storage
         // Events to watch out for
         event FileSystemEventHandler Created;
         event FileSystemEventHandler Deleted;
+        event FileSystemEventHandler Changed;
         event RenamedEventHandler Renamed;
 
         // Properties of File System watcher

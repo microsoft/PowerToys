@@ -2,7 +2,8 @@
 #include "trace.h"
 #include "lib/ZoneSet.h"
 #include "lib/Settings.h"
-#include "lib/JsonHelpers.h"
+#include "lib/FancyZonesData.h"
+#include "lib/FancyZonesDataTypes.h"
 
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,
@@ -71,7 +72,7 @@ void Trace::FancyZones::OnKeyDown(DWORD vkCode, bool win, bool control, bool inM
 
 void Trace::FancyZones::DataChanged() noexcept
 {
-    const JSONHelpers::FancyZonesData& data = JSONHelpers::FancyZonesDataInstance();
+    const FancyZonesData& data = FancyZonesDataInstance();
     int appsHistorySize = static_cast<int>(data.GetAppZoneHistoryMap().size());
     const auto& customZones = data.GetCustomZoneSetsMap();
     const auto& devices = data.GetDeviceInfoMap();
@@ -82,15 +83,15 @@ void Trace::FancyZones::DataChanged() noexcept
         return;
     }
 
-    auto getCustomZoneCount = [&data](const std::variant<JSONHelpers::CanvasLayoutInfo, JSONHelpers::GridLayoutInfo>& layoutInfo) -> int {
-        if (std::holds_alternative<JSONHelpers::GridLayoutInfo>(layoutInfo))
+    auto getCustomZoneCount = [&data](const std::variant<FancyZonesDataTypes::CanvasLayoutInfo, FancyZonesDataTypes::GridLayoutInfo>& layoutInfo) -> int {
+        if (std::holds_alternative<FancyZonesDataTypes::GridLayoutInfo>(layoutInfo))
         {
-            const auto& info = std::get<JSONHelpers::GridLayoutInfo>(layoutInfo);
+            const auto& info = std::get<FancyZonesDataTypes::GridLayoutInfo>(layoutInfo);
             return (info.rows() * info.columns());
         }
-        else if (std::holds_alternative<JSONHelpers::CanvasLayoutInfo>(layoutInfo))
+        else if (std::holds_alternative<FancyZonesDataTypes::CanvasLayoutInfo>(layoutInfo))
         {
-            const auto& info = std::get<JSONHelpers::CanvasLayoutInfo>(layoutInfo);
+            const auto& info = std::get<FancyZonesDataTypes::CanvasLayoutInfo>(layoutInfo);
             return static_cast<int>(info.zones.size());
         }
         return 0;
@@ -108,15 +109,15 @@ void Trace::FancyZones::DataChanged() noexcept
     std::wstring activeZoneSetInfo;
     for (const auto& [id, device] : devices)
     {
-        const JSONHelpers::ZoneSetLayoutType type = device.activeZoneSet.type;
+        const FancyZonesDataTypes::ZoneSetLayoutType type = device.activeZoneSet.type;
         if (!activeZoneSetInfo.empty())
         {
             activeZoneSetInfo += L"; ";
         }
-        activeZoneSetInfo += L"type: " + JSONHelpers::TypeToString(type);
+        activeZoneSetInfo += L"type: " + FancyZonesDataTypes::TypeToString(type);
 
         int zoneCount = -1;
-        if (type == JSONHelpers::ZoneSetLayoutType::Custom)
+        if (type == FancyZonesDataTypes::ZoneSetLayoutType::Custom)
         {
             const auto& activeCustomZone = customZones.find(device.activeZoneSet.uuid);
             if (activeCustomZone != customZones.end())

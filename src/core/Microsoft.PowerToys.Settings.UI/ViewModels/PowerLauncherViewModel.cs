@@ -184,7 +184,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
         }
-        
+
         public bool OverrideWinRKey
         {
             get
@@ -238,19 +238,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ClearInputOnLaunch
         {
-	        get
-	        {
-		        return settings.Properties.clear_input_on_launch;
-	        }
+            get
+            {
+                return settings.Properties.clear_input_on_launch;
+            }
 
-	        set
-	        {
-		        if (settings.Properties.clear_input_on_launch != value)
-		        {
-			        settings.Properties.clear_input_on_launch = value;
-			        UpdateSettings();
-		        }
-	        }
+            set
+            {
+                if (settings.Properties.clear_input_on_launch != value)
+                {
+                    settings.Properties.clear_input_on_launch = value;
+                    UpdateSettings();
+                }
+            }
         }
 
         public bool DisableDriveDetectionWarning

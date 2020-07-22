@@ -78,7 +78,7 @@ namespace Wox
         }
 
         public void ShowMsg(string title, string subTitle = "", string iconPath = "", bool useMainWindowAsOwner = true)
-        {           
+        {
         }
 
         public void InstallPlugin(string path)
@@ -115,16 +115,16 @@ namespace Wox
         {
             ThemeChanged?.Invoke(oldTheme, newTheme);
         }
-   
+
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
-            {            
+            {
                 if (disposing)
                 {
                     _themeManager.ThemeChanged -= OnThemeChanged;
                     _disposed = true;
-                }               
+                }
             }
         }
         #endregion

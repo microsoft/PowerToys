@@ -64,7 +64,7 @@ namespace Microsoft.Plugin.Program.Programs
             var nameMatch = StringMatcher.FuzzySearch(query, Name);
             var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
             var executableNameMatch = StringMatcher.FuzzySearch(query, ExecutableName);
-            var score = new[] { nameMatch.Score, descriptionMatch.Score/2, executableNameMatch.Score }.Max();
+            var score = new[] { nameMatch.Score, descriptionMatch.Score / 2, executableNameMatch.Score }.Max();
             return score;
         }
 
@@ -81,7 +81,7 @@ namespace Microsoft.Plugin.Program.Programs
         public bool FilterWebApplication(string query)
         {
             // If the app is not a web application, then do not filter it
-            if(!IsWebApplication())
+            if (!IsWebApplication())
             {
                 return false;
             }
@@ -101,7 +101,7 @@ namespace Microsoft.Plugin.Program.Programs
                     pathContainsQuery = true;
                 }
 
-                if(Name.Contains(subquery, StringComparison.OrdinalIgnoreCase))
+                if (Name.Contains(subquery, StringComparison.OrdinalIgnoreCase))
                 {
                     nameContainsQuery = true;
                 }
@@ -112,19 +112,19 @@ namespace Microsoft.Plugin.Program.Programs
         // Function to set the subtitle based on the Type of application
         private string SetSubtitle(IPublicAPI api)
         {
-            if(AppType == (uint)ApplicationTypes.WIN32_APPLICATION)
+            if (AppType == (uint)ApplicationTypes.WIN32_APPLICATION)
             {
                 return api.GetTranslation("powertoys_run_plugin_program_win32_application");
             }
-            else if(AppType == (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION)
+            else if (AppType == (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION)
             {
                 return api.GetTranslation("powertoys_run_plugin_program_internet_shortcut_application");
             }
-            else if(AppType == (uint)ApplicationTypes.WEB_APPLICATION)
+            else if (AppType == (uint)ApplicationTypes.WEB_APPLICATION)
             {
                 return api.GetTranslation("powertoys_run_plugin_program_web_application");
             }
-            else if(AppType == (uint)ApplicationTypes.RUN_COMMAND)
+            else if (AppType == (uint)ApplicationTypes.RUN_COMMAND)
             {
                 return api.GetTranslation("powertoys_run_plugin_program_run_command");
             }
@@ -153,7 +153,7 @@ namespace Microsoft.Plugin.Program.Programs
                 return null;
             }
 
-            if(!hasArguments)
+            if (!hasArguments)
             {
                 var noArgumentScoreModifier = 5;
                 score += noArgumentScoreModifier;
@@ -168,7 +168,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
 
             // NOTE: This is to display run commands only when there is an exact match, like in start menu
-            if(!QueryEqualsNameForRunCommands(query))
+            if (!QueryEqualsNameForRunCommands(query))
             {
                 return null;
             }
@@ -330,27 +330,27 @@ namespace Microsoft.Plugin.Program.Programs
             const string urlPrefix = "URL=";
             const string iconFilePrefix = "IconFile=";
 
-            foreach(string line in lines)
+            foreach (string line in lines)
             {
-                if(line.StartsWith(urlPrefix))
+                if (line.StartsWith(urlPrefix))
                 {
                     urlPath = line.Substring(urlPrefix.Length);
                     Uri uri = new Uri(urlPath);
 
                     // To filter out only those steam shortcuts which have 'run' or 'rungameid' as the hostname
-                    if(InternetShortcutURLPrefixes.Match(urlPath).Success)
+                    if (InternetShortcutURLPrefixes.Match(urlPath).Success)
                     {
                         validApp = true;
                     }
                 }
 
-                if(line.StartsWith(iconFilePrefix))
+                if (line.StartsWith(iconFilePrefix))
                 {
                     iconPath = line.Substring(iconFilePrefix.Length);
                 }
             }
 
-            if(!validApp)
+            if (!validApp)
             {
                 return new Win32() { Valid = false, Enabled = false };
             }
@@ -387,7 +387,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 const int MAX_PATH = 260;
                 StringBuilder buffer = new StringBuilder(MAX_PATH);
-                
+
                 string target = _helper.RetrieveTargetPath(path);
 
                 if (!string.IsNullOrEmpty(target))
@@ -473,25 +473,25 @@ namespace Microsoft.Plugin.Program.Programs
 
             string extension = Path.GetExtension(path);
 
-            if(extension.Equals(exeExtension, StringComparison.OrdinalIgnoreCase))
+            if (extension.Equals(exeExtension, StringComparison.OrdinalIgnoreCase))
             {
                 app = ExeProgram(path);
             }
-            else if(extension.Equals(lnkExtension, StringComparison.OrdinalIgnoreCase))
+            else if (extension.Equals(lnkExtension, StringComparison.OrdinalIgnoreCase))
             {
                 app = LnkProgram(path);
             }
-            else if(extension.Equals(apprefExtension, StringComparison.OrdinalIgnoreCase))
+            else if (extension.Equals(apprefExtension, StringComparison.OrdinalIgnoreCase))
             {
                 app = Win32Program(path);
             }
-            else if(extension.Equals(urlExtenion, StringComparison.OrdinalIgnoreCase))
+            else if (extension.Equals(urlExtenion, StringComparison.OrdinalIgnoreCase))
             {
                 app = InternetShortcutProgram(path);
             }
-            
+
             // if the app is valid, only then return the application, else return null
-            if(app?.Valid ?? false)
+            if (app?.Valid ?? false)
             {
                 return app;
             }
@@ -512,7 +512,7 @@ namespace Microsoft.Plugin.Program.Programs
             var files = new List<string>();
             var folderQueue = new Queue<string>();
             folderQueue.Enqueue(directory);
-            
+
             do
             {
                 var currentDirectory = folderQueue.Dequeue();
@@ -540,7 +540,7 @@ namespace Microsoft.Plugin.Program.Programs
                 try
                 {
                     // If the search is set to be non-recursive, then do not enqueue the child directories.
-                    if(!recursiveSearch)
+                    if (!recursiveSearch)
                     {
                         continue;
                     }
@@ -606,9 +606,9 @@ namespace Microsoft.Plugin.Program.Programs
             IEnumerable<String> toFilterAllPaths = new List<String>();
             bool isRecursiveSearch = true;
 
-            foreach(string path in searchPaths)
+            foreach (string path in searchPaths)
             {
-                if(path.Length > 0)
+                if (path.Length > 0)
                 {
                     // to expand any environment variables present in the path
                     string directory = Environment.ExpandEnvironmentVariables(path);
@@ -629,7 +629,7 @@ namespace Microsoft.Plugin.Program.Programs
             var allPrograms = programs1.Concat(programs2).Where(p => p.Valid)
                 .Concat(programs3).Where(p => p.Valid)
                 .Concat(programs4).Where(p => p.Valid)
-                .Select( p => { p.AppType = (uint)ApplicationTypes.RUN_COMMAND; return p; });
+                .Select(p => { p.AppType = (uint)ApplicationTypes.RUN_COMMAND; return p; });
 
             return allPrograms;
         }
@@ -644,7 +644,7 @@ namespace Microsoft.Plugin.Program.Programs
                 var _paths = ProgramPaths(location, suffixes);
                 toFilter = toFilter.Concat(_paths);
             }
-           
+
             var paths = toFilter
                         .Where(t1 => !disabledProgramsList.Any(x => x.UniqueIdentifier == t1))
                         .Select(t1 => t1)
@@ -665,7 +665,7 @@ namespace Microsoft.Plugin.Program.Programs
         {
             var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
             var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms);
-            List<string> IndexLocation = new List<string>() { directory1, directory2};
+            List<string> IndexLocation = new List<string>() { directory1, directory2 };
 
             return IndexPath(suffixes, IndexLocation);
         }
@@ -777,8 +777,8 @@ namespace Microsoft.Plugin.Program.Programs
         {
             public bool Equals(Win32 app1, Win32 app2)
             {
-                
-                if(!string.IsNullOrEmpty(app1.Name) && !string.IsNullOrEmpty(app2.Name)
+
+                if (!string.IsNullOrEmpty(app1.Name) && !string.IsNullOrEmpty(app2.Name)
                     && !string.IsNullOrEmpty(app1.ExecutableName) && !string.IsNullOrEmpty(app2.ExecutableName)
                     && !string.IsNullOrEmpty(app1.FullPath) && !string.IsNullOrEmpty(app2.FullPath))
                 {

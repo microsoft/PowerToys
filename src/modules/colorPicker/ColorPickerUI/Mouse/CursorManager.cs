@@ -38,7 +38,7 @@ namespace ColorPicker.Mouse
         {
             try
             {
-                if(curFile != null)
+                if (curFile != null)
                 {
                     Registry.SetValue(CursorsRegistryPath, cursorRegistryName, curFile);
                     Win32Apis.SystemParametersInfo(SPI_SETCURSORS, 0, new IntPtr(0), SPIF_SENDCHANGE);

@@ -589,6 +589,7 @@
         <File Source="$(var.BinX64Dir)modules\$(var.PowerRenameProjectName)\PowerRenameExt.dll" KeyPath="yes" />
         <RegistryKey Root="HKCR" Key="CLSID\{0440049F-D1DC-4E46-B27B-98393D79486B}">
           <RegistryValue Type="string" Value="PowerRename Shell Extension" />
+          <RegistryValue Type="string" Name="ContextMenuOptIn" Value="" />
           <RegistryValue Type="string" Key="InprocServer32" Value="[PowerRenameInstallFolder]PowerRenameExt.dll" />
           <RegistryValue Type="string" Key="InprocServer32" Name="ThreadingModel" Value="Apartment" />
         </RegistryKey>
@@ -980,6 +981,20 @@
       <Component Id="IndexerImagesComponent" Directory="IndexerImagesFolder" Guid="DB2E8D49-D104-425B-9616-952AC8CAB676">
         <?foreach File in indexer.dark.png;indexer.light.png;Warning.light.png;Warning.dark.png?>
           <File Id="Indexer_$(var.File)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\Images\$(var.File)" />
+        <?endforeach?>
+      </Component>
+      <Component Id="IndexerLanguagesComponent" Directory="IndexerLanguagesFolder" Guid="4B5ED306-7DD5-4EA6-9DBB-CF054929182C">
+        <?foreach LanguageFile in de.xaml;en.xaml;ja.xaml;pl.xaml;tr.xaml;zh-cn.xaml;zh-tw.xaml?>
+          <!--NB: Ids can't contain hyphens-->
+          <?if $(var.LanguageFile) = zh-cn.xaml?>
+            <?define IdSafeLanguage = zh_cn.xaml?>
+          <?elseif $(var.LanguageFile) = zh-tw.xaml?>
+            <?define IdSafeLanguage = zh_tw.xaml?>
+          <?else?>
+            <?define IdSafeLanguage = $(var.LanguageFile)?>
+          <?endif?>
+          <File Id="Indexer_Plugin_$(var.IdSafeLanguage)" Source="$(var.BinX64Dir)modules\launcher\Plugins\Microsoft.Plugin.Indexer\Languages\$(var.LanguageFile)" />
+          <?undef IdSafeLanguage?>
         <?endforeach?>
       </Component>
       <Component Id="IndexerpinyindbComponent" Directory="IndexerpinyindbFolder" Guid="48DE333A-80F8-400A-87F4-244DF0A2DB05">

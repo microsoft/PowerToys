@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Forms;
 
 namespace PowerToysTests
-{ 
+{
     [TestClass]
     public class FancyZonesEditorGridZoneResizeTests : FancyZonesEditor
     {
@@ -82,7 +82,7 @@ namespace PowerToysTests
             foreach (AppiumWebElement thumb in thumbs)
             {
                 int expected = thumb.Rect.X;
-                
+
                 Move(thumb, 0, false, false);
                 int actual = thumb.Rect.X;
 
@@ -242,7 +242,7 @@ namespace PowerToysTests
 
             ReadOnlyCollection<WindowsElement> zones = session.FindElementsByClassName("GridZone");
             Assert.AreEqual(4, zones.Count);
-            
+
             //check that zone was splitted vertically
             Assert.AreEqual(zones[0].Rect.Height, zones[1].Rect.Height);
             Assert.AreEqual(zones[1].Rect.Height, zones[2].Rect.Height);
@@ -311,7 +311,7 @@ namespace PowerToysTests
         [TestMethod]
         public void MoveVerticallyWithLimiter()
         {
-            OpenCreatorWindow("Rows", "Custom table layout creator", "EditTemplateButton"); 
+            OpenCreatorWindow("Rows", "Custom table layout creator", "EditTemplateButton");
             WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
             Assert.IsNotNull(gridEditor);
 
@@ -388,7 +388,7 @@ namespace PowerToysTests
 
             //move thumb
             AppiumWebElement thumb = thumbs[1]; //thumb from merged zone is still present 
-            Move(thumb, 0, false, true); 
+            Move(thumb, 0, false, true);
             Assert.IsTrue(thumb.Rect.Left <= moveStep);
             Assert.IsTrue(thumb.Rect.Right > 0);
         }
