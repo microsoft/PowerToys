@@ -645,6 +645,10 @@ bool SimpleMediaStream::SyncCurrentSettings()
                     _overlayImage = imageSample;
                     settings->newOverlayImagePosted = false;
                 }
+                else
+                {
+                    LogToFile("Failed to load image");
+                }
             });
         }
     });
