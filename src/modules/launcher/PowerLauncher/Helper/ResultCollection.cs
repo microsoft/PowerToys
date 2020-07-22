@@ -27,11 +27,11 @@ namespace PowerLauncher.Helper
         /// <param name="newItems"></param>
         public void Update(List<ResultViewModel> newItems)
         {
-            if(newItems == null)
+            if (newItems == null)
             {
                 throw new ArgumentNullException(nameof(newItems));
             }
-            
+
             int newCount = newItems.Count;
             int oldCount = Items.Count;
             int location = newCount > oldCount ? oldCount : newCount;

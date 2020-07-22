@@ -63,7 +63,7 @@ namespace Microsoft.Plugin.Calculator
         {
             return Translate(input, this.sourceCulture, this.targetCulture, this.splitRegexForSource);
         }
-        
+
         /// <summary>
         /// Translate from target to source culture.
         /// </summary>

@@ -25,7 +25,7 @@ namespace Wox.Infrastructure.Storage
 
         public ListRepository()
         {
-           
+
         }
 
         public void Set(IList<T> items)
@@ -35,7 +35,7 @@ namespace Wox.Infrastructure.Storage
             {
                 _items = new ConcurrentDictionary<int, T>(items.ToDictionary(i => i.GetHashCode()));
             }
-            catch(ArgumentException e)
+            catch (ArgumentException e)
             {
                 Log.Info($"|LisRepository.Set| Trying to insert a duplicate item", e.Message);
             }
@@ -52,7 +52,7 @@ namespace Wox.Infrastructure.Storage
             {
                 Log.Error($"|ListRepository.Add| Item Already Exists <{insertedItem}>");
             }
-     
+
         }
 
         public void Remove(T removedItem)

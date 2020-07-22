@@ -165,7 +165,7 @@ namespace PowerLauncher.ViewModel
         public void SelectNextTabItem()
         {
             //Do nothing if there is no selected item or we've selected the next context button
-            if(!SelectedItem?.SelectNextContextButton() ?? true)
+            if (!SelectedItem?.SelectNextContextButton() ?? true)
             {
                 SelectNextResult();
             }
@@ -320,6 +320,6 @@ namespace PowerLauncher.ViewModel
         }
         #endregion
 
-        
+
     }
 }

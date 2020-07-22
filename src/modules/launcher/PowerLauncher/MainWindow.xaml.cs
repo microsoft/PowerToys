@@ -110,7 +110,7 @@ namespace PowerLauncher
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if(e.PropertyName == nameof(MainViewModel.MainWindowVisibility)) 
+            if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
             {
                 if (Visibility == System.Windows.Visibility.Visible)
                 {
@@ -124,7 +124,7 @@ namespace PowerLauncher
                         _viewModel.LastQuerySelected = true;
                     }
                 }
-            }          
+            }
             else if (e.PropertyName == nameof(MainViewModel.SystemQueryText))
             {
                 this._isTextSetProgrammatically = true;
@@ -153,19 +153,19 @@ namespace PowerLauncher
 
         private void OnActivated(object sender, EventArgs e)
         {
-	        if (_settings.ClearInputOnLaunch)
-	        {
-		        _viewModel.ClearQueryCommand.Execute(null);
-	        }
+            if (_settings.ClearInputOnLaunch)
+            {
+                _viewModel.ClearQueryCommand.Execute(null);
+            }
         }
 
         private void OnDeactivated(object sender, EventArgs e)
         {
-	        if (_settings.HideWhenDeactivated)
+            if (_settings.HideWhenDeactivated)
             {
                 //(this.FindResource("OutroStoryboard") as Storyboard).Begin();
                 Hide();
-            }              
+            }
         }
 
         private void UpdatePosition()
@@ -176,7 +176,7 @@ namespace PowerLauncher
                 Top = _settings.WindowTop;
             }
             else
-            {              
+            {
                 Top = WindowTop();
                 Left = WindowLeft();
             }
@@ -290,7 +290,7 @@ namespace PowerLauncher
         private void SuggestionsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ListView listview = (ListView)sender;
-            _viewModel.Results.SelectedItem = (ResultViewModel) listview.SelectedItem;
+            _viewModel.Results.SelectedItem = (ResultViewModel)listview.SelectedItem;
             if (e.AddedItems.Count > 0 && e.AddedItems[0] != null)
             {
                 listview.ScrollIntoView(e.AddedItems[0]);
@@ -304,7 +304,7 @@ namespace PowerLauncher
                     _viewModel.Results.SelectedIndex,
                     _viewModel.Results.SelectedItem?.ToString(),
                     _viewModel.QueryText);
-            }          
+            }
         }
 
         private const int millisecondsToWait = 100;
@@ -312,7 +312,7 @@ namespace PowerLauncher
         private bool disposedValue = false;
 
         private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {          
+        {
             if (_isTextSetProgrammatically)
             {
                 var textBox = ((TextBox)sender);
@@ -345,7 +345,7 @@ namespace PowerLauncher
                 }));
             }
         }
-        
+
         private void ListBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Right)

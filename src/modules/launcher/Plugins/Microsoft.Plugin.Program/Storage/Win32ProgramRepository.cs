@@ -17,7 +17,7 @@ namespace Microsoft.Plugin.Program.Storage
         private IList<IFileSystemWatcherWrapper> _fileSystemWatcherHelpers;
         private string[] _pathsToWatch;
         private int _numberOfPathsToWatch;
-        private Collection<string> extensionsToWatch = new Collection<string>{ "*.exe", "*.lnk", "*.appref-ms", "*.url" };
+        private Collection<string> extensionsToWatch = new Collection<string> { "*.exe", "*.lnk", "*.appref-ms", "*.url" };
         private readonly string lnkExtension = ".lnk";
         private readonly string urlExtension = ".url";
 
@@ -33,7 +33,7 @@ namespace Microsoft.Plugin.Program.Storage
 
         private void InitializeFileSystemWatchers()
         {
-            for(int index = 0; index < _numberOfPathsToWatch; index++)
+            for (int index = 0; index < _numberOfPathsToWatch; index++)
             {
                 // To set the paths to monitor
                 _fileSystemWatcherHelpers[index].Path = _pathsToWatch[index];
@@ -77,7 +77,7 @@ namespace Microsoft.Plugin.Program.Storage
                 {
                     oldApp = new Win32() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = newApp.ExecutableName, FullPath = newApp.FullPath };
                 }
-                else if(extension.Equals(urlExtension, StringComparison.OrdinalIgnoreCase))
+                else if (extension.Equals(urlExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     oldApp = new Win32() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = Path.GetFileName(e.OldName), FullPath = newApp.FullPath };
                 }
@@ -126,7 +126,7 @@ namespace Microsoft.Plugin.Program.Storage
                     app = Programs.Win32.GetAppFromPath(path);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Info($"|Win32ProgramRepository|OnAppDeleted-{extension}Program|{path}|Unable to create program from {path}| {ex.Message}");
             }
@@ -154,7 +154,7 @@ namespace Microsoft.Plugin.Program.Storage
         // Unlike the rename event args, since we do not have a newPath, we iterate through all the programs and find the one with the same LnkResolved path.
         private Programs.Win32 GetAppWithSameLnkResolvedPath(string lnkResolvedPath)
         {
-            foreach(Programs.Win32 app in Items)
+            foreach (Programs.Win32 app in Items)
             {
                 if (lnkResolvedPath.ToLower().Equals(app.LnkResolvedPath))
                 {
@@ -167,7 +167,7 @@ namespace Microsoft.Plugin.Program.Storage
         private void OnAppCreated(object sender, FileSystemEventArgs e)
         {
             string path = e.FullPath;
-            if(!Path.GetExtension(path).Equals(urlExtension))
+            if (!Path.GetExtension(path).Equals(urlExtension))
             {
                 Programs.Win32 app = Programs.Win32.GetAppFromPath(path);
                 if (app != null)

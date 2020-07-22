@@ -49,10 +49,10 @@ namespace Microsoft.Plugin.Shell
                 _settings.ReplaceWinR = false;
             };
 
-            ShellComboBox.SelectedIndex = (int) _settings.Shell;
+            ShellComboBox.SelectedIndex = (int)_settings.Shell;
             ShellComboBox.SelectionChanged += (o, e) =>
             {
-                _settings.Shell = (Shell) ShellComboBox.SelectedIndex;
+                _settings.Shell = (Shell)ShellComboBox.SelectedIndex;
                 LeaveShellOpen.IsEnabled = _settings.Shell != Shell.RunCommand;
             };
         }

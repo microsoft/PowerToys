@@ -9,7 +9,6 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
-
     public class ShortcutGuideProperties
     {
         public ShortcutGuideProperties()

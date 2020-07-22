@@ -44,7 +44,7 @@ namespace Microsoft.Plugin.Calculator
                 var result = MagesEngine.Interpret(query.Search);
 
                 // This could happen for some incorrect queries, like pi(2) 
-                if(result == null)
+                if (result == null)
                 {
                     return new List<Result>();
                 }
@@ -86,7 +86,7 @@ namespace Microsoft.Plugin.Calculator
                                 thread.Join();
                                 return ret;
                             }
-                        } 
+                        }
                     };
                 }
             }

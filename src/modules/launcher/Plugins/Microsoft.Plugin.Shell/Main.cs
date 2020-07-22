@@ -198,7 +198,7 @@ namespace Microsoft.Plugin.Shell
             else if (_settings.Shell == Shell.RunCommand)
             {
                 //Open explorer if the path is a file or directory
-                if(Directory.Exists(command) || File.Exists(command))
+                if (Directory.Exists(command) || File.Exists(command))
                 {
                     info = ShellCommand.SetProcessStartInfo("explorer.exe", arguments: command, verb: runAsAdministratorArg);
                 }
@@ -236,11 +236,11 @@ namespace Microsoft.Plugin.Shell
             return info;
         }
 
-        private void Execute(Func<ProcessStartInfo, Process> startProcess,ProcessStartInfo info)
+        private void Execute(Func<ProcessStartInfo, Process> startProcess, ProcessStartInfo info)
         {
             try
             {
-                startProcess(info);                
+                startProcess(info);
             }
             catch (FileNotFoundException e)
             {
@@ -248,7 +248,7 @@ namespace Microsoft.Plugin.Shell
                 var message = $"Command not found: {e.Message}";
                 _context.API.ShowMsg(name, message);
             }
-            catch(Win32Exception e)
+            catch (Win32Exception e)
             {
                 var name = "Plugin: Shell";
                 var message = $"Error running the command: {e.Message}";

@@ -14,10 +14,10 @@ namespace Microsoft.Plugin.Indexer.DriveDetection
         {
             using (RegistryKey regKey = Registry.LocalMachine.OpenSubKey(registryLocation))
             {
-                if(regKey != null)
+                if (regKey != null)
                 {
                     Object value = regKey.GetValue(valueName);
-                    if(value != null)
+                    if (value != null)
                     {
                         return (int)value;
                     }

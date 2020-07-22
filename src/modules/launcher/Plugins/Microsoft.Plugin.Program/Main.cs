@@ -66,7 +66,7 @@ namespace Microsoft.Plugin.Program
             Task.WaitAll(a, b);
 
             _settings.LastIndexTime = DateTime.Today;
-            
+
         }
 
         public void Save()

@@ -91,7 +91,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             Window newWindow = new Window(hwnd);
 
             if (newWindow.IsWindow && newWindow.Visible && newWindow.IsOwner &&
-                (!newWindow.IsToolWindow || newWindow.IsAppWindow ) && !newWindow.TaskListDeleted &&
+                (!newWindow.IsToolWindow || newWindow.IsAppWindow) && !newWindow.TaskListDeleted &&
                 newWindow.ClassName != "Windows.UI.Core.CoreWindow")
             {
                 windows.Add(newWindow);

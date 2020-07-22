@@ -58,7 +58,7 @@ namespace Microsoft.Plugin.Program.Views
         private void btnAddProgramSource_OnClick(object sender, RoutedEventArgs e)
         {
             var add = new AddProgramSource(context, _settings);
-            if(add.ShowDialog() ?? false)
+            if (add.ShowDialog() ?? false)
             {
                 ReIndexing();
             }
@@ -139,14 +139,14 @@ namespace Microsoft.Plugin.Program.Views
                             UniqueIdentifier = directory
                         };
 
-                        directoriesToAdd.Add(source);                        
+                        directoriesToAdd.Add(source);
                     }
                 }
 
                 if (directoriesToAdd.Count() > 0)
                 {
                     directoriesToAdd.ForEach(x => _settings.ProgramSources.Add(x));
-                    directoriesToAdd.ForEach(x => ProgramSettingDisplayList.Add(x));                   
+                    directoriesToAdd.ForEach(x => ProgramSettingDisplayList.Add(x));
 
                     programSourceView.Items.Refresh();
                     ReIndexing();
@@ -212,8 +212,8 @@ namespace Microsoft.Plugin.Program.Views
                 ProgramSettingDisplayList.SetProgramSourcesStatus(selectedItems, true);
 
                 ProgramSettingDisplayList.RemoveDisabledFromSettings();
-            }            
-            
+            }
+
             if (selectedItems.IsReindexRequired())
                 ReIndexing();
 
@@ -256,7 +256,7 @@ namespace Microsoft.Plugin.Program.Views
                     var sortBy = columnBinding?.Path.Path ?? headerClicked.Column.Header as string;
 
                     Sort(sortBy, direction);
-                    
+
                     _lastHeaderClicked = headerClicked;
                     _lastDirection = direction;
                 }

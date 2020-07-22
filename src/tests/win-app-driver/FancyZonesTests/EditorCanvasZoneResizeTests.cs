@@ -12,7 +12,7 @@ namespace PowerToysTests
         {
             int shiftX = shiftLeft ? -(corner.Rect.Width / 2) + 1 : (corner.Rect.Width / 2) - 1;
             int shiftY = shiftUp ? -(corner.Rect.Height / 2) + 1 : (corner.Rect.Height / 2) - 1;
-            
+
             new Actions(session).MoveToElement(corner)
                 .MoveByOffset(shiftX, shiftY)
                 .ClickAndHold().MoveByOffset(xOffset, yOffset).Release().Perform();
@@ -83,7 +83,7 @@ namespace PowerToysTests
             Assert.IsTrue(leftBorder.Rect.X <= rightBorder.Rect.X);
             Assert.IsTrue(width > rightBorder.Rect.X - leftBorder.Rect.X);
         }
-        
+
         [TestMethod]
         public void MoveRightBorder()
         {
@@ -205,7 +205,7 @@ namespace PowerToysTests
             Assert.IsTrue(bottomLeftCorner.Rect.X <= rightBorder.Rect.X);
             Assert.IsTrue(actualHeight < expectedHeight);
             Assert.IsTrue(actualWidth < expectedWidth);
-            
+
             expectedHeight = actualHeight;
             expectedWidth = actualWidth;
 
@@ -271,7 +271,7 @@ namespace PowerToysTests
                 LaunchPowerToys();
             }
             OpenEditor();
-            OpenCustomLayouts();            
+            OpenCustomLayouts();
         }
 
         [ClassCleanup]

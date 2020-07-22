@@ -16,7 +16,7 @@ using static PowerLauncher.Helper.WindowsInteropHelper;
 
 // http://blogs.microsoft.co.il/arik/2010/05/28/wpf-single-instance-application/
 // modified to allow single instance restart
-namespace PowerLauncher.Helper 
+namespace PowerLauncher.Helper
 {
     internal enum WM
     {
@@ -208,12 +208,12 @@ namespace PowerLauncher.Helper
             }
         }
 
-    } 
+    }
 
-    public interface ISingleInstanceApp 
-    { 
-         void OnSecondAppStarted(); 
-    } 
+    public interface ISingleInstanceApp
+    {
+        void OnSecondAppStarted();
+    }
 
     /// <summary>
     /// This class checks to make sure that only one instance of 
@@ -226,9 +226,9 @@ namespace PowerLauncher.Helper
     /// running as Administrator, can activate it with command line arguments.
     /// For most apps, this will not be much of an issue.
     /// </remarks>
-    public static class SingleInstance<TApplication>  
-                where   TApplication: Application ,  ISingleInstanceApp 
-                                    
+    public static class SingleInstance<TApplication>
+                where TApplication : Application, ISingleInstanceApp
+
     {
         #region Private Fields
 
@@ -260,7 +260,7 @@ namespace PowerLauncher.Helper
         /// If not, activates the first instance.
         /// </summary>
         /// <returns>True if this is the first instance of the application.</returns>
-        internal static bool InitializeAsFirstInstance( string uniqueName )
+        internal static bool InitializeAsFirstInstance(string uniqueName)
         {
             // Build unique application Id and the IPC channel name.
             string applicationIdentifier = uniqueName + Environment.UserName;
@@ -298,7 +298,7 @@ namespace PowerLauncher.Helper
         /// Gets command line args - for ClickOnce deployed applications, command line args may not be passed directly, they have to be retrieved.
         /// </summary>
         /// <returns>List of command line arg strings.</returns>
-        private static IList<string> GetCommandLineArgs( string uniqueApplicationName )
+        private static IList<string> GetCommandLineArgs(string uniqueApplicationName)
         {
             string[] args = null;
 
@@ -309,7 +309,7 @@ namespace PowerLauncher.Helper
             }
             catch (NotSupportedException)
             {
-              
+
                 // The application was clickonce deployed
                 // Clickonce deployed apps cannot receive traditional commandline arguments
                 // As a workaround commandline arguments can be written to a shared location before 
@@ -353,7 +353,7 @@ namespace PowerLauncher.Helper
         {
             using (NamedPipeServerStream pipeServer = new NamedPipeServerStream(channelName, PipeDirection.In))
             {
-                while(true)
+                while (true)
                 {
                     // Wait for connection to the pipe
                     await pipeServer.WaitForConnectionAsync().ConfigureAwait(false);

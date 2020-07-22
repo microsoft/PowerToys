@@ -42,10 +42,10 @@ namespace PowerLauncher.ViewModel
             {
                 Result = result;
             }
-            
+
             ContextMenuSelectedIndex = NoSelectionIndex;
             LoadContextMenu();
-            
+
             ActivateContextButtonsHoverCommand = new RelayCommand(ActivateContextButtonsHoverAction);
             ActivateContextButtonsSelectionCommand = new RelayCommand(ActivateContextButtonsSelectionAction);
             DeactivateContextButtonsHoverCommand = new RelayCommand(DeactivateContextButtonsHoverAction);

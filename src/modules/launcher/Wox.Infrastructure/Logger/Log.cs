@@ -49,7 +49,7 @@ namespace Wox.Infrastructure.Logger
             return valid;
         }
 
-        
+
 
         [MethodImpl(MethodImplOptions.Synchronized)]
         public static void Exception(string className, string message, System.Exception exception, [CallerMemberName] string methodName = "")
