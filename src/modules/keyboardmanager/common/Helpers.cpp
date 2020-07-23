@@ -138,13 +138,13 @@ namespace KeyboardManagerHelper
         case ErrorType::NoError:
             return L"Remapping successful";
         case ErrorType::SameKeyPreviouslyMapped:
-            return L"Cannot remap a key more than once";
+            return L"Cannot remap a key more than once for the same target app";
         case ErrorType::MapToSameKey:
             return L"Cannot remap a key to itself";
         case ErrorType::ConflictingModifierKey:
             return L"Cannot remap this key as it conflicts with another remapped key";
         case ErrorType::SameShortcutPreviouslyMapped:
-            return L"Cannot remap a shortcut more than once";
+            return L"Cannot remap a shortcut more than once for the same target app";
         case ErrorType::MapToSameShortcut:
             return L"Cannot remap a shortcut to itself";
         case ErrorType::ConflictingModifierShortcut:
