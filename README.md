@@ -64,16 +64,6 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 <br>
 <br>
 <br>
-<br>
-<br>
-
-### Color Picker
-
-[<img align="left" src="./doc/images/overview/ColorPicker_small.png" />](https://aka.ms/PowerToysOverview_PowerRename) [Color Picker](https://aka.ms/PowerToysOverview_PowerRename) is a simple and quick system-wide color picker. Color Picker allows to pick colors from any currently running application and automically copies the HEX or RGB values to your clipboard. This code is based on [Martin Chrzan's Color Picker](https://github.com/martinchrzan/ColorPicker).
-<br>
-
-<br>
-<br>
 
 ## Installing and running Microsoft PowerToys
 
