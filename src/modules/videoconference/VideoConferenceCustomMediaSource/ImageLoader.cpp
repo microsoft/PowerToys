@@ -163,7 +163,7 @@ ComPtr<IMFSample> LoadImageAsSample(ComPtr<IStream> imageStream, IMFMediaType* s
     IMFActivate** ppVDActivate = nullptr;
     UINT32 count = 0;
 
-    RETURN_NULLPTR_IF_FAILED_WITH_LOGGING(MFTEnumEx(MFT_CATEGORY_VIDEO_DECODER, MFT_ENUM_FLAG_SYNCMFT, &inputFilter, &outputFilter, &ppVDActivate, &count));
+    RETURN_NULLPTR_IF_FAILED_WITH_LOGGING(MFTEnumEx(MFT_CATEGORY_VIDEO_DECODER, MFT_ENUM_FLAG_ALL, &inputFilter, &outputFilter, &ppVDActivate, &count));
     ComPtr<IMFTransform> videoDecoder;
 
     bool videoDecoderActivated = false;
