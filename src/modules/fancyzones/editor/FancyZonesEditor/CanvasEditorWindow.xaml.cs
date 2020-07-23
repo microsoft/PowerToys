@@ -21,8 +21,18 @@ namespace FancyZonesEditor
 
         private void OnAddZone(object sender, RoutedEventArgs e)
         {
-            _model.AddZone(new Int32Rect(_offset, _offset, (int)(Settings.WorkArea.Width * 0.6), (int)(Settings.WorkArea.Height * 0.6)));
-            _offset += 100;
+            if (_offset + (int)(Settings.WorkArea.Width * 0.4) < (int)Settings.WorkArea.Width
+                && _offset + (int)(Settings.WorkArea.Height * 0.4) < (int)Settings.WorkArea.Height)
+            {
+                _model.AddZone(new Int32Rect(_offset, _offset, (int)(Settings.WorkArea.Width * 0.4), (int)(Settings.WorkArea.Height * 0.4)));
+            }
+            else
+            {
+                _offset = 100;
+                _model.AddZone(new Int32Rect(_offset, _offset, (int)(Settings.WorkArea.Width * 0.4), (int)(Settings.WorkArea.Height * 0.4)));
+            }
+
+            _offset += 50;
         }
 
         protected new void OnCancel(object sender, RoutedEventArgs e)
