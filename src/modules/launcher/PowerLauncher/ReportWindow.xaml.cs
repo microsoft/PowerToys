@@ -9,6 +9,7 @@ using System.Windows.Documents;
 using PowerLauncher.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
+using System.Windows.Navigation;
 
 namespace PowerLauncher
 {
@@ -42,6 +43,16 @@ namespace PowerLauncher
             ErrorTextbox.Document.Blocks.Add(paragraph);
         }
 
+        private static void LinkOnRequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            var ps = new ProcessStartInfo(e.Uri.ToString())
+            {
+                UseShellExecute = true,
+                Verb = "open"
+            };
+            Process.Start(ps);
+        }
+
         private static Paragraph Hyperlink(string textBeforeUrl, string url)
         {
             var paragraph = new Paragraph();
@@ -50,8 +61,7 @@ namespace PowerLauncher
             var link = new Hyperlink { IsEnabled = true };
             link.Inlines.Add(url);
             link.NavigateUri = new Uri(url);
-            link.RequestNavigate += (s, e) => Process.Start(e.Uri.ToString());
-            link.Click += (s, e) => Process.Start(url);
+            link.RequestNavigate += LinkOnRequestNavigate;
 
             paragraph.Inlines.Add(textBeforeUrl);
             paragraph.Inlines.Add(link);
