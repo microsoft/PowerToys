@@ -197,8 +197,9 @@ namespace FancyZonesEditor
         private SnappyHelperBase snappyX;
         private SnappyHelperBase snappyY;
 
-        private SnappyHelperBase NewDefaultSnappyHelper(bool isX, ResizeMode mode, int screenAxisSize)
+        private SnappyHelperBase NewDefaultSnappyHelper(bool isX, ResizeMode mode)
         {
+            int screenAxisSize = (int)(isX ? Settings.WorkArea.Width : Settings.WorkArea.Height);
             return new SnappyHelperMagnetic(Model.Zones, ZoneIndex, isX, mode, screenAxisSize);
         }
 
@@ -287,8 +288,8 @@ namespace FancyZonesEditor
         // Corner dragging
         private void Caption_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, ResizeMode.BothEdges, (int)Settings.WorkArea.Width);
-            snappyY = NewDefaultSnappyHelper(false, ResizeMode.BothEdges, (int)Settings.WorkArea.Height);
+            snappyX = NewDefaultSnappyHelper(true, ResizeMode.BothEdges);
+            snappyY = NewDefaultSnappyHelper(false, ResizeMode.BothEdges);
         }
 
         public CanvasLayoutModel Model { get => model; set => model = value; }
@@ -297,50 +298,50 @@ namespace FancyZonesEditor
 
         private void NWResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, ResizeMode.BottomEdge, (int)Settings.WorkArea.Width);
-            snappyY = NewDefaultSnappyHelper(false, ResizeMode.BottomEdge, (int)Settings.WorkArea.Height);
+            snappyX = NewDefaultSnappyHelper(true, ResizeMode.BottomEdge);
+            snappyY = NewDefaultSnappyHelper(false, ResizeMode.BottomEdge);
         }
 
         private void NEResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, ResizeMode.TopEdge, (int)Settings.WorkArea.Width);
-            snappyY = NewDefaultSnappyHelper(false, ResizeMode.BottomEdge, (int)Settings.WorkArea.Height);
+            snappyX = NewDefaultSnappyHelper(true, ResizeMode.TopEdge);
+            snappyY = NewDefaultSnappyHelper(false, ResizeMode.BottomEdge);
         }
 
         private void SWResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, ResizeMode.BottomEdge, (int)Settings.WorkArea.Width);
-            snappyY = NewDefaultSnappyHelper(false, ResizeMode.TopEdge, (int)Settings.WorkArea.Height);
+            snappyX = NewDefaultSnappyHelper(true, ResizeMode.BottomEdge);
+            snappyY = NewDefaultSnappyHelper(false, ResizeMode.TopEdge);
         }
 
         private void SEResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, ResizeMode.TopEdge, (int)Settings.WorkArea.Width);
-            snappyY = NewDefaultSnappyHelper(false, ResizeMode.TopEdge, (int)Settings.WorkArea.Height);
+            snappyX = NewDefaultSnappyHelper(true, ResizeMode.TopEdge);
+            snappyY = NewDefaultSnappyHelper(false, ResizeMode.TopEdge);
         }
 
         // Edge dragging
         private void NResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
             snappyX = null;
-            snappyY = NewDefaultSnappyHelper(false, ResizeMode.BottomEdge, (int)Settings.WorkArea.Height);
+            snappyY = NewDefaultSnappyHelper(false, ResizeMode.BottomEdge);
         }
 
         private void SResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
             snappyX = null;
-            snappyY = NewDefaultSnappyHelper(false, ResizeMode.TopEdge, (int)Settings.WorkArea.Height);
+            snappyY = NewDefaultSnappyHelper(false, ResizeMode.TopEdge);
         }
 
         private void WResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, ResizeMode.BottomEdge, (int)Settings.WorkArea.Width);
+            snappyX = NewDefaultSnappyHelper(true, ResizeMode.BottomEdge);
             snappyY = null;
         }
 
         private void EResize_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            snappyX = NewDefaultSnappyHelper(true, ResizeMode.TopEdge, (int)Settings.WorkArea.Width);
+            snappyX = NewDefaultSnappyHelper(true, ResizeMode.TopEdge);
             snappyY = null;
         }
     }
