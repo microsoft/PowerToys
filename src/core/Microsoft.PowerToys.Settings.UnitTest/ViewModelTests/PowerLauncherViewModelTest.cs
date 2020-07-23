@@ -82,7 +82,7 @@ namespace ViewModelTests
             viewModel.OpenFileLocation = openFileLocation;
             viewModel.CopyPathLocation = copyFileLocation;
 
-            Assert.AreEqual(4, sendCallbackMock.TimesSent);
+            Assert.AreEqual(3, sendCallbackMock.TimesSent);
 
             AssertHotkeySettings(
                 mockSettings.Properties.open_powerlauncher,
@@ -99,14 +99,6 @@ namespace ViewModelTests
                 false,
                 false,
                 (int)Windows.System.VirtualKey.A
-                );
-            AssertHotkeySettings(
-                mockSettings.Properties.open_console,
-                false,
-                false,
-                true,
-                false,
-                (int)Windows.System.VirtualKey.D
                 );
             AssertHotkeySettings(
                 mockSettings.Properties.copy_path_location,
