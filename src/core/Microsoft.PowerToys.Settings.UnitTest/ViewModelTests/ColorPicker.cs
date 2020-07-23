@@ -35,6 +35,8 @@ namespace ViewModelTests
             {
                 DeleteFolder(ModuleName);
             }
+
+            ShellPage.DefaultSndMSGCallback = null;
         }
 
         [TestMethod]
