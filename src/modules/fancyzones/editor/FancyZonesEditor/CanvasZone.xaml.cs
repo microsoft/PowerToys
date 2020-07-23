@@ -83,6 +83,12 @@ namespace FancyZonesEditor
                     }
                 }
 
+                foreach (Rect singleMonitor in Settings.UsedWorkAreas)
+                {
+                    keyPositions.Add((int)(isX ? singleMonitor.Left : singleMonitor.Top));
+                    keyPositions.Add((int)(isX ? singleMonitor.Right : singleMonitor.Bottom));
+                }
+
                 // Remove duplicates and sort
                 keyPositions.Sort();
                 Snaps = new List<int>();
