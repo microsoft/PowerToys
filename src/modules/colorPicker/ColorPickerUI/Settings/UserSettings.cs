@@ -25,7 +25,7 @@ namespace ColorPicker.Settings
             ChangeCursor = new SettingItem<bool>(true);
             ActivationShortcut = new SettingItem<string>(DefaultActivationShortcut);
             CopiedColorRepresentation = new SettingItem<ColorRepresentationType>(ColorRepresentationType.HEX);
-            
+
             LoadSettingsFromJson();
             _watcher = Helper.GetFileWatcher(ColorPickerModuleName, "settings.json", LoadSettingsFromJson);
         }
@@ -60,9 +60,9 @@ namespace ColorPicker.Settings
                             var settings = SettingsUtils.GetSettings<ColorPickerSettings>(ColorPickerModuleName);
                             if (settings != null)
                             {
-                                ChangeCursor.Value = settings.properties.ChangeCursor;
-                                ActivationShortcut.Value = settings.properties.ActivationShortcut.ToString();
-                                CopiedColorRepresentation.Value = settings.properties.CopiedColorRepresentation;
+                                ChangeCursor.Value = settings.Properties.ChangeCursor;
+                                ActivationShortcut.Value = settings.Properties.ActivationShortcut.ToString();
+                                CopiedColorRepresentation.Value = settings.Properties.CopiedColorRepresentation;
                             }
 
                             retry = false;
@@ -76,7 +76,7 @@ namespace ColorPicker.Settings
                             Logger.LogError("Failed to read changed settings", ex);
                             Thread.Sleep(500);
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             Logger.LogError("Failed to read changed settings", ex);
                         }

@@ -9,7 +9,7 @@ namespace fs = std::filesystem;
 
 HRESULT GetTrimmedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source)
 {
-    HRESULT hr = (source && wcslen(source) > 0) ? S_OK : E_INVALIDARG;     
+    HRESULT hr = (source && wcslen(source) > 0) ? S_OK : E_INVALIDARG;
     if (SUCCEEDED(hr))
     {
         PWSTR newName = nullptr;
@@ -226,6 +226,23 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
     return hr;
 }
 
+HRESULT _GetShellItemArrayFromDataOject(_In_ IUnknown* dataSource, _COM_Outptr_ IShellItemArray** items)
+{
+    *items = nullptr;
+    CComPtr<IDataObject> dataObj;
+    HRESULT hr;
+    if (SUCCEEDED(dataSource->QueryInterface(IID_PPV_ARGS(&dataObj))))
+    {
+        hr = SHCreateShellItemArrayFromDataObject(dataObj, IID_PPV_ARGS(items));
+    }
+    else
+    {
+        hr = dataSource->QueryInterface(IID_PPV_ARGS(items));
+    }
+
+    return hr;
+}
+
 HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* psrm, _In_ int depth = 0)
 {
     HRESULT hr = E_INVALIDARG;
@@ -280,16 +297,7 @@ HRESULT _ParseEnumItems(_In_ IEnumShellItems* pesi, _In_ IPowerRenameManager* ps
 HRESULT EnumerateDataObject(_In_ IUnknown* dataSource, _In_ IPowerRenameManager* psrm)
 {
     CComPtr<IShellItemArray> spsia;
-    IDataObject* dataObj{};
-    HRESULT hr;
-    if (SUCCEEDED(dataSource->QueryInterface(IID_IDataObject, reinterpret_cast<void**>(&dataObj))))
-    {
-        hr = SHCreateShellItemArrayFromDataObject(dataObj, IID_PPV_ARGS(&spsia));
-    }
-    else
-    {
-        hr = dataSource->QueryInterface(IID_IShellItemArray, reinterpret_cast<void**>(&spsia));
-    }
+    HRESULT hr = _GetShellItemArrayFromDataOject(dataSource, &spsia);
     if (SUCCEEDED(hr))
     {
         CComPtr<IEnumShellItems> spesi;
@@ -464,4 +472,32 @@ BOOL GetEnumeratedFileName(__out_ecount(cchMax) PWSTR pszUniqueName, UINT cchMax
     }
 
     return fRet;
+}
+
+// Iterate through the data source and checks if at least 1 item has SFGAO_CANRENAME.
+// We do not enumerate child items - only the items the user selected.
+bool DataObjectContainsRenamableItem(_In_ IUnknown* dataSource)
+{
+    bool hasRenamable = false;
+    CComPtr<IShellItemArray> spsia;
+    if (SUCCEEDED(_GetShellItemArrayFromDataOject(dataSource, &spsia)))
+    {
+        CComPtr<IEnumShellItems> spesi;
+        if (SUCCEEDED(spsia->EnumItems(&spesi)))
+        {
+            ULONG celtFetched;
+            CComPtr<IShellItem> spsi;
+            while ((S_OK == spesi->Next(1, &spsi, &celtFetched)))
+            {
+                SFGAOF attrs;
+                if (SUCCEEDED(spsi->GetAttributes(SFGAO_CANRENAME, &attrs)) &&
+                    attrs & SFGAO_CANRENAME)
+                {
+                    hasRenamable = true;
+                    break;
+                }
+            }
+        }
+    }
+    return hasRenamable;
 }

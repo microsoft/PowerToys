@@ -71,7 +71,8 @@ namespace Wox.Core.Plugin
 
         private string GetParameterByType(object parameter)
         {
-            if (parameter == null) {
+            if (parameter == null)
+            {
                 return "null";
             }
             if (parameter is string)

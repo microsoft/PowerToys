@@ -35,7 +35,7 @@ namespace Microsoft.Plugin.Program.Storage
                 try
                 {
                     var packageWrapper = PackageWrapper.GetWrapperFromPackage(args.Package);
-                    if(!string.IsNullOrEmpty(packageWrapper.InstalledLocation))
+                    if (!string.IsNullOrEmpty(packageWrapper.InstalledLocation))
                     {
                         var uwp = new UWP(packageWrapper);
                         uwp.InitializeAppInfo(packageWrapper.InstalledLocation);

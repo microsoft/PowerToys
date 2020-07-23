@@ -52,7 +52,7 @@ namespace Microsoft.Plugin.Program.Storage
             {
                 if (disposing)
                 {
-                    for(int index = 0; index < _pathsToWatch.Length; index++)
+                    for (int index = 0; index < _pathsToWatch.Length; index++)
                     {
                         _fileSystemWatchers[index].Dispose();
                     }

@@ -24,7 +24,7 @@ namespace Microsoft.Plugin.Indexer
         }
 
         // Extensions for adding run as admin context menu item for applications
-        private readonly string[]  appExtensions = { ".exe", ".bat", ".appref-ms", ".lnk" };
+        private readonly string[] appExtensions = { ".exe", ".bat", ".appref-ms", ".lnk" };
 
         public ContextMenuLoader(PluginInitContext context)
         {
@@ -44,7 +44,7 @@ namespace Microsoft.Plugin.Indexer
                 }
 
                 // Test to check if File can be Run as admin, if yes, we add a 'run as admin' context menu item
-                if(CanFileBeRunAsAdmin(record.Path))
+                if (CanFileBeRunAsAdmin(record.Path))
                 {
                     contextMenus.Add(CreateRunAsAdminContextMenu(record));
                 }
@@ -55,7 +55,7 @@ namespace Microsoft.Plugin.Indexer
                     Title = _context.API.GetTranslation("Microsoft_plugin_indexer_copy_path"),
                     Glyph = "\xE8C8",
                     FontFamily = "Segoe MDL2 Assets",
-                    AcceleratorKey = Key.C, 
+                    AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control,
 
                     Action = (context) =>
@@ -128,7 +128,7 @@ namespace Microsoft.Plugin.Indexer
                         Task.Run(() => Helper.RunAsAdmin(record.Path));
                         return true;
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         Log.Exception($"|Microsoft.Plugin.Indexer.ContextMenu| Failed to run {record.Path} as admin, {e.Message}", e);
                         return false;
@@ -142,9 +142,9 @@ namespace Microsoft.Plugin.Indexer
         private bool CanFileBeRunAsAdmin(string path)
         {
             string fileExtension = Path.GetExtension(path);
-            foreach(string extension in appExtensions)
+            foreach (string extension in appExtensions)
             {
-                if(extension.Equals(fileExtension, StringComparison.OrdinalIgnoreCase))
+                if (extension.Equals(fileExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -169,7 +169,7 @@ namespace Microsoft.Plugin.Indexer
                     {
                         Process.Start("explorer.exe", $" /select,\"{record.Path}\"");
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         var message = $"Fail to open file at {record.Path}";
                         LogException(message, e);

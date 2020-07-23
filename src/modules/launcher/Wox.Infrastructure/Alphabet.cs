@@ -23,7 +23,7 @@ namespace Wox.Infrastructure
         private ConcurrentDictionary<string, string[][]> PinyinCache;
         private BinaryStorage<Dictionary<string, string[][]>> _pinyinStorage;
         private Settings _settings;
-         
+
         public void Initialize([NotNull] Settings settings)
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
@@ -60,10 +60,10 @@ namespace Wox.Infrastructure
 
             if (!ContainsChinese(source))
                 return source;
-                
+
             var combination = PinyinCombination(source);
-            
-            var pinyinArray=combination.Select(x => string.Join("", x));
+
+            var pinyinArray = combination.Select(x => string.Join("", x));
             var acronymArray = combination.Select(Acronym).Distinct();
 
             var joinedSingleStringCombination = new StringBuilder();
@@ -77,7 +77,7 @@ namespace Wox.Infrastructure
         {
             if (!_settings.ShouldUsePinyin)
             {
-                return; 
+                return;
             }
             _pinyinStorage.Save(GetPinyinCacheAsDictionary());
         }

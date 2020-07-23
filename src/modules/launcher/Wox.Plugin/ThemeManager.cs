@@ -70,11 +70,11 @@ namespace Wox.Plugin
         {
             return currentTheme;
         }
-        
+
         private static Theme GetHighContrastBaseType()
         {
             string RegistryKey = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes";
-            string theme = (string) Registry.GetValue(RegistryKey, "CurrentTheme", string.Empty);
+            string theme = (string)Registry.GetValue(RegistryKey, "CurrentTheme", string.Empty);
             theme = theme.Split('\\').Last().Split('.').First().ToString();
 
             if (theme == "hc1")
@@ -153,13 +153,13 @@ namespace Wox.Plugin
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
-            {            
+            {
                 if (disposing)
                 {
                     ControlzEx.Theming.ThemeManager.Current.ThemeChanged -= Current_ThemeChanged;
                     SystemParameters.StaticPropertyChanged -= SystemParameters_StaticPropertyChanged;
                     _disposed = true;
-                }               
+                }
             }
         }
 
@@ -175,8 +175,8 @@ namespace Wox.Plugin
     public enum Theme
     {
         None,
-        Light, 
-        Dark, 
+        Light,
+        Dark,
         HighContrastOne,
         HighContrastTwo,
         HighContrastBlack,

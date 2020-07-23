@@ -58,8 +58,8 @@ namespace Wox.Infrastructure
         /// </summary>
         public MatchResult FuzzyMatch(string query, string stringToCompare, MatchOption opt)
         {
-            if (string.IsNullOrEmpty(stringToCompare) || string.IsNullOrEmpty(query)) return new MatchResult (false, UserSettingSearchPrecision);
-            
+            if (string.IsNullOrEmpty(stringToCompare) || string.IsNullOrEmpty(query)) return new MatchResult(false, UserSettingSearchPrecision);
+
             query = query.Trim();
 
             if (_alphabet != null)
@@ -71,7 +71,7 @@ namespace Wox.Infrastructure
             var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToLower() : stringToCompare;
 
             var queryWithoutCase = opt.IgnoreCase ? query.ToLower() : query;
-                        
+
             var querySubstrings = queryWithoutCase.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             int currentQuerySubstringIndex = 0;
             var currentQuerySubstring = querySubstrings[currentQuerySubstringIndex];
@@ -154,7 +154,7 @@ namespace Wox.Infrastructure
                     currentQuerySubstringCharacterIndex = 0;
                 }
             }
-            
+
             // proceed to calculate score if every char or substring without whitespaces matched
             if (allQuerySubstringsMatched)
             {
@@ -164,13 +164,13 @@ namespace Wox.Infrastructure
                 return new MatchResult(true, UserSettingSearchPrecision, indexList, score);
             }
 
-            return new MatchResult (false, UserSettingSearchPrecision);
+            return new MatchResult(false, UserSettingSearchPrecision);
         }
 
         // To get the index of the closest space which preceeds the first matching index
         private int CalculateClosestSpaceIndex(List<int> spaceIndices, int firstMatchIndex)
         {
-            if(spaceIndices.Count == 0)
+            if (spaceIndices.Count == 0)
             {
                 return -1;
             }
@@ -182,7 +182,7 @@ namespace Wox.Infrastructure
             }
         }
 
-        private static bool AllPreviousCharsMatched(int startIndexToVerify, int currentQuerySubstringCharacterIndex, 
+        private static bool AllPreviousCharsMatched(int startIndexToVerify, int currentQuerySubstringCharacterIndex,
                                                         string fullStringToCompareWithoutCase, string currentQuerySubstring)
         {
             var allMatch = true;
@@ -197,7 +197,7 @@ namespace Wox.Infrastructure
 
             return allMatch;
         }
-        
+
         private static List<int> GetUpdatedIndexList(int startIndexToVerify, int currentQuerySubstringCharacterIndex, int firstMatchIndexInWord, List<int> indexList)
         {
             var updatedList = new List<int>();
@@ -240,7 +240,7 @@ namespace Wox.Infrastructure
             {
                 int count = query.Count(c => !char.IsWhiteSpace(c));
                 int threshold = 4;
-                if(count <= threshold)
+                if (count <= threshold)
                 {
                     score += count * 10;
                 }

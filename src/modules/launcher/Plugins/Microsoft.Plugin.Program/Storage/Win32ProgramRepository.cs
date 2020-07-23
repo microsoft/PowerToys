@@ -17,7 +17,7 @@ namespace Microsoft.Plugin.Program.Storage
         private IList<IFileSystemWatcherWrapper> _fileSystemWatcherHelpers;
         private string[] _pathsToWatch;
         private int _numberOfPathsToWatch;
-        private Collection<string> extensionsToWatch = new Collection<string>{ "*.exe", "*.lnk", "*.appref-ms", "*.url" };
+        private Collection<string> extensionsToWatch = new Collection<string> { "*.exe", "*.lnk", "*.appref-ms", "*.url" };
         private readonly string lnkExtension = ".lnk";
         private readonly string urlExtension = ".url";
 
@@ -33,13 +33,13 @@ namespace Microsoft.Plugin.Program.Storage
 
         private void InitializeFileSystemWatchers()
         {
-            for(int index = 0; index < _numberOfPathsToWatch; index++)
+            for (int index = 0; index < _numberOfPathsToWatch; index++)
             {
                 // To set the paths to monitor
                 _fileSystemWatcherHelpers[index].Path = _pathsToWatch[index];
 
                 // to be notified when there is a change to a file
-                _fileSystemWatcherHelpers[index].NotifyFilter = NotifyFilters.FileName;
+                _fileSystemWatcherHelpers[index].NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite;
 
                 // filtering the app types that we want to monitor
                 _fileSystemWatcherHelpers[index].Filters = extensionsToWatch;
@@ -48,6 +48,7 @@ namespace Microsoft.Plugin.Program.Storage
                 _fileSystemWatcherHelpers[index].Created += OnAppCreated;
                 _fileSystemWatcherHelpers[index].Deleted += OnAppDeleted;
                 _fileSystemWatcherHelpers[index].Renamed += OnAppRenamed;
+                _fileSystemWatcherHelpers[index].Changed += OnAppChanged;
 
                 // Enable the file system watcher
                 _fileSystemWatcherHelpers[index].EnableRaisingEvents = true;
@@ -76,7 +77,7 @@ namespace Microsoft.Plugin.Program.Storage
                 {
                     oldApp = new Win32() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = newApp.ExecutableName, FullPath = newApp.FullPath };
                 }
-                else if(extension.Equals(urlExtension, StringComparison.OrdinalIgnoreCase))
+                else if (extension.Equals(urlExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     oldApp = new Win32() { Name = Path.GetFileNameWithoutExtension(e.OldName), ExecutableName = Path.GetFileName(e.OldName), FullPath = newApp.FullPath };
                 }
@@ -125,7 +126,7 @@ namespace Microsoft.Plugin.Program.Storage
                     app = Programs.Win32.GetAppFromPath(path);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Info($"|Win32ProgramRepository|OnAppDeleted-{extension}Program|{path}|Unable to create program from {path}| {ex.Message}");
             }
@@ -153,7 +154,7 @@ namespace Microsoft.Plugin.Program.Storage
         // Unlike the rename event args, since we do not have a newPath, we iterate through all the programs and find the one with the same LnkResolved path.
         private Programs.Win32 GetAppWithSameLnkResolvedPath(string lnkResolvedPath)
         {
-            foreach(Programs.Win32 app in Items)
+            foreach (Programs.Win32 app in Items)
             {
                 if (lnkResolvedPath.ToLower().Equals(app.LnkResolvedPath))
                 {
@@ -166,10 +167,26 @@ namespace Microsoft.Plugin.Program.Storage
         private void OnAppCreated(object sender, FileSystemEventArgs e)
         {
             string path = e.FullPath;
-            Programs.Win32 app = Programs.Win32.GetAppFromPath(path);
-            if (app != null)
+            if (!Path.GetExtension(path).Equals(urlExtension))
             {
-                Add(app);
+                Programs.Win32 app = Programs.Win32.GetAppFromPath(path);
+                if (app != null)
+                {
+                    Add(app);
+                }
+            }
+        }
+
+        private void OnAppChanged(object sender, FileSystemEventArgs e)
+        {
+            string path = e.FullPath;
+            if (Path.GetExtension(path).Equals(urlExtension))
+            {
+                Programs.Win32 app = Programs.Win32.GetAppFromPath(path);
+                if (app != null)
+                {
+                    Add(app);
+                }
             }
         }
 

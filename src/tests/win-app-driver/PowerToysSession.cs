@@ -158,7 +158,7 @@ namespace PowerToysTests
             {
                 Console.WriteLine(ex.Message);
             }
-}
+        }
 
         public static void CloseSettings()
         {
@@ -186,7 +186,7 @@ namespace PowerToysTests
                 isLaunched = (pt != null);
                 trayButton.Click(); //close
             }
-            catch(OpenQA.Selenium.WebDriverException)
+            catch (OpenQA.Selenium.WebDriverException)
             {
                 //PowerToys not found
             }
@@ -228,7 +228,7 @@ namespace PowerToysTests
                 trayButton.Click(); //close tray
                 isPowerToysLaunched = false;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }

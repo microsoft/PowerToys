@@ -62,14 +62,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return _colorPickerSettings.properties.ChangeCursor;
+                return _colorPickerSettings.Properties.ChangeCursor;
             }
 
             set
             {
-                if (_colorPickerSettings.properties.ChangeCursor != value)
+                if (_colorPickerSettings.Properties.ChangeCursor != value)
                 {
-                    _colorPickerSettings.properties.ChangeCursor = value;
+                    _colorPickerSettings.Properties.ChangeCursor = value;
                     OnPropertyChanged(nameof(ChangeCursor));
                     NotifySettingsChanged();
                 }
@@ -80,14 +80,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return _colorPickerSettings.properties.ActivationShortcut;
+                return _colorPickerSettings.Properties.ActivationShortcut;
             }
 
             set
             {
-                if (_colorPickerSettings.properties.ActivationShortcut != value)
+                if (_colorPickerSettings.Properties.ActivationShortcut != value)
                 {
-                    _colorPickerSettings.properties.ActivationShortcut = value;
+                    _colorPickerSettings.Properties.ActivationShortcut = value;
                     OnPropertyChanged(nameof(ActivationShortcut));
                     NotifySettingsChanged();
                 }
@@ -98,14 +98,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return (int)_colorPickerSettings.properties.CopiedColorRepresentation;
+                return (int)_colorPickerSettings.Properties.CopiedColorRepresentation;
             }
 
             set
             {
-                if (_colorPickerSettings.properties.CopiedColorRepresentation != (ColorRepresentationType)value)
+                if (_colorPickerSettings.Properties.CopiedColorRepresentation != (ColorRepresentationType)value)
                 {
-                    _colorPickerSettings.properties.CopiedColorRepresentation = (ColorRepresentationType)value;
+                    _colorPickerSettings.Properties.CopiedColorRepresentation = (ColorRepresentationType)value;
                     OnPropertyChanged(nameof(CopiedColorRepresentationIndex));
                     NotifySettingsChanged();
                 }

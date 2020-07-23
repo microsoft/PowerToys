@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Telemetry
     /// </summary>
     public class PowerToysTelemetry : TelemetryBase
     {
-       
+
         /// <summary>
         /// Name for ETW event.
         /// </summary>

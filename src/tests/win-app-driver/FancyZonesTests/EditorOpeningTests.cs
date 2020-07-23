@@ -249,7 +249,7 @@ namespace PowerToysTests
         [TestInitialize]
         public void TestInitialize()
         {
-            
+
         }
 
         [TestCleanup]

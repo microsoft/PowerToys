@@ -117,7 +117,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 ((IPersistFile)link).Load(path, STGM_READ);
             }
-            catch(System.IO.FileNotFoundException ex)
+            catch (System.IO.FileNotFoundException ex)
             {
                 ProgramLogger.LogException($"|Win32| ShellLinkHelper.retrieveTargetPath | {path} | Path could not be retrieved", ex);
                 return String.Empty;

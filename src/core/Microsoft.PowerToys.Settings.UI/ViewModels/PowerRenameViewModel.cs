@@ -29,11 +29,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 SettingsUtils.SaveSettings(localSettings.ToJsonString(), ModuleName, "power-rename-settings.json");
             }
 
-            _powerRenameEnabledOnContextMenu = Settings.properties.ShowIcon.Value;
-            _powerRenameEnabledOnContextExtendedMenu = Settings.properties.ExtendedContextMenuOnly.Value;
-            _powerRenameRestoreFlagsOnLaunch = Settings.properties.PersistState.Value;
-            _powerRenameMaxDispListNumValue = Settings.properties.MaxMRUSize.Value;
-            _autoComplete = Settings.properties.MRUEnabled.Value;
+            _powerRenameEnabledOnContextMenu = Settings.Properties.ShowIcon.Value;
+            _powerRenameEnabledOnContextExtendedMenu = Settings.Properties.ExtendedContextMenuOnly.Value;
+            _powerRenameRestoreFlagsOnLaunch = Settings.Properties.PersistState.Value;
+            _powerRenameMaxDispListNumValue = Settings.Properties.MaxMRUSize.Value;
+            _autoComplete = Settings.Properties.MRUEnabled.Value;
 
             GeneralSettings generalSettings;
             try
@@ -94,7 +94,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _autoComplete)
                 {
                     _autoComplete = value;
-                    Settings.properties.MRUEnabled.Value = value;
+                    Settings.Properties.MRUEnabled.Value = value;
                     RaisePropertyChanged();
                     RaisePropertyChanged("GlobalAndMruEnabled");
                 }
@@ -122,7 +122,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _powerRenameEnabledOnContextMenu)
                 {
                     _powerRenameEnabledOnContextMenu = value;
-                    Settings.properties.ShowIcon.Value = value;
+                    Settings.Properties.ShowIcon.Value = value;
                     RaisePropertyChanged();
                 }
             }
@@ -140,7 +140,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _powerRenameEnabledOnContextExtendedMenu)
                 {
                     _powerRenameEnabledOnContextExtendedMenu = value;
-                    Settings.properties.ExtendedContextMenuOnly.Value = value;
+                    Settings.Properties.ExtendedContextMenuOnly.Value = value;
                     RaisePropertyChanged();
                 }
             }
@@ -158,7 +158,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _powerRenameRestoreFlagsOnLaunch)
                 {
                     _powerRenameRestoreFlagsOnLaunch = value;
-                    Settings.properties.PersistState.Value = value;
+                    Settings.Properties.PersistState.Value = value;
                     RaisePropertyChanged();
                 }
             }
@@ -176,7 +176,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _powerRenameMaxDispListNumValue)
                 {
                     _powerRenameMaxDispListNumValue = value;
-                    Settings.properties.MaxMRUSize.Value = value;
+                    Settings.Properties.MaxMRUSize.Value = value;
                     RaisePropertyChanged();
                 }
             }
