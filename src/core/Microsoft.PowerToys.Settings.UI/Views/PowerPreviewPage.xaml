@@ -75,13 +75,15 @@
                            Grid.Row="1" />
             </StackPanel>
 
-            <Image x:Name="AboutImage"
-                   RelativePanel.Below="DescriptionPanel"
-                   Margin="{StaticResource SmallTopBottomMargin}"
-                   Grid.Row="2"
-                   MaxWidth="240"
-                   HorizontalAlignment="Left"
-                   Source="https://aka.ms/powerToysPowerPreviewSettingImage" />
+            <Border x:Name="AboutImage"
+                    CornerRadius="4"
+                    Grid.Row="2"
+                    MaxWidth="240"
+                    HorizontalAlignment="Left"
+                    Margin="{StaticResource SmallTopBottomMargin}"
+                    RelativePanel.Below="DescriptionPanel">
+                <Image Source="https://aka.ms/powerToysPowerPreviewSettingImage" />
+            </Border>
 
             <StackPanel x:Name="LinksPanel"
                         RelativePanel.Below="AboutImage"
