@@ -49,7 +49,7 @@ namespace Microsoft.Plugin.VSCodeWorkspaces
                 {
                     Title = title,
                     IcoPath = a.VSCodeInstance.VSCodeVersion == VSCodeVersion.Stable ? "Images/code_workspace.png" : "Images/code_insiders_workspace.png",
-                    Score = 100 - Math.Abs(a.FolderName.ToLower().CompareTo(query.Search.ToLower())),
+                    Score = 100 - a.FolderName.ToLower().CompareTo(query.Search.ToLower()),
                     SubTitle = $"Workspace{(a.TypeWorkspace != TypeWorkspace.Local ? $" in {typeWorkspace}" : "")}: {a.RelativePath}",
                     Action = c =>
                     {
