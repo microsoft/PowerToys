@@ -259,6 +259,8 @@ namespace FancyZonesEditor
 
         public static Rect WorkArea { get; private set; }
 
+        public static List<Rect> UsedWorkAreas { get; private set; }
+
         public static string UniqueKey { get; private set; }
 
         public static string ActiveZoneSetUUid { get; private set; }
@@ -453,6 +455,8 @@ namespace FancyZonesEditor
         private void ParseCommandLineArgs()
         {
             WorkArea = SystemParameters.WorkArea;
+            UsedWorkAreas = new List<Rect>();
+            UsedWorkAreas.Add(WorkArea);
 
             string[] args = Environment.GetCommandLineArgs();
 
@@ -470,22 +474,28 @@ namespace FancyZonesEditor
             }
             else if (args.Length == 3)
             {
-                var parsedLocation = args[(int)CmdArgs.WorkAreaSize].Split('_');
-                if (parsedLocation.Length != 4)
+                UsedWorkAreas.Clear();
+                foreach (var singleMonitorString in args[(int)CmdArgs.WorkAreaSize].Split('/'))
                 {
-                    MessageBox.Show(ErrorInvalidArgs, ErrorMessageBoxTitle);
-                    ((App)Application.Current).Shutdown();
+                    var parsedLocation = singleMonitorString.Split('_');
+                    if (parsedLocation.Length != 4)
+                    {
+                        MessageBox.Show(ErrorInvalidArgs, ErrorMessageBoxTitle);
+                        ((App)Application.Current).Shutdown();
+                    }
+
+                    var x = int.Parse(parsedLocation[(int)WorkAreaCmdArgElements.X]);
+                    var y = int.Parse(parsedLocation[(int)WorkAreaCmdArgElements.Y]);
+                    var width = int.Parse(parsedLocation[(int)WorkAreaCmdArgElements.Width]);
+                    var height = int.Parse(parsedLocation[(int)WorkAreaCmdArgElements.Height]);
+
+                    Rect thisMonitor = new Rect(x, y, width, height);
+                    WorkArea.Union(thisMonitor);
+                    UsedWorkAreas.Add(thisMonitor);
+
+                    int.TryParse(args[(int)CmdArgs.PowerToysPID], out _powerToysPID);
+                    ParseDeviceInfoData();
                 }
-
-                var x = int.Parse(parsedLocation[(int)WorkAreaCmdArgElements.X]);
-                var y = int.Parse(parsedLocation[(int)WorkAreaCmdArgElements.Y]);
-                var width = int.Parse(parsedLocation[(int)WorkAreaCmdArgElements.Width]);
-                var height = int.Parse(parsedLocation[(int)WorkAreaCmdArgElements.Height]);
-
-                WorkArea = new Rect(x, y, width, height);
-
-                int.TryParse(args[(int)CmdArgs.PowerToysPID], out _powerToysPID);
-                ParseDeviceInfoData();
             }
             else
             {
