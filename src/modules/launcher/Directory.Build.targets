@@ -8,6 +8,4 @@
      </Exec>
   </Target>
 
-  <Target Name="IncrementalClean" />
-
 </Project>
