@@ -7,6 +7,8 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using Mages.Core;
+using Microsoft.Plugin.VSCodeWorkspaces.RemoteMachinesHelper;
+using Microsoft.Plugin.VSCodeWorkspaces.VSCodeHelper;
 using Microsoft.Plugin.VSCodeWorkspaces.WorkspacesHelper;
 using Wox.Plugin;
 
@@ -16,31 +18,22 @@ namespace Microsoft.Plugin.VSCodeWorkspaces
     {
         public PluginInitContext _context { get; private set; }
 
-        public readonly VSCodeWorkspacesApi _api = new VSCodeWorkspacesApi();
-
-        public string GetTypeWorkspace(TypeWorkspace type)
+        public Main()
         {
-            switch (type)
-            {
-                case TypeWorkspace.Local: return "Local";
-                case TypeWorkspace.Codespaces: return "Codespaces";
-                case TypeWorkspace.RemoteContainers: return "Container";
-                case TypeWorkspace.RemoteSSH: return "SSH";
-                case TypeWorkspace.RemoteWSL: return "WSL";
-            }
-
-            return string.Empty;
+            VSCodeInstances.LoadVSCodeInstances();
         }
+
+        public readonly VSCodeWorkspacesApi _workspacesApi = new VSCodeWorkspacesApi();
 
         public List<Result> Query(Query query)
         {
             var results = new List<Result>();
 
-            foreach (var a in _api.Search(query.Search))
+            foreach (var a in _workspacesApi.Search(query.Search))
             {
                 var title = $"{a.FolderName}";
 
-                var typeWorkspace = GetTypeWorkspace(a.TypeWorkspace);
+                var typeWorkspace = a.WorkspaceTypeToString();
                 if (a.TypeWorkspace == TypeWorkspace.Codespaces)
                 {
                     title += $" - {typeWorkspace}";
@@ -53,7 +46,7 @@ namespace Microsoft.Plugin.VSCodeWorkspaces
                 results.Add(new Result
                 {
                     Title = title,
-                    IcoPath = a.VSCodeVersion == VSCodeVersion.Stable ? "Images/code.png" : "Images/code_insiders.png",
+                    IcoPath = a.VSCodeInstance.VSCodeVersion == VSCodeVersion.Stable ? "Images/code_workspace.png" : "Images/code_insiders_workspace.png",
                     Score = 100 - Math.Abs(a.FolderName.ToLower().CompareTo(query.Search.ToLower())),
                     SubTitle = $"Workspace{(a.TypeWorkspace != TypeWorkspace.Local ? $" in {typeWorkspace}" : "")}: {a.RelativePath}",
                     Action = c =>
@@ -63,7 +56,7 @@ namespace Microsoft.Plugin.VSCodeWorkspaces
                         {
                             Process.Start(new ProcessStartInfo
                             {
-                                FileName = a.VSCodeExecutable,
+                                FileName = a.VSCodeInstance.ExecutablePath,
                                 UseShellExecute = false,
                                 Arguments = $"--folder-uri {a.Path}"
                             });
@@ -80,7 +73,6 @@ namespace Microsoft.Plugin.VSCodeWorkspaces
                     }
                 });
             }
-
 
             return results;
         }

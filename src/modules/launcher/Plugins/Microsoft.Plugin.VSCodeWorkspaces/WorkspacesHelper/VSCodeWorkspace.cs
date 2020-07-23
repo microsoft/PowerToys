@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Plugin.VSCodeWorkspaces.VSCodeHelper;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -16,9 +17,21 @@ namespace Microsoft.Plugin.VSCodeWorkspaces.WorkspacesHelper
 
         public TypeWorkspace TypeWorkspace { get; set; }
 
-        public VSCodeVersion VSCodeVersion { get; set; }
+        public VSCodeInstance VSCodeInstance { get; set; }
 
-        public string VSCodeExecutable { get; set; }
+        public string WorkspaceTypeToString()
+        {
+            switch (TypeWorkspace)
+            {
+                case TypeWorkspace.Local: return "Local";
+                case TypeWorkspace.Codespaces: return "Codespaces";
+                case TypeWorkspace.RemoteContainers: return "Container";
+                case TypeWorkspace.RemoteSSH: return "SSH";
+                case TypeWorkspace.RemoteWSL: return "WSL";
+            }
+
+            return string.Empty;
+        }
     }
 
     public enum TypeWorkspace
@@ -29,12 +42,4 @@ namespace Microsoft.Plugin.VSCodeWorkspaces.WorkspacesHelper
         RemoteSSH = 4,
         RemoteContainers = 5
     }
-
-    public enum VSCodeVersion
-    {
-        Stable = 1,
-        Insiders = 2,
-        Exploration = 3
-    }
-
 }

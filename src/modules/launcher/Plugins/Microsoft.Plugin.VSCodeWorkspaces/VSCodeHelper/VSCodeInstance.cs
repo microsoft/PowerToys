@@ -2,8 +2,15 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.Plugin.VSCodeWorkspaces.WorkspacesHelper
+namespace Microsoft.Plugin.VSCodeWorkspaces.VSCodeHelper
 {
+    public enum VSCodeVersion
+    {
+        Stable = 1,
+        Insiders = 2,
+        Exploration = 3
+    }
+
     public class VSCodeInstance
     {
         public VSCodeVersion VSCodeVersion { get; set; }

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Plugin.VSCodeWorkspaces.VSCodeHelper;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,79 +10,11 @@ namespace Microsoft.Plugin.VSCodeWorkspaces.WorkspacesHelper
 {
     public class VSCodeWorkspacesApi
     {
-        public readonly string PathUserAppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-
-        private string _systemPath = String.Empty;
-
-        private string _userAppDataPath = Environment.GetEnvironmentVariable("AppData");
-
-        private List<VSCodeInstance> _vscodeInstances = new List<VSCodeInstance>();
-
-        public VSCodeWorkspacesApi()
-        {
-            LoadVSCodeInstances();
-        }
-
-        // Gets the executablePath and AppData for each instance of VSCode
-        public void LoadVSCodeInstances()
-        {
-            if (_systemPath != Environment.GetEnvironmentVariable("PATH"))
-            {
-
-                _vscodeInstances = new List<VSCodeInstance>();
-
-                _systemPath = Environment.GetEnvironmentVariable("PATH");
-                var paths = _systemPath.Split(";");
-                foreach (var path in paths)
-                {
-                    if (path.Contains("\\Microsoft VS Code\\"))
-                    {
-                        var path_executable = System.IO.Path.GetFullPath(path.Replace("\\bin", "\\Code.exe"));
-                        if (File.Exists(path_executable))
-                        {
-                            _vscodeInstances.Add(new VSCodeInstance
-                            {
-                                ExecutablePath = path_executable,
-                                AppData = Path.Combine(_userAppDataPath, "Code"),
-                                VSCodeVersion = VSCodeVersion.Stable
-                            });
-                        }
-                    }
-                    else if (path.Contains("\\Microsoft VS Code Insiders\\"))
-                    {
-                        var path_executable = System.IO.Path.GetFullPath(path.Replace("\\bin", "\\Code - Insiders.exe"));
-                        if (File.Exists(path_executable))
-                        {
-                            _vscodeInstances.Add(new VSCodeInstance
-                            {
-                                ExecutablePath = path_executable,
-                                AppData = Path.Combine(_userAppDataPath, "Code - Insiders"),
-                                VSCodeVersion = VSCodeVersion.Insiders
-                            });
-                        }
-                    }
-                    else if (path.Contains("\\Microsoft VS Code Exploration\\"))
-                    {
-                        var path_executable = System.IO.Path.GetFullPath(path.Replace("\\bin", "\\Code - Exploration.exe"));
-                        if (File.Exists(path_executable))
-                        {
-                            _vscodeInstances.Add(new VSCodeInstance
-                            {
-                                ExecutablePath = path_executable,
-                                AppData = Path.Combine(_userAppDataPath, "Code - Exploration"),
-                                VSCodeVersion = VSCodeVersion.Exploration
-                            });
-                        }
-                    }
-                }
-            }
-        }
-
         public List<VSCodeWorkspace> Search(string query)
         {
             var results = new List<VSCodeWorkspace>();
 
-            foreach (var vscodeInstance in _vscodeInstances)
+            foreach (var vscodeInstance in VSCodeInstances.instances)
             {
                 // storage.json contains opened Workspaces
                 var vscode_storage = Path.Combine(vscodeInstance.AppData, "storage.json");
@@ -114,8 +47,7 @@ namespace Microsoft.Plugin.VSCodeWorkspaces.WorkspacesHelper
                                                 FolderName = folderName,
                                                 ExtraInfo = typeWorkspace.MachineName,
                                                 TypeWorkspace = typeWorkspace.TypeWorkspace.Value,
-                                                VSCodeVersion = vscodeInstance.VSCodeVersion,
-                                                VSCodeExecutable = vscodeInstance.ExecutablePath
+                                                VSCodeInstance = vscodeInstance
                                             });
                                         }
                                     }
