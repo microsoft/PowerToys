@@ -47,7 +47,7 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 
 ### PowerRename
 
-[<img align="left" src="./doc/images/overview/PowerRename_small.PNG" />](https://aka.ms/PowerToysOverview_PowerRename) [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) is a Windows Shell Extension for advanced bulk renaming using search and replace or regular expressions. PowerRename allows simple search and replace or more advanced regular expression matching. While you type in the search and replace input fields, the preview area will show what the items will be renamed to. PowerRename then calls into the Windows Explorer file operations engine to perform the rename. This has the benefit of allowing the rename operation to be undone after PowerRename exits. This code is based on [Chris Davis's SmartRename](https://github.com/chrdavis/SmartRename).
+[<img align="left" src="./doc/images/overview/PowerRename_small.png" />](https://aka.ms/PowerToysOverview_PowerRename) [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) is a Windows Shell Extension for advanced bulk renaming using search and replace or regular expressions. PowerRename allows simple search and replace or more advanced regular expression matching. While you type in the search and replace input fields, the preview area will show what the items will be renamed to. PowerRename then calls into the Windows Explorer file operations engine to perform the rename. This has the benefit of allowing the rename operation to be undone after PowerRename exits. This code is based on [Chris Davis's SmartRename](https://github.com/chrdavis/SmartRename).
 <br>
 
 ### PowerToys Run
@@ -63,6 +63,12 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 <br>
 <br>
 <br>
+
+### Color Picker
+
+[<img align="left" src="./doc/images/overview/ColorPicker_small.png" />](https://aka.ms/PowerToysOverview_PowerRename) [ColorPicker](https://aka.ms/PowerToysOverview_PowerRename) is a simple and quick system-wide color picker. Color Picker allows to pick colors from any currently running application and automically copies the HEX or RGB values to your clipboard. This code is based on [Martin Chrzan's Color Picker](https://github.com/martinchrzan/ColorPicker).
+<br>
+
 <br>
 <br>
 
