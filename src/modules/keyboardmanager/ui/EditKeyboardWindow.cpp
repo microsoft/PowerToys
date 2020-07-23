@@ -326,7 +326,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
         // Clear existing Key Remaps
         keyboardManagerState.ClearSingleKeyRemaps();
-        DWORD successfulRemapCount = 0;
+        DWORD successfulKeyToKeyRemapCount = 0;
+        DWORD successfulKeyToShortcutRemapCount = 0;
         for (int i = 0; i < SingleKeyRemapControl::singleKeyRemapBuffer.size(); i++)
         {
             DWORD originalKey = std::get<DWORD>(SingleKeyRemapControl::singleKeyRemapBuffer[i].first[0]);
@@ -370,7 +371,14 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
                 }
                 else
                 {
-                    successfulRemapCount += 1;
+                    if (newKey.index() == 0)
+                    {
+                        successfulKeyToKeyRemapCount += 1;
+                    }
+                    else
+                    {
+                        successfulKeyToShortcutRemapCount += 1;
+                    }
                 }
             }
             else
@@ -379,7 +387,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
             }
         }
 
-        Trace::KeyRemapCount(successfulRemapCount);
+        Trace::KeyRemapCount(successfulKeyToKeyRemapCount, successfulKeyToShortcutRemapCount);
         // Save the updated shortcuts remaps to file.
         bool saveResult = keyboardManagerState.SaveConfigToFile();
         if (!saveResult)

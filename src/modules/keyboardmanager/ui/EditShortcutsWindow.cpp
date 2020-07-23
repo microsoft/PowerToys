@@ -256,8 +256,10 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         // Clear existing shortcuts
         keyboardManagerState.ClearOSLevelShortcuts();
         keyboardManagerState.ClearAppSpecificShortcuts();
-        DWORD successfulOSLevelRemapCount = 0;
-        DWORD successfulAppSpecificRemapCount = 0;
+        DWORD successfulOSLevelShortcutToShortcutRemapCount = 0;
+        DWORD successfulOSLevelShortcutToKeyRemapCount = 0;
+        DWORD successfulAppSpecificShortcutToShortcutRemapCount = 0;
+        DWORD successfulAppSpecificShortcutToKeyRemapCount = 0;
         // Save the shortcuts that are valid and report if any of them were invalid
         for (int i = 0; i < ShortcutControl::shortcutRemapBuffer.size(); i++)
         {
@@ -275,7 +277,14 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
                     }
                     else
                     {
-                        successfulOSLevelRemapCount += 1;
+                        if (newShortcut.index() == 0)
+                        {
+                            successfulOSLevelShortcutToKeyRemapCount += 1;
+                        }
+                        else
+                        {
+                            successfulOSLevelShortcutToShortcutRemapCount += 1;
+                        }
                     }
                 }
                 else
@@ -287,7 +296,14 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
                     }
                     else
                     {
-                        successfulAppSpecificRemapCount += 1;
+                        if (newShortcut.index() == 0)
+                        {
+                            successfulAppSpecificShortcutToKeyRemapCount += 1;
+                        }
+                        else
+                        {
+                            successfulAppSpecificShortcutToShortcutRemapCount += 1;
+                        }
                     }
                 }
             }
@@ -298,8 +314,8 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
         }
 
         // Telemetry events
-        Trace::OSLevelShortcutRemapCount(successfulOSLevelRemapCount);
-        Trace::AppSpecificShortcutRemapCount(successfulAppSpecificRemapCount);
+        Trace::OSLevelShortcutRemapCount(successfulOSLevelShortcutToShortcutRemapCount, successfulOSLevelShortcutToKeyRemapCount);
+        Trace::AppSpecificShortcutRemapCount(successfulAppSpecificShortcutToShortcutRemapCount, successfulAppSpecificShortcutToKeyRemapCount);
 
         // Save the updated key remaps to file.
         bool saveResult = keyboardManagerState.SaveConfigToFile();
