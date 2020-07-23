@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Plugin.Uri
 {
-	public class Settings
-	{
-	}
+    public class Settings
+    {
+    }
 }
