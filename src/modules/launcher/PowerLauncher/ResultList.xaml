@@ -239,11 +239,11 @@
                                     <Button Style="{StaticResource IconButtonStyle}" Command="{Binding Command}" VerticalAlignment="Center" Height="42" Width="42" BorderThickness="1" >
                                         <ToolTipService.ToolTip>
                                             <ToolTip >
-                                                <TextBlock Text="{Binding Title}" Foreground="{DynamicResource ToolTipForegroundBrushKey}" Margin="8,5" FontSize="12"/>
+                                                <TextBlock Text="{Binding Title}" Foreground="{DynamicResource ToolTipForegroundBrushKey}" Margin="8,5" FontSize="12" RenderOptions.ClearTypeHint="Enabled"/>
                                             </ToolTip>
                                         </ToolTipService.ToolTip>
                                         <Button.Content>
-                                            <TextBlock FontFamily="{Binding FontFamily}" FontSize="16" Text="{Binding Glyph}"/>
+                                            <TextBlock FontFamily="{Binding FontFamily}" FontSize="16" Text="{Binding Glyph}" TextOptions.TextFormattingMode="Display"/>
                                         </Button.Content>
                                     </Button>
                                 </DataTemplate>
