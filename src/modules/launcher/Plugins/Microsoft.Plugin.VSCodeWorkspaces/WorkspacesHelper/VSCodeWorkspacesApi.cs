@@ -10,6 +10,8 @@ namespace Microsoft.Plugin.VSCodeWorkspaces.WorkspacesHelper
 {
     public class VSCodeWorkspacesApi
     {
+        public VSCodeWorkspacesApi() { }
+
         public List<VSCodeWorkspace> Search(string query)
         {
             var results = new List<VSCodeWorkspace>();

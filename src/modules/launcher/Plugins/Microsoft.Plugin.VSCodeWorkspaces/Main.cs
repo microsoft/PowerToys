@@ -25,6 +25,8 @@ namespace Microsoft.Plugin.VSCodeWorkspaces
 
         public readonly VSCodeWorkspacesApi _workspacesApi = new VSCodeWorkspacesApi();
 
+        public readonly VSCodeRemoteMachinesApi _machinesApi = new VSCodeRemoteMachinesApi();
+
         public List<Result> Query(Query query)
         {
             var results = new List<Result>();
@@ -73,6 +75,48 @@ namespace Microsoft.Plugin.VSCodeWorkspaces
                     }
                 });
             }
+
+            foreach (var a in _machinesApi.Search(query.Search))
+            {
+                var title = $"{a.Host}";
+
+                if (a.User != null && a.User != String.Empty && a.HostName != null && a.HostName != String.Empty)
+                {
+                    title += $" [{a.User}@{a.HostName}]";
+                }
+
+                results.Add(new Result
+                {
+                    Title = title,
+                    IcoPath = a.VSCodeInstance.VSCodeVersion == VSCodeVersion.Stable ? "Images/code_machine.png" : "Images/code_insiders_machine.png",
+                    Score = 100 - a.Host.ToLower().CompareTo(query.Search.ToLower()),
+                    SubTitle = "SSH Remote machine",
+                    Action = c =>
+                    {
+                        bool hide;
+                        try
+                        {
+                            Process.Start(new ProcessStartInfo
+                            {
+                                FileName = a.VSCodeInstance.ExecutablePath,
+                                UseShellExecute = false,
+                                Arguments = $"--remote ssh-remote+{a.Host}"
+                            });
+                            hide = true;
+                        }
+                        catch (Win32Exception)
+                        {
+                            var name = $"Plugin: {_context.CurrentPluginMetadata.Name}";
+                            var msg = "Can't Open this file";
+                            _context.API.ShowMsg(name, msg, string.Empty);
+                            hide = false;
+                        }
+                        return hide;
+                    }
+                });
+            }
+
+            results.Sort((a, b) => { return b.Score - a.Score; });
 
             return results;
         }
