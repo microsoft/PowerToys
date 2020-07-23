@@ -216,6 +216,7 @@ namespace FancyZonesEditor.Models
                     string type = current.GetProperty(TypeJsonTag).GetString();
                     string uuid = current.GetProperty(UuidJsonTag).GetString();
                     var info = current.GetProperty(InfoJsonTag);
+
                     if (type.Equals(GridJsonTag))
                     {
                         int rows = info.GetProperty(RowsJsonTag).GetInt32();
