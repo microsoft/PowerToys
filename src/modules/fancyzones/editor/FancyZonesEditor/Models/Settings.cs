@@ -292,9 +292,9 @@ namespace FancyZonesEditor
                 ZoneCount = 3;
             }
 
-            Int32Rect focusZoneRect = new Int32Rect((int)(WorkArea.Width * 0.1), (int)(WorkArea.Height * 0.1), (int)(WorkArea.Width * 0.6), (int)(WorkArea.Height * 0.6));
-            int focusRectXIncrement = (ZoneCount <= 1) ? 0 : (int)(WorkArea.Width * 0.2) / (ZoneCount - 1);
-            int focusRectYIncrement = (ZoneCount <= 1) ? 0 : (int)(WorkArea.Height * 0.2) / (ZoneCount - 1);
+            Int32Rect focusZoneRect = new Int32Rect(100, 100, (int)(WorkArea.Width * 0.4), (int)(WorkArea.Height * 0.4));
+            int focusRectXIncrement = (ZoneCount <= 1) ? 0 : 50;
+            int focusRectYIncrement = (ZoneCount <= 1) ? 0 : 50;
 
             for (int i = 0; i < ZoneCount; i++)
             {
