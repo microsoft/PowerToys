@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Plugin.WindowWalker.Components
 {
-    class WindowResult:Window
+    class WindowResult : Window
     {
         /// <summary>
         /// Number of letters in between constant for when
         /// the result hasn't been set yet
         /// </summary>
-        public const int NoResult = -1; 
+        public const int NoResult = -1;
 
         /// <summary>
         /// Properties that signify how many characters (including spaces)
@@ -27,7 +27,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Constructor for WindowResult
         /// </summary>
-        public WindowResult(Window window):base(window.Hwnd)
+        public WindowResult(Window window) : base(window.Hwnd)
         {
             LettersInBetweenScore = WindowResult.NoResult;
         }

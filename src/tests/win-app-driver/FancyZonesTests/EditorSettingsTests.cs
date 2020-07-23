@@ -40,7 +40,7 @@ namespace PowerToysTests
                     WaitSeconds(1);
                     Assert.AreEqual(editorZoneCountValue, GetEditZonesSetting<int>(editorZoneCount));
                     OpenEditor();
-                    
+
                     minusButton = session.FindElementByAccessibilityId("decrementZones");
                     zoneCount = session.FindElementByAccessibilityId("zoneCount");
                 }
@@ -64,7 +64,7 @@ namespace PowerToysTests
         [TestMethod]
         public void ShowSpacingTest()
         {
-           for (int i = 0; i < 2; ++i)
+            for (int i = 0; i < 2; ++i)
             {
                 OpenEditor();
 
@@ -139,7 +139,7 @@ namespace PowerToysTests
                 Assert.AreEqual(editorSpacingValue, GetEditZonesSetting<string>(editorSpacing));
             }
         }
-        
+
         [TestMethod]
         public void SpacingTestLargeValue()
         {

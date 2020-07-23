@@ -34,9 +34,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 settings = new PowerLauncherSettings();
-                settings.Properties.open_powerlauncher.Alt = true;
-                settings.Properties.open_powerlauncher.Code = (int)Windows.System.VirtualKey.Space;
-                settings.Properties.maximum_number_of_results = 4;
+                settings.Properties.OpenPowerLauncher.Alt = true;
+                settings.Properties.OpenPowerLauncher.Code = (int)Windows.System.VirtualKey.Space;
+                settings.Properties.MaximumNumberOfResults = 4;
                 callback(settings);
             }
 
@@ -87,14 +87,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return settings.Properties.search_result_preference;
+                return settings.Properties.SearchResultPreference;
             }
 
             set
             {
-                if (settings.Properties.search_result_preference != value)
+                if (settings.Properties.SearchResultPreference != value)
                 {
-                    settings.Properties.search_result_preference = value;
+                    settings.Properties.SearchResultPreference = value;
                     UpdateSettings();
                 }
             }
@@ -104,14 +104,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return settings.Properties.search_type_preference;
+                return settings.Properties.SearchTypePreference;
             }
 
             set
             {
-                if (settings.Properties.search_type_preference != value)
+                if (settings.Properties.SearchTypePreference != value)
                 {
-                    settings.Properties.search_type_preference = value;
+                    settings.Properties.SearchTypePreference = value;
                     UpdateSettings();
                 }
             }
@@ -121,14 +121,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return settings.Properties.maximum_number_of_results;
+                return settings.Properties.MaximumNumberOfResults;
             }
 
             set
             {
-                if (settings.Properties.maximum_number_of_results != value)
+                if (settings.Properties.MaximumNumberOfResults != value)
                 {
-                    settings.Properties.maximum_number_of_results = value;
+                    settings.Properties.MaximumNumberOfResults = value;
                     UpdateSettings();
                 }
             }
@@ -138,14 +138,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return settings.Properties.open_powerlauncher;
+                return settings.Properties.OpenPowerLauncher;
             }
 
             set
             {
-                if (settings.Properties.open_powerlauncher != value)
+                if (settings.Properties.OpenPowerLauncher != value)
                 {
-                    settings.Properties.open_powerlauncher = value;
+                    settings.Properties.OpenPowerLauncher = value;
                     UpdateSettings();
                 }
             }
@@ -155,14 +155,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return settings.Properties.open_file_location;
+                return settings.Properties.OpenFileLocation;
             }
 
             set
             {
-                if (settings.Properties.open_file_location != value)
+                if (settings.Properties.OpenFileLocation != value)
                 {
-                    settings.Properties.open_file_location = value;
+                    settings.Properties.OpenFileLocation = value;
                     UpdateSettings();
                 }
             }
@@ -172,31 +172,31 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return settings.Properties.copy_path_location;
+                return settings.Properties.CopyPathLocation;
             }
 
             set
             {
-                if (settings.Properties.copy_path_location != value)
+                if (settings.Properties.CopyPathLocation != value)
                 {
-                    settings.Properties.copy_path_location = value;
+                    settings.Properties.CopyPathLocation = value;
                     UpdateSettings();
                 }
             }
         }
-        
+
         public bool OverrideWinRKey
         {
             get
             {
-                return settings.Properties.override_win_r_key;
+                return settings.Properties.OverrideWinkeyR;
             }
 
             set
             {
-                if (settings.Properties.override_win_r_key != value)
+                if (settings.Properties.OverrideWinkeyR != value)
                 {
-                    settings.Properties.override_win_r_key = value;
+                    settings.Properties.OverrideWinkeyR = value;
                     UpdateSettings();
                 }
             }
@@ -206,14 +206,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return settings.Properties.override_win_s_key;
+                return settings.Properties.OverrideWinkeyS;
             }
 
             set
             {
-                if (settings.Properties.override_win_s_key != value)
+                if (settings.Properties.OverrideWinkeyS != value)
                 {
-                    settings.Properties.override_win_s_key = value;
+                    settings.Properties.OverrideWinkeyS = value;
                     UpdateSettings();
                 }
             }
@@ -223,14 +223,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return settings.Properties.ignore_hotkeys_in_fullscreen;
+                return settings.Properties.IgnoreHotkeysInFullscreen;
             }
 
             set
             {
-                if (settings.Properties.ignore_hotkeys_in_fullscreen != value)
+                if (settings.Properties.IgnoreHotkeysInFullscreen != value)
                 {
-                    settings.Properties.ignore_hotkeys_in_fullscreen = value;
+                    settings.Properties.IgnoreHotkeysInFullscreen = value;
                     UpdateSettings();
                 }
             }
@@ -238,33 +238,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ClearInputOnLaunch
         {
-	        get
-	        {
-		        return settings.Properties.clear_input_on_launch;
-	        }
+            get
+            {
+                return settings.Properties.ClearInputOnLaunch;
+            }
 
-	        set
-	        {
-		        if (settings.Properties.clear_input_on_launch != value)
-		        {
-			        settings.Properties.clear_input_on_launch = value;
-			        UpdateSettings();
-		        }
-	        }
+            set
+            {
+                if (settings.Properties.ClearInputOnLaunch != value)
+                {
+                    settings.Properties.ClearInputOnLaunch = value;
+                    UpdateSettings();
+                }
+            }
         }
 
         public bool DisableDriveDetectionWarning
         {
             get
             {
-                return settings.Properties.disable_drive_detection_warning;
+                return settings.Properties.DisableDriveDetectionWarning;
             }
 
             set
             {
-                if (settings.Properties.disable_drive_detection_warning != value)
+                if (settings.Properties.DisableDriveDetectionWarning != value)
                 {
-                    settings.Properties.disable_drive_detection_warning = value;
+                    settings.Properties.DisableDriveDetectionWarning = value;
                     UpdateSettings();
                 }
             }

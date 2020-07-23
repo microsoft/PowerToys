@@ -40,8 +40,10 @@ namespace Wox.Core.Plugin
             return Execute(_startInfo);
         }
 
-        protected override string ExecuteContextMenu(Result selectedResult) {
-            JsonRPCServerRequestModel request = new JsonRPCServerRequestModel {
+        protected override string ExecuteContextMenu(Result selectedResult)
+        {
+            JsonRPCServerRequestModel request = new JsonRPCServerRequestModel
+            {
                 Method = "contextmenu",
                 Parameters = new object[] { selectedResult.ContextData },
             };

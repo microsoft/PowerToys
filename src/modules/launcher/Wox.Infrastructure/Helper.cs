@@ -92,7 +92,7 @@ namespace Wox.Infrastructure
             {
                 Process.Start(info);
             }
-            catch(System.Exception ex)
+            catch (System.Exception ex)
             {
                 Log.Exception($"Wox.Infrastructure.Helper| Unable to Run {path} as admin : {ex.Message}", ex);
             }

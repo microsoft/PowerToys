@@ -206,6 +206,9 @@
     <PackageReference Include="MSTest.TestFramework">
       <Version>2.1.2</Version>
     </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk">
+      <Version>16.6.1</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\Telemetry.csproj">

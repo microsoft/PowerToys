@@ -11,13 +11,14 @@ namespace Wox.Infrastructure.UserSettings
     {
         private string _hotkey = "Alt + Space";
         private string _previousHotkey = "";
-        public string PreviousHotkey {
+        public string PreviousHotkey
+        {
             get
             {
                 return _previousHotkey;
             }
         }
-        public string Hotkey 
+        public string Hotkey
         {
             get
             {
@@ -84,7 +85,7 @@ namespace Wox.Infrastructure.UserSettings
         public double WindowTop { get; set; }
 
         private int _maxResultsToShow = 4;
-        public int MaxResultsToShow 
+        public int MaxResultsToShow
         {
             get
             {

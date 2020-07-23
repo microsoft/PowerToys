@@ -34,16 +34,28 @@ steps:
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
 
+# directly not doing WinAppDriver testing
 - task: VSTest@2
   inputs:
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
-      **\PreviewPaneUnitTests.dll
-      **\UnitTests-SvgPreviewHandler.dll
-      **\UnitTests-PreviewHandlerCommon.dll
-      **\powerpreviewTest.dll
-      **\UnitTests-CommonLib.dll
+      !**\*PowerToysTests.dll
       !**\*TestAdapter.dll
       !**\obj\**
+      **\ImageResizer.Test.dll
+      **\KeyboardManagerTest.dll
+      **\Microsoft.Plugin.Program.UnitTests.dll
+      **\PowerRenameUnitTests.dll
+      **\UnitTests-CommonLib.dll
+      **\PreviewPaneUnitTests.dll #this is the markdown tests
+      **\UnitTests-PreviewHandlerCommon.dll
+      **\UnitTests-SvgPreviewHandler.dll
+      **\Wox.Test.dll
+      **\powerpreviewTest.dll
+      # Can't get working, says no tests
+      #   #**\Microsoft.PowerToys.Settings.UnitTest.exe
+      # crashes CI
+      #**\interop-tests.dll 
+      #**\UnitTests-FancyZones.dll

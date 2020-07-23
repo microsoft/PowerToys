@@ -17,7 +17,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public ShortcutGuideSettingsIPCMessage()
         {
-
         }
 
         public ShortcutGuideSettingsIPCMessage(SndShortcutGuideSettings settings)

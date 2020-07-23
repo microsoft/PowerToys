@@ -9,7 +9,7 @@ namespace PowerToysTests
 {
     [TestClass]
     public class FancyZonesEditorCustomLayoutsTests : FancyZonesEditor
-    {       
+    {
         private void SetLayoutName(string name)
         {
             WindowsElement textBox = session.FindElementByClassName("TextBox");
@@ -119,7 +119,7 @@ namespace PowerToysTests
         {
             OpenCreatorWindow("Create new custom", "Custom layout creator");
             string name = "My custom zone layout name";
-            SetLayoutName(name);          
+            SetLayoutName(name);
             SaveTest("canvas", name, 0);
         }
 
@@ -236,7 +236,7 @@ namespace PowerToysTests
                 SetLayoutName(name);
 
                 new Actions(session).MoveToElement(session.FindElementByName("Save and apply")).Click().Perform();
-                
+
                 //remove layout
                 OpenEditor();
                 OpenCustomLayouts();

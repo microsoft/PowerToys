@@ -74,7 +74,7 @@ namespace Microsoft.Plugin.Program.Programs
         public interface IAppxManifestProperties
         {
             [PreserveSig]
-            int GetBoolValue([MarshalAs(UnmanagedType.LPWStr)]string name, out bool value);
+            int GetBoolValue([MarshalAs(UnmanagedType.LPWStr)] string name, out bool value);
             [PreserveSig]
             int GetStringValue([MarshalAs(UnmanagedType.LPWStr)] string name, [MarshalAs(UnmanagedType.LPWStr)] out string value);
         }

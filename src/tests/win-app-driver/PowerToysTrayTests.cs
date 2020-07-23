@@ -35,10 +35,10 @@ namespace PowerToysTests
             Assert.IsNotNull(pt);
 
             new Actions(session).MoveToElement(pt).ContextClick().Perform();
-            
+
             //open settings
             WaitElementByXPath("//MenuItem[@Name=\"Settings\"]").Click();
-            
+
             //check settings window opened
             WindowsElement settingsWindow = WaitElementByName("PowerToys Settings");
             Assert.IsNotNull(settingsWindow);
@@ -59,10 +59,10 @@ namespace PowerToysTests
             Assert.IsNotNull(powerToys);
 
             new Actions(session).MoveToElement(powerToys).ContextClick().Perform();
-            
+
             //exit
             WaitElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
-            
+
             //check PowerToys exited
             powerToys = null;
             try
@@ -109,7 +109,7 @@ namespace PowerToysTests
             {
                 CloseSettings();
             }
-            
+
             if (isTrayOpened)
             {
                 trayButton.Click();

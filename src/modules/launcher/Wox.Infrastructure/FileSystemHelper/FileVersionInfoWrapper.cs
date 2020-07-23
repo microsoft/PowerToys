@@ -8,7 +8,7 @@ namespace Wox.Infrastructure.FileSystemHelper
         public FileVersionInfoWrapper() { }
         public FileVersionInfo GetVersionInfo(string path)
         {
-            if(File.Exists(path))
+            if (File.Exists(path))
             {
                 return FileVersionInfo.GetVersionInfo(path);
             }

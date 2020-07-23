@@ -8,14 +8,14 @@ namespace Wox.Infrastructure.Storage
     {
         public FileSystemWatcherWrapper() { }
 
-        Collection<string> IFileSystemWatcherWrapper.Filters 
-        { 
+        Collection<string> IFileSystemWatcherWrapper.Filters
+        {
             get => this.Filters;
-            set 
-            { 
-                if(value != null)
+            set
+            {
+                if (value != null)
                 {
-                    foreach(string filter in value)
+                    foreach (string filter in value)
                     {
                         this.Filters.Add(filter);
                     }

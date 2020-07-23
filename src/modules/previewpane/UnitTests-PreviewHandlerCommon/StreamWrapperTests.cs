@@ -19,7 +19,7 @@ namespace UnitTests_PreviewHandlerCommon
     public class StreamWrapperTests
     {
         [TestMethod]
-        public void StreamWrapper_ShouldThrow_IfInitializeWithNullStream() 
+        public void StreamWrapper_ShouldThrow_IfInitializeWithNullStream()
         {
             // Arrange
             IStream stream = null;
@@ -30,7 +30,7 @@ namespace UnitTests_PreviewHandlerCommon
             {
                 var streamWrapper = new StreamWrapper(stream);
             }
-            catch (ArgumentNullException ex) 
+            catch (ArgumentNullException ex)
             {
                 exception = ex;
             }
@@ -151,7 +151,7 @@ namespace UnitTests_PreviewHandlerCommon
         {
             // Arrange
             int expectedDwOrigin = 0;
-            switch (origin) 
+            switch (origin)
             {
                 case SeekOrigin.Begin:
                     expectedDwOrigin = 0;
@@ -218,7 +218,7 @@ namespace UnitTests_PreviewHandlerCommon
             {
                 streamWrapper.Read(buffer, offSet, bytesToRead);
             }
-            catch (ArgumentOutOfRangeException ex) 
+            catch (ArgumentOutOfRangeException ex)
             {
                 exception = ex;
             }
@@ -236,7 +236,7 @@ namespace UnitTests_PreviewHandlerCommon
             // Arrange
             var inputBuffer = new byte[1024];
             var streamBytes = new byte[count];
-            for (int i = 0; i < count; i++) 
+            for (int i = 0; i < count; i++)
             {
                 streamBytes[i] = (byte)i;
             }
@@ -244,12 +244,12 @@ namespace UnitTests_PreviewHandlerCommon
             var stremMock = new Mock<IStream>();
 
             stremMock
-                .Setup(x => x.Read(It.IsAny<byte []>(), It.IsAny<int>(), It.IsAny<IntPtr>()))
-                .Callback<byte [], int, IntPtr>((buffer, countToRead , bytesReadPtr) =>
-                {
-                    Array.Copy(streamBytes, 0, buffer, 0, streamBytes.Length);
-                    Marshal.WriteInt32(bytesReadPtr, count);
-                });
+                .Setup(x => x.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<IntPtr>()))
+                .Callback<byte[], int, IntPtr>((buffer, countToRead, bytesReadPtr) =>
+               {
+                   Array.Copy(streamBytes, 0, buffer, 0, streamBytes.Length);
+                   Marshal.WriteInt32(bytesReadPtr, count);
+               });
 
             var streamWrapper = new StreamWrapper(stremMock.Object);
 
@@ -274,7 +274,7 @@ namespace UnitTests_PreviewHandlerCommon
             {
                 streamWrapper.Flush();
             }
-            catch (NotImplementedException ex) 
+            catch (NotImplementedException ex)
             {
                 exception = ex;
             }

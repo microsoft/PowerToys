@@ -64,8 +64,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
         {
             //Arrange
             ListRepository<string> repository = new ListRepository<string>();
-            var numItems = 1000; 
-            for(var i=0; i<numItems;++i)
+            var numItems = 1000;
+            for (var i = 0; i < numItems; ++i)
             {
                 repository.Add($"OriginalItem_{i}");
             }
@@ -87,16 +87,16 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             });
 
             //Act - Insert on another thread
-            var addTask =  Task.Run(() =>
-            {
-                for (var i = 0; i < numItems; ++i)
-                {
-                    repository.Add($"NewItem_{i}");
-                }
-            });
+            var addTask = Task.Run(() =>
+           {
+               for (var i = 0; i < numItems; ++i)
+               {
+                   repository.Add($"NewItem_{i}");
+               }
+           });
 
             //Assert that this does not throw.  Collections that aren't syncronized will throw an invalidoperatioexception if the list is modified while enumerating
-            Assert.DoesNotThrowAsync(async () => 
+            Assert.DoesNotThrowAsync(async () =>
             {
                 await Task.WhenAll(new Task[] { iterationTask, addTask });
             });

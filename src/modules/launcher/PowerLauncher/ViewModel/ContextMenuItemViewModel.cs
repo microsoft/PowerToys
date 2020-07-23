@@ -15,7 +15,8 @@ namespace PowerLauncher.ViewModel
         public string Title { get; set; }
         public string Glyph { get; set; }
         public string FontFamily { get; set; }
-        public ICommand Command {
+        public ICommand Command
+        {
             get
             {
                 return this._command;

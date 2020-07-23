@@ -41,8 +41,8 @@ namespace Wox.Infrastructure.Image
         internal interface IShellItem
         {
             void BindToHandler(IntPtr pbc,
-                [MarshalAs(UnmanagedType.LPStruct)]Guid bhid,
-                [MarshalAs(UnmanagedType.LPStruct)]Guid riid,
+                [MarshalAs(UnmanagedType.LPStruct)] Guid bhid,
+                [MarshalAs(UnmanagedType.LPStruct)] Guid riid,
                 out IntPtr ppv);
 
             void GetParent(out IShellItem ppsi);

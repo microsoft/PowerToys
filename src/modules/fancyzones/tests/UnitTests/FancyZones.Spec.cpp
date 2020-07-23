@@ -3,8 +3,8 @@
 #include <filesystem>
 
 #include <lib/FancyZones.h>
+#include <lib/FancyZonesData.h>
 #include <lib/Settings.h>
-#include <common/common.h>
 
 #include "util.h"
 
@@ -271,7 +271,7 @@ namespace FancyZonesUnitTests
         winrt::com_ptr<IFancyZonesSettings> m_settings = nullptr;
         winrt::com_ptr<IFancyZonesCallback> m_fzCallback = nullptr;
 
-        JSONHelpers::FancyZonesData& m_fancyZonesData = JSONHelpers::FancyZonesDataInstance();
+        FancyZonesData& m_fancyZonesData = FancyZonesDataInstance();
 
         std::wstring serializedPowerToySettings(const Settings& settings)
         {

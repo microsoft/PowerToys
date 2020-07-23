@@ -196,7 +196,7 @@ namespace PowerToysTests
                     editorWindow.SendKeys(OpenQA.Selenium.Keys.Alt + OpenQA.Selenium.Keys.F4);
                 }
             }
-            catch(OpenQA.Selenium.WebDriverException)
+            catch (OpenQA.Selenium.WebDriverException)
             {
                 //editor has already closed
             }

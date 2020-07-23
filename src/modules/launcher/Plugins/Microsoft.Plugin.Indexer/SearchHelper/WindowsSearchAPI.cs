@@ -30,7 +30,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             List<OleDBResult> oleDBResults = WindowsIndexerSearch.Query(queryHelper.ConnectionString, sqlQuery);
 
             // Loop over all records from the database
-            foreach(OleDBResult oleDBResult in oleDBResults)
+            foreach (OleDBResult oleDBResult in oleDBResults)
             {
                 if (oleDBResult.fieldData[0] == DBNull.Value || oleDBResult.fieldData[1] == DBNull.Value || oleDBResult.fieldData[2] == DBNull.Value)
                 {
@@ -49,7 +49,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                         Title = (string)oleDBResult.fieldData[1]
                     };
                     _Result.Add(result);
-                }                                 
+                }
             }
 
             return _Result;
@@ -105,7 +105,8 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 
         public IEnumerable<SearchResult> Search(string keyword, string pattern = "*", int maxCount = 30)
         {
-            lock(_lock){
+            lock (_lock)
+            {
                 ISearchQueryHelper queryHelper;
                 InitQueryHelper(out queryHelper, maxCount);
                 ModifyQueryHelper(ref queryHelper, pattern);

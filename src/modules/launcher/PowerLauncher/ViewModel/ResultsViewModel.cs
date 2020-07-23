@@ -165,7 +165,7 @@ namespace PowerLauncher.ViewModel
         public void SelectNextTabItem()
         {
             //Do nothing if there is no selected item or we've selected the next context button
-            if(!SelectedItem?.SelectNextContextButton() ?? true)
+            if (!SelectedItem?.SelectNextContextButton() ?? true)
             {
                 SelectNextResult();
             }
@@ -179,6 +179,37 @@ namespace PowerLauncher.ViewModel
                 //Tabbing backwards should highlight the last item of the previous row
                 SelectPrevResult();
                 SelectedItem.SelectLastContextButton();
+            }
+        }
+
+        public void SelectNextContextMenuItem()
+        {
+            if(SelectedItem != null)
+            {
+                if(!SelectedItem.SelectNextContextButton())
+                {
+                    SelectedItem.SelectLastContextButton();
+                }
+            }
+        }
+
+        public void SelectPreviousContextMenuItem()
+        {
+            if (SelectedItem != null)
+            {
+                SelectedItem.SelectPrevContextButton();
+            }
+        }
+
+        public bool IsContextMenuItemSelected()
+        {
+            if (SelectedItem != null && SelectedItem.ContextMenuSelectedIndex != ResultViewModel.NoSelectionIndex)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
@@ -289,6 +320,6 @@ namespace PowerLauncher.ViewModel
         }
         #endregion
 
-        
+
     }
 }

@@ -90,12 +90,12 @@ namespace Wox.Infrastructure.Exception
                 else if (string.IsNullOrEmpty(ass.Location))
                 {
                     sb.Append("location is null or empty");
-                    
+
                 }
                 else
                 {
-                sb.Append(ass.Location);
-                    
+                    sb.Append(ass.Location);
+
                 }
                 sb.AppendLine(")");
             }
