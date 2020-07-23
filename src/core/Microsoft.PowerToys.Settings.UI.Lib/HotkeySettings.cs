@@ -26,7 +26,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         /// <param name="ctrl">Should Ctrl key be used</param>
         /// <param name="alt">Should Alt key be used</param>
         /// <param name="shift">Should Shift key be used</param>
-        /// <param name="key">Hot key</param>
         /// <param name="code">Go to https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes to see list of v-keys</param>
         public HotkeySettings(bool win, bool ctrl, bool alt, bool shift, int code)
         {
