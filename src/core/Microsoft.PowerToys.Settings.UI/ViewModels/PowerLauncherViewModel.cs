@@ -172,14 +172,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return settings.Properties.open_console;
+                return settings.Properties.OpenConsole;
             }
 
             set
             {
-                if (settings.Properties.open_console != value)
+                if (settings.Properties.OpenConsole != value)
                 {
-                    settings.Properties.open_console = value;
+                    settings.Properties.OpenConsole = value;
                     UpdateSettings();
                 }
             }
