@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         // converts the current to a json string.
         public virtual string ToJsonString()
         {
-            return JsonSerializer.Serialize(this);
+            return JsonSerializer.Serialize(this, this.GetType());
         }
     }
 }
