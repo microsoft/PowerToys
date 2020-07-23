@@ -231,7 +231,7 @@
             <CustomControls:GroupTitleTextBlock x:Uid="KeyboardManager_RemapKeyboardHeader"
                                                 IsActive="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>
 
-            <CustomControls:BodyTextBlock Text="Click below to remap a single key to another key" 
+            <CustomControls:BodyTextBlock Text="Click below to remap keys to other keys or shortcuts." 
                                           IsActive="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"
                                           Margin="{StaticResource SmallTopMargin}"/>
 
@@ -270,7 +270,7 @@
             <CustomControls:GroupTitleTextBlock x:Uid="KeyboardManager_RemapShortcutsHeader"
                                                 IsActive="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>
 
-            <CustomControls:BodyTextBlock Text="Click below to remap a shortcut (hotkey) to another shortcut"
+            <CustomControls:BodyTextBlock Text="Click below to remap a shortcuts to other shortcuts or keys. Additionally, mappings can be targeted to specific applications as well."
                                           IsActive="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>
 
             <Button x:Uid="KeyboardManager_RemapShortcutsButton"

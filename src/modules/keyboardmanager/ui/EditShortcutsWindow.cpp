@@ -148,7 +148,7 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
     shortcutRemapInfoHeader.TextWrapping(TextWrapping::Wrap);
 
     TextBlock shortcutRemapInfoExample;
-    shortcutRemapInfoExample.Text(L"For example, if you want to press \"Ctrl+C\" and get \"Alt\" only on Microsoft Edge, \"Ctrl+C\" would be your \"Shortcut\" column, the key \"Alt\" would be your \"Mapped To\" column, and \"MSEdge\" would be your \"Target App\" column. If no target app is entered, it will apply globally (All Apps). The name must be the process name and not the app name.");
+    shortcutRemapInfoExample.Text(L"For example, if you want to press \"Ctrl+C\" and get \"Alt\" only on Microsoft Edge, \"Ctrl+C\" would be your \"Shortcut\" column, the key \"Alt\" would be your \"Mapped To\" column, and \"MSEdge\" would be your \"Target App\" column. If no target app is entered, it will apply globally. The name must be the process name and not the app name.");
     shortcutRemapInfoExample.Margin({ 10, 0, 0, 20 });
     shortcutRemapInfoExample.FontStyle(Text::FontStyle::Italic);
     shortcutRemapInfoExample.TextWrapping(TextWrapping::Wrap);
