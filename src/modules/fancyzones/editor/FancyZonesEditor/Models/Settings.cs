@@ -455,8 +455,7 @@ namespace FancyZonesEditor
         private void ParseCommandLineArgs()
         {
             WorkArea = SystemParameters.WorkArea;
-            UsedWorkAreas = new List<Rect>();
-            UsedWorkAreas.Add(WorkArea);
+            UsedWorkAreas = new List<Rect> { WorkArea };
 
             string[] args = Environment.GetCommandLineArgs();
 
@@ -490,7 +489,15 @@ namespace FancyZonesEditor
                     var height = int.Parse(parsedLocation[(int)WorkAreaCmdArgElements.Height]);
 
                     Rect thisMonitor = new Rect(x, y, width, height);
-                    WorkArea.Union(thisMonitor);
+                    if (UsedWorkAreas.Count == 0)
+                    {
+                        WorkArea = thisMonitor;
+                    }
+                    else
+                    {
+                        WorkArea.Union(thisMonitor);
+                    }
+
                     UsedWorkAreas.Add(thisMonitor);
 
                     int.TryParse(args[(int)CmdArgs.PowerToysPID], out _powerToysPID);
