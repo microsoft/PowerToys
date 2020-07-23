@@ -44,17 +44,23 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Images\code.png">
+    <None Include="Images\code_workspace.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Images\code_insiders.png">
+    <None Include="Images\code_insiders_workspace.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Images\code_machine.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Images\code_insiders_machine.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj" />
+    <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj" />  
   </ItemGroup>
   
   <ItemGroup>
@@ -63,5 +69,4 @@
     <PackageReference Include="System.Runtime" Version="4.3.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
-
 </Project>
