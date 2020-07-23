@@ -138,13 +138,13 @@ namespace KeyboardManagerHelper
         case ErrorType::NoError:
             return L"Remapping successful";
         case ErrorType::SameKeyPreviouslyMapped:
-            return L"Cannot remap a key more than once";
+            return L"Cannot remap a key more than once for the same target app";
         case ErrorType::MapToSameKey:
             return L"Cannot remap a key to itself";
         case ErrorType::ConflictingModifierKey:
             return L"Cannot remap this key as it conflicts with another remapped key";
         case ErrorType::SameShortcutPreviouslyMapped:
-            return L"Cannot remap a shortcut more than once";
+            return L"Cannot remap a shortcut more than once for the same target app";
         case ErrorType::MapToSameShortcut:
             return L"Cannot remap a shortcut to itself";
         case ErrorType::ConflictingModifierShortcut:
@@ -215,7 +215,7 @@ namespace KeyboardManagerHelper
         {
             std::wstring process_path = get_process_path(current_window_handle);
             process_name = process_path;
-            
+
             // Get process name from path
             PathStripPath(&process_path[0]);
 
@@ -247,5 +247,82 @@ namespace KeyboardManagerHelper
         }
 
         return process_name;
+    }
+
+    // Function to set key events for modifier keys: When shortcutToCompare is passed (non-empty shortcut), then the key event is sent only if both shortcut's don't have the same modifier key. When keyToBeReleased is passed (non-NULL), then the key event is sent if either the shortcuts don't have the same modfifier or if the shortcutToBeSent's modifier matches the keyToBeReleased
+    void SetModifierKeyEvents(const Shortcut& shortcutToBeSent, const ModifierKey& winKeyInvoked, LPINPUT keyEventArray, int& index, bool isKeyDown, ULONG_PTR extraInfoFlag, const Shortcut& shortcutToCompare, const DWORD& keyToBeReleased)
+    {
+        // If key down is to be sent, send in the order Win, Ctrl, Alt, Shift
+        if (isKeyDown)
+        {
+            // If shortcutToCompare is non-empty, then the key event is sent only if both shortcut's don't have the same modifier key. If keyToBeReleased is non-NULL, then the key event is sent if either the shortcuts don't have the same modfifier or if the shortcutToBeSent's modifier matches the keyToBeReleased
+            if (shortcutToBeSent.GetWinKey(winKeyInvoked) != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetWinKey(winKeyInvoked) != shortcutToCompare.GetWinKey(winKeyInvoked)) && (keyToBeReleased == NULL || !shortcutToBeSent.CheckWinKey(keyToBeReleased)))
+            {
+                KeyboardManagerHelper::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetWinKey(winKeyInvoked), 0, extraInfoFlag);
+                index++;
+            }
+            if (shortcutToBeSent.GetCtrlKey() != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetCtrlKey() != shortcutToCompare.GetCtrlKey()) && (keyToBeReleased == NULL || !shortcutToBeSent.CheckCtrlKey(keyToBeReleased)))
+            {
+                KeyboardManagerHelper::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetCtrlKey(), 0, extraInfoFlag);
+                index++;
+            }
+            if (shortcutToBeSent.GetAltKey() != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetAltKey() != shortcutToCompare.GetAltKey()) && (keyToBeReleased == NULL || !shortcutToBeSent.CheckAltKey(keyToBeReleased)))
+            {
+                KeyboardManagerHelper::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetAltKey(), 0, extraInfoFlag);
+                index++;
+            }
+            if (shortcutToBeSent.GetShiftKey() != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetShiftKey() != shortcutToCompare.GetShiftKey()) && (keyToBeReleased == NULL || !shortcutToBeSent.CheckShiftKey(keyToBeReleased)))
+            {
+                KeyboardManagerHelper::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetShiftKey(), 0, extraInfoFlag);
+                index++;
+            }
+        }
+
+        // If key up is to be sent, send in the order Shift, Alt, Ctrl, Win
+        else
+        {
+            // If shortcutToCompare is non-empty, then the key event is sent only if both shortcut's don't have the same modifier key. If keyToBeReleased is non-NULL, then the key event is sent if either the shortcuts don't have the same modfifier or if the shortcutToBeSent's modifier matches the keyToBeReleased
+            if (shortcutToBeSent.GetShiftKey() != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetShiftKey() != shortcutToCompare.GetShiftKey() || shortcutToBeSent.CheckShiftKey(keyToBeReleased)))
+            {
+                KeyboardManagerHelper::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetShiftKey(), KEYEVENTF_KEYUP, extraInfoFlag);
+                index++;
+            }
+            if (shortcutToBeSent.GetAltKey() != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetAltKey() != shortcutToCompare.GetAltKey() || shortcutToBeSent.CheckAltKey(keyToBeReleased)))
+            {
+                KeyboardManagerHelper::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetAltKey(), KEYEVENTF_KEYUP, extraInfoFlag);
+                index++;
+            }
+            if (shortcutToBeSent.GetCtrlKey() != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetCtrlKey() != shortcutToCompare.GetCtrlKey() || shortcutToBeSent.CheckCtrlKey(keyToBeReleased)))
+            {
+                KeyboardManagerHelper::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetCtrlKey(), KEYEVENTF_KEYUP, extraInfoFlag);
+                index++;
+            }
+            if (shortcutToBeSent.GetWinKey(winKeyInvoked) != NULL && (shortcutToCompare.IsEmpty() || shortcutToBeSent.GetWinKey(winKeyInvoked) != shortcutToCompare.GetWinKey(winKeyInvoked) || shortcutToBeSent.CheckWinKey(keyToBeReleased)))
+            {
+                KeyboardManagerHelper::SetKeyEvent(keyEventArray, index, INPUT_KEYBOARD, (WORD)shortcutToBeSent.GetWinKey(winKeyInvoked), KEYEVENTF_KEYUP, extraInfoFlag);
+                index++;
+            }
+        }
+    }
+
+    // Function to filter the key codes for artificial key codes
+    DWORD FilterArtificialKeys(const DWORD& key)
+    {
+        switch (key)
+        {
+        // If a key is remapped to VK_WIN_BOTH, we send VK_LWIN instead
+        case CommonSharedConstants::VK_WIN_BOTH:
+            return VK_LWIN;
+        }
+
+        return key;
+    }
+
+    // Function to sort a vector of shortcuts based on it's size
+    void SortShortcutVectorBasedOnSize(std::vector<Shortcut>& shortcutVector)
+    {
+        std::sort(shortcutVector.begin(), shortcutVector.end(), [](Shortcut first, Shortcut second) {
+            return first.Size() > second.Size();
+        });
     }
 }

@@ -96,7 +96,7 @@ namespace KeyboardManagerConstants
 
     // String constant for the default app name in Remap shortcuts
     inline const std::wstring DefaultAppName = L"All Apps";
-    
+
     // String constant to represent no activated application in app-specific shortcuts
     inline const std::wstring NoActivatedApp = L"";
 }
