@@ -85,7 +85,7 @@ namespace ViewModelTests
             Assert.AreEqual(4, sendCallbackMock.TimesSent);
 
             AssertHotkeySettings(
-                mockSettings.Properties.OpenPowerlauncher,
+                mockSettings.Properties.OpenPowerLauncher,
                 true,
                 false,
                 false,

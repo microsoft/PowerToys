@@ -43,7 +43,7 @@ namespace PowerLauncher
                 {
                     var overloadSettings = SettingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
 
-                    var openPowerlauncher = ConvertHotkey(overloadSettings.Properties.OpenPowerlauncher);
+                    var openPowerlauncher = ConvertHotkey(overloadSettings.Properties.OpenPowerLauncher);
                     if (_settings.Hotkey != openPowerlauncher)
                     {
                         _settings.Hotkey = openPowerlauncher;

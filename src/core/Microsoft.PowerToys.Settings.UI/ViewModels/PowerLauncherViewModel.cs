@@ -34,8 +34,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 settings = new PowerLauncherSettings();
-                settings.Properties.OpenPowerlauncher.Alt = true;
-                settings.Properties.OpenPowerlauncher.Code = (int)Windows.System.VirtualKey.Space;
+                settings.Properties.OpenPowerLauncher.Alt = true;
+                settings.Properties.OpenPowerLauncher.Code = (int)Windows.System.VirtualKey.Space;
                 settings.Properties.MaximumNumberOfResults = 4;
                 callback(settings);
             }
@@ -138,14 +138,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return settings.Properties.OpenPowerlauncher;
+                return settings.Properties.OpenPowerLauncher;
             }
 
             set
             {
-                if (settings.Properties.OpenPowerlauncher != value)
+                if (settings.Properties.OpenPowerLauncher != value)
                 {
-                    settings.Properties.OpenPowerlauncher = value;
+                    settings.Properties.OpenPowerLauncher = value;
                     UpdateSettings();
                 }
             }

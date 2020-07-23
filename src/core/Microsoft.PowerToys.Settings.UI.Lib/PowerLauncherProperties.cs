@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public int MaximumNumberOfResults { get; set; }
 
         [JsonPropertyName("open_powerlauncher")]
-        public HotkeySettings OpenPowerlauncher { get; set; }
+        public HotkeySettings OpenPowerLauncher { get; set; }
 
         [JsonPropertyName("open_file_location")]
         public HotkeySettings OpenFileLocation { get; set; }
@@ -46,7 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public PowerLauncherProperties()
         {
-            OpenPowerlauncher = new HotkeySettings();
+            OpenPowerLauncher = new HotkeySettings();
             OpenFileLocation = new HotkeySettings();
             CopyPathLocation = new HotkeySettings();
             OpenConsole = new HotkeySettings();
