@@ -27,11 +27,48 @@ namespace FancyZonesEditor.Models
     //  Manages common properties and base persistence
     public abstract class LayoutModel : INotifyPropertyChanged
     {
-        public static void ShowExceptionMessageBox(string message, Exception ex)
+        // Localizable strings
+        private const string ErrorMessageBoxTitle = "FancyZones Editor Exception Handler";
+        private const string ErrorMessageBoxMessage = "Please report the bug to ";
+        private const string ErrorSerializingDeletedLayouts = "Error serializing deleted layouts";
+        private const string ErrorLoadingCustomLayouts = "Error loading custom layouts";
+        private const string ErrorApplyingLayout = "Error applying layout";
+
+        // Non-localizable strings
+        private const string NameStr = "Name";
+        private const string IsSelectedStr = "IsSelected";
+        private const string LCNameStr = "name";
+        private const string CustomZoneSetsJsonTag = "custom-zone-sets";
+        private const string TypeJsonTag = "type";
+        private const string UuidJsonTag = "uuid";
+        private const string InfoJsonTag = "info";
+        private const string GridJsonTag = "grid";
+        private const string RowsJsonTag = "rows";
+        private const string ColumnsJsonTag = "columns";
+        private const string RowsPercentageJsonTag = "rows-percentage";
+        private const string ColumnsPercentageJsonTag = "columns-percentage";
+        private const string CellChildMapJsonTag = "cell-child-map";
+        private const string ZonesJsonTag = "zones";
+        private const string CanvasJsonTag = "canvas";
+        private const string RefWidthJsonTag = "ref-width";
+        private const string RefHeightJsonTag = "ref-height";
+        private const string XJsonTag = "X";
+        private const string YJsonTag = "Y";
+        private const string WidthJsonTag = "width";
+        private const string HeightJsonTag = "height";
+        private const string FocusJsonTag = "focus";
+        private const string PriorityGridJsonTag = "priority-grid";
+        private const string CustomJsonTag = "custom";
+
+        public static void ShowExceptionMessageBox(string message, Exception exception = null)
         {
-            string title = "FancyZones Editor Exception Handler";
-            string fullMessage = "Please report the bug to https://github.com/microsoft/PowerToys/issues \n" + message + ": " + ex.Message;
-            MessageBox.Show(fullMessage, title);
+            string fullMessage = ErrorMessageBoxMessage + "https://github.com/microsoft/PowerToys/issues \n" + message;
+            if (exception != null)
+            {
+                fullMessage += ": " + exception.Message;
+            }
+
+            MessageBox.Show(fullMessage, ErrorMessageBoxTitle);
         }
 
         protected LayoutModel()
@@ -74,7 +111,7 @@ namespace FancyZonesEditor.Models
                 if (_name != value)
                 {
                     _name = value;
-                    FirePropertyChanged("Name");
+                    FirePropertyChanged(NameStr);
                 }
             }
         }
@@ -107,7 +144,7 @@ namespace FancyZonesEditor.Models
                 if (_isSelected != value)
                 {
                     _isSelected = value;
-                    FirePropertyChanged("IsSelected");
+                    FirePropertyChanged(IsSelectedStr);
                 }
             }
         }
@@ -158,7 +195,7 @@ namespace FancyZonesEditor.Models
             }
             catch (Exception ex)
             {
-                ShowExceptionMessageBox("Error serializing deleted layouts", ex);
+                ShowExceptionMessageBox(ErrorSerializingDeletedLayouts, ex);
             }
         }
 
@@ -171,36 +208,36 @@ namespace FancyZonesEditor.Models
             {
                 FileStream inputStream = File.Open(Settings.FancyZonesSettingsFile, FileMode.Open);
                 JsonDocument jsonObject = JsonDocument.Parse(inputStream, options: default);
-                JsonElement.ArrayEnumerator customZoneSetsEnumerator = jsonObject.RootElement.GetProperty("custom-zone-sets").EnumerateArray();
+                JsonElement.ArrayEnumerator customZoneSetsEnumerator = jsonObject.RootElement.GetProperty(CustomZoneSetsJsonTag).EnumerateArray();
 
                 while (customZoneSetsEnumerator.MoveNext())
                 {
                     var current = customZoneSetsEnumerator.Current;
-                    string name = current.GetProperty("name").GetString();
-                    string type = current.GetProperty("type").GetString();
-                    string uuid = current.GetProperty("uuid").GetString();
-                    var info = current.GetProperty("info");
-                    if (type.Equals("grid"))
+                    string name = current.GetProperty(LCNameStr).GetString();
+                    string type = current.GetProperty(TypeJsonTag).GetString();
+                    string uuid = current.GetProperty(UuidJsonTag).GetString();
+                    var info = current.GetProperty(InfoJsonTag);
+                    if (type.Equals(GridJsonTag))
                     {
-                        int rows = info.GetProperty("rows").GetInt32();
-                        int columns = info.GetProperty("columns").GetInt32();
+                        int rows = info.GetProperty(RowsJsonTag).GetInt32();
+                        int columns = info.GetProperty(ColumnsJsonTag).GetInt32();
 
                         List<int> rowsPercentage = new List<int>(rows);
-                        JsonElement.ArrayEnumerator rowsPercentageEnumerator = info.GetProperty("rows-percentage").EnumerateArray();
+                        JsonElement.ArrayEnumerator rowsPercentageEnumerator = info.GetProperty(RowsPercentageJsonTag).EnumerateArray();
                         while (rowsPercentageEnumerator.MoveNext())
                         {
                             rowsPercentage.Add(rowsPercentageEnumerator.Current.GetInt32());
                         }
 
                         List<int> columnsPercentage = new List<int>(columns);
-                        JsonElement.ArrayEnumerator columnsPercentageEnumerator = info.GetProperty("columns-percentage").EnumerateArray();
+                        JsonElement.ArrayEnumerator columnsPercentageEnumerator = info.GetProperty(ColumnsPercentageJsonTag).EnumerateArray();
                         while (columnsPercentageEnumerator.MoveNext())
                         {
                             columnsPercentage.Add(columnsPercentageEnumerator.Current.GetInt32());
                         }
 
                         int i = 0;
-                        JsonElement.ArrayEnumerator cellChildMapRows = info.GetProperty("cell-child-map").EnumerateArray();
+                        JsonElement.ArrayEnumerator cellChildMapRows = info.GetProperty(CellChildMapJsonTag).EnumerateArray();
                         int[,] cellChildMap = new int[rows, columns];
                         while (cellChildMapRows.MoveNext())
                         {
@@ -216,19 +253,19 @@ namespace FancyZonesEditor.Models
 
                         _customModels.Add(new GridLayoutModel(uuid, name, LayoutType.Custom, rows, columns, rowsPercentage, columnsPercentage, cellChildMap));
                     }
-                    else if (type.Equals("canvas"))
+                    else if (type.Equals(CanvasJsonTag))
                     {
-                        int lastWorkAreaWidth = info.GetProperty("ref-width").GetInt32();
-                        int lastWorkAreaHeight = info.GetProperty("ref-height").GetInt32();
+                        int lastWorkAreaWidth = info.GetProperty(RefWidthJsonTag).GetInt32();
+                        int lastWorkAreaHeight = info.GetProperty(RefHeightJsonTag).GetInt32();
 
-                        JsonElement.ArrayEnumerator zonesEnumerator = info.GetProperty("zones").EnumerateArray();
+                        JsonElement.ArrayEnumerator zonesEnumerator = info.GetProperty(ZonesJsonTag).EnumerateArray();
                         IList<Int32Rect> zones = new List<Int32Rect>();
                         while (zonesEnumerator.MoveNext())
                         {
-                            int x = zonesEnumerator.Current.GetProperty("X").GetInt32();
-                            int y = zonesEnumerator.Current.GetProperty("Y").GetInt32();
-                            int width = zonesEnumerator.Current.GetProperty("width").GetInt32();
-                            int height = zonesEnumerator.Current.GetProperty("height").GetInt32();
+                            int x = zonesEnumerator.Current.GetProperty(XJsonTag).GetInt32();
+                            int y = zonesEnumerator.Current.GetProperty(YJsonTag).GetInt32();
+                            int width = zonesEnumerator.Current.GetProperty(WidthJsonTag).GetInt32();
+                            int height = zonesEnumerator.Current.GetProperty(HeightJsonTag).GetInt32();
                             zones.Add(new Int32Rect(x, y, width, height));
                         }
 
@@ -240,7 +277,7 @@ namespace FancyZonesEditor.Models
             }
             catch (Exception ex)
             {
-                ShowExceptionMessageBox("Error loading custom layouts", ex);
+                ShowExceptionMessageBox(ErrorLoadingCustomLayouts, ex);
                 return new ObservableCollection<LayoutModel>();
             }
 
@@ -291,22 +328,22 @@ namespace FancyZonesEditor.Models
             switch (Type)
             {
                 case LayoutType.Focus:
-                    activeZoneSet.Type = "focus";
+                    activeZoneSet.Type = FocusJsonTag;
                     break;
                 case LayoutType.Rows:
-                    activeZoneSet.Type = "rows";
+                    activeZoneSet.Type = RowsJsonTag;
                     break;
                 case LayoutType.Columns:
-                    activeZoneSet.Type = "columns";
+                    activeZoneSet.Type = ColumnsJsonTag;
                     break;
                 case LayoutType.Grid:
-                    activeZoneSet.Type = "grid";
+                    activeZoneSet.Type = GridJsonTag;
                     break;
                 case LayoutType.PriorityGrid:
-                    activeZoneSet.Type = "priority-grid";
+                    activeZoneSet.Type = PriorityGridJsonTag;
                     break;
                 case LayoutType.Custom:
-                    activeZoneSet.Type = "custom";
+                    activeZoneSet.Type = CustomJsonTag;
                     break;
             }
 
@@ -333,7 +370,7 @@ namespace FancyZonesEditor.Models
             }
             catch (Exception ex)
             {
-                ShowExceptionMessageBox("Error applying layout", ex);
+                ShowExceptionMessageBox(ErrorApplyingLayout, ex);
             }
         }
     }
