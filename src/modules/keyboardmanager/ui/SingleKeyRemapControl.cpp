@@ -15,6 +15,7 @@ SingleKeyRemapControl::SingleKeyRemapControl(Grid table, const int colIndex)
 {
     typeKey = Button();
     typeKey.as<Button>().Width(KeyboardManagerConstants::RemapTableDropDownWidth);
+    typeKey.as<Button>().Content(winrt::box_value(L"Type"));
 
     singleKeyRemapControlLayout = StackPanel();
     singleKeyRemapControlLayout.as<StackPanel>().Margin({ 0, 0, 0, 10 });
@@ -24,7 +25,6 @@ SingleKeyRemapControl::SingleKeyRemapControl(Grid table, const int colIndex)
     // Key column
     if (colIndex == 0)
     {
-        typeKey.as<Button>().Content(winrt::box_value(L"Type Key"));
         keyDropDownControlObjects.push_back(std::move(std::unique_ptr<KeyDropDownControl>(new KeyDropDownControl(false))));
         singleKeyRemapControlLayout.as<StackPanel>().Children().Append(keyDropDownControlObjects[0]->GetComboBox());
         // Set selection handler for the drop down
@@ -34,7 +34,6 @@ SingleKeyRemapControl::SingleKeyRemapControl(Grid table, const int colIndex)
     // Hybrid column
     else
     {
-        typeKey.as<Button>().Content(winrt::box_value(L"Type Shortcut"));
         hybridDropDownStackPanel = StackPanel();
         hybridDropDownStackPanel.as<StackPanel>().Spacing(KeyboardManagerConstants::ShortcutTableDropDownSpacing);
         hybridDropDownStackPanel.as<StackPanel>().Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);

@@ -20,7 +20,7 @@ ShortcutControl::ShortcutControl(Grid table, const int colIndex, TextBox targetA
     shortcutDropDownStackPanel.as<StackPanel>().Spacing(KeyboardManagerConstants::ShortcutTableDropDownSpacing);
     shortcutDropDownStackPanel.as<StackPanel>().Orientation(Windows::UI::Xaml::Controls::Orientation::Horizontal);
 
-    typeShortcut.as<Button>().Content(winrt::box_value(L"Type Shortcut"));
+    typeShortcut.as<Button>().Content(winrt::box_value(L"Type"));
     typeShortcut.as<Button>().Width(KeyboardManagerConstants::ShortcutTableDropDownWidth);
     typeShortcut.as<Button>().Click([&, table, colIndex, isHybridControl, targetApp](winrt::Windows::Foundation::IInspectable const& sender, RoutedEventArgs const&) {
         keyboardManagerState->SetUIState(KeyboardManagerUIState::DetectShortcutWindowActivated, EditShortcutsWindowHandle);

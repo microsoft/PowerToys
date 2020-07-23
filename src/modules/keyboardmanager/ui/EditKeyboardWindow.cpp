@@ -238,13 +238,13 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     //  Text block for information about remap key section.
     TextBlock keyRemapInfoHeader;
-    keyRemapInfoHeader.Text(L"Select the key you want to change (Key) and the key you want it to become (Mapped To).");
+    keyRemapInfoHeader.Text(L"Select the key you want to change (Key) and then the key or shortcut you want it to become (Mapped To).");
     keyRemapInfoHeader.Margin({ 10, 0, 0, 10 });
     keyRemapInfoHeader.FontWeight(Text::FontWeights::SemiBold());
     keyRemapInfoHeader.TextWrapping(TextWrapping::Wrap);
 
     TextBlock keyRemapInfoExample;
-    keyRemapInfoExample.Text(L"For example, if you want to press A and get B, Key A would be your \"Key\" and Key B would be your \"Mapped To\".");
+    keyRemapInfoExample.Text(L"For example, if you want to press A and get \"Ctrl+C\", key \"A\" would be your \"Key\" column and the shortcut \"Ctrl+C\" would be your \"Mapped To\" column.");
     keyRemapInfoExample.Margin({ 10, 0, 0, 20 });
     keyRemapInfoExample.FontStyle(Text::FontStyle::Italic);
     keyRemapInfoExample.TextWrapping(TextWrapping::Wrap);

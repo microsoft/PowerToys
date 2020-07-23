@@ -142,13 +142,13 @@ void createEditShortcutsWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMa
 
     //  Text block for information about remap key section.
     TextBlock shortcutRemapInfoHeader;
-    shortcutRemapInfoHeader.Text(L"Select shortcut you want to change (Shortcut) and the shortcut you want it to invoke (Mapped To).");
+    shortcutRemapInfoHeader.Text(L"Select the shortcut you want to change (Shortcut) and then the key or shortcut you want it to invoke (Mapped To).");
     shortcutRemapInfoHeader.Margin({ 10, 0, 0, 10 });
     shortcutRemapInfoHeader.FontWeight(Text::FontWeights::SemiBold());
     shortcutRemapInfoHeader.TextWrapping(TextWrapping::Wrap);
 
     TextBlock shortcutRemapInfoExample;
-    shortcutRemapInfoExample.Text(L"For example, if you want Ctrl+C to paste, Ctrl+C is the \"Shortcut\" and Ctrl+V would be your \"Mapped To\".");
+    shortcutRemapInfoExample.Text(L"For example, if you want to press \"Ctrl+C\" and get \"Alt\" only on Microsoft Edge, \"Ctrl+C\" would be your \"Shortcut\" column, the key \"Alt\" would be your \"Mapped To\" column, and \"MSEdge\" would be your \"Target App\" column. If no target app is entered, it will apply globally (All Apps). The name must be the process name and not the app name.");
     shortcutRemapInfoExample.Margin({ 10, 0, 0, 20 });
     shortcutRemapInfoExample.FontStyle(Text::FontStyle::Italic);
     shortcutRemapInfoExample.TextWrapping(TextWrapping::Wrap);
