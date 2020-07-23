@@ -20,6 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         // converts the current to a json string.
         public virtual string ToJsonString()
         {
+            // By default JsonSerializer will only serialize the properties in the base class. This can be avoided by passing the object type (more details at https://stackoverflow.com/a/62498888)
             return JsonSerializer.Serialize(this, this.GetType());
         }
     }
