@@ -237,10 +237,10 @@ namespace FancyZonesEditor.Models
                             error = true;
                         }
 
-                        while (rowsPercentageEnumerator.MoveNext())
+                        while (!error && rowsPercentageEnumerator.MoveNext())
                         {
                             int percentage = rowsPercentageEnumerator.Current.GetInt32();
-                            if (error || percentage <= 0)
+                            if (percentage <= 0)
                             {
                                 error = true;
                                 break;
@@ -249,10 +249,10 @@ namespace FancyZonesEditor.Models
                             rowsPercentage.Add(percentage);
                         }
 
-                        while (columnsPercentageEnumerator.MoveNext())
+                        while (!error && columnsPercentageEnumerator.MoveNext())
                         {
                             int percentage = columnsPercentageEnumerator.Current.GetInt32();
-                            if (error || percentage <= 0)
+                            if (percentage <= 0)
                             {
                                 error = true;
                                 break;
@@ -270,11 +270,11 @@ namespace FancyZonesEditor.Models
                             error = true;
                         }
 
-                        while (cellChildMapRows.MoveNext())
+                        while (!error && cellChildMapRows.MoveNext())
                         {
                             int j = 0;
                             JsonElement.ArrayEnumerator cellChildMapRowElems = cellChildMapRows.Current.EnumerateArray();
-                            if (error || cellChildMapRowElems.Count() != columns)
+                            if (cellChildMapRowElems.Count() != columns)
                             {
                                 error = true;
                                 break;
@@ -311,14 +311,14 @@ namespace FancyZonesEditor.Models
                             error = true;
                         }
 
-                        while (zonesEnumerator.MoveNext())
+                        while (!error && zonesEnumerator.MoveNext())
                         {
                             int x = zonesEnumerator.Current.GetProperty(XJsonTag).GetInt32();
                             int y = zonesEnumerator.Current.GetProperty(YJsonTag).GetInt32();
                             int width = zonesEnumerator.Current.GetProperty(WidthJsonTag).GetInt32();
                             int height = zonesEnumerator.Current.GetProperty(HeightJsonTag).GetInt32();
 
-                            if (error || width <= 0 || height <= 0)
+                            if (width <= 0 || height <= 0)
                             {
                                 error = true;
                                 break;
