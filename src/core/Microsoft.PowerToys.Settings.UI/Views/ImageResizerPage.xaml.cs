@@ -9,7 +9,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 {
     public sealed partial class ImageResizerPage : Page
     {
-        ImageResizerViewModel ViewModel { get; set; }
+        private ImageResizerViewModel ViewModel { get; set; }
 
         public ImageResizerPage()
         {
