@@ -46,6 +46,7 @@ namespace PowerLauncher.ViewModel
         private HotkeyManager _hotkeyManager { get; set; }
         private ushort _hotkeyHandle;
         private readonly Internationalization _translator = InternationalizationManager.Instance;
+        private System.Diagnostics.Stopwatch hotkeyTimer = new System.Diagnostics.Stopwatch();
 
         #endregion
 
@@ -618,7 +619,12 @@ namespace PowerLauncher.ViewModel
             {
                 if (!ShouldIgnoreHotkeys())
                 {
+                    // If launcher window was hidden and the hotkey was pressed, start telemetry event
+                    if (MainWindowVisibility != Visibility.Visible)
+                    {
 
+                        StartHotkeyTimer();
+                    }
                     if (_settings.LastQueryMode == LastQueryMode.Empty)
                     {
                         ChangeQueryText(string.Empty);
@@ -809,6 +815,21 @@ namespace PowerLauncher.ViewModel
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        public void StartHotkeyTimer()
+        {
+            hotkeyTimer.Start();
+        }
+
+        public long GetHotkeyEventTimeMs()
+        {
+            hotkeyTimer.Stop();
+            long recordedTime = hotkeyTimer.ElapsedMilliseconds;
+
+            // Reset the stopwatch and return the time elapsed
+            hotkeyTimer.Reset();
+            return recordedTime;
         }
 
         #endregion

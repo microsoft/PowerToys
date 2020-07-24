@@ -371,6 +371,9 @@ namespace PowerLauncher
                 {
                     SearchBox.QueryTextBox.SelectAll();
                 }
+
+                // Log the time taken from pressing the hotkey till launcher is visible
+                PowerToysTelemetry.Log.WriteEvent(new LauncherHotkeyEvent() { HotkeyToShowTimeMs = _viewModel.GetHotkeyEventTimeMs() });
             }
             else
             {
