@@ -2,18 +2,18 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.PowerToys.Settings.UI.Lib;
 using System;
+using Microsoft.PowerToys.Settings.UI.Lib;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     public sealed partial class HotkeySettingsControl : UserControl
     {
         public string Header { get; set; }
+
         public string Keys { get; set; }
 
         public static readonly DependencyProperty IsActiveProperty =
@@ -40,14 +40,16 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 if (value)
                 {
                     HotkeyTextBox.IsEnabled = true;
-                    //TitleText.IsActive = "True";
-                    //TitleGlyph.IsActive = "True";
+
+                    // TitleText.IsActive = "True";
+                    // TitleGlyph.IsActive = "True";
                 }
                 else
                 {
                     HotkeyTextBox.IsEnabled = false;
-                    //TitleText.IsActive = "False";
-                    //TitleGlyph.IsActive = "False";
+
+                    // TitleText.IsActive = "False";
+                    // TitleGlyph.IsActive = "False";
                 }
             }
         }
