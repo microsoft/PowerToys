@@ -12,72 +12,82 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 ## Current PowerToy Utilities
 
+### Color Picker
+
+[<img align="left" src="./doc/images/overview/ColorPicker_small.png" />](https://aka.ms/PowerToysOverview_PowerRename) [ColorPicker](https://aka.ms/PowerToysOverview_PowerRename) is a simple and quick system-wide color picker. Color Picker allows to pick colors from any currently running application and automically copies the HEX or RGB values to your clipboard. This code is based on [Martin Chrzan's Color Picker](https://github.com/martinchrzan/ColorPicker).
+<br/>
+<br/>
+<br/>
+<br/>
+
 ### FancyZones
 
 [<img align="left" src="./doc/images/overview/FancyZones_small.png" />](https://aka.ms/PowerToysOverview_FancyZones) [FancyZones](https://aka.ms/PowerToysOverview_FancyZones) is a window manager that makes it easy to create complex window layouts and quickly position windows into those layouts.
-<br>
-<br>
-<br>
-<br>
-<br>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
 
 ### File Explorer Add-ons (Preview Panes)
 
 [<img align="left" src="./doc/images/overview/PowerPreview_small.png" />](https://aka.ms/PowerToysOverview_FileExplorerAddOns) [File Explorer](https://aka.ms/PowerToysOverview_FileExplorerAddOns) add-ons right now are just limited to Preview Pane additions for File Explorer. Preview Pane is an existing feature in the File Explorer.  To enable it, you just click the View tab in the ribbon and then click "Preview Pane".
 
 PowerToys will now enable two types of files to be previewed: Markdown (.md) & SVG (.svg)
-<br>
-<br>
+<br/>
+<br/>
 
 ### Image Resizer
 
 [<img align="left" src="./doc/images/overview/ImageResizer_small.png" />](https://aka.ms/PowerToysOverview_ImageResizer) [Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) is a Windows Shell Extension for quickly resizing images.  With a simple right click from File Explorer, resize one or many images instantly. This code is based on [Brice Lambson's Image Resizer](https://github.com/bricelam/ImageResizer).
-<br>
-<br>
-<br>
-<br>
+<br/>
+<br/>
+<br/>
+<br/>
 
 ### Keyboard Manager
 
 [<img align="left" src="./doc/images/overview/KBM_small.png" />](https://aka.ms/PowerToysOverview_KeyboardManager) [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) allows you to customize the keyboard to be more productive by remapping keys and creating your own keyboard shortcuts. This PowerToy requires Windows 10 1903 (build 18362) or later.
-<br>
-<br>
-<br>
-<br>
+<br/>
+<br/>
+<br/>
+<br/>
 
 ### PowerRename
 
 [<img align="left" src="./doc/images/overview/PowerRename_small.png" />](https://aka.ms/PowerToysOverview_PowerRename) [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) is a Windows Shell Extension for advanced bulk renaming using search and replace or regular expressions. PowerRename allows simple search and replace or more advanced regular expression matching. While you type in the search and replace input fields, the preview area will show what the items will be renamed to. PowerRename then calls into the Windows Explorer file operations engine to perform the rename. This has the benefit of allowing the rename operation to be undone after PowerRename exits. This code is based on [Chris Davis's SmartRename](https://github.com/chrdavis/SmartRename).
-<br>
+<br/>
 
 ### PowerToys Run
 
 [<img align="left" src="./doc/images/overview/PowerLauncher_small.png" />](https://aka.ms/PowerToysOverview_PowerToysRun) [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) is a new toy in PowerToys that can help you search and launch your app instantly with a simple alt-space and start typing! It is open source and modular for additional plugins.  Window Walker is now inside too! This PowerToy requires Windows 10 1903 (build 18362) or later.
-<br>
-<br>
-<br>
-<br>
+<br/>
+<br/>
+<br/>
+<br/>
 
 ### Shortcut Guide
 
 [<img align="left" src="./doc/images/overview/ShortcutGuide_small.png" />](https://aka.ms/PowerToysOverview_ShortcutGuide)  [Windows key shortcut guide](https://aka.ms/PowerToysOverview_ShortcutGuide) appears when a user holds the Windows key down for more than one second and shows the available shortcuts for the current state of the desktop.
-<br>
-<br>
-<br>
-<br>
-<br>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
 
 ## Installing and running Microsoft PowerToys
 
 **Requirements**
 - Windows 10 1803 (build 17134) or later.
-- Have [.NET Core 3.1 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.4-windows-x64-installer). The installer will prompt this but we want to directly make people aware.
+- Have [.NET Core 3.1 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.4-windows-x64-installer). The installer should handle this but we want to directly make people aware.
+
+### 0.18 users for updating via notifications
+
+- We adjusted how upgrading works in 0.20.  In 0.19 we accounted for this upcoming change but if you are going from 0.18 to 0.20, please directly use the installer file.
 
 ### Via GitHub with MSI [Recommended]
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.19.2-x64.msi` to download the PowerToys installer.
-
-**Note:** After installing, you will have to start PowerToys for the first time.  We will improve install experience this moving forward but due to a possible install dependency, we can't start after install currently.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.20.0-x64.msi` to download the PowerToys installer.
 
 This is our preferred method.
 
@@ -106,12 +116,6 @@ To upgrade PowerToys, run the following command from the command line / PowerShe
 choco upgrade powertoys
 ```
 
-### Known issues
-
-- PT Run, Newly installed apps can't be found [#3553](https://github.com/microsoft/PowerToys/issues/3553).  We will address this in 0.20.
-- PT Run, CPU / Memory, still investigating [#3208](https://github.com/microsoft/PowerToys/issues/3208).  We have 2 leads and fixed one item.
-- WinKey remapping for PT Run can be quirky [#4578](https://github.com/microsoft/PowerToys/issues/4578)
-
 ### Processor support
 
 We currently support the matrix below.
@@ -122,29 +126,32 @@ We currently support the matrix below.
 
 ## What's Happening
 
-### June 2020 Update
+### July 2020 Update
 
-Our goals for 0.19 release cycle had one big goal, add in stability / quality fixes. We've addressed over 100 issues across all our utilities. We've improved our installer experience and parts will start coming online in 0.19 and 0.20.  In this release, it will be the last time during upgrade you'll see Windows Explorer flash on you. For 0.20, the .NET Core install experience much smoother.
+Our goals for 0.20 release cycle we wanted to focus on adding in a few new features along with stability / quality fixes. Martin Chrzan helped contribute a new utility that was in our 2021 plans!, a screen wide color picker!
 
-We'd also stress feedback is critical. We know there are areas for improvement on PowerToys Run. We would love feedback so we can improve. We also would love to know if you want us to be more aggressive on auto-upgrading.
+Between 0.19 and 0.20 releases, we tracked down a lot of performance and memory issues with PowerToys Run as well. The most important ones got added to 0.19.1 and 0.19.2 releases. If you find something not working correctly, please make us aware.
 
-Lastly, we'd like to thank everyone who filed a bug, gave feedback or made a pull-request. The PowerToys team is extremely grateful to have the support of an amazing active community.
+In addition, we'd like to thank everyone who filed a bug, gave feedback or made a pull-request. The PowerToys team is extremely grateful to have the support of an amazing active community.
 
-- We shipped [v0.19][github-release-link]!
-- Big push for PowerToys Run search quality fixes
-- PowerToys Run can now remap to any key shortcut (minus restricted ones such as WinKey+L)
-- Improved FancyZones on Virtual Desktops and multi-thread design
-- Installer after 0.19 will no longer restart Windows Explorer
-- Fixed [#2012 - Uninstalling with old control panel fails](https://github.com/microsoft/PowerToys/issues/2012)
-- Fixed [#3384 - PowerToys Settings window is empty](https://github.com/microsoft/PowerToys/issues/3384)
-- Over 100 bug fixes!
+Here are a few highlights from July
 
-For [0.20](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F6), we are proactively working on:
+- We shipped [v0.20][github-release-link]!
+- [Martin Chrzan's Color Picker](https://github.com/martinchrzan/) was added in!  With a quick `WinKey+Shift+C`, get the color from your screen
+- You can now snap to any number of zones in FancyZones
+- PT Run keyboard interaction improvements
+- PT Run can detect new apps now
+- Keyboard manager can now do app level shortcuts 
+- Keyboard manager now can remap key to shortcut and shortcut to key.
+- Settings screen now has improved OOBE based on the work the Microsoft Garage Interns did during their hackathon
+- PowerRename improvements
 
-- Stability
-- Start work on FZ Editor V2
-- Start work on OOBE improvements
-- Keyboard manager improvements
+For [0.21](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F8), we are proactively working on:
+
+- Stability / Quality
+- Localization
+- SVG file icons for File Explorer
+- FancyZone improvements
 
 ### Version 1.0 plan
 
