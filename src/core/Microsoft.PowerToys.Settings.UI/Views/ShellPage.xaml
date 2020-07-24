@@ -26,18 +26,9 @@
         SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
         IsSettingsVisible="False"
         IsPaneToggleButtonVisible="False" 
-        PaneDisplayMode="Left">
-            <!--     <winui:NavigationView.PaneHeader>
-           
-                TODO: 
-                    PowerToys needs to be string 
-                    Think maybe about svg logo here
-                    Margin should be style
-   
-            <TextBlock Margin="12, 24, 0, 6" Style="{StaticResource SubheaderTextBlockStyle}" FontWeight="Bold">PowerToys</TextBlock>    
-            
-          
-        </winui:NavigationView.PaneHeader>   -->
+        PaneDisplayMode="Left"
+        Background="{ThemeResource SystemControlBackgroundAltHighBrush}"
+            >
             <winui:NavigationView.MenuItems>
                 <winui:NavigationViewItem x:Uid="Shell_General" helpers:NavHelper.NavigateTo="views:GeneralPage">
                     <winui:NavigationViewItem.Icon>
