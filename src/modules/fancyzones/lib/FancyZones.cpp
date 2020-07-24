@@ -191,6 +191,9 @@ public:
         return m_windowMoveHandler.InMoveSize();
     }
 
+    IFACEMETHODIMP_(RECT)
+    CombinedWorkArea() noexcept;
+
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void OnDisplayChange(DisplayChangeType changeType) noexcept;
     void AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept;
@@ -710,6 +713,40 @@ FancyZones::MoveWindowsOnActiveZoneSetChange() noexcept
     {
         UpdateWindowsPositions();
     }
+}
+
+IFACEMETHODIMP_(RECT)
+FancyZones::CombinedWorkArea() noexcept
+{
+    std::shared_lock readLock(m_lock);
+
+    const auto& activeWorkAreaMap = m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId);
+
+    bool empty = true;
+    RECT result{ 0, 0, 0, 0 };
+
+    for (const auto& [monitor, workArea] : activeWorkAreaMap)
+    {
+        MONITORINFOEX mi;
+        mi.cbSize = sizeof(mi);
+        if (GetMonitorInfo(monitor, &mi))
+        {
+            if (!empty)
+            {
+                result.left = min(result.left, mi.rcWork.left);
+                result.top = min(result.top, mi.rcWork.top);
+                result.right = max(result.right, mi.rcWork.right);
+                result.bottom = max(result.bottom, mi.rcWork.bottom);
+            }
+            else
+            {
+                empty = false;
+                result = mi.rcWork;
+            }
+        }
+    }
+
+    return result;
 }
 
 LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept

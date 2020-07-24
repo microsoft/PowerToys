@@ -260,9 +260,17 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
         return false;
     }
 
+    Rect workAreaRect;
     m_monitor = monitor;
-    const UINT dpi = GetDpiForMonitor(m_monitor);
-    const Rect workAreaRect(mi.rcWork, dpi);
+    if (monitor)
+    {
+        const UINT dpi = GetDpiForMonitor(m_monitor);
+        workAreaRect = Rect(mi.rcWork, dpi);
+    }
+    else
+    {
+        workAreaRect = host->CombinedWorkArea();
+    }
 
     m_uniqueId = uniqueId;
     InitializeZoneSets(parentUniqueId);
