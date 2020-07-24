@@ -273,7 +273,6 @@ namespace PowerLauncher.ViewModel
 
         public string QueryText { get; set; } = String.Empty;
 
-
         /// <summary>
         /// we need move cursor to end when we manually changed query
         /// but we don't want to move cursor to end when query is updated from TextBox. 
@@ -792,6 +791,20 @@ namespace PowerLauncher.ViewModel
             }
 
             return string.Empty;
+        }
+
+        public static FlowDirection GetLanguageFlowDirection()
+        {
+            bool isCurrentLanguageRightToLeft = System.Windows.Input.InputLanguageManager.Current.CurrentInputLanguage.TextInfo.IsRightToLeft;
+
+            if (isCurrentLanguageRightToLeft)
+            {
+                return FlowDirection.RightToLeft;
+            }
+            else
+            {
+                return FlowDirection.LeftToRight;
+            }
         }
 
         protected virtual void Dispose(bool disposing)
