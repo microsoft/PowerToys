@@ -15,3 +15,10 @@ jobs:
   - template: build-powertoys-steps.yml
     parameters:
       additionalBuildArguments: ${{ parameters.additionalBuildArguments }}
+  
+  # Download the artifacts
+  - task: DownloadBuildArtifacts@0
+    inputs:
+      buildType: 'current'
+      downloadType: 'specific'
+      downloadPath: '$(System.ArtifactsDirectory)'
