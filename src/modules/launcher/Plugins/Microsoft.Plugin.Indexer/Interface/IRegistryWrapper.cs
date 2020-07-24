@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.Plugin.Indexer.Interface
+namespace Microsoft.Plugin.Indexer
 {
     public interface IRegistryWrapper
     {

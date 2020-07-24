@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Input;
-using Microsoft.Plugin.Indexer.Interface;
+using Microsoft.Plugin.Indexer;
 using Microsoft.Win32;
 
 namespace Microsoft.Plugin.Indexer.DriveDetection
