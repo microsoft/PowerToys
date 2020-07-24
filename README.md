@@ -128,7 +128,7 @@ We currently support the matrix below.
 
 ### July 2020 Update
 
-Our goals for 0.20 release cycle we wanted to focus on adding in a few new features along with stability / quality fixes. Martin Chrzan helped contribute a new utility that was in our 2021 plans!, a screen wide color picker!
+Our goals for 0.20 release cycle we wanted to focus on adding in a few new features along with stability / quality fixes. Martin Chrzan helped contribute a new utility that was in our 2021 plans, a screen wide color picker!  Chris Davis also helped contribute a SVG icon support for File Explorer!
 
 Between 0.19 and 0.20 releases, we tracked down a lot of performance and memory issues with PowerToys Run as well. The most important ones got added to 0.19.1 and 0.19.2 releases. If you find something not working correctly, please make us aware.
 
@@ -138,13 +138,15 @@ Here are a few highlights from July
 
 - We shipped [v0.20][github-release-link]!
 - [Martin Chrzan's Color Picker](https://github.com/martinchrzan/) was added in!  With a quick `WinKey+Shift+C`, get the color from your screen
-- You can now snap to any number of zones in FancyZones
-- PT Run keyboard interaction improvements
-- PT Run can detect new apps now
-- Keyboard manager can now do app level shortcuts 
+- File Explorer - Can now render SVG icons thanks to Chris Davis
+- FancyZones - you can now snap to any number of zones in FancyZones holding `Shift+Ctrl` while dragging a window
+- PT Run - keyboard interaction improvements
+- PT Run - new apps are now
+- PT Run - Lots of bug perf fixes
+- Keyboard manager - app level shortcuts 
    - Example: For Outlook, Remap `Ctrl+F` to `F4` and now `Ctrl+F` will put up the find window :)
-- Keyboard manager now can remap key to shortcut and shortcut to key.
-- Settings screen now has improved OOBE based on the work the Microsoft Garage Interns did during their hackathon
+- Keyboard manager - Now can remap key to shortcut and shortcut to key.
+- Settings - Now has improved OOBE based on the work the Microsoft Garage Interns did during their hackathon
 - PowerRename improvements
 
 For [0.21](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F8), we are proactively working on:
