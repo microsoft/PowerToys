@@ -323,6 +323,7 @@ namespace PowerLauncher
                 await System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
                     _viewModel.Query();
+                    throw new Exception();
                 }));
             }
         }

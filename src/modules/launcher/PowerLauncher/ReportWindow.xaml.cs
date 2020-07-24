@@ -10,6 +10,9 @@ using PowerLauncher.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
 using System.Windows.Navigation;
+using Wox.Infrastructure.Image;
+using System.Drawing;
+using System.Windows.Media.Imaging;
 
 namespace PowerLauncher
 {
@@ -18,6 +21,11 @@ namespace PowerLauncher
         public ReportWindow(Exception exception)
         {
             InitializeComponent();
+            BitmapImage image = GetImageFromPath(ImageLoader.ErrorIconPath);
+            if(image != null)
+            {
+                this.Icon = image;
+            }
             ErrorTextbox.Document.Blocks.FirstBlock.Margin = new Thickness(0);
             SetException(exception);
         }
@@ -41,6 +49,28 @@ namespace PowerLauncher
             paragraph = new Paragraph();
             paragraph.Inlines.Add(content.ToString());
             ErrorTextbox.Document.Blocks.Add(paragraph);
+        }
+
+        private static BitmapImage GetImageFromPath(string path)
+        {
+            if (File.Exists(path))
+            {
+                MemoryStream memoryStream = new MemoryStream();
+
+                byte[] fileBytes = File.ReadAllBytes(path);
+                memoryStream.Write(fileBytes, 0, fileBytes.Length);
+                memoryStream.Position = 0;
+
+                var image = new BitmapImage();
+                image.BeginInit();
+                image.StreamSource = memoryStream;
+                image.EndInit();
+                return image;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         private static void LinkOnRequestNavigate(object sender, RequestNavigateEventArgs e)

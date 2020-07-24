@@ -40,5 +40,7 @@ namespace Wox.Infrastructure
         public static readonly int ThumbnailSize = 64;
         public static readonly string DefaultIcon = Path.Combine(ProgramDirectory, "Images", "app.dark.png");
         public static readonly string ErrorIcon = Path.Combine(ProgramDirectory, "Images", "app_error.dark.png");
+        public static readonly string LightThemedDefaultIcon = Path.Combine(ProgramDirectory, "Images", "app.light.png");
+        public static readonly string LightThemedErrorIcon = Path.Combine(ProgramDirectory, "Images", "app_error.light.png");
     }
 }
