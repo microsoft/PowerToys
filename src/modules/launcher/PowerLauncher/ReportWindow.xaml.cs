@@ -9,6 +9,10 @@ using System.Windows.Documents;
 using PowerLauncher.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Logger;
+using System.Windows.Navigation;
+using Wox.Infrastructure.Image;
+using System.Drawing;
+using System.Windows.Media.Imaging;
 
 namespace PowerLauncher
 {
@@ -17,6 +21,11 @@ namespace PowerLauncher
         public ReportWindow(Exception exception)
         {
             InitializeComponent();
+            BitmapImage image = GetImageFromPath(ImageLoader.ErrorIconPath);
+            if(image != null)
+            {
+                this.Icon = image;
+            }
             ErrorTextbox.Document.Blocks.FirstBlock.Margin = new Thickness(0);
             SetException(exception);
         }
@@ -42,6 +51,39 @@ namespace PowerLauncher
             ErrorTextbox.Document.Blocks.Add(paragraph);
         }
 
+        // Function to get the Bitmap Image from the path
+        private static BitmapImage GetImageFromPath(string path)
+        {
+            if (File.Exists(path))
+            {
+                MemoryStream memoryStream = new MemoryStream();
+
+                byte[] fileBytes = File.ReadAllBytes(path);
+                memoryStream.Write(fileBytes, 0, fileBytes.Length);
+                memoryStream.Position = 0;
+
+                var image = new BitmapImage();
+                image.BeginInit();
+                image.StreamSource = memoryStream;
+                image.EndInit();
+                return image;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private static void LinkOnRequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            var ps = new ProcessStartInfo(e.Uri.ToString())
+            {
+                UseShellExecute = true,
+                Verb = "open"
+            };
+            Process.Start(ps);
+        }
+
         private static Paragraph Hyperlink(string textBeforeUrl, string url)
         {
             var paragraph = new Paragraph();
@@ -50,8 +92,7 @@ namespace PowerLauncher
             var link = new Hyperlink { IsEnabled = true };
             link.Inlines.Add(url);
             link.NavigateUri = new Uri(url);
-            link.RequestNavigate += (s, e) => Process.Start(e.Uri.ToString());
-            link.Click += (s, e) => Process.Start(url);
+            link.RequestNavigate += LinkOnRequestNavigate;
 
             paragraph.Inlines.Add(textBeforeUrl);
             paragraph.Inlines.Add(link);

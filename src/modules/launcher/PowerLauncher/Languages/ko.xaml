@@ -119,7 +119,7 @@
     <system:String x:Key="reportWindow_sending">보내는 중</system:String>
     <system:String x:Key="reportWindow_report_succeed">보고서를 정상적으로 보냈습니다.</system:String>
     <system:String x:Key="reportWindow_report_failed">보고서를 보내지 못했습니다.</system:String>
-    <system:String x:Key="reportWindow_wox_got_an_error">Wox에 문제가 발생했습니다.</system:String>
+    <system:String x:Key="reportWindow_wox_got_an_error">PT Run에 문제가 발생했습니다.</system:String>
 
     <!--update-->
     <system:String x:Key="update_wox_update_new_version_available">새 Wox 버전({0})을 사용할 수 있습니다.</system:String>

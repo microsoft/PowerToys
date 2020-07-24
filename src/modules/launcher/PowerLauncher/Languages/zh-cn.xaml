@@ -122,7 +122,7 @@
     <system:String x:Key="reportWindow_sending">发送中</system:String>
     <system:String x:Key="reportWindow_report_succeed">发送成功</system:String>
     <system:String x:Key="reportWindow_report_failed">发送失败</system:String>
-    <system:String x:Key="reportWindow_wox_got_an_error">Wox出错啦</system:String>
+    <system:String x:Key="reportWindow_wox_got_an_error">PT Run出错啦</system:String>
 
     <!--更新-->
     <system:String x:Key="update_wox_update_new_version_available">发现Wox新版本 V{0}</system:String>

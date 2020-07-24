@@ -125,7 +125,7 @@
     <system:String x:Key="reportWindow_sending">Odosiela sa</system:String>
     <system:String x:Key="reportWindow_report_succeed">Hlásenie bolo úspešne odoslané</system:String>
     <system:String x:Key="reportWindow_report_failed">Odoslanie hlásenia zlyhalo</system:String>
-    <system:String x:Key="reportWindow_wox_got_an_error">Wox zaznamenal chybu</system:String>
+    <system:String x:Key="reportWindow_wox_got_an_error">PT Run zaznamenal chybu</system:String>
 
     <!--update-->
     <system:String x:Key="update_wox_update_new_version_available">Je dostupné nové vydanie Wox {0}</system:String>

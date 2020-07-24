@@ -127,7 +127,7 @@
     <system:String x:Key="reportWindow_sending">送信中</system:String>
     <system:String x:Key="reportWindow_report_succeed">クラッシュレポートの送信に成功しました</system:String>
     <system:String x:Key="reportWindow_report_failed">クラッシュレポートの送信に失敗しました</system:String>
-    <system:String x:Key="reportWindow_wox_got_an_error">Woxにエラーが発生しました</system:String>
+    <system:String x:Key="reportWindow_wox_got_an_error">PT Runにエラーが発生しました</system:String>
 
     <!--update-->
     <system:String x:Key="update_wox_update_new_version_available">Wox の最新バージョン V{0} が入手可能です</system:String>

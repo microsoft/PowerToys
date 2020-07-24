@@ -71,8 +71,8 @@ namespace Wox.Infrastructure.Image
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
             {
-                ErrorIconPath = Constant.ErrorIcon;
-                DefaultIconPath = Constant.DefaultIcon;
+                ErrorIconPath = Constant.LightThemedErrorIcon;
+                DefaultIconPath = Constant.LightThemedDefaultIcon;
             }
             else
             {
