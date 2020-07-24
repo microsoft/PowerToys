@@ -15,6 +15,7 @@
 #include "trace.h"
 #include "VirtualDesktopUtils.h"
 #include "MonitorWorkAreaHandler.h"
+#include "KeyState.h"
 
 #include <lib/SecondaryMouseButtonsHook.h>
 #include <lib/GenericKeyHook.h>
@@ -49,9 +50,12 @@ public:
         m_mouseHook(std::bind(&FancyZones::OnMouseDown, this)),
         m_shiftHook(std::bind(&FancyZones::OnShiftChangeState, this, std::placeholders::_1)),
         m_ctrlHook(std::bind(&FancyZones::OnCtrlChangeState, this, std::placeholders::_1)),
-        m_windowMoveHandler(settings, &m_mouseHook, &m_shiftHook, &m_ctrlHook)
+        m_windowMoveHandler(settings, &m_keyState, &m_mouseHook, &m_shiftHook, &m_ctrlHook)
     {
         m_settings->SetCallback(this);
+        m_keyState.setCallback([this]() {
+            PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
+        });
     }
 
     // IFancyZones
@@ -62,23 +66,17 @@ public:
 
     void OnMouseDown() noexcept
     {
-        m_windowMoveHandler.OnMouseDown();
-
-        PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
+        m_keyState.setMouseState(!m_keyState.mouseState());
     }
 
     void OnShiftChangeState(bool state) noexcept
     {
-        m_windowMoveHandler.OnShiftChangeState(state);
-
-        PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
+        m_keyState.setShiftState(state);
     }
 
     void OnCtrlChangeState(bool state) noexcept
     {
-        m_windowMoveHandler.OnCtrlChangeState(state);
-
-        PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
+        m_keyState.setCtrlState(state);
     }
 
     void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen) noexcept
@@ -268,6 +266,7 @@ private:
     SecondaryMouseButtonsHook m_mouseHook;
     ShiftKeyHook m_shiftHook;
     CtrlKeyHook m_ctrlHook;
+    KeyState m_keyState;
 
     winrt::com_ptr<IFancyZonesSettings> m_settings{};
     GUID m_previousDesktopId{}; // UUID of previously active virtual desktop.

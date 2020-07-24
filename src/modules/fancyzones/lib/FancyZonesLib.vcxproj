@@ -106,6 +106,7 @@
     <ClInclude Include="GenericKeyHook.h" />
     <ClInclude Include="FancyZonesData.h" />
     <ClInclude Include="JsonHelpers.h" />
+    <ClInclude Include="KeyState.h" />
     <ClInclude Include="MonitorWorkAreaHandler.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
