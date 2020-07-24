@@ -142,6 +142,7 @@ Here are a few highlights from July
 - PT Run keyboard interaction improvements
 - PT Run can detect new apps now
 - Keyboard manager can now do app level shortcuts 
+   - Example: For Outlook, Remap Ctrl+F to F4 and now Ctrl+F will put up the find window :)
 - Keyboard manager now can remap key to shortcut and shortcut to key.
 - Settings screen now has improved OOBE based on the work the Microsoft Garage Interns did during their hackathon
 - PowerRename improvements
