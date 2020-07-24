@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows;
@@ -225,13 +226,13 @@ namespace FancyZonesEditor.Models
                         int rows = info.GetProperty(RowsJsonTag).GetInt32();
                         int columns = info.GetProperty(ColumnsJsonTag).GetInt32();
 
-                        if (rows <= 0 || columns <= 0)
+                        List<int> rowsPercentage = new List<int>(rows);
+                        JsonElement.ArrayEnumerator rowsPercentageEnumerator = info.GetProperty(RowsPercentageJsonTag).EnumerateArray();
+                        if (rows <= 0 || columns <= 0 || rowsPercentageEnumerator.Count() != rows)
                         {
                             error = true;
                         }
 
-                        List<int> rowsPercentage = new List<int>(rows);
-                        JsonElement.ArrayEnumerator rowsPercentageEnumerator = info.GetProperty(RowsPercentageJsonTag).EnumerateArray();
                         while (rowsPercentageEnumerator.MoveNext())
                         {
                             int percentage = rowsPercentageEnumerator.Current.GetInt32();
@@ -246,6 +247,11 @@ namespace FancyZonesEditor.Models
 
                         List<int> columnsPercentage = new List<int>(columns);
                         JsonElement.ArrayEnumerator columnsPercentageEnumerator = info.GetProperty(ColumnsPercentageJsonTag).EnumerateArray();
+                        if (columnsPercentageEnumerator.Count() != columns)
+                        {
+                            error = true;
+                        }
+
                         while (columnsPercentageEnumerator.MoveNext())
                         {
                             int percentage = columnsPercentageEnumerator.Current.GetInt32();
@@ -261,10 +267,22 @@ namespace FancyZonesEditor.Models
                         int i = 0;
                         JsonElement.ArrayEnumerator cellChildMapRows = info.GetProperty(CellChildMapJsonTag).EnumerateArray();
                         int[,] cellChildMap = new int[rows, columns];
+
+                        if (cellChildMapRows.Count() != rows)
+                        {
+                            error = true;
+                        }
+
                         while (cellChildMapRows.MoveNext())
                         {
                             int j = 0;
                             JsonElement.ArrayEnumerator cellChildMapRowElems = cellChildMapRows.Current.EnumerateArray();
+                            if (cellChildMapRowElems.Count() != columns)
+                            {
+                                error = true;
+                                break;
+                            }
+
                             while (cellChildMapRowElems.MoveNext())
                             {
                                 cellChildMap[i, j++] = cellChildMapRowElems.Current.GetInt32();
@@ -290,6 +308,12 @@ namespace FancyZonesEditor.Models
                         IList<Int32Rect> zones = new List<Int32Rect>();
 
                         bool error = false;
+
+                        if (lastWorkAreaWidth <= 0 || lastWorkAreaHeight <= 0)
+                        {
+                            error = true;
+                        }
+
                         while (zonesEnumerator.MoveNext())
                         {
                             int x = zonesEnumerator.Current.GetProperty(XJsonTag).GetInt32();
