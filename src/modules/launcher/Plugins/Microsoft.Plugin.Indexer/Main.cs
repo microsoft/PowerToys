@@ -19,7 +19,7 @@ using System.Globalization;
 
 namespace Microsoft.Plugin.Indexer
 {
-    class Main : ISettingProvider, IPlugin, ISavable, IPluginI18n, IContextMenu
+    class Main : ISettingProvider, IPlugin, ISavable, IPluginI18n, IContextMenu, IDisposable
     {
 
         // This variable contains metadata about the Plugin
@@ -32,7 +32,8 @@ namespace Microsoft.Plugin.Indexer
         private PluginJsonStorage<IndexerSettings> _storage;
 
         // To access Windows Search functionalities
-        private readonly WindowsSearchAPI _api = new WindowsSearchAPI(new OleDBSearch());
+        private static readonly OleDBSearch _search = new OleDBSearch();
+        private readonly WindowsSearchAPI _api = new WindowsSearchAPI(_search);
 
         // To obtain information regarding the drives that are indexed
         private readonly IndexerDriveDetection _driveDetection = new IndexerDriveDetection(new RegistryWrapper());
@@ -41,6 +42,7 @@ namespace Microsoft.Plugin.Indexer
         private string ReservedStringPattern = @"^[\/\\\$\%]+$";
         private string WarningIconPath { get; set; }
         private IContextMenu _contextMenuLoader;
+        private bool disposedValue;
 
         // To save the configurations of plugins
         public void Save()
@@ -220,5 +222,33 @@ namespace Microsoft.Plugin.Indexer
             return ps;
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _search.Dispose();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        // ~Main()
+        // {
+        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
     }
 }
