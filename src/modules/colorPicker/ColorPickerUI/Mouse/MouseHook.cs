@@ -92,6 +92,7 @@ namespace ColorPicker.Mouse
                     {
                         MouseDown.Invoke(null, new System.Drawing.Point(mouseHookStruct.pt.x, mouseHookStruct.pt.y));
                     }
+                    return new IntPtr(-1);
                 }
                 if (wParam.ToInt32() == WM_MOUSEWHEEL)
                 {
