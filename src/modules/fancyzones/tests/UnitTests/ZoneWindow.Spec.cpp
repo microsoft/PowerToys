@@ -133,7 +133,6 @@ namespace FancyZonesUnitTests
 
             Assert::IsNotNull(zoneWindow.get());
             Assert::AreEqual(m_uniqueId.str().c_str(), zoneWindow->UniqueId().c_str());
-            Assert::AreEqual(expectedWorkArea, zoneWindow->WorkAreaKey());
         }
 
     public:
@@ -187,7 +186,6 @@ namespace FancyZonesUnitTests
 
             Assert::IsNotNull(m_zoneWindow.get());
             Assert::AreEqual(expectedUniqueId.c_str(), m_zoneWindow->UniqueId().c_str());
-            Assert::AreEqual(expectedWorkArea, m_zoneWindow->WorkAreaKey());
             Assert::IsNull(m_zoneWindow->ActiveZoneSet());
         }
 
