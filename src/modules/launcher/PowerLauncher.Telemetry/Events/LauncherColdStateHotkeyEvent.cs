@@ -9,9 +9,9 @@ using System.Diagnostics.Tracing;
 namespace Microsoft.PowerLauncher.Telemetry
 {
     [EventData]
-    public class LauncherHotkeyEvent : EventBase, IEvent
+    public class LauncherColdStateHotkeyEvent : EventBase, IEvent
     {
-        public double HotkeyToShowTimeMs { get; set; }
+        public double HotkeyToVisibleTimeMs { get; set; }
 
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
     }

@@ -28,6 +28,7 @@ namespace PowerLauncher
         private bool _isTextSetProgrammatically;
         bool _deletePressed = false;
         Timer _firstDeleteTimer = new Timer();
+        bool _coldStateHotkeyPressed = false;
 
         #endregion
 
@@ -372,8 +373,16 @@ namespace PowerLauncher
                     SearchBox.QueryTextBox.SelectAll();
                 }
 
-                // Log the time taken from pressing the hotkey till launcher is visible
-                PowerToysTelemetry.Log.WriteEvent(new LauncherHotkeyEvent() { HotkeyToShowTimeMs = _viewModel.GetHotkeyEventTimeMs() });
+                // Log the time taken from pressing the hotkey till launcher is visible as separate events depending on if it's the first hotkey invoke or second
+                if (!_coldStateHotkeyPressed)
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new LauncherColdStateHotkeyEvent() { HotkeyToVisibleTimeMs = _viewModel.GetHotkeyEventTimeMs() });
+                    _coldStateHotkeyPressed = true;
+                }
+                else
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new LauncherWarmStateHotkeyEvent() { HotkeyToVisibleTimeMs = _viewModel.GetHotkeyEventTimeMs() });
+                }
             }
             else
             {
