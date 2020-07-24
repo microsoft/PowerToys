@@ -93,15 +93,10 @@
     </Compile>
     <Compile Include="Behaviors\NavigationViewHeaderBehavior.cs" />
     <Compile Include="Behaviors\NavigationViewHeaderMode.cs" />
-    <Compile Include="Controls\BodyTextBlock.xaml.cs">
-      <DependentUpon>BodyTextBlock.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\GroupTitleTextBlock.xaml.cs">
-      <DependentUpon>GroupTitleTextBlock.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Controls\HotkeySettingsControl.xaml.cs">
       <DependentUpon>HotkeySettingsControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\ModuleEnabledToForegroundConverter.cs" />
     <Compile Include="Generated Files\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -207,14 +202,6 @@
     <PRIResource Include="Strings\en-us\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Controls\BodyTextBlock.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\GroupTitleTextBlock.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Controls\HotkeySettingsControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

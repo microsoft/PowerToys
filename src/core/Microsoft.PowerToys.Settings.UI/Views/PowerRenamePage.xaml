@@ -17,9 +17,11 @@
                         <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="1" />
-                        <Setter Target="SidePanel.(Grid.Row)" Value="0" />
-                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}" />
+                        <Setter Target="SidePanel.(Grid.Column)" Value="1"/>
+                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}"/>
+                        <Setter Target="PowerRenameSettingsView.(Grid.Row)" Value="0" />
+                        <Setter Target="LinksPanel.(RelativePanel.Below)" Value="AboutImage"/>
+                        <Setter Target="AboutTitle.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
@@ -27,9 +29,13 @@
                         <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
-                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
-                        <Setter Target="SidePanel.Width" Value="Auto" />
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
+                        <Setter Target="SidePanel.Width" Value="500"/>
+                        <Setter Target="PowerRenameSettingsView.(Grid.Row)" Value="1" />
+                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
+                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
+                        <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
+                        <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -45,18 +51,13 @@
         <StackPanel Orientation="Vertical"
                     x:Name="PowerRenameSettingsView">
 
-            <TextBlock x:Uid="PowerRename_Description"
-                       TextWrapping="Wrap"/>
-
             <ToggleSwitch x:Uid="PowerRename_Toggle_Enable"
-                          Margin="{StaticResource MediumTopMargin}" 
                           IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"                          
                            />
 
-            <CustomControls:GroupTitleTextBlock 
-                        x:Uid="PowerRename_ShellIntegration"
-                        IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
-                        />
+            <TextBlock x:Uid="PowerRename_ShellIntegration"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <ToggleSwitch x:Uid="PowerRename_Toggle_EnableOnContextMenu"
                           Margin="{StaticResource SmallTopMargin}" 
@@ -70,18 +71,20 @@
                           IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                            />
 
-            <CustomControls:GroupTitleTextBlock x:Uid="PowerRename_AutoCompleteHeader"
-                                                IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-            
-            <ToggleSwitch x:Uid="PowerRename_Toggle_AutoComplete"
+            <TextBlock x:Uid="PowerRename_AutoCompleteHeader"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+
+            <CheckBox x:Uid="PowerRename_Toggle_AutoComplete"
                           Margin="{StaticResource SmallTopMargin}" 
-                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.MRUEnabled}"
+                          IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MRUEnabled}"
                           IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                            />
 
-            <CustomControls:BodyTextBlock x:Uid="PowerRename_Toggle_MaxDispListNum"
-                                          Margin="{StaticResource SmallTopMargin}"
-                                          IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            <TextBlock x:Uid="PowerRename_Toggle_MaxDispListNum"
+                Margin="{StaticResource SmallTopMargin}"
+                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+            
             <muxc:NumberBox SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource HeaderTextTopMargin}"
@@ -91,42 +94,56 @@
                             Maximum="20"
                             IsEnabled="{ x:Bind Mode=OneWay, Path=ViewModel.GlobalAndMruEnabled}"/>
 
-            <ToggleSwitch x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch"
+            <CheckBox x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch"
                           Margin="0, 17, 0, 0" 
-                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreFlagsOnLaunch}"
+                          IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.RestoreFlagsOnLaunch}"
                           IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
         </StackPanel>
 
 
-        <StackPanel x:Name="SidePanel"
-                    Orientation="Vertical"
+        <RelativePanel x:Name="SidePanel" 
                     HorizontalAlignment="Left"
                     Width="{StaticResource SidePanelWidth}"
                     Grid.Column="1">
-
-            <TextBlock x:Uid="About_PowerRename"
+            <StackPanel x:Name="DescriptionPanel">
+                <TextBlock x:Uid="About_PowerRename" x:Name="AboutTitle" Grid.ColumnSpan="2"
                        Style="{StaticResource SettingsGroupTitleStyle}"
-                       Margin="{StaticResource XSmallBottomMargin}"
-                       />
+                       Margin="{StaticResource XSmallBottomMargin}"/>
+                <TextBlock x:Uid="PowerRename_Description"
+                           TextWrapping="Wrap"
+                           Grid.Row="1" />
+            </StackPanel>
 
-            <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_PowerRename">
-                <TextBlock x:Uid="Module_overview" />
-            </HyperlinkButton>
+            <Border x:Name="AboutImage"
+                    CornerRadius="4"
+                    Grid.Row="2"
+                    MaxWidth="240"
+                    HorizontalAlignment="Left"
+                    Margin="{StaticResource SmallTopBottomMargin}"
+                    RelativePanel.Below="DescriptionPanel">
+                <Image Source="https://aka.ms/powerToysPowerRenameSettingImage" />
+            </Border>
 
-            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
-                <TextBlock x:Uid="Give_Feedback" />
-            </HyperlinkButton>
+            <StackPanel x:Name="LinksPanel"
+                        RelativePanel.Below="AboutImage"
+                        Orientation="Vertical" >
+                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_PowerRename">
+                    <TextBlock x:Uid="Module_overview" />
+                </HyperlinkButton>
+                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                    <TextBlock x:Uid="Give_Feedback" />
+                </HyperlinkButton>
 
-
-            <TextBlock 
+                <TextBlock 
                 x:Uid="AttributionTitle"
-                Style="{StaticResource SettingsGroupTitleStyle}"
-                />
+                Style="{StaticResource SettingsGroupTitleStyle}" 
+                Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
 
-            <HyperlinkButton 
-                NavigateUri="https://github.com/chrdavis/SmartRename">
-                <TextBlock Text="Chris Davis's SmartRenamer" TextWrapping="Wrap" />
-            </HyperlinkButton>
-        </StackPanel>
+                <HyperlinkButton NavigateUri="https://github.com/chrdavis/SmartRename" Margin="0,-3,0,0">
+                    <TextBlock Text="Chris Davis's SmartRenamer" TextWrapping="Wrap" />
+                </HyperlinkButton>
+
+            </StackPanel>
+        </RelativePanel>
     </Grid>
 </Page>

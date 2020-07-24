@@ -181,9 +181,11 @@
                         <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="1" />
-                        <Setter Target="SidePanel.(Grid.Row)" Value="0" />
-                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}" />
+                        <Setter Target="SidePanel.(Grid.Column)" Value="1"/>
+                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}"/>
+                        <Setter Target="KeyboardManagerView.(Grid.Row)" Value="0" />
+                        <Setter Target="LinksPanel.(RelativePanel.Below)" Value="AboutImage"/>
+                        <Setter Target="AboutTitle.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
@@ -191,9 +193,13 @@
                         <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
-                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
-                        <Setter Target="SidePanel.Width" Value="Auto" />
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
+                        <Setter Target="SidePanel.Width" Value="500"/>
+                        <Setter Target="KeyboardManagerView.(Grid.Row)" Value="1" />
+                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
+                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
+                        <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
+                        <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -207,13 +213,9 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Vertical">
-            <TextBlock x:Uid="KeyboardManager_Description"
-                       TextWrapping="Wrap"/>
-
+        <StackPanel Orientation="Vertical" x:Name="KeyboardManagerView">
             <ToggleSwitch x:Uid="KeyboardManager_EnableToggle"
-                          IsOn="{x:Bind Path=ViewModel.Enabled, Mode=TwoWay}"
-                          Margin="{StaticResource MediumTopMargin}" />
+                          IsOn="{x:Bind Path=ViewModel.Enabled, Mode=TwoWay}"/>
 
             <!--<TextBlock x:Uid="KeyboardManager_ConfigHeader"
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
@@ -228,12 +230,13 @@
                 <ComboBoxItem Content="Config-3"/>
             </ComboBox>-->
 
-            <CustomControls:GroupTitleTextBlock x:Uid="KeyboardManager_RemapKeyboardHeader"
-                                                IsActive="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>
+            <TextBlock x:Uid="KeyboardManager_RemapKeyboardHeader"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.Enabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <CustomControls:BodyTextBlock Text="Click below to remap keys to other keys or shortcuts." 
-                                          IsActive="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"
-                                          Margin="{StaticResource SmallTopMargin}"/>
+            <TextBlock x:Uid="KeyboardManager_RemapKeyboardSubtitle"
+                       Margin="{StaticResource SmallTopMargin}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.Enabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <Button x:Uid="KeyboardManager_RemapKeyboardButton"
                     Margin="{StaticResource SmallTopMargin}"
@@ -267,11 +270,13 @@
                     HorizontalAlignment="Left"
                     IsEnabled="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>-->
 
-            <CustomControls:GroupTitleTextBlock x:Uid="KeyboardManager_RemapShortcutsHeader"
-                                                IsActive="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>
+            <TextBlock x:Uid="KeyboardManager_RemapShortcutsHeader"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.Enabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <CustomControls:BodyTextBlock Text="Click below to remap a shortcuts to other shortcuts or keys. Additionally, mappings can be targeted to specific applications as well."
-                                          IsActive="{x:Bind Path=ViewModel.Enabled, Mode=OneWay}"/>
+            <TextBlock x:Uid="KeyboardManager_RemapShortcutsSubtitle"
+                       Margin="{StaticResource SmallTopMargin}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.Enabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <Button x:Uid="KeyboardManager_RemapShortcutsButton"
                     Margin="{StaticResource SmallTopMargin}"
@@ -311,26 +316,41 @@
                     />-->
         </StackPanel>
 
-        <StackPanel 
-            x:Name="SidePanel"
-            Orientation="Vertical"
-            HorizontalAlignment="Left"
-            Width="{StaticResource SidePanelWidth}"
-            Grid.Column="1">
+        <RelativePanel x:Name="SidePanel" 
+                    HorizontalAlignment="Left"
+                    Width="{StaticResource SidePanelWidth}"
+                    Grid.Column="1">
+            <StackPanel x:Name="DescriptionPanel">
+                <TextBlock x:Uid="About_KeyboardManager"
+                           x:Name="AboutTitle"
+                           Grid.ColumnSpan="2"
+                           Style="{StaticResource SettingsGroupTitleStyle}"
+                           Margin="{StaticResource XSmallBottomMargin}"/>
+                <TextBlock x:Uid="KeyboardManager_Description"
+                           TextWrapping="Wrap"
+                           Grid.Row="1" />
+            </StackPanel>
 
-            <TextBlock
-                x:Uid="About_KeyboardManager"
-                Style="{StaticResource SettingsGroupTitleStyle}"
-                Margin="{StaticResource XSmallBottomMargin}"
-                Foreground="{Binding Mode=TwoWay, Path=TextColor}"/>
+            <Border x:Name="AboutImage"
+                    CornerRadius="4"
+                    Grid.Row="2"
+                    MaxWidth="240"
+                    HorizontalAlignment="Left"
+                    Margin="{StaticResource SmallTopBottomMargin}"
+                    RelativePanel.Below="DescriptionPanel">
+                <Image Source="https://aka.ms/powerToysKBMSettingImage" />
+            </Border>
 
-            <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_KeyboardManager">
-                <TextBlock x:Uid="Module_overview" />
-            </HyperlinkButton>
-
-            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
-                <TextBlock x:Uid="Give_Feedback" />
-            </HyperlinkButton>
-        </StackPanel>
+            <StackPanel x:Name="LinksPanel"
+                        RelativePanel.Below="AboutImage"
+                        Orientation="Vertical" >
+                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_KeyboardManager">
+                    <TextBlock x:Uid="Module_overview" />
+                </HyperlinkButton>
+                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                    <TextBlock x:Uid="Give_Feedback" />
+                </HyperlinkButton>
+            </StackPanel>
+        </RelativePanel>
     </Grid>
 </Page>

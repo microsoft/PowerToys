@@ -23,9 +23,11 @@
                         <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="1" />
-                        <Setter Target="SidePanel.(Grid.Row)" Value="0" />
-                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}" />
+                        <Setter Target="SidePanel.(Grid.Column)" Value="1"/>
+                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}"/>
+                        <Setter Target="ShortCutGuideView.(Grid.Row)" Value="0" />
+                        <Setter Target="LinksPanel.(RelativePanel.Below)" Value="AboutImage"/>
+                        <Setter Target="AboutTitle.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
@@ -33,9 +35,13 @@
                         <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
-                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
-                        <Setter Target="SidePanel.Width" Value="Auto" />
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
+                        <Setter Target="SidePanel.Width" Value="500"/>
+                        <Setter Target="ShortCutGuideView.(Grid.Row)" Value="1" />
+                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
+                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
+                        <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
+                        <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -49,20 +55,17 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <StackPanel Orientation="Vertical" x:Name="ShortCutGuideView">
-            <TextBlock x:Uid="ShortcutGuide_Description"
-                       TextWrapping="Wrap"
-                       />
-
             <ToggleSwitch x:Uid="ShortcutGuide_Enable"
-                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"
-                          Margin="{StaticResource MediumTopMargin}"/>
+                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.IsEnabled}"/>
 
-            <CustomControls:GroupTitleTextBlock x:Uid="ShortcutGuide_Appearance_Behavior" 
-                                                IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
-            <CustomControls:BodyTextBlock x:Uid="ShortcutGuide_PressTime"
-                                          Margin="{StaticResource SmallTopMargin}"
-                                          IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            <TextBlock x:Uid="ShortcutGuide_PressTime"
+                Margin="{StaticResource SmallTopMargin}"
+                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+
             <muxc:NumberBox Minimum="100"
                             SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
@@ -82,16 +85,20 @@
                     IsThumbToolTipEnabled="False"
                     HorizontalAlignment="Left"
                     IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
-                <CustomControls:BodyTextBlock Text="{x:Bind Mode=OneWay, Path=ViewModel.OverlayOpacity, Converter={StaticResource StringFormatConverter}, ConverterParameter=' {0}%' }"
-                                              VerticalAlignment="Center"
-                                              FontSize="16"
-                                              Margin="0,21,0,0"
-                                              IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+
+                <TextBlock
+                    Text="{x:Bind Mode=OneWay, Path=ViewModel.OverlayOpacity, Converter={StaticResource StringFormatConverter}, ConverterParameter=' {0}%' }"
+                    VerticalAlignment="Center"
+                    FontSize="16"
+                    FontWeight="SemiBold"
+                    Margin="0,16,0,0"
+                    Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
             </StackPanel>
 
-            <CustomControls:BodyTextBlock x:Uid="ShortcutGuide_Theme"
-                                          Margin="{StaticResource SmallTopMargin}"
-                                          IsActive="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+            <TextBlock x:Uid="ShortcutGuide_Theme"
+                Margin="{StaticResource SmallTopMargin}"
+                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+            
             <muxc:RadioButtons IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                                SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}"
                                Margin="{StaticResource HeaderTextTopMargin}">
@@ -101,26 +108,41 @@
             </muxc:RadioButtons>
         </StackPanel>
 
-        <StackPanel 
-            x:Name="SidePanel"
-            Orientation="Vertical"
-            HorizontalAlignment="Left"
-            Width="{StaticResource SidePanelWidth}"
-            Grid.Column="1">
+        <RelativePanel x:Name="SidePanel" 
+                    HorizontalAlignment="Left"
+                    Width="{StaticResource SidePanelWidth}"
+                    Grid.Column="1">
+            <StackPanel x:Name="DescriptionPanel">
+                <TextBlock x:Uid="About_ShortcutGuide"
+                           x:Name="AboutTitle"
+                           Grid.ColumnSpan="2"
+                           Style="{StaticResource SettingsGroupTitleStyle}"
+                           Margin="{StaticResource XSmallBottomMargin}"/>
+                <TextBlock x:Uid="ShortcutGuide_Description"
+                           TextWrapping="Wrap"
+                           Grid.Row="1" />
+            </StackPanel>
 
-            <TextBlock 
-                x:Uid="About_ShortcutGuide"
-                Style="{StaticResource SettingsGroupTitleStyle}"
-                Margin="{StaticResource XSmallBottomMargin}"
-                />
+            <Border x:Name="AboutImage"
+                    CornerRadius="4"
+                    Grid.Row="2"
+                    MaxWidth="240"
+                    HorizontalAlignment="Left"
+                    Margin="{StaticResource SmallTopBottomMargin}"
+                    RelativePanel.Below="DescriptionPanel">
+                <Image Source="https://aka.ms/powerToysShortcutGuideSettingImage" />
+            </Border>
 
-            <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ShortcutGuide">
-                <TextBlock x:Uid="Module_overview"/>
-            </HyperlinkButton>
-
-            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
-                <TextBlock x:Uid="Give_Feedback" />
-            </HyperlinkButton>
-        </StackPanel>
+            <StackPanel x:Name="LinksPanel"
+                        RelativePanel.Below="AboutImage"
+                        Orientation="Vertical" >
+                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ShortcutGuide">
+                    <TextBlock x:Uid="Module_overview" />
+                </HyperlinkButton>
+                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                    <TextBlock x:Uid="Give_Feedback" />
+                </HyperlinkButton>
+            </StackPanel>
+        </RelativePanel>
     </Grid>
 </Page>
