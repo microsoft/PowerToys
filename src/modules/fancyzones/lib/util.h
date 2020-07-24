@@ -128,3 +128,4 @@ void RestoreWindowOrigin(HWND window) noexcept;
 
 bool IsValidGuid(const std::wstring& str);
 bool IsValidDeviceId(const std::wstring& str);
+std::vector<std::pair<HMONITOR, RECT>> GetAllMonitorWorkAreas();

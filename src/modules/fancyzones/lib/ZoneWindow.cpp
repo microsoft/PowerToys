@@ -7,6 +7,7 @@
 #include "ZoneWindow.h"
 #include "trace.h"
 #include "util.h"
+#include "Settings.h"
 
 #include <ShellScalingApi.h>
 #include <mutex>
@@ -31,6 +32,11 @@ namespace ZoneWindowUtils
             StringCchPrintf(uniqueId, ARRAYSIZE(uniqueId), L"%s_%d_%d_%s", parsedId, monitorRect.width(), monitorRect.height(), virtualDesktopId);
         }
         return std::wstring{ uniqueId };
+    }
+
+    std::wstring GenerateUniqueIdAllMonitors(PCWSTR virtualDesktopId)
+    {
+        return std::wstring(MULTI_MONITOR_MODE_DEVICE) + L"_" + virtualDesktopId;
     }
 }
 
@@ -253,17 +259,16 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
 {
     m_host.copy_from(host);
 
-    MONITORINFO mi{};
-    mi.cbSize = sizeof(mi);
-    if (!GetMonitorInfoW(monitor, &mi))
-    {
-        return false;
-    }
-
     Rect workAreaRect;
     m_monitor = monitor;
     if (monitor)
     {
+        MONITORINFO mi{};
+        mi.cbSize = sizeof(mi);
+        if (!GetMonitorInfoW(monitor, &mi))
+        {
+            return false;
+        }
         const UINT dpi = GetDpiForMonitor(m_monitor);
         workAreaRect = Rect(mi.rcWork, dpi);
     }
@@ -285,6 +290,9 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
     }
 
     MakeWindowTransparent(m_window.get());
+
+    // Ignore flashZones
+    /*
     if (flashZones)
     {
         // Don't flash if the foreground window is in full screen mode
@@ -298,6 +306,7 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
             FlashZones();
         }
     }
+    */
 
     return true;
 }

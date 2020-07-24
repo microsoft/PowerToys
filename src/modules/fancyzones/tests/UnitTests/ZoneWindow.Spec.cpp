@@ -55,6 +55,11 @@ namespace FancyZonesUnitTests
         {
             return true;
         }
+        IFACEMETHODIMP_(RECT)
+        CombinedWorkArea() noexcept
+        {
+            return RECT{ 0, 0, 800, 600 };
+        }
 
         IZoneWindow* m_zoneWindow;
     };

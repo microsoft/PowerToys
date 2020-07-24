@@ -3,6 +3,7 @@
 #define MULTI_ZONE_STAMP L"FancyZones_zones"
 #define RESTORE_SIZE_STAMP L"FancyZones_RestoreSize"
 #define RESTORE_ORIGIN_STAMP L"FancyZones_RestoreOrigin"
+#define MULTI_MONITOR_MODE_DEVICE L"FancyZones_MultiMonitorDevice"
 #include <common/settings_objects.h>
 
 struct Settings
