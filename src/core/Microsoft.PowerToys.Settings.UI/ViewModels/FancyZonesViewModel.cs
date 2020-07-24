@@ -420,7 +420,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     if (value.IsEmpty())
                     {
-                        _editorHotkey = new HotkeySettings(true, false, false, false, "'", 192);
+
+                        _editorHotkey = FZConfigProperties.DefaultHotkeyValue;
                     }
                     else
                     {

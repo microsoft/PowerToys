@@ -1,20 +1,11 @@
 #pragma once
-
+#include "ModifierKey.h"
 class InputInterface;
 class LayoutMap;
 namespace KeyboardManagerHelper
 {
     enum class ErrorType;
 }
-
-// Enum type to store different states of the win key
-enum class ModifierKey
-{
-    Disabled,
-    Left,
-    Right,
-    Both
-};
 
 class Shortcut
 {

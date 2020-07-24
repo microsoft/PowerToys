@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -15,13 +17,13 @@ namespace Microsoft.Plugin.Folder
     public partial class FileSystemSettings
     {
         private IPublicAPI woxAPI;
-        private Settings _settings;
+        private FolderSettings _settings;
 
-        public FileSystemSettings(IPublicAPI woxAPI, Settings settings)
+        public FileSystemSettings(IPublicAPI woxAPI, FolderSettings settings)
         {
             this.woxAPI = woxAPI;
             InitializeComponent();
-            _settings = settings;
+            _settings = settings ?? throw new ArgumentNullException(paramName:nameof(settings));
             lbxFolders.ItemsSource = _settings.FolderLinks;
         }
 
@@ -30,7 +32,7 @@ namespace Microsoft.Plugin.Folder
             var selectedFolder = lbxFolders.SelectedItem as FolderLink;
             if (selectedFolder != null)
             {
-                string msg = string.Format(woxAPI.GetTranslation("wox_plugin_folder_delete_folder_link"), selectedFolder.Path);
+                string msg = string.Format(CultureInfo.InvariantCulture, woxAPI.GetTranslation("wox_plugin_folder_delete_folder_link"), selectedFolder.Path);
 
                 if (MessageBox.Show(msg, string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
@@ -50,15 +52,17 @@ namespace Microsoft.Plugin.Folder
             var selectedFolder = lbxFolders.SelectedItem as FolderLink;
             if (selectedFolder != null)
             {
-                var folderBrowserDialog = new FolderBrowserDialog();
-                folderBrowserDialog.SelectedPath = selectedFolder.Path;
-                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+                using (var folderBrowserDialog = new FolderBrowserDialog())
                 {
-                    var link = _settings.FolderLinks.First(x => x.Path == selectedFolder.Path);
-                    link.Path = folderBrowserDialog.SelectedPath;
-                }
+                    folderBrowserDialog.SelectedPath = selectedFolder.Path;
+                    if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        var link = _settings.FolderLinks.First(x => x.Path == selectedFolder.Path);
+                        link.Path = folderBrowserDialog.SelectedPath;
+                    }
 
-                lbxFolders.Items.Refresh();
+                    lbxFolders.Items.Refresh();
+                }
             }
             else
             {
@@ -69,36 +73,28 @@ namespace Microsoft.Plugin.Folder
 
         private void btnAdd_Click(object sender, RoutedEventArgs e)
         {
-            var folderBrowserDialog = new FolderBrowserDialog();
-            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            using (var folderBrowserDialog = new FolderBrowserDialog())
             {
-                var newFolder = new FolderLink
+                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
                 {
-                    Path = folderBrowserDialog.SelectedPath
-                };
+                    var newFolder = new FolderLink
+                    {
+                        Path = folderBrowserDialog.SelectedPath
+                    };
 
-                if (_settings.FolderLinks == null)
-                {
-                    _settings.FolderLinks = new List<FolderLink>();
+                    _settings.FolderLinks.Add(newFolder);
                 }
 
-                _settings.FolderLinks.Add(newFolder);
+                lbxFolders.Items.Refresh();
             }
-
-            lbxFolders.Items.Refresh();
         }
 
         private void lbxFolders_Drop(object sender, DragEventArgs e)
         {
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
 
-            if (files != null && files.Count() > 0)
+            if (files != null && files.Any())
             {
-                if (_settings.FolderLinks == null)
-                {
-                    _settings.FolderLinks = new List<FolderLink>();
-                }
-
                 foreach (string s in files)
                 {
                     if (Directory.Exists(s))

@@ -129,7 +129,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     return;
                 default:
                     internalSettings.Code = matchValueCode;
-                    internalSettings.Key = matchValueText;
                     break;
             }
         }

@@ -109,7 +109,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-
         public bool EnabledOnContextMenu
         {
             get

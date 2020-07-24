@@ -221,6 +221,7 @@ namespace FancyZonesEditor
                         {
                             foundExistingSplit = true;
                             splitCol = foundCol + i;
+
                             // use existing division
                         }
                     }
@@ -270,6 +271,7 @@ namespace FancyZonesEditor
                         {
                             foundExistingSplit = true;
                             splitRow = foundRow + i;
+
                             // use existing division
                         }
                     }

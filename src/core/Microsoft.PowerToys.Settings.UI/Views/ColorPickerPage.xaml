@@ -77,10 +77,15 @@
                 <ComboBoxItem Content="RGB - RGB(100, 50, 75)"/>
             </ComboBox>
 
+               <!--
+            Disabling this until we have a safer way to reset cursor as 
+            we can hit a state where the cursor doesn't reset
+           
             <CheckBox x:Uid="ColorPicker_ChangeCursor" 
                           IsChecked="{Binding ChangeCursor, Mode=TwoWay}"
                           Margin="{StaticResource SmallTopMargin}"
                           IsEnabled="{Binding IsEnabled}"/>
+                          -->
         </StackPanel>
 
         <RelativePanel x:Name="SidePanel" 
