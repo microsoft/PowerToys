@@ -19,9 +19,11 @@
                         <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="1" />
-                        <Setter Target="SidePanel.(Grid.Row)" Value="0" />
-                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}" />
+                        <Setter Target="SidePanel.(Grid.Column)" Value="1"/>
+                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}"/>
+                        <Setter Target="PowerToysRunView.(Grid.Row)" Value="0" />
+                        <Setter Target="LinksPanel.(RelativePanel.Below)" Value="AboutImage"/>
+                        <Setter Target="AboutTitle.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
@@ -29,9 +31,13 @@
                         <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="0" />
-                        <Setter Target="SidePanel.(Grid.Row)" Value="1" />
-                        <Setter Target="SidePanel.Width" Value="Auto" />
+                        <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
+                        <Setter Target="SidePanel.Width" Value="500"/>
+                        <Setter Target="PowerToysRunView.(Grid.Row)" Value="1" />
+                        <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
+                        <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
+                        <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
+                        <Setter Target="AboutTitle.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -45,56 +51,20 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Vertical">
-            <TextBlock x:Uid="PowerLauncher_Description"
-                       TextWrapping="Wrap"/>
-
+        <StackPanel Orientation="Vertical" x:Name="PowerToysRunView">
             <ToggleSwitch x:Uid="PowerLauncher_EnablePowerLauncher" 
-                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnablePowerLauncher}"
-                          Margin="{StaticResource MediumTopMargin}"/>
+                          IsOn="{x:Bind Mode=TwoWay, Path=ViewModel.EnablePowerLauncher}"/>
 
-            <CustomControls:GroupTitleTextBlock x:Uid="PowerLauncher_SearchResults"
-                                        IsActive="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
-
-            <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
-                      MinWidth="320"
-                      Margin="{StaticResource SmallTopMargin}"
-                      ItemsSource="{Binding searchResultPreferencesOptions}"
-                      SelectedItem="{Binding Mode=TwoWay, Path=SelectedSearchResultPreference}"
-                      SelectedValuePath="Item2"
-                      DisplayMemberPath="Item1"
-                      IsEnabled="False"
-                      />
-
-            <ComboBox x:Uid="PowerLauncher_SearchTypePreference"
-                      MinWidth="320"
-                      Margin="{StaticResource SmallTopMargin}"
-                      ItemsSource="{Binding searchTypePreferencesOptions}"
-                      SelectedItem="{Binding Mode=TwoWay, Path=SelectedSearchTypePreference}"
-                      SelectedValuePath="Item2"
-                      DisplayMemberPath="Item1"
-                      IsEnabled="False"
-                      />-->
-
-            <CustomControls:BodyTextBlock x:Uid="PowerLauncher_MaximumNumberOfResults"
-                                  Margin="{StaticResource SmallTopMargin}"
-                                  IsActive="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
-            <muxc:NumberBox Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}"
-                            Width="240"
-                            SpinButtonPlacementMode="Compact"
-                            HorizontalAlignment="Left"
-                            Minimum="1"
-                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
-
-            <CustomControls:GroupTitleTextBlock x:Uid="PowerLauncher_Shortcuts"
-                       HorizontalAlignment="Left"
-                       IsActive="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
+            <TextBlock x:Uid="PowerLauncher_Shortcuts"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <CustomControls:HotkeySettingsControl x:Uid="PowerLauncher_OpenPowerLauncher"
                                                   Width="240"
                                                   HorizontalAlignment="Left"
                                                   Margin="{StaticResource SmallTopMargin}"
                                                   HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}"
+                                                  Keys="Win, Ctrl, Alt, Shift"
                                                   Enabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
             <!--<Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenFileLocation"
                                           Width="320"
@@ -108,6 +78,7 @@
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{Binding Path=ViewModel.CopyPathLocation, Mode=TwoWay}"
+                                          Keys="Win, Ctrl, Alt, Shift"
                                           IsEnabled="False"
                                         />
             <Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenConsole"
@@ -115,6 +86,7 @@
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{Binding Path=ViewModel.OpenConsole, Mode=TwoWay}"
+                                          Keys="Win, Ctrl, Alt, Shift"
                                           IsEnabled="False"
                                         />-->
 
@@ -136,6 +108,42 @@
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"
                       />
 
+            <TextBlock x:Uid="PowerLauncher_SearchResults"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+
+            <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
+                      MinWidth="320"
+                      Margin="{StaticResource SmallTopMargin}"
+                      ItemsSource="{Binding searchResultPreferencesOptions}"
+                      SelectedItem="{Binding Mode=TwoWay, Path=SelectedSearchResultPreference}"
+                      SelectedValuePath="Item2"
+                      DisplayMemberPath="Item1"
+                      IsEnabled="False"
+                      />
+
+            <ComboBox x:Uid="PowerLauncher_SearchTypePreference"
+                      MinWidth="320"
+                      Margin="{StaticResource SmallTopMargin}"
+                      ItemsSource="{Binding searchTypePreferencesOptions}"
+                      SelectedItem="{Binding Mode=TwoWay, Path=SelectedSearchTypePreference}"
+                      SelectedValuePath="Item2"
+                      DisplayMemberPath="Item1"
+                      IsEnabled="False"
+                      />-->
+
+            <TextBlock x:Uid="PowerLauncher_MaximumNumberOfResults"
+                Margin="{StaticResource SmallTopMargin}"
+                Foreground="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
+            
+            <muxc:NumberBox Value="{Binding Mode=TwoWay, Path=MaximumNumberOfResults}"
+                            Width="240"
+                            SpinButtonPlacementMode="Compact"
+                            HorizontalAlignment="Left"
+                            Minimum="1"
+                            Margin="{StaticResource HeaderTextTopMargin}"
+                            IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
+
             <CheckBox x:Uid="PowerLauncher_ClearInputOnLaunch"
                       Margin="{StaticResource SmallTopMargin}"
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.ClearInputOnLaunch}"
@@ -149,39 +157,53 @@
 	                />
 
         </StackPanel>
-        <StackPanel
-            x:Name="SidePanel"
-            Orientation="Vertical"
-            HorizontalAlignment="Left"
-            Width="{StaticResource SidePanelWidth}"
-            Grid.Column="1">
 
-            <TextBlock 
-                x:Uid="About_PowerLauncher"
-                Style="{StaticResource SettingsGroupTitleStyle}"
-                Margin="{StaticResource XSmallBottomMargin}"
-                Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
+        <RelativePanel x:Name="SidePanel" 
+                    HorizontalAlignment="Left"
+                    Width="{StaticResource SidePanelWidth}"
+                    Grid.Column="1">
+            <StackPanel x:Name="DescriptionPanel">
+                <TextBlock x:Uid="About_PowerLauncher" x:Name="AboutTitle" Grid.ColumnSpan="2"
+                       Style="{StaticResource SettingsGroupTitleStyle}"
+                       Margin="{StaticResource XSmallBottomMargin}"/>
+                <TextBlock x:Uid="PowerLauncher_Description"
+                           TextWrapping="Wrap"
+                           Grid.Row="1" />
+            </StackPanel>
 
-            <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_PowerToysRun">
-                <TextBlock x:Uid="Module_overview" />
-            </HyperlinkButton>
+            <Border x:Name="AboutImage"
+                    CornerRadius="4"
+                    Grid.Row="2"
+                    MaxWidth="240"
+                    HorizontalAlignment="Left"
+                    Margin="{StaticResource SmallTopBottomMargin}"
+                    RelativePanel.Below="DescriptionPanel">
+                <Image Source="https://aka.ms/powerToysPowerLauncherSettingImage" />
+            </Border>
+            
+            <StackPanel x:Name="LinksPanel"
+                        RelativePanel.Below="AboutImage"
+                        Orientation="Vertical" >
+                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_PowerToysRun">
+                    <TextBlock x:Uid="Module_overview" />
+                </HyperlinkButton>
+                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                    <TextBlock x:Uid="Give_Feedback" />
+                </HyperlinkButton>
 
-            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
-                <TextBlock x:Uid="Give_Feedback" />
-            </HyperlinkButton>
+                <TextBlock x:Uid="AttributionTitle"
+                           Style="{StaticResource SettingsGroupTitleStyle}"
+                           Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
 
-            <TextBlock 
-                x:Uid="AttributionTitle"
-                Style="{StaticResource SettingsGroupTitleStyle}" 
-                Foreground="{ Binding Mode=TwoWay, Path=TextColor}"/>
+                <HyperlinkButton Margin="0,-3,0,0" NavigateUri="https://github.com/Wox-launcher/Wox/">
+                    <TextBlock Text="Wox"/>
+                </HyperlinkButton>
 
-            <HyperlinkButton NavigateUri="https://github.com/Wox-launcher/Wox/">
-                <TextBlock Text="Wox"/>
-            </HyperlinkButton>
+                <HyperlinkButton NavigateUri="https://github.com/betsegaw/windowwalker/">
+                    <TextBlock Text="Beta Tadele's Window Walker" />
+                </HyperlinkButton>
 
-            <HyperlinkButton NavigateUri="https://github.com/betsegaw/windowwalker/">
-                <TextBlock Text="Beta Tadele's Window Walker" />
-            </HyperlinkButton>
-        </StackPanel>
+            </StackPanel>
+        </RelativePanel>
     </Grid>
 </Page>

@@ -58,7 +58,8 @@ namespace PowerLauncher
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            RunnerHelper.WaitForPowerToysRunner(_powerToysPid, () => {
+            RunnerHelper.WaitForPowerToysRunner(_powerToysPid, () =>
+            {
                 Dispose();
                 Environment.Exit(0);
             });
@@ -104,7 +105,7 @@ namespace PowerLauncher
                 RegisterExitEvents();
 
                 _settingsWatcher = new SettingsWatcher(_settings);
-                
+
                 _mainVM.MainWindowVisibility = Visibility.Visible;
                 _mainVM.ColdStartFix();
                 _themeManager.ThemeChanged += OnThemeChanged;

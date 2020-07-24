@@ -17,7 +17,7 @@ namespace PowerToysTests
 
         private void PressWinKey()
         {
-            if(!isWinKeyPressed)
+            if (!isWinKeyPressed)
             {
                 new Actions(session).KeyDown(OpenQA.Selenium.Keys.Command).Perform();
                 isWinKeyPressed = true;
@@ -26,7 +26,7 @@ namespace PowerToysTests
 
         private void ReleaseWinKey()
         {
-            if(isWinKeyPressed)
+            if (isWinKeyPressed)
             {
                 new Actions(session).KeyUp(OpenQA.Selenium.Keys.Command).Perform();
                 isWinKeyPressed = false;
@@ -89,7 +89,8 @@ namespace PowerToysTests
                 // FindElementByClassName will be faster than using with XPath.
                 WindowsElement shortcutHelperWindow = session.FindElementByClassName("PToyD2DPopup");
                 Assert.IsNotNull(shortcutHelperWindow);
-            } catch (InvalidOperationException)
+            }
+            catch (InvalidOperationException)
             {
                 // Not the exception we wanted to catch here.
                 Assert.Fail("Shortcut Guide not found");
@@ -121,11 +122,12 @@ namespace PowerToysTests
             try
             {
                 startMenuWindow = session.FindElementByXPath("/Pane[@ClassName=\"#32769\"]/Window[@Name=\"Start\"]");
-            } catch (Exception)
+            }
+            catch (Exception)
             {
                 //Start menu not found, as expected.
             }
-            if (startMenuWindow!=null)
+            if (startMenuWindow != null)
             {
                 string startMenuWindowHandle = (int.Parse(startMenuWindow.GetAttribute("NativeWindowHandle"))).ToString("x");
                 // Create session for controlling the Start Menu.

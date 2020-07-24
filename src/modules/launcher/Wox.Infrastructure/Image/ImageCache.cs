@@ -23,7 +23,7 @@ namespace Wox.Infrastructure.Image
                 var i = _data[path];
                 return i;
             }
-            set 
+            set
             {
                 _data[path] = value;
 

@@ -170,7 +170,7 @@
     <comment>Keyboard Manager current configuration header</comment>
   </data>
   <data name="KeyboardManager_Description.Text" xml:space="preserve">
-    <value>Reconfigure your keyboard by remapping keys and shortcuts</value>
+    <value>Reconfigure your keyboard by remapping keys and shortcuts.</value>
     <comment>Keyboard Manager page description</comment>
   </data>
   <data name="KeyboardManager_EnableToggle.Header" xml:space="preserve">
@@ -198,19 +198,19 @@
     <comment>Keyboard Manager remap shortcuts header</comment>
   </data>
   <data name="ColorPicker_Description.Text" xml:space="preserve">
-    <value>Quick and simple system-wide color picker</value>
+    <value>Quick and simple system-wide color picker.</value>
   </data>
   <data name="ColorPicker_EnableColorPicker.Header" xml:space="preserve">
     <value>Enable Color Picker</value>
   </data>
-  <data name="ColorPicker_ChangeCursor.Header" xml:space="preserve">
+  <data name="ColorPicker_ChangeCursor.Content" xml:space="preserve">
     <value>Change cursor when picking a color</value>
   </data>
   <data name="ColorPicker_CopiedColorRepresentation.Header" xml:space="preserve">
     <value>Copied color representation</value>
   </data>
   <data name="ColorPicker_ActivationShortcut.Header" xml:space="preserve">
-    <value>Activation shortcut</value>
+    <value>Open Color Picker</value>
   </data>
   <data name="PowerLauncher_Description.Text" xml:space="preserve">
     <value>A quick launcher that has additional capabilities without sacrificing performance.</value>
@@ -264,13 +264,13 @@
     <value>Open console</value>
   </data>
   <data name="PowerLauncher_OverrideWinRKey.Content" xml:space="preserve">
-    <value>Override Win+R key</value>
+    <value>Override Win+R shortcut</value>
   </data>
   <data name="PowerLauncher_OverrideWinSKey.Content" xml:space="preserve">
-    <value>Override Win+S key</value>
+    <value>Override Win+S shortcut</value>
   </data>
   <data name="PowerLauncher_IgnoreHotkeysInFullScreen.Content" xml:space="preserve">
-    <value>Ignore hotkeys in fullscreen mode</value>
+    <value>Ignore shortcuts in fullscreen mode</value>
   </data>
   <data name="PowerLauncher_DisableDriveDetectionWarning.Content" xml:space="preserve">
     <value>Disable drive detection warning for the indexer plugin</value>
@@ -306,8 +306,8 @@
   <data name="FancyZones_HighlightOpacity.Header" xml:space="preserve">
     <value>Zone highlight opacity</value>
   </data>
-  <data name="FancyZones_HotkeyEditorControl.Text" xml:space="preserve">
-    <value>Edit hotkey / shortcut</value>
+  <data name="FancyZones_HotkeyEditorControl.Header" xml:space="preserve">
+    <value>Open zones editor</value>
   </data>
   <data name="FancyZones_LaunchEditorButtonControl.Text" xml:space="preserve">
     <value>Launch zones editor</value>
@@ -322,10 +322,7 @@
     <value>Move windows between zones across all monitors when snapping with (Win + Arrow)</value>
   </data>
   <data name="FancyZones_OverrideSnapHotkeysCheckBoxControl.Content" xml:space="preserve">
-    <value>Override Windows Snap hotkeys (Win + Arrow) to move windows between zones</value>
-  </data>
-  <data name="FancyZones_SaveZoneHighlightColor.Content" xml:space="preserve">
-    <value>Save Zone Highlight Color Choice</value>
+    <value>Override Windows Snap shortcut (Win + Arrow) to move windows between zones</value>
   </data>
   <data name="FancyZones_ShiftDragCheckBoxControl_Header.Content" xml:space="preserve">
     <value>Hold Shift key to activate zones while dragging</value>
@@ -390,9 +387,6 @@
   <data name="GeneralPage_ToggleSwitch_RunAtStartUp.Header" xml:space="preserve">
     <value>Run at startup</value>
   </data>
-  <data name="MiscellaneousTextBlockTitle.Text" xml:space="preserve">
-    <value>Miscellaneous</value>
-  </data>
   <data name="PowerRename_Description.Text" xml:space="preserve">
     <value>A Windows Shell extension for more advanced bulk renaming using search and replace or regular expressions.</value>
   </data>
@@ -414,7 +408,7 @@
   <data name="PowerRename_Toggle_MaxDispListNum.Text" xml:space="preserve">
     <value>Maximum number of items</value>
   </data>
-  <data name="PowerRename_Toggle_RestoreFlagsOnLaunch.Header" xml:space="preserve">
+  <data name="PowerRename_Toggle_RestoreFlagsOnLaunch.Content" xml:space="preserve">
     <value>Show values from last use</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_MD.Header" xml:space="preserve">
@@ -435,7 +429,7 @@
   <data name="OpenSource_Notice.Text" xml:space="preserve">
     <value>Open-source notice</value>
   </data>
-  <data name="PowerRename_Toggle_AutoComplete.Header" xml:space="preserve">
+  <data name="PowerRename_Toggle_AutoComplete.Content" xml:space="preserve">
     <value>Enable autocomplete for the search and replace fields</value>
   </data>
   <data name="FancyZones_BorderColor.Text" xml:space="preserve">
@@ -443,12 +437,6 @@
   </data>
   <data name="FancyZones_InActiveColor.Text" xml:space="preserve">
     <value>Zone inactive color (Default: #F5FCFF)</value>
-  </data>
-  <data name="FancyZones_SaveBorderColor.Content" xml:space="preserve">
-    <value>Save Zone Border Color Choice</value>
-  </data>
-  <data name="FancyZones_SaveZoneInActiveColor.Content" xml:space="preserve">
-    <value>Save Zone Inactive Color Choice</value>
   </data>
   <data name="ShortcutGuide_Description.Text" xml:space="preserve">
     <value>Shows a help overlay with Windows shortcuts when the Windows key is pressed.</value>
@@ -624,14 +612,8 @@
   <data name="General_RunAsAdminRequired.Text" xml:space="preserve">
     <value>You need to run as administrator to use this setting</value>
   </data>
-  <data name="FancyZones_HotkeyEditorControl.ToolTipService.ToolTip" xml:space="preserve">
-    <value>Only shortcuts with the following hotkeys are valid: Win, Ctrl, Alt, Shift.</value>
-  </data>
-  <data name="FancyZones_HotkeyEditorControl_Icon.ToolTipService.ToolTip" xml:space="preserve">
-    <value>Only shortcuts with the following hotkeys are valid: Win, Ctrl, Alt, Shift.</value>
-  </data>
-  <data name="FancyZones_HotkeyEditorControl_TextBox.ToolTipService.ToolTip" xml:space="preserve">
-    <value>Only shortcuts with the following hotkeys are valid: Win, Ctrl, Alt, Shift.</value>
+  <data name="ShortcutWarningLabel.Text" xml:space="preserve">
+    <value>Only shortcuts with the following hotkeys are valid:</value>
   </data>
   <data name="FancyZones_RestoreSize.Content" xml:space="preserve">
     <value>Restore the original size of windows when unsnapping</value>
@@ -642,7 +624,7 @@
   <data name="ImageResizer_FileFormatDescription.Text" xml:space="preserve">
     <value>The following parameters can be used:</value>
   </data>
-  <data name="ImageResizer_FilenameFormatHeader.Header" xml:space="preserve">
+  <data name="ImageResizer_FilenameFormatHeader.Text" xml:space="preserve">
     <value>Filename format</value>
   </data>
   <data name="ImageResizer_UseOriginalDate.Content" xml:space="preserve">
@@ -650,5 +632,14 @@
   </data>
   <data name="Encoding.Text" xml:space="preserve">
     <value>Encoding</value>
+  </data>
+  <data name="KeyboardManager_RemapKeyboardSubtitle.Text" xml:space="preserve">
+    <value>Remap keys to other keys or shortcuts.</value>
+  </data>
+  <data name="KeyboardManager_RemapShortcutsSubtitle.Text" xml:space="preserve">
+    <value>Remap shortcuts to other shortcuts or keys. Additionally, mappings can be targeted to specific applications as well.</value>
+  </data>
+  <data name="About_PowerToys.Text" xml:space="preserve">
+    <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity</value>
   </data>
 </root>

@@ -71,8 +71,8 @@ namespace Wox.Infrastructure.Image
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
             {
-                ErrorIconPath = Constant.ErrorIcon;
-                DefaultIconPath = Constant.DefaultIcon;
+                ErrorIconPath = Constant.LightThemedErrorIcon;
+                DefaultIconPath = Constant.LightThemedDefaultIcon;
             }
             else
             {
@@ -207,7 +207,7 @@ namespace Wox.Infrastructure.Image
                     int ImageCacheValue;
                     if (GuidToKey.TryGetValue(hash, out string key))
                     { // image already exists
-                        if(ImageCache.Usage.TryGetValue(path, out ImageCacheValue))
+                        if (ImageCache.Usage.TryGetValue(path, out ImageCacheValue))
                         {
                             img = ImageCache[key];
                         }

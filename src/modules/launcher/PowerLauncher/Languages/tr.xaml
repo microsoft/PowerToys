@@ -128,7 +128,7 @@
     <system:String x:Key="reportWindow_sending">Gönderiliyor</system:String>
     <system:String x:Key="reportWindow_report_succeed">Hata raporu başarıyla gönderildi</system:String>
     <system:String x:Key="reportWindow_report_failed">Hata raporu gönderimi başarısız oldu</system:String>
-    <system:String x:Key="reportWindow_wox_got_an_error">Wox'ta bir hata oluştu</system:String>
+    <system:String x:Key="reportWindow_wox_got_an_error">PT Run'ta bir hata oluştu</system:String>
 
     <!--update-->
     <system:String x:Key="update_wox_update_new_version_available">Wox'un yeni bir sürümü ({0}) mevcut</system:String>

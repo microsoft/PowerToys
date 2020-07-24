@@ -45,8 +45,8 @@ namespace ViewModelTests
             viewModel.SearchTypePreference = "SearchOptionsAreNotValidated";
 
             Assert.AreEqual(sendCallbackMock.TimesSent, 2);
-            Assert.IsTrue(mockSettings.Properties.search_result_preference == "SearchOptionsAreNotValidated");
-            Assert.IsTrue(mockSettings.Properties.search_type_preference == "SearchOptionsAreNotValidated");
+            Assert.IsTrue(mockSettings.Properties.SearchResultPreference == "SearchOptionsAreNotValidated");
+            Assert.IsTrue(mockSettings.Properties.SearchTypePreference == "SearchOptionsAreNotValidated");
         }
 
         public void AssertHotkeySettings(HotkeySettings setting, bool win, bool ctrl, bool alt, bool shift, int code)
@@ -85,7 +85,7 @@ namespace ViewModelTests
             Assert.AreEqual(4, sendCallbackMock.TimesSent);
 
             AssertHotkeySettings(
-                mockSettings.Properties.open_powerlauncher,
+                mockSettings.Properties.OpenPowerLauncher,
                 true,
                 false,
                 false,
@@ -93,7 +93,7 @@ namespace ViewModelTests
                 (int)Windows.System.VirtualKey.S
                 );
             AssertHotkeySettings(
-                mockSettings.Properties.open_file_location,
+                mockSettings.Properties.OpenFileLocation,
                 false,
                 true,
                 false,
@@ -101,7 +101,7 @@ namespace ViewModelTests
                 (int)Windows.System.VirtualKey.A
                 );
             AssertHotkeySettings(
-                mockSettings.Properties.open_console,
+                mockSettings.Properties.OpenConsole,
                 false,
                 false,
                 true,
@@ -109,7 +109,7 @@ namespace ViewModelTests
                 (int)Windows.System.VirtualKey.D
                 );
             AssertHotkeySettings(
-                mockSettings.Properties.copy_path_location,
+                mockSettings.Properties.CopyPathLocation,
                 false,
                 false,
                 false,
@@ -127,8 +127,8 @@ namespace ViewModelTests
 
             Assert.AreEqual(1, sendCallbackMock.TimesSent);
 
-            Assert.IsTrue(mockSettings.Properties.override_win_r_key);
-            Assert.IsFalse(mockSettings.Properties.override_win_s_key);
+            Assert.IsTrue(mockSettings.Properties.OverrideWinkeyR);
+            Assert.IsFalse(mockSettings.Properties.OverrideWinkeyS);
         }
 
         [TestMethod]
@@ -139,7 +139,7 @@ namespace ViewModelTests
 
             // Assert
             Assert.AreEqual(1, sendCallbackMock.TimesSent);
-            Assert.IsTrue(mockSettings.Properties.disable_drive_detection_warning);
+            Assert.IsTrue(mockSettings.Properties.DisableDriveDetectionWarning);
         }
     }
 }

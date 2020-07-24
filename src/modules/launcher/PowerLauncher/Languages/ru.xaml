@@ -115,7 +115,7 @@
     <system:String x:Key="reportWindow_sending">Отправляем</system:String>
     <system:String x:Key="reportWindow_report_succeed">Отчёт успешно отправлен</system:String>
     <system:String x:Key="reportWindow_report_failed">Не удалось отправить отчёт</system:String>
-    <system:String x:Key="reportWindow_wox_got_an_error">Произошёл сбой в Wox</system:String>
+    <system:String x:Key="reportWindow_wox_got_an_error">Произошёл сбой в PT Run</system:String>
 
     <!--update-->
     <system:String x:Key="update_wox_update_new_version_available">Доступна новая версия Wox V{0}</system:String>

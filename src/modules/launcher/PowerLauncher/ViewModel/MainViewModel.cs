@@ -46,6 +46,7 @@ namespace PowerLauncher.ViewModel
         private HotkeyManager _hotkeyManager { get; set; }
         private ushort _hotkeyHandle;
         private readonly Internationalization _translator = InternationalizationManager.Instance;
+        private System.Diagnostics.Stopwatch hotkeyTimer = new System.Diagnostics.Stopwatch();
 
         #endregion
 
@@ -117,7 +118,7 @@ namespace PowerLauncher.ViewModel
 
         private void InitializeKeyCommands()
         {
-            IgnoreCommand = new RelayCommand(_ => {});
+            IgnoreCommand = new RelayCommand(_ => { });
 
             EscCommand = new RelayCommand(_ =>
             {
@@ -151,6 +152,16 @@ namespace PowerLauncher.ViewModel
                 SelectedResults.SelectPrevTabItem();
             });
 
+            SelectNextContextMenuItemCommand = new RelayCommand(_ =>
+            {
+                SelectedResults.SelectNextContextMenuItem();
+            });
+
+            SelectPreviousContextMenuItemCommand = new RelayCommand(_ =>
+            {
+                SelectedResults.SelectPreviousContextMenuItem();
+            });
+
             SelectNextPageCommand = new RelayCommand(_ =>
             {
                 SelectedResults.SelectNextPage();
@@ -177,7 +188,7 @@ namespace PowerLauncher.ViewModel
                     results.SelectedIndex = int.Parse(index.ToString(), CultureInfo.InvariantCulture);
                 }
 
-                if(results.SelectedItem != null)
+                if (results.SelectedItem != null)
                 {
                     //If there is a context button selected fire the action for that button before the main command. 
                     bool didExecuteContextButton = results.SelectedItem.ExecuteSelectedContextButton();
@@ -208,7 +219,7 @@ namespace PowerLauncher.ViewModel
                             }
                         }
                     }
-                }              
+                }
             });
 
             LoadContextMenuCommand = new RelayCommand(_ =>
@@ -238,12 +249,12 @@ namespace PowerLauncher.ViewModel
 
             ClearQueryCommand = new RelayCommand(_ =>
             {
-                if(!string.IsNullOrEmpty(QueryText))
+                if (!string.IsNullOrEmpty(QueryText))
                 {
-	                ChangeQueryText(string.Empty,true);
-	                //Push Event to UI SystemQuery has changed
-	                OnPropertyChanged(nameof(SystemQueryText));
-				}
+                    ChangeQueryText(string.Empty, true);
+                    //Push Event to UI SystemQuery has changed
+                    OnPropertyChanged(nameof(SystemQueryText));
+                }
             });
         }
 
@@ -261,7 +272,6 @@ namespace PowerLauncher.ViewModel
         public string SystemQueryText { get; set; } = String.Empty;
 
         public string QueryText { get; set; } = String.Empty;
-      
 
         /// <summary>
         /// we need move cursor to end when we manually changed query
@@ -270,11 +280,11 @@ namespace PowerLauncher.ViewModel
         /// </summary>
         /// <param name="queryText"></param>
         /// <param name="requery">Optional Parameter that if true, will automatically execute a query against the updated text</param>
-        public void ChangeQueryText(string queryText, bool requery=false)
+        public void ChangeQueryText(string queryText, bool requery = false)
         {
             SystemQueryText = queryText;
-            
-            if(requery)
+
+            if (requery)
             {
                 QueryText = queryText;
                 Query();
@@ -322,11 +332,13 @@ namespace PowerLauncher.ViewModel
 
         private Visibility _visibility;
 
-        public Visibility MainWindowVisibility {
+        public Visibility MainWindowVisibility
+        {
             get { return _visibility; }
-            set {
+            set
+            {
                 _visibility = value;
-                if(value == Visibility.Visible)
+                if (value == Visibility.Visible)
                 {
                     PowerToysTelemetry.Log.WriteEvent(new LauncherShowEvent());
                 }
@@ -334,7 +346,7 @@ namespace PowerLauncher.ViewModel
                 {
                     PowerToysTelemetry.Log.WriteEvent(new LauncherHideEvent());
                 }
-            
+
             }
         }
 
@@ -342,6 +354,8 @@ namespace PowerLauncher.ViewModel
         public ICommand EscCommand { get; set; }
         public ICommand SelectNextItemCommand { get; set; }
         public ICommand SelectPrevItemCommand { get; set; }
+        public ICommand SelectNextContextMenuItemCommand { get; set; }
+        public ICommand SelectPreviousContextMenuItemCommand { get; set; }
 
         public ICommand SelectNextTabItemCommand { get; set; }
         public ICommand SelectPrevTabItemCommand { get; set; }
@@ -491,7 +505,7 @@ namespace PowerLauncher.ViewModel
                 _updateSource?.Cancel();
                 _lastQuery = _emptyQuery;
                 Results.SelectedItem = null;
-                Results.Clear();                
+                Results.Clear();
                 Results.Visibility = Visibility.Collapsed;
             }
         }
@@ -557,7 +571,7 @@ namespace PowerLauncher.ViewModel
                 hotkey.Shift = hotkeyModel.Shift;
                 hotkey.Ctrl = hotkeyModel.Ctrl;
                 hotkey.Win = hotkeyModel.Win;
-                hotkey.Key = (byte) KeyInterop.VirtualKeyFromKey(hotkeyModel.CharKey);
+                hotkey.Key = (byte)KeyInterop.VirtualKeyFromKey(hotkeyModel.CharKey);
 
                 _hotkeyHandle = _hotkeyManager.RegisterHotkey(hotkey, action);
             }
@@ -604,7 +618,12 @@ namespace PowerLauncher.ViewModel
             {
                 if (!ShouldIgnoreHotkeys())
                 {
+                    // If launcher window was hidden and the hotkey was pressed, start telemetry event
+                    if (MainWindowVisibility != Visibility.Visible)
+                    {
 
+                        StartHotkeyTimer();
+                    }
                     if (_settings.LastQueryMode == LastQueryMode.Empty)
                     {
                         ChangeQueryText(string.Empty);
@@ -660,7 +679,7 @@ namespace PowerLauncher.ViewModel
         /// </summary>
         public void UpdateResultView(List<Result> list, PluginMetadata metadata, Query originQuery)
         {
-            if(list == null)
+            if (list == null)
             {
                 throw new ArgumentNullException(nameof(list));
             }
@@ -774,6 +793,20 @@ namespace PowerLauncher.ViewModel
             return string.Empty;
         }
 
+        public static FlowDirection GetLanguageFlowDirection()
+        {
+            bool isCurrentLanguageRightToLeft = System.Windows.Input.InputLanguageManager.Current.CurrentInputLanguage.TextInfo.IsRightToLeft;
+
+            if (isCurrentLanguageRightToLeft)
+            {
+                return FlowDirection.RightToLeft;
+            }
+            else
+            {
+                return FlowDirection.LeftToRight;
+            }
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -787,14 +820,29 @@ namespace PowerLauncher.ViewModel
                     _hotkeyManager.Dispose();
                     _updateSource.Dispose();
                     _disposed = true;
-                }   
-            }         
+                }
+            }
         }
 
         public void Dispose()
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        public void StartHotkeyTimer()
+        {
+            hotkeyTimer.Start();
+        }
+
+        public long GetHotkeyEventTimeMs()
+        {
+            hotkeyTimer.Stop();
+            long recordedTime = hotkeyTimer.ElapsedMilliseconds;
+
+            // Reset the stopwatch and return the time elapsed
+            hotkeyTimer.Reset();
+            return recordedTime;
         }
 
         #endregion

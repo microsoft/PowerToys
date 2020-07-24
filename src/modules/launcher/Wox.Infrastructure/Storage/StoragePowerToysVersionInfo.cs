@@ -11,7 +11,7 @@ namespace Wox.Infrastructure.Storage
         // This detail is accessed by the storage items and is used to decide if the cache must be deleted or not
         public bool clearCache = false;
 
-        
+
         private String currentPowerToysVersion = String.Empty;
         private String FilePath { get; set; } = String.Empty;
 
@@ -32,21 +32,37 @@ namespace Wox.Infrastructure.Storage
 
             // If there is some error in populating/retrieving the version numbers, then the cache must be deleted
             // This case will not be hit, but is present as a fail safe
-            if(String.IsNullOrEmpty(version1) || String.IsNullOrEmpty(version2))
+            if (String.IsNullOrEmpty(version1) || String.IsNullOrEmpty(version2))
             {
                 return true;
             }
 
-            string[] split1 = version1.Split( new string[] { version, period }, StringSplitOptions.RemoveEmptyEntries); 
-            string[] split2 = version2.Split( new string[] { version, period }, StringSplitOptions.RemoveEmptyEntries); 
+            string[] split1 = version1.Split(new string[] { version, period }, StringSplitOptions.RemoveEmptyEntries);
+            string[] split2 = version2.Split(new string[] { version, period }, StringSplitOptions.RemoveEmptyEntries);
 
-            for(int i=0; i<versionLength; i++)
+            // If an incomplete file write resulted in the version number not being saved completely, then the cache must be deleted
+            if (split1.Length != split2.Length || split1.Length != versionLength)
             {
-                if(int.Parse(split1[i]) < int.Parse(split2[i]))
+                return true;
+            }
+
+            for (int i = 0; i < versionLength; i++)
+            {
+                if (int.TryParse(split1[i], out int version1AsInt) && int.TryParse(split2[i], out int version2AsInt))
+                {
+                    if (version1AsInt < version2AsInt)
+                    {
+                        return true;
+                    }
+                }
+
+                // If either of the values could not be parsed, the version number was not saved correctly and the cache must be deleted
+                else
                 {
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -70,11 +86,11 @@ namespace Wox.Infrastructure.Storage
             string cacheSuffix = ".cache";
             string jsonSuffix = ".json";
 
-            if(type == (uint)StorageType.BINARY_STORAGE)
+            if (type == (uint)StorageType.BINARY_STORAGE)
             {
                 suffix = cacheSuffix;
             }
-            else if(type == (uint)StorageType.JSON_STORAGE)
+            else if (type == (uint)StorageType.JSON_STORAGE)
             {
                 suffix = jsonSuffix;
             }

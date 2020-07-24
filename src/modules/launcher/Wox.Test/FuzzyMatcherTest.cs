@@ -150,7 +150,7 @@ namespace Wox.Test
         [TestCase("chr", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.Regular, false)]
         [TestCase("chr", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.None, true)]
         [TestCase("ccs", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.Low, true)]
-        [TestCase("cand", "Candy Crush Saga from King",StringMatcher.SearchPrecisionScore.Regular, true)]
+        [TestCase("cand", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.Regular, true)]
         [TestCase("cand", "Help cure hope raise on mind entity Chrome", StringMatcher.SearchPrecisionScore.Regular, false)]
         public void WhenGivenDesiredPrecisionThenShouldReturnAllResultsGreaterOrEqual(
             string queryString,
@@ -159,7 +159,7 @@ namespace Wox.Test
             bool expectedPrecisionResult)
         {
             // When            
-            var matcher = new StringMatcher {UserSettingSearchPrecision = expectedPrecisionScore};
+            var matcher = new StringMatcher { UserSettingSearchPrecision = expectedPrecisionScore };
 
             // Given
             var matchResult = matcher.FuzzyMatch(queryString, compareString);

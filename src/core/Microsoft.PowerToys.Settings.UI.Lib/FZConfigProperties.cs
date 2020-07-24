@@ -1,6 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -8,35 +9,28 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     public class FZConfigProperties
     {
+        public static readonly HotkeySettings DefaultHotkeyValue = new HotkeySettings(true, false, false, false, 0xc0);
+
         public FZConfigProperties()
         {
-            this.FancyzonesShiftDrag = new BoolProperty(ConfigDefaults.DefaultFancyzonesShiftDrag);
-            this.FancyzonesOverrideSnapHotkeys = new BoolProperty();
-            this.FancyzonesMouseSwitch = new BoolProperty();
-            this.FancyzonesMoveWindowsAcrossMonitors = new BoolProperty();
-            this.FancyzonesDisplayChangeMoveWindows = new BoolProperty();
-            this.FancyzonesZoneSetChangeMoveWindows = new BoolProperty();
-            this.FancyzonesAppLastZoneMoveWindows = new BoolProperty();
-            this.FancyzonesOpenWindowOnActiveMonitor = new BoolProperty();
-            this.FancyzonesRestoreSize = new BoolProperty();
-            this.UseCursorposEditorStartupscreen = new BoolProperty(ConfigDefaults.DefaultUseCursorposEditorStartupscreen);
-            this.FancyzonesShowOnAllMonitors = new BoolProperty();
-            this.FancyzonesZoneHighlightColor = new StringProperty(ConfigDefaults.DefaultFancyZonesZoneHighlightColor);
-            this.FancyzonesHighlightOpacity = new IntProperty(50);
-            this.FancyzonesEditorHotkey = new KeyboardKeysProperty(
-                new HotkeySettings()
-                {
-                    Win = true,
-                    Ctrl = false,
-                    Alt = false,
-                    Shift = false,
-                    Key = "`",
-                    Code = 192,
-                });
-            this.FancyzonesMakeDraggedWindowTransparent = new BoolProperty();
-            this.FancyzonesExcludedApps = new StringProperty();
-            this.FancyzonesInActiveColor = new StringProperty(ConfigDefaults.DefaultFancyZonesInActiveColor);
-            this.FancyzonesBorderColor = new StringProperty(ConfigDefaults.DefaultFancyzonesBorderColor);
+            FancyzonesShiftDrag = new BoolProperty(ConfigDefaults.DefaultFancyzonesShiftDrag);
+            FancyzonesOverrideSnapHotkeys = new BoolProperty();
+            FancyzonesMouseSwitch = new BoolProperty();
+            FancyzonesMoveWindowsAcrossMonitors = new BoolProperty();
+            FancyzonesDisplayChangeMoveWindows = new BoolProperty();
+            FancyzonesZoneSetChangeMoveWindows = new BoolProperty();
+            FancyzonesAppLastZoneMoveWindows = new BoolProperty();
+            FancyzonesOpenWindowOnActiveMonitor = new BoolProperty();
+            FancyzonesRestoreSize = new BoolProperty();
+            UseCursorposEditorStartupscreen = new BoolProperty(ConfigDefaults.DefaultUseCursorposEditorStartupscreen);
+            FancyzonesShowOnAllMonitors = new BoolProperty();
+            FancyzonesZoneHighlightColor = new StringProperty(ConfigDefaults.DefaultFancyZonesZoneHighlightColor);
+            FancyzonesHighlightOpacity = new IntProperty(50);
+            FancyzonesEditorHotkey = new KeyboardKeysProperty(DefaultHotkeyValue);
+            FancyzonesMakeDraggedWindowTransparent = new BoolProperty();
+            FancyzonesExcludedApps = new StringProperty();
+            FancyzonesInActiveColor = new StringProperty(ConfigDefaults.DefaultFancyZonesInActiveColor);
+            FancyzonesBorderColor = new StringProperty(ConfigDefaults.DefaultFancyzonesBorderColor);
         }
 
         [JsonPropertyName("fancyzones_shiftDrag")]

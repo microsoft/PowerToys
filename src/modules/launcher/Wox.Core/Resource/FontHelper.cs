@@ -14,9 +14,10 @@ namespace Wox.Core.Resource
 
             try
             {
-                return (FontWeight) fontWeightConverter.ConvertFromInvariantString(value);
+                return (FontWeight)fontWeightConverter.ConvertFromInvariantString(value);
             }
-            catch {
+            catch
+            {
                 return FontWeights.Normal;
             }
         }

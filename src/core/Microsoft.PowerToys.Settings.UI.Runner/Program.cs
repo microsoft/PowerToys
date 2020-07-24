@@ -58,7 +58,8 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                         IsUserAnAdmin = false;
                     }
 
-                    RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () => {
+                    RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
+                    {
                         Environment.Exit(0);
                     });
 

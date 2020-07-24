@@ -27,9 +27,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
             }
 
-            this._svgRenderIsEnabled = Settings.properties.EnableSvgPreview;
-            this._svgThumbnailIsEnabled = Settings.properties.EnableSvgThumbnail;
-            this._mdRenderIsEnabled = Settings.properties.EnableMdPreview;
+            this._svgRenderIsEnabled = Settings.Properties.EnableSvgPreview;
+            this._svgThumbnailIsEnabled = Settings.Properties.EnableSvgThumbnail;
+            this._mdRenderIsEnabled = Settings.Properties.EnableMdPreview;
         }
 
         private bool _svgRenderIsEnabled = false;
@@ -48,7 +48,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _svgRenderIsEnabled)
                 {
                     _svgRenderIsEnabled = value;
-                    Settings.properties.EnableSvgPreview = value;
+                    Settings.Properties.EnableSvgPreview = value;
                     RaisePropertyChanged();
                 }
             }
@@ -66,7 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _svgThumbnailIsEnabled)
                 {
                     _svgThumbnailIsEnabled = value;
-                    Settings.properties.EnableSvgThumbnail = value;
+                    Settings.Properties.EnableSvgThumbnail = value;
                     RaisePropertyChanged();
                 }
             }
@@ -84,7 +84,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _mdRenderIsEnabled)
                 {
                     _mdRenderIsEnabled = value;
-                    Settings.properties.EnableMdPreview = value;
+                    Settings.Properties.EnableMdPreview = value;
                     RaisePropertyChanged();
                 }
             }

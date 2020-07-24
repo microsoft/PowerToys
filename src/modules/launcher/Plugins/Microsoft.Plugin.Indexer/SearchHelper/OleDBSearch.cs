@@ -69,7 +69,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                 resultDisposed = true;
             }
 
-            if(conn.State == System.Data.ConnectionState.Closed)
+            if (conn.State == System.Data.ConnectionState.Closed)
             {
                 connDisposed = true;
             }

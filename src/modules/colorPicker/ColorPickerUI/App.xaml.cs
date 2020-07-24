@@ -46,12 +46,13 @@ namespace ColorPickerUI
                 return;
             }
 
-            if(_args.Length > 0)
+            if (_args.Length > 0)
             {
                 _ = int.TryParse(_args[0], out _powerToysPid);
             }
 
-            RunnerHelper.WaitForPowerToysRunner(_powerToysPid, () => {
+            RunnerHelper.WaitForPowerToysRunner(_powerToysPid, () =>
+            {
                 Environment.Exit(0);
             });
 

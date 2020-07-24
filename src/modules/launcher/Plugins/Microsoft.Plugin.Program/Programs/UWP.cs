@@ -41,7 +41,7 @@ namespace Microsoft.Plugin.Program.Programs
         public static IPackageManager PackageManagerWrapper { get; set; } = new PackageManagerWrapper();
 
         public UWP(IPackage package)
-        {        
+        {
             Name = package.Name;
             FullName = package.FullName;
             FamilyName = package.FamilyName;
@@ -64,9 +64,9 @@ namespace Microsoft.Plugin.Program.Programs
             if (hResult == Hresult.Ok)
             {
                 var apps = new List<Application>();
-             
+
                 List<AppxPackageHelper.IAppxManifestApplication> _apps = _helper.getAppsFromManifest(stream);
-                foreach(var _app in _apps)
+                foreach (var _app in _apps)
                 {
                     var app = new Application(_app, this);
                     apps.Add(app);
@@ -194,12 +194,12 @@ namespace Microsoft.Plugin.Program.Programs
                 }
                 catch (Exception e)
                 {
-                    ProgramLogger.LogException("UWP" ,"CurrentUserPackages", $"id","An unexpected error occurred and "
+                    ProgramLogger.LogException("UWP", "CurrentUserPackages", $"id", "An unexpected error occurred and "
                                                 + $"unable to verify if package is valid", e);
                     return false;
                 }
-                    
-                    
+
+
                 return valid;
             });
 
@@ -242,7 +242,7 @@ namespace Microsoft.Plugin.Program.Programs
             public string Name => DisplayName;
             public string Location => Package.Location;
             public bool Enabled { get; set; }
-            public bool CanRunElevated {get;set;}
+            public bool CanRunElevated { get; set; }
 
             public string LogoUri { get; set; }
             public string LogoPath { get; set; }
@@ -253,7 +253,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 var displayNameMatch = StringMatcher.FuzzySearch(query, DisplayName);
                 var descriptionMatch = StringMatcher.FuzzySearch(query, Description);
-                var score = new[] { displayNameMatch.Score, descriptionMatch.Score/2 }.Max();
+                var score = new[] { displayNameMatch.Score, descriptionMatch.Score / 2 }.Max();
                 return score;
             }
 
@@ -326,22 +326,22 @@ namespace Microsoft.Plugin.Program.Programs
                             }
                         );
                 }
-               contextMenus.Add(
-                   new ContextMenuResult
-                   {
-                       PluginName = Assembly.GetExecutingAssembly().GetName().Name,
-                       Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
-                       Glyph = "\xE838",
-                       FontFamily = "Segoe MDL2 Assets",
-                       AcceleratorKey = Key.E,
-                       AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
-                       Action = _ =>
-                       {
-                           Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", Package.Location));
+                contextMenus.Add(
+                    new ContextMenuResult
+                    {
+                        PluginName = Assembly.GetExecutingAssembly().GetName().Name,
+                        Title = api.GetTranslation("wox_plugin_program_open_containing_folder"),
+                        Glyph = "\xE838",
+                        FontFamily = "Segoe MDL2 Assets",
+                        AcceleratorKey = Key.E,
+                        AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
+                        Action = _ =>
+                        {
+                            Main.StartProcess(Process.Start, new ProcessStartInfo("explorer", Package.Location));
 
-                           return true;
-                       }
-                   });
+                            return true;
+                        }
+                    });
 
                 contextMenus.Add(new ContextMenuResult
                 {
@@ -436,7 +436,7 @@ namespace Microsoft.Plugin.Program.Programs
                     if (File.Exists(manifest))
                     {
                         var file = File.ReadAllText(manifest);
-                        if(file.Contains("TrustLevel=\"mediumIL\"", StringComparison.InvariantCultureIgnoreCase))
+                        if (file.Contains("TrustLevel=\"mediumIL\"", StringComparison.InvariantCultureIgnoreCase))
                         {
                             return true;
                         }
@@ -565,7 +565,7 @@ namespace Microsoft.Plugin.Program.Programs
                 {
                     var end = path.Length - extension.Length;
                     var prefix = path.Substring(0, end);
-                    var paths = new List<string> { path };                    
+                    var paths = new List<string> { path };
 
                     var scaleFactors = new Dictionary<PackageVersion, List<int>>
                     {
@@ -594,7 +594,7 @@ namespace Microsoft.Plugin.Program.Programs
                     else
                     {
                         int appIconSize = 36;
-                        var targetSizes = new List<int>{16, 24, 30, 36, 44, 60, 72, 96, 128, 180, 256}.AsParallel();
+                        var targetSizes = new List<int> { 16, 24, 30, 36, 44, 60, 72, 96, 128, 180, 256 }.AsParallel();
                         Dictionary<string, int> pathFactorPairs = new Dictionary<string, int>();
 
                         foreach (var factor in targetSizes)

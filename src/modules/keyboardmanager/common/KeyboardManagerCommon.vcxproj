@@ -121,6 +121,7 @@
     <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ModifierKey.h" />
     <ClInclude Include="InputInterface.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="KeyboardManagerConstants.h" />
