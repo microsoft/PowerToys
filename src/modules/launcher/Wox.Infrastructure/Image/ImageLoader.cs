@@ -39,8 +39,7 @@ namespace Wox.Infrastructure.Image
             _hashGenerator = new ImageHashGenerator();
             ImageCache.SetUsageAsDictionary(_storage.TryLoad(new Dictionary<string, int>()));
 
-            // Todo : Add error and default icon specific to each theme
-            foreach (var icon in new[] { Constant.DefaultIcon, Constant.ErrorIcon })
+            foreach (var icon in new[] { Constant.DefaultIcon, Constant.ErrorIcon, Constant.LightThemedDefaultIcon, Constant.LightThemedErrorIcon })
             {
                 ImageSource img = new BitmapImage(new Uri(icon));
                 img.Freeze();
