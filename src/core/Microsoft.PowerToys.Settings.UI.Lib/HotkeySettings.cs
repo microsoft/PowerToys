@@ -56,6 +56,11 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         [JsonPropertyName("code")]
         public int Code { get; set; }
 
+        // This is currently needed for FancyZones, we need to unify these two objects
+        // see src\common\settings_objects.h
+        [JsonPropertyName("key")]
+        public string Key { get; set; } = string.Empty;
+
         public override string ToString()
         {
             StringBuilder output = new StringBuilder();
