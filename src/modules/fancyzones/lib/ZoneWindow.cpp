@@ -573,7 +573,7 @@ void ZoneWindow::CalculateZoneSet() noexcept
             bool showSpacing = deviceInfoData->showSpacing;
             int spacing = showSpacing ? deviceInfoData->spacing : 0;
             int zoneCount = deviceInfoData->zoneCount;
-            zoneSet->CalculateZones(monitorInfo, zoneCount, spacing);
+            zoneSet->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
             UpdateActiveZoneSet(zoneSet.get());
         }
     }
