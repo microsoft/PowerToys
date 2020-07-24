@@ -59,3 +59,42 @@ steps:
       # crashes CI
       #**\interop-tests.dll 
       #**\UnitTests-FancyZones.dll
+
+- task: VSTest@2
+    displayName: Run Microsoft.PowerToys.Settings.UnitTest.exe
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'  
+    inputs:
+      testAssemblyVer2: **\Microsoft.PowerToys.Settings.UnitTest.exe
+      otherConsoleOptions: /Platform:${{ parameters.platform }}
+      codeCoverageEnabled: true
+      publishRunAttachments: true
+  
+  - task: PublishTestResults@2
+    displayName: Publish tests Microsoft.PowerToys.Settings.UnitTest.exe
+    inputs:
+      testResultsFormat: 'VSTest'
+      testResultsFiles: '**/TEST-*.trx'
+      
+- task: DownloadBuildArtifacts@0
+    displayName: Download Microsoft.PowerToys.Settings.UnitTest.exe
+    inputs:
+      artifactName: drop
+      itemPattern: '**'
+      
+- task: VSTest@2
+    displayName: Run DailymotionUnitTests.Core
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    testSelector: 'testAssemblies'    
+    inputs:
+      testAssemblyVer2: **\Microsoft.PowerToys.Settings.UnitTest.exe
+      otherConsoleOptions: /Platform:${{ parameters.platform }}
+      codeCoverageEnabled: true
+      publishRunAttachments: true
+      
+- task: PublishTestResults@2
+    displayName: Publish tests DailymotionUnitTests.Core
+    inputs:
+      testResultsFormat: 'VSTest'
+      testResultsFiles: '**/TEST-*.trx'
