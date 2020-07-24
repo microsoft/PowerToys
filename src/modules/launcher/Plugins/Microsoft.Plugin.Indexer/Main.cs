@@ -15,6 +15,7 @@ using System.Windows.Controls;
 using Wox.Infrastructure.Logger;
 using System.Text.RegularExpressions;
 using Microsoft.Plugin.Indexer.DriveDetection;
+using System.Globalization;
 
 namespace Microsoft.Plugin.Indexer
 {
@@ -47,7 +48,9 @@ namespace Microsoft.Plugin.Indexer
             _storage.Save();
         }
 
+
         // This function uses the Windows indexer and returns the list of results obtained
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive but will log the exception")]
         public List<Result> Query(Query query)
         {
             var results = new List<Result>();
@@ -72,8 +75,8 @@ namespace Microsoft.Plugin.Indexer
                             foreach (var searchResult in searchResultsList)
                             {
                                 var path = searchResult.Path;
-                                var toolTipTitle = string.Format("{0} : {1}", _context.API.GetTranslation("Microsoft_plugin_indexer_name"), searchResult.Title);
-                                var toolTipText = string.Format("{0} : {1}", _context.API.GetTranslation("Microsoft_plugin_indexer_path"), path);
+                                var toolTipTitle = string.Format(CultureInfo.InvariantCulture, "{0} : {1}", _context.API.GetTranslation("Microsoft_plugin_indexer_name"), searchResult.Title);
+                                var toolTipText = string.Format(CultureInfo.InvariantCulture, "{0} : {1}", _context.API.GetTranslation("Microsoft_plugin_indexer_path"), path);
                                 string workingDir = null;
                                 if (_settings.UseLocationAsWorkingDir)
                                     workingDir = Path.GetDirectoryName(path);
@@ -116,14 +119,9 @@ namespace Microsoft.Plugin.Indexer
                                 results.Add(r);
                             }
                         }
-                        catch (InvalidOperationException)
+                        catch (Exception e)
                         {
-                            //The connection has closed, internal error of ExecuteReader()
-                            //Not showing this exception to the users
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Info(ex.ToString());
+                            Log.Exception($"|Microsoft.Plugin.Indexer.Main.Query|Exception when query for <{query}>", e);
                         }
                     }
                 }
