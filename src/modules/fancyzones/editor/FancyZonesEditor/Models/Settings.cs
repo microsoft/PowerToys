@@ -495,14 +495,14 @@ namespace FancyZonesEditor
                     }
                     else
                     {
-                        WorkArea.Union(thisMonitor);
+                        WorkArea = Rect.Union(WorkArea, thisMonitor);
                     }
 
                     UsedWorkAreas.Add(thisMonitor);
-
-                    int.TryParse(args[(int)CmdArgs.PowerToysPID], out _powerToysPID);
-                    ParseDeviceInfoData();
                 }
+
+                int.TryParse(args[(int)CmdArgs.PowerToysPID], out _powerToysPID);
+                ParseDeviceInfoData();
             }
             else
             {
