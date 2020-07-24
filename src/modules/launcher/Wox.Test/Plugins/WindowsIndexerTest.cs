@@ -299,10 +299,10 @@ namespace Wox.Test.Plugins
             mockapi.Verify(m => m.GetTranslation("Microsoft_plugin_indexer_open_in_console"), Times.Once());
         }
 
-        [TestCase(0, false, ExpectedResult = false)]
-        [TestCase(0, true, ExpectedResult = true)]
-        [TestCase(1, false, ExpectedResult = true)]
-        [TestCase(1, true, ExpectedResult = true)]
+        [TestCase(0, false, ExpectedResult = true)]
+        [TestCase(0, true, ExpectedResult = false)]
+        [TestCase(1, false, ExpectedResult = false)]
+        [TestCase(1, true, ExpectedResult = false)]
         public bool DriveDetection_MustDisplayResults_WhenEnhancedModeIsOnOrWhenWarningIsDisabled(int enhancedModeStatus, bool disableWarningCheckBoxStatus) 
         {
             // Arrange
@@ -313,7 +313,7 @@ namespace Wox.Test.Plugins
             _driveDetection.IsDriveDetectionWarningCheckBoxSelected = disableWarningCheckBoxStatus;
 
             // Act & Assert
-            return _driveDetection.DisplayResults();
+            return _driveDetection.DisplayWarning();
         }
 
     }
