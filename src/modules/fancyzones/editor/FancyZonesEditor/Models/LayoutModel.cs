@@ -228,7 +228,11 @@ namespace FancyZonesEditor.Models
 
                         List<int> rowsPercentage = new List<int>(rows);
                         JsonElement.ArrayEnumerator rowsPercentageEnumerator = info.GetProperty(RowsPercentageJsonTag).EnumerateArray();
-                        if (rows <= 0 || columns <= 0 || rowsPercentageEnumerator.Count() != rows)
+
+                        List<int> columnsPercentage = new List<int>(columns);
+                        JsonElement.ArrayEnumerator columnsPercentageEnumerator = info.GetProperty(ColumnsPercentageJsonTag).EnumerateArray();
+
+                        if (rows <= 0 || columns <= 0 || rowsPercentageEnumerator.Count() != rows || columnsPercentageEnumerator.Count() != columns)
                         {
                             error = true;
                         }
@@ -236,7 +240,7 @@ namespace FancyZonesEditor.Models
                         while (rowsPercentageEnumerator.MoveNext())
                         {
                             int percentage = rowsPercentageEnumerator.Current.GetInt32();
-                            if (percentage <= 0)
+                            if (error || percentage <= 0)
                             {
                                 error = true;
                                 break;
@@ -245,17 +249,10 @@ namespace FancyZonesEditor.Models
                             rowsPercentage.Add(percentage);
                         }
 
-                        List<int> columnsPercentage = new List<int>(columns);
-                        JsonElement.ArrayEnumerator columnsPercentageEnumerator = info.GetProperty(ColumnsPercentageJsonTag).EnumerateArray();
-                        if (columnsPercentageEnumerator.Count() != columns)
-                        {
-                            error = true;
-                        }
-
                         while (columnsPercentageEnumerator.MoveNext())
                         {
                             int percentage = columnsPercentageEnumerator.Current.GetInt32();
-                            if (percentage <= 0)
+                            if (error || percentage <= 0)
                             {
                                 error = true;
                                 break;
@@ -277,7 +274,7 @@ namespace FancyZonesEditor.Models
                         {
                             int j = 0;
                             JsonElement.ArrayEnumerator cellChildMapRowElems = cellChildMapRows.Current.EnumerateArray();
-                            if (cellChildMapRowElems.Count() != columns)
+                            if (error || cellChildMapRowElems.Count() != columns)
                             {
                                 error = true;
                                 break;
@@ -321,7 +318,7 @@ namespace FancyZonesEditor.Models
                             int width = zonesEnumerator.Current.GetProperty(WidthJsonTag).GetInt32();
                             int height = zonesEnumerator.Current.GetProperty(HeightJsonTag).GetInt32();
 
-                            if (width <= 0 || height <= 0)
+                            if (error || width <= 0 || height <= 0)
                             {
                                 error = true;
                                 break;
