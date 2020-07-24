@@ -51,6 +51,7 @@ namespace PowerLauncher
             ErrorTextbox.Document.Blocks.Add(paragraph);
         }
 
+        // Function to get the Bitmap Image from the path
         private static BitmapImage GetImageFromPath(string path)
         {
             if (File.Exists(path))
