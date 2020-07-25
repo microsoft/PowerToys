@@ -178,7 +178,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="https://aka.ms/powerToysPowerLauncherSettingImage" />
+                <Image Source="ms-appx:///Assets/Modules/PowerLauncher.png" />
             </Border>
             
             <StackPanel x:Name="LinksPanel"

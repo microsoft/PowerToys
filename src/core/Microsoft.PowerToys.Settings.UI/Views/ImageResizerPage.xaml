@@ -316,7 +316,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="https://aka.ms/powerToysImageResizerSettingImage" />
+                <Image Source="ms-appx:///Assets/Modules/ImageResizer.png" />
             </Border>
             
             <StackPanel x:Name="LinksPanel"

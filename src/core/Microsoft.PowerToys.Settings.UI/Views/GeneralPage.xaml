@@ -155,7 +155,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="https://aka.ms/powerToysPTSettingImage" />
+                <Image Source="ms-appx:///Assets/Modules/PT.png" />
             </Border>
             <StackPanel x:Name="LinksPanel"
                         RelativePanel.Below="AboutImage"

@@ -108,7 +108,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="https://aka.ms/powerToysColorPickerSettingImage" />
+                <Image Source="ms-appx:///Assets/Modules/ColorPicker.png" />
             </Border>
             <StackPanel x:Name="LinksPanel"
                         RelativePanel.Below="AboutImage"

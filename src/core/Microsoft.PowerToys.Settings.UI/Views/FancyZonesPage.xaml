@@ -303,7 +303,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="https://aka.ms/powerToysFancyZoneSettingImage" />
+                <Image Source="ms-appx:///Assets/Modules/FancyZones.png" />
             </Border>
 
             <StackPanel x:Name="LinksPanel"

@@ -158,6 +158,15 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\Logo.scale-200.png" />
+    <Content Include="Assets\Modules\ColorPicker.png" />
+    <Content Include="Assets\Modules\FancyZones.png" />
+    <Content Include="Assets\Modules\ImageResizer.png" />
+    <Content Include="Assets\Modules\KBM.png" />
+    <Content Include="Assets\Modules\PowerLauncher.png" />
+    <Content Include="Assets\Modules\PowerPreview.png" />
+    <Content Include="Assets\Modules\PowerRename.png" />
+    <Content Include="Assets\Modules\PT.png" />
+    <Content Include="Assets\Modules\ShortcutGuide.png" />
     <Content Include="Assets\SplashScreen.png" />
     <Content Include="Assets\Square150x150Logo.scale-200.png" />
     <Content Include="Assets\Square44x44Logo.scale-200.png" />

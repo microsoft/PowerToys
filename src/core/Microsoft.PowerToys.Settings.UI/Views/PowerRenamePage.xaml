@@ -121,7 +121,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="https://aka.ms/powerToysPowerRenameSettingImage" />
+                <Image Source="ms-appx:///Assets/Modules/PowerRename.png" />
             </Border>
 
             <StackPanel x:Name="LinksPanel"
