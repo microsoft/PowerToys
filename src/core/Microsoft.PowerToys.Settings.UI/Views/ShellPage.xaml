@@ -24,7 +24,8 @@
         IsBackButtonVisible="Collapsed"
         IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
         SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
-        IsSettingsVisible="False" 
+        IsSettingsVisible="False"
+        OpenPaneLength="296"
         CompactModeThresholdWidth="0"
         Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
             <winui:NavigationView.MenuItems>
