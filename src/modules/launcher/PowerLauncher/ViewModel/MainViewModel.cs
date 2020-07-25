@@ -302,13 +302,13 @@ namespace PowerLauncher.ViewModel
                 _selectedResults = value;
                 if (SelectedIsFromQueryResults())
                 {
-                    ContextMenu.Visibility = Visibility.Collapsed;
-                    History.Visibility = Visibility.Collapsed;
+                    ContextMenu.Visibility = Visibility.Hidden;
+                    History.Visibility = Visibility.Hidden;
                     ChangeQueryText(_queryTextBeforeLeaveResults);
                 }
                 else
                 {
-                    Results.Visibility = Visibility.Collapsed;
+                    Results.Visibility = Visibility.Hidden;
                     _queryTextBeforeLeaveResults = QueryText;
 
 
@@ -496,7 +496,7 @@ namespace PowerLauncher.ViewModel
                                 }
                                 else
                                 {
-                                    Results.Visibility = Visibility.Collapsed;
+                                    Results.Visibility = Visibility.Hidden;
                                 }
                             }));
                         }
@@ -523,7 +523,7 @@ namespace PowerLauncher.ViewModel
                 _lastQuery = _emptyQuery;
                 Results.SelectedItem = null;
                 Results.Clear();
-                Results.Visibility = Visibility.Collapsed;
+                Results.Visibility = Visibility.Hidden;
             }
         }
 
