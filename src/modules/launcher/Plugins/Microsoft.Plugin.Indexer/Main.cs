@@ -52,102 +52,100 @@ namespace Microsoft.Plugin.Indexer
         {
             var results = new List<Result>();
 
-            if (_driveDetection.DisplayResults())
+            if (!string.IsNullOrEmpty(query.Search))
             {
-                if (!string.IsNullOrEmpty(query.Search))
+                var searchQuery = query.Search;
+                if (_settings.MaxSearchCount <= 0)
                 {
-                    var searchQuery = query.Search;
-                    if (_settings.MaxSearchCount <= 0)
-                    {
-                        _settings.MaxSearchCount = 50;
-                    }
+                    _settings.MaxSearchCount = 50;
+                }
 
-                    var regexMatch = Regex.Match(searchQuery, ReservedStringPattern);
+                var regexMatch = Regex.Match(searchQuery, ReservedStringPattern);
 
-                    if (!regexMatch.Success)
+                if (!regexMatch.Success)
+                {
+                    try
                     {
-                        try
+                        if(_driveDetection.DisplayWarning())
                         {
-                            var searchResultsList = _api.Search(searchQuery, maxCount: _settings.MaxSearchCount).ToList();
-                            foreach (var searchResult in searchResultsList)
+                            results.Add(new Result
                             {
-                                var path = searchResult.Path;
-                                var toolTipTitle = string.Format("{0} : {1}", _context.API.GetTranslation("Microsoft_plugin_indexer_name"), searchResult.Title);
-                                var toolTipText = string.Format("{0} : {1}", _context.API.GetTranslation("Microsoft_plugin_indexer_path"), path);
-                                string workingDir = null;
-                                if (_settings.UseLocationAsWorkingDir)
-                                    workingDir = Path.GetDirectoryName(path);
-
-                                Result r = new Result();
-                                r.Title = searchResult.Title;
-                                r.SubTitle = "Search: " + path;
-                                r.IcoPath = path;
-                                r.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
-                                r.Action = c =>
+                                Title = _context.API.GetTranslation("Microsoft_plugin_indexer_drivedetectionwarning"),
+                                SubTitle = _context.API.GetTranslation("Microsoft_plugin_indexer_disable_warning_in_settings"),
+                                IcoPath = WarningIconPath,
+                                Action = e =>
                                 {
-                                    bool hide;
                                     try
                                     {
-                                        Process.Start(new ProcessStartInfo
-                                        {
-                                            FileName = path,
-                                            UseShellExecute = true,
-                                            WorkingDirectory = workingDir
-                                        });
-                                        hide = true;
+                                        Process.Start(GetWindowsSearchSettingsProcessInfo());
                                     }
-                                    catch (Win32Exception)
+                                    catch (Exception ex)
                                     {
-                                        var name = $"Plugin: {_context.CurrentPluginMetadata.Name}";
-                                        var msg = "Can't Open this file";
-                                        _context.API.ShowMsg(name, msg, string.Empty);
-                                        hide = false;
+                                        Log.Exception("Microsoft.Plugin.Indexer", $"Unable to launch Windows Search Settings: {ex.Message}", ex, "Query");
                                     }
-                                    return hide;
-                                };
-                                r.ContextData = searchResult;
-
-                                //If the result is a directory, then it's display should show a directory.
-                                if (Directory.Exists(path))
-                                {
-                                    r.QueryTextDisplay = path;
+                                    return true;
                                 }
+                            });
+                        }
 
-                                results.Add(r);
+                        var searchResultsList = _api.Search(searchQuery, maxCount: _settings.MaxSearchCount).ToList();
+                        foreach (var searchResult in searchResultsList)
+                        {
+                            var path = searchResult.Path;
+                            var toolTipTitle = string.Format("{0} : {1}", _context.API.GetTranslation("Microsoft_plugin_indexer_name"), searchResult.Title);
+                            var toolTipText = string.Format("{0} : {1}", _context.API.GetTranslation("Microsoft_plugin_indexer_path"), path);
+                            string workingDir = null;
+                            if (_settings.UseLocationAsWorkingDir)
+                                workingDir = Path.GetDirectoryName(path);
+
+                            Result r = new Result();
+                            r.Title = searchResult.Title;
+                            r.SubTitle = "Search: " + path;
+                            r.IcoPath = path;
+                            r.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
+                            r.Action = c =>
+                            {
+                                bool hide;
+                                try
+                                {
+                                    Process.Start(new ProcessStartInfo
+                                    {
+                                        FileName = path,
+                                        UseShellExecute = true,
+                                        WorkingDirectory = workingDir
+                                    });
+                                    hide = true;
+                                }
+                                catch (Win32Exception)
+                                {
+                                    var name = $"Plugin: {_context.CurrentPluginMetadata.Name}";
+                                    var msg = "Can't Open this file";
+                                    _context.API.ShowMsg(name, msg, string.Empty);
+                                    hide = false;
+                                }
+                                return hide;
+                            };
+                            r.ContextData = searchResult;
+
+                            //If the result is a directory, then it's display should show a directory.
+                            if (Directory.Exists(path))
+                            {
+                                r.QueryTextDisplay = path;
                             }
+
+                            results.Add(r);
                         }
-                        catch (InvalidOperationException)
-                        {
-                            //The connection has closed, internal error of ExecuteReader()
-                            //Not showing this exception to the users
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Info(ex.ToString());
-                        }
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        //The connection has closed, internal error of ExecuteReader()
+                        //Not showing this exception to the users
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Info(ex.ToString());
                     }
                 }
-            }
-            else
-            {
-                results.Add(new Result
-                {
-                    Title = _context.API.GetTranslation("Microsoft_plugin_indexer_drivedetectionwarning"),
-                    SubTitle = _context.API.GetTranslation("Microsoft_plugin_indexer_disable_warning_in_settings"),
-                    IcoPath = WarningIconPath,
-                    Action = e =>
-                    {
-                        try
-                        {
-                            Process.Start(GetWindowsSearchSettingsProcessInfo());
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Exception("Microsoft.Plugin.Indexer", $"Unable to launch Windows Search Settings: {ex.Message}", ex, "Query");
-                        }
-                        return true;
-                    }
-                });
             }
 
             return results;
