@@ -1,6 +1,8 @@
-﻿using PowerLauncher.Helper;
+﻿#define DEBUG
+using PowerLauncher.Helper;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -154,12 +156,12 @@ namespace PowerLauncher.ViewModel
 
         public void RemoveResultsExcept(PluginMetadata metadata)
         {
-            Results.RemoveAll(r => r.Result.PluginID != metadata.ID);
+            Results.RemovePredicate(r => r.Result.PluginID != metadata.ID);
         }
 
         public void RemoveResultsFor(PluginMetadata metadata)
         {
-            Results.RemoveAll(r => r.Result.PluginID == metadata.ID);
+            Results.RemovePredicate(r => r.Result.PluginID == metadata.ID);
         }
 
         public void SelectNextTabItem()
@@ -224,7 +226,8 @@ namespace PowerLauncher.ViewModel
 
                 // update UI in one run, so it can avoid UI flickering
                 Results.Update(newResults);
-
+                Results.NotifyChanges();
+                Debug.WriteLine("Collection changed");
                 if (Results.Count > 0)
                 {
                     Margin = new Thickness { Top = 8 };

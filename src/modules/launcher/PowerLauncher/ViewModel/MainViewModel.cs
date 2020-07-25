@@ -440,18 +440,20 @@ namespace PowerLauncher.ViewModel
                 var currentCancellationToken = _updateSource.Token;
                 _updateToken = currentCancellationToken;
 
-                ProgressBarVisibility = Visibility.Hidden;
                 var query = QueryBuilder.Build(QueryText.Trim(), PluginManager.NonGlobalPlugins);
                 if (query != null)
                 {
-                    // handle the exclusiveness of plugin using action keyword
-                    RemoveOldQueryResults(query);
-
                     _lastQuery = query;
                     var plugins = PluginManager.ValidPluginsForQuery(query);
 
                     Task.Run(() =>
                     {
+                        Thread.Sleep(200);
+                        currentCancellationToken.ThrowIfCancellationRequested();
+
+                        // handle the exclusiveness of plugin using action keyword
+                        RemoveOldQueryResults(query);
+
                         // so looping will stop once it was cancelled
                         var parallelOptions = new ParallelOptions { CancellationToken = currentCancellationToken };
                         try
@@ -461,6 +463,7 @@ namespace PowerLauncher.ViewModel
                                 if (!plugin.Metadata.Disabled)
                                 {
                                     var results = PluginManager.QueryForPlugin(plugin, query);
+                                    currentCancellationToken.ThrowIfCancellationRequested();
                                     if (Application.Current.Dispatcher.CheckAccess())
                                     {
                                         UpdateResultView(results, plugin.Metadata, query);
@@ -478,14 +481,6 @@ namespace PowerLauncher.ViewModel
                         catch (OperationCanceledException)
                         {
                             // nothing to do here
-                        }
-
-
-                        // this should happen once after all queries are done so progress bar should continue
-                        // until the end of all querying
-                        if (currentUpdateSource == _updateSource)
-                        { // update to hidden if this is still the current query
-                            ProgressBarVisibility = Visibility.Hidden;
                         }
 
                         queryTimer.Stop();

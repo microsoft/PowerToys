@@ -315,8 +315,6 @@ namespace PowerLauncher
             }
         }
 
-        private const int millisecondsToWait = 100;
-        private static DateTime s_lastTimeOfTyping;
         private bool disposedValue = false;
 
         private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -335,22 +333,7 @@ namespace PowerLauncher
                     SearchBox.AutoCompleteTextBlock.Text = string.Empty;
                 }
                 _viewModel.QueryText = text;
-                var latestTimeOfTyping = DateTime.Now;
-
-                Task.Run(() => DelayedCheck(latestTimeOfTyping));
-                s_lastTimeOfTyping = latestTimeOfTyping;
-            }
-        }
-
-        private async Task DelayedCheck(DateTime latestTimeOfTyping)
-        {
-            await Task.Delay(millisecondsToWait).ConfigureAwait(false);
-            if (latestTimeOfTyping.Equals(s_lastTimeOfTyping))
-            {
-                await System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    _viewModel.Query();
-                }));
+                _viewModel.Query();
             }
         }
 
