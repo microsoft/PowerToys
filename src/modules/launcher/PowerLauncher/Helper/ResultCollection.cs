@@ -1,5 +1,4 @@
-﻿#define DEBUG
-using PowerLauncher.ViewModel;
+﻿using PowerLauncher.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
