@@ -444,39 +444,54 @@ namespace PowerLauncher.ViewModel
                 if (query != null)
                 {
                     _lastQuery = query;
-                    var plugins = PluginManager.ValidPluginsForQuery(query);
 
                     Task.Run(() =>
                     {
-                        Thread.Sleep(200);
+                        Thread.Sleep(100);
                         currentCancellationToken.ThrowIfCancellationRequested();
 
                         // handle the exclusiveness of plugin using action keyword
                         RemoveOldQueryResults(query);
 
+                        var plugins = PluginManager.ValidPluginsForQuery(query);
+
                         // so looping will stop once it was cancelled
                         var parallelOptions = new ParallelOptions { CancellationToken = currentCancellationToken };
                         try
                         {
+                            var resultPluginPair = new List<(List<Result>, PluginMetadata)>();
                             Parallel.ForEach(plugins, parallelOptions, plugin =>
                             {
                                 if (!plugin.Metadata.Disabled)
                                 {
                                     var results = PluginManager.QueryForPlugin(plugin, query);
                                     currentCancellationToken.ThrowIfCancellationRequested();
-                                    if (Application.Current.Dispatcher.CheckAccess())
+                                    lock (resultPluginPair)
                                     {
-                                        UpdateResultView(results, plugin.Metadata, query);
-                                    }
-                                    else
-                                    {
-                                        Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                                        {
-                                            UpdateResultView(results, plugin.Metadata, query);
-                                        }));
+                                        resultPluginPair.Add((results, plugin.Metadata));
                                     }
                                 }
                             });
+
+     
+                            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                foreach(var p in resultPluginPair)
+                                {
+                                    UpdateResultView(p.Item1, p.Item2, query);
+                                }
+
+                                Results.Results.NotifyChanges();
+                                if (Results.Results.Count > 0)
+                                {
+                                    Results.Visibility = Visibility.Visible;
+                                    Results.SelectedIndex = 0;
+                                }
+                                else
+                                {
+                                    Results.Visibility = Visibility.Collapsed;
+                                }
+                            }));
                         }
                         catch (OperationCanceledException)
                         {
@@ -704,11 +719,6 @@ namespace PowerLauncher.ViewModel
             if (originQuery.RawQuery == _lastQuery.RawQuery)
             {
                 Results.AddResults(list, metadata.ID);
-            }
-
-            if (Results.Visibility != Visibility.Visible && list.Count > 0)
-            {
-                Results.Visibility = Visibility.Visible;
             }
         }
 

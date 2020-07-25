@@ -1,8 +1,6 @@
-﻿#define DEBUG
-using PowerLauncher.Helper;
+﻿using PowerLauncher.Helper;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -223,19 +221,14 @@ namespace PowerLauncher.ViewModel
             lock (_addResultsLock)
             {
                 var newResults = NewResults(newRawResults, resultId);
-
-                // update UI in one run, so it can avoid UI flickering
                 Results.Update(newResults);
-                Results.NotifyChanges();
-                Debug.WriteLine("Collection changed");
                 if (Results.Count > 0)
                 {
-                    Margin = new Thickness { Top = 8 };
+                    Visibility = Visibility.Visible;
                     SelectedIndex = 0;
                 }
                 else
                 {
-                    Margin = new Thickness { Top = 0 };
                     Visibility = Visibility.Collapsed;
                 }
             }
