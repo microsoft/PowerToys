@@ -17,7 +17,6 @@ namespace PowerLauncher.ViewModel
 
         public ResultCollection Results { get; }
 
-        private readonly object _addResultsLock = new object();
         private readonly object _collectionLock = new object();
         private readonly Settings _settings;
         // private int MaxResults => _settings?.MaxResultsToShow ?? 6;
@@ -218,20 +217,8 @@ namespace PowerLauncher.ViewModel
         /// </summary>
         public void AddResults(List<Result> newRawResults, string resultId)
         {
-            lock (_addResultsLock)
-            {
-                var newResults = NewResults(newRawResults, resultId);
-                Results.Update(newResults);
-                if (Results.Count > 0)
-                {
-                    Visibility = Visibility.Visible;
-                    SelectedIndex = 0;
-                }
-                else
-                {
-                    Visibility = Visibility.Collapsed;
-                }
-            }
+            var newResults = NewResults(newRawResults, resultId);
+            Results.Update(newResults);
         }
 
         private List<ResultViewModel> NewResults(List<Result> newRawResults, string resultId)

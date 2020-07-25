@@ -48,6 +48,7 @@ namespace PowerLauncher.ViewModel
         private readonly Internationalization _translator = InternationalizationManager.Instance;
         private System.Diagnostics.Stopwatch hotkeyTimer = new System.Diagnostics.Stopwatch();
 
+        private readonly object _addResultsLock = new object();
         #endregion
 
         #region Constructor
@@ -450,9 +451,6 @@ namespace PowerLauncher.ViewModel
                         Thread.Sleep(100);
                         currentCancellationToken.ThrowIfCancellationRequested();
 
-                        // handle the exclusiveness of plugin using action keyword
-                        RemoveOldQueryResults(query);
-
                         var plugins = PluginManager.ValidPluginsForQuery(query);
 
                         // so looping will stop once it was cancelled
@@ -465,23 +463,32 @@ namespace PowerLauncher.ViewModel
                                 if (!plugin.Metadata.Disabled)
                                 {
                                     var results = PluginManager.QueryForPlugin(plugin, query);
-                                    currentCancellationToken.ThrowIfCancellationRequested();
                                     lock (resultPluginPair)
                                     {
                                         resultPluginPair.Add((results, plugin.Metadata));
                                     }
+                                    currentCancellationToken.ThrowIfCancellationRequested();
                                 }
                             });
 
-     
-                            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                            lock(_addResultsLock)
                             {
-                                foreach(var p in resultPluginPair)
+                                // handle the exclusiveness of plugin using action keyword
+                                RemoveOldQueryResults(query);
+                                foreach (var p in resultPluginPair)
                                 {
                                     UpdateResultView(p.Item1, p.Item2, query);
                                 }
+                            }
 
-                                Results.Results.NotifyChanges();
+                            currentCancellationToken.ThrowIfCancellationRequested();
+                            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                if (query.RawQuery == _lastQuery.RawQuery)
+                                {
+                                    Results.Results.NotifyChanges();
+                                }
+
                                 if (Results.Results.Count > 0)
                                 {
                                     Results.Visibility = Visibility.Visible;
