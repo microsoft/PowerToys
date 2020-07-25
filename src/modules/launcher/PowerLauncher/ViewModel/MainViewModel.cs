@@ -450,21 +450,21 @@ namespace PowerLauncher.ViewModel
                         Thread.Sleep(20);
                         var plugins = PluginManager.ValidPluginsForQuery(query);
 
-                        var parallelOptions = new ParallelOptions { CancellationToken = currentCancellationToken };
                         try
                         {
                             currentCancellationToken.ThrowIfCancellationRequested();
+
                             var resultPluginPair = new List<(List<Result>, PluginMetadata)>();
+                            var parallelOptions = new ParallelOptions { CancellationToken = currentCancellationToken };
                             Parallel.ForEach(plugins, parallelOptions, plugin =>
                             {
-                                if (!plugin.Metadata.Disabled)
+                                if (!plugin.Metadata.Disabled && !currentCancellationToken.IsCancellationRequested)
                                 {
                                     var results = PluginManager.QueryForPlugin(plugin, query);
                                     lock (resultPluginPair)
                                     {
                                         resultPluginPair.Add((results, plugin.Metadata));
                                     }
-                                    parallelOptions.CancellationToken.ThrowIfCancellationRequested();
                                 }
                             });
 
@@ -519,8 +519,6 @@ namespace PowerLauncher.ViewModel
                 _updateSource?.Cancel();
                 _lastQuery = _emptyQuery;
                 Results.SelectedItem = null;
-                Results.Clear();
-                Results.Results.NotifyChanges();
                 Results.Visibility = Visibility.Hidden;
             }
         }
