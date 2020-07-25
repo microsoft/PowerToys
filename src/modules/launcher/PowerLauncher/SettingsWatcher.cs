@@ -36,11 +36,20 @@ namespace PowerLauncher
         {
             Monitor.Enter(_watcherSyncObject);
             var retry = true;
-            for (int i = 0; retry && i < MAX_RETRIES; i++)
+            var retryCount = 0;
+            while(retry)
             {
-                retry = false;
                 try
                 {
+                    retryCount++;
+                    if (!SettingsUtils.SettingsExists(PowerLauncherSettings.ModuleName))
+                    {
+                        Debug.WriteLine("PT Run settings.json was missing, creating a new one");
+
+                        var defaultSettings = new PowerLauncherSettings();
+                        defaultSettings.Save();
+                    }
+
                     var overloadSettings = SettingsUtils.GetSettings<PowerLauncherSettings>(PowerLauncherSettings.ModuleName);
 
                     var openPowerlauncher = ConvertHotkey(overloadSettings.Properties.OpenPowerLauncher);
@@ -77,12 +86,17 @@ namespace PowerLauncher
                     {
                         _settings.ClearInputOnLaunch = overloadSettings.Properties.ClearInputOnLaunch;
                     }
+
+                    retry = false;
                 }
                 // the settings application can hold a lock on the settings.json file which will result in a IOException.  
                 // This should be changed to properly synch with the settings app instead of retrying.
                 catch (IOException e)
                 {
-                    retry = true;
+                    if (retryCount > MAX_RETRIES)
+                    {
+                        retry = false;
+                    }
                     Thread.Sleep(1000);
                     Debug.WriteLine(e.Message);
                 }
