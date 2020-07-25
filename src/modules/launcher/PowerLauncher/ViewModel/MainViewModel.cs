@@ -445,18 +445,15 @@ namespace PowerLauncher.ViewModel
                 if (query != null)
                 {
                     _lastQuery = query;
-
                     Task.Run(() =>
                     {
-                        Thread.Sleep(100);
-                        currentCancellationToken.ThrowIfCancellationRequested();
-
+                        Thread.Sleep(20);
                         var plugins = PluginManager.ValidPluginsForQuery(query);
 
-                        // so looping will stop once it was cancelled
                         var parallelOptions = new ParallelOptions { CancellationToken = currentCancellationToken };
                         try
                         {
+                            currentCancellationToken.ThrowIfCancellationRequested();
                             var resultPluginPair = new List<(List<Result>, PluginMetadata)>();
                             Parallel.ForEach(plugins, parallelOptions, plugin =>
                             {
@@ -467,11 +464,11 @@ namespace PowerLauncher.ViewModel
                                     {
                                         resultPluginPair.Add((results, plugin.Metadata));
                                     }
-                                    currentCancellationToken.ThrowIfCancellationRequested();
+                                    parallelOptions.CancellationToken.ThrowIfCancellationRequested();
                                 }
                             });
 
-                            lock(_addResultsLock)
+                            lock (_addResultsLock)
                             {
                                 // handle the exclusiveness of plugin using action keyword
                                 RemoveOldQueryResults(query);
@@ -523,6 +520,7 @@ namespace PowerLauncher.ViewModel
                 _lastQuery = _emptyQuery;
                 Results.SelectedItem = null;
                 Results.Clear();
+                Results.Results.NotifyChanges();
                 Results.Visibility = Visibility.Hidden;
             }
         }
