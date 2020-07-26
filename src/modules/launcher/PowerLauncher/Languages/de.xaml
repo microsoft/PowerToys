@@ -32,7 +32,7 @@
     <system:String x:Key="hideOnStartup">Verstecke Wox bei Systemstart</system:String>
     <system:String x:Key="hideNotifyIcon">Verstecke Taskbar icon</system:String>
     <system:String x:Key="querySearchPrecision">Suchanfrage verfeinern</system:String>
-    <system:String x:Key="ShouldUsePinyin">SSollte Pinyin benutzen</system:String>
+    <system:String x:Key="ShouldUsePinyin">Sollte Pinyin benutzen</system:String>
    
     <!--Setting Plugin-->
     <system:String x:Key="plugin">Plugin</system:String>
