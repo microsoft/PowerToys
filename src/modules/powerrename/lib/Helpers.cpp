@@ -172,8 +172,8 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
 bool isFileAttributesUsed(_In_ PCWSTR source) 
 {
     bool used = false;
-    std::wstring patterns[] = { L"(([^\\$]|^)(\\$\\$)*)\\$YYYY", L"(([^\\$]|^)(\\$\\$)*)\\$MM", L"(([^\\$]|^)(\\$\\$)*)\\$DD", 
-        L"(([^\\$]|^)(\\$\\$)*)\\$hh", L"(([^\\$]|^)(\\$\\$)*)\\$mm", L"(([^\\$]|^)(\\$\\$)*)\\$ss", L"(([^\\$]|^)(\\$\\$)*)\\$fff" };
+    std::wstring patterns[] = { L"(([^\\$]|^)(\\$\\$)*)\\$Y", L"(([^\\$]|^)(\\$\\$)*)\\$YY", L"(([^\\$]|^)(\\$\\$)*)\\$YYYY", L"(([^\\$]|^)(\\$\\$)*)\\$M",
+        L"(([^\\$]|^)(\\$\\$)*)\\$D", L"(([^\\$]|^)(\\$\\$)*)\\$h", L"(([^\\$]|^)(\\$\\$)*)\\$m", L"(([^\\$]|^)(\\$\\$)*)\\$s", L"(([^\\$]|^)(\\$\\$)*)\\$f" };
     size_t patternsLength = ARRAYSIZE(patterns);
     for (size_t i = 0; !used && i < patternsLength; i++)
     {
@@ -186,31 +186,118 @@ bool isFileAttributesUsed(_In_ PCWSTR source)
 }
 HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SYSTEMTIME LocalTime)
 {
+    std::wstring months[] = { L"Jan", L"Feb", L"Mar", L"Apr", L"May", L"Jun", L"Jul", L"Aug", L"Sep", L"Oct", L"Nov", L"Dec"};
+    std::wstring monthsFull[] = { L"January", L"February", L"March", L"April", L"May", L"June", L"July", L"August", L"September", L"October", L"November", L"December"};
+    std::wstring days[] = { L"Sun", L"Mon", L"Tue", L"Wed", L"Thu", L"Fri", L"Sat" };
+    std::wstring daysFull[] = { L"Sunday", L"Monday", L"Tuesday", L"Wednesday", L"Thursday", L"Friday", L"Saturday"};
+
     HRESULT hr = (source && wcslen(source) > 0) ? S_OK : E_INVALIDARG;     
     if (SUCCEEDED(hr))
     {
         std::wstring res(source);
         wchar_t replaceTerm[MAX_PATH] = {0};
-        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", LocalTime.wYear);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%04d"), L"$01", LocalTime.wYear);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$YYYY"), replaceTerm);
 
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", (LocalTime.wYear % 100));
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$YY"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", (LocalTime.wYear % 10));
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$Y"), replaceTerm);
+        
+        /*
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", monthsFull[LocalTime.wMonth - 1]);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MMMM"), replaceTerm);
+        */
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", months[LocalTime.wMonth - 1]);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MMM"), replaceTerm);
+        
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", LocalTime.wMonth);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MM"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", LocalTime.wMonth);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$M"), replaceTerm);
+
+        /*
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s_%s_"), L"$01", daysFull[4]);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDDD1"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s_%s_"), L"$01", L"Thursday");
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDDD2"), replaceTerm);
+        /*
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", daysFull[LocalTime.wDayOfWeek]);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDDD"), replaceTerm);
+        */
+
+
+        
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", days[0]);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDD0"), replaceTerm);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", days[1]);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDD1"), replaceTerm);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", days[2]);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDD2"), replaceTerm);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", days[3]);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDD3"), replaceTerm);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", days[4]);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDD4"), replaceTerm);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", days[5]);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDD5"), replaceTerm);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", days[6]);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDD6"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", daysFull[0]);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDDD0"), replaceTerm);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", daysFull[1]);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDDD1"), replaceTerm);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", daysFull[2]);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDDD2"), replaceTerm);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", daysFull[3]);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDDD3"), replaceTerm);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", daysFull[4]);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDDD4"), replaceTerm);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", daysFull[5]);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDDD5"), replaceTerm);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", daysFull[6]);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDDD6"), replaceTerm);
+
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", days[LocalTime.wDayOfWeek]);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDD"), replaceTerm);
+        
 
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", LocalTime.wDay);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DD"), replaceTerm);
 
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", LocalTime.wDay);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$D"), replaceTerm);
+
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", LocalTime.wHour);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$hh"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", LocalTime.wHour);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$h"), replaceTerm);
 
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", LocalTime.wMinute);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$mm"), replaceTerm);
 
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", LocalTime.wMinute);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$m"), replaceTerm);
+
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", LocalTime.wSecond);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$ss"), replaceTerm);
 
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", LocalTime.wSecond);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$s"), replaceTerm);
+
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%03d"), L"$01", LocalTime.wMilliseconds);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$fff"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", LocalTime.wMilliseconds/10);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$ff"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", LocalTime.wMilliseconds/100);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$f"), replaceTerm);
 
         hr = StringCchCopy(result, cchMax, res.c_str());
     }
