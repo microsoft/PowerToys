@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows;
 
@@ -35,9 +36,7 @@ namespace FancyZonesEditor.Models
         private const string ErrorApplyingLayout = "Error applying layout";
 
         // Non-localizable strings
-        private const string NameStr = "Name";
-        private const string IsSelectedStr = "IsSelected";
-        private const string LCNameStr = "name";
+        private const string NameStr = "name";
         private const string CustomZoneSetsJsonTag = "custom-zone-sets";
         private const string TypeJsonTag = "type";
         private const string UuidJsonTag = "uuid";
@@ -111,7 +110,7 @@ namespace FancyZonesEditor.Models
                 if (_name != value)
                 {
                     _name = value;
-                    FirePropertyChanged(NameStr);
+                    FirePropertyChanged();
                 }
             }
         }
@@ -144,7 +143,7 @@ namespace FancyZonesEditor.Models
                 if (_isSelected != value)
                 {
                     _isSelected = value;
-                    FirePropertyChanged(IsSelectedStr);
+                    FirePropertyChanged();
                 }
             }
         }
@@ -155,7 +154,7 @@ namespace FancyZonesEditor.Models
         public event PropertyChangedEventHandler PropertyChanged;
 
         // FirePropertyChanged -- wrapper that calls INPC.PropertyChanged
-        protected virtual void FirePropertyChanged(string propertyName)
+        protected virtual void FirePropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
@@ -213,7 +212,7 @@ namespace FancyZonesEditor.Models
                 while (customZoneSetsEnumerator.MoveNext())
                 {
                     var current = customZoneSetsEnumerator.Current;
-                    string name = current.GetProperty(LCNameStr).GetString();
+                    string name = current.GetProperty(NameStr).GetString();
                     string type = current.GetProperty(TypeJsonTag).GetString();
                     string uuid = current.GetProperty(UuidJsonTag).GetString();
                     var info = current.GetProperty(InfoJsonTag);
