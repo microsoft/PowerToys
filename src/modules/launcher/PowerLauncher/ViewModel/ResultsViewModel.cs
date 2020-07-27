@@ -213,7 +213,7 @@ namespace PowerLauncher.ViewModel
         }
 
         /// <summary>
-        /// To avoid deadlock, this method should not called from main thread
+        /// Add new results to ResultCollection
         /// </summary>
         public void AddResults(List<Result> newRawResults, string resultId)
         {
