@@ -56,13 +56,18 @@ std::optional<fs::path> extractEmbeddedInstaller()
         return std::nullopt;
     }
     auto installerPath = fs::temp_directory_path() / L"PowerToysBootstrappedInstaller-" PRODUCT_VERSION_STRING L".msi";
-    std::fstream installerFile{ installerPath, std::ios_base::binary | std::ios_base::out | std::ios_base::trunc };
-    if (!installerFile.is_open())
+    return executableRes->saveAsFile(installerPath) ? std::make_optional(std::move(installerPath)) : std::nullopt;
+}
+
+std::optional<fs::path> extractIcon()
+{
+    auto iconRes = RcResource::create(IDR_BIN_ICON, L"BIN");
+    if (!iconRes)
     {
         return std::nullopt;
     }
-    installerFile.write(reinterpret_cast<const char*>(executableRes->_memory.data()), executableRes->_memory.size());
-    return std::move(installerPath);
+    auto icoPath = fs::temp_directory_path() / L"PowerToysBootstrappedInstaller.ico";
+    return iconRes->saveAsFile(icoPath) ? std::make_optional(std::move(icoPath)) : std::nullopt;
 }
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
@@ -86,17 +91,34 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     {
         return 1;
     }
-    notifications::initialize_application_id(APPLICATION_ID);
-    notifications::register_activatable_shortcut(TOAST_TITLE);
+    notifications::set_application_id(APPLICATION_ID);
+
+    fs::path iconPath{ L"C:\\" };
+    if (auto extractedIcon = extractIcon())
+    {
+        iconPath = std::move(*extractedIcon);
+    }
+
+    notifications::register_application_id(TOAST_TITLE, iconPath.c_str());
 
     auto removeShortcut = wil::scope_exit([&] {
-        notifications::remove_activatable_shortcut(TOAST_TITLE);
+        notifications::unregister_application_id();
     });
 
-    // Hack to allow for shortcut to be picked by Windows
-    // TODO(yuyoyuppe): use registry instead of shortcut to avoid this.
-    Sleep(3000);
+    // Check if there's a newer version installed, and launch its installer if so.
+    const VersionHelper myVersion(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
+    if (const auto installedVersion = updating::get_installed_powertoys_version(); installedVersion && *installedVersion >= myVersion)
+    {
+        auto msi_path = updating::get_msi_package_path();
+        if (!msi_path.empty())
+        {
+            MsiSetInternalUI(INSTALLUILEVEL_FULL, nullptr);
+            MsiInstallProductW(msi_path.c_str(), nullptr);
+            return 0;
+        }
+    }
 
+    std::mutex progressLock;
     notifications::progress_bar_params progressParams;
     progressParams.progress = 0.0f;
     progressParams.progress_title = EXTRACTING_INSTALLER;
@@ -106,6 +128,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     auto processToasts = wil::scope_exit([&] {
         run_message_loop(true, 2);
     });
+
+    // Worker thread to periodically increase progress and keep the progress toast from losing focus
+    std::thread{ [&] {
+        for (;; Sleep(3000))
+        {
+            std::scoped_lock lock{ progressLock };
+            if (progressParams.progress == 1.f)
+            {
+                break;
+            }
+            progressParams.progress = min(0.99f, progressParams.progress + 0.001f);
+            notifications::update_progress_bar_toast(TOAST_TAG, progressParams);
+        }
+    } }.detach();
+
+    auto updateProgressBar = [&](const float value, const wchar_t* title) {
+        std::scoped_lock lock{ progressLock };
+        progressParams.progress = value;
+        progressParams.progress_title = title;
+        notifications::update_progress_bar_toast(TOAST_TAG, progressParams);
+    };
 
     const auto installerPath = extractEmbeddedInstaller();
     if (!installerPath)
@@ -118,35 +161,44 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         fs::remove(*installerPath, _);
     });
 
-    progressParams.progress = 0.25f;
-    progressParams.progress_title = UNINSTALLING_PREVIOUS_VERSION;
-    notifications::update_progress_bar_toast(TOAST_TAG, progressParams);
+    updateProgressBar(.25f, UNINSTALLING_PREVIOUS_VERSION);
     const auto package_path = updating::get_msi_package_path();
     if (!package_path.empty() && !updating::uninstall_msi_version(package_path))
     {
         notifications::show_toast(UNINSTALL_PREVIOUS_VERSION_ERROR, TOAST_TITLE);
     }
 
-    progressParams.progress = 0.5f;
-    progressParams.progress_title = INSTALLING_DOTNET;
-    notifications::update_progress_bar_toast(TOAST_TAG, progressParams);
+    updateProgressBar(.5f, INSTALLING_DOTNET);
     if (!updating::dotnet_is_installed() && !updating::install_dotnet())
     {
         notifications::show_toast(DOTNET_INSTALL_ERROR, TOAST_TITLE);
     }
 
-    progressParams.progress = 0.75f;
-    progressParams.progress_title = INSTALLING_NEW_VERSION;
-    notifications::update_progress_bar_toast(TOAST_TAG, progressParams);
+    updateProgressBar(.75f, INSTALLING_NEW_VERSION);
     if (!silent)
     {
         MsiSetInternalUI(INSTALLUILEVEL_FULL, nullptr);
     }
     const bool installationDone = MsiInstallProductW(installerPath->c_str(), nullptr) == ERROR_SUCCESS;
 
-    progressParams.progress = 1.f;
-    progressParams.progress_title = installationDone ? NEW_VERSION_INSTALLATION_DONE : NEW_VERSION_INSTALLATION_ERROR;
-    notifications::update_progress_bar_toast(TOAST_TAG, progressParams);
-    
+    updateProgressBar(1.f, installationDone ? NEW_VERSION_INSTALLATION_DONE : NEW_VERSION_INSTALLATION_ERROR);
+
+    if (!installationDone)
+    {
+        return 1;
+    }
+    auto newPTPath = updating::get_msi_package_installed_path();
+    if (!newPTPath)
+    {
+        return 1;
+    }
+    *newPTPath += L"\\PowerToys.exe";
+    SHELLEXECUTEINFOW sei{ sizeof(sei) };
+    sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NO_CONSOLE };
+    sei.lpFile = newPTPath->c_str();
+    sei.nShow = SW_SHOWNORMAL;
+    sei.lpParameters = UPDATE_REPORT_SUCCESS;
+    ShellExecuteExW(&sei);
+
     return 0;
 }

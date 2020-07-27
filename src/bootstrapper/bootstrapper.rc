@@ -3,6 +3,8 @@
 #include "../common/version.h"
 
 MAINICON ICON "../runner/svgs/icon.ico" 
+IDR_BIN_ICON BIN "../runner/svgs/icon.ico" 
+
 
 STRINGTABLE
 BEGIN

@@ -10,11 +10,12 @@ namespace notifications
 {
     constexpr inline const wchar_t TOAST_ACTIVATED_LAUNCH_ARG[] = L"-ToastActivated";
 
-    void initialize_application_id(const std::wstring_view appID);
+    void set_application_id(const std::wstring_view appID);
     void register_background_toast_handler();
     void run_desktop_app_activator_loop();
-    bool register_activatable_shortcut(const std::wstring_view shorcutName);
-    void remove_activatable_shortcut(const std::wstring_view shorcutName);
+
+    bool register_application_id(const std::wstring_view appName, const std::wstring_view iconPath);
+    void unregister_application_id();
 
     struct snooze_duration
     {

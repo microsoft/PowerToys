@@ -35,6 +35,7 @@ namespace
     constexpr std::wstring_view TASK_NAME = L"PowerToysBackgroundNotificationsHandler";
     constexpr std::wstring_view TASK_ENTRYPOINT = L"PowerToysNotifications.BackgroundHandler";
     constexpr std::wstring_view PACKAGED_APPLICATION_ID = L"PowerToys";
+    constexpr std::wstring_view APPIDS_REGISTRY = LR"(Software\Classes\AppUserModelId\)";
 
     std::wstring APPLICATION_ID;
 }
@@ -121,92 +122,69 @@ void notifications::run_desktop_app_activator_loop()
     CoRevokeClassObject(token);
 }
 
-void notifications::remove_activatable_shortcut(const std::wstring_view shorcutName)
+bool notifications::register_application_id(const std::wstring_view appName, const std::wstring_view iconPath)
 {
-    std::wstring shortcutPath(MAX_PATH, L'\0');
-    const auto length = GetEnvironmentVariableW(L"APPDATA", shortcutPath.data(), static_cast<DWORD>(size(shortcutPath)));
-    if (!length)
-    {
-        return;
-    }
-    shortcutPath.resize(length);
-    shortcutPath += L"\\Microsoft\\Windows\\Start Menu\\Programs\\";
-    shortcutPath += shorcutName.data();
-    shortcutPath += L".lnk";
-
-    std::error_code _;
-    fs::remove(shortcutPath, _);
-}
-
-bool notifications::register_activatable_shortcut(const std::wstring_view shorcutName)
-{
-    std::wstring shortcutPath(MAX_PATH, L'\0');
-    const auto length = GetEnvironmentVariableW(L"APPDATA", shortcutPath.data(), static_cast<DWORD>(size(shortcutPath)));
-    if (!length)
+    std::wstring aumidPath{ APPIDS_REGISTRY };
+    aumidPath += APPLICATION_ID;
+    wil::unique_hkey aumidKey;
+    if (FAILED(RegCreateKeyW(HKEY_CURRENT_USER, aumidPath.c_str(), &aumidKey)))
     {
         return false;
     }
-    shortcutPath.resize(length);
-    shortcutPath += L"\\Microsoft\\Windows\\Start Menu\\Programs\\";
-    shortcutPath += shorcutName.data();
-    shortcutPath += L".lnk";
-    if (fs::is_regular_file(shortcutPath))
-    {
-        // Shortcut already exists
-        return true;
-    }
-
-    const auto exePath = get_module_folderpath(nullptr, false);
-
-    auto shellLink = wil::CoCreateInstanceNoThrow<ShellLink, IShellLinkW>();
-    if (!shellLink)
-    {
-        return false;
-    }
-    if (!SUCCEEDED(shellLink->SetPath(exePath.c_str())))
+    if (FAILED(RegSetKeyValueW(aumidKey.get(),
+                               nullptr,
+                               L"DisplayName",
+                               REG_SZ,
+                               appName.data(),
+                               static_cast<DWORD>((size(appName) + 1) * sizeof(wchar_t)))))
     {
         return false;
     }
 
-    PROPVARIANT appIdProperty;
-    auto propertyStore = shellLink.try_query<IPropertyStore>();
-    if (!propertyStore)
-    {
-        return false;
-    }
-    if (!SUCCEEDED(InitPropVariantFromString(APPLICATION_ID.c_str(), &appIdProperty)))
-    {
-        return false;
-    }
-
-    if (!SUCCEEDED(propertyStore->SetValue(PKEY_AppUserModel_ID, appIdProperty)))
+    if (FAILED(RegSetKeyValueW(aumidKey.get(),
+                               nullptr,
+                               L"IconUri",
+                               REG_SZ,
+                               iconPath.data(),
+                               static_cast<DWORD>((size(iconPath) + 1) * sizeof(wchar_t)))))
     {
         return false;
     }
 
-    PropVariantClear(&appIdProperty);
-
-    if (!SUCCEEDED(propertyStore->Commit()))
+    const std::wstring_view iconColor = L"FFDDDDDD";
+    if (FAILED(RegSetKeyValueW(aumidKey.get(),
+                               nullptr,
+                               L"IconBackgroundColor",
+                               REG_SZ,
+                               iconColor.data(),
+                               static_cast<DWORD>((size(iconColor) + 1) * sizeof(wchar_t)))))
     {
         return false;
     }
-    auto persistFile = shellLink.try_query<IPersistFile>();
-    if (!persistFile)
-    {
-        return false;
-    }
-
-    if (!SUCCEEDED(persistFile->Save(shortcutPath.c_str(), TRUE)))
-    {
-        return false;
-    }
-    // Make the shortcut will be removed once our process is terminated
-    //CreateFileW(shortcutPath.c_str(), 0, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_DELETE_ON_CLOSE, nullptr);
-
     return true;
 }
 
-void notifications::initialize_application_id(const std::wstring_view appID)
+void notifications::unregister_application_id()
+{
+    std::wstring aumidPath{ APPIDS_REGISTRY };
+    aumidPath += APPLICATION_ID;
+    wil::unique_hkey registryRoot;
+    RegOpenKeyW(HKEY_CURRENT_USER, aumidPath.c_str(), &registryRoot);
+    if (!registryRoot)
+    {
+        return;
+    }
+    RegDeleteTreeW(registryRoot.get(), nullptr);
+    registryRoot.reset();
+    RegOpenKeyW(HKEY_CURRENT_USER, APPIDS_REGISTRY.data(), &registryRoot);
+    if (!registryRoot)
+    {
+        return;
+    }
+    RegDeleteKeyW(registryRoot.get(), APPLICATION_ID.data());
+}
+
+void notifications::set_application_id(const std::wstring_view appID)
 {
     APPLICATION_ID = appID;
     SetCurrentProcessExplicitAppUserModelID(APPLICATION_ID.c_str());
