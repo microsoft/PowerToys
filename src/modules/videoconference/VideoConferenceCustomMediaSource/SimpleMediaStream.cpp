@@ -284,7 +284,7 @@ ComPtr<IMFMediaType> SelectBestMediaType(IMFSourceReader* reader)
         else
             LogToFile("Some ohter format");
 
-        if (subtype != MFVideoFormat_YUY2)
+        if (subtype != MFVideoFormat_RGB24)
             continue;
 
         constexpr float minimalAcceptableFramerate = 15.f;

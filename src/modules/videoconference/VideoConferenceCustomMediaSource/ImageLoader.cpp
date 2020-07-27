@@ -56,7 +56,7 @@ using Microsoft::WRL::ComPtr;
 ComPtr<IMFSample> LoadImageAsSample(ComPtr<IStream> imageStream, IMFMediaType* sampleMediaType)
 {
     HRESULT hr = S_OK;
-    LogToFile(__FUNCTION__);
+    LogToFile("CO jest?");
 
     // Get target sample frame dimensions
     UINT targetWidth = 0;
@@ -66,7 +66,7 @@ ComPtr<IMFSample> LoadImageAsSample(ComPtr<IStream> imageStream, IMFMediaType* s
     IWICImagingFactory* pWIC = _GetWIC();
     if (!pWIC)
     {
-        LogToFile("!pWIC");
+        LogToFile("Failed to create IWICImagingFactory");
         return nullptr;
     }
 
@@ -84,7 +84,7 @@ ComPtr<IMFSample> LoadImageAsSample(ComPtr<IStream> imageStream, IMFMediaType* s
     ComPtr<IWICBitmapSource> sourceImageFrame;
     if (targetWidth != imageWidth || targetHeight != imageHeight)
     {
-        LogToFile("targetWidth != imageWidth || targetHeight != imageHeight");
+        LogToFile("Scaling image");
         ComPtr<IWICBitmapScaler> scaler;
         RETURN_NULLPTR_IF_FAILED_WITH_LOGGING(pWIC->CreateBitmapScaler(&scaler));
         RETURN_NULLPTR_IF_FAILED_WITH_LOGGING(scaler->Initialize(decodedFrame.Get(), targetWidth, targetHeight, WICBitmapInterpolationModeHighQualityCubic));
@@ -92,14 +92,14 @@ ComPtr<IMFSample> LoadImageAsSample(ComPtr<IStream> imageStream, IMFMediaType* s
     }
     else
     {
-        LogToFile("!(targetWidth != imageWidth || targetHeight != imageHeight)");
+        LogToFile("No scaling required");
         sourceImageFrame.Attach(decodedFrame.Detach());
     }
 
     // We need to encode the image as jpg, since it's always supported by MT video decoders and could be converted to
     // other formats
     ComPtr<IWICBitmapEncoder> jpgEncoder;
-    RETURN_NULLPTR_IF_FAILED_WITH_LOGGING(pWIC->CreateEncoder(GUID_ContainerFormatJpeg, nullptr, &jpgEncoder));
+    RETURN_NULLPTR_IF_FAILED_WITH_LOGGING(pWIC->CreateEncoder(GUID_ContainerFormatBmp, nullptr, &jpgEncoder));
 
     // Prepare the encoder output memory stream and encoding params
     ComPtr<IStream> jpgStream;
@@ -149,16 +149,18 @@ ComPtr<IMFSample> LoadImageAsSample(ComPtr<IStream> imageStream, IMFMediaType* s
     RETURN_NULLPTR_IF_FAILED_WITH_LOGGING(inputSample->AddBuffer(inputMediaBuffer));
 
     // Now we are ready to convert it to the requested media type, so we need to find a suitable jpg encoder
-    MFT_REGISTER_TYPE_INFO inputFilter = { MFMediaType_Video, MFVideoFormat_MJPG };
+    MFT_REGISTER_TYPE_INFO inputFilter = { MFMediaType_Video, MFVideoFormat_RGB24 };
     MFT_REGISTER_TYPE_INFO outputFilter = { MFMediaType_Video, {} };
     RETURN_NULLPTR_IF_FAILED_WITH_LOGGING(sampleMediaType->GetGUID(MF_MT_SUBTYPE, &outputFilter.guidSubtype));
 
     // But if no conversion is needed, just return the input sample
     if (!memcmp(&inputFilter.guidSubtype, &outputFilter.guidSubtype, sizeof(GUID)))
     {
-        LogToFile("!memcmp(&inputFilter.guidSubtype, &outputFilter.guidSubtype, sizeof(GUID))");
+        LogToFile("No convertion needed for blank frame");
         return inputSample;
     }
+
+    LogToFile("Conversion needed");
 
     IMFActivate** ppVDActivate = nullptr;
     UINT32 count = 0;
@@ -181,7 +183,7 @@ ComPtr<IMFSample> LoadImageAsSample(ComPtr<IStream> imageStream, IMFMediaType* s
     }
     if (!videoDecoderActivated)
     {
-        LogToFile("!videoDecoderActivated");
+        LogToFile("No converter avialable for this format");
         return nullptr;
     }
     auto shutdownVideoDecoder = wil::scope_exit([&videoDecoder] { MFShutdownObject(videoDecoder.Get()); });
