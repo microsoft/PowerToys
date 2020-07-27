@@ -62,6 +62,7 @@
     <Compile Include="Settings\IUserSettings.cs" />
     <Compile Include="Settings\SettingItem.cs" />
     <Compile Include="Settings\UserSettings.cs" />
+    <Compile Include="Telemetry\ColorPickerCancelledEvent.cs" />
     <Compile Include="Telemetry\ColorPickerShowEvent.cs" />
     <Compile Include="Telemetry\ColorPickerZoomOpenedEvent.cs" />
     <Compile Include="Win32Apis.cs" />
