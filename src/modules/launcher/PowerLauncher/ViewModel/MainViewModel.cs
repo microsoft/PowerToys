@@ -448,33 +448,22 @@ namespace PowerLauncher.ViewModel
                     Task.Run(() =>
                     {
                         Thread.Sleep(20);
+                        RemoveOldQueryResults(query);
                         var plugins = PluginManager.ValidPluginsForQuery(query);
 
                         try
                         {
                             currentCancellationToken.ThrowIfCancellationRequested();
-
-                            var resultPluginPair = new List<(List<Result>, PluginMetadata)>();
-                            var parallelOptions = new ParallelOptions { CancellationToken = currentCancellationToken };
-                            Parallel.ForEach(plugins, parallelOptions, plugin =>
+                            foreach(PluginPair plugin in plugins)
                             {
                                 if (!plugin.Metadata.Disabled && !currentCancellationToken.IsCancellationRequested)
                                 {
                                     var results = PluginManager.QueryForPlugin(plugin, query);
-                                    lock (resultPluginPair)
+                                    currentCancellationToken.ThrowIfCancellationRequested();
+                                    lock (_addResultsLock)
                                     {
-                                        resultPluginPair.Add((results, plugin.Metadata));
+                                        UpdateResultView(results, plugin.Metadata, query);
                                     }
-                                }
-                            });
-
-                            lock (_addResultsLock)
-                            {
-                                // handle the exclusiveness of plugin using action keyword
-                                RemoveOldQueryResults(query);
-                                foreach (var p in resultPluginPair)
-                                {
-                                    UpdateResultView(p.Item1, p.Item2, query);
                                 }
                             }
 
