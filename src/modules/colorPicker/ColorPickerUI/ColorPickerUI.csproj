@@ -62,6 +62,8 @@
     <Compile Include="Settings\IUserSettings.cs" />
     <Compile Include="Settings\SettingItem.cs" />
     <Compile Include="Settings\UserSettings.cs" />
+    <Compile Include="Telemetry\ColorPickerShowEvent.cs" />
+    <Compile Include="Telemetry\ColorPickerZoomOpenedEvent.cs" />
     <Compile Include="Win32Apis.cs" />
     <Compile Include="ZoomWindow.xaml.cs">
       <DependentUpon>ZoomWindow.xaml</DependentUpon>
@@ -176,6 +178,10 @@
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj">
       <Project>{4AED67B6-55FD-486F-B917-E543DEE2CB3C}</Project>
       <Name>ManagedCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\Telemetry.csproj">
+      <Project>{5d00d290-4016-4cfe-9e41-1e7c724509ba}</Project>
+      <Name>Telemetry</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\core\Microsoft.PowerToys.Settings.UI.Lib\Microsoft.PowerToys.Settings.UI.Lib.csproj">
       <Project>{b1bcc8c6-46b5-4bfa-8f22-20f32d99ec6a}</Project>

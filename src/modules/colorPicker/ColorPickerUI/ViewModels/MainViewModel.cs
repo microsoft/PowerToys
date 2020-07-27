@@ -10,7 +10,9 @@ using ColorPicker.Keyboard;
 using ColorPicker.Mouse;
 using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
+using ColorPicker.Telemetry;
 using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Telemetry;
 
 namespace ColorPicker.ViewModels
 {
@@ -108,6 +110,7 @@ namespace ColorPicker.ViewModels
             CopyToClipboard(colorRepresentationToCopy);
 
             _appStateHandler.HideColorPicker();
+            PowerToysTelemetry.Log.WriteEvent(new ColorPickerShowEvent());
         }
 
         private static void CopyToClipboard(string colorRepresentationToCopy)

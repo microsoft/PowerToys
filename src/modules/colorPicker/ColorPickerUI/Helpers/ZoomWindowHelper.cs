@@ -1,4 +1,6 @@
-﻿using ColorPicker.ViewModelContracts;
+﻿using ColorPicker.Telemetry;
+using ColorPicker.ViewModelContracts;
+using Microsoft.PowerToys.Telemetry;
 using System;
 using System.ComponentModel.Composition;
 using System.Drawing;
@@ -163,6 +165,7 @@ namespace ColorPicker.Helpers
             {
                 _zoomWindow.Left = _lastLeft + 1;
                 _zoomWindow.Top = _lastTop + 1;
+                PowerToysTelemetry.Log.WriteEvent(new ColorPickerZoomOpenedEvent());
             }
 
             _zoomWindow.DesiredLeft = _lastLeft;
