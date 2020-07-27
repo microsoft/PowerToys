@@ -132,6 +132,17 @@ build:
             - 'PowerToysSetup-*.msi'
           signing_options:
             sign_inline: true  # This does signing a soon as this command completes
+    - !!buildcommand
+      name: 'Build Power Toys Bootstrapper'
+      command: '.pipelines\build-bootstrapper.cmd'
+      artifacts:
+        - from: 'x64/Release'
+          to: 'Build_Installer_Output'
+          include:
+            - 'PowerToysSetup-*.exe'
+          signing_options:
+            sign_inline: true  # This does signing a soon as this command completes
+
 
 #package:
 #  commands:
