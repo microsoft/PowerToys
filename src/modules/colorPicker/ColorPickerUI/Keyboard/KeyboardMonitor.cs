@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Windows.Input;
 using ColorPicker.Helpers;
 using ColorPicker.Settings;
 using ColorPicker.Telemetry;
@@ -59,7 +60,7 @@ namespace ColorPicker.Keyboard
         {
             var virtualCode = e.KeyboardData.VirtualCode;
             // ESC pressed
-            if(virtualCode == 27)
+            if(virtualCode == KeyInterop.VirtualKeyFromKey(Key.Escape))
             {
                 _currentlyPressedKeys.Clear();
                 _appStateHandler.HideColorPicker();
