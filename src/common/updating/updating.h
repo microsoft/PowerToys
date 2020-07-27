@@ -33,5 +33,6 @@ namespace updating
     std::future<void> check_new_version_available();
     std::future<std::wstring> download_update();
 
+    // non-localized
     constexpr inline std::wstring_view INSTALLER_FILENAME_PATTERN = L"powertoyssetup";
 }
