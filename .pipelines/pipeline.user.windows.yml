@@ -137,7 +137,7 @@ build:
       command: '.pipelines\build-bootstrapper.cmd'
       artifacts:
         - from: 'x64/Release'
-          to: 'Build_Bootstrapper_Output'
+          to: 'Build_Installer_Output'
           include:
             - 'PowerToysSetup-*.exe'
           signing_options:
