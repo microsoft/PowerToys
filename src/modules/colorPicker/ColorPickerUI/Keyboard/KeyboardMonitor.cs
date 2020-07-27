@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using ColorPicker.Helpers;
 using ColorPicker.Settings;
+using ColorPicker.Telemetry;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using Microsoft.PowerToys.Telemetry;
 
 namespace ColorPicker.Keyboard
 {
@@ -56,6 +58,14 @@ namespace ColorPicker.Keyboard
         private void Hook_KeyboardPressed(object sender, GlobalKeyboardHookEventArgs e)
         {
             var virtualCode = e.KeyboardData.VirtualCode;
+            // ESC pressed
+            if(virtualCode == 27)
+            {
+                _currentlyPressedKeys.Clear();
+                _appStateHandler.HideColorPicker();
+                PowerToysTelemetry.Log.WriteEvent(new ColorPickerCancelledEvent());
+            }
+
             var name = Helper.GetKeyName((uint)virtualCode);
 
             // we got modifier with additional info such as "Ctrl (left)" - get rid of parenthesess
