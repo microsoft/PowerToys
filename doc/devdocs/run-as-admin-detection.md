@@ -17,7 +17,7 @@ This is when a process runs with "elevated" privileges.  Typically this would be
 
 Basically it runs with additional access to the operating system.  Most things do not need run elevated. A common scenario would be needing to run certain PowerShell commands or edit the registry.
 
-How do i know my application is "elevated"?  If you see this prompt (User Access Control prompt), the application is requesting it:
+How do I know my application is "elevated"?  If you see this prompt (User Access Control prompt), the application is requesting it:
 
 ![alt text][uac]
 
