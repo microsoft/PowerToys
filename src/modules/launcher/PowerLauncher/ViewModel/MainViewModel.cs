@@ -509,6 +509,7 @@ namespace PowerLauncher.ViewModel
                 _lastQuery = _emptyQuery;
                 Results.SelectedItem = null;
                 Results.Visibility = Visibility.Hidden;
+                Results.Clear();
             }
         }
 
