@@ -192,13 +192,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     {
         return 1;
     }
-    *newPTPath += L"\\PowerToys.exe";
-    SHELLEXECUTEINFOW sei{ sizeof(sei) };
-    sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NO_CONSOLE };
-    sei.lpFile = newPTPath->c_str();
-    sei.nShow = SW_SHOWNORMAL;
-    sei.lpParameters = UPDATE_REPORT_SUCCESS;
-    ShellExecuteExW(&sei);
+    // Do not launch PowerToys, if we're launched from the action_runner
+    if (!silent)
+    {
+        *newPTPath += L"\\PowerToys.exe";
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NO_CONSOLE };
+        sei.lpFile = newPTPath->c_str();
+        sei.nShow = SW_SHOWNORMAL;
+        sei.lpParameters = UPDATE_REPORT_SUCCESS;
+        ShellExecuteExW(&sei);
+    }
 
     return 0;
 }
