@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Microsoft Security Response Center (MSRC)
+    url: https://msrc.microsoft.com/create-report
+    about: Report security bugs
+  - name: Dev documentation
+    url: https://github.com/microsoft/PowerToys/tree/master/doc/devdocs
+    about: The documentation for Developers
