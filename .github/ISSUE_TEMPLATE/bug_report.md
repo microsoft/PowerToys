@@ -14,11 +14,9 @@ Instead, send dumps/traces to secure@microsoft.com, referencing this GitHub issu
 
 ## ℹ Computer information
 
-```
-Windows build number: [run "ver" at a command prompt]
-PowerToys version: 
-PowerToy module:
-```
+- Windows build number: [run "winver"]
+- PowerToys version: 
+- PowerToy module:
 
 ## 📝 Provide detailed reproduction steps (if any)
 
@@ -36,4 +34,4 @@ _What is the actual result of the above steps?_
 
 ## 📷 Screenshots
 
-<!-- If applicable, add screenshots to help explain your problem. -->
+_Are there any useful screenshots? WinKey+Shift+S and then just paste them directly into the form_
