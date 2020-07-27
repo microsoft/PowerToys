@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows;
@@ -31,6 +32,7 @@ namespace FancyZonesEditor.Models
         // Localizable strings
         private const string ErrorMessageBoxTitle = "FancyZones Editor Exception Handler";
         private const string ErrorMessageBoxMessage = "Please report the bug to ";
+        private const string ErrorLayoutMalformedData = "Layout '{0}' has malformed data";
         private const string ErrorSerializingDeletedLayouts = "Error serializing deleted layouts";
         private const string ErrorLoadingCustomLayouts = "Error loading custom layouts";
         private const string ErrorApplyingLayout = "Error applying layout";
@@ -216,38 +218,80 @@ namespace FancyZonesEditor.Models
                     string type = current.GetProperty(TypeJsonTag).GetString();
                     string uuid = current.GetProperty(UuidJsonTag).GetString();
                     var info = current.GetProperty(InfoJsonTag);
+
                     if (type.Equals(GridJsonTag))
                     {
+                        bool error = false;
+
                         int rows = info.GetProperty(RowsJsonTag).GetInt32();
                         int columns = info.GetProperty(ColumnsJsonTag).GetInt32();
 
                         List<int> rowsPercentage = new List<int>(rows);
                         JsonElement.ArrayEnumerator rowsPercentageEnumerator = info.GetProperty(RowsPercentageJsonTag).EnumerateArray();
-                        while (rowsPercentageEnumerator.MoveNext())
-                        {
-                            rowsPercentage.Add(rowsPercentageEnumerator.Current.GetInt32());
-                        }
 
                         List<int> columnsPercentage = new List<int>(columns);
                         JsonElement.ArrayEnumerator columnsPercentageEnumerator = info.GetProperty(ColumnsPercentageJsonTag).EnumerateArray();
-                        while (columnsPercentageEnumerator.MoveNext())
+
+                        if (rows <= 0 || columns <= 0 || rowsPercentageEnumerator.Count() != rows || columnsPercentageEnumerator.Count() != columns)
                         {
-                            columnsPercentage.Add(columnsPercentageEnumerator.Current.GetInt32());
+                            error = true;
+                        }
+
+                        while (!error && rowsPercentageEnumerator.MoveNext())
+                        {
+                            int percentage = rowsPercentageEnumerator.Current.GetInt32();
+                            if (percentage <= 0)
+                            {
+                                error = true;
+                                break;
+                            }
+
+                            rowsPercentage.Add(percentage);
+                        }
+
+                        while (!error && columnsPercentageEnumerator.MoveNext())
+                        {
+                            int percentage = columnsPercentageEnumerator.Current.GetInt32();
+                            if (percentage <= 0)
+                            {
+                                error = true;
+                                break;
+                            }
+
+                            columnsPercentage.Add(percentage);
                         }
 
                         int i = 0;
                         JsonElement.ArrayEnumerator cellChildMapRows = info.GetProperty(CellChildMapJsonTag).EnumerateArray();
                         int[,] cellChildMap = new int[rows, columns];
-                        while (cellChildMapRows.MoveNext())
+
+                        if (cellChildMapRows.Count() != rows)
+                        {
+                            error = true;
+                        }
+
+                        while (!error && cellChildMapRows.MoveNext())
                         {
                             int j = 0;
                             JsonElement.ArrayEnumerator cellChildMapRowElems = cellChildMapRows.Current.EnumerateArray();
+                            if (cellChildMapRowElems.Count() != columns)
+                            {
+                                error = true;
+                                break;
+                            }
+
                             while (cellChildMapRowElems.MoveNext())
                             {
                                 cellChildMap[i, j++] = cellChildMapRowElems.Current.GetInt32();
                             }
 
                             i++;
+                        }
+
+                        if (error)
+                        {
+                            ShowExceptionMessageBox(string.Format(ErrorLayoutMalformedData, name));
+                            continue;
                         }
 
                         _customModels.Add(new GridLayoutModel(uuid, name, LayoutType.Custom, rows, columns, rowsPercentage, columnsPercentage, cellChildMap));
@@ -259,13 +303,34 @@ namespace FancyZonesEditor.Models
 
                         JsonElement.ArrayEnumerator zonesEnumerator = info.GetProperty(ZonesJsonTag).EnumerateArray();
                         IList<Int32Rect> zones = new List<Int32Rect>();
-                        while (zonesEnumerator.MoveNext())
+
+                        bool error = false;
+
+                        if (lastWorkAreaWidth <= 0 || lastWorkAreaHeight <= 0)
+                        {
+                            error = true;
+                        }
+
+                        while (!error && zonesEnumerator.MoveNext())
                         {
                             int x = zonesEnumerator.Current.GetProperty(XJsonTag).GetInt32();
                             int y = zonesEnumerator.Current.GetProperty(YJsonTag).GetInt32();
                             int width = zonesEnumerator.Current.GetProperty(WidthJsonTag).GetInt32();
                             int height = zonesEnumerator.Current.GetProperty(HeightJsonTag).GetInt32();
+
+                            if (width <= 0 || height <= 0)
+                            {
+                                error = true;
+                                break;
+                            }
+
                             zones.Add(new Int32Rect(x, y, width, height));
+                        }
+
+                        if (error)
+                        {
+                            ShowExceptionMessageBox(string.Format(ErrorLayoutMalformedData, name));
+                            continue;
                         }
 
                         _customModels.Add(new CanvasLayoutModel(uuid, name, LayoutType.Custom, zones, lastWorkAreaWidth, lastWorkAreaHeight));
