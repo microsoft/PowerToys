@@ -290,6 +290,7 @@ namespace PowerRenameManagerTests
 
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | Lowercase | ExtensionOnly);
         }
+
         TEST_METHOD (VerifyFileAttributesNoPadding)
         {
             rename_pairs renamePairs[] = {
@@ -298,6 +299,7 @@ namespace PowerRenameManagerTests
 
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar$YY-$M-$D-$h-$m-$s-$f", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS);
         }
+
         TEST_METHOD (VerifyFileAttributesPadding)
         {
             rename_pairs renamePairs[] = {
@@ -306,6 +308,7 @@ namespace PowerRenameManagerTests
 
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar$YYYY-$MM-$DD-$hh-$mm-$ss-$fff", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS);
         }
+
         TEST_METHOD (VerifyFileAttributesMonthandDayNames)
         {
             rename_pairs renamePairs[] = {
