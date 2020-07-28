@@ -19,30 +19,9 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
 
             string selectedTheme = generalSettings.Theme.ToLower();
 
-            if (selectedTheme == "dark")
+            if (selectedTheme == "dark" || (selectedTheme == "system" && uiTheme == "#FF000000"))
             {
-                if (isEnabled)
-                {
-                    return (SolidColorBrush)Application.Current.Resources["DarkForegroundBrush"];
-                }
-                else
-                {
-                    return (SolidColorBrush)Application.Current.Resources["DarkForegroundDisabledBrush"];
-                }
-            }
-            else if (selectedTheme == "light")
-            {
-                if (isEnabled)
-                {
-                    return (SolidColorBrush)Application.Current.Resources["LightForegroundBrush"];
-                }
-                else
-                {
-                    return (SolidColorBrush)Application.Current.Resources["LightForegroundDisabledBrush"];
-                }
-            }
-            else if (selectedTheme == "system" && uiTheme == "#FF000000")
-            {
+                // DARK
                 if (isEnabled)
                 {
                     return (SolidColorBrush)Application.Current.Resources["DarkForegroundBrush"];
@@ -54,6 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
             }
             else
             {
+                // LIGHT
                 if (isEnabled)
                 {
                     return (SolidColorBrush)Application.Current.Resources["LightForegroundBrush"];
