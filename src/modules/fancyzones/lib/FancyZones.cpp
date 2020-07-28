@@ -47,10 +47,7 @@ public:
     FancyZones(HINSTANCE hinstance, const winrt::com_ptr<IFancyZonesSettings>& settings) noexcept :
         m_hinstance(hinstance),
         m_settings(settings),
-        m_mouseHook(std::bind(&FancyZones::OnMouseDown, this)),
-        m_shiftHook(std::bind(&FancyZones::OnShiftChangeState, this, std::placeholders::_1)),
-        m_ctrlHook(std::bind(&FancyZones::OnCtrlChangeState, this, std::placeholders::_1)),
-        m_windowMoveHandler(settings, &m_keyState, &m_mouseHook, &m_shiftHook, &m_ctrlHook)
+        m_windowMoveHandler(settings, &m_keyState)
     {
         m_settings->SetCallback(this);
         m_keyState.setCallback([this]() {
@@ -63,21 +60,6 @@ public:
     Run() noexcept;
     IFACEMETHODIMP_(void)
     Destroy() noexcept;
-
-    void OnMouseDown() noexcept
-    {
-        m_keyState.setMouseState(!m_keyState.mouseState());
-    }
-
-    void OnShiftChangeState(bool state) noexcept
-    {
-        m_keyState.setShiftState(state);
-    }
-
-    void OnCtrlChangeState(bool state) noexcept
-    {
-        m_keyState.setCtrlState(state);
-    }
 
     void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen) noexcept
     {
@@ -263,9 +245,6 @@ private:
     HWND m_window{};
     WindowMoveHandler m_windowMoveHandler;
     MonitorWorkAreaHandler m_workAreaHandler;
-    SecondaryMouseButtonsHook m_mouseHook;
-    ShiftKeyHook m_shiftHook;
-    CtrlKeyHook m_ctrlHook;
     KeyState m_keyState;
 
     winrt::com_ptr<IFancyZonesSettings> m_settings{};

@@ -10,7 +10,7 @@ class KeyState;
 class WindowMoveHandler
 {
 public:
-    WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& settings, KeyState* keyState, SecondaryMouseButtonsHook* mouseHook, ShiftKeyHook* shiftHook, CtrlKeyHook* ctrlHook);
+    WindowMoveHandler(const winrt::com_ptr<IFancyZonesSettings>& settings, KeyState* keyState);
     ~WindowMoveHandler();
 
     bool InMoveSize() const noexcept;
