@@ -25,7 +25,7 @@ std::optional<RcResource> RcResource::create(int resource_id, const std::wstring
     {
         return std::nullopt;
     }
-    return RcResource{ { res, resSize } };
+    return RcResource{ res, resSize };
 }
 
 bool RcResource::saveAsFile(const std::filesystem::path destination)
@@ -35,6 +35,6 @@ bool RcResource::saveAsFile(const std::filesystem::path destination)
     {
         return false;
     }
-    installerFile.write(reinterpret_cast<const char*>(_memory.data()), _memory.size());
+    installerFile.write(reinterpret_cast<const char*>(_memory), _size);
     return true;
 }

@@ -18,7 +18,6 @@
 #include <wil/resource.h>
 
 #include <winrt/base.h>
-#include <span>
 #include "resource.h"
 #include <Msi.h>
 
