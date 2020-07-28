@@ -77,6 +77,7 @@ build:
             - 'modules\FileExplorerPreview\powerpreview.dll'
             - 'modules\FileExplorerPreview\PreviewHandlerCommon.dll'
             - 'modules\FileExplorerPreview\SvgPreviewHandler.dll'
+            - 'modules\FileExplorerPreview\SVGThumbnailProvider.dll'
             - 'modules\ImageResizer\ImageResizer.exe'
             - 'modules\ImageResizer\ImageResizerExt.dll'
             - 'modules\KeyboardManager\KeyboardManager.dll'
