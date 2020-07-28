@@ -130,7 +130,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="https://aka.ms/powerToysShortcutGuideSettingImage" />
+                <Image Source="ms-appx:///Assets/Modules/ShortcutGuide.png" />
             </Border>
 
             <StackPanel x:Name="LinksPanel"
