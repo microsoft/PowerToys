@@ -4,14 +4,17 @@
 #include <string>
 #include <future>
 #include <filesystem>
-
 #include <winrt/Windows.Foundation.h>
+
+#include "../VersionHelper.h"
 
 namespace updating
 {
     std::wstring get_msi_package_path();
     bool uninstall_msi_version(const std::wstring& package_path);
     bool offer_msi_uninstallation();
+    std::optional<std::wstring> get_msi_package_installed_path();
+    std::optional<VersionHelper> get_installed_powertoys_version();
 
     std::future<bool> uninstall_previous_msix_version_async();
 
@@ -30,5 +33,6 @@ namespace updating
     std::future<void> check_new_version_available();
     std::future<std::wstring> download_update();
 
-    constexpr inline std::wstring_view installer_filename_pattern = L"powertoyssetup";
+    // non-localized
+    constexpr inline std::wstring_view INSTALLER_FILENAME_PATTERN = L"powertoyssetup";
 }

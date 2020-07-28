@@ -27,6 +27,9 @@
     <ClInclude Include="http_client.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="dotnet_installation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -41,9 +44,11 @@
     <ClCompile Include="http_client.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="dotnet_installation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="..\UnitTests-CommonLib\packages.config" />
   </ItemGroup>
 </Project>

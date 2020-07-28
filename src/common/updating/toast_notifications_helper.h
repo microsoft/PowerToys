@@ -15,6 +15,6 @@ namespace updating
         void show_uninstallation_success();
         void show_uninstallation_error();
 
-        void update_download_progress(float progress);
+        void update_download_progress(const updating::new_version_download_info& info, float progress);
     }
 }

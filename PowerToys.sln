@@ -263,6 +263,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColorPickerUI", "src\module
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "colorpicker", "colorpicker", "{1D78B84B-CA39-406C-98F4-71F7EC266CC0}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bootstrapper", "src\bootstrapper\bootstrapper.vcxproj", "{D194E3AA-F824-4CA9-9A58-034DD6B7D022}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -521,6 +523,8 @@ Global
 		{BA58206B-1493-4C75-BFEA-A85768A1E156}.Debug|x64.Build.0 = Debug|x64
 		{BA58206B-1493-4C75-BFEA-A85768A1E156}.Release|x64.ActiveCfg = Release|x64
 		{BA58206B-1493-4C75-BFEA-A85768A1E156}.Release|x64.Build.0 = Release|x64
+		{D194E3AA-F824-4CA9-9A58-034DD6B7D022}.Debug|x64.ActiveCfg = Debug|x64
+		{D194E3AA-F824-4CA9-9A58-034DD6B7D022}.Release|x64.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

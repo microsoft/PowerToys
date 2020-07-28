@@ -7,6 +7,7 @@
 #include <common/common.h>
 #include <common/updating/updating.h>
 #include <common/updating/http_client.h>
+#include <common/updating/dotnet_installation.h>
 
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Storage.h>
@@ -114,6 +115,7 @@ bool install_new_version_stage_2(std::wstring installer_path, std::wstring_view 
         sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE};
         sei.lpFile = installer_path.c_str();
         sei.nShow = SW_SHOWNORMAL;
+        sei.lpParameters = L"-silent";
 
         success = ShellExecuteExW(&sei) == TRUE;
         // Wait for the install completion
@@ -144,57 +146,6 @@ bool install_new_version_stage_2(std::wstring installer_path, std::wstring_view 
         return ShellExecuteExW(&sei) == TRUE;
     }
     return true;
-}
-
-bool dotnet_is_installed()
-{
-    auto runtimes = exec_and_read_output(LR"(dotnet --list-runtimes)");
-    if (!runtimes)
-    {
-        return false;
-    }
-    const char DESKTOP_DOTNET_RUNTIME_STRING[] = "Microsoft.WindowsDesktop.App 3.1.";
-    return runtimes->find(DESKTOP_DOTNET_RUNTIME_STRING) != std::string::npos;
-}
-
-bool install_dotnet()
-{
-    const wchar_t DOTNET_DESKTOP_DOWNLOAD_LINK[] = L"https://download.visualstudio.microsoft.com/download/pr/d8cf1fe3-21c2-4baf-988f-f0152996135e/0c00b94713ee93e7ad5b4f82e2b86607/windowsdesktop-runtime-3.1.4-win-x64.exe";
-    const wchar_t DOTNET_DESKTOP_FILENAME[] = L"windowsdesktop-runtime-3.1.4-win-x64.exe";
-
-    auto dotnet_download_path = fs::temp_directory_path() / DOTNET_DESKTOP_FILENAME;
-    winrt::Windows::Foundation::Uri download_link{ DOTNET_DESKTOP_DOWNLOAD_LINK };
-
-    const size_t max_attempts = 3;
-    bool download_success = false;
-    for (size_t i = 0; i < max_attempts; ++i)
-    {
-        try
-        {
-            http::HttpClient client;
-            client.download(download_link, dotnet_download_path).wait();
-            download_success = true;
-            break;
-        }
-        catch (...)
-        {
-            // couldn't download
-        }
-    }
-    if (!download_success)
-    {
-        MessageBoxW(nullptr,
-                    GET_RESOURCE_STRING(IDS_DOTNET_CORE_DOWNLOAD_FAILURE).c_str(),
-                    GET_RESOURCE_STRING(IDS_DOTNET_CORE_DOWNLOAD_FAILURE_TITLE).c_str(),
-                    MB_OK | MB_ICONERROR);
-        return false;
-    }
-    SHELLEXECUTEINFOW sei{ sizeof(sei) };
-    sei.fMask = { SEE_MASK_NOASYNC };
-    sei.lpFile = dotnet_download_path.c_str();
-    sei.nShow = SW_SHOWNORMAL;
-    sei.lpParameters = L"/install /passive";
-    return ShellExecuteExW(&sei) == TRUE;
 }
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
@@ -270,11 +221,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
     else if (action == L"-install_dotnet")
     {
-        if (dotnet_is_installed())
+        if (updating::dotnet_is_installed())
         {
             return 0;
         }
-        return !install_dotnet();
+        const bool success = updating::install_dotnet();
+
+        MessageBoxW(nullptr,
+                    GET_RESOURCE_STRING(IDS_DOTNET_CORE_DOWNLOAD_FAILURE).c_str(),
+                    GET_RESOURCE_STRING(IDS_DOTNET_CORE_DOWNLOAD_FAILURE_TITLE).c_str(),
+                    MB_OK | MB_ICONERROR);
+
+        return !success;
     }
     else if (action == L"-uninstall_msi")
     {

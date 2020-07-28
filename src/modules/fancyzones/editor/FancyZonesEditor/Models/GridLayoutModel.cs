@@ -27,7 +27,7 @@ namespace FancyZonesEditor.Models
                 if (_rows != value)
                 {
                     _rows = value;
-                    FirePropertyChanged("Rows");
+                    FirePropertyChanged();
                 }
             }
         }
@@ -47,7 +47,7 @@ namespace FancyZonesEditor.Models
                 if (_cols != value)
                 {
                     _cols = value;
-                    FirePropertyChanged("Columns");
+                    FirePropertyChanged();
                 }
             }
         }
