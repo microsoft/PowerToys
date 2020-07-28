@@ -76,12 +76,20 @@ public:
     void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
+        if (m_settings->GetSettings()->multiMonitorMode)
+        {
+            monitor = NULL;
+        }
         m_windowMoveHandler.MoveSizeStart(window, monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId));
     }
 
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
+        if (m_settings->GetSettings()->multiMonitorMode)
+        {
+            monitor = NULL;
+        }
         m_windowMoveHandler.MoveSizeUpdate(monitor, ptScreen, m_workAreaHandler.GetWorkAreasByDesktopId(m_currentDesktopId));
     }
 
@@ -1152,14 +1160,20 @@ bool FancyZones::ShouldProcessSnapHotkey() noexcept
 {
     if (m_settings->GetSettings()->overrideSnapHotkeys)
     {
-        const HMONITOR monitor = MonitorFromWindow(GetForegroundWindow(), MONITOR_DEFAULTTONULL);
-        if (monitor)
+        HMONITOR monitor;
+        if (m_settings->GetSettings()->multiMonitorMode)
         {
-            auto zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
-            if (zoneWindow->ActiveZoneSet() != nullptr)
-            {
-                return true;
-            }
+            monitor = NULL;
+        }
+        else
+        {
+            monitor = MonitorFromWindow(GetForegroundWindow(), MONITOR_DEFAULTTONULL);
+        }
+        
+        auto zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, monitor);
+        if (zoneWindow->ActiveZoneSet() != nullptr)
+        {
+            return true;
         }
     }
     return false;

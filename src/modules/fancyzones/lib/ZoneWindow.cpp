@@ -37,8 +37,17 @@ namespace ZoneWindowUtils
     std::wstring GenerateUniqueIdAllMonitors(PCWSTR virtualDesktopId)
     {
         std::wstring result{ MULTI_MONITOR_MODE_DEVICE };
-        
-        return std::wstring(MULTI_MONITOR_MODE_DEVICE) + L"_" + virtualDesktopId;
+
+        RECT combinedResolution = GetAllMonitorsCombinedRect<&MONITORINFO::rcMonitor>();
+
+        result += L'_';
+        result += std::to_wstring(combinedResolution.right - combinedResolution.left);
+        result += L'_';
+        result += std::to_wstring(combinedResolution.bottom - combinedResolution.top);
+        result += L'_';
+        result += virtualDesktopId;
+
+        return result;
     }
 }
 
@@ -585,16 +594,31 @@ void ZoneWindow::CalculateZoneSet() noexcept
             zoneSetId,
             activeZoneSet.type,
             m_monitor));
-        MONITORINFO monitorInfo{};
-        monitorInfo.cbSize = sizeof(monitorInfo);
-        if (GetMonitorInfoW(m_monitor, &monitorInfo))
+        
+        RECT workArea;
+        if (m_monitor)
         {
-            bool showSpacing = deviceInfoData->showSpacing;
-            int spacing = showSpacing ? deviceInfoData->spacing : 0;
-            int zoneCount = deviceInfoData->zoneCount;
-            zoneSet->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
-            UpdateActiveZoneSet(zoneSet.get());
+            MONITORINFO monitorInfo{};
+            monitorInfo.cbSize = sizeof(monitorInfo);
+            if (GetMonitorInfoW(m_monitor, &monitorInfo))
+            {
+                workArea = monitorInfo.rcWork;
+            }
+            else
+            {
+                return;
+            }
         }
+        else
+        {
+            workArea = GetAllMonitorsCombinedRect<&MONITORINFO::rcWork>();
+        }
+
+        bool showSpacing = deviceInfoData->showSpacing;
+        int spacing = showSpacing ? deviceInfoData->spacing : 0;
+        int zoneCount = deviceInfoData->zoneCount;
+        zoneSet->CalculateZones(workArea, zoneCount, spacing);
+        UpdateActiveZoneSet(zoneSet.get());        
     }
 }
 
