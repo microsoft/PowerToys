@@ -1059,58 +1059,65 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
     auto window = GetForegroundWindow();
     if (IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
     {
-        const HMONITOR current = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
-        if (current)
+        HMONITOR current;
+
+        if (m_settings->GetSettings()->multiMonitorMode)
         {
-            std::vector<HMONITOR> monitorInfo = GetMonitorsSorted();
-            if (monitorInfo.size() > 1 && m_settings->GetSettings()->moveWindowAcrossMonitors)
+            current = NULL;
+        }
+        else
+        {
+            current = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+        }
+         
+        std::vector<HMONITOR> monitorInfo = GetMonitorsSorted();
+        if (current && monitorInfo.size() > 1 && m_settings->GetSettings()->moveWindowAcrossMonitors)
+        {
+            // Multi monitor environment.
+            auto currMonitorInfo = std::find(std::begin(monitorInfo), std::end(monitorInfo), current);
+            do
             {
-                // Multi monitor environment.
-                auto currMonitorInfo = std::find(std::begin(monitorInfo), std::end(monitorInfo), current);
-                do
+                std::unique_lock writeLock(m_lock);
+                if (m_windowMoveHandler.MoveWindowIntoZoneByDirection(window, vkCode, false /* cycle through zones */, m_workAreaHandler.GetWorkArea(m_currentDesktopId, *currMonitorInfo)))
                 {
-                    std::unique_lock writeLock(m_lock);
-                    if (m_windowMoveHandler.MoveWindowIntoZoneByDirection(window, vkCode, false /* cycle through zones */, m_workAreaHandler.GetWorkArea(m_currentDesktopId, *currMonitorInfo)))
+                    return true;
+                }
+                // We iterated through all zones in current monitor zone layout, move on to next one (or previous depending on direction).
+                if (vkCode == VK_RIGHT)
+                {
+                    currMonitorInfo = std::next(currMonitorInfo);
+                    if (currMonitorInfo == std::end(monitorInfo))
                     {
-                        return true;
+                        currMonitorInfo = std::begin(monitorInfo);
                     }
-                    // We iterated through all zones in current monitor zone layout, move on to next one (or previous depending on direction).
-                    if (vkCode == VK_RIGHT)
+                }
+                else if (vkCode == VK_LEFT)
+                {
+                    if (currMonitorInfo == std::begin(monitorInfo))
                     {
-                        currMonitorInfo = std::next(currMonitorInfo);
-                        if (currMonitorInfo == std::end(monitorInfo))
-                        {
-                            currMonitorInfo = std::begin(monitorInfo);
-                        }
+                        currMonitorInfo = std::end(monitorInfo);
                     }
-                    else if (vkCode == VK_LEFT)
-                    {
-                        if (currMonitorInfo == std::begin(monitorInfo))
-                        {
-                            currMonitorInfo = std::end(monitorInfo);
-                        }
-                        currMonitorInfo = std::prev(currMonitorInfo);
-                    }
-                } while (*currMonitorInfo != current);
+                    currMonitorInfo = std::prev(currMonitorInfo);
+                }
+            } while (*currMonitorInfo != current);
+        }
+        else
+        {
+            // Single monitor environment, or combined multi-monitor environment.
+            std::unique_lock writeLock(m_lock);
+            if (m_settings->GetSettings()->restoreSize)
+            {
+                bool moved = m_windowMoveHandler.MoveWindowIntoZoneByDirection(window, vkCode, false /* cycle through zones */, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
+                if (!moved)
+                {
+                    RestoreWindowOrigin(window);
+                    RestoreWindowSize(window);
+                }
+                return true;
             }
             else
             {
-                // Single monitor environment.
-                std::unique_lock writeLock(m_lock);
-                if (m_settings->GetSettings()->restoreSize)
-                {
-                    bool moved = m_windowMoveHandler.MoveWindowIntoZoneByDirection(window, vkCode, false /* cycle through zones */, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
-                    if (!moved)
-                    {
-                        RestoreWindowOrigin(window);
-                        RestoreWindowSize(window);
-                    }
-                    return true;
-                }
-                else
-                {
-                    return m_windowMoveHandler.MoveWindowIntoZoneByDirection(window, vkCode, true /* cycle through zones */, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
-                }
+                return m_windowMoveHandler.MoveWindowIntoZoneByDirection(window, vkCode, true /* cycle through zones */, m_workAreaHandler.GetWorkArea(m_currentDesktopId, current));
             }
         }
     }
