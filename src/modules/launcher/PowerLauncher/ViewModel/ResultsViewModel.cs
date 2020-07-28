@@ -17,7 +17,6 @@ namespace PowerLauncher.ViewModel
 
         public ResultCollection Results { get; }
 
-        private readonly object _addResultsLock = new object();
         private readonly object _collectionLock = new object();
         private readonly Settings _settings;
         // private int MaxResults => _settings?.MaxResultsToShow ?? 6;
@@ -154,12 +153,12 @@ namespace PowerLauncher.ViewModel
 
         public void RemoveResultsExcept(PluginMetadata metadata)
         {
-            Results.RemoveAll(r => r.Result.PluginID != metadata.ID);
+            Results.RemovePredicate(r => r.Result.PluginID != metadata.ID);
         }
 
         public void RemoveResultsFor(PluginMetadata metadata)
         {
-            Results.RemoveAll(r => r.Result.PluginID == metadata.ID);
+            Results.RemovePredicate(r => r.Result.PluginID == metadata.ID);
         }
 
         public void SelectNextTabItem()
@@ -214,28 +213,12 @@ namespace PowerLauncher.ViewModel
         }
 
         /// <summary>
-        /// To avoid deadlock, this method should not called from main thread
+        /// Add new results to ResultCollection
         /// </summary>
         public void AddResults(List<Result> newRawResults, string resultId)
         {
-            lock (_addResultsLock)
-            {
-                var newResults = NewResults(newRawResults, resultId);
-
-                // update UI in one run, so it can avoid UI flickering
-                Results.Update(newResults);
-
-                if (Results.Count > 0)
-                {
-                    Margin = new Thickness { Top = 8 };
-                    SelectedIndex = 0;
-                }
-                else
-                {
-                    Margin = new Thickness { Top = 0 };
-                    Visibility = Visibility.Collapsed;
-                }
-            }
+            var newResults = NewResults(newRawResults, resultId);
+            Results.Update(newResults);
         }
 
         private List<ResultViewModel> NewResults(List<Result> newRawResults, string resultId)
