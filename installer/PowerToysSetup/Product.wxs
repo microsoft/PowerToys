@@ -635,6 +635,7 @@
         <!-- File to include common library used by preview handlers -->
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\PreviewHandlerCommon.dll" />
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\Telemetry.dll" />
+        <File Id="FileExplorerPreview_PowerToysInterop" Source="$(var.BinX64Dir)modules\FileExplorerPreview\PowerToysInterop.dll" />
         <!-- File to include dll for Svg Preview Handler -->
         <File Source="$(var.BinX64Dir)modules\FileExplorerPreview\SvgPreviewHandler.dll" />
         <!-- File to include dll for Svg Preview Handler -->

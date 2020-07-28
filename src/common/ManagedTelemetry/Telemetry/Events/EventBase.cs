@@ -1,4 +1,5 @@
-﻿using System;
+﻿using interop;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Text;
@@ -12,5 +13,13 @@ namespace Microsoft.PowerToys.Telemetry.Events
     public class EventBase
     {
         public bool UTCReplace_AppSessionGuid => true;
+
+        public string Version
+        {
+            get
+            {
+                return CommonManaged.GetProductVersion();
+            }
+        }
     }
 }
