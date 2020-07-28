@@ -36,6 +36,8 @@ namespace ZoneWindowUtils
 
     std::wstring GenerateUniqueIdAllMonitors(PCWSTR virtualDesktopId)
     {
+        std::wstring result{ MULTI_MONITOR_MODE_DEVICE };
+        
         return std::wstring(MULTI_MONITOR_MODE_DEVICE) + L"_" + virtualDesktopId;
     }
 }
@@ -274,7 +276,7 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
     }
     else
     {
-        workAreaRect = host->CombinedWorkArea();
+        workAreaRect = GetAllMonitorsCombinedRect<&MONITORINFO::rcWork>();
     }
 
     m_uniqueId = uniqueId;

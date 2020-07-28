@@ -191,9 +191,6 @@ public:
         return m_windowMoveHandler.InMoveSize();
     }
 
-    IFACEMETHODIMP_(RECT)
-    CombinedWorkArea() noexcept;
-
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void OnDisplayChange(DisplayChangeType changeType) noexcept;
     void AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept;
@@ -648,7 +645,7 @@ void FancyZones::ToggleEditor() noexcept
 
     if (m_settings->GetSettings()->multiMonitorMode)
     {
-        auto allMonitors = GetAllMonitorWorkAreas();
+        auto allMonitors = GetAllMonitorRects<&MONITORINFOEX::rcWork>();
         for (auto& [monitor, workArea] : allMonitors)
         {
             const auto x = workArea.left;
@@ -753,32 +750,6 @@ FancyZones::MoveWindowsOnActiveZoneSetChange() noexcept
     {
         UpdateWindowsPositions();
     }
-}
-
-IFACEMETHODIMP_(RECT)
-FancyZones::CombinedWorkArea() noexcept
-{
-    auto allMonitors = GetAllMonitorWorkAreas();
-    bool empty = true;
-    RECT result{ 0, 0, 0, 0 };
-
-    for (auto& [monitor, workArea] : allMonitors)
-    {
-        if (empty)
-        {
-            empty = false;
-            result = workArea;
-        }
-        else
-        {
-            result.left = min(result.left, workArea.left);
-            result.top = min(result.top, workArea.top);
-            result.right = max(result.right, workArea.right);
-            result.bottom = max(result.bottom, workArea.bottom);
-        }
-    }
-
-    return result;
 }
 
 LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) noexcept
