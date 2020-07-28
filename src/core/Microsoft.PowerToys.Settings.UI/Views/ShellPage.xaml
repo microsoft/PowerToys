@@ -25,10 +25,9 @@
         IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
         SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
         IsSettingsVisible="False"
-        IsPaneToggleButtonVisible="False" 
-        PaneDisplayMode="Left"
-        Background="{ThemeResource SystemControlBackgroundAltHighBrush}"
-            >
+        OpenPaneLength="296"
+        CompactModeThresholdWidth="0"
+        Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
             <winui:NavigationView.MenuItems>
                 <winui:NavigationViewItem x:Uid="Shell_General" helpers:NavHelper.NavigateTo="views:GeneralPage">
                     <winui:NavigationViewItem.Icon>
@@ -96,7 +95,7 @@
                     <behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
                         <DataTemplate>
                             <!-- TODO: Style clean up-->
-                            <Grid Margin="0, 12, 0, 6">
+                            <Grid Margin="0, -2, 0, 6">
                                 <TextBlock
                                 Text="{Binding}"
                                 FontWeight="Bold"
