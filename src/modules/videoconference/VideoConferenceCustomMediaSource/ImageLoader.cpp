@@ -56,7 +56,7 @@ using Microsoft::WRL::ComPtr;
 ComPtr<IMFSample> LoadImageAsSample(ComPtr<IStream> imageStream, IMFMediaType* sampleMediaType)
 {
     HRESULT hr = S_OK;
-    LogToFile("CO jest?");
+    LogToFile(__FUNCTION__);
 
     // Get target sample frame dimensions
     UINT targetWidth = 0;

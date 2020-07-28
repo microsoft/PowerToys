@@ -376,7 +376,6 @@ void VideoConferenceModule::sendOverlayImageUpdate()
 {
     if (!_settingsUpdateChannel.has_value())
     {
-        LogToFile("!_settingsUpdateChannel.has_value()");
         return;
     }
     _imageOverlayChannel.reset();
@@ -388,9 +387,6 @@ void VideoConferenceModule::sendOverlayImageUpdate()
 
     std::wstring blankImagePath(powertoysDirectory);
     blankImagePath += L"\\modules\\VideoConference\\black.bmp";
-
-    LogToFile(std::string(blankImagePath.begin(), blankImagePath.end()) + " - blankImagePath");
-    LogToFile(std::string(imageOverlayPath.begin(), imageOverlayPath.end()) + " - imageOverlayPath");
 
     _imageOverlayChannel = SerializedSharedMemory::create_readonly(CameraOverlayImageChannel::endpoint(),
                                                                    imageOverlayPath != L"" ? imageOverlayPath : blankImagePath);

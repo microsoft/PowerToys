@@ -159,130 +159,7 @@ ComPtr<IMFMediaType> SelectBestMediaType(IMFSourceReader* reader)
         GUID subtype{};
         nextType->GetGUID(MF_MT_SUBTYPE, &subtype);
 
-        if (subtype == MFVideoFormat_YUY2)
-            LogToFile("MFVideoFormat_YUY2");
-        else if (subtype == MFVideoFormat_RGB32)
-            LogToFile("MFVideoFormat_RGB32");
-        else if (subtype == MFVideoFormat_RGB24)
-            LogToFile("MFVideoFormat_RGB24");
-        else if (subtype == MFVideoFormat_ARGB32)
-            LogToFile("MFVideoFormat_ARGB32");
-        else if (subtype == MFVideoFormat_RGB555)
-            LogToFile("MFVideoFormat_RGB555");
-        else if (subtype == MFVideoFormat_RGB565)
-            LogToFile("MFVideoFormat_RGB565");
-        else if (subtype == MFVideoFormat_RGB8)
-            LogToFile("MFVideoFormat_RGB8");
-        else if (subtype == MFVideoFormat_L8)
-            LogToFile("MFVideoFormat_L8");
-        else if (subtype == MFVideoFormat_L16)
-            LogToFile("MFVideoFormat_L16");
-        else if (subtype == MFVideoFormat_D16)
-            LogToFile("MFVideoFormat_D16");
-        else if (subtype == MFVideoFormat_AYUV)
-            LogToFile("MFVideoFormat_AYUV");
-        else if (subtype == MFVideoFormat_YUY2)
-            LogToFile("MFVideoFormat_YUY2");
-        else if (subtype == MFVideoFormat_YVYU)
-            LogToFile("MFVideoFormat_YVYU");
-        else if (subtype == MFVideoFormat_YVU9)
-            LogToFile("MFVideoFormat_YVU9");
-        else if (subtype == MFVideoFormat_UYVY)
-            LogToFile("MFVideoFormat_UYVY");
-        else if (subtype == MFVideoFormat_NV11)
-            LogToFile("MFVideoFormat_NV11");
-        else if (subtype == MFVideoFormat_NV12)
-            LogToFile("MFVideoFormat_NV12");
-        else if (subtype == MFVideoFormat_YV12)
-            LogToFile("MFVideoFormat_YV12");
-        else if (subtype == MFVideoFormat_I420)
-            LogToFile("MFVideoFormat_I420");
-        else if (subtype == MFVideoFormat_IYUV)
-            LogToFile("MFVideoFormat_IYUV");
-        else if (subtype == MFVideoFormat_Y210)
-            LogToFile("MFVideoFormat_Y210");
-        else if (subtype == MFVideoFormat_Y216)
-            LogToFile("MFVideoFormat_Y216");
-        else if (subtype == MFVideoFormat_Y410)
-            LogToFile("MFVideoFormat_Y410");
-        else if (subtype == MFVideoFormat_Y416)
-            LogToFile("MFVideoFormat_Y416");
-        else if (subtype == MFVideoFormat_Y41P)
-            LogToFile("MFVideoFormat_Y41P");
-        else if (subtype == MFVideoFormat_Y41T)
-            LogToFile("MFVideoFormat_Y41T");
-        else if (subtype == MFVideoFormat_Y42T)
-            LogToFile("MFVideoFormat_Y42T");
-        else if (subtype == MFVideoFormat_P210)
-            LogToFile("MFVideoFormat_P210");
-        else if (subtype == MFVideoFormat_P216)
-            LogToFile("MFVideoFormat_P216");
-        else if (subtype == MFVideoFormat_P010)
-            LogToFile("MFVideoFormat_P010");
-        else if (subtype == MFVideoFormat_P016)
-            LogToFile("MFVideoFormat_P016");
-        else if (subtype == MFVideoFormat_v210)
-            LogToFile("MFVideoFormat_v210");
-        else if (subtype == MFVideoFormat_v216)
-            LogToFile("MFVideoFormat_v216");
-        else if (subtype == MFVideoFormat_v410)
-            LogToFile("MFVideoFormat_v410");
-        else if (subtype == MFVideoFormat_MP43)
-            LogToFile("MFVideoFormat_MP43");
-        else if (subtype == MFVideoFormat_MP4S)
-            LogToFile("MFVideoFormat_MP4S");
-        else if (subtype == MFVideoFormat_M4S2)
-            LogToFile("MFVideoFormat_M4S2");
-        else if (subtype == MFVideoFormat_MP4V)
-            LogToFile("MFVideoFormat_MP4V");
-        else if (subtype == MFVideoFormat_WMV1)
-            LogToFile("MFVideoFormat_WMV1");
-        else if (subtype == MFVideoFormat_WMV2)
-            LogToFile("MFVideoFormat_WMV2");
-        else if (subtype == MFVideoFormat_WMV3)
-            LogToFile("MFVideoFormat_WMV3");
-        else if (subtype == MFVideoFormat_WVC1)
-            LogToFile("MFVideoFormat_WVC1");
-        else if (subtype == MFVideoFormat_MSS1)
-            LogToFile("MFVideoFormat_MSS1");
-        else if (subtype == MFVideoFormat_MSS2)
-            LogToFile("MFVideoFormat_MSS2");
-        else if (subtype == MFVideoFormat_MPG1)
-            LogToFile("MFVideoFormat_MPG1");
-        else if (subtype == MFVideoFormat_DVSL)
-            LogToFile("MFVideoFormat_DVSL");
-        else if (subtype == MFVideoFormat_DVSD)
-            LogToFile("MFVideoFormat_DVSD");
-        else if (subtype == MFVideoFormat_DVHD)
-            LogToFile("MFVideoFormat_DVHD");
-        else if (subtype == MFVideoFormat_DV25)
-            LogToFile("MFVideoFormat_DV25");
-        else if (subtype == MFVideoFormat_DV50)
-            LogToFile("MFVideoFormat_DV50");
-        else if (subtype == MFVideoFormat_DVH1)
-            LogToFile("MFVideoFormat_DVH1");
-        else if (subtype == MFVideoFormat_DVC)
-            LogToFile("MFVideoFormat_DVC");
-        else if (subtype == MFVideoFormat_H264)
-            LogToFile("MFVideoFormat_H264");
-        else if (subtype == MFVideoFormat_H265)
-            LogToFile("MFVideoFormat_H265");
-        else if (subtype == MFVideoFormat_MJPG)
-            LogToFile("MFVideoFormat_MJPG");
-        else if (subtype == MFVideoFormat_420O)
-            LogToFile("MFVideoFormat_420O");
-        else if (subtype == MFVideoFormat_HEVC)
-            LogToFile("MFVideoFormat_HEVC");
-        else if (subtype == MFVideoFormat_HEVC_ES)
-            LogToFile("MFVideoFormat_HEVC_ES");
-        else if (subtype == MFVideoFormat_VP80)
-            LogToFile("MFVideoFormat_VP80");
-        else if (subtype == MFVideoFormat_VP90)
-            LogToFile("MFVideoFormat_VP90");
-        else if (subtype == MFVideoFormat_ORAW)
-            LogToFile("MFVideoFormat_ORAW");
-        else
-            LogToFile("Some ohter format");
+        LogToFile(std::string("Avialable format: ") + toMediaTypeString(subtype));
 
         if (subtype != MFVideoFormat_RGB24)
             continue;
@@ -710,17 +587,15 @@ bool SimpleMediaStream::SyncCurrentSettings()
     bool webcamDisabled = false;
     if (!_settingsUpdateChannel.has_value())
     {
-        LogToFile("!_settingsUpdateChannel.has_value()");
         _settingsUpdateChannel = SerializedSharedMemory::open(CameraSettingsUpdateChannel::endpoint(), sizeof(CameraSettingsUpdateChannel), false);
     }
     if (!_settingsUpdateChannel)
     {
-        LogToFile("!_settingsUpdateChannel");
+        LogToFile("PowerToys not running");
         return webcamDisabled;
     }
 
     _settingsUpdateChannel->access([this, &webcamDisabled](auto settingsMemory) {
-        LogToFile("_settingsUpdateChannel->access lambda");
 
         auto settings = reinterpret_cast<CameraSettingsUpdateChannel*>(settingsMemory.data());
         bool cameraNameUpdated = false;
@@ -767,7 +642,7 @@ bool SimpleMediaStream::SyncCurrentSettings()
                 }
                 if (auto imageSample = LoadImageAsSample(imageStream, _spMediaType.Get()))
                 {
-                    LogToFile("auto imageSample = LoadImageAsSample(imageStream, _spMediaType.Get())");
+                    LogToFile("Successfully loaded image");
                     _overlayImage = imageSample;
                     settings->newOverlayImagePosted = false;
                 }

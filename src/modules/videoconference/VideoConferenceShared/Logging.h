@@ -1,8 +1,10 @@
 #pragma once
 
 #include <string>
+#include <guiddef.h>
 
 void LogToFile(std::string what);
+std::string toMediaTypeString(GUID subtype);
 
 #define RETURN_IF_FAILED_WITH_LOGGING(val)                                               \
     hr = (val);                                                                          \
