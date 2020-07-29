@@ -102,6 +102,7 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="trace.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -114,6 +115,9 @@
     <ProjectReference Include="..\..\..\common\common.vcxproj">
       <Project>{74485049-c722-400f-abe5-86ac52d929b3}</Project>
     </ProjectReference>
+  </ItemGroup>
+   <ItemGroup>
+    <ResourceCompile Include="ColorPicker.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
