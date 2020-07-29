@@ -744,10 +744,13 @@ void FancyZones::ToggleEditor() noexcept
 
 void FancyZones::SettingsChanged() noexcept
 {
-    std::shared_lock readLock(m_lock);
     // Update the hotkey
     UnregisterHotKey(m_window, 1);
     RegisterHotKey(m_window, 1, m_settings->GetSettings()->editorHotkey.get_modifiers(), m_settings->GetSettings()->editorHotkey.get_code());
+
+    // Needed if we toggled multiMonitorMode
+    m_workAreaHandler.Clear();
+    OnDisplayChange(DisplayChangeType::Initialization);
 }
 
 // IZoneWindowHost
