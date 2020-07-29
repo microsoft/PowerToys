@@ -85,8 +85,15 @@ namespace FancyZonesEditor
 
                 foreach (Rect singleMonitor in Settings.UsedWorkAreas)
                 {
-                    keyPositions.Add((int)(isX ? singleMonitor.Left : singleMonitor.Top));
-                    keyPositions.Add((int)(isX ? singleMonitor.Right : singleMonitor.Bottom));
+                    int monitorPositionLow = (int)(isX ? singleMonitor.Left : singleMonitor.Top);
+                    int monitorPositionHigh = (int)(isX ? singleMonitor.Right : singleMonitor.Bottom);
+                    keyPositions.Add(monitorPositionLow);
+                    keyPositions.Add(monitorPositionHigh);
+                    if (mode == ResizeMode.BothEdges)
+                    {
+                        keyPositions.Add(monitorPositionLow - zoneAxisSize);
+                        keyPositions.Add(monitorPositionHigh - zoneAxisSize);
+                    }
                 }
 
                 // Remove duplicates and sort
