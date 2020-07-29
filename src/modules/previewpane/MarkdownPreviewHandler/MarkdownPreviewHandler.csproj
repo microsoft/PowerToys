@@ -119,7 +119,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack">
-      <Version>1.11.23</Version>
+      <Version>1.11.24</Version>
     </PackageReference>
     <PackageReference Include="Markdig.Signed">
       <Version>0.20.0</Version>
