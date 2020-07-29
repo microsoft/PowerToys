@@ -20,8 +20,4 @@
     <Compile Include="..\..\Telemetry\TelemetryBase.cs" Link="TelemetryBase.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\interop\interop.vcxproj" />
-  </ItemGroup>
-
 </Project>
