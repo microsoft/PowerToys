@@ -239,7 +239,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interop", "src\common\inter
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "common-md-flag", "src\common\common-md-flag\common-md-flag.vcxproj", "{985B3F2F-CEED-4C0A-A249-69257E719145}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "interop-tests", "src\common\interop-tests\interop-tests.csproj", "{437AD818-3F1F-4CA5-A79B-25233A157026}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Interop.Tests", "src\common\interop-tests\Microsoft.Interop.Tests.csproj", "{437AD818-3F1F-4CA5-A79B-25233A157026}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Folder", "src\modules\launcher\Plugins\Microsoft.Plugin.Folder\Microsoft.Plugin.Folder.csproj", "{787B8AA6-CA93-4C84-96FE-DF31110AD1C4}"
 EndProject
