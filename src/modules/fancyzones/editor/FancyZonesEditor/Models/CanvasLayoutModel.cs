@@ -14,6 +14,13 @@ namespace FancyZonesEditor.Models
     //  Free form Layout Model, which specifies independent zone rects
     public class CanvasLayoutModel : LayoutModel
     {
+        // Localizable strings
+        private const string ErrorPersistingCanvasLayout = "Error persisting canvas layout";
+
+        // Non-localizable strings
+        private const string PropertyZonesChanged = "Zones";
+        private const string ModelType = "canvas";
+
         public CanvasLayoutModel(string uuid, string name, LayoutType type, IList<Int32Rect> zones, int workAreaWidth, int workAreaHeight)
             : base(uuid, name, type)
         {
@@ -56,7 +63,7 @@ namespace FancyZonesEditor.Models
         public void RemoveZoneAt(int index)
         {
             Zones.RemoveAt(index);
-            FirePropertyChanged("Zones");
+            FirePropertyChanged(PropertyZonesChanged);
         }
 
         // AddZone
@@ -64,7 +71,7 @@ namespace FancyZonesEditor.Models
         public void AddZone(Int32Rect zone)
         {
             Zones.Add(zone);
-            FirePropertyChanged("Zones");
+            FirePropertyChanged(PropertyZonesChanged);
         }
 
         // Clone
@@ -178,7 +185,7 @@ namespace FancyZonesEditor.Models
             {
                 Uuid = "{" + Guid.ToString().ToUpper() + "}",
                 Name = Name,
-                Type = "canvas",
+                Type = ModelType,
                 Info = layoutInfo,
             };
 
@@ -194,7 +201,7 @@ namespace FancyZonesEditor.Models
             }
             catch (Exception ex)
             {
-                ShowExceptionMessageBox("Error persisting canvas layout", ex);
+                ShowExceptionMessageBox(ErrorPersistingCanvasLayout, ex);
             }
         }
     }

@@ -5,9 +5,59 @@
 #include "lib/FancyZonesData.h"
 #include "lib/FancyZonesDataTypes.h"
 
+// Telemetry strings should not be localized.
+#define LoggingProvider "Microsoft.PowerToys"
+
+#define EventEnableFancyZones "FancyZones_EnableFancyZones"
+#define EventKeyDown "FancyZones_OnKeyDown"
+#define EventZoneSettingsChanged "FancyZones_ZoneSettingsChanged"
+#define EventEditorLaunch "FancyZones_EditorLaunch"
+#define EventSettingsChanged "FancyZones_SettingsChanged"
+#define EventDesktopChanged "FancyZones_VirtualDesktopChanged"
+#define EventZoneWindowKeyUp "FancyZones_ZoneWindowKeyUp"
+#define EventMoveSizeEnd "FancyZones_MoveSizeEnd"
+#define EventCycleActiveZoneSet "FancyZones_CycleActiveZoneSet"
+
+#define EventEnabled "Enabled"
+#define PressedKeyCode "Hotkey"
+#define PressedWindowKey "WindowsKey"
+#define PressedControlKey "ControlKey"
+#define MoveSizeAction "InMoveSize"
+#define AppsInHistoryCount "AppsInHistoryCount"
+#define CustomZoneSetCount "CustomZoneSetCount"
+#define NumberOfZonesForEachCustomZoneSet "NumberOfZonesForEachCustomZoneSet"
+#define ActiveZoneSetsCount "ActiveZoneSetsCount"
+#define ActiveZoneSetsList "ActiveZoneSetsList"
+#define EditorLaunchValue "Value"
+#define ShiftDrag "ShiftDrag"
+#define MouseSwitch "MouseSwitch"
+#define MoveWindowsOnDisplayChange "MoveWindowsOnDisplayChange"
+#define FlashZonesOnZoneSetChange "FlashZonesOnZoneSetChange"
+#define MoveWindowsOnZoneSetChange "MoveWindowsOnZoneSetChange"
+#define OverrideSnapHotKeys "OverrideSnapHotKeys"
+#define MoveWindowAcrossMonitors "MoveWindowAcrossMonitors"
+#define MoveWindowsToLastZoneOnAppOpening "MoveWindowsToLastZoneOnAppOpening"
+#define OpenWindowOnActiveMonitor "OpenWindowOnActiveMonitor"
+#define RestoreSize "RestoreSize"
+#define UseCursorPosOnEditorStartup "UseCursorPosOnEditorStartup"
+#define ShowZonesOnAllMonitors "ShowZonesOnAllMonitors"
+#define SpanZonesAcrossMonitors "SpanZonesAcrossMonitors"
+#define MakeDraggedWindowTransparent "MakeDraggedWindowTransparent"
+#define ZoneColor "ZoneColor"
+#define ZoneBorderColor "ZoneBorderColor"
+#define ZoneHighlightColor "ZoneHighlightColor"
+#define ZoneHighlightOpacity "ZoneHighlightOpacity"
+#define Hotkey "Hotkey"
+#define ExcludedAppsCount "ExcludedAppsCount"
+#define KeyboardValue "KeyboardValue"
+#define ActiveSetKey "ActiveSet"
+#define NumberOfZonesKey "NumberOfZones"
+#define NumberOfWindowsKey "NumberOfWindows"
+#define InputModeKey "InputMode"
+
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,
-    "Microsoft.PowerToys",
+    LoggingProvider,
     // {38e8889b-9731-53f5-e901-e8a7c1753074}
     (0x38e8889b, 0x9731, 0x53f5, 0xe9, 0x01, 0xe8, 0xa7, 0xc1, 0x75, 0x30, 0x74),
     TraceLoggingOptionProjectTelemetry());
@@ -51,23 +101,23 @@ void Trace::FancyZones::EnableFancyZones(bool enabled) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "FancyZones_EnableFancyZones",
+        EventEnableFancyZones,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingBoolean(enabled, "Enabled"));
+        TraceLoggingBoolean(enabled, EventEnabled));
 }
 
 void Trace::FancyZones::OnKeyDown(DWORD vkCode, bool win, bool control, bool inMoveSize) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "FancyZones_OnKeyDown",
+        EventKeyDown,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingValue(vkCode, "Hotkey"),
-        TraceLoggingBoolean(win, "WindowsKey"),
-        TraceLoggingBoolean(control, "ControlKey"),
-        TraceLoggingBoolean(inMoveSize, "InMoveSize"));
+        TraceLoggingValue(vkCode, PressedKeyCode),
+        TraceLoggingBoolean(win, PressedWindowKey),
+        TraceLoggingBoolean(control, PressedControlKey),
+        TraceLoggingBoolean(inMoveSize, MoveSizeAction));
 }
 
 void Trace::FancyZones::DataChanged() noexcept
@@ -142,24 +192,24 @@ void Trace::FancyZones::DataChanged() noexcept
 
     TraceLoggingWrite(
         g_hProvider,
-        "FancyZones_ZoneSettingsChanged",
+        EventZoneSettingsChanged,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingInt32(appsHistorySize, "AppsInHistoryCount"),
-        TraceLoggingInt32(static_cast<int>(customZones.size()), "CustomZoneSetCount"),
-        TraceLoggingInt32Array(customZonesArray.get(), static_cast<int>(customZones.size()), "NumberOfZonesForEachCustomZoneSet"),
-        TraceLoggingInt32(static_cast<int>(devices.size()), "ActiveZoneSetsCount"),
-        TraceLoggingWideString(activeZoneSetInfo.c_str(), "ActiveZoneSetsList"));
+        TraceLoggingInt32(appsHistorySize, AppsInHistoryCount),
+        TraceLoggingInt32(static_cast<int>(customZones.size()), CustomZoneSetCount),
+        TraceLoggingInt32Array(customZonesArray.get(), static_cast<int>(customZones.size()), NumberOfZonesForEachCustomZoneSet),
+        TraceLoggingInt32(static_cast<int>(devices.size()), ActiveZoneSetsCount),
+        TraceLoggingWideString(activeZoneSetInfo.c_str(), ActiveZoneSetsList));
 }
 
 void Trace::FancyZones::EditorLaunched(int value) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "FancyZones_EditorLaunch",
+        EventEditorLaunch,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingInt32(value, "Value"));
+        TraceLoggingInt32(value, EditorLaunchValue));
 }
 
 void Trace::SettingsChanged(const Settings& settings) noexcept
@@ -174,36 +224,36 @@ void Trace::SettingsChanged(const Settings& settings) noexcept
     
     TraceLoggingWrite(
         g_hProvider,
-        "FancyZones_SettingsChanged",
+        EventSettingsChanged,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingBoolean(settings.shiftDrag, "ShiftDrag"),
-        TraceLoggingBoolean(settings.mouseSwitch, "MouseSwitch"),
-        TraceLoggingBoolean(settings.displayChange_moveWindows, "MoveWindowsOnDisplayChange"),
-        TraceLoggingBoolean(settings.zoneSetChange_flashZones, "FlashZonesOnZoneSetChange"),
-        TraceLoggingBoolean(settings.zoneSetChange_moveWindows, "MoveWindowsOnZoneSetChange"),
-        TraceLoggingBoolean(settings.overrideSnapHotkeys, "OverrideSnapHotKeys"),
-        TraceLoggingBoolean(settings.moveWindowAcrossMonitors, "MoveWindowAcrossMonitors"),
-        TraceLoggingBoolean(settings.appLastZone_moveWindows, "MoveWindowsToLastZoneOnAppOpening"),
-        TraceLoggingBoolean(settings.openWindowOnActiveMonitor, "OpenWindowOnActiveMonitor"),
-        TraceLoggingBoolean(settings.restoreSize, "RestoreSize"),
-        TraceLoggingBoolean(settings.use_cursorpos_editor_startupscreen, "UseCursorPosOnEditorStartup"),
-        TraceLoggingBoolean(settings.showZonesOnAllMonitors, "ShowZonesOnAllMonitors"),
-        TraceLoggingBoolean(settings.spanZonesAcrossMonitors, "SpanZonesAcrossMonitors"),
-        TraceLoggingBoolean(settings.makeDraggedWindowTransparent, "MakeDraggedWindowTransparent"),
-        TraceLoggingWideString(settings.zoneColor.c_str(), "ZoneColor"),
-        TraceLoggingWideString(settings.zoneBorderColor.c_str(), "ZoneBorderColor"),
-        TraceLoggingWideString(settings.zoneHighlightColor.c_str(), "ZoneHighlightColor"),
-        TraceLoggingInt32(settings.zoneHighlightOpacity, "ZoneHighlightOpacity"),
-        TraceLoggingWideString(hotkeyStr.c_str(), "Hotkey"),
-        TraceLoggingInt32(static_cast<int>(settings.excludedAppsArray.size()), "ExcludedAppsCount"));
+        TraceLoggingBoolean(settings.shiftDrag, ShiftDrag),
+        TraceLoggingBoolean(settings.mouseSwitch, MouseSwitch),
+        TraceLoggingBoolean(settings.displayChange_moveWindows, MoveWindowsOnDisplayChange),
+        TraceLoggingBoolean(settings.zoneSetChange_flashZones, FlashZonesOnZoneSetChange),
+        TraceLoggingBoolean(settings.zoneSetChange_moveWindows, MoveWindowsOnZoneSetChange),
+        TraceLoggingBoolean(settings.overrideSnapHotkeys, OverrideSnapHotKeys),
+        TraceLoggingBoolean(settings.moveWindowAcrossMonitors, MoveWindowAcrossMonitors),
+        TraceLoggingBoolean(settings.appLastZone_moveWindows, MoveWindowsToLastZoneOnAppOpening),
+        TraceLoggingBoolean(settings.openWindowOnActiveMonitor, OpenWindowOnActiveMonitor),
+        TraceLoggingBoolean(settings.restoreSize, RestoreSize),
+        TraceLoggingBoolean(settings.use_cursorpos_editor_startupscreen, UseCursorPosOnEditorStartup),
+        TraceLoggingBoolean(settings.showZonesOnAllMonitors, ShowZonesOnAllMonitors),
+        TraceLoggingBoolean(settings.spanZonesAcrossMonitors, SpanZonesAcrossMonitors),
+        TraceLoggingBoolean(settings.makeDraggedWindowTransparent, MakeDraggedWindowTransparent),
+        TraceLoggingWideString(settings.zoneColor.c_str(), ZoneColor),
+        TraceLoggingWideString(settings.zoneBorderColor.c_str(), ZoneBorderColor),
+        TraceLoggingWideString(settings.zoneHighlightColor.c_str(), ZoneHighlightColor),
+        TraceLoggingInt32(settings.zoneHighlightOpacity, ZoneHighlightOpacity),
+        TraceLoggingWideString(hotkeyStr.c_str(), Hotkey),
+        TraceLoggingInt32(static_cast<int>(settings.excludedAppsArray.size()), ExcludedAppsCount));
 }
 
 void Trace::VirtualDesktopChanged() noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "FancyZones_VirtualDesktopChanged",
+        EventDesktopChanged,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
@@ -212,10 +262,10 @@ void Trace::ZoneWindow::KeyUp(WPARAM wParam) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "FancyZones_ZoneWindowKeyUp",
+        EventZoneWindowKeyUp,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingValue(wParam, "KeyboardValue"));
+        TraceLoggingValue(wParam, KeyboardValue));
 }
 
 void Trace::ZoneWindow::MoveSizeEnd(_In_opt_ winrt::com_ptr<IZoneSet> activeSet) noexcept
@@ -223,12 +273,12 @@ void Trace::ZoneWindow::MoveSizeEnd(_In_opt_ winrt::com_ptr<IZoneSet> activeSet)
     auto const zoneInfo = GetZoneSetInfo(activeSet);
     TraceLoggingWrite(
         g_hProvider,
-        "FancyZones_MoveSizeEnd",
+        EventMoveSizeEnd,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingValue(reinterpret_cast<void*>(activeSet.get()), "ActiveSet"),
-        TraceLoggingValue(zoneInfo.NumberOfZones, "NumberOfZones"),
-        TraceLoggingValue(zoneInfo.NumberOfWindows, "NumberOfWindows"));
+        TraceLoggingValue(reinterpret_cast<void*>(activeSet.get()), ActiveSetKey),
+        TraceLoggingValue(zoneInfo.NumberOfZones, NumberOfZonesKey),
+        TraceLoggingValue(zoneInfo.NumberOfWindows, NumberOfWindowsKey));
 }
 
 void Trace::ZoneWindow::CycleActiveZoneSet(_In_opt_ winrt::com_ptr<IZoneSet> activeSet, InputMode mode) noexcept
@@ -236,11 +286,11 @@ void Trace::ZoneWindow::CycleActiveZoneSet(_In_opt_ winrt::com_ptr<IZoneSet> act
     auto const zoneInfo = GetZoneSetInfo(activeSet);
     TraceLoggingWrite(
         g_hProvider,
-        "FancyZones_CycleActiveZoneSet",
+        EventCycleActiveZoneSet,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingValue(reinterpret_cast<void*>(activeSet.get()), "ActiveSet"),
-        TraceLoggingValue(zoneInfo.NumberOfZones, "NumberOfZones"),
-        TraceLoggingValue(zoneInfo.NumberOfWindows, "NumberOfWindows"),
-        TraceLoggingValue(static_cast<int>(mode), "InputMode"));
+        TraceLoggingValue(reinterpret_cast<void*>(activeSet.get()), ActiveSetKey),
+        TraceLoggingValue(zoneInfo.NumberOfZones, NumberOfZonesKey),
+        TraceLoggingValue(zoneInfo.NumberOfWindows, NumberOfWindowsKey),
+        TraceLoggingValue(static_cast<int>(mode), InputModeKey));
 }
