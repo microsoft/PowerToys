@@ -4,7 +4,7 @@
 
 Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. Inspired by the [Windows 95 era PowerToys project](https://en.wikipedia.org/wiki/Microsoft_PowerToys), this reboot provides power users with ways to squeeze more efficiency out of the Windows 10 shell and customize it for individual workflows.  A great overview of the Windows 95 PowerToys can be found [here](https://socket3.wordpress.com/2016/10/22/using-windows-95-powertoys/).
 
-[What's Happening](#whats-happening)   |   [Downloading & Release notes][github-release-link]   |   [Contributing to PowerToys](#contributing) | [Known issues](#known-issues)
+[What's Happening](#whats-happening)   |   [Downloading & Release notes][github-release-link]   |   [Contributing to PowerToys](#contributing)
 
 ## Build status
 
@@ -14,7 +14,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 
 ### Color Picker
 
-[<img align="left" src="./doc/images/overview/ColorPicker_small.png" />](https://aka.ms/PowerToysOverview_ColorPicker) [ColorPicker](https://aka.ms/PowerToysOverview_PowerRename) is a simple and quick system-wide color picker. Color Picker allows to pick colors from any currently running application and automically copies the HEX or RGB values to your clipboard. This code is based on [Martin Chrzan's Color Picker](https://github.com/martinchrzan/ColorPicker).
+[<img align="left" src="./doc/images/overview/ColorPicker_small.png" />](https://aka.ms/PowerToysOverview_ColorPicker) [ColorPicker](https://aka.ms/PowerToysOverview_PowerRename) is a simple and quick system-wide color picker with <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd>. Color Picker allows to pick colors from any currently running application and automically copies the HEX or RGB values to your clipboard. This code is based on [Martin Chrzan's Color Picker](https://github.com/martinchrzan/ColorPicker).
 <br/>
 <br/>
 <br/>
@@ -60,7 +60,7 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 
 ### PowerToys Run
 
-[<img align="left" src="./doc/images/overview/PowerLauncher_small.png" />](https://aka.ms/PowerToysOverview_PowerToysRun) [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) is a new toy in PowerToys that can help you search and launch your app instantly with a simple alt-space and start typing! It is open source and modular for additional plugins.  Window Walker is now inside too! This PowerToy requires Windows 10 1903 (build 18362) or later.
+[<img align="left" src="./doc/images/overview/PowerLauncher_small.png" />](https://aka.ms/PowerToysOverview_PowerToysRun) [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) is a new toy in PowerToys that can help you search and launch your app instantly with a simple <kbd>Alt</kbd>+<kbd>Space</kbd> and start typing! It is open source and modular for additional plugins.  Window Walker is now inside too! This PowerToy requires Windows 10 1903 (build 18362) or later.
 <br/>
 <br/>
 <br/>
@@ -85,9 +85,9 @@ PowerToys will now enable two types of files to be previewed: Markdown (.md) & S
 
 - We adjusted how upgrading works in 0.20.  In 0.19 we accounted for this upcoming change but if you are going from 0.18 to 0.20, please directly use the installer file.
 
-### Via GitHub with MSI [Recommended]
+### Via GitHub with EXE [Recommended]
 
-Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.20.0-x64.msi` to download the PowerToys installer.
+Install from the [Microsoft PowerToys GitHub releases page][github-release-link]. Click on `Assets` to show the files available in the release and then click on `PowerToysSetup-0.20.0-x64.exe` to download the PowerToys installer.
 
 This is our preferred method.
 
@@ -137,28 +137,28 @@ In addition, we'd like to thank everyone who filed a bug, gave feedback or made 
 Here are a few highlights from July
 
 - We shipped [v0.20][github-release-link]!
-- [Martin Chrzan's Color Picker](https://github.com/martinchrzan/) was added in!  With a quick `WinKey+Shift+C`, get the color from your screen
+- [Martin Chrzan's Color Picker](https://github.com/martinchrzan/) was added in!  With a quick <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd>, get the color from your screen
 - File Explorer - Can now render SVG icons thanks to Chris Davis
-- FancyZones - you can now snap to any number of zones in FancyZones holding `Shift+Ctrl` while dragging a window
+- FancyZones - you can now snap to any number of zones in FancyZones holding <kbd>Shift</kbd>+<kbd>Ctrl</kbd> while dragging a window
 - PT Run - keyboard interaction improvements
-- PT Run - new apps are now
-- PT Run - Lots of bug perf fixes
+- PT Run - freshly installed apps are now being detected
+- PT Run - Lots of perf and bug fixes
 - Keyboard manager - app level shortcuts 
-   - Example: For Outlook, Remap `Ctrl+F` to `F4` and now `Ctrl+F` will put up the find window :)
+   - Example: For Outlook, Remap <kbd>Ctrl</kbd>+<kbd>F</kbd> to <kbd>F4</kbd> and now <kbd>Ctrl</kbd>+<kbd>F</kbd> will put up the find window :)
 - Keyboard manager - Now can remap key to shortcut and shortcut to key.
 - Settings - Now has improved OOBE based on the work the Microsoft Garage Interns did during their hackathon
 - PowerRename improvements
 
 For [0.21](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+project%3Amicrosoft%2FPowerToys%2F8), we are proactively working on:
 
-- Stability / Quality
+- Stability
+- Quality
 - Localization
-- SVG file icons for File Explorer
 - FancyZone improvements
 
-### Version 1.0 plan
+### PowerToys 2020 plan
 
-Our plan for all the [goals and utilities for v1.0 detailed over here in the wiki][v1].
+Our plan for all the [goals and utilities for 2020 detailed over here in the wiki][v1].
 
 ## Developer Guidance
 
