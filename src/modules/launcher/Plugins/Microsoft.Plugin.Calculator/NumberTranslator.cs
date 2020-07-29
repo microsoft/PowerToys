@@ -81,9 +81,8 @@ namespace Microsoft.Plugin.Calculator
             string[] tokens = splitRegex.Split(input);
             foreach (string token in tokens)
             {
-                decimal number;
                 outputBuilder.Append(
-                    decimal.TryParse(token, NumberStyles.Number, cultureFrom, out number)
+                    decimal.TryParse(token, NumberStyles.Number, cultureFrom, out decimal number)
                     ? number.ToString(cultureTo)
                     : token);
             }
@@ -91,14 +90,16 @@ namespace Microsoft.Plugin.Calculator
             return outputBuilder.ToString();
         }
 
-        private Regex GetSplitRegex(CultureInfo culture)
+        private static Regex GetSplitRegex(CultureInfo culture)
         {
             var splitPattern = $"((?:\\d|{Regex.Escape(culture.NumberFormat.NumberDecimalSeparator)}";
+            
             if (!string.IsNullOrEmpty(culture.NumberFormat.NumberGroupSeparator))
             {
                 splitPattern += $"|{Regex.Escape(culture.NumberFormat.NumberGroupSeparator)}";
             }
             splitPattern += ")+)";
+
             return new Regex(splitPattern);
         }
     }

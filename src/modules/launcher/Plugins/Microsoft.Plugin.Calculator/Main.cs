@@ -101,7 +101,7 @@ namespace Microsoft.Plugin.Calculator
             return new List<Result>();
         }
 
-        private bool IsBracketComplete(string query)
+        private static bool IsBracketComplete(string query)
         {
             var matchs = RegBrackets.Matches(query);
             var leftBracketCount = 0;
@@ -122,12 +122,7 @@ namespace Microsoft.Plugin.Calculator
 
         public void Init(PluginInitContext context)
         {
-            if(context == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(context));
-            }
-
-            Context = context;
+            Context = context ?? throw new ArgumentNullException(paramName: nameof(context));
             Context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(Context.API.GetCurrentTheme());
         }
