@@ -156,9 +156,9 @@ For [0.21](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen+is%3Aissue+
 - Localization
 - FancyZone improvements
 
-### PowerToys 2020 plan
+### PowerToys 2020 raodmap
 
-Our plan for all the [goals and utilities for 2020 detailed over here in the wiki][v1].
+Our roadmap for all the [goals and utilities for 2020 detailed over here in the wiki][v1].
 
 ## Developer Guidance
 
