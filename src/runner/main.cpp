@@ -16,6 +16,7 @@
 #include <common/updating/updating.h>
 #include <common/RestartManagement.h>
 #include <common/appMutex.h>
+#include <common/processApi.h>
 
 #include "update_state.h"
 #include "update_utils.h"
@@ -252,10 +253,36 @@ void RequestExplorerRestart()
     if (MessageBoxW(nullptr,
                     localized_strings::PT_UPDATE_MESSAGE_BOX_TEXT,
                     L"PowerToys",
-                    MB_ICONINFORMATION | MB_YESNO | MB_DEFBUTTON1) == IDYES)
+                    MB_ICONINFORMATION | MB_YESNO | MB_DEFBUTTON1) != IDYES)
     {
-        RestartProcess(EXPLORER_PROCESS_NAME);
+        return;
     }
+    std::thread{ [] {
+        RestartProcess(EXPLORER_PROCESS_NAME);
+
+        constexpr size_t max_checks = 10;
+        for (size_t i = 0; i < max_checks; ++i)
+        {
+            Sleep(1000);
+            const bool explorerStarted = !getProcessHandlesByName(L"explorer.exe", {}).empty();
+            if (explorerStarted)
+            {
+                return;
+            }
+        }
+
+        // Timeout - restart explorer manually
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_NOASYNC | SEE_MASK_FLAG_NO_UI | SEE_MASK_NO_CONSOLE | SEE_MASK_NOCLOSEPROCESS };
+        sei.lpFile = L"cmd";
+        sei.lpParameters = L"/c explorer.exe";
+        sei.nShow = SW_HIDE;
+        ShellExecuteExW(&sei);
+        // Let cmd launch explorer, then terminate it
+        Sleep(1000);
+        TerminateProcess(sei.hProcess, 0);
+        CloseHandle(sei.hProcess);
+    } }.detach();
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
