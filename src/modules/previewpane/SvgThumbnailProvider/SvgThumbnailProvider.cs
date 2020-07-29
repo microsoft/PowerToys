@@ -2,23 +2,20 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
+using System.Windows.Forms;
+using Common.ComInterlop;
+using Common.Utilities;
+using PreviewHandlerCommon;
+
 namespace SvgThumbnailProvider
 {
-    using System;
-    using System.Drawing;
-    using System.Drawing.Drawing2D;
-    using System.Drawing.Imaging;
-    using System.IO;
-    using System.Linq;
-    using System.Runtime.InteropServices;
-    using System.Runtime.InteropServices.ComTypes;
-    using System.Windows.Forms;
-    using Common;
-    using Common.ComInterlop;
-    using Common.Utilities;
-    using Microsoft.PowerToys.Telemetry;
-    using PreviewHandlerCommon;
-
     /// <summary>
     /// SVG Thumbnail Provider.
     /// </summary>
