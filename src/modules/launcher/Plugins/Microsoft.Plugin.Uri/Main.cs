@@ -5,30 +5,35 @@ using Microsoft.Plugin.Uri.UriHelper;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
-using Control = System.Windows.Controls.Control;
 
 namespace Microsoft.Plugin.Uri
 {
-    public class Main : IPlugin, ISettingProvider, IPluginI18n, IContextMenu, ISavable
+    public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable, IDisposable
     {
-        private PluginJsonStorage<Settings> _storage;
-        private Settings _settings;
+        private readonly ExtendedUriParser _uriParser;
+        private readonly UriResolver _uriResolver;
         private PluginInitContext _context;
-        private ExtendedUriParser _uriParser;
-        private UriResolver _uriResolver;
+        private bool _disposed;
+        private readonly PluginJsonStorage<UriSettings> _storage;
+        private UriSettings _uriSettings;
 
         public Main()
         {
-            _storage = new PluginJsonStorage<Settings>();
-            _settings = _storage.Load();
+            _storage = new PluginJsonStorage<UriSettings>();
+            _uriSettings = _storage.Load();
             _uriParser = new ExtendedUriParser();
             _uriResolver = new UriResolver();
         }
 
-        public void Save()
+        public string IconPath { get; set; }
+
+        public PluginInitContext Context { get; protected set; }
+
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
-            _storage.Save();
+            return new List<ContextMenuResult>(0);
         }
+
 
         public List<Result> Query(Query query)
         {
@@ -39,7 +44,7 @@ namespace Microsoft.Plugin.Uri
             {
                 var uriResultString = uriResult.ToString();
 
-                results.Add(new Result()
+                results.Add(new Result
                 {
                     Title = uriResultString,
                     IcoPath = IconPath,
@@ -59,12 +64,34 @@ namespace Microsoft.Plugin.Uri
 
         public void Init(PluginInitContext context)
         {
-            // initialize the context of the plugin
-            _context = context;
-            _storage = new PluginJsonStorage<Settings>();
-            _settings = _storage.Load();
+            Context = context;
+            Context.API.ThemeChanged += OnThemeChanged;
+            UpdateIconPath(Context.API.GetCurrentTheme());
+        }
 
-            UpdateIconPath(_context.API.GetCurrentTheme());
+
+        public string GetTranslatedPluginTitle()
+        {
+            return "Url Handler";
+        }
+
+        public string GetTranslatedPluginDescription()
+        {
+            return "Handles urls";
+        }
+
+        public void Save()
+        {
+            _storage.Save();
+        }
+
+        public void UpdateSettings(PowerLauncherSettings settings)
+        {
+        }
+
+        private void OnThemeChanged(Theme oldtheme, Theme newTheme)
+        {
+            UpdateIconPath(newTheme);
         }
 
         private void UpdateIconPath(Theme theme)
@@ -79,30 +106,19 @@ namespace Microsoft.Plugin.Uri
             }
         }
 
-        public string IconPath { get; set; }
-
-        public Control CreateSettingPanel()
+        public void Dispose()
         {
-            throw new NotImplementedException();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        public void UpdateSettings(PowerLauncherSettings settings)
+        protected virtual void Dispose(bool disposing)
         {
-        }
-
-        public string GetTranslatedPluginTitle()
-        {
-            return "Url Handler";
-        }
-
-        public string GetTranslatedPluginDescription()
-        {
-            return "Handles urls";
-        }
-
-        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
-        {
-            return new List<ContextMenuResult>(0);
+            if (!_disposed && disposing)
+            {
+                _context.API.ThemeChanged -= OnThemeChanged;
+                _disposed = true;
+            }
         }
     }
 }

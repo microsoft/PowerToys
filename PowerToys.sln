@@ -265,6 +265,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "colorpicker", "colorpicker"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bootstrapper", "src\bootstrapper\bootstrapper.vcxproj", "{D194E3AA-F824-4CA9-9A58-034DD6B7D022}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Uri", "src\modules\launcher\Plugins\Microsoft.Plugin.Uri\Microsoft.Plugin.Uri.csproj", "{03276A39-D4E9-417C-8FFD-200B0EE5E871}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Uri.UnitTests", "src\modules\launcher\Plugins\Microsoft.Plugin.Uri.UnitTests\Microsoft.Plugin.Uri.UnitTests.csproj", "{E929929E-0204-4AC5-B3B2-B5481A0116C7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -525,6 +529,14 @@ Global
 		{BA58206B-1493-4C75-BFEA-A85768A1E156}.Release|x64.Build.0 = Release|x64
 		{D194E3AA-F824-4CA9-9A58-034DD6B7D022}.Debug|x64.ActiveCfg = Debug|x64
 		{D194E3AA-F824-4CA9-9A58-034DD6B7D022}.Release|x64.ActiveCfg = Release|x64
+		{03276A39-D4E9-417C-8FFD-200B0EE5E871}.Debug|x64.ActiveCfg = Debug|x64
+		{03276A39-D4E9-417C-8FFD-200B0EE5E871}.Debug|x64.Build.0 = Debug|x64
+		{03276A39-D4E9-417C-8FFD-200B0EE5E871}.Release|x64.ActiveCfg = Release|x64
+		{03276A39-D4E9-417C-8FFD-200B0EE5E871}.Release|x64.Build.0 = Release|x64
+		{E929929E-0204-4AC5-B3B2-B5481A0116C7}.Debug|x64.ActiveCfg = Debug|x64
+		{E929929E-0204-4AC5-B3B2-B5481A0116C7}.Debug|x64.Build.0 = Debug|x64
+		{E929929E-0204-4AC5-B3B2-B5481A0116C7}.Release|x64.ActiveCfg = Release|x64
+		{E929929E-0204-4AC5-B3B2-B5481A0116C7}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -599,6 +611,8 @@ Global
 		{655C9AF2-18D3-4DA6-80E4-85504A7722BA} = {1D78B84B-CA39-406C-98F4-71F7EC266CC0}
 		{BA58206B-1493-4C75-BFEA-A85768A1E156} = {1D78B84B-CA39-406C-98F4-71F7EC266CC0}
 		{1D78B84B-CA39-406C-98F4-71F7EC266CC0} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
+		{03276A39-D4E9-417C-8FFD-200B0EE5E871} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
+		{E929929E-0204-4AC5-B3B2-B5481A0116C7} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

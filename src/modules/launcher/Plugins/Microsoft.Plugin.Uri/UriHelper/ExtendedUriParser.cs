@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Plugin.Uri.Interface;
 
 namespace Microsoft.Plugin.Uri.UriHelper
