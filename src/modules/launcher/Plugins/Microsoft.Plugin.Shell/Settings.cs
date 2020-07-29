@@ -5,7 +5,7 @@ namespace Microsoft.Plugin.Shell
     public class Settings
     {
         public Shell Shell { get; set; } = Shell.RunCommand;
-        
+
         // not overriding Win+R 
         // crutkas we need to earn the right for Win+R override
         public bool ReplaceWinR { get; set; } = false;

@@ -14,7 +14,8 @@ namespace ColorPicker.Behaviors
         {
             var sender = ((ResizeBehavior)d).AssociatedObject;
             var move = new DoubleAnimation(sender.Width, (double)e.NewValue, new Duration(TimeSpan.FromMilliseconds(150)), FillBehavior.Stop);
-            move.Completed += (s, e1) => {
+            move.Completed += (s, e1) =>
+            {
                 sender.BeginAnimation(FrameworkElement.WidthProperty, null); sender.Width = (double)e.NewValue;
             };
             move.EasingFunction = new QuadraticEase() { EasingMode = EasingMode.EaseOut };

@@ -7,7 +7,6 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-
 namespace RemappingLogicTests
 {
     TEST_CLASS (AppSpecificShortcutRemappingTests)
@@ -40,7 +39,7 @@ namespace RemappingLogicTests
             dest.SetKey(VK_MENU);
             dest.SetKey(0x56);
             testState.AddAppSpecificShortcut(testApp1, src, dest);
-            
+
             // Set the testApp as the foreground process
             mockedInputHandler.SetForegroundProcess(testApp1);
 
@@ -86,7 +85,7 @@ namespace RemappingLogicTests
             // Send Ctrl+A keydown
             mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
-            // Ctrl and A key states should be unchanged, Alt and V key states should be true
+            // Ctrl and A key states should be true, Alt and V key states should be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), true);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), false);
@@ -172,12 +171,146 @@ namespace RemappingLogicTests
             // Release A then Ctrl
             mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
 
-
             // Ctrl, A, Alt and Tab should all be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_MENU), false);
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_TAB), false);
+        }
+
+        // Test if the app specific shortcut to key remap takes place when the target app is in foreground
+        TEST_METHOD (AppSpecificShortcutToSingleKey_ShouldGetRemapped_WhenAppIsInForeground)
+        {
+            // Remap Ctrl+A to V
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey(0x41);
+            testState.AddAppSpecificShortcut(testApp1, src, 0x56);
+
+            // Set the testApp as the foreground process
+            mockedInputHandler.SetForegroundProcess(testApp1);
+
+            const int nInputs = 2;
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = 0x41;
+
+            // Send Ctrl+A keydown
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // Ctrl and A key states should be unchanged, V key states should be true
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), true);
+        }
+
+        // Test if the app specific shortcut to key remap takes place when the target app is not in foreground
+        TEST_METHOD (AppSpecificShortcutToSingleKey_ShouldNotGetRemapped_WhenAppIsNotInForeground)
+        {
+            // Remap Ctrl+A to V
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey(0x41);
+            testState.AddAppSpecificShortcut(testApp1, src, 0x56);
+
+            // Set the testApp as the foreground process
+            mockedInputHandler.SetForegroundProcess(testApp2);
+
+            const int nInputs = 2;
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = 0x41;
+
+            // Send Ctrl+A keydown
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // Ctrl and A key states should be true, V key state should be false
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), true);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), false);
+        }
+
+        // Test if the the keyboard manager state's activated app is correctly set after an app specific shortcut to key remap takes place
+        TEST_METHOD (AppSpecificShortcutToSingleKey_ShouldSetCorrectActivatedApp_WhenRemapOccurs)
+        {
+            // Remap Ctrl+A to V
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey(0x41);
+            testState.AddAppSpecificShortcut(testApp1, src, 0x56);
+
+            // Set the testApp as the foreground process
+            mockedInputHandler.SetForegroundProcess(testApp1);
+
+            const int nInputs = 2;
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = 0x41;
+
+            // Send Ctrl+A keydown
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // Activated app should be testApp1
+            Assert::AreEqual(testApp1, testState.GetActivatedApp());
+
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = 0x41;
+            input[0].ki.dwFlags = KEYEVENTF_KEYUP;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = VK_CONTROL;
+            input[1].ki.dwFlags = KEYEVENTF_KEYUP;
+
+            // Release A then Ctrl
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // Activated app should be empty string
+            Assert::AreEqual(std::wstring(KeyboardManagerConstants::NoActivatedApp), testState.GetActivatedApp());
+        }
+        // Test if the key states get cleared if foreground app changes after app-specific shortcut to key shortcut is invoked and then released
+        TEST_METHOD (AppSpecificShortcutToSingleKey_ShouldClearKeyStates_WhenForegroundAppChangesAfterShortcutIsPressedOnRelease)
+        {
+            // Remap Ctrl+A to V
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey(0x41);
+            testState.AddAppSpecificShortcut(testApp1, src, 0x56);
+
+            // Set the testApp as the foreground process
+            mockedInputHandler.SetForegroundProcess(testApp1);
+
+            const int nInputs = 2;
+            INPUT input[nInputs] = {};
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = 0x41;
+
+            // Send Ctrl+A keydown
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // Set the testApp as the foreground process
+            mockedInputHandler.SetForegroundProcess(testApp2);
+
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = 0x41;
+            input[0].ki.dwFlags = KEYEVENTF_KEYUP;
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = VK_CONTROL;
+            input[1].ki.dwFlags = KEYEVENTF_KEYUP;
+
+            // Release A then Ctrl
+            mockedInputHandler.SendVirtualInput(nInputs, input, sizeof(INPUT));
+
+            // Ctrl, A, V should all be false
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(VK_CONTROL), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
+            Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), false);
         }
     };
 }

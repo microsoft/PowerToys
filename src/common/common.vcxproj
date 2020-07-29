@@ -89,6 +89,7 @@
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <MultiProcessorCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -103,6 +104,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalIncludeDirectories>inc;telemetry;..\..\deps\cpprestsdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -116,6 +118,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="animation.h" />
+    <ClInclude Include="appMutex.h" />
     <ClInclude Include="async_message_queue.h" />
     <ClInclude Include="d2d_svg.h" />
     <ClInclude Include="d2d_text.h" />
@@ -126,6 +129,8 @@
     <ClInclude Include="keyboard_layout.h" />
     <ClInclude Include="keyboard_layout_impl.h" />
     <ClInclude Include="notifications.h" />
+    <ClInclude Include="processApi.h" />
+    <ClInclude Include="RcResource.h" />
     <ClInclude Include="os-detect.h" />
     <ClInclude Include="RestartManagement.h" />
     <ClInclude Include="shared_constants.h" />
@@ -165,6 +170,7 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="RcResource.cpp" />
     <ClCompile Include="RestartManagement.cpp" />
     <ClCompile Include="settings_helpers.cpp" />
     <ClCompile Include="settings_objects.cpp" />

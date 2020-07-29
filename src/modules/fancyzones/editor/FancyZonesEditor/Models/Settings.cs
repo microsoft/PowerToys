@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows;
 using FancyZonesEditor.Models;
@@ -169,7 +170,7 @@ namespace FancyZonesEditor
                 {
                     _zoneCount = value;
                     UpdateLayoutModels();
-                    FirePropertyChanged("ZoneCount");
+                    FirePropertyChanged();
                 }
             }
         }
@@ -189,7 +190,7 @@ namespace FancyZonesEditor
                 if (_spacing != value)
                 {
                     _spacing = value;
-                    FirePropertyChanged("Spacing");
+                    FirePropertyChanged();
                 }
             }
         }
@@ -209,7 +210,7 @@ namespace FancyZonesEditor
                 if (_showSpacing != value)
                 {
                     _showSpacing = value;
-                    FirePropertyChanged("ShowSpacing");
+                    FirePropertyChanged();
                 }
             }
         }
@@ -229,7 +230,7 @@ namespace FancyZonesEditor
                 if (_isShiftKeyPressed != value)
                 {
                     _isShiftKeyPressed = value;
-                    FirePropertyChanged("IsShiftKeyPressed");
+                    FirePropertyChanged();
                 }
             }
         }
@@ -249,7 +250,7 @@ namespace FancyZonesEditor
                 if (_isCtrlKeyPressed != value)
                 {
                     _isCtrlKeyPressed = value;
-                    FirePropertyChanged("IsCtrlKeyPressed");
+                    FirePropertyChanged();
                 }
             }
         }
@@ -292,9 +293,9 @@ namespace FancyZonesEditor
                 ZoneCount = 3;
             }
 
-            Int32Rect focusZoneRect = new Int32Rect((int)(WorkArea.Width * 0.1), (int)(WorkArea.Height * 0.1), (int)(WorkArea.Width * 0.6), (int)(WorkArea.Height * 0.6));
-            int focusRectXIncrement = (ZoneCount <= 1) ? 0 : (int)(WorkArea.Width * 0.2) / (ZoneCount - 1);
-            int focusRectYIncrement = (ZoneCount <= 1) ? 0 : (int)(WorkArea.Height * 0.2) / (ZoneCount - 1);
+            Int32Rect focusZoneRect = new Int32Rect(100, 100, (int)(WorkArea.Width * 0.4), (int)(WorkArea.Height * 0.4));
+            int focusRectXIncrement = (ZoneCount <= 1) ? 0 : 50;
+            int focusRectYIncrement = (ZoneCount <= 1) ? 0 : 50;
 
             for (int i = 0; i < ZoneCount; i++)
             {
@@ -521,7 +522,7 @@ namespace FancyZonesEditor
         public event PropertyChangedEventHandler PropertyChanged;
 
         // FirePropertyChanged -- wrapper that calls INPC.PropertyChanged
-        protected virtual void FirePropertyChanged(string propertyName)
+        protected virtual void FirePropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

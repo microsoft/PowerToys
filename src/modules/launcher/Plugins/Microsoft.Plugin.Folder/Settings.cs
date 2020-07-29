@@ -4,9 +4,9 @@ using Wox.Infrastructure.Storage;
 
 namespace Microsoft.Plugin.Folder
 {
-    public class Settings
+    public class FolderSettings
     {
         [JsonProperty]
-        public List<FolderLink> FolderLinks { get; set; } = new List<FolderLink>();
+        public List<FolderLink> FolderLinks { get;} = new List<FolderLink>();
     }
 }

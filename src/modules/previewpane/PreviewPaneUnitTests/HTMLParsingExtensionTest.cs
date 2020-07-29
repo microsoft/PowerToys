@@ -36,7 +36,7 @@ namespace PreviewPaneUnitTests
         {
             // Arrange 
             String mdString = "> Blockquotes.";
-            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension(()=> { });
+            HTMLParsingExtension htmlParsingExtension = new HTMLParsingExtension(() => { });
             MarkdownPipeline markdownPipeline = BuidPipeline(htmlParsingExtension);
 
             // Act

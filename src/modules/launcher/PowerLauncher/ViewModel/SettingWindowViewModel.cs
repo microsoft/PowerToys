@@ -39,7 +39,7 @@ namespace PowerLauncher.ViewModel
         #region about
 
         public string ActivatedTimes => string.Format(CultureInfo.InvariantCulture, _translater.GetTranslation("about_activate_times"), Settings.ActivateTimes);
-        
+
         #endregion
     }
 }

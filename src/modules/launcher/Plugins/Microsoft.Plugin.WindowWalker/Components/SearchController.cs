@@ -94,7 +94,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// Event handler for when the search text has been updated
         /// </summary>
         public async Task UpdateSearchText(string searchText)
-        { 
+        {
             this.SearchText = searchText;
             await SyncOpenWindowsWithModelAsync();
         }

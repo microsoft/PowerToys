@@ -5,7 +5,7 @@
         public IPlugin Plugin { get; internal set; }
         public PluginMetadata Metadata { get; internal set; }
 
-        
+
 
         public override string ToString()
         {

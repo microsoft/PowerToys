@@ -9,8 +9,8 @@ namespace Wox.Plugin
         public string Text { get; private set; }
 
         public ToolTipData(string title, string text)
-        {          
-            if(string.IsNullOrEmpty(title))
+        {
+            if (string.IsNullOrEmpty(title))
             {
                 throw new ArgumentException("title cannot be null or empty", "title");
             }

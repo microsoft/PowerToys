@@ -124,7 +124,7 @@
     <system:String x:Key="reportWindow_sending">Slanje</system:String>
     <system:String x:Key="reportWindow_report_succeed">Izveštaj uspešno poslat</system:String>
     <system:String x:Key="reportWindow_report_failed">Izveštaj neuspešno poslat</system:String>
-    <system:String x:Key="reportWindow_wox_got_an_error">Wox je dobio grešku</system:String>
+    <system:String x:Key="reportWindow_wox_got_an_error">PT Run je dobio grešku</system:String>
 
     <!--update-->
     <system:String x:Key="update_wox_update_new_version_available">Nova verzija Wox-a {0} je dostupna</system:String>

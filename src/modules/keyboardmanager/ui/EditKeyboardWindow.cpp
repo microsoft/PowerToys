@@ -35,12 +35,18 @@ static std::vector<DWORD> GetOrphanedKeys()
 
     for (int i = 0; i < SingleKeyRemapControl::singleKeyRemapBuffer.size(); i++)
     {
-        DWORD ogKey = SingleKeyRemapControl::singleKeyRemapBuffer[i][0];
-        DWORD newKey = SingleKeyRemapControl::singleKeyRemapBuffer[i][1];
-        if (ogKey != 0 && newKey != 0)
+        DWORD ogKey = std::get<DWORD>(SingleKeyRemapControl::singleKeyRemapBuffer[i].first[0]);
+        std::variant<DWORD, Shortcut> newKey = SingleKeyRemapControl::singleKeyRemapBuffer[i].first[1];
+
+        if (ogKey != NULL && ((newKey.index() == 0 && std::get<DWORD>(newKey) != 0) || (newKey.index() == 1 && std::get<Shortcut>(newKey).IsValidShortcut())))
         {
             ogKeys.insert(ogKey);
-            newKeys.insert(newKey);
+
+            // newKey should be added only if the target is a key
+            if (SingleKeyRemapControl::singleKeyRemapBuffer[i].first[1].index() == 0)
+            {
+                newKeys.insert(std::get<DWORD>(newKey));
+            }
         }
     }
 
@@ -86,11 +92,8 @@ static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
 
 static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, XamlRoot root, std::function<void()> ApplyRemappings)
 {
-    KeyboardManagerHelper::ErrorType isSuccess = Dialog::CheckIfRemappingsAreValid<DWORD>(
-        SingleKeyRemapControl::singleKeyRemapBuffer,
-        [](DWORD key) {
-            return key != 0;
-        });
+    KeyboardManagerHelper::ErrorType isSuccess = Dialog::CheckIfRemappingsAreValid(SingleKeyRemapControl::singleKeyRemapBuffer);
+
     if (isSuccess != KeyboardManagerHelper::ErrorType::NoError)
     {
         if (!co_await Dialog::PartialRemappingConfirmationDialog(root, L"Some of the keys could not be remapped. Do you want to continue anyway?"))
@@ -98,6 +101,7 @@ static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, Xa
             co_return;
         }
     }
+
     // Check for orphaned keys
     // Draw content Dialog
     std::vector<DWORD> orphanedKeys = GetOrphanedKeys();
@@ -112,7 +116,7 @@ static IAsyncAction OnClickAccept(KeyboardManagerState& keyboardManagerState, Xa
 }
 
 // Function to combine remappings if the L and R version of the modifier is mapped to the same key
-void CombineRemappings(std::unordered_map<DWORD, DWORD>& table, DWORD leftKey, DWORD rightKey, DWORD combinedKey)
+void CombineRemappings(std::unordered_map<DWORD, std::variant<DWORD, Shortcut>>& table, DWORD leftKey, DWORD rightKey, DWORD combinedKey)
 {
     if (table.find(leftKey) != table.end() && table.find(rightKey) != table.end())
     {
@@ -127,7 +131,7 @@ void CombineRemappings(std::unordered_map<DWORD, DWORD>& table, DWORD leftKey, D
 }
 
 // Function to pre process the remap table before loading it into the UI
-void PreProcessRemapTable(std::unordered_map<DWORD, DWORD>& table)
+void PreProcessRemapTable(std::unordered_map<DWORD, std::variant<DWORD, Shortcut>>& table)
 {
     // Pre process the table to combine L and R versions of Ctrl/Alt/Shift/Win that are mapped to the same key
     CombineRemappings(table, VK_LCONTROL, VK_RCONTROL, VK_CONTROL);
@@ -234,13 +238,13 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     //  Text block for information about remap key section.
     TextBlock keyRemapInfoHeader;
-    keyRemapInfoHeader.Text(L"Select the key you want to change (Key) and the key you want it to become (Mapped To).");
+    keyRemapInfoHeader.Text(L"Select the key you want to change (Key) and then the key or shortcut you want it to become (Mapped To).");
     keyRemapInfoHeader.Margin({ 10, 0, 0, 10 });
     keyRemapInfoHeader.FontWeight(Text::FontWeights::SemiBold());
     keyRemapInfoHeader.TextWrapping(TextWrapping::Wrap);
 
     TextBlock keyRemapInfoExample;
-    keyRemapInfoExample.Text(L"For example, if you want to press A and get B, Key A would be your \"Key\" and Key B would be your \"Mapped To\".");
+    keyRemapInfoExample.Text(L"For example, if you want to press A and get \"Ctrl+C\", key \"A\" would be your \"Key\" column and the shortcut \"Ctrl+C\" would be your \"Mapped To\" column.");
     keyRemapInfoExample.Margin({ 10, 0, 0, 20 });
     keyRemapInfoExample.FontStyle(Text::FontStyle::Italic);
     keyRemapInfoExample.TextWrapping(TextWrapping::Wrap);
@@ -253,8 +257,8 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     ColumnDefinition arrowColumn;
     arrowColumn.MinWidth(KeyboardManagerConstants::TableArrowColWidth);
     ColumnDefinition newColumn;
-    newColumn.MinWidth(KeyboardManagerConstants::RemapTableDropDownWidth);
-    newColumn.MaxWidth(KeyboardManagerConstants::RemapTableDropDownWidth);
+    newColumn.MinWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
+    newColumn.MaxWidth(3 * KeyboardManagerConstants::ShortcutTableDropDownWidth + 2 * KeyboardManagerConstants::ShortcutTableDropDownSpacing);
     ColumnDefinition removeColumn;
     removeColumn.MinWidth(KeyboardManagerConstants::TableRemoveColWidth);
     keyRemapTable.Margin({ 10, 10, 10, 20 });
@@ -300,7 +304,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
 
     // Load existing remaps into UI
     std::unique_lock<std::mutex> lock(keyboardManagerState.singleKeyReMap_mutex);
-    std::unordered_map<DWORD, DWORD> singleKeyRemapCopy = keyboardManagerState.singleKeyReMap;
+    std::unordered_map<DWORD, std::variant<DWORD, Shortcut>> singleKeyRemapCopy = keyboardManagerState.singleKeyReMap;
     lock.unlock();
     PreProcessRemapTable(singleKeyRemapCopy);
 
@@ -322,13 +326,14 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
         KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
         // Clear existing Key Remaps
         keyboardManagerState.ClearSingleKeyRemaps();
-        DWORD successfulRemapCount = 0;
+        DWORD successfulKeyToKeyRemapCount = 0;
+        DWORD successfulKeyToShortcutRemapCount = 0;
         for (int i = 0; i < SingleKeyRemapControl::singleKeyRemapBuffer.size(); i++)
         {
-            DWORD originalKey = SingleKeyRemapControl::singleKeyRemapBuffer[i][0];
-            DWORD newKey = SingleKeyRemapControl::singleKeyRemapBuffer[i][1];
+            DWORD originalKey = std::get<DWORD>(SingleKeyRemapControl::singleKeyRemapBuffer[i].first[0]);
+            std::variant<DWORD, Shortcut> newKey = SingleKeyRemapControl::singleKeyRemapBuffer[i].first[1];
 
-            if (originalKey != NULL && newKey != NULL)
+            if (originalKey != NULL && !(newKey.index() == 0 && std::get<DWORD>(newKey) == NULL) && !(newKey.index() == 1 && !std::get<Shortcut>(newKey).IsValidShortcut()))
             {
                 // If Ctrl/Alt/Shift are added, add their L and R versions instead to the same key
                 bool result = false;
@@ -366,7 +371,14 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
                 }
                 else
                 {
-                    successfulRemapCount += 1;
+                    if (newKey.index() == 0)
+                    {
+                        successfulKeyToKeyRemapCount += 1;
+                    }
+                    else
+                    {
+                        successfulKeyToShortcutRemapCount += 1;
+                    }
                 }
             }
             else
@@ -375,7 +387,7 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
             }
         }
 
-        Trace::KeyRemapCount(successfulRemapCount);
+        Trace::KeyRemapCount(successfulKeyToKeyRemapCount, successfulKeyToShortcutRemapCount);
         // Save the updated shortcuts remaps to file.
         bool saveResult = keyboardManagerState.SaveConfigToFile();
         if (!saveResult)

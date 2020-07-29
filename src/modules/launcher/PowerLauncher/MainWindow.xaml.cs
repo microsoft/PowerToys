@@ -28,6 +28,7 @@ namespace PowerLauncher
         private bool _isTextSetProgrammatically;
         bool _deletePressed = false;
         Timer _firstDeleteTimer = new Timer();
+        bool _coldStateHotkeyPressed = false;
 
         #endregion
 
@@ -82,6 +83,13 @@ namespace PowerLauncher
             SearchBox.QueryTextBox.DataContext = _viewModel;
             SearchBox.QueryTextBox.PreviewKeyDown += _launcher_KeyDown;
             SearchBox.QueryTextBox.TextChanged += QueryTextBox_TextChanged;
+
+            // Set initial language flow direction
+            SearchBox_UpdateFlowDirection();
+
+            // Register language changed event
+            InputLanguageManager.Current.InputLanguageChanged += SearchBox_InputLanguageChanged;
+
             SearchBox.QueryTextBox.Focus();
 
             ListBox.DataContext = _viewModel;
@@ -110,7 +118,7 @@ namespace PowerLauncher
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if(e.PropertyName == nameof(MainViewModel.MainWindowVisibility)) 
+            if (e.PropertyName == nameof(MainViewModel.MainWindowVisibility))
             {
                 if (Visibility == System.Windows.Visibility.Visible)
                 {
@@ -124,7 +132,7 @@ namespace PowerLauncher
                         _viewModel.LastQuerySelected = true;
                     }
                 }
-            }          
+            }
             else if (e.PropertyName == nameof(MainViewModel.SystemQueryText))
             {
                 this._isTextSetProgrammatically = true;
@@ -153,19 +161,19 @@ namespace PowerLauncher
 
         private void OnActivated(object sender, EventArgs e)
         {
-	        if (_settings.ClearInputOnLaunch)
-	        {
-		        _viewModel.ClearQueryCommand.Execute(null);
-	        }
+            if (_settings.ClearInputOnLaunch)
+            {
+                _viewModel.ClearQueryCommand.Execute(null);
+            }
         }
 
         private void OnDeactivated(object sender, EventArgs e)
         {
-	        if (_settings.HideWhenDeactivated)
+            if (_settings.HideWhenDeactivated)
             {
                 //(this.FindResource("OutroStoryboard") as Storyboard).Begin();
                 Hide();
-            }              
+            }
         }
 
         private void UpdatePosition()
@@ -176,7 +184,7 @@ namespace PowerLauncher
                 Top = _settings.WindowTop;
             }
             else
-            {              
+            {
                 Top = WindowTop();
                 Left = WindowLeft();
             }
@@ -239,6 +247,25 @@ namespace PowerLauncher
                 UpdateTextBoxToSelectedItem();
                 e.Handled = true;
             }
+            else if (e.Key == Key.Right)
+            {
+                if(SearchBox.QueryTextBox.CaretIndex == SearchBox.QueryTextBox.Text.Length)
+                {
+                    _viewModel.SelectNextContextMenuItemCommand.Execute(null);
+                    e.Handled = true;
+                }
+            }
+            else if (e.Key == Key.Left)
+            {
+                if (SearchBox.QueryTextBox.CaretIndex == SearchBox.QueryTextBox.Text.Length)
+                {
+                    if(_viewModel.Results != null && _viewModel.Results.IsContextMenuItemSelected())
+                    {
+                        _viewModel.SelectPreviousContextMenuItemCommand.Execute(null);
+                        e.Handled = true;
+                    }
+                }
+            }
             else if (e.Key == Key.PageDown)
             {
                 _viewModel.SelectNextPageCommand.Execute(null);
@@ -271,7 +298,7 @@ namespace PowerLauncher
         private void SuggestionsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ListView listview = (ListView)sender;
-            _viewModel.Results.SelectedItem = (ResultViewModel) listview.SelectedItem;
+            _viewModel.Results.SelectedItem = (ResultViewModel)listview.SelectedItem;
             if (e.AddedItems.Count > 0 && e.AddedItems[0] != null)
             {
                 listview.ScrollIntoView(e.AddedItems[0]);
@@ -285,15 +312,13 @@ namespace PowerLauncher
                     _viewModel.Results.SelectedIndex,
                     _viewModel.Results.SelectedItem?.ToString(),
                     _viewModel.QueryText);
-            }          
+            }
         }
 
-        private const int millisecondsToWait = 100;
-        private static DateTime s_lastTimeOfTyping;
         private bool disposedValue = false;
 
         private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {          
+        {
             if (_isTextSetProgrammatically)
             {
                 var textBox = ((TextBox)sender);
@@ -308,25 +333,10 @@ namespace PowerLauncher
                     SearchBox.AutoCompleteTextBlock.Text = string.Empty;
                 }
                 _viewModel.QueryText = text;
-                var latestTimeOfTyping = DateTime.Now;
-
-                Task.Run(() => DelayedCheck(latestTimeOfTyping));
-                s_lastTimeOfTyping = latestTimeOfTyping;
+                _viewModel.Query();
             }
         }
 
-        private async Task DelayedCheck(DateTime latestTimeOfTyping)
-        {
-            await Task.Delay(millisecondsToWait).ConfigureAwait(false);
-            if (latestTimeOfTyping.Equals(s_lastTimeOfTyping))
-            {
-                await System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    _viewModel.Query();
-                }));
-            }
-        }
-        
         private void ListBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Right)
@@ -352,6 +362,17 @@ namespace PowerLauncher
                 {
                     SearchBox.QueryTextBox.SelectAll();
                 }
+
+                // Log the time taken from pressing the hotkey till launcher is visible as separate events depending on if it's the first hotkey invoke or second
+                if (!_coldStateHotkeyPressed)
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new LauncherColdStateHotkeyEvent() { HotkeyToVisibleTimeMs = _viewModel.GetHotkeyEventTimeMs() });
+                    _coldStateHotkeyPressed = true;
+                }
+                else
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new LauncherWarmStateHotkeyEvent() { HotkeyToVisibleTimeMs = _viewModel.GetHotkeyEventTimeMs() });
+                }
             }
             else
             {
@@ -362,6 +383,17 @@ namespace PowerLauncher
         private void OutroStoryboard_Completed(object sender, EventArgs e)
         {
             Hide();
+        }
+
+        private void SearchBox_UpdateFlowDirection()
+        {
+            SearchBox.QueryTextBox.FlowDirection = MainViewModel.GetLanguageFlowDirection();
+            SearchBox.AutoCompleteTextBlock.FlowDirection = MainViewModel.GetLanguageFlowDirection();
+        }
+
+        private void SearchBox_InputLanguageChanged(object sender, InputLanguageEventArgs e) 
+        {
+            SearchBox_UpdateFlowDirection();
         }
 
         protected virtual void Dispose(bool disposing)

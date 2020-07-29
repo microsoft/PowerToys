@@ -34,7 +34,7 @@ namespace PowerLauncher.ViewModel
 
         public int ContextMenuSelectedIndex { get; set; }
 
-        const int NoSelectionIndex = -1;
+        public const int NoSelectionIndex = -1;
 
         public ResultViewModel(Result result)
         {
@@ -42,10 +42,10 @@ namespace PowerLauncher.ViewModel
             {
                 Result = result;
             }
-            
+
             ContextMenuSelectedIndex = NoSelectionIndex;
             LoadContextMenu();
-            
+
             ActivateContextButtonsHoverCommand = new RelayCommand(ActivateContextButtonsHoverAction);
             ActivateContextButtonsSelectionCommand = new RelayCommand(ActivateContextButtonsSelectionAction);
             DeactivateContextButtonsHoverCommand = new RelayCommand(DeactivateContextButtonsHoverAction);

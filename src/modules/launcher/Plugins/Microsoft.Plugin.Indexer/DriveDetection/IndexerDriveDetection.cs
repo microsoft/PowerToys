@@ -18,10 +18,10 @@ namespace Microsoft.Plugin.Indexer.DriveDetection
             GetEnhancedModeStatus();
         }
 
-        // To display the results if either enhanced mode is on or if the disable drive detection checkbox is checked
-        public bool DisplayResults()
+        // To display the warning when Enhanced mode is disabled and the Disable Drive detection check box in settings is unchecked
+        public bool DisplayWarning()
         {
-            return IsDriveDetectionWarningCheckBoxSelected || IsEnhancedModeEnabled;
+            return !(IsDriveDetectionWarningCheckBoxSelected || IsEnhancedModeEnabled);
         }
 
         // To look up the registry entry for 

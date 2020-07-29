@@ -20,7 +20,7 @@ namespace Wox.Test
 
             // Act
             string autoCompleteText = MainViewModel.GetAutoCompleteText(index, input, query);
-            
+
             // Assert
             Assert.AreEqual(autoCompleteText, string.Empty);
         }

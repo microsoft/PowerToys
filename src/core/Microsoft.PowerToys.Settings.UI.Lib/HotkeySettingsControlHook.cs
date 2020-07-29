@@ -1,6 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using interop;
 
 namespace Microsoft.PowerToys.Settings.UI.Lib
@@ -11,41 +12,41 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
     public class HotkeySettingsControlHook
     {
-        const int WM_KEYDOWN = 0x100;
-        const int WM_KEYUP = 0x101;
-        const int WM_SYSKEYDOWN = 0x0104;
-        const int WM_SYSKEYUP = 0x0105;
+        private const int WmKeyDown = 0x100;
+        private const int WmKeyUp = 0x101;
+        private const int WmSysKeyDown = 0x0104;
+        private const int WmSysKeyUp = 0x0105;
 
-        private KeyboardHook hook;
-        private KeyEvent keyDown;
-        private KeyEvent keyUp;
-        private IsActive isActive;
+        private KeyboardHook _hook;
+        private KeyEvent _keyDown;
+        private KeyEvent _keyUp;
+        private IsActive _isActive;
 
         public HotkeySettingsControlHook(KeyEvent keyDown, KeyEvent keyUp, IsActive isActive)
         {
-            this.keyDown = keyDown;
-            this.keyUp = keyUp;
-            this.isActive = isActive;
-            hook = new KeyboardHook(HotkeySettingsHookCallback, IsActive, null);
-            hook.Start();
+            _keyDown = keyDown;
+            _keyUp = keyUp;
+            _isActive = isActive;
+            _hook = new KeyboardHook(HotkeySettingsHookCallback, IsActive, null);
+            _hook.Start();
         }
 
         private bool IsActive()
         {
-            return isActive();
+            return _isActive();
         }
 
         private void HotkeySettingsHookCallback(KeyboardEvent ev)
         {
             switch (ev.message)
             {
-                case WM_KEYDOWN:
-                case WM_SYSKEYDOWN:
-                    keyDown(ev.key);
+                case WmKeyDown:
+                case WmSysKeyDown:
+                    _keyDown(ev.key);
                     break;
-                case WM_KEYUP:
-                case WM_SYSKEYUP:
-                    keyUp(ev.key);
+                case WmKeyUp:
+                case WmSysKeyUp:
+                    _keyUp(ev.key);
                     break;
             }
         }
@@ -53,7 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
         public void Dispose()
         {
             // Dispose the KeyboardHook object to terminate the hook threads
-            hook.Dispose();
+            _hook.Dispose();
         }
     }
 }

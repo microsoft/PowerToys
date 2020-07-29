@@ -67,6 +67,10 @@ HRESULT CPowerRenameMenu::QueryContextMenu(HMENU hMenu, UINT index, UINT uIDFirs
     if (CSettingsInstance().GetExtendedContextMenuOnly() && (!(uFlags & CMF_EXTENDEDVERBS)))
         return E_FAIL;
 
+    // Check if at least one of the selected items is actually renamable.
+    if (!DataObjectContainsRenamableItem(m_spdo))
+        return E_FAIL;
+
     HRESULT hr = E_UNEXPECTED;
     if (m_spdo && !(uFlags & (CMF_DEFAULTONLY | CMF_VERBSONLY | CMF_OPTIMIZEFORINVOKE)))
     {
