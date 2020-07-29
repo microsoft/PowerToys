@@ -156,6 +156,7 @@ namespace UnitTests_SvgPreviewHandler
                     .Setup(x => x.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<IntPtr>()))
                     .Throws(new Exception());
                 svgPreviewControl.DoPreview(mockStream.Object);
+
                 var textBox = svgPreviewControl.Controls[0] as RichTextBox;
                 var incrementParentControlWidth = 5;
                 var initialParentWidth = svgPreviewControl.Width;
