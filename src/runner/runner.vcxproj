@@ -118,7 +118,6 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="restart_elevated.cpp" />
     <ClCompile Include="settings_window.cpp" />
-    <ClCompile Include="system_menu_helper.cpp" />
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="tray_icon.cpp" />
     <ClCompile Include="unhandled_exception_handler.cpp" />
@@ -136,7 +135,6 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="restart_elevated.h" />
     <ClInclude Include="settings_window.h" />
-    <ClInclude Include="system_menu_helper.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="tray_icon.h" />
     <ClInclude Include="unhandled_exception_handler.h" />

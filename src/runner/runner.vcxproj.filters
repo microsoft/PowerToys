@@ -24,9 +24,6 @@
     <ClCompile Include="general_settings.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="system_menu_helper.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="restart_elevated.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
@@ -61,9 +58,6 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="general_settings.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="system_menu_helper.h">
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="restart_elevated.h">

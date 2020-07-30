@@ -1,5 +1,4 @@
 #pragma once
-#include "system_menu_helper.h"
 #include <interface/powertoy_module_interface.h>
 #include <string>
 #include <memory>

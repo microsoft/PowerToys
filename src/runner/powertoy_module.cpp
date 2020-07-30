@@ -22,7 +22,6 @@ PowertoyModule load_powertoy(const std::wstring_view filename)
         FreeLibrary(handle);
         winrt::throw_last_error();
     }
-    module->register_system_menu_helper(&SystemMenuHelperInstance());
     return PowertoyModule(module, handle);
 }
 
