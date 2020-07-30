@@ -116,19 +116,6 @@ struct typed_storage
     }
 };
 
-template<typename Callable>
-struct on_scope_exit
-{
-    Callable _f;
-    on_scope_exit(Callable f) :
-        _f{ std::move(f) } {}
-
-    ~on_scope_exit()
-    {
-        _f();
-    }
-};
-
 template<class... Ts>
 struct overloaded : Ts...
 {
