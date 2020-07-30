@@ -86,10 +86,6 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      */
     IFACEMETHOD_(std::wstring, UniqueId)() = 0;
     /**
-     * @returns Work area resolution (not same as monitor resolution).
-     */
-    IFACEMETHOD_(std::wstring, WorkAreaKey)() = 0;
-    /**
      * @returns Active zone layout for this work area.
      */
     IFACEMETHOD_(IZoneSet*, ActiveZoneSet)() = 0;

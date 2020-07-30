@@ -28,6 +28,7 @@ namespace PowerLauncher
         private bool _isTextSetProgrammatically;
         bool _deletePressed = false;
         Timer _firstDeleteTimer = new Timer();
+        bool _coldStateHotkeyPressed = false;
 
         #endregion
 
@@ -82,6 +83,13 @@ namespace PowerLauncher
             SearchBox.QueryTextBox.DataContext = _viewModel;
             SearchBox.QueryTextBox.PreviewKeyDown += _launcher_KeyDown;
             SearchBox.QueryTextBox.TextChanged += QueryTextBox_TextChanged;
+
+            // Set initial language flow direction
+            SearchBox_UpdateFlowDirection();
+
+            // Register language changed event
+            InputLanguageManager.Current.InputLanguageChanged += SearchBox_InputLanguageChanged;
+
             SearchBox.QueryTextBox.Focus();
 
             ListBox.DataContext = _viewModel;
@@ -307,8 +315,6 @@ namespace PowerLauncher
             }
         }
 
-        private const int millisecondsToWait = 100;
-        private static DateTime s_lastTimeOfTyping;
         private bool disposedValue = false;
 
         private void QueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -327,22 +333,7 @@ namespace PowerLauncher
                     SearchBox.AutoCompleteTextBlock.Text = string.Empty;
                 }
                 _viewModel.QueryText = text;
-                var latestTimeOfTyping = DateTime.Now;
-
-                Task.Run(() => DelayedCheck(latestTimeOfTyping));
-                s_lastTimeOfTyping = latestTimeOfTyping;
-            }
-        }
-
-        private async Task DelayedCheck(DateTime latestTimeOfTyping)
-        {
-            await Task.Delay(millisecondsToWait).ConfigureAwait(false);
-            if (latestTimeOfTyping.Equals(s_lastTimeOfTyping))
-            {
-                await System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    _viewModel.Query();
-                }));
+                _viewModel.Query();
             }
         }
 
@@ -371,6 +362,17 @@ namespace PowerLauncher
                 {
                     SearchBox.QueryTextBox.SelectAll();
                 }
+
+                // Log the time taken from pressing the hotkey till launcher is visible as separate events depending on if it's the first hotkey invoke or second
+                if (!_coldStateHotkeyPressed)
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new LauncherColdStateHotkeyEvent() { HotkeyToVisibleTimeMs = _viewModel.GetHotkeyEventTimeMs() });
+                    _coldStateHotkeyPressed = true;
+                }
+                else
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new LauncherWarmStateHotkeyEvent() { HotkeyToVisibleTimeMs = _viewModel.GetHotkeyEventTimeMs() });
+                }
             }
             else
             {
@@ -381,6 +383,17 @@ namespace PowerLauncher
         private void OutroStoryboard_Completed(object sender, EventArgs e)
         {
             Hide();
+        }
+
+        private void SearchBox_UpdateFlowDirection()
+        {
+            SearchBox.QueryTextBox.FlowDirection = MainViewModel.GetLanguageFlowDirection();
+            SearchBox.AutoCompleteTextBlock.FlowDirection = MainViewModel.GetLanguageFlowDirection();
+        }
+
+        private void SearchBox_InputLanguageChanged(object sender, InputLanguageEventArgs e) 
+        {
+            SearchBox_UpdateFlowDirection();
         }
 
         protected virtual void Dispose(bool disposing)

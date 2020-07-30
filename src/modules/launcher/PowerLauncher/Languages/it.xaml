@@ -124,7 +124,7 @@
     <system:String x:Key="reportWindow_sending">Invio in corso</system:String>
     <system:String x:Key="reportWindow_report_succeed">Rapporto inviato correttamente</system:String>
     <system:String x:Key="reportWindow_report_failed">Invio rapporto fallito</system:String>
-    <system:String x:Key="reportWindow_wox_got_an_error">Wox ha riportato un errore</system:String>
+    <system:String x:Key="reportWindow_wox_got_an_error">PT Run ha riportato un errore</system:String>
 
     <!--update-->
     <system:String x:Key="update_wox_update_new_version_available">E' disponibile la nuova release {0} di Wox</system:String>

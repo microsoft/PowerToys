@@ -1,6 +1,44 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="..\..\..\..\installer\Version.props" />
+  <!-- We don't have GenerateAssemblyInfo task until we use .net core, so we generate it with WriteLinesToFile -->
+  <PropertyGroup>
+    <AssemblyTitle>ColorPicker</AssemblyTitle>
+    <AssemblyDescription>PowerToys ColorPicker</AssemblyDescription>
+    <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
+    <AssemblyCopyright>Copyright (C) 2020 Microsoft Corporation</AssemblyCopyright>
+    <AssemblyProduct>PowerToys</AssemblyProduct>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyVersionFiles Include="Generated Files\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Target Name="GenerateAssemblyInfo" BeforeTargets="PrepareForBuild">
+    <ItemGroup>
+      <HeaderLines Include="// Copyright (c) Microsoft Corporation" />
+      <HeaderLines Include="// The Microsoft Corporation licenses this file to you under the MIT license." />
+      <HeaderLines Include="// See the LICENSE file in the project root for more information." />
+      <HeaderLines Include="#pragma warning disable SA1516" />
+      <HeaderLines Include="using System.Reflection%3b" />
+      <HeaderLines Include="using System.Resources%3b" />
+      <HeaderLines Include="using System.Runtime.InteropServices%3b" />
+      <HeaderLines Include="using System.Windows%3b" />
+      <HeaderLines Include="[assembly: AssemblyTitle(&quot;$(AssemblyTitle)&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyDescription(&quot;$(AssemblyDescription)&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyConfiguration(&quot;&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyCompany(&quot;$(AssemblyCompany)&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyCopyright(&quot;$(AssemblyCopyright)&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyProduct(&quot;$(AssemblyProduct)&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyTrademark(&quot;&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyCulture(&quot;&quot;)]" />
+      <HeaderLines Include="[assembly: ComVisible(false)]" />
+      <HeaderLines Include="[assembly: NeutralResourcesLanguage(&quot;en-US&quot;)]" />
+      <HeaderLines Include="[assembly: ThemeInfo(ResourceDictionaryLocation.None, ResourceDictionaryLocation.SourceAssembly)]" />
+      <HeaderLines Include="[assembly: AssemblyVersion(&quot;$(Version).0&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyFileVersion(&quot;$(Version).0&quot;)]" />
+    </ItemGroup>
+    <WriteLinesToFile File="Generated Files\AssemblyInfo.cs" Lines="@(HeaderLines)" Overwrite="true" Encoding="Unicode" WriteOnlyWhenDifferent="true" />
+  </Target>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -40,6 +78,9 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -62,6 +103,9 @@
     <Compile Include="Settings\IUserSettings.cs" />
     <Compile Include="Settings\SettingItem.cs" />
     <Compile Include="Settings\UserSettings.cs" />
+    <Compile Include="Telemetry\ColorPickerCancelledEvent.cs" />
+    <Compile Include="Telemetry\ColorPickerShowEvent.cs" />
+    <Compile Include="Telemetry\ColorPickerZoomOpenedEvent.cs" />
     <Compile Include="Win32Apis.cs" />
     <Compile Include="ZoomWindow.xaml.cs">
       <DependentUpon>ZoomWindow.xaml</DependentUpon>
@@ -129,13 +173,13 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Generated Files\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Mouse\CursorManager.cs" />
     <Compile Include="Mouse\IMouseInfoProvider.cs" />
     <Compile Include="Mouse\MouseHook.cs" />
     <Compile Include="Mouse\MouseInfoProvider.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -176,6 +220,10 @@
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj">
       <Project>{4AED67B6-55FD-486F-B917-E543DEE2CB3C}</Project>
       <Name>ManagedCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\Telemetry.csproj">
+      <Project>{5d00d290-4016-4cfe-9e41-1e7c724509ba}</Project>
+      <Name>Telemetry</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\core\Microsoft.PowerToys.Settings.UI.Lib\Microsoft.PowerToys.Settings.UI.Lib.csproj">
       <Project>{b1bcc8c6-46b5-4bfa-8f22-20f32d99ec6a}</Project>

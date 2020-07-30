@@ -93,15 +93,10 @@
     </Compile>
     <Compile Include="Behaviors\NavigationViewHeaderBehavior.cs" />
     <Compile Include="Behaviors\NavigationViewHeaderMode.cs" />
-    <Compile Include="Controls\BodyTextBlock.xaml.cs">
-      <DependentUpon>BodyTextBlock.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\GroupTitleTextBlock.xaml.cs">
-      <DependentUpon>GroupTitleTextBlock.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Controls\HotkeySettingsControl.xaml.cs">
       <DependentUpon>HotkeySettingsControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\ModuleEnabledToForegroundConverter.cs" />
     <Compile Include="Generated Files\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -163,6 +158,15 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\Logo.scale-200.png" />
+    <Content Include="Assets\Modules\ColorPicker.png" />
+    <Content Include="Assets\Modules\FancyZones.png" />
+    <Content Include="Assets\Modules\ImageResizer.png" />
+    <Content Include="Assets\Modules\KBM.png" />
+    <Content Include="Assets\Modules\PowerLauncher.png" />
+    <Content Include="Assets\Modules\PowerPreview.png" />
+    <Content Include="Assets\Modules\PowerRename.png" />
+    <Content Include="Assets\Modules\PT.png" />
+    <Content Include="Assets\Modules\ShortcutGuide.png" />
     <Content Include="Assets\SplashScreen.png" />
     <Content Include="Assets\Square150x150Logo.scale-200.png" />
     <Content Include="Assets\Square44x44Logo.scale-200.png" />
@@ -207,14 +211,6 @@
     <PRIResource Include="Strings\en-us\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Controls\BodyTextBlock.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\GroupTitleTextBlock.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Controls\HotkeySettingsControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

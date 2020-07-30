@@ -111,19 +111,16 @@ struct ZoneSetConfig
     ZoneSetConfig(
         GUID id,
         FancyZonesDataTypes::ZoneSetLayoutType layoutType,
-        HMONITOR monitor,
-        PCWSTR resolutionKey) noexcept :
+        HMONITOR monitor) noexcept :
             Id(id),
             LayoutType(layoutType),
-            Monitor(monitor),
-            ResolutionKey(resolutionKey)
+            Monitor(monitor)
     {
     }
 
     GUID Id{};
     FancyZonesDataTypes::ZoneSetLayoutType LayoutType{};
     HMONITOR Monitor{};
-    PCWSTR ResolutionKey{};
 };
 
 winrt::com_ptr<IZoneSet> MakeZoneSet(ZoneSetConfig const& config) noexcept;
