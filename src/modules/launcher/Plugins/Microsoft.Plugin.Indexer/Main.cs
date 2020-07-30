@@ -19,7 +19,7 @@ using System.Globalization;
 
 namespace Microsoft.Plugin.Indexer
 {
-    class Main : ISettingProvider, IPlugin, ISavable, IPluginI18n, IContextMenu, IDisposable
+    internal class Main : ISettingProvider, IPlugin, ISavable, IPluginI18n, IContextMenu, IDisposable
     {
 
         // This variable contains metadata about the Plugin
