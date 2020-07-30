@@ -132,7 +132,7 @@ namespace Microsoft.Plugin.Folder
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
-        private void InitialDriverList()
+        private static void InitialDriverList()
         {
             if (_driverNames == null)
             {
@@ -151,7 +151,7 @@ namespace Microsoft.Plugin.Folder
         };
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
-        private List<Result> QueryInternal_Directory_Exists(Query query)
+        private static List<Result> QueryInternal_Directory_Exists(Query query)
         {
             var search = query.Search;
             var results = new List<Result>();
