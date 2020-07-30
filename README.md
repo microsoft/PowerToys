@@ -77,11 +77,11 @@ Preview Pane is an existing feature in the File Explorer.  To enable it, you jus
 
 ## Installing and running Microsoft PowerToys
 
-**Requirements**
+#### Requirements
 - Windows 10 1803 (build 17134) or later.
 - Have [.NET Core 3.1 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.4-windows-x64-installer). The installer should handle this but we want to directly make people aware.
 
-### 0.18 users for updating via notifications
+#### 0.18 users for updating via notifications
 
 - We adjusted how upgrading works in 0.20.  In 0.19 we accounted for this upcoming change but if you are going from 0.18 to 0.20, please directly use the installer file.
 
