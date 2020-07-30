@@ -15,23 +15,25 @@ using System.Windows.Controls;
 using Wox.Infrastructure.Logger;
 using System.Text.RegularExpressions;
 using Microsoft.Plugin.Indexer.DriveDetection;
+using System.Globalization;
 
 namespace Microsoft.Plugin.Indexer
 {
-    class Main : ISettingProvider, IPlugin, ISavable, IPluginI18n, IContextMenu
+    internal class Main : ISettingProvider, IPlugin, ISavable, IPluginI18n, IContextMenu, IDisposable
     {
 
         // This variable contains metadata about the Plugin
         private PluginInitContext _context;
 
         // This variable contains information about the context menus
-        private Settings _settings;
+        private IndexerSettings _settings;
 
         // Contains information about the plugin stored in json format
-        private PluginJsonStorage<Settings> _storage;
+        private PluginJsonStorage<IndexerSettings> _storage;
 
         // To access Windows Search functionalities
-        private readonly WindowsSearchAPI _api = new WindowsSearchAPI(new OleDBSearch());
+        private static readonly OleDBSearch _search = new OleDBSearch();
+        private readonly WindowsSearchAPI _api = new WindowsSearchAPI(_search);
 
         // To obtain information regarding the drives that are indexed
         private readonly IndexerDriveDetection _driveDetection = new IndexerDriveDetection(new RegistryWrapper());
@@ -40,6 +42,7 @@ namespace Microsoft.Plugin.Indexer
         private string ReservedStringPattern = @"^[\/\\\$\%]+$";
         private string WarningIconPath { get; set; }
         private IContextMenu _contextMenuLoader;
+        private bool disposedValue;
 
         // To save the configurations of plugins
         public void Save()
@@ -47,7 +50,9 @@ namespace Microsoft.Plugin.Indexer
             _storage.Save();
         }
 
+
         // This function uses the Windows indexer and returns the list of results obtained
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive but will log the exception")]
         public List<Result> Query(Query query)
         {
             var results = new List<Result>();
@@ -92,8 +97,8 @@ namespace Microsoft.Plugin.Indexer
                         foreach (var searchResult in searchResultsList)
                         {
                             var path = searchResult.Path;
-                            var toolTipTitle = string.Format("{0} : {1}", _context.API.GetTranslation("Microsoft_plugin_indexer_name"), searchResult.Title);
-                            var toolTipText = string.Format("{0} : {1}", _context.API.GetTranslation("Microsoft_plugin_indexer_path"), path);
+                            var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", _context.API.GetTranslation("Microsoft_plugin_indexer_name"), searchResult.Title);
+                            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", _context.API.GetTranslation("Microsoft_plugin_indexer_path"), path);
                             string workingDir = null;
                             if (_settings.UseLocationAsWorkingDir)
                                 workingDir = Path.GetDirectoryName(path);
@@ -156,7 +161,7 @@ namespace Microsoft.Plugin.Indexer
             // initialize the context of the plugin
             _context = context;
             _contextMenuLoader = new ContextMenuLoader(context);
-            _storage = new PluginJsonStorage<Settings>();
+            _storage = new PluginJsonStorage<IndexerSettings>();
             _settings = _storage.Load();
             _context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(_context.API.GetCurrentTheme());
@@ -209,7 +214,7 @@ namespace Microsoft.Plugin.Indexer
         }
 
         // Returns the Process Start Information for the new Windows Search Settings
-        public ProcessStartInfo GetWindowsSearchSettingsProcessInfo()
+        public static ProcessStartInfo GetWindowsSearchSettingsProcessInfo()
         {
             var ps = new ProcessStartInfo("ms-settings:cortana-windowssearch")
             {
@@ -220,5 +225,24 @@ namespace Microsoft.Plugin.Indexer
             return ps;
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _search.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

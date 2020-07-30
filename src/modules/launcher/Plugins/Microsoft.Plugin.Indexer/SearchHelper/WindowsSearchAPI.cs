@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.Plugin.Indexer.Interface;
 using Microsoft.Search.Interop;
 
 namespace Microsoft.Plugin.Indexer.SearchHelper
@@ -21,6 +20,11 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 
         public List<SearchResult> ExecuteQuery(ISearchQueryHelper queryHelper, string keyword)
         {
+            if(queryHelper == null)
+            {
+                throw new ArgumentNullException(paramName: nameof(queryHelper));
+            }
+
             List<SearchResult> _Result = new List<SearchResult>();
 
             // Generate SQL from our parameters, converting the userQuery from AQS->WHERE clause
@@ -32,21 +36,21 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             // Loop over all records from the database
             foreach (OleDBResult oleDBResult in oleDBResults)
             {
-                if (oleDBResult.fieldData[0] == DBNull.Value || oleDBResult.fieldData[1] == DBNull.Value || oleDBResult.fieldData[2] == DBNull.Value)
+                if (oleDBResult.FieldData[0] == DBNull.Value || oleDBResult.FieldData[1] == DBNull.Value || oleDBResult.FieldData[2] == DBNull.Value)
                 {
                     continue;
                 }
 
-                UInt32 fileAttributes = (UInt32)((Int64)oleDBResult.fieldData[2]);
+                UInt32 fileAttributes = (UInt32)((Int64)oleDBResult.FieldData[2]);
                 bool isFileHidden = (fileAttributes & FILE_ATTRIBUTE_HIDDEN) == FILE_ATTRIBUTE_HIDDEN;
 
                 if (DisplayHiddenFiles || !isFileHidden)
                 {
-                    var uri_path = new Uri((string)oleDBResult.fieldData[0]);
+                    var uri_path = new Uri((string)oleDBResult.FieldData[0]);
                     var result = new SearchResult
                     {
                         Path = uri_path.LocalPath,
-                        Title = (string)oleDBResult.fieldData[1]
+                        Title = (string)oleDBResult.FieldData[1]
                     };
                     _Result.Add(result);
                 }
@@ -56,15 +60,25 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
         }
 
 
-        public void ModifyQueryHelper(ref ISearchQueryHelper queryHelper, string pattern)
+        public static void ModifyQueryHelper(ref ISearchQueryHelper queryHelper, string pattern)
         {
+            if(pattern == null)
+            {
+                throw new ArgumentNullException(paramName: nameof(pattern));
+            }
+
+            if (queryHelper == null)
+            {
+                throw new ArgumentNullException(paramName: nameof(queryHelper));
+            }
+
             // convert file pattern if it is not '*'. Don't create restriction for '*' as it includes all files.
             if (pattern != "*")
             {
-                pattern = pattern.Replace("*", "%");
-                pattern = pattern.Replace("?", "_");
+                pattern = pattern.Replace("*", "%", StringComparison.InvariantCulture);
+                pattern = pattern.Replace("?", "_", StringComparison.InvariantCulture);
 
-                if (pattern.Contains("%") || pattern.Contains("_"))
+                if (pattern.Contains("%", StringComparison.InvariantCulture) || pattern.Contains("_", StringComparison.InvariantCulture))
                 {
                     queryHelper.QueryWhereRestrictions += " AND System.FileName LIKE '" + pattern + "' ";
                 }
@@ -76,7 +90,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             }
         }
 
-        public void InitQueryHelper(out ISearchQueryHelper queryHelper, int maxCount)
+        public static void InitQueryHelper(out ISearchQueryHelper queryHelper, int maxCount)
         {
             // This uses the Microsoft.Search.Interop assembly
             CSearchManager manager = new CSearchManager();

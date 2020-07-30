@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Plugin.Indexer.DriveDetection;
-using Microsoft.Plugin.Indexer.Interface;
-
-namespace Microsoft.Plugin.Indexer.DriveDetection
+﻿namespace Microsoft.Plugin.Indexer.DriveDetection
 {
     public class IndexerDriveDetection
     {

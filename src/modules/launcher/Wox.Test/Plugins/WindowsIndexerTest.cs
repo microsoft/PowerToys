@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Search.Interop;
 using Microsoft.Plugin.Indexer.SearchHelper;
-using Microsoft.Plugin.Indexer.Interface;
 using Microsoft.Plugin.Indexer;
 using Moq;
 using Wox.Plugin;
@@ -33,7 +32,7 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper = null;
 
             // Act
-            _api.InitQueryHelper(out queryHelper, maxCount);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, maxCount);
 
             // Assert
             Assert.IsNotNull(queryHelper);
@@ -47,10 +46,10 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             String pattern = "*";
             WindowsSearchAPI _api = GetWindowsSearchAPI();
-            _api.InitQueryHelper(out queryHelper, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
 
             // Act
-            _api.ModifyQueryHelper(ref queryHelper, pattern);
+            WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
 
             // Assert
             Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("LIKE"));
@@ -64,10 +63,10 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             String pattern = "tt*^&)";
             WindowsSearchAPI _api = GetWindowsSearchAPI();
-            _api.InitQueryHelper(out queryHelper, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
 
             // Act
-            _api.ModifyQueryHelper(ref queryHelper, pattern);
+            WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
 
             // Assert
             Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("LIKE"));
@@ -81,10 +80,10 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             String pattern = "tt%^&)";
             WindowsSearchAPI _api = GetWindowsSearchAPI();
-            _api.InitQueryHelper(out queryHelper, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
 
             // Act
-            _api.ModifyQueryHelper(ref queryHelper, pattern);
+            WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
 
             // Assert
             Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("LIKE"));
@@ -98,10 +97,10 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             String pattern = "tt_^&)";
             WindowsSearchAPI _api = GetWindowsSearchAPI();
-            _api.InitQueryHelper(out queryHelper, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
 
             // Act
-            _api.ModifyQueryHelper(ref queryHelper, pattern);
+            WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
 
             // Assert
             Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("LIKE"));
@@ -115,10 +114,10 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             String pattern = "tt?^&)";
             WindowsSearchAPI _api = GetWindowsSearchAPI();
-            _api.InitQueryHelper(out queryHelper, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
 
             // Act
-            _api.ModifyQueryHelper(ref queryHelper, pattern);
+            WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
 
             // Assert
             Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("LIKE"));
@@ -132,10 +131,10 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             String pattern = "tt^&)bc";
             WindowsSearchAPI _api = GetWindowsSearchAPI();
-            _api.InitQueryHelper(out queryHelper, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
 
             // Act
-            _api.ModifyQueryHelper(ref queryHelper, pattern);
+            WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
 
             // Assert
             Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("LIKE"));
