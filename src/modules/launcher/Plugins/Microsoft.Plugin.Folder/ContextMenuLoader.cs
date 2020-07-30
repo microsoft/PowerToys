@@ -130,20 +130,6 @@ namespace Microsoft.Plugin.Folder
         {
             Log.Exception($"|Microsoft.Plugin.Folder.ContextMenu|{message}", e);
         }
-
-        private bool CanRunAsDifferentUser(string path)
-        {
-            switch (Path.GetExtension(path))
-            {
-                case ".exe":
-                case ".bat":
-                    return true;
-
-                default:
-                    return false;
-
-            }
-        }
     }
 
     public class SearchResult
