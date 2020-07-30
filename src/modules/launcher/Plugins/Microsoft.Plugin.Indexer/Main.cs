@@ -97,8 +97,8 @@ namespace Microsoft.Plugin.Indexer
                         foreach (var searchResult in searchResultsList)
                         {
                             var path = searchResult.Path;
-                            var toolTipTitle = string.Format(CultureInfo.InvariantCulture, "{0} : {1}", _context.API.GetTranslation("Microsoft_plugin_indexer_name"), searchResult.Title);
-                            var toolTipText = string.Format(CultureInfo.InvariantCulture, "{0} : {1}", _context.API.GetTranslation("Microsoft_plugin_indexer_path"), path);
+                            var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", _context.API.GetTranslation("Microsoft_plugin_indexer_name"), searchResult.Title);
+                            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", _context.API.GetTranslation("Microsoft_plugin_indexer_path"), path);
                             string workingDir = null;
                             if (_settings.UseLocationAsWorkingDir)
                                 workingDir = Path.GetDirectoryName(path);
