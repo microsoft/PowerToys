@@ -447,7 +447,6 @@ namespace PowerLauncher.ViewModel
                     _lastQuery = query;
                     Task.Run(() =>
                     {
-                        Thread.Sleep(20);
                         var plugins = PluginManager.ValidPluginsForQuery(query);
 
                         try
