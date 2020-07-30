@@ -168,6 +168,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public HotkeySettings OpenConsole
+        {
+            get
+            {
+                return settings.Properties.OpenConsole;
+            }
+
+            set
+            {
+                if (settings.Properties.OpenConsole != value)
+                {
+                    settings.Properties.OpenConsole = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
         public HotkeySettings CopyPathLocation
         {
             get
