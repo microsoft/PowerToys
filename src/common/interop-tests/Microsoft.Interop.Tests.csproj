@@ -5,11 +5,9 @@
   <Import Project="..\..\..\installer\Version.props" />
   <!-- We don't have GenerateAssemblyInfo task until we use .net core, so we generate it with WriteLinesToFile -->
   <PropertyGroup>
-    <AssemblyTitle>win-app-driver</AssemblyTitle>
-    <AssemblyDescription>PowerToys WinAppDriver</AssemblyDescription>
+    <AssemblyTitle>interop-tests</AssemblyTitle>
     <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
     <AssemblyCopyright>Copyright (C) 2020 Microsoft Corp.</AssemblyCopyright>
-    <AssemblyProduct>PowerToys</AssemblyProduct>
   </PropertyGroup>
   <ItemGroup>
     <AssemblyVersionFiles Include="Generated Files\AssemblyInfo.cs" />
@@ -21,19 +19,17 @@
       <HeaderLines Include="// See the LICENSE file in the project root for more information." />
       <HeaderLines Include="#pragma warning disable SA1516" />
       <HeaderLines Include="using System.Reflection%3b" />
-      <HeaderLines Include="using System.Resources%3b" />
       <HeaderLines Include="using System.Runtime.InteropServices%3b" />
       <HeaderLines Include="using System.Windows%3b" />
       <HeaderLines Include="[assembly: AssemblyTitle(&quot;$(AssemblyTitle)&quot;)]" />
-      <HeaderLines Include="[assembly: AssemblyDescription(&quot;$(AssemblyDescription)&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyDescription(&quot;&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyConfiguration(&quot;&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyCompany(&quot;$(AssemblyCompany)&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyCopyright(&quot;$(AssemblyCopyright)&quot;)]" />
-      <HeaderLines Include="[assembly: AssemblyProduct(&quot;$(AssemblyProduct)&quot;)]" />
+      <HeaderLines Include="[assembly: AssemblyProduct(&quot;$(AssemblyTitle)&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyTrademark(&quot;&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyCulture(&quot;&quot;)]" />
       <HeaderLines Include="[assembly: ComVisible(false)]" />
-      <HeaderLines Include="[assembly: NeutralResourcesLanguage(&quot;en-US&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyVersion(&quot;$(Version).0&quot;)]" />
       <HeaderLines Include="[assembly: AssemblyFileVersion(&quot;$(Version).0&quot;)]" />
     </ItemGroup>
@@ -42,11 +38,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{880ED251-9E16-4713-9A70-D35FE0C01669}</ProjectGuid>
+    <ProjectGuid>{437AD818-3F1F-4CA5-A79B-25233A157026}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PowerToysTests</RootNamespace>
-    <AssemblyName>PowerToysTests</AssemblyName>
+    <RootNamespace>Microsoft.Interop.Tests</RootNamespace>
+    <AssemblyName>Microsoft.Interop.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -57,94 +53,67 @@
     <TestProjectType>UnitTest</TestProjectType>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>bin\x64\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Appium.Net, Version=4.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Appium.WebDriver.4.1.1\lib\net45\Appium.Net.dll</HintPath>
-    </Reference>
-    <Reference Include="Castle.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Castle.Core.4.4.1\lib\net45\Castle.Core.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\MSTest.TestFramework.2.1.2\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\MSTest.TestFramework.2.1.2\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="SeleniumExtras.PageObjects, Version=3.11.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\DotNetSeleniumExtras.PageObjects.3.11.0\lib\net45\SeleniumExtras.PageObjects.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System">
-      <HintPath>C:\Windows\Microsoft.NET\assembly\GAC_MSIL\System\v4.0_4.0.0.0__b77a5c561934e089\System.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Configuration">
-      <HintPath>C:\Windows\Microsoft.NET\assembly\GAC_MSIL\System.Configuration\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Configuration.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Core">
-      <HintPath>C:\Windows\Microsoft.NET\assembly\GAC_MSIL\System.Core\v4.0_4.0.0.0__b77a5c561934e089\System.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="WebDriver, Version=3.141.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Selenium.WebDriver.3.141.0\lib\net45\WebDriver.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="WebDriver.Support, Version=3.141.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Selenium.Support.3.141.0\lib\net45\WebDriver.Support.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FancyZonesTests\EditorCanvasZoneResizeTests.cs" />
-    <Compile Include="FancyZonesTests\EditorCustomLayoutsTests.cs" />
-    <Compile Include="FancyZonesTests\EditorGridZoneResizeTests.cs" />
-    <Compile Include="FancyZonesTests\EditorOpeningTests.cs" />
-    <Compile Include="FancyZonesTests\EditorSettingsTests.cs" />
-    <Compile Include="FancyZonesTests\EditorTemplatesApplyTests.cs" />
-    <Compile Include="FancyZonesTests\EditorTemplatesEditTests.cs" />
-    <Compile Include="FancyZonesTests\FancyZonesEditor.cs" />
-    <Compile Include="FancyZonesTests\FancyZonesSettingsTests.cs" />
+    <Compile Include="..\..\codeAnalysis\GlobalSuppressions.cs">
+      <Link>GlobalSuppressions.cs</Link>
+    </Compile>
+    <Compile Include="InteropTests.cs" />
     <Compile Include="Generated Files\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="PowerToysSession.cs" />
-    <Compile Include="PowerToysTrayTests.cs" />
-    <Compile Include="TestShortcutHelper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <WCFMetadata Include="Connected Services\" />
-  </ItemGroup>
-  <ItemGroup>
+    <AdditionalFiles Include="..\..\codeAnalysis\StyleCop.json">
+      <Link>StyleCop.json</Link>
+    </AdditionalFiles>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers">
+      <Version>1.1.118</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\interop\interop.vcxproj">
+      <Project>{f055103b-f80b-4d0c-bf48-057c55620033}</Project>
+      <Name>interop</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\MSTest.TestAdapter.1.3.2\build\net45\MSTest.TestAdapter.targets" Condition="Exists('..\packages\MSTest.TestAdapter.1.3.2\build\net45\MSTest.TestAdapter.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
