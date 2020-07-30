@@ -28,6 +28,7 @@ function Get-Dirty-Files-From-Git() {
   $result = New-Object System.Collections.Generic.List[string]
   $staged, $unstaged, $untracked | % {
     $_.Split(" ") | 
+      where {Test-Path $_ -PathType Leaf} |
       where {$sourceExtensions.Contains((Get-Item $_).Extension)} | 
       foreach {$result.Add($_)}
   } 
