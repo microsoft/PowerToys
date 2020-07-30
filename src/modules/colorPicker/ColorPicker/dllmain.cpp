@@ -9,10 +9,9 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-BOOL APIENTRY DllMain( HMODULE hModule,
-                       DWORD  ul_reason_for_call,
-                       LPVOID lpReserved
-                     )
+BOOL APIENTRY DllMain(HMODULE hModule,
+                      DWORD ul_reason_for_call,
+                      LPVOID lpReserved)
 {
     switch (ul_reason_for_call)
     {
@@ -27,7 +26,8 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     return TRUE;
 }
 
-struct ModuleSettings{
+struct ModuleSettings
+{
 } g_settings;
 
 class ColorPicker : public PowertoyModuleIface
@@ -39,8 +39,9 @@ private:
 
     HANDLE m_hProcess;
 
-     // Time to wait for process to close after sending WM_CLOSE signal
+    // Time to wait for process to close after sending WM_CLOSE signal
     static const int MAX_WAIT_MILLISEC = 10000;
+
 public:
     ColorPicker()
     {
@@ -65,13 +66,6 @@ public:
     virtual const wchar_t* get_name() override
     {
         return app_name.c_str();
-    }
-
-    virtual const wchar_t** get_events() override
-    {
-        static const wchar_t* events[] = { nullptr };
-
-        return events;
     }
 
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
@@ -111,8 +105,8 @@ public:
         }
     }
 
-    virtual void enable(){
-
+    virtual void enable()
+    {
         // use only with new settings?
         if (UseNewSettings())
         {
@@ -134,23 +128,19 @@ public:
         }
     };
 
-    virtual void disable() {
+    virtual void disable()
+    {
         if (m_enabled)
         {
             terminateProcess();
         }
-        
+
         m_enabled = false;
     }
 
     virtual bool is_enabled() override
     {
         return m_enabled;
-    }
-
-    virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
-    {
-        return 0;
     }
 
     static BOOL CALLBACK requestMainWindowClose(HWND nextWindow, LPARAM closePid)
@@ -175,7 +165,7 @@ public:
         }
     }
 
-     /* Register helper class to handle system menu items related actions. */
+    /* Register helper class to handle system menu items related actions. */
     virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) {}
     /* Handle action on system menu item. */
     virtual void signal_system_menu_action(const wchar_t* name) {}
@@ -185,4 +175,3 @@ extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
     return new ColorPicker();
 }
-

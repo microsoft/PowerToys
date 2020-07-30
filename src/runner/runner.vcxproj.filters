@@ -6,9 +6,6 @@
     <ClCompile Include="unhandled_exception_handler.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="lowlevel_keyboard_event.cpp">
-      <Filter>Events</Filter>
-    </ClCompile>
     <ClCompile Include="tray_icon.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
@@ -26,12 +23,6 @@
     </ClCompile>
     <ClCompile Include="general_settings.cpp">
       <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="powertoys_events.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="win_hook_event.cpp">
-      <Filter>Events</Filter>
     </ClCompile>
     <ClCompile Include="system_menu_helper.cpp">
       <Filter>Utils</Filter>
@@ -54,9 +45,6 @@
     <ClInclude Include="unhandled_exception_handler.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="lowlevel_keyboard_event.h">
-      <Filter>Events</Filter>
-    </ClInclude>
     <ClInclude Include="tray_icon.h">
       <Filter>Utils</Filter>
     </ClInclude>
@@ -74,12 +62,6 @@
     </ClInclude>
     <ClInclude Include="general_settings.h">
       <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="powertoys_events.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="win_hook_event.h">
-      <Filter>Events</Filter>
     </ClInclude>
     <ClInclude Include="system_menu_helper.h">
       <Filter>Utils</Filter>
@@ -106,9 +88,6 @@
     </Filter>
     <Filter Include="svgs">
       <UniqueIdentifier>{1123565f-43ba-4eb8-a6f5-2d5f8f3ae6af}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Events">
-      <UniqueIdentifier>{d409b25e-c0f1-4913-bb32-da4a21339c76}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{74d0b535-16ee-46cc-9adf-dc4668bbcfda}</UniqueIdentifier>

@@ -129,6 +129,12 @@
     <ClInclude Include="processApi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LowlevelKeyboardEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WinHookEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d2d_svg.cpp">

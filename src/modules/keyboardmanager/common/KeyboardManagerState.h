@@ -2,8 +2,8 @@
 #include <mutex>
 #include "KeyboardManagerConstants.h"
 #include "../common/keyboard_layout.h"
+#include "../common/LowlevelKeyboardEvent.h"
 #include <functional>
-#include <interface/lowlevel_keyboard_event_data.h>
 #include <variant>
 #include "Shortcut.h"
 #include "RemapShortcut.h"
