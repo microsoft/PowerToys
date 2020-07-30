@@ -135,8 +135,10 @@ namespace PowerToysTests
             try
             {
                 trayButton.Click();
-                session.FindElementByXPath("//Button[@Name=\"PowerToys\"]").Click();
-                trayButton.Click();
+                WaitSeconds(1);
+
+                PowerToysTrayButton().Click();
+                trayButton.Click(); //close
             }
             catch (Exception ex)
             {
@@ -176,13 +178,26 @@ namespace PowerToysTests
             }
         }
 
+        protected static AppiumWebElement PowerToysTrayButton()
+        {
+            WindowsElement notificationOverflow = session.FindElementByName("Notification Overflow");
+            Assert.IsNotNull(notificationOverflow);
+            AppiumWebElement overflowArea = notificationOverflow.FindElementByName("Overflow Notification Area");
+            Assert.IsNotNull(overflowArea);
+            AppiumWebElement powerToys = overflowArea.FindElementByXPath("//Button[contains(@Name, \"PowerToys\")]");
+            Assert.IsNotNull(powerToys);
+
+            return powerToys;
+        }
+
         private static bool CheckPowerToysLaunched()
         {
             bool isLaunched = false;
             try
             {
                 trayButton.Click();
-                WindowsElement pt = WaitElementByXPath("//Button[@Name=\"PowerToys\"]");
+                WaitSeconds(1);
+                AppiumWebElement pt = PowerToysTrayButton();
                 isLaunched = (pt != null);
                 trayButton.Click(); //close
             }
