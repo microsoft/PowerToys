@@ -169,7 +169,10 @@ namespace PowerToysTests
                 WindowsElement settings = session.FindElementByName("PowerToys Settings");
                 if (settings != null)
                 {
-                    settings.SendKeys(Keys.Alt + Keys.F4);
+                    settings.Click();
+                    WaitSeconds(1);
+                    settings.FindElementByName("Close").Click();
+                    //settings.SendKeys(Keys.Alt + Keys.F4);
                 }
             }
             catch (Exception ex)
