@@ -12,6 +12,7 @@ using OpenQA.Selenium.Interactions;
 
 namespace PowerToysTests
 {
+    [Ignore]
     [TestClass]
     public class FancyZonesSettingsTests : PowerToysSession
     {
