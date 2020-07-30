@@ -14,11 +14,6 @@ namespace MarkdownPreviewHandler.Telemetry.Events
     [EventData]
     public class MarkdownFileHandlerLoaded : EventBase, IEvent
     {
-        /// <summary>
-        /// Gets The version string. TODO: This should be replaced by a P/Invoke call to get_product_version.
-        /// </summary>
-        public string Version => "v0.19.3";
-
         /// <inheritdoc/>
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
     }

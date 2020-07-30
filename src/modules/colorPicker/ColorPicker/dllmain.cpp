@@ -3,6 +3,7 @@
 #include <common/common.h>
 #include <interface/powertoy_module_interface.h>
 #include "trace.h"
+#include "resource.h"
 #include <common\settings_objects.h>
 #include <common\os-detect.h>
 
@@ -43,7 +44,7 @@ private:
 public:
     ColorPicker()
     {
-        app_name = L"ColorPicker";
+        app_name = GET_RESOURCE_STRING(IDS_LAUNCHER_NAME);
     }
 
     ~ColorPicker()
@@ -79,8 +80,7 @@ public:
 
         // Create a Settings object.
         PowerToysSettings::Settings settings(hinstance, get_name());
-        settings.set_description(L"Color picker");
-        //  settings.set_description(GET_RESOURCE_STRING(IDS_LAUNCHER_SETTINGS_DESC));
+        settings.set_description(GET_RESOURCE_STRING(IDS_LAUNCHER_SETTINGS_DESC));
 
         settings.set_overview_link(L"https://aka.ms/PowerToysOverview_ColorPicker");
 
