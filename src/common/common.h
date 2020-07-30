@@ -40,7 +40,7 @@ bool operator<(const RECT& lhs, const RECT& rhs);
 // Moves and/or resizes small_rect to fit inside big_rect.
 RECT keep_rect_inside_rect(const RECT& small_rect, const RECT& big_rect);
 // Initializes and runs windows message loop
-int run_message_loop();
+int run_message_loop(const bool until_idle = false, const std::optional<uint32_t> timeout_seconds = {});
 
 std::optional<std::wstring> get_last_error_message(const DWORD dw);
 void show_last_error_message(LPCWSTR lpszFunction, DWORD dw);
@@ -89,7 +89,7 @@ std::wstring get_process_path(HWND hwnd) noexcept;
 std::wstring get_product_version();
 
 std::wstring get_module_filename(HMODULE mod = nullptr);
-std::wstring get_module_folderpath(HMODULE mod = nullptr);
+std::wstring get_module_folderpath(HMODULE mod = nullptr, const bool removeFilename = true);
 
 // Get a string from the resource file
 std::wstring get_resource_string(UINT resource_id, HINSTANCE instance, const wchar_t* fallback);
@@ -135,6 +135,6 @@ struct overloaded : Ts...
     using Ts::operator()...;
 };
 template<class... Ts>
-overloaded(Ts...)->overloaded<Ts...>;
+overloaded(Ts...) -> overloaded<Ts...>;
 
 #define POWER_LAUNCHER_PID_SHARED_FILE L"Local\\3cbfbad4-199b-4e2c-9825-942d5d3d3c74"

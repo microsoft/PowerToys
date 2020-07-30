@@ -338,7 +338,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="https://aka.ms/powerToysKBMSettingImage" />
+                <Image Source="ms-appx:///Assets/Modules/KBM.png" />
             </Border>
 
             <StackPanel x:Name="LinksPanel"

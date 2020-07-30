@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.PowerToys.Settings.UI.Lib;
+using System;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
@@ -15,13 +12,36 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             bool isEnabled = (bool)value;
-            if (isEnabled)
+            GeneralSettings generalSettings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
+
+            var defaultTheme = new Windows.UI.ViewManagement.UISettings();
+            var uiTheme = defaultTheme.GetColorValue(Windows.UI.ViewManagement.UIColorType.Background).ToString();
+
+            string selectedTheme = generalSettings.Theme.ToLower();
+
+            if (selectedTheme == "dark" || (selectedTheme == "system" && uiTheme == "#FF000000"))
             {
-                return new SolidColorBrush((Color)Application.Current.Resources["SystemBaseHighColor"]);
+                // DARK
+                if (isEnabled)
+                {
+                    return (SolidColorBrush)Application.Current.Resources["DarkForegroundBrush"];
+                }
+                else
+                {
+                    return (SolidColorBrush)Application.Current.Resources["DarkForegroundDisabledBrush"];
+                }
             }
             else
             {
-                return (SolidColorBrush)Application.Current.Resources["SystemControlDisabledBaseMediumLowBrush"];
+                // LIGHT
+                if (isEnabled)
+                {
+                    return (SolidColorBrush)Application.Current.Resources["LightForegroundBrush"];
+                }
+                else
+                {
+                    return (SolidColorBrush)Application.Current.Resources["LightForegroundDisabledBrush"];
+                }
             }
         }
 

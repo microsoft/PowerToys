@@ -155,6 +155,12 @@
       <!-- link-time polymorpism -->
       <ForceSymbolReferences>ModuleAddRef,ModuleRelease</ForceSymbolReferences>
     </Lib>
+    <ClCompile>
+      <MultiProcessorCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</MultiProcessorCompilation>
+    </ClCompile>
+    <ClCompile>
+      <MultiProcessorCompilation Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</MultiProcessorCompilation>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="PowerRenameUI.h" />

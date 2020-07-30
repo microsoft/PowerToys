@@ -303,13 +303,13 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="https://aka.ms/powerToysFancyZoneSettingImage" />
+                <Image Source="ms-appx:///Assets/Modules/FancyZones.png" />
             </Border>
 
             <StackPanel x:Name="LinksPanel"
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
-                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_FancyZones" Margin="0,-3,0,0">
+                <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_FancyZones">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
                 <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">

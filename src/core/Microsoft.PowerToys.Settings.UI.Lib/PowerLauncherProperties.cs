@@ -46,7 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
 
         public PowerLauncherProperties()
         {
-            OpenPowerLauncher = new HotkeySettings();
+            OpenPowerLauncher = new HotkeySettings(false, false, true, false, 32);
             OpenFileLocation = new HotkeySettings();
             CopyPathLocation = new HotkeySettings();
             OpenConsole = new HotkeySettings();
@@ -55,6 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             IgnoreHotkeysInFullscreen = false;
             DisableDriveDetectionWarning = false;
             ClearInputOnLaunch = false;
+            MaximumNumberOfResults = 4;
         }
     }
 }

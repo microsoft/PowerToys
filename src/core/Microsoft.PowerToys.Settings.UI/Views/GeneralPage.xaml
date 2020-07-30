@@ -83,7 +83,7 @@
                           IsEnabled="{Binding Mode=TwoWay, Path=IsElevated, Source={StaticResource eventViewModel}}"
                           IsOn="{Binding Mode=TwoWay, Path=RunElevated, Source={StaticResource eventViewModel}}"/>
 
-            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/blob/master/doc/devdocs/run-as-admin-detection.md">
+            <HyperlinkButton NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp">
                 <TextBlock x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link" />
             </HyperlinkButton>
 
@@ -155,7 +155,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="https://aka.ms/powerToysPTSettingImage" />
+                <Image Source="ms-appx:///Assets/Modules/PT.png" />
             </Border>
             <StackPanel x:Name="LinksPanel"
                         RelativePanel.Below="AboutImage"

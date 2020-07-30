@@ -82,7 +82,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="https://aka.ms/powerToysPowerPreviewSettingImage" />
+                <Image Source="ms-appx:///Assets/Modules/PowerPreview.png" />
             </Border>
 
             <StackPanel x:Name="LinksPanel"
