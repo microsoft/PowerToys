@@ -268,13 +268,26 @@ RECT keep_rect_inside_rect(const RECT& small_rect, const RECT& big_rect)
     return result;
 }
 
-int run_message_loop()
+int run_message_loop(const bool until_idle, const std::optional<uint32_t> timeout_seconds)
 {
     MSG msg;
-    while (GetMessage(&msg, NULL, 0, 0))
+    bool stop = false;
+    UINT_PTR timerId = 0;
+    if (timeout_seconds.has_value())
+    {
+        timerId = SetTimer(nullptr, 0, *timeout_seconds * 1000, nullptr);
+    }
+
+    while (!stop && GetMessageW(&msg, nullptr, 0, 0))
     {
         TranslateMessage(&msg);
-        DispatchMessage(&msg);
+        DispatchMessageW(&msg);
+        stop = until_idle && !PeekMessageW(&msg, nullptr, 0, 0, PM_NOREMOVE);
+        stop = stop || (msg.message == WM_TIMER && msg.wParam == timerId);
+    }
+    if (timeout_seconds.has_value())
+    {
+        KillTimer(nullptr, timerId);
     }
     return static_cast<int>(msg.wParam);
 }
@@ -537,7 +550,7 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWOR
             CloseHandle(pi.hThread);
         }
     }
-    
+
     return succeeded;
 }
 
@@ -548,7 +561,7 @@ bool run_same_elevation(const std::wstring& file, const std::wstring& params, DW
     {
         executable_args += L" " + params;
     }
-    
+
     STARTUPINFO si = { 0 };
     PROCESS_INFORMATION pi = { 0 };
     auto succeeded = CreateProcessW(file.c_str(),
@@ -656,7 +669,7 @@ std::wstring get_module_filename(HMODULE mod)
     return { buffer, actual_length };
 }
 
-std::wstring get_module_folderpath(HMODULE mod)
+std::wstring get_module_folderpath(HMODULE mod, const bool removeFilename)
 {
     wchar_t buffer[MAX_PATH + 1];
     DWORD actual_length = GetModuleFileNameW(mod, buffer, MAX_PATH);
@@ -671,7 +684,10 @@ std::wstring get_module_folderpath(HMODULE mod)
         return long_filename;
     }
 
-    PathRemoveFileSpecW(buffer);
+    if (removeFilename)
+    {
+        PathRemoveFileSpecW(buffer);
+    }
     return { buffer, (UINT)lstrlenW(buffer) };
 }
 

@@ -156,6 +156,6 @@ void MockedInput::SetForegroundProcess(std::wstring process)
 
 // Function to get the foreground process name
 void MockedInput::GetForegroundProcess(_Out_ std::wstring& foregroundProcess)
-{    
+{
     foregroundProcess = currentProcess;
 }

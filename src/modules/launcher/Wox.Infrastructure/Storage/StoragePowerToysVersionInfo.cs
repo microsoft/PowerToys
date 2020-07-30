@@ -40,13 +40,29 @@ namespace Wox.Infrastructure.Storage
             string[] split1 = version1.Split(new string[] { version, period }, StringSplitOptions.RemoveEmptyEntries);
             string[] split2 = version2.Split(new string[] { version, period }, StringSplitOptions.RemoveEmptyEntries);
 
+            // If an incomplete file write resulted in the version number not being saved completely, then the cache must be deleted
+            if (split1.Length != split2.Length || split1.Length != versionLength)
+            {
+                return true;
+            }
+
             for (int i = 0; i < versionLength; i++)
             {
-                if (int.Parse(split1[i]) < int.Parse(split2[i]))
+                if (int.TryParse(split1[i], out int version1AsInt) && int.TryParse(split2[i], out int version2AsInt))
+                {
+                    if (version1AsInt < version2AsInt)
+                    {
+                        return true;
+                    }
+                }
+
+                // If either of the values could not be parsed, the version number was not saved correctly and the cache must be deleted
+                else
                 {
                     return true;
                 }
             }
+
             return false;
         }
 

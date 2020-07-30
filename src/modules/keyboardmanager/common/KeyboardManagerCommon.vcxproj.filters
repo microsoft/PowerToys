@@ -65,6 +65,9 @@
     <ClInclude Include="InputInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ModifierKey.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

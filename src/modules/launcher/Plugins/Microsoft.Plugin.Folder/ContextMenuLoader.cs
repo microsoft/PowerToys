@@ -23,6 +23,7 @@ namespace Microsoft.Plugin.Folder
             _context = context;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive, and instead log the exception")]
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
             var contextMenus = new List<ContextMenuResult>();
@@ -95,6 +96,7 @@ namespace Microsoft.Plugin.Folder
             return contextMenus;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive, and instead log the exception")]
         private ContextMenuResult CreateOpenContainingFolderResult(SearchResult record)
         {
             return new ContextMenuResult
@@ -124,35 +126,7 @@ namespace Microsoft.Plugin.Folder
             };
         }
 
-
-        private Result CreateOpenWithEditorResult(SearchResult record)
-        {
-            string editorPath = "notepad.exe"; // TODO add the ability to create a custom editor
-
-            var name = "Open With Editor: " + Path.GetFileNameWithoutExtension(editorPath);
-            return new Result
-            {
-                Title = name,
-                Action = _ =>
-                {
-                    try
-                    {
-                        Process.Start(editorPath, record.FullPath);
-                        return true;
-                    }
-                    catch (Exception e)
-                    {
-                        var message = $"Fail to editor for file at {record.FullPath}";
-                        LogException(message, e);
-                        _context.API.ShowMsg(message);
-                        return false;
-                    }
-                },
-                IcoPath = editorPath
-            };
-        }
-
-        public void LogException(string message, Exception e)
+        public static void LogException(string message, Exception e)
         {
             Log.Exception($"|Microsoft.Plugin.Folder.ContextMenu|{message}", e);
         }

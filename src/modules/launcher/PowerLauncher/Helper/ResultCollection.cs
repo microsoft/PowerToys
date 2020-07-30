@@ -2,16 +2,69 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Diagnostics;
+using System.Windows;
+using System.Windows.Threading;
 
 namespace PowerLauncher.Helper
 {
     public class ResultCollection : ObservableCollection<ResultViewModel>
     {
+        /// <summary>
+        /// This private variable holds the flag to
+        /// turn on and off the collection changed notification.
+        /// </summary>
+        private bool suspendCollectionChangeNotification;
 
-        public void RemoveAll(Predicate<ResultViewModel> predicate)
+        /// <summary>
+        /// Initializes a new instance of the FastObservableCollection class.
+        /// </summary>
+        public ResultCollection()
+            : base()
+        {
+            this.suspendCollectionChangeNotification = false;
+        }
+
+        /// <summary>
+        /// This event is overriden CollectionChanged event of the observable collection.
+        /// </summary>
+        //public override event NotifyCollectionChangedEventHandler CollectionChanged;
+
+        /// <summary>
+        /// Raises collection change event.
+        /// </summary>
+        public void NotifyChanges()
+        {
+            this.ResumeCollectionChangeNotification();
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        }
+
+        /// <summary>
+        /// Resumes collection changed notification.
+        /// </summary>
+        public void ResumeCollectionChangeNotification()
+        {
+            this.suspendCollectionChangeNotification = false;
+        }
+
+        /// <summary>
+        /// Suspends collection changed notification.
+        /// </summary>
+        public void SuspendCollectionChangeNotification()
+        {
+            this.suspendCollectionChangeNotification = true;
+        }
+
+        /// <summary>
+        /// This method removes all items that match a predicate
+        /// </summary>
+        /// <param name="predicate">predicate</param>
+        public void RemovePredicate(Predicate<ResultViewModel> predicate)
         {
             CheckReentrancy();
 
+            this.SuspendCollectionChangeNotification();
             for (int i = Count - 1; i >= 0; i--)
             {
                 if (predicate(this[i]))
@@ -36,6 +89,7 @@ namespace PowerLauncher.Helper
             int oldCount = Items.Count;
             int location = newCount > oldCount ? oldCount : newCount;
 
+            this.SuspendCollectionChangeNotification();
             for (int i = 0; i < location; i++)
             {
                 ResultViewModel oldResult = this[i];
@@ -50,7 +104,6 @@ namespace PowerLauncher.Helper
                 }
             }
 
-
             if (newCount >= oldCount)
             {
                 for (int i = oldCount; i < newCount; i++)
@@ -64,6 +117,21 @@ namespace PowerLauncher.Helper
                 {
                     RemoveAt(i);
                 }
+            }
+        }
+
+        /// <summary>
+        /// This collection changed event performs thread safe event raising.
+        /// </summary>
+        /// <param name="e">The event argument.</param>
+        protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            // Recommended is to avoid reentry 
+            // in collection changed event while collection
+            // is getting changed on other thread.
+            if(!this.suspendCollectionChangeNotification)
+            {
+                base.OnCollectionChanged(e);
             }
         }
     }

@@ -16,6 +16,11 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
+namespace
+{
+    const wchar_t TOAST_TITLE[] = L"FancyZones";
+}
+
 namespace WindowMoveHandlerUtils
 {
     bool IsCursorTypeIndicatingSizeEvent()
@@ -399,7 +404,10 @@ void WindowMoveHandlerPrivate::WarnIfElevationIsRequired(HWND window) noexcept
                 notifications::link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_LEARN_MORE), L"https://aka.ms/powertoysDetectedElevatedHelp" },
                 notifications::link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN), L"powertoys://cant_drag_elevated_disable/" }
             };
-            notifications::show_toast_with_activations(GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED), {}, std::move(actions));
+            notifications::show_toast_with_activations(GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED),
+                                                       TOAST_TITLE,
+                                                       {},
+                                                       std::move(actions));
             warning_shown = true;
         }
     }

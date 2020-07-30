@@ -115,7 +115,7 @@
     <system:String x:Key="reportWindow_sending">Sender</system:String>
     <system:String x:Key="reportWindow_report_succeed">Rapport sendt korrekt</system:String>
     <system:String x:Key="reportWindow_report_failed">Kunne ikke sende rapport</system:String>
-    <system:String x:Key="reportWindow_wox_got_an_error">Wox fik en fejl</system:String>
+    <system:String x:Key="reportWindow_wox_got_an_error">PT Run fik en fejl</system:String>
 
     <!--update-->
     <system:String x:Key="update_wox_update_new_version_available">Ny Wox udgivelse {0} er nu tilgængelig</system:String>

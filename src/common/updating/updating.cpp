@@ -17,16 +17,19 @@
 #include <winrt/Windows.Networking.Connectivity.h>
 
 #include "VersionHelper.h"
+#include <PathCch.h>
 
 namespace
 {
     const wchar_t POWER_TOYS_UPGRADE_CODE[] = L"{42B84BF7-5FBF-473B-9C8B-049DC16F7708}";
+    const wchar_t POWERTOYS_EXE_COMPONENT[] = L"{A2C66D91-3485-4D00-B04D-91844E6B345B}";
     const wchar_t DONT_SHOW_AGAIN_RECORD_REGISTRY_PATH[] = L"delete_previous_powertoys_confirm";
     const wchar_t LATEST_RELEASE_ENDPOINT[] = L"https://api.github.com/repos/microsoft/PowerToys/releases/latest";
     const wchar_t MSIX_PACKAGE_NAME[] = L"Microsoft.PowerToys";
     const wchar_t MSIX_PACKAGE_PUBLISHER[] = L"CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US";
 
     const size_t MAX_DOWNLOAD_ATTEMPTS = 3;
+    const wchar_t TOAST_TITLE[] = L"PowerToys";
 }
 
 namespace localized_strings
@@ -88,7 +91,7 @@ namespace updating
         {
             try
             {
-                ::notifications::show_toast(*system_message);
+                ::notifications::show_toast(*system_message, TOAST_TITLE);
             }
             catch (...)
             {
@@ -114,7 +117,7 @@ namespace updating
             if (github_version > current_version)
             {
                 const std::wstring_view required_architecture = get_architecture_string(get_current_architecture());
-                constexpr const std::wstring_view required_filename_pattern = updating::installer_filename_pattern;
+                constexpr const std::wstring_view required_filename_pattern = updating::INSTALLER_FILENAME_PATTERN;
                 // Desc-sorted by its priority
                 const std::array<std::wstring_view, 2> asset_extensions = { L".exe", L".msi" };
                 for (const auto asset_extension : asset_extensions)
@@ -202,7 +205,7 @@ namespace updating
         {
             co_return;
         }
-        
+
         if (download_updates_automatically && !could_be_costly_connection())
         {
             auto installer_download_dst = create_download_path() / new_version->installer_filename;
@@ -260,8 +263,8 @@ namespace updating
 
         try
         {
-            auto progressUpdateHandle = [](float progress) {
-                updating::notifications::update_download_progress(progress);
+            auto progressUpdateHandle = [&](float progress) {
+                updating::notifications::update_download_progress(new_version.value(), progress);
             };
 
             http::HttpClient client;
@@ -274,5 +277,85 @@ namespace updating
         }
 
         co_return new_version->installer_filename;
+    }
+
+    std::optional<std::wstring> get_msi_package_installed_path()
+    {
+        constexpr size_t guid_length = 39;
+        wchar_t product_ID[guid_length];
+        if (const bool found = ERROR_SUCCESS == MsiEnumRelatedProductsW(POWER_TOYS_UPGRADE_CODE, 0, 0, product_ID); !found)
+        {
+            return std::nullopt;
+        }
+
+        if (const bool installed = INSTALLSTATE_DEFAULT == MsiQueryProductStateW(product_ID); !installed)
+        {
+            return std::nullopt;
+        }
+
+        DWORD buf_size = MAX_PATH;
+        wchar_t buf[MAX_PATH];
+        if (ERROR_SUCCESS == MsiGetProductInfoW(product_ID, INSTALLPROPERTY_INSTALLLOCATION, buf, &buf_size) && buf_size)
+        {
+            return buf;
+        }
+
+        DWORD package_path_size = 0;
+
+        if (ERROR_SUCCESS != MsiGetProductInfoW(product_ID, INSTALLPROPERTY_LOCALPACKAGE, nullptr, &package_path_size))
+        {
+            return std::nullopt;
+        }
+        std::wstring package_path(++package_path_size, L'\0');
+
+        if (ERROR_SUCCESS != MsiGetProductInfoW(product_ID, INSTALLPROPERTY_LOCALPACKAGE, package_path.data(), &package_path_size))
+        {
+            return std::nullopt;
+        }
+        package_path.resize(size(package_path) - 1); // trim additional \0 which we got from MsiGetProductInfoW
+
+        wchar_t path[MAX_PATH];
+        DWORD path_size = MAX_PATH;
+        MsiGetComponentPathW(product_ID, POWERTOYS_EXE_COMPONENT, path, &path_size);
+        if (!path_size)
+        {
+            return std::nullopt;
+        }
+        PathCchRemoveFileSpec(path, path_size);
+        return path;
+    }
+
+    std::optional<VersionHelper> get_installed_powertoys_version()
+    {
+        auto installed_path = get_msi_package_installed_path();
+        if (!installed_path)
+        {
+            return std::nullopt;
+        }
+        *installed_path += L"\\PowerToys.exe";
+
+        // Get the version information for the file requested
+        const DWORD fvSize = GetFileVersionInfoSizeW(installed_path->c_str(), nullptr);
+        if (!fvSize)
+        {
+            return std::nullopt;
+        }
+
+        auto pbVersionInfo = std::make_unique<BYTE[]>(fvSize);
+
+        if (!GetFileVersionInfoW(installed_path->c_str(), 0, fvSize, pbVersionInfo.get()))
+        {
+            return std::nullopt;
+        }
+
+        VS_FIXEDFILEINFO* fileInfo = nullptr;
+        UINT fileInfoLen = 0;
+        if (!VerQueryValueW(pbVersionInfo.get(), L"\\", reinterpret_cast<LPVOID*>(&fileInfo), &fileInfoLen))
+        {
+            return std::nullopt;
+        }
+        return VersionHelper{ (fileInfo->dwFileVersionMS >> 16) & 0xffff,
+                              (fileInfo->dwFileVersionMS >> 0) & 0xffff,
+                              (fileInfo->dwFileVersionLS >> 16) & 0xffff };
     }
 }

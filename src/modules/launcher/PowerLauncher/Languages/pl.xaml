@@ -115,7 +115,7 @@
     <system:String x:Key="reportWindow_sending">Wysyłam raport...</system:String>
     <system:String x:Key="reportWindow_report_succeed">Raport wysłany pomyślnie</system:String>
     <system:String x:Key="reportWindow_report_failed">Nie udało się wysłać raportu</system:String>
-    <system:String x:Key="reportWindow_wox_got_an_error">W programie Wox wystąpił błąd</system:String>
+    <system:String x:Key="reportWindow_wox_got_an_error">PT Run programie Wox wystąpił błąd</system:String>
 
     <!--update-->
     <system:String x:Key="update_wox_update_new_version_available">Nowa wersja Wox {0} jest dostępna</system:String>

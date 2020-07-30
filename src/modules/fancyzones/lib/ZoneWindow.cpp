@@ -184,8 +184,6 @@ public:
     CycleActiveZoneSet(DWORD vkCode) noexcept;
     IFACEMETHODIMP_(std::wstring)
     UniqueId() noexcept { return { m_uniqueId }; }
-    IFACEMETHODIMP_(std::wstring)
-    WorkAreaKey() noexcept { return { m_workArea }; }
     IFACEMETHODIMP_(void)
     SaveWindowProcessToZoneIndex(HWND window) noexcept;
     IFACEMETHODIMP_(IZoneSet*)
@@ -216,7 +214,6 @@ private:
     winrt::com_ptr<IZoneWindowHost> m_host;
     HMONITOR m_monitor{};
     std::wstring m_uniqueId; // Parsed deviceId + resolution + virtualDesktopId
-    wchar_t m_workArea[256]{};
     wil::unique_hwnd m_window{}; // Hidden tool window used to represent current monitor desktop work area.
     HWND m_windowMoveSize{};
     bool m_drawHints{};
@@ -265,9 +262,7 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
 
     m_monitor = monitor;
     const UINT dpi = GetDpiForMonitor(m_monitor);
-    const Rect monitorRect(mi.rcMonitor);
     const Rect workAreaRect(mi.rcWork, dpi);
-    StringCchPrintf(m_workArea, ARRAYSIZE(m_workArea), L"%d_%d", monitorRect.width(), monitorRect.height());
 
     m_uniqueId = uniqueId;
     InitializeZoneSets(parentUniqueId);
@@ -570,8 +565,7 @@ void ZoneWindow::CalculateZoneSet() noexcept
         auto zoneSet = MakeZoneSet(ZoneSetConfig(
             zoneSetId,
             activeZoneSet.type,
-            m_monitor,
-            m_workArea));
+            m_monitor));
         MONITORINFO monitorInfo{};
         monitorInfo.cbSize = sizeof(monitorInfo);
         if (GetMonitorInfoW(m_monitor, &monitorInfo))
