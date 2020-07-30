@@ -83,7 +83,7 @@
                           IsEnabled="{Binding Mode=TwoWay, Path=IsElevated, Source={StaticResource eventViewModel}}"
                           IsOn="{Binding Mode=TwoWay, Path=RunElevated, Source={StaticResource eventViewModel}}"/>
 
-            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/wiki/PowerToys-and-running-as-Administrator">
+            <HyperlinkButton NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp">
                 <TextBlock x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link" />
             </HyperlinkButton>
 
