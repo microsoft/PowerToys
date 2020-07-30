@@ -214,7 +214,7 @@ namespace Microsoft.Plugin.Indexer
         }
 
         // Returns the Process Start Information for the new Windows Search Settings
-        public ProcessStartInfo GetWindowsSearchSettingsProcessInfo()
+        public static ProcessStartInfo GetWindowsSearchSettingsProcessInfo()
         {
             var ps = new ProcessStartInfo("ms-settings:cortana-windowssearch")
             {
