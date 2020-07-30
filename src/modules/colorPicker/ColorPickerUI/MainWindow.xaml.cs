@@ -1,6 +1,10 @@
-﻿using ColorPicker.ViewModelContracts;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.ComponentModel.Composition;
 using System.Windows;
+using ColorPicker.ViewModelContracts;
 
 namespace ColorPicker
 {
@@ -17,7 +21,6 @@ namespace ColorPicker
             DataContext = this;
             Hide();
         }
-
 
         [Import]
         public IMainViewModel MainViewModel { get; set; }

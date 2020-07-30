@@ -1,7 +1,11 @@
-﻿using ColorPicker.Helpers;
-using Microsoft.Win32;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.IO;
+using ColorPicker.Helpers;
+using Microsoft.Win32;
 
 namespace ColorPicker.Mouse
 {
@@ -18,6 +22,11 @@ namespace ColorPicker.Mouse
         private static string _originalIBeamCursorPath;
         private static string _originalCrosshairCursorPath;
         private static string _originalHandCursorPath;
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop object")]
+        private const int SPI_SETCURSORS = 0x0057;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop object")]
+        private const int SPIF_SENDCHANGE = 0x02;
 
         public static void SetColorPickerCursor()
         {
@@ -60,21 +69,21 @@ namespace ColorPicker.Mouse
             {
                 _originalArrowCursorPath = (string)Registry.GetValue(CursorsRegistryPath, ArrowRegistryName, string.Empty);
             }
+
             if (string.IsNullOrEmpty(_originalIBeamCursorPath))
             {
                 _originalIBeamCursorPath = (string)Registry.GetValue(CursorsRegistryPath, IBeamRegistryName, string.Empty);
             }
+
             if (string.IsNullOrEmpty(_originalCrosshairCursorPath))
             {
                 _originalCrosshairCursorPath = (string)Registry.GetValue(CursorsRegistryPath, CrosshairRegistryName, string.Empty);
             }
+
             if (string.IsNullOrEmpty(_originalHandCursorPath))
             {
                 _originalHandCursorPath = (string)Registry.GetValue(CursorsRegistryPath, HandRegistryName, string.Empty);
             }
         }
-
-        const int SPI_SETCURSORS = 0x0057;
-        const int SPIF_SENDCHANGE = 0x02;
     }
 }

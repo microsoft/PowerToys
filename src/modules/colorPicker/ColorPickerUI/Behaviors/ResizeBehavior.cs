@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Windows;
 using System.Windows.Interactivity;
 using System.Windows.Media.Animation;
@@ -40,6 +44,7 @@ namespace ColorPicker.Behaviors
             {
                 return (double)GetValue(WidthProperty);
             }
+
             set
             {
                 SetValue(WidthProperty, value);
@@ -52,6 +57,7 @@ namespace ColorPicker.Behaviors
             {
                 return (double)GetValue(HeightProperty);
             }
+
             set
             {
                 SetValue(HeightProperty, value);

@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -47,6 +51,7 @@ namespace ColorPicker.Keyboard
                         int errorCode = Marshal.GetLastWin32Error();
                         throw new Win32Exception(errorCode, $"Failed to remove keyboard hooks for '{Process.GetCurrentProcess().ProcessName}'. Error {errorCode}: {new Win32Exception(Marshal.GetLastWin32Error()).Message}.");
                     }
+
                     _windowsHookHandle = IntPtr.Zero;
 
                     // ReSharper disable once DelegateSubtraction
@@ -56,11 +61,13 @@ namespace ColorPicker.Keyboard
 
             if (_user32LibraryHandle != IntPtr.Zero)
             {
-                if (!FreeLibrary(_user32LibraryHandle)) // reduces reference to library by 1.
+                // reduces reference to library by 1.
+                if (!FreeLibrary(_user32LibraryHandle))
                 {
                     int errorCode = Marshal.GetLastWin32Error();
                     throw new Win32Exception(errorCode, $"Failed to unload library 'User32.dll'. Error {errorCode}: {new Win32Exception(Marshal.GetLastWin32Error()).Message}.");
                 }
+
                 _user32LibraryHandle = IntPtr.Zero;
             }
         }
@@ -81,7 +88,7 @@ namespace ColorPicker.Keyboard
             KeyDown = 0x0100,
             KeyUp = 0x0101,
             SysKeyDown = 0x0104,
-            SysKeyUp = 0x0105
+            SysKeyUp = 0x0105,
         }
 
         private IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam)

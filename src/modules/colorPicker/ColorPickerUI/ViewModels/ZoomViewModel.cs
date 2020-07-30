@@ -1,7 +1,11 @@
-﻿using ColorPicker.Common;
-using ColorPicker.ViewModelContracts;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System.ComponentModel.Composition;
 using System.Windows.Media.Imaging;
+using ColorPicker.Common;
+using ColorPicker.ViewModelContracts;
 
 namespace ColorPicker.ViewModels
 {
@@ -26,6 +30,7 @@ namespace ColorPicker.ViewModels
             {
                 return _zoomArea;
             }
+
             set
             {
                 _zoomArea = value;
@@ -39,6 +44,7 @@ namespace ColorPicker.ViewModels
             {
                 return _zoomFactor;
             }
+
             set
             {
                 _zoomFactor = value;
@@ -52,6 +58,7 @@ namespace ColorPicker.ViewModels
             {
                 return _desiredWidth;
             }
+
             set
             {
                 _desiredWidth = value;
@@ -65,6 +72,7 @@ namespace ColorPicker.ViewModels
             {
                 return _desiredHeight;
             }
+
             set
             {
                 _desiredHeight = value;
@@ -78,6 +86,7 @@ namespace ColorPicker.ViewModels
             {
                 return _width;
             }
+
             set
             {
                 _width = value;
@@ -91,6 +100,7 @@ namespace ColorPicker.ViewModels
             {
                 return _height;
             }
+
             set
             {
                 _height = value;

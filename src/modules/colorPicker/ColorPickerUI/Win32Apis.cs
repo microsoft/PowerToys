@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
@@ -6,10 +10,11 @@ namespace ColorPicker
 {
     public static class Win32Apis
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop")]
         public const int WH_KEYBOARD_LL = 13;
         public const int VkSnapshot = 0x2c;
         public const int KfAltdown = 0x2000;
-        public const int LlkhfAltdown = (KfAltdown >> 8);
+        public const int LlkhfAltdown = KfAltdown >> 8;
         public const int MonitorinfofPrimary = 0x00000001;
 
         public delegate bool MonitorEnumProc(
@@ -23,9 +28,7 @@ namespace ColorPicker
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         internal static extern bool FreeLibrary(IntPtr hModule);
 
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode,
-             CallingConvention = CallingConvention.StdCall)]
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.StdCall)]
         internal static extern IntPtr GetModuleHandle(string name);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
@@ -41,21 +44,19 @@ namespace ColorPicker
         [DllImport("user32.dll")]
         internal static extern bool GetCursorPos(out PointInter lpPoint);
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto,
-            CallingConvention = CallingConvention.StdCall, SetLastError = true)]
+        [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
         internal static extern IntPtr SetWindowsHookEx(int idHook, HookProc lpfn, IntPtr hMod, int dwThreadId);
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto,
-           CallingConvention = CallingConvention.StdCall, SetLastError = true)]
+        [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
         internal static extern bool UnhookWindowsHookEx(IntPtr idHook);
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto,
-             CallingConvention = CallingConvention.StdCall, SetLastError = true)]
+        [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
         internal static extern IntPtr CallNextHookEx(IntPtr idHook, int nCode, IntPtr wParam, IntPtr lParam);
 
         [DllImport("user32.dll", EntryPoint = "SystemParametersInfo")]
         internal static extern bool SystemParametersInfo(int uiAction, int uiParam, IntPtr pvParam, int fWinIni);
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "Interop object")]
         [StructLayout(LayoutKind.Sequential)]
         internal struct POINT
         {
@@ -63,6 +64,7 @@ namespace ColorPicker
             public int y;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "Interop object")]
         [StructLayout(LayoutKind.Sequential)]
         internal struct MSLLHOOKSTRUCT
         {
@@ -78,10 +80,11 @@ namespace ColorPicker
         {
             public int X;
             public int Y;
+
             public static explicit operator System.Windows.Point(PointInter point) => new System.Windows.Point(point.X, point.Y);
         }
 
-
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "Interop object")]
         [StructLayout(LayoutKind.Sequential)]
         internal struct Rect
         {
@@ -91,15 +94,17 @@ namespace ColorPicker
             public int bottom;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "Interop object")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "false positive, used in MonitorResolutionHelper")]
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto, Pack = 4)]
         internal class MonitorInfoEx
         {
-            internal int cbSize = Marshal.SizeOf(typeof(MonitorInfoEx));
-            internal Rect rcMonitor = default;
-            internal Rect rcWork = default;
-            internal int dwFlags = 0;
+            public int cbSize = Marshal.SizeOf(typeof(MonitorInfoEx));
+            public Rect rcMonitor = default;
+            public Rect rcWork = default;
+            public int dwFlags = 0;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            internal char[] szDevice = new char[32];
+            public char[] szDevice = new char[32];
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -111,7 +116,7 @@ namespace ColorPicker
             public int VirtualCode;
 
             /// <summary>
-            /// A hardware scan code for the key. 
+            /// A hardware scan code for the key.
             /// </summary>
             public int HardwareScanCode;
 
@@ -126,10 +131,9 @@ namespace ColorPicker
             public int TimeStamp;
 
             /// <summary>
-            /// Additional information associated with the message. 
+            /// Additional information associated with the message.
             /// </summary>
             public IntPtr AdditionalInformation;
         }
-
     }
 }

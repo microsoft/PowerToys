@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Windows;
 using System.Windows.Interactivity;
 using System.Windows.Media.Animation;
@@ -7,10 +11,9 @@ namespace ColorPicker.Behaviors
 {
     public class MoveWindowBehavior : Behavior<Window>
     {
-        public static DependencyProperty LeftProperty = DependencyProperty.Register("Left", typeof(double), typeof(MoveWindowBehavior), new PropertyMetadata(new PropertyChangedCallback(LeftPropertyChanged)));
+        private static readonly DependencyProperty LeftProperty = DependencyProperty.Register("Left", typeof(double), typeof(MoveWindowBehavior), new PropertyMetadata(new PropertyChangedCallback(LeftPropertyChanged)));
 
-        private static void LeftPropertyChanged(DependencyObject d,
-               DependencyPropertyChangedEventArgs e)
+        private static void LeftPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var sender = ((MoveWindowBehavior)d).AssociatedObject;
             var move = new DoubleAnimation(sender.Left, (double)e.NewValue, new Duration(TimeSpan.FromMilliseconds(150)), FillBehavior.Stop);
@@ -18,10 +21,9 @@ namespace ColorPicker.Behaviors
             sender.BeginAnimation(Window.LeftProperty, move, HandoffBehavior.SnapshotAndReplace);
         }
 
-        public static DependencyProperty TopProperty = DependencyProperty.Register("Top", typeof(double), typeof(MoveWindowBehavior), new PropertyMetadata(new PropertyChangedCallback(TopPropertyChanged)));
+        private static readonly DependencyProperty TopProperty = DependencyProperty.Register("Top", typeof(double), typeof(MoveWindowBehavior), new PropertyMetadata(new PropertyChangedCallback(TopPropertyChanged)));
 
-        private static void TopPropertyChanged(DependencyObject d,
-               DependencyPropertyChangedEventArgs e)
+        private static void TopPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var sender = ((MoveWindowBehavior)d).AssociatedObject;
             var move = new DoubleAnimation(sender.Top, (double)e.NewValue, new Duration(TimeSpan.FromMilliseconds(150)), FillBehavior.Stop);
@@ -35,6 +37,7 @@ namespace ColorPicker.Behaviors
             {
                 return (double)GetValue(LeftProperty);
             }
+
             set
             {
                 SetValue(LeftProperty, value);
@@ -47,6 +50,7 @@ namespace ColorPicker.Behaviors
             {
                 return (double)GetValue(TopProperty);
             }
+
             set
             {
                 SetValue(TopProperty, value);
