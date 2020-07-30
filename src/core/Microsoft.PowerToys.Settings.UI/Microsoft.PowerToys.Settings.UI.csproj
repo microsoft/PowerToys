@@ -13,6 +13,13 @@
   <ItemGroup>
     <AssemblyVersionFiles Include="Generated Files\AssemblyInfo.cs" />
   </ItemGroup>
+  <Target Name="GeneratePackageManifest" AfterTargets="PrepareForBuild">
+    <PropertyGroup>
+      <InputFile>Package.appxmanifest</InputFile>
+      <OutputFile>Generated Files\Package.appxmanifest</OutputFile>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(OutputFile)" Lines="$([System.IO.File]::ReadAllText($(InputFile)).Replace('##VERSION','$(Version)'))" Overwrite="true" Encoding="UTF-8" WriteOnlyWhenDifferent="true" />
+  </Target>
   <Target Name="GenerateAssemblyInfo" BeforeTargets="PrepareForBuild">
     <ItemGroup>
       <HeaderLines Include="// Copyright (c) Microsoft Corporation" />
@@ -152,7 +159,7 @@
     <Compile Include="Views\VisibleIfNotEmpty.cs" />
   </ItemGroup>
   <ItemGroup>
-    <AppxManifest Include="Package.appxmanifest">
+    <AppxManifest Include="Generated Files\Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
   </ItemGroup>
