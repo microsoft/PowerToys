@@ -16,6 +16,7 @@
 #include <common/updating/updating.h>
 #include <common/RestartManagement.h>
 #include <common/appMutex.h>
+#include <common/processApi.h>
 
 #include "update_state.h"
 #include "update_utils.h"
@@ -39,6 +40,7 @@ const wchar_t EXPLORER_PROCESS_NAME[] = L"explorer.exe";
 namespace localized_strings
 {
     const wchar_t MSI_VERSION_IS_ALREADY_RUNNING[] = L"An older version of PowerToys is already running.";
+    const wchar_t DOWNLOAD_UPDATE_ERROR[] = L"Couldn't download PowerToys update! Please report the issue on Github.";
     const wchar_t OLDER_MSIX_UNINSTALLED[] = L"An older MSIX version of PowerToys was uninstalled.";
     const wchar_t PT_UPDATE_MESSAGE_BOX_TEXT[] = L"PowerToys was updated and some components require Windows Explorer to restart. Do you want to restart Windows Explorer now?";
 }
@@ -232,14 +234,26 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     }
     else if (param.starts_with(download_and_install_update))
     {
-        std::wstring installer_filename = updating::download_update().get();
+        try
+        {
+            std::wstring installer_filename = updating::download_update().get();
 
-        std::wstring args{ UPDATE_NOW_LAUNCH_STAGE1_CMDARG };
-        args += L' ';
-        args += installer_filename;
-        launch_action_runner(args.c_str());
+            std::wstring args{ UPDATE_NOW_LAUNCH_STAGE1_CMDARG };
+            args += L' ';
+            args += installer_filename;
+            launch_action_runner(args.c_str());
 
-        return toast_notification_handler_result::exit_success;
+            return toast_notification_handler_result::exit_success;
+        }
+        catch (...)
+        {
+            MessageBoxW(nullptr,
+                        localized_strings::DOWNLOAD_UPDATE_ERROR,
+                        L"PowerToys",
+                        MB_ICONWARNING | MB_OK);
+
+            return toast_notification_handler_result::exit_error;
+        }
     }
     else
     {
@@ -252,10 +266,36 @@ void RequestExplorerRestart()
     if (MessageBoxW(nullptr,
                     localized_strings::PT_UPDATE_MESSAGE_BOX_TEXT,
                     L"PowerToys",
-                    MB_ICONINFORMATION | MB_YESNO | MB_DEFBUTTON1) == IDYES)
+                    MB_ICONINFORMATION | MB_YESNO | MB_DEFBUTTON1) != IDYES)
     {
-        RestartProcess(EXPLORER_PROCESS_NAME);
+        return;
     }
+    std::thread{ [] {
+        RestartProcess(EXPLORER_PROCESS_NAME);
+
+        constexpr size_t max_checks = 10;
+        for (size_t i = 0; i < max_checks; ++i)
+        {
+            Sleep(1000);
+            const bool explorerStarted = !getProcessHandlesByName(L"explorer.exe", {}).empty();
+            if (explorerStarted)
+            {
+                return;
+            }
+        }
+
+        // Timeout - restart explorer manually
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_NOASYNC | SEE_MASK_FLAG_NO_UI | SEE_MASK_NO_CONSOLE | SEE_MASK_NOCLOSEPROCESS };
+        sei.lpFile = L"cmd";
+        sei.lpParameters = L"/c explorer.exe";
+        sei.nShow = SW_HIDE;
+        ShellExecuteExW(&sei);
+        // Let cmd launch explorer, then terminate it
+        Sleep(1000);
+        TerminateProcess(sei.hProcess, 0);
+        CloseHandle(sei.hProcess);
+    } }.detach();
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)

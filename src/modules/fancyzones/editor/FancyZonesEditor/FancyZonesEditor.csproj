@@ -109,6 +109,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="..\..\..\..\codeAnalysis\GlobalSuppressions.cs">
+      <Link>GlobalSuppressions.cs</Link>
+    </Compile>
     <Compile Include="DashCaseNamingPolicy.cs" />
     <Compile Include="GridData.cs" />
     <Compile Include="GridDragHandles.cs" />
@@ -119,7 +122,6 @@
       <DependentUpon>CanvasEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="EditorWindow.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="GridEditor.xaml.cs">
       <DependentUpon>GridEditor.xaml</DependentUpon>
     </Compile>
