@@ -205,7 +205,7 @@ namespace Microsoft.Plugin.Program.Programs
             return result;
         }
 
-
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentially keeping the process alive.")]
         public List<ContextMenuResult> ContextMenus(IPublicAPI api)
         {
             var contextMenus = new List<ContextMenuResult>();

@@ -144,6 +144,7 @@ namespace Microsoft.Plugin.Program.Programs
             Version = PackageVersion.Unknown;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentially keeping the process alive.")]
         public static Application[] All()
         {
             var windows10 = new Version(10, 0);
@@ -180,6 +181,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentially keeping the process alive.")]
         private static IEnumerable<IPackage> CurrentUserPackages()
         {
             var ps = PackageManagerWrapper.FindPackagesForCurrentUser();
@@ -296,6 +298,7 @@ namespace Microsoft.Plugin.Program.Programs
                 return result;
             }
 
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentially keeping the process alive.")]
             public List<ContextMenuResult> ContextMenus(IPublicAPI api)
             {
                 var contextMenus = new List<ContextMenuResult>();
@@ -369,6 +372,7 @@ namespace Microsoft.Plugin.Program.Programs
                 return contextMenus;
             }
 
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentially keeping the process alive, and showing the user an error message")]
             private async void Launch(IPublicAPI api)
             {
                 var appManager = new ApplicationActivationHelper.ApplicationActivationManager();
