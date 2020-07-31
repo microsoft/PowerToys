@@ -327,10 +327,6 @@ public:
         return m_enabled;
     }
 
-    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override {}
-
-    virtual void signal_system_menu_action(const wchar_t* name) override {}
-
     // Hook procedure definition
     static LRESULT CALLBACK hook_proc(int nCode, WPARAM wParam, LPARAM lParam)
     {

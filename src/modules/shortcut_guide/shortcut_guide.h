@@ -24,9 +24,6 @@ public:
     virtual void disable() override;
     virtual bool is_enabled() override;
 
-    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override {}
-    virtual void signal_system_menu_action(const wchar_t* name) override {}
-
     void on_held();
     void on_held_press(DWORD vkCode);
     void quick_hide();

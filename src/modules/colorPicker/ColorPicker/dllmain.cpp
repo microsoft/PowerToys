@@ -164,11 +164,6 @@ public:
             TerminateProcess(m_hProcess, 1);
         }
     }
-
-    /* Register helper class to handle system menu items related actions. */
-    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) {}
-    /* Handle action on system menu item. */
-    virtual void signal_system_menu_action(const wchar_t* name) {}
 };
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()

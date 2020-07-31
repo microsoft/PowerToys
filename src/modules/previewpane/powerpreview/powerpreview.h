@@ -61,6 +61,4 @@ public:
     virtual void disable();
     virtual bool is_enabled();
     virtual void init_settings();
-    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override {}
-    virtual void signal_system_menu_action(const wchar_t* name) override {}
 };

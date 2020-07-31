@@ -26,8 +26,6 @@
     - unload the DLL.
  */
 
-class PowertoySystemMenuIface;
-
 class PowertoyModuleIface
 {
 public:
@@ -49,11 +47,6 @@ public:
     virtual void disable() = 0;
     /* Should return if the PowerToys is enabled or disabled. */
     virtual bool is_enabled() = 0;
-    /* Register helper class to handle system menu items related actions. */
-    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) = 0;
-    /* Handle action on system menu item. */
-    virtual void signal_system_menu_action(const wchar_t* name) = 0;
-
     /* Destroy the PowerToy and free all memory. */
     virtual void destroy() = 0;
 };
