@@ -1,22 +1,15 @@
 using Microsoft.PowerToys.Settings.UI.Lib;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
-using WindowsInput;
-using WindowsInput.Native;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin.SharedCommands;
 using Wox.Plugin;
-using Application = System.Windows.Application;
 using Control = System.Windows.Controls.Control;
-using Keys = System.Windows.Forms.Keys;
 using System.Windows.Input;
 using System.Reflection;
 
@@ -26,8 +19,6 @@ namespace Microsoft.Plugin.Shell
     {
         private string IconPath { get; set; }
         private PluginInitContext _context;
-        private bool _winRStroked;
-        private readonly KeyboardSimulator _keyboardSimulator = new KeyboardSimulator(new InputSimulator());
 
         private readonly Settings _settings;
         private readonly PluginJsonStorage<Settings> _storage;
@@ -310,36 +301,6 @@ namespace Microsoft.Plugin.Shell
             UpdateIconPath(newTheme);
         }
 
-        bool API_GlobalKeyboardEvent(int keyevent, int vkcode, SpecialKeyState state)
-        {
-            // not overriding Win+R 
-            // crutkas we need to earn the right for Win+R override
-            /*
-            if (_settings.ReplaceWinR)
-            {
-                if (keyevent == (int)KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
-                {
-                    _winRStroked = true;
-                    OnWinRPressed();
-                    return false;
-                }
-                if (keyevent == (int)KeyEvent.WM_KEYUP && _winRStroked && vkcode == (int)Keys.LWin)
-                {
-                    _winRStroked = false;
-                    _keyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.LWIN, VirtualKeyCode.BACK);
-                    return false;
-                }
-            }
-            */
-            return true;
-        }
-
-        private void OnWinRPressed()
-        {
-            _context.API.ChangeQuery($"{_context.CurrentPluginMetadata.ActionKeywords[0]}{Wox.Plugin.Query.TermSeparator}");
-            Application.Current.MainWindow.Visibility = Visibility.Visible;
-        }
-
         public Control CreateSettingPanel()
         {
             return new CMDSetting(_settings);
@@ -380,7 +341,6 @@ namespace Microsoft.Plugin.Shell
 
         public void UpdateSettings(PowerLauncherSettings settings)
         {
-            //_settings.ReplaceWinR = settings.properties.override_win_r_key;
         }
     }
 }
