@@ -806,7 +806,7 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         // Deduplication code
-        public static Func<ParallelQuery<Win32>, Win32[]> DeduplicatePrograms = (programs) =>
+        private static Func<ParallelQuery<Win32>, Win32[]> DeduplicatePrograms = (programs) =>
         {
             var uniqueExePrograms = programs.Where(x => !(string.IsNullOrEmpty(x.LnkResolvedPath) && (Extension(x.FullPath) == ExeExtension) && !(x.AppType == (uint)ApplicationTypes.RUN_COMMAND)));
             var uniquePrograms = uniqueExePrograms.Distinct(new removeDuplicatesComparer());
@@ -848,21 +848,12 @@ namespace Microsoft.Plugin.Program.Programs
 
                 return DeduplicatePrograms(programs);
             }
-#if DEBUG //This is to make developer aware of any unhandled exception and add in handling.
-            catch (Exception e)
-            {
-                throw e;
-            }
-#endif
-
-#if !DEBUG //Only do a catch all in production.
             catch (Exception e)
             {
                 ProgramLogger.LogException("|Win32|All|Not available|An unexpected error occurred", e);
 
                 return new Win32[0];
             }
-#endif
         }
     }
 }
