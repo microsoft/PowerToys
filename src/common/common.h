@@ -138,3 +138,4 @@ template<class... Ts>
 overloaded(Ts...) -> overloaded<Ts...>;
 
 #define POWER_LAUNCHER_PID_SHARED_FILE L"Local\\3cbfbad4-199b-4e2c-9825-942d5d3d3c74"
+#define COLORPICKER_PID_SHARED_FILE L"Local\\a1ccc22e-2d4a-cc55-f727-b03deacc52e9"

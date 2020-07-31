@@ -112,17 +112,61 @@ public:
         {
             unsigned long powertoys_pid = GetCurrentProcessId();
 
-            std::wstring executable_args = L"";
-            executable_args.append(std::to_wstring(powertoys_pid));
+            if (!is_process_elevated(false))
+            {
+                std::wstring executable_args = L"";
+                executable_args.append(std::to_wstring(powertoys_pid));
 
-            SHELLEXECUTEINFOW sei{ sizeof(sei) };
-            sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-            sei.lpFile = L"modules\\ColorPicker\\ColorPicker.exe";
-            sei.nShow = SW_SHOWNORMAL;
-            sei.lpParameters = executable_args.data();
-            ShellExecuteExW(&sei);
+                SHELLEXECUTEINFOW sei{ sizeof(sei) };
+                sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+                sei.lpFile = L"modules\\ColorPicker\\ColorPicker.exe";
+                sei.nShow = SW_SHOWNORMAL;
+                sei.lpParameters = executable_args.data();
+                ShellExecuteExW(&sei);
 
-            m_hProcess = sei.hProcess;
+                m_hProcess = sei.hProcess;
+            }
+            else
+            {
+                std::wstring action_runner_path = get_module_folderpath();
+
+                std::wstring params;
+                params += L"-run-non-elevated ";
+                params += L"-target modules\\ColorPicker\\ColorPicker.exe ";
+                params += L"-pidFile ";
+                params += COLORPICKER_PID_SHARED_FILE;
+                params += L" " + std::to_wstring(powertoys_pid) + L" ";
+
+                action_runner_path += L"\\action_runner.exe";
+                // Set up the shared file from which to retrieve the PID of ColorPicker
+                HANDLE hMapFile = CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(DWORD), COLORPICKER_PID_SHARED_FILE);
+                if (hMapFile)
+                {
+                    PDWORD pidBuffer = reinterpret_cast<PDWORD>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(DWORD)));
+                    if (pidBuffer)
+                    {
+                        *pidBuffer = 0;
+                        m_hProcess = NULL;
+
+                        if (run_non_elevated(action_runner_path, params, pidBuffer))
+                        {
+                            const int maxRetries = 80;
+                            for (int retry = 0; retry < maxRetries; ++retry)
+                            {
+                                Sleep(50);
+                                DWORD pid = *pidBuffer;
+                                if (pid)
+                                {
+                                    m_hProcess = OpenProcess(PROCESS_TERMINATE | PROCESS_QUERY_INFORMATION | SYNCHRONIZE, FALSE, pid);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    CloseHandle(hMapFile);
+                }
+            }
+          
 
             m_enabled = true;
         }
