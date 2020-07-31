@@ -45,7 +45,7 @@ private:
 public:
     ColorPicker()
     {
-        app_name = GET_RESOURCE_STRING(IDS_LAUNCHER_NAME);
+        app_name = GET_RESOURCE_STRING(IDS_COLORPICKER_NAME);
     }
 
     ~ColorPicker()
@@ -74,7 +74,7 @@ public:
 
         // Create a Settings object.
         PowerToysSettings::Settings settings(hinstance, get_name());
-        settings.set_description(GET_RESOURCE_STRING(IDS_LAUNCHER_SETTINGS_DESC));
+        settings.set_description(GET_RESOURCE_STRING(IDS_COLORPICKER_SETTINGS_DESC));
 
         settings.set_overview_link(L"https://aka.ms/PowerToysOverview_ColorPicker");
 
