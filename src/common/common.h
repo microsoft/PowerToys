@@ -22,7 +22,7 @@ struct FancyZonesFilter
     bool no_visible_owner = false; // True if the window is a top-level window that does not have a visible owner
     std::wstring process_path; // Path to the executable owning the window
 };
-FancyZonesFilter get_fancyzones_filtered_window(HWND window);
+FancyZonesFilter get_fancyzones_filtered_window(HWND window, bool IsNewlyCreatedWindow);
 
 // Gets active foreground window, filtering out all "non standard" windows like the taskbar, etc.
 struct ShortcutGuideFilter

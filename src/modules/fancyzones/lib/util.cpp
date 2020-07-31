@@ -153,9 +153,9 @@ void SizeWindowToRect(HWND window, RECT rect) noexcept
     ::SetWindowPlacement(window, &placement);
 }
 
-bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& excludedApps) noexcept
+bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& excludedApps, bool IsNewlyCreatedWindow) noexcept
 {
-    auto filtered = get_fancyzones_filtered_window(window);
+    auto filtered = get_fancyzones_filtered_window(window, IsNewlyCreatedWindow);
     if (!filtered.zonable)
     {
         return false;

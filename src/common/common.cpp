@@ -102,7 +102,7 @@ static bool no_visible_owner(HWND window) noexcept
     return rect.top == rect.bottom || rect.left == rect.right;
 }
 
-FancyZonesFilter get_fancyzones_filtered_window(HWND window)
+FancyZonesFilter get_fancyzones_filtered_window(HWND window, bool IsNewlyCreatedWindow)
 {
     FancyZonesFilter result;
     if (GetAncestor(window, GA_ROOT) != window || !IsWindowVisible(window))
@@ -143,7 +143,7 @@ FancyZonesFilter get_fancyzones_filtered_window(HWND window)
     result.process_path = std::move(process_path);
     result.standard_window = true;
     result.no_visible_owner = no_visible_owner(window);
-    result.zonable = result.standard_window && result.no_visible_owner;
+    result.zonable = result.standard_window && (result.no_visible_owner || !IsNewlyCreatedWindow);
     return result;
 }
 

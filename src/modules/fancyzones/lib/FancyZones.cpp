@@ -357,7 +357,7 @@ bool FancyZones::ShouldProcessNewWindow(HWND window) noexcept
     // that belong to excluded applications list.
     if (IsSplashScreen(window) ||
         (reinterpret_cast<size_t>(::GetProp(window, MULTI_ZONE_STAMP)) != 0) ||
-        !IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray))
+        !IsInterestingWindow(window, m_settings->GetSettings()->excludedAppsArray, true))
     {
         return false;
     }
