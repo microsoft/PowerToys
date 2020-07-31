@@ -228,14 +228,14 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         [Flags]
-        public enum Stgm : uint
+        public enum Stgm : Int64
         {
-            Read = 0x0,
+            Read = 0x00000000L,
         }
 
-        public enum Hresult : uint
+        public enum Hresult : Int32
         {
-            Ok = 0x0000,
+            Ok = 0x0,
         }
 
         [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
