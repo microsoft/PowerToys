@@ -29,7 +29,7 @@ namespace Microsoft.Plugin.Program
 
         private readonly PluginJsonStorage<Settings> _settingsStorage;
         private bool _disposed = false;
-        private PackageRepository _packageRepository = new PackageRepository(new PackageCatalogWrapper(), new BinaryStorage<IList<UWP.Application>>("UWP"));
+        private PackageRepository _packageRepository = new PackageRepository(new PackageCatalogWrapper(), new BinaryStorage<IList<UWPApplication>>("UWP"));
         private static Win32ProgramFileSystemWatchers _win32ProgramRepositoryHelper;
         private static Win32ProgramRepository _win32ProgramRepository;
 
@@ -104,7 +104,7 @@ namespace Microsoft.Plugin.Program
 
         public void UpdateUWPIconPath(Theme theme)
         {
-            foreach (UWP.Application app in _packageRepository)
+            foreach (UWPApplication app in _packageRepository)
             {
                 app.UpdatePath(theme);
             }
