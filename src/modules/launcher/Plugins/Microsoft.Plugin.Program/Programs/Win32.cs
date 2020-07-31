@@ -38,9 +38,9 @@ namespace Microsoft.Plugin.Program.Programs
         public string Location => ParentDirectory;
         public uint AppType { get; set; }
         // Wrappers for File Operations
-        public static IFileVersionInfoWrapper _fileVersionInfoWrapper = new FileVersionInfoWrapper();
-        public static IFileWrapper _fileWrapper = new FileWrapper();
-        public static IShellLinkHelper _helper = new ShellLinkHelper();
+        private static IFileVersionInfoWrapper _fileVersionInfoWrapper = new FileVersionInfoWrapper();
+        private static IFileWrapper _fileWrapper = new FileWrapper();
+        private static IShellLinkHelper _helper = new ShellLinkHelper();
 
         private const string ShortcutExtension = "lnk";
         private const string ApplicationReferenceExtension = "appref-ms";
@@ -502,7 +502,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         }
 
-        private static IEnumerable<string> ProgramPaths(string directory, string[] suffixes, bool recursiveSearch = true)
+        private static IEnumerable<string> ProgramPaths(string directory, IList<string> suffixes, bool recursiveSearch = true)
         {
             if (!Directory.Exists(directory))
             {
@@ -574,7 +574,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-        private static ParallelQuery<Win32> UnregisteredPrograms(List<Settings.ProgramSource> sources, string[] suffixes)
+        private static ParallelQuery<Win32> UnregisteredPrograms(List<Settings.ProgramSource> sources, IList<string> suffixes)
         {
             var listToAdd = new List<string>();
             sources.Where(s => Directory.Exists(s.Location) && s.Enabled)
@@ -597,7 +597,7 @@ namespace Microsoft.Plugin.Program.Programs
 
 
         // Function to obtain the list of applications, the locations of which have been added to the env variable PATH
-        private static ParallelQuery<Win32> PathEnvironmentPrograms(string[] suffixes)
+        private static ParallelQuery<Win32> PathEnvironmentPrograms(IList<string> suffixes)
         {
 
             // To get all the locations stored in the PATH env variable
@@ -634,7 +634,7 @@ namespace Microsoft.Plugin.Program.Programs
             return allPrograms;
         }
 
-        private static ParallelQuery<Win32> IndexPath(string[] suffixes, List<string> IndexLocation)
+        private static ParallelQuery<Win32> IndexPath(IList<string> suffixes, List<string> IndexLocation)
         {
             var disabledProgramsList = Main._settings.DisabledProgramSources;
 
@@ -661,7 +661,7 @@ namespace Microsoft.Plugin.Program.Programs
                 .Concat(programs4).Where(p => p.Valid);
         }
 
-        private static ParallelQuery<Win32> StartMenuPrograms(string[] suffixes)
+        private static ParallelQuery<Win32> StartMenuPrograms(IList<string> suffixes)
         {
             var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
             var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms);
@@ -670,7 +670,7 @@ namespace Microsoft.Plugin.Program.Programs
             return IndexPath(suffixes, IndexLocation);
         }
 
-        private static ParallelQuery<Win32> DesktopPrograms(string[] suffixes)
+        private static ParallelQuery<Win32> DesktopPrograms(IList<string> suffixes)
         {
             var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             List<string> IndexLocation = new List<string>() { directory1 };
@@ -678,7 +678,7 @@ namespace Microsoft.Plugin.Program.Programs
             return IndexPath(suffixes, IndexLocation);
         }
 
-        private static ParallelQuery<Win32> AppPathsPrograms(string[] suffixes)
+        private static ParallelQuery<Win32> AppPathsPrograms(IList<string> suffixes)
         {
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ee872121
             const string appPaths = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
