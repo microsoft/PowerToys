@@ -11,6 +11,7 @@
 #include "Dialog.h"
 #include <keyboardmanager/dll/resource.h>
 #include <keyboardmanager/common/KeyboardManagerState.h>
+#include "LoadingAndSavingRemappingHelper.h"
 
 using namespace winrt::Windows::Foundation;
 
@@ -31,7 +32,7 @@ static IAsyncAction OnClickAccept(
     XamlRoot root,
     std::function<void()> ApplyRemappings)
 {
-    KeyboardManagerHelper::ErrorType isSuccess = Dialog::CheckIfRemappingsAreValid(ShortcutControl::shortcutRemapBuffer);
+    KeyboardManagerHelper::ErrorType isSuccess = LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(ShortcutControl::shortcutRemapBuffer);
 
     if (isSuccess != KeyboardManagerHelper::ErrorType::NoError)
     {

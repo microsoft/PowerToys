@@ -116,6 +116,7 @@
     <ClCompile Include="EditKeyboardWindow.cpp" />
     <ClCompile Include="EditShortcutsWindow.cpp" />
     <ClCompile Include="KeyDropDownControl.cpp" />
+    <ClCompile Include="LoadingAndSavingRemappingHelper.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
     </ClCompile>
@@ -128,6 +129,7 @@
     <ClInclude Include="Dialog.h" />
     <ClInclude Include="EditKeyboardWindow.h" />
     <ClInclude Include="EditShortcutsWindow.h" />
+    <ClInclude Include="LoadingAndSavingRemappingHelper.h" />
     <ClInclude Include="Styles.h" />
     <ClInclude Include="KeyDropDownControl.h" />
     <ClInclude Include="pch.h" />
