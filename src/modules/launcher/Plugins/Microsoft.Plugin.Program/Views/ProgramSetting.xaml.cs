@@ -143,7 +143,7 @@ namespace Microsoft.Plugin.Program.Views
                     }
                 }
 
-                if (directoriesToAdd.Count() > 0)
+                if (directoriesToAdd.Count > 0)
                 {
                     directoriesToAdd.ForEach(x => _settings.ProgramSources.Add(x));
                     directoriesToAdd.ForEach(x => ProgramSettingDisplayList.Add(x));
@@ -179,7 +179,7 @@ namespace Microsoft.Plugin.Program.Views
                                 .SelectedItems.Cast<ProgramSource>()
                                 .ToList();
 
-            if (selectedItems.Count() == 0)
+            if (selectedItems.Count == 0)
             {
                 string msg = context.API.GetTranslation("wox_plugin_program_pls_select_program_source");
                 MessageBox.Show(msg);
@@ -190,7 +190,7 @@ namespace Microsoft.Plugin.Program.Views
                 .Where(t1 => !_settings
                                 .ProgramSources
                                 .Any(x => t1.UniqueIdentifier == x.UniqueIdentifier))
-                .Count() == 0)
+                .Any())
             {
                 var msg = string.Format(context.API.GetTranslation("wox_plugin_program_delete_program_source"));
 
@@ -288,7 +288,7 @@ namespace Microsoft.Plugin.Program.Views
                 .Where(t1 => !_settings
                                 .ProgramSources
                                 .Any(x => t1.UniqueIdentifier == x.UniqueIdentifier))
-                .Count() == 0)
+                .Any())
             {
                 btnProgramSourceStatus.Content = context.API.GetTranslation("wox_plugin_program_delete");
                 return;

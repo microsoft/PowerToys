@@ -27,7 +27,7 @@ namespace Microsoft.Plugin.Program.Storage
             this._storage = storage ?? throw new ArgumentNullException("storage", "Win32ProgramRepository requires an initialized storage interface");
             this._settings = settings ?? throw new ArgumentNullException("settings", "Win32ProgramRepository requires an initialized settings object");
             this._pathsToWatch = pathsToWatch;
-            this._numberOfPathsToWatch = pathsToWatch.Count();
+            this._numberOfPathsToWatch = pathsToWatch.Length;
             InitializeFileSystemWatchers();
         }
 
