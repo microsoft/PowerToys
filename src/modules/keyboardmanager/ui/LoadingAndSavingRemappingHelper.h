@@ -3,6 +3,8 @@
 #include <keyboardmanager/common/Helpers.h>
 #include <variant>
 
+class KeyboardManagerState;
+
 namespace LoadingAndSavingRemappingHelper
 {
     // Function to check if the set of remappings in the buffer are valid
@@ -16,4 +18,10 @@ namespace LoadingAndSavingRemappingHelper
 
     // Function to pre process the remap table before loading it into the UI
     void PreProcessRemapTable(std::unordered_map<DWORD, std::variant<DWORD, Shortcut>>& table);
+
+    // Function to apply the single key remappings from the buffer to the KeyboardManagerState variable
+    void ApplySingleKeyRemappings(KeyboardManagerState& keyboardManagerState, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& remappings, bool isTelemetryRequired);
+
+    // Function to apply the shortcut remappings from the buffer to the KeyboardManagerState variable
+    void ApplyShortcutRemappings(KeyboardManagerState& keyboardManagerState, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& remappings, bool isTelemetryRequired);
 }

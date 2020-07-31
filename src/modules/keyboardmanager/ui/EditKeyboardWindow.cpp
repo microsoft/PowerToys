@@ -269,78 +269,9 @@ void createEditKeyboardWindow(HINSTANCE hInst, KeyboardManagerState& keyboardMan
     header.SetLeftOf(applyButton, cancelButton);
 
     auto ApplyRemappings = [&keyboardManagerState, _hWndEditKeyboardWindow]() {
-        KeyboardManagerHelper::ErrorType isSuccess = KeyboardManagerHelper::ErrorType::NoError;
-        // Clear existing Key Remaps
-        keyboardManagerState.ClearSingleKeyRemaps();
-        DWORD successfulKeyToKeyRemapCount = 0;
-        DWORD successfulKeyToShortcutRemapCount = 0;
-        for (int i = 0; i < SingleKeyRemapControl::singleKeyRemapBuffer.size(); i++)
-        {
-            DWORD originalKey = std::get<DWORD>(SingleKeyRemapControl::singleKeyRemapBuffer[i].first[0]);
-            std::variant<DWORD, Shortcut> newKey = SingleKeyRemapControl::singleKeyRemapBuffer[i].first[1];
-
-            if (originalKey != NULL && !(newKey.index() == 0 && std::get<DWORD>(newKey) == NULL) && !(newKey.index() == 1 && !std::get<Shortcut>(newKey).IsValidShortcut()))
-            {
-                // If Ctrl/Alt/Shift are added, add their L and R versions instead to the same key
-                bool result = false;
-                bool res1, res2;
-                switch (originalKey)
-                {
-                case VK_CONTROL:
-                    res1 = keyboardManagerState.AddSingleKeyRemap(VK_LCONTROL, newKey);
-                    res2 = keyboardManagerState.AddSingleKeyRemap(VK_RCONTROL, newKey);
-                    result = res1 && res2;
-                    break;
-                case VK_MENU:
-                    res1 = keyboardManagerState.AddSingleKeyRemap(VK_LMENU, newKey);
-                    res2 = keyboardManagerState.AddSingleKeyRemap(VK_RMENU, newKey);
-                    result = res1 && res2;
-                    break;
-                case VK_SHIFT:
-                    res1 = keyboardManagerState.AddSingleKeyRemap(VK_LSHIFT, newKey);
-                    res2 = keyboardManagerState.AddSingleKeyRemap(VK_RSHIFT, newKey);
-                    result = res1 && res2;
-                    break;
-                case CommonSharedConstants::VK_WIN_BOTH:
-                    res1 = keyboardManagerState.AddSingleKeyRemap(VK_LWIN, newKey);
-                    res2 = keyboardManagerState.AddSingleKeyRemap(VK_RWIN, newKey);
-                    result = res1 && res2;
-                    break;
-                default:
-                    result = keyboardManagerState.AddSingleKeyRemap(originalKey, newKey);
-                }
-
-                if (!result)
-                {
-                    isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
-                    // Tooltip is already shown for this row
-                }
-                else
-                {
-                    if (newKey.index() == 0)
-                    {
-                        successfulKeyToKeyRemapCount += 1;
-                    }
-                    else
-                    {
-                        successfulKeyToShortcutRemapCount += 1;
-                    }
-                }
-            }
-            else
-            {
-                isSuccess = KeyboardManagerHelper::ErrorType::RemapUnsuccessful;
-            }
-        }
-
-        Trace::KeyRemapCount(successfulKeyToKeyRemapCount, successfulKeyToShortcutRemapCount);
+        LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings(keyboardManagerState, SingleKeyRemapControl::singleKeyRemapBuffer, true);
         // Save the updated shortcuts remaps to file.
         bool saveResult = keyboardManagerState.SaveConfigToFile();
-        if (!saveResult)
-        {
-            isSuccess = KeyboardManagerHelper::ErrorType::SaveFailed;
-        }
-
         PostMessage(_hWndEditKeyboardWindow, WM_CLOSE, 0, 0);
     };
 
