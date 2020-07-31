@@ -4,8 +4,8 @@
 
 STRINGTABLE
 BEGIN
-    IDS_LAUNCHER_NAME            L"Color Picker" 
-    IDS_LAUNCHER_SETTINGS_DESC   L"This feature requires Windows 10 version 1903 or higher"
+    IDS_COLORPICKER_NAME            L"ColorPicker" 
+    IDS_COLORPICKER_SETTINGS_DESC   L"This feature requires Windows 10 version 1903 or higher"
 END
 
 1 VERSIONINFO
