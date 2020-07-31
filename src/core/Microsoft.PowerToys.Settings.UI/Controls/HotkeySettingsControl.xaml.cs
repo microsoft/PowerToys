@@ -117,7 +117,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             HotkeyTextBox.GettingFocus += HotkeyTextBox_GettingFocus;
             HotkeyTextBox.LosingFocus += HotkeyTextBox_LosingFocus;
             HotkeyTextBox.Unloaded += HotkeyTextBox_Unloaded;
-
             hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive);
         }
 
