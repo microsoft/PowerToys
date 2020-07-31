@@ -28,7 +28,7 @@ namespace Microsoft.Plugin.Program.Views
         // this as temporary holder for displaying all loaded programs sources. 
         internal static List<ProgramSource> ProgramSettingDisplayList { get; set; }
 
-        public ProgramSetting(PluginInitContext context, Settings settings, Programs.Win32[] win32s, UWP.Application[] uwps)
+        public ProgramSetting(PluginInitContext context, Settings settings)
         {
             this.context = context;
             InitializeComponent();
