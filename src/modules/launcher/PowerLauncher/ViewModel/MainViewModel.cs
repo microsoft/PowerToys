@@ -1,4 +1,5 @@
-﻿using System;
+﻿#define DEBUG
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -447,6 +448,7 @@ namespace PowerLauncher.ViewModel
                     _lastQuery = query;
                     Task.Run(() =>
                     {
+                        Thread.Sleep(20);
                         var plugins = PluginManager.ValidPluginsForQuery(query);
 
                         try
