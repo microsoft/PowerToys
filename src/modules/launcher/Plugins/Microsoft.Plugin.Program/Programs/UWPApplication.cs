@@ -183,7 +183,7 @@ namespace Microsoft.Plugin.Program.Programs
                     var message = $"Can't start UWP: {DisplayName}";
                     api.ShowMsg(name, message, string.Empty);
                 }
-            });
+            }).ConfigureAwait(false);
         }
 
         public UWPApplication(AppxPackageHelper.IAppxManifestApplication manifestApp, UWP package)
