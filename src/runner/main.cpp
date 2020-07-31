@@ -114,7 +114,6 @@ int runner(bool isProcessElevated)
             } }.detach();
         }
 
-        notifications::set_application_id(APPLICATION_ID);
         notifications::register_background_toast_handler();
 
         chdir_current_executable();
@@ -306,6 +305,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     {
         return 0;
     }
+    notifications::set_application_id(APPLICATION_ID);
 
     int n_cmd_args = 0;
     LPWSTR* cmd_arg_list = CommandLineToArgvW(GetCommandLineW(), &n_cmd_args);
