@@ -1,9 +1,13 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UnitTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
-using System;
 
 namespace CommonLibTest
 {
@@ -17,7 +21,7 @@ namespace CommonLibTest
         [Obsolete]
         public void ToJsonString_ShouldReturnValidJSONOfModel_WhenSuccessful()
         {
-            // Arrange            
+            // Arrange
             string file_name = "test\\BasePTModuleSettingsTest";
             string expectedSchemaText = @"
                 {

@@ -1,12 +1,14 @@
-using Microsoft.PowerToys.Settings.UI.Lib;
-using Microsoft.PowerToys.Settings.UnitTest;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
+using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UnitTest;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CommonLibTest
 {
@@ -22,7 +24,7 @@ namespace CommonLibTest
             }
         }
 
-        [TestCleanup()]
+        [TestCleanup]
         public void Cleanup()
         {
             string file_name = "\\test";
@@ -50,7 +52,7 @@ namespace CommonLibTest
         }
 
         [TestMethod]
-        public async Task SaveSettings_ShouldCreateFile_WhenFilePathIsNotFoundAsync()
+        public void SaveSettings_ShouldCreateFile_WhenFilePathIsNotFound()
         {
             // Arrange
             string file_name = "test\\Test Folder";
@@ -113,6 +115,7 @@ namespace CommonLibTest
             Random random = new Random();
             int length = 20;
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
             return new string(Enumerable.Repeat(chars, length)
               .Select(s => s[random.Next(s.Length)]).ToArray());
         }
