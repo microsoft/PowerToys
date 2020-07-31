@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Plugin.WindowWalker.Components;
 using Wox.Plugin;
@@ -8,7 +12,9 @@ namespace Microsoft.Plugin.WindowWalker
     public class Main : IPlugin, IPluginI18n
     {
         private static List<SearchResult> _results = new List<SearchResult>();
+
         private string IconPath { get; set; }
+
         private PluginInitContext Context { get; set; }
 
         static Main()
@@ -30,9 +36,8 @@ namespace Microsoft.Plugin.WindowWalker
                 {
                     x.Result.SwitchToWindow();
                     return true;
-                }
-            }
-            ).ToList();
+                },
+            }).ToList();
         }
 
         public void Init(PluginInitContext context)
@@ -55,7 +60,7 @@ namespace Microsoft.Plugin.WindowWalker
             }
         }
 
-        private void OnThemeChanged(Theme _, Theme newTheme)
+        private void OnThemeChanged(Theme currentTheme, Theme newTheme)
         {
             UpdateIconPath(newTheme);
         }
