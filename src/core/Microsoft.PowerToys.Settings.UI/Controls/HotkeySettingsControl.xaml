@@ -10,10 +10,10 @@
     d:DesignWidth="400">
     <StackPanel Orientation="Vertical">
         <ToolTipService.ToolTip>
-            <ToolTip>
+            <ToolTip Name="HotkeyTooltip">
                 <StackPanel Orientation="Vertical">
                     <TextBlock x:Uid="ShortcutWarningLabel"/>
-                    <TextBlock Text="{x:Bind Keys, Mode=OneTime}" FontWeight="SemiBold"/>
+                    <TextBlock Text="{x:Bind _keys, Mode=OneTime}" FontWeight="SemiBold"/>
                 </StackPanel>
             </ToolTip>
         </ToolTipService.ToolTip>

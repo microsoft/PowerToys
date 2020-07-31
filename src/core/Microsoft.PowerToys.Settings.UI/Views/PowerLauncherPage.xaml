@@ -64,7 +64,7 @@
                                                   HorizontalAlignment="Left"
                                                   Margin="{StaticResource SmallTopMargin}"
                                                   HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}"
-                                                  Keys="Win, Ctrl, Alt, Shift"
+                                                  Keys=""
                                                   Enabled="{x:Bind Mode=OneWay, Path=ViewModel.EnablePowerLauncher}"/>
             <!--<Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenFileLocation"
                                           Width="320"

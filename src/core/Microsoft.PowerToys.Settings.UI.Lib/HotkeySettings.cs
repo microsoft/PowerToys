@@ -98,9 +98,41 @@ namespace Microsoft.PowerToys.Settings.UI.Lib
             return output.ToString();
         }
 
-        public bool IsValid()
+        public bool IsValid(string necessaryKeys)
         {
-            return (Alt || Ctrl || Win || Shift) && Code != 0;
+            return HasAtLeastOneOfNecessaryKeys(necessaryKeys) && Code != 0;
+        }
+
+        // Checks if at least one of the necessary keys matches,
+        // if necessaryKeys is empty, then it will always return true.
+        private bool HasAtLeastOneOfNecessaryKeys(string necessaryKeys)
+        {
+            if (string.IsNullOrWhiteSpace(necessaryKeys))
+            {
+                return true;
+            }
+
+            if (necessaryKeys.Contains("Win") && Win)
+            {
+                return true;
+            }
+
+            if (necessaryKeys.Contains("Ctrl") && Ctrl)
+            {
+                return true;
+            }
+
+            if (necessaryKeys.Contains("Alt") && Alt)
+            {
+                return true;
+            }
+
+            if (necessaryKeys.Contains("Shift") && Shift)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public bool IsEmpty()

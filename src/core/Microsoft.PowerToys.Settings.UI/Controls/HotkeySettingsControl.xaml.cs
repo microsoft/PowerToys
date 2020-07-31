@@ -14,7 +14,31 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
     {
         public string Header { get; set; }
 
-        public string Keys { get; set; }
+        private string _keys;
+
+        public string Keys
+        {
+            get
+            {
+                return _keys;
+            }
+
+            set
+            {
+                _keys = value;
+
+                if (string.IsNullOrWhiteSpace(_keys))
+                {
+                    TitleGlyph.Visibility = Visibility.Collapsed;
+                    HotkeyTooltip.IsEnabled = false;
+                }
+                else
+                {
+                    TitleGlyph.Visibility = Visibility.Visible;
+                    HotkeyTooltip.IsEnabled = true;
+                }
+            }
+        }
 
         public static readonly DependencyProperty IsActiveProperty =
             DependencyProperty.Register(
@@ -93,6 +117,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             HotkeyTextBox.GettingFocus += HotkeyTextBox_GettingFocus;
             HotkeyTextBox.LosingFocus += HotkeyTextBox_LosingFocus;
             HotkeyTextBox.Unloaded += HotkeyTextBox_Unloaded;
+
             hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive);
         }
 
@@ -168,7 +193,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void HotkeyTextBox_LosingFocus(object sender, RoutedEventArgs e)
         {
-            if (lastValidSettings != null && (lastValidSettings.IsValid() || lastValidSettings.IsEmpty()))
+            if (lastValidSettings != null && (lastValidSettings.IsValid(_keys) || lastValidSettings.IsEmpty()))
             {
                 HotkeySettings = lastValidSettings.Clone();
             }
