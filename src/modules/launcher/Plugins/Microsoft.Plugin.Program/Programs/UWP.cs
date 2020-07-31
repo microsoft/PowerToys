@@ -12,6 +12,7 @@ using Microsoft.Plugin.Program.Logger;
 using Rect = System.Windows.Rect;
 using System.Windows.Controls;
 using System.Runtime.InteropServices.ComTypes;
+using Wox.Infrastructure.Logger;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -101,8 +102,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             else
             {
-                ProgramLogger.LogException($"|UWP|XmlNamespaces|{path}" +
-                                                $"|Error occurred while trying to get the XML from {path}", new ArgumentNullException());
+                Log.Error($"|UWP.XmlNamespaces|Error occurred while trying to get the XML from {path}");
 
                 return new string[] { };
             }
