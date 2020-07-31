@@ -2,16 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Castle.Core.Logging;
-using Common.Utilities;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using System;
 using System.IO;
 using System.Linq;
-using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using Common.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace UnitTests_PreviewHandlerCommon
 {
@@ -84,8 +82,10 @@ namespace UnitTests_PreviewHandlerCommon
             // Arrange
             long streamLength = 5;
             var stremMock = new Mock<IStream>();
-            var stat = new System.Runtime.InteropServices.ComTypes.STATSTG();
-            stat.cbSize = streamLength;
+            var stat = new System.Runtime.InteropServices.ComTypes.STATSTG
+            {
+                cbSize = streamLength,
+            };
 
             stremMock
                 .Setup(x => x.Stat(out stat, It.IsAny<int>()));
@@ -131,22 +131,23 @@ namespace UnitTests_PreviewHandlerCommon
             int expectedDwOrigin = 0; // STREAM_SEEK_SET
             var stremMock = new Mock<IStream>();
 
-            var streamWrapper = new StreamWrapper(stremMock.Object);
-
-            // Act
-            streamWrapper.Position = positionToSet;
+            var streamWrapper = new StreamWrapper(stremMock.Object)
+            {
+                // Act
+                Position = positionToSet,
+            };
 
             // Assert
             stremMock.Verify(_ => _.Seek(It.Is<long>(offset => offset == positionToSet), It.Is<int>(dworigin => dworigin == expectedDwOrigin), It.IsAny<IntPtr>()), Times.Once);
         }
 
         [DataTestMethod]
-        [DataRow((long)0, SeekOrigin.Begin)]
-        [DataRow((long)5, SeekOrigin.Begin)]
-        [DataRow((long)0, SeekOrigin.Current)]
-        [DataRow((long)5, SeekOrigin.Current)]
-        [DataRow((long)0, SeekOrigin.End)]
-        [DataRow((long)5, SeekOrigin.End)]
+        [DataRow(0L, SeekOrigin.Begin)]
+        [DataRow(5L, SeekOrigin.Begin)]
+        [DataRow(0L, SeekOrigin.Current)]
+        [DataRow(5L, SeekOrigin.Current)]
+        [DataRow(0L, SeekOrigin.End)]
+        [DataRow(5L, SeekOrigin.End)]
         public void StreamWrapper_ShouldCallIStreamSeekWithValidArguments_WhenSeekCalled(long offset, SeekOrigin origin)
         {
             // Arrange
@@ -326,7 +327,5 @@ namespace UnitTests_PreviewHandlerCommon
             // Assert
             Assert.IsNotNull(exception);
         }
-
-
     }
 }

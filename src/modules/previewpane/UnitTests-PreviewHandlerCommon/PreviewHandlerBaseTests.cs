@@ -5,7 +5,6 @@
 using System;
 using System.ComponentModel;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using Common;
 using Common.ComInterlop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -111,7 +110,7 @@ namespace UnitTests_PreviewHandlerCommon
 
             previewHandlerControl = mockPreviewControl.Object;
             var testPreviewHandler = new TestPreviewHandler();
-            var color = new COLORREF();
+            var color = default(COLORREF);
 
             // Act
             testPreviewHandler.SetBackgroundColor(color);
@@ -128,7 +127,7 @@ namespace UnitTests_PreviewHandlerCommon
 
             previewHandlerControl = mockPreviewControl.Object;
             var testPreviewHandler = new TestPreviewHandler();
-            var color = new COLORREF();
+            var color = default(COLORREF);
 
             // Act
             testPreviewHandler.SetTextColor(color);
@@ -231,7 +230,7 @@ namespace UnitTests_PreviewHandlerCommon
             // Arrange
             var mockPreviewControl = new Mock<IPreviewHandlerControl>();
             var mockPreviewHandlerFrame = new Mock<IPreviewHandlerFrame>();
-            var msg = new MSG();
+            var msg = default(MSG);
 
             previewHandlerControl = mockPreviewControl.Object;
             var testPreviewHandler = new TestPreviewHandler();
@@ -245,14 +244,14 @@ namespace UnitTests_PreviewHandlerCommon
         }
 
         [DataTestMethod]
-        [DataRow((uint)0)]
-        [DataRow((uint)1)]
+        [DataRow(0U)]
+        [DataRow(1U)]
         public void PreviewHandlerBase_ShouldReturnIPreviewHandlerFrameResponse_IfIPreviewHandlerFrameIsSet(uint resultCode)
         {
             // Arrange
             var mockPreviewControl = new Mock<IPreviewHandlerControl>();
             var mockPreviewHandlerFrame = new Mock<IPreviewHandlerFrame>();
-            var msg = new MSG();
+            var msg = default(MSG);
             mockPreviewHandlerFrame
                 .Setup(x => x.TranslateAccelerator(ref msg))
                 .Returns(resultCode);
@@ -273,8 +272,8 @@ namespace UnitTests_PreviewHandlerCommon
         {
             // Arrange
             var mockPreviewControl = new Mock<IPreviewHandlerControl>();
-            var msg = new MSG();
-            uint S_FALSE = 1;
+            var msg = default(MSG);
+            uint sFalse = 1;
 
             previewHandlerControl = mockPreviewControl.Object;
             var testPreviewHandler = new TestPreviewHandler();
@@ -283,7 +282,7 @@ namespace UnitTests_PreviewHandlerCommon
             var result = testPreviewHandler.TranslateAccelerator(ref msg);
 
             // Assert
-            Assert.AreEqual(result, S_FALSE);
+            Assert.AreEqual(result, sFalse);
         }
 
         [TestMethod]
@@ -354,31 +353,35 @@ namespace UnitTests_PreviewHandlerCommon
 
         private LOGFONT GetLogFont()
         {
-            var logFont = new LOGFONT();
-            logFont.LfHeight = 12;
-            logFont.LfWidth = 0;
-            logFont.LfEscapement = 0;
-            logFont.LfWeight = 400; // FW_NORMAL
-            logFont.LfItalic = Convert.ToByte(false);
-            logFont.LfUnderline = Convert.ToByte(false);
-            logFont.LfStrikeOut = Convert.ToByte(0);
-            logFont.LfCharSet = Convert.ToByte(0); // ANSI_CHARSET
-            logFont.LfOutPrecision = Convert.ToByte(0); // OUT_DEFAULT_PRECIS
-            logFont.LfClipPrecision = Convert.ToByte(0);
-            logFont.LfQuality = Convert.ToByte(0);
-            logFont.LfPitchAndFamily = Convert.ToByte(0);
-            logFont.LfFaceName = "valid-font";
+            var logFont = new LOGFONT
+            {
+                LfHeight = 12,
+                LfWidth = 0,
+                LfEscapement = 0,
+                LfWeight = 400, // FW_NORMAL
+                LfItalic = Convert.ToByte(false),
+                LfUnderline = Convert.ToByte(false),
+                LfStrikeOut = Convert.ToByte(0),
+                LfCharSet = Convert.ToByte(0), // ANSI_CHARSET
+                LfOutPrecision = Convert.ToByte(0), // OUT_DEFAULT_PRECIS
+                LfClipPrecision = Convert.ToByte(0),
+                LfQuality = Convert.ToByte(0),
+                LfPitchAndFamily = Convert.ToByte(0),
+                LfFaceName = "valid-font",
+            };
 
             return logFont;
         }
 
         private RECT GetRectangle(int left, int top, int right, int bottom)
         {
-            var rect = new RECT();
-            rect.Left = left;
-            rect.Top = top;
-            rect.Right = right;
-            rect.Bottom = bottom;
+            var rect = new RECT
+            {
+                Left = left,
+                Top = top,
+                Right = right,
+                Bottom = bottom,
+            };
 
             return rect;
         }
