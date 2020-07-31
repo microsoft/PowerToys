@@ -16,7 +16,6 @@
 #include "VirtualDesktopUtils.h"
 #include "MonitorWorkAreaHandler.h"
 
-#include <interface/win_hook_event_data.h>
 #include <lib/SecondaryMouseButtonsHook.h>
 #include <lib/GenericKeyHook.h>
 
@@ -365,7 +364,8 @@ bool FancyZones::ShouldProcessNewWindow(HWND window) noexcept
 }
 
 std::vector<int> FancyZones::GetZoneIndexSetFromWorkAreaHistory(
-    HWND window, winrt::com_ptr<IZoneWindow> workArea) noexcept
+    HWND window,
+    winrt::com_ptr<IZoneWindow> workArea) noexcept
 {
     const auto activeZoneSet = workArea->ActiveZoneSet();
     if (activeZoneSet)
@@ -458,9 +458,9 @@ RECT FitOnScreen(const RECT& windowRect, const RECT& originMonitorRect, const RE
         H = min(H, RectHeight(destMonitorRect) - CUSTOM_POSITIONING_LEFT_TOP_PADDING);
     }
 
-    return { .left   = left,
-             .top    = top,
-             .right  = left + W,
+    return { .left = left,
+             .top = top,
+             .right = left + W,
              .bottom = top + H };
 }
 
@@ -506,7 +506,7 @@ FancyZones::WindowCreated(HWND window) noexcept
         // creation of new window. We need to check if window being processed is on currently active desktop.
         return;
     }
-    const bool moveToAppLastZone   = m_settings->GetSettings()->appLastZone_moveWindows;
+    const bool moveToAppLastZone = m_settings->GetSettings()->appLastZone_moveWindows;
     const bool openOnActiveMonitor = m_settings->GetSettings()->openWindowOnActiveMonitor;
     if ((moveToAppLastZone || openOnActiveMonitor) && ShouldProcessNewWindow(window))
     {

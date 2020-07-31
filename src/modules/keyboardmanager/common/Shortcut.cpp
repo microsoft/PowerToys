@@ -2,7 +2,6 @@
 #include "Shortcut.h"
 #include "../common/keyboard_layout.h"
 #include "../common/shared_constants.h"
-#include <interface/lowlevel_keyboard_event_data.h>
 #include "Helpers.h"
 #include "InputInterface.h"
 

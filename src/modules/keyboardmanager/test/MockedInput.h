@@ -2,7 +2,8 @@
 #include <keyboardmanager/common/InputInterface.h>
 #include <vector>
 #include <functional>
-#include <interface/lowlevel_keyboard_event_data.h>
+
+#include <common/LowlevelKeyboardEvent.h>
 
 // Class for mocked keyboard input
 class MockedInput :
