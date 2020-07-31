@@ -16,6 +16,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.FileSystemHelper;
+using System.Globalization;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -73,7 +74,7 @@ namespace Microsoft.Plugin.Program.Programs
             // To Filter PWAs when the user searches for the main application
             // All Chromium based applications contain the --app-id argument
             // Reference : https://codereview.chromium.org/399045/show
-            bool isWebApplication = FullPath.Contains(proxyWebApp) && Arguments.Contains(appIdArgument);
+            bool isWebApplication = FullPath.Contains(proxyWebApp, StringComparison.InvariantCultureIgnoreCase) && Arguments.Contains(appIdArgument, StringComparison.InvariantCultureIgnoreCase);
             return isWebApplication;
         }
 
@@ -89,7 +90,7 @@ namespace Microsoft.Plugin.Program.Programs
             // Set the subtitle to 'Web Application'
             AppType = (uint)ApplicationTypes.WEB_APPLICATION;
 
-            string[] subqueries = query.Split();
+            string[] subqueries = query?.Split() ?? Array.Empty<string>();
             bool nameContainsQuery = false;
             bool pathContainsQuery = false;
 
@@ -136,7 +137,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public bool QueryEqualsNameForRunCommands(string query)
         {
-            if (AppType == (uint)ApplicationTypes.RUN_COMMAND
+            if (query != null && AppType == (uint)ApplicationTypes.RUN_COMMAND
                 && !query.Equals(Name, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
@@ -198,8 +199,8 @@ namespace Microsoft.Plugin.Program.Programs
             result.Title = Name;
             result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
 
-            var toolTipTitle = string.Format("{0}: {1}", api.GetTranslation("powertoys_run_plugin_program_file_name"), result.Title);
-            var toolTipText = string.Format("{0}: {1}", api.GetTranslation("powertoys_run_plugin_program_file_path"), FullPath);
+            var toolTipTitle = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", api.GetTranslation("powertoys_run_plugin_program_file_name"), result.Title);
+            var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0}: {1}", api.GetTranslation("powertoys_run_plugin_program_file_path"), FullPath);
             result.ToolTipData = new ToolTipData(toolTipTitle, toolTipText);
 
             return result;
