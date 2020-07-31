@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Windows.Input;
@@ -59,8 +63,9 @@ namespace ColorPicker.Keyboard
         private void Hook_KeyboardPressed(object sender, GlobalKeyboardHookEventArgs e)
         {
             var virtualCode = e.KeyboardData.VirtualCode;
+
             // ESC pressed
-            if(virtualCode == KeyInterop.VirtualKeyFromKey(Key.Escape))
+            if (virtualCode == KeyInterop.VirtualKeyFromKey(Key.Escape))
             {
                 _currentlyPressedKeys.Clear();
                 _appStateHandler.HideColorPicker();
@@ -113,6 +118,7 @@ namespace ColorPicker.Keyboard
                     return false;
                 }
             }
+
             return true;
         }
     }
