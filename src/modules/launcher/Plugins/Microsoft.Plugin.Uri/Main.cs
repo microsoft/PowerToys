@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Plugin.Uri.UriHelper;
 using Microsoft.PowerToys.Settings.UI.Lib;
+using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 
@@ -12,10 +16,10 @@ namespace Microsoft.Plugin.Uri
     {
         private readonly ExtendedUriParser _uriParser;
         private readonly UriResolver _uriResolver;
-        private PluginInitContext _context;
         private bool _disposed;
         private readonly PluginJsonStorage<UriSettings> _storage;
         private UriSettings _uriSettings;
+        private RegisteryWrapper _registeryWrapper;
 
         public Main()
         {
@@ -23,9 +27,12 @@ namespace Microsoft.Plugin.Uri
             _uriSettings = _storage.Load();
             _uriParser = new ExtendedUriParser();
             _uriResolver = new UriResolver();
+            _registeryWrapper = new RegisteryWrapper();
         }
 
-        public string IconPath { get; set; }
+        public string BrowserIconPath { get; set; }
+
+        public string DefaultIconPath { get; set; }
 
         public PluginInitContext Context { get; protected set; }
 
@@ -33,7 +40,6 @@ namespace Microsoft.Plugin.Uri
         {
             return new List<ContextMenuResult>(0);
         }
-
 
         public List<Result> Query(Query query)
         {
@@ -47,7 +53,10 @@ namespace Microsoft.Plugin.Uri
                 results.Add(new Result
                 {
                     Title = uriResultString,
-                    IcoPath = IconPath,
+                    SubTitle = Context.API.GetTranslation("Microsoft_plugin_uri_website"),
+                    IcoPath = _uriSettings.ShowBrowserIcon
+                        ? BrowserIconPath
+                        : DefaultIconPath,
                     Action = action =>
                     {
                         Process.Start(new ProcessStartInfo(uriResultString)
@@ -67,8 +76,8 @@ namespace Microsoft.Plugin.Uri
             Context = context;
             Context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(Context.API.GetCurrentTheme());
+            UpdateBrowserIconPath(Context.API.GetCurrentTheme());
         }
-
 
         public string GetTranslatedPluginTitle()
         {
@@ -92,17 +101,57 @@ namespace Microsoft.Plugin.Uri
         private void OnThemeChanged(Theme oldtheme, Theme newTheme)
         {
             UpdateIconPath(newTheme);
+            UpdateBrowserIconPath(newTheme);
+        }
+
+        private void UpdateBrowserIconPath(Theme newTheme)
+        {
+            try
+            {
+                var progId = _registeryWrapper.GetRegistryValue("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoice", "ProgId");
+                var programLocation =
+                    // Resolve App Icon (UWP)
+                    _registeryWrapper.GetRegistryValue("HKEY_CLASSES_ROOT\\" + progId + "\\Application", "ApplicationIcon")
+                    //Resolves default  file association icon (UWP + Normal)
+                    ?? _registeryWrapper.GetRegistryValue("HKEY_CLASSES_ROOT\\" + progId + "\\DefaultIcon", null);
+                //"Handles 'Indirect Strings' (UWP programs)"
+                if (programLocation.StartsWith("@"))
+                {
+                    var directProgramLocationStringBuilder = new StringBuilder(128);
+                    if (NativeMethods.SHLoadIndirectString(programLocation, directProgramLocationStringBuilder, (uint)directProgramLocationStringBuilder.Capacity, IntPtr.Zero) ==
+                        NativeMethods.Hresult.Ok)
+                    {
+                        //Check if there's a postfix with contract-white/contrast-black icon is available and use that instead 
+                        var directProgramLocation = directProgramLocationStringBuilder.ToString();
+                        var themeIcon = newTheme == Theme.Light || newTheme == Theme.HighContrastWhite ? "contrast-white" : "contrast-black";
+                        var extension = Path.GetExtension(directProgramLocation);
+                        var themedProgLocation = $"{directProgramLocation.Substring(0, directProgramLocation.Length - extension.Length)}_{themeIcon}{extension}";
+                        BrowserIconPath = File.Exists(themedProgLocation)
+                            ? themedProgLocation
+                            : directProgramLocation;
+                    }
+                }
+                else
+                {
+                    BrowserIconPath = programLocation;
+                }
+            }
+            catch (Exception e)
+            {
+                BrowserIconPath = DefaultIconPath;
+                Log.Exception("Exception when retreiving icon", e);
+            }
         }
 
         private void UpdateIconPath(Theme theme)
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
             {
-                IconPath = "Images/uri.light.png";
+                DefaultIconPath = "Images/uri.light.png";
             }
             else
             {
-                IconPath = "Images/uri.dark.png";
+                DefaultIconPath = "Images/uri.dark.png";
             }
         }
 
@@ -116,7 +165,7 @@ namespace Microsoft.Plugin.Uri
         {
             if (!_disposed && disposing)
             {
-                _context.API.ThemeChanged -= OnThemeChanged;
+                Context.API.ThemeChanged -= OnThemeChanged;
                 _disposed = true;
             }
         }

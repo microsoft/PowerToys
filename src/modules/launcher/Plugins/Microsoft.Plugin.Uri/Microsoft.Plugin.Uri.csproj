@@ -38,6 +38,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Languages\en.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Languages\en.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj" />
   </ItemGroup>
@@ -49,7 +61,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="InputSimulator" Version="1.0.4" />
     <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
@@ -57,10 +68,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.Runtime" Version="4.3.1" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Folder Include="Languages\" />
   </ItemGroup>
   
   <ItemGroup>

@@ -15,6 +15,7 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [TestCase("https://google.com", true, "https://google.com/")]
         [TestCase("ftps://google.com", true, "ftps://google.com/")]
         [TestCase(null, false, null)]
+        [TestCase("bing.com/search?q=gmx", true, "http://bing.com/search?q=gmx")]
 
         public void TryParse_CanParseHostName(string query, bool expectedSuccess, string expectedResult)
         {
