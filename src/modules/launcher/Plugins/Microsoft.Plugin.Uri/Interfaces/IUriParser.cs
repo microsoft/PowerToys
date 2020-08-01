@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Plugin.Uri.Interface
+namespace Microsoft.Plugin.Uri.Interfaces
 {
     public interface IUriParser
     {

@@ -1,5 +1,5 @@
 using System;
-using Microsoft.Plugin.Uri.Interface;
+using Microsoft.Plugin.Uri.Interfaces;
 
 namespace Microsoft.Plugin.Uri.UriHelper
 {

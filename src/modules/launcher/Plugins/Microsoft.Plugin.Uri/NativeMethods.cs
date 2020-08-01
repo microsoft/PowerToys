@@ -12,7 +12,6 @@ namespace Microsoft.Plugin.Uri
         }
 
         [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
-        internal static extern Hresult SHLoadIndirectString(string pszSource, StringBuilder pszOutBuf, uint cchOutBuf,
-            IntPtr ppvReserved);
+        internal static extern Hresult SHLoadIndirectString(string pszSource, StringBuilder pszOutBuf, uint cchOutBuf, IntPtr ppvReserved);
     }
 }

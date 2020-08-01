@@ -16,8 +16,8 @@ namespace Microsoft.Plugin.Uri
     {
         private readonly ExtendedUriParser _uriParser;
         private readonly UriResolver _uriResolver;
-        private bool _disposed;
         private readonly PluginJsonStorage<UriSettings> _storage;
+        private bool _disposed;
         private UriSettings _uriSettings;
         private RegisteryWrapper _registeryWrapper;
 
@@ -45,7 +45,8 @@ namespace Microsoft.Plugin.Uri
         {
             var results = new List<Result>();
 
-            if (_uriParser.TryParse(query.Search, out var uriResult)
+            if (!string.IsNullOrEmpty(query?.Search)
+                && _uriParser.TryParse(query.Search, out var uriResult)
                 && _uriResolver.IsValidHost(uriResult))
             {
                 var uriResultString = uriResult.ToString();
@@ -61,10 +62,10 @@ namespace Microsoft.Plugin.Uri
                     {
                         Process.Start(new ProcessStartInfo(uriResultString)
                         {
-                            UseShellExecute = true
+                            UseShellExecute = true,
                         });
                         return true;
-                    }
+                    },
                 });
             }
 
@@ -73,7 +74,7 @@ namespace Microsoft.Plugin.Uri
 
         public void Init(PluginInitContext context)
         {
-            Context = context;
+            Context = context ?? throw new InvalidOperationException($"{nameof(Context)} should not be NULL");
             Context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(Context.API.GetCurrentTheme());
             UpdateBrowserIconPath(Context.API.GetCurrentTheme());
@@ -94,34 +95,34 @@ namespace Microsoft.Plugin.Uri
             _storage.Save();
         }
 
-        public void UpdateSettings(PowerLauncherSettings settings)
-        {
-        }
-
         private void OnThemeChanged(Theme oldtheme, Theme newTheme)
         {
             UpdateIconPath(newTheme);
             UpdateBrowserIconPath(newTheme);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive but will log the exception")]
         private void UpdateBrowserIconPath(Theme newTheme)
         {
             try
             {
                 var progId = _registeryWrapper.GetRegistryValue("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoice", "ProgId");
                 var programLocation =
+
                     // Resolve App Icon (UWP)
                     _registeryWrapper.GetRegistryValue("HKEY_CLASSES_ROOT\\" + progId + "\\Application", "ApplicationIcon")
-                    //Resolves default  file association icon (UWP + Normal)
+
+                    // Resolves default  file association icon (UWP + Normal)
                     ?? _registeryWrapper.GetRegistryValue("HKEY_CLASSES_ROOT\\" + progId + "\\DefaultIcon", null);
-                //"Handles 'Indirect Strings' (UWP programs)"
-                if (programLocation.StartsWith("@"))
+
+                // "Handles 'Indirect Strings' (UWP programs)"
+                if (programLocation.StartsWith("@", StringComparison.Ordinal))
                 {
                     var directProgramLocationStringBuilder = new StringBuilder(128);
                     if (NativeMethods.SHLoadIndirectString(programLocation, directProgramLocationStringBuilder, (uint)directProgramLocationStringBuilder.Capacity, IntPtr.Zero) ==
                         NativeMethods.Hresult.Ok)
                     {
-                        //Check if there's a postfix with contract-white/contrast-black icon is available and use that instead 
+                        // Check if there's a postfix with contract-white/contrast-black icon is available and use that instead
                         var directProgramLocation = directProgramLocationStringBuilder.ToString();
                         var themeIcon = newTheme == Theme.Light || newTheme == Theme.HighContrastWhite ? "contrast-white" : "contrast-black";
                         var extension = Path.GetExtension(directProgramLocation);

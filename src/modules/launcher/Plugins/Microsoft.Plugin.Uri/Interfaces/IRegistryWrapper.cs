@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Microsoft.Plugin.Uri.Interface
+namespace Microsoft.Plugin.Uri.Interfaces
 {
     public interface IRegistryWrapper
     {

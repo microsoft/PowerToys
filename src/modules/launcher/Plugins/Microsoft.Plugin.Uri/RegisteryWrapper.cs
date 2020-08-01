@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Microsoft.Plugin.Uri.Interfaces;
 using Microsoft.Win32;
-using Microsoft.Plugin.Uri.Interface;
 
 namespace Microsoft.Plugin.Uri
 {
