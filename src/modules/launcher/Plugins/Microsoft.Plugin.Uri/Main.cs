@@ -134,7 +134,10 @@ namespace Microsoft.Plugin.Uri
                 }
                 else
                 {
-                    BrowserIconPath = programLocation;
+                    var indexOfComma = programLocation.IndexOf(',',StringComparison.Ordinal);
+                    BrowserIconPath = indexOfComma > 0
+                        ? programLocation.Substring(0,  indexOfComma)
+                        : programLocation;
                 }
             }
             catch (Exception e)
