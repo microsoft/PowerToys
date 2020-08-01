@@ -95,6 +95,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs">
+      <Link>GlobalSuppressions.cs</Link>
+    </Compile>
     <Compile Include="cominterop\IInitializeWithFile.cs" />
     <Compile Include="cominterop\COLORREF.cs" />
     <Compile Include="cominterop\IInitializeWithStream.cs" />

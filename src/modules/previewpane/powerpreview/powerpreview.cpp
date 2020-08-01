@@ -1,6 +1,4 @@
 #include "pch.h"
-#include <interface/lowlevel_keyboard_event_data.h>
-#include <interface/win_hook_event_data.h>
 #include <settings_objects.h>
 #include <common.h>
 #include "powerpreview.h"
@@ -49,11 +47,6 @@ const wchar_t* PowerPreviewModule::get_name()
     return m_moduleName.c_str();
 }
 
-const wchar_t** PowerPreviewModule::get_events()
-{
-    return nullptr;
-}
-
 // Return JSON with the configuration options.
 bool PowerPreviewModule::get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_size)
 {
@@ -88,7 +81,6 @@ bool PowerPreviewModule::get_config(_Out_ wchar_t* buffer, _Out_ int* buffer_siz
             thumbnailProvider->GetToggleSettingDescription(),
             thumbnailProvider->GetToggleSettingState());
     }
-
 
     return settings.serialize_to_buffer(buffer, buffer_size);
 }
@@ -182,12 +174,6 @@ bool PowerPreviewModule::is_enabled()
     return this->m_enabled;
 }
 
-// Handle incoming event, data is event-specific
-intptr_t PowerPreviewModule::signal_event(const wchar_t* name, intptr_t data)
-{
-    return 0;
-}
-
 // Load the settings file.
 void PowerPreviewModule::init_settings()
 {
@@ -207,7 +193,6 @@ void PowerPreviewModule::init_settings()
         {
             thumbnailProvider->LoadState(settings);
         }
-
     }
     catch (std::exception const& e)
     {

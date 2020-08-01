@@ -42,11 +42,6 @@ const wchar_t* OverlayWindow::get_name()
     return app_name.c_str();
 }
 
-const wchar_t** OverlayWindow::get_events()
-{
-    return nullptr;
-}
-
 bool OverlayWindow::get_config(wchar_t* buffer, int* buffer_size)
 {
     HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
@@ -211,11 +206,6 @@ void OverlayWindow::disable()
 bool OverlayWindow::is_enabled()
 {
     return _enabled;
-}
-
-intptr_t OverlayWindow::signal_event(const wchar_t* name, intptr_t data)
-{
-    return 0;
 }
 
 intptr_t OverlayWindow::signal_event(LowlevelKeyboardEvent* event)

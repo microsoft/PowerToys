@@ -1,138 +1,45 @@
 ﻿using PowerLauncher.ViewModel;
-using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Diagnostics;
-using System.Windows;
-using System.Windows.Threading;
 
 namespace PowerLauncher.Helper
 {
-    public class ResultCollection : ObservableCollection<ResultViewModel>
+    public class ResultCollection : List<ResultViewModel>, INotifyCollectionChanged
     {
-        /// <summary>
-        /// This private variable holds the flag to
-        /// turn on and off the collection changed notification.
-        /// </summary>
-        private bool suspendCollectionChangeNotification;
+        public event NotifyCollectionChangedEventHandler CollectionChanged;
 
-        /// <summary>
-        /// Initializes a new instance of the FastObservableCollection class.
-        /// </summary>
-        public ResultCollection()
-            : base()
+        private int CompareResultViewModel(ResultViewModel c1, ResultViewModel c2)
         {
-            this.suspendCollectionChangeNotification = false;
-        }
-
-        /// <summary>
-        /// This event is overriden CollectionChanged event of the observable collection.
-        /// </summary>
-        //public override event NotifyCollectionChangedEventHandler CollectionChanged;
-
-        /// <summary>
-        /// Raises collection change event.
-        /// </summary>
-        public void NotifyChanges()
-        {
-            this.ResumeCollectionChangeNotification();
-            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-        }
-
-        /// <summary>
-        /// Resumes collection changed notification.
-        /// </summary>
-        public void ResumeCollectionChangeNotification()
-        {
-            this.suspendCollectionChangeNotification = false;
-        }
-
-        /// <summary>
-        /// Suspends collection changed notification.
-        /// </summary>
-        public void SuspendCollectionChangeNotification()
-        {
-            this.suspendCollectionChangeNotification = true;
-        }
-
-        /// <summary>
-        /// This method removes all items that match a predicate
-        /// </summary>
-        /// <param name="predicate">predicate</param>
-        public void RemovePredicate(Predicate<ResultViewModel> predicate)
-        {
-            CheckReentrancy();
-
-            this.SuspendCollectionChangeNotification();
-            for (int i = Count - 1; i >= 0; i--)
+            if (c1.Result.Score > c2.Result.Score)
             {
-                if (predicate(this[i]))
-                {
-                    RemoveAt(i);
-                }
+                return -1;
             }
-        }
-
-        /// <summary>
-        /// Update the results collection with new results, try to keep identical results
-        /// </summary>
-        /// <param name="newItems"></param>
-        public void Update(List<ResultViewModel> newItems)
-        {
-            if (newItems == null)
+            else if (c1.Result.Score == c2.Result.Score)
             {
-                throw new ArgumentNullException(nameof(newItems));
-            }
-
-            int newCount = newItems.Count;
-            int oldCount = Items.Count;
-            int location = newCount > oldCount ? oldCount : newCount;
-
-            this.SuspendCollectionChangeNotification();
-            for (int i = 0; i < location; i++)
-            {
-                ResultViewModel oldResult = this[i];
-                ResultViewModel newResult = newItems[i];
-                if (!oldResult.Equals(newResult))
-                { // result is not the same update it in the current index
-                    this[i] = newResult;
-                }
-                else if (oldResult.Result.Score != newResult.Result.Score)
-                {
-                    this[i].Result.Score = newResult.Result.Score;
-                }
-            }
-
-            if (newCount >= oldCount)
-            {
-                for (int i = oldCount; i < newCount; i++)
-                {
-                    Add(newItems[i]);
-                }
+                return 0;
             }
             else
             {
-                for (int i = oldCount - 1; i >= newCount; i--)
-                {
-                    RemoveAt(i);
-                }
+                return 1;
             }
         }
 
         /// <summary>
-        /// This collection changed event performs thread safe event raising.
+        /// sort the list in descending order of score
+        /// </summary>
+        public new void Sort()
+        {
+            base.Sort(CompareResultViewModel);
+        }
+
+        /// <summary>
+        /// Notify change in the List view items
         /// </summary>
         /// <param name="e">The event argument.</param>
-        protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        public void NotifyChanges()
         {
-            // Recommended is to avoid reentry 
-            // in collection changed event while collection
-            // is getting changed on other thread.
-            if(!this.suspendCollectionChangeNotification)
-            {
-                base.OnCollectionChanged(e);
-            }
+            CollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
+
     }
 }

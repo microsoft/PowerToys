@@ -101,7 +101,7 @@ namespace Microsoft.Plugin.Calculator
             return new List<Result>();
         }
 
-        private bool IsBracketComplete(string query)
+        private static bool IsBracketComplete(string query)
         {
             var matchs = RegBrackets.Matches(query);
             var leftBracketCount = 0;

@@ -1,6 +1,4 @@
 #pragma once
-#include "powertoys_events.h"
-#include "system_menu_helper.h"
 #include <interface/powertoy_module_interface.h>
 #include <string>
 #include <memory>
@@ -16,8 +14,6 @@ struct PowertoyModuleDeleter
     {
         if (module)
         {
-            powertoys_events().unregister_system_menu_action(module);
-            powertoys_events().unregister_receiver(module);
             module->destroy();
         }
     }

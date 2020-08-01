@@ -2,9 +2,8 @@
 #include <common/settings_objects.h>
 #include <common/common.h>
 #include <common/debug_control.h>
+#include <common/LowlevelKeyboardEvent.h>
 #include <interface/powertoy_module_interface.h>
-#include <interface/lowlevel_keyboard_event_data.h>
-#include <interface/win_hook_event_data.h>
 #include <lib/ZoneSet.h>
 
 #include <lib/resource.h>
@@ -42,13 +41,6 @@ public:
     virtual PCWSTR get_name() override
     {
         return app_name.c_str();
-    }
-
-    // Return array of the names of all events that this powertoy listens for, with
-    // nullptr as the last element of the array. Nullptr can also be returned for empty list.
-    virtual PCWSTR* get_events() override
-    {
-        return nullptr;
     }
 
     // Return JSON with the configuration options.
@@ -133,15 +125,6 @@ public:
     {
         return (m_app != nullptr);
     }
-
-    // PowertoyModuleIface method, unused
-    virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
-    {
-        return 0;
-    }
-
-    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override {}
-    virtual void signal_system_menu_action(const wchar_t* name) override {}
 
     // Destroy the powertoy and free memory
     virtual void destroy() override

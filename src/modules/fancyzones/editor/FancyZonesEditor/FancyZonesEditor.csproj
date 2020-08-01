@@ -109,6 +109,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="..\..\..\..\codeAnalysis\GlobalSuppressions.cs">
+      <Link>GlobalSuppressions.cs</Link>
+    </Compile>
     <Compile Include="DashCaseNamingPolicy.cs" />
     <Compile Include="GridData.cs" />
     <Compile Include="GridDragHandles.cs" />
@@ -119,7 +122,6 @@
       <DependentUpon>CanvasEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="EditorWindow.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="GridEditor.xaml.cs">
       <DependentUpon>GridEditor.xaml</DependentUpon>
     </Compile>
@@ -239,7 +241,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MahApps.Metro">
-      <Version>2.1.0</Version>
+      <Version>2.1.1</Version>
     </PackageReference>
     <PackageReference Include="System.Text.Json">
       <Version>4.7.2</Version>

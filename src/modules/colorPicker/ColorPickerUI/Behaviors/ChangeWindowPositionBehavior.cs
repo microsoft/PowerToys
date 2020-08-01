@@ -1,4 +1,8 @@
-﻿using System.Windows;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Windows;
 using System.Windows.Interactivity;
 using ColorPicker.Helpers;
 using ColorPicker.Mouse;
@@ -59,9 +63,9 @@ namespace ColorPicker.Behaviors
                 windowLeft -= MonitorRightSideDeadZone - ((int)monitorBounds.Right - windowLeft);
             }
 
-            if ((windowTop + MonitorBottomSideDeadZone / dpi.DpiScaleX) > monitorBounds.Bottom / dpi.DpiScaleX)
+            if ((windowTop + (MonitorBottomSideDeadZone / dpi.DpiScaleX)) > monitorBounds.Bottom / dpi.DpiScaleX)
             {
-                windowTop -= MonitorBottomSideDeadZone / dpi.DpiScaleX - (((int)monitorBounds.Bottom / dpi.DpiScaleX - windowTop));
+                windowTop -= (MonitorBottomSideDeadZone / dpi.DpiScaleX) - (((int)monitorBounds.Bottom / dpi.DpiScaleX) - windowTop);
             }
 
             AssociatedObject.Left = windowLeft;

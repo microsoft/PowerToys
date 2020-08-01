@@ -91,7 +91,7 @@ namespace Microsoft.Plugin.Calculator
             return outputBuilder.ToString();
         }
 
-        private Regex GetSplitRegex(CultureInfo culture)
+        private static Regex GetSplitRegex(CultureInfo culture)
         {
             var splitPattern = $"((?:\\d|{Regex.Escape(culture.NumberFormat.NumberDecimalSeparator)}";
             if (!string.IsNullOrEmpty(culture.NumberFormat.NumberGroupSeparator))

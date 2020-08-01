@@ -8,11 +8,11 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 {
     public class OleDBResult
     {
-        public List<object> fieldData;
+        public List<object> FieldData { get; }
 
         public OleDBResult(List<object> fieldData)
         {
-            this.fieldData = fieldData;
+            FieldData = fieldData;
         }
     }
 }

@@ -1,11 +1,14 @@
-﻿using System.IO;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.ComponentModel.Composition;
+using System.IO;
+using System.Threading;
+using ColorPicker.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
-using ColorPicker.Helpers;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
 
 namespace ColorPicker.Settings
 {
@@ -57,6 +60,7 @@ namespace ColorPicker.Settings
                                 var defaultColorPickerSettings = new ColorPickerSettings();
                                 defaultColorPickerSettings.Save();
                             }
+
                             var settings = SettingsUtils.GetSettings<ColorPickerSettings>(ColorPickerModuleName);
                             if (settings != null)
                             {
@@ -73,6 +77,7 @@ namespace ColorPicker.Settings
                             {
                                 retry = false;
                             }
+
                             Logger.LogError("Failed to read changed settings", ex);
                             Thread.Sleep(500);
                         }
@@ -81,7 +86,7 @@ namespace ColorPicker.Settings
                             Logger.LogError("Failed to read changed settings", ex);
                         }
                     }
-                };
+                }
             }
         }
     }

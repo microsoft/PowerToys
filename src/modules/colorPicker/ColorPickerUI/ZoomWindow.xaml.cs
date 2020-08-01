@@ -1,4 +1,8 @@
-﻿using System.ComponentModel;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.ComponentModel;
 using System.Windows;
 
 namespace ColorPicker
@@ -16,12 +20,14 @@ namespace ColorPicker
             InitializeComponent();
             DataContext = this;
         }
+
         public double DesiredLeft
         {
             get
             {
                 return _left;
             }
+
             set
             {
                 _left = value;
@@ -35,6 +41,7 @@ namespace ColorPicker
             {
                 return _top;
             }
+
             set
             {
                 _top = value;

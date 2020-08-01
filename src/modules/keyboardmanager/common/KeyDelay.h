@@ -3,8 +3,8 @@
 #include <thread>
 #include <queue>
 #include <mutex>
-#include <interface/lowlevel_keyboard_event_data.h>
 
+#include <LowlevelKeyboardEvent.h>
 // Available states for the KeyDelay state machine.
 enum class KeyDelayState
 {
