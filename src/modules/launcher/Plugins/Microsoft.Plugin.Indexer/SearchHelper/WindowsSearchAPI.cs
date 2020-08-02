@@ -10,7 +10,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 
         private readonly ISearch WindowsIndexerSearch;
         private readonly object _lock = new object();
-        private readonly UInt32 FILE_ATTRIBUTE_HIDDEN = 0x2;
+        private const int FILE_ATTRIBUTE_HIDDEN = 0x2;
 
         public WindowsSearchAPI(ISearch windowsIndexerSearch, bool displayHiddenFiles = false)
         {
@@ -36,16 +36,16 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             // Loop over all records from the database
             foreach (OleDBResult oleDBResult in oleDBResults)
             {
-                if (oleDBResult.fieldData[0] == DBNull.Value || oleDBResult.fieldData[1] == DBNull.Value)
+                if (oleDBResult.FieldData[0] == DBNull.Value || oleDBResult.FieldData[1] == DBNull.Value)
                 {
                     continue;
                 }
 
-                var uri_path = new Uri((string)oleDBResult.fieldData[0]);
+                var uri_path = new Uri((string)oleDBResult.FieldData[0]);
                 var result = new SearchResult
                 {
                     Path = uri_path.LocalPath,
-                    Title = (string)oleDBResult.fieldData[1]
+                    Title = (string)oleDBResult.FieldData[1]
                 };
                 _Result.Add(result);
             }
@@ -84,7 +84,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             }
         }
 
-        public static void InitQueryHelper(out ISearchQueryHelper queryHelper, int maxCount)
+        public void InitQueryHelper(out ISearchQueryHelper queryHelper, int maxCount)
         {
             // This uses the Microsoft.Search.Interop assembly
             CSearchManager manager = new CSearchManager();
