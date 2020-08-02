@@ -1,0 +1,76 @@
+<PackagingLayout xmlns="http://schemas.microsoft.com/appx/makeappx/2017">
+  <PackageFamily ID="PowerToys" FlatBundle="true" ManifestPath="appxmanifest.xml" ResourceManager="false">
+    
+    <Package ID="PowerToys-x64" ProcessorArchitecture="x64">
+      <Files>
+        <File DestinationPath="License.rtf" SourcePath="..\License.rtf"/>
+
+        <File DestinationPath="action_runner.exe" SourcePath="..\..\x64\Release\action_runner.exe"/>
+        <File DestinationPath="PowerToys.exe" SourcePath="..\..\x64\Release\PowerToys.exe"/>
+        <File DestinationPath="PowerToysSettings.exe" SourcePath="..\..\x64\Release\PowerToysSettings.exe"/>
+
+        <File DestinationPath="modules\FancyZonesEditor.exe" SourcePath="..\..\x64\Release\modules\FancyZonesEditor.exe"/>
+        <File DestinationPath="modules\ControlzEx.dll" SourcePath="..\..\x64\Release\modules\ControlzEx.dll"/>
+        <File DestinationPath="modules\fancyzones.dll" SourcePath="..\..\x64\Release\modules\fancyzones.dll"/>
+        <File DestinationPath="modules\MahApps.Metro.dll" SourcePath="..\..\x64\Release\modules\MahApps.Metro.dll"/>
+        <File DestinationPath="modules\Microsoft.Xaml.Behaviors.dll" SourcePath="..\..\x64\Release\modules\Microsoft.Xaml.Behaviors.dll"/>
+        <File DestinationPath="modules\PowerRenameExt.dll" SourcePath="..\..\x64\Release\modules\PowerRenameExt.dll"/>
+        <File DestinationPath="modules\shortcut_guide.dll" SourcePath="..\..\x64\Release\modules\shortcut_guide.dll"/>
+        <File DestinationPath="modules\PowerRenameUWPUI.exe" SourcePath="..\..\x64\Release\modules\PowerRenameUWPUI.exe"/>
+        <File DestinationPath="modules\ImageResizer.exe" SourcePath="..\..\x64\Release\modules\ImageResizer.exe"/>
+        <File DestinationPath="modules\ImageResizerExt.dll" SourcePath="..\..\x64\Release\modules\ImageResizerExt.dll"/>
+        <File DestinationPath="modules\GalaSoft.MvvmLight.dll" SourcePath="..\..\x64\Release\modules\GalaSoft.MvvmLight.dll"/>
+        <File DestinationPath="modules\GalaSoft.MvvmLight.Platform.dll" SourcePath="..\..\x64\Release\modules\GalaSoft.MvvmLight.Platform.dll"/>
+        <File DestinationPath="modules\GalaSoft.MvvmLight.Extras.dll" SourcePath="..\..\x64\Release\modules\GalaSoft.MvvmLight.Extras.dll"/>
+        <File DestinationPath="modules\System.Windows.Interactivity.dll" SourcePath="..\..\x64\Release\modules\System.Windows.Interactivity.dll"/>
+        <File DestinationPath="modules\Newtonsoft.Json.dll" SourcePath="..\..\x64\Release\modules\Newtonsoft.Json.dll"/>
+        <File DestinationPath="modules\PowerKeys.dll" SourcePath="..\..\x64\Release\modules\PowerKeys.dll"/>
+        <File DestinationPath="modules\System.Text.Json.dll" SourcePath="..\..\x64\Release\modules\System.Text.Json.dll"/>
+        <File DestinationPath="modules\System.Memory.dll" SourcePath="..\..\x64\Release\modules\System.Memory.dll"/>
+        <File DestinationPath="modules\System.Buffers.dll" SourcePath="..\..\x64\Release\modules\System.Buffers.dll"/>
+        <File DestinationPath="modules\System.Runtime.CompilerServices.Unsafe.dll" SourcePath="..\..\x64\Release\modules\System.Runtime.CompilerServices.Unsafe.dll"/>
+        <File DestinationPath="modules\System.Text.Encodings.Web.dll" SourcePath="..\..\x64\Release\modules\System.Text.Encodings.Web.dll"/>
+        <File DestinationPath="modules\System.Threading.Tasks.Extensions.dll" SourcePath="..\..\x64\Release\modules\System.Threading.Tasks.Extensions.dll"/>
+        <File DestinationPath="modules\System.ValueTuple.dll" SourcePath="..\..\x64\Release\modules\System.ValueTuple.dll"/>
+        <File DestinationPath="modules\System.Numerics.Vectors.dll" SourcePath="..\..\x64\Release\modules\System.Numerics.Vectors.dll"/>
+        <File DestinationPath="modules\Microsoft.Bcl.AsyncInterfaces.dll" SourcePath="..\..\x64\Release\modules\Microsoft.Bcl.AsyncInterfaces.dll"/>
+        <File DestinationPath="modules\powerpreview.dll" SourcePath="..\..\x64\Release\modules\powerpreview.dll"/>
+        <File DestinationPath="modules\PreviewHandlerCommon.dll" SourcePath="..\..\x64\Release\modules\PreviewHandlerCommon.dll"/>
+        <File DestinationPath="modules\SvgPreviewHandler.dll" SourcePath="..\..\x64\Release\modules\SvgPreviewHandler.dll"/>
+        <File DestinationPath="modules\MarkdownPreviewHandler.dll" SourcePath="..\..\x64\Release\modules\MarkdownPreviewHandler.dll"/>
+        <File DestinationPath="modules\Markdig.Signed.dll" SourcePath="..\..\x64\Release\modules\Markdig.Signed.dll"/>
+        <File DestinationPath="modules\HtmlAgilityPack.dll" SourcePath="..\..\x64\Release\modules\HtmlAgilityPack.dll"/>
+        <File DestinationPath="registry.dat" SourcePath="registry.dat"/>
+
+        <File DestinationPath="modules\FancyZonesEditor.exe.config" SourcePath="..\..\x64\Release\modules\FancyZonesEditor.exe.config"/>
+
+        <File DestinationPath="Notifications.dll" SourcePath="..\..\x64\Release\Notifications.dll"/>
+
+        <File DestinationPath="svgs\*" SourcePath="..\..\x64\Release\svgs\*"/>
+        <File DestinationPath="settings-html\**" SourcePath="..\..\x64\Release\settings-html\**"/>
+        <File DestinationPath="Images\*.png" SourcePath="Images\*.png"/>
+
+        <!-- Resource files for ar,bg,ca,cs,de,es,eu-ES,fr,he,hu,it,nb-NO,nl,pl,pt-BR,ru,sk,tr,zh-Hans -->
+        <File DestinationPath="modules\ar\**" SourcePath="..\..\x64\Release\modules\ar\**"/>
+        <File DestinationPath="modules\bg\**" SourcePath="..\..\x64\Release\modules\bg\**"/>
+        <File DestinationPath="modules\ca\**" SourcePath="..\..\x64\Release\modules\ca\**"/>
+        <File DestinationPath="modules\cs\**" SourcePath="..\..\x64\Release\modules\cs\**"/>
+        <File DestinationPath="modules\de\**" SourcePath="..\..\x64\Release\modules\de\**"/>
+        <File DestinationPath="modules\es\**" SourcePath="..\..\x64\Release\modules\es\**"/>
+        <File DestinationPath="modules\eu-ES\**" SourcePath="..\..\x64\Release\modules\eu-ES\**"/>
+        <File DestinationPath="modules\fr\**" SourcePath="..\..\x64\Release\modules\fr\**"/>
+        <File DestinationPath="modules\he\**" SourcePath="..\..\x64\Release\modules\he\**"/>
+        <File DestinationPath="modules\hu\**" SourcePath="..\..\x64\Release\modules\hu\**"/>
+        <File DestinationPath="modules\it\**" SourcePath="..\..\x64\Release\modules\it\**"/>
+        <File DestinationPath="modules\nb-NO\**" SourcePath="..\..\x64\Release\modules\nb-NO\**"/>
+        <File DestinationPath="modules\nl\**" SourcePath="..\..\x64\Release\modules\nl\**"/>
+        <File DestinationPath="modules\pl\**" SourcePath="..\..\x64\Release\modules\pl\**"/>
+        <File DestinationPath="modules\pt-BR\**" SourcePath="..\..\x64\Release\modules\pt-BR\**"/>
+        <File DestinationPath="modules\ru\**" SourcePath="..\..\x64\Release\modules\ru\**"/>
+        <File DestinationPath="modules\sk\**" SourcePath="..\..\x64\Release\modules\sk\**"/>
+        <File DestinationPath="modules\tr\**" SourcePath="..\..\x64\Release\modules\tr\**"/>
+        <File DestinationPath="modules\zh-Hans\**" SourcePath="..\..\x64\Release\modules\zh-Hans\**"/>
+      </Files>
+    </Package>
+  </PackageFamily>
+</PackagingLayout>

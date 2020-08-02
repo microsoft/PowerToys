@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FancyZone_HitTest", "FancyZone_HitTest\FancyZone_HitTest.csproj", "{4589E362-908E-4277-B2CE-F2257469356D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4589E362-908E-4277-B2CE-F2257469356D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4589E362-908E-4277-B2CE-F2257469356D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4589E362-908E-4277-B2CE-F2257469356D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4589E362-908E-4277-B2CE-F2257469356D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {10EA2631-C13F-4C50-9389-5BE4FCC66F2A}
+	EndGlobalSection
+EndGlobal

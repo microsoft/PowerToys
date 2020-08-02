@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29215.179
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "PowerToysSetup", "PowerToysSetup\PowerToysSetup.wixproj", "{022A9D30-7C4F-416D-A9DF-5FF2661CC0AD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToysSetupCustomActions", "PowerToysSetupCustomActions\PowerToysSetupCustomActions.vcxproj", "{32F3882B-F2D6-4586-B5ED-11E39E522BD3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{022A9D30-7C4F-416D-A9DF-5FF2661CC0AD}.Debug|x64.ActiveCfg = Debug|x64
+		{022A9D30-7C4F-416D-A9DF-5FF2661CC0AD}.Debug|x64.Build.0 = Debug|x64
+		{022A9D30-7C4F-416D-A9DF-5FF2661CC0AD}.Release|x64.ActiveCfg = Release|x64
+		{022A9D30-7C4F-416D-A9DF-5FF2661CC0AD}.Release|x64.Build.0 = Release|x64
+		{32F3882B-F2D6-4586-B5ED-11E39E522BD3}.Debug|x64.ActiveCfg = Debug|x64
+		{32F3882B-F2D6-4586-B5ED-11E39E522BD3}.Debug|x64.Build.0 = Debug|x64
+		{32F3882B-F2D6-4586-B5ED-11E39E522BD3}.Release|x64.ActiveCfg = Release|x64
+		{32F3882B-F2D6-4586-B5ED-11E39E522BD3}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B7A3DA30-D443-40FF-AC51-988AD41E3962}
+	EndGlobalSection
+EndGlobal
