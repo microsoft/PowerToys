@@ -13,7 +13,7 @@ namespace ColorPicker.Behaviors
     {
         // color window should not get into these zones, only mouse to avoid window getting outsize of monitor
         private const int MonitorRightSideDeadZone = 200;
-        private const int MonitorBottomSideDeadZone = 100;
+        private const int MonitorBottomSideDeadZone = 80;
 
         private const int YOffset = 10;
         private const int XOffset = 5;
@@ -58,14 +58,14 @@ namespace ColorPicker.Behaviors
             var windowLeft = mousePositionScaled.X + XOffset;
             var windowTop = mousePositionScaled.Y + YOffset;
 
-            if ((windowLeft + MonitorRightSideDeadZone) > monitorBounds.Right)
+            if ((windowLeft + MonitorRightSideDeadZone) > monitorBounds.Right / dpi.DpiScaleX)
             {
-                windowLeft -= MonitorRightSideDeadZone - ((int)monitorBounds.Right - windowLeft);
+                windowLeft -= MonitorRightSideDeadZone - (((int)monitorBounds.Right / dpi.DpiScaleX) - windowLeft);
             }
 
-            if ((windowTop + (MonitorBottomSideDeadZone / dpi.DpiScaleX)) > monitorBounds.Bottom / dpi.DpiScaleX)
+            if ((windowTop + MonitorBottomSideDeadZone) > monitorBounds.Bottom / dpi.DpiScaleX)
             {
-                windowTop -= (MonitorBottomSideDeadZone / dpi.DpiScaleX) - (((int)monitorBounds.Bottom / dpi.DpiScaleX) - windowTop);
+                windowTop -= MonitorBottomSideDeadZone - (((int)monitorBounds.Bottom / dpi.DpiScaleX) - windowTop);
             }
 
             AssociatedObject.Left = windowLeft;
