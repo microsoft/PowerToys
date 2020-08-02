@@ -32,7 +32,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                         {
                             while (WDSResults.Read())
                             {
-                                List<Object> fieldData = new List<object>();
+                                List<object> fieldData = new List<object>(WDSResults.FieldCount);
                                 for (int i = 0; i < WDSResults.FieldCount; i++)
                                 {
                                     fieldData.Add(WDSResults.GetValue(i));

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.Search.Interop;
 
@@ -10,7 +10,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 
         private readonly ISearch WindowsIndexerSearch;
         private readonly object _lock = new object();
-        private readonly UInt32 FILE_ATTRIBUTE_HIDDEN = 0x2;
+        private const int FILE_ATTRIBUTE_HIDDEN = 0x2;
 
         public WindowsSearchAPI(ISearch windowsIndexerSearch, bool displayHiddenFiles = false)
         {
@@ -36,16 +36,12 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             // Loop over all records from the database
             foreach (OleDBResult oleDBResult in oleDBResults)
             {
-                if (oleDBResult.FieldData[0] == DBNull.Value || oleDBResult.FieldData[1] == DBNull.Value || oleDBResult.FieldData[2] == DBNull.Value)
+                if (oleDBResult.FieldData[0] == DBNull.Value || oleDBResult.FieldData[1] == DBNull.Value)
                 {
                     continue;
                 }
 
-                UInt32 fileAttributes = (UInt32)((Int64)oleDBResult.FieldData[2]);
-                bool isFileHidden = (fileAttributes & FILE_ATTRIBUTE_HIDDEN) == FILE_ATTRIBUTE_HIDDEN;
-
-                if (DisplayHiddenFiles || !isFileHidden)
-                {
+              
                     var uri_path = new Uri((string)oleDBResult.FieldData[0]);
                     var result = new SearchResult
                     {
@@ -53,7 +49,6 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                         Title = (string)oleDBResult.FieldData[1]
                     };
                     _Result.Add(result);
-                }
             }
 
             return _Result;
@@ -90,7 +85,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             }
         }
 
-        public static void InitQueryHelper(out ISearchQueryHelper queryHelper, int maxCount)
+        public void InitQueryHelper(out ISearchQueryHelper queryHelper, int maxCount)
         {
             // This uses the Microsoft.Search.Interop assembly
             CSearchManager manager = new CSearchManager();
@@ -105,10 +100,16 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             queryHelper.QueryMaxResults = maxCount;
 
             // Set list of columns we want to display, getting the path presently
-            queryHelper.QuerySelectColumns = "System.ItemUrl, System.FileName, System.FileAttributes";
+            queryHelper.QuerySelectColumns = "System.ItemUrl, System.FileName";
 
             // Set additional query restriction
             queryHelper.QueryWhereRestrictions = "AND scope='file:'";
+
+            if (!DisplayHiddenFiles)
+            {
+	            // https://docs.microsoft.com/en-us/windows/win32/search/all-bitwise
+	            queryHelper.QueryWhereRestrictions += "AND System.FileAttributes <> SOME BITWISE " + FILE_ATTRIBUTE_HIDDEN;
+            }
 
             // To filter based on title for now
             queryHelper.QueryContentProperties = "System.FileName";

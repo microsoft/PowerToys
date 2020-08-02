@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using Microsoft.Search.Interop;
@@ -32,7 +32,7 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper = null;
 
             // Act
-            WindowsSearchAPI.InitQueryHelper(out queryHelper, maxCount);
+            _api.InitQueryHelper(out queryHelper, maxCount);
 
             // Assert
             Assert.IsNotNull(queryHelper);
@@ -46,7 +46,7 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             String pattern = "*";
             WindowsSearchAPI _api = GetWindowsSearchAPI();
-            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
+            _api.InitQueryHelper(out queryHelper, 10);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -63,7 +63,7 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             String pattern = "tt*^&)";
             WindowsSearchAPI _api = GetWindowsSearchAPI();
-            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
+            _api.InitQueryHelper(out queryHelper, 10);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -80,7 +80,7 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             String pattern = "tt%^&)";
             WindowsSearchAPI _api = GetWindowsSearchAPI();
-            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
+            _api.InitQueryHelper(out queryHelper, 10);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -97,7 +97,7 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             String pattern = "tt_^&)";
             WindowsSearchAPI _api = GetWindowsSearchAPI();
-            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
+            _api.InitQueryHelper(out queryHelper, 10);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -114,7 +114,7 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             String pattern = "tt?^&)";
             WindowsSearchAPI _api = GetWindowsSearchAPI();
-            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
+            _api.InitQueryHelper(out queryHelper, 10);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -131,7 +131,7 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             String pattern = "tt^&)bc";
             WindowsSearchAPI _api = GetWindowsSearchAPI();
-            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
+            _api.InitQueryHelper(out queryHelper, 10);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -156,12 +156,12 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void WindowsSearchAPI_ShouldShowHiddenFiles_WhenDisplayHiddenFilesIsTrue()
+        public void WindowsSearchAPI_ShouldReturnResults_WhenSearchWasExecuted()
         {
             // Arrange
-            OleDBResult unHiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", "file1.txt", (Int64)0x0 });
-            OleDBResult hiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt", (Int64)0x2 });
-            List<OleDBResult> results = new List<OleDBResult>() { hiddenFile, unHiddenFile };
+            OleDBResult result1 = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", "file1.txt" });
+            OleDBResult result2 = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt" });
+            List<OleDBResult> results = new List<OleDBResult>() { result2, result1 };
             var mock = new Mock<ISearch>();
             mock.Setup(x => x.Query(It.IsAny<string>(), It.IsAny<string>())).Returns(results);
             WindowsSearchAPI _api = new WindowsSearchAPI(mock.Object, true);
@@ -176,31 +176,11 @@ namespace Wox.Test.Plugins
         }
 
         [Test]
-        public void WindowsSearchAPI_ShouldNotShowHiddenFiles_WhenDisplayHiddenFilesIsFalse()
-        {
-            // Arrange
-            OleDBResult unHiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", "file1.txt", (Int64)0x0 });
-            OleDBResult hiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt", (Int64)0x2 });
-            List<OleDBResult> results = new List<OleDBResult>() { hiddenFile, unHiddenFile };
-            var mock = new Mock<ISearch>();
-            mock.Setup(x => x.Query(It.IsAny<string>(), It.IsAny<string>())).Returns(results);
-            WindowsSearchAPI _api = new WindowsSearchAPI(mock.Object, false);
-
-            // Act
-            var windowsSearchAPIResults = _api.Search("FilePath");
-
-            // Assert
-            Assert.IsTrue(windowsSearchAPIResults.Count() == 1);
-            Assert.IsTrue(windowsSearchAPIResults.Any(x => x.Title == "file1.txt"));
-            Assert.IsFalse(windowsSearchAPIResults.Any(x => x.Title == "file2.txt"));
-        }
-
-        [Test]
         public void WindowsSearchAPI_ShouldNotReturnResultsWithNullValue_WhenDbResultHasANullColumn()
         {
             // Arrange
-            OleDBResult file1 = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", DBNull.Value, (Int64)0x0 });
-            OleDBResult file2 = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt", (Int64)0x0 });
+            OleDBResult file1 = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", DBNull.Value});
+            OleDBResult file2 = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt"});
 
             List<OleDBResult> results = new List<OleDBResult>() { file1, file2 };
             var mock = new Mock<ISearch>();
@@ -214,6 +194,58 @@ namespace Wox.Test.Plugins
             Assert.IsTrue(windowsSearchAPIResults.Count() == 1);
             Assert.IsFalse(windowsSearchAPIResults.Any(x => x.Title == "file1.txt"));
             Assert.IsTrue(windowsSearchAPIResults.Any(x => x.Title == "file2.txt"));
+        }
+
+        [Test]
+        public void WindowsSearchAPI_ShouldRequestNormalRequest_WhenDisplayHiddenFilesIsTrue()
+        {
+            ISearchQueryHelper queryHelper;
+            String pattern = "notepad";
+            WindowsSearchAPI _api = GetWindowsSearchAPI();
+            _api.DisplayHiddenFiles = true;
+
+            // Act
+            _api.InitQueryHelper(out queryHelper, 10);
+            WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
+
+            // Assert
+            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("AND System.FileAttributes <> SOME BITWISE 2"));
+        }
+
+        [Test]
+        public void WindowsSearchAPI_ShouldRequestFilteredRequest_WhenDisplayHiddenFilesIsFalse()
+        {
+            ISearchQueryHelper queryHelper;
+            String pattern = "notepad";
+            WindowsSearchAPI _api = GetWindowsSearchAPI();
+            _api.DisplayHiddenFiles = false;
+
+            // Act
+            _api.InitQueryHelper(out queryHelper, 10);
+            WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
+
+            // Assert
+            Assert.IsTrue(queryHelper.QueryWhereRestrictions.Contains("AND System.FileAttributes <> SOME BITWISE 2"));
+        }
+
+
+        [Test]
+        public void WindowsSearchAPI_ShouldRequestNormalRequest_WhenDisplayHiddenFilesIsTrue_AfterRuntimeSwap()
+        {
+            ISearchQueryHelper queryHelper;
+            String pattern = "notepad";
+            WindowsSearchAPI _api = GetWindowsSearchAPI();
+            _api.DisplayHiddenFiles = false;
+
+            // Act
+            _api.InitQueryHelper(out queryHelper, 10);
+            WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
+            _api.DisplayHiddenFiles = true;
+            _api.InitQueryHelper(out queryHelper, 10);
+            WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
+
+            // Assert
+            Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("AND System.FileAttributes <> SOME BITWISE 2"));
         }
 
         [TestCase("item.exe")]
