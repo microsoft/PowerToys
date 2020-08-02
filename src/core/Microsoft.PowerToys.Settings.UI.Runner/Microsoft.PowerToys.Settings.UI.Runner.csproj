@@ -10,6 +10,7 @@
     <Authors>Microsoft Corporation</Authors>
     <Product>PowerToys</Product>
     <Description>PowerToys Settings UI Runner</Description>
+    <AssemblyName>PowerToys Settings</AssemblyName>
     <Copyright>Copyright (C) 2020 Microsoft Corporation</Copyright>
     <Company>Microsoft Corporation</Company>
     <PackageIcon>logo.png</PackageIcon>
