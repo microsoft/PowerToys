@@ -1,0 +1,17 @@
+{
+  "ID": "565B73353DBF4806919830B9202EE3BF",
+  "ActionKeywords": [
+    "web",
+    "map",
+    "dict",
+    "image"
+  ],
+  "Name": "Web Searches",
+  "Description": "Provide the web search ability powered by Bing.",
+  "Author": "yangpeng",
+  "Version": "1.0.0",
+  "Language": "csharp",
+  "Website": "https://github.com/Wox-launcher/Wox",
+  "ExecuteFileName": "Microsoft.Plugin.WebSearch.dll",
+  "IcoPath": "Images\\web_search.png"
+}

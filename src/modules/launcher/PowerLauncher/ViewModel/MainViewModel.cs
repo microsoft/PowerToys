@@ -444,7 +444,6 @@ namespace PowerLauncher.ViewModel
                 var query = QueryBuilder.Build(QueryText.Trim(), PluginManager.NonGlobalPlugins);
                 if (query != null)
                 {
-                    _lastQuery = query;
                     Task.Run(() =>
                     {
                         Thread.Sleep(20);
@@ -496,6 +495,8 @@ namespace PowerLauncher.ViewModel
                                     Results.Visibility = Visibility.Hidden;
                                 }
                             }));
+
+                            _lastQuery = query;
                         }
                         catch (OperationCanceledException)
                         {
@@ -720,7 +721,7 @@ namespace PowerLauncher.ViewModel
                 }
             }
 
-            if (originQuery.RawQuery == _lastQuery.RawQuery)
+            if (originQuery.RawQuery != _lastQuery.RawQuery)
             {
                 ct.ThrowIfCancellationRequested();
                 Results.AddResults(list, metadata.ID, ct);

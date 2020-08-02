@@ -265,6 +265,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "colorpicker", "colorpicker"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bootstrapper", "src\bootstrapper\bootstrapper.vcxproj", "{D194E3AA-F824-4CA9-9A58-034DD6B7D022}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Plugin.WebSearch", "src\modules\launcher\Plugins\Microsoft.Plugin.WebSearch\Microsoft.Plugin.WebSearch.csproj", "{403B57F2-1856-4FC7-8A24-36AB346B763E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -525,6 +527,8 @@ Global
 		{BA58206B-1493-4C75-BFEA-A85768A1E156}.Release|x64.Build.0 = Release|x64
 		{D194E3AA-F824-4CA9-9A58-034DD6B7D022}.Debug|x64.ActiveCfg = Debug|x64
 		{D194E3AA-F824-4CA9-9A58-034DD6B7D022}.Release|x64.ActiveCfg = Release|x64
+		{403B57F2-1856-4FC7-8A24-36AB346B763E}.Debug|x64.ActiveCfg = Debug|x64
+		{403B57F2-1856-4FC7-8A24-36AB346B763E}.Release|x64.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -599,6 +603,7 @@ Global
 		{655C9AF2-18D3-4DA6-80E4-85504A7722BA} = {1D78B84B-CA39-406C-98F4-71F7EC266CC0}
 		{BA58206B-1493-4C75-BFEA-A85768A1E156} = {1D78B84B-CA39-406C-98F4-71F7EC266CC0}
 		{1D78B84B-CA39-406C-98F4-71F7EC266CC0} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
+		{403B57F2-1856-4FC7-8A24-36AB346B763E} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

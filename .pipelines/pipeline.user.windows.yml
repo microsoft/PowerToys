@@ -94,6 +94,7 @@ build:
             - 'modules\launcher\Plugins\Microsoft.Plugin.Program\Wox.Infrastructure.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Program\Wox.Plugin.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Shell\Microsoft.Plugin.Shell.dll'
+            - 'modules\launcher\Plugins\Microsoft.Plugin.Shell\Microsoft.Plugin.WebSearch.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Shell\Wox.Infrastructure.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.Shell\Wox.Plugin.dll'
             - 'modules\launcher\Plugins\Microsoft.Plugin.WindowWalker\Microsoft.Plugin.WindowWalker.dll'

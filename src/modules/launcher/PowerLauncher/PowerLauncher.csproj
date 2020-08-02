@@ -92,6 +92,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.24" />
+    <PackageReference Include="InputSimulator" Version="1.0.4">
+      <NoWarn>NU1701</NoWarn>
+    </PackageReference>
     <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
     <PackageReference Include="Mages" Version="1.6.0">
        <NoWarn>NU1701</NoWarn>

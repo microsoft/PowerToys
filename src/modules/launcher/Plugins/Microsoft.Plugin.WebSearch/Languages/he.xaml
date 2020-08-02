@@ -1,0 +1,32 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:String x:Key="wox_plugin_websearch_delete">מחק</system:String>
+    <system:String x:Key="wox_plugin_websearch_edit">ערוך</system:String>
+    <system:String x:Key="wox_plugin_websearch_add">הוסף</system:String>
+    <system:String x:Key="wox_plugin_websearch_confirm">אשר</system:String>
+    <system:String x:Key="wox_plugin_websearch_action_keyword">מילת מפתח לפעולה</system:String>
+    <system:String x:Key="wox_plugin_websearch_url">קישור</system:String>
+    <system:String x:Key="wox_plugin_websearch_search">חפש</system:String>
+    <system:String x:Key="wox_plugin_websearch_enable_suggestion">אפשר הצעות חיפוש</system:String>
+    <system:String x:Key="wox_plugin_websearch_pls_select_web_search">אנא בחר חיפוש אינטרנטי</system:String>
+    <system:String x:Key="wox_plugin_websearch_delete_warning">האם אתה בטוח שאתה רוצה למחוק את {0}?</system:String>
+
+    <!--web search edit-->
+    <system:String x:Key="wox_plugin_websearch_title">כותרת</system:String>
+    <system:String x:Key="wox_plugin_websearch_enable">אפשר</system:String>
+    <system:String x:Key="wox_plugin_websearch_select_icon">בחר צלמית</system:String>
+    <system:String x:Key="wox_plugin_websearch_icon">צלמית</system:String>
+    <system:String x:Key="wox_plugin_websearch_cancel">בטל</system:String>
+    <system:String x:Key="wox_plugin_websearch_invalid_web_search">חיפוש אינטרנטי שגוי</system:String>
+    <system:String x:Key="wox_plugin_websearch_input_title">אנא הכנס כותרת</system:String>
+    <system:String x:Key="wox_plugin_websearch_input_action_keyword">אנא הכנס מילת מפתח לפעולה</system:String>
+    <system:String x:Key="wox_plugin_websearch_input_url">אנא הכנס קישור</system:String>
+    <system:String x:Key="wox_plugin_websearch_action_keyword_exist">מילת מפתח כזו כבר קיימת, אנא הכנס אחרת</system:String>
+    <system:String x:Key="wox_plugin_websearch_succeed">הצלחה</system:String>
+
+    <system:String x:Key="wox_plugin_websearch_plugin_name">חיפושי אינטרנט</system:String>
+    <system:String x:Key="wox_plugin_websearch_plugin_description">מאפשר לבצע חיפושי אינטרנט</system:String>
+
+</ResourceDictionary>

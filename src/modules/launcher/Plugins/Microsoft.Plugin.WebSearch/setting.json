@@ -1,0 +1,37 @@
+{
+  "WebSearches": [
+    {
+      "Title": "Bing",
+      "ActionKeyword": "web",
+      "IconPath": "Images\\bing.png",
+      "Url": "https://www.bing.com/search?q={q}",
+      "Enabled": true,
+      "SuggestionSources": "bingweb"
+    },
+    {
+      "Title": "Bing Dictionary",
+      "ActionKeyword": "dict",
+      "IconPath": "Images\\bing.png",
+      "Url": "https://www.bing.com/search?q={q}",
+      "Enabled": true,
+      "SuggestionSources": "bingdict"
+    },
+    {
+      "Title": "Bing Map",
+      "ActionKeyword": "map",
+      "IconPath": "Images\\bingmap.png",
+      "Url": "https://www.bing.com/maps?q={q}",
+      "Enabled": true,
+      "SuggestionSources": "bingmap"
+    },
+    {
+      "Title": "Bing Image",
+      "ActionKeyword": "image",
+      "IconPath": "Images\\bing.png",
+      "Url": "https://www.bing.com/images/search/?q={q}",
+      "Enabled": true,
+      "SuggestionSources": "bingimage"
+    }
+  ],
+  "EnableSuggestion":  true
+}

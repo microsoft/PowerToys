@@ -1,0 +1,32 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:String x:Key="wox_plugin_websearch_delete">Eliminar</system:String>
+    <system:String x:Key="wox_plugin_websearch_edit">Editar</system:String>
+    <system:String x:Key="wox_plugin_websearch_add">Adicionar</system:String>
+    <system:String x:Key="wox_plugin_websearch_confirm">Confirmar</system:String>
+    <system:String x:Key="wox_plugin_websearch_action_keyword">Palavra-chave da ação</system:String>
+    <system:String x:Key="wox_plugin_websearch_url">URL</system:String>
+    <system:String x:Key="wox_plugin_websearch_search">Pesquisa</system:String>
+    <system:String x:Key="wox_plugin_websearch_enable_suggestion">Ativar sugestões de pesquisa</system:String>
+    <system:String x:Key="wox_plugin_websearch_pls_select_web_search">Selecione o motor de pesquisa</system:String>
+    <system:String x:Key="wox_plugin_websearch_delete_warning">Tem a certeza de que deseja eliminar {0}?</system:String>
+
+    <!--web search edit-->
+    <system:String x:Key="wox_plugin_websearch_title">Título</system:String>
+    <system:String x:Key="wox_plugin_websearch_enable">Ativar</system:String>
+    <system:String x:Key="wox_plugin_websearch_select_icon">Selecione o ícone</system:String>
+    <system:String x:Key="wox_plugin_websearch_icon">Ícone</system:String>
+    <system:String x:Key="wox_plugin_websearch_cancel">Cancelar</system:String>
+    <system:String x:Key="wox_plugin_websearch_invalid_web_search">Pesquisa inválida</system:String>
+    <system:String x:Key="wox_plugin_websearch_input_title">Introduza um título</system:String>
+    <system:String x:Key="wox_plugin_websearch_input_action_keyword">Introduza uma palavra-chave para a ação</system:String>
+    <system:String x:Key="wox_plugin_websearch_input_url">Introduza um URL</system:String>
+    <system:String x:Key="wox_plugin_websearch_action_keyword_exist">Esta palavra-chave já existe. Por favor escolha outra.</system:String>
+    <system:String x:Key="wox_plugin_websearch_succeed">Sucesso</system:String>
+
+    <system:String x:Key="wox_plugin_websearch_plugin_name">Pesquisas na Web</system:String>
+    <system:String x:Key="wox_plugin_websearch_plugin_description">Permite executar pesquisas na Web</system:String>
+
+</ResourceDictionary>

@@ -270,6 +270,11 @@
                   <Directory Id="ShellLanguagesFolder" Name="Languages" />
                   <Directory Id="ShellpinyindbFolder" Name="pinyindb" />
                 </Directory>
+                <Directory Id="ShellPluginFolder" Name="Microsoft.Plugin.WebSearch">
+                  <Directory Id="ShellImagesFolder" Name="Images" />
+                  <Directory Id="ShellLanguagesFolder" Name="Languages" />
+                  <Directory Id="ShellpinyindbFolder" Name="pinyindb" />
+                </Directory>
                 <Directory Id="IndexerPluginFolder" Name="Microsoft.Plugin.Indexer">
                   <Directory Id="IndexerImagesFolder" Name="Images" />
                   <Directory Id="IndexerLanguagesFolder" Name="Languages" />

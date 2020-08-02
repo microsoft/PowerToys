@@ -1,0 +1,32 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <system:String x:Key="wox_plugin_websearch_delete">Odstrániť</system:String>
+    <system:String x:Key="wox_plugin_websearch_edit">Upraviť</system:String>
+    <system:String x:Key="wox_plugin_websearch_add">Pridať</system:String>
+    <system:String x:Key="wox_plugin_websearch_confirm">Potvrdiť</system:String>
+    <system:String x:Key="wox_plugin_websearch_action_keyword">Skratka akcie</system:String>
+    <system:String x:Key="wox_plugin_websearch_url">URL</system:String>
+    <system:String x:Key="wox_plugin_websearch_search">Hľadať</system:String>
+    <system:String x:Key="wox_plugin_websearch_enable_suggestion">Povoliť návrhy vyhľadávania</system:String>
+    <system:String x:Key="wox_plugin_websearch_pls_select_web_search">Vyberte webové vyhľadávanie</system:String>
+    <system:String x:Key="wox_plugin_websearch_delete_warning">Naozaj chcete odstrániť {0}?</system:String>
+
+    <!--web search edit-->
+    <system:String x:Key="wox_plugin_websearch_title">Názov</system:String>
+    <system:String x:Key="wox_plugin_websearch_enable">Povoliť</system:String>
+    <system:String x:Key="wox_plugin_websearch_select_icon">Vybrať ikonu</system:String>
+    <system:String x:Key="wox_plugin_websearch_icon">Ikona</system:String>
+    <system:String x:Key="wox_plugin_websearch_cancel">Zrušiť</system:String>
+    <system:String x:Key="wox_plugin_websearch_invalid_web_search">Neplatné webové vyhľadávanie</system:String>
+    <system:String x:Key="wox_plugin_websearch_input_title">Zadajte názov</system:String>
+    <system:String x:Key="wox_plugin_websearch_input_action_keyword">Zadajte skratku akcie</system:String>
+    <system:String x:Key="wox_plugin_websearch_input_url">Zadajte URL</system:String>
+    <system:String x:Key="wox_plugin_websearch_action_keyword_exist">Zadaná skratka akcie už existuje, zadajte inú</system:String>
+    <system:String x:Key="wox_plugin_websearch_succeed">Úspešné</system:String>
+
+    <system:String x:Key="wox_plugin_websearch_plugin_name">Webové vyhľadávanie</system:String>
+    <system:String x:Key="wox_plugin_websearch_plugin_description">Umožňuje vyhľadávanie webov</system:String>
+
+</ResourceDictionary>
