@@ -112,21 +112,7 @@ public:
         {
             unsigned long powertoys_pid = GetCurrentProcessId();
 
-            if (!is_process_elevated(false))
-            {
-                std::wstring executable_args = L"";
-                executable_args.append(std::to_wstring(powertoys_pid));
-
-                SHELLEXECUTEINFOW sei{ sizeof(sei) };
-                sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-                sei.lpFile = L"modules\\ColorPicker\\ColorPicker.exe";
-                sei.nShow = SW_SHOWNORMAL;
-                sei.lpParameters = executable_args.data();
-                ShellExecuteExW(&sei);
-
-                m_hProcess = sei.hProcess;
-            }
-            else
+            if (is_process_elevated(false))
             {
                 std::wstring action_runner_path = get_module_folderpath();
 
@@ -166,7 +152,20 @@ public:
                     CloseHandle(hMapFile);
                 }
             }
-          
+            else
+            {
+                std::wstring executable_args = L"";
+                executable_args.append(std::to_wstring(powertoys_pid));
+
+                SHELLEXECUTEINFOW sei{ sizeof(sei) };
+                sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+                sei.lpFile = L"modules\\ColorPicker\\ColorPicker.exe";
+                sei.nShow = SW_SHOWNORMAL;
+                sei.lpParameters = executable_args.data();
+                ShellExecuteExW(&sei);
+
+                m_hProcess = sei.hProcess;
+            }
 
             m_enabled = true;
         }
