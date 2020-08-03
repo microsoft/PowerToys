@@ -18,9 +18,10 @@ namespace Wox.Plugin.WebSearch.SuggestionSources
             string result;
             try
             {
+                // {TODO: this is using appid of maps.bing.com for now, needs to get a dedicate appid.}
                 string mkt = string.IsNullOrEmpty(locale) ? "en-us" : locale;
                 query = Uri.EscapeUriString(query);
-                string apiUrl = $"https://www.bing.com/api/v6/Places/AutoSuggest?appid=EA61BE03A99556E0B316087FE81BB2311B62D90E&structuredaddress=true&types=business,address,place&mkt={mkt}&setlang={mkt}&q={query}";
+                string apiUrl = $"https://www.bing.com/api/v6/Places/AutoSuggest?appid=D41D8CD98F00B204E9800998ECF8427E1FBE79C2&structuredaddress=true&types=business,address,place&mkt={mkt}&setlang={mkt}&q={query}";
                 result = await Http.Get(apiUrl);
             }
             catch (WebException e)

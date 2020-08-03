@@ -42,7 +42,7 @@ namespace Wox.Plugin.WebSearch
             {
                 Title = "Bing Map",
                 ActionKeyword = "map",
-                Icon = "bingmap.png",
+                Icon = "bing.png",
                 Url = "https://www.bing.com/maps?q={q}",
                 Enabled = true,
                 SuggestionSources = "bingmap"

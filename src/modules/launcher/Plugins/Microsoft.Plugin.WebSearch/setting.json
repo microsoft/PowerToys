@@ -19,7 +19,7 @@
     {
       "Title": "Bing Map",
       "ActionKeyword": "map",
-      "IconPath": "Images\\bingmap.png",
+      "IconPath": "Images\\bing.png",
       "Url": "https://www.bing.com/maps?q={q}",
       "Enabled": true,
       "SuggestionSources": "bingmap"
