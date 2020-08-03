@@ -83,7 +83,13 @@ namespace ColorPicker.Settings
                         }
                         catch (Exception ex)
                         {
+                            if (retryCount > MaxNumberOfRetry)
+                            {
+                                retry = false;
+                            }
+
                             Logger.LogError("Failed to read changed settings", ex);
+                            Thread.Sleep(500);
                         }
                     }
                 }

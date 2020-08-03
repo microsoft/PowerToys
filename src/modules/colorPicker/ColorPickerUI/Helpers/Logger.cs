@@ -69,7 +69,7 @@ namespace ColorPicker.Helpers
 
             var methodName = stackTrace.GetFrame(3)?.GetMethod();
             var className = methodName?.DeclaringType.Name;
-            return "[Method]: " + methodName.Name + " [Class]: " + className;
+            return "[Method]: " + methodName?.Name + " [Class]: " + className;
         }
     }
 }
