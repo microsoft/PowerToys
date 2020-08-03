@@ -1,20 +1,16 @@
-﻿using System;
-using System.ComponentModel;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Media.Animation;
-using PowerLauncher.Helper;
-using Wox.Infrastructure.UserSettings;
-using PowerLauncher.ViewModel;
-
-using Screen = System.Windows.Forms.Screen;
-using KeyEventArgs = System.Windows.Input.KeyEventArgs;
-using System.Windows.Controls;
-using System.Threading.Tasks;
-using System.Diagnostics;
-using System.Timers;
-using Microsoft.PowerLauncher.Telemetry;
+﻿using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
+using PowerLauncher.Helper;
+using PowerLauncher.ViewModel;
+using System;
+using System.ComponentModel;
+using System.Timers;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using Wox.Infrastructure.UserSettings;
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+using Screen = System.Windows.Forms.Screen;
 
 
 namespace PowerLauncher
@@ -47,10 +43,13 @@ namespace PowerLauncher
 
         private void CheckForFirstDelete(object sender, ElapsedEventArgs e)
         {
-            _firstDeleteTimer.Stop();
-            if (_deletePressed)
+            if (_firstDeleteTimer != null)
             {
-                PowerToysTelemetry.Log.WriteEvent(new LauncherFirstDeleteEvent());
+                _firstDeleteTimer.Stop();
+                if (_deletePressed)
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new LauncherFirstDeleteEvent());
+                }
             }
 
         }
@@ -350,7 +349,10 @@ namespace PowerLauncher
             if (Visibility == Visibility.Visible)
             {
                 _deletePressed = false;
-                _firstDeleteTimer.Start();
+                if (_firstDeleteTimer != null)
+                {
+                    _firstDeleteTimer.Start();
+                }
                 // (this.FindResource("IntroStoryboard") as Storyboard).Begin();
 
                 SearchBox.QueryTextBox.Focus();
@@ -376,7 +378,10 @@ namespace PowerLauncher
             }
             else
             {
-                _firstDeleteTimer.Stop();
+                if (_firstDeleteTimer != null)
+                {
+                    _firstDeleteTimer.Stop();
+                }
             }
         }
 
@@ -402,11 +407,15 @@ namespace PowerLauncher
             {
                 if (disposing)
                 {
-                    _firstDeleteTimer.Dispose();
+                    if (_firstDeleteTimer != null)
+                    {
+                        _firstDeleteTimer.Dispose();
+                    }
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
                 // TODO: set large fields to null
+                _firstDeleteTimer = null;
                 disposedValue = true;
             }
         }
