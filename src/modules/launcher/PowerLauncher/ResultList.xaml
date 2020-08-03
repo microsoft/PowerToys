@@ -167,8 +167,9 @@
             IsItemClickEnabled="True"-->
             <!--Style="{StaticResource ListViewNoAnimations}"-->
             <ListView.ItemTemplate>
-                <DataTemplate >
+                <DataTemplate>
                     <Grid 
+                        AutomationProperties.Name="Item"
                         Height="72" 
                         Width="642" 
                         Background="Transparent"

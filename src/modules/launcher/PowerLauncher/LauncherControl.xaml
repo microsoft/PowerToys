@@ -92,6 +92,7 @@
         -->
 
         <TextBox
+            AutomationProperties.Name="Query"
             x:Name="QueryTextBox"
             x:FieldModifier="public"
             Canvas.ZIndex="0"
@@ -103,6 +104,7 @@
             />
 
         <TextBlock
+            AutomationProperties.Name="SearchIcon"
             Grid.Column="1"
             Text="&#xE721;"
             FontFamily="Segoe MDL2 Assets"
