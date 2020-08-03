@@ -192,7 +192,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void HotkeyTextBox_LosingFocus(object sender, RoutedEventArgs e)
         {
-            if (lastValidSettings != null && (lastValidSettings.IsValid(_keys) || lastValidSettings.IsEmpty()))
+            if (lastValidSettings != null && (lastValidSettings.IsValid(Keys) || lastValidSettings.IsEmpty()))
             {
                 HotkeySettings = lastValidSettings.Clone();
             }
