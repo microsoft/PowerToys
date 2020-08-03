@@ -653,7 +653,12 @@ void FancyZones::ToggleEditor() noexcept
 
     if (m_settings->GetSettings()->multiMonitorMode)
     {
-        auto allMonitors = GetAllMonitorRects<&MONITORINFOEX::rcWork>();
+        std::vector<std::pair<HMONITOR, RECT>> allMonitors;
+
+        m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
+            allMonitors = GetAllMonitorRects<&MONITORINFOEX::rcWork>();
+            } }).wait();
+
         for (auto& [monitor, workArea] : allMonitors)
         {
             const auto x = workArea.left;
@@ -683,9 +688,8 @@ void FancyZones::ToggleEditor() noexcept
         mi.cbSize = sizeof(mi);
 
         m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
-                              GetMonitorInfo(monitor, &mi);
-                          } })
-            .wait();
+            GetMonitorInfo(monitor, &mi);
+            } }).wait();
 
         const auto x = mi.rcWork.left;
         const auto y = mi.rcWork.top;
