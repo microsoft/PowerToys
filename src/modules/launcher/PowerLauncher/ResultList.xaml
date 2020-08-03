@@ -160,7 +160,8 @@
             ScrollViewer.VerticalScrollBarVisibility="Auto"       
             SelectionMode="Single"
             SelectedIndex="{Binding Results.SelectedIndex, Mode=TwoWay}"
-            ItemContainerStyle="{StaticResource ResultsListViewItemContainerStyle}">
+            ItemContainerStyle="{StaticResource ResultsListViewItemContainerStyle}"
+            AutomationProperties.Name="Suggestions">
             
             <!--AllowFocusOnInteraction="False"
             IsItemClickEnabled="True"-->
@@ -207,10 +208,11 @@
                                 </StackPanel>
                             </ToolTip>
                         </Grid.ToolTip>
-                        <Image x:Name="AppIcon" Height="36" MaxWidth="56" Grid.RowSpan="2" Margin="-6,-2,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />
-                        <TextBlock x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" Margin="0,0,0,-2" VerticalAlignment="Bottom"/>
-                        <TextBlock x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Foreground="{DynamicResource SecondaryTextForeground}" Margin="0,2,0,0" VerticalAlignment="Top"/>
-                        <ListView                                  
+                        <Image AutomationProperties.Name="AppIcon" x:Name="AppIcon" Height="36" MaxWidth="56" Grid.RowSpan="2" Margin="-6,-2,0,0" HorizontalAlignment="Center" Source="{Binding Image}" />
+                        <TextBlock AutomationProperties.Name="Title" x:Name="Title" Grid.Column="1" Text="{Binding Result.Title}" FontWeight="SemiBold" FontSize="20" Margin="0,0,0,-2" VerticalAlignment="Bottom"/>
+                        <TextBlock AutomationProperties.Name="Subtitle" x:Name="Path" Grid.Column="1" Text= "{Binding Result.SubTitle}" Grid.Row="1" Foreground="{DynamicResource SecondaryTextForeground}" Margin="0,2,0,0" VerticalAlignment="Top"/>
+                        <ListView      
+                            AutomationProperties.Name="ContextMenuItemsCollection"
                             HorizontalAlignment="Right" 
                             VerticalAlignment="Center"                                  
                             Background="Transparent"
@@ -234,14 +236,14 @@
                             </ItemsControl.ItemsPanel>
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <Button Style="{StaticResource IconButtonStyle}" Command="{Binding Command}" VerticalAlignment="Center" Height="42" Width="42" BorderThickness="1" >
+                                    <Button AutomationProperties.Name="ContextMenuItem" Style="{StaticResource IconButtonStyle}" Command="{Binding Command}" VerticalAlignment="Center" Height="42" Width="42" BorderThickness="1" >
                                         <ToolTipService.ToolTip>
                                             <ToolTip >
-                                                <TextBlock Text="{Binding Title}" Foreground="{DynamicResource ToolTipForegroundBrushKey}" Margin="8,5" FontSize="12"/>
+                                                <TextBlock AutomationProperties.Name="ContextMenuItemAdditionalInformation" Text="{Binding Title}" Foreground="{DynamicResource ToolTipForegroundBrushKey}" Margin="8,5" FontSize="12"/>
                                             </ToolTip>
                                         </ToolTipService.ToolTip>
                                         <Button.Content>
-                                            <TextBlock FontFamily="{Binding FontFamily}" FontSize="16" Text="{Binding Glyph}"/>
+                                            <TextBlock AutomationProperties.Name="ContextMenuItemContent" FontFamily="{Binding FontFamily}" FontSize="16" Text="{Binding Glyph}"/>
                                         </Button.Content>
                                     </Button>
                                 </DataTemplate>
