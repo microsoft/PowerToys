@@ -30,6 +30,7 @@ using winrt::Windows::UI::Notifications::ToastNotificationManager;
 
 namespace fs = std::filesystem;
 
+// This namespace contains strings that SHOULD NOT be localized
 namespace
 {
     constexpr std::wstring_view TASK_NAME = L"PowerToysBackgroundNotificationsHandler";
