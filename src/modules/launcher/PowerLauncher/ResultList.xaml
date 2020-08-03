@@ -169,7 +169,6 @@
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid 
-                        AutomationProperties.Name="Item"
                         Height="72" 
                         Width="642" 
                         Background="Transparent"
