@@ -782,7 +782,11 @@ std::optional<std::string> exec_and_read_output(const std::wstring_view command,
     constexpr size_t bufferSize = 4096;
     // We must use a named pipe for async I/O
     char pipename[MAX_PATH + 1];
-    GetTempFileNameA(R"(\\.\pipe\)", "tmp", 1, pipename);
+    if (!GetTempFileNameA(R"(\\.\pipe\)", "tmp", 1, pipename))
+    {
+        return std::nullopt;
+    }
+
     wil::unique_handle readPipe{ CreateNamedPipeA(pipename, PIPE_ACCESS_INBOUND | FILE_FLAG_OVERLAPPED, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE, PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &saAttr) };
 
     saAttr.bInheritHandle = true;
