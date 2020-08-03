@@ -10,7 +10,7 @@ namespace notifications
 {
     constexpr inline const wchar_t TOAST_ACTIVATED_LAUNCH_ARG[] = L"-ToastActivated";
 
-    void set_application_id(const std::wstring_view appID);
+    void override_application_id(const std::wstring_view appID);
     void register_background_toast_handler();
     void run_desktop_app_activator_loop();
 

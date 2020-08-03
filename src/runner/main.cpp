@@ -48,7 +48,6 @@ namespace localized_strings
 namespace
 {
     const wchar_t PT_URI_PROTOCOL_SCHEME[] = L"powertoys://";
-    const wchar_t APPLICATION_ID[] = L"Microsoft.PowerToysWin32";
 }
 
 void chdir_current_executable()
@@ -305,8 +304,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     {
         return 0;
     }
-    notifications::set_application_id(APPLICATION_ID);
-
     int n_cmd_args = 0;
     LPWSTR* cmd_arg_list = CommandLineToArgvW(GetCommandLineW(), &n_cmd_args);
     switch (should_run_in_special_mode(n_cmd_args, cmd_arg_list))

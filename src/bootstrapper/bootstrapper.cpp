@@ -90,7 +90,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     {
         return 1;
     }
-    notifications::set_application_id(APPLICATION_ID);
+    notifications::override_application_id(APPLICATION_ID);
 
     fs::path iconPath{ L"C:\\" };
     if (auto extractedIcon = extractIcon())
