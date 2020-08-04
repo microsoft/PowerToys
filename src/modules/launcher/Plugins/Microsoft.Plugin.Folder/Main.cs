@@ -156,7 +156,6 @@ namespace Microsoft.Plugin.Folder
             var search = query.Search;
             var results = new List<Result>();
             var hasSpecial = search.IndexOfAny(_specialSearchChars) >= 0;
-            var truncated = false;
             string incompleteName = "";
             if (hasSpecial || !Directory.Exists(search + "\\"))
             {
@@ -237,24 +236,16 @@ namespace Microsoft.Plugin.Folder
                 throw;
             }
 
-            if(folderList.Count > _settings.MaxFolderResults)
+            if(folderList.Count > _settings.MaxFolderResults || fileList.Count > _settings.MaxFileResults)
             {
-                results.Concat(folderList.OrderBy(x => x.Title).Take(_settings.MaxFolderResults));
-            }
-            else
-            {
-                results.Concat(folderList.OrderBy(x => x.Title));
-            }
-
-            if (fileList.Count > _settings.MaxFileResults)
-            {
-                results.Concat(fileList.OrderBy(x => x.Title).Take(_settings.MaxFileResults));
-            }
-            else
-            {
-                results.Concat(fileList.OrderBy(x => x.Title));
+                var preTruncationCount = folderList.Count + fileList.Count;
+                var postTruncationCount = 0;
+                postTruncationCount += Math.Min(folderList.Count, _settings.MaxFolderResults);
+                postTruncationCount += Math.Min(fileList.Count, _settings.MaxFileResults);
+                results.Add(CreateTruncatedItemsResult(search, preTruncationCount, postTruncationCount));
             }
 
+            results = results.Concat(folderList.OrderBy(x => x.Title).Take(_settings.MaxFolderResults)).Concat(fileList.OrderBy(x => x.Title).Take(_settings.MaxFileResults)).ToList();
             return results.ToList();
         }
 
@@ -309,6 +300,17 @@ namespace Microsoft.Plugin.Folder
                     Process.Start(_fileExplorerProgramName, sanitizedPath);
                     return true;
                 }
+            };
+        }
+
+        private static Result CreateTruncatedItemsResult(string search, int preTruncationCount, int postTruncationCount)
+        {
+            return new Result
+            {
+                Title = "Warning : Results Truncated",
+                QueryTextDisplay = search,
+                SubTitle = "Showing " + postTruncationCount + " of " + preTruncationCount + " Results",
+                IcoPath = search,
             };
         }
 
