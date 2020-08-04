@@ -2,6 +2,7 @@
 #include "KeyDropDownControl.h"
 #include "keyboardmanager/common/Helpers.h"
 #include <keyboardmanager/common/KeyboardManagerState.h>
+#include "BufferValidationHelpers.h"
 
 // Initialized to null
 KeyboardManagerState* KeyDropDownControl::keyboardManagerState = nullptr;
@@ -64,62 +65,12 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel singleKeyCo
         bool indexFound = table.Children().IndexOf(singleKeyControl, controlIndex);
         if (indexFound)
         {
-            KeyboardManagerHelper::ErrorType errorType = KeyboardManagerHelper::ErrorType::NoError;
             int rowIndex = (controlIndex - KeyboardManagerConstants::RemapTableHeaderCount) / KeyboardManagerConstants::RemapTableColCount;
-            // Check if the element was not found or the index exceeds the known keys
-            if (selectedKeyIndex != -1 && keyCodeList.size() > selectedKeyIndex)
-            {
-                // Check if the value being set is the same as the other column
-                if (singleKeyRemapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)].index() == 0)
-                {
-                    if (std::get<DWORD>(singleKeyRemapBuffer[rowIndex].first[std::abs(int(colIndex) - 1)]) == keyCodeList[selectedKeyIndex])
-                    {
-                        errorType = KeyboardManagerHelper::ErrorType::MapToSameKey;
-                    }
-                }
 
-                // If one column is shortcut and other is key no warning required
+            // Validate current remap selection
+            KeyboardManagerHelper::ErrorType errorType = BufferValidationHelpers::ValidateKeyBufferElement(rowIndex, colIndex, selectedKeyIndex, keyCodeList, singleKeyRemapBuffer);
 
-                if (errorType == KeyboardManagerHelper::ErrorType::NoError && colIndex == 0)
-                {
-                    // Check if the key is already remapped to something else
-                    for (int i = 0; i < singleKeyRemapBuffer.size(); i++)
-                    {
-                        if (i != rowIndex)
-                        {
-                            if (singleKeyRemapBuffer[i].first[colIndex].index() == 0)
-                            {
-                                KeyboardManagerHelper::ErrorType result = KeyboardManagerHelper::DoKeysOverlap(std::get<DWORD>(singleKeyRemapBuffer[i].first[colIndex]), keyCodeList[selectedKeyIndex]);
-                                if (result != KeyboardManagerHelper::ErrorType::NoError)
-                                {
-                                    errorType = result;
-                                    break;
-                                }
-                            }
-                            else
-                            {
-                                // check key to shortcut error
-                            }
-                        }
-                    }
-                }
-
-                // If there is no error, set the buffer
-                if (errorType == KeyboardManagerHelper::ErrorType::NoError)
-                {
-                    singleKeyRemapBuffer[rowIndex].first[colIndex] = keyCodeList[selectedKeyIndex];
-                }
-                else
-                {
-                    singleKeyRemapBuffer[rowIndex].first[colIndex] = NULL;
-                }
-            }
-            else
-            {
-                // Reset to null if the key is not found
-                singleKeyRemapBuffer[rowIndex].first[colIndex] = NULL;
-            }
-
+            // If there is an error set the warning flyout
             if (errorType != KeyboardManagerHelper::ErrorType::NoError)
             {
                 SetDropDownError(currentDropDown, KeyboardManagerHelper::GetErrorMessage(errorType));

@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "CppUnitTest.h"
-#include "MockedInput.h"
 #include <keyboardmanager/common/KeyboardManagerState.h>
 #include <keyboardmanager/ui/LoadingAndSavingRemappingHelper.h>
 #include "TestHelpers.h"
@@ -10,7 +9,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace RemappingUITests
 {
-    // Tests for MockedInput test helper - to ensure simulated keyboard input behaves as expected
+    // Tests for methods in the LoadingAndSavingRemappingHelper namespace
     TEST_CLASS (LoadingAndSavingRemappingTests)
     {
         std::wstring testApp1 = L"testtrocess1.exe";
