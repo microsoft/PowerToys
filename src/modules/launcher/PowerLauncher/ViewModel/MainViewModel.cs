@@ -825,7 +825,7 @@ namespace PowerLauncher.ViewModel
                 {
                     if (_hotkeyHandle != 0)
                     {
-                        _hotkeyManager.UnregisterHotkey(_hotkeyHandle);
+                        _hotkeyManager?.UnregisterHotkey(_hotkeyHandle);
                     }
                     _hotkeyManager?.Dispose();
                     _updateSource?.Dispose();
