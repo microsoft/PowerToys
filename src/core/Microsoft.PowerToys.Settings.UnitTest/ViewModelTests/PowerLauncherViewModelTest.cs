@@ -1,30 +1,29 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.PowerToys.Settings.UI.ViewModels;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using Microsoft.PowerToys.Settings.UI.Lib;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Text.Json;
+using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ViewModelTests
 {
     [TestClass]
-    public class PowerLauncher
+    public class PowerLauncherViewModelTest
     {
-        class SendCallbackMock
+        private class SendCallbackMock
         {
             public int TimesSent { get; set; }
+
             public void OnSend(PowerLauncherSettings settings)
             {
                 TimesSent++;
             }
         }
+
         private PowerLauncherViewModel viewModel;
         private PowerLauncherSettings mockSettings;
         private SendCallbackMock sendCallbackMock;
-
 
         [TestInitialize]
         public void Initialize()
@@ -34,8 +33,7 @@ namespace ViewModelTests
 
             viewModel = new PowerLauncherViewModel(
                 mockSettings,
-                new PowerLauncherViewModel.SendCallback(sendCallbackMock.OnSend)
-                );
+                new PowerLauncherViewModel.SendCallback(sendCallbackMock.OnSend));
         }
 
         [TestMethod]
@@ -65,7 +63,6 @@ namespace ViewModelTests
             openPowerLauncher.Win = true;
             openPowerLauncher.Code = (int)Windows.System.VirtualKey.S;
 
-
             var openFileLocation = new HotkeySettings();
             openFileLocation.Ctrl = true;
             openFileLocation.Code = (int)Windows.System.VirtualKey.A;
@@ -91,32 +88,28 @@ namespace ViewModelTests
                 false,
                 false,
                 false,
-                (int)Windows.System.VirtualKey.S
-                );
+                (int)Windows.System.VirtualKey.S);
             AssertHotkeySettings(
                 mockSettings.Properties.OpenFileLocation,
                 false,
                 true,
                 false,
                 false,
-                (int)Windows.System.VirtualKey.A
-                );
+                (int)Windows.System.VirtualKey.A);
             AssertHotkeySettings(
                 mockSettings.Properties.OpenConsole,
                 false,
                 false,
                 true,
                 false,
-                (int)Windows.System.VirtualKey.D
-                );
+                (int)Windows.System.VirtualKey.D);
             AssertHotkeySettings(
                 mockSettings.Properties.CopyPathLocation,
                 false,
                 false,
                 false,
                 true,
-                (int)Windows.System.VirtualKey.F
-                );
+                (int)Windows.System.VirtualKey.F);
         }
 
         [TestMethod]
@@ -124,7 +117,6 @@ namespace ViewModelTests
         {
             viewModel.OverrideWinRKey = true;
             viewModel.OverrideWinSKey = false;
-
 
             Assert.AreEqual(1, sendCallbackMock.TimesSent);
 
