@@ -828,7 +828,7 @@ namespace PowerLauncher.ViewModel
                         _hotkeyManager.UnregisterHotkey(_hotkeyHandle);
                     }
                     _hotkeyManager.Dispose();
-                    _updateSource.Dispose();
+                    _updateSource?.Dispose();
                     _disposed = true;
                 }
             }
