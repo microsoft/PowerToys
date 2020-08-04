@@ -60,8 +60,15 @@ namespace PowerLauncher
         {
             RunnerHelper.WaitForPowerToysRunner(_powerToysPid, () =>
             {
-                Dispose();
-                Environment.Exit(0);
+                try
+                {
+                    Dispose();
+                }
+                finally
+                {
+
+                    Environment.Exit(0);
+                }
             });
 
             var bootTime = new System.Diagnostics.Stopwatch();
