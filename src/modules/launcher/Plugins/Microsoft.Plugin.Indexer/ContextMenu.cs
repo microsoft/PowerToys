@@ -4,8 +4,14 @@
 
 namespace Microsoft.Plugin.Indexer
 {
-    public interface IRegistryWrapper
+    public class ContextMenu
     {
-        int GetHKLMRegistryValue(string registryLocation, string valueName);
+        public string Name { get; set; }
+
+        public string Command { get; set; }
+
+        public string Argument { get; set; }
+
+        public string ImagePath { get; set; }
     }
 }

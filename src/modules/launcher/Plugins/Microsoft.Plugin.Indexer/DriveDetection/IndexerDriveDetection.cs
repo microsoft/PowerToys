@@ -1,9 +1,15 @@
-﻿namespace Microsoft.Plugin.Indexer.DriveDetection
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+namespace Microsoft.Plugin.Indexer.DriveDetection
 {
     public class IndexerDriveDetection
     {
         private bool IsEnhancedModeEnabled { get; set; } = false;
-        private IRegistryWrapper _registryHelper;
+
+        private readonly IRegistryWrapper _registryHelper;
+
         public bool IsDriveDetectionWarningCheckBoxSelected { get; set; } = false;
 
         public IndexerDriveDetection(IRegistryWrapper registryHelper)
@@ -18,7 +24,7 @@
             return !(IsDriveDetectionWarningCheckBoxSelected || IsEnhancedModeEnabled);
         }
 
-        // To look up the registry entry for 
+        // To look up the registry entry for enhanced search
         private void GetEnhancedModeStatus()
         {
             string registryLocation = @"Software\Microsoft\Windows Search\Gather\Windows\SystemIndex";
