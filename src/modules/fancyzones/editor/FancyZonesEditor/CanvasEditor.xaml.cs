@@ -14,7 +14,7 @@ namespace FancyZonesEditor
     public partial class CanvasEditor : UserControl
     {
         // Non-localizable strings
-        private const string PropertyZonesChanged = "Zones";
+        private const string PropertyUpdateLayout = "UpdateLayout";
 
         private CanvasLayoutModel _model;
 
@@ -38,7 +38,7 @@ namespace FancyZonesEditor
 
         private void OnModelChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == PropertyZonesChanged)
+            if (e.PropertyName == PropertyUpdateLayout)
             {
                 UpdateZoneRects();
             }

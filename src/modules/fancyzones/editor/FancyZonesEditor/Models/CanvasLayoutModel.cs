@@ -62,7 +62,7 @@ namespace FancyZonesEditor.Models
         public void RemoveZoneAt(int index)
         {
             Zones.RemoveAt(index);
-            FirePropertyChanged("Zones");
+            UpdateLayout();
         }
 
         // AddZone
@@ -70,7 +70,12 @@ namespace FancyZonesEditor.Models
         public void AddZone(Int32Rect zone)
         {
             Zones.Add(zone);
-            FirePropertyChanged("Zones");
+            UpdateLayout();
+        }
+
+        private void UpdateLayout()
+        {
+            FirePropertyChanged();
         }
 
         // Clone
