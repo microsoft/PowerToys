@@ -2,5 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Version>0.20.1</Version>
+    <DefineConstants>Version=$(Version);</DefineConstants>
   </PropertyGroup>
 </Project>
