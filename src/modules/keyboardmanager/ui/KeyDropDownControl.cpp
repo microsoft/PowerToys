@@ -68,7 +68,7 @@ void KeyDropDownControl::SetSelectionHandler(Grid& table, StackPanel singleKeyCo
             int rowIndex = (controlIndex - KeyboardManagerConstants::RemapTableHeaderCount) / KeyboardManagerConstants::RemapTableColCount;
 
             // Validate current remap selection
-            KeyboardManagerHelper::ErrorType errorType = BufferValidationHelpers::ValidateKeyBufferElement(rowIndex, colIndex, selectedKeyIndex, keyCodeList, singleKeyRemapBuffer);
+            KeyboardManagerHelper::ErrorType errorType = BufferValidationHelpers::ValidateAndUpdateKeyBufferElement(rowIndex, colIndex, selectedKeyIndex, keyCodeList, singleKeyRemapBuffer);
 
             // If there is an error set the warning flyout
             if (errorType != KeyboardManagerHelper::ErrorType::NoError)

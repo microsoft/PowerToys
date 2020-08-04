@@ -7,5 +7,5 @@
 namespace BufferValidationHelpers
 {
     // Function to validate an element of the key remap buffer when the selection has changed
-    KeyboardManagerHelper::ErrorType ValidateKeyBufferElement(int rowIndex, int colIndex, int selectedKeyIndex, std::vector<DWORD>& keyCodeList, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& remapBuffer);
+    KeyboardManagerHelper::ErrorType ValidateAndUpdateKeyBufferElement(int rowIndex, int colIndex, int selectedKeyIndex, std::vector<DWORD>& keyCodeList, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& remapBuffer);
 }
