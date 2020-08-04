@@ -325,4 +325,38 @@ namespace KeyboardManagerHelper
             return first.Size() > second.Size();
         });
     }
+
+    // Function to check if a modifier has been repeated in the previous drop downs
+    bool CheckRepeatedModifier(std::vector<DWORD>& currentKeys, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList)
+    {
+        // check if modifier has already been added before in a previous drop down
+        int currentDropDownIndex = -1;
+
+        // Find the key index of the current drop down selection so that we skip that index while searching for repeated modifiers
+        for (int i = 0; i < currentKeys.size(); i++)
+        {
+            if (currentKeys[i] == keyCodeList[selectedKeyIndex])
+            {
+                currentDropDownIndex = i;
+                break;
+            }
+        }
+
+        bool matchPreviousModifier = false;
+        for (int i = 0; i < currentKeys.size(); i++)
+        {
+            // Skip the current drop down
+            if (i != currentDropDownIndex)
+            {
+                // If the key type for the newly added key matches any of the existing keys in the shortcut
+                if (KeyboardManagerHelper::GetKeyType(keyCodeList[selectedKeyIndex]) == KeyboardManagerHelper::GetKeyType(currentKeys[i]))
+                {
+                    matchPreviousModifier = true;
+                    break;
+                }
+            }
+        }
+
+        return matchPreviousModifier;
+    }
 }

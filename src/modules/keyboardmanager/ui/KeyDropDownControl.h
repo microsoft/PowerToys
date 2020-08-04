@@ -77,9 +77,6 @@ public:
     // Function to get the list of key codes from the shortcut combo box stack panel
     static std::vector<DWORD> GetKeysFromStackPanel(StackPanel parent);
 
-    // Function to check if a modifier has been repeated in the previous drop downs
-    static bool CheckRepeatedModifier(winrt::Windows::UI::Xaml::Controls::StackPanel parent, int selectedKeyIndex, const std::vector<DWORD>& keyCodeList);
-
     // Function for validating the selection of shortcuts for all the associated drop downs
     static void ValidateShortcutFromDropDownList(Grid table, StackPanel shortcutControl, StackPanel parent, int colIndex, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow);
 
