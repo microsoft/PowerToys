@@ -1,5 +1,10 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Windows.Input;
+
 namespace ColorPicker.Common
 {
     public class RelayCommand : ICommand
@@ -13,7 +18,8 @@ namespace ColorPicker.Common
             _execute = x => { execute.Invoke(); };
         }
 
-        public RelayCommand(Action<object> execute) : this(x => true, execute)
+        public RelayCommand(Action<object> execute)
+            : this(x => true, execute)
         {
         }
 

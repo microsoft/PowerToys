@@ -1,6 +1,7 @@
-﻿using ColorPicker.Telemetry;
-using ColorPicker.ViewModelContracts;
-using Microsoft.PowerToys.Telemetry;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.ComponentModel.Composition;
 using System.Drawing;
@@ -8,6 +9,9 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using ColorPicker.Telemetry;
+using ColorPicker.ViewModelContracts;
+using Microsoft.PowerToys.Telemetry;
 
 namespace ColorPicker.Helpers
 {
@@ -19,11 +23,12 @@ namespace ColorPicker.Helpers
         private const int MaxZoomLevel = 3;
         private const int MinZoomLevel = 0;
 
+        private readonly IZoomViewModel _zoomViewModel;
+        private readonly AppStateHandler _appStateHandler;
+
         private int _currentZoomLevel = 0;
         private int _previousZoomLevel = 0;
 
-        private readonly IZoomViewModel _zoomViewModel;
-        private readonly AppStateHandler _appStateHandler;
         private ZoomWindow _zoomWindow;
 
         private double _lastLeft;
@@ -79,8 +84,8 @@ namespace ColorPicker.Helpers
             // we just started zooming, copy screen area
             if (_previousZoomLevel == 0)
             {
-                var x = (int)point.X - BaseZoomImageSize / 2;
-                var y = (int)point.Y - BaseZoomImageSize / 2;
+                var x = (int)point.X - (BaseZoomImageSize / 2);
+                var y = (int)point.Y - (BaseZoomImageSize / 2);
                 var rect = new Rectangle(x, y, BaseZoomImageSize, BaseZoomImageSize);
                 var bmp = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb);
                 var g = Graphics.FromImage(bmp);
@@ -143,8 +148,8 @@ namespace ColorPicker.Helpers
                 _previousScaledY = y / dpi.DpiScaleY;
             }
 
-            _lastLeft = Math.Floor(_previousScaledX - ((BaseZoomImageSize * Math.Pow(ZoomFactor, _currentZoomLevel - 1)) / 2));
-            _lastTop = Math.Floor(_previousScaledY - ((BaseZoomImageSize * Math.Pow(ZoomFactor, _currentZoomLevel - 1)) / 2));
+            _lastLeft = Math.Floor(_previousScaledX - (BaseZoomImageSize * Math.Pow(ZoomFactor, _currentZoomLevel - 1) / 2));
+            _lastTop = Math.Floor(_previousScaledY - (BaseZoomImageSize * Math.Pow(ZoomFactor, _currentZoomLevel - 1) / 2));
 
             var justShown = false;
             if (!_zoomWindow.IsVisible)
@@ -155,11 +160,12 @@ namespace ColorPicker.Helpers
                 _zoomViewModel.Width = BaseZoomImageSize;
                 _zoomWindow.Show();
                 justShown = true;
+
                 // make sure color picker window is on top of just opened zoom window
                 AppStateHandler.SetTopMost();
             }
 
-            // dirty hack - sometimes when we just show a window on a second monitor with different DPI, 
+            // dirty hack - sometimes when we just show a window on a second monitor with different DPI,
             // window position is not set correctly on a first time, we need to "ping" it again to make it appear on the proper location
             if (justShown)
             {

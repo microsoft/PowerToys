@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Runtime.InteropServices;
@@ -9,8 +13,8 @@ using ColorPicker.Helpers;
 using ColorPicker.Keyboard;
 using ColorPicker.Mouse;
 using ColorPicker.Settings;
-using ColorPicker.ViewModelContracts;
 using ColorPicker.Telemetry;
+using ColorPicker.ViewModelContracts;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Telemetry;
 
@@ -19,12 +23,12 @@ namespace ColorPicker.ViewModels
     [Export(typeof(IMainViewModel))]
     public class MainViewModel : ViewModelBase, IMainViewModel
     {
-        private string _hexColor;
-        private string _rgbColor;
-        private Brush _colorBrush;
         private readonly ZoomWindowHelper _zoomWindowHelper;
         private readonly AppStateHandler _appStateHandler;
         private readonly IUserSettings _userSettings;
+        private string _hexColor;
+        private string _rgbColor;
+        private Brush _colorBrush;
 
         [ImportingConstructor]
         public MainViewModel(
@@ -51,6 +55,7 @@ namespace ColorPicker.ViewModels
             {
                 return _hexColor;
             }
+
             private set
             {
                 _hexColor = value;
@@ -64,6 +69,7 @@ namespace ColorPicker.ViewModels
             {
                 return _rgbColor;
             }
+
             private set
             {
                 _rgbColor = value;
@@ -77,6 +83,7 @@ namespace ColorPicker.ViewModels
             {
                 return _colorBrush;
             }
+
             private set
             {
                 _colorBrush = value;
@@ -133,6 +140,7 @@ namespace ColorPicker.ViewModels
                             Logger.LogError("Failed to set text into clipboard", ex);
                         }
                     }
+
                     System.Threading.Thread.Sleep(10);
                 }
             }

@@ -48,7 +48,6 @@ namespace localized_strings
 namespace
 {
     const wchar_t PT_URI_PROTOCOL_SCHEME[] = L"powertoys://";
-    const wchar_t APPLICATION_ID[] = L"Microsoft.PowerToysWin32";
 }
 
 void chdir_current_executable()
@@ -114,7 +113,6 @@ int runner(bool isProcessElevated)
             } }.detach();
         }
 
-        notifications::set_application_id(APPLICATION_ID);
         notifications::register_background_toast_handler();
 
         chdir_current_executable();
@@ -306,7 +304,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     {
         return 0;
     }
-
     int n_cmd_args = 0;
     LPWSTR* cmd_arg_list = CommandLineToArgvW(GetCommandLineW(), &n_cmd_args);
     switch (should_run_in_special_mode(n_cmd_args, cmd_arg_list))
@@ -400,8 +397,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     {
         // Singletons initialization order needs to be preserved, first events and
         // then modules to guarantee the reverse destruction order.
-        SystemMenuHelperInstance();
-        powertoys_events();
         modules();
 
         auto general_settings = load_general_settings();

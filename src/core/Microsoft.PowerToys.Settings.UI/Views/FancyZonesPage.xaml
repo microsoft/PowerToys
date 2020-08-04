@@ -279,6 +279,9 @@
                      Width="380"
                      Height="160"
                      HorizontalAlignment="Left"
+                     ScrollViewer.VerticalScrollBarVisibility ="Visible"
+                     ScrollViewer.VerticalScrollMode="Enabled"
+                     ScrollViewer.IsVerticalRailEnabled="True"
                      TextWrapping="Wrap"
                      AcceptsReturn="True"/>
         </StackPanel>

@@ -1,7 +1,5 @@
 #include "pch.h"
 #include <interface/powertoy_module_interface.h>
-#include <interface/lowlevel_keyboard_event_data.h>
-#include <interface/win_hook_event_data.h>
 #include <common/settings_objects.h>
 #include <common/common.h>
 #include "trace.h"
@@ -78,23 +76,6 @@ public:
     virtual const wchar_t* get_name() override
     {
         return app_name.c_str();
-    }
-
-    // Return array of the names of all events that this powertoy listens for, with
-    // nullptr as the last element of the array. Nullptr can also be returned for empty
-    // list.
-    virtual const wchar_t** get_events() override
-    {
-        static const wchar_t* events[] = { nullptr };
-        // Available events:
-        // - ll_keyboard
-        // - win_hook_event
-        //
-        // static const wchar_t* events[] = { ll_keyboard,
-        //                                   win_hook_event,
-        //                                   nullptr };
-
-        return events;
     }
 
     // Return JSON with the configuration options.
@@ -232,25 +213,6 @@ public:
         return m_enabled;
     }
 
-    // Handle incoming event, data is event-specific
-    virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
-    {
-        if (wcscmp(name, ll_keyboard) == 0)
-        {
-            auto& event = *(reinterpret_cast<LowlevelKeyboardEvent*>(data));
-            // Return 1 if the keypress is to be suppressed (not forwarded to Windows),
-            // otherwise return 0.
-            return 0;
-        }
-        else if (wcscmp(name, win_hook_event) == 0)
-        {
-            auto& event = *(reinterpret_cast<WinHookEvent*>(data));
-            // Return value is ignored
-            return 0;
-        }
-        return 0;
-    }
-
     // Callback to send WM_CLOSE signal to each top level window.
     static BOOL CALLBACK requestMainWindowClose(HWND nextWindow, LPARAM closePid)
     {
@@ -274,11 +236,6 @@ public:
             TerminateProcess(m_hProcess, 1);
         }
     }
-
-    /* Register helper class to handle system menu items related actions. */
-    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) {}
-    /* Handle action on system menu item. */
-    virtual void signal_system_menu_action(const wchar_t* name) {}
 };
 
 // Load the settings file.

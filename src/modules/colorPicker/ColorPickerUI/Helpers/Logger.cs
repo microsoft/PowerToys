@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -7,7 +11,7 @@ namespace ColorPicker.Helpers
 {
     public static class Logger
     {
-        private static string ApplicationLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ColorPicker");
+        private static readonly string ApplicationLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ColorPicker");
 
         static Logger()
         {
@@ -30,7 +34,8 @@ namespace ColorPicker.Helpers
 
         public static void LogError(string message, Exception ex)
         {
-            Log(message + Environment.NewLine +
+            Log(
+                message + Environment.NewLine +
                 ex?.Message + Environment.NewLine +
                 "Inner exception: " + Environment.NewLine +
                 ex?.InnerException?.Message + Environment.NewLine +
@@ -64,7 +69,7 @@ namespace ColorPicker.Helpers
 
             var methodName = stackTrace.GetFrame(3)?.GetMethod();
             var className = methodName?.DeclaringType.Name;
-            return "[Method]: " + methodName.Name + " [Class]: " + className;
+            return "[Method]: " + methodName?.Name + " [Class]: " + className;
         }
     }
 }

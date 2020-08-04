@@ -9,7 +9,7 @@ assignees: ''
 
 ## 📝 Provide a description of the new feature
 
-_What is the expected behavior of the proposed feature?  What is the scenario this woudl be used?_
+_What is the expected behavior of the proposed feature?  What is the scenario this would be used?_
 
 ---
 

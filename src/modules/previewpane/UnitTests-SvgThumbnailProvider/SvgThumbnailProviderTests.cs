@@ -4,15 +4,12 @@
 
 using System;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
-using Moq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Common.ComInterlop;
-using SvgThumbnailProvider;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace SvgThumbnailProviderUnitTests
 {
@@ -59,7 +56,7 @@ namespace SvgThumbnailProviderUnitTests
         [TestMethod]
         public void CheckNoSvgEmptyString_ShouldReturnNullBitmap()
         {
-            Bitmap thumbnail = SvgThumbnailProvider.SvgThumbnailProvider.GetThumbnail("", 256);
+            Bitmap thumbnail = SvgThumbnailProvider.SvgThumbnailProvider.GetThumbnail(string.Empty, 256);
             Assert.IsTrue(thumbnail == null);
         }
 
