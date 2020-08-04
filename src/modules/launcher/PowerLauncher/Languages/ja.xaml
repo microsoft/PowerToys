@@ -2,6 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
     <!--MainWindow-->
+    <system:String x:Key="startTyping">Start typing...</system:String>
     <system:String x:Key="registerHotkeyFailed">ホットキー「{0}」の登録に失敗しました</system:String>
     <system:String x:Key="couldnotStartCmd">{0}の起動に失敗しました</system:String>
     <system:String x:Key="invalidWoxPluginFileFormat">Woxプラグインの形式が正しくありません</system:String>
