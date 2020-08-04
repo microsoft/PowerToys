@@ -5,16 +5,12 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Windows.ApplicationModel.Resources;
-using Windows.Data.Html;
-using Windows.System;
-using Windows.UI.Popups;
 using Windows.UI.Xaml;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -29,13 +25,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
 
-        public readonly string RunningAsUserDefaultText;
-        public readonly string RunningAsAdminDefaultText;
+        public string RunningAsUserDefaultText { get; private set; }
+
+        public string RunningAsAdminDefaultText { get; private set; }
+
+        private bool _packaged = false;
+        private bool _startup = false;
+        private bool _isElevated = false;
+        private bool _runElevated = false;
+        private bool _isAdmin = false;
+        private bool _isDarkThemeRadioButtonChecked = false;
+        private bool _isLightThemeRadioButtonChecked = false;
+        private bool _isSystemThemeRadioButtonChecked = false;
+        private bool _autoDownloadUpdates = false;
 
         public GeneralViewModel()
         {
-            this.CheckFoUpdatesEventHandler = new ButtonClickCommand(CheckForUpdates_Click);
-            this.RestartElevatedButtonEventHandler = new ButtonClickCommand(Restart_Elevated);
+            CheckFoUpdatesEventHandler = new ButtonClickCommand(CheckForUpdates_Click);
+            RestartElevatedButtonEventHandler = new ButtonClickCommand(Restart_Elevated);
 
             try
             {
@@ -106,16 +113,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _isAdmin = ShellPage.IsUserAnAdmin;
         }
-
-        private bool _packaged = false;
-        private bool _startup = false;
-        private bool _isElevated = false;
-        private bool _runElevated = false;
-        private bool _isAdmin = false;
-        private bool _isDarkThemeRadioButtonChecked = false;
-        private bool _isLightThemeRadioButtonChecked = false;
-        private bool _isSystemThemeRadioButtonChecked = false;
-        private bool _autoDownloadUpdates = false;
 
         // Gets or sets a value indicating whether packaged.
         public bool Packaged
@@ -350,7 +347,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         // callback function to launch the URL to check for updates.
-        private async void CheckForUpdates_Click()
+        private void CheckForUpdates_Click()
         {
             GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
             settings.CustomActionName = "check_for_updates";
@@ -358,10 +355,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
-            if (ShellPage.CheckForUpdatesMsgCallback != null)
-            {
-                ShellPage.CheckForUpdatesMsgCallback(customaction.ToString());
-            }
+            ShellPage.CheckForUpdatesMsgCallback?.Invoke(customaction.ToString());
         }
 
         public void Restart_Elevated()
@@ -372,10 +366,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
-            if (ShellPage.SndRestartAsAdminMsgCallback != null)
-            {
-                ShellPage.SndRestartAsAdminMsgCallback(customaction.ToString());
-            }
+            ShellPage.SndRestartAsAdminMsgCallback?.Invoke(customaction.ToString());
         }
     }
 }

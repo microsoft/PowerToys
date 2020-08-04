@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Windows.UI.Xaml.Controls;
 
