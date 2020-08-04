@@ -18,7 +18,6 @@ namespace FancyZonesEditor.Models
         private const string ErrorPersistingCanvasLayout = "Error persisting canvas layout";
 
         // Non-localizable strings
-        private const string PropertyZonesChanged = "Zones";
         private const string ModelType = "canvas";
 
         public CanvasLayoutModel(string uuid, string name, LayoutType type, IList<Int32Rect> zones, int workAreaWidth, int workAreaHeight)
@@ -63,7 +62,7 @@ namespace FancyZonesEditor.Models
         public void RemoveZoneAt(int index)
         {
             Zones.RemoveAt(index);
-            FirePropertyChanged(PropertyZonesChanged);
+            FirePropertyChanged("Zones");
         }
 
         // AddZone
@@ -71,7 +70,7 @@ namespace FancyZonesEditor.Models
         public void AddZone(Int32Rect zone)
         {
             Zones.Add(zone);
-            FirePropertyChanged(PropertyZonesChanged);
+            FirePropertyChanged("Zones");
         }
 
         // Clone

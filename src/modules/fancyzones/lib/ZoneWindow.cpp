@@ -18,7 +18,7 @@
 // Non-Localizable strings
 namespace NonLocalizable
 {
-    const wchar_t ZoneIndexFont[] = L"Segoe ui";
+    const wchar_t SegoeUiFont[] = L"Segoe ui";
     const wchar_t ToolWindowClassName[] = L"SuperFancyZones_ZoneWindow";
 }
 
@@ -78,7 +78,7 @@ namespace ZoneWindowDrawUtils
     {
         Gdiplus::Graphics g(hdc.get());
 
-        Gdiplus::FontFamily fontFamily(NonLocalizable::ZoneIndexFont);
+        Gdiplus::FontFamily fontFamily(NonLocalizable::SegoeUiFont);
         Gdiplus::Font font(&fontFamily, 80, Gdiplus::FontStyleRegular, Gdiplus::UnitPixel);
         Gdiplus::SolidBrush solidBrush(Gdiplus::Color(255, 0, 0, 0));
 

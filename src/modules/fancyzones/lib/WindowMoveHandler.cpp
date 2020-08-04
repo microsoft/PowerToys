@@ -19,7 +19,7 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 // Non-Localizable strings
 namespace NonLocalizable
 {
-    const wchar_t FancyZonesWikiPage[] = L"https://aka.ms/powertoysDetectedElevatedHelp";
+    const wchar_t FancyZonesRunAsAdminInfoPage[] = L"https://aka.ms/powertoysDetectedElevatedHelp";
     const wchar_t ToastNotificationButtonUrl[] = L"powertoys://cant_drag_elevated_disable/";
 }
 
@@ -403,7 +403,7 @@ void WindowMoveHandlerPrivate::WarnIfElevationIsRequired(HWND window) noexcept
         if (!warning_shown && !is_cant_drag_elevated_warning_disabled())
         {
             std::vector<notifications::action_t> actions = {
-                notifications::link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_LEARN_MORE), NonLocalizable::FancyZonesWikiPage },
+                notifications::link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_LEARN_MORE), NonLocalizable::FancyZonesRunAsAdminInfoPage },
                 notifications::link_button{ GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN), NonLocalizable::ToastNotificationButtonUrl }
             };
             notifications::show_toast_with_activations(GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED),
