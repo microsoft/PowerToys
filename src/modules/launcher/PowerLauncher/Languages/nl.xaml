@@ -2,6 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
     <!--MainWindow-->
+    <system:String x:Key="startTyping">Start typing...</system:String>
     <system:String x:Key="registerHotkeyFailed">Sneltoets registratie: {0} mislukt</system:String>
     <system:String x:Key="couldnotStartCmd">Kan {0} niet starten</system:String>
     <system:String x:Key="invalidWoxPluginFileFormat">Ongeldige Wox plugin bestandsextensie</system:String>
