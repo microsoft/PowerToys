@@ -293,6 +293,8 @@ namespace FancyZonesEditor
                 ZoneCount = 3;
             }
 
+            // If changing focus layout zones size and/or increment,
+            // same change should be applied in ZoneSet.cpp (ZoneSet::CalculateFocusLayout)
             Int32Rect focusZoneRect = new Int32Rect(100, 100, (int)(WorkArea.Width * 0.4), (int)(WorkArea.Height * 0.4));
             int focusRectXIncrement = (ZoneCount <= 1) ? 0 : 50;
             int focusRectYIncrement = (ZoneCount <= 1) ? 0 : 50;
