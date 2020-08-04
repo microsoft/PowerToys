@@ -209,6 +209,14 @@ void SaveWindowSizeAndOrigin(HWND window) noexcept
 
 void RestoreWindowSize(HWND window) noexcept
 {
+    WINDOWPLACEMENT placement{};
+    if (GetWindowPlacement(window, &placement) &&
+        placement.showCmd & SW_SHOWMAXIMIZED)
+    {
+        // Do not restore maximized windows.
+        return;
+    }
+
     auto windowSizeData = GetPropW(window, RESTORE_SIZE_STAMP);
     if (windowSizeData)
     {
