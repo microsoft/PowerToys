@@ -151,11 +151,12 @@ namespace Microsoft.Plugin.Folder
         };
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
-        private static List<Result> QueryInternal_Directory_Exists(Query query)
+        private List<Result> QueryInternal_Directory_Exists(Query query)
         {
             var search = query.Search;
             var results = new List<Result>();
             var hasSpecial = search.IndexOfAny(_specialSearchChars) >= 0;
+            var truncated = false;
             string incompleteName = "";
             if (hasSpecial || !Directory.Exists(search + "\\"))
             {
@@ -236,8 +237,25 @@ namespace Microsoft.Plugin.Folder
                 throw;
             }
 
-            // Initial ordering, this order can be updated later by UpdateResultView.MainViewModel based on history of user selection.
-            return results.Concat(folderList.OrderBy(x => x.Title)).Concat(fileList.OrderBy(x => x.Title)).ToList();
+            if(folderList.Count > _settings.MaxFolderResults)
+            {
+                results.Concat(folderList.OrderBy(x => x.Title).Take(_settings.MaxFolderResults));
+            }
+            else
+            {
+                results.Concat(folderList.OrderBy(x => x.Title));
+            }
+
+            if (fileList.Count > _settings.MaxFileResults)
+            {
+                results.Concat(fileList.OrderBy(x => x.Title).Take(_settings.MaxFileResults));
+            }
+            else
+            {
+                results.Concat(fileList.OrderBy(x => x.Title));
+            }
+
+            return results.ToList();
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alve and instead inform the user of the error")]

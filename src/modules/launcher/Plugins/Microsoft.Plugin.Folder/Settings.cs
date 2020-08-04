@@ -8,5 +8,11 @@ namespace Microsoft.Plugin.Folder
     {
         [JsonProperty]
         public List<FolderLink> FolderLinks { get;} = new List<FolderLink>();
+
+        [JsonProperty]
+        public int MaxFolderResults { get; set; } = 50;
+
+        public int MaxFileResults { get; set; } = 50;
+
     }
 }
