@@ -172,7 +172,7 @@ namespace PowerLauncher
             if (_settings.HideWhenDeactivated)
             {
                 //(this.FindResource("OutroStoryboard") as Storyboard).Begin();
-                //Hide();
+                Hide();
             }
         }
 
