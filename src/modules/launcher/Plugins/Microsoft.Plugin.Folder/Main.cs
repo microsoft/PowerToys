@@ -29,6 +29,8 @@ namespace Microsoft.Plugin.Folder
         private readonly PluginJsonStorage<FolderSettings> _storage;
         private IContextMenu _contextMenuLoader;
 
+        private static string WarningIconPath { get; set; }
+
         public Main()
         {
             _storage = new PluginJsonStorage<FolderSettings>();
@@ -47,9 +49,29 @@ namespace Microsoft.Plugin.Folder
 
         public void Init(PluginInitContext context)
         {
-            _context = context;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
             _contextMenuLoader = new ContextMenuLoader(context);
             InitialDriverList();
+
+            _context.API.ThemeChanged += OnThemeChanged;
+            UpdateIconPath(_context.API.GetCurrentTheme());
+        }
+
+        private static void UpdateIconPath(Theme theme)
+        {
+            if (theme == Theme.Light || theme == Theme.HighContrastWhite)
+            {
+                WarningIconPath = "Images/Warning.light.png";
+            }
+            else
+            {
+                WarningIconPath = "Images/Warning.dark.png";
+            }
+        }
+
+        private void OnThemeChanged(Theme _, Theme newTheme)
+        {
+            UpdateIconPath(newTheme);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
@@ -245,6 +267,7 @@ namespace Microsoft.Plugin.Folder
                 results.Add(CreateTruncatedItemsResult(search, preTruncationCount, postTruncationCount));
             }
 
+            // Initial ordering, this order can be updated later by UpdateResultView.MainViewModel based on history of user selection.
             results = results.Concat(folderList.OrderBy(x => x.Title).Take(_settings.MaxFolderResults)).Concat(fileList.OrderBy(x => x.Title).Take(_settings.MaxFileResults)).ToList();
             return results.ToList();
         }
@@ -260,7 +283,7 @@ namespace Microsoft.Plugin.Folder
                 TitleHighlightData = StringMatcher.FuzzySearch(query.Search, Path.GetFileName(filePath)).MatchData,
                 Action = c =>
                 {
-                    try
+                     try
                     {
                         Process.Start(_fileExplorerProgramName, filePath);
                     }
@@ -310,7 +333,8 @@ namespace Microsoft.Plugin.Folder
                 Title = "Warning : Results Truncated",
                 QueryTextDisplay = search,
                 SubTitle = "Showing " + postTruncationCount + " of " + preTruncationCount + " Results",
-                IcoPath = search,
+                IcoPath = WarningIconPath,
+                Score = 500,
             };
         }
 
