@@ -177,6 +177,17 @@ bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& excludedA
     return true;
 }
 
+bool IsWindowMaximized(HWND window) noexcept
+{
+    WINDOWPLACEMENT placement{};
+    if (GetWindowPlacement(window, &placement) &&
+        placement.showCmd == SW_SHOWMAXIMIZED)
+    {
+        return true;
+    }
+    return false;
+}
+
 void SaveWindowSizeAndOrigin(HWND window) noexcept
 {
     HANDLE handle = GetPropW(window, RESTORE_SIZE_STAMP);
@@ -209,14 +220,6 @@ void SaveWindowSizeAndOrigin(HWND window) noexcept
 
 void RestoreWindowSize(HWND window) noexcept
 {
-    WINDOWPLACEMENT placement{};
-    if (GetWindowPlacement(window, &placement) &&
-        placement.showCmd == SW_SHOWMAXIMIZED)
-    {
-        // Do not restore maximized windows.
-        return;
-    }
-
     auto windowSizeData = GetPropW(window, RESTORE_SIZE_STAMP);
     if (windowSizeData)
     {
