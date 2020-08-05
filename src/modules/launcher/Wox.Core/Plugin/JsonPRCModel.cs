@@ -66,7 +66,6 @@ namespace Wox.Core.Plugin
             }
 
             return rpc;
-
         }
 
         private string GetParameterByType(object parameter)

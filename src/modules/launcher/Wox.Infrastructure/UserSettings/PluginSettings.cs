@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Collections.Generic;
 using Wox.Plugin;
 
 namespace Wox.Infrastructure.UserSettings
@@ -19,6 +23,7 @@ namespace Wox.Infrastructure.UserSettings
                         metadata.ActionKeywords = settings.ActionKeywords;
                         metadata.ActionKeyword = settings.ActionKeywords[0];
                     }
+
                     metadata.Disabled = settings.Disabled;
                 }
                 else
@@ -34,6 +39,7 @@ namespace Wox.Infrastructure.UserSettings
             }
         }
     }
+
     public class Plugin
     {
         public string ID { get; set; }

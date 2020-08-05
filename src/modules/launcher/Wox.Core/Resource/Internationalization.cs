@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -30,13 +34,11 @@ namespace Wox.Core.Resource
             AddWoxLanguageDirectory();
         }
 
-
         private void AddWoxLanguageDirectory()
         {
             var directory = Path.Combine(Constant.ProgramDirectory, Folder);
             _languageDirectories.Add(directory);
         }
-
 
         private void AddPluginLanguageDirectories()
         {
@@ -96,7 +98,6 @@ namespace Wox.Core.Resource
                 LoadLanguage(language);
             }
             UpdatePluginMetadataTranslations();
-
         }
 
         public bool PromptShouldUsePinyin(string languageCodeToSet)

@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -32,7 +36,6 @@ namespace Wox.Infrastructure.Image
             ".ico"
         };
 
-
         public static void Initialize(Theme theme)
         {
             _storage = new BinaryStorage<Dictionary<string, int>>("Image");
@@ -45,6 +48,7 @@ namespace Wox.Infrastructure.Image
                 img.Freeze();
                 ImageCache[icon] = img;
             }
+
             UpdateIconPath(theme);
             Task.Run(() =>
             {
@@ -112,6 +116,7 @@ namespace Wox.Infrastructure.Image
                 {
                     return new ImageResult(ImageCache[ErrorIconPath], ImageType.Error);
                 }
+
                 if (ImageCache.ContainsKey(path))
                 {
                     return new ImageResult(ImageCache[path], ImageType.Cache);
@@ -188,6 +193,7 @@ namespace Wox.Infrastructure.Image
                 image = ImageCache[ErrorIconPath];
                 ImageCache[path] = image;
             }
+
             return new ImageResult(image, type);
         }
 
@@ -220,7 +226,6 @@ namespace Wox.Infrastructure.Image
                 // update cache
                 ImageCache[path] = img;
             }
-
 
             return img;
         }
