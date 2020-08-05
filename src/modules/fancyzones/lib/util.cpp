@@ -211,7 +211,7 @@ void RestoreWindowSize(HWND window) noexcept
 {
     WINDOWPLACEMENT placement{};
     if (GetWindowPlacement(window, &placement) &&
-        placement.showCmd & SW_SHOWMAXIMIZED)
+        placement.showCmd == SW_SHOWMAXIMIZED)
     {
         // Do not restore maximized windows.
         return;
