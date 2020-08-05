@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.IO;
 using System.Net;
 
@@ -40,6 +44,7 @@ namespace PowerLauncher.Helper
             public override string ContentType
             {
                 get { return m_contentType; }
+
                 set
                 {
                     throw new NotSupportedException();
@@ -49,6 +54,7 @@ namespace PowerLauncher.Helper
             public override long ContentLength
             {
                 get { return m_data.Length; }
+
                 set
                 {
                     throw new NotSupportedException();

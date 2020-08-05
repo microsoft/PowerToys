@@ -1,27 +1,32 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Windows.Media;
 using System.Windows;
+using System.Windows.Media;
 
 namespace Wox.Plugin
 {
-
     public class Result
     {
-
         private string _title;
         private ToolTipData _toolTipData;
         private string _pluginDirectory;
         private string _icoPath;
+
         public string Title
         {
             get { return _title; }
+
             set
             {
                 _title = value.Replace("\n", " ");
             }
         }
+
         public string SubTitle { get; set; }
 
         public string Glyph { get; set; }
@@ -36,6 +41,7 @@ namespace Wox.Plugin
             {
                 return _toolTipData;
             }
+
             set
             {
                 _toolTipData = value;
@@ -51,6 +57,7 @@ namespace Wox.Plugin
         public string IcoPath
         {
             get { return _icoPath; }
+
             set
             {
                 if (!string.IsNullOrEmpty(PluginDirectory) && !Path.IsPathRooted(value))
@@ -97,6 +104,7 @@ namespace Wox.Plugin
         public string PluginDirectory
         {
             get { return _pluginDirectory; }
+
             set
             {
                 _pluginDirectory = value;
