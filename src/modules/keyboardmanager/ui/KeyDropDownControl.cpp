@@ -116,12 +116,11 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
             rowIndex = (controlIndex - KeyboardManagerConstants::ShortcutTableHeaderCount) / KeyboardManagerConstants::ShortcutTableColCount;
         }
 
-        uint32_t dropDownCount = parent.Children().Size();
         std::vector<DWORD> selectedKeyCodes = GetKeysFromStackPanel(parent);
         std::vector<int32_t> selectedIndices;
 
         // Get selected indices for each drop down
-        for (int i = 0; i < (int)dropDownCount; i++)
+        for (int i = 0; i < (int)parent.Children().Size(); i++)
         {
             ComboBox ItDropDown = parent.Children().GetAt(i).as<ComboBox>();
             selectedIndices.push_back(ItDropDown.SelectedIndex());
@@ -134,7 +133,7 @@ std::pair<KeyboardManagerHelper::ErrorType, int> KeyDropDownControl::ValidateSho
         }
 
         // Validate shortcut element
-        validationResult = BufferValidationHelpers::ValidateShortcutBufferElement(rowIndex, colIndex, dropDownIndex, dropDownFound, selectedKeyIndex, dropDownCount, selectedKeyCodes, selectedIndices, appName, keyCodeList, shortcutRemapBuffer, isHybridControl);
+        validationResult = BufferValidationHelpers::ValidateShortcutBufferElement(rowIndex, colIndex, dropDownIndex, dropDownFound, selectedKeyIndex, selectedKeyCodes, selectedIndices, appName, keyCodeList, shortcutRemapBuffer, isHybridControl);
 
         // Add or clear unused drop downs
         if (validationResult.second == BufferValidationHelpers::DropDownAction::AddDropDown)
