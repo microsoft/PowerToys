@@ -75,7 +75,7 @@ public:
     static void AddDropDown(winrt::Windows::UI::Xaml::Controls::Grid table, winrt::Windows::UI::Xaml::Controls::StackPanel shortcutControl, winrt::Windows::UI::Xaml::Controls::StackPanel parent, const int colIndex, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, winrt::Windows::UI::Xaml::Controls::TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow);
 
     // Function to get the list of key codes from the shortcut combo box stack panel
-    static std::vector<DWORD> GetKeysFromStackPanel(StackPanel parent);
+    static std::vector<int32_t> GetSelectedIndicesFromStackPanel(StackPanel parent);
 
     // Function for validating the selection of shortcuts for all the associated drop downs
     static void ValidateShortcutFromDropDownList(Grid table, StackPanel shortcutControl, StackPanel parent, int colIndex, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& shortcutRemapBuffer, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow);

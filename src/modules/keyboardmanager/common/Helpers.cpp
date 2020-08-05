@@ -3,6 +3,7 @@
 #include <sstream>
 #include "../common/shared_constants.h"
 #include <shlwapi.h>
+#include "../common/keyboard_layout.h"
 
 using namespace winrt::Windows::Foundation;
 
@@ -358,5 +359,26 @@ namespace KeyboardManagerHelper
         }
 
         return matchPreviousModifier;
+    }
+
+    // Function to get the selected key codes from the list of selected indices
+    std::vector<DWORD> GetKeyCodesFromSelectedIndices(const std::vector<int32_t>& selectedIndices, const std::vector<DWORD>& keyCodeList)
+    {
+        std::vector<DWORD> keys;
+
+        for (int i = 0; i < selectedIndices.size(); i++)
+        {
+            int selectedKeyIndex = selectedIndices[i];
+            if (selectedKeyIndex != -1 && keyCodeList.size() > selectedKeyIndex)
+            {
+                // If None is not the selected key
+                if (keyCodeList[selectedKeyIndex] != 0)
+                {
+                    keys.push_back(keyCodeList[selectedKeyIndex]);
+                }
+            }
+        }
+
+        return keys;
     }
 }

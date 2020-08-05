@@ -65,11 +65,12 @@ namespace BufferValidationHelpers
     }
 
     // Function to validate an element of the shortcut remap buffer when the selection has changed
-    std::pair<KeyboardManagerHelper::ErrorType, DropDownAction> ValidateShortcutBufferElement(int rowIndex, int colIndex, uint32_t dropDownIndex, bool dropDownFound, int selectedKeyIndex, std::vector<DWORD>& selectedKeyCodes, std::vector<int32_t>& selectedIndices, std::wstring& appName, std::vector<DWORD>& keyCodeList, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& remapBuffer, bool isHybridControl)
+    std::pair<KeyboardManagerHelper::ErrorType, DropDownAction> ValidateShortcutBufferElement(int rowIndex, int colIndex, uint32_t dropDownIndex, bool dropDownFound, int selectedKeyIndex, std::vector<int32_t>& selectedIndices, std::wstring& appName, const std::vector<DWORD>& keyCodeList, std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>>& remapBuffer, bool isHybridControl)
     {
         BufferValidationHelpers::DropDownAction dropDownAction = BufferValidationHelpers::DropDownAction::NoAction;
         KeyboardManagerHelper::ErrorType errorType = KeyboardManagerHelper::ErrorType::NoError;
         size_t dropDownCount = selectedIndices.size();
+        std::vector<DWORD> selectedKeyCodes = KeyboardManagerHelper::GetKeyCodesFromSelectedIndices(selectedIndices, keyCodeList);
 
         if (selectedKeyIndex != -1 && keyCodeList.size() > selectedKeyIndex && dropDownFound)
         {
