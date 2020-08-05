@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -104,6 +108,7 @@ namespace Wox.Infrastructure.Storage
                     break;
                 }
             }
+
             return ayResult;
         }
 
@@ -125,6 +130,7 @@ namespace Wox.Infrastructure.Storage
                     Log.Exception($"|BinaryStorage.Save|serialize error for file <{FilePath}>", e);
                 }
             }
+
             _storageHelper.Close();
             Log.Info($"|BinaryStorage.Save|Saving cached data| <{FilePath}>");
         }

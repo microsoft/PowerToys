@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.ObjectModel;
 using System.Drawing;
@@ -18,6 +22,7 @@ namespace Wox.Infrastructure.UserSettings
                 return _previousHotkey;
             }
         }
+
         public string Hotkey
         {
             get
@@ -34,6 +39,7 @@ namespace Wox.Infrastructure.UserSettings
                 }
             }
         }
+
         public string Language { get; set; } = "en";
         public string Theme { get; set; } = "Dark";
         public string QueryBoxFont { get; set; } = FontFamily.GenericSansSerif.Name;
@@ -44,7 +50,6 @@ namespace Wox.Infrastructure.UserSettings
         public string ResultFontStyle { get; set; }
         public string ResultFontWeight { get; set; }
         public string ResultFontStretch { get; set; }
-
 
         /// <summary>
         /// when false Alphabet static service will always return empty results
@@ -100,6 +105,7 @@ namespace Wox.Infrastructure.UserSettings
                 }
             }
         }
+
         public int ActivateTimes { get; set; }
 
         // Order defaults to 0 or -1, so 1 will let this property appear last
@@ -128,6 +134,7 @@ namespace Wox.Infrastructure.UserSettings
                 OnPropertyChanged();
             }
         }
+
         public bool LeaveCmdOpen { get; set; }
         public bool HideWhenDeactivated { get; set; } = true;
         public bool ClearInputOnLaunch { get; set; } = false;

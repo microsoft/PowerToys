@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
@@ -12,7 +16,6 @@ namespace Wox.Infrastructure.Hotkey
         public bool Win { get; set; }
         public bool Ctrl { get; set; }
         public Key CharKey { get; set; }
-
 
         Dictionary<Key, string> specialSymbolDictionary = new Dictionary<Key, string>
         {
@@ -29,18 +32,22 @@ namespace Wox.Infrastructure.Hotkey
                 {
                     modifierKeys = ModifierKeys.Alt;
                 }
+
                 if (Shift)
                 {
                     modifierKeys = modifierKeys | ModifierKeys.Shift;
                 }
+
                 if (Win)
                 {
                     modifierKeys = modifierKeys | ModifierKeys.Windows;
                 }
+
                 if (Ctrl)
                 {
                     modifierKeys = modifierKeys | ModifierKeys.Control;
                 }
+
                 return modifierKeys;
             }
         }
@@ -70,27 +77,32 @@ namespace Wox.Infrastructure.Hotkey
             {
                 return;
             }
+
             List<string> keys = hotkeyString.Replace(" ", "").Split('+').ToList();
             if (keys.Contains("Alt"))
             {
                 Alt = true;
                 keys.Remove("Alt");
             }
+
             if (keys.Contains("Shift"))
             {
                 Shift = true;
                 keys.Remove("Shift");
             }
+
             if (keys.Contains("Win"))
             {
                 Win = true;
                 keys.Remove("Win");
             }
+
             if (keys.Contains("Ctrl"))
             {
                 Ctrl = true;
                 keys.Remove("Ctrl");
             }
+
             if (keys.Count > 0)
             {
                 string charKey = keys[0];
@@ -120,14 +132,17 @@ namespace Wox.Infrastructure.Hotkey
             {
                 text += "Ctrl + ";
             }
+
             if (Alt)
             {
                 text += "Alt + ";
             }
+
             if (Shift)
             {
                 text += "Shift + ";
             }
+
             if (Win)
             {
                 text += "Win + ";
