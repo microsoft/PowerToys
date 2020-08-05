@@ -1,4 +1,6 @@
-using Microsoft.PowerToys.Settings.UI.Lib;
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
@@ -6,31 +8,25 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
-using WindowsInput;
-using WindowsInput.Native;
+using System.Reflection;
+using System.Windows.Input;
+using Microsoft.PowerToys.Settings.UI.Lib;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
-using Wox.Plugin.SharedCommands;
 using Wox.Plugin;
-using Application = System.Windows.Application;
+using Wox.Plugin.SharedCommands;
 using Control = System.Windows.Controls.Control;
-using Keys = System.Windows.Forms.Keys;
-using System.Windows.Input;
-using System.Reflection;
 
 namespace Microsoft.Plugin.Shell
 {
     public class Main : IPlugin, ISettingProvider, IPluginI18n, IContextMenu, ISavable
     {
-        private string IconPath { get; set; }
-        private PluginInitContext _context;
-        private bool _winRStroked;
-        private readonly KeyboardSimulator _keyboardSimulator = new KeyboardSimulator(new InputSimulator());
-
         private readonly Settings _settings;
         private readonly PluginJsonStorage<Settings> _storage;
+
+        private string IconPath { get; set; }
+
+        private PluginInitContext _context;
 
         public Main()
         {
@@ -42,7 +38,6 @@ namespace Microsoft.Plugin.Shell
         {
             _storage.Save();
         }
-
 
         public List<Result> Query(Query query)
         {
@@ -92,7 +87,7 @@ namespace Microsoft.Plugin.Shell
                             {
                                 Execute(Process.Start, PrepareProcessStartInfo(m));
                                 return true;
-                            }
+                            },
                         }));
                     }
                 }
@@ -100,6 +95,7 @@ namespace Microsoft.Plugin.Shell
                 {
                     Log.Exception($"|Microsoft.Plugin.Shell.Main.Query|Exception when query for <{query}>", e);
                 }
+
                 return results;
             }
         }
@@ -125,7 +121,7 @@ namespace Microsoft.Plugin.Shell
                         {
                             Execute(Process.Start, PrepareProcessStartInfo(m.Key));
                             return true;
-                        }
+                        },
                     };
                     return ret;
                 }).Where(o => o != null).Take(4);
@@ -144,7 +140,7 @@ namespace Microsoft.Plugin.Shell
                 {
                     Execute(Process.Start, PrepareProcessStartInfo(cmd));
                     return true;
-                }
+                },
             };
 
             return result;
@@ -162,7 +158,7 @@ namespace Microsoft.Plugin.Shell
                     {
                         Execute(Process.Start, PrepareProcessStartInfo(m.Key));
                         return true;
-                    }
+                    },
                 }).Take(5);
             return history.ToList();
         }
@@ -172,7 +168,7 @@ namespace Microsoft.Plugin.Shell
             command = command.Trim();
             command = Environment.ExpandEnvironmentVariables(command);
             var workingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            var runAsAdministratorArg = !runAsAdministrator && !_settings.RunAsAdministrator ? "" : "runas";
+            var runAsAdministratorArg = !runAsAdministrator && !_settings.RunAsAdministrator ? string.Empty : "runas";
 
             ProcessStartInfo info;
             if (_settings.Shell == Shell.Cmd)
@@ -197,7 +193,7 @@ namespace Microsoft.Plugin.Shell
             }
             else if (_settings.Shell == Shell.RunCommand)
             {
-                //Open explorer if the path is a file or directory
+                // Open explorer if the path is a file or directory
                 if (Directory.Exists(command) || File.Exists(command))
                 {
                     info = ShellCommand.SetProcessStartInfo("explorer.exe", arguments: command, verb: runAsAdministratorArg);
@@ -276,6 +272,7 @@ namespace Microsoft.Plugin.Shell
                             return true;
                         }
                     }
+
                     return false;
                 }
                 else
@@ -305,39 +302,9 @@ namespace Microsoft.Plugin.Shell
             }
         }
 
-        private void OnThemeChanged(Theme _, Theme newTheme)
+        private void OnThemeChanged(Theme currentTheme, Theme newTheme)
         {
             UpdateIconPath(newTheme);
-        }
-
-        bool API_GlobalKeyboardEvent(int keyevent, int vkcode, SpecialKeyState state)
-        {
-            // not overriding Win+R 
-            // crutkas we need to earn the right for Win+R override
-            /*
-            if (_settings.ReplaceWinR)
-            {
-                if (keyevent == (int)KeyEvent.WM_KEYDOWN && vkcode == (int)Keys.R && state.WinPressed)
-                {
-                    _winRStroked = true;
-                    OnWinRPressed();
-                    return false;
-                }
-                if (keyevent == (int)KeyEvent.WM_KEYUP && _winRStroked && vkcode == (int)Keys.LWin)
-                {
-                    _winRStroked = false;
-                    _keyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.LWIN, VirtualKeyCode.BACK);
-                    return false;
-                }
-            }
-            */
-            return true;
-        }
-
-        private void OnWinRPressed()
-        {
-            _context.API.ChangeQuery($"{_context.CurrentPluginMetadata.ActionKeywords[0]}{Wox.Plugin.Query.TermSeparator}");
-            Application.Current.MainWindow.Visibility = Visibility.Visible;
         }
 
         public Control CreateSettingPanel()
@@ -366,13 +333,13 @@ namespace Microsoft.Plugin.Shell
                     Glyph = "\xE7EF",
                     FontFamily = "Segoe MDL2 Assets",
                     AcceleratorKey = Key.Enter,
-                    AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
+                    AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = c =>
                     {
                         Execute(Process.Start, PrepareProcessStartInfo(selectedResult.Title, true));
                         return true;
-                    }
-                }
+                    },
+                },
             };
 
             return resultlist;
@@ -380,7 +347,6 @@ namespace Microsoft.Plugin.Shell
 
         public void UpdateSettings(PowerLauncherSettings settings)
         {
-            //_settings.ReplaceWinR = settings.properties.override_win_r_key;
         }
     }
 }

@@ -1,6 +1,9 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -22,39 +25,49 @@ namespace Microsoft.Plugin.Calculator
                         @"==|~=|&&|\|\||" +
                         @"[ei]|[0-9]|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
                         @")+$", RegexOptions.Compiled);
+
         private static readonly Regex RegBrackets = new Regex(@"[\(\)\[\]]", RegexOptions.Compiled);
         private static readonly Engine MagesEngine = new Engine();
+
         private PluginInitContext Context { get; set; }
+
         private string IconPath { get; set; }
+
         private bool _disposed = false;
 
         public List<Result> Query(Query query)
         {
-            if(query == null)
+            if (query == null)
             {
                 throw new ArgumentNullException(paramName: nameof(query));
             }
 
-            if (query.Search.Length <= 2          // don't affect when user only input "e" or "i" keyword
+            if (query.Search.Length <= 2 // don't affect when user only input "e" or "i" keyword
                 || !RegValidExpressChar.IsMatch(query.Search)
-                || !IsBracketComplete(query.Search)) return new List<Result>();
+                || !IsBracketComplete(query.Search))
+            {
+                return new List<Result>();
+            }
 
             try
             {
                 var result = MagesEngine.Interpret(query.Search);
 
-                // This could happen for some incorrect queries, like pi(2) 
+                // This could happen for some incorrect queries, like pi(2)
                 if (result == null)
                 {
                     return new List<Result>();
                 }
 
                 if (result.ToString() == "NaN")
+                {
                     result = Context.API.GetTranslation("wox_plugin_calculator_not_a_number");
+                }
 
                 if (result is Function)
+                {
                     result = Context.API.GetTranslation("wox_plugin_calculator_expression_not_complete");
-
+                }
 
                 if (!string.IsNullOrEmpty(result?.ToString()))
                 {
@@ -85,14 +98,13 @@ namespace Microsoft.Plugin.Calculator
                                 thread.Start();
                                 thread.Join();
                                 return ret;
-                            }
-                        }
+                            },
+                        },
                     };
                 }
-            }
-//We want to keep the process alive if any the mages library throws any exceptions.
+            } // We want to keep the process alive if any the mages library throws any exceptions.
 #pragma warning disable CA1031 // Do not catch general exception types
-            catch(Exception e)
+            catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
                 Log.Exception($"|Microsoft.Plugin.Calculator.Main.Query|Exception when query for <{query}>", e);
@@ -122,7 +134,7 @@ namespace Microsoft.Plugin.Calculator
 
         public void Init(PluginInitContext context)
         {
-            if(context == null)
+            if (context == null)
             {
                 throw new ArgumentNullException(paramName: nameof(context));
             }
@@ -145,7 +157,7 @@ namespace Microsoft.Plugin.Calculator
             }
         }
 
-        private void OnThemeChanged(Theme _, Theme newTheme)
+        private void OnThemeChanged(Theme currentTheme, Theme newTheme)
         {
             UpdateIconPath(newTheme);
         }

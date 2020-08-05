@@ -101,7 +101,7 @@
             VerticalAlignment="Center"
             FontSize="24"
             Style="{StaticResource QueryTextBoxStyle}"
-            Tag="Start typing..."
+            Tag="{DynamicResource startTyping}"
             />
 
         <TextBlock

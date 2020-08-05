@@ -111,7 +111,7 @@ namespace PowerLauncher.ViewModel
                     Task.Run(() =>
                     {
                         PluginManager.UpdatePluginMetadata(e.Results, pair.Metadata, e.Query);
-                        UpdateResultView(e.Results, pair.Metadata, e.Query);
+                        UpdateResultView(e.Results, pair.Metadata, e.Query, _updateToken);
                     }, _updateToken);
                 };
             }
@@ -421,11 +421,11 @@ namespace PowerLauncher.ViewModel
                     r => StringMatcher.FuzzySearch(query, r.Title).IsSearchPrecisionScoreMet() ||
                          StringMatcher.FuzzySearch(query, r.SubTitle).IsSearchPrecisionScoreMet()
                 ).ToList();
-                History.AddResults(filtered, id);
+                History.AddResults(filtered, id, _updateToken);
             }
             else
             {
-                History.AddResults(results, id);
+                History.AddResults(results, id, _updateToken);
             }
         }
 
@@ -448,23 +448,34 @@ namespace PowerLauncher.ViewModel
                     Task.Run(() =>
                     {
                         Thread.Sleep(20);
-                        RemoveOldQueryResults(query);
                         var plugins = PluginManager.ValidPluginsForQuery(query);
 
                         try
                         {
                             currentCancellationToken.ThrowIfCancellationRequested();
-                            foreach(PluginPair plugin in plugins)
+
+                            var resultPluginPair = new List<(List<Result>, PluginMetadata)>();
+                            foreach (PluginPair plugin in plugins)
                             {
-                                if (!plugin.Metadata.Disabled && !currentCancellationToken.IsCancellationRequested)
+                                if (!plugin.Metadata.Disabled)
                                 {
                                     var results = PluginManager.QueryForPlugin(plugin, query);
+                                    resultPluginPair.Add((results, plugin.Metadata));
                                     currentCancellationToken.ThrowIfCancellationRequested();
-                                    lock (_addResultsLock)
-                                    {
-                                        UpdateResultView(results, plugin.Metadata, query);
-                                    }
                                 }
+                            }
+
+                            lock (_addResultsLock)
+                            {
+                                RemoveOldQueryResults(query);
+                                foreach (var p in resultPluginPair)
+                                {
+                                    UpdateResultView(p.Item1, p.Item2, query, currentCancellationToken);
+                                    currentCancellationToken.ThrowIfCancellationRequested();
+                                }
+
+                                currentCancellationToken.ThrowIfCancellationRequested();
+                                Results.Results.Sort();
                             }
 
                             currentCancellationToken.ThrowIfCancellationRequested();
@@ -680,7 +691,7 @@ namespace PowerLauncher.ViewModel
         /// <summary>
         /// To avoid deadlock, this method should not called from main thread
         /// </summary>
-        public void UpdateResultView(List<Result> list, PluginMetadata metadata, Query originQuery)
+        public void UpdateResultView(List<Result> list, PluginMetadata metadata, Query originQuery, CancellationToken ct)
         {
             if (list == null)
             {
@@ -711,7 +722,8 @@ namespace PowerLauncher.ViewModel
 
             if (originQuery.RawQuery == _lastQuery.RawQuery)
             {
-                Results.AddResults(list, metadata.ID);
+                ct.ThrowIfCancellationRequested();
+                Results.AddResults(list, metadata.ID, ct);
             }
         }
 
@@ -724,7 +736,7 @@ namespace PowerLauncher.ViewModel
                 Title = "hello"
             };
             list.Add(r);
-            Results.AddResults(list, "0");
+            Results.AddResults(list, "0", _updateToken);
             Results.Clear();
             MainWindowVisibility = System.Windows.Visibility.Collapsed;
 
@@ -813,10 +825,10 @@ namespace PowerLauncher.ViewModel
                 {
                     if (_hotkeyHandle != 0)
                     {
-                        _hotkeyManager.UnregisterHotkey(_hotkeyHandle);
+                        _hotkeyManager?.UnregisterHotkey(_hotkeyHandle);
                     }
-                    _hotkeyManager.Dispose();
-                    _updateSource.Dispose();
+                    _hotkeyManager?.Dispose();
+                    _updateSource?.Dispose();
                     _disposed = true;
                 }
             }

@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.  Code forked from Betsegaw Tadele's https://github.com/betsegaw/windowwalker/
+// See the LICENSE file in the project root for more information.
 
+// Code forked from Betsegaw Tadele's https://github.com/betsegaw/windowwalker/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -95,15 +96,15 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// </summary>
         public async Task UpdateSearchText(string searchText)
         {
-            this.SearchText = searchText;
+            SearchText = searchText;
             await SyncOpenWindowsWithModelAsync();
         }
 
         /// <summary>
         /// Event handler called when the OpenWindows list changes
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">sending item</param>
+        /// <param name="e">event arg</param>
         public async void OpenWindowsUpdateHandler(object sender, SearchResultUpdateEventArgs e)
         {
             await SyncOpenWindowsWithModelAsync();
@@ -133,7 +134,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Redirecting method for Fuzzy searching
         /// </summary>
-        /// <param name="openWindows"></param>
+        /// <param name="openWindows">what windows are open</param>
         /// <returns>Returns search results</returns>
         private Task<List<SearchResult>> FuzzySearchOpenWindowsAsync(List<Window> openWindows)
         {
@@ -145,7 +146,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Search method that matches the title of windows with the user search text
         /// </summary>
-        /// <param name="openWindows"></param>
+        /// <param name="openWindows">what windows are open</param>
         /// <returns>Returns search results</returns>
         private List<SearchResult> FuzzySearchOpenWindows(List<Window> openWindows)
         {

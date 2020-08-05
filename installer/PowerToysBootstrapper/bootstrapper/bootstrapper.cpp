@@ -1,10 +1,4 @@
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#include <shellapi.h>
-
-#include <string_view>
-#include <optional>
-#include <fstream>
+#include "pch.h"
 
 #include <common/common.h>
 #include <common/notifications.h>
@@ -15,11 +9,8 @@
 #include <common/appMutex.h>
 #include <common/processApi.h>
 
-#include <wil/resource.h>
 
-#include <winrt/base.h>
 #include "resource.h"
-#include <Msi.h>
 
 #include <runner/action_runner_utils.h>
 
@@ -90,7 +81,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     {
         return 1;
     }
-    notifications::set_application_id(APPLICATION_ID);
+    notifications::override_application_id(APPLICATION_ID);
 
     fs::path iconPath{ L"C:\\" };
     if (auto extractedIcon = extractIcon())

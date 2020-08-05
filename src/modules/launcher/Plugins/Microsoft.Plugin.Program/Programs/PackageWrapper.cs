@@ -41,7 +41,13 @@ namespace Microsoft.Plugin.Program.Programs
             catch (Exception e) when (e is ArgumentException || e is FileNotFoundException)
             {
                 ProgramLogger.LogException($"PackageWrapper", "GetWrapperFromPackage", "package.InstalledLocation.Path", $"Exception {package.Id.Name}", e);
-                return new PackageWrapper();
+                return new PackageWrapper(
+                    package.Id.Name,
+                    package.Id.FullName,
+                    package.Id.FamilyName,
+                    package.IsFramework,
+                    package.IsDevelopmentMode, 
+                    string.Empty);
             }
 
             return new PackageWrapper(

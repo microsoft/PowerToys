@@ -1,14 +1,14 @@
-﻿using Microsoft.PowerToys.Settings.UI.Lib;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace ViewModelTests
 {
@@ -16,6 +16,7 @@ namespace ViewModelTests
     public class ImageResizer
     {
         public const string Module = "ImageResizer";
+
         [TestInitialize]
         public void Setup()
         {
@@ -138,7 +139,6 @@ namespace ViewModelTests
             Assert.AreEqual(true, settings.Properties.ImageresizerKeepDateModified.Value);
         }
 
-
         [TestMethod]
         public void Encoder_ShouldUpdateValue_WhenSuccessful()
         {
@@ -201,7 +201,7 @@ namespace ViewModelTests
             double negativeWidth = -2.0;
             double negativeHeight = -2.0;
 
-            // Act 
+            // Act
             imageSize.Width = negativeWidth;
             imageSize.Height = negativeHeight;
 
@@ -209,7 +209,7 @@ namespace ViewModelTests
             Assert.AreEqual(0, imageSize.Width);
             Assert.AreEqual(0, imageSize.Height);
 
-            // Act 
+            // Act
             imageSize.Width = 50;
             imageSize.Height = 50;
 
