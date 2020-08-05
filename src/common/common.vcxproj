@@ -120,6 +120,7 @@
     <ClInclude Include="animation.h" />
     <ClInclude Include="appMutex.h" />
     <ClInclude Include="async_message_queue.h" />
+    <ClInclude Include="comUtils.h" />
     <ClInclude Include="d2d_svg.h" />
     <ClInclude Include="d2d_text.h" />
     <ClInclude Include="d2d_window.h" />
@@ -159,6 +160,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="animation.cpp" />
+    <ClCompile Include="comUtils.cpp" />
     <ClCompile Include="d2d_svg.cpp" />
     <ClCompile Include="d2d_text.cpp" />
     <ClCompile Include="d2d_window.cpp" />
