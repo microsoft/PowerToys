@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Wox.Plugin;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
-using Microsoft.PowerToys.Settings.UI.Lib;
-using Wox.Infrastructure.UserSettings;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using System;
 using System.Diagnostics;
-using System.Threading;
-using Wox.Infrastructure.Hotkey;
-using System.Windows.Input;
-using Wox.Core.Plugin;
 using System.IO;
+using System.Threading;
+using System.Windows.Input;
+using Microsoft.PowerToys.Settings.UI.Lib;
+using Wox.Core.Plugin;
+using Wox.Infrastructure.Hotkey;
+using Wox.Infrastructure.UserSettings;
+using Wox.Plugin;
 
 namespace PowerLauncher
 {
@@ -22,6 +22,7 @@ namespace PowerLauncher
         private static object _watcherSyncObject = new object();
         private FileSystemWatcher _watcher;
         private Settings _settings;
+
         public SettingsWatcher(Settings settings)
         {
             _settings = settings;
@@ -89,7 +90,7 @@ namespace PowerLauncher
 
                     retry = false;
                 }
-                // the settings application can hold a lock on the settings.json file which will result in a IOException.  
+                // the settings application can hold a lock on the settings.json file which will result in a IOException.
                 // This should be changed to properly synch with the settings app instead of retrying.
                 catch (IOException e)
                 {
