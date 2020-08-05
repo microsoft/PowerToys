@@ -5,7 +5,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
     xmlns:local="clr-namespace:PowerLauncher"
-    xmlns:props="clr-namespace:PowerLauncher.Properties"
     mc:Ignorable="d" 
     d:DesignHeight="300"
     d:DesignWidth="720">
@@ -93,7 +92,7 @@
         -->
 
         <TextBox
-            AutomationProperties.Name="{x:Static props:Resources.Query}"
+            AutomationProperties.Name="{DynamicResource Query}"
             x:Name="QueryTextBox"
             x:FieldModifier="public"
             Canvas.ZIndex="0"
@@ -105,7 +104,7 @@
             />
 
         <TextBlock
-            AutomationProperties.Name="{x:Static props:Resources.SearchIcon}"
+            AutomationProperties.Name="{DynamicResource SearchIcon}"
             Grid.Column="1"
             Text="&#xE721;"
             FontFamily="Segoe MDL2 Assets"

@@ -61,102 +61,12 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Application Icon.
-        /// </summary>
-        public static string AppIcon {
-            get {
-                return ResourceManager.GetString("AppIcon", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Context Menu Item.
-        /// </summary>
-        public static string ContextMenuItem {
-            get {
-                return ResourceManager.GetString("ContextMenuItem", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Context Menu Item Additional Information.
-        /// </summary>
-        public static string ContextMenuItemAdditionalInformation {
-            get {
-                return ResourceManager.GetString("ContextMenuItemAdditionalInformation", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Context Menu Item Content.
-        /// </summary>
-        public static string ContextMenuItemContent {
-            get {
-                return ResourceManager.GetString("ContextMenuItemContent", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Context Menu Items Collection.
-        /// </summary>
-        public static string ContextMenuItemsCollection {
-            get {
-                return ResourceManager.GetString("ContextMenuItemsCollection", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
         public static System.Drawing.Icon placeholderLauncher {
             get {
                 object obj = ResourceManager.GetObject("placeholderLauncher", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Query.
-        /// </summary>
-        public static string Query {
-            get {
-                return ResourceManager.GetString("Query", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Results.
-        /// </summary>
-        public static string Results {
-            get {
-                return ResourceManager.GetString("Results", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Search Icon.
-        /// </summary>
-        public static string SearchIcon {
-            get {
-                return ResourceManager.GetString("SearchIcon", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Subtitle.
-        /// </summary>
-        public static string Subtitle {
-            get {
-                return ResourceManager.GetString("Subtitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Title.
-        /// </summary>
-        public static string Title {
-            get {
-                return ResourceManager.GetString("Title", resourceCulture);
             }
         }
     }
