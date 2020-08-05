@@ -167,7 +167,7 @@ namespace Wox.Infrastructure
 
             if (word.Length > 40)
             {
-                //Skip strings that are too long string for Pinyin conversion.
+                // Skip strings that are too long string for Pinyin conversion.
                 return false;
             }
 

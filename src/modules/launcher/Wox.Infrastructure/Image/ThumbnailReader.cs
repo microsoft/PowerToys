@@ -50,11 +50,13 @@ namespace Wox.Infrastructure.Image
                 out IntPtr ppv);
 
             void GetParent(out IShellItem ppsi);
+
             void GetDisplayName(SIGDN sigdnName, out IntPtr ppszName);
+
             void GetAttributes(uint sfgaoMask, out uint psfgaoAttribs);
+
             void Compare(IShellItem psi, uint hint, out int piOrder);
         }
-;
 
         internal enum SIGDN : uint
         {
@@ -105,9 +107,9 @@ namespace Wox.Infrastructure.Image
             private int height;
 
             public int Width { set { width = value; } }
+
             public int Height { set { height = value; } }
         }
-;
 
         public static BitmapSource GetThumbnail(string fileName, int width, int height, ThumbnailOptions options)
         {

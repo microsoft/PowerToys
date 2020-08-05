@@ -69,7 +69,7 @@ namespace Wox.Infrastructure.Image
             _storage.Save(ImageCache.GetUsageAsDictionary());
         }
 
-        //Todo : Update it with icons specific to each theme.
+        // Todo : Update it with icons specific to each theme.
         public static void UpdateIconPath(Theme theme)
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
@@ -93,6 +93,7 @@ namespace Wox.Infrastructure.Image
             }
 
             public ImageType ImageType { get; }
+
             public ImageSource ImageSource { get; }
         }
 
@@ -138,14 +139,13 @@ namespace Wox.Infrastructure.Image
                 {
                     /* Directories can also have thumbnails instead of shell icons.
                      * Generating thumbnails for a bunch of folders while scrolling through
-                     * results from Everything makes a big impact on performance and 
-                     * Wox responsibility. 
+                     * results from Everything makes a big impact on performance and
+                     * Wox responsibility.
                      * - Solution: just load the icon
                      */
                     type = ImageType.Folder;
                     image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize,
                         Constant.ThumbnailSize, ThumbnailOptions.IconOnly);
-
                 }
                 else if (File.Exists(path))
                 {
@@ -159,9 +159,9 @@ namespace Wox.Infrastructure.Image
                         }
                         else
                         {
-                            /* Although the documentation for GetImage on MSDN indicates that 
+                            /* Although the documentation for GetImage on MSDN indicates that
                              * if a thumbnail is available it will return one, this has proved to not
-                             * be the case in many situations while testing. 
+                             * be the case in many situations while testing.
                              * - Solution: explicitly pass the ThumbnailOnly flag
                              */
                             image = WindowsThumbnailProvider.GetThumbnail(path, Constant.ThumbnailSize,

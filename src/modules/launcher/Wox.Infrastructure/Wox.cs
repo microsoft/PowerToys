@@ -22,6 +22,7 @@ namespace Wox.Infrastructure
         public static bool IsPortableMode;
         public const string PortableFolderName = "UserData";
         public static string PortableDataPath = Path.Combine(ProgramDirectory, PortableFolderName);
+
         public static string DetermineDataDirectory()
         {
             if (Directory.Exists(PortableDataPath))
