@@ -34,7 +34,7 @@ namespace Wox.Core.Plugin
         public static IPublicAPI API { private set; get; }
 
         // todo happlebao, this should not be public, the indicator function should be embedded 
-        public static PluginsSettings Settings;
+        public static PluginSettings Settings;
         private static List<PluginMetadata> _metadatas;
         private static readonly string[] Directories = { Constant.PreinstalledDirectory, Constant.PluginsDirectory };
 
@@ -74,7 +74,7 @@ namespace Wox.Core.Plugin
         /// todo happlebao The API should be removed
         /// </summary>
         /// <param name="settings"></param>
-        public static void LoadPlugins(PluginsSettings settings)
+        public static void LoadPlugins(PluginSettings settings)
         {
             _metadatas = PluginConfig.Parse(Directories);
             Settings = settings;

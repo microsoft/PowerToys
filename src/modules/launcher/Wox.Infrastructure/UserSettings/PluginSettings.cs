@@ -7,7 +7,7 @@ using Wox.Plugin;
 
 namespace Wox.Infrastructure.UserSettings
 {
-    public class PluginsSettings : BaseModel
+    public class PluginSettings : BaseModel
     {
         public Dictionary<string, Plugin> Plugins { get; set; } = new Dictionary<string, Plugin>();
 
