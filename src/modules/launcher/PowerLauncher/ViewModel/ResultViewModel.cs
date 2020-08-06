@@ -20,7 +20,7 @@ namespace PowerLauncher.ViewModel
         {
             Selection,
             Hover
-        };
+        }
 
         public ObservableCollection<ContextMenuItemViewModel> ContextMenuItems { get; } = new ObservableCollection<ContextMenuItemViewModel>();
 

@@ -44,6 +44,5 @@ namespace PowerLauncher.Helper
         {
             CollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
-
     }
 }

@@ -25,10 +25,11 @@ namespace PowerLauncher
         {
             InitializeComponent();
             BitmapImage image = GetImageFromPath(ImageLoader.ErrorIconPath);
-            if(image != null)
+            if (image != null)
             {
                 this.Icon = image;
             }
+
             ErrorTextbox.Document.Blocks.FirstBlock.Margin = new Thickness(0);
             SetException(exception);
         }

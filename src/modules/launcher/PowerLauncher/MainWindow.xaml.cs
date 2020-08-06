@@ -40,7 +40,6 @@ namespace PowerLauncher
 
             _firstDeleteTimer.Elapsed += CheckForFirstDelete;
             _firstDeleteTimer.Interval = 1000;
-
         }
 
         private void CheckForFirstDelete(object sender, ElapsedEventArgs e)
@@ -53,7 +52,6 @@ namespace PowerLauncher
                     PowerToysTelemetry.Log.WriteEvent(new LauncherFirstDeleteEvent());
                 }
             }
-
         }
 
         public MainWindow()
@@ -251,7 +249,7 @@ namespace PowerLauncher
             }
             else if (e.Key == Key.Right)
             {
-                if(SearchBox.QueryTextBox.CaretIndex == SearchBox.QueryTextBox.Text.Length)
+                if (SearchBox.QueryTextBox.CaretIndex == SearchBox.QueryTextBox.Text.Length)
                 {
                     _viewModel.SelectNextContextMenuItemCommand.Execute(null);
                     e.Handled = true;
@@ -261,7 +259,7 @@ namespace PowerLauncher
             {
                 if (SearchBox.QueryTextBox.CaretIndex == SearchBox.QueryTextBox.Text.Length)
                 {
-                    if(_viewModel.Results != null && _viewModel.Results.IsContextMenuItemSelected())
+                    if (_viewModel.Results != null && _viewModel.Results.IsContextMenuItemSelected())
                     {
                         _viewModel.SelectPreviousContextMenuItemCommand.Execute(null);
                         e.Handled = true;
@@ -334,6 +332,7 @@ namespace PowerLauncher
                 {
                     SearchBox.AutoCompleteTextBlock.Text = string.Empty;
                 }
+
                 _viewModel.QueryText = text;
                 _viewModel.Query();
             }
@@ -356,8 +355,8 @@ namespace PowerLauncher
                 {
                     _firstDeleteTimer.Start();
                 }
-                // (this.FindResource("IntroStoryboard") as Storyboard).Begin();
 
+                // (this.FindResource("IntroStoryboard") as Storyboard).Begin();
                 SearchBox.QueryTextBox.Focus();
                 Keyboard.Focus(SearchBox.QueryTextBox);
 
@@ -429,7 +428,6 @@ namespace PowerLauncher
         //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
         //     Dispose(disposing: false);
         // }
-
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
