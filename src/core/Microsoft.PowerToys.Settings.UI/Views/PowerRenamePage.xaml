@@ -4,11 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:CustomControls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-    
+
     <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
@@ -84,7 +83,7 @@
             <TextBlock x:Uid="PowerRename_Toggle_MaxDispListNum"
                 Margin="{StaticResource SmallTopMargin}"
                 Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-            
+
             <muxc:NumberBox SpinButtonPlacementMode="Compact"
                             HorizontalAlignment="Left"
                             Margin="{StaticResource HeaderTextTopMargin}"
@@ -121,7 +120,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="ms-appx:///Assets/Modules/PowerRename.png" />
+                <Image Source="https://aka.ms/powerToysPowerRenameSettingImage" />
             </Border>
 
             <StackPanel x:Name="LinksPanel"

@@ -6,18 +6,11 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using Microsoft.PowerToys.Settings.UI.Helpers;
-using Microsoft.PowerToys.Settings.UI.Lib;
+using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
-using Microsoft.PowerToys.Settings.UI.ViewModels.Commands;
-using Microsoft.PowerToys.Settings.UI.Views;
-using Windows.ApplicationModel.Resources;
-using Windows.Data.Html;
-using Windows.System;
-using Windows.UI.Popups;
-using Windows.UI.Xaml;
+using Microsoft.PowerToys.Settings.UI.Lib.ViewModels.Commands;
 
-namespace Microsoft.PowerToys.Settings.UI.ViewModels
+namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class GeneralViewModel : Observable
     {
@@ -27,12 +20,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
 
-        private ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();
+
+        public Func<string, int> UpdateUIThemeCallBack { get; }
+
+        public Func<string, int> SendConfigMSG { get; }
+
+        public Func<string, int> SendRestartAsAdminConfigMSG { get; }
+
+        public Func<string, int> SendCheckForUpdatesConfigMSG { get; }
 
         public readonly string RunningAsUserDefaultText;
         public readonly string RunningAsAdminDefaultText;
 
-        public GeneralViewModel()
+        public GeneralViewModel(string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc)
         {
             this.CheckFoUpdatesEventHandler = new ButtonClickCommand(CheckForUpdates_Click);
             this.RestartElevatedButtonEventHandler = new ButtonClickCommand(Restart_Elevated);
@@ -59,52 +59,37 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 SettingsUtils.SaveSettings(GeneralSettingsConfigs.ToJsonString(), string.Empty);
             }
 
+            // set the callback functions value to hangle outgoing IPC message.
+            SendConfigMSG = ipcMSGCallBackFunc;
+            SendCheckForUpdatesConfigMSG = ipcMSGCheckForUpdatesCallBackFunc;
+            SendRestartAsAdminConfigMSG = ipcMSGRestartAsAdminMSGCallBackFunc;
+
+            // set the callback function value to update the UI theme.
+            UpdateUIThemeCallBack = updateTheme;
+            UpdateUIThemeCallBack(GeneralSettingsConfigs.Theme.ToLower());
+
             switch (GeneralSettingsConfigs.Theme.ToLower())
             {
                 case "light":
                     _isLightThemeRadioButtonChecked = true;
-                    try
-                    {
-                        ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
-                    }
-                    catch
-                    {
-                    }
-
                     break;
                 case "dark":
                     _isDarkThemeRadioButtonChecked = true;
-                    try
-                    {
-                        ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
-                    }
-                    catch
-                    {
-                    }
-
                     break;
                 case "system":
                     _isSystemThemeRadioButtonChecked = true;
-                    try
-                    {
-                        ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
-                    }
-                    catch
-                    {
-                    }
-
                     break;
             }
 
             _startup = GeneralSettingsConfigs.Startup;
             _autoDownloadUpdates = GeneralSettingsConfigs.AutoDownloadUpdates;
-            _isElevated = ShellPage.IsElevated;
+            _isElevated = isElevated;
             _runElevated = GeneralSettingsConfigs.RunElevated;
 
-            RunningAsUserDefaultText = loader.GetString("GeneralSettings_RunningAsUserText");
-            RunningAsAdminDefaultText = loader.GetString("GeneralSettings_RunningAsAdminText");
+            RunningAsUserDefaultText = runAsUserText;
+            RunningAsAdminDefaultText = runAsAdminText;
 
-            _isAdmin = ShellPage.IsUserAnAdmin;
+            _isAdmin = isAdmin;
         }
 
         private bool _packaged = false;
@@ -268,7 +253,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _isDarkThemeRadioButtonChecked = value;
                     try
                     {
-                        ShellPage.ShellHandler.RequestedTheme = ElementTheme.Dark;
+                        UpdateUIThemeCallBack(GeneralSettingsConfigs.Theme);
                     }
                     catch
                     {
@@ -294,7 +279,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _isLightThemeRadioButtonChecked = value;
                     try
                     {
-                        ShellPage.ShellHandler.RequestedTheme = ElementTheme.Light;
+                        UpdateUIThemeCallBack(GeneralSettingsConfigs.Theme);
                     }
                     catch
                     {
@@ -320,7 +305,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _isSystemThemeRadioButtonChecked = value;
                     try
                     {
-                        ShellPage.ShellHandler.RequestedTheme = ElementTheme.Default;
+                        UpdateUIThemeCallBack(GeneralSettingsConfigs.Theme);
                     }
                     catch
                     {
@@ -346,7 +331,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfigs);
 
-            ShellPage.DefaultSndMSGCallback(outsettings.ToString());
+            SendConfigMSG(outsettings.ToString());
         }
 
         // callback function to launch the URL to check for updates.
@@ -358,10 +343,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
-            if (ShellPage.CheckForUpdatesMsgCallback != null)
-            {
-                ShellPage.CheckForUpdatesMsgCallback(customaction.ToString());
-            }
+            SendCheckForUpdatesConfigMSG(customaction.ToString());
         }
 
         public void Restart_Elevated()
@@ -372,10 +354,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(settings);
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
-            if (ShellPage.SndRestartAsAdminMsgCallback != null)
-            {
-                ShellPage.SndRestartAsAdminMsgCallback(customaction.ToString());
-            }
+            SendRestartAsAdminConfigMSG(customaction.ToString());
         }
     }
 }
