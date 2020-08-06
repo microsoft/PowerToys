@@ -19,6 +19,7 @@ namespace Wox.Core.Resource
     public class Internationalization
     {
         public Settings Settings { get; set; }
+
         private const string Folder = "Languages";
         private const string DefaultFile = "en.xaml";
         private const string Extension = ".xaml";
@@ -29,6 +30,7 @@ namespace Wox.Core.Resource
         {
             AddPluginLanguageDirectories();
             LoadDefaultLanguage();
+
             // we don't want to load /Languages/en.xaml twice
             // so add wox language directory after load plugin language files
             AddWoxLanguageDirectory();
@@ -97,6 +99,7 @@ namespace Wox.Core.Resource
             {
                 LoadLanguage(language);
             }
+
             UpdatePluginMetadataTranslations();
         }
 

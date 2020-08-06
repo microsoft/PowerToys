@@ -35,7 +35,6 @@ namespace Wox.Core.Plugin
             {
                 var milliseconds = Stopwatch.Debug($"|PluginsLoader.CSharpPlugins|Constructor init cost for {metadata.Name}", () =>
                 {
-
 #if DEBUG
                     var assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(metadata.ExecuteFilePath);
                     var types = assembly.GetTypes();
@@ -83,6 +82,7 @@ namespace Wox.Core.Plugin
                 });
                 metadata.InitTime += milliseconds;
             }
+
             return plugins;
         }
 
