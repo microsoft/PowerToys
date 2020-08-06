@@ -1,4 +1,3 @@
-#define DEBUG
 using Microsoft.PowerToys.Settings.UI.Lib;
 using System;
 using System.Collections.Generic;
