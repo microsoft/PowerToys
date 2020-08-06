@@ -927,7 +927,7 @@ void FancyZones::AddZoneWindow(HMONITOR monitor, PCWSTR deviceId) noexcept
             }
             else
             {
-                uniqueId = ZoneWindowUtils::GenerateUniqueIdAllMonitors(virtualDesktopId.get());
+                uniqueId = ZoneWindowUtils::GenerateUniqueIdAllMonitorsArea(virtualDesktopId.get());
             }
 
             // "Turning FLASHING_ZONE option off"

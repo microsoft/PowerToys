@@ -34,7 +34,7 @@ namespace ZoneWindowUtils
         return std::wstring{ uniqueId };
     }
 
-    std::wstring GenerateUniqueIdAllMonitors(PCWSTR virtualDesktopId)
+    std::wstring GenerateUniqueIdAllMonitorsArea(PCWSTR virtualDesktopId)
     {
         std::wstring result{ MULTI_MONITOR_MODE_DEVICE };
 
