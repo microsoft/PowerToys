@@ -229,14 +229,30 @@ namespace RemappingUITests
             Assert::AreEqual(true, dest == std::get<Shortcut>(remapBuffer[1].first[1]));
         }
 
-        // Test if the ValidateShortcutBufferElement method is successful and no drop down action is required on setting a column to null in a new row
-        TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnNoErrorAndNoAction_OnSettingColumnToNullInANewRow)
+        // Test if the ValidateShortcutBufferElement method is successful and no drop down action is required on setting a column to null in a new or valid row
+        TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnNoErrorAndNoAction_OnSettingColumnToNullInANewOrValidRow)
         {
             std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
 
             // Add empty rows
             remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), Shortcut() }), std::wstring()));
             remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ Shortcut(), NULL }), std::wstring()));
+            Shortcut src1;
+            src1.SetKey(VK_CONTROL);
+            src1.SetKey(0x43);
+            Shortcut dest1;
+            dest1.SetKey(VK_CONTROL);
+            dest1.SetKey(0x41);
+            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src1, dest1 }), std::wstring()));
+            Shortcut src2;
+            src2.SetKey(VK_CONTROL);
+            src2.SetKey(VK_SHIFT);
+            src2.SetKey(0x44);
+            Shortcut dest2;
+            dest2.SetKey(VK_CONTROL);
+            dest2.SetKey(VK_SHIFT);
+            dest2.SetKey(0x42);
+            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ src2, dest2 }), std::wstring()));
 
             // Case 1: Validate the element when making null-selection (-1 index) on first column of empty shortcut to shortcut row
             std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
@@ -263,6 +279,111 @@ namespace RemappingUITests
 
             // Case 4: Validate the element when making null-selection (-1 index) on second column of empty shortcut to key row
             result = BufferValidationHelpers::ValidateShortcutBufferElement(1, 1, 0, true, -1, selectedIndices, std::wstring(), keyList, remapBuffer, true);
+
+            // Assert that the element is valid and no drop down action is required
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
+
+            // Case 5: Validate the element when making null-selection (-1 index) on first dropdown of first column of valid shortcut to shortcut row
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(2, 0, 0, true, -1, std::vector<int32_t>({ -1, (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), 0x43)) }), std::wstring(), keyList, remapBuffer, false);
+
+            // Assert that the element is valid and no drop down action is required
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
+
+            // Case 6: Validate the element when making null-selection (-1 index) on first dropdown of second column of valid shortcut to shortcut row
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(2, 1, 0, true, -1, std::vector<int32_t>({ -1, (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), 0x41)) }), std::wstring(), keyList, remapBuffer, false);
+
+            // Assert that the element is valid and no drop down action is required
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
+
+            // Case 7: Validate the element when making null-selection (-1 index) on first dropdown of second column of valid hybrid shortcut to shortcut row
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(2, 1, 0, true, -1, std::vector<int32_t>({ -1, (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), 0x41)) }), std::wstring(), keyList, remapBuffer, true);
+
+            // Assert that the element is valid and no drop down action is required
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
+
+            // Case 8: Validate the element when making null-selection (-1 index) on second dropdown of first column of valid shortcut to shortcut row
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(2, 0, 1, true, -1, std::vector<int32_t>({ (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), VK_CONTROL)), -1 }), std::wstring(), keyList, remapBuffer, false);
+
+            // Assert that the element is valid and no drop down action is required
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
+
+            // Case 9: Validate the element when making null-selection (-1 index) on second dropdown of second column of valid shortcut to shortcut row
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(2, 1, 1, true, -1, std::vector<int32_t>({ (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), VK_CONTROL)), -1 }), std::wstring(), keyList, remapBuffer, false);
+
+            // Assert that the element is valid and no drop down action is required
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
+
+            // Case 10: Validate the element when making null-selection (-1 index) on second dropdown of second column of valid hybrid shortcut to shortcut row
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(2, 1, 1, true, -1, std::vector<int32_t>({ (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), VK_CONTROL)), -1 }), std::wstring(), keyList, remapBuffer, true);
+
+            // Assert that the element is valid and no drop down action is required
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
+
+            // Case 11: Validate the element when making null-selection (-1 index) on first dropdown of first column of valid 3 key shortcut to shortcut row
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(3, 0, 0, true, -1, std::vector<int32_t>({ -1, (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), VK_SHIFT)), (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), 0x44)) }), std::wstring(), keyList, remapBuffer, false);
+
+            // Assert that the element is valid and no drop down action is required
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
+
+            // Case 12: Validate the element when making null-selection (-1 index) on first dropdown of second column of valid 3 key shortcut to shortcut row
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(3, 1, 0, true, -1, std::vector<int32_t>({ -1, (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), VK_SHIFT)), (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), 0x42)) }), std::wstring(), keyList, remapBuffer, false);
+
+            // Assert that the element is valid and no drop down action is required
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
+
+            // Case 13: Validate the element when making null-selection (-1 index) on first dropdown of second column of valid 3 key hybrid shortcut to shortcut row
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(3, 1, 0, true, -1, std::vector<int32_t>({ -1, (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), VK_SHIFT)), (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), 0x42)) }), std::wstring(), keyList, remapBuffer, true);
+
+            // Assert that the element is valid and no drop down action is required
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
+
+            // Case 14: Validate the element when making null-selection (-1 index) on second dropdown of first column of valid 3 key shortcut to shortcut row
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(3, 0, 1, true, -1, std::vector<int32_t>({ (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), VK_CONTROL)), -1, (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), 0x44)) }), std::wstring(), keyList, remapBuffer, false);
+
+            // Assert that the element is valid and no drop down action is required
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
+
+            // Case 15: Validate the element when making null-selection (-1 index) on second dropdown of second column of valid 3 key shortcut to shortcut row
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(3, 1, 1, true, -1, std::vector<int32_t>({ (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), VK_CONTROL)), -1, (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), 0x42)) }), std::wstring(), keyList, remapBuffer, false);
+
+            // Assert that the element is valid and no drop down action is required
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
+
+            // Case 16: Validate the element when making null-selection (-1 index) on second dropdown of second column of valid 3 key hybrid shortcut to shortcut row
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(3, 1, 1, true, -1, std::vector<int32_t>({ (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), VK_CONTROL)), -1, (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), 0x42)) }), std::wstring(), keyList, remapBuffer, true);
+
+            // Assert that the element is valid and no drop down action is required
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
+
+            // Case 17: Validate the element when making null-selection (-1 index) on third dropdown of first column of valid 3 key shortcut to shortcut row
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(3, 0, 2, true, -1, std::vector<int32_t>({ (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), VK_CONTROL)), (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), VK_SHIFT)), -1 }), std::wstring(), keyList, remapBuffer, false);
+
+            // Assert that the element is valid and no drop down action is required
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
+
+            // Case 18: Validate the element when making null-selection (-1 index) on third dropdown of second column of valid 3 key shortcut to shortcut row
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(3, 1, 2, true, -1, std::vector<int32_t>({ (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), VK_CONTROL)), (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), VK_SHIFT)), -1 }), std::wstring(), keyList, remapBuffer, false);
+
+            // Assert that the element is valid and no drop down action is required
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
+            Assert::AreEqual(true, result.second == BufferValidationHelpers::DropDownAction::NoAction);
+
+            // Case 19: Validate the element when making null-selection (-1 index) on third dropdown of second column of valid 3 key hybrid shortcut to shortcut row
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(3, 1, 2, true, -1, std::vector<int32_t>({ (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), VK_CONTROL)), (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), VK_SHIFT)), -1 }), std::wstring(), keyList, remapBuffer, true);
 
             // Assert that the element is valid and no drop down action is required
             Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::NoError);
