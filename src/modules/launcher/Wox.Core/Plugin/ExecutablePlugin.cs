@@ -10,6 +10,7 @@ namespace Wox.Core.Plugin
     internal class ExecutablePlugin : JsonRPCPlugin
     {
         private readonly ProcessStartInfo _startInfo;
+
         public override string SupportedLanguage { get; set; } = AllowedLanguage.Executable;
 
         public ExecutablePlugin(string filename)

@@ -28,7 +28,9 @@ namespace Wox.Core.Plugin
         public abstract string SupportedLanguage { get; set; }
 
         protected abstract string ExecuteQuery(Query query);
+
         protected abstract string ExecuteCallback(JsonRPCRequestModel rpcRequest);
+
         protected abstract string ExecuteContextMenu(Result selectedResult);
 
         public List<Result> Query(Query query)
@@ -50,10 +52,10 @@ namespace Wox.Core.Plugin
             string output = ExecuteContextMenu(selectedResult);
             try
             {
-                //This should not hit. If it does it's because Wox shares the same interface for querying context menu items as well as search results. In this case please file a bug.
-                //To my knowledge we aren't supporting this JSonRPC commands in Launcher, and am not able to repro this, but I will leave this here for the time being in case I'm proven wrong. 
-                //We should remove this, or identify and test officially supported use cases and Deserialize this properly. 
-                //return DeserializedResult(output);
+                // This should not hit. If it does it's because Wox shares the same interface for querying context menu items as well as search results. In this case please file a bug.
+                // To my knowledge we aren't supporting this JSonRPC commands in Launcher, and am not able to repro this, but I will leave this here for the time being in case I'm proven wrong.
+                // We should remove this, or identify and test officially supported use cases and Deserialize this properly.
+                // return DeserializedResult(output);
                 throw new NotImplementedException();
             }
             catch (Exception e)
@@ -97,10 +99,12 @@ namespace Wox.Core.Plugin
                                 }
                             }
                         }
+
                         return !result1.JsonRPCAction.DontHideAfterAction;
                     };
                     results.Add(result);
                 }
+
                 return results;
             }
             else
@@ -120,7 +124,7 @@ namespace Wox.Core.Plugin
                 }
                 catch (Exception)
                 {
-#if (DEBUG)
+#if DEBUG
                     {
                         throw;
                     }

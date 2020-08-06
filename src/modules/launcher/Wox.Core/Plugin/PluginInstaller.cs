@@ -22,6 +22,7 @@ namespace Wox.Core.Plugin
                 {
                     Directory.Delete(tempFolder, true);
                 }
+
                 UnZip(path, tempFolder, true);
 
                 string iniPath = Path.Combine(tempFolder, "plugin.json");
@@ -71,21 +72,21 @@ namespace Wox.Core.Plugin
                 {
                     if (existingPlugin != null && Directory.Exists(existingPlugin.Metadata.PluginDirectory))
                     {
-                        //when plugin is in use, we can't delete them. That's why we need to make plugin folder a random name
+                        // when plugin is in use, we can't delete them. That's why we need to make plugin folder a random name
                         File.Create(Path.Combine(existingPlugin.Metadata.PluginDirectory, "NeedDelete.txt")).Close();
                     }
 
                     UnZip(path, newPluginPath, true);
                     Directory.Delete(tempFolder, true);
 
-                    //existing plugins could be loaded by the application,
-                    //if we try to delete those kind of plugins, we will get a  error that indicate the
-                    //file is been used now.
-                    //current solution is to restart wox. Ugly.
-                    //if (MainWindow.Initialized)
-                    //{
+                    // existing plugins could be loaded by the application,
+                    // if we try to delete those kind of plugins, we will get a  error that indicate the
+                    // file is been used now.
+                    // current solution is to restart wox. Ugly.
+                    // if (MainWindow.Initialized)
+                    // {
                     //    Plugins.Initialize();
-                    //}
+                    // }
                     if (MessageBox.Show($"You have installed plugin {plugin.Name} successfully.{Environment.NewLine}" +
                                         "Restart Wox to take effect?",
                                         "Install plugin", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
@@ -114,7 +115,7 @@ namespace Wox.Core.Plugin
             catch (Exception)
             {
                 string error = $"Parse plugin config {configPath} failed: json format is not valid";
-#if (DEBUG)
+#if DEBUG
                 {
                     throw new Exception(error);
                 }
@@ -125,17 +126,18 @@ namespace Wox.Core.Plugin
             if (!AllowedLanguage.IsAllowed(metadata.Language))
             {
                 string error = $"Parse plugin config {configPath} failed: invalid language {metadata.Language}";
-#if (DEBUG)
+#if DEBUG
                 {
                     throw new Exception(error);
                 }
 #endif
                 return null;
             }
+
             if (!File.Exists(metadata.ExecuteFilePath))
             {
                 string error = $"Parse plugin config {configPath} failed: ExecuteFile {metadata.ExecuteFilePath} didn't exist";
-#if (DEBUG)
+#if DEBUG
                 {
                     throw new Exception(error);
                 }
@@ -147,7 +149,7 @@ namespace Wox.Core.Plugin
         }
 
         /// <summary>
-        /// unzip 
+        /// unzip
         /// </summary>
         /// <param name="zippedFile">The zipped file.</param>
         /// <param name="strDirectory">The STR directory.</param>
@@ -192,6 +194,7 @@ namespace Wox.Core.Plugin
                                     else
                                         break;
                                 }
+
                                 streamWriter.Close();
                             }
                         }

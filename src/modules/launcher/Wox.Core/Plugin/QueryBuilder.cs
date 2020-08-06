@@ -43,6 +43,7 @@ namespace Wox.Core.Plugin
                 RawQuery = rawQuery,
                 ActionKeyword = actionKeyword,
                 Search = search,
+
                 // Obsolete value initialisation
                 ActionName = actionKeyword,
                 ActionParameters = actionParameters

@@ -12,6 +12,7 @@ namespace Wox.Core.Resource
     public static class FontHelper
     {
         static FontWeightConverter fontWeightConverter = new FontWeightConverter();
+
         public static FontWeight GetFontWeightFromInvariantStringOrNormal(string value)
         {
             if (value == null) return FontWeights.Normal;
@@ -27,6 +28,7 @@ namespace Wox.Core.Resource
         }
 
         static FontStyleConverter fontStyleConverter = new FontStyleConverter();
+
         public static FontStyle GetFontStyleFromInvariantStringOrNormal(string value)
         {
             if (value == null) return FontStyles.Normal;
@@ -42,6 +44,7 @@ namespace Wox.Core.Resource
         }
 
         static FontStretchConverter fontStretchConverter = new FontStretchConverter();
+
         public static FontStretch GetFontStretchFromInvariantStringOrNormal(string value)
         {
             if (value == null) return FontStretches.Normal;
