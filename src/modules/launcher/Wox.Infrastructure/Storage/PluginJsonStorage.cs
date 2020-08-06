@@ -6,6 +6,7 @@ using System.IO;
 
 namespace Wox.Infrastructure.Storage
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "Generic, file is named correctly")]
     public class PluginJsonStorage<T> : JsonStorage<T> where T : new()
     {
         public PluginJsonStorage()

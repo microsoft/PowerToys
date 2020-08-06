@@ -16,6 +16,7 @@ namespace Wox.Infrastructure.Storage
     /// Storage object using binary data
     /// Normally, it has better performance, but not readable
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "Generic, file is named correctly")]
     public class BinaryStorage<T> : IStorage<T>
     {
         // This storage helper returns whether or not to delete the binary storage items

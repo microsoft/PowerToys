@@ -4,18 +4,19 @@
 
 namespace Wox.Infrastructure.Storage
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "Generic, file is named correctly")]
     public interface IStorage<T>
     {
         /// <summary>
         /// Saves the data
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="data">data to be saved</param>
         void Save(T data);
 
         /// <summary>
         /// Attempts to load data, otherwise it will return the default provided
         /// </summary>
-        /// <param name="defaultData"></param>
+        /// <param name="defaultData">default data value</param>
         /// <returns>The loaded data or default</returns>
         T TryLoad(T defaultData);
     }
