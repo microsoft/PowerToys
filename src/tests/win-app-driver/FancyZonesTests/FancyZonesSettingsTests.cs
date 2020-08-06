@@ -354,7 +354,7 @@ namespace PowerToysTests
             Assert.AreEqual(toggleValues[7], GetPropertyValue<bool>(savedProps, "fancyzones_restoreSize"));
             Assert.AreEqual(toggleValues[8], GetPropertyValue<bool>(savedProps, "use_cursorpos_editor_startupscreen"));
             Assert.AreEqual(toggleValues[9], GetPropertyValue<bool>(savedProps, "fancyzones_show_on_all_monitors"));
-            Assert.AreEqual(toggleValues[10], GetPropertyValue<bool>(savedProps, "fancyzones_multi_monitor_mode"));
+            Assert.AreEqual(toggleValues[10], GetPropertyValue<bool>(savedProps, "fancyzones_span_zones_across_monitors"));
             Assert.AreEqual(toggleValues[11], GetPropertyValue<bool>(savedProps, "fancyzones_makeDraggedWindowTransparent"));
         }
 

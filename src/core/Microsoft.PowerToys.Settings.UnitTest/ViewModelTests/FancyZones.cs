@@ -267,21 +267,21 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void MultiMonitorMode_ShouldSetValue2True_WhenSuccessful()
+        public void SpanZonesAcrossMonitors_ShouldSetValue2True_WhenSuccessful()
         {
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel();
-            Assert.IsFalse(viewModel.MultiMonitorMode); // check if value was initialized to false.
+            Assert.IsFalse(viewModel.SpanZonesAcrossMonitors); // check if value was initialized to false.
 
             // Assert
             ShellPage.DefaultSndMSGCallback = msg =>
             {
                 FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
-                Assert.IsTrue(snd.Powertoys.FancyZones.Properties.FancyzonesMultiMonitorMode.Value);
+                Assert.IsTrue(snd.Powertoys.FancyZones.Properties.FancyzonesSpanZonesAcrossMonitors.Value);
             };
 
             // act
-            viewModel.MultiMonitorMode = true;
+            viewModel.SpanZonesAcrossMonitors = true;
         }
 
         [TestMethod]

@@ -76,7 +76,7 @@ public:
     void MoveSizeStart(HWND window, HMONITOR monitor, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
-        if (m_settings->GetSettings()->multiMonitorMode)
+        if (m_settings->GetSettings()->spanZonesAcrossMonitors)
         {
             monitor = NULL;
         }
@@ -86,7 +86,7 @@ public:
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen) noexcept
     {
         std::unique_lock writeLock(m_lock);
-        if (m_settings->GetSettings()->multiMonitorMode)
+        if (m_settings->GetSettings()->spanZonesAcrossMonitors)
         {
             monitor = NULL;
         }
@@ -635,7 +635,7 @@ void FancyZones::ToggleEditor() noexcept
 
     std::shared_lock readLock(m_lock);
     
-    if (m_settings->GetSettings()->multiMonitorMode)
+    if (m_settings->GetSettings()->spanZonesAcrossMonitors)
     {
         zoneWindow = m_workAreaHandler.GetWorkArea(m_currentDesktopId, NULL);
     }
@@ -651,7 +651,7 @@ void FancyZones::ToggleEditor() noexcept
 
     std::wstring editorLocation;
 
-    if (m_settings->GetSettings()->multiMonitorMode)
+    if (m_settings->GetSettings()->spanZonesAcrossMonitors)
     {
         std::vector<std::pair<HMONITOR, RECT>> allMonitors;
 
@@ -752,7 +752,7 @@ void FancyZones::SettingsChanged() noexcept
     UnregisterHotKey(m_window, 1);
     RegisterHotKey(m_window, 1, m_settings->GetSettings()->editorHotkey.get_modifiers(), m_settings->GetSettings()->editorHotkey.get_code());
 
-    // Needed if we toggled multiMonitorMode
+    // Needed if we toggled spanZonesAcrossMonitors
     m_workAreaHandler.Clear();
     OnDisplayChange(DisplayChangeType::Initialization);
 }
@@ -1003,7 +1003,7 @@ void FancyZones::UpdateZoneWindows() noexcept
         return TRUE;
     };
 
-    if (m_settings->GetSettings()->multiMonitorMode)
+    if (m_settings->GetSettings()->spanZonesAcrossMonitors)
     {
         AddZoneWindow(nullptr, NULL);
     }
@@ -1068,7 +1068,7 @@ bool FancyZones::OnSnapHotkey(DWORD vkCode) noexcept
     {
         HMONITOR current;
 
-        if (m_settings->GetSettings()->multiMonitorMode)
+        if (m_settings->GetSettings()->spanZonesAcrossMonitors)
         {
             current = NULL;
         }
@@ -1175,7 +1175,7 @@ bool FancyZones::ShouldProcessSnapHotkey() noexcept
     if (m_settings->GetSettings()->overrideSnapHotkeys)
     {
         HMONITOR monitor;
-        if (m_settings->GetSettings()->multiMonitorMode)
+        if (m_settings->GetSettings()->spanZonesAcrossMonitors)
         {
             monitor = NULL;
         }

@@ -45,7 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _restoreSize = Settings.Properties.FancyzonesRestoreSize.Value;
             _useCursorPosEditorStartupScreen = Settings.Properties.UseCursorposEditorStartupscreen.Value;
             _showOnAllMonitors = Settings.Properties.FancyzonesShowOnAllMonitors.Value;
-            _multiMonitorMode = Settings.Properties.FancyzonesMultiMonitorMode.Value;
+            _spanZonesAcrossMonitors = Settings.Properties.FancyzonesSpanZonesAcrossMonitors.Value;
             _makeDraggedWindowTransparent = Settings.Properties.FancyzonesMakeDraggedWindowTransparent.Value;
             _highlightOpacity = Settings.Properties.FancyzonesHighlightOpacity.Value;
             _excludedApps = Settings.Properties.FancyzonesExcludedApps.Value;
@@ -82,7 +82,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _zoneSetChangeMoveWindows;
         private bool _appLastZoneMoveWindows;
         private bool _openWindowOnActiveMonitor;
-        private bool _multiMonitorMode;
+        private bool _spanZonesAcrossMonitors;
         private bool _restoreSize;
         private bool _useCursorPosEditorStartupScreen;
         private bool _showOnAllMonitors;
@@ -315,19 +315,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool MultiMonitorMode
+        public bool SpanZonesAcrossMonitors
         {
             get
             {
-                return _multiMonitorMode;
+                return _spanZonesAcrossMonitors;
             }
 
             set
             {
-                if (value != _multiMonitorMode)
+                if (value != _spanZonesAcrossMonitors)
                 {
-                    _multiMonitorMode = value;
-                    Settings.Properties.FancyzonesMultiMonitorMode.Value = value;
+                    _spanZonesAcrossMonitors = value;
+                    Settings.Properties.FancyzonesSpanZonesAcrossMonitors.Value = value;
                     RaisePropertyChanged();
                 }
             }
