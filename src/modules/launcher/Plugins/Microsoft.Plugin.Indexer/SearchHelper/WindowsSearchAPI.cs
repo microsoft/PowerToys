@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Microsoft.Search.Interop;
 
 namespace Microsoft.Plugin.Indexer.SearchHelper
@@ -33,9 +34,30 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 
             // Generate SQL from our parameters, converting the userQuery from AQS->WHERE clause
             string sqlQuery = queryHelper.GenerateSQLFromUserQuery(keyword);
+            Regex rx = new Regex(@"[^\s(]+\s+LIKE\s+'([^']|'')*'\s+OR");
 
             // execute the command, which returns the results as an OleDBResults.
             List<OleDBResult> oleDBResults = windowsIndexerSearch.Query(queryHelper.ConnectionString, sqlQuery);
+            System.IO.FileStream fileStream = System.IO.File.Open("..\\..\\indexer_query_debug.log", System.IO.FileMode.Append, System.IO.FileAccess.Write);
+
+            // Encapsulate the filestream object in a StreamWriter instance.
+            System.IO.StreamWriter fileWriter = new System.IO.StreamWriter(fileStream);
+
+            // Write the current date time to the file
+            Match match = rx.Match(sqlQuery);
+
+            // Modify to consider all matches (. in each word for example). Test query without LIKE
+            if (match.Success)
+            {
+                fileWriter.WriteLine(keyword + ", " + sqlQuery + ", " + match.Value);
+            }
+            else
+            {
+                fileWriter.WriteLine(keyword + ", " + sqlQuery);
+            }
+
+            fileWriter.Flush();
+            fileWriter.Close();
 
             // Loop over all records from the database
             foreach (OleDBResult oleDBResult in oleDBResults)
