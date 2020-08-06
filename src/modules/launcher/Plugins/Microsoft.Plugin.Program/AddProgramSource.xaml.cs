@@ -35,11 +35,13 @@ namespace Microsoft.Plugin.Program
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new FolderBrowserDialog();
-            DialogResult result = dialog.ShowDialog();
-            if (result == System.Windows.Forms.DialogResult.OK)
+            using (var dialog = new FolderBrowserDialog())
             {
-                Directory.Text = dialog.SelectedPath;
+                DialogResult result = dialog.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    Directory.Text = dialog.SelectedPath;
+                }
             }
         }
 
