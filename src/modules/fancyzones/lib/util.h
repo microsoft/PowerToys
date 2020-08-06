@@ -121,6 +121,7 @@ void OrderMonitors(std::vector<std::pair<HMONITOR, RECT>>& monitorInfo);
 void SizeWindowToRect(HWND window, RECT rect) noexcept;
 
 bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& excludedApps) noexcept;
+bool IsWindowMaximized(HWND window) noexcept;
 void SaveWindowSizeAndOrigin(HWND window) noexcept;
 void RestoreWindowSize(HWND window) noexcept;
 void RestoreWindowOrigin(HWND window) noexcept;
