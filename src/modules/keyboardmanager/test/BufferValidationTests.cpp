@@ -1901,5 +1901,80 @@ namespace RemappingUITests
             // Assert that the element is invalid
             Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::CtrlAltDel);
         }
+
+        // Test if the ValidateShortcutBufferElement method returns MapToSameKey error on setting hybrid second column to match first column in a remap keys table
+        TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnMapToSameKeyError_OnSettingHybridSecondColumnToFirstColumnInKeyTable)
+        {
+            std::vector<std::pair<std::vector<std::variant<DWORD, Shortcut>>, std::wstring>> remapBuffer;
+
+            Shortcut s1;
+            s1.SetKey(VK_CONTROL);
+            s1.SetKey(0x43);
+            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ 0x41, NULL }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ 0x42, 0x43 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ 0x43, s1 }), std::wstring()));
+            remapBuffer.push_back(std::make_pair(std::vector<std::variant<DWORD, Shortcut>>({ VK_CONTROL, s1 }), std::wstring()));
+
+            // Case 1 : Validate the element when selecting A on first dropdown of empty hybrid second column
+            std::vector<DWORD> keyList = keyboardLayout.GetKeyCodeList(true);
+            size_t index = std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), 0x41));
+
+            std::pair<KeyboardManagerHelper::ErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(0, 1, 0, true, (int)index, std::vector<int32_t>({ (int32_t)index }), std::wstring(), keyList, remapBuffer, true);
+            
+            // Assert that the element is invalid
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::MapToSameKey);
+
+            // Case 2 : Validate the element when selecting A on second dropdown of empty hybrid second column
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(0, 1, 1, true, (int)index, std::vector<int32_t>({ -1, (int32_t)index, -1 }), std::wstring(), keyList, remapBuffer, true);
+
+            // Assert that the element is invalid
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::MapToSameKey);
+
+            // Case 3 : Validate the element when selecting A on third dropdown of empty hybrid second column
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(0, 1, 2, true, (int)index, std::vector<int32_t>({ -1, -1, (int32_t)index }), std::wstring(), keyList, remapBuffer, true);
+
+            // Assert that the element is invalid
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::MapToSameKey);
+
+            // Case 4 : Validate the element when selecting B on first dropdown of hybrid second column with key
+            index = std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), 0x42));
+
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(1, 1, 0, true, (int)index, std::vector<int32_t>({ (int32_t)index }), std::wstring(), keyList, remapBuffer, true);
+
+            // Assert that the element is invalid
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::MapToSameKey);
+
+            // Case 5 : Validate the element when selecting null on first dropdown of hybrid second column with shortcut
+            index = -1;
+
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(2, 1, 0, true, (int)index, std::vector<int32_t>({ (int32_t)index, (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), 0x43)) }), std::wstring(), keyList, remapBuffer, true);
+
+            // Assert that the element is invalid
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::MapToSameKey);
+
+            // Case 6 : Validate the element when selecting None on first dropdown of hybrid second column with shortcut
+            index = 0;
+
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(2, 1, 0, true, (int)index, std::vector<int32_t>({ (int32_t)index, (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), 0x43)) }), std::wstring(), keyList, remapBuffer, true);
+
+            // Assert that the element is invalid
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::MapToSameKey);
+
+            // Case 7 : Validate the element when selecting null on second dropdown of hybrid second column with shortcut
+            index = -1;
+
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(3, 1, 1, true, (int)index, std::vector<int32_t>({ (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), VK_CONTROL)), (int32_t)index }), std::wstring(), keyList, remapBuffer, true);
+
+            // Assert that the element is invalid
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::MapToSameKey);
+
+            // Case 8 : Validate the element when selecting None on second dropdown of hybrid second column with shortcut
+            index = 0;
+
+            result = BufferValidationHelpers::ValidateShortcutBufferElement(3, 1, 1, true, (int)index, std::vector<int32_t>({ (int32_t)index, (int32_t)std::distance(keyList.begin(), std::find(keyList.begin(), keyList.end(), VK_CONTROL)), (int32_t)index }), std::wstring(), keyList, remapBuffer, true);
+
+            // Assert that the element is invalid
+            Assert::AreEqual(true, result.first == KeyboardManagerHelper::ErrorType::MapToSameKey);
+        }
     };
 }
