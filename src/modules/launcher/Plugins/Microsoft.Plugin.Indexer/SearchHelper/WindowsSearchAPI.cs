@@ -16,7 +16,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
         private readonly ISearch windowsIndexerSearch;
         private readonly object _lock = new object();
         private const uint _fileAttributeHidden = 0x2;
-        private static Regex _likeRegex = new Regex(@"[^\s(]+\s+LIKE\s+'([^']|'')*'\s+OR\s+", RegexOptions.Compiled);
+        private static readonly Regex _likeRegex = new Regex(@"[^\s(]+\s+LIKE\s+'([^']|'')*'\s+OR\s+", RegexOptions.Compiled);
 
         public WindowsSearchAPI(ISearch windowsIndexerSearch, bool displayHiddenFiles = false)
         {
