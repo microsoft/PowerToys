@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Input;
-using Microsoft.Plugin.Indexer;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using Microsoft.Win32;
 
 namespace Microsoft.Plugin.Indexer.DriveDetection
@@ -16,13 +16,14 @@ namespace Microsoft.Plugin.Indexer.DriveDetection
             {
                 if (regKey != null)
                 {
-                    Object value = regKey.GetValue(valueName);
+                    object value = regKey.GetValue(valueName);
                     if (value != null)
                     {
                         return (int)value;
                     }
                 }
             }
+
             return 0;
         }
     }
