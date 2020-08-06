@@ -270,6 +270,7 @@
 
             <TextBlock x:Uid="KeyboardManager_RemapShortcutsSubtitle"
                        Margin="{StaticResource SmallTopMargin}"
+                       TextWrapping="WrapWholeWords"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.Enabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <Button x:Uid="KeyboardManager_RemapShortcutsButton"
