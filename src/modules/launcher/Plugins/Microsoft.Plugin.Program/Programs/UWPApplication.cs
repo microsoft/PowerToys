@@ -186,7 +186,7 @@ namespace Microsoft.Plugin.Program.Programs
             }).ConfigureAwait(false);
         }
 
-        public UWPApplication(AppxPackageHelper.IAppxManifestApplication manifestApp, UWP package)
+        public UWPApplication(IAppxManifestApplication manifestApp, UWP package)
         {
           
             var hr = manifestApp.GetAppUserModelId(out var tmpUserModelId);
@@ -302,7 +302,7 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
 
-        internal string LogoUriFromManifest(AppxPackageHelper.IAppxManifestApplication app)
+        internal string LogoUriFromManifest(IAppxManifestApplication app)
         {
             var logoKeyFromVersion = new Dictionary<PackageVersion, string>
                 {

@@ -55,7 +55,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 var apps = new List<UWPApplication>();
 
-                List<AppxPackageHelper.IAppxManifestApplication> _apps = _helper.getAppsFromManifest(stream);
+                List<IAppxManifestApplication> _apps = _helper.getAppsFromManifest(stream);
                 foreach (var _app in _apps)
                 {
                     var app = new UWPApplication(_app, this);
