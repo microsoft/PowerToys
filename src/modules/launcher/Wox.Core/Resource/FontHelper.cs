@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
@@ -69,6 +73,5 @@ namespace Wox.Core.Resource
             return family.FamilyTypefaces.FirstOrDefault(o => o.Style == styleObj && o.Weight == weightObj && o.Stretch == stretchObj)
                 ?? family.ChooseRegularFamilyTypeface();
         }
-
     }
 }

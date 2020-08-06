@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" />
-  <Import Project="..\..\installer\Version.props" />
+  <Import Project="..\..\..\src\Version.props" />
   <Target Name="Generate Resource file" BeforeTargets="PrepareForBuild">
     <ItemGroup>
-      <RCLines Include="IDR_BIN_MSIINSTALLER BIN &quot;..\\..\\installer\\PowerToysSetup\\$(PlatformShortName)\\$(Configuration)\\PowerToysSetup-$(Version)-$(PlatformShortName).msi&quot;" />
+      <RCLines Include="IDR_BIN_MSIINSTALLER BIN &quot;..\\PowerToysSetup\\$(PlatformShortName)\\$(Configuration)\\PowerToysSetup-$(Version)-$(PlatformShortName).msi&quot;" />
     </ItemGroup>
     <WriteLinesToFile File="Generated Files\installer_resource.rc" Lines="@(RCLines)" Overwrite="true" Encoding="Unicode" WriteOnlyWhenDifferent="true" />
   </Target>
@@ -76,6 +75,9 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>../../../src/</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -94,6 +96,9 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>../../../src/</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -103,17 +108,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="bootstrapper.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\common\common.vcxproj">
-      <Project>{74485049-c722-400f-abe5-86ac52d929b3}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\common\updating\updating.vcxproj">
-      <Project>{17da04df-e393-4397-9cf0-84dabe11032e}</Project>
-    </ProjectReference>
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\runner\updating.h" />
+    <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
@@ -125,17 +127,22 @@
   <ItemGroup>
     <Image Include="..\runner\svgs\icon.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\common\common.vcxproj">
+      <Project>{74485049-c722-400f-abe5-86ac52d929b3}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\common\updating\updating.vcxproj">
+      <Project>{17da04df-e393-4397-9cf0-84dabe11032e}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200519.2\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200519.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
-    <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200519.2\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200519.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200519.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200519.2\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
-    <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200519.2\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.200519.2\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
   </Target>
 </Project>

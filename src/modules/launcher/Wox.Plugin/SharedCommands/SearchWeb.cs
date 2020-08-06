@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -7,8 +11,8 @@ namespace Wox.Plugin.SharedCommands
 {
     public static class SearchWeb
     {
-        /// <summary> 
-        /// Opens search in a new browser. If no browser path is passed in then Chrome is used. 
+        /// <summary>
+        /// Opens search in a new browser. If no browser path is passed in then Chrome is used.
         /// Leave browser path blank to use Chrome.
         /// </summary>
 		public static void NewBrowserWindow(this string url, string browserPath)
@@ -37,7 +41,7 @@ namespace Wox.Plugin.SharedCommands
             }
         }
 
-        /// <summary> 
+        /// <summary>
         /// Opens search as a tab in the default browser chosen in Windows settings.
         /// </summary>
         public static void NewTabInBrowser(this string url, string browserPath)
@@ -53,6 +57,7 @@ namespace Wox.Plugin.SharedCommands
                     Process.Start(url);
                 }
             }
+
             // This error may be thrown for Process.Start(browserPath, url)
             catch (System.ComponentModel.Win32Exception)
             {

@@ -2,6 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
     <!--MainWindow-->
+    <system:String x:Key="startTyping">Start typing...</system:String>
     <system:String x:Key="registerHotkeyFailed">Реєстрація хоткея {0} не вдалася</system:String>
     <system:String x:Key="couldnotStartCmd">Не вдалося запустити {0}</system:String>
     <system:String x:Key="invalidWoxPluginFileFormat">Невірний формат файлу плагіна Wox</system:String>
@@ -127,4 +128,16 @@
     <system:String x:Key="update_wox_update_files">Оновити файли</system:String>
     <system:String x:Key="update_wox_update_upadte_description">Опис оновлення</system:String>
 
+    <!--Automation Properties-->
+    <system:String x:Key="AppIcon">Application Icon</system:String>
+    <system:String x:Key="ContextMenuItem">Context Menu Item</system:String>
+    <system:String x:Key="ContextMenuItemAdditionalInformation">Context Menu Item Additional Information</system:String>
+    <system:String x:Key="ContextMenuIcon">Context Menu Icon</system:String>
+    <system:String x:Key="ContextMenuItemsCollection">Context Menu Items Collection</system:String>
+    <system:String x:Key="Query">Query</system:String>
+    <system:String x:Key="Results">Results</system:String>
+    <system:String x:Key="SearchIcon">Search Icon</system:String>
+    <system:String x:Key="Subtitle">Subtitle</system:String>
+    <system:String x:Key="Title">Title</system:String>
+    
 </ResourceDictionary>

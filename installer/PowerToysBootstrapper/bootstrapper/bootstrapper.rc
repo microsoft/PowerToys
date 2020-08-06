@@ -1,9 +1,9 @@
 #include <windows.h>
 #include "resource.h"
-#include "../common/version.h"
+#include "../../../src/common/version.h"
 
-MAINICON ICON "../runner/svgs/icon.ico" 
-IDR_BIN_ICON BIN "../runner/svgs/icon.ico" 
+MAINICON ICON "../../../src/runner/svgs/icon.ico" 
+IDR_BIN_ICON BIN "../../../src/runner/svgs/icon.ico" 
 
 
 STRINGTABLE

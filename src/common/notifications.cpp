@@ -30,6 +30,7 @@ using winrt::Windows::UI::Notifications::ToastNotificationManager;
 
 namespace fs = std::filesystem;
 
+// This namespace contains strings that SHOULD NOT be localized
 namespace
 {
     constexpr std::wstring_view TASK_NAME = L"PowerToysBackgroundNotificationsHandler";
@@ -37,7 +38,7 @@ namespace
     constexpr std::wstring_view PACKAGED_APPLICATION_ID = L"PowerToys";
     constexpr std::wstring_view APPIDS_REGISTRY = LR"(Software\Classes\AppUserModelId\)";
 
-    std::wstring APPLICATION_ID;
+    std::wstring APPLICATION_ID = L"Microsoft.PowerToysWin32";
 }
 
 namespace localized_strings
@@ -184,7 +185,7 @@ void notifications::unregister_application_id()
     RegDeleteKeyW(registryRoot.get(), APPLICATION_ID.data());
 }
 
-void notifications::set_application_id(const std::wstring_view appID)
+void notifications::override_application_id(const std::wstring_view appID)
 {
     APPLICATION_ID = appID;
     SetCurrentProcessExplicitAppUserModelID(APPLICATION_ID.c_str());

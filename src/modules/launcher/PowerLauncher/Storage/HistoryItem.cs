@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 
 namespace PowerLauncher.Storage
@@ -5,6 +9,7 @@ namespace PowerLauncher.Storage
     public class HistoryItem
     {
         public string Query { get; set; }
+
         public DateTime ExecutedDateTime { get; set; }
 
         public string GetTimeAgo()

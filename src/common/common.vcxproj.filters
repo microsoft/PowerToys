@@ -129,6 +129,9 @@
     <ClInclude Include="processApi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="comUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>    
     <ClInclude Include="LowlevelKeyboardEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -211,6 +214,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RcResource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="comUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
