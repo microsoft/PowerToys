@@ -188,31 +188,24 @@ namespace Microsoft.Plugin.Program.Programs
 
         public UWPApplication(AppxPackageHelper.IAppxManifestApplication manifestApp, UWP package)
         {
-            string tmpUserModelId;
-            string tmpUniqueIdentifier;
-            string tmpDisplayName;
-            string tmpDescription;
-            string tmpBackgroundColor;
-            string tmpEntryPoint;
-            
+          
+            var hr = manifestApp.GetAppUserModelId(out var tmpUserModelId);
+            UserModelId = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpUserModelId);
 
-            var hr = manifestApp.GetAppUserModelId(out tmpUserModelId);
-            UserModelId = CheckHRAndReturnOrThrow(hr, tmpUserModelId);
+            hr = manifestApp.GetAppUserModelId(out var tmpUniqueIdentifier);
+            UniqueIdentifier = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpUniqueIdentifier);
 
-            hr = manifestApp.GetAppUserModelId(out tmpUniqueIdentifier);
-            UniqueIdentifier = CheckHRAndReturnOrThrow(hr, tmpUniqueIdentifier);
+            hr = manifestApp.GetStringValue("DisplayName", out var tmpDisplayName);
+            DisplayName = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpDisplayName);
 
-            hr = manifestApp.GetStringValue("DisplayName", out tmpDisplayName);
-            DisplayName = CheckHRAndReturnOrThrow(hr, tmpDisplayName);
+            hr = manifestApp.GetStringValue("Description", out var tmpDescription);
+            Description = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpDescription);
 
-            hr = manifestApp.GetStringValue("Description", out tmpDescription);
-            Description = CheckHRAndReturnOrThrow(hr, tmpDescription);
+            hr = manifestApp.GetStringValue("BackgroundColor", out var tmpBackgroundColor);
+            BackgroundColor = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpBackgroundColor);
 
-            hr = manifestApp.GetStringValue("BackgroundColor", out tmpBackgroundColor);
-            BackgroundColor = CheckHRAndReturnOrThrow(hr, tmpBackgroundColor);
-
-            hr = manifestApp.GetStringValue("EntryPoint", out tmpEntryPoint);
-            EntryPoint = CheckHRAndReturnOrThrow(hr, tmpEntryPoint);
+            hr = manifestApp.GetStringValue("EntryPoint", out var tmpEntryPoint);
+            EntryPoint = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpEntryPoint);
 
             Package = package;
 
@@ -222,15 +215,6 @@ namespace Microsoft.Plugin.Program.Programs
 
             Enabled = true;
             CanRunElevated = IfApplicationcanRunElevated();
-        }
-
-        private static T CheckHRAndReturnOrThrow<T>(Hresult hr, T result)
-        {
-            if(hr != Hresult.Ok)
-            {
-                Marshal.ThrowExceptionForHR((int)hr);
-            }
-            return result;
         }
 
         private bool IfApplicationcanRunElevated()
@@ -328,9 +312,9 @@ namespace Microsoft.Plugin.Program.Programs
                 };
             if (logoKeyFromVersion.ContainsKey(Package.Version))
             {
-                string logoUri;
                 var key = logoKeyFromVersion[Package.Version];
-                app.GetStringValue(key, out logoUri);
+                var hr = app.GetStringValue(key, out var logoUri);
+                _ = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, logoUri);
                 return logoUri;
             }
             else

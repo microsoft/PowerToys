@@ -19,9 +19,9 @@ namespace Microsoft.Plugin.Program.Programs
             var manifestApps = reader.GetApplications();
             while (manifestApps.GetHasCurrent())
             {
-                string appListEntry;
                 var manifestApp = manifestApps.GetCurrent();
-                manifestApp.GetStringValue("AppListEntry", out appListEntry);
+                var hr = manifestApp.GetStringValue("AppListEntry", out var appListEntry);
+                _ = CheckHRAndReturnOrThrow(hr, appListEntry);
                 if (appListEntry != "none")
                 {
                     apps.Add(manifestApp);
@@ -29,6 +29,15 @@ namespace Microsoft.Plugin.Program.Programs
                 manifestApps.MoveNext();
             }
             return apps;
+        }
+
+        public static T CheckHRAndReturnOrThrow<T>(Hresult hr, T result)
+        {
+            if (hr != Hresult.Ok)
+            {
+                Marshal.ThrowExceptionForHR((int)hr);
+            }
+            return result;
         }
 
         // Reference : https://stackoverflow.com/questions/32122679/getting-icon-of-modern-windows-app-from-a-desktop-application
