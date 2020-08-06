@@ -1,24 +1,24 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Diagnostics;
+using System.Windows;
 using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
-using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using System.Timers;
-using System.Windows;
+using PowerLauncher.Helper;
+using PowerLauncher.ViewModel;
 using Wox;
-using Wox.Core;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
-using PowerLauncher.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Http;
 using Wox.Infrastructure.Image;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
-using PowerLauncher.ViewModel;
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace PowerLauncher
@@ -26,6 +26,7 @@ namespace PowerLauncher
     public partial class App : IDisposable, ISingleInstanceApp
     {
         public static PublicAPIInstance API { get; private set; }
+
         private const string Unique = "PowerLauncher_Unique_Application_Mutex";
         private static bool _disposed = false;
         private static int _powerToysPid;
@@ -66,7 +67,6 @@ namespace PowerLauncher
                 }
                 finally
                 {
-
                     Environment.Exit(0);
                 }
             });
@@ -122,7 +122,7 @@ namespace PowerLauncher
 
                 PowerToysTelemetry.Log.WriteEvent(new LauncherBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
 
-                //[Conditional("RELEASE")]
+                // [Conditional("RELEASE")]
                 // check update every 5 hours
 
                 // check updates on startup
@@ -155,7 +155,6 @@ namespace PowerLauncher
         {
             DispatcherUnhandledException += ErrorReporting.DispatcherUnhandledException;
         }
-
 
         /// <summary>
         /// let exception throw as normal is better for Debug

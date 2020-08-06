@@ -337,7 +337,7 @@ void WindowMoveHandlerPrivate::MoveSizeEnd(HWND window, POINT const& ptScreen, c
             {
                 ::RemoveProp(window, RESTORE_SIZE_STAMP);
             }
-            else
+            else if (!IsWindowMaximized(window))
             {
                 RestoreWindowSize(window);
             }

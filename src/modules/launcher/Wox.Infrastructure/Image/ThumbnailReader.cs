@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Runtime.InteropServices;
 using System.IO;
 using System.Windows.Interop;
@@ -49,7 +53,8 @@ namespace Wox.Infrastructure.Image
             void GetDisplayName(SIGDN sigdnName, out IntPtr ppszName);
             void GetAttributes(uint sfgaoMask, out uint psfgaoAttribs);
             void Compare(IShellItem psi, uint hint, out int piOrder);
-        };
+        }
+;
 
         internal enum SIGDN : uint
         {
@@ -101,8 +106,8 @@ namespace Wox.Infrastructure.Image
 
             public int Width { set { width = value; } }
             public int Height { set { height = value; } }
-        };
-
+        }
+;
 
         public static BitmapSource GetThumbnail(string fileName, int width, int height, ThumbnailOptions options)
         {

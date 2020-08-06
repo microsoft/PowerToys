@@ -1,4 +1,8 @@
-﻿using NUnit.Framework;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using NUnit.Framework;
 using PowerLauncher.ViewModel;
 using System;
 using System.Collections.Generic;
@@ -41,7 +45,6 @@ namespace Wox.Test
             });
             rvm.SelectedItem = selectedItem;
 
-
             // Act
             rvm.SelectNextContextMenuItem();
 
@@ -61,7 +64,6 @@ namespace Wox.Test
                 Title = "Dummy Context Menu"
             });
             rvm.SelectedItem = selectedItem;
-
 
             // Act
             rvm.SelectNextContextMenuItem();
@@ -91,7 +93,6 @@ namespace Wox.Test
             });
             rvm.SelectedItem = selectedItem;
 
-
             // Act
             rvm.SelectNextContextMenuItem();
             rvm.SelectNextContextMenuItem();
@@ -115,7 +116,6 @@ namespace Wox.Test
             });
             rvm.SelectedItem = selectedItem;
 
-
             // Act
             rvm.SelectNextContextMenuItem();
             rvm.SelectPreviousContextMenuItem();
@@ -137,7 +137,6 @@ namespace Wox.Test
             });
             rvm.SelectedItem = selectedItem;
 
-
             // Act
             rvm.SelectNextContextMenuItem();
             bool isContextMenuItemSelected = rvm.IsContextMenuItemSelected();
@@ -158,7 +157,6 @@ namespace Wox.Test
                 Title = "Dummy Context Menu"
             });
             rvm.SelectedItem = selectedItem;
-
 
             // Act
             rvm.SelectNextContextMenuItem();

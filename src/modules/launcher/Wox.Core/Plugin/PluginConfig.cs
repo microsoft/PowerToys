@@ -1,10 +1,12 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Wox.Infrastructure.Exception;
 using Wox.Infrastructure.Logger;
 using Wox.Plugin;
 
@@ -80,7 +82,6 @@ namespace Wox.Core.Plugin
                 Log.Exception($"|PluginConfig.GetPluginMetadata|invalid json for config <{configPath}>", e);
                 return null;
             }
-
 
             if (!AllowedLanguage.IsAllowed(metadata.Language))
             {
