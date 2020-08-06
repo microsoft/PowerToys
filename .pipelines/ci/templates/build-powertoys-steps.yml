@@ -16,7 +16,7 @@ steps:
   displayName: Ensure VSTest Platform
 
 - task: NuGetCommand@2
-  displayName: Restore NuGet packages
+  displayName: Restore NuGet packages for PowerToys.sln
   inputs:
     command: restore
     feedsToUse: config
@@ -25,7 +25,7 @@ steps:
     restoreDirectory: '$(Build.SourcesDirectory)\packages'
 
 - task: VSBuild@1
-  displayName: 'Build solution **\PowerToys.sln'
+  displayName: 'Build PowerToys.sln'
   inputs:
     solution: '**\PowerToys.sln'
     vsVersion: 16.0
@@ -33,6 +33,45 @@ steps:
     configuration: '$(BuildConfiguration)'
     msbuildArgs: ${{ parameters.additionalBuildArguments }}
     maximumCpuCount: true
+
+- task: NuGetCommand@2
+  displayName: Restore NuGet packages for PowerToysSetup.sln
+  inputs:
+    command: restore
+    feedsToUse: config
+    configPath: NuGet.config
+    restoreSolution: installer\PowerToysSetup.sln
+    restoreDirectory: '$(Build.SourcesDirectory)\installer\packages'
+
+- task: VSBuild@1
+  displayName: 'Build PowerToysSetup.sln'
+  inputs:
+    solution: '**\installer\PowerToysSetup.sln'
+    vsVersion: 16.0
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    msbuildArgs: ${{ parameters.additionalBuildArguments }}
+    maximumCpuCount: true
+
+- task: NuGetCommand@2
+  displayName: Restore NuGet packages for PowerToysBootstrapper.sln
+  inputs:
+    command: restore
+    feedsToUse: config
+    configPath: NuGet.config
+    restoreSolution: installer\PowerToysBootstrapper\PowerToysBootstrapper.sln
+    restoreDirectory: '$(Build.SourcesDirectory)\installer\PowerToysBootstrapper\packages'
+
+- task: VSBuild@1
+  displayName: 'Build PowerToysBootstrapper.sln'
+  inputs:
+    solution: '**\installer\PowerToysBootstrapper\PowerToysBootstrapper.sln'
+    vsVersion: 16.0
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    msbuildArgs: ${{ parameters.additionalBuildArguments }}
+    maximumCpuCount: true
+
 
 # directly not doing WinAppDriver testing
 - task: VSTest@2
