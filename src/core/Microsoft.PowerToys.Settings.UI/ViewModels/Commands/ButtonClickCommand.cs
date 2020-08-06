@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels.Commands
 
         public ButtonClickCommand(Action execute)
         {
-            this._execute = execute;
+            _execute = execute;
         }
 
         // Occurs when changes occur that affect whether or not the command should execute.
@@ -30,5 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels.Commands
         {
             _execute();
         }
+
+        public void OnCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 }
