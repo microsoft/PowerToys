@@ -814,6 +814,7 @@ namespace Microsoft.Plugin.Program.Programs
             return uniquePrograms.ToArray();
         };
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Keeping the process alive but logging the exception")]
         public static Win32[] All(Settings settings)
         {
             try
