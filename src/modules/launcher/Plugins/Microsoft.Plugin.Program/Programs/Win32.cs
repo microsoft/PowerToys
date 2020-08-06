@@ -39,9 +39,9 @@ namespace Microsoft.Plugin.Program.Programs
         public string Location => ParentDirectory;
         public uint AppType { get; set; }
         // Wrappers for File Operations
-        private static IFileVersionInfoWrapper _fileVersionInfoWrapper = new FileVersionInfoWrapper();
-        private static IFileWrapper _fileWrapper = new FileWrapper();
-        private static IShellLinkHelper _helper = new ShellLinkHelper();
+        public static IFileVersionInfoWrapper FileVersionInfoWrapper { get; set;} =  new FileVersionInfoWrapper();
+        public static IFileWrapper FileWrapper { get; set; } = new FileWrapper();
+        public static IShellLinkHelper Helper { get; set; } = new ShellLinkHelper();
 
         private const string ShortcutExtension = "lnk";
         private const string ApplicationReferenceExtension = "appref-ms";
@@ -267,7 +267,7 @@ namespace Microsoft.Plugin.Program.Programs
                     {
                         try
                         {
-                            Helper.OpenInConsole(ParentDirectory);
+                            Wox.Infrastructure.Helper.OpenInConsole(ParentDirectory);
                             return true;
                         }
                         catch (Exception e)
@@ -319,7 +319,7 @@ namespace Microsoft.Plugin.Program.Programs
         // This function filters Internet Shortcut programs
         private static Win32 InternetShortcutProgram(string path)
         {
-            string[] lines = _fileWrapper.ReadAllLines(path);
+            string[] lines = FileWrapper.ReadAllLines(path);
             string appName = string.Empty;
             string iconPath = string.Empty;
             string urlPath = string.Empty;
@@ -389,7 +389,7 @@ namespace Microsoft.Plugin.Program.Programs
                 const int MAX_PATH = 260;
                 StringBuilder buffer = new StringBuilder(MAX_PATH);
 
-                string target = _helper.RetrieveTargetPath(path);
+                string target = Helper.RetrieveTargetPath(path);
 
                 if (!string.IsNullOrEmpty(target))
                 {
@@ -399,17 +399,17 @@ namespace Microsoft.Plugin.Program.Programs
                         program.LnkResolvedPath = program.FullPath;
                         program.FullPath = Path.GetFullPath(target).ToLower();
                         program.ExecutableName = Path.GetFileName(target);
-                        program.hasArguments = _helper.hasArguments;
-                        program.Arguments = _helper.Arguments;
+                        program.hasArguments = Helper.hasArguments;
+                        program.Arguments = Helper.Arguments;
 
-                        var description = _helper.description;
+                        var description = Helper.description;
                         if (!string.IsNullOrEmpty(description))
                         {
                             program.Description = description;
                         }
                         else
                         {
-                            var info = _fileVersionInfoWrapper.GetVersionInfo(target);
+                            var info = FileVersionInfoWrapper.GetVersionInfo(target);
                             if (!string.IsNullOrEmpty(info?.FileDescription))
                             {
                                 program.Description = info.FileDescription;
@@ -445,7 +445,7 @@ namespace Microsoft.Plugin.Program.Programs
             try
             {
                 var program = Win32Program(path);
-                var info = _fileVersionInfoWrapper.GetVersionInfo(path);
+                var info = FileVersionInfoWrapper.GetVersionInfo(path);
 
                 if (!string.IsNullOrEmpty(info?.FileDescription))
                 {
@@ -807,12 +807,12 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         // Deduplication code
-        private static Func<ParallelQuery<Win32>, Win32[]> DeduplicatePrograms = (programs) =>
+        public static Win32[] DeduplicatePrograms(ParallelQuery<Win32>  programs)
         {
             var uniqueExePrograms = programs.Where(x => !(string.IsNullOrEmpty(x.LnkResolvedPath) && (Extension(x.FullPath) == ExeExtension) && !(x.AppType == (uint)ApplicationTypes.RUN_COMMAND)));
             var uniquePrograms = uniqueExePrograms.Distinct(new removeDuplicatesComparer());
             return uniquePrograms.ToArray();
-        };
+        }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Keeping the process alive but logging the exception")]
         public static Win32[] All(Settings settings)
