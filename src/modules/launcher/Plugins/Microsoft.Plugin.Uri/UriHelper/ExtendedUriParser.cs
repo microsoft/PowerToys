@@ -13,10 +13,27 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 return false;
             }
 
-            var urlBuilder = new UriBuilder(input);
+            //Handle common cases UriBuilder does not handle
+            if (input.EndsWith(":", StringComparison.Ordinal)
+                || input.EndsWith(".", StringComparison.Ordinal)
+                || input.EndsWith(":/", StringComparison.Ordinal))
+            {
+	            result = default;
+	            return false;
+            }
 
-            result = urlBuilder.Uri;
-            return true;
+            try
+            {
+	            var urlBuilder = new UriBuilder(input);
+
+	            result = urlBuilder.Uri;
+	            return true;
+            }
+            catch (System.UriFormatException)
+            {
+	            result = default;
+	            return false;
+            }
         }
     }
 }

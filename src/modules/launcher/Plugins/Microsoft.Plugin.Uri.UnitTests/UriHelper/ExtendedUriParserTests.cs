@@ -16,6 +16,22 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         [TestCase("ftps://google.com", true, "ftps://google.com/")]
         [TestCase(null, false, null)]
         [TestCase("bing.com/search?q=gmx", true, "http://bing.com/search?q=gmx")]
+        [TestCase("h", true, "http://h/")]
+        [TestCase("ht", true, "http://ht/")]
+        [TestCase("htt", true, "http://htt/")]
+        [TestCase("http", true, "http://http/")]
+        [TestCase("http:", false, null)]
+        [TestCase("http:/", false, null)]
+        [TestCase("http://", false, null)]
+        [TestCase("http://t", true, "http://t/")]
+        [TestCase("http://te", true, "http://te/")]
+        [TestCase("http://tes", true, "http://tes/")]
+        [TestCase("http://test", true, "http://test/")]
+        [TestCase("http://test.", false, null)]
+        [TestCase("http://test.c", true, "http://test.c/")]
+        [TestCase("http://test.co", true, "http://test.co/")]
+        [TestCase("http://test.com", true, "http://test.com/")]
+        [TestCase("http:3", true,"http://http:3/")]
 
         public void TryParse_CanParseHostName(string query, bool expectedSuccess, string expectedResult)
         {
@@ -26,8 +42,9 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
             var success = parser.TryParse(query, out var result);
 
             // Assert
-            Assert.AreEqual(expectedSuccess, success);
             Assert.AreEqual(expectedResult, result?.ToString());
+            Assert.AreEqual(expectedSuccess, success);
         }
     }
 }
+
