@@ -16,6 +16,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
         private readonly ISearch windowsIndexerSearch;
         private readonly object _lock = new object();
         private const uint _fileAttributeHidden = 0x2;
+        private static Regex _likeRegex = new Regex(@"[^\s(]+\s+LIKE\s+'([^']|'')*'\s+OR\s+", RegexOptions.Compiled);
 
         public WindowsSearchAPI(ISearch windowsIndexerSearch, bool displayHiddenFiles = false)
         {
@@ -34,27 +35,19 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 
             // Generate SQL from our parameters, converting the userQuery from AQS->WHERE clause
             string sqlQuery = queryHelper.GenerateSQLFromUserQuery(keyword);
-            Regex rx = new Regex(@"[^\s(]+\s+LIKE\s+'([^']|'')*'\s+OR");
+            string simplifiedSqlQuery = SimplifyQuery(sqlQuery);
 
             // execute the command, which returns the results as an OleDBResults.
-            List<OleDBResult> oleDBResults = windowsIndexerSearch.Query(queryHelper.ConnectionString, sqlQuery);
+            List<OleDBResult> oleDBResults = windowsIndexerSearch.Query(queryHelper.ConnectionString, simplifiedSqlQuery);
             System.IO.FileStream fileStream = System.IO.File.Open("..\\..\\indexer_query_debug.log", System.IO.FileMode.Append, System.IO.FileAccess.Write);
 
             // Encapsulate the filestream object in a StreamWriter instance.
             System.IO.StreamWriter fileWriter = new System.IO.StreamWriter(fileStream);
 
             // Write the current date time to the file
-            Match match = rx.Match(sqlQuery);
 
             // Modify to consider all matches (. in each word for example). Test query without LIKE
-            if (match.Success)
-            {
-                fileWriter.WriteLine(keyword + ", " + sqlQuery + ", " + match.Value);
-            }
-            else
-            {
-                fileWriter.WriteLine(keyword + ", " + sqlQuery);
-            }
+            fileWriter.WriteLine(keyword + ", " + simplifiedSqlQuery);
 
             fileWriter.Flush();
             fileWriter.Close();
@@ -152,6 +145,11 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                 ModifyQueryHelper(ref queryHelper, pattern);
                 return ExecuteQuery(queryHelper, keyword);
             }
+        }
+
+        public static string SimplifyQuery(string sqlQuery)
+        {
+            return _likeRegex.Replace(sqlQuery, string.Empty);
         }
     }
 }
