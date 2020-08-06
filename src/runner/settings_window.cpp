@@ -248,7 +248,7 @@ void run_settings_window()
 
     if (UseNewSettings())
     {
-        executable_path.append(L"\\SettingsUIRunner\\Microsoft.PowerToys.Settings.UI.Runner.exe");
+        executable_path.append(L"\\SettingsUIRunner\\PowerToys Settings.exe");
     }
     else
     {
