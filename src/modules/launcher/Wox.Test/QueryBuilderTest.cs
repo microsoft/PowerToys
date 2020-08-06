@@ -16,7 +16,7 @@ namespace Wox.Test
         {
             var nonGlobalPlugins = new Dictionary<string, PluginPair>
             {
-                {">", new PluginPair {Metadata = new PluginMetadata {ActionKeywords = new List<string> {">"}}}}
+                { ">", new PluginPair { Metadata = new PluginMetadata { ActionKeywords = new List<string> { ">" } } } }
             };
 
             Query q = QueryBuilder.Build(">   file.txt    file2 file3", nonGlobalPlugins);
@@ -30,7 +30,7 @@ namespace Wox.Test
         {
             var nonGlobalPlugins = new Dictionary<string, PluginPair>
             {
-                {">", new PluginPair {Metadata = new PluginMetadata {ActionKeywords = new List<string> {">"}, Disabled = true}}}
+                { ">", new PluginPair { Metadata = new PluginMetadata { ActionKeywords = new List<string> { ">" }, Disabled = true } } }
             };
 
             Query q = QueryBuilder.Build(">   file.txt    file2 file3", nonGlobalPlugins);
