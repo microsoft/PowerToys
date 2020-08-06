@@ -60,8 +60,9 @@ namespace FancyZonesEditor
             /// <param name="zoneIndex">The index of the zone to track</param>
             /// <param name="isX"> Whether this is the X or Y SnappyHelper</param>
             /// <param name="mode"> One of the three modes of operation (for example: tracking left/right/both edges)</param>
+            /// <param name="screenAxisOrigin"> The origin (left/top) of the screen in this (X or Y) dimension</param>
             /// <param name="screenAxisSize"> The size of the screen in this (X or Y) dimension</param>
-            public SnappyHelperBase(IList<Int32Rect> zones, int zoneIndex, bool isX, ResizeMode mode, int screenAxisSize)
+            public SnappyHelperBase(IList<Int32Rect> zones, int zoneIndex, bool isX, ResizeMode mode, int screenAxisOrigin, int screenAxisSize)
             {
                 int zonePosition = isX ? zones[zoneIndex].X : zones[zoneIndex].Y;
                 int zoneAxisSize = isX ? zones[zoneIndex].Width : zones[zoneIndex].Height;
@@ -87,12 +88,12 @@ namespace FancyZonesEditor
                 {
                     int monitorPositionLow = (int)(isX ? singleMonitor.Left : singleMonitor.Top);
                     int monitorPositionHigh = (int)(isX ? singleMonitor.Right : singleMonitor.Bottom);
-                    keyPositions.Add(monitorPositionLow);
-                    keyPositions.Add(monitorPositionHigh);
+                    keyPositions.Add(monitorPositionLow - screenAxisOrigin);
+                    keyPositions.Add(monitorPositionHigh - screenAxisOrigin);
                     if (mode == ResizeMode.BothEdges)
                     {
-                        keyPositions.Add(monitorPositionLow - zoneAxisSize);
-                        keyPositions.Add(monitorPositionHigh - zoneAxisSize);
+                        keyPositions.Add(monitorPositionLow - screenAxisOrigin - zoneAxisSize);
+                        keyPositions.Add(monitorPositionHigh - screenAxisOrigin - zoneAxisSize);
                     }
                 }
 
@@ -156,8 +157,8 @@ namespace FancyZonesEditor
                 get => (int)(0.08 * ScreenW);
             }
 
-            public SnappyHelperMagnetic(IList<Int32Rect> zones, int zoneIndex, bool isX, ResizeMode mode, int screenAxisSize)
-                : base(zones, zoneIndex, isX, mode, screenAxisSize)
+            public SnappyHelperMagnetic(IList<Int32Rect> zones, int zoneIndex, bool isX, ResizeMode mode, int screenAxisOrigin, int screenAxisSize)
+                : base(zones, zoneIndex, isX, mode, screenAxisOrigin, screenAxisSize)
             {
                 freePosition = Position;
                 magnetZoneSizes = new List<int>();
@@ -212,8 +213,9 @@ namespace FancyZonesEditor
 
         private SnappyHelperBase NewDefaultSnappyHelper(bool isX, ResizeMode mode)
         {
+            int screenAxisOrigin = (int)(isX ? Settings.WorkArea.Left : Settings.WorkArea.Top);
             int screenAxisSize = (int)(isX ? Settings.WorkArea.Width : Settings.WorkArea.Height);
-            return new SnappyHelperMagnetic(Model.Zones, ZoneIndex, isX, mode, screenAxisSize);
+            return new SnappyHelperMagnetic(Model.Zones, ZoneIndex, isX, mode, screenAxisOrigin, screenAxisSize);
         }
 
         private void UpdateFromSnappyHelpers()
