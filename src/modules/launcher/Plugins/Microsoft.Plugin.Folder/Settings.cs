@@ -12,6 +12,7 @@ namespace Microsoft.Plugin.Folder
         [JsonProperty]
         public int MaxFolderResults { get; set; } = 50;
 
+        [JsonProperty]
         public int MaxFileResults { get; set; } = 50;
 
     }

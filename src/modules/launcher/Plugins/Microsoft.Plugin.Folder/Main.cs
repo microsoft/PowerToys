@@ -28,7 +28,6 @@ namespace Microsoft.Plugin.Folder
         private readonly FolderSettings _settings;
         private readonly PluginJsonStorage<FolderSettings> _storage;
         private IContextMenu _contextMenuLoader;
-
         private static string WarningIconPath { get; set; }
 
         public Main()
@@ -283,7 +282,7 @@ namespace Microsoft.Plugin.Folder
                 TitleHighlightData = StringMatcher.FuzzySearch(query.Search, Path.GetFileName(filePath)).MatchData,
                 Action = c =>
                 {
-                     try
+                    try
                     {
                         Process.Start(_fileExplorerProgramName, filePath);
                     }
