@@ -325,15 +325,15 @@ namespace Microsoft.Plugin.Folder
             };
         }
 
-        private static Result CreateTruncatedItemsResult(string search, int preTruncationCount, int postTruncationCount)
+        private Result CreateTruncatedItemsResult(string search, int preTruncationCount, int postTruncationCount)
         {
             return new Result
             {
-                Title = "Warning : Results Truncated",
+                Title = _context.API.GetTranslation("Microsoft_plugin_folder_truncation_warning_title"),
                 QueryTextDisplay = search,
-                SubTitle = "Showing " + postTruncationCount + " of " + preTruncationCount + " Results",
+                SubTitle = string.Format(CultureInfo.InvariantCulture, _context.API.GetTranslation("Microsoft_plugin_folder_truncation_warning_subtitle"), postTruncationCount, preTruncationCount),
                 IcoPath = WarningIconPath,
-                Score = 500,
+                Score = 1,
             };
         }
 
