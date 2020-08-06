@@ -63,7 +63,7 @@ namespace Microsoft.Plugin.Indexer
                 var searchQuery = query.Search;
                 if (_settings.MaxSearchCount <= 0)
                 {
-                    _settings.MaxSearchCount = 50;
+                    _settings.MaxSearchCount = 30;
                 }
 
                 var regexMatch = Regex.Match(searchQuery, reservedStringPattern);
@@ -211,7 +211,6 @@ namespace Microsoft.Plugin.Indexer
 
         public void UpdateSettings(PowerLauncherSettings settings)
         {
-            _settings.MaxSearchCount = settings.Properties.MaximumNumberOfResults;
             _driveDetection.IsDriveDetectionWarningCheckBoxSelected = settings.Properties.DisableDriveDetectionWarning;
         }
 
