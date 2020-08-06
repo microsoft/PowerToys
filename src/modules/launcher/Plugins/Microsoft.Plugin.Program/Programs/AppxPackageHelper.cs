@@ -4,6 +4,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using Windows.Storage;
+using static Microsoft.Plugin.Program.Programs.UWP;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -64,19 +65,19 @@ namespace Microsoft.Plugin.Program.Programs
         public interface IAppxManifestApplication
         {
             [PreserveSig]
-            int GetStringValue([MarshalAs(UnmanagedType.LPWStr)] string name, [MarshalAs(UnmanagedType.LPWStr)] out string value);
+            Hresult GetStringValue([MarshalAs(UnmanagedType.LPWStr)] string name, [MarshalAs(UnmanagedType.LPWStr)] out string value);
 
             [PreserveSig]
-            int GetAppUserModelId([MarshalAs(UnmanagedType.LPWStr)] out string value);
+            Hresult GetAppUserModelId([MarshalAs(UnmanagedType.LPWStr)] out string value);
         }
 
         [Guid("03FAF64D-F26F-4B2C-AAF7-8FE7789B8BCA"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
         public interface IAppxManifestProperties
         {
             [PreserveSig]
-            int GetBoolValue([MarshalAs(UnmanagedType.LPWStr)] string name, out bool value);
+            Hresult GetBoolValue([MarshalAs(UnmanagedType.LPWStr)] string name, out bool value);
             [PreserveSig]
-            int GetStringValue([MarshalAs(UnmanagedType.LPWStr)] string name, [MarshalAs(UnmanagedType.LPWStr)] out string value);
+            Hresult GetStringValue([MarshalAs(UnmanagedType.LPWStr)] string name, [MarshalAs(UnmanagedType.LPWStr)] out string value);
         }
     }
 }

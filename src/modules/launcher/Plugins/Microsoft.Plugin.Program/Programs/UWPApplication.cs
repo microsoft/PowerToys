@@ -188,27 +188,31 @@ namespace Microsoft.Plugin.Program.Programs
 
         public UWPApplication(AppxPackageHelper.IAppxManifestApplication manifestApp, UWP package)
         {
-            // This is done because we cannot use the keyword 'out' along with a property
             string tmpUserModelId;
             string tmpUniqueIdentifier;
             string tmpDisplayName;
             string tmpDescription;
             string tmpBackgroundColor;
             string tmpEntryPoint;
+            
 
-            manifestApp.GetAppUserModelId(out tmpUserModelId);
-            manifestApp.GetAppUserModelId(out tmpUniqueIdentifier);
-            manifestApp.GetStringValue("DisplayName", out tmpDisplayName);
-            manifestApp.GetStringValue("Description", out tmpDescription);
-            manifestApp.GetStringValue("BackgroundColor", out tmpBackgroundColor);
-            manifestApp.GetStringValue("EntryPoint", out tmpEntryPoint);
+            var hr = manifestApp.GetAppUserModelId(out tmpUserModelId);
+            UserModelId = CheckHRAndReturnOrThrow(hr, tmpUserModelId);
 
-            UserModelId = tmpUserModelId;
-            UniqueIdentifier = tmpUniqueIdentifier;
-            DisplayName = tmpDisplayName;
-            Description = tmpDescription;
-            BackgroundColor = tmpBackgroundColor;
-            EntryPoint = tmpEntryPoint;
+            hr = manifestApp.GetAppUserModelId(out tmpUniqueIdentifier);
+            UniqueIdentifier = CheckHRAndReturnOrThrow(hr, tmpUniqueIdentifier);
+
+            hr = manifestApp.GetStringValue("DisplayName", out tmpDisplayName);
+            DisplayName = CheckHRAndReturnOrThrow(hr, tmpDisplayName);
+
+            hr = manifestApp.GetStringValue("Description", out tmpDescription);
+            Description = CheckHRAndReturnOrThrow(hr, tmpDescription);
+
+            hr = manifestApp.GetStringValue("BackgroundColor", out tmpBackgroundColor);
+            BackgroundColor = CheckHRAndReturnOrThrow(hr, tmpBackgroundColor);
+
+            hr = manifestApp.GetStringValue("EntryPoint", out tmpEntryPoint);
+            EntryPoint = CheckHRAndReturnOrThrow(hr, tmpEntryPoint);
 
             Package = package;
 
@@ -218,6 +222,15 @@ namespace Microsoft.Plugin.Program.Programs
 
             Enabled = true;
             CanRunElevated = IfApplicationcanRunElevated();
+        }
+
+        private static T CheckHRAndReturnOrThrow<T>(Hresult hr, T result)
+        {
+            if(hr != Hresult.Ok)
+            {
+                Marshal.ThrowExceptionForHR((int)hr);
+            }
+            return result;
         }
 
         private bool IfApplicationcanRunElevated()
