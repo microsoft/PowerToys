@@ -38,7 +38,7 @@ namespace Wox.Infrastructure
         public static readonly string DataDirectory = DetermineDataDirectory();
         public static readonly string PluginsDirectory = Path.Combine(DataDirectory, Plugins);
         public static readonly string PreinstalledDirectory = Path.Combine(ProgramDirectory, Plugins);
-        public const string Issue = "https://github.com/microsoft/PowerToys/issues";
+        public const string Issue = "https://aka.ms/powerToysReportBug";
         public static readonly string Version = FileVersionInfo.GetVersionInfo(Assembly.Location.NonNull()).ProductVersion;
 
         public static readonly int ThumbnailSize = 64;

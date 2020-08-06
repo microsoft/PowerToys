@@ -63,7 +63,7 @@ namespace FancyZonesEditor.Models
 
         public static void ShowExceptionMessageBox(string message, Exception exception = null)
         {
-            string fullMessage = ErrorMessageBoxMessage + "https://github.com/microsoft/PowerToys/issues \n" + message;
+            string fullMessage = ErrorMessageBoxMessage + "https://aka.ms/powerToysReportBug \n" + message;
             if (exception != null)
             {
                 fullMessage += ": " + exception.Message;
