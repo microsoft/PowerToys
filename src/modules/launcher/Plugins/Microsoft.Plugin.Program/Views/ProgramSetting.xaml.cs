@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Microsoft.Plugin.Program.Views.Models;
 using Microsoft.Plugin.Program.Views.Commands;
 using Microsoft.Plugin.Program.Programs;
 using System.ComponentModel;
@@ -79,7 +78,7 @@ namespace Microsoft.Plugin.Program.Views
 
         private void btnEditProgramSource_OnClick(object sender, RoutedEventArgs e)
         {
-            var selectedProgramSource = programSourceView.SelectedItem as Settings.ProgramSource;
+            var selectedProgramSource = programSourceView.SelectedItem as ProgramSource;
             if (selectedProgramSource != null)
             {
                 var add = new AddProgramSource(selectedProgramSource, _settings);

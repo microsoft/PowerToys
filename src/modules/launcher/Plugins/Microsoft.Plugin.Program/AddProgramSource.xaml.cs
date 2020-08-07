@@ -1,6 +1,5 @@
 ﻿using System.Windows;
 using System.Windows.Forms;
-using Microsoft.Plugin.Program.Views.Models;
 using Microsoft.Plugin.Program.Views;
 using System.Linq;
 using Wox.Plugin;
@@ -13,7 +12,7 @@ namespace Microsoft.Plugin.Program
     public partial class AddProgramSource
     {
         private PluginInitContext _context;
-        private Settings.ProgramSource _editing;
+        private ProgramSource _editing;
         private Settings _settings;
 
         public AddProgramSource(PluginInitContext context, Settings settings)
@@ -24,7 +23,7 @@ namespace Microsoft.Plugin.Program
             Directory.Focus();
         }
 
-        public AddProgramSource(Settings.ProgramSource edit, Settings settings)
+        public AddProgramSource(ProgramSource edit, Settings settings)
         {
             _editing = edit;
             _settings = settings;

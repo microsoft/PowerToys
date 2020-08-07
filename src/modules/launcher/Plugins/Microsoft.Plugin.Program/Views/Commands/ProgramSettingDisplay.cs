@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Plugin.Program.Views.Models;
+
 
 namespace Microsoft.Plugin.Program.Views.Commands
 {
     internal static class ProgramSettingDisplay
     {
-        internal static List<ProgramSource> LoadProgramSources(this List<Settings.ProgramSource> programSources)
+        internal static List<ProgramSource> LoadProgramSources(this List<ProgramSource> programSources)
         {
             var list = new List<ProgramSource>();
 
@@ -89,7 +87,7 @@ namespace Microsoft.Plugin.Program.Views.Commands
                 .ToList()
                 .ForEach(x => Main._settings.DisabledProgramSources
                                             .Add(
-                                                    new Settings.DisabledProgramSource
+                                                    new DisabledProgramSource
                                                     {
                                                         Name = x.Name,
                                                         Location = x.Location,

@@ -575,7 +575,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-        private static ParallelQuery<Win32> UnregisteredPrograms(List<Settings.ProgramSource> sources, IList<string> suffixes)
+        private static ParallelQuery<Win32> UnregisteredPrograms(List<ProgramSource> sources, IList<string> suffixes)
         {
             var listToAdd = new List<string>();
             sources.Where(s => Directory.Exists(s.Location) && s.Enabled)
@@ -774,7 +774,7 @@ namespace Microsoft.Plugin.Program.Programs
             return obj is Win32 win && _removeDuplicatesHelper.Equals(this, win);
         }
 
-        public class removeDuplicatesComparer : IEqualityComparer<Win32>
+        private class removeDuplicatesComparer : IEqualityComparer<Win32>
         {
             public bool Equals(Win32 app1, Win32 app2)
             {
