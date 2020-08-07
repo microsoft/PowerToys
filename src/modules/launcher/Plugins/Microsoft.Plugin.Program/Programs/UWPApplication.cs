@@ -109,8 +109,7 @@ namespace Microsoft.Plugin.Program.Programs
                             Action = _ =>
                             {
                                 string command = "shell:AppsFolder\\" + UniqueIdentifier;
-                                command.Trim();
-                                command = Environment.ExpandEnvironmentVariables(command);
+                                command = Environment.ExpandEnvironmentVariables(command.Trim());
 
                                 var info = ShellCommand.SetProcessStartInfo(command, verb: "runas");
                                 info.UseShellExecute = true;
