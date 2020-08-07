@@ -1,4 +1,4 @@
-﻿﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -44,7 +44,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                 {
                     continue;
                 }
-             
+
                 var uri_path = new Uri((string)oleDBResult.FieldData[0]);
                 var result = new SearchResult
                 {
@@ -53,7 +53,6 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                 };
 
                 results.Add(result);
-                
             }
 
             return results;
@@ -111,8 +110,8 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 
             if (!DisplayHiddenFiles)
             {
-	            // https://docs.microsoft.com/en-us/windows/win32/search/all-bitwise
-	            queryHelper.QueryWhereRestrictions += "AND System.FileAttributes <> SOME BITWISE " + _fileAttributeHidden;
+                // https://docs.microsoft.com/en-us/windows/win32/search/all-bitwise
+                queryHelper.QueryWhereRestrictions += "AND System.FileAttributes <> SOME BITWISE " + _fileAttributeHidden;
             }
 
             // To filter based on title for now
