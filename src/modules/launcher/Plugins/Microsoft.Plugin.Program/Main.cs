@@ -20,7 +20,6 @@ namespace Microsoft.Plugin.Program
 {
     public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable, IReloadable, IDisposable
     {
-        private static readonly object IndexLock = new object();
         internal static Settings _settings { get; set; }
 
         private static bool IsStartupIndexProgramsRequired => _settings.LastIndexTime.AddDays(3) < DateTime.Today;
