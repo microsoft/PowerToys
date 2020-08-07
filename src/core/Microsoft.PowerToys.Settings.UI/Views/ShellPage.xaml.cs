@@ -61,6 +61,24 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             shellFrame.Navigate(typeof(GeneralPage));
         }
 
+        public static int SendDefaultIPCMessage(string msg)
+        {
+            DefaultSndMSGCallback(msg);
+            return 0;
+        }
+
+        public static int SendCheckForUpdatesIPCMessage(string msg)
+        {
+            CheckForUpdatesMsgCallback(msg);
+            return 0;
+        }
+
+        public static int SendRestartAdminIPCMessage(string msg)
+        {
+            SndRestartAsAdminMsgCallback(msg);
+            return 0;
+        }
+
         /// <summary>
         /// Set Default IPC Message callback function.
         /// </summary>
