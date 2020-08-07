@@ -57,7 +57,12 @@ namespace Microsoft.Plugin.Shell
 
                 try
                 {
-                    results.AddRange(Folder.Main.GetFolderPluginResults(query));
+                    List<Result> folderPluginResults = Folder.Main.GetFolderPluginResults(query);
+                    foreach(Result result in folderPluginResults)
+                    {
+                        result.QueryTextDisplay = "> " + result.QueryTextDisplay;
+                    }
+                    results.AddRange(folderPluginResults);
                 }
                 catch (Exception e)
                 {
