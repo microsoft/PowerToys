@@ -24,7 +24,7 @@ namespace Microsoft.Plugin.Program.Programs
         public string FamilyName { get; }
         public string Location { get; set; }
 
-        public UWPApplication[] Apps { get; set; }
+        public IList<UWPApplication> Apps { get; private set; }
 
         public PackageVersion Version { get; set; }
 
