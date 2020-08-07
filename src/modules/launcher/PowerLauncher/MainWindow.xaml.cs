@@ -57,8 +57,6 @@ namespace PowerLauncher
         public MainWindow()
         {
             InitializeComponent();
-            var reportWindow = new ReportWindow(new NullReferenceException());
-            reportWindow.Show();
         }
 
         private void OnClosing(object sender, CancelEventArgs e)
