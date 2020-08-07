@@ -791,7 +791,7 @@ namespace FancyZonesUnitTests
                         for (const auto& monitorInfo : m_popularMonitors)
                         {
                             auto set = MakeZoneSet(m_config);
-                            auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                            auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                             Assert::IsTrue(result);
                             checkZones(set, zoneCount, monitorInfo);
                         }
@@ -808,7 +808,7 @@ namespace FancyZonesUnitTests
                         auto set = MakeZoneSet(m_config);
 
                         MONITORINFO info{};
-                        auto result = set->CalculateZones(info, zoneCount, spacing);
+                        auto result = set->CalculateZones(info.rcWork, zoneCount, spacing);
                         Assert::IsFalse(result);
                     }
                 }
@@ -825,7 +825,7 @@ namespace FancyZonesUnitTests
                         for (const auto& monitorInfo : m_popularMonitors)
                         {
                             auto set = MakeZoneSet(m_config);
-                            auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                            auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                             Assert::IsTrue(result);
                             checkZones(set, zoneCount, monitorInfo);
                         }
@@ -844,7 +844,7 @@ namespace FancyZonesUnitTests
 
                         for (const auto& monitorInfo : m_popularMonitors)
                         {
-                            auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                            auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                             if (type == static_cast<int>(ZoneSetLayoutType::Focus))
                             {
                                 //Focus doesn't depends on spacing
@@ -870,7 +870,7 @@ namespace FancyZonesUnitTests
                         for (const auto& monitorInfo : m_popularMonitors)
                         {
                             const int spacing = monitorInfo.rcWork.right;
-                            auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                            auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                             if (type == static_cast<int>(ZoneSetLayoutType::Focus))
                             {
                                 //Focus doesn't depends on spacing
@@ -896,7 +896,7 @@ namespace FancyZonesUnitTests
                         for (const auto& monitorInfo : m_popularMonitors)
                         {
                             const int spacing = monitorInfo.rcWork.bottom;
-                            auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                            auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                             if (type == static_cast<int>(ZoneSetLayoutType::Focus))
                             {
                                 //Focus doesn't depends on spacing
@@ -922,7 +922,7 @@ namespace FancyZonesUnitTests
 
                         for (const auto& monitorInfo : m_popularMonitors)
                         {
-                            auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                            auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                             Assert::IsFalse(result);
                         }
                     }
@@ -942,7 +942,7 @@ namespace FancyZonesUnitTests
                         for (const auto& monitorInfo : m_popularMonitors)
                         {
                             auto set = MakeZoneSet(m_config);
-                            auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                            auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                             Assert::IsTrue(result);
                             checkZones(set, zoneCount, monitorInfo);
                         }
@@ -965,7 +965,7 @@ namespace FancyZonesUnitTests
 
                     for (const auto& monitorInfo : m_popularMonitors)
                     {
-                        auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                        auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                         Assert::IsFalse(result);
                     }
                 }
@@ -983,7 +983,7 @@ namespace FancyZonesUnitTests
 
                     for (const auto& monitorInfo : m_popularMonitors)
                     {
-                        auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                        auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                         Assert::IsFalse(result);
                     }
                 }
@@ -1004,7 +1004,7 @@ namespace FancyZonesUnitTests
 
                     for (const auto& monitorInfo : m_popularMonitors)
                     {
-                        auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                        auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                         Assert::IsFalse(result);
                     }
                 }
@@ -1030,7 +1030,7 @@ namespace FancyZonesUnitTests
 
                     for (const auto& monitorInfo : m_popularMonitors)
                     {
-                        auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                        auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                         Assert::IsFalse(result);
                     }
                 }
@@ -1064,7 +1064,7 @@ namespace FancyZonesUnitTests
                     for (const auto& monitorInfo : m_popularMonitors)
                     {
                         auto set = MakeZoneSet(m_config);
-                        auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                        auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                         Assert::IsTrue(result);
                         checkZones(set, zoneCount, monitorInfo);
                     }
@@ -1105,7 +1105,7 @@ namespace FancyZonesUnitTests
                     for (const auto& monitorInfo : m_popularMonitors)
                     {
                         auto set = MakeZoneSet(m_config);
-                        auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                        auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                         Assert::IsTrue(result);
                         checkZones(set, zoneCount, monitorInfo);
                     }
@@ -1129,7 +1129,7 @@ namespace FancyZonesUnitTests
 
                     for (const auto& monitorInfo : m_popularMonitors)
                     {
-                        auto result = set->CalculateZones(monitorInfo, zoneCount, spacing);
+                        auto result = set->CalculateZones(monitorInfo.rcWork, zoneCount, spacing);
                         Assert::IsFalse(result);
                     }
                 }
