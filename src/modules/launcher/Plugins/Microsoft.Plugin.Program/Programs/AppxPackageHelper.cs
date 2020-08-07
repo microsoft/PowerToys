@@ -50,6 +50,7 @@ namespace Microsoft.Plugin.Program.Programs
     [Guid("BEB94909-E451-438B-B5A7-D79E767B75D8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IAppxFactory
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Implements COM Interface")]
         void _VtblGap0_2(); // skip 2 methods
         IAppxManifestReader CreateManifestReader(IStream inputStream);
     }
@@ -57,8 +58,11 @@ namespace Microsoft.Plugin.Program.Programs
     [Guid("4E1BD148-55A0-4480-A3D1-15544710637C"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IAppxManifestReader
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Implements COM Interface")]
         void _VtblGap0_1(); // skip 1 method
         IAppxManifestProperties GetProperties();
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Implements COM Interface")]
         void _VtblGap1_5(); // skip 5 methods
         IAppxManifestApplicationsEnumerator GetApplications();
     }
