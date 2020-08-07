@@ -1,14 +1,13 @@
-﻿using Microsoft.PowerToys.Settings.UI.Lib;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.IO;
+using System.Text.Json;
+using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 using Windows.UI;
 
 namespace ViewModelTests
@@ -268,6 +267,24 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void SpanZonesAcrossMonitors_ShouldSetValue2True_WhenSuccessful()
+        {
+            // arrange
+            FancyZonesViewModel viewModel = new FancyZonesViewModel();
+            Assert.IsFalse(viewModel.SpanZonesAcrossMonitors); // check if value was initialized to false.
+
+            // Assert
+            ShellPage.DefaultSndMSGCallback = msg =>
+            {
+                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
+                Assert.IsTrue(snd.Powertoys.FancyZones.Properties.FancyzonesSpanZonesAcrossMonitors.Value);
+            };
+
+            // act
+            viewModel.SpanZonesAcrossMonitors = true;
+        }
+
+        [TestMethod]
         public void ZoneHighlightColor_ShouldSetColorValue2White_WhenSuccessful()
         {
             // arrange
@@ -326,7 +343,7 @@ namespace ViewModelTests
         {
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel();
-            Assert.AreEqual("", viewModel.ExcludedApps);
+            Assert.AreEqual(string.Empty, viewModel.ExcludedApps);
 
             // Assert
             ShellPage.DefaultSndMSGCallback = msg =>
@@ -357,7 +374,7 @@ namespace ViewModelTests
             viewModel.HighlightOpacity = 60;
         }
 
-        private String ToRGBHex(Color color)
+        private string ToRGBHex(Color color)
         {
             return "#" + color.R.ToString("X2") + color.G.ToString("X2") + color.B.ToString("X2");
         }

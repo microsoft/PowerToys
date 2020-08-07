@@ -36,7 +36,7 @@ private:
         PCWSTR name;
         bool* value;
         int resourceId;
-    } m_configBools[12 /* 13 */] = { // "Turning FLASHING_ZONE option off"
+    } m_configBools[13 /* 14 */] = { // "Turning FLASHING_ZONE option off"
         { L"fancyzones_shiftDrag", &m_settings.shiftDrag, IDS_SETTING_DESCRIPTION_SHIFTDRAG },
         { L"fancyzones_mouseSwitch", &m_settings.mouseSwitch, IDS_SETTING_DESCRIPTION_MOUSESWITCH },
         { L"fancyzones_overrideSnapHotkeys", &m_settings.overrideSnapHotkeys, IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS },
@@ -49,8 +49,9 @@ private:
         { L"fancyzones_openWindowOnActiveMonitor", &m_settings.openWindowOnActiveMonitor, IDS_SETTING_DESCRIPTION_OPEN_WINDOW_ON_ACTIVE_MONITOR },
         { L"fancyzones_restoreSize", &m_settings.restoreSize, IDS_SETTING_DESCRIPTION_RESTORESIZE },
         { L"use_cursorpos_editor_startupscreen", &m_settings.use_cursorpos_editor_startupscreen, IDS_SETTING_DESCRIPTION_USE_CURSORPOS_EDITOR_STARTUPSCREEN },
-        { L"fancyzones_show_on_all_monitors", &m_settings.showZonesOnAllMonitors, IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS},
-        { L"fancyzones_makeDraggedWindowTransparent", &m_settings.makeDraggedWindowTransparent, IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT},
+        { L"fancyzones_show_on_all_monitors", &m_settings.showZonesOnAllMonitors, IDS_SETTING_DESCRIPTION_SHOW_FANCY_ZONES_ON_ALL_MONITORS },
+        { L"fancyzones_span_zones_across_monitors", &m_settings.spanZonesAcrossMonitors, IDS_SETTING_DESCRIPTION_SPAN_ZONES_ACROSS_MONITORS },
+        { L"fancyzones_makeDraggedWindowTransparent", &m_settings.makeDraggedWindowTransparent, IDS_SETTING_DESCRIPTION_MAKE_DRAGGED_WINDOW_TRANSPARENT },
     };
 
     const std::wstring m_zoneColorName = L"fancyzones_zoneColor";

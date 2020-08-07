@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Collections.Generic;
 
 namespace Wox.Plugin
 {
@@ -12,7 +16,7 @@ namespace Wox.Plugin
         /// </summary>
         /// <param name="query">query text</param>
         /// <param name="requery">
-        /// force requery By default, Wox will not fire query if your query is same with existing one. 
+        /// force requery By default, Wox will not fire query if your query is same with existing one.
         /// Set this to true to force Wox requerying
         /// </param>
         void ChangeQuery(string query, bool requery = false);
@@ -38,7 +42,7 @@ namespace Wox.Plugin
         void SaveAppAllSettings();
 
         /// <summary>
-        /// Reloads any Plugins that have the 
+        /// Reloads any Plugins that have the
         /// IReloadable implemented. It refreshes
         /// Plugin's in memory data with new content
         /// added by user.
@@ -73,7 +77,7 @@ namespace Wox.Plugin
         string GetTranslation(string key);
 
         /// <summary>
-        /// Get all loaded plugins 
+        /// Get all loaded plugins
         /// </summary>
         /// <returns></returns>
         List<PluginPair> GetAllPlugins();

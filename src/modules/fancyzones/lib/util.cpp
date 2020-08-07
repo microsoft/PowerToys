@@ -124,21 +124,22 @@ void SizeWindowToRect(HWND window, RECT rect) noexcept
     WINDOWPLACEMENT placement{};
     ::GetWindowPlacement(window, &placement);
 
-    //wait if SW_SHOWMINIMIZED would be removed from window (Issue #1685)
-    for (int i = 0; i < 5 && (placement.showCmd & SW_SHOWMINIMIZED) != 0; i++)
+    // Wait if SW_SHOWMINIMIZED would be removed from window (Issue #1685)
+    for (int i = 0; i < 5 && (placement.showCmd == SW_SHOWMINIMIZED); ++i)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         ::GetWindowPlacement(window, &placement);
     }
 
     // Do not restore minimized windows. We change their placement though so they restore to the correct zone.
-    if ((placement.showCmd & SW_SHOWMINIMIZED) == 0)
+    if ((placement.showCmd != SW_SHOWMINIMIZED) &&
+        (placement.showCmd != SW_MINIMIZE))
     {
-        placement.showCmd = SW_RESTORE | SW_SHOWNA;
+        placement.showCmd = SW_RESTORE;
     }
 
     // Remove maximized show command to make sure window is moved to the correct zone.
-    if (placement.showCmd & SW_SHOWMAXIMIZED)
+    if (placement.showCmd == SW_SHOWMAXIMIZED)
     {
         placement.showCmd = SW_RESTORE;
         placement.flags &= ~WPF_RESTORETOMAXIMIZED;
@@ -175,6 +176,17 @@ bool IsInterestingWindow(HWND window, const std::vector<std::wstring>& excludedA
         return false;
     }
     return true;
+}
+
+bool IsWindowMaximized(HWND window) noexcept
+{
+    WINDOWPLACEMENT placement{};
+    if (GetWindowPlacement(window, &placement) &&
+        placement.showCmd == SW_SHOWMAXIMIZED)
+    {
+        return true;
+    }
+    return false;
 }
 
 void SaveWindowSizeAndOrigin(HWND window) noexcept

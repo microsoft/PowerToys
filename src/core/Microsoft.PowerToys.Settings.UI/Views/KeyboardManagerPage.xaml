@@ -173,28 +173,22 @@
         </DataTemplate>
     </Page.Resources>
 
-    <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
+    <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
                 <VisualState x:Name="WideLayout">
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
                     </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="1"/>
-                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}"/>
-                        <Setter Target="KeyboardManagerView.(Grid.Row)" Value="0" />
-                        <Setter Target="LinksPanel.(RelativePanel.Below)" Value="AboutImage"/>
-                        <Setter Target="AboutTitle.Visibility" Value="Visible" />
-                    </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
+                        <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
-                        <Setter Target="SidePanel.Width" Value="500"/>
+                        <Setter Target="SidePanel.Width" Value="Auto"/>
                         <Setter Target="KeyboardManagerView.(Grid.Row)" Value="1" />
                         <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
                         <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
@@ -276,6 +270,7 @@
 
             <TextBlock x:Uid="KeyboardManager_RemapShortcutsSubtitle"
                        Margin="{StaticResource SmallTopMargin}"
+                       TextWrapping="WrapWholeWords"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.Enabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
 
             <Button x:Uid="KeyboardManager_RemapShortcutsButton"
@@ -342,12 +337,13 @@
             </Border>
 
             <StackPanel x:Name="LinksPanel"
+                        Margin="0,1,0,0"
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
                 <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_KeyboardManager">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
-                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
                     <TextBlock x:Uid="Give_Feedback" />
                 </HyperlinkButton>
             </StackPanel>

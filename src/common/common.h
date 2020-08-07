@@ -67,7 +67,7 @@ bool is_process_elevated(const bool use_cached_value = true);
 bool drop_elevated_privileges();
 
 // Run command as elevated user, returns true if succeeded
-bool run_elevated(const std::wstring& file, const std::wstring& params);
+HANDLE run_elevated(const std::wstring& file, const std::wstring& params);
 
 // Run command as non-elevated user, returns true if succeeded, puts the process id into returnPid if returnPid != NULL
 bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWORD* returnPid);
@@ -99,7 +99,7 @@ std::wstring get_resource_string(UINT resource_id, HINSTANCE instance, const wch
 // is added to the .cpp file.
 #define GET_RESOURCE_STRING(resource_id) get_resource_string(resource_id, reinterpret_cast<HINSTANCE>(&__ImageBase), L#resource_id)
 
-std::optional<std::string> exec_and_read_output(const std::wstring_view command, const DWORD timeout = INFINITE);
+std::optional<std::string> exec_and_read_output(const std::wstring_view command, DWORD timeout_ms = 30000);
 
 // Helper class for various COM-related APIs, e.g working with security descriptors
 template<typename T>
@@ -113,19 +113,6 @@ struct typed_storage
     inline operator T*()
     {
         return reinterpret_cast<T*>(_buffer.get());
-    }
-};
-
-template<typename Callable>
-struct on_scope_exit
-{
-    Callable _f;
-    on_scope_exit(Callable f) :
-        _f{ std::move(f) } {}
-
-    ~on_scope_exit()
-    {
-        _f();
     }
 };
 

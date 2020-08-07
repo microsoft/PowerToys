@@ -1,4 +1,8 @@
-﻿using Moq;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -13,7 +17,7 @@ namespace Wox.Test.Plugins
         [Test]
         public void ContextMenuLoader_ReturnContextMenuForFolderWithOpenInConsole_WhenLoadContextMenusIsCalled()
         {
-            // Arrange 
+            // Arrange
             var mock = new Mock<IPublicAPI>();
             mock.Setup(api => api.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
             var pluginInitContext = new PluginInitContext() { API = mock.Object };
@@ -33,7 +37,7 @@ namespace Wox.Test.Plugins
         [Test]
         public void ContextMenuLoader_ReturnContextMenuForFileWithOpenInConsole_WhenLoadContextMenusIsCalled()
         {
-            // Arrange 
+            // Arrange
             var mock = new Mock<IPublicAPI>();
             mock.Setup(api => api.GetTranslation(It.IsAny<string>())).Returns(It.IsAny<string>());
             var pluginInitContext = new PluginInitContext() { API = mock.Object };

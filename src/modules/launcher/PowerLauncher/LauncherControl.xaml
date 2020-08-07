@@ -92,6 +92,7 @@
         -->
 
         <TextBox
+            AutomationProperties.Name="{DynamicResource Query}"
             x:Name="QueryTextBox"
             x:FieldModifier="public"
             Canvas.ZIndex="0"
@@ -99,10 +100,11 @@
             VerticalAlignment="Center"
             FontSize="24"
             Style="{StaticResource QueryTextBoxStyle}"
-            Tag="Start typing..."
+            Tag="{DynamicResource startTyping}"
             />
 
         <TextBlock
+            AutomationProperties.Name="{DynamicResource SearchIcon}"
             Grid.Column="1"
             Text="&#xE721;"
             FontFamily="Segoe MDL2 Assets"

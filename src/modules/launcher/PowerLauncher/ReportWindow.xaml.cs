@@ -1,18 +1,21 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Text;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Documents;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using PowerLauncher.Helper;
 using Wox.Infrastructure;
-using Wox.Infrastructure.Logger;
-using System.Windows.Navigation;
 using Wox.Infrastructure.Image;
-using System.Drawing;
-using System.Windows.Media.Imaging;
+using Wox.Infrastructure.Logger;
 
 namespace PowerLauncher
 {
@@ -22,10 +25,11 @@ namespace PowerLauncher
         {
             InitializeComponent();
             BitmapImage image = GetImageFromPath(ImageLoader.ErrorIconPath);
-            if(image != null)
+            if (image != null)
             {
                 this.Icon = image;
             }
+
             ErrorTextbox.Document.Blocks.FirstBlock.Margin = new Thickness(0);
             SetException(exception);
         }

@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Windows.Threading;
 using NLog;
 using Wox.Infrastructure;
@@ -22,15 +26,16 @@ namespace PowerLauncher.Helper
 
         public static void UnhandledExceptionHandle(object sender, UnhandledExceptionEventArgs e)
         {
-            //handle non-ui thread exceptions
+            // handle non-ui thread exceptions
             Report((Exception)e?.ExceptionObject);
         }
 
         public static void DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            //handle ui thread exceptions
+            // handle ui thread exceptions
             Report(e?.Exception);
-            //prevent application exist, so the user can copy prompted error info
+
+            // prevent application exist, so the user can copy prompted error info
             e.Handled = true;
         }
 

@@ -1,27 +1,27 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Diagnostics;
-using System.Text;
-using System.Threading.Tasks;
-using Wox.Plugin;
-using System.IO;
 using System.ComponentModel;
-using Wox.Infrastructure.Storage;
-using Microsoft.Plugin.Indexer.SearchHelper;
-using Microsoft.Search.Interop;
-using Microsoft.PowerToys.Settings.UI.Lib;
-using System.Windows.Controls;
-using Wox.Infrastructure.Logger;
-using System.Text.RegularExpressions;
-using Microsoft.Plugin.Indexer.DriveDetection;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Windows.Controls;
+using Microsoft.Plugin.Indexer.DriveDetection;
+using Microsoft.Plugin.Indexer.SearchHelper;
+using Microsoft.PowerToys.Settings.UI.Lib;
+using Wox.Infrastructure.Logger;
+using Wox.Infrastructure.Storage;
+using Wox.Plugin;
 
 namespace Microsoft.Plugin.Indexer
 {
     internal class Main : ISettingProvider, IPlugin, ISavable, IPluginI18n, IContextMenu, IDisposable
     {
-
         // This variable contains metadata about the Plugin
         private PluginInitContext _context;
 
@@ -39,8 +39,10 @@ namespace Microsoft.Plugin.Indexer
         private readonly IndexerDriveDetection _driveDetection = new IndexerDriveDetection(new RegistryWrapper());
 
         // Reserved keywords in oleDB
-        private string ReservedStringPattern = @"^[\/\\\$\%]+$";
+        private readonly string reservedStringPattern = @"^[\/\\\$\%]+$";
+
         private string WarningIconPath { get; set; }
+
         private IContextMenu _contextMenuLoader;
         private bool disposedValue;
 
@@ -49,7 +51,6 @@ namespace Microsoft.Plugin.Indexer
         {
             _storage.Save();
         }
-
 
         // This function uses the Windows indexer and returns the list of results obtained
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive but will log the exception")]
@@ -62,16 +63,16 @@ namespace Microsoft.Plugin.Indexer
                 var searchQuery = query.Search;
                 if (_settings.MaxSearchCount <= 0)
                 {
-                    _settings.MaxSearchCount = 50;
+                    _settings.MaxSearchCount = 30;
                 }
 
-                var regexMatch = Regex.Match(searchQuery, ReservedStringPattern);
+                var regexMatch = Regex.Match(searchQuery, reservedStringPattern);
 
                 if (!regexMatch.Success)
                 {
                     try
                     {
-                        if(_driveDetection.DisplayWarning())
+                        if (_driveDetection.DisplayWarning())
                         {
                             results.Add(new Result
                             {
@@ -88,8 +89,9 @@ namespace Microsoft.Plugin.Indexer
                                     {
                                         Log.Exception("Microsoft.Plugin.Indexer", $"Unable to launch Windows Search Settings: {ex.Message}", ex, "Query");
                                     }
+
                                     return true;
-                                }
+                                },
                             });
                         }
 
@@ -101,7 +103,9 @@ namespace Microsoft.Plugin.Indexer
                             var toolTipText = string.Format(CultureInfo.CurrentCulture, "{0} : {1}", _context.API.GetTranslation("Microsoft_plugin_indexer_path"), path);
                             string workingDir = null;
                             if (_settings.UseLocationAsWorkingDir)
+                            {
                                 workingDir = Path.GetDirectoryName(path);
+                            }
 
                             Result r = new Result();
                             r.Title = searchResult.Title;
@@ -117,7 +121,7 @@ namespace Microsoft.Plugin.Indexer
                                     {
                                         FileName = path,
                                         UseShellExecute = true,
-                                        WorkingDirectory = workingDir
+                                        WorkingDirectory = workingDir,
                                     });
                                     hide = true;
                                 }
@@ -128,11 +132,12 @@ namespace Microsoft.Plugin.Indexer
                                     _context.API.ShowMsg(name, msg, string.Empty);
                                     hide = false;
                                 }
+
                                 return hide;
                             };
                             r.ContextData = searchResult;
 
-                            //If the result is a directory, then it's display should show a directory.
+                            // If the result is a directory, then it's display should show a directory.
                             if (Directory.Exists(path))
                             {
                                 r.QueryTextDisplay = path;
@@ -143,8 +148,8 @@ namespace Microsoft.Plugin.Indexer
                     }
                     catch (InvalidOperationException)
                     {
-                        //The connection has closed, internal error of ExecuteReader()
-                        //Not showing this exception to the users
+                        // The connection has closed, internal error of ExecuteReader()
+                        // Not showing this exception to the users
                     }
                     catch (Exception ex)
                     {
@@ -180,7 +185,7 @@ namespace Microsoft.Plugin.Indexer
             }
         }
 
-        private void OnThemeChanged(Theme _, Theme newTheme)
+        private void OnThemeChanged(Theme currentTheme, Theme newTheme)
         {
             UpdateIconPath(newTheme);
         }
@@ -203,11 +208,12 @@ namespace Microsoft.Plugin.Indexer
         {
             return _contextMenuLoader.LoadContextMenus(selectedResult);
         }
+
         public void UpdateSettings(PowerLauncherSettings settings)
         {
-            _settings.MaxSearchCount = settings.Properties.MaximumNumberOfResults;
             _driveDetection.IsDriveDetectionWarningCheckBoxSelected = settings.Properties.DisableDriveDetectionWarning;
         }
+
         public Control CreateSettingPanel()
         {
             throw new NotImplementedException();
@@ -219,7 +225,7 @@ namespace Microsoft.Plugin.Indexer
             var ps = new ProcessStartInfo("ms-settings:cortana-windowssearch")
             {
                 UseShellExecute = true,
-                Verb = "open"
+                Verb = "open",
             };
 
             return ps;

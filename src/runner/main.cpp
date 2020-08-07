@@ -17,6 +17,7 @@
 #include <common/RestartManagement.h>
 #include <common/appMutex.h>
 #include <common/processApi.h>
+#include <common/comUtils.h>
 
 #include "update_state.h"
 #include "update_utils.h"
@@ -34,21 +35,17 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-// Window Explorer process name should not be localized.
-const wchar_t EXPLORER_PROCESS_NAME[] = L"explorer.exe";
-
 namespace localized_strings
 {
     const wchar_t MSI_VERSION_IS_ALREADY_RUNNING[] = L"An older version of PowerToys is already running.";
     const wchar_t DOWNLOAD_UPDATE_ERROR[] = L"Couldn't download PowerToys update! Please report the issue on Github.";
     const wchar_t OLDER_MSIX_UNINSTALLED[] = L"An older MSIX version of PowerToys was uninstalled.";
-    const wchar_t PT_UPDATE_MESSAGE_BOX_TEXT[] = L"PowerToys was updated and some components require Windows Explorer to restart. Do you want to restart Windows Explorer now?";
+    const wchar_t PT_UPDATE_MESSAGE_BOX_TEXT[] = L"PowerToys was updated successfully!";
 }
 
 namespace
 {
     const wchar_t PT_URI_PROTOCOL_SCHEME[] = L"powertoys://";
-    const wchar_t APPLICATION_ID[] = L"Microsoft.PowerToysWin32";
 }
 
 void chdir_current_executable()
@@ -260,53 +257,26 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     }
 }
 
-void RequestExplorerRestart()
-{
-    if (MessageBoxW(nullptr,
-                    localized_strings::PT_UPDATE_MESSAGE_BOX_TEXT,
-                    L"PowerToys",
-                    MB_ICONINFORMATION | MB_YESNO | MB_DEFBUTTON1) != IDYES)
-    {
-        return;
-    }
-    std::thread{ [] {
-        RestartProcess(EXPLORER_PROCESS_NAME);
-
-        constexpr size_t max_checks = 10;
-        for (size_t i = 0; i < max_checks; ++i)
-        {
-            Sleep(1000);
-            const bool explorerStarted = !getProcessHandlesByName(L"explorer.exe", {}).empty();
-            if (explorerStarted)
-            {
-                return;
-            }
-        }
-
-        // Timeout - restart explorer manually
-        SHELLEXECUTEINFOW sei{ sizeof(sei) };
-        sei.fMask = { SEE_MASK_NOASYNC | SEE_MASK_FLAG_NO_UI | SEE_MASK_NO_CONSOLE | SEE_MASK_NOCLOSEPROCESS };
-        sei.lpFile = L"cmd";
-        sei.lpParameters = L"/c explorer.exe";
-        sei.nShow = SW_HIDE;
-        ShellExecuteExW(&sei);
-        // Let cmd launch explorer, then terminate it
-        Sleep(1000);
-        TerminateProcess(sei.hProcess, 0);
-        CloseHandle(sei.hProcess);
-    } }.detach();
-}
-
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     winrt::init_apartment();
+    const wchar_t* securityDescriptor =
+        L"O:BA" // Owner: Builtin (local) administrator
+        L"G:BA" // Group: Builtin (local) administrator
+        L"D:"
+        L"(A;;0x7;;;PS)" // Access allowed on COM_RIGHTS_EXECUTE, _LOCAL, & _REMOTE for Personal self
+        L"(A;;0x7;;;IU)" // Access allowed on COM_RIGHTS_EXECUTE for Interactive Users
+        L"(A;;0x3;;;SY)" // Access allowed on COM_RIGHTS_EXECUTE, & _LOCAL for Local system
+        L"(A;;0x7;;;BA)" // Access allowed on COM_RIGHTS_EXECUTE, _LOCAL, & _REMOTE for Builtin (local) administrator
+        L"(A;;0x3;;;S-1-15-3-1310292540-1029022339-4008023048-2190398717-53961996-4257829345-603366646)" // Access allowed on COM_RIGHTS_EXECUTE, & _LOCAL for Win32WebViewHost package capability
+        L"S:"
+        L"(ML;;NX;;;LW)"; // Integrity label on No execute up for Low mandatory level
+    initializeCOMSecurity(securityDescriptor);
 
     if (launch_pending_update())
     {
         return 0;
     }
-    notifications::set_application_id(APPLICATION_ID);
-
     int n_cmd_args = 0;
     LPWSTR* cmd_arg_list = CommandLineToArgvW(GetCommandLineW(), &n_cmd_args);
     switch (should_run_in_special_mode(n_cmd_args, cmd_arg_list))
@@ -322,7 +292,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             return 0;
         }
     case SpecialMode::ReportSuccessfulUpdate:
-        RequestExplorerRestart();
+        notifications::show_toast(localized_strings::PT_UPDATE_MESSAGE_BOX_TEXT, L"PowerToys");
         break;
 
     case SpecialMode::None:

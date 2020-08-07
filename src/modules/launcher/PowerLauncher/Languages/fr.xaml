@@ -2,6 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
     <!--MainWindow-->
+    <system:String x:Key="startTyping">Start typing...</system:String>
     <system:String x:Key="registerHotkeyFailed">Échec lors de l'enregistrement du raccourci : {0}</system:String>
     <system:String x:Key="couldnotStartCmd">Impossible de lancer {0}</system:String>
     <system:String x:Key="invalidWoxPluginFileFormat">Le format de fichier n'est pas un plugin Wox valide</system:String>
@@ -132,5 +133,17 @@
     <system:String x:Key="update_wox_update_upadte_files">Les fichiers suivants seront mis à jour</system:String>
     <system:String x:Key="update_wox_update_files">Fichiers mis à jour</system:String>
     <system:String x:Key="update_wox_update_upadte_description">Description de la mise à jour</system:String>
+
+    <!--Automation Properties-->
+    <system:String x:Key="AppIcon">Application Icon</system:String>
+    <system:String x:Key="ContextMenuItem">Context Menu Item</system:String>
+    <system:String x:Key="ContextMenuItemAdditionalInformation">Context Menu Item Additional Information</system:String>
+    <system:String x:Key="ContextMenuIcon">Context Menu Icon</system:String>
+    <system:String x:Key="ContextMenuItemsCollection">Context Menu Items Collection</system:String>
+    <system:String x:Key="Query">Query</system:String>
+    <system:String x:Key="Results">Results</system:String>
+    <system:String x:Key="SearchIcon">Search Icon</system:String>
+    <system:String x:Key="Subtitle">Subtitle</system:String>
+    <system:String x:Key="Title">Title</system:String>
     
 </ResourceDictionary>

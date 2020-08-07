@@ -7,6 +7,7 @@
 #include "ZoneWindow.h"
 #include "trace.h"
 #include "util.h"
+#include "Settings.h"
 
 #include <ShellScalingApi.h>
 #include <mutex>
@@ -31,6 +32,22 @@ namespace ZoneWindowUtils
             StringCchPrintf(uniqueId, ARRAYSIZE(uniqueId), L"%s_%d_%d_%s", parsedId, monitorRect.width(), monitorRect.height(), virtualDesktopId);
         }
         return std::wstring{ uniqueId };
+    }
+
+    std::wstring GenerateUniqueIdAllMonitorsArea(PCWSTR virtualDesktopId)
+    {
+        std::wstring result{ MULTI_MONITOR_MODE_DEVICE };
+
+        RECT combinedResolution = GetAllMonitorsCombinedRect<&MONITORINFO::rcMonitor>();
+
+        result += L'_';
+        result += std::to_wstring(combinedResolution.right - combinedResolution.left);
+        result += L'_';
+        result += std::to_wstring(combinedResolution.bottom - combinedResolution.top);
+        result += L'_';
+        result += virtualDesktopId;
+
+        return result;
     }
 }
 
@@ -253,16 +270,23 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
 {
     m_host.copy_from(host);
 
-    MONITORINFO mi{};
-    mi.cbSize = sizeof(mi);
-    if (!GetMonitorInfoW(monitor, &mi))
-    {
-        return false;
-    }
-
+    Rect workAreaRect;
     m_monitor = monitor;
-    const UINT dpi = GetDpiForMonitor(m_monitor);
-    const Rect workAreaRect(mi.rcWork, dpi);
+    if (monitor)
+    {
+        MONITORINFO mi{};
+        mi.cbSize = sizeof(mi);
+        if (!GetMonitorInfoW(monitor, &mi))
+        {
+            return false;
+        }
+        const UINT dpi = GetDpiForMonitor(m_monitor);
+        workAreaRect = Rect(mi.rcWork, dpi);
+    }
+    else
+    {
+        workAreaRect = GetAllMonitorsCombinedRect<&MONITORINFO::rcWork>();
+    }
 
     m_uniqueId = uniqueId;
     InitializeZoneSets(parentUniqueId);
@@ -277,6 +301,9 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
     }
 
     MakeWindowTransparent(m_window.get());
+
+    // Ignore flashZones
+    /*
     if (flashZones)
     {
         // Don't flash if the foreground window is in full screen mode
@@ -290,6 +317,7 @@ bool ZoneWindow::Init(IZoneWindowHost* host, HINSTANCE hinstance, HMONITOR monit
             FlashZones();
         }
     }
+    */
 
     return true;
 }
@@ -566,16 +594,31 @@ void ZoneWindow::CalculateZoneSet() noexcept
             zoneSetId,
             activeZoneSet.type,
             m_monitor));
-        MONITORINFO monitorInfo{};
-        monitorInfo.cbSize = sizeof(monitorInfo);
-        if (GetMonitorInfoW(m_monitor, &monitorInfo))
+        
+        RECT workArea;
+        if (m_monitor)
         {
-            bool showSpacing = deviceInfoData->showSpacing;
-            int spacing = showSpacing ? deviceInfoData->spacing : 0;
-            int zoneCount = deviceInfoData->zoneCount;
-            zoneSet->CalculateZones(monitorInfo, zoneCount, spacing);
-            UpdateActiveZoneSet(zoneSet.get());
+            MONITORINFO monitorInfo{};
+            monitorInfo.cbSize = sizeof(monitorInfo);
+            if (GetMonitorInfoW(m_monitor, &monitorInfo))
+            {
+                workArea = monitorInfo.rcWork;
+            }
+            else
+            {
+                return;
+            }
         }
+        else
+        {
+            workArea = GetAllMonitorsCombinedRect<&MONITORINFO::rcWork>();
+        }
+
+        bool showSpacing = deviceInfoData->showSpacing;
+        int spacing = showSpacing ? deviceInfoData->spacing : 0;
+        int zoneCount = deviceInfoData->zoneCount;
+        zoneSet->CalculateZones(workArea, zoneCount, spacing);
+        UpdateActiveZoneSet(zoneSet.get());        
     }
 }
 

@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Collections.Generic;
 using NUnit.Framework;
 using Wox.Core.Plugin;
 using Wox.Plugin;
@@ -12,7 +16,7 @@ namespace Wox.Test
         {
             var nonGlobalPlugins = new Dictionary<string, PluginPair>
             {
-                {">", new PluginPair {Metadata = new PluginMetadata {ActionKeywords = new List<string> {">"}}}}
+                { ">", new PluginPair { Metadata = new PluginMetadata { ActionKeywords = new List<string> { ">" } } } }
             };
 
             Query q = QueryBuilder.Build(">   file.txt    file2 file3", nonGlobalPlugins);
@@ -26,7 +30,7 @@ namespace Wox.Test
         {
             var nonGlobalPlugins = new Dictionary<string, PluginPair>
             {
-                {">", new PluginPair {Metadata = new PluginMetadata {ActionKeywords = new List<string> {">"}, Disabled = true}}}
+                { ">", new PluginPair { Metadata = new PluginMetadata { ActionKeywords = new List<string> { ">" }, Disabled = true } } }
             };
 
             Query q = QueryBuilder.Build(">   file.txt    file2 file3", nonGlobalPlugins);

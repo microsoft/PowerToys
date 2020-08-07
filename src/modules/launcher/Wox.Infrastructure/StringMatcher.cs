@@ -1,11 +1,15 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using static Wox.Infrastructure.StringMatcher;
 
 [assembly: InternalsVisibleToAttribute("Microsoft.Plugin.Program.UnitTests")]
+
 namespace Wox.Infrastructure
 {
     public class StringMatcher
@@ -222,7 +226,7 @@ namespace Wox.Infrastructure
         private static int CalculateSearchScore(string query, string stringToCompare, int firstIndex, int matchLen, bool allSubstringsContainedInCompareString)
         {
             // A match found near the beginning of a string is scored more than a match found near the end
-            // A match is scored more if the characters in the patterns are closer to each other, 
+            // A match is scored more if the characters in the patterns are closer to each other,
             // while the score is lower if they are more spread out
             var score = 100 * (query.Length + 1) / ((1 + firstIndex) + (matchLen + 1));
 
@@ -298,6 +302,7 @@ namespace Wox.Infrastructure
         public int RawScore
         {
             get { return _rawScore; }
+
             set
             {
                 _rawScore = value;

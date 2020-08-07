@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -33,6 +37,7 @@ namespace Wox.Infrastructure.Storage
         public T TryLoad(T defaultData)
         {
             _storageHelper = new StoragePowerToysVersionInfo(FilePath, BINARY_STORAGE);
+
             // Depending on the version number of the previously installed PT Run, delete the cache if it is found to be incompatible
             if (_storageHelper.clearCache)
             {
@@ -68,7 +73,7 @@ namespace Wox.Infrastructure.Storage
 
         private T Deserialize(FileStream stream, T defaultData)
         {
-            //http://stackoverflow.com/questions/2120055/binaryformatter-deserialize-gives-serializationexception
+            // http://stackoverflow.com/questions/2120055/binaryformatter-deserialize-gives-serializationexception
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             BinaryFormatter binaryFormatter = new BinaryFormatter
             {
@@ -104,6 +109,7 @@ namespace Wox.Infrastructure.Storage
                     break;
                 }
             }
+
             return ayResult;
         }
 
@@ -125,6 +131,7 @@ namespace Wox.Infrastructure.Storage
                     Log.Exception($"|BinaryStorage.Save|serialize error for file <{FilePath}>", e);
                 }
             }
+
             _storageHelper.Close();
             Log.Info($"|BinaryStorage.Save|Saving cached data| <{FilePath}>");
         }

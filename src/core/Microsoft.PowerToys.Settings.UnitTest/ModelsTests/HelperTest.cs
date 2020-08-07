@@ -1,6 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
+using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CommonLibTest
 {
@@ -12,7 +16,6 @@ namespace CommonLibTest
             var res = Helper.CompareVersions(v1, v2);
             Assert.IsTrue(res < 0);
         }
-
 
         public static void TestStringsAreEqual(string v1, string v2)
         {
@@ -46,7 +49,7 @@ namespace CommonLibTest
         [ExpectedException(typeof(FormatException))]
         public void Helper_CompareVersions_ShouldThrowBadFormat_WhenNoVersionString()
         {
-            Helper.CompareVersions("v0.0.1", "");
+            Helper.CompareVersions("v0.0.1", string.Empty);
         }
 
         [TestMethod]

@@ -1,10 +1,13 @@
-﻿using ControlzEx.Theming;
-using MahApps.Metro.Theming;
-using Microsoft.Win32;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Windows;
+using ControlzEx.Theming;
+using MahApps.Metro.Theming;
+using Microsoft.Win32;
 
 namespace Wox.Plugin
 {
@@ -142,6 +145,7 @@ namespace Wox.Plugin
             {
                 currentTheme = Theme.None;
             }
+
             ThemeChanged?.Invoke(oldTheme, currentTheme);
         }
 

@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Wox.Plugin;
@@ -18,7 +22,7 @@ namespace PowerLauncher.Storage
                 return false;
             }
 
-            // since this dictionary should be very small (or empty) going over it should be pretty fast. 
+            // since this dictionary should be very small (or empty) going over it should be pretty fast.
             return records.Any(o => o.Value.Title == result.Title
                                      && o.Value.SubTitle == result.SubTitle
                                      && o.Value.PluginID == result.PluginID
@@ -39,7 +43,6 @@ namespace PowerLauncher.Storage
                 SubTitle = result.SubTitle
             };
             records[result.OriginQuery.RawQuery] = record;
-
         }
 
         public void Load(Dictionary<string, Record> dictionary)
@@ -48,11 +51,12 @@ namespace PowerLauncher.Storage
         }
     }
 
-
     public class Record
     {
         public string Title { get; set; }
+
         public string SubTitle { get; set; }
+
         public string PluginID { get; set; }
     }
 }

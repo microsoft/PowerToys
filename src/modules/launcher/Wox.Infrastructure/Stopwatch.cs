@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using Wox.Infrastructure.Logger;
 
@@ -8,6 +12,7 @@ namespace Wox.Infrastructure
     {
         private static readonly Dictionary<string, long> Count = new Dictionary<string, long>();
         private static readonly object Locker = new object();
+
         /// <summary>
         /// This stopwatch will appear only in Debug mode
         /// </summary>

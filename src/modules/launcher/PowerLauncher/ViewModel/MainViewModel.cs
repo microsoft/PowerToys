@@ -1,25 +1,29 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using interop;
+using Microsoft.PowerLauncher.Telemetry;
+using Microsoft.PowerToys.Telemetry;
+using PowerLauncher.Helper;
+using PowerLauncher.Storage;
 using Wox.Core.Plugin;
 using Wox.Core.Resource;
-using PowerLauncher.Helper;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Hotkey;
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
-using Microsoft.PowerLauncher.Telemetry;
-using PowerLauncher.Storage;
-using Microsoft.PowerToys.Telemetry;
-using interop;
-using System.Globalization;
 
 namespace PowerLauncher.ViewModel
 {
@@ -41,9 +45,12 @@ namespace PowerLauncher.ViewModel
         private readonly TopMostRecord _topMostRecord;
 
         private CancellationTokenSource _updateSource { get; set; }
+
         private CancellationToken _updateToken;
         private bool _saved;
+
         private HotkeyManager _hotkeyManager { get; set; }
+
         private ushort _hotkeyHandle;
         private readonly Internationalization _translator = InternationalizationManager.Instance;
         private System.Diagnostics.Stopwatch hotkeyTimer = new System.Diagnostics.Stopwatch();
@@ -177,7 +184,7 @@ namespace PowerLauncher.ViewModel
 
             StartHelpCommand = new RelayCommand(_ =>
             {
-                Process.Start("http://doc.wox.one/");
+                Process.Start("https://aka.ms/PowerToys/");
             });
 
             OpenResultCommand = new RelayCommand(index =>
@@ -191,7 +198,7 @@ namespace PowerLauncher.ViewModel
 
                 if (results.SelectedItem != null)
                 {
-                    //If there is a context button selected fire the action for that button before the main command. 
+                    // If there is a context button selected fire the action for that button before the main command.
                     bool didExecuteContextButton = results.SelectedItem.ExecuteSelectedContextButton();
 
                     if (!didExecuteContextButton)
@@ -253,7 +260,8 @@ namespace PowerLauncher.ViewModel
                 if (!string.IsNullOrEmpty(QueryText))
                 {
                     ChangeQueryText(string.Empty, true);
-                    //Push Event to UI SystemQuery has changed
+
+                    // Push Event to UI SystemQuery has changed
                     OnPropertyChanged(nameof(SystemQueryText));
                 }
             });
@@ -264,10 +272,13 @@ namespace PowerLauncher.ViewModel
         #region ViewModel Properties
 
         public Brush MainWindowBackground { get; set; }
+
         public Brush MainWindowBorderBrush { get; set; }
 
         public ResultsViewModel Results { get; private set; }
+
         public ResultsViewModel ContextMenu { get; private set; }
+
         public ResultsViewModel History { get; private set; }
 
         public string SystemQueryText { get; set; } = String.Empty;
@@ -276,7 +287,7 @@ namespace PowerLauncher.ViewModel
 
         /// <summary>
         /// we need move cursor to end when we manually changed query
-        /// but we don't want to move cursor to end when query is updated from TextBox. 
+        /// but we don't want to move cursor to end when query is updated from TextBox.
         /// Also we don't want to force the results to change unless explicitly told to.
         /// </summary>
         /// <param name="queryText"></param>
@@ -291,12 +302,15 @@ namespace PowerLauncher.ViewModel
                 Query();
             }
         }
+
         public bool LastQuerySelected { get; set; }
 
         private ResultsViewModel _selectedResults;
+
         private ResultsViewModel SelectedResults
         {
             get { return _selectedResults; }
+
             set
             {
                 _selectedResults = value;
@@ -311,7 +325,6 @@ namespace PowerLauncher.ViewModel
                     Results.Visibility = Visibility.Hidden;
                     _queryTextBeforeLeaveResults = QueryText;
 
-
                     // Because of Fody's optimization
                     // setter won't be called when property value is not changed.
                     // so we need manually call Query()
@@ -325,6 +338,7 @@ namespace PowerLauncher.ViewModel
                         QueryText = string.Empty;
                     }
                 }
+
                 _selectedResults.Visibility = Visibility.Visible;
             }
         }
@@ -336,6 +350,7 @@ namespace PowerLauncher.ViewModel
         public Visibility MainWindowVisibility
         {
             get { return _visibility; }
+
             set
             {
                 _visibility = value;
@@ -347,29 +362,40 @@ namespace PowerLauncher.ViewModel
                 {
                     PowerToysTelemetry.Log.WriteEvent(new LauncherHideEvent());
                 }
-
             }
         }
 
         public ICommand IgnoreCommand { get; set; }
+
         public ICommand EscCommand { get; set; }
+
         public ICommand SelectNextItemCommand { get; set; }
+
         public ICommand SelectPrevItemCommand { get; set; }
+
         public ICommand SelectNextContextMenuItemCommand { get; set; }
+
         public ICommand SelectPreviousContextMenuItemCommand { get; set; }
 
         public ICommand SelectNextTabItemCommand { get; set; }
+
         public ICommand SelectPrevTabItemCommand { get; set; }
 
         public ICommand SelectNextPageCommand { get; set; }
-        public ICommand SelectPrevPageCommand { get; set; }
-        public ICommand SelectFirstResultCommand { get; set; }
-        public ICommand StartHelpCommand { get; set; }
-        public ICommand LoadContextMenuCommand { get; set; }
-        public ICommand LoadHistoryCommand { get; set; }
-        public ICommand OpenResultCommand { get; set; }
-        public ICommand ClearQueryCommand { get; set; }
 
+        public ICommand SelectPrevPageCommand { get; set; }
+
+        public ICommand SelectFirstResultCommand { get; set; }
+
+        public ICommand StartHelpCommand { get; set; }
+
+        public ICommand LoadContextMenuCommand { get; set; }
+
+        public ICommand LoadHistoryCommand { get; set; }
+
+        public ICommand OpenResultCommand { get; set; }
+
+        public ICommand ClearQueryCommand { get; set; }
 
         #endregion
 
@@ -510,7 +536,6 @@ namespace PowerLauncher.ViewModel
                             QueryLength = query.RawQuery.Length
                         };
                         PowerToysTelemetry.Log.WriteEvent(queryEvent);
-
                     }, currentCancellationToken);
                 }
             }
@@ -548,7 +573,6 @@ namespace PowerLauncher.ViewModel
             }
         }
 
-
         private bool SelectedIsFromQueryResults()
         {
             var selected = SelectedResults == Results;
@@ -560,7 +584,6 @@ namespace PowerLauncher.ViewModel
             var selected = SelectedResults == ContextMenu;
             return selected;
         }
-
 
         private bool HistorySelected()
         {
@@ -604,7 +627,7 @@ namespace PowerLauncher.ViewModel
         /// <returns></returns>
         private bool ShouldIgnoreHotkeys()
         {
-            //double if to omit calling win32 function
+            // double if to omit calling win32 function
             if (_settings.IgnoreHotkeysOnFullscreen)
                 if (WindowsInteropHelper.IsWindowFullscreen())
                     return true;
@@ -635,9 +658,9 @@ namespace PowerLauncher.ViewModel
                     // If launcher window was hidden and the hotkey was pressed, start telemetry event
                     if (MainWindowVisibility != Visibility.Visible)
                     {
-
                         StartHotkeyTimer();
                     }
+
                     if (_settings.LastQueryMode == LastQueryMode.Empty)
                     {
                         ChangeQueryText(string.Empty);
@@ -750,7 +773,9 @@ namespace PowerLauncher.ViewModel
                 {
                     var _ = PluginManager.QueryForPlugin(plugin, query);
                 }
-            };
+            }
+
+;
         }
 
         public void HandleContextMenu(Key AcceleratorKey, ModifierKeys AcceleratorModifiers)
@@ -797,6 +822,7 @@ namespace PowerLauncher.ViewModel
                         return query + input.Substring(query.Length);
                     }
                 }
+
                 return input;
             }
 
@@ -825,10 +851,11 @@ namespace PowerLauncher.ViewModel
                 {
                     if (_hotkeyHandle != 0)
                     {
-                        _hotkeyManager.UnregisterHotkey(_hotkeyHandle);
+                        _hotkeyManager?.UnregisterHotkey(_hotkeyHandle);
                     }
-                    _hotkeyManager.Dispose();
-                    _updateSource.Dispose();
+
+                    _hotkeyManager?.Dispose();
+                    _updateSource?.Dispose();
                     _disposed = true;
                 }
             }
