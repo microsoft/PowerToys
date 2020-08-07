@@ -206,7 +206,7 @@ namespace Microsoft.Plugin.Program.Storage
 
         public void Load()
         {
-            var items = _storage.TryLoad(new Programs.Win32[] { });
+            var items = _storage.TryLoad(Array.Empty<Win32>());
             Set(items);
         }
 

@@ -76,7 +76,7 @@ namespace Microsoft.Plugin.Program.Storage
             var windows10 = new Version(10, 0);
             var support = Environment.OSVersion.Version.Major >= windows10.Major;
 
-            var applications = support ? Programs.UWP.All() : new Programs.UWPApplication[] { };
+            var applications = support ? Programs.UWP.All() : Array.Empty<UWPApplication>();
             Set(applications);
         }
 
@@ -87,7 +87,7 @@ namespace Microsoft.Plugin.Program.Storage
 
         public void Load()
         {
-            var items = _storage.TryLoad(new Programs.UWPApplication[] { });
+            var items = _storage.TryLoad(Array.Empty<UWPApplication>());
             Set(items);
         }
     }

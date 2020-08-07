@@ -104,7 +104,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 Log.Error($"|UWP.XmlNamespaces|Error occurred while trying to get the XML from {path}");
 
-                return new string[] { };
+                return Array.Empty<string>();
             }
         }
 
@@ -152,7 +152,7 @@ namespace Microsoft.Plugin.Program.Programs
                     {
                         ProgramLogger.LogException($"|UWP|All|{p.InstalledLocation}|An unexpected error occurred and "
                                                         + $"unable to convert Package to UWP for {p.FullName}", e);
-                        return new UWPApplication[] { };
+                        return Array.Empty<UWPApplication>();
                     }
                     return u.Apps;
                 }).ToArray();
@@ -166,7 +166,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             else
             {
-                return new UWPApplication[] { };
+                return Array.Empty<UWPApplication>();
             }
         }
 

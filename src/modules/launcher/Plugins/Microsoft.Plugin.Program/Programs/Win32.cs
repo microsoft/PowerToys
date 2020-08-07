@@ -507,7 +507,7 @@ namespace Microsoft.Plugin.Program.Programs
         {
             if (!Directory.Exists(directory))
             {
-                return new string[] { };
+                return Array.Empty<string>();
             }
 
             var files = new List<string>();
@@ -854,7 +854,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 ProgramLogger.LogException("|Win32|All|Not available|An unexpected error occurred", e);
 
-                return new Win32[0];
+                return Array.Empty<Win32>();
             }
         }
     }
