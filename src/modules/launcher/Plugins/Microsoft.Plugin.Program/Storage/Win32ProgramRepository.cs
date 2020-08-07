@@ -14,7 +14,7 @@ namespace Microsoft.Plugin.Program.Storage
     internal class Win32ProgramRepository : ListRepository<Programs.Win32>, IProgramRepository
     {
         private IStorage<IList<Programs.Win32>> _storage;
-        private Settings _settings;
+        private ProgramPluginSettings _settings;
         private IList<IFileSystemWatcherWrapper> _fileSystemWatcherHelpers;
         private string[] _pathsToWatch;
         private int _numberOfPathsToWatch;
@@ -22,7 +22,7 @@ namespace Microsoft.Plugin.Program.Storage
         private readonly string lnkExtension = ".lnk";
         private readonly string urlExtension = ".url";
 
-        public Win32ProgramRepository(IList<IFileSystemWatcherWrapper> fileSystemWatcherHelpers, IStorage<IList<Win32>> storage, Settings settings, string[] pathsToWatch)
+        public Win32ProgramRepository(IList<IFileSystemWatcherWrapper> fileSystemWatcherHelpers, IStorage<IList<Win32>> storage, ProgramPluginSettings settings, string[] pathsToWatch)
         {
             this._fileSystemWatcherHelpers = fileSystemWatcherHelpers;
             this._storage = storage ?? throw new ArgumentNullException("storage", "Win32ProgramRepository requires an initialized storage interface");

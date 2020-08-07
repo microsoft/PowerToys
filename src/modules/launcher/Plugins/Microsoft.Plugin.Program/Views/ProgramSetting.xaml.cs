@@ -19,7 +19,7 @@ namespace Microsoft.Plugin.Program.Views
     public partial class ProgramSetting : UserControl
     {
         private PluginInitContext context;
-        private Settings _settings;
+        private ProgramPluginSettings _settings;
         private GridViewColumnHeader _lastHeaderClicked;
         private ListSortDirection _lastDirection;
 
@@ -27,7 +27,7 @@ namespace Microsoft.Plugin.Program.Views
         // this as temporary holder for displaying all loaded programs sources. 
         internal static List<ProgramSource> ProgramSettingDisplayList { get; set; }
 
-        public ProgramSetting(PluginInitContext context, Settings settings)
+        public ProgramSetting(PluginInitContext context, ProgramPluginSettings settings)
         {
             this.context = context;
             InitializeComponent();

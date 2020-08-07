@@ -9,14 +9,14 @@ namespace Microsoft.Plugin.Program
     public partial class ProgramSuffixes
     {
         private PluginInitContext context;
-        private Settings _settings;
+        private ProgramPluginSettings _settings;
 
-        public ProgramSuffixes(PluginInitContext context, Settings settings)
+        public ProgramSuffixes(PluginInitContext context, ProgramPluginSettings settings)
         {
             this.context = context;
             InitializeComponent();
             _settings = settings;
-            tbSuffixes.Text = string.Join(Settings.SuffixSeparator.ToString(), _settings.ProgramSuffixes);
+            tbSuffixes.Text = string.Join(ProgramPluginSettings.SuffixSeparator.ToString(), _settings.ProgramSuffixes);
         }
 
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
@@ -29,7 +29,7 @@ namespace Microsoft.Plugin.Program
             }
 
             _settings.ProgramSuffixes.Clear();
-            _settings.ProgramSuffixes.AddRange(tbSuffixes.Text.Split(Settings.SuffixSeparator));
+            _settings.ProgramSuffixes.AddRange(tbSuffixes.Text.Split(ProgramPluginSettings.SuffixSeparator));
             string msg = context.API.GetTranslation("wox_plugin_program_update_file_suffixes");
             MessageBox.Show(msg);
 

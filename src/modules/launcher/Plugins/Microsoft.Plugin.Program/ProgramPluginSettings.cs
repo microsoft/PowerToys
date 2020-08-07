@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Microsoft.Plugin.Program
 {
-    public class Settings
+    public class ProgramPluginSettings
     {
         public DateTime LastIndexTime { get; set; }
         public List<ProgramSource> ProgramSources { get;} = new List<ProgramSource>();

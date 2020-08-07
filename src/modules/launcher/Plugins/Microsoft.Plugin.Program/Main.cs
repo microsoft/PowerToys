@@ -20,13 +20,13 @@ namespace Microsoft.Plugin.Program
 {
     public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable, IReloadable, IDisposable
     {
-        internal static Settings _settings { get; set; }
+        internal static ProgramPluginSettings _settings { get; set; }
 
         private static bool IsStartupIndexProgramsRequired => _settings.LastIndexTime.AddDays(3) < DateTime.Today;
 
         private static PluginInitContext _context;
 
-        private readonly PluginJsonStorage<Settings> _settingsStorage;
+        private readonly PluginJsonStorage<ProgramPluginSettings> _settingsStorage;
         private bool _disposed = false;
         private PackageRepository _packageRepository = new PackageRepository(new PackageCatalogWrapper(), new BinaryStorage<IList<UWPApplication>>("UWP"));
         private static Win32ProgramFileSystemWatchers _win32ProgramRepositoryHelper;
@@ -34,7 +34,7 @@ namespace Microsoft.Plugin.Program
 
         public Main()
         {
-            _settingsStorage = new PluginJsonStorage<Settings>();
+            _settingsStorage = new PluginJsonStorage<ProgramPluginSettings>();
             _settings = _settingsStorage.Load();
             // This helper class initializes the file system watchers based on the locations to watch
             _win32ProgramRepositoryHelper = new Win32ProgramFileSystemWatchers();

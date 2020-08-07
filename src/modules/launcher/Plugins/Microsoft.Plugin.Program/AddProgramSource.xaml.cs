@@ -13,9 +13,9 @@ namespace Microsoft.Plugin.Program
     {
         private PluginInitContext _context;
         private ProgramSource _editing;
-        private Settings _settings;
+        private ProgramPluginSettings _settings;
 
-        public AddProgramSource(PluginInitContext context, Settings settings)
+        public AddProgramSource(PluginInitContext context, ProgramPluginSettings settings)
         {
             InitializeComponent();
             _context = context;
@@ -23,7 +23,7 @@ namespace Microsoft.Plugin.Program
             Directory.Focus();
         }
 
-        public AddProgramSource(ProgramSource edit, Settings settings)
+        public AddProgramSource(ProgramSource edit, ProgramPluginSettings settings)
         {
             _editing = edit;
             _settings = settings;

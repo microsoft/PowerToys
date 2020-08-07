@@ -19,7 +19,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
     class Win32ProgramRepositoryTest
     {
         List<IFileSystemWatcherWrapper> _fileSystemWatchers;
-        Settings _settings = new Settings();
+        ProgramPluginSettings _settings = new ProgramPluginSettings();
         string[] _pathsToWatch = new string[] { "location1", "location2" };
         List<Mock<IFileSystemWatcherWrapper>> _fileSystemMocks;
 
