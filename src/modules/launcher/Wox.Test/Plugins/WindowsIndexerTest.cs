@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -34,7 +34,7 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper = null;
 
             // Act
-            _api.InitQueryHelper(out queryHelper, maxCount);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, maxCount, _api.DisplayHiddenFiles);
 
             // Assert
             Assert.IsNotNull(queryHelper);
@@ -48,7 +48,7 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             String pattern = "*";
             WindowsSearchAPI _api = GetWindowsSearchAPI();
-            _api.InitQueryHelper(out queryHelper, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10, _api.DisplayHiddenFiles);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -65,7 +65,7 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             String pattern = "tt*^&)";
             WindowsSearchAPI _api = GetWindowsSearchAPI();
-            _api.InitQueryHelper(out queryHelper, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10, _api.DisplayHiddenFiles);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -82,7 +82,7 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             String pattern = "tt%^&)";
             WindowsSearchAPI _api = GetWindowsSearchAPI();
-            _api.InitQueryHelper(out queryHelper, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10, _api.DisplayHiddenFiles);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -99,7 +99,7 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             String pattern = "tt_^&)";
             WindowsSearchAPI _api = GetWindowsSearchAPI();
-            _api.InitQueryHelper(out queryHelper, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10, _api.DisplayHiddenFiles);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -116,7 +116,7 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             String pattern = "tt?^&)";
             WindowsSearchAPI _api = GetWindowsSearchAPI();
-            _api.InitQueryHelper(out queryHelper, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10, _api.DisplayHiddenFiles);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -133,7 +133,7 @@ namespace Wox.Test.Plugins
             ISearchQueryHelper queryHelper;
             String pattern = "tt^&)bc";
             WindowsSearchAPI _api = GetWindowsSearchAPI();
-            _api.InitQueryHelper(out queryHelper, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10, _api.DisplayHiddenFiles);
 
             // Act
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
@@ -181,8 +181,8 @@ namespace Wox.Test.Plugins
         public void WindowsSearchAPI_ShouldNotReturnResultsWithNullValue_WhenDbResultHasANullColumn()
         {
             // Arrange
-            OleDBResult file1 = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", DBNull.Value});
-            OleDBResult file2 = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt"});
+            OleDBResult file1 = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", DBNull.Value });
+            OleDBResult file2 = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt" });
 
             List<OleDBResult> results = new List<OleDBResult>() { file1, file2 };
             var mock = new Mock<ISearch>();
@@ -207,7 +207,7 @@ namespace Wox.Test.Plugins
             _api.DisplayHiddenFiles = true;
 
             // Act
-            _api.InitQueryHelper(out queryHelper, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10, _api.DisplayHiddenFiles);
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
 
             // Assert
@@ -223,7 +223,7 @@ namespace Wox.Test.Plugins
             _api.DisplayHiddenFiles = false;
 
             // Act
-            _api.InitQueryHelper(out queryHelper, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10, _api.DisplayHiddenFiles);
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
 
             // Assert
@@ -240,10 +240,10 @@ namespace Wox.Test.Plugins
             _api.DisplayHiddenFiles = false;
 
             // Act
-            _api.InitQueryHelper(out queryHelper, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10, _api.DisplayHiddenFiles);
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
             _api.DisplayHiddenFiles = true;
-            _api.InitQueryHelper(out queryHelper, 10);
+            WindowsSearchAPI.InitQueryHelper(out queryHelper, 10, _api.DisplayHiddenFiles);
             WindowsSearchAPI.ModifyQueryHelper(ref queryHelper, pattern);
 
             // Assert

@@ -88,7 +88,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             }
         }
 
-        public void InitQueryHelper(out ISearchQueryHelper queryHelper, int maxCount)
+        public static void InitQueryHelper(out ISearchQueryHelper queryHelper, int maxCount, bool displayHiddenFiles)
         {
             // This uses the Microsoft.Search.Interop assembly
             CSearchManager manager = new CSearchManager();
@@ -108,7 +108,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             // Set additional query restriction
             queryHelper.QueryWhereRestrictions = "AND scope='file:'";
 
-            if (!DisplayHiddenFiles)
+            if (!displayHiddenFiles)
             {
                 // https://docs.microsoft.com/en-us/windows/win32/search/all-bitwise
                 queryHelper.QueryWhereRestrictions += "AND System.FileAttributes <> SOME BITWISE " + _fileAttributeHidden;
@@ -126,7 +126,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             lock (_lock)
             {
                 ISearchQueryHelper queryHelper;
-                InitQueryHelper(out queryHelper, maxCount);
+                InitQueryHelper(out queryHelper, maxCount, DisplayHiddenFiles);
                 ModifyQueryHelper(ref queryHelper, pattern);
                 return ExecuteQuery(queryHelper, keyword);
             }
