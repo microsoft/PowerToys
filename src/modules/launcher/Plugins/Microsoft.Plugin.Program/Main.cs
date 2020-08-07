@@ -40,7 +40,7 @@ namespace Microsoft.Plugin.Program
             _win32ProgramRepositoryHelper = new Win32ProgramFileSystemWatchers();
 
             // Initialize the Win32ProgramRepository with the settings object
-            _win32ProgramRepository = new Win32ProgramRepository(_win32ProgramRepositoryHelper._fileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList(), new BinaryStorage<IList<Programs.Win32>>("Win32"), _settings, _win32ProgramRepositoryHelper._pathsToWatch);
+            _win32ProgramRepository = new Win32ProgramRepository(_win32ProgramRepositoryHelper._fileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList(), new BinaryStorage<IList<Programs.Win32Program>>("Win32"), _settings, _win32ProgramRepositoryHelper._pathsToWatch);
 
             Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Preload programs cost", () =>
             {

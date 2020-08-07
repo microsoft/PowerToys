@@ -22,7 +22,7 @@ namespace Microsoft.Plugin.Program.Programs
 {
 
     [Serializable]
-    public class Win32 : IProgram
+    public class Win32Program : IProgram
     {
         public string Name { get; set; }
         public string UniqueIdentifier { get; set; }
@@ -288,11 +288,11 @@ namespace Microsoft.Plugin.Program.Programs
             return ExecutableName;
         }
 
-        private static Win32 Win32Program(string path)
+        private static Win32Program Create(string path)
         {
             try
             {
-                var p = new Win32
+                var p = new Win32Program
                 {
                     Name = Path.GetFileNameWithoutExtension(path),
                     ExecutableName = Path.GetFileName(path),
@@ -312,12 +312,12 @@ namespace Microsoft.Plugin.Program.Programs
                 ProgramLogger.LogException($"|Win32|Win32Program|{path}" +
                                             $"|Permission denied when trying to load the program from {path}", e);
 
-                return new Win32() { Valid = false, Enabled = false };
+                return new Win32Program() { Valid = false, Enabled = false };
             }
         }
 
         // This function filters Internet Shortcut programs
-        private static Win32 InternetShortcutProgram(string path)
+        private static Win32Program InternetShortcutProgram(string path)
         {
             string[] lines = FileWrapper.ReadAllLines(path);
             string appName = string.Empty;
@@ -353,12 +353,12 @@ namespace Microsoft.Plugin.Program.Programs
 
             if (!validApp)
             {
-                return new Win32() { Valid = false, Enabled = false };
+                return new Win32Program() { Valid = false, Enabled = false };
             }
 
             try
             {
-                var p = new Win32
+                var p = new Win32Program
                 {
                     Name = Path.GetFileNameWithoutExtension(path),
                     ExecutableName = Path.GetFileName(path),
@@ -377,13 +377,13 @@ namespace Microsoft.Plugin.Program.Programs
                 ProgramLogger.LogException($"|Win32|InternetShortcutProgram|{path}" +
                                             $"|Permission denied when trying to load the program from {path}", e);
 
-                return new Win32() { Valid = false, Enabled = false };
+                return new Win32Program() { Valid = false, Enabled = false };
             }
         }
 
-        private static Win32 LnkProgram(string path)
+        private static Win32Program LnkProgram(string path)
         {
-            var program = Win32Program(path);
+            var program = Create(path);
             try
             {
                 const int MAX_PATH = 260;
@@ -440,11 +440,11 @@ namespace Microsoft.Plugin.Program.Programs
 #endif
         }
 
-        private static Win32 ExeProgram(string path)
+        private static Win32Program ExeProgram(string path)
         {
             try
             {
-                var program = Win32Program(path);
+                var program = Create(path);
                 var info = FileVersionInfoWrapper.GetVersionInfo(path);
 
                 if (!string.IsNullOrEmpty(info?.FileDescription))
@@ -459,14 +459,14 @@ namespace Microsoft.Plugin.Program.Programs
                 ProgramLogger.LogException($"|Win32|ExeProgram|{path}" +
                                             $"|Permission denied when trying to load the program from {path}", e);
 
-                return new Win32() { Valid = false, Enabled = false };
+                return new Win32Program() { Valid = false, Enabled = false };
             }
         }
 
         // Function to get the Win32 application, given the path to the application
-        public static Win32 GetAppFromPath(string path)
+        public static Win32Program GetAppFromPath(string path)
         {
-            Win32 app = null;
+            Win32Program app = null;
             const string exeExtension = ".exe";
             const string lnkExtension = ".lnk";
             const string urlExtenion = ".url";
@@ -484,7 +484,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             else if (extension.Equals(apprefExtension, StringComparison.OrdinalIgnoreCase))
             {
-                app = Win32Program(path);
+                app = Create(path);
             }
             else if (extension.Equals(urlExtenion, StringComparison.OrdinalIgnoreCase))
             {
@@ -575,7 +575,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-        private static ParallelQuery<Win32> UnregisteredPrograms(List<ProgramSource> sources, IList<string> suffixes)
+        private static ParallelQuery<Win32Program> UnregisteredPrograms(List<ProgramSource> sources, IList<string> suffixes)
         {
             var listToAdd = new List<string>();
             sources.Where(s => Directory.Exists(s.Location) && s.Enabled)
@@ -592,13 +592,13 @@ namespace Microsoft.Plugin.Program.Programs
             var programs3 = from p in paths.AsParallel()
                             let e = Extension(p)
                             where e != ShortcutExtension && e != ExeExtension
-                            select Win32Program(p);
+                            select Create(p);
             return programs1.Concat(programs2).Concat(programs3);
         }
 
 
         // Function to obtain the list of applications, the locations of which have been added to the env variable PATH
-        private static ParallelQuery<Win32> PathEnvironmentPrograms(IList<string> suffixes)
+        private static ParallelQuery<Win32Program> PathEnvironmentPrograms(IList<string> suffixes)
         {
 
             // To get all the locations stored in the PATH env variable
@@ -623,7 +623,7 @@ namespace Microsoft.Plugin.Program.Programs
                         .ToArray();
 
             var programs1 = allPaths.AsParallel().Where(p => Extension(p).Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(LnkProgram);
-            var programs2 = allPaths.AsParallel().Where(p => Extension(p).Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase)).Select(Win32Program);
+            var programs2 = allPaths.AsParallel().Where(p => Extension(p).Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase)).Select(Create);
             var programs3 = allPaths.AsParallel().Where(p => Extension(p).Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(InternetShortcutProgram);
             var programs4 = allPaths.AsParallel().Where(p => Extension(p).Equals(ExeExtension, StringComparison.OrdinalIgnoreCase)).Select(ExeProgram);
 
@@ -635,7 +635,7 @@ namespace Microsoft.Plugin.Program.Programs
             return allPrograms;
         }
 
-        private static ParallelQuery<Win32> IndexPath(IList<string> suffixes, List<string> IndexLocation)
+        private static ParallelQuery<Win32Program> IndexPath(IList<string> suffixes, List<string> IndexLocation)
         {
             var disabledProgramsList = Main._settings.DisabledProgramSources;
 
@@ -653,7 +653,7 @@ namespace Microsoft.Plugin.Program.Programs
                         .ToArray();
 
             var programs1 = paths.AsParallel().Where(p => Extension(p).Equals(ShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(LnkProgram);
-            var programs2 = paths.AsParallel().Where(p => Extension(p).Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase)).Select(Win32Program);
+            var programs2 = paths.AsParallel().Where(p => Extension(p).Equals(ApplicationReferenceExtension, StringComparison.OrdinalIgnoreCase)).Select(Create);
             var programs3 = paths.AsParallel().Where(p => Extension(p).Equals(InternetShortcutExtension, StringComparison.OrdinalIgnoreCase)).Select(InternetShortcutProgram);
             var programs4 = paths.AsParallel().Where(p => Extension(p).Equals(ExeExtension, StringComparison.OrdinalIgnoreCase)).Select(ExeProgram);
 
@@ -662,7 +662,7 @@ namespace Microsoft.Plugin.Program.Programs
                 .Concat(programs4).Where(p => p.Valid);
         }
 
-        private static ParallelQuery<Win32> StartMenuPrograms(IList<string> suffixes)
+        private static ParallelQuery<Win32Program> StartMenuPrograms(IList<string> suffixes)
         {
             var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
             var directory2 = Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms);
@@ -671,7 +671,7 @@ namespace Microsoft.Plugin.Program.Programs
             return IndexPath(suffixes, IndexLocation);
         }
 
-        private static ParallelQuery<Win32> DesktopPrograms(IList<string> suffixes)
+        private static ParallelQuery<Win32Program> DesktopPrograms(IList<string> suffixes)
         {
             var directory1 = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             List<string> IndexLocation = new List<string>() { directory1 };
@@ -679,11 +679,11 @@ namespace Microsoft.Plugin.Program.Programs
             return IndexPath(suffixes, IndexLocation);
         }
 
-        private static ParallelQuery<Win32> AppPathsPrograms(IList<string> suffixes)
+        private static ParallelQuery<Win32Program> AppPathsPrograms(IList<string> suffixes)
         {
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ee872121
             const string appPaths = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
-            var programs = new List<Win32>();
+            var programs = new List<Win32Program>();
             using (var root = Registry.LocalMachine.OpenSubKey(appPaths))
             {
                 if (root != null)
@@ -707,7 +707,7 @@ namespace Microsoft.Plugin.Program.Programs
             return filtered;
         }
 
-        private static IEnumerable<Win32> GetProgramsFromRegistry(RegistryKey root)
+        private static IEnumerable<Win32Program> GetProgramsFromRegistry(RegistryKey root)
         {
             return root
                     .GetSubKeyNames()
@@ -745,17 +745,17 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
-        private static Win32 GetProgramFromPath(string path)
+        private static Win32Program GetProgramFromPath(string path)
         {
             if (string.IsNullOrEmpty(path))
-                return new Win32();
+                return new Win32Program();
 
             path = Environment.ExpandEnvironmentVariables(path);
 
             if (!File.Exists(path))
-                return new Win32();
+                return new Win32Program();
 
-            var entry = Win32Program(path);
+            var entry = Create(path);
             entry.ExecutableName = Path.GetFileName(path);
 
             return entry;
@@ -771,12 +771,12 @@ namespace Microsoft.Plugin.Program.Programs
         public override bool Equals(object obj)
         {
             removeDuplicatesComparer _removeDuplicatesHelper = new removeDuplicatesComparer();
-            return obj is Win32 win && _removeDuplicatesHelper.Equals(this, win);
+            return obj is Win32Program win && _removeDuplicatesHelper.Equals(this, win);
         }
 
-        private class removeDuplicatesComparer : IEqualityComparer<Win32>
+        private class removeDuplicatesComparer : IEqualityComparer<Win32Program>
         {
-            public bool Equals(Win32 app1, Win32 app2)
+            public bool Equals(Win32Program app1, Win32Program app2)
             {
 
                 if (!string.IsNullOrEmpty(app1.Name) && !string.IsNullOrEmpty(app2.Name)
@@ -791,7 +791,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
 
             // Ref : https://stackoverflow.com/questions/2730865/how-do-i-calculate-a-good-hash-code-for-a-list-of-strings
-            public int GetHashCode(Win32 obj)
+            public int GetHashCode(Win32Program obj)
             {
                 int namePrime = 13;
                 int executablePrime = 17;
@@ -807,7 +807,7 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         // Deduplication code
-        public static Win32[] DeduplicatePrograms(ParallelQuery<Win32>  programs)
+        public static Win32Program[] DeduplicatePrograms(ParallelQuery<Win32Program>  programs)
         {
             var uniqueExePrograms = programs.Where(x => !(string.IsNullOrEmpty(x.LnkResolvedPath) && (Extension(x.FullPath) == ExeExtension) && !(x.AppType == (uint)ApplicationTypes.RUN_COMMAND)));
             var uniquePrograms = uniqueExePrograms.Distinct(new removeDuplicatesComparer());
@@ -815,11 +815,11 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Keeping the process alive but logging the exception")]
-        public static Win32[] All(ProgramPluginSettings settings)
+        public static Win32Program[] All(ProgramPluginSettings settings)
         {
             try
             {
-                var programs = new List<Win32>().AsParallel();
+                var programs = new List<Win32Program>().AsParallel();
 
                 var unregistered = UnregisteredPrograms(settings.ProgramSources, settings.ProgramSuffixes);
                 programs = programs.Concat(unregistered);
@@ -854,7 +854,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 ProgramLogger.LogException("|Win32|All|Not available|An unexpected error occurred", e);
 
-                return Array.Empty<Win32>();
+                return Array.Empty<Win32Program>();
             }
         }
     }
