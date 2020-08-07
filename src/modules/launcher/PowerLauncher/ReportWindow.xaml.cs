@@ -40,17 +40,19 @@ namespace PowerLauncher
             var directory = new DirectoryInfo(path);
             var log = directory.GetFiles().OrderByDescending(f => f.LastWriteTime).First();
 
-            var paragraph = Hyperlink("Please open new issue in: ", Constant.Issue);
-            paragraph.Inlines.Add($"1. upload log file: {log.FullName}\n");
-            paragraph.Inlines.Add($"2. copy below exception message");
-            ErrorTextbox.Document.Blocks.Add(paragraph);
+           // = Hyperlink("Please open new issue in: ", Constant.Issue);
+            //paragraph.Inlines.Add($"1. upload log file: {log.FullName}\n");
+            //paragraph.Inlines.Add($"2. copy below exception message");
+            //ErrorTextbox.Document.Blocks.Add(paragraph);
 
             StringBuilder content = new StringBuilder();
             content.AppendLine(ErrorReporting.RuntimeInfo());
             content.AppendLine($"Date: {DateTime.Now.ToString(CultureInfo.InvariantCulture)}");
             content.AppendLine("Exception:");
             content.AppendLine(exception.ToString());
-            paragraph = new Paragraph();
+            var paragraph = new Paragraph();
+            paragraph.Inlines.Add(content.ToString());
+            paragraph.Inlines.Add(content.ToString());
             paragraph.Inlines.Add(content.ToString());
             ErrorTextbox.Document.Blocks.Add(paragraph);
         }
