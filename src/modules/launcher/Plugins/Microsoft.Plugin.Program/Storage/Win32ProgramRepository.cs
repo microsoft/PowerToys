@@ -6,6 +6,7 @@ using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using System.IO;
 using System.Linq;
+using System.Globalization;
 
 namespace Microsoft.Plugin.Program.Storage
 {
@@ -144,7 +145,7 @@ namespace Microsoft.Plugin.Program.Storage
         {
             foreach (Win32 app in Items)
             {
-                if (name.Equals(app.Name, StringComparison.OrdinalIgnoreCase) && executableName.Equals(app.ExecutableName, StringComparison.OrdinalIgnoreCase))
+                if (name.Equals(app.Name, StringComparison.CurrentCultureIgnoreCase) && executableName.Equals(app.ExecutableName, StringComparison.CurrentCultureIgnoreCase))
                 {
                     return app;
                 }
@@ -158,7 +159,7 @@ namespace Microsoft.Plugin.Program.Storage
         {
             foreach (Programs.Win32 app in Items)
             {
-                if (lnkResolvedPath.ToLower().Equals(app.LnkResolvedPath))
+                if (lnkResolvedPath.ToLower(CultureInfo.CurrentCulture).Equals(app.LnkResolvedPath, StringComparison.CurrentCultureIgnoreCase))
                 {
                     return app;
                 }
@@ -169,7 +170,7 @@ namespace Microsoft.Plugin.Program.Storage
         private void OnAppCreated(object sender, FileSystemEventArgs e)
         {
             string path = e.FullPath;
-            if (!Path.GetExtension(path).Equals(urlExtension))
+            if (!Path.GetExtension(path).Equals(urlExtension, StringComparison.CurrentCultureIgnoreCase))
             {
                 Programs.Win32 app = Programs.Win32.GetAppFromPath(path);
                 if (app != null)
@@ -182,7 +183,7 @@ namespace Microsoft.Plugin.Program.Storage
         private void OnAppChanged(object sender, FileSystemEventArgs e)
         {
             string path = e.FullPath;
-            if (Path.GetExtension(path).Equals(urlExtension))
+            if (Path.GetExtension(path).Equals(urlExtension, StringComparison.CurrentCultureIgnoreCase))
             {
                 Programs.Win32 app = Programs.Win32.GetAppFromPath(path);
                 if (app != null)

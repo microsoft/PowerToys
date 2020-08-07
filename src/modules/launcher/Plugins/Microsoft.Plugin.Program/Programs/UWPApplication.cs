@@ -241,17 +241,17 @@ namespace Microsoft.Plugin.Program.Programs
         internal string ResourceFromPri(string packageFullName, string resourceReference)
         {
             const string prefix = "ms-resource:";
-            if (!string.IsNullOrWhiteSpace(resourceReference) && resourceReference.StartsWith(prefix))
+            if (!string.IsNullOrWhiteSpace(resourceReference) && resourceReference.StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase))
             {
                 // magic comes from @talynone
                 // https://github.com/talynone/Wox.Plugin.WindowsUniversalAppLauncher/blob/master/StoreAppLauncher/Helpers/NativeApiHelper.cs#L139-L153
                 string key = resourceReference.Substring(prefix.Length);
                 string parsed;
-                if (key.StartsWith("//"))
+                if (key.StartsWith("//", StringComparison.InvariantCulture))
                 {
                     parsed = prefix + key;
                 }
-                else if (key.StartsWith("/"))
+                else if (key.StartsWith("/", StringComparison.InvariantCulture))
                 {
                     parsed = prefix + "//" + key;
                 }
@@ -343,7 +343,7 @@ namespace Microsoft.Plugin.Program.Programs
             // windows 8 https://msdn.microsoft.com/en-us/library/windows/apps/br211475.aspx
 
             string path;
-            if (uri.Contains("\\"))
+            if (uri.Contains("\\", StringComparison.InvariantCulture))
             {
                 path = Path.Combine(Package.Location, uri);
             }
@@ -378,7 +378,7 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                 }
 
-                paths = paths.OrderByDescending(x => x.Contains(theme)).ToList();
+                paths = paths.OrderByDescending(x => x.Contains(theme, StringComparison.InvariantCultureIgnoreCase)).ToList();
                 var selected = paths.FirstOrDefault(File.Exists);
                 if (!string.IsNullOrEmpty(selected))
                 {
@@ -405,7 +405,7 @@ namespace Microsoft.Plugin.Program.Programs
                         pathFactorPairs.Add(prefixThemePath, factor);
                     }
 
-                    paths = paths.OrderByDescending(x => x.Contains(theme)).ToList();
+                    paths = paths.OrderByDescending(x => x.Contains(theme, StringComparison.InvariantCultureIgnoreCase)).ToList();
                     var selectedIconPath = paths.OrderBy(x => Math.Abs(pathFactorPairs.GetValueOrDefault(x) - appIconSize)).FirstOrDefault(File.Exists);
                     if (!string.IsNullOrEmpty(selectedIconPath))
                     {

@@ -206,7 +206,7 @@ namespace Microsoft.Plugin.Program.Programs
         {
             if (obj is UWP uwp)
             {
-                return FamilyName.Equals(uwp.FamilyName);
+                return FamilyName.Equals(uwp.FamilyName, StringComparison.CurrentCultureIgnoreCase);
             }
             else
             {
@@ -216,7 +216,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         public override int GetHashCode()
         {
-            return FamilyName.GetHashCode();
+            return FamilyName.GetHashCode(StringComparison.CurrentCultureIgnoreCase);
         }
 
         public enum PackageVersion

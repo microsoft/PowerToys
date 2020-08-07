@@ -333,7 +333,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             foreach (string line in lines)
             {
-                if (line.StartsWith(urlPrefix))
+                if (line.StartsWith(urlPrefix, StringComparison.InvariantCultureIgnoreCase))
                 {
                     urlPath = line.Substring(urlPrefix.Length);
                     Uri uri = new Uri(urlPath);
@@ -345,7 +345,7 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                 }
 
-                if (line.StartsWith(iconFilePrefix))
+                if (line.StartsWith(iconFilePrefix, StringComparison.InvariantCultureIgnoreCase))
                 {
                     iconPath = line.Substring(iconFilePrefix.Length);
                 }
@@ -798,9 +798,9 @@ namespace Microsoft.Plugin.Program.Programs
                 int fullPathPrime = 31;
 
                 int result = 1;
-                result = result * namePrime + obj.Name.ToLowerInvariant().GetHashCode();
-                result = result * executablePrime + obj.ExecutableName.ToLowerInvariant().GetHashCode();
-                result = result * fullPathPrime + obj.FullPath.ToLowerInvariant().GetHashCode();
+                result = result * namePrime + obj.Name.ToLowerInvariant().GetHashCode(StringComparison.InvariantCulture);
+                result = result * executablePrime + obj.ExecutableName.ToLowerInvariant().GetHashCode(StringComparison.InvariantCulture);
+                result = result * fullPathPrime + obj.FullPath.ToLowerInvariant().GetHashCode(StringComparison.InvariantCulture);
 
                 return result;
             }
