@@ -14,7 +14,7 @@
     <Page.Resources>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
     </Page.Resources>
-    
+
     <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
@@ -98,7 +98,7 @@
             <TextBlock x:Uid="ShortcutGuide_Theme"
                 Margin="{StaticResource SmallTopMargin}"
                 Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-            
+
             <muxc:RadioButtons IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"
                                SelectedIndex="{x:Bind Mode=TwoWay, Path=ViewModel.ThemeIndex}"
                                Margin="{StaticResource HeaderTextTopMargin}">
@@ -130,7 +130,7 @@
                     HorizontalAlignment="Left"
                     Margin="{StaticResource SmallTopBottomMargin}"
                     RelativePanel.Below="DescriptionPanel">
-                <Image Source="ms-appx:///Assets/Modules/ShortcutGuide.png" />
+                <Image Source="https://aka.ms/powerToysShortcutGuideSettingImage" />
             </Border>
 
             <StackPanel x:Name="LinksPanel"
@@ -139,7 +139,7 @@
                 <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ShortcutGuide">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
-                <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
+                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
                     <TextBlock x:Uid="Give_Feedback" />
                 </HyperlinkButton>
             </StackPanel>
