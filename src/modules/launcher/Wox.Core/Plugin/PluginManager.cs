@@ -35,7 +35,7 @@ namespace Wox.Core.Plugin
 
 
         // todo happlebao, this should not be public, the indicator function should be embedded
-        public static PluginsSettings Settings;
+        public static PluginSettings Settings;
         private static List<PluginMetadata> _metadatas;
         private static readonly string[] Directories = { Constant.PreinstalledDirectory, Constant.PluginsDirectory };
 
