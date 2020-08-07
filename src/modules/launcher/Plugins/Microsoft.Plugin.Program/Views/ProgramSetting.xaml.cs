@@ -272,7 +272,7 @@ namespace Microsoft.Plugin.Program.Views
             dataView.Refresh();
         }
 
-        private bool IsSelectedRowStatusEnabledMoreOrEqualThanDisabled(List<ProgramSource> selectedItems)
+        private static bool IsSelectedRowStatusEnabledMoreOrEqualThanDisabled(List<ProgramSource> selectedItems)
         {
             return selectedItems.Where(x => x.Enabled).Count() >= selectedItems.Where(x => !x.Enabled).Count();
         }

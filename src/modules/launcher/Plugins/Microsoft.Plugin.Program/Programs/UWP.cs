@@ -55,7 +55,7 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 var apps = new List<UWPApplication>();
 
-                List<IAppxManifestApplication> _apps = _helper.getAppsFromManifest(stream);
+                List<IAppxManifestApplication> _apps = AppxPackageHelper.getAppsFromManifest(stream);
                 foreach (var _app in _apps)
                 {
                     var app = new UWPApplication(_app, this);
@@ -85,7 +85,7 @@ namespace Microsoft.Plugin.Program.Programs
 
 
         /// http://www.hanselman.com/blog/GetNamespacesFromAnXMLDocumentWithXPathDocumentAndLINQToXML.aspx
-        private string[] XmlNamespaces(string path)
+        private static string[] XmlNamespaces(string path)
         {
             XDocument z = XDocument.Load(path);
             if (z.Root != null)

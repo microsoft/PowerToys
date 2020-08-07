@@ -11,7 +11,7 @@ namespace Microsoft.Plugin.Program.Programs
     public class AppxPackageHelper
     {
         // This function returns a list of attributes of applications
-        public List<IAppxManifestApplication> getAppsFromManifest(IStream stream)
+        public static List<IAppxManifestApplication> getAppsFromManifest(IStream stream)
         {
             List<IAppxManifestApplication> apps = new List<IAppxManifestApplication>();
             var appxFactory = new AppxFactory();

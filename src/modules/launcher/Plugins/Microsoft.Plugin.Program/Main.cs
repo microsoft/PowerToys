@@ -161,7 +161,7 @@ namespace Microsoft.Plugin.Program
             IndexPrograms();
         }
 
-        public void UpdateSettings(PowerLauncherSettings settings)
+        public static void UpdateSettings(PowerLauncherSettings settings)
         {
         }
 
