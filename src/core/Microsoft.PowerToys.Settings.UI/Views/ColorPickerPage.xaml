@@ -67,7 +67,7 @@
             <TextBlock x:Uid="ShortcutGuide_Appearance_Behavior"
                        Style="{StaticResource SettingsGroupTitleStyle}"
                        Foreground="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled, Converter={StaticResource ModuleEnabledToForegroundConverter}}"/>
-
+        
             <ComboBox x:Uid="ColorPicker_CopiedColorRepresentation"
                           SelectedIndex="{Binding CopiedColorRepresentationIndex, Mode=TwoWay}"
                           Margin="{StaticResource SmallTopMargin}"
@@ -77,7 +77,7 @@
                 <ComboBoxItem Content="RGB - RGB(100, 50, 75)"/>
             </ComboBox>
 
-            <!--
+               <!--
             Disabling this until we have a safer way to reset cursor as 
             we can hit a state where the cursor doesn't reset
            
@@ -116,7 +116,7 @@
                 <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ColorPicker">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
-                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
                     <TextBlock x:Uid="Give_Feedback" />
                 </HyperlinkButton>
 
