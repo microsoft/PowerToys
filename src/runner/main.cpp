@@ -40,7 +40,7 @@ namespace localized_strings
     const wchar_t MSI_VERSION_IS_ALREADY_RUNNING[] = L"An older version of PowerToys is already running.";
     const wchar_t DOWNLOAD_UPDATE_ERROR[] = L"Couldn't download PowerToys update! Please report the issue on Github.";
     const wchar_t OLDER_MSIX_UNINSTALLED[] = L"An older MSIX version of PowerToys was uninstalled.";
-    const wchar_t PT_UPDATE_MESSAGE_BOX_TEXT[] = L"PowerToys was updated successfully! Some components may require explorer to be restarted.";
+    const wchar_t PT_UPDATE_MESSAGE_BOX_TEXT[] = L"PowerToys was updated successfully!";
 }
 
 namespace
