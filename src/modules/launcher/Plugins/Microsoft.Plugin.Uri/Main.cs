@@ -76,7 +76,7 @@ namespace Microsoft.Plugin.Uri
 
         public void Init(PluginInitContext context)
         {
-            Context = context ?? throw new InvalidOperationException($"{nameof(Context)} should not be NULL");
+            Context = context ?? throw new ArgumentNullException(nameof(context));
             Context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(Context.API.GetCurrentTheme());
             UpdateBrowserIconPath(Context.API.GetCurrentTheme());
