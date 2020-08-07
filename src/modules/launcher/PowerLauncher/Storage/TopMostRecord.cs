@@ -43,7 +43,6 @@ namespace PowerLauncher.Storage
                 SubTitle = result.SubTitle
             };
             records[result.OriginQuery.RawQuery] = record;
-
         }
 
         public void Load(Dictionary<string, Record> dictionary)

@@ -43,6 +43,7 @@ namespace PowerLauncher.Storage
             {
                 return value;
             }
+
             return 0;
         }
     }

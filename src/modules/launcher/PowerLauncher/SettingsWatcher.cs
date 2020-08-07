@@ -26,6 +26,7 @@ namespace PowerLauncher
         public SettingsWatcher(Settings settings)
         {
             _settings = settings;
+
             // Set up watcher
             _watcher = Microsoft.PowerToys.Settings.UI.Lib.Utilities.Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", OverloadSettings);
 
@@ -38,7 +39,7 @@ namespace PowerLauncher
             Monitor.Enter(_watcherSyncObject);
             var retry = true;
             var retryCount = 0;
-            while(retry)
+            while (retry)
             {
                 try
                 {
@@ -90,6 +91,7 @@ namespace PowerLauncher
 
                     retry = false;
                 }
+
                 // the settings application can hold a lock on the settings.json file which will result in a IOException.
                 // This should be changed to properly synch with the settings app instead of retrying.
                 catch (IOException e)
@@ -98,10 +100,12 @@ namespace PowerLauncher
                     {
                         retry = false;
                     }
+
                     Thread.Sleep(1000);
                     Debug.WriteLine(e.Message);
                 }
             }
+
             Monitor.Exit(_watcherSyncObject);
         }
 
@@ -111,6 +115,5 @@ namespace PowerLauncher
             HotkeyModel model = new HotkeyModel(hotkey.Alt, hotkey.Shift, hotkey.Win, hotkey.Ctrl, key);
             return model.ToString();
         }
-
     }
 }

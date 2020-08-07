@@ -17,21 +17,25 @@ namespace PowerLauncher.Helper
             {
                 state.ShiftPressed = true;
             }
+
             if ((Keyboard.GetKeyStates(Key.LWin) & KeyStates.Down) > 0 ||
                 (Keyboard.GetKeyStates(Key.RWin) & KeyStates.Down) > 0)
             {
                 state.WinPressed = true;
             }
+
             if ((Keyboard.GetKeyStates(Key.LeftCtrl) & KeyStates.Down) > 0 ||
                 (Keyboard.GetKeyStates(Key.RightCtrl) & KeyStates.Down) > 0)
             {
                 state.CtrlPressed = true;
             }
+
             if ((Keyboard.GetKeyStates(Key.LeftAlt) & KeyStates.Down) > 0 ||
                 (Keyboard.GetKeyStates(Key.RightAlt) & KeyStates.Down) > 0)
             {
                 state.AltPressed = true;
             }
+
             return state;
         }
     }
