@@ -24,7 +24,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             DisplayHiddenFiles = displayHiddenFiles;
         }
 
-        public List<SearchResult> ExecuteQuery(ISearchQueryHelper queryHelper, string keyword)
+        public List<SearchResult> ExecuteQuery(ISearchQueryHelper queryHelper, string keyword, bool isFullQuery)
         {
             if (queryHelper == null)
             {
@@ -35,10 +35,20 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 
             // Generate SQL from our parameters, converting the userQuery from AQS->WHERE clause
             string sqlQuery = queryHelper.GenerateSQLFromUserQuery(keyword);
-            string simplifiedSqlQuery = SimplifyQuery(sqlQuery);
+            var simplifiedQuery = SimplifyQuery(sqlQuery);
+
+            if (!isFullQuery)
+            {
+                sqlQuery = simplifiedQuery;
+            }
+            else if (simplifiedQuery.Equals(sqlQuery, StringComparison.CurrentCultureIgnoreCase))
+            {
+                // if a full query is requested but there is no difference between the queries, return empty results
+                return results;
+            }
 
             // execute the command, which returns the results as an OleDBResults.
-            List<OleDBResult> oleDBResults = windowsIndexerSearch.Query(queryHelper.ConnectionString, simplifiedSqlQuery);
+            List<OleDBResult> oleDBResults = windowsIndexerSearch.Query(queryHelper.ConnectionString, sqlQuery);
             System.IO.FileStream fileStream = System.IO.File.Open("..\\..\\indexer_query_debug.log", System.IO.FileMode.Append, System.IO.FileAccess.Write);
 
             // Encapsulate the filestream object in a StreamWriter instance.
@@ -47,7 +57,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             // Write the current date time to the file
 
             // Modify to consider all matches (. in each word for example). Test query without LIKE
-            fileWriter.WriteLine(keyword + ", " + simplifiedSqlQuery);
+            fileWriter.WriteLine(keyword + ", " + sqlQuery);
 
             fileWriter.Flush();
             fileWriter.Close();
@@ -136,14 +146,14 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             queryHelper.QuerySorting = "System.DateModified DESC";
         }
 
-        public IEnumerable<SearchResult> Search(string keyword, string pattern = "*", int maxCount = 30)
+        public IEnumerable<SearchResult> Search(string keyword, bool isFullQuery, string pattern = "*", int maxCount = 30)
         {
             lock (_lock)
             {
                 ISearchQueryHelper queryHelper;
                 InitQueryHelper(out queryHelper, maxCount);
                 ModifyQueryHelper(ref queryHelper, pattern);
-                return ExecuteQuery(queryHelper, keyword);
+                return ExecuteQuery(queryHelper, keyword, isFullQuery);
             }
         }
 

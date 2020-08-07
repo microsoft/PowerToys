@@ -151,7 +151,7 @@ namespace Wox.Core.Plugin
             }
         }
 
-        public static List<Result> QueryForPlugin(PluginPair pair, Query query)
+        public static List<Result> QueryForPlugin(PluginPair pair, Query query, bool delayedExecution = false)
         {
             try
             {
@@ -159,7 +159,14 @@ namespace Wox.Core.Plugin
                 var metadata = pair.Metadata;
                 var milliseconds = Stopwatch.Debug($"|PluginManager.QueryForPlugin|Cost for {metadata.Name}", () =>
                 {
-                    results = pair.Plugin.Query(query) ?? new List<Result>();
+                    if (delayedExecution && (pair.Plugin is IDelayedExecutionPlugin))
+                    {
+                        results = ((IDelayedExecutionPlugin)pair.Plugin).Query(query, delayedExecution) ?? new List<Result>();
+                    }
+                    else
+                    {
+                        results = pair.Plugin.Query(query) ?? new List<Result>();
+                    }
                     UpdatePluginMetadata(results, metadata, query);
                 });
                 metadata.QueryCount += 1;

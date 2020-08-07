@@ -20,7 +20,7 @@ using Wox.Plugin;
 
 namespace Microsoft.Plugin.Indexer
 {
-    internal class Main : ISettingProvider, IPlugin, ISavable, IPluginI18n, IContextMenu, IDisposable
+    internal class Main : ISettingProvider, IPlugin, ISavable, IPluginI18n, IContextMenu, IDisposable, IDelayedExecutionPlugin
     {
         // This variable contains metadata about the Plugin
         private PluginInitContext _context;
@@ -54,7 +54,7 @@ namespace Microsoft.Plugin.Indexer
 
         // This function uses the Windows indexer and returns the list of results obtained
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive but will log the exception")]
-        public List<Result> Query(Query query)
+        public List<Result> Query(Query query, bool isFullQuery)
         {
             var results = new List<Result>();
 
@@ -95,7 +95,7 @@ namespace Microsoft.Plugin.Indexer
                             });
                         }
 
-                        var searchResultsList = _api.Search(searchQuery, maxCount: _settings.MaxSearchCount).ToList();
+                        var searchResultsList = _api.Search(searchQuery, isFullQuery, maxCount: _settings.MaxSearchCount).ToList();
                         foreach (var searchResult in searchResultsList)
                         {
                             var path = searchResult.Path;
@@ -159,6 +159,12 @@ namespace Microsoft.Plugin.Indexer
             }
 
             return results;
+        }
+
+        // This function uses the Windows indexer and returns the list of results obtained. This version is required to implement the interface
+        public List<Result> Query(Query query)
+        {
+            return Query(query, false);
         }
 
         public void Init(PluginInitContext context)

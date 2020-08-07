@@ -57,6 +57,8 @@ namespace Wox.Plugin
             return Name;
         }
 
+        public bool DelayedExecution { get; set; } = false;
+
         [Obsolete("Use IcoPath")]
         public string FullIcoPath => IcoPath;
 

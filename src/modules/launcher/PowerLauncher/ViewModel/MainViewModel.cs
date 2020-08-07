@@ -260,7 +260,6 @@ namespace PowerLauncher.ViewModel
                 if (!string.IsNullOrEmpty(QueryText))
                 {
                     ChangeQueryText(string.Empty, true);
-
                     // Push Event to UI SystemQuery has changed
                     OnPropertyChanged(nameof(SystemQueryText));
                 }
@@ -338,7 +337,6 @@ namespace PowerLauncher.ViewModel
                         QueryText = string.Empty;
                     }
                 }
-
                 _selectedResults.Visibility = Visibility.Visible;
             }
         }
@@ -362,6 +360,7 @@ namespace PowerLauncher.ViewModel
                 {
                     PowerToysTelemetry.Log.WriteEvent(new LauncherHideEvent());
                 }
+
             }
         }
 
@@ -522,6 +521,46 @@ namespace PowerLauncher.ViewModel
                                     Results.Visibility = Visibility.Hidden;
                                 }
                             }));
+
+                            // Run the slower query of the DelayedExecution plugins
+                            currentCancellationToken.ThrowIfCancellationRequested();
+                            foreach (PluginPair plugin in plugins)
+                            {
+                                if (!plugin.Metadata.Disabled && plugin.Metadata.DelayedExecution)
+                                {
+                                    var results = PluginManager.QueryForPlugin(plugin, query, true);
+                                    currentCancellationToken.ThrowIfCancellationRequested();
+                                    if (results.Count != 0)
+                                    {
+                                        lock (_addResultsLock)
+                                        {
+                                            currentCancellationToken.ThrowIfCancellationRequested();
+                                            UpdateResultView(results, plugin.Metadata, query, currentCancellationToken);
+                                            currentCancellationToken.ThrowIfCancellationRequested();
+                                            Results.Results.Sort();
+                                        }
+
+                                        currentCancellationToken.ThrowIfCancellationRequested();
+                                        Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                                        {
+                                            if (query.RawQuery == _lastQuery.RawQuery)
+                                            {
+                                                Results.Results.NotifyChanges();
+                                            }
+
+                                            if (Results.Results.Count > 0)
+                                            {
+                                                Results.Visibility = Visibility.Visible;
+                                                Results.SelectedIndex = 0;
+                                            }
+                                            else
+                                            {
+                                                Results.Visibility = Visibility.Hidden;
+                                            }
+                                        }));
+                                    }
+                                }
+                            }
                         }
                         catch (OperationCanceledException)
                         {
@@ -536,6 +575,7 @@ namespace PowerLauncher.ViewModel
                             QueryLength = query.RawQuery.Length
                         };
                         PowerToysTelemetry.Log.WriteEvent(queryEvent);
+
                     }, currentCancellationToken);
                 }
             }
@@ -660,7 +700,6 @@ namespace PowerLauncher.ViewModel
                     {
                         StartHotkeyTimer();
                     }
-
                     if (_settings.LastQueryMode == LastQueryMode.Empty)
                     {
                         ChangeQueryText(string.Empty);
@@ -773,9 +812,7 @@ namespace PowerLauncher.ViewModel
                 {
                     var _ = PluginManager.QueryForPlugin(plugin, query);
                 }
-            }
-
-;
+            };
         }
 
         public void HandleContextMenu(Key AcceleratorKey, ModifierKeys AcceleratorModifiers)
@@ -822,7 +859,6 @@ namespace PowerLauncher.ViewModel
                         return query + input.Substring(query.Length);
                     }
                 }
-
                 return input;
             }
 
@@ -853,7 +889,6 @@ namespace PowerLauncher.ViewModel
                     {
                         _hotkeyManager?.UnregisterHotkey(_hotkeyHandle);
                     }
-
                     _hotkeyManager?.Dispose();
                     _updateSource?.Dispose();
                     _disposed = true;
