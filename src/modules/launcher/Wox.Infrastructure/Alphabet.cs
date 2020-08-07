@@ -16,11 +16,6 @@ using Wox.Infrastructure.UserSettings;
 
 namespace Wox.Infrastructure
 {
-    public interface IAlphabet
-    {
-        string Translate(string stringToTranslate);
-    }
-
     public class Alphabet : IAlphabet
     {
         private readonly HanyuPinyinOutputFormat Format = new HanyuPinyinOutputFormat();

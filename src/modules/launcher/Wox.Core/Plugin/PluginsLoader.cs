@@ -18,7 +18,7 @@ namespace Wox.Core.Plugin
     {
         public const string PATH = "PATH";
 
-        public static List<PluginPair> Plugins(List<PluginMetadata> metadatas, PluginsSettings settings)
+        public static List<PluginPair> Plugins(List<PluginMetadata> metadatas, PluginSettings settings)
         {
             var csharpPlugins = CSharpPlugins(metadatas).ToList();
             var executablePlugins = ExecutablePlugins(metadatas);
