@@ -1,20 +1,21 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
+
+using System;
 using System.Text.Json;
+using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 
-using Microsoft.PowerToys.Settings.UI.Helpers;
-using Microsoft.PowerToys.Settings.UI.Lib;
-using Microsoft.PowerToys.Settings.UI.Views;
-
-namespace Microsoft.PowerToys.Settings.UI.ViewModels
+namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 {
     public class ColorPickerViewModel : Observable
     {
         private ColorPickerSettings _colorPickerSettings;
         private bool _isEnabled;
 
-        public ColorPickerViewModel()
+        private Func<string, int> SendConfigMSG { get; }
+
+        public ColorPickerViewModel(Func<string, int> ipcMSGCallBackFunc)
         {
             if (SettingsUtils.SettingsExists(ColorPickerSettings.ModuleName))
             {
@@ -30,6 +31,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 var generalSettings = SettingsUtils.GetSettings<GeneralSettings>();
                 _isEnabled = generalSettings.Enabled.ColorPicker;
             }
+
+            // set the callback functions value to hangle outgoing IPC message.
+            SendConfigMSG = ipcMSGCallBackFunc;
         }
 
         public bool IsEnabled
@@ -50,7 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     var generalSettings = SettingsUtils.GetSettings<GeneralSettings>();
                     generalSettings.Enabled.ColorPicker = value;
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettings);
-                    ShellPage.DefaultSndMSGCallback(outgoing.ToString());
+                    SendConfigMSG(outgoing.ToString());
                 }
             }
         }
@@ -111,7 +115,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void NotifySettingsChanged()
         {
-            ShellPage.DefaultSndMSGCallback(
+            SendConfigMSG(
                    string.Format("{{ \"powertoys\": {{ \"{0}\": {1} }} }}", ColorPickerSettings.ModuleName, JsonSerializer.Serialize(_colorPickerSettings)));
         }
     }
