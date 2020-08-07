@@ -93,8 +93,8 @@ steps:
       **\UnitTests-SvgPreviewHandler.dll
       **\Wox.Test.dll
       **\powerpreviewTest.dll
+      **\Microsoft.PowerToys.Settings.UnitTests.exe
       # Can't get working, says no tests
-      #   #**\Microsoft.PowerToys.Settings.UnitTest.exe
       # crashes CI
       #**\interop-tests.dll 
       #**\UnitTests-FancyZones.dll
