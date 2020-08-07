@@ -228,6 +228,7 @@ namespace Microsoft.Plugin.Program.Programs
         }
 
         [Flags]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1714:Flags enums should have plural names", Justification = "This name is consistent with the corresponding win32 flags: https://docs.microsoft.com/en-us/windows/win32/stg/stgm-constants ")]
         public enum Stgm : Int64
         {
             Read = 0x00000000L,
