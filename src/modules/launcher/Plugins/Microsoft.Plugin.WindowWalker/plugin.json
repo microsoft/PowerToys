@@ -6,7 +6,7 @@
     "Author":"betadele",
     "Version":"1.0.0",
     "Language":"csharp",
-    "Website":"http://www.windowwalker.com/",
+    "Website":"https://www.windowwalker.com/",
     "ExecuteFileName":"Microsoft.Plugin.WindowWalker.dll",
     "IcoPath":"Images\\windowwalker.dark.png"
 }

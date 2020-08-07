@@ -184,7 +184,7 @@ namespace PowerLauncher.ViewModel
 
             StartHelpCommand = new RelayCommand(_ =>
             {
-                Process.Start("http://doc.wox.one/");
+                Process.Start("https://aka.ms/PowerToys/");
             });
 
             OpenResultCommand = new RelayCommand(index =>

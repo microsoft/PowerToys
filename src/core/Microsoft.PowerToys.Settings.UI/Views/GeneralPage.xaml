@@ -114,7 +114,7 @@
                        Style="{StaticResource SettingsGroupTitleStyle}"/>
             <StackPanel Orientation="Horizontal" Margin="{StaticResource SmallTopMargin}">
                 <TextBlock Text="Version: " x:Uid="General_Version"  />
-                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" Margin="4,-6,0,0">
+                <HyperlinkButton NavigateUri="https://aka.ms/installpowertoys" Margin="4,-6,0,0">
                     <TextBlock Text="{x:Bind ViewModel.PowerToysVersion }" />
                 </HyperlinkButton>
             </StackPanel>
@@ -163,15 +163,15 @@
                     <TextBlock x:Uid="General_Repository"/>
                 </HyperlinkButton>
 
-                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysReportBug">
                     <TextBlock x:Uid="GeneralPage_ReportAbug"/>
                 </HyperlinkButton>
 
-                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysRequestFeature">
                     <TextBlock x:Uid="GeneralPage_RequestAFeature_URL"/>
                 </HyperlinkButton>
 
-                <HyperlinkButton NavigateUri=" http://go.microsoft.com/fwlink/?LinkId=521839">
+                <HyperlinkButton NavigateUri=" https://go.microsoft.com/fwlink/?LinkId=521839">
                     <TextBlock x:Uid="GeneralPage_PrivacyStatement_URL"/>
                 </HyperlinkButton>
 

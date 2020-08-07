@@ -27,6 +27,7 @@ namespace Wox.Infrastructure.Http
         }
 
         public static HttpProxy Proxy { private get; set; }
+
         public static IWebProxy WebProxy()
         {
             if (Proxy != null && Proxy.Enabled && !string.IsNullOrEmpty(Proxy.Server))

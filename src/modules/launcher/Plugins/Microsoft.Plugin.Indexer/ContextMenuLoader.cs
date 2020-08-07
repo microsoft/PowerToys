@@ -1,15 +1,19 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Windows;
-using Wox.Infrastructure.Logger;
-using Wox.Plugin;
-using Microsoft.Plugin.Indexer.SearchHelper;
-using System.Windows.Input;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
+using Microsoft.Plugin.Indexer.SearchHelper;
 using Wox.Infrastructure;
+using Wox.Infrastructure.Logger;
+using Wox.Plugin;
 
 namespace Microsoft.Plugin.Indexer
 {
@@ -20,7 +24,7 @@ namespace Microsoft.Plugin.Indexer
         public enum ResultType
         {
             Folder,
-            File
+            File,
         }
 
         // Extensions for adding run as admin context menu item for applications
@@ -73,7 +77,7 @@ namespace Microsoft.Plugin.Indexer
                             _context.API.ShowMsg(message);
                             return false;
                         }
-                    }
+                    },
                 });
                 contextMenus.Add(new ContextMenuResult
                 {
@@ -104,7 +108,7 @@ namespace Microsoft.Plugin.Indexer
                             Log.Exception($"|Microsoft.Plugin.Indexer.ContextMenuLoader.LoadContextMenus| Failed to open {record.Path} in console, {e.Message}", e);
                             return false;
                         }
-                    }
+                    },
                 });
             }
 
@@ -122,7 +126,7 @@ namespace Microsoft.Plugin.Indexer
                 Glyph = "\xE7EF",
                 FontFamily = "Segoe MDL2 Assets",
                 AcceleratorKey = Key.Enter,
-                AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
+                AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                 Action = _ =>
                 {
                     try
@@ -135,8 +139,7 @@ namespace Microsoft.Plugin.Indexer
                         Log.Exception($"|Microsoft.Plugin.Indexer.ContextMenu| Failed to run {record.Path} as admin, {e.Message}", e);
                         return false;
                     }
-
-                }
+                },
             };
         }
 
@@ -151,6 +154,7 @@ namespace Microsoft.Plugin.Indexer
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -164,7 +168,7 @@ namespace Microsoft.Plugin.Indexer
                 Glyph = "\xE838",
                 FontFamily = "Segoe MDL2 Assets",
                 AcceleratorKey = Key.E,
-                AcceleratorModifiers = (ModifierKeys.Control | ModifierKeys.Shift),
+                AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                 Action = _ =>
                 {
                     try
@@ -189,5 +193,4 @@ namespace Microsoft.Plugin.Indexer
             Log.Exception($"|Microsoft.Plugin.Folder.ContextMenu|{message}", e);
         }
     }
-
 }

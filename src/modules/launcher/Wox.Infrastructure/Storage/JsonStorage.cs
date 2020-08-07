@@ -17,10 +17,13 @@ namespace Wox.Infrastructure.Storage
     {
         private readonly JsonSerializerSettings _serializerSettings;
         private T _data;
+
         // need a new directory name
         public const string DirectoryName = "Settings";
         public const string FileSuffix = ".json";
+
         public string FilePath { get; set; }
+
         public string DirectoryPath { get; set; }
 
         // This storage helper returns whether or not to delete the json storage items
@@ -41,6 +44,7 @@ namespace Wox.Infrastructure.Storage
         public T Load()
         {
             _storageHelper = new StoragePowerToysVersionInfo(FilePath, JSON_STORAGE);
+
             // Depending on the version number of the previously installed PT Run, delete the cache if it is found to be incompatible
             if (_storageHelper.clearCache)
             {
@@ -108,6 +112,7 @@ namespace Wox.Infrastructure.Storage
             var backupName = $"{originName}-{timestamp}{FileSuffix}";
             var backupPath = Path.Combine(directory, backupName);
             File.Copy(FilePath, backupPath, true);
+
             // todo give user notification for the backup process
         }
 

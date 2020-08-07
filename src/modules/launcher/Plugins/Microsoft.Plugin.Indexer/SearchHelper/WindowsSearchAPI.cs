@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Collections.Generic;
 using Microsoft.Search.Interop;
 
@@ -8,30 +12,30 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
     {
         public bool DisplayHiddenFiles { get; set; }
 
-        private readonly ISearch WindowsIndexerSearch;
+        private readonly ISearch windowsIndexerSearch;
         private readonly object _lock = new object();
-        private readonly UInt32 FILE_ATTRIBUTE_HIDDEN = 0x2;
+        private const uint _fileAttributeHidden = 0x2;
 
         public WindowsSearchAPI(ISearch windowsIndexerSearch, bool displayHiddenFiles = false)
         {
-            this.WindowsIndexerSearch = windowsIndexerSearch;
-            this.DisplayHiddenFiles = displayHiddenFiles;
+            this.windowsIndexerSearch = windowsIndexerSearch;
+            DisplayHiddenFiles = displayHiddenFiles;
         }
 
         public List<SearchResult> ExecuteQuery(ISearchQueryHelper queryHelper, string keyword)
         {
-            if(queryHelper == null)
+            if (queryHelper == null)
             {
                 throw new ArgumentNullException(paramName: nameof(queryHelper));
             }
 
-            List<SearchResult> _Result = new List<SearchResult>();
+            List<SearchResult> results = new List<SearchResult>();
 
             // Generate SQL from our parameters, converting the userQuery from AQS->WHERE clause
             string sqlQuery = queryHelper.GenerateSQLFromUserQuery(keyword);
 
             // execute the command, which returns the results as an OleDBResults.
-            List<OleDBResult> oleDBResults = WindowsIndexerSearch.Query(queryHelper.ConnectionString, sqlQuery);
+            List<OleDBResult> oleDBResults = windowsIndexerSearch.Query(queryHelper.ConnectionString, sqlQuery);
 
             // Loop over all records from the database
             foreach (OleDBResult oleDBResult in oleDBResults)
@@ -41,8 +45,8 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                     continue;
                 }
 
-                UInt32 fileAttributes = (UInt32)((Int64)oleDBResult.FieldData[2]);
-                bool isFileHidden = (fileAttributes & FILE_ATTRIBUTE_HIDDEN) == FILE_ATTRIBUTE_HIDDEN;
+                uint fileAttributes = (uint)((long)oleDBResult.FieldData[2]);
+                bool isFileHidden = (fileAttributes & _fileAttributeHidden) == _fileAttributeHidden;
 
                 if (DisplayHiddenFiles || !isFileHidden)
                 {
@@ -50,19 +54,19 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                     var result = new SearchResult
                     {
                         Path = uri_path.LocalPath,
-                        Title = (string)oleDBResult.FieldData[1]
+                        Title = (string)oleDBResult.FieldData[1],
                     };
-                    _Result.Add(result);
+
+                    results.Add(result);
                 }
             }
 
-            return _Result;
+            return results;
         }
-
 
         public static void ModifyQueryHelper(ref ISearchQueryHelper queryHelper, string pattern)
         {
-            if(pattern == null)
+            if (pattern == null)
             {
                 throw new ArgumentNullException(paramName: nameof(pattern));
             }
@@ -113,7 +117,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             // To filter based on title for now
             queryHelper.QueryContentProperties = "System.FileName";
 
-            // Set sorting order 
+            // Set sorting order
             queryHelper.QuerySorting = "System.DateModified DESC";
         }
 

@@ -423,15 +423,15 @@ bool ZoneSet::CalculateFocusLayout(Rect workArea, int zoneCount) noexcept
 {
     bool success = true;
 
-    long left{ long(workArea.width() * 0.1) };
-    long top{ long(workArea.height() * 0.1) };
-    long right{ left + long(workArea.width() * 0.6) };
-    long bottom{ top + long(workArea.height() * 0.6) };
+    long left{ 100 };
+    long top{ 100 };
+    long right{ left + long(workArea.width() * 0.4) };
+    long bottom{ top + long(workArea.height() * 0.4) };
 
     RECT focusZoneRect{ left, top, right, bottom };
 
-    long focusRectXIncrement = (zoneCount <= 1) ? 0 : (int)(workArea.width() * 0.2) / (zoneCount - 1);
-    long focusRectYIncrement = (zoneCount <= 1) ? 0 : (int)(workArea.height() * 0.2) / (zoneCount - 1);
+    long focusRectXIncrement = (zoneCount <= 1) ? 0 : 50;
+    long focusRectYIncrement = (zoneCount <= 1) ? 0 : 50;
 
     if (left >= right || top >= bottom || left < 0 || right < 0 || top < 0 || bottom < 0)
     {

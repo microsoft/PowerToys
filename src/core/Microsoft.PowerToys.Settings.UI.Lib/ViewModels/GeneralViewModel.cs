@@ -29,13 +29,24 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
         public Func<string, int> SendCheckForUpdatesConfigMSG { get; }
 
-        public readonly string RunningAsUserDefaultText;
-        public readonly string RunningAsAdminDefaultText;
+        public string RunningAsUserDefaultText { get; private set; }
+
+        public string RunningAsAdminDefaultText { get; private set; }
+
+        private bool _packaged = false;
+        private bool _startup = false;
+        private bool _isElevated = false;
+        private bool _runElevated = false;
+        private bool _isAdmin = false;
+        private bool _isDarkThemeRadioButtonChecked = false;
+        private bool _isLightThemeRadioButtonChecked = false;
+        private bool _isSystemThemeRadioButtonChecked = false;
+        private bool _autoDownloadUpdates = false;
 
         public GeneralViewModel(string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> updateTheme, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc)
         {
-            this.CheckFoUpdatesEventHandler = new ButtonClickCommand(CheckForUpdates_Click);
-            this.RestartElevatedButtonEventHandler = new ButtonClickCommand(Restart_Elevated);
+            CheckFoUpdatesEventHandler = new ButtonClickCommand(CheckForUpdates_Click);
+            RestartElevatedButtonEventHandler = new ButtonClickCommand(Restart_Elevated);
 
             try
             {
@@ -91,16 +102,6 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
 
             _isAdmin = isAdmin;
         }
-
-        private bool _packaged = false;
-        private bool _startup = false;
-        private bool _isElevated = false;
-        private bool _runElevated = false;
-        private bool _isAdmin = false;
-        private bool _isDarkThemeRadioButtonChecked = false;
-        private bool _isLightThemeRadioButtonChecked = false;
-        private bool _isSystemThemeRadioButtonChecked = false;
-        private bool _autoDownloadUpdates = false;
 
         // Gets or sets a value indicating whether packaged.
         public bool Packaged
@@ -335,7 +336,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
         }
 
         // callback function to launch the URL to check for updates.
-        private async void CheckForUpdates_Click()
+        private void CheckForUpdates_Click()
         {
             GeneralSettings settings = SettingsUtils.GetSettings<GeneralSettings>(string.Empty);
             settings.CustomActionName = "check_for_updates";

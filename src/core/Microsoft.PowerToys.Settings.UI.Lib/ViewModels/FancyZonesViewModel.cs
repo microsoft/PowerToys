@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Lib.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib.ViewModels.Commands;
@@ -31,23 +30,23 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
             }
 
-            this.LaunchEditorEventHandler = new ButtonClickCommand(LaunchEditor);
+            LaunchEditorEventHandler = new ButtonClickCommand(LaunchEditor);
 
-            this._shiftDrag = Settings.Properties.FancyzonesShiftDrag.Value;
-            this._mouseSwitch = Settings.Properties.FancyzonesMouseSwitch.Value;
-            this._overrideSnapHotkeys = Settings.Properties.FancyzonesOverrideSnapHotkeys.Value;
-            this._moveWindowsAcrossMonitors = Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value;
-            this._displayChangemoveWindows = Settings.Properties.FancyzonesDisplayChangeMoveWindows.Value;
-            this._zoneSetChangeMoveWindows = Settings.Properties.FancyzonesZoneSetChangeMoveWindows.Value;
-            this._appLastZoneMoveWindows = Settings.Properties.FancyzonesAppLastZoneMoveWindows.Value;
-            this._openWindowOnActiveMonitor = Settings.Properties.FancyzonesOpenWindowOnActiveMonitor.Value;
-            this._restoreSize = Settings.Properties.FancyzonesRestoreSize.Value;
-            this._useCursorPosEditorStartupScreen = Settings.Properties.UseCursorposEditorStartupscreen.Value;
-            this._showOnAllMonitors = Settings.Properties.FancyzonesShowOnAllMonitors.Value;
-            this._makeDraggedWindowTransparent = Settings.Properties.FancyzonesMakeDraggedWindowTransparent.Value;
-            this._highlightOpacity = Settings.Properties.FancyzonesHighlightOpacity.Value;
-            this._excludedApps = Settings.Properties.FancyzonesExcludedApps.Value;
-            this.EditorHotkey = Settings.Properties.FancyzonesEditorHotkey.Value;
+            _shiftDrag = Settings.Properties.FancyzonesShiftDrag.Value;
+            _mouseSwitch = Settings.Properties.FancyzonesMouseSwitch.Value;
+            _overrideSnapHotkeys = Settings.Properties.FancyzonesOverrideSnapHotkeys.Value;
+            _moveWindowsAcrossMonitors = Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value;
+            _displayChangemoveWindows = Settings.Properties.FancyzonesDisplayChangeMoveWindows.Value;
+            _zoneSetChangeMoveWindows = Settings.Properties.FancyzonesZoneSetChangeMoveWindows.Value;
+            _appLastZoneMoveWindows = Settings.Properties.FancyzonesAppLastZoneMoveWindows.Value;
+            _openWindowOnActiveMonitor = Settings.Properties.FancyzonesOpenWindowOnActiveMonitor.Value;
+            _restoreSize = Settings.Properties.FancyzonesRestoreSize.Value;
+            _useCursorPosEditorStartupScreen = Settings.Properties.UseCursorposEditorStartupscreen.Value;
+            _showOnAllMonitors = Settings.Properties.FancyzonesShowOnAllMonitors.Value;
+            _makeDraggedWindowTransparent = Settings.Properties.FancyzonesMakeDraggedWindowTransparent.Value;
+            _highlightOpacity = Settings.Properties.FancyzonesHighlightOpacity.Value;
+            _excludedApps = Settings.Properties.FancyzonesExcludedApps.Value;
+            EditorHotkey = Settings.Properties.FancyzonesEditorHotkey.Value;
 
             // set the callback functions value to hangle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -72,7 +71,7 @@ namespace Microsoft.PowerToys.Settings.UI.Lib.ViewModels
                 SettingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
             }
 
-            this._isEnabled = generalSettings.Enabled.FancyZones;
+            _isEnabled = generalSettings.Enabled.FancyZones;
         }
 
         private bool _isEnabled;

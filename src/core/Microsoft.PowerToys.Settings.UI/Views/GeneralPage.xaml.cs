@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// </summary>
         public GeneralPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
             // Load string resources
             ResourceLoader loader = ResourceLoader.GetForViewIndependentUse();

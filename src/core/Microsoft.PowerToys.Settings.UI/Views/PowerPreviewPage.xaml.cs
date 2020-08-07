@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// </summary>
     public sealed partial class PowerPreviewPage : Page
     {
-        public PowerPreviewViewModel viewModel { get; set; }
+        public PowerPreviewViewModel ViewModel { get; set; }
 
         public PowerPreviewPage()
         {

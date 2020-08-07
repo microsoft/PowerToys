@@ -311,7 +311,7 @@
                 <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_FancyZones" Margin="0,-3,0,0">
                     <TextBlock x:Uid="Module_overview" />
                 </HyperlinkButton>
-                <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/issues">
+                <HyperlinkButton NavigateUri="https://aka.ms/powerToysGiveFeedback">
                     <TextBlock x:Uid="Give_Feedback" />
                 </HyperlinkButton>
             </StackPanel>
