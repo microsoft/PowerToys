@@ -8,7 +8,6 @@ using Wox.Infrastructure.Exception;
 
 namespace Wox.Test.Plugins
 {
-
     [TestFixture]
     public class PluginInitTest
     {

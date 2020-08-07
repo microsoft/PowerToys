@@ -2,14 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Wox.Plugin;
+using System;
 
-namespace Wox.Infrastructure.UserSettings
+namespace ColorPicker.Helpers
 {
-    public class CustomPluginHotkey : BaseModel
+    public interface IThrottledActionInvoker
     {
-        public string Hotkey { get; set; }
-
-        public string ActionKeyword { get; set; }
+        void ScheduleAction(Action action, int miliseconds);
     }
 }

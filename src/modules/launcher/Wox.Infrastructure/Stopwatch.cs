@@ -12,6 +12,7 @@ namespace Wox.Infrastructure
     {
         private static readonly Dictionary<string, long> Count = new Dictionary<string, long>();
         private static readonly object Locker = new object();
+
         /// <summary>
         /// This stopwatch will appear only in Debug mode
         /// </summary>

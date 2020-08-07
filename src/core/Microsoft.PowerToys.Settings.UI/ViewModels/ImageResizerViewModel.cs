@@ -2,18 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Views;
-using Windows.UI.Popups;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -47,14 +42,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 SettingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
             }
 
-            this._isEnabled = generalSettings.Enabled.ImageResizer;
-            this._advancedSizes = Settings.Properties.ImageresizerSizes.Value;
-            this._jpegQualityLevel = Settings.Properties.ImageresizerJpegQualityLevel.Value;
-            this._pngInterlaceOption = Settings.Properties.ImageresizerPngInterlaceOption.Value;
-            this._tiffCompressOption = Settings.Properties.ImageresizerTiffCompressOption.Value;
-            this._fileName = Settings.Properties.ImageresizerFileName.Value;
-            this._keepDateModified = Settings.Properties.ImageresizerKeepDateModified.Value;
-            this._encoderGuidId = GetEncoderIndex(Settings.Properties.ImageresizerFallbackEncoder.Value);
+            _isEnabled = generalSettings.Enabled.ImageResizer;
+            _advancedSizes = Settings.Properties.ImageresizerSizes.Value;
+            _jpegQualityLevel = Settings.Properties.ImageresizerJpegQualityLevel.Value;
+            _pngInterlaceOption = Settings.Properties.ImageresizerPngInterlaceOption.Value;
+            _tiffCompressOption = Settings.Properties.ImageresizerTiffCompressOption.Value;
+            _fileName = Settings.Properties.ImageresizerFileName.Value;
+            _keepDateModified = Settings.Properties.ImageresizerKeepDateModified.Value;
+            _encoderGuidId = GetEncoderIndex(Settings.Properties.ImageresizerFallbackEncoder.Value);
 
             int i = 0;
             foreach (ImageSize size in _advancedSizes)

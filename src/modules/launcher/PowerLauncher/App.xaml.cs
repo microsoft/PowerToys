@@ -106,7 +106,6 @@ namespace PowerLauncher
                 InternationalizationManager.Instance.ChangeLanguage(_settings.Language);
 
                 // main windows needs initialized before theme change because of blur settings
-
                 Http.Proxy = _settings.Proxy;
 
                 RegisterExitEvents();
@@ -203,7 +202,6 @@ namespace PowerLauncher
         //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
         //     Dispose(disposing: false);
         // }
-
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method

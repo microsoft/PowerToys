@@ -10,7 +10,7 @@ namespace Microsoft.Plugin.Indexer
     {
         public List<ContextMenu> ContextMenus { get; } = new List<ContextMenu>();
 
-        public int MaxSearchCount { get; set; } = 100;
+        public int MaxSearchCount { get; set; } = 30;
 
         public bool UseLocationAsWorkingDir { get; set; } = false;
     }

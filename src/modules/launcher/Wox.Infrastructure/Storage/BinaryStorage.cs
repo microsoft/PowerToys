@@ -16,6 +16,7 @@ namespace Wox.Infrastructure.Storage
     /// Storage object using binary data
     /// Normally, it has better performance, but not readable
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "Generic, file is named correctly")]
     public class BinaryStorage<T> : IStorage<T>
     {
         // This storage helper returns whether or not to delete the binary storage items
@@ -37,6 +38,7 @@ namespace Wox.Infrastructure.Storage
         public T TryLoad(T defaultData)
         {
             _storageHelper = new StoragePowerToysVersionInfo(FilePath, BINARY_STORAGE);
+
             // Depending on the version number of the previously installed PT Run, delete the cache if it is found to be incompatible
             if (_storageHelper.clearCache)
             {
@@ -72,7 +74,7 @@ namespace Wox.Infrastructure.Storage
 
         private T Deserialize(FileStream stream, T defaultData)
         {
-            //http://stackoverflow.com/questions/2120055/binaryformatter-deserialize-gives-serializationexception
+            // http://stackoverflow.com/questions/2120055/binaryformatter-deserialize-gives-serializationexception
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             BinaryFormatter binaryFormatter = new BinaryFormatter
             {

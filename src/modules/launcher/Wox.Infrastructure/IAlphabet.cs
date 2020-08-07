@@ -2,14 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Wox.Plugin;
-
-namespace Wox.Infrastructure.UserSettings
+namespace Wox.Infrastructure
 {
-    public class CustomPluginHotkey : BaseModel
+    public interface IAlphabet
     {
-        public string Hotkey { get; set; }
-
-        public string ActionKeyword { get; set; }
+        string Translate(string stringToTranslate);
     }
 }

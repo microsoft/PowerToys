@@ -54,8 +54,6 @@ namespace Wox.Test
 
             // Assert
             Assert.IsTrue(testClass.isFunctionCalled);
-
         }
-
     }
 }

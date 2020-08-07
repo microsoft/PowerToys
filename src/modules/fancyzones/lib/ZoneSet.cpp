@@ -142,7 +142,7 @@ public:
     IFACEMETHODIMP_(void)
     MoveWindowIntoZoneByPoint(HWND window, HWND zoneWindow, POINT ptClient) noexcept;
     IFACEMETHODIMP_(bool)
-    CalculateZones(MONITORINFO monitorInfo, int zoneCount, int spacing) noexcept;
+    CalculateZones(RECT workArea, int zoneCount, int spacing) noexcept;
     IFACEMETHODIMP_(bool)
     IsZoneEmpty(int zoneIndex) noexcept;
 
@@ -369,9 +369,9 @@ ZoneSet::MoveWindowIntoZoneByPoint(HWND window, HWND zoneWindow, POINT ptClient)
 }
 
 IFACEMETHODIMP_(bool)
-ZoneSet::CalculateZones(MONITORINFO monitorInfo, int zoneCount, int spacing) noexcept
+ZoneSet::CalculateZones(RECT workAreaRect, int zoneCount, int spacing) noexcept
 {
-    Rect const workArea(monitorInfo.rcWork);
+    Rect workArea(workAreaRect);
     //invalid work area
     if (workArea.width() == 0 || workArea.height() == 0)
     {

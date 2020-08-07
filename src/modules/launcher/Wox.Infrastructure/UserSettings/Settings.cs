@@ -15,6 +15,7 @@ namespace Wox.Infrastructure.UserSettings
     {
         private string _hotkey = "Alt + Space";
         private string _previousHotkey = "";
+
         public string PreviousHotkey
         {
             get
@@ -29,6 +30,7 @@ namespace Wox.Infrastructure.UserSettings
             {
                 return _hotkey;
             }
+
             set
             {
                 if (_hotkey != value)
@@ -41,14 +43,23 @@ namespace Wox.Infrastructure.UserSettings
         }
 
         public string Language { get; set; } = "en";
+
         public string Theme { get; set; } = "Dark";
+
         public string QueryBoxFont { get; set; } = FontFamily.GenericSansSerif.Name;
+
         public string QueryBoxFontStyle { get; set; }
+
         public string QueryBoxFontWeight { get; set; }
+
         public string QueryBoxFontStretch { get; set; }
+
         public string ResultFont { get; set; } = FontFamily.GenericSansSerif.Name;
+
         public string ResultFontStyle { get; set; }
+
         public string ResultFontWeight { get; set; }
+
         public string ResultFontStretch { get; set; }
 
         /// <summary>
@@ -62,6 +73,7 @@ namespace Wox.Infrastructure.UserSettings
         public string QuerySearchPrecisionString
         {
             get { return QuerySearchPrecision.ToString(); }
+
             set
             {
                 try
@@ -87,15 +99,18 @@ namespace Wox.Infrastructure.UserSettings
         public bool AutoUpdates { get; set; } = false;
 
         public double WindowLeft { get; set; }
+
         public double WindowTop { get; set; }
 
         private int _maxResultsToShow = 4;
+
         public int MaxResultsToShow
         {
             get
             {
                 return _maxResultsToShow;
             }
+
             set
             {
                 if (_maxResultsToShow != value)
@@ -110,7 +125,8 @@ namespace Wox.Infrastructure.UserSettings
 
         // Order defaults to 0 or -1, so 1 will let this property appear last
         [JsonProperty(Order = 1)]
-        public PluginsSettings PluginSettings { get; set; } = new PluginsSettings();
+        public PluginSettings PluginSettings { get; set; } = new PluginSettings();
+
         public ObservableCollection<CustomPluginHotkey> CustomPluginHotkeys { get; set; } = new ObservableCollection<CustomPluginHotkey>();
 
         [Obsolete]
@@ -120,14 +136,19 @@ namespace Wox.Infrastructure.UserSettings
         public OpacityMode OpacityMode { get; set; } = OpacityMode.Normal;
 
         public bool DontPromptUpdateMsg { get; set; }
+
         public bool EnableUpdateLog { get; set; }
 
         public bool StartWoxOnSystemStartup { get; set; } = true;
+
         public bool HideOnStartup { get; set; }
+
         bool _hideNotifyIcon { get; set; }
+
         public bool HideNotifyIcon
         {
             get { return _hideNotifyIcon; }
+
             set
             {
                 _hideNotifyIcon = value;
@@ -136,10 +157,13 @@ namespace Wox.Infrastructure.UserSettings
         }
 
         public bool LeaveCmdOpen { get; set; }
+
         public bool HideWhenDeactivated { get; set; } = true;
+
         public bool ClearInputOnLaunch { get; set; } = false;
 
         public bool RememberLastLaunchLocation { get; set; }
+
         public bool IgnoreHotkeysOnFullscreen { get; set; }
 
         public HttpProxy Proxy { get; set; } = new HttpProxy();

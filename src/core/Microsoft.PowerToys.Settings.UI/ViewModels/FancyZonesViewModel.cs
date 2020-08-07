@@ -2,16 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Runtime.CompilerServices;
-using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.Toolkit.Uwp.Helpers;
 using Windows.UI;
-using Windows.UI.Popups;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -35,32 +32,32 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
             }
 
-            this.LaunchEditorEventHandler = new ButtonClickCommand(LaunchEditor);
+            LaunchEditorEventHandler = new ButtonClickCommand(LaunchEditor);
 
-            this._shiftDrag = Settings.Properties.FancyzonesShiftDrag.Value;
-            this._mouseSwitch = Settings.Properties.FancyzonesMouseSwitch.Value;
-            this._overrideSnapHotkeys = Settings.Properties.FancyzonesOverrideSnapHotkeys.Value;
-            this._moveWindowsAcrossMonitors = Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value;
-            this._displayChangemoveWindows = Settings.Properties.FancyzonesDisplayChangeMoveWindows.Value;
-            this._zoneSetChangeMoveWindows = Settings.Properties.FancyzonesZoneSetChangeMoveWindows.Value;
-            this._appLastZoneMoveWindows = Settings.Properties.FancyzonesAppLastZoneMoveWindows.Value;
-            this._openWindowOnActiveMonitor = Settings.Properties.FancyzonesOpenWindowOnActiveMonitor.Value;
-            this._restoreSize = Settings.Properties.FancyzonesRestoreSize.Value;
-            this._useCursorPosEditorStartupScreen = Settings.Properties.UseCursorposEditorStartupscreen.Value;
-            this._showOnAllMonitors = Settings.Properties.FancyzonesShowOnAllMonitors.Value;
-            this._makeDraggedWindowTransparent = Settings.Properties.FancyzonesMakeDraggedWindowTransparent.Value;
-            this._highlightOpacity = Settings.Properties.FancyzonesHighlightOpacity.Value;
-            this._excludedApps = Settings.Properties.FancyzonesExcludedApps.Value;
-            this.EditorHotkey = Settings.Properties.FancyzonesEditorHotkey.Value;
-
+            _shiftDrag = Settings.Properties.FancyzonesShiftDrag.Value;
+            _mouseSwitch = Settings.Properties.FancyzonesMouseSwitch.Value;
+            _overrideSnapHotkeys = Settings.Properties.FancyzonesOverrideSnapHotkeys.Value;
+            _moveWindowsAcrossMonitors = Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value;
+            _displayChangemoveWindows = Settings.Properties.FancyzonesDisplayChangeMoveWindows.Value;
+            _zoneSetChangeMoveWindows = Settings.Properties.FancyzonesZoneSetChangeMoveWindows.Value;
+            _appLastZoneMoveWindows = Settings.Properties.FancyzonesAppLastZoneMoveWindows.Value;
+            _openWindowOnActiveMonitor = Settings.Properties.FancyzonesOpenWindowOnActiveMonitor.Value;
+            _restoreSize = Settings.Properties.FancyzonesRestoreSize.Value;
+            _useCursorPosEditorStartupScreen = Settings.Properties.UseCursorposEditorStartupscreen.Value;
+            _showOnAllMonitors = Settings.Properties.FancyzonesShowOnAllMonitors.Value;
+            _spanZonesAcrossMonitors = Settings.Properties.FancyzonesSpanZonesAcrossMonitors.Value;
+            _makeDraggedWindowTransparent = Settings.Properties.FancyzonesMakeDraggedWindowTransparent.Value;
+            _highlightOpacity = Settings.Properties.FancyzonesHighlightOpacity.Value;
+            _excludedApps = Settings.Properties.FancyzonesExcludedApps.Value;
+            EditorHotkey = Settings.Properties.FancyzonesEditorHotkey.Value;
             string inactiveColor = Settings.Properties.FancyzonesInActiveColor.Value;
-            this._zoneInActiveColor = inactiveColor != string.Empty ? inactiveColor.ToColor() : "#F5FCFF".ToColor();
+            _zoneInActiveColor = inactiveColor != string.Empty ? inactiveColor.ToColor() : "#F5FCFF".ToColor();
 
             string borderColor = Settings.Properties.FancyzonesBorderColor.Value;
-            this._zoneBorderColor = borderColor != string.Empty ? borderColor.ToColor() : "#FFFFFF".ToColor();
+            _zoneBorderColor = borderColor != string.Empty ? borderColor.ToColor() : "#FFFFFF".ToColor();
 
             string highlightColor = Settings.Properties.FancyzonesZoneHighlightColor.Value;
-            this._zoneHighlightColor = highlightColor != string.Empty ? highlightColor.ToColor() : "#0078D7".ToColor();
+            _zoneHighlightColor = highlightColor != string.Empty ? highlightColor.ToColor() : "#0078D7".ToColor();
 
             GeneralSettings generalSettings;
             try
@@ -73,7 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 SettingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
             }
 
-            this._isEnabled = generalSettings.Enabled.FancyZones;
+            _isEnabled = generalSettings.Enabled.FancyZones;
         }
 
         private bool _isEnabled;
@@ -85,6 +82,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _zoneSetChangeMoveWindows;
         private bool _appLastZoneMoveWindows;
         private bool _openWindowOnActiveMonitor;
+        private bool _spanZonesAcrossMonitors;
         private bool _restoreSize;
         private bool _useCursorPosEditorStartupScreen;
         private bool _showOnAllMonitors;
@@ -312,6 +310,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _showOnAllMonitors = value;
                     Settings.Properties.FancyzonesShowOnAllMonitors.Value = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool SpanZonesAcrossMonitors
+        {
+            get
+            {
+                return _spanZonesAcrossMonitors;
+            }
+
+            set
+            {
+                if (value != _spanZonesAcrossMonitors)
+                {
+                    _spanZonesAcrossMonitors = value;
+                    Settings.Properties.FancyzonesSpanZonesAcrossMonitors.Value = value;
                     RaisePropertyChanged();
                 }
             }

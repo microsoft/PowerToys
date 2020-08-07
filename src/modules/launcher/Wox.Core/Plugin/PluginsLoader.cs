@@ -18,7 +18,7 @@ namespace Wox.Core.Plugin
     {
         public const string PATH = "PATH";
 
-        public static List<PluginPair> Plugins(List<PluginMetadata> metadatas, PluginsSettings settings)
+        public static List<PluginPair> Plugins(List<PluginMetadata> metadatas, PluginSettings settings)
         {
             var csharpPlugins = CSharpPlugins(metadatas).ToList();
             var executablePlugins = ExecutablePlugins(metadatas);
@@ -35,7 +35,6 @@ namespace Wox.Core.Plugin
             {
                 var milliseconds = Stopwatch.Debug($"|PluginsLoader.CSharpPlugins|Constructor init cost for {metadata.Name}", () =>
                 {
-
 #if DEBUG
                     var assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(metadata.ExecuteFilePath);
                     var types = assembly.GetTypes();
@@ -83,6 +82,7 @@ namespace Wox.Core.Plugin
                 });
                 metadata.InitTime += milliseconds;
             }
+
             return plugins;
         }
 

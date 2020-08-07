@@ -39,9 +39,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 SettingsUtils.SaveSettings(generalSettings.ToJsonString(), string.Empty);
             }
 
-            this._isEnabled = generalSettings.Enabled.ShortcutGuide;
-            this._pressTime = Settings.Properties.PressTime.Value;
-            this._opacity = Settings.Properties.OverlayOpacity.Value;
+            _isEnabled = generalSettings.Enabled.ShortcutGuide;
+            _pressTime = Settings.Properties.PressTime.Value;
+            _opacity = Settings.Properties.OverlayOpacity.Value;
 
             string theme = Settings.Properties.Theme.Value;
 

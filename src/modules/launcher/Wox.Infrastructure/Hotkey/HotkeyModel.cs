@@ -12,15 +12,19 @@ namespace Wox.Infrastructure.Hotkey
     public class HotkeyModel
     {
         public bool Alt { get; set; }
+
         public bool Shift { get; set; }
+
         public bool Win { get; set; }
+
         public bool Ctrl { get; set; }
+
         public Key CharKey { get; set; }
 
         Dictionary<Key, string> specialSymbolDictionary = new Dictionary<Key, string>
         {
-            {Key.Space, "Space"},
-            {Key.Oem3, "~"}
+            { Key.Space, "Space" },
+            { Key.Oem3, "~" }
         };
 
         public ModifierKeys ModifierKeys
@@ -54,7 +58,6 @@ namespace Wox.Infrastructure.Hotkey
 
         public HotkeyModel()
         {
-
         }
 
         public HotkeyModel(string hotkeyString)
@@ -119,7 +122,6 @@ namespace Wox.Infrastructure.Hotkey
                     }
                     catch (ArgumentException)
                     {
-
                     }
                 }
             }

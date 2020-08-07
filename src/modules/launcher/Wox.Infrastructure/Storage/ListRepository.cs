@@ -13,9 +13,10 @@ namespace Wox.Infrastructure.Storage
 {
     /// <summary>
     /// The intent of this class is to provide a basic subset of 'list' like operations, without exposing callers to the internal representation
-    /// of the data structure.  Currently this is implemented as a list for it's simplicity. 
+    /// of the data structure.  Currently this is implemented as a list for it's simplicity.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">typeof</typeparam>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "Generic, file is named correctly")]
     public class ListRepository<T> : IRepository<T>, IEnumerable<T>
     {
         public IList<T> Items { get { return _items.Values.ToList(); } }
@@ -24,12 +25,11 @@ namespace Wox.Infrastructure.Storage
 
         public ListRepository()
         {
-
         }
 
         public void Set(IList<T> items)
         {
-            //enforce that internal representation
+            // enforce that internal representation
             try
             {
                 _items = new ConcurrentDictionary<int, T>(items.ToDictionary(i => i.GetHashCode()));
@@ -51,7 +51,6 @@ namespace Wox.Infrastructure.Storage
             {
                 Log.Error($"|ListRepository.Add| Item Already Exists <{insertedItem}>");
             }
-
         }
 
         public void Remove(T removedItem)

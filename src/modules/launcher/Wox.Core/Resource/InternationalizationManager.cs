@@ -23,6 +23,7 @@ namespace Wox.Core.Resource
                         }
                     }
                 }
+
                 return instance;
             }
         }

@@ -13,7 +13,6 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Lib;
 using Microsoft.PowerToys.Settings.UI.Lib.Utilities;
 using Microsoft.PowerToys.Settings.UI.Views;
-using Microsoft.Toolkit.Uwp.Helpers;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;

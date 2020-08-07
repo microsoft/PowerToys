@@ -10,11 +10,6 @@ using System.Windows.Media.Imaging;
 
 namespace Wox.Infrastructure.Image
 {
-    public interface IImageHashGenerator
-    {
-        string GetHashFromImage(ImageSource image);
-    }
-
     public class ImageHashGenerator : IImageHashGenerator
     {
         public string GetHashFromImage(ImageSource imageSource)
@@ -48,7 +43,6 @@ namespace Wox.Infrastructure.Image
             {
                 return null;
             }
-
         }
     }
 }

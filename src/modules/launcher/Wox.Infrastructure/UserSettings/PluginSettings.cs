@@ -7,7 +7,7 @@ using Wox.Plugin;
 
 namespace Wox.Infrastructure.UserSettings
 {
-    public class PluginsSettings : BaseModel
+    public class PluginSettings : BaseModel
     {
         public Dictionary<string, Plugin> Plugins { get; set; } = new Dictionary<string, Plugin>();
 
@@ -38,17 +38,5 @@ namespace Wox.Infrastructure.UserSettings
                 }
             }
         }
-    }
-
-    public class Plugin
-    {
-        public string ID { get; set; }
-        public string Name { get; set; }
-        public List<string> ActionKeywords { get; set; } // a reference of the action keywords from plugin manager
-
-        /// <summary>
-        /// Used only to save the state of the plugin in settings
-        /// </summary>
-        public bool Disabled { get; set; }
     }
 }

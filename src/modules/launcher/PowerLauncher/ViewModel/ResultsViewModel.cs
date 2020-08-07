@@ -23,8 +23,8 @@ namespace PowerLauncher.ViewModel
 
         private readonly object _collectionLock = new object();
         private readonly Settings _settings;
-        // private int MaxResults => _settings?.MaxResultsToShow ?? 6;
 
+        // private int MaxResults => _settings?.MaxResultsToShow ?? 6;
         public ResultsViewModel()
         {
             Results = new ResultCollection();
@@ -105,6 +105,7 @@ namespace PowerLauncher.ViewModel
                     break;
                 }
             }
+
             return index;
         }
 
@@ -189,9 +190,9 @@ namespace PowerLauncher.ViewModel
 
         public void SelectNextContextMenuItem()
         {
-            if(SelectedItem != null)
+            if (SelectedItem != null)
             {
-                if(!SelectedItem.SelectNextContextButton())
+                if (!SelectedItem.SelectNextContextButton())
                 {
                     SelectedItem.SelectLastContextButton();
                 }
@@ -229,7 +230,7 @@ namespace PowerLauncher.ViewModel
             }
 
             List<ResultViewModel> newResults = new List<ResultViewModel>(newRawResults.Count);
-            foreach(Result r in newRawResults)
+            foreach (Result r in newRawResults)
             {
                 newResults.Add(new ResultViewModel(r));
                 ct.ThrowIfCancellationRequested();

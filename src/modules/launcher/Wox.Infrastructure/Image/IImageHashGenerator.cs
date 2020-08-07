@@ -2,14 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Wox.Plugin;
+using System.Windows.Media;
 
-namespace Wox.Infrastructure.UserSettings
+namespace Wox.Infrastructure.Image
 {
-    public class CustomPluginHotkey : BaseModel
+    public interface IImageHashGenerator
     {
-        public string Hotkey { get; set; }
-
-        public string ActionKeyword { get; set; }
+        string GetHashFromImage(ImageSource image);
     }
 }

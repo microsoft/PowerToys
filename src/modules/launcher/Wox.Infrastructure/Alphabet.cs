@@ -16,11 +16,6 @@ using Wox.Infrastructure.UserSettings;
 
 namespace Wox.Infrastructure
 {
-    public interface IAlphabet
-    {
-        string Translate(string stringToTranslate);
-    }
-
     public class Alphabet : IAlphabet
     {
         private readonly HanyuPinyinOutputFormat Format = new HanyuPinyinOutputFormat();
@@ -167,7 +162,7 @@ namespace Wox.Infrastructure
 
             if (word.Length > 40)
             {
-                //Skip strings that are too long string for Pinyin conversion.
+                // Skip strings that are too long string for Pinyin conversion.
                 return false;
             }
 
