@@ -188,6 +188,7 @@ namespace PowerLauncher.Helper
                 {
                     throw new Win32Exception();
                 }
+
                 var result = new string[numArgs];
 
                 for (int i = 0; i < numArgs; i++)
@@ -201,11 +202,11 @@ namespace PowerLauncher.Helper
             finally
             {
                 IntPtr p = _LocalFree(argv);
+
                 // Otherwise LocalFree failed.
                 // Assert.AreEqual(IntPtr.Zero, p);
             }
         }
-
     }
 
     public interface ISingleInstanceApp
@@ -359,6 +360,7 @@ namespace PowerLauncher.Helper
                         // Do an asynchronous call to ActivateFirstInstance function
                         Application.Current.Dispatcher.Invoke(ActivateFirstInstance);
                     }
+
                     // Disconnect client
                     pipeServer.Disconnect();
                 }

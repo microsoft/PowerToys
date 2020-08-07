@@ -27,6 +27,7 @@ namespace PowerLauncher.Storage
                     years += 1;
                 return $"about {years} {(years == 1 ? "year" : "years")} ago";
             }
+
             if (span.Days > 30)
             {
                 int months = (span.Days / 30);
@@ -34,6 +35,7 @@ namespace PowerLauncher.Storage
                     months += 1;
                 return $"about {months} {(months == 1 ? "month" : "months")} ago";
             }
+
             if (span.Days > 0)
                 return $"about {span.Days} {(span.Days == 1 ? "day" : "days")} ago";
             if (span.Hours > 0)

@@ -52,7 +52,6 @@ namespace PowerLauncher.ViewModel
                 PluginName = PluginName,
                 Trigger = triggerType.ToString(),
                 ActionName = Title
-
             };
             PowerToysTelemetry.Log.WriteEvent(eventData);
         }

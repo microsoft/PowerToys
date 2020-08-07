@@ -15,11 +15,9 @@ using Microsoft.Plugin.Indexer.DriveDetection;
 
 namespace Wox.Test.Plugins
 {
-
     [TestFixture]
     public class WindowsIndexerTest
     {
-
         public WindowsSearchAPI GetWindowsSearchAPI()
         {
             var mock = new Mock<ISearch>();
@@ -306,7 +304,7 @@ namespace Wox.Test.Plugins
         [TestCase(0, true, ExpectedResult = false)]
         [TestCase(1, false, ExpectedResult = false)]
         [TestCase(1, true, ExpectedResult = false)]
-        public bool DriveDetection_MustDisplayWarning_WhenEnhancedModeIsOffAndWhenWarningIsNotDisabled(int enhancedModeStatus, bool disableWarningCheckBoxStatus) 
+        public bool DriveDetection_MustDisplayWarning_WhenEnhancedModeIsOffAndWhenWarningIsNotDisabled(int enhancedModeStatus, bool disableWarningCheckBoxStatus)
         {
             // Arrange
             var mockRegistry = new Mock<IRegistryWrapper>();
@@ -318,6 +316,5 @@ namespace Wox.Test.Plugins
             // Act & Assert
             return _driveDetection.DisplayWarning();
         }
-
     }
 }

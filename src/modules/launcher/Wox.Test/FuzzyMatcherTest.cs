@@ -119,6 +119,7 @@ namespace Wox.Test
                 {
                     Debug.WriteLine("SCORE: " + item.Score.ToString() + ", FoundString: " + item.Title);
                 }
+
                 Debug.WriteLine("###############################################");
                 Debug.WriteLine("");
 
@@ -162,7 +163,7 @@ namespace Wox.Test
             StringMatcher.SearchPrecisionScore expectedPrecisionScore,
             bool expectedPrecisionResult)
         {
-            // When            
+            // When
             var matcher = new StringMatcher { UserSettingSearchPrecision = expectedPrecisionScore };
 
             // Given

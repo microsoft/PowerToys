@@ -186,6 +186,7 @@ namespace PowerLauncher.Helper
                     matrix = src.CompositionTarget.TransformFromDevice;
                 }
             }
+
             return new Point((int)(matrix.M11 * unitX), (int)(matrix.M22 * unitY));
         }
 
