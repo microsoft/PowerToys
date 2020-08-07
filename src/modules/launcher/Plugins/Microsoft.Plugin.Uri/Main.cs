@@ -1,11 +1,13 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Plugin.Uri.UriHelper;
-using Microsoft.PowerToys.Settings.UI.Lib;
 using Wox.Infrastructure.Logger;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
@@ -134,9 +136,9 @@ namespace Microsoft.Plugin.Uri
                 }
                 else
                 {
-                    var indexOfComma = programLocation.IndexOf(',',StringComparison.Ordinal);
+                    var indexOfComma = programLocation.IndexOf(',', StringComparison.Ordinal);
                     BrowserIconPath = indexOfComma > 0
-                        ? programLocation.Substring(0,  indexOfComma)
+                        ? programLocation.Substring(0, indexOfComma)
                         : programLocation;
                 }
             }

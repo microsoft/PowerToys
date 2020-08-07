@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using Microsoft.Plugin.Uri.Interfaces;
 
@@ -13,26 +17,26 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 return false;
             }
 
-            //Handle common cases UriBuilder does not handle
+            // Handle common cases UriBuilder does not handle
             if (input.EndsWith(":", StringComparison.Ordinal)
                 || input.EndsWith(".", StringComparison.Ordinal)
                 || input.EndsWith(":/", StringComparison.Ordinal))
             {
-	            result = default;
-	            return false;
+                result = default;
+                return false;
             }
 
             try
             {
-	            var urlBuilder = new UriBuilder(input);
+                var urlBuilder = new UriBuilder(input);
 
-	            result = urlBuilder.Uri;
-	            return true;
+                result = urlBuilder.Uri;
+                return true;
             }
             catch (System.UriFormatException)
             {
-	            result = default;
-	            return false;
+                result = default;
+                return false;
             }
         }
     }
