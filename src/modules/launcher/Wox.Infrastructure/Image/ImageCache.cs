@@ -26,6 +26,7 @@ namespace Wox.Infrastructure.Image
                 var i = _data[path];
                 return i;
             }
+
             set
             {
                 _data[path] = value;
@@ -89,5 +90,4 @@ namespace Wox.Infrastructure.Image
             Usage = new ConcurrentDictionary<string, int>(usage);
         }
     }
-
 }

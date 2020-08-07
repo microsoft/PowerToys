@@ -19,7 +19,7 @@ namespace ColorPicker.Behaviors
             var sender = ((MoveWindowBehavior)d).AssociatedObject;
             var move = new DoubleAnimation(sender.Left, (double)e.NewValue, new Duration(TimeSpan.FromMilliseconds(150)), FillBehavior.Stop);
             move.EasingFunction = new QuadraticEase() { EasingMode = EasingMode.EaseOut };
-            sender.BeginAnimation(Window.LeftProperty, move, HandoffBehavior.SnapshotAndReplace);
+            sender.BeginAnimation(Window.LeftProperty, move, HandoffBehavior.Compose);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "https://docs.microsoft.com/en-us/dotnet/framework/wpf/advanced/dependency-property-security#:~:text=Dependency%20properties%20should%20generally%20be%20considered%20to%20be,make%20security%20guarantees%20about%20a%20dependency%20property%20value.")]
@@ -30,7 +30,7 @@ namespace ColorPicker.Behaviors
             var sender = ((MoveWindowBehavior)d).AssociatedObject;
             var move = new DoubleAnimation(sender.Top, (double)e.NewValue, new Duration(TimeSpan.FromMilliseconds(150)), FillBehavior.Stop);
             move.EasingFunction = new QuadraticEase() { EasingMode = EasingMode.EaseOut };
-            sender.BeginAnimation(Window.TopProperty, move, HandoffBehavior.SnapshotAndReplace);
+            sender.BeginAnimation(Window.TopProperty, move, HandoffBehavior.Compose);
         }
 
         public double Left

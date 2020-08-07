@@ -18,7 +18,7 @@ namespace Wox.Infrastructure.Exception
             return CreateExceptionReport(exception);
         }
 
-        //todo log /display line by line 
+        // todo log /display line by line
         private static string CreateExceptionReport(System.Exception ex)
         {
             var sb = new StringBuilder();
@@ -96,12 +96,10 @@ namespace Wox.Infrastructure.Exception
                 else if (string.IsNullOrEmpty(ass.Location))
                 {
                     sb.Append("location is null or empty");
-
                 }
                 else
                 {
                     sb.Append(ass.Location);
-
                 }
 
                 sb.AppendLine(")");
@@ -151,9 +149,7 @@ namespace Wox.Infrastructure.Exception
                                     else if (install == "1")
                                         result.Add(string.Format("{0} {1} {2}", versionKeyName, subKeyName, name));
                                 }
-
                             }
-
                         }
                     }
                 }
@@ -179,7 +175,6 @@ namespace Wox.Infrastructure.Exception
             {
                 return new List<string>();
             }
-
         }
     }
 }

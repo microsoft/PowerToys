@@ -9,9 +9,13 @@ namespace Wox.Infrastructure.Storage
     public interface IRepository<T>
     {
         void Add(T insertedItem);
+
         void Remove(T removedItem);
+
         bool Contains(T item);
+
         void Set(IList<T> list);
+
         bool Any();
     }
 }

@@ -13,6 +13,7 @@ namespace Wox.Infrastructure.Storage
         public bool clearCache = false;
 
         private String currentPowerToysVersion = String.Empty;
+
         private String FilePath { get; set; } = String.Empty;
 
         // As of now this information is not pertinent but may be in the future
@@ -102,6 +103,7 @@ namespace Wox.Infrastructure.Storage
         public StoragePowerToysVersionInfo(String AssociatedFilePath, int type)
         {
             FilePath = GetFilePath(AssociatedFilePath, type);
+
             // Get the previous version of PowerToys and cache Storage details from the CacheDetails.json storage file
             String previousVersion = GetPreviousVersion();
             currentPowerToysVersion = Microsoft.PowerToys.Settings.UI.Lib.Utilities.Helper.GetProductVersion();

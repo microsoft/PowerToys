@@ -184,7 +184,7 @@ namespace PowerLauncher.ViewModel
 
             StartHelpCommand = new RelayCommand(_ =>
             {
-                Process.Start("http://doc.wox.one/");
+                Process.Start("https://aka.ms/PowerToys/");
             });
 
             OpenResultCommand = new RelayCommand(index =>
@@ -260,6 +260,7 @@ namespace PowerLauncher.ViewModel
                 if (!string.IsNullOrEmpty(QueryText))
                 {
                     ChangeQueryText(string.Empty, true);
+
                     // Push Event to UI SystemQuery has changed
                     OnPropertyChanged(nameof(SystemQueryText));
                 }
@@ -337,6 +338,7 @@ namespace PowerLauncher.ViewModel
                         QueryText = string.Empty;
                     }
                 }
+
                 _selectedResults.Visibility = Visibility.Visible;
             }
         }
@@ -360,7 +362,6 @@ namespace PowerLauncher.ViewModel
                 {
                     PowerToysTelemetry.Log.WriteEvent(new LauncherHideEvent());
                 }
-
             }
         }
 
@@ -535,7 +536,6 @@ namespace PowerLauncher.ViewModel
                             QueryLength = query.RawQuery.Length
                         };
                         PowerToysTelemetry.Log.WriteEvent(queryEvent);
-
                     }, currentCancellationToken);
                 }
             }
@@ -660,6 +660,7 @@ namespace PowerLauncher.ViewModel
                     {
                         StartHotkeyTimer();
                     }
+
                     if (_settings.LastQueryMode == LastQueryMode.Empty)
                     {
                         ChangeQueryText(string.Empty);
@@ -772,7 +773,9 @@ namespace PowerLauncher.ViewModel
                 {
                     var _ = PluginManager.QueryForPlugin(plugin, query);
                 }
-            };
+            }
+
+;
         }
 
         public void HandleContextMenu(Key AcceleratorKey, ModifierKeys AcceleratorModifiers)
@@ -819,6 +822,7 @@ namespace PowerLauncher.ViewModel
                         return query + input.Substring(query.Length);
                     }
                 }
+
                 return input;
             }
 
@@ -849,6 +853,7 @@ namespace PowerLauncher.ViewModel
                     {
                         _hotkeyManager?.UnregisterHotkey(_hotkeyHandle);
                     }
+
                     _hotkeyManager?.Dispose();
                     _updateSource?.Dispose();
                     _disposed = true;

@@ -48,7 +48,6 @@ namespace Wox.Infrastructure.Image
             {
                 return null;
             }
-
         }
     }
 }

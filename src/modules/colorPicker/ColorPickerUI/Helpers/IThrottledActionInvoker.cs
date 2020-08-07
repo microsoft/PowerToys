@@ -2,10 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.Plugin.Indexer
+using System;
+
+namespace ColorPicker.Helpers
 {
-    public interface IRegistryWrapper
+    public interface IThrottledActionInvoker
     {
-        int GetHKLMRegistryValue(string registryLocation, string valueName);
+        void ScheduleAction(Action action, int miliseconds);
     }
 }
