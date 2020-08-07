@@ -51,8 +51,6 @@ namespace PowerLauncher
             content.AppendLine(exception.ToString());
             var paragraph = new Paragraph();
             paragraph.Inlines.Add(content.ToString());
-            paragraph.Inlines.Add(content.ToString());
-            paragraph.Inlines.Add(content.ToString());
             ErrorTextbox.Document.Blocks.Add(paragraph);
         }
 
