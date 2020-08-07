@@ -21,8 +21,8 @@ namespace Microsoft.Plugin.Program.Storage
         private IPackageCatalog _packageCatalog;
         public PackageRepository(IPackageCatalog packageCatalog, IStorage<IList<UWPApplication>> storage)
         {
-            _storage = storage ?? throw new ArgumentNullException("storage", "StorageRepository requires an initialized storage interface");
-            _packageCatalog = packageCatalog ?? throw new ArgumentNullException("packageCatalog", "PackageRepository expects an interface to be able to subscribe to package events");
+            _storage = storage ?? throw new ArgumentNullException(nameof(storage), "StorageRepository requires an initialized storage interface");
+            _packageCatalog = packageCatalog ?? throw new ArgumentNullException(nameof(packageCatalog), "PackageRepository expects an interface to be able to subscribe to package events");
             _packageCatalog.PackageInstalling += OnPackageInstalling;
             _packageCatalog.PackageUninstalling += OnPackageUninstalling;
         }
