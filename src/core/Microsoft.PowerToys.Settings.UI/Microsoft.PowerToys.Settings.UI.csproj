@@ -112,7 +112,6 @@
     <Compile Include="ViewModels\Commands\ButtonClickCommand.cs" />
     <Compile Include="ViewModels\GeneralViewModel.cs" />
     <Compile Include="ViewModels\FancyZonesViewModel.cs" />
-    <Compile Include="ViewModels\ImageResizerViewModel.cs" />
     <Compile Include="ViewModels\KeyboardManagerViewModel.cs" />
     <Compile Include="ViewModels\PowerPreviewViewModel.cs" />
     <Compile Include="ViewModels\PowerRenameViewModel.cs" />
