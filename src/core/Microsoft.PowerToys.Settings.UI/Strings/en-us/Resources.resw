@@ -645,4 +645,22 @@
   <data name="FancyZones_SpanZonesAcrossMonitorsCheckBoxControl.Content" xml:space="preserve">
     <value>Allow zones to span across monitors</value>
   </data>
+  <data name="ImageResizer_Formatting_ActualHeight.Text" xml:space="preserve">
+    <value>Actual height</value>
+  </data>
+  <data name="ImageResizer_Formatting_ActualWidth.Text" xml:space="preserve">
+    <value>Actual width</value>
+  </data>
+  <data name="ImageResizer_Formatting_Filename.Text" xml:space="preserve">
+    <value>Original filename</value>
+  </data>
+  <data name="ImageResizer_Formatting_SelectedHeight.Text" xml:space="preserve">
+    <value>Selected height</value>
+  </data>
+  <data name="ImageResizer_Formatting_SelectedWidth.Text" xml:space="preserve">
+    <value>Selected width</value>
+  </data>
+  <data name="ImageResizer_Formatting_Sizename.Text" xml:space="preserve">
+    <value>Size name</value>
+  </data>
 </root>
