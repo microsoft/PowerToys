@@ -96,6 +96,7 @@ namespace Microsoft.Plugin.Indexer
                         }
 
                         var searchResultsList = _api.Search(searchQuery, isFullQuery, maxCount: _settings.MaxSearchCount).ToList();
+                        var score = 0;
                         foreach (var searchResult in searchResultsList)
                         {
                             var path = searchResult.Path;
@@ -135,7 +136,10 @@ namespace Microsoft.Plugin.Indexer
 
                                 return hide;
                             };
+                            r.Score = score;
                             r.ContextData = searchResult;
+
+                            score -= 1;
 
                             // If the result is a directory, then it's display should show a directory.
                             if (Directory.Exists(path))
