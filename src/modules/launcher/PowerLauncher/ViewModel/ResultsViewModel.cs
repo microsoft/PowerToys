@@ -222,7 +222,7 @@ namespace PowerLauncher.ViewModel
         /// <summary>
         /// Add new results to ResultCollection
         /// </summary>
-        public void AddResults(List<Result> newRawResults, string resultId, CancellationToken ct)
+        public void AddResults(List<Result> newRawResults, CancellationToken ct)
         {
             if (newRawResults == null)
             {
@@ -236,7 +236,6 @@ namespace PowerLauncher.ViewModel
                 ct.ThrowIfCancellationRequested();
             }
 
-            Results.RemoveAll(r => r.Result.PluginID == resultId);
             Results.AddRange(newResults);
         }
         #endregion
