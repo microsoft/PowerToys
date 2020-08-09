@@ -14,27 +14,23 @@ namespace ViewModelTests
     [TestClass]
     public class General
     {
+        public const string generalSettings_file_name = "Test\\GenealSettings";
+
         [TestInitialize]
         public void Setup()
         {
             // initialize creation of test settings file.
             GeneralSettings generalSettings = new GeneralSettings();
-            SettingsUtils.SaveSettings(generalSettings.ToJsonString());
+            SettingsUtils.SaveSettings(generalSettings.ToJsonString(), generalSettings_file_name);
         }
 
         [TestCleanup]
         public void CleanUp()
         {
             // delete folder created.
-            string generalSettings_file_name = string.Empty;
             if (SettingsUtils.SettingsFolderExists(generalSettings_file_name))
             {
                 DeleteFolder(generalSettings_file_name);
-            }
-
-            if (SettingsUtils.SettingsFolderExists(string.Empty))
-            {
-                DeleteFolder(string.Empty);
             }
         }
 
@@ -58,7 +54,8 @@ namespace ViewModelTests
                 UpdateUIThemeMethod,
                 SendMockIPCConfigMSG,
                 SendRestartAdminIPCMessage,
-                SendCheckForUpdatesIPCMessage);
+                SendCheckForUpdatesIPCMessage,
+                generalSettings_file_name);
 
             Assert.AreEqual(viewModel.RunningAsUserDefaultText, viewModel.RunningAsText);
             Assert.IsFalse(viewModel.IsElevated);
@@ -93,7 +90,8 @@ namespace ViewModelTests
                 UpdateUIThemeMethod,
                 SendMockIPCConfigMSG,
                 SendRestartAdminIPCMessage,
-                SendCheckForUpdatesIPCMessage);
+                SendCheckForUpdatesIPCMessage,
+                generalSettings_file_name);
             Assert.IsFalse(viewModel.Startup);
 
             // act
@@ -123,7 +121,8 @@ namespace ViewModelTests
                 UpdateUIThemeMethod,
                 SendMockIPCConfigMSG,
                 SendRestartAdminIPCMessage,
-                SendCheckForUpdatesIPCMessage);
+                SendCheckForUpdatesIPCMessage,
+                generalSettings_file_name);
 
             Assert.IsFalse(viewModel.RunElevated);
 
@@ -132,38 +131,10 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void AutoDownloadUpdates_ShouldEnableAutoDownloadUpdates_WhenSuccessful()
-        {
-            // Arrange
-            // Assert
-            Func<string, int> SendMockIPCConfigMSG = msg =>
-            {
-                OutGoingGeneralSettings snd = JsonSerializer.Deserialize<OutGoingGeneralSettings>(msg);
-                Assert.IsTrue(snd.GeneralSettings.AutoDownloadUpdates);
-                return 0;
-            };
-
-            Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
-            Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
-            GeneralViewModel viewModel = new GeneralViewModel(
-                "GeneralSettings_RunningAsAdminText",
-                "GeneralSettings_RunningAsUserText",
-                false,
-                false,
-                UpdateUIThemeMethod,
-                SendMockIPCConfigMSG,
-                SendRestartAdminIPCMessage,
-                SendCheckForUpdatesIPCMessage);
-            Assert.IsFalse(viewModel.AutoDownloadUpdates);
-
-            // act
-            viewModel.AutoDownloadUpdates = true;
-        }
-
-        [TestMethod]
         public void IsLightThemeRadioButtonChecked_ShouldThemeToLight_WhenSuccessful()
         {
             // Arrange
+            GeneralViewModel viewModel = null;
             // Assert
             Func<string, int> SendMockIPCConfigMSG = msg =>
             {
@@ -174,7 +145,7 @@ namespace ViewModelTests
 
             Func<string, int> SendRestartAdminIPCMessage = msg => { return 0; };
             Func<string, int> SendCheckForUpdatesIPCMessage = msg => { return 0; };
-            GeneralViewModel viewModel = new GeneralViewModel(
+            viewModel = new GeneralViewModel(
                 "GeneralSettings_RunningAsAdminText",
                 "GeneralSettings_RunningAsUserText",
                 false,
@@ -182,7 +153,8 @@ namespace ViewModelTests
                 UpdateUIThemeMethod,
                 SendMockIPCConfigMSG,
                 SendRestartAdminIPCMessage,
-                SendCheckForUpdatesIPCMessage);
+                SendCheckForUpdatesIPCMessage,
+                generalSettings_file_name);
             Assert.IsFalse(viewModel.IsLightThemeRadioButtonChecked);
 
             // act
@@ -211,7 +183,8 @@ namespace ViewModelTests
                 UpdateUIThemeMethod,
                 SendMockIPCConfigMSG,
                 SendRestartAdminIPCMessage,
-                SendCheckForUpdatesIPCMessage);
+                SendCheckForUpdatesIPCMessage,
+                generalSettings_file_name);
             Assert.IsFalse(viewModel.IsDarkThemeRadioButtonChecked);
 
 
