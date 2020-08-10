@@ -798,9 +798,9 @@ namespace Microsoft.Plugin.Program.Programs
                 int fullPathPrime = 31;
 
                 int result = 1;
-                result = result * namePrime + obj.Name.ToLowerInvariant().GetHashCode(StringComparison.Ordinal);
-                result = result * executablePrime + obj.ExecutableName.ToLowerInvariant().GetHashCode(StringComparison.Ordinal);
-                result = result * fullPathPrime + obj.FullPath.ToLowerInvariant().GetHashCode(StringComparison.Ordinal);
+                result = result * namePrime + obj.Name.ToUpperInvariant().GetHashCode(StringComparison.Ordinal);
+                result = result * executablePrime + obj.ExecutableName.ToUpperInvariant().GetHashCode(StringComparison.Ordinal);
+                result = result * fullPathPrime + obj.FullPath.ToUpperInvariant().GetHashCode(StringComparison.Ordinal);
 
                 return result;
             }
