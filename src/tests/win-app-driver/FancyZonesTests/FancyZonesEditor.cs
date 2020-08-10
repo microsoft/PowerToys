@@ -1,4 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 using System;
@@ -8,6 +9,7 @@ namespace PowerToysTests
     public class FancyZonesEditor : PowerToysSession
     {
         protected static WindowsElement editorWindow;
+        protected static AppiumWebElement creatorWindow;
 
         protected static void ResetSettings()
         {
@@ -94,15 +96,13 @@ namespace PowerToysTests
             }
         }
 
-        protected static void OpenCreatorWindow(string tabName, string creatorWindowName, string buttonId = "EditCustomButton")
+        protected static void OpenCreatorWindow(string tabName, string buttonId = "EditCustomButton")
         {
             try
             {
-                string elementXPath = "//Text[@Name=\"" + tabName + "\"]";
-                WaitElementByXPath(elementXPath).Click();
-                WaitElementByAccessibilityId(buttonId).Click();
-
-                WindowsElement creatorWindow = WaitElementByName(creatorWindowName);
+                editorWindow.FindElementByName(tabName).Click();
+                editorWindow.FindElementByAccessibilityId(buttonId).Click();
+                creatorWindow = editorWindow.FindElementByXPath("//Window");
                 Assert.IsNotNull(creatorWindow, "Creator window didn't open");
             }
             catch (Exception ex)

@@ -48,7 +48,7 @@ namespace PowerToysTests
         [TestMethod]
         public void MoveVerticalSplitter()
         {
-            OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
+            OpenCreatorWindow("Columns", "EditTemplateButton");
             WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
             Assert.IsNotNull(gridEditor);
 
@@ -104,7 +104,7 @@ namespace PowerToysTests
         [TestMethod]
         public void MoveHorizontalSplitter()
         {
-            OpenCreatorWindow("Rows", "Custom table layout creator", "EditTemplateButton");
+            OpenCreatorWindow("Rows", "EditTemplateButton");
             WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
             Assert.IsNotNull(gridEditor);
 
@@ -160,7 +160,7 @@ namespace PowerToysTests
         [TestMethod]
         public void CreateSplitter()
         {
-            OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
+            OpenCreatorWindow("Columns", "EditTemplateButton");
             WaitSeconds(2);
 
             ReadOnlyCollection<WindowsElement> zones = session.FindElementsByClassName("GridZone");
@@ -184,7 +184,7 @@ namespace PowerToysTests
         [TestMethod]
         public void TestSplitterShiftAfterCreation()
         {
-            OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
+            OpenCreatorWindow("Columns", "EditTemplateButton");
             WaitSeconds(2);
 
             ReadOnlyCollection<WindowsElement> zones = session.FindElementsByClassName("GridZone");
@@ -227,7 +227,7 @@ namespace PowerToysTests
         [TestMethod]
         public void CreateSplitterWithShiftPressed()
         {
-            OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
+            OpenCreatorWindow("Columns", "EditTemplateButton");
             WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
             Assert.IsNotNull(gridEditor);
 
@@ -252,7 +252,7 @@ namespace PowerToysTests
         [TestMethod]
         public void CreateSplitterWithShiftPressedFocusOnGridEditor()
         {
-            OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
+            OpenCreatorWindow("Columns", "EditTemplateButton");
             WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
             Assert.IsNotNull(gridEditor);
 
@@ -277,7 +277,7 @@ namespace PowerToysTests
         [TestMethod]
         public void MoveHorizontallyWithLimiter()
         {
-            OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
+            OpenCreatorWindow("Columns", "EditTemplateButton");
             WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
             Assert.IsNotNull(gridEditor);
 
@@ -311,7 +311,7 @@ namespace PowerToysTests
         [TestMethod]
         public void MoveVerticallyWithLimiter()
         {
-            OpenCreatorWindow("Rows", "Custom table layout creator", "EditTemplateButton");
+            OpenCreatorWindow("Rows", "EditTemplateButton");
             WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
             Assert.IsNotNull(gridEditor);
 
@@ -345,7 +345,7 @@ namespace PowerToysTests
         [TestMethod]
         public void MergeZones()
         {
-            OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
+            OpenCreatorWindow("Columns", "EditTemplateButton");
             WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
             Assert.IsNotNull(gridEditor);
 
@@ -367,7 +367,7 @@ namespace PowerToysTests
         [TestMethod]
         public void MoveAfterMerge()
         {
-            OpenCreatorWindow("Columns", "Custom table layout creator", "EditTemplateButton");
+            OpenCreatorWindow("Columns", "EditTemplateButton");
             WindowsElement gridEditor = session.FindElementByClassName("GridEditor");
             Assert.IsNotNull(gridEditor);
 
