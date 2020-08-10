@@ -6,7 +6,6 @@ using System.ComponentModel;
 
 namespace ColorPicker.Settings
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "Generic, file is named correctly")]
     public sealed class SettingItem<T> : INotifyPropertyChanged
     {
         private T _value;

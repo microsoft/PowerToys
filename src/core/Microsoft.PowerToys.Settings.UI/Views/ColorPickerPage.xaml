@@ -11,29 +11,23 @@
     d:DesignWidth="400" 
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
+    <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
                 <VisualState x:Name="WideLayout">
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
                     </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="1"/>
-                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}"/>
-                        <Setter Target="ColorPickerSettingsView.(Grid.Row)" Value="0" />
-                        <Setter Target="LinksPanel.(RelativePanel.Below)" Value="AboutImage"/>
-                        <Setter Target="AboutTitle.Visibility" Value="Visible" />
-                    </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
+                        <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
-                        <Setter Target="SidePanel.Width" Value="500"/>
-                        <Setter Target="ColorPickerSettingsView.(Grid.Row)" Value="1" />
+                        <Setter Target="SidePanel.Width" Value="Auto"/>
+                        <Setter Target="ColorPickerView.(Grid.Row)" Value="1" />
                         <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
                         <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
                         <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
@@ -51,7 +45,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Vertical" x:Name="ColorPickerSettingsView">
+        <StackPanel Orientation="Vertical" x:Name="ColorPickerView">
             <ToggleSwitch x:Uid="ColorPicker_EnableColorPicker" 
                           IsOn="{Binding IsEnabled, Mode=TwoWay}"/>
 
@@ -111,6 +105,7 @@
                 <Image Source="ms-appx:///Assets/Modules/ColorPicker.png" />
             </Border>
             <StackPanel x:Name="LinksPanel"
+                        Margin="0,1,0,0"
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
                 <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_ColorPicker">

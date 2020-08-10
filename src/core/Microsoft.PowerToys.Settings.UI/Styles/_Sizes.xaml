@@ -6,10 +6,10 @@
     <x:Double x:Key="SidePanelWidth">240</x:Double>
 
     <!-- Breakpoint for wide layout (side panel next to content) -->
-    <x:Double x:Key="WideLayoutMinWidth">1008</x:Double>
+    <x:Double x:Key="WideLayoutMinWidth">720</x:Double>
     
-    <!-- Breakpoint for small layout (side panel under content) -->
-    <x:Double x:Key="SmallLayoutMinWidth">480</x:Double>
+    <!-- Breakpoint for small layout (side panel above content) -->
+    <x:Double x:Key="SmallLayoutMinWidth">600</x:Double>
 
     <!-- Column spacing between content and sidepanel -->
     <x:Double x:Key="DefaultColumnSpacing">24</x:Double>
