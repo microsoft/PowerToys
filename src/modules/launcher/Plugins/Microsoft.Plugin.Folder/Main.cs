@@ -27,8 +27,8 @@ namespace Microsoft.Plugin.Folder
 
         private const string _fileExplorerProgramName = "explorer";
 
-        private readonly PluginJsonStorage<FolderSettings> _storage = new PluginJsonStorage<FolderSettings>();
-        private readonly FolderSettings _settings = _storage.Load();
+        private static readonly PluginJsonStorage<FolderSettings> _storage = new PluginJsonStorage<FolderSettings>();
+        private static readonly FolderSettings _settings = _storage.Load();
 
         private static List<string> _driverNames;
         private PluginInitContext _context;
@@ -60,15 +60,7 @@ namespace Microsoft.Plugin.Folder
                 throw new ArgumentNullException(paramName: nameof(query));
             }
 
-            var results = GetUserFolderResults(query);
-
-            string search = query.Search.ToLower(CultureInfo.InvariantCulture);
-            if (!IsDriveOrSharedFolder(search))
-            {
-                return results;
-            }
-
-            results.AddRange(QueryInternal_Directory_Exists(query));
+            var results = GetFolderPluginResults(query);
 
             // todo why was this hack here?
             foreach (var result in results)
@@ -79,8 +71,28 @@ namespace Microsoft.Plugin.Folder
             return results;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
+        public static List<Result> GetFolderPluginResults(Query query)
+        {
+            var results = GetUserFolderResults(query);
+            string search = query.Search.ToLower(CultureInfo.InvariantCulture);
+
+            if (!IsDriveOrSharedFolder(search))
+            {
+                return results;
+            }
+
+            results.AddRange(QueryInternalDirectoryExists(query));
+            return results;
+        }
+
         private static bool IsDriveOrSharedFolder(string search)
         {
+            if (search == null)
+            {
+                throw new ArgumentNullException(nameof(search));
+            }
+
             if (search.StartsWith(@"\\", StringComparison.InvariantCulture))
             { // share folder
                 return true;
@@ -118,7 +130,7 @@ namespace Microsoft.Plugin.Folder
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
-        private List<Result> GetUserFolderResults(Query query)
+        private static List<Result> GetUserFolderResults(Query query)
         {
             if (query == null)
             {
@@ -153,7 +165,7 @@ namespace Microsoft.Plugin.Folder
         };
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
-        private static List<Result> QueryInternal_Directory_Exists(Query query)
+        private static List<Result> QueryInternalDirectoryExists(Query query)
         {
             var search = query.Search;
             var results = new List<Result>();
