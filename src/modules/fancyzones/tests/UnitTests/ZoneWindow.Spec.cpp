@@ -527,7 +527,7 @@ namespace FancyZonesUnitTests
         {
             PrepareFZData();
             auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, false);
-            
+
             const auto window = Mocks::Window();
             zoneWindow->MoveSizeEnter(window);
 
@@ -626,14 +626,14 @@ namespace FancyZonesUnitTests
             zoneWindow->MoveWindowIntoZoneByIndex(Mocks::Window(), 0);
         }
 
-        TEST_METHOD(MoveWindowIntoZoneByDirection)
+        TEST_METHOD(MoveWindowIntoZoneByDirectionAndIndex)
         {
             PrepareFZData();
             auto zoneWindow = MakeZoneWindow(winrt::make_self<MockZoneWindowHost>().get(), m_hInst, m_monitor, m_uniqueId.str(), {}, false);
             Assert::IsNotNull(zoneWindow->ActiveZoneSet());
 
             const auto window = Mocks::WindowCreate(m_hInst);
-            zoneWindow->MoveWindowIntoZoneByDirection(window, VK_RIGHT, true);
+            zoneWindow->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true);
 
             const auto& actualAppZoneHistory = m_fancyZonesData.GetAppZoneHistoryMap();
             Assert::AreEqual((size_t)1, actualAppZoneHistory.size());
@@ -649,9 +649,9 @@ namespace FancyZonesUnitTests
             Assert::IsNotNull(zoneWindow->ActiveZoneSet());
 
             const auto window = Mocks::WindowCreate(m_hInst);
-            zoneWindow->MoveWindowIntoZoneByDirection(window, VK_RIGHT, true);
-            zoneWindow->MoveWindowIntoZoneByDirection(window, VK_RIGHT, true);
-            zoneWindow->MoveWindowIntoZoneByDirection(window, VK_RIGHT, true);
+            zoneWindow->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true);
+            zoneWindow->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true);
+            zoneWindow->MoveWindowIntoZoneByDirectionAndIndex(window, VK_RIGHT, true);
 
             const auto& actualAppZoneHistory = m_fancyZonesData.GetAppZoneHistoryMap();
             Assert::AreEqual((size_t)1, actualAppZoneHistory.size());
@@ -776,7 +776,7 @@ namespace FancyZonesUnitTests
             auto zone = MakeZone(RECT{ 50, 50, 300, 300 });
             zoneWindow->ActiveZoneSet()->AddZone(zone);
 
-            zoneWindow->MoveWindowIntoZoneByDirection(window, VK_LEFT, true);
+            zoneWindow->MoveWindowIntoZoneByDirectionAndIndex(window, VK_LEFT, true);
 
             RECT inZoneRect;
             GetWindowRect(window, &inZoneRect);
