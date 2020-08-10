@@ -58,7 +58,8 @@ interface __declspec(uuid("{7F017528-8110-4FB3-BE41-F472969C2560}")) IZoneWindow
      */
     IFACEMETHOD_(void, MoveWindowIntoZoneByIndexSet)(HWND window, const std::vector<int>& indexSet) = 0;
     /**
-     * Assign window to the zone based on direction (using WIN + LEFT/RIGHT arrow).
+     * Assign window to the zone based on direction (using WIN + LEFT/RIGHT arrow), based on zone index numbers,
+     * not their on-screen position.
      *
      * @param   window Handle of window which should be assigned to zone.
      * @param   vkCode Pressed arrow key.
