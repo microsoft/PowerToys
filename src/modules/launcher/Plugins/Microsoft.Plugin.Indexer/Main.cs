@@ -96,6 +96,13 @@ namespace Microsoft.Plugin.Indexer
                         }
 
                         var searchResultsList = _api.Search(searchQuery, isFullQuery, maxCount: _settings.MaxSearchCount).ToList();
+
+                        // If the delayed execution query is not required (since the SQL query is fast) return empty results
+                        if (searchResultsList.Count == 0 && isFullQuery)
+                        {
+                            return new List<Result>();
+                        }
+
                         var score = 0;
                         foreach (var searchResult in searchResultsList)
                         {

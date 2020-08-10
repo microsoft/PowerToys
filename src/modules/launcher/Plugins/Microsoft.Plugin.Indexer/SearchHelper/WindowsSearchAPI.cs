@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.Search.Interop;
 
@@ -14,7 +15,8 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
         public bool DisplayHiddenFiles { get; set; }
 
         private readonly ISearch windowsIndexerSearch;
-        private readonly object _lock = new object();
+
+        // private readonly object _lock = new object();
         private const uint _fileAttributeHidden = 0x2;
         private static readonly Regex _likeRegex = new Regex(@"[^\s(]+\s+LIKE\s+'([^']|'')*'\s+OR\s+", RegexOptions.Compiled);
 
@@ -48,23 +50,12 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             }
             else
             {
+                System.Diagnostics.Debug.WriteLine("sleep hit");
                 System.Threading.Thread.Sleep(10000);
             }
 
             // execute the command, which returns the results as an OleDBResults.
             List<OleDBResult> oleDBResults = windowsIndexerSearch.Query(queryHelper.ConnectionString, sqlQuery);
-            System.IO.FileStream fileStream = System.IO.File.Open("..\\..\\indexer_query_debug.log", System.IO.FileMode.Append, System.IO.FileAccess.Write);
-
-            // Encapsulate the filestream object in a StreamWriter instance.
-            System.IO.StreamWriter fileWriter = new System.IO.StreamWriter(fileStream);
-
-            // Write the current date time to the file
-
-            // Modify to consider all matches (. in each word for example). Test query without LIKE
-            fileWriter.WriteLine(keyword + ", " + sqlQuery);
-
-            fileWriter.Flush();
-            fileWriter.Close();
 
             // Loop over all records from the database
             foreach (OleDBResult oleDBResult in oleDBResults)
@@ -152,13 +143,10 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
 
         public IEnumerable<SearchResult> Search(string keyword, bool isFullQuery, string pattern = "*", int maxCount = 30)
         {
-            lock (_lock)
-            {
-                ISearchQueryHelper queryHelper;
-                InitQueryHelper(out queryHelper, maxCount);
-                ModifyQueryHelper(ref queryHelper, pattern);
-                return ExecuteQuery(queryHelper, keyword, isFullQuery);
-            }
+            ISearchQueryHelper queryHelper;
+            InitQueryHelper(out queryHelper, maxCount);
+            ModifyQueryHelper(ref queryHelper, pattern);
+            return ExecuteQuery(queryHelper, keyword, isFullQuery);
         }
 
         public static string SimplifyQuery(string sqlQuery)
