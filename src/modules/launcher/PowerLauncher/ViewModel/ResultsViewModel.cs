@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,12 +20,12 @@ namespace PowerLauncher.ViewModel
     {
         #region Private Fields
 
-        public ResultCollection Results { get; }
-
         private readonly object _collectionLock = new object();
+
         private readonly Settings _settings;
 
-        // private int MaxResults => _settings?.MaxResultsToShow ?? 6;
+        #endregion
+
         public ResultsViewModel()
         {
             Results = new ResultCollection();
@@ -45,8 +46,6 @@ namespace PowerLauncher.ViewModel
                 }
             };
         }
-
-        #endregion
 
         #region Properties
 
@@ -89,6 +88,8 @@ namespace PowerLauncher.ViewModel
         public Thickness Margin { get; set; }
 
         public Visibility Visibility { get; set; } = Visibility.Hidden;
+
+        public ResultCollection Results { get; }
 
         #endregion
 
@@ -238,6 +239,14 @@ namespace PowerLauncher.ViewModel
 
             Results.AddRange(newResults);
         }
+
+        public void Sort()
+        {
+            var sorted = Results.OrderByDescending(x => x.Result.Score).ToList();
+            Results.Clear();
+            Results.AddRange(sorted);
+        }
+
         #endregion
 
         #region FormattedText Dependency Property
