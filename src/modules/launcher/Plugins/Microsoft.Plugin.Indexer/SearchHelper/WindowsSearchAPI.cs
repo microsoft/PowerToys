@@ -48,11 +48,6 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
                 // if a full query is requested but there is no difference between the queries, return empty results
                 return results;
             }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine("sleep hit");
-                System.Threading.Thread.Sleep(10000);
-            }
 
             // execute the command, which returns the results as an OleDBResults.
             List<OleDBResult> oleDBResults = windowsIndexerSearch.Query(queryHelper.ConnectionString, sqlQuery);
