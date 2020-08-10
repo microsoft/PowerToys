@@ -1,4 +1,7 @@
-using Microsoft.PowerToys.Settings.UI.Lib;
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,6 +11,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.PowerToys.Settings.UI.Lib;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
@@ -22,11 +26,12 @@ namespace Microsoft.Plugin.Folder
         public const string CopyImagePath = "Images\\copy.dark.png";
 
         private const string _fileExplorerProgramName = "explorer";
+
+        private readonly PluginJsonStorage<FolderSettings> _storage = new PluginJsonStorage<FolderSettings>();
+        private readonly FolderSettings _settings = _storage.Load();
+
         private static List<string> _driverNames;
         private PluginInitContext _context;
-
-        private static readonly PluginJsonStorage<FolderSettings> _storage = new PluginJsonStorage<FolderSettings>();
-        private static readonly FolderSettings _settings = _storage.Load();
 
         private IContextMenu _contextMenuLoader;
 
@@ -47,14 +52,23 @@ namespace Microsoft.Plugin.Folder
             InitialDriverList();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
         public List<Result> Query(Query query)
         {
-            if(query == null)
+            if (query == null)
             {
                 throw new ArgumentNullException(paramName: nameof(query));
             }
 
-            var results = GetFolderPluginResults(query);
+            var results = GetUserFolderResults(query);
+
+            string search = query.Search.ToLower(CultureInfo.InvariantCulture);
+            if (!IsDriveOrSharedFolder(search))
+            {
+                return results;
+            }
+
+            results.AddRange(QueryInternal_Directory_Exists(query));
 
             // todo why was this hack here?
             foreach (var result in results)
@@ -65,28 +79,8 @@ namespace Microsoft.Plugin.Folder
             return results;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
-        public static List<Result> GetFolderPluginResults(Query query)
-        {
-            var results = GetUserFolderResults(query);
-            string search = query.Search.ToLower(CultureInfo.InvariantCulture);
-
-            if (!IsDriveOrSharedFolder(search))
-            {
-                return results;
-            }
-
-            results.AddRange(QueryInternalDirectoryExists(query));
-            return results;
-        }
-
         private static bool IsDriveOrSharedFolder(string search)
         {
-            if (search == null)
-            {
-                throw new ArgumentNullException(nameof(search));
-            }
-
             if (search.StartsWith(@"\\", StringComparison.InvariantCulture))
             { // share folder
                 return true;
@@ -119,14 +113,14 @@ namespace Microsoft.Plugin.Folder
                 {
                     Process.Start(_fileExplorerProgramName, path);
                     return true;
-                }
+                },
             };
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
-        private static List<Result> GetUserFolderResults(Query query)
+        private List<Result> GetUserFolderResults(Query query)
         {
-            if(query == null)
+            if (query == null)
             {
                 throw new ArgumentNullException(paramName: nameof(query));
             }
@@ -155,24 +149,19 @@ namespace Microsoft.Plugin.Folder
 
         private static readonly char[] _specialSearchChars = new char[]
         {
-            '?', '*', '>'
+            '?', '*', '>',
         };
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
-        private static List<Result> QueryInternalDirectoryExists(Query query)
+        private static List<Result> QueryInternal_Directory_Exists(Query query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
-
             var search = query.Search;
             var results = new List<Result>();
             var hasSpecial = search.IndexOfAny(_specialSearchChars) >= 0;
-            string incompleteName = "";
+            string incompleteName = string.Empty;
             if (hasSpecial || !Directory.Exists(search + "\\"))
             {
-                // if folder doesn't exist, we want to take the last part and use it afterwards to help the user 
+                // if folder doesn't exist, we want to take the last part and use it afterwards to help the user
                 // find the right folder.
                 int index = search.LastIndexOf('\\');
                 if (index > 0 && index < (search.Length - 1))
@@ -198,7 +187,7 @@ namespace Microsoft.Plugin.Folder
                 }
             }
 
-            results.Add(CreateOpenCurrentFolderResult( search));
+            results.Add(CreateOpenCurrentFolderResult(search));
 
             var searchOption = SearchOption.TopDirectoryOnly;
             incompleteName += "*";
@@ -223,7 +212,10 @@ namespace Microsoft.Plugin.Folder
 
                 foreach (var fileSystemInfo in fileSystemInfos)
                 {
-                    if ((fileSystemInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
+                    if ((fileSystemInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                    {
+                        continue;
+                    }
 
                     if (fileSystemInfo is DirectoryInfo)
                     {
@@ -275,7 +267,7 @@ namespace Microsoft.Plugin.Folder
 
                     return true;
                 },
-                ContextData = new SearchResult { Type = ResultType.File, FullPath = filePath }
+                ContextData = new SearchResult { Type = ResultType.File, FullPath = filePath },
             };
             return result;
         }
@@ -286,6 +278,7 @@ namespace Microsoft.Plugin.Folder
 
             var folderName = search.TrimEnd('\\').Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.None).Last();
             var sanitizedPath = Regex.Replace(search, @"[\/\\]+", "\\");
+
             // A network path must start with \\
             if (sanitizedPath.StartsWith("\\", StringComparison.InvariantCulture))
             {
@@ -303,7 +296,7 @@ namespace Microsoft.Plugin.Folder
                 {
                     Process.Start(_fileExplorerProgramName, sanitizedPath);
                     return true;
-                }
+                },
             };
         }
 
@@ -324,7 +317,6 @@ namespace Microsoft.Plugin.Folder
 
         public void UpdateSettings(PowerLauncherSettings settings)
         {
-
         }
     }
 }
