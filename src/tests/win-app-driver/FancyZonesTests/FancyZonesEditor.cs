@@ -15,21 +15,37 @@ namespace PowerToysTests
             ResetDefaultZoneSettings(true);
         }
 
-        protected static void OpenEditor()
+        protected static bool OpenEditor()
         {
+            Console.WriteLine("Open Editor");
+
             try
             {
                 new Actions(session).KeyDown(OpenQA.Selenium.Keys.Command).SendKeys("`").KeyUp(OpenQA.Selenium.Keys.Command).Perform();
-                WaitSeconds(2);
+                WaitSeconds(1);
+                
                 //editorWindow = WaitElementByXPath("//Window[@Name=\"FancyZones Editor\"]");
                 editorWindow = WaitElementByName("FancyZones Editor");
-                //may not find editor by name in 0.16.1
-                //editorWindow = WaitElementByAccessibilityId("MainWindow1");
                 Assert.IsNotNull(editorWindow, "Couldn't find editor window");
+                
+                return true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+            }
+
+            return false;
+        }
+
+        protected static void CloseEditor()
+        {
+            try
+            {
+                if (editorWindow != null)
+                {
+                    editorWindow.SendKeys(OpenQA.Selenium.Keys.Alt + OpenQA.Selenium.Keys.F4);
+                }
             }
         }
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 using System.Windows.Forms;
@@ -265,12 +265,7 @@ namespace PowerToysTests
                 return;
 
             ResetSettings();
-
-            if (!isPowerToysLaunched)
-            {
-                LaunchPowerToys();
-            }
-            OpenEditor();
+            Assert.IsTrue(OpenEditor());
             OpenCustomLayouts();
         }
 

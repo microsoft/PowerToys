@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 
@@ -87,7 +87,7 @@ namespace PowerToysTests
             if (session == null)
                 return;
 
-            OpenEditor();
+            Assert.IsTrue(OpenEditor());
             OpenTemplates();
         }
 

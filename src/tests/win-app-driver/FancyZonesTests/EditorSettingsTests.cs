@@ -18,7 +18,7 @@ namespace PowerToysTests
         [TestMethod]
         public void ZoneCount()
         {
-            OpenEditor();
+            Assert.IsTrue(OpenEditor());
 
             WindowsElement minusButton = session.FindElementByAccessibilityId("decrementZones");
             WindowsElement zoneCount = session.FindElementByAccessibilityId("zoneCount");
@@ -39,7 +39,7 @@ namespace PowerToysTests
 
                     WaitSeconds(1);
                     Assert.AreEqual(editorZoneCountValue, GetEditZonesSetting<int>(editorZoneCount));
-                    OpenEditor();
+                    Assert.IsTrue(OpenEditor());
 
                     minusButton = session.FindElementByAccessibilityId("decrementZones");
                     zoneCount = session.FindElementByAccessibilityId("zoneCount");
@@ -66,7 +66,7 @@ namespace PowerToysTests
         {
             for (int i = 0; i < 2; ++i)
             {
-                OpenEditor();
+                Assert.IsTrue(OpenEditor());
 
                 WindowsElement spaceAroundSetting = session.FindElementByAccessibilityId("spaceAroundSetting");
                 bool spaceAroundSettingValue = spaceAroundSetting.Selected;
@@ -83,7 +83,7 @@ namespace PowerToysTests
         [TestMethod]
         public void SpacingTestsValid()
         {
-            OpenEditor();
+            Assert.IsTrue(OpenEditor());
 
             WindowsElement spaceAroundSetting = session.FindElementByAccessibilityId("spaceAroundSetting");
             bool editorShowSpacingValue = spaceAroundSetting.Selected;
@@ -95,7 +95,7 @@ namespace PowerToysTests
 
             foreach (string editorSpacingValue in validValues)
             {
-                OpenEditor();
+                Assert.IsTrue(OpenEditor());
 
                 WindowsElement paddingValue = WaitElementByAccessibilityId("paddingValue");
                 ClearText(paddingValue);
@@ -112,7 +112,7 @@ namespace PowerToysTests
         [TestMethod]
         public void SpacingTestsInvalid()
         {
-            OpenEditor();
+            Assert.IsTrue(OpenEditor());
 
             WindowsElement spaceAroundSetting = session.FindElementByAccessibilityId("spaceAroundSetting");
             bool editorShowSpacingValue = spaceAroundSetting.Selected;
@@ -126,7 +126,7 @@ namespace PowerToysTests
 
             foreach (string value in invalidValues)
             {
-                OpenEditor();
+                Assert.IsTrue(OpenEditor());
 
                 WindowsElement paddingValue = WaitElementByAccessibilityId("paddingValue");
                 ClearText(paddingValue);
@@ -143,7 +143,7 @@ namespace PowerToysTests
         [TestMethod]
         public void SpacingTestLargeValue()
         {
-            OpenEditor();
+            Assert.IsTrue(OpenEditor());
             session.FindElementByXPath("//Text[@Name=\"Grid\"]").Click();
 
             WindowsElement paddingValue = session.FindElementByAccessibilityId("paddingValue");
@@ -155,7 +155,7 @@ namespace PowerToysTests
             editorWindow = null;
             try
             {
-                OpenEditor();
+                Assert.IsTrue(OpenEditor());
             }
             catch { }
 

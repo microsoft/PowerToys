@@ -406,7 +406,7 @@ namespace PowerToysTests
             {
                 LaunchPowerToys();
             }
-            OpenEditor();
+            Assert.IsTrue(OpenEditor());
             OpenTemplates();
         }
 
