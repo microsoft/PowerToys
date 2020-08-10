@@ -478,7 +478,7 @@ namespace PowerLauncher.ViewModel
                         // Contains all the non-global plugins for which this raw query is valid
                         var plugins = pluginQueryPair.Keys.ToList();
 
-                        // TODO CHECK: Global plugins 
+                        // Global plugins 
                         plugins = plugins.Concat(PluginManager.GlobalPlugins).ToList();
 
                         try
