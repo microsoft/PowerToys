@@ -31,8 +31,8 @@ namespace PowerLauncher.ViewModel
     {
         #region Private Fields
 
-        private Query _currentQuery;
-        private static Query _emptyQuery = new Query();
+        private string _currentQuery;
+        private static string _emptyQuery = String.Empty;
         private static bool _disposed;
         private string _queryTextBeforeLeaveResults;
 
@@ -467,14 +467,14 @@ namespace PowerLauncher.ViewModel
                 _updateToken = currentCancellationToken;
                 var queryText = QueryText.Trim();
 
-                var query = QueryBuilder.Build(ref queryText, PluginManager.NonGlobalPlugins);
-                if (query != null)
+                var pluginQueryPair = QueryBuilder.Build(ref queryText, PluginManager.NonGlobalPlugins);
+                if (pluginQueryPair != null)
                 {
-                    _currentQuery = query;
+                    _currentQuery = queryText;
                     Task.Run(() =>
                     {
                         Thread.Sleep(20);
-                        var plugins = PluginManager.ValidPluginsForQuery(query);
+                        var plugins = PluginManager.ValidPluginsForQuery(queryText);
 
                         try
                         {
@@ -485,7 +485,7 @@ namespace PowerLauncher.ViewModel
                             {
                                 if (!plugin.Metadata.Disabled)
                                 {
-                                    var results = PluginManager.QueryForPlugin(plugin, query);
+                                    var results = PluginManager.QueryForPlugin(plugin, queryText);
                                     resultPluginPair.Add((results, plugin.Metadata));
                                     currentCancellationToken.ThrowIfCancellationRequested();
                                 }
@@ -493,12 +493,12 @@ namespace PowerLauncher.ViewModel
 
                             lock (_addResultsLock)
                             {
-                                if (query.RawQuery == _currentQuery.RawQuery)
+                                if (queryText.Equals(_currentQuery, StringComparison.InvariantCulture))
                                 {
                                     Results.Clear();
                                     foreach (var p in resultPluginPair)
                                     {
-                                        UpdateResultView(p.Item1, query, currentCancellationToken);
+                                        UpdateResultView(p.Item1, queryText, currentCancellationToken);
                                         currentCancellationToken.ThrowIfCancellationRequested();
                                     }
 
@@ -510,7 +510,7 @@ namespace PowerLauncher.ViewModel
                             currentCancellationToken.ThrowIfCancellationRequested();
                             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                             {
-                                if (query.RawQuery == _currentQuery.RawQuery)
+                                if (queryText.Equals(_currentQuery, StringComparison.InvariantCulture))
                                 {
                                     Results.Results.NotifyChanges();
                                 }
@@ -536,7 +536,7 @@ namespace PowerLauncher.ViewModel
                         {
                             QueryTimeMs = queryTimer.ElapsedMilliseconds,
                             NumResults = Results.Results.Count,
-                            QueryLength = query.RawQuery.Length
+                            QueryLength = queryText.Length
                         };
                         PowerToysTelemetry.Log.WriteEvent(queryEvent);
                     }, currentCancellationToken);
