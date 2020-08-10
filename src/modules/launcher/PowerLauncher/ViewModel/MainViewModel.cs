@@ -697,7 +697,7 @@ namespace PowerLauncher.ViewModel
         /// <summary>
         /// To avoid deadlock, this method should not called from main thread
         /// </summary>
-        public void UpdateResultView(List<Result> list, Query originQuery, CancellationToken ct)
+        public void UpdateResultView(List<Result> list, string originQuery, CancellationToken ct)
         {
             if (list == null)
             {
@@ -721,7 +721,7 @@ namespace PowerLauncher.ViewModel
                 }
             }
 
-            if (originQuery.RawQuery == _currentQuery.RawQuery)
+            if (originQuery.Equals(_currentQuery, StringComparison.InvariantCulture))
             {
                 ct.ThrowIfCancellationRequested();
                 Results.AddResults(list, ct);
