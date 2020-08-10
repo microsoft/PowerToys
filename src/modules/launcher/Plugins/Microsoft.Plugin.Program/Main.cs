@@ -91,7 +91,7 @@ namespace Microsoft.Plugin.Program
 
         public void Init(PluginInitContext context)
         {
-            _context = context;
+            _context = context ?? throw new ArgumentNullException(nameof(context)); ;
             _context.API.ThemeChanged += OnThemeChanged;
             UpdateUWPIconPath(_context.API.GetCurrentTheme());
         }
@@ -131,6 +131,11 @@ namespace Microsoft.Plugin.Program
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
+            if(selectedResult == null)
+            {
+                throw new ArgumentNullException(nameof(selectedResult));
+            }
+
             var menuOptions = new List<ContextMenuResult>();
             var program = selectedResult.ContextData as Programs.IProgram;
             if (program != null)
@@ -146,6 +151,16 @@ namespace Microsoft.Plugin.Program
         {
             try
             {
+                if(runProcess == null)
+                {
+                    throw new ArgumentNullException(nameof(runProcess));
+                }
+
+                if(info == null)
+                {
+                    throw new ArgumentNullException(nameof(info));
+                }
+
                 runProcess(info);
             }
             catch (Exception)

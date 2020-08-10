@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using Microsoft.Plugin.Program.Views;
 using System.Linq;
 using Wox.Plugin;
+using System;
 
 namespace Microsoft.Plugin.Program
 {
@@ -25,7 +26,7 @@ namespace Microsoft.Plugin.Program
 
         public AddProgramSource(ProgramSource edit, ProgramPluginSettings settings)
         {
-            _editing = edit;
+            _editing = edit ?? throw new ArgumentNullException(nameof(edit));
             _settings = settings;
 
             InitializeComponent();

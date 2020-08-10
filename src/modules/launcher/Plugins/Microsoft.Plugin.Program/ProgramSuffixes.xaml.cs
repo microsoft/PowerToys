@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using Wox.Plugin;
 
 namespace Microsoft.Plugin.Program
@@ -13,9 +14,9 @@ namespace Microsoft.Plugin.Program
 
         public ProgramSuffixes(PluginInitContext context, ProgramPluginSettings settings)
         {
-            this.context = context;
+            this.context = context ?? throw new ArgumentNullException(nameof(context));
             InitializeComponent();
-            _settings = settings;
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             tbSuffixes.Text = string.Join(ProgramPluginSettings.SuffixSeparator.ToString(), _settings.ProgramSuffixes);
         }
 

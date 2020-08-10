@@ -60,6 +60,11 @@ namespace Microsoft.Plugin.Program.Programs
 
         public Result Result(string query, IPublicAPI api)
         {
+            if (api == null)
+            {
+                throw new ArgumentNullException(nameof(api));
+            }
+
             var score = Score(query);
             if (score <= 0)
             { // no need to create result if score is 0
@@ -94,6 +99,11 @@ namespace Microsoft.Plugin.Program.Programs
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentially keeping the process alive.")]
         public List<ContextMenuResult> ContextMenus(IPublicAPI api)
         {
+            if (api == null)
+            {
+                throw new ArgumentNullException(nameof(api));
+            }
+
             var contextMenus = new List<ContextMenuResult>();
 
             if (CanRunElevated)
@@ -188,7 +198,11 @@ namespace Microsoft.Plugin.Program.Programs
 
         public UWPApplication(IAppxManifestApplication manifestApp, UWP package)
         {
-          
+            if (manifestApp == null)
+            {
+                throw new ArgumentNullException(nameof(manifestApp));
+            }
+
             var hr = manifestApp.GetAppUserModelId(out var tmpUserModelId);
             UserModelId = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpUserModelId);
 
@@ -207,7 +221,7 @@ namespace Microsoft.Plugin.Program.Programs
             hr = manifestApp.GetStringValue("EntryPoint", out var tmpEntryPoint);
             EntryPoint = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpEntryPoint);
 
-            Package = package;
+            Package = package ?? throw new ArgumentNullException(nameof(package));
 
             DisplayName = ResourceFromPri(package.FullName, DisplayName);
             Description = ResourceFromPri(package.FullName, Description);

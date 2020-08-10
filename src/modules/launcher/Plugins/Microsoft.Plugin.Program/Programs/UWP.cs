@@ -32,6 +32,11 @@ namespace Microsoft.Plugin.Program.Programs
 
         public UWP(IPackage package)
         {
+            if (package == null)
+            {
+                throw new ArgumentNullException(nameof(package));
+            }
+
             Name = package.Name;
             FullName = package.FullName;
             FamilyName = package.FamilyName;

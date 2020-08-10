@@ -148,6 +148,11 @@ namespace Microsoft.Plugin.Program.Programs
 
         public Result Result(string query, IPublicAPI api)
         {
+            if(api == null)
+            {
+                throw new ArgumentNullException(nameof(api));
+            }
+
             var score = Score(query);
             if (score <= 0)
             { // no need to create result if this is zero
@@ -209,6 +214,11 @@ namespace Microsoft.Plugin.Program.Programs
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentially keeping the process alive.")]
         public List<ContextMenuResult> ContextMenus(IPublicAPI api)
         {
+            if (api == null)
+            {
+                throw new ArgumentNullException(nameof(api));
+            }
+
             var contextMenus = new List<ContextMenuResult>();
 
             if (AppType != (uint)ApplicationTypes.INTERNET_SHORTCUT_APPLICATION)
@@ -466,6 +476,11 @@ namespace Microsoft.Plugin.Program.Programs
         // Function to get the Win32 application, given the path to the application
         public static Win32Program GetAppFromPath(string path)
         {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
             Win32Program app = null;
             const string exeExtension = ".exe";
             const string lnkExtension = ".lnk";
@@ -817,6 +832,11 @@ namespace Microsoft.Plugin.Program.Programs
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Keeping the process alive but logging the exception")]
         public static Win32Program[] All(ProgramPluginSettings settings)
         {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
             try
             {
                 var programs = new List<Win32Program>().AsParallel();
