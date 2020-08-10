@@ -87,9 +87,11 @@ namespace PowerToysTests
                 try
                 {
                     result = session.FindElementByName(name);
+                    return result;
                 }
                 catch { }
-                return result;
+
+                WaitSeconds(0.5);
             }
             return null;
         }
@@ -105,9 +107,11 @@ namespace PowerToysTests
                 try
                 {
                     result = session.FindElementByXPath(xPath);
+                    return result;
                 }
                 catch { }
-                return result;
+
+                WaitSeconds(0.5);
             }
             return null;
         }
@@ -123,9 +127,11 @@ namespace PowerToysTests
                 try
                 {
                     result = session.FindElementByAccessibilityId(accessibilityId);
+                    return result;
                 }
                 catch { }
-                return result;
+
+                WaitSeconds(0.5);
             }
             return null;
         }
@@ -217,39 +223,48 @@ namespace PowerToysTests
             try
             {
                 AppiumOptions opts = new AppiumOptions();
-                opts.PlatformName = "Windows";
                 opts.AddAdditionalCapability("app", AppPath);
 
                 WindowsDriver<WindowsElement> driver = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), opts);
                 Assert.IsNotNull(driver);
                 driver.LaunchApp();
             }
-            catch (OpenQA.Selenium.WebDriverException ex)
+            catch (WebDriverException ex)
             {
                 Console.WriteLine("Exception on PowerToys launch:" + ex.Message);
                 //exception could be thrown even if app launched successfully
             }
+
+            //close launcher if appeared
+            WaitSeconds(1); 
+            new Actions(session).SendKeys(Keys.Escape).Perform();
+            WaitSeconds(1);
 
             isPowerToysLaunched = true;
         }
 
         public static void ExitPowerToys()
         {
+            trayButton.Click();
+            WaitSeconds(1);
+
             try
             {
-                trayButton.Click();
+                AppiumWebElement pt = PowerToysTrayButton();
+                Assert.IsNotNull(pt, "Could not exit PowerToys");
 
-                WindowsElement pt = WaitElementByXPath("//Button[@Name=\"PowerToys\"]");
                 new Actions(session).MoveToElement(pt).ContextClick().Perform();
+                session.FindElementByAccessibilityId("40001").Click();
+                //WaitElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
 
-                WaitElementByXPath("//MenuItem[@Name=\"Exit\"]").Click();
-                trayButton.Click(); //close tray
                 isPowerToysLaunched = false;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
+
+            trayButton.Click(); //close tray
         }
 
         public static void ResetDefaultFancyZonesSettings(bool relaunch)
@@ -270,11 +285,7 @@ namespace PowerToysTests
             }
             File.WriteAllText(filePath, data);
 
-            if (isPowerToysLaunched)
-            {
-                ExitPowerToys();
-            }
-
+            ExitPowerToys();
             if (relaunch)
             {
                 LaunchPowerToys();
