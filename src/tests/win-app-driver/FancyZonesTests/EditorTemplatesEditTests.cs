@@ -175,14 +175,12 @@ namespace PowerToysTests
         public static void ClassCleanup()
         {
             CloseSettings();
-            TearDown();
         }
 
         [TestInitialize]
         public void TestInitialize()
         {
-            if (session == null)
-                return;
+            Assert.IsNotNull(session);
 
             if (!isPowerToysLaunched)
             {

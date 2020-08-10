@@ -718,8 +718,7 @@ namespace PowerToysTests
         public static void ClassInitialize(TestContext context)
         {
             Setup(context);
-            if (session == null)
-                return;
+            Assert.IsNotNull(session);
 
             Init();
         }

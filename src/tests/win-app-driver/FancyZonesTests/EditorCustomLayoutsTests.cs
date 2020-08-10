@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
@@ -324,8 +324,7 @@ namespace PowerToysTests
         public static void ClassInitialize(TestContext context)
         {
             Setup(context, false);
-            if (session == null)
-                return;
+            Assert.IsNotNull(session);
 
             ResetSettings();
         }
@@ -339,9 +338,7 @@ namespace PowerToysTests
         [TestInitialize]
         public void TestInitialize()
         {
-            if (session == null)
-                return;
-
+            ResetDefaultZoneSettings(true);
             if (!isPowerToysLaunched)
             {
                 LaunchPowerToys();

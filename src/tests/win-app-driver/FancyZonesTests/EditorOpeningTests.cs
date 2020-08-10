@@ -233,8 +233,7 @@ namespace PowerToysTests
         public static void ClassInitialize(TestContext context)
         {
             Setup(context, false);
-            if (session == null)
-                return;
+            Assert.IsNotNull(session);
 
             ResetDefaultFancyZonesSettings(true);
         }

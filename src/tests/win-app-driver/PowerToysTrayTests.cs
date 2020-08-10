@@ -82,6 +82,7 @@ namespace PowerToysTests
         public static void ClassInitialize(TestContext context)
         {
             Setup(context);
+            Assert.IsNotNull(session);
         }
 
         [ClassCleanup]
