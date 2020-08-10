@@ -391,6 +391,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Unsure of what exceptions are caught here while enabling static analysis")]
         private static Win32Program LnkProgram(string path)
         {
             var program = Create(path);
@@ -429,16 +430,8 @@ namespace Microsoft.Plugin.Program.Programs
                 }
                 return program;
             }
-            catch (COMException e)
-            {
-                // C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\MiracastView.lnk always cause exception
-                ProgramLogger.LogException($"|Win32|LnkProgram|{path}" +
-                                                "|Error caused likely due to trying to get the description of the program", e);
-
-                program.Valid = false;
-                return program;
-            }
-#if !DEBUG //Only do a catch all in production. This is so make developer aware of any unhandled exception and add the exception handling in.
+             //Only do a catch all in production. This is so make developer aware of any unhandled exception and add the exception handling in.
+            //Error caused likely due to trying to get the description of the program
             catch (Exception e)
             {
                 ProgramLogger.LogException($"|Win32|LnkProgram|{path}" +
@@ -447,7 +440,6 @@ namespace Microsoft.Plugin.Program.Programs
                 program.Valid = false;
                 return program;
             }
-#endif
         }
 
         private static Win32Program ExeProgram(string path)
