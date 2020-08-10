@@ -26,7 +26,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             DisplayHiddenFiles = displayHiddenFiles;
         }
 
-        public List<SearchResult> ExecuteQuery(ISearchQueryHelper queryHelper, string keyword, bool isFullQuery)
+        public List<SearchResult> ExecuteQuery(ISearchQueryHelper queryHelper, string keyword, bool isFullQuery = false)
         {
             if (queryHelper == null)
             {
@@ -136,7 +136,7 @@ namespace Microsoft.Plugin.Indexer.SearchHelper
             queryHelper.QuerySorting = "System.DateModified DESC";
         }
 
-        public IEnumerable<SearchResult> Search(string keyword, bool isFullQuery, string pattern = "*", int maxCount = 30)
+        public IEnumerable<SearchResult> Search(string keyword, bool isFullQuery = false, string pattern = "*", int maxCount = 30)
         {
             ISearchQueryHelper queryHelper;
             InitQueryHelper(out queryHelper, maxCount);

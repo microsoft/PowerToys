@@ -562,7 +562,6 @@ namespace PowerLauncher.ViewModel
                                             if (Results.Results.Count > 0)
                                             {
                                                 Results.Visibility = Visibility.Visible;
-                                                Results.SelectedIndex = 0;
                                             }
                                             else
                                             {
