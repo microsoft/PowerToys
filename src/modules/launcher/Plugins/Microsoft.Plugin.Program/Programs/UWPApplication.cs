@@ -228,7 +228,7 @@ namespace Microsoft.Plugin.Program.Programs
                 if (File.Exists(manifest))
                 {
                     var file = File.ReadAllText(manifest);
-                    if (file.Contains("TrustLevel=\"mediumIL\"", StringComparison.InvariantCultureIgnoreCase))
+                    if (file.Contains("TrustLevel=\"mediumIL\"", StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
@@ -240,17 +240,17 @@ namespace Microsoft.Plugin.Program.Programs
         internal string ResourceFromPri(string packageFullName, string resourceReference)
         {
             const string prefix = "ms-resource:";
-            if (!string.IsNullOrWhiteSpace(resourceReference) && resourceReference.StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(resourceReference) && resourceReference.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
                 // magic comes from @talynone
                 // https://github.com/talynone/Wox.Plugin.WindowsUniversalAppLauncher/blob/master/StoreAppLauncher/Helpers/NativeApiHelper.cs#L139-L153
                 string key = resourceReference.Substring(prefix.Length);
                 string parsed;
-                if (key.StartsWith("//", StringComparison.InvariantCulture))
+                if (key.StartsWith("//", StringComparison.Ordinal))
                 {
                     parsed = prefix + key;
                 }
-                else if (key.StartsWith("/", StringComparison.InvariantCulture))
+                else if (key.StartsWith("/", StringComparison.Ordinal))
                 {
                     parsed = prefix + "//" + key;
                 }
@@ -342,7 +342,7 @@ namespace Microsoft.Plugin.Program.Programs
             // windows 8 https://msdn.microsoft.com/en-us/library/windows/apps/br211475.aspx
 
             string path;
-            if (uri.Contains("\\", StringComparison.InvariantCulture))
+            if (uri.Contains("\\", StringComparison.Ordinal))
             {
                 path = Path.Combine(Package.Location, uri);
             }
@@ -377,7 +377,7 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                 }
 
-                paths = paths.OrderByDescending(x => x.Contains(theme, StringComparison.InvariantCultureIgnoreCase)).ToList();
+                paths = paths.OrderByDescending(x => x.Contains(theme, StringComparison.OrdinalIgnoreCase)).ToList();
                 var selected = paths.FirstOrDefault(File.Exists);
                 if (!string.IsNullOrEmpty(selected))
                 {
@@ -404,7 +404,7 @@ namespace Microsoft.Plugin.Program.Programs
                         pathFactorPairs.Add(prefixThemePath, factor);
                     }
 
-                    paths = paths.OrderByDescending(x => x.Contains(theme, StringComparison.InvariantCultureIgnoreCase)).ToList();
+                    paths = paths.OrderByDescending(x => x.Contains(theme, StringComparison.OrdinalIgnoreCase)).ToList();
                     var selectedIconPath = paths.OrderBy(x => Math.Abs(pathFactorPairs.GetValueOrDefault(x) - appIconSize)).FirstOrDefault(File.Exists);
                     if (!string.IsNullOrEmpty(selectedIconPath))
                     {

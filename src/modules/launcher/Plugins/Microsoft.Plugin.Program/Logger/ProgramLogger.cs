@@ -31,7 +31,7 @@ namespace Microsoft.Plugin.Program.Logger
             using (var target = new FileTarget())
             {
                 configuration.AddTarget("file", target);
-                target.FileName = path.Replace(@"\", "/", StringComparison.InvariantCulture) + "/${shortdate}.txt";
+                target.FileName = path.Replace(@"\", "/", StringComparison.Ordinal) + "/${shortdate}.txt";
 #if DEBUG
                 var rule = new LoggingRule("*", LogLevel.Debug, target);
 #else

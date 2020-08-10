@@ -74,7 +74,7 @@ namespace Microsoft.Plugin.Program.Programs
             // To Filter PWAs when the user searches for the main application
             // All Chromium based applications contain the --app-id argument
             // Reference : https://codereview.chromium.org/399045/show
-            bool isWebApplication = FullPath.Contains(proxyWebApp, StringComparison.InvariantCultureIgnoreCase) && Arguments.Contains(appIdArgument, StringComparison.InvariantCultureIgnoreCase);
+            bool isWebApplication = FullPath.Contains(proxyWebApp, StringComparison.OrdinalIgnoreCase) && Arguments.Contains(appIdArgument, StringComparison.OrdinalIgnoreCase);
             return isWebApplication;
         }
 
@@ -333,7 +333,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             foreach (string line in lines)
             {
-                if (line.StartsWith(urlPrefix, StringComparison.InvariantCultureIgnoreCase))
+                if (line.StartsWith(urlPrefix, StringComparison.OrdinalIgnoreCase))
                 {
                     urlPath = line.Substring(urlPrefix.Length);
                     Uri uri = new Uri(urlPath);
@@ -345,7 +345,7 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                 }
 
-                if (line.StartsWith(iconFilePrefix, StringComparison.InvariantCultureIgnoreCase))
+                if (line.StartsWith(iconFilePrefix, StringComparison.OrdinalIgnoreCase))
                 {
                     iconPath = line.Substring(iconFilePrefix.Length);
                 }
@@ -798,9 +798,9 @@ namespace Microsoft.Plugin.Program.Programs
                 int fullPathPrime = 31;
 
                 int result = 1;
-                result = result * namePrime + obj.Name.ToLowerInvariant().GetHashCode(StringComparison.InvariantCulture);
-                result = result * executablePrime + obj.ExecutableName.ToLowerInvariant().GetHashCode(StringComparison.InvariantCulture);
-                result = result * fullPathPrime + obj.FullPath.ToLowerInvariant().GetHashCode(StringComparison.InvariantCulture);
+                result = result * namePrime + obj.Name.ToLowerInvariant().GetHashCode(StringComparison.Ordinal);
+                result = result * executablePrime + obj.ExecutableName.ToLowerInvariant().GetHashCode(StringComparison.Ordinal);
+                result = result * fullPathPrime + obj.FullPath.ToLowerInvariant().GetHashCode(StringComparison.Ordinal);
 
                 return result;
             }
