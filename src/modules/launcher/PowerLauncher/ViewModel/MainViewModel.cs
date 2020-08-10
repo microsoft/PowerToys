@@ -118,7 +118,7 @@ namespace PowerLauncher.ViewModel
                     Task.Run(() =>
                     {
                         PluginManager.UpdatePluginMetadata(e.Results, pair.Metadata, e.Query);
-                        UpdateResultView(e.Results, e.Query, _updateToken);
+                        UpdateResultView(e.Results, e.Query.RawQuery, _updateToken);
                     }, _updateToken);
                 };
             }
@@ -476,9 +476,10 @@ namespace PowerLauncher.ViewModel
                         Thread.Sleep(20);
 
                         // Contains all the non-global plugins for which this raw query is valid
-                        var plugins = pluginQueryPair.Keys;
+                        var plugins = pluginQueryPair.Keys.ToList();
 
-                        // TODO: Add all the global plugins as well
+                        // TODO CHECK: Global plugins 
+                        plugins = plugins.Concat(PluginManager.GlobalPlugins).ToList();
 
                         try
                         {
@@ -489,7 +490,9 @@ namespace PowerLauncher.ViewModel
                             {
                                 if (!plugin.Metadata.Disabled)
                                 {
-                                    var results = PluginManager.QueryForPlugin(plugin, queryText);
+                                    Query query;
+                                    pluginQueryPair.TryGetValue(plugin, out query);
+                                    var results = PluginManager.QueryForPlugin(plugin, query);
                                     resultPluginPair.Add((results, plugin.Metadata));
                                     currentCancellationToken.ThrowIfCancellationRequested();
                                 }
@@ -742,7 +745,9 @@ namespace PowerLauncher.ViewModel
             MainWindowVisibility = System.Windows.Visibility.Collapsed;
 
             // Fix Cold start for plugins
-            string s = "m";
+
+            // TODO: make same changes here
+            /*string s = "m";
             var query = QueryBuilder.Build(ref s, PluginManager.NonGlobalPlugins);
             var plugins = PluginManager.ValidPluginsForQuery(query);
             foreach (PluginPair plugin in plugins)
@@ -751,7 +756,7 @@ namespace PowerLauncher.ViewModel
                 {
                     var _ = PluginManager.QueryForPlugin(plugin, query);
                 }
-            }
+            }*/
 
 ;
         }

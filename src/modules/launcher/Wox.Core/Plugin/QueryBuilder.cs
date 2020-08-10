@@ -45,6 +45,12 @@ namespace Wox.Core.Plugin
                 }
             }
 
+            foreach(PluginPair globalPlugin in PluginManager.GlobalPlugins)
+            {
+                var query = new Query(rawQuery, rawQuery, terms, String.Empty);
+                pluginQueryPair.Add(globalPlugin, query);
+            }
+
             return pluginQueryPair;
         }
     }
