@@ -45,7 +45,6 @@ namespace Microsoft.Plugin.Program.Programs
         public void InitializeAppInfo(string installedLocation)
         {
             Location = installedLocation;
-            AppxPackageHelper _helper = new AppxPackageHelper();
             var path = Path.Combine(installedLocation, "AppxManifest.xml");
 
             var namespaces = XmlNamespaces(path);

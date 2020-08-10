@@ -8,7 +8,7 @@ using static Microsoft.Plugin.Program.Programs.UWP;
 
 namespace Microsoft.Plugin.Program.Programs
 {
-    public class AppxPackageHelper
+    public static class AppxPackageHelper
     {
         // This function returns a list of attributes of applications
         public static List<IAppxManifestApplication> getAppsFromManifest(IStream stream)
