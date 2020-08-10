@@ -177,8 +177,8 @@ namespace PowerToysTests
             //check splitted zone 
             Assert.AreEqual(zones[0].Rect.Top, defaultSpacing);
             Assert.IsTrue(Math.Abs(zones[0].Rect.Bottom - splitPos + defaultSpacing / 2) <= 2);
-            Assert.IsTrue(Math.Abs(zones[3].Rect.Top - splitPos - defaultSpacing / 2) <= 2);
-            Assert.AreEqual(zones[3].Rect.Bottom, Screen.PrimaryScreen.Bounds.Bottom - defaultSpacing);
+            Assert.IsTrue(Math.Abs(zones[1].Rect.Top - splitPos - defaultSpacing / 2) <= 2);
+            Assert.AreEqual(zones[1].Rect.Bottom, Screen.PrimaryScreen.Bounds.Bottom - defaultSpacing);
         }
 
         [TestMethod]
@@ -201,7 +201,7 @@ namespace PowerToysTests
 
             Assert.AreEqual(zones[0].Rect.Top, defaultSpacing);
             Assert.IsTrue(Math.Abs(zones[0].Rect.Bottom - firstSplitPos + defaultSpacing / 2) <= 2);
-            Assert.IsTrue(Math.Abs(zones[3].Rect.Top - firstSplitPos - defaultSpacing / 2) <= 2);
+            Assert.IsTrue(Math.Abs(zones[1].Rect.Top - firstSplitPos - defaultSpacing / 2) <= 2);
             Assert.AreEqual(zones[3].Rect.Bottom, Screen.PrimaryScreen.Bounds.Bottom - defaultSpacing);
 
             //create second split
@@ -235,7 +235,7 @@ namespace PowerToysTests
             Assert.AreEqual(3, session.FindElementsByClassName("GridZone").Count);
             Assert.AreEqual(2, thumbs.Count);
 
-            new Actions(session).MoveToElement(thumbs[0]).MoveByOffset(-100, 0)
+            new Actions(session).MoveToElement(thumbs[0]).Click().MoveByOffset(-100, 0)
                 .KeyDown(OpenQA.Selenium.Keys.Shift).Click().KeyUp(OpenQA.Selenium.Keys.Shift)
                 .Perform();
             Assert.AreEqual(3, gridEditor.FindElementsByClassName("Thumb").Count);
@@ -387,7 +387,8 @@ namespace PowerToysTests
             new Actions(session).Click(mergeButton).Perform();
 
             //move thumb
-            AppiumWebElement thumb = thumbs[1]; //thumb from merged zone is still present 
+            thumbs = gridEditor.FindElementsByClassName("Thumb");
+            AppiumWebElement thumb = thumbs[0]; 
             Move(thumb, 0, false, true);
             Assert.IsTrue(thumb.Rect.Left <= moveStep);
             Assert.IsTrue(thumb.Rect.Right > 0);
