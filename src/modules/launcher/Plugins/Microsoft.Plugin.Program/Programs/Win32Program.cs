@@ -297,7 +297,7 @@ namespace Microsoft.Plugin.Program.Programs
                     Name = Path.GetFileNameWithoutExtension(path),
                     ExecutableName = Path.GetFileName(path),
                     IcoPath = path,
-                    FullPath = path.ToLower(),
+                    FullPath = path.ToLower(CultureInfo.CurrentCulture),
                     UniqueIdentifier = path,
                     ParentDirectory = Directory.GetParent(path).FullName,
                     Description = string.Empty,
@@ -397,7 +397,7 @@ namespace Microsoft.Plugin.Program.Programs
                     if (extension == ExeExtension && File.Exists(target))
                     {
                         program.LnkResolvedPath = program.FullPath;
-                        program.FullPath = Path.GetFullPath(target).ToLower();
+                        program.FullPath = Path.GetFullPath(target).ToLower(CultureInfo.CurrentCulture);
                         program.ExecutableName = Path.GetFileName(target);
                         program.hasArguments = Helper.hasArguments;
                         program.Arguments = Helper.Arguments;
@@ -563,7 +563,7 @@ namespace Microsoft.Plugin.Program.Programs
 
         private static string Extension(string path)
         {
-            var extension = Path.GetExtension(path)?.ToLower();
+            var extension = Path.GetExtension(path)?.ToLower(CultureInfo.CurrentCulture);
 
             if (!string.IsNullOrEmpty(extension))
             {

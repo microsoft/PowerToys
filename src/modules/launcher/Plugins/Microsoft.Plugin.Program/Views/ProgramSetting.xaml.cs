@@ -10,6 +10,7 @@ using Microsoft.Plugin.Program.Programs;
 using System.ComponentModel;
 using System.Windows.Data;
 using Wox.Plugin;
+using System.Globalization;
 
 namespace Microsoft.Plugin.Program.Views
 {
@@ -191,7 +192,7 @@ namespace Microsoft.Plugin.Program.Views
                                 .Any(x => t1.UniqueIdentifier == x.UniqueIdentifier))
                 .Any())
             {
-                var msg = string.Format(context.API.GetTranslation("wox_plugin_program_delete_program_source"));
+                var msg = string.Format(CultureInfo.CurrentCulture, context.API.GetTranslation("wox_plugin_program_delete_program_source"));
 
                 if (MessageBox.Show(msg, string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.No)
                 {
