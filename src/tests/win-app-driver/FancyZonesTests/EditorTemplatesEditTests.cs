@@ -206,7 +206,7 @@ namespace PowerToysTests
                 //editor has already closed
             }
 
-            ResetDefaultZoneSettings(false);
+            ResetDefaultZoneSettings(true);
         }
     }
 }

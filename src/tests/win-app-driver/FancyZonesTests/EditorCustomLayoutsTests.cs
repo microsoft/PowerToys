@@ -326,23 +326,19 @@ namespace PowerToysTests
             Setup(context, false);
             Assert.IsNotNull(session);
 
-            ResetSettings();
+            ResetDefaultFancyZonesSettings(false);
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            TearDown();
+            ResetDefaultZoneSettings(true);
         }
 
         [TestInitialize]
         public void TestInitialize()
         {
             ResetDefaultZoneSettings(true);
-            if (!isPowerToysLaunched)
-            {
-                LaunchPowerToys();
-            }
             Assert.IsTrue(OpenEditor());
             OpenCustomLayouts();
         }
@@ -351,7 +347,6 @@ namespace PowerToysTests
         public void TestCleanup()
         {
             CloseEditor();
-            ResetDefaultZoneSettings(false);
         }
     }
 }
