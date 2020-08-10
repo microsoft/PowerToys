@@ -13,7 +13,6 @@ namespace Wox.Infrastructure.Storage
     /// <summary>
     /// Serialize object using json format.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "Generic, file is named correctly")]
     public class JsonStorage<T>
     {
         private readonly JsonSerializerSettings _serializerSettings;

@@ -17,30 +17,23 @@
         <viewModel:GeneralViewModel x:Key="eventViewModel"/>
     </Page.Resources>
 
-
-    <Grid ColumnSpacing="{StaticResource DefaultColumnSpacing}" RowSpacing="{StaticResource DefaultRowSpacing}">
+    <Grid RowSpacing="{StaticResource DefaultRowSpacing}">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LayoutVisualStates">
                 <VisualState x:Name="WideLayout">
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="{StaticResource WideLayoutMinWidth}" />
                     </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="SidePanel.(Grid.Column)" Value="1"/>
-                        <Setter Target="SidePanel.Width" Value="{StaticResource SidePanelWidth}"/>
-                        <Setter Target="GeneralSettingsView.(Grid.Row)" Value="0" />
-                        <Setter Target="LinksPanel.(RelativePanel.Below)" Value="AboutImage"/>
-                        <Setter Target="AboutTitle.Visibility" Value="Visible" />
-                    </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SmallLayout">
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="{StaticResource SmallLayoutMinWidth}" />
+                        <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="SidePanel.(Grid.Column)" Value="0"/>
-                        <Setter Target="SidePanel.Width" Value="500"/>
-                        <Setter Target="GeneralSettingsView.(Grid.Row)" Value="1" />
+                        <Setter Target="SidePanel.Width" Value="Auto"/>
+                        <Setter Target="GeneralView.(Grid.Row)" Value="1" />
                         <Setter Target="LinksPanel.(RelativePanel.RightOf)" Value="AboutImage"/>
                         <Setter Target="LinksPanel.(RelativePanel.AlignTopWith)" Value="AboutImage"/>
                         <Setter Target="AboutImage.Margin" Value="0,12,12,0"/>
@@ -59,7 +52,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Vertical" 
-                    x:Name="GeneralSettingsView">
+                    x:Name="GeneralView">
             <TextBlock x:Uid="Admin_Mode" FontWeight="SemiBold"
                        Style="{StaticResource SubtitleTextBlockStyle}"/>
 
@@ -158,6 +151,7 @@
                 <Image Source="ms-appx:///Assets/Modules/PT.png" />
             </Border>
             <StackPanel x:Name="LinksPanel"
+                        Margin="0,1,0,0"
                         RelativePanel.Below="AboutImage"
                         Orientation="Vertical" >
 
