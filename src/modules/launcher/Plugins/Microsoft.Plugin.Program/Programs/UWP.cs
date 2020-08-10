@@ -13,6 +13,7 @@ using Rect = System.Windows.Rect;
 using System.Windows.Controls;
 using System.Runtime.InteropServices.ComTypes;
 using Wox.Infrastructure.Logger;
+using Microsoft.Plugin.Program.Win32;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -53,7 +54,7 @@ namespace Microsoft.Plugin.Program.Programs
             IStream stream;
             const uint noAttribute = 0x80;
             const Stgm exclusiveRead = Stgm.Read;
-            var hResult = SHCreateStreamOnFileEx(path, exclusiveRead, noAttribute, false, null, out stream);
+            var hResult = NativeMethods.SHCreateStreamOnFileEx(path, exclusiveRead, noAttribute, false, null, out stream);
 
             if (hResult == Hresult.Ok)
             {
@@ -243,8 +244,6 @@ namespace Microsoft.Plugin.Program.Programs
             Ok = 0x0,
         }
 
-        [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
-        private static extern Hresult SHCreateStreamOnFileEx(string fileName, Stgm grfMode, uint attributes, bool create,
-IStream reserved, out IStream stream);
+
     }
 }

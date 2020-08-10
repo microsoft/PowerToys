@@ -19,6 +19,7 @@ using Wox.Infrastructure.Logger;
 using static Microsoft.Plugin.Program.Programs.UWP;
 using System.Runtime.InteropServices.ComTypes;
 using System.Globalization;
+using Microsoft.Plugin.Program.Win32;
 
 namespace Microsoft.Plugin.Program.Programs
 {
@@ -283,7 +284,7 @@ namespace Microsoft.Plugin.Program.Programs
                 var outBuffer = new StringBuilder(128);
                 string source = $"@{{{packageFullName}? {parsed}}}";
                 var capacity = (uint)outBuffer.Capacity;
-                var hResult = SHLoadIndirectString(source, outBuffer, capacity, IntPtr.Zero);
+                var hResult = NativeMethods.SHLoadIndirectString(source, outBuffer, capacity, IntPtr.Zero);
                 if (hResult == Hresult.Ok)
                 {
                     var loaded = outBuffer.ToString();
@@ -480,14 +481,6 @@ namespace Microsoft.Plugin.Program.Programs
         {
             return $"{DisplayName}: {Description}";
         }
-
-        [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
-        private static extern Hresult SHCreateStreamOnFileEx(string fileName, Stgm grfMode, uint attributes, bool create,
-        IStream reserved, out IStream stream);
-
-        [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
-        private static extern Hresult SHLoadIndirectString(string pszSource, StringBuilder pszOutBuf, uint cchOutBuf,
-            IntPtr ppvReserved);
     }
 
 }
