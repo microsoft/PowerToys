@@ -475,11 +475,8 @@ namespace PowerLauncher.ViewModel
                     {
                         Thread.Sleep(20);
 
-                        // Contains all the non-global plugins for which this raw query is valid
+                        // Contains all the plugins for which this raw query is valid
                         var plugins = pluginQueryPair.Keys.ToList();
-
-                        // Global plugins 
-                        plugins = plugins.Concat(PluginManager.GlobalPlugins).ToList();
 
                         try
                         {
