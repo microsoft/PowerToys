@@ -19,6 +19,8 @@ namespace Microsoft.Plugin.Program
 
         public bool EnablePathEnvironmentVariableSource { get; set; } = true;
 
+        public double MinScoreThreshold { get; set; } = 0.75;
+
         internal const char SuffixSeparator = ';';
 
         /// <summary>
