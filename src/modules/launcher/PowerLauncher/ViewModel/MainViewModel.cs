@@ -474,7 +474,11 @@ namespace PowerLauncher.ViewModel
                     Task.Run(() =>
                     {
                         Thread.Sleep(20);
-                        var plugins = PluginManager.ValidPluginsForQuery(queryText);
+
+                        // Contains all the non-global plugins for which this raw query is valid
+                        var plugins = pluginQueryPair.Keys;
+
+                        // TODO: Add all the global plugins as well
 
                         try
                         {
