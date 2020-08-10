@@ -3,8 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using NUnit.Framework;
-using Wox.Core.Plugin;
-using Wox.Infrastructure.Exception;
 
 namespace Wox.Test.Plugins
 {
