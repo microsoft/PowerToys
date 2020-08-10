@@ -105,6 +105,11 @@
                       Margin="{StaticResource SmallTopMargin}"
                       IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
 
+            <CheckBox x:Uid="FancyZones_MoveWindowsBasedOnPositionCheckBoxControl"
+                      IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.MoveWindowsBasedOnPosition}"
+                      Margin="{StaticResource SmallTopMargin}"
+                      IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsEnabled}"/>
+
             <CheckBox x:Uid="FancyZones_DisplayChangeMoveWindowsCheckBoxControl"
                       IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.DisplayChangeMoveWindows}"
                       Margin="{StaticResource SmallTopMargin}"

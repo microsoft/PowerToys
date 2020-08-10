@@ -666,4 +666,7 @@
   <data name="ImageResizer_Formatting_Sizename.Text" xml:space="preserve">
     <value>Size name</value>
   </data>
+  <data name="FancyZones_MoveWindowsBasedOnPositionCheckBoxControl.Content" xml:space="preserve">
+    <value>Move windows based on their position when snapping with (Win + Arrow)</value>
+  </data>
 </root>

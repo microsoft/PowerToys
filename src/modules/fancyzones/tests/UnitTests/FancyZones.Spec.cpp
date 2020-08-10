@@ -70,6 +70,7 @@ namespace FancyZonesUnitTests
             ptSettings.add_bool_toggle(L"fancyzones_mouseSwitch", IDS_SETTING_DESCRIPTION_MOUSESWITCH, settings.mouseSwitch);
             ptSettings.add_bool_toggle(L"fancyzones_overrideSnapHotkeys", IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS, settings.overrideSnapHotkeys);
             ptSettings.add_bool_toggle(L"fancyzones_moveWindowAcrossMonitors", IDS_SETTING_DESCRIPTION_MOVE_WINDOW_ACROSS_MONITORS, settings.moveWindowAcrossMonitors);
+            ptSettings.add_bool_toggle(L"fancyzones_moveWindowsBasedOnPosition", IDS_SETTING_DESCRIPTION_MOVE_WINDOWS_BASED_ON_POSITION, settings.moveWindowsBasedOnPosition);
             ptSettings.add_bool_toggle(L"fancyzones_zoneSetChange_flashZones", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES, settings.zoneSetChange_flashZones);
             ptSettings.add_bool_toggle(L"fancyzones_displayChange_moveWindows", IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS, settings.displayChange_moveWindows);
             ptSettings.add_bool_toggle(L"fancyzones_zoneSetChange_moveWindows", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS, settings.zoneSetChange_moveWindows);
@@ -120,6 +121,7 @@ namespace FancyZonesUnitTests
                         .zoneSetChange_moveWindows = true,
                         .overrideSnapHotkeys = false,
                         .moveWindowAcrossMonitors = false,
+                        .moveWindowsBasedOnPosition = false,
                         .appLastZone_moveWindows = true,
                         .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
@@ -151,6 +153,7 @@ namespace FancyZonesUnitTests
                         .zoneSetChange_moveWindows = true,
                         .overrideSnapHotkeys = false,
                         .moveWindowAcrossMonitors = false,
+                        .moveWindowsBasedOnPosition = false,
                         .appLastZone_moveWindows = true,
                         .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
@@ -182,6 +185,7 @@ namespace FancyZonesUnitTests
                         .zoneSetChange_moveWindows = true,
                         .overrideSnapHotkeys = false,
                         .moveWindowAcrossMonitors = false,
+                        .moveWindowsBasedOnPosition = false,
                         .appLastZone_moveWindows = true,
                         .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
@@ -215,6 +219,7 @@ namespace FancyZonesUnitTests
                         .zoneSetChange_moveWindows = true,
                         .overrideSnapHotkeys = false,
                         .moveWindowAcrossMonitors = false,
+                        .moveWindowsBasedOnPosition = false,
                         .appLastZone_moveWindows = true,
                         .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
@@ -248,6 +253,7 @@ namespace FancyZonesUnitTests
                         .zoneSetChange_moveWindows = true,
                         .overrideSnapHotkeys = false,
                         .moveWindowAcrossMonitors = false,
+                        .moveWindowsBasedOnPosition = false,
                         .appLastZone_moveWindows = true,
                         .restoreSize = false,
                         .use_cursorpos_editor_startupscreen = true,
@@ -288,6 +294,7 @@ namespace FancyZonesUnitTests
             ptSettings.add_bool_toggle(L"fancyzones_mouseSwitch", IDS_SETTING_DESCRIPTION_MOUSESWITCH, settings.mouseSwitch);
             ptSettings.add_bool_toggle(L"fancyzones_overrideSnapHotkeys", IDS_SETTING_DESCRIPTION_OVERRIDE_SNAP_HOTKEYS, settings.overrideSnapHotkeys);
             ptSettings.add_bool_toggle(L"fancyzones_moveWindowAcrossMonitors", IDS_SETTING_DESCRIPTION_MOVE_WINDOW_ACROSS_MONITORS, settings.moveWindowAcrossMonitors);
+            ptSettings.add_bool_toggle(L"fancyzones_moveWindowsBasedOnPosition", IDS_SETTING_DESCRIPTION_MOVE_WINDOWS_BASED_ON_POSITION, settings.moveWindowsBasedOnPosition);
             ptSettings.add_bool_toggle(L"fancyzones_zoneSetChange_flashZones", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_FLASHZONES, settings.zoneSetChange_flashZones);
             ptSettings.add_bool_toggle(L"fancyzones_displayChange_moveWindows", IDS_SETTING_DESCRIPTION_DISPLAYCHANGE_MOVEWINDOWS, settings.displayChange_moveWindows);
             ptSettings.add_bool_toggle(L"fancyzones_zoneSetChange_moveWindows", IDS_SETTING_DESCRIPTION_ZONESETCHANGE_MOVEWINDOWS, settings.zoneSetChange_moveWindows);

@@ -108,6 +108,24 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void MoveWindowsBasedOnPosition_ShouldSetValue2True_WhenSuccessful()
+        {
+            // arrange
+            FancyZonesViewModel viewModel = new FancyZonesViewModel();
+            Assert.IsFalse(viewModel.MoveWindowsBasedOnPosition); // check if value was initialized to false.
+
+            // Assert
+            ShellPage.DefaultSndMSGCallback = msg =>
+            {
+                FancyZonesSettingsIPCMessage snd = JsonSerializer.Deserialize<FancyZonesSettingsIPCMessage>(msg);
+                Assert.IsTrue(snd.Powertoys.FancyZones.Properties.FancyzonesMoveWindowsBasedOnPosition.Value);
+            };
+
+            // act
+            viewModel.OverrideSnapHotkeys = true;
+        }
+
+        [TestMethod]
         public void ZoneSetChangeFlashZones_ShouldSetValue2False_WhenSuccessful()
         {
             // Assert
