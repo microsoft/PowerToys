@@ -536,23 +536,25 @@ namespace PowerLauncher.ViewModel
                                     {
                                         lock (_addResultsLock)
                                         {
-                                            currentCancellationToken.ThrowIfCancellationRequested();
+                                            if (query.RawQuery == _currentQuery.RawQuery)
+                                            {
+                                                currentCancellationToken.ThrowIfCancellationRequested();
 
-                                            // Remove the original results from the plugin
-                                            Results.Results.RemoveAll(r => r.Result.PluginID == plugin.Metadata.ID);
+                                                // Remove the original results from the plugin
+                                                Results.Results.RemoveAll(r => r.Result.PluginID == plugin.Metadata.ID);
+                                                currentCancellationToken.ThrowIfCancellationRequested();
 
-                                            currentCancellationToken.ThrowIfCancellationRequested();
-
-                                            // Add the new results from the plugin
-                                            UpdateResultView(results, plugin.Metadata, query, currentCancellationToken);
-                                            currentCancellationToken.ThrowIfCancellationRequested();
-                                            Results.Results.Sort();
+                                                // Add the new results from the plugin
+                                                UpdateResultView(results, query, currentCancellationToken);
+                                                currentCancellationToken.ThrowIfCancellationRequested();
+                                                Results.Results.Sort();
+                                            }
                                         }
 
                                         currentCancellationToken.ThrowIfCancellationRequested();
                                         Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                                         {
-                                            if (query.RawQuery == _lastQuery.RawQuery)
+                                            if (query.RawQuery == _currentQuery.RawQuery)
                                             {
                                                 Results.Results.NotifyChanges();
                                             }
