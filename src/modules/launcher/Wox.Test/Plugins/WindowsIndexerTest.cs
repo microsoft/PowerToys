@@ -2,16 +2,16 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using Microsoft.Search.Interop;
-using Microsoft.Plugin.Indexer.SearchHelper;
-using Microsoft.Plugin.Indexer;
-using Moq;
-using Wox.Plugin;
 using System.Linq;
+using Microsoft.Plugin.Indexer;
 using Microsoft.Plugin.Indexer.DriveDetection;
+using Microsoft.Plugin.Indexer.SearchHelper;
+using Microsoft.Search.Interop;
+using Moq;
+using NUnit.Framework;
+using Wox.Plugin;
 
 namespace Wox.Test.Plugins
 {
@@ -30,7 +30,7 @@ namespace Wox.Test.Plugins
         {
             // Arrange
             int maxCount = 10;
-            WindowsSearchAPI _api = GetWindowsSearchAPI();
+            WindowsSearchAPI api = GetWindowsSearchAPI();
             ISearchQueryHelper queryHelper = null;
 
             // Act
@@ -46,8 +46,8 @@ namespace Wox.Test.Plugins
         {
             // Arrange
             ISearchQueryHelper queryHelper;
-            String pattern = "*";
-            WindowsSearchAPI _api = GetWindowsSearchAPI();
+            string pattern = "*";
+            WindowsSearchAPI api = GetWindowsSearchAPI();
             WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
 
             // Act
@@ -63,8 +63,8 @@ namespace Wox.Test.Plugins
         {
             // Arrange
             ISearchQueryHelper queryHelper;
-            String pattern = "tt*^&)";
-            WindowsSearchAPI _api = GetWindowsSearchAPI();
+            string pattern = "tt*^&)";
+            WindowsSearchAPI api = GetWindowsSearchAPI();
             WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
 
             // Act
@@ -80,8 +80,8 @@ namespace Wox.Test.Plugins
         {
             // Arrange
             ISearchQueryHelper queryHelper;
-            String pattern = "tt%^&)";
-            WindowsSearchAPI _api = GetWindowsSearchAPI();
+            string pattern = "tt%^&)";
+            WindowsSearchAPI api = GetWindowsSearchAPI();
             WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
 
             // Act
@@ -97,8 +97,8 @@ namespace Wox.Test.Plugins
         {
             // Arrange
             ISearchQueryHelper queryHelper;
-            String pattern = "tt_^&)";
-            WindowsSearchAPI _api = GetWindowsSearchAPI();
+            string pattern = "tt_^&)";
+            WindowsSearchAPI api = GetWindowsSearchAPI();
             WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
 
             // Act
@@ -114,8 +114,8 @@ namespace Wox.Test.Plugins
         {
             // Arrange
             ISearchQueryHelper queryHelper;
-            String pattern = "tt?^&)";
-            WindowsSearchAPI _api = GetWindowsSearchAPI();
+            string pattern = "tt?^&)";
+            WindowsSearchAPI api = GetWindowsSearchAPI();
             WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
 
             // Act
@@ -131,8 +131,8 @@ namespace Wox.Test.Plugins
         {
             // Arrange
             ISearchQueryHelper queryHelper;
-            String pattern = "tt^&)bc";
-            WindowsSearchAPI _api = GetWindowsSearchAPI();
+            string pattern = "tt^&)bc";
+            WindowsSearchAPI api = GetWindowsSearchAPI();
             WindowsSearchAPI.InitQueryHelper(out queryHelper, 10);
 
             // Act
@@ -148,10 +148,10 @@ namespace Wox.Test.Plugins
         {
             // Arrange
             OleDBSearch oleDbSearch = new OleDBSearch();
-            WindowsSearchAPI _api = new WindowsSearchAPI(oleDbSearch);
+            WindowsSearchAPI api = new WindowsSearchAPI(oleDbSearch);
 
             // Act
-            _api.Search("FilePath");
+            api.Search("FilePath");
 
             // Assert
             Assert.IsTrue(oleDbSearch.HaveAllDisposableItemsBeenDisposed());
@@ -161,15 +161,15 @@ namespace Wox.Test.Plugins
         public void WindowsSearchAPI_ShouldShowHiddenFiles_WhenDisplayHiddenFilesIsTrue()
         {
             // Arrange
-            OleDBResult unHiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", "file1.txt", (Int64)0x0 });
-            OleDBResult hiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt", (Int64)0x2 });
+            OleDBResult unHiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", "file1.txt", 0x0L });
+            OleDBResult hiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt", 0x2L });
             List<OleDBResult> results = new List<OleDBResult>() { hiddenFile, unHiddenFile };
             var mock = new Mock<ISearch>();
             mock.Setup(x => x.Query(It.IsAny<string>(), It.IsAny<string>())).Returns(results);
-            WindowsSearchAPI _api = new WindowsSearchAPI(mock.Object, true);
+            WindowsSearchAPI api = new WindowsSearchAPI(mock.Object, true);
 
             // Act
-            var windowsSearchAPIResults = _api.Search("FilePath");
+            var windowsSearchAPIResults = api.Search("FilePath");
 
             // Assert
             Assert.IsTrue(windowsSearchAPIResults.Count() == 2);
@@ -181,15 +181,15 @@ namespace Wox.Test.Plugins
         public void WindowsSearchAPI_ShouldNotShowHiddenFiles_WhenDisplayHiddenFilesIsFalse()
         {
             // Arrange
-            OleDBResult unHiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", "file1.txt", (Int64)0x0 });
-            OleDBResult hiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt", (Int64)0x2 });
+            OleDBResult unHiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", "file1.txt", 0x0L });
+            OleDBResult hiddenFile = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt", 0x2L });
             List<OleDBResult> results = new List<OleDBResult>() { hiddenFile, unHiddenFile };
             var mock = new Mock<ISearch>();
             mock.Setup(x => x.Query(It.IsAny<string>(), It.IsAny<string>())).Returns(results);
-            WindowsSearchAPI _api = new WindowsSearchAPI(mock.Object, false);
+            WindowsSearchAPI api = new WindowsSearchAPI(mock.Object, false);
 
             // Act
-            var windowsSearchAPIResults = _api.Search("FilePath");
+            var windowsSearchAPIResults = api.Search("FilePath");
 
             // Assert
             Assert.IsTrue(windowsSearchAPIResults.Count() == 1);
@@ -201,16 +201,16 @@ namespace Wox.Test.Plugins
         public void WindowsSearchAPI_ShouldNotReturnResultsWithNullValue_WhenDbResultHasANullColumn()
         {
             // Arrange
-            OleDBResult file1 = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", DBNull.Value, (Int64)0x0 });
-            OleDBResult file2 = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt", (Int64)0x0 });
+            OleDBResult file1 = new OleDBResult(new List<object>() { "C:/test/path/file1.txt", DBNull.Value, 0x0L });
+            OleDBResult file2 = new OleDBResult(new List<object>() { "C:/test/path/file2.txt", "file2.txt", 0x0L });
 
             List<OleDBResult> results = new List<OleDBResult>() { file1, file2 };
             var mock = new Mock<ISearch>();
             mock.Setup(x => x.Query(It.IsAny<string>(), It.IsAny<string>())).Returns(results);
-            WindowsSearchAPI _api = new WindowsSearchAPI(mock.Object, false);
+            WindowsSearchAPI api = new WindowsSearchAPI(mock.Object, false);
 
             // Act
-            var windowsSearchAPIResults = _api.Search("FilePath");
+            var windowsSearchAPIResults = api.Search("FilePath");
 
             // Assert
             Assert.IsTrue(windowsSearchAPIResults.Count() == 1);
@@ -228,15 +228,15 @@ namespace Wox.Test.Plugins
             var mockapi = new Mock<IPublicAPI>();
             var pluginInitContext = new PluginInitContext() { API = mockapi.Object };
 
-            ContextMenuLoader _contextMenuLoader = new ContextMenuLoader(pluginInitContext);
+            ContextMenuLoader contextMenuLoader = new ContextMenuLoader(pluginInitContext);
 
             // Act
             Result result = new Result
             {
-                ContextData = new SearchResult { Path = path }
+                ContextData = new SearchResult { Path = path },
             };
 
-            List<ContextMenuResult> contextMenuItems = _contextMenuLoader.LoadContextMenus(result);
+            List<ContextMenuResult> contextMenuItems = contextMenuLoader.LoadContextMenus(result);
 
             // Assert
             Assert.AreEqual(contextMenuItems.Count, 4);
@@ -256,15 +256,15 @@ namespace Wox.Test.Plugins
             var mockapi = new Mock<IPublicAPI>();
             var pluginInitContext = new PluginInitContext() { API = mockapi.Object };
 
-            ContextMenuLoader _contextMenuLoader = new ContextMenuLoader(pluginInitContext);
+            ContextMenuLoader contextMenuLoader = new ContextMenuLoader(pluginInitContext);
 
             // Act
             Result result = new Result
             {
-                ContextData = new SearchResult { Path = path }
+                ContextData = new SearchResult { Path = path },
             };
 
-            List<ContextMenuResult> contextMenuItems = _contextMenuLoader.LoadContextMenus(result);
+            List<ContextMenuResult> contextMenuItems = contextMenuLoader.LoadContextMenus(result);
 
             // Assert
             Assert.AreEqual(contextMenuItems.Count, 3);
@@ -282,15 +282,15 @@ namespace Wox.Test.Plugins
             var mockapi = new Mock<IPublicAPI>();
             var pluginInitContext = new PluginInitContext() { API = mockapi.Object };
 
-            ContextMenuLoader _contextMenuLoader = new ContextMenuLoader(pluginInitContext);
+            ContextMenuLoader contextMenuLoader = new ContextMenuLoader(pluginInitContext);
 
             // Act
             Result result = new Result
             {
-                ContextData = new SearchResult { Path = path }
+                ContextData = new SearchResult { Path = path },
             };
 
-            List<ContextMenuResult> contextMenuItems = _contextMenuLoader.LoadContextMenus(result);
+            List<ContextMenuResult> contextMenuItems = contextMenuLoader.LoadContextMenus(result);
 
             // Assert
             Assert.AreEqual(contextMenuItems.Count, 2);
@@ -310,11 +310,11 @@ namespace Wox.Test.Plugins
             var mockRegistry = new Mock<IRegistryWrapper>();
             mockRegistry.Setup(r => r.GetHKLMRegistryValue(It.IsAny<string>(), It.IsAny<string>())).Returns(enhancedModeStatus); // Enhanced mode is disabled
 
-            IndexerDriveDetection _driveDetection = new IndexerDriveDetection(mockRegistry.Object);
-            _driveDetection.IsDriveDetectionWarningCheckBoxSelected = disableWarningCheckBoxStatus;
+            IndexerDriveDetection driveDetection = new IndexerDriveDetection(mockRegistry.Object);
+            driveDetection.IsDriveDetectionWarningCheckBoxSelected = disableWarningCheckBoxStatus;
 
             // Act & Assert
-            return _driveDetection.DisplayWarning();
+            return driveDetection.DisplayWarning();
         }
     }
 }
