@@ -1,4 +1,5 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 using System.Windows.Forms;
@@ -223,6 +224,9 @@ namespace PowerToysTests
         [TestMethod]
         public void MoveBottomRightCorner()
         {
+            WindowsElement zone = session.FindElementByAccessibilityId("Caption");
+            Assert.IsNotNull(zone, "Unable to move zone");
+            new Actions(session).MoveToElement(zone).ClickAndHold().MoveByOffset(creatorWindow.Rect.Width / 2, 0).Release().Perform();
             WindowsElement bottomRightCorner = session.FindElementByAccessibilityId("SEResize");
             WindowsElement topBorder = session.FindElementByAccessibilityId("NResize");
             WindowsElement leftBorder = session.FindElementByAccessibilityId("WResize");
@@ -279,21 +283,17 @@ namespace PowerToysTests
         [TestInitialize]
         public void TestInitialize()
         {
-            if (session == null)
-                return;
-
             //create canvas zone
-            OpenCreatorWindow("Create new custom", "Custom layout creator");
-            session.FindElementByAccessibilityId("newZoneButton").Click();
+            OpenCreatorWindow("Create new custom");
+            WaitElementByAccessibilityId("newZoneButton").Click();
         }
 
         [TestCleanup]
         public void TestCleanup()
         {
-            if (session == null)
-                return;
-
-            new Actions(session).MoveToElement(session.FindElementByXPath("//Button[@Name=\"Cancel\"]")).Click().Perform();
+            AppiumWebElement cancelButton = creatorWindow.FindElementByName("Cancel");
+            Assert.IsNotNull(cancelButton);
+            new Actions(session).MoveToElement(cancelButton).Click().Perform();
         }
     }
 }
