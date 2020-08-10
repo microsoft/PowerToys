@@ -39,9 +39,11 @@ namespace Microsoft.Plugin.Program.Programs
         public bool Enabled { get; set; }
         public bool CanRunElevated { get; set; }
 
-        public string LogoUri { get; set; }
+        
         public string LogoPath { get; set; }
         public UWP Package { get; set; }
+
+        private string logoUri;
 
         // Function to calculate the score of a result
         private int Score(string query)
@@ -225,7 +227,7 @@ namespace Microsoft.Plugin.Program.Programs
 
             DisplayName = ResourceFromPri(package.FullName, DisplayName);
             Description = ResourceFromPri(package.FullName, Description);
-            LogoUri = LogoUriFromManifest(manifestApp);
+            this.logoUri = LogoUriFromManifest(manifestApp);
 
             Enabled = true;
             CanRunElevated = IfApplicationcanRunElevated();
@@ -341,11 +343,11 @@ namespace Microsoft.Plugin.Program.Programs
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
             {
-                LogoPath = LogoPathFromUri(LogoUri, "contrast-white");
+                LogoPath = LogoPathFromUri(this.logoUri, "contrast-white");
             }
             else
             {
-                LogoPath = LogoPathFromUri(LogoUri, "contrast-black");
+                LogoPath = LogoPathFromUri(this.logoUri, "contrast-black");
             }
         }
 
