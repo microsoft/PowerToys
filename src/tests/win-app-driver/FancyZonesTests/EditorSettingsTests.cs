@@ -1,10 +1,9 @@
 using System;
 using System.IO;
-using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Appium.Windows;
+using OpenQA.Selenium.Appium;
 
 namespace PowerToysTests
 {
@@ -20,8 +19,8 @@ namespace PowerToysTests
         {
             Assert.IsTrue(OpenEditor());
 
-            WindowsElement minusButton = session.FindElementByAccessibilityId("decrementZones");
-            WindowsElement zoneCount = session.FindElementByAccessibilityId("zoneCount");
+            AppiumWebElement minusButton = editorWindow.FindElementByAccessibilityId("decrementZones");
+            AppiumWebElement zoneCount = editorWindow.FindElementByAccessibilityId("zoneCount");
 
             int editorZoneCountValue;
             Assert.IsTrue(Int32.TryParse(zoneCount.Text, out editorZoneCountValue));
@@ -35,18 +34,18 @@ namespace PowerToysTests
 
                 if (j == 0 || i == -4)
                 {
-                    session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
+                    editorWindow.FindElementByAccessibilityId("ApplyTemplateButton").Click();
 
                     WaitSeconds(1);
                     Assert.AreEqual(editorZoneCountValue, GetEditZonesSetting<int>(editorZoneCount));
                     Assert.IsTrue(OpenEditor());
 
-                    minusButton = session.FindElementByAccessibilityId("decrementZones");
-                    zoneCount = session.FindElementByAccessibilityId("zoneCount");
+                    minusButton = editorWindow.FindElementByAccessibilityId("decrementZones");
+                    zoneCount = editorWindow.FindElementByAccessibilityId("zoneCount");
                 }
             }
 
-            WindowsElement plusButton = session.FindElementByAccessibilityId("incrementZones");
+            AppiumWebElement plusButton = editorWindow.FindElementByAccessibilityId("incrementZones");
 
             for (int i = 2; i < 45; ++i)
             {
@@ -56,7 +55,7 @@ namespace PowerToysTests
                 Assert.AreEqual(Math.Min(i, 40), editorZoneCountValue);
             }
 
-            session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
+            editorWindow.FindElementByAccessibilityId("ApplyTemplateButton").Click();
             WaitSeconds(1);
             Assert.AreEqual(editorZoneCountValue, GetEditZonesSetting<int>(editorZoneCount));
         }
@@ -68,11 +67,11 @@ namespace PowerToysTests
             {
                 Assert.IsTrue(OpenEditor());
 
-                WindowsElement spaceAroundSetting = session.FindElementByAccessibilityId("spaceAroundSetting");
+                AppiumWebElement spaceAroundSetting = editorWindow.FindElementByAccessibilityId("spaceAroundSetting");
                 bool spaceAroundSettingValue = spaceAroundSetting.Selected;
                 spaceAroundSetting.Click();
 
-                session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
+                editorWindow.FindElementByAccessibilityId("ApplyTemplateButton").Click();
 
                 WaitSeconds(1);
 
@@ -85,10 +84,10 @@ namespace PowerToysTests
         {
             Assert.IsTrue(OpenEditor());
 
-            WindowsElement spaceAroundSetting = session.FindElementByAccessibilityId("spaceAroundSetting");
+            AppiumWebElement spaceAroundSetting = editorWindow.FindElementByAccessibilityId("spaceAroundSetting");
             bool editorShowSpacingValue = spaceAroundSetting.Selected;
 
-            session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
+            editorWindow.FindElementByAccessibilityId("ApplyTemplateButton").Click();
             WaitSeconds(1);
 
             string[] validValues = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
@@ -97,11 +96,11 @@ namespace PowerToysTests
             {
                 Assert.IsTrue(OpenEditor());
 
-                WindowsElement paddingValue = WaitElementByAccessibilityId("paddingValue");
+                AppiumWebElement paddingValue = editorWindow.FindElementByAccessibilityId("paddingValue");
                 ClearText(paddingValue);
                 paddingValue.SendKeys(editorSpacingValue);
 
-                session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
+                editorWindow.FindElementByAccessibilityId("ApplyTemplateButton").Click();
                 WaitSeconds(1);
 
                 Assert.AreEqual(editorShowSpacingValue, GetEditZonesSetting<bool>(editorShowSpacing));
@@ -114,10 +113,10 @@ namespace PowerToysTests
         {
             Assert.IsTrue(OpenEditor());
 
-            WindowsElement spaceAroundSetting = session.FindElementByAccessibilityId("spaceAroundSetting");
+            AppiumWebElement spaceAroundSetting = editorWindow.FindElementByAccessibilityId("spaceAroundSetting");
             bool editorShowSpacingValue = spaceAroundSetting.Selected;
 
-            session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
+            editorWindow.FindElementByAccessibilityId("ApplyTemplateButton").Click();
             WaitSeconds(1);
 
             string[] invalidValues = { "!", "/", "<", "?", "D", "Z", "]", "m", "}", "1.5", "2,5" };
@@ -128,11 +127,11 @@ namespace PowerToysTests
             {
                 Assert.IsTrue(OpenEditor());
 
-                WindowsElement paddingValue = WaitElementByAccessibilityId("paddingValue");
+                AppiumWebElement paddingValue = editorWindow.FindElementByAccessibilityId("paddingValue");
                 ClearText(paddingValue);
                 paddingValue.SendKeys(value);
 
-                session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
+                editorWindow.FindElementByAccessibilityId("ApplyTemplateButton").Click();
                 WaitSeconds(1);
 
                 Assert.AreEqual(editorShowSpacingValue, GetEditZonesSetting<bool>(editorShowSpacing));
@@ -144,9 +143,9 @@ namespace PowerToysTests
         public void SpacingTestLargeValue()
         {
             Assert.IsTrue(OpenEditor());
-            session.FindElementByXPath("//Text[@Name=\"Grid\"]").Click();
+            editorWindow.FindElementByName("Grid").Click();
 
-            WindowsElement paddingValue = session.FindElementByAccessibilityId("paddingValue");
+            AppiumWebElement paddingValue = editorWindow.FindElementByAccessibilityId("paddingValue");
             ClearText(paddingValue);
             paddingValue.SendKeys("1000");
 
@@ -169,7 +168,7 @@ namespace PowerToysTests
             return result;
         }
 
-        private void ClearText(WindowsElement windowsElement)
+        private void ClearText(AppiumWebElement windowsElement)
         {
             windowsElement.SendKeys(Keys.Home);
             windowsElement.SendKeys(Keys.Control + Keys.Delete);

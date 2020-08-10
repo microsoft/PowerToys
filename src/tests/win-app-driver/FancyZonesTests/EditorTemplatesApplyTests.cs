@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 
@@ -9,9 +9,8 @@ namespace PowerToysTests
     {
         private void ApplyLayout(string tabName)
         {
-            string elementXPath = "//Text[@Name=\"" + tabName + "\"]";
-            session.FindElementByXPath(elementXPath).Click();
-            session.FindElementByAccessibilityId("ApplyTemplateButton").Click();
+            editorWindow.FindElementByName(tabName).Click();
+            editorWindow.FindElementByAccessibilityId("ApplyTemplateButton").Click();
 
             try
             {
