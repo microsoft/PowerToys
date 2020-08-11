@@ -18,6 +18,7 @@ namespace PowerToysTests
         protected static WindowsDriver<WindowsElement> session;
         protected static bool isPowerToysLaunched = false;
         protected static WindowsElement trayButton;
+        protected static WindowsElement settingsWindow;
 
         protected static string _settingsFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\FancyZones");
         protected static string _settingsPath = _settingsFolderPath + "\\settings.json";
@@ -145,6 +146,9 @@ namespace PowerToysTests
 
                 PowerToysTrayButton().Click();
                 trayButton.Click(); //close
+
+                settingsWindow = WaitElementByName("PowerToys Settings");
+                Assert.IsNotNull(settingsWindow);
             }
             catch (Exception ex)
             {
@@ -156,10 +160,9 @@ namespace PowerToysTests
         {
             try
             {
-                WindowsElement fzNavigationButton = WaitElementByXPath("//Button[@Name=\"FancyZones\"]");
+                AppiumWebElement fzNavigationButton = settingsWindow.FindElementByName("FancyZones");
                 Assert.IsNotNull(fzNavigationButton);
 
-                fzNavigationButton.Click();
                 fzNavigationButton.Click();
             }
             catch (Exception ex)
