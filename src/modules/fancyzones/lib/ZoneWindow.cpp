@@ -43,7 +43,7 @@ namespace ZoneWindowUtils
 
     std::wstring GenerateUniqueIdAllMonitorsArea(PCWSTR virtualDesktopId)
     {
-        std::wstring result{ ZonedWindowProperties::MultiMonitorDevice };
+        std::wstring result{ ZonedWindowProperties::MultiMonitorDeviceID };
 
         RECT combinedResolution = GetAllMonitorsCombinedRect<&MONITORINFO::rcMonitor>();
 

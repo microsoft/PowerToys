@@ -216,7 +216,7 @@ void SaveWindowSizeAndOrigin(HWND window) noexcept
         memcpy(&rawData, windowSizeData.data(), sizeof rawData);
         SetPropW(window, ZonedWindowProperties::PropertyRestoreSizeID, rawData);
         memcpy(&rawData, windowOriginData.data(), sizeof rawData);
-        SetPropW(window, ZonedWindowProperties::RestoreOrigin, rawData);
+        SetPropW(window, ZonedWindowProperties::PropertyRestoreOriginID, rawData);
     }
 }
 
@@ -245,7 +245,7 @@ void RestoreWindowSize(HWND window) noexcept
 
 void RestoreWindowOrigin(HWND window) noexcept
 {
-    auto windowOriginData = GetPropW(window, ZonedWindowProperties::RestoreOrigin);
+    auto windowOriginData = GetPropW(window, ZonedWindowProperties::PropertyRestoreOriginID);
     if (windowOriginData)
     {
         std::array<int, 2> windowOrigin;
@@ -267,7 +267,7 @@ void RestoreWindowOrigin(HWND window) noexcept
             SizeWindowToRect(window, rect);
         }
 
-        ::RemoveProp(window, ZonedWindowProperties::RestoreOrigin);
+        ::RemoveProp(window, ZonedWindowProperties::PropertyRestoreOriginID);
     }
 }
 
