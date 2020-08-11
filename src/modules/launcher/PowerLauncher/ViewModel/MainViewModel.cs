@@ -547,7 +547,7 @@ namespace PowerLauncher.ViewModel
                                                 // Add the new results from the plugin
                                                 UpdateResultView(results, query, currentCancellationToken);
                                                 currentCancellationToken.ThrowIfCancellationRequested();
-                                                Results.Results.Sort();
+                                                Results.Sort();
                                             }
                                         }
 
