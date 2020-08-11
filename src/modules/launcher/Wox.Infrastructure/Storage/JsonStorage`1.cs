@@ -37,7 +37,7 @@ namespace Wox.Infrastructure.Storage
             _serializerSettings = new JsonSerializerSettings
             {
                 ObjectCreationHandling = ObjectCreationHandling.Replace,
-                NullValueHandling = NullValueHandling.Ignore
+                NullValueHandling = NullValueHandling.Ignore,
             };
         }
 
