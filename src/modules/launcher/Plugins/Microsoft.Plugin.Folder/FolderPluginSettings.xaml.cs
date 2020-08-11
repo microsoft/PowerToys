@@ -1,5 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -13,26 +16,24 @@ using MessageBox = System.Windows.MessageBox;
 
 namespace Microsoft.Plugin.Folder
 {
-
     public partial class FileSystemSettings
     {
-        private IPublicAPI woxAPI;
+        private IPublicAPI _woxAPI;
         private FolderSettings _settings;
 
         public FileSystemSettings(IPublicAPI woxAPI, FolderSettings settings)
         {
-            this.woxAPI = woxAPI;
+            _woxAPI = woxAPI;
             InitializeComponent();
-            _settings = settings ?? throw new ArgumentNullException(paramName:nameof(settings));
+            _settings = settings ?? throw new ArgumentNullException(paramName: nameof(settings));
             lbxFolders.ItemsSource = _settings.FolderLinks;
         }
 
-        private void btnDelete_Click(object sender, RoutedEventArgs e)
+        private void BtnDelete_Click(object sender, RoutedEventArgs e)
         {
-            var selectedFolder = lbxFolders.SelectedItem as FolderLink;
-            if (selectedFolder != null)
+            if (lbxFolders.SelectedItem is FolderLink selectedFolder)
             {
-                string msg = string.Format(CultureInfo.InvariantCulture, woxAPI.GetTranslation("wox_plugin_folder_delete_folder_link"), selectedFolder.Path);
+                string msg = string.Format(CultureInfo.InvariantCulture, _woxAPI.GetTranslation("wox_plugin_folder_delete_folder_link"), selectedFolder.Path);
 
                 if (MessageBox.Show(msg, string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
@@ -42,15 +43,14 @@ namespace Microsoft.Plugin.Folder
             }
             else
             {
-                string warning = woxAPI.GetTranslation("wox_plugin_folder_select_folder_link_warning");
+                string warning = _woxAPI.GetTranslation("wox_plugin_folder_select_folder_link_warning");
                 MessageBox.Show(warning);
             }
         }
 
-        private void btnEdit_Click(object sender, RoutedEventArgs e)
+        private void BtnEdit_Click(object sender, RoutedEventArgs e)
         {
-            var selectedFolder = lbxFolders.SelectedItem as FolderLink;
-            if (selectedFolder != null)
+            if (lbxFolders.SelectedItem is FolderLink selectedFolder)
             {
                 using (var folderBrowserDialog = new FolderBrowserDialog())
                 {
@@ -66,12 +66,12 @@ namespace Microsoft.Plugin.Folder
             }
             else
             {
-                string warning = woxAPI.GetTranslation("wox_plugin_folder_select_folder_link_warning");
+                string warning = _woxAPI.GetTranslation("wox_plugin_folder_select_folder_link_warning");
                 MessageBox.Show(warning);
             }
         }
 
-        private void btnAdd_Click(object sender, RoutedEventArgs e)
+        private void BtnAdd_Click(object sender, RoutedEventArgs e)
         {
             using (var folderBrowserDialog = new FolderBrowserDialog())
             {
@@ -79,7 +79,7 @@ namespace Microsoft.Plugin.Folder
                 {
                     var newFolder = new FolderLink
                     {
-                        Path = folderBrowserDialog.SelectedPath
+                        Path = folderBrowserDialog.SelectedPath,
                     };
 
                     _settings.FolderLinks.Add(newFolder);
@@ -89,7 +89,7 @@ namespace Microsoft.Plugin.Folder
             }
         }
 
-        private void lbxFolders_Drop(object sender, DragEventArgs e)
+        private void LbxFolders_Drop(object sender, DragEventArgs e)
         {
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
 
@@ -101,7 +101,7 @@ namespace Microsoft.Plugin.Folder
                     {
                         var newFolder = new FolderLink
                         {
-                            Path = s
+                            Path = s,
                         };
 
                         _settings.FolderLinks.Add(newFolder);
@@ -112,7 +112,7 @@ namespace Microsoft.Plugin.Folder
             }
         }
 
-        private void lbxFolders_DragEnter(object sender, DragEventArgs e)
+        private void LbxFolders_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {

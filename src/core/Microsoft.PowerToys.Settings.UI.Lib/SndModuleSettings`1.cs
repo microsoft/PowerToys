@@ -4,8 +4,6 @@
 
 using System.Text.Json;
 
-#pragma warning disable SA1649 // File name should match first type name
-
 namespace Microsoft.PowerToys.Settings.UI.Lib
 {
     // Represents a powertoys module settings setnt to the runner.

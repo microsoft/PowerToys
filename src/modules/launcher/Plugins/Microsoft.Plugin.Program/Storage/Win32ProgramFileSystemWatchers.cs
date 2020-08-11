@@ -19,7 +19,7 @@ namespace Microsoft.Plugin.Program.Storage
         }
 
         // Returns an array of paths to be watched
-        private string[] GetPathsToWatch()
+        private static string[] GetPathsToWatch()
         {
             string[] paths = new string[]
                             {

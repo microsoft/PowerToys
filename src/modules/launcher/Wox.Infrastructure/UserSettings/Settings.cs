@@ -125,7 +125,7 @@ namespace Wox.Infrastructure.UserSettings
 
         // Order defaults to 0 or -1, so 1 will let this property appear last
         [JsonProperty(Order = 1)]
-        public PluginsSettings PluginSettings { get; set; } = new PluginsSettings();
+        public PluginSettings PluginSettings { get; set; } = new PluginSettings();
 
         public ObservableCollection<CustomPluginHotkey> CustomPluginHotkeys { get; set; } = new ObservableCollection<CustomPluginHotkey>();
 
