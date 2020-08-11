@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Import Project="..\..\..\Version.props" />
+  
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <ProjectGuid>{FF742965-9A80-41A5-B042-D6C7D3A21708}</ProjectGuid>
@@ -7,6 +8,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Wox.Test</RootNamespace>
     <AssemblyName>Wox.Test</AssemblyName>
+    <Version>$(Version).0</Version>
     <ApplicationIcon />
     <StartupObject />
     <Platforms>x64</Platforms>
