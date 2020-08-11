@@ -8,6 +8,8 @@ using Wox.Plugin;
 using Microsoft.Plugin.Program;
 using System.IO.Packaging;
 using Windows.ApplicationModel;
+using System;
+
 namespace Microsoft.Plugin.Program.UnitTests.Programs
 {
     using Win32Program = Microsoft.Plugin.Program.Programs.Win32Program;
@@ -430,8 +432,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             var result = cmder_run_command.Result("cmder", mock.Object);
 
             // Assert
-            Assert.IsTrue(result.Title.Equals(cmder_run_command.Name));
-            Assert.IsFalse(result.Title.Equals(cmder_run_command.Description));
+            Assert.IsTrue(result.Title.Equals(cmder_run_command.Name, StringComparison.Ordinal));
+            Assert.IsFalse(result.Title.Equals(cmder_run_command.Description, StringComparison.Ordinal));
         }
     }
 }
